@@ -24,6 +24,15 @@ Changed
 
 - Clean up ``COPYRIGHT`` file. [drybjed_]
 
+- Update installation and introduction documentation. [drybjed_]
+
+Removed
+~~~~~~~
+
+- Remove the Getting Started documentation, and point the users to the more
+  comprehensive Getting Started located in the ``debops-playbooks`` repository.
+  [drybjed_]
+
 
 `debops-tools v0.4.4`_ - 2016-06-29
 -----------------------------------

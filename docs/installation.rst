@@ -1,74 +1,147 @@
 Installation
 ============
 
-DebOps scripts are distributed on `PyPI`_, Python Package Index. They can be
-installed using the ``pip`` command:
+This document describes how to install and upgrade DebOps scripts, roles and
+playbooks, as well as additional software requirements that are needed by the
+DebOps roles to be used properly.
+
+
+Quick setup
+-----------
+
+DebOps uses latest Ansible stable release, which can be installed using
+`variety of methods <https://docs.ansible.com/ansible/intro_installation.html>`_.
+On MacOS X, you should use Ansible from `PyPI <https://pypi.python.org/>`_ (Python Package Index), not
+Homebrew. Various DebOps roles require additional Python packages on the
+Ansible Controller; see the list in the
+:ref:`debops-tools__ref_prerequisites` section for more details.
+
+You can install DebOps on a host that supports Ansible and Python using
+a package from PyPI:
 
 .. code-block:: console
 
    pip install debops
 
-You can also use ``pip`` to upgrade the scripts themselves:
+To perform an upgrade of an existing script installation, you can use the
+command:
 
 .. code-block:: console
 
    pip install --upgrade debops
 
-After the installation is finished, scripts will be available in
-:file:`/usr/local/bin/`, which should be in your shell's ``$PATH``.
+After installation, you need to download the DebOps roles and playbooks. To do
+that, on your regular user account (not ``root``) run the command:
 
-.. _PyPI: https://pypi.python.org/pypi/debops
+.. code-block:: console
+
+   debops-update
+
+This command is used to download the roles and playbooks on a fresh
+installation, as well as to update the existing set of roles and playbooks.
+
+This script will download playbooks and roles from their GitHub repositories
+into your user directory. Exact location is dependent upon your operating
+system:
+
+- on Linux systems, it will be :file:`$XDG_DATA_HOME/debops/` which usually is
+  expanded to :file:`~/.local/share/debops/`;
+
+- on MacOSX systems, it will be :file:`~/Library/Application Support/debops`
+
+Afterwards, you should check out the `Getting Started Guide <https://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html>`_
+to learn how to create and manage your first DebOps environment.
+
+
+Ansible Controller
+------------------
+
+The DebOps playbooks and roles are designed to be used in an Ansible "push"
+model, with a central host called an "Ansible Controller" executing Ansible
+playbooks and connecting to the "remote hosts" to manage them over SSH. Ansible
+Controller host is not an integral part of the DebOps environment, wich means
+that this host does not need to be available at all times for other hosts
+managed by DebOps. You can use DebOps playbook and roles on a laptop or another
+device that can then be disconnected from the network and securely stored
+offline.
+
+The Ansible Controller operating system needs to be able to run Ansible and
+Python. Preferably the OS can be a Debian GNU/Linux Stable release, which then
+can be managed by DebOps itself; other operating systems that support Ansible
+and Python can also be used (Ubuntu and other Linux distributions, MacOS X)
+however they may have issues.
+
+
+.. _debops-tools__ref_prerequisites:
 
 DebOps prerequisites
 --------------------
 
-To use DebOps playbooks, you need some additional tools on your Ansible
-Controller besides the official scripts. Some of these tools will be installed
-for you by ``pip`` as prerequisites of the scripts.
+To use DebOps roles and playbooks, you need some additional tools on your
+Ansible Controller besides the official scripts. Some of these tools will be
+installed for you by ``pip`` as prerequisites of the DebOps scripts if they are
+not already present on the host.
 
-Ansible
-  You need to install Ansible to use DebOps playbooks. DebOps is developed and
-  used on current development version of Ansible, however we try not to use
-  certain features until they are available in current stable release.
+ansible
+~~~~~~~
 
-Python ``netaddr`` library
-  This is a Python library used to manipulate strings containing IP addresses
-  and networks. DebOps provides an Ansible plugin (included in Ansible 1.9+)
-  which uses this library to manipulate IP addresses.
+You need to install Ansible to use DebOps roles and playbooks. The project is
+focused on current stable Ansible release, which means that the Ansible
+packages provided in some OS distributions like Debian Stable are not
+sufficient.
 
-  You can install ``netaddr`` either using your favorite package manager, or
-  through ``pip``.
+python-netaddr
+~~~~~~~~~~~~~~
 
-Python ``ldap`` library
-  This Python library is used to access and manipulate LDAP servers. It can be
-  installed through your package manager or using ``pip``.
+This is a Python library used to manipulate strings containing IP addresses
+and networks. DebOps provides an Ansible plugin (included in Ansible 1.9+)
+which uses this library to manipulate IP addresses.
 
-Python ``passlib`` library
-  This Python library is used to encrypt random passwords generated by Debops
-  and store them in the :file:`secret/` directory.
+You can install ``netaddr`` either using your favorite package manager, or
+through ``pip``.
 
-``uuidgen``
-  This command is used to generate unique identifiers for hosts which are then
-  saved as Ansible facts and can be used to identify hosts in the playbook. In
-  most Linux or MacOSX desktop distributions this command should be already
-  installed. If not, it can be usually found in the ``uuid-runtime`` package.
+python-ldap
+~~~~~~~~~~~
 
-``encfs``
-  This is an optional application, which is used by the :command:`debops-padlock`
-  script to encrypt the :file:`secret/` directory within DebOps project
-  directories, which holds confidential data like passwords, private keys and
-  certificates. EncFS is available on Linux distributions, usually as the
-  ``encfs`` package.
+This Python library is used to access and manipulate LDAP servers. It can be
+installed through your package manager or using ``pip``.
 
-:command:`gpg`
-  GnuPG is used to encrypt the file which holds EncFS password; this allows you
-  to share the encrypted :file:`secret/` directory with other users without sharing
-  the password, and using private GPG keys instead. ``debops`` script will
-  automatically decrypt the keyfile and use it to open an EncFS volume.
+python-passlib
+~~~~~~~~~~~~~~
 
-  GnuPG is usually installed on Linux or MacOSX operating systems.
+This Python library is used to encrypt random passwords generated by DebOps
+and store them in the :file:`secret/` directory.
 
-:command:`git`
-  Git is required to be installed for Debops to be used. Git is a version control
-  system. If it is not already install, it can be usually be installed using your
-  favourite package manager.
+uuid-runtime
+~~~~~~~~~~~~
+
+This Debian package provides the :command:`uuidgen` command, which is used to
+generate unique identifiers for hosts which are then saved as Ansible facts and
+can be used to identify hosts in the playbook. In most Linux or MacOSX desktop
+distributions this command should be already installed.
+
+encfs
+~~~~~
+
+This is an optional application, which is used by the :command:`debops-padlock`
+script to encrypt the :file:`secret/` directory within DebOps project
+directories, which holds confidential data like passwords, private keys and
+certificates. EncFS is available on Linux distributions, usually as the
+``encfs`` package.
+
+gpg
+~~~
+
+GnuPG is used to encrypt the file which holds EncFS password; this allows you
+to share the encrypted :file:`secret/` directory with other users without sharing
+the password, and using private GPG keys instead. ``debops`` script will
+automatically decrypt the keyfile and use it to open an EncFS volume.
+
+GnuPG is usually installed on Linux or MacOSX operating systems.
+
+git
+~~~
+
+Git is required to be installed for DebOps to be used. Git is a version control
+system. If it is not already install, it can be usually be installed using your
+favourite package manager.

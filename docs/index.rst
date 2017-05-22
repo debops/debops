@@ -8,7 +8,6 @@ DebOps scripts
 
    introduction
    installation
-   getting-started
    configuration
    scripts/debops-update
    scripts/debops-init
