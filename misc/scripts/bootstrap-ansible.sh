@@ -1,8 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 # bootstrap-ansible.sh: download and build Ansible on Debian/Ubuntu host
-# Copyright (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
-# Part of the DebOps - https://debops.org/
+
+# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2017 DebOps https://debops.org/
 
 
 # This program is free software; you can redistribute
@@ -27,52 +28,91 @@
 # https://www.gnu.org/copyleft/gpl.html
 
 
-# By default, script will install latest 'devel' branch of Ansible; to specify
-# different branch or tag, specify it as the first argument
+# Usage: ./bootstrap-ansible.sh [branch] [build_directory]
 
 
 set -e
 
-# Ansible project repository to use
-project="https://github.com/ansible/ansible.git"
+install_ansible_requirements () {
 
-# Select branch to build
-branch="${1:-devel}"
+    sudo apt-get --no-install-recommends -qq -y install git devscripts \
+        python-paramiko python-yaml python-jinja2 python-httplib2 \
+        cdbs debhelper dpkg-dev fakeroot sshpass python-nose python-passlib \
+        python-setuptools asciidoc xmlto build-essential python-sphinx
 
-# Create temporary directory for build
-build_dir=$(mktemp -d)
+}
 
-cd ${build_dir}
+build_ansible_deb () {
 
-# Update APT package database
-echo "Update APT package lists..."
-sudo apt-get update -qq
+    # Build Debian package
+    if [ -n "$(grep 'local_deb' Makefile || true)" ] ; then
+        LANG=C make local_deb
+    else
+        LANG=C make deb
+    fi
 
-# Install required packages
-echo "Install required APT packages..."
-sudo apt-get --no-install-recommends -qq -y install git devscripts \
-	python-paramiko python-yaml python-jinja2 python-httplib2 \
-	cdbs debhelper dpkg-dev python-support fakeroot sshpass \
-	python-nose python-passlib python-setuptools asciidoc xmlto \
-	build-essential
+    # Check if .deb package with new method is present
+    if [ -n "$(find deb-build/unstable/ -name ansible_*_all.deb 2>/dev/null)" ]; then
 
-# Clone Ansible from main project repository (devel branch, default)
-echo "Clone Ansible repository..."
-git clone --branch ${branch} --recursive ${project} ansible
-cd ansible
+        sudo dpkg -i deb-build/unstable/ansible_*_all.deb
 
-# Build Debian package
-LANG=C make deb
+    # Otherwise, look for package generated with old method
+    elif [ -n "$(find .. -name ansible_*_all.deb 2>/dev/null)" ]; then
 
-# Check if .deb package with new method is present
-if [ -n "$(find deb-build/unstable/ -name ansible_*_all.deb 2>/dev/null)" ]; then
-	sudo dpkg -i deb-build/unstable/ansible_*_all.deb
+        sudo dpkg -i ../ansible_*_all.deb
 
-# Otherwise, look for package generated with old method
-elif [ -n "$(find .. -name ansible_*_all.deb 2>/dev/null)" ]; then
-	sudo dpkg -i ../ansible_*_all.deb
-fi
+    fi
 
-echo "Finished. Ansible source can be found in:"
-echo ${build_dir}
+}
 
+bootstrap_ansible_deb () {
+
+    local ansible_branch="${1:-devel}"
+    local build_dir="${2:-$(mktemp -d)}"
+    local ansible_git_repo="${3:-https://github.com/ansible/ansible}"
+
+    local ansible_source_dir="ansible"
+
+    if [ ! -d "${build_dir}" ] ; then
+        mkdir -p "${build_dir}"
+    fi
+
+    cd "${build_dir}"
+
+    if [ -d "${ansible_source_dir}" ] ; then
+
+        cd "${ansible_source_dir}"
+
+        local old_git_checkout="$(git rev-parse HEAD)"
+
+        local current_branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
+        local current_branch_name="(unnamed branch)"     # detached HEAD
+        local current_branch_name=${current_branch_name##refs/heads/}
+
+        if [ "${current_branch_name}" != "${ansible_branch}" ] ; then
+            git checkout "${ansible_branch}"
+        fi
+
+        git pull --quiet
+        git submodule update
+
+        local current_git_checkout="$(git rev-parse HEAD)"
+
+        if [ "${old_git_checkout}" != "${current_git_checkout}" ] ; then
+            build_ansible_deb
+        fi
+
+    else
+
+        install_ansible_requirements
+        git clone --branch "${ansible_branch}" --recursive "${ansible_git_repo}" "${ansible_source_dir}"
+        cd "${ansible_source_dir}"
+        build_ansible_deb
+
+    fi
+}
+
+ansible_branch="${1:-devel}"
+build_dir="${2:-$(mktemp -d)}"
+
+bootstrap_ansible_deb "${ansible_branch}" "${build_dir}"

@@ -26,6 +26,9 @@ Changed
 
 - Update installation and introduction documentation. [drybjed_]
 
+- Update ``bootstrap-ansible.sh`` script so it again can install recent Ansible
+  versions. [drybjed_]
+
 Removed
 ~~~~~~~
 
