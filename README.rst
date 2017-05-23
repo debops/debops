@@ -49,7 +49,7 @@ If you want to have more control on the installation process, you can
 use::
 
    $ git clone https://github.com/debops/debops-tools
-   $ sudo pip install ./debops
+   $ sudo pip install ./debops-tools
    $ debops-update
 
 Please see the `Installation Guide
