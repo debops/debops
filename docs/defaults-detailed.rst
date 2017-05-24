@@ -46,6 +46,13 @@ Each database is defined as a YAML dict with the following keys:
   Optional. If present and ``False``, it will prevent deletion of target file
   on remote host.
 
+``encoding``
+  Optional. Encoding mode to use, examples include ``utf8`` or ``latin1_swedish_ci``.
+
+``collation``
+  Optional. Collation mode (sorting). This only applies to new table/databases
+  and does not update existing ones, this is a limitation of MySQL.
+
 Examples
 ~~~~~~~~
 
