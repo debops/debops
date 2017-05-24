@@ -25,10 +25,15 @@
 # List of base packages required by ownCloud.
 owncloud__base_packages:
   - '{{ [ ("owncloud-deps-php" + ansible_local.php.version) ]
-        if (ansible_local|d() and ansible_local.php|d() and
+        if (owncloud__variant == "owncloud" and
+            ansible_local|d() and ansible_local.php|d() and
             ansible_local.php.version|d())
         else [] }}'
-  - 'owncloud'
+  - '{{ [ "owncloud" ]
+        if (owncloud__variant == "owncloud")
+        else [] }}'
+
+  # There are no Debian packages for Nextcloud yet unfortunately.
 
   ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
   ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
@@ -41,10 +46,53 @@ owncloud__base_packages:
   - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("9.0", ">=")) else [] }}'
 
 
+# .. envvar:: nextcloud__required_php_packages
+#
+# List of PHP packages required by Nextcloud.
+# Refer to the `official Nextcloud documentation <https://docs.nextcloud.com/server/11/admin_manual/installation/source_installation.html>`__ for details.
+nextcloud__required_php_packages:
+  # Included in base install:
+  # - 'ctype'
+
+  # - 'dom'
+  # - 'iconv'
+
+  - 'gd'
+  - 'json'
+
+  - 'xml'
+  # Included in the `xml` Debian package:
+  # - 'SimpleXML'
+  # - 'XMLWriter'
+
+  - 'mbstring'
+  # - 'posix'
+  - 'zip'
+  # - 'zlib'
+
+
+# .. envvar:: nextcloud__recommended_php_packages
+#
+# List of PHP packages recommended by Nextcloud.
+# Refer to the `official Nextcloud documentation <https://docs.nextcloud.com/server/11/admin_manual/installation/source_installation.html>`__ for details.
+nextcloud__recommended_php_packages:
+  - 'curl'
+  - 'bz2'
+  - 'intl'
+  - 'mcrypt'
+
+  # Recommended/Optional: SFTP storage
+  - 'gmp'
+
+
 # .. envvar:: owncloud__base_php_packages
 #
 # List of base PHP packages required by ownCloud.
 owncloud__base_php_packages:
+  - '{{ nextcloud__required_php_packages
+        if (owncloud__variant == "nextcloud")
+        else [] }}'
+
   - '{{ [ "apcu" ] if (owncloud__apcu_enabled|bool) else [] }}'
   - '{{ [ "mysql" ] if (owncloud__database in [ "mariadb", "mysql" ]) else [] }}'
   - '{{ [ "pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
@@ -67,8 +115,12 @@ owncloud__base_php_packages:
 
 # .. envvar:: owncloud__optional_php_packages
 #
-# List of optional PHP packages for ownCloud.
+# List of recommended/optional PHP packages for ownCloud.
 owncloud__optional_php_packages:
+  - '{{ nextcloud__recommended_php_packages
+        if (owncloud__variant == "nextcloud")
+        else [] }}'
+
   - 'imagick'
 
 
@@ -117,6 +169,75 @@ owncloud__dependent_packages: []
 owncloud__deploy_state: 'present'
 
 
+# Nextcloud user account [[[
+# --------------------------
+
+# .. envvar:: nextcloud__system_user [[[
+#
+# Name of the system account which will perform signature and archive
+# verification.
+nextcloud__system_user: 'nextcloud'
+
+                                                                   # ]]]
+# .. envvar:: nextcloud__system_group [[[
+#
+# Name of the primary system group of the Nextcloud account.
+nextcloud__system_group: 'nextcloud'
+
+                                                                   # ]]]
+# .. envvar:: nextcloud__system_home [[[
+#
+# Path to the home directory of the Nextcloud account.
+nextcloud__system_home: '{{ (ansible_local.root.home
+                             if (ansible_local|d() and ansible_local.root|d() and
+                                 ansible_local.root.home|d())
+                             else "/var/local") + "/" + nextcloud__system_user }}'
+
+                                                                   # ]]]
+# .. envvar:: nextcloud__comment [[[
+#
+# The GECOS string set for the Nextcloud account.
+nextcloud__comment: 'Nextcloud Application Manager'
+
+                                                                   # ]]]
+# .. envvar:: nextcloud__shell [[[
+#
+# The default shell of the Nextcloud account.
+nextcloud__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Base directory paths [[[
+# ------------------------
+
+# .. envvar:: nextcloud__src [[[
+#
+# Base path to the directory with application archives, their hash
+# signatures and OpenPGP signatures.
+nextcloud__src: '{{ (ansible_local.root.src
+                     if (ansible_local|d() and ansible_local.root|d() and
+                         ansible_local.root.src|d())
+                     else "/usr/local/src") + "/" + nextcloud__system_user }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Nextcloud installation [[[
+# --------------------------
+
+# .. envvar:: nextcloud__upstream_key_fingerprint [[[
+#
+# The OpenPGP key fingerprint for the key by which the upstream release
+# tarballs are signed.
+nextcloud__upstream_key_fingerprint: '2880 6A87 8AE4 23A2 8372 792E D758 99B9 A724 937A'
+                                                                   # ]]]
+# .. envvar:: nextcloud__keyserver [[[
+#
+# URL of the OpenPGP keyserver used to obtain OpenPGP keys.
+nextcloud__keyserver: '{{ ansible_local.core.keyserver
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.keyserver|d())
+                          else "hkp://pool.sks-keyservers.net" }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # .. ownCloud upgrades [[[1
 #
 # ---------------------
@@ -241,14 +362,23 @@ owncloud__post_upgrade_hook_host_list: []
 # Supported variants:
 #
 # * ``owncloud`` (main supported variant and used in production by the role maintainers)
+# * ``nextcloud`` (experimental support on Debian stretch, refer to `issue 45 <https://github.com/debops/ansible-owncloud/issues/45>`_ for details)
 #
-# `NextCloud is currently not supported <https://github.com/debops/ansible-owncloud/issues/45>`_.
 owncloud__variant: 'owncloud'
 
 
 # .. envvar:: owncloud__variant_url_map
 #
 # URL map for :envvar:`owncloud__variant`.
+# Used to download the software.
+owncloud__variant_download_url_map:
+  nextcloud: 'https://download.nextcloud.com/server/releases'
+
+
+# .. envvar:: owncloud__variant_url_map
+#
+# Homepage URL map for :envvar:`owncloud__variant`.
+# Used when referring to the software.
 owncloud__variant_url_map:
   owncloud: 'https://owncloud.org/'
   nextcloud: 'https://nextcloud.com/'
@@ -257,9 +387,10 @@ owncloud__variant_url_map:
 # .. envvar:: owncloud__variant_name_map
 #
 # Name map for :envvar:`owncloud__variant`.
+# Used when referring to the software.
 owncloud__variant_name_map:
   owncloud: 'ownCloud'
-  nextcloud: 'NextCloud'
+  nextcloud: 'Nextcloud'
 
 
 # .. envvar:: owncloud__release
@@ -269,13 +400,15 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * ownCloud ``8.1``
-# * ownCloud ``8.2``
 # * ownCloud ``9.0`` (main supported version and used in production by the role maintainers)
 # * ownCloud ``9.1`` (setup should work but not yet well tested nor used in production by the role maintainers)
 #
+# * Nextcloud ``11.0`` (experimental support on Debian stretch, refer to `issue 45 <https://github.com/debops/ansible-owncloud/issues/45>`_ for details)
+#
 # Refer to the `ownCloud Maintenance and Release Schedule <https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule>`_
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
+#
+# For Nextcloud refer to the `Nextcloud Server Changelog <https://nextcloud.com/changelog/>`_.
 owncloud__release: '9.0'
 
 
@@ -342,31 +475,38 @@ owncloud__apt_repo_source: '{{ "deb http://" + owncloud__apt_repo_base + "/" +
                                owncloud__distribution + "/ /" }}'
 
 
-# .. envvar:: owncloud__user
+# .. envvar:: owncloud__app_user
 #
 # User that will be used for the ownCloud instance.
-owncloud__user: '{{ ansible_local.nginx.user
-                    if (ansible_local|d() and ansible_local.nginx|d() and
-                        ansible_local.nginx.user|d())
-                    else "www-data" }}'
+owncloud__app_user: '{{ ansible_local.nginx.user
+                        if (ansible_local|d() and ansible_local.nginx|d() and
+                            ansible_local.nginx.user|d())
+                        else "www-data" }}'
 
 
-# .. envvar:: owncloud__group
+# .. envvar:: owncloud__app_group
 #
 # Group that will be used for the ownCloud instance.
-owncloud__group: '{{ owncloud__user }}'
+owncloud__app_group: '{{ owncloud__app_user }}'
 
 
-# .. envvar:: owncloud__home
+# .. envvar:: owncloud__app_home
 #
 # Directory under which ownCloud will be installed.
-owncloud__home: '/var/www/owncloud'
+owncloud__app_home: '{{ "/var/www/owncloud"
+                        if (owncloud__variant == "owncloud")
+                        else (
+                          (ansible_local.nginx.www
+                          if (ansible_local|d() and ansible_local.nginx|d()
+                              and ansible_local.nginx.www|d())
+                          else "/srv/www") + "/" + nextcloud__system_user
+                        ) }}'
 
 
 # .. envvar:: owncloud__data_path
 #
 # Path where ownCloud data directory and files are stored.
-owncloud__data_path: '{{ owncloud__home }}/data'
+owncloud__data_path: '{{ owncloud__app_home }}/data'
 
 
 # .. envvar:: owncloud__temp_path
@@ -388,7 +528,7 @@ owncloud__temp_path: ''
 # .. envvar:: owncloud__deploy_path
 #
 # Where the ownCloud instance will be deployed (web root).
-owncloud__deploy_path: '{{ owncloud__home }}'
+owncloud__deploy_path: '{{ owncloud__app_home }}'
 
 
 # .. In memory caching [[[1
@@ -454,7 +594,8 @@ owncloud__redis_password: '{{ ansible_local.redis.password
 
 # .. envvar:: owncloud__database
 #
-# ownCloud recommends MySQL or MariaDB as database. Set to ``False`` to use SQLite.
+# ownCloud recommends MySQL or MariaDB as database management system.
+# Set to ``False`` to use SQLite.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_database/linux_database_configuration.html>`__ for details.
 # See the :envvar:`owncloud__database_map` for the databases support by this role.
 owncloud__database: 'mariadb'
@@ -476,13 +617,13 @@ owncloud__database_port: '{{ ansible_local[owncloud__database].port }}'
 # .. envvar:: owncloud__database_user
 #
 # Database user to use for ownCloud.
-owncloud__database_user: 'owncloud'
+owncloud__database_user: '{{ owncloud__variant }}'
 
 
 # .. envvar:: owncloud__database_name
 #
 # Name of the database to use for ownCloud.
-owncloud__database_name: 'owncloud'
+owncloud__database_name: '{{ owncloud__variant }}'
 
 
 # .. envvar:: owncloud__database_password_path
@@ -509,8 +650,8 @@ owncloud__database_map:
   # MySQL/MariaDB database.
   mariadb:
     dbtype: 'mysql'
-    dbname: '{{ owncloud__database_name|d(owncloud__user) }}'
-    dbuser: '{{ owncloud__database_user|d(owncloud__user) }}'
+    dbname: '{{ owncloud__database_name|d(owncloud__app_user) }}'
+    dbuser: '{{ owncloud__database_user|d(owncloud__app_user) }}'
     dbpass: '{{ owncloud__database_password }}'
     dbhost: '{{ owncloud__database_server|d("localhost") }}'
     dbtableprefix: ''
@@ -518,8 +659,8 @@ owncloud__database_map:
   # PostgreSQL database on localhost, connection through Unix socket, no default password.
   postgresql:
     dbtype: 'pgsql'
-    dbname: '{{ owncloud__database_name|d(owncloud__user) }}'
-    dbuser: '{{ owncloud__database_user|d(owncloud__user) }}'
+    dbname: '{{ owncloud__database_name|d(owncloud__app_user) }}'
+    dbuser: '{{ owncloud__database_user|d(owncloud__app_user) }}'
     dbpass: ''
     dbhost: '{{ owncloud__database_server|d("/var/run/postgresql") }}'
     dbtableprefix: ''
@@ -657,7 +798,7 @@ owncloud__role_config:
   ## TODO: Temporary workaround until all package maintainers have caught up.
   ## Edit: Have caught up as of 9.0.2-1.1. Remove this config in a while when
   ## it is expected that all users are running 9.0.2 or later.
-  'updatechecker': False
+  'updatechecker': '{{ True if (owncloud__variant in ["nextcloud"]) else False }}'
 
   'memcache.local':
     state: '{{ "present" if (owncloud__apcu_enabled|bool) else "absent" }}'
@@ -704,6 +845,11 @@ owncloud__role_recommended_config:
   ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
   logdateformat: 'Y-m-d H:i:s.u'
 
+  ## Default is "stable" as of Nextcloud 11.
+  ## "production" is the most conservative channel which is preferred by the role maintainers.
+  ## https://owncloud.org/release-channels/
+  'updater.release.channel': 'production'
+
 
 # .. envvar:: owncloud__config
 #
@@ -739,7 +885,7 @@ owncloud__host_config: {}
 # You might need to change a particular setting via the web interface in order
 # for it to appear in the output.
 #
-# Note that the :command:`occ` can also change ownCloud system settings but this should
+# Note that :command:`occ` can also change ownCloud system settings but this should
 # be done via `ownCloud config.php configuration`_.
 #
 # Examples:
@@ -781,6 +927,10 @@ owncloud__role_apps_config:
   documents:
     enabled: '{{ "yes" if (owncloud__app_documents_enabled | bool) else "no" }}'
     converter: 'local'
+
+  password_policy:
+    ## Default is 6 as of Nextcloud 11 which is not state of the art.
+    minLength: 8
 
 
 # .. envvar:: owncloud__apps_config
@@ -1306,7 +1456,9 @@ owncloud__mail_conf_map:
 # (for example using debops.resources_) and set this variable to
 # ``$your_theme_name``. Note that the role maintainers recommend to let the
 # role assemble your theme. See the following options.
-owncloud__theme_active: 'debops'
+owncloud__theme_active: '{{ "debops"
+                            if (owncloud__variant in ["owncloud"])
+                            else "" }}'
 
 
 # .. envvar:: owncloud__theme_directory_name
@@ -1317,7 +1469,9 @@ owncloud__theme_active: 'debops'
 # an empty string to disable this feature.
 # The generated theme name defaults to ``debops`` to allow enabling it via
 # :envvar:`owncloud__theme_active`.
-owncloud__theme_directory_name: 'debops'
+owncloud__theme_directory_name: '{{ "debops"
+                                    if (owncloud__variant in ["owncloud"])
+                                    else "" }}'
 
 
 # .. envvar:: owncloud__theme_title
@@ -1463,12 +1617,16 @@ owncloud__theme_conf_map:
 
 # .. envvar:: owncloud__webserver [[[
 #
-# Variable containing the used webserver which can be used.
+# Variable containing the webserver which should be used.
 # Refer to :ref:`owncloud__ref_getting_started` for how to switch webservers.
-owncloud__webserver: '{{
-    ("nginx" if ((["debops_service_owncloud", "debops_service_owncloud_nginx"] | intersect(group_names) | length) > 0) else "") +
-    ("apache" if ((["debops_service_owncloud_apache"] | intersect(group_names) | length) > 0) else "")
-  }}'
+owncloud__webserver: '{{ ansible_local.owncloud.webserver
+                         if (ansible_local|d() and ansible_local.owncloud|d() and
+                             ansible_local.owncloud.webserver|d())
+                         else ("apache"
+                               if (ansible_local|d() and ansible_local.apache|d() and ansible_local.apache.enabled|d()|bool)
+                               else ("nginx"
+                                     if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.enabled|d()|bool)
+                                     else "no-webserver-detected")) }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__apache_modules [[[
@@ -1560,8 +1718,70 @@ owncloud__apt_preferences__dependent_list_optional:
     pin: 'origin "download.owncloud.org"'
     priority: 995
     by_role: 'debops.owncloud'
-    state: '{{ owncloud__deploy_state }}'
+    state: '{{ "present"
+               if (owncloud__variant in ["owncloud"] and
+                   owncloud__deploy_state == "present")
+               else "absent" }}'
 
+
+# .. envvar:: owncloud__mariadb__dependent_databases [[[
+#
+# Configuration of the database managed by the debops.mariadb_ role.
+owncloud__mariadb__dependent_databases:
+
+  - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
+    state: '{{ "present" if (owncloud__deploy_state != "purged") else "absent" }}'
+
+    # ## https://docs.nextcloud.com/server/12/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb
+    # ## Currently experimental and not enabled by default.
+    # encoding: 'utf8mb4'
+    # collation: 'utf8mb4_general_ci'
+
+    # mariadb_server__options:
+    #   ## https://docs.nextcloud.com/server/11/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb
+    #   'innodb_large_prefix': 'on'
+    #   'innodb_file_format': 'barracuda'
+    #   'innodb_file_per_table': 'true'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__mariadb__dependent_users [[[
+#
+# Configuration of the database user managed by the debops.mariadb_ role.
+owncloud__mariadb__dependent_users:
+
+  - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
+    user: '{{ owncloud__database_map[owncloud__database].dbuser }}'
+    password: '{{ owncloud__database_map[owncloud__database].dbpass }}'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__postgresql__dependent_roles [[[
+#
+# Configuration of the database roles managed by the debops.postgresql_ role.
+owncloud__postgresql__dependent_roles:
+
+  - name: '{{ owncloud__database_name }}' # Separate role is needed when owncloud__database_name != owncloud__database_user
+  - name: '{{ owncloud__database_user }}' # Password is not passed directly - it will be read from the file
+
+                                                                   # ]]]
+# .. envvar:: owncloud__postgresql__dependent_groups [[[
+#
+# Configuration of the database groups managed by the debops.postgresql_ role.
+owncloud__postgresql__dependent_groups:
+
+  - roles: [ '{{ owncloud__database_user }}' ]
+    groups: [ '{{ owncloud__database_name }}' ]
+    database: '{{ owncloud__database_name }}'
+    enabled: '{{ owncloud__database_name != owncloud__database_user }}'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__postgresql__dependent_databases [[[
+#
+# Configuration of the database managed by the debops.postgresql_ role.
+owncloud__postgresql__dependent_databases:
+
+  - name: '{{ owncloud__database_name }}'
+    owner: '{{ owncloud__database_user }}'
+                                                                   # ]]]
 
 # .. envvar:: owncloud__apache__dependent_snippets
 #
@@ -1583,7 +1803,7 @@ owncloud__apache__dependent_vhosts:
     name: '{{ owncloud__fqdn }}'
     by_role: 'debops.owncloud'
     filename: 'debops.owncloud'
-    root: '{{ owncloud__home }}'
+    root: '{{ owncloud__app_home }}'
     options: '+FollowSymLinks'
     allow_override: 'All'
     root_directives: |
@@ -1591,8 +1811,8 @@ owncloud__apache__dependent_vhosts:
             Dav off
       </IfModule>
 
-      SetEnv HOME {{ owncloud__home }}
-      SetEnv HTTP_HOME {{ owncloud__home }}
+      SetEnv HOME {{ owncloud__app_home }}
+      SetEnv HTTP_HOME {{ owncloud__app_home }}
 
       {# Does not work.
       ## Tested with while uploading with:
@@ -1609,11 +1829,11 @@ owncloud__apache__dependent_vhosts:
       # SetEnv TMPDIR '{{ owncloud__php_temp_path }}'
       #}
     raw_content: |
-      <Directory "{{ owncloud__home }}/data/">
+      <Directory "{{ owncloud__app_home }}/data/">
           # Just in case the .htaccess gets disabled.
           Require all denied
       </Directory>
-      {% if owncloud__data_path != (owncloud__home + "/data") %}
+      {% if owncloud__data_path != (owncloud__app_home + "/data") %}
       <Directory {{ owncloud__data_path | quote }}>
           # Just in case someone changes the global Apache defaults and messed
           # with the "Alias" directive ;)
@@ -1735,7 +1955,7 @@ owncloud__nginx__dependent_servers:
       - pattern: '~* \.(?:css|js)$'
         options: |
           # Adding the cache control header for js and css files
-          # It needs to be below the PHP block.
+          # Make sure it is BELOW the PHP block
 
           try_files $uri /index.php$uri$is_args$args;
           add_header Cache-Control "public, max-age=7200";
@@ -1829,8 +2049,8 @@ owncloud__php__dependent_configuration:
 owncloud__php__dependent_pools:
   name: 'owncloud'
   by_role: 'debops.owncloud'
-  user: '{{ owncloud__user }}'
-  group: '{{ owncloud__group }}'
+  user: '{{ owncloud__app_user }}'
+  group: '{{ owncloud__app_group }}'
   pm_max_children: '{{ owncloud__php_max_children }}'
 
   ## Overwrite DebOps default to ensure that long running syncing jobs don’t
@@ -1885,4 +2105,7 @@ owncloud__unattended_upgrades__dependent_origins:
 
   - origin: 'site=download.owncloud.org'
     by_role: 'debops.owncloud'
-    state: '{{ "present" if (owncloud__auto_security_updates_enabled | bool) else "absent" }}'
+    state: '{{ "present"
+               if (owncloud__variant in ["owncloud"] and
+                   owncloud__auto_security_updates_enabled | bool)
+               else "absent" }}'

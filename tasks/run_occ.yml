@@ -14,7 +14,7 @@
 - name: Construct occ command for ownCloud apps configuration
   set_fact:
     owncloud__occ_item:
-      command: 'config:app:set {{ owncloud__apps_item.key | quote }} {{ owncloud__apps_setting_item.key | quote }} --value={{ owncloud__apps_setting_item.value | quote }}'
+      command: 'config:app:set {{ owncloud__apps_item.key | quote }} {{ owncloud__apps_setting_item.key | quote }} --value={{ owncloud__apps_setting_item.value|string | quote }}'
   when: (owncloud__apps_setting_item is defined)
 
 - name: 'Construct occ command for ownCloud files:scan configuration'
@@ -29,7 +29,7 @@
   # An alternative would be https://doc.owncloud.org/server/9.1/admin_manual/configuration_user/user_provisioning_api.html
   # but `occ` is preferred in the case of Ansible.
 - name: Run given occ commands
-  command: php --file "{{ owncloud__home }}/occ" {{ owncloud__occ_item.command }} {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
+  command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }} {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
   environment: '{{ owncloud__occ_item.env|d({}) }}'
   ## TODO: Upstream needs to fix this. See above.
   changed_when: False
@@ -43,7 +43,7 @@
   no_log: True
   register: owncloud__occ_run
   become: True
-  become_user: '{{ owncloud__user }}'
+  become_user: '{{ owncloud__app_user }}'
   ## https://github.com/debops/ansible-owncloud/issues/62
   when: (owncloud__occ_item|d() and
          owncloud__occ_item.command|d("") != "" and

@@ -30,24 +30,14 @@
 
     - role: debops.mariadb
       tags: [ 'role::mariadb' ]
-      mariadb__dependent_users:
-        - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
-          user: '{{ owncloud__database_map[owncloud__database].dbuser }}'
-          password: '{{ owncloud__database_map[owncloud__database].dbpass }}'
+      mariadb__dependent_databases: '{{ owncloud__mariadb__dependent_databases }}'
+      mariadb__dependent_users: '{{ owncloud__mariadb__dependent_users }}'
       when: (owncloud__database == 'mariadb')
 
     - role: debops.postgresql
-      postgresql__dependent_roles:
-        - name: '{{ owncloud__database_name }}' # Separate role is needed when owncloud__database_name != owncloud__database_user
-        - name: '{{ owncloud__database_user }}' # Password is not passed directly - it will be read for the file
-      postgresql__dependent_groups:
-        - roles: [ '{{ owncloud__database_user }}' ]
-          groups: [ '{{ owncloud__database_name }}' ]
-          database: '{{ owncloud__database_name }}'
-          enabled: '{{ owncloud__database_name != owncloud__database_user }}'
-      postgresql__dependent_databases:
-        - name: '{{ owncloud__database_name }}'
-          owner: '{{ owncloud__database_user }}'
+      postgresql__dependent_roles: '{{ owncloud__postgresql__dependent_roles }}'
+      postgresql__dependent_groups: '{{ owncloud__postgresql__dependent_groups }}'
+      postgresql__dependent_databases: '{{ owncloud__postgresql__dependent_databases }}'
       when: (owncloud__database == 'postgresql')
       tags: [ 'role::postgresql' ]
 

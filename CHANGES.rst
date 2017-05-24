@@ -36,6 +36,8 @@ Added
   :envvar:`owncloud__auto_database_upgrade_3party_app_disable`.
   Defaults to upstream default. [ypid_]
 
+- Add experimental NextCloud 11 support, tested on Debian Stretch. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -65,6 +67,8 @@ Removed
 
 - Removed deprecated Ansible inventory group ``debops_owncloud``. Refer to the
   :ref:`owncloud__ref_getting_started` guide. [ypid_]
+
+- Drop support for ownCloud 8.2 and below. 8.2 is End of Life as of 8.2.11 (2017-04-18). [ypid_]
 
 Fixed
 ~~~~~
