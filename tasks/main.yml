@@ -155,7 +155,7 @@
       tags: [ 'role::hashicorp:verify' ]
 
     - name: Check file signatures
-      shell: grep --file <(find . -type f -printf "%f\n")
+      shell: grep --file <(find . -type f -printf "%f$\n")
              {{ item + '_' + hashicorp__combined_version_map[item] + '_' + hashicorp__hash_suffix }}
              | sha256sum --check --status
       args:
