@@ -90,12 +90,18 @@
 
     # OpenPGP key management [[[2
 
+    - name: Ensure user GnuPG directory exists
+      file:
+        path: '{{ hashicorp__home + "/.gnupg" }}'
+        state: 'directory'
+        mode: '0700'
+
     - name: Import HashiCorp OpenPGP key
-      shell: gpg --list-keys --with-colons {{ hashicorp__gpg_key_id }} > /dev/null 2>&1
-             || gpg --keyserver {{ hashicorp__keyserver }} --recv-key {{ hashicorp__gpg_key_id }}
-      register: hashicorp__register_gpg_import
-      changed_when: hashicorp__register_gpg_import.stdout != ''
-      tags: [ 'role::hashicorp:verify' ]
+      apt_key:
+        id: '{{ hashicorp__gpg_key_id | replace(" ","") }}'
+        keyring: '{{ hashicorp__home + "/.gnupg/pubring.gpg" }}'
+        keyserver: '{{ hashicorp__keyserver  }}'
+        state: 'present'
 
 
     # HashiCorp application archive download [[[2
