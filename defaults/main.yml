@@ -169,7 +169,10 @@ owncloud__dependent_packages: []
 owncloud__deploy_state: 'present'
 
 
-# Nextcloud user account [[[
+# .. Nextcloud user account [[[
+#
+# --------------------------
+#   Nextcloud user account
 # --------------------------
 
 # .. envvar:: owncloud__system_user [[[
@@ -206,7 +209,10 @@ owncloud__comment: 'Nextcloud Application Manager'
 owncloud__shell: '/usr/sbin/nologin'
                                                                    # ]]]
                                                                    # ]]]
-# Base directory paths [[[
+# .. Base directory paths [[[
+#
+# ------------------------
+#   Base directory paths
 # ------------------------
 
 # .. envvar:: owncloud__src [[[
@@ -220,7 +226,10 @@ owncloud__src: '{{ (ansible_local.root.src
 
                                                                    # ]]]
                                                                    # ]]]
-# Nextcloud installation [[[
+# .. Nextcloud installation [[[
+#
+# --------------------------
+#   Nextcloud installation
 # --------------------------
 
 # .. envvar:: owncloud__upstream_key_fingerprint [[[
@@ -367,7 +376,7 @@ owncloud__post_upgrade_hook_host_list: []
 owncloud__variant: 'owncloud'
 
 
-# .. envvar:: owncloud__variant_url_map
+# .. envvar:: owncloud__variant_download_url_map
 #
 # URL map for :envvar:`owncloud__variant`.
 # Used to download the software.
@@ -1732,17 +1741,6 @@ owncloud__mariadb__dependent_databases:
   - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
     state: '{{ "present" if (owncloud__deploy_state != "purged") else "absent" }}'
 
-    # ## https://docs.nextcloud.com/server/12/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb
-    # ## Currently experimental and not enabled by default.
-    # encoding: 'utf8mb4'
-    # collation: 'utf8mb4_general_ci'
-
-    # mariadb_server__options:
-    #   ## https://docs.nextcloud.com/server/11/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb
-    #   'innodb_large_prefix': 'on'
-    #   'innodb_file_format': 'barracuda'
-    #   'innodb_file_per_table': 'true'
-
                                                                    # ]]]
 # .. envvar:: owncloud__mariadb__dependent_users [[[
 #
@@ -1786,7 +1784,7 @@ owncloud__postgresql__dependent_databases:
 #
 # Configuration of the logrotate rule managed by the debops.logrotate_ role.
 # ownCloud as of Version 9.0 does not do log rotate by default. This could
-# be enabled by ``log_rotate_size``. ``logrotate` is the default in DebOps.
+# be enabled by ``log_rotate_size``. ``logrotate`` is the default in DebOps.
 owncloud__logrotate__dependent_config:
 
   - filename: '{{ owncloud__variant }}'
