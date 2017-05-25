@@ -31,7 +31,7 @@
     path: '/etc/systemd/system/docker.service'
     state: 'absent'
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr == 'systemd' and 
+  when: (ansible_service_mgr == 'systemd' and
          docker__register_other_version_removed|changed)
 
 - name: Install required packages
@@ -93,7 +93,7 @@
     path: '/etc/default/docker'
     state: 'absent'
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout | version_compare('1.10', '>=')) 
+  when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout | version_compare('1.10', '>='))
 
 - name: Configure Docker systemd options
   template:
@@ -111,7 +111,7 @@
     path: '/etc/docker/daemon.json'
     state: 'absent'
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr != 'systemd' or docker__register_version.stdout | version_compare('1.10', '<')) 
+  when: (ansible_service_mgr != 'systemd' or docker__register_version.stdout | version_compare('1.10', '<'))
 
 - name: Make sure that systemd directory exists
   file:
@@ -130,7 +130,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (ansible_service_mgr == 'systemd' and 
+  when: (ansible_service_mgr == 'systemd' and
         (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
@@ -153,7 +153,7 @@
     group: 'root'
     mode: '0644'
   register: docker__register_systemd_proxy_present
-  when: (ansible_service_mgr == 'systemd' and 
+  when: (ansible_service_mgr == 'systemd' and
         (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
@@ -184,4 +184,3 @@
   with_items: '{{ docker__admins }}'
   when: item|d()
   tags: [ 'role::docker:config', 'role::docker:admins' ]
-
