@@ -7,7 +7,7 @@ Getting started
 Example inventory
 -----------------
 
-The ``debops.logrotate`` role is included in the ``common.yml`` DebOps
+The ``debops.logrotate`` role is included in the :file:`common.yml` DebOps
 playbook, so you don't need to enable it separately.
 
 Example playbook

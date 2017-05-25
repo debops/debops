@@ -1,7 +1,7 @@
-Default variables: configuration
-================================
+Default variable details
+========================
 
-some of ``debops.logrotate`` default variables have more extensive
+Some of ``debops.logrotate`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
 
@@ -16,17 +16,17 @@ logrotate__config
 
 This is a list of YAML dictionaries, each dictionary defines a file with one or
 more sections that configure the ``logrotate`` service. The same syntax can be
-used to configure log files in ``/etc/logrotate.conf`` as well as separate
-configuration files in ``/etc/logrotate.d/``. The configuration uses the
+used to configure log files in :file:`/etc/logrotate.conf` as well as separate
+configuration files in :file:`/etc/logrotate.d/`. The configuration uses the
 following keys:
 
 ``filename``
-  Name of the configuration file located in ``/etc/logrotate.d/``. This
+  Name of the configuration file located in :file:`/etc/logrotate.d/`. This
   parameter is ignored in the main configuration file.
 
 ``divert``
   Boolean, optional. When specified and ``True``, the original configuration
-  file will be diverted using ``dpkg-divert(8)``. If a configuration file is
+  file will be diverted using :command:`dpkg-divert(8)`. If a configuration file is
   due to be removed, the original file will be reverted back into place.
 
 ``sections``
@@ -89,7 +89,7 @@ Configure log rotation for a custom log file:
          missingok
          notifempty
 
-Change options of stock ``apt`` log rotation configuration, with original
+Change options of stock :command:`apt` log rotation configuration, with original
 configuration diverted to a different file:
 
 .. code-block:: yaml
@@ -117,4 +117,3 @@ configuration diverted to a different file:
              compress
              missingok
              notifempty
-
