@@ -46,11 +46,11 @@ owncloud__base_packages:
   - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("9.0", ">=")) else [] }}'
 
 
-# .. envvar:: nextcloud__required_php_packages
+# .. envvar:: owncloud__required_php_packages
 #
 # List of PHP packages required by Nextcloud.
 # Refer to the `official Nextcloud documentation <https://docs.nextcloud.com/server/11/admin_manual/installation/source_installation.html>`__ for details.
-nextcloud__required_php_packages:
+owncloud__required_php_packages:
   # Included in base install:
   # - 'ctype'
 
@@ -71,11 +71,11 @@ nextcloud__required_php_packages:
   # - 'zlib'
 
 
-# .. envvar:: nextcloud__recommended_php_packages
+# .. envvar:: owncloud__recommended_php_packages
 #
 # List of PHP packages recommended by Nextcloud.
 # Refer to the `official Nextcloud documentation <https://docs.nextcloud.com/server/11/admin_manual/installation/source_installation.html>`__ for details.
-nextcloud__recommended_php_packages:
+owncloud__recommended_php_packages:
   - 'curl'
   - 'bz2'
   - 'intl'
@@ -89,7 +89,7 @@ nextcloud__recommended_php_packages:
 #
 # List of base PHP packages required by ownCloud.
 owncloud__base_php_packages:
-  - '{{ nextcloud__required_php_packages
+  - '{{ owncloud__required_php_packages
         if (owncloud__variant == "nextcloud")
         else [] }}'
 
@@ -117,7 +117,7 @@ owncloud__base_php_packages:
 #
 # List of recommended/optional PHP packages for ownCloud.
 owncloud__optional_php_packages:
-  - '{{ nextcloud__recommended_php_packages
+  - '{{ owncloud__recommended_php_packages
         if (owncloud__variant == "nextcloud")
         else [] }}'
 
@@ -172,67 +172,67 @@ owncloud__deploy_state: 'present'
 # Nextcloud user account [[[
 # --------------------------
 
-# .. envvar:: nextcloud__system_user [[[
+# .. envvar:: owncloud__system_user [[[
 #
 # Name of the system account which will perform signature and archive
 # verification.
-nextcloud__system_user: 'nextcloud'
+owncloud__system_user: 'nextcloud'
 
                                                                    # ]]]
-# .. envvar:: nextcloud__system_group [[[
+# .. envvar:: owncloud__system_group [[[
 #
 # Name of the primary system group of the Nextcloud account.
-nextcloud__system_group: 'nextcloud'
+owncloud__system_group: 'nextcloud'
 
                                                                    # ]]]
-# .. envvar:: nextcloud__system_home [[[
+# .. envvar:: owncloud__system_home [[[
 #
 # Path to the home directory of the Nextcloud account.
-nextcloud__system_home: '{{ (ansible_local.root.home
+owncloud__system_home: '{{ (ansible_local.root.home
                              if (ansible_local|d() and ansible_local.root|d() and
                                  ansible_local.root.home|d())
-                             else "/var/local") + "/" + nextcloud__system_user }}'
+                             else "/var/local") + "/" + owncloud__system_user }}'
 
                                                                    # ]]]
-# .. envvar:: nextcloud__comment [[[
+# .. envvar:: owncloud__comment [[[
 #
 # The GECOS string set for the Nextcloud account.
-nextcloud__comment: 'Nextcloud Application Manager'
+owncloud__comment: 'Nextcloud Application Manager'
 
                                                                    # ]]]
-# .. envvar:: nextcloud__shell [[[
+# .. envvar:: owncloud__shell [[[
 #
 # The default shell of the Nextcloud account.
-nextcloud__shell: '/usr/sbin/nologin'
+owncloud__shell: '/usr/sbin/nologin'
                                                                    # ]]]
                                                                    # ]]]
 # Base directory paths [[[
 # ------------------------
 
-# .. envvar:: nextcloud__src [[[
+# .. envvar:: owncloud__src [[[
 #
 # Base path to the directory with application archives, their hash
 # signatures and OpenPGP signatures.
-nextcloud__src: '{{ (ansible_local.root.src
+owncloud__src: '{{ (ansible_local.root.src
                      if (ansible_local|d() and ansible_local.root|d() and
                          ansible_local.root.src|d())
-                     else "/usr/local/src") + "/" + nextcloud__system_user }}'
+                     else "/usr/local/src") + "/" + owncloud__system_user }}'
 
                                                                    # ]]]
                                                                    # ]]]
 # Nextcloud installation [[[
 # --------------------------
 
-# .. envvar:: nextcloud__upstream_key_fingerprint [[[
+# .. envvar:: owncloud__upstream_key_fingerprint [[[
 #
 # The OpenPGP key fingerprint for the key by which the upstream release
 # tarballs are signed.
-nextcloud__upstream_key_fingerprint: '2880 6A87 8AE4 23A2 8372 792E D758 99B9 A724 937A'
+owncloud__upstream_key_fingerprint: '2880 6A87 8AE4 23A2 8372 792E D758 99B9 A724 937A'
                                                                    # ]]]
-# .. envvar:: nextcloud__keyserver [[[
+# .. envvar:: owncloud__keyserver [[[
 #
 # URL of the OpenPGP keyserver used to obtain OpenPGP keys.
-nextcloud__keyserver: '{{ ansible_local.core.keyserver
+owncloud__keyserver: '{{ ansible_local.core.keyserver
                           if (ansible_local|d() and ansible_local.core|d() and
                               ansible_local.core.keyserver|d())
                           else "hkp://pool.sks-keyservers.net" }}'
@@ -499,7 +499,7 @@ owncloud__app_home: '{{ "/var/www/owncloud"
                           (ansible_local.nginx.www
                           if (ansible_local|d() and ansible_local.nginx|d()
                               and ansible_local.nginx.www|d())
-                          else "/srv/www") + "/" + nextcloud__system_user
+                          else "/srv/www") + "/" + owncloud__system_user
                         ) }}'
 
 
