@@ -50,7 +50,7 @@ the filename format is:
 
    /etc/ferm/rules.d/<weight>_rule_<name>.conf
 
-The rule "weight" is determined by a given rule type which can be overriden if
+The rule "weight" is determined by a given rule type which can be overridden if
 needed, see the ``type``, ``weight`` and ``weight_class`` parameters for more
 details.
 
@@ -89,7 +89,7 @@ documentation.
   rules. If this parameter is not specified, role will try and generate rules
   automatically based on other parameters specified on the "first level" of
   a given rule definition. Most of the other parameters can be specified on the
-  "second evel" rules and will apply to a given rule in the list.
+  "second level" rules and will apply to a given rule in the list.
 
   Example custom rule definition that restarts :command:`nginx` after firewall is modified:
 
@@ -100,7 +100,7 @@ documentation.
          type: 'post-hook'
          rules: '@hook post "type nginx > /dev/null && systemctl restart nginx || true";'
 
-  Exmple list of rule definitions which will open access to different service
+  Example list of rule definitions which will open access to different service
   ports; rules will be present in the same file:
 
   .. code-block:: yaml
@@ -116,8 +116,8 @@ documentation.
              accept_any: True
 
 ``rule_state``
-  Optional. Specify the state the of the firewall rule file, or one of the
-  rules included in that file. Available states:
+  Optional. Specify the state of the firewall rule file, or one of the
+  rules included in that file. Supported states:
 
   - ``present``: default. The rule file will be created if it doesn't exist,
     a rule will be present in the file.
@@ -142,7 +142,7 @@ documentation.
   ``reject``. Different rule types can use different rule parameters, the rule
   type also affects the "weight" used to order the configuration files. Weight
   of the different rules is specified in the :envvar:`ferm__default_weight_map`
-  variable and can be overriden using the :envvar:`ferm__weight_map` variable.
+  variable and can be overridden using the :envvar:`ferm__weight_map` variable.
 
   List of known rule types can be found in the :ref:`ferm__ref_firewall_rules`
   documentation.
