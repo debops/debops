@@ -26,7 +26,7 @@ Added
 -----
 
 - Enable ``vault-ssh-helper`` on the list of known HashiCorp applications,
-  v0.1.2 release is compatible with the installation method. [drybjed]
+  v0.1.2 release is compatible with the installation method. [drybjed_]
 
 Changed
 ~~~~~~~
@@ -35,7 +35,7 @@ Changed
   hyperlinks and Sphinx inline syntax. [ypid_]
 
 - Update default application versions of ``terraform`` (v0.7.2) and ``nomad``
-  (v0.4.1). [drybjed]
+  (v0.4.1). [drybjed_]
 
 
 debops.hashicorp v0.1.0 - 2016-07-22

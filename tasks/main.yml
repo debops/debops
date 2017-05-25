@@ -37,7 +37,7 @@
   tags: [ 'role::hashicorp:download', 'role::hashicorp:verify' ]
 
 
-# FIlesystem directory management [[[1
+# Filesystem directory management [[[1
 
 - name: Create source directories
   file:
@@ -84,18 +84,25 @@
 
 # OpenPGP keys, application download and validation [[[1
 
-- become_user: '{{ hashicorp__user }}'
+- become: True
+  become_user: '{{ hashicorp__user }}'
   when: (hashicorp__applications or hashicorp__dependent_applications)
   block:
 
     # OpenPGP key management [[[2
 
+    - name: Ensure user GnuPG directory exists
+      file:
+        path: '{{ hashicorp__home + "/.gnupg" }}'
+        state: 'directory'
+        mode: '0700'
+
     - name: Import HashiCorp OpenPGP key
-      shell: gpg --list-keys --with-colons {{ hashicorp__gpg_key_id }} > /dev/null 2>&1
-             || gpg --keyserver {{ hashicorp__keyserver }} --recv-key {{ hashicorp__gpg_key_id }}
-      register: hashicorp__register_gpg_import
-      changed_when: hashicorp__register_gpg_import.stdout != ''
-      tags: [ 'role::hashicorp:verify' ]
+      apt_key:
+        id: '{{ hashicorp__gpg_key_id | replace(" ","") }}'
+        keyring: '{{ hashicorp__home + "/.gnupg/pubring.gpg" }}'
+        keyserver: '{{ hashicorp__keyserver }}'
+        state: 'present'
 
 
     # HashiCorp application archive download [[[2
@@ -148,7 +155,7 @@
       tags: [ 'role::hashicorp:verify' ]
 
     - name: Check file signatures
-      shell: grep --file <(find . -type f -printf "%f\n")
+      shell: grep --file <(find . -type f -printf "%f$\n")
              {{ item + '_' + hashicorp__combined_version_map[item] + '_' + hashicorp__hash_suffix }}
              | sha256sum --check --status
       args:
@@ -165,7 +172,7 @@
 
     - name: Unpack the file archives
       unarchive:
-        copy: False
+        remote_src: True
         src: '{{ hashicorp__src + "/" + item + "/" + hashicorp__combined_version_map[item] + "/" +
                  item + "_" + hashicorp__combined_version_map[item] + "_" + hashicorp__tar_suffix }}'
         dest: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] }}'
