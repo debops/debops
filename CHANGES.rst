@@ -16,6 +16,22 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.hashicorp master: https://github.com/debops/ansible-hashicorp/compare/v0.1.1...master
 
+Changed
+~~~~~~~
+
+- Update documentation and Changelog. [ypid_, drybjed_]
+
+- Use the ``become`` method explicitly in Ansible block to ensure that
+  ``become_user`` works. [ypid_]
+
+- Use the ``apt_key`` Ansible module to import Hashicorp GPG key instead of
+  ``shell`` command. [ypid_]
+
+- Use more specific regexp matching during signature verification. [ypid_]
+
+- Use the ``remote_src`` parameter instead of ``copy`` in the ``unarchive``
+  task due to the latter being deprecated. [ypid_]
+
 
 `debops.hashicorp v0.1.1`_ - 2016-08-27
 ---------------------------------------
