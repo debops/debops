@@ -5,26 +5,27 @@ Changelog
 
 **debops.logrotate**
 
-Copyright (C) 2016 `DebOps project <https://debops.org/>`_
-
-License: `GNU General Public License v3 <https://www.tldrlegal.com/l/gpl-3.0>`_
-
-This project adheres to `Semantic Versioning <http://semver.org/>`__
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-
-Contributors
-------------
-
-- [drybjed_] - `Maciej Delmanowski <https://github.com/drybjed/>`_  (role maintainer)
+The current role maintainer_ is drybjed_
 
 
-Unreleased
-----------
+`debops.logrotate master`_ - unreleased
+---------------------------------------
+
+.. _debops.logrotate master: https://github.com/debops/ansible-logrotate/compare/v0.1.2...master
+
+Changed
+~~~~~~~
+
+- Mostly automated update to the lastest DebOps Standards Version. [ypid_]
 
 
-v0.1.2 - 2016-07-05
--------------------
+`debops.logrotate v0.1.2`_ - 2016-07-05
+---------------------------------------
+
+.. _debops.logrotate v0.1.2: https://github.com/debops/ansible-logrotate/compare/v0.1.1...v0.1.2
 
 Fixed
 ~~~~~
@@ -34,8 +35,11 @@ Fixed
   not present in the filesystem was diverted on each run, breaking idempotency.
   [drybjed_]
 
-v0.1.1 - 2016-05-18
--------------------
+
+`debops.logrotate v0.1.1`_ - 2016-05-18
+---------------------------------------
+
+.. _debops.logrotate v0.1.1: https://github.com/debops/ansible-logrotate/compare/v0.1.0...v0.1.1
 
 Changed
 ~~~~~~~
@@ -44,11 +48,10 @@ Changed
   specific logs are set. [drybjed_]
 
 
-v0.1.0 - 2016-04-15
--------------------
+debops.logrotate v0.1.0 - 2016-04-15
+------------------------------------
 
 Added
 ~~~~~
 
 - Initial release. [drybjed_]
-
