@@ -1769,7 +1769,7 @@ owncloud__postgresql__dependent_groups:
   - roles: [ '{{ owncloud__database_user }}' ]
     groups: [ '{{ owncloud__database_name }}' ]
     database: '{{ owncloud__database_name }}'
-    enabled: '{{ owncloud__database_name != owncloud__database_user }}'
+    state: '{{ "present" if (owncloud__deploy_state != "purged") else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__postgresql__dependent_databases [[[
