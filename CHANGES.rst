@@ -56,8 +56,6 @@ Added
 
 - Add debops.apache_ role and its corresponding playbook. [ypid_]
 
-- Update the debops.owncloud_ playbook to add support for debops.apache_. [ypid_]
-
 - Add debops.gunicorn_ role and its corresponding playbook. [drybjed_]
 
 - Add debops.netbox_ role and its corresponding playbook. [drybjed_]
@@ -120,7 +118,8 @@ Changed
   playbook. To enable Postfix management, add the host to
   ``[debops_service_postfix]`` inventory group. [drybjed_]
 
-- Update debops.owncloud_ playbook. [ypid_]
+- Update the debops.owncloud_ playbook and add a playbook for debops.apache_
+  support. [ypid_]
 
 - Update debops.librenms_ playbook. [drybjed_]
 
