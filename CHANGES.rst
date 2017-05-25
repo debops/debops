@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.hashicorp master`_ - unreleased
 ---------------------------------------
 
-.. _debops.hashicorp master: https://github.com/debops/ansible-hashicorp/compare/v0.1.1...master
+.. _debops.hashicorp master: https://github.com/debops/ansible-hashicorp/compare/v0.1.2...master
+
+
+`debops.hashicorp v0.1.2`_ - 2017-05-25
+---------------------------------------
+
+.. _debops.hashicorp v0.1.2: https://github.com/debops/ansible-hashicorp/compare/v0.1.1...v0.1.2
 
 Changed
 ~~~~~~~
