@@ -1,6 +1,8 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
 
@@ -12,23 +14,23 @@ The Docker package from distribution repositories will be installed by default
 which is the default in DebOps). You can install the upstream version of Docker
 by setting the ``docker__upstream: True`` variable in Ansible’s inventory.
 
-If ``debops.pki`` was configured on the host, Docker will automatically listen
+If debops.pki_ was configured on the host, Docker will automatically listen
 on its TCP port for incoming TLS connections, which is by default blocked by
-the ``ferm`` firewall. If you don't use a firewall or have it disabled, you might
-want to set ``docker__tcp`` to ``False`` to disable this behavior.
+the :program:`ferm` firewall. If you don't use a firewall or have it disabled, you might
+want to set :envvar:`docker__tcp` to ``False`` to disable this behavior.
 
 Docker manages its own network bridge and :command:`iptables` entries. The :program:`ferment`
-Python script will be installed to allow ``ferm`` firewall to reload Docker
+Python script will be installed to allow :program:`ferm` firewall to reload Docker
 firewall rules automatically, however it does not fully support Docker yet, so
 be aware of this when you modify the firewall configuration. You can restart
-``docker`` daemon to make sure that all firewall rules are set up correctly.
+:command:`docker` daemon to make sure that all firewall rules are set up correctly.
 
 To let the docker daemon trust a private registry with self-signed certificates,
-add the root CA used to sign the registry's certificate through the ``debops.pki``
+add the root CA used to sign the registry's certificate through the debops.pki_
 role.
 
-``debops.docker`` relies on configuration managed by ``debops.core``,
-``debops.ferm``, and ``debops.pki`` Ansible roles.
+``debops.docker`` relies on configuration managed by debops.core_,
+debops.ferm_, and debops.pki_ Ansible roles.
 
 Useful variables
 ----------------
@@ -36,11 +38,11 @@ Useful variables
 This is a list of role variables which your most likely want to define in
 Ansible inventory to customize Docker:
 
-``docker__tcp_allow``
+:envvar:`docker__tcp_allow`
   List of IP addresses or subnets that can connect to Docker daemon remotely
   over TLS.
 
-``docker__admins``
+:envvar:`docker__admins`
   List of UNIX accounts that have access to Docker daemon socket.
 
 Example inventory
@@ -66,9 +68,9 @@ Ansible tags
 ------------
 
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
-tasks are performed during Ansible run. This can be used after host is first
+tasks are performed during Ansible run. This can be used after a host was first
 configured to speed up playbook execution, when you are sure that most of the
-configuration has not been changed.
+configuration is already in the desired state.
 
 Available role tags:
 
