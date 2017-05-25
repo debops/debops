@@ -32,6 +32,11 @@ Changed
 - Use the ``remote_src`` parameter instead of ``copy`` in the ``unarchive``
   task due to the latter being deprecated. [ypid_]
 
+- Update the version of :command:`consul`, :command:`consul-replicate`,
+  :command:`consul-template`, :command:`envconsul`, :command:`nomad`,
+  :command:`packer`, :command:`serf`, :command:`terraform`, :command:`vault`
+  and :command:`vault-ssh-helper` to their latest releases. [drybjed_]
+
 
 `debops.hashicorp v0.1.1`_ - 2016-08-27
 ---------------------------------------
