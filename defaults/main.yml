@@ -1782,6 +1782,25 @@ owncloud__postgresql__dependent_databases:
   - name: '{{ owncloud__database_name }}'
     owner: '{{ owncloud__database_user }}'
                                                                    # ]]]
+# .. envvar:: owncloud__logrotate__dependent_config [[[
+#
+# Configuration of the logrotate rule managed by the debops.logrotate_ role.
+# ownCloud as of Version 9.0 does not do log rotate by default. This could
+# be enabled by ``log_rotate_size``. ``logrotate` is the default in DebOps.
+owncloud__logrotate__dependent_config:
+
+  - filename: '{{ owncloud__variant }}'
+    log: '{{ owncloud__data_path + "/" + owncloud__variant + ".log" }}'
+    state: '{{ "present" if (owncloud__deploy_state == "present") else "absent" }}'
+    options: |
+      rotate 12
+      weekly
+      missingok
+      notifempty
+      compress
+      su {{ owncloud__app_user }} {{ owncloud__app_group }}
+      delaycompress
+# ]]]
 
 # .. envvar:: owncloud__apache__dependent_snippets
 #

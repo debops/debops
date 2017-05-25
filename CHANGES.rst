@@ -62,6 +62,8 @@ Changed
 
 - Derive LDAP port from :envvar:`owncloud__ldap_port`. [ypid_]
 
+- Offload ``logrotate`` rule management to the debops.logrotate_ role. [ypid_]
+
 Removed
 ~~~~~~~
 
