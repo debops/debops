@@ -204,12 +204,13 @@
 
 # ownCloud integrity check [[[
 
-# TODO: Enable. As of ownCloud 9.0.4, the results from `occ` don’t match the web interface output?
-# - name: Check ownCloud core integrity
-#   command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
-#   register: owncloud__register_occ_integrity_check_core
-#   failed_when: (owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
-#   changed_when: False
-#   when: (owncloud__release | version_compare("9.1", "<="))
+- name: Check ownCloud core integrity
+  command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
+  register: owncloud__register_occ_integrity_check_core
+  failed_when: (owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
+  changed_when: False
+  # As of ownCloud 9.0.4, the results from `occ` don’t match the web interface output?
+  # Seems to work with ownCloud 9.0.8 and Nextcloud 11.
+  when: (owncloud__release | version_compare("9.0.8", ">="))
 
 # ]]]
