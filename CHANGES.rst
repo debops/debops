@@ -33,6 +33,12 @@ Changed
 
 - Update documentation and Changelog. [ypid_, drybjed_]
 
+- Rename the ``libvirtd__group_map`` variable to
+  :envvar:`libvirtd__access_groups`. [drybjed_]
+
+- Use the ``getent`` Ansible module to get the list of UNIX groups present on
+  the host. [drybjed_]
+
 
 `debops.libvirtd v0.2.0`_ - 2016-05-19
 --------------------------------------

@@ -24,16 +24,15 @@
     group: 'root'
     mode: '0644'
 
-- name: Get list of groups
-  command: cut -d ":" -f 1 /etc/group
-  register: libvirt__register_groups
-  changed_when: False
-  always_run: True
-  
-- name: Add administrators to libvirt system group
+- name: Get list of UNIX groups present on the host
+  getent:
+    database: 'group'
+  register: libvirtd__register_groups
+
+- name: Add administrators to libvirtd access group
   user:
     name: '{{ item }}'
-    groups: "{{ libvirt__register_groups.stdout.split('\n') | intersect(libvirtd__group_map) | join(',') }}"
+    groups: "{{ getent_group.keys() | intersect(libvirtd__access_groups) | join(',') }}"
     append: True
   with_items: '{{ libvirtd__admins }}'
   when: libvirtd__admins|d()

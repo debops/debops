@@ -67,12 +67,12 @@ libvirtd__admins: [ '{{ (ansible_ssh_user
                         if (ansible_ssh_user | d()) else ansible_user | d(lookup("env", "USER"))) }}' ]
 
                                                                    # ]]]
-# .. envvar:: libvirtd__group_map [[[
+# .. envvar:: libvirtd__access_groups [[[
 #
-# Mapping of default UNIX access group on different distributions.
-libvirtd__group_map:
-  - 'libvirt'
-  - 'libvirtd'
+# List of UNIX system groups which are used by :command:`libvirtd` service to
+# control access to the UNIX socket on different OS releases. The role will
+# check which group is present and will add the admin accounts to that group.
+libvirtd__access_groups: [ 'libvirt', 'libvirtd' ]
                                                                    # ]]]
                                                                    # ]]]
 # libvirtd connection URI [[[
