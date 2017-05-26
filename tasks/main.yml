@@ -24,10 +24,15 @@
     group: 'root'
     mode: '0644'
 
-- name: Add administrators to libvirt system group
+- name: Get list of UNIX groups present on the host
+  getent:
+    database: 'group'
+  register: libvirtd__register_groups
+
+- name: Add administrators to libvirtd access group
   user:
     name: '{{ item }}'
-    groups: '{{ libvirtd__group_map[ansible_distribution] }}'
+    groups: "{{ getent_group.keys() | intersect(libvirtd__access_groups) | join(',') }}"
     append: True
   with_items: '{{ libvirtd__admins }}'
   when: libvirtd__admins|d()
