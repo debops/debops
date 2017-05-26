@@ -1,24 +1,50 @@
+.. _libvirtd__ref_changelog:
+
 Changelog
 =========
 
 .. include:: includes/all.rst
 
-v0.2.0
-------
+**debops.libvirtd**
 
-*Released: 2016-05-19*
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-- Remove most of the Ansible role dependencies, leaving only those that are
-  required for the role to run correctly.
+The current role maintainer_ is drybjed_.
 
-  Configuration of dependent services like firewall, TCP Wrappers, APT
-  preferences is set in separate default variables. These variables can be used
-  by Ansible playbooks to configure settings related to :program:`libvirtd` in other
-  services. [ypid]
 
-- Fix deprecation warnings in Ansible 2.1.0. [ypid]
+`debops.libvirtd master`_ - unreleased
+--------------------------------------
 
-- Fix issue with wrong variable type conversion. [drybjed]
+.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.2.0...master
+
+Added
+~~~~~
+
+- Add ``qemu-utils`` package to list of installed packages. [bfabio_]
+
+- Add optional support for `Kernel same-page merging <https://en.wikipedia.org/wiki/Kernel_same-page_merging>`_.
+  It's not enabled by default due to potential security risks. [gaudenz]
+
+Changed
+~~~~~~~
+
+- Change how the role detects the :command:`libvirtd` UNIX access group. [fyhertz]
+
+- Update documentation and Changelog. [ypid_, drybjed_]
+
+
+`debops.libvirtd v0.2.0`_ - 2016-05-19
+--------------------------------------
+
+.. _debops.libvirtd v0.2.0: https://github.com/debops/ansible-libvirtd/compare/v0.1.2...v0.2.0
+
+Changed
+~~~~~~~
+
+- Fix deprecation warnings in Ansible 2.1.0. [ypid_]
+
+- Fix issue with wrong variable type conversion. [drybjed_]
 
 - Changed variable namespace from ``libvirtd_`` to ``libvirtd__``.
   ``libvirtd_[^_]`` variables are hereby deprecated.
@@ -28,28 +54,49 @@ v0.2.0
 
   .. code:: shell
 
-     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(libvirtd)_([^_])/\1__\2/g;'
+     git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 \
+     | xargs --null sed --in-place --regexp-extended 's/\<(libvirtd)_([^_])/\1__\2/g;'
 
-  [ypid]
+  [ypid_]
 
-v0.1.2
-------
+Removed
+~~~~~~~
 
-*Released: 2015-11-12*
+- Remove most of the Ansible role dependencies, leaving only those that are
+  required for the role to run correctly.
 
-- Fix issue with empty ``ansible_ssh_user`` on Ansible v2. [drybjed]
+  Configuration of dependent services like firewall, TCP Wrappers, APT
+  preferences is set in separate default variables. These variables can be used
+  by Ansible playbooks to configure settings related to :program:`libvirtd` in other
+  services. [ypid_]
 
-v0.1.1
-------
 
-*Released: 2015-07-27*
+`debops.libvirtd v0.1.2`_ - 2015-11-12
+--------------------------------------
 
-- Fix documentation formatting. [drybjed]
+.. _debops.libvirtd v0.1.2: https://github.com/debops/ansible-libvirtd/compare/v0.1.1...v0.1.2
 
-v0.1.0
-------
+Changed
+~~~~~~~
 
-*Released: 2015-07-27*
+- Fix issue with empty ``ansible_ssh_user`` variable on Ansible v2. [drybjed_]
 
-- Initial release. [drybjed]
 
+`debops.libvirtd v0.1.1`_ - 2015-07-27
+--------------------------------------
+
+.. _debops.libvirtd v0.1.1: https://github.com/debops/ansible-libvirtd/compare/v0.1.0...v0.1.1
+
+Changed
+~~~~~~~
+
+- Fix documentation formatting. [drybjed_]
+
+
+debops.libvirtd v0.1.0 - 2015-07-27
+-----------------------------------
+
+Added
+~~~~~
+
+- Initial release. [drybjed_]
