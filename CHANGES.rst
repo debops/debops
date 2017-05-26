@@ -41,6 +41,9 @@ Changed
 
 - Move the list of hardcoded APT packages to a new default variable. [drybjed_]
 
+- Don't restart :command:`sysfsutils` on hosts with read-only :file:`/sys`
+  filesystem, eg. LXC containers. [drybjed_]
+
 
 `debops.libvirtd v0.2.0`_ - 2016-05-19
 --------------------------------------

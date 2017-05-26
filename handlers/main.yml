@@ -4,3 +4,5 @@
   service:
     name: 'sysfsutils'
     state: 'restarted'
+  when: (libvirtd__register_sysfs|d() and
+         'rw' in libvirtd__register_sysfs.stdout_lines)

@@ -45,3 +45,9 @@
     group: 'root'
     mode: '0644'
   notify: 'Restart sysfsutils'
+
+- name: Check /sys filesystem mount options
+  shell: findmnt -n -o FS-OPTIONS --target /sys | tr ',' '\n'
+  register: libvirtd__register_sysfs
+  changed_when: False
+  check_mode: False
