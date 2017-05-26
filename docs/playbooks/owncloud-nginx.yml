@@ -17,14 +17,14 @@
       tags: [ 'role::owncloud', 'role::owncloud:env', 'role::nginx' ]
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'role::nginx', 'role::php' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ owncloud__apt_preferences__dependent_list }}'
         - '{{ php__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'role::nginx' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 

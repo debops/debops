@@ -91,6 +91,8 @@ Fixed
   As a result, this role does not enable or disable maintenance mode and
   the role maintainers recommend to leave maintainers mode disabled. [ypid_]
 
+- Fix playbook to handle the ``role::nginx`` Ansible tag correctly. [ypid_]
+
 Security
 ~~~~~~~~
 
