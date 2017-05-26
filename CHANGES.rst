@@ -1,28 +1,31 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.logrotate**
 
-Copyright (C) 2016 `DebOps Project <http://debops.org/>`_
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
 
-License: `GNU General Public License v3 <https://www.tldrlegal.com/l/gpl-3.0>`_
-
-This project adheres to `Semantic Versioning <http://semver.org/>`_
-and `human-readable changelog <http://keepachangelog.com/>`_.
+The current role maintainer_ is drybjed_
 
 
-Contributors
-------------
+`debops.logrotate master`_ - unreleased
+---------------------------------------
 
-- [drybjed] - `Maciej Delmanowski <https://github.com/drybjed/>`_  (role maintainer)
+.. _debops.logrotate master: https://github.com/debops/ansible-logrotate/compare/v0.1.2...master
+
+Changed
+~~~~~~~
+
+- Mostly automated update to the lastest DebOps Standards Version. [ypid_]
 
 
-Unreleased
-----------
+`debops.logrotate v0.1.2`_ - 2016-07-05
+---------------------------------------
 
-
-v0.1.2 - 2016-07-05
--------------------
+.. _debops.logrotate v0.1.2: https://github.com/debops/ansible-logrotate/compare/v0.1.1...v0.1.2
 
 Fixed
 ~~~~~
@@ -30,23 +33,25 @@ Fixed
 - Role will now correctly divert/revert ``logrotate`` configuration files for
   packages that are not yet installed. This fixes an issue where specified file
   not present in the filesystem was diverted on each run, breaking idempotency.
-  [drybjed]
+  [drybjed_]
 
-v0.1.1 - 2016-05-18
--------------------
+
+`debops.logrotate v0.1.1`_ - 2016-05-18
+---------------------------------------
+
+.. _debops.logrotate v0.1.1: https://github.com/debops/ansible-logrotate/compare/v0.1.0...v0.1.1
 
 Changed
 ~~~~~~~
 
 - Allow configuration of ``logrotate`` options common to all logs when no
-  specific logs are set. [drybjed]
+  specific logs are set. [drybjed_]
 
 
-v0.1.0 - 2016-04-15
--------------------
+debops.logrotate v0.1.0 - 2016-04-15
+------------------------------------
 
 Added
 ~~~~~
 
-- Initial release. [drybjed]
-
+- Initial release. [drybjed_]
