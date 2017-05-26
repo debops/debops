@@ -37,14 +37,14 @@
   with_items: '{{ libvirtd__admins }}'
   when: libvirtd__admins|d()
 
-- name: Add KSM sysfsutils configuration
+- name: Configure Kernel Same-page Merging
   template:
-    src: 'etc/sysfs.d/ksm.conf'
+    src: 'etc/sysfs.d/ksm.conf.j2'
     dest: '/etc/sysfs.d/ksm.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: 'Restart sysfsutils'
+  notify: [ 'Restart sysfsutils' ]
 
 - name: Check /sys filesystem mount options
   shell: findmnt -n -o FS-OPTIONS --target /sys | tr ',' '\n'
