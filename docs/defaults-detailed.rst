@@ -3,7 +3,7 @@ Default variable details
 
 .. include:: includes/all.rst
 
-Some of debops.mariadb_ default variables have more extensive configuration
+Some of ``debops.mariadb`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
@@ -45,6 +45,13 @@ Each database is defined as a YAML dict with the following keys:
 ``target_delete``
   Optional. If present and ``False``, it will prevent deletion of target file
   on remote host.
+
+``encoding``
+  Optional. Encoding mode to use, examples include ``utf8`` or ``latin1_swedish_ci``.
+
+``collation``
+  Optional. Collation mode (sorting). This only applies to new table/databases
+  and does not update existing ones, this is a limitation of MySQL.
 
 Examples
 ~~~~~~~~
@@ -147,8 +154,8 @@ User configuration file
 
 ``owner``
   Optional. It should specify a local UNIX account on the host managed by
-  the debops.mariadb_ role (not on the host with the database, unless it's
-  a local installation). If specified, the debops.mariadb_ role will create
+  the ``debops.mariadb`` role (not on the host with the database, unless it's
+  a local installation). If specified, the ``debops.mariadb`` role will create
   a local UNIX account if it doesn't exist with the specified name and create
   a ``~/.my.cnf`` configuration file with the MariaDB account credentials and
   configuration pointing to the MariaDB server.

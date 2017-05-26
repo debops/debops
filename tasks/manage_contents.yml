@@ -13,6 +13,8 @@
   mysql_db:
     name: '{{ item.database | d(item.name) }}'
     state: 'present'
+    encoding: '{{ item.encoding | d(omit) }}'
+    collation: '{{ item.collation | d(omit) }}'
   with_items: '{{ mariadb__databases + mariadb__dependent_databases + mariadb_databases|d([]) }}'
   delegate_to: '{{ mariadb__delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and

@@ -26,6 +26,9 @@ Added
 
 - Support MySQL-Galera flavor from Codership. [ganto_]
 
+- Support to specify ``encoding`` and ``collation`` for
+  :envvar:`mariadb__databases`. [ypid_]
+
 Changed
 ~~~~~~~
 
