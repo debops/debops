@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # Docker packages and installation [[[
@@ -65,7 +67,7 @@ docker__packages: []
                                                                    # ]]]
 # .. envvar:: docker__admins [[[
 #
-# List of UNIX accounts which should be added to ``docker`` system group which
+# List of UNIX accounts which should be added to :command:`docker` system group which
 # has access to the Docker UNIX socket.
 docker__admins: '{{ ansible_local.core.admin_users
                     if (ansible_local|d() and ansible_local.core|d() and
@@ -93,7 +95,7 @@ docker__fixed_cidr: ''
 # .. envvar:: docker__dns_nameserver [[[
 #
 # List of IP addresses of nameservers used by Docker. By default they
-# are gathered by the ``debops.core`` role from the :file:`/etc/resolv.conf` file of
+# are gathered by the debops.core_ role from the :file:`/etc/resolv.conf` file of
 # the remote host.
 docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
                             if (ansible_local|d() and ansible_local.resolver|d() and
@@ -104,7 +106,7 @@ docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
 # .. envvar:: docker__dns_search [[[
 #
 # List of DNS search domains to use by Docker. By default they are gathered by
-# the ``debops.core`` role from the :file:`/etc/resolv.conf` file of the remote host.
+# the debops.core_ role from the :file:`/etc/resolv.conf` file of the remote host.
 docker__dns_search: '{{ ansible_local.resolver.search
                         if (ansible_local|d() and ansible_local.resolver|d() and
                             ansible_local.resolver.search|d())
@@ -117,7 +119,7 @@ docker__dns_search: '{{ ansible_local.resolver.search
 # .. envvar:: docker__tcp [[[
 #
 # Enable or disable listening for TLS connections on the TCP docker port. By
-# default remote connections are enabled if the ``debops.pki`` role has been
+# default remote connections are enabled if the debops.pki_ role has been
 # configured on remote host (access is controlled by the firewall).
 docker__tcp: '{{ docker__pki | bool }}'
 
@@ -206,7 +208,7 @@ docker__listen:
 #
 # .. code-block:: yaml
 #    :linenos:
-
+#
 #    docker__labels:
 #      'com.example.environment': 'production'
 #      'com.example.storage':     'extfs'
@@ -239,7 +241,6 @@ docker__graph: '/var/lib/docker'
 docker__registry_mirrors: []
 
                                                                    # ]]]
-
 # .. envvar:: docker__storage_driver [[[
 #
 # Storage driver for docker volumes.
@@ -261,7 +262,7 @@ docker__custom_daemon_options: {}
                                                                    # ]]]
 # .. envvar:: docker__options [[[
 #
-# List of additional options passed to ``docker`` daemon. Examples:
+# List of additional options passed to :command:`docker` daemon. Examples:
 #
 # .. code-block:: yaml
 #    :linenos:
@@ -278,7 +279,7 @@ docker__options: []
 
 # .. envvar:: docker__pki [[[
 #
-# Enable or disable support for PKI certificates managed by ``debops.pki``.
+# Enable or disable support for PKI certificates managed by debops.pki_.
 docker__pki: '{{ (True
                   if (ansible_local|d() and ansible_local.pki|d() and
                       ansible_local.pki.enabled|d() | bool)
@@ -319,7 +320,6 @@ docker__pki_crt: 'default.crt'
 #
 # Name of the private key file used by Docker.
 docker__pki_key: 'default.key'
-
                                                                    # ]]]
                                                                    # ]]]
 # Firewall and ferment support [[[
@@ -327,7 +327,7 @@ docker__pki_key: 'default.key'
 
 # .. envvar:: docker__ferm_post_hook [[[
 #
-# Enable or disable installation for the ``ferm`` post hook when :program:`ferment`
+# Enable or disable installation for the :program:`ferm` post hook when :program:`ferment`
 # is disabled.
 docker__ferm_post_hook: '{{ True
                             if (ansible_local|d() and ansible_local.ferm|d() and
@@ -336,7 +336,7 @@ docker__ferm_post_hook: '{{ True
                                                                    # ]]]
 # .. envvar:: docker__ferment [[[
 #
-# Enable or disable support for :program:`ferment` script, which can generate ``ferm``
+# Enable or disable support for :program:`ferment` script, which can generate :program:`ferm`
 # configuration with the current Docker state.
 docker__ferment: True
 
@@ -349,19 +349,19 @@ docker__ferment_pip_package: 'ferment'
                                                                    # ]]]
 # .. envvar:: docker__ferment_wrapper [[[
 #
-# Path to the :program:`ferment` wrapper script used to generate ``ferm`` configuration.
+# Path to the :program:`ferment` wrapper script used to generate :program:`ferm` configuration.
 docker__ferment_wrapper: '{{ (ansible_local.root.lib
                               if (ansible_local|d() and ansible_local.root|d() and
                                   ansible_local.root.lib|d())
                               else "/usr/local/lib") + "/docker-ferment-wrapper" }}'
                                                                    # ]]]
                                                                    # ]]]
-# Configuration of other Ansible roles [[[
-# ----------------------------------------
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
 # .. envvar:: docker__etc_services__dependent_list [[[
 #
-# Configuration for ``debops.etc_services`` role which registers port numbers
+# Configuration for debops.etc_services_ role which registers port numbers
 # for Docker REST API.
 docker__etc_services__dependent_list:
 
@@ -376,7 +376,7 @@ docker__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: docker__ferm__dependent_rules [[[
 #
-# Configuration for ``debops.ferm`` role which enables support for :program:`ferment`
+# Configuration for debops.ferm_ role which enables support for :program:`ferment`
 # script and opens access to the Docker REST API in the firewall.
 docker__ferm__dependent_rules:
 
