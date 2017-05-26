@@ -8,22 +8,6 @@
   when: owncloud__webserver == "apache"
   with_flattened: '{{ owncloud__apache_modules }}'
 
-# ownCloud temp directory [[[
-
-- name: Ensure the custom temp directories are setup
-  file:
-    path: '{{ item.path }}'
-    state: 'directory'
-    owner: '{{ owncloud__app_user }}'
-    group: '{{ owncloud__app_group }}'
-    mode: '1750'
-  when: (item.path != "")
-  with_items:
-    - path: '{{ owncloud__temp_path }}'
-    - path: '{{ owncloud__php_temp_path }}'
-
-# .. ]]]
-
 # ownCloud ./config/ [[[
 
 - name: Install ownCloud config file

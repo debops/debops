@@ -93,6 +93,11 @@ Fixed
 
 - Fix playbook to handle the ``role::nginx`` Ansible tag correctly. [ypid_]
 
+- Fix custom directory creating. Previously, the Ansible role did not ensure
+  that custom directories the administrator might had configured using
+  ``owncloud__data_path`` and ``owncloud__nginx_client_body_temp_path``
+  actually existed and failed when reloading the respective services. [ypid_]
+
 Security
 ~~~~~~~~
 
