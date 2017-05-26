@@ -39,6 +39,8 @@ Changed
 - Use the ``getent`` Ansible module to get the list of UNIX groups present on
   the host. [drybjed_]
 
+- Move the list of hardcoded APT packages to a new default variable. [drybjed_]
+
 
 `debops.libvirtd v0.2.0`_ - 2016-05-19
 --------------------------------------
