@@ -29,6 +29,7 @@ libvirtd__base_packages_map:
   'wheezy':  [ 'libvirt-bin' ]
   'precise': [ 'libvirt-bin' ]
   'trusty':  [ 'libvirt-bin' ]
+  'xenial':  [ 'libvirt-bin' ]
 
                                                                    # ]]]
 # .. envvar:: libvirtd__kvm_packages [[[
@@ -63,17 +64,15 @@ libvirtd__packages: []
 #
 # List of administrator accounts which should have access to :program:`libvirtd`.
 libvirtd__admins: [ '{{ (ansible_ssh_user
-                        if (ansible_ssh_user | d() and
-                            ansible_ssh_user != "root")
-                        else lookup("env", "USER")) }}' ]
+                        if (ansible_ssh_user | d()) else ansible_user | d(lookup("env", "USER"))) }}' ]
 
                                                                    # ]]]
 # .. envvar:: libvirtd__group_map [[[
 #
 # Mapping of default UNIX access group on different distributions.
 libvirtd__group_map:
-  'Debian': 'libvirt'
-  'Ubuntu': 'libvirtd'
+  - 'libvirt'
+  - 'libvirtd'
                                                                    # ]]]
                                                                    # ]]]
 # libvirtd connection URI [[[
