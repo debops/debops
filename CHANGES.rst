@@ -26,6 +26,10 @@ Added
 - Add optional support for `Kernel same-page merging <https://en.wikipedia.org/wiki/Kernel_same-page_merging>`_.
   It's not enabled by default due to potential security risks. [gaudenz]
 
+- Configure APT preferences to prefer ``libvirt`` and ``qemu`` packages from
+  the ``jessie-backports`` repository on Debian Jessie, to ensure feature
+  parity with Debian Stretch. [drybjed_]
+
 Changed
 ~~~~~~~
 
