@@ -48,6 +48,8 @@ Changed
 - Don't restart :command:`sysfsutils` on hosts with read-only :file:`/sys`
   filesystem, eg. LXC containers. [drybjed_]
 
+- Divert original configuration files instead of overwriting them. [drybjed_]
+
 
 `debops.libvirtd v0.2.0`_ - 2016-05-19
 --------------------------------------

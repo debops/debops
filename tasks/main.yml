@@ -16,13 +16,22 @@
                    ansible_virtualization_role in [ "guest" ])
                    else libvirtd__kvm_packages }}' ]
 
-- name: Generate system-wide libvirt.conf configuration
+- name: Divert managed configuration files
+  command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'
+  args:
+    creates: '{{ item }}.dpkg-divert'
+  with_items:
+    - '/etc/libvirt/libvirt.conf'
+
+- name: Generate libvirt configuration files
   template:
-    src: 'etc/libvirt/libvirt.conf.j2'
-    dest: '/etc/libvirt/libvirt.conf'
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
+  with_items:
+    - 'etc/libvirt/libvirt.conf'
 
 - name: Get list of UNIX groups present on the host
   getent:
