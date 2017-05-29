@@ -72,7 +72,7 @@ role to interpret a given dictionary using specific parameters:
 ``section``
   Optional. Specify the name of the section of the configuration file in which
   the parameter should be placed. Section names and their order are defined in
-  the :envvar:`libvirt__configuration_sections` variable. If a section is not
+  the :envvar:`libvirtd__configuration_sections` variable. If a section is not
   specified, an ``unknown`` section will be automatically selected.
 
 ``weight``
