@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.libvirtd master`_ - unreleased
 --------------------------------------
 
-.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.2.0...master
+.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.3.0...master
+
+
+`debops.libvirtd v0.3.0`_ - 2017-05-29
+--------------------------------------
+
+.. _debops.libvirtd v0.3.0: https://github.com/debops/ansible-libvirtd/compare/v0.2.0...v0.3.0
 
 Added
 ~~~~~
@@ -26,6 +32,23 @@ Added
 - Add optional support for `Kernel same-page merging <https://en.wikipedia.org/wiki/Kernel_same-page_merging>`_.
   It's not enabled by default due to potential security risks. [gaudenz]
 
+- Configure APT preferences to prefer ``libvirt`` and ``qemu`` packages from
+  the ``jessie-backports`` repository on Debian Jessie, to ensure feature
+  parity with Debian Stretch. [drybjed_]
+
+- Add support for management of the :file:`/etc/libvirt/libvirtd.conf`
+  configuration file. [drybjed_]
+
+- Add Ansible local facts for the ``debops.libvirtd`` role. [drybjed_]
+
+- Add the :envvar:`libvirtd__deployment_mode` with a respective Ansible local
+  fact, which can be used to change :command:`libvirtd` configuration
+  conditionally depending on the deployment and management environment.
+  Currently plain "libvirt" and OpenNebula environments are supported.
+  [drybjed_]
+
+- Add the ``debops.libvirtd_qemu`` role to the example playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
@@ -33,11 +56,30 @@ Changed
 
 - Update documentation and Changelog. [ypid_, drybjed_]
 
-- Rename the ``libvirtd__group_map`` variable to
-  :envvar:`libvirtd__access_groups`. [drybjed_]
+- Rename the ``libvirtd__group_map`` variable to ``libvirtd__access_groups``.
+  [drybjed_]
 
 - Use the ``getent`` Ansible module to get the list of UNIX groups present on
   the host. [drybjed_]
+
+- Move the list of hardcoded APT packages to a new default variable. [drybjed_]
+
+- Don't restart :command:`sysfsutils` on hosts with read-only :file:`/sys`
+  filesystem, eg. LXC containers. [drybjed_]
+
+- Divert original configuration files instead of overwriting them. [drybjed_]
+
+- Change the way that ``libvirt`` UNIX group is detected. Instead of a task
+  during execution, it's now done via local Ansible facts; this allows use of
+  the group name in multiple places in the role. [drybjed_]
+
+- Rename the ``libvirtd__access_group`` variable to
+  :envvar:`libvirtd__unix_sock_group`. [drybjed_]
+
+- Cleanup of the :file:`/etc/libvirt/libvirt.conf` configuration file. The
+  ``libvirtd__connections`` variable is renamed to
+  :envvar:`libvirtd__uri_aliases`. The ``libvirtd__uri`` variable is renamed to
+  :envvar:`libvirtd__default_uri`. [drybjed_]
 
 
 `debops.libvirtd v0.2.0`_ - 2016-05-19

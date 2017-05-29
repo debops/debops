@@ -9,6 +9,7 @@ Ansible role: debops.libvirtd
    introduction
    getting-started
    defaults
+   defaults-detailed
    copyright
    changelog
 

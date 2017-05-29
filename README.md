@@ -14,7 +14,7 @@ Configuration of `libvirtd` instance (local or remote) can be performed using
 
 ### Installation
 
-This role requires at least Ansible `v1.8.0`. To install it, run:
+This role requires at least Ansible `v2.3.0`. To install it, run:
 
     ansible-galaxy install debops.libvirtd
 
