@@ -30,6 +30,9 @@ Added
   the ``jessie-backports`` repository on Debian Jessie, to ensure feature
   parity with Debian Stretch. [drybjed_]
 
+- Add support for management of the :file:`/etc/libvirt/libvirtd.conf`
+  configuration file. [drybjed_]
+
 Changed
 ~~~~~~~
 

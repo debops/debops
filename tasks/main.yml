@@ -22,6 +22,7 @@
     creates: '{{ item }}.dpkg-divert'
   with_items:
     - '/etc/libvirt/libvirt.conf'
+    - '/etc/libvirt/libvirtd.conf'
 
 - name: Generate libvirt configuration files
   template:
@@ -32,6 +33,17 @@
     mode: '0644'
   with_items:
     - 'etc/libvirt/libvirt.conf'
+
+- name: Generate libvirtd configuration files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/libvirt/libvirtd.conf'
+  notify: [ 'Restart libvirtd' ]
 
 - name: Get list of UNIX groups present on the host
   getent:
