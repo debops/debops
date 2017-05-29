@@ -41,6 +41,8 @@ Added
   Currently plain "libvirt" and OpenNebula environments are supported.
   [drybjed_]
 
+- Add the ``debops.libvirtd_qemu`` role to the example playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
