@@ -6,21 +6,15 @@
 #
 # Following the '=' may be any valid libvirt connection
 # URI, including arbitrary parameters
-#uri_aliases = [
-#  "hail=qemu+ssh://root@hail.cloud.example.com/system",
-#  "sleet=qemu+ssh://root@sleet.cloud.example.com/system",
-#]
 
 uri_aliases = [
-{% for key, value in libvirtd__connections.iteritems() %}
+{% for key, value in libvirtd__uri_aliases.iteritems() %}
     "{{ key + '=' + value }}",
 {% endfor %}
 ]
 
-# This can be used to prevent probing of the hypervisor
-# driver when no URI is supplied by the application.
-#uri_default = "qemu:///system"
-
-{% if libvirtd__uri|d() %}
-uri_default = "{{ libvirtd__connections[libvirtd__uri] }}"
-{% endif %}
+#
+# These can be used in cases when no URI is supplied by the application
+# (@uri_default also prevents probing of the hypervisor driver).
+#
+uri_default = "{{ libvirtd__uri_aliases[libvirtd__default_uri] }}"

@@ -68,6 +68,11 @@ Changed
 - Rename the ``libvirtd__access_group`` variable to
   :envvar:`libvirtd__unix_sock_group`. [drybjed_]
 
+- Cleanup of the :file:`/etc/libvirt/libvirt.conf` configuration file. The
+  ``libvirtd__connections`` variable is renamed to
+  :envvar:`libvirtd__uri_aliases`. The ``libvirtd__uri`` variable is renamed to
+  :envvar:`libvirtd__default_uri`. [drybjed_]
+
 
 `debops.libvirtd v0.2.0`_ - 2016-05-19
 --------------------------------------

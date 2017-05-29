@@ -118,23 +118,22 @@ libvirtd__unix_sock_group: '{{ ansible_local.libvirtd.unix_sock_group
 libvirtd__system_uri: 'qemu:///system'
 
                                                                    # ]]]
-# .. envvar:: libvirtd__connections [[[
+# .. envvar:: libvirtd__uri_aliases [[[
 #
-# Dict with connections configured in :file:`/etc/libvirt/libvirt.conf`.
+# YAML dictionary with system-wide connection aliases configured in
+# the :file:`/etc/libvirt/libvirt.conf` configuration file.
 #
 # Each key is an alias for a connection, each value should be a valid
-# ``libvirt`` URI connection string. At the moment only local
-# (``qemu:///system``, ``lxc:///``) and SSH (``qemu+ssh://<hostname>/system``,
-# ``lxc+ssh://<hostname>/``) connections are supported by ``debops.libvirtd``.
-libvirtd__connections:
+# :command:`libvirt` URI connection string.
+libvirtd__uri_aliases:
   'localhost': '{{ libvirtd__system_uri }}'
 
                                                                    # ]]]
-# .. envvar:: libvirtd__uri [[[
+# .. envvar:: libvirtd__default_uri [[[
 #
-# Name of the connection from ``libvirtd__connections`` configured as default
-# system-wide.
-libvirtd__uri: 'localhost'
+# Name of the alias from the :envvar:`libvirtd__uri_aliases` variable
+# configured as default :command:`libvirt` connection system-wide.
+libvirtd__default_uri: 'localhost'
                                                                    # ]]]
                                                                    # ]]]
 # libvirtd master configuration [[[
