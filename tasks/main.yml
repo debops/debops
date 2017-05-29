@@ -16,6 +16,27 @@
                    ansible_virtualization_role in [ "guest" ])
                    else libvirtd__kvm_packages }}' ]
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save libvirtd local facts
+  template:
+    src: 'etc/ansible/facts.d/libvirtd.fact.j2'
+    dest: '/etc/ansible/facts.d/libvirtd.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: libvirtd__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: libvirtd__register_facts|changed
+
 - name: Divert managed configuration files
   command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'
   args:
@@ -45,15 +66,10 @@
     - 'etc/libvirt/libvirtd.conf'
   notify: [ 'Restart libvirtd' ]
 
-- name: Get list of UNIX groups present on the host
-  getent:
-    database: 'group'
-  register: libvirtd__register_groups
-
 - name: Add administrators to libvirtd access group
   user:
     name: '{{ item }}'
-    groups: "{{ getent_group.keys() | intersect(libvirtd__access_groups) | join(',') }}"
+    groups: "{{ libvirtd__unix_sock_group }}"
     append: True
   with_items: '{{ libvirtd__admins }}'
   when: libvirtd__admins|d()
