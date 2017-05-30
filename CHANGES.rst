@@ -16,7 +16,22 @@ The current role maintainer_ is drybjed_.
 `debops.libvirtd master`_ - unreleased
 --------------------------------------
 
-.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.3.0...master
+.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.3.1...master
+
+
+`debops.libvirtd v0.3.1`_ - 2017-05-30
+--------------------------------------
+
+.. _debops.libvirtd v0.3.1: https://github.com/debops/ansible-libvirtd/compare/v0.3.0...v0.3.1
+
+Removed
+~~~~~~~
+
+- Remove mention of the ``debops.libvirtd_qemu`` role from the example playbook
+  for now. It will be added back later when the role is released. [drybjed_]
+
+- Don't enable the ``jessie-backports`` version of libvirt and qemu packages on
+  Debian Jessie. It will be enabled after Debian Stretch is relesed. [drybjed_]
 
 
 `debops.libvirtd v0.3.0`_ - 2017-05-29
