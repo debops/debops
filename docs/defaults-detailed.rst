@@ -131,7 +131,7 @@ of the list is a YAML dictionary with specific parameters:
   ``section`` parameter. Should be short and recognizable.
 
 ``title``
-  Required. A shor description of the given configuration file section which
+  Required. A short description of the given configuration file section which
   will be added as a header.
 
 ``comment``
