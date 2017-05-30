@@ -20,7 +20,7 @@
     group: 'root'
     mode: '0644'
   with_nested:
-    - rsnapshot_external_servers
+    - '{{ rsnapshot_external_servers }}'
     - [ 'include.txt', 'exclude.txt', 'rsnapshot.conf' ]
   when: (inventory_hostname in rsnapshot_clients and
          ((item.0 is defined and item.0) and item.0 != inventory_hostname and
