@@ -31,7 +31,7 @@ Removed
   for now. It will be added back later when the role is released. [drybjed_]
 
 - Don't enable the ``jessie-backports`` version of libvirt and qemu packages on
-  Debian Jessie. It will be enabled after Debian Stretch is relesed. [drybjed_]
+  Debian Jessie. It will be enabled after Debian Stretch is released. [drybjed_]
 
 
 `debops.libvirtd v0.3.0`_ - 2017-05-29
