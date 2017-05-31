@@ -16,7 +16,7 @@ debops.libvirt_ role, which uses the ``libvirt`` API to manage the server.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.3.0``. To install it, run:
+This role requires at least Ansible ``v2.2.3``. To install it, run:
 
 .. code-block:: console
 

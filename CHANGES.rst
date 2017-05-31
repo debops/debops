@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.3.1...master
 
+Changed
+~~~~~~~
+
+- Decrease minimum Ansible version requirement to v2.2.3. v2.2.x was also
+  supported by previous 0.3.x role releases. [ypid_]
+
 
 `debops.libvirtd v0.3.1`_ - 2017-05-30
 --------------------------------------
@@ -95,6 +101,8 @@ Changed
   ``libvirtd__connections`` variable is renamed to
   :envvar:`libvirtd__uri_aliases`. The ``libvirtd__uri`` variable is renamed to
   :envvar:`libvirtd__default_uri`. [drybjed_]
+
+- Increase minimum Ansible version requirement to v2.3. [drybjed_]
 
 
 `debops.libvirtd v0.2.0`_ - 2016-05-19
