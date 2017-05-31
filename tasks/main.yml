@@ -51,7 +51,7 @@
     LC_ALL: 'C'
   shell: dpkg-divert --list '/etc/logrotate.d/*.dpkg-divert' | awk '{print $NF}'
   register: logrotate__register_diversions
-  always_run: True
+  check_mode: no
   changed_when: False
 
 - name: Divert the custom log rotation config
