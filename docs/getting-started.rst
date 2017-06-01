@@ -19,7 +19,7 @@ Example inventory
 -----------------
 
 This role should be enabled on virtualization hosts, you can do this by adding
-a host to ``[debops_service_libvirtd]`` group:
+a host to the ``[debops_service_libvirtd]`` group:
 
 .. code:: ini
 
