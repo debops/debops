@@ -12,7 +12,7 @@
                  ["not-installed", "config-files",
                   "unpacked", "half-installed", "half-configured",
                   "triggers-pending", "triggers-awaited", "installed"]
-  check_mode: no
+  check_mode: False
 
 - name: Make sure that OpenSSH configuration directory exists
   file:
@@ -77,7 +77,7 @@
   shell: 'dpkg-query -W -f="\${Version}\n" "openssh-server" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
   register: sshd__register_version
   changed_when: False
-  check_mode: no
+  check_mode: False
   tags: [ 'role::sshd:config' ]
 
 - name: Ensure that Ed25519 host key is present
@@ -100,7 +100,7 @@
   shell: find /etc/ssh -maxdepth 1 -type f -name 'ssh_host_*_key.pub' -exec basename {} .pub \;
   register: sshd__register_host_keys
   changed_when: False
-  check_mode: no
+  check_mode: False
   tags: [ 'role::sshd:config' ]
 
 - name: Setup /etc/ssh/sshd_config
@@ -145,7 +145,7 @@
   shell: awk '$5 < {{ sshd__moduli_minimum }}' /etc/ssh/moduli
   register: sshd__register_moduli
   changed_when: sshd__register_moduli.stdout
-  check_mode: no
+  check_mode: False
 
 - name: Remove DH parameters smaller than the requested size
   shell: awk '$5 >= {{ sshd__moduli_minimum }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
