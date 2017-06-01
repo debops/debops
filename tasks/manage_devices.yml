@@ -175,7 +175,7 @@
   register: cryptsetup__register_ciphertext_blkid
   changed_when: False
   failed_when: (cryptsetup__register_ciphertext_blkid.rc not in [ 0, 2 ])
-  check_mode: no
+  check_mode: False
   when: (item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
