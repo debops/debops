@@ -24,7 +24,8 @@
     install_recommends: False
   register: docker__register_other_version_removed
   with_flattened:
-    - '{{ "docker.io" if docker__upstream|d() else "docker-engine" }}'
+    - '{{ "docker.io docker-engine" if docker__upstream|d()
+                else docker__packagename }}'
 
 - name: Remove custom systemd startup file if present
   file:
@@ -40,7 +41,8 @@
     state: 'present'
     install_recommends: False
   with_flattened:
-    - '{{ "docker-engine" if docker__upstream|d() else "docker.io" }}'
+    - '{{ docker__mandatory_packages }}'
+    - '{{ docker__packagename if docker__upstream|d() else "docker.io" }}'
     - '{{ docker__base_packages }}'
     - '{{ docker__packages }}'
 
@@ -71,7 +73,7 @@
 - name: Check Docker version
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' '{{ ("docker-engine" if docker__upstream|d() else "docker.io") }}' | cut -d- -f1
+  shell: dpkg-query -W -f='${Version}\n' '{{ ("docker-ce" if docker__upstream|d() else "docker.io") }}' | cut -d- -f1
   register: docker__register_version
   changed_when: False
   failed_when: False
