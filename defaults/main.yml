@@ -41,16 +41,66 @@ docker__distribution_release: '{{ ansible_local.core.distribution_release
 docker__upstream: False
 
                                                                    # ]]]
+# .. envvar:: docker__variant [[[
+#
+# For upstream repositories the variant to be installed: ce or ee.
+docker__variant: 'ce'
+
+                                                                   # ]]]
+# .. envvar:: docker__channel [[[
+#
+# For upstream repositories choose the stable or edge channel.
+docker__channel: 'stable'
+
+                                                                   # ]]]
 # .. envvar:: docker__upstream_key [[[
 #
 # APT GPG key id used to sign the upstream Docker packages.
-docker__upstream_key: '58118E89F3A912897C070ADBF76221572C52609D'
+docker__upstream_key: '{{ "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+                           if (docker__variant == "ce")
+                           else "DD911E995A64A202E85907D6BC14F10B6D085F96" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__version [[[
+#
+# The docker version to be installed. Leave empty to install the latest (stable or edge)
+# version, or specify a version. Example:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    docker__version: '17.05.0~ce-0~ubuntu-xenial'
+#
+docker__version: ''
+docker__packagename: '{{"docker-" + docker__variant + "=" + docker__version if docker__version|d() else "docker-" + docker__variant }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_arch_map [[[
+#
+# A YAML dictionary that maps the ``ansible_architecture`` variable with its
+# corresponding processor architecture used in the Docker repository URLs.
+docker__upstream_arch_map:
+  'x86_64': 'amd64'
+  'armhf':  'armhf'
 
                                                                    # ]]]
 # .. envvar:: docker__upstream_repository [[[
 #
 # Address of the Docker upstream APT repository.
-docker__upstream_repository: 'deb https://apt.dockerproject.org/repo {{ docker__distribution | lower }}-{{ docker__distribution_release }} main'
+docker__upstream_repository: '{{ "deb [arch="
+        + docker__upstream_arch_map[ansible_architecture]
+        + "] https://download.docker.com/linux/"
+        + docker__distribution|lower
+        + " "
+        + docker__distribution_release
+        + " "
+        + docker__channel }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__mandatory_packages [[[
+#
+# List of mandatory packages to install with Docker.
+docker__mandatory_packages: [ 'apt-transport-https', 'ca-certificates', 'curl', 'gnupg2', 'software-properties-common' ]
 
                                                                    # ]]]
 # .. envvar:: docker__base_packages [[[
@@ -244,7 +294,9 @@ docker__registry_mirrors: []
 # .. envvar:: docker__storage_driver [[[
 #
 # Storage driver for docker volumes.
-docker__storage_driver: 'overlay'
+docker__storage_driver: '{{ "aufs"
+                             if (ansible_distribution_release in ["wheezy", "jessie" ])
+                             else "overlay" }}'
 
                                                                    # ]]]
 # .. envvar:: docker__storage_options [[[
