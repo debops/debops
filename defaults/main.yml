@@ -413,6 +413,7 @@ owncloud__variant_name_map:
 # * ownCloud ``9.1`` (setup should work but not yet well tested nor used in production by the role maintainers)
 #
 # * Nextcloud ``11.0`` (experimental support on Debian stretch, refer to `issue 45 <https://github.com/debops/ansible-owncloud/issues/45>`_ for details)
+# * Nextcloud ``12.0`` (experimental support on Debian stretch, refer to `issue 45 <https://github.com/debops/ansible-owncloud/issues/45>`_ for details)
 #
 # Refer to the `ownCloud Maintenance and Release Schedule <https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule>`_
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
@@ -1884,6 +1885,7 @@ owncloud__nginx__dependent_servers:
 
     robots_tag: [ 'none' ]
     permitted_cross_domain_policies: 'none'
+    frame_options: '{{ omit if (owncloud__variant in ["nextcloud"] and owncloud__release | version_compare("12.0", ">=")) else "SAMEORIGIN" }}'
 
     options: |
       add_header X-Download-Options noopen;
@@ -1980,7 +1982,9 @@ owncloud__nginx__dependent_servers:
           add_header Cache-Control "public, max-age=7200";
 
           add_header X-Content-Type-Options nosniff;
+          {% if not (owncloud__variant in ["nextcloud"] and owncloud__release | version_compare("12.0", ">=")) %}
           add_header X-Frame-Options "SAMEORIGIN";
+          {% endif %}
           add_header X-XSS-Protection "1; mode=block";
           add_header X-Robots-Tag none;
           add_header X-Download-Options noopen;
