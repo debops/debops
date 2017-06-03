@@ -246,16 +246,16 @@ Header {{ apache__tpl_directive_options }} Content-Security-Policy "{{ item.csp|
 {% if item.csp_report_enabled|d(False) | bool %}
 Header {{ apache__tpl_directive_options }} Content-Security-Policy-Report-Only "{{ item.csp_report|d(item.csp|d("default-src https: ;")) + (" " + item.csp_append|d(apache__http_csp_append) if (item.csp_append|d(apache__http_csp_append)) else "") }}"
 {% endif %}
-{% if apache__http_frame_options|d(item.http_frame_options) %}
-Header {{ apache__tpl_directive_options }} X-Frame-Options "{{ apache__http_frame_options|d(item.http_frame_options) }}"
+{% if item.http_frame_options|d(apache__http_frame_options) != omit %}
+Header {{ apache__tpl_directive_options }} X-Frame-Options "{{ item.http_frame_options|d(apache__http_frame_options) }}"
 {% endif %}
-{% if apache__http_frame_options|d(item.http_frame_options) != omit %}
+{% if item.http_xss_protection|d(apache__http_xss_protection) != omit %}
 Header {{ apache__tpl_directive_options }} X-XSS-Protection "{{ item.http_xss_protection|d(apache__http_xss_protection) }}"
 {% endif %}
-{% if apache__http_referrer_policy|d(item.http_referrer_policy) != omit %}
-Header {{ apache__tpl_directive_options }} Referrer-Policy "{{ apache__http_referrer_policy|d(item.http_referrer_policy) }}"
+{% if item.http_referrer_policy|d(apache__http_referrer_policy) != omit %}
+Header {{ apache__tpl_directive_options }} Referrer-Policy "{{ item.http_referrer_policy|d(apache__http_referrer_policy) }}"
 {% endif %}
-{% if apache__http_frame_options|d(item.http_frame_options) %}
+{% if item.http_content_type_options|d(apache__http_content_type_options) != omit %}
 Header {{ apache__tpl_directive_options }} X-Content-Type-Options "{{ item.http_content_type_options|d(apache__http_content_type_options) }}"
 {% endif %}
 {% endmacro %}{# ]]] #}
