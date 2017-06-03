@@ -95,3 +95,7 @@ Fixed
 
 - Don't define HTTPS redirects for vhosts and completely disable ``mod_ssl``
   if :envvar:`apache__https_enabled` is set to ``False``. [ganto_]
+
+- Fix usage of ``item.http_frame_options``, ``item.http_xss_protection``,
+  ``item.http_referrer_policy``, ``item.http_content_type_options`` and their
+  corresponding default options. [ypid_]
