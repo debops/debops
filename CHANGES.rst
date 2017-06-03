@@ -21,6 +21,14 @@ Added
 
 - Support to disable :envvar:`nginx_acme_domain`. [ypid_]
 
+Changed
+~~~~~~~
+
+- ``item.frame_option`` and ``item.content_type_options`` can now be set to the
+  special value ``{{ omit }}`` to omit their corresponding HTTP headers in
+  nginx servers. [ypid_]
+
+
 Fixed
 ~~~~~
 
