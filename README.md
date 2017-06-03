@@ -8,7 +8,7 @@
 [![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops--contrib.bitcoind-660198.svg?style=flat)](https://galaxy.ansible.com/debops-contrib/bitcoind)
 
 
-The ``debops-contrib.bitcoind`` role allows you to manage and configure [bitcoind].
+The `debops-contrib.bitcoind` role allows you to manage and configure [bitcoind].
 bitcoind can be used to run a [full node]  in the distributed cryptocurrency network [Bitcoin].
 A full node is a program that fully validates transactions and blocks and
 therefore enforces all of the rules of Bitcoin.
