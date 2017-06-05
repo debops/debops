@@ -195,6 +195,8 @@ apt__architecture_map:
 apt__distribution: '{{ ansible_local.core.distribution
                        if (ansible_local|d() and ansible_local.core|d() and
                            ansible_local.core.distribution|d())
+                       else ansible_lsb.id
+                         if (ansible_lsb|d() and ansible_lsb.id|d())
                        else ansible_distribution }}'
 
                                                                    # ]]]
