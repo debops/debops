@@ -7,8 +7,8 @@
     path:    '{{ (owncloud__data_path + "/" + item.dest) | dirname }}'
     state:   'directory'
     recurse: '{{ item.parent_dirs_recurse | d(True) }}'
-    owner:   '{{ item.parent_dirs_owner   | d(owncloud__user) }}'
-    group:   '{{ item.parent_dirs_group   | d(owncloud__group) }}'
+    owner:   '{{ item.parent_dirs_owner   | d(owncloud__app_user) }}'
+    group:   '{{ item.parent_dirs_group   | d(owncloud__app_group) }}'
     mode:    '{{ item.parent_dirs_mode    | d("0755") }}'
   when: ((item.parent_dirs_create|d(True)| bool) and item.dest|d() and item.state|d("present") != 'absent')
   with_flattened:
@@ -21,8 +21,8 @@
     dest:     '{{ owncloud__data_path + "/" + item.dest }}'
     src:      '{{ item.src      | d(omit) }}'
     content:  '{{ item.content  | d(omit) }}'
-    owner:    '{{ item.owner    | d(owncloud__user) }}'
-    group:    '{{ item.group    | d(owncloud__group) }}'
+    owner:    '{{ item.owner    | d(owncloud__app_user) }}'
+    group:    '{{ item.group    | d(owncloud__app_group) }}'
     mode:     '{{ item.mode     | d("u=rwX,g=rX,o=rX") }}'
     selevel:  '{{ item.selevel  | d(omit) }}'
     serole:   '{{ item.serole   | d(omit) }}'

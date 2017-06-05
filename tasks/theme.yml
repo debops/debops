@@ -27,7 +27,7 @@
     dest: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/defaults.php" }}'
     owner: 'root'
     ## ownCloud itself does not need to change this file and does not even allow to do so.
-    group: '{{ owncloud__group }}'
+    group: '{{ owncloud__app_group }}'
     mode: '0640'
     validate: 'php -f %s'
   when: (owncloud__theme_directory_name != "")
@@ -70,7 +70,7 @@
     src: 'srv/www/sites/config/theme.config.php.j2'
     dest: '{{ owncloud__deploy_path }}/config/theme.config.php'
     owner: 'root'
-    group: '{{ owncloud__group }}'
+    group: '{{ owncloud__app_group }}'
     mode: '0640'
   when: (owncloud__theme_active != "")
   tags: [ 'role::owncloud:theme:activate' ]

@@ -8,30 +8,14 @@
   when: owncloud__webserver == "apache"
   with_flattened: '{{ owncloud__apache_modules }}'
 
-# ownCloud temp directory [[[
-
-- name: Ensure the custom temp directories are setup
-  file:
-    path: '{{ item.path }}'
-    state: 'directory'
-    owner: '{{ owncloud__user }}'
-    group: '{{ owncloud__group }}'
-    mode: '1750'
-  when: (item.path != "")
-  with_items:
-    - path: '{{ owncloud__temp_path }}'
-    - path: '{{ owncloud__php_temp_path }}'
-
-# .. ]]]
-
 # ownCloud ./config/ [[[
 
 - name: Install ownCloud config file
   template:
     src: 'srv/www/sites/config/debops.config.php.j2'
     dest: '{{ owncloud__deploy_path }}/config/debops.config.php'
-    owner: '{{ owncloud__user }}'
-    group: '{{ owncloud__group }}'
+    owner: '{{ owncloud__app_user }}'
+    group: '{{ owncloud__app_group }}'
     mode: '0640'
     validate: 'php -f %s'
 
@@ -39,8 +23,8 @@
   template:
     src: 'srv/www/sites/config/mail.config.php.j2'
     dest: '{{ owncloud__deploy_path }}/config/mail.config.php'
-    owner: '{{ owncloud__user }}'
-    group: '{{ owncloud__group }}'
+    owner: '{{ owncloud__app_user }}'
+    group: '{{ owncloud__app_group }}'
     mode: '0640'
     validate: 'php -f %s'
   when: ((owncloud__mail_conf_map.keys() | length) >= 1)
@@ -62,18 +46,6 @@
 
 # .. ]]]
 
-# Logging [[[
-  ## ownCloud as of Version 9.0 does not do log rotate by default. This could
-  ## be enabled by `log_rotate_size`. `logrotate` is used in DebOps.
-- name: Setup logrotate for owncloud
-  template:
-    src: 'etc/logrotate.d/owncloud.j2'
-    dest: '/etc/logrotate.d/owncloud'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-# .. ]]]
-
 # Setup the occ command [[[
 
 - name: Remove legacy files
@@ -90,7 +62,7 @@
     src: 'usr/local/bin/occ.j2'
     dest: '{{ owncloud__occ_bin_file_path }}'
     owner: 'root'
-    group: '{{ owncloud__group }}'
+    group: '{{ owncloud__app_group }}'
     mode: 0755
   tags: [ 'role::owncloud:occ' ]
 
@@ -108,7 +80,7 @@
     owncloud__do_autosetup: '{{ (owncloud__autosetup and
                                  owncloud__admin_username != "" and
                                  (not owncloud__register_occ_check|skipped) and
-                                 "ownCloud is not installed" in owncloud__register_occ_check.stdout) }}'
+                                 "is not installed" in owncloud__register_occ_check.stdout) }}'
 
 - name: Automatically finish setup via the occ tool
   command: |
@@ -127,31 +99,6 @@
   when: owncloud__do_autosetup|bool and owncloud__release not in [ '8.0' ]
   ## Did not work with 8.1.6-2.1 because of https://github.com/owncloud/core/issues/17583
   ## Falling back to URL auto install method.
-
-- name: Install ownCloud autoconfig file
-  template:
-    src: 'srv/www/sites/config/autoconfig.php.j2'
-    dest: '{{ owncloud__deploy_path }}/config/autoconfig.php'
-    owner: '{{ owncloud__user }}'
-    group: '{{ owncloud__group }}'
-    mode: '0660'
-    validate: 'php -f %s'
-  register: owncloud__register_autoconfig
-  when: owncloud__do_autosetup|bool and owncloud__release in [ '8.0' ]
-
-- name: Test availability of automatically finish setup
-  uri:
-    url: '{{ owncloud__autosetup_url }}'
-    status_code: '200,401'
-  register: owncloud__auto_finish_setup
-  when: not owncloud__register_autoconfig|skipped
-
-- name: Automatically finish setup via URL request
-  uri:
-    url: '{{ owncloud__autosetup_url }}'
-  when: owncloud__auto_finish_setup is defined and
-        owncloud__auto_finish_setup.status is defined and
-        owncloud__auto_finish_setup.status|int != 200
 
 # .. ]]]
 
@@ -213,7 +160,7 @@
   cron:
     name: 'ownCloud Background Jobs'
     minute: '{{ owncloud__cron_minute }}'
-    user: '{{ owncloud__user }}'
+    user: '{{ owncloud__app_user }}'
     job: 'test -x /usr/bin/php && test -e {{ (owncloud__deploy_path + "/cron.php") | quote }} && /usr/bin/php -f {{ (owncloud__deploy_path + "/cron.php") | quote }}'
     cron_file: 'owncloud'
 
@@ -241,12 +188,13 @@
 
 # ownCloud integrity check [[[
 
-# TODO: Enable. As of ownCloud 9.0.4, the results from `occ` don’t match the web interface output?
-# - name: Check ownCloud core integrity
-#   command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
-#   register: owncloud__register_occ_integrity_check_core
-#   failed_when: (owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
-#   changed_when: False
-#   when: (owncloud__release | version_compare("9.1", "<="))
+- name: Check ownCloud core integrity
+  command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
+  register: owncloud__register_occ_integrity_check_core
+  failed_when: (owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
+  changed_when: False
+  # As of ownCloud 9.0.4, the results from `occ` don’t match the web interface output?
+  # Seems to work with ownCloud 9.0.8 and Nextcloud 11.
+  when: (owncloud__release | version_compare("9.0.8", ">="))
 
 # ]]]

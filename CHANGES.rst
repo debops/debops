@@ -36,6 +36,8 @@ Added
   :envvar:`owncloud__auto_database_upgrade_3party_app_disable`.
   Defaults to upstream default. [ypid_]
 
+- Add experimental NextCloud 11 support, tested on Debian Stretch. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -60,11 +62,15 @@ Changed
 
 - Derive LDAP port from :envvar:`owncloud__ldap_port`. [ypid_]
 
+- Offload ``logrotate`` rule management to the debops.logrotate_ role. [ypid_]
+
 Removed
 ~~~~~~~
 
 - Removed deprecated Ansible inventory group ``debops_owncloud``. Refer to the
   :ref:`owncloud__ref_getting_started` guide. [ypid_]
+
+- Drop support for ownCloud 8.2 and below. 8.2 is End of Life as of 8.2.11 (2017-04-18). [ypid_]
 
 Fixed
 ~~~~~
@@ -84,6 +90,13 @@ Fixed
   want to use those :command:`occ` subcommands.
   As a result, this role does not enable or disable maintenance mode and
   the role maintainers recommend to leave maintainers mode disabled. [ypid_]
+
+- Fix playbook to handle the ``role::nginx`` Ansible tag correctly. [ypid_]
+
+- Fix custom directory creating. Previously, the Ansible role did not ensure
+  that custom directories the administrator might had configured using
+  ``owncloud__data_path`` and ``owncloud__nginx_client_body_temp_path``
+  actually existed and failed when reloading the respective services. [ypid_]
 
 Security
 ~~~~~~~~
@@ -219,7 +232,7 @@ Changed
   from ``300`` to ``3600`` and the :envvar:`owncloud__upload_size` from
   ``128M`` to ``2G``. [ypid_]
 
-- Support to run the :command:`occ` wrapper script as :envvar:`owncloud__user`
+- Support to run the :command:`occ` wrapper script as :envvar:`owncloud__app_user`
   which can be useful for scripting. [ypid_]
 
 - Changed default ownCloud domain from ``owncloud.{{ ansible_domain }}`` to
