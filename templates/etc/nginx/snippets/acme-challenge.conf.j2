@@ -20,6 +20,7 @@ location @well-known-acme-challenge {
         try_files $uri @redirect-acme-challenge;
 }
 
+{% if nginx_acme_domain %}
 # Redirect the ACME challenge to a different host. If a redirect loop is
 # detected, return 404.
 location @redirect-acme-challenge {
@@ -29,8 +30,8 @@ location @redirect-acme-challenge {
         return 307 $scheme://{{ nginx_acme_domain }}$request_uri?redirect=yes;
 }
 
+{% endif %}
 # Return 404 if ACME challenge well known path is accessed directly.
 location = /.well-known/acme-challenge/ {
     return 404;
 }
-

@@ -16,6 +16,29 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Support to disable :envvar:`nginx_acme_domain`. [ypid_]
+
+Changed
+~~~~~~~
+
+- ``item.frame_option`` and ``item.content_type_options`` can now be set to the
+  special value ``{{ omit }}`` to omit their corresponding HTTP headers in
+  nginx servers. [ypid_]
+
+
+Fixed
+~~~~~
+
+- Fixed the usage of :envvar:`nginx_default_ssl_verify_client` when
+  :envvar:`nginx_ocsp` is set to ``False``.
+  :envvar:`nginx_default_ssl_verify_client` does not depend on :envvar:`nginx_ocsp`. [ypid_]
+
+- CSP for welcome server did not end with a semicolon resulting in an invalid CSP with
+  :envvar:`nginx__http_csp_append` set. [ypid_]
+
 
 `debops.nginx v0.2.0`_ - 2017-04-15
 -----------------------------------

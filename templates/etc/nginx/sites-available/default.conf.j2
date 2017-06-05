@@ -543,18 +543,18 @@ server {
         ssl_stapling_verify       on;
         ssl_trusted_certificate   {{ nginx_tpl_ssl_trusted_certificate }};
 {%         endif                                                %}
-{%         if (item.ssl_verify_client | d(nginx_default_ssl_verify_client)) | bool      %}
-{%             if item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) %}
-        ssl_verify_client         on;
-        ssl_client_certificate    {{ item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) }};
-{%             endif                                                                    %}
-{%             if item.ssl_crl | d(nginx_default_ssl_crl)           %}
-        ssl_crl                   {{ item.ssl_crl | d(nginx_default_ssl_crl) }};
-{%             endif                                                %}
-{%         endif                                                    %}
         resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
 {%     endif                                                        %}
+{%     if (item.ssl_verify_client | d(nginx_default_ssl_verify_client)) | bool      %}
+{%         if item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) %}
+        ssl_verify_client         on;
+        ssl_client_certificate    {{ item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) }};
+{%         endif                                                                    %}
+{%         if item.ssl_crl | d(nginx_default_ssl_crl)           %}
+        ssl_crl                   {{ item.ssl_crl | d(nginx_default_ssl_crl) }};
+{%         endif                                                %}
+{%     endif                                                    %}
 {%     if item.hsts_enabled|d(True) | bool                      %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}";
 {% endif                                                    %}
@@ -564,10 +564,10 @@ server {
 {% if item.csp_report_enabled|d(False) | bool %}
         add_header                Content-Security-Policy-Report-Only "{{ item.csp_report|d(item.csp|d("default-src https: ;")) + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";
 {% endif %}
-{%     if item.content_type_options|d(True)                     %}
+{%     if item.content_type_options|d(True) != omit             %}
         add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
-{%     if item.frame_options|d(True)                            %}
+{%     if item.frame_options|d() != omit                        %}
         add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
 {%     if item.xss_protection | d(nginx__http_xss_protection) != omit %}
