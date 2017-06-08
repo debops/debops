@@ -1,0 +1,45 @@
+---
+
+- name: Install libvirt if not already installed
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - [ '{{ libvirtd_qemu__base_packages_map[ansible_distribution_release]
+            if (ansible_distribution_release in libvirtd_qemu__base_packages_map.keys())
+            else libvirtd_qemu__base_packages }}' ]
+    - [ '{{ [] if (ansible_virtualization_type in [ "kvm" ] and
+                   ansible_virtualization_role in [ "guest" ])
+                   else libvirtd_qemu__kvm_packages }}' ]
+    - '{{ libvirtd_qemu__packages }}'
+  when: (ansible_local is undefined or
+         (ansible_local|d() and ansible_local.libvirtd is undefined or
+          (ansible_local|d() and ansible_local.libvirtd|d() and
+           (ansible_local.libvirtd.installed is undefined or
+            not ansible_local.libvirtd.installed|bool))))
+
+- name: Make sure required directories exist
+  file:
+    path: '/etc/libvirt'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Divert managed configuration files
+  command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'
+  args:
+    creates: '{{ item }}.dpkg-divert'
+  with_items:
+    - '/etc/libvirt/qemu.conf'
+
+- name: Generate QEMU private configuration files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  with_items:
+    - 'etc/libvirt/qemu.conf'
+  notify: [ 'Restart libvirtd', 'Restart libvirt-bin' ]

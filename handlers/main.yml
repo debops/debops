@@ -1,0 +1,13 @@
+---
+
+- name: Restart libvirtd
+  service:
+    name: 'libvirtd'
+    state: 'restarted'
+  when: ansible_distribution_release not in [ 'precise', 'trusty', 'xenial' ]
+
+- name: Restart libvirt-bin
+  service:
+    name: 'libvirt-bin'
+    state: 'restarted'
+  when: ansible_distribution_release in [ 'precise', 'trusty', 'xenial' ]
