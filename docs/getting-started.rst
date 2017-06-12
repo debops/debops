@@ -7,12 +7,22 @@ Getting started
    :local:
 
 
-The ``debops.libvirtd`` role will install :program:`libvirtd` along with virtualization
-components required on the server.
+The management of the libvirt daemon is split into a few Ansible roles to allow
+easier control over a lot of configuration options. The roles are meant to be
+used together, with only the main role taking care of the environment itself.
+See the example playbook provided with the main role to see how they are used
+together.
 
-Configuration at the moment is very minimal - specified account will be granted
-access to ``libvirt`` system group which has access to :program:`libvirtd` daemon. If
-more configuration is required, it will be added at a later time.
+The ``debops.libvirtd`` role will install :program:`libvirtd` along with virtualization
+components required on the server. It manages the configuration of the main
+:command:`libvirtd` daemon process. The role detects if the OpenNebula
+environment is enabled using the specific Ansible inventory groups and enables
+support for OpenNebula in libvirt.
+
+The `debops.libvirtd_qemu` role manages the configuration of the QEMU/KVM
+virtualization environment. The role supports custom configuration required by
+OpenNebula nodes, which is enabled automatically when OpenNebula environment is
+detected by the main role.
 
 
 Example inventory

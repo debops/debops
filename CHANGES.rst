@@ -24,6 +24,9 @@ Changed
 - Decrease minimum Ansible version requirement to v2.2.3. v2.2.x was also
   supported by previous 0.3.x role releases. [ypid_]
 
+- Add the reference to the ``debops.libvirtd_qemu`` role in the example
+  playbook and update the documentation. [drybjed_]
+
 
 `debops.libvirtd v0.3.1`_ - 2017-05-30
 --------------------------------------
