@@ -1,0 +1,19 @@
+---
+
+- name: Install and manage libvirtd QEMU configuration
+  hosts: [ 'debops_service_libvirtd_qemu' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ libvirtd_qemu__ferm__dependent_rules }}'
+
+    - role: debops.libvirtd_qemu
+      tags: [ 'role::libvirtd_qemu' ]
