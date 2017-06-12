@@ -1,7 +1,7 @@
 ---
 
 - name: Install and manage libvirtd
-  hosts: [ 'debops_service_libvirtd', 'debops_libvirtd' ]
+  hosts: [ 'debops_service_libvirtd' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -11,17 +11,20 @@
   roles:
 
     - role: debops.apt_preferences
-      tags: [ 'depend::apt_preferences', 'type::dependency' ]
+      tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ libvirtd__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
-      tags: [ 'depend::ferm', 'type::dependency' ]
+      tags: [ 'role::ferm' ]
       ferm__forward: '{{ libvirtd__ferm__forward|d() | bool }}'
       ferm__forward_accept: '{{ libvirtd__ferm__forward|d() | bool }}'
       ferm__dependent_rules:
         - '{{ libvirtd__ferm__dependent_rules }}'
+        - '{{ libvirtd_qemu__ferm__dependent_rules }}'
 
     - role: debops.libvirtd
       tags: [ 'role::libvirtd' ]
 
+    - role: debops.libvirtd_qemu
+      tags: [ 'role::libvirtd_qemu', 'role::libvirtd' ]

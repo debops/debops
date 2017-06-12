@@ -101,6 +101,9 @@ Added
 - Add the ``debops.kibana`` Ansible role and its corresponding playbook.
   [drybjed_]
 
+- Add the ``debops.libvirtd_qemu`` role and playbook, update the
+  ``debops.libvirtd`` playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
