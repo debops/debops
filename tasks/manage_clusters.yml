@@ -143,8 +143,9 @@
     creates: '{{ item.external_pid_file | d("/var/run/postgresql/" + (item.version | d(postgresql_server__version)) + "-" + item.name + ".pid") }}'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: ((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init != 'systemd') and
+  when: (((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init != 'systemd') or
+          ((ansible_service_mgr|d() and ansible_service_mgr != 'systemd'))) and
          ((item.name|d() and item.name) and
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
@@ -154,8 +155,9 @@
     state: 'started'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: ((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init == 'systemd') and
+  when: (((ansible_local|d() and ansible_local.init|d() and
+          ansible_local.init == 'systemd') or
+          ((ansible_service_mgr|d() and ansible_service_mgr == 'systemd'))) and
          ((item.name|d() and item.name) and
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
