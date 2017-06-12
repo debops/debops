@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.libvirtd master`_ - unreleased
 --------------------------------------
 
-.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.3.1...master
+.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.3.2...master
+
+
+`debops.libvirtd v0.3.2`_ - 2017-06-12
+--------------------------------------
+
+.. _debops.libvirtd v0.3.2: https://github.com/debops/ansible-libvirtd/compare/v0.3.1...v0.3.2
 
 Changed
 ~~~~~~~
