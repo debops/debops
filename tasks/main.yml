@@ -42,6 +42,15 @@
 - include: install_postgresql.yml
   tags: [ 'role::postgresql_server:packages' ]
 
+  
+- name: data_dir setting
+  lineinfile:
+    path: /etc/postgresql-common/createcluster.conf
+    regexp: "data_directory"
+    line: "data_directory= '{{postgresql_server__data_directory}}/%v/%c'"
+  when: (postgresql_server__data_directory|d())
+
+
 - name: Count number of currently configured clusters
   set_fact:
     postgresql_server__fact_cluster_count: '{{ (postgresql_server__clusters|length|int) * 1 }}'

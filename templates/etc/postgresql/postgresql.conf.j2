@@ -8,7 +8,7 @@
 # FILE LOCATIONS
 #------------------------------------------------------------------------------
 
-data_directory = '{{ item.data_directory | d("/var/lib/postgresql/" + item.version | d(postgresql_server__version) + "/" + item.name) }}'
+data_directory = '{{ item.data_directory | d(postgresql_server__data_directory + "/" + item.version | d(postgresql_server__version) + "/" + item.name) }}'
 hba_file = '{{ item.hba_file | d("/etc/postgresql/" + item.version | d(postgresql_server__version) + "/" + item.name + "/pg_hba.conf") }}'
 ident_file = '{{ item.ident_file | d("/etc/postgresql/" + item.version | d(postgresql_server__version) + "/" + item.name + "/pg_ident.conf") }}'
 external_pid_file = '{{ item.external_pid_file | d("/var/run/postgresql/" + item.version | d(postgresql_server__version) + "-" + item.name + ".pid") }}'
