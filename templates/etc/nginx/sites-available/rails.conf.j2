@@ -16,7 +16,12 @@
 {%   endif %}
 {% elif nginx_flavor == 'passenger' %}
         passenger_enabled on;
-
+{%   if item.passenger_ruby is defined and item.passenger_ruby %}
+        passenger_ruby {{ item.passenger_ruby }};
+{%   endif %}
+{%   if item.passenger_app_env is defined and item.passenger_app_env %}
+        passenger_app_env {{ item.passenger_app_env }};
+{%   endif %}
 {%   if item.passenger_user is defined and item.passenger_user %}
         passenger_user {{ item.passenger_user }};
 {%     if item.passenger_group is defined and item.passenger_group %}
