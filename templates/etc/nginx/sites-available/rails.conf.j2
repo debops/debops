@@ -1,6 +1,6 @@
 {% extends "default.conf.j2" %}
 {% block nginx_tpl_block_location %}
-{% if nginx_flavor != 'passenger' %}
+
 {%   if (item.location is defined and item.location) or (item.location_list is defined and item.location_list) %}
 {%     if item.location_list is defined and item.location_list %}
 {{       print_location_list(item.location_list) }}
@@ -12,8 +12,8 @@
                 try_files {{ item.try_files|default(nginx_default_try_files) | join(' ') }} =404;
 {%     endblock %}
         }
-
 {%   endif %}
+
 {% elif nginx_flavor == 'passenger' %}
         passenger_enabled on;
 {%   if item.passenger_ruby is defined and item.passenger_ruby %}
@@ -29,7 +29,6 @@
 {%     else %}
         passenger_group {{ item.passenger_user }};
 {%     endif %}
-
 {%   endif %}
         passenger_min_instances {{ item.passenger_min_instances | default(nginx_passenger_default_min_instances) }};
 {%   if item.passenger_options is defined and item.passenger_options %}
