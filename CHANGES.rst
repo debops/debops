@@ -31,6 +31,8 @@ Fixed
 
 - Make sure that role works in Ansible ``--check`` mode. [drybjed_]
 
+- Fix Ansible 2.2 deprecation warnings. [brzhk]
+
 
 debops.sysctl v0.1.0 - 2016-09-04
 ---------------------------------
