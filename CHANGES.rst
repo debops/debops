@@ -28,7 +28,7 @@ Added
 Fixed
 ~~~~~
 
-- Fix Ansible 2.2 deprecation warnings. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
 
 
 `debops.redis v0.2.1`_ - 2016-11-18
