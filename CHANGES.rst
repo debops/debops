@@ -6,7 +6,7 @@ Changelog
 Fixed
 ~~~~~
 
-- Fix Ansible 2.2 deprecation warnings. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
 
 v0.1.2
 ------
