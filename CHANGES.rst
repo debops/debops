@@ -96,4 +96,4 @@ Fixed
 - Don't define HTTPS redirects for vhosts and completely disable ``mod_ssl``
   if :envvar:`apache__https_enabled` is set to ``False``. [ganto_]
 
-- Fix Ansible 2.2 deprecation warnings. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
