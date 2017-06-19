@@ -29,6 +29,10 @@ Changed
   Ansible facts. This should allow for the role to be used without the
   debops.core_ role. [hvisage, drybjed_]
 
+- The tasks that decide to remove the initial PostgreSQL cluster are more
+  specific to make sure that the cluster is not removed accidentally. The
+  cluster should not be removed with role Ansible facts are present. [drybjed_]
+
 
 .. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.3...master
 
