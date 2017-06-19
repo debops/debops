@@ -25,6 +25,11 @@ Added
   a background save if it uses more than half of the available memory with
   overcommit disabled. [scibi_]
 
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings. [brzhk]
+
 
 `debops.redis v0.2.1`_ - 2016-11-18
 -----------------------------------
