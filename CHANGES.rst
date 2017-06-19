@@ -29,6 +29,8 @@ Changed
 
 - Update the role to DebOps Standards v0.2.1. [ypid_]
 
+- Fix Ansible 2.2 deprecation warnings. [brzhk]
+
 
 `debops.dhparam v0.1.2`_ - 2016-02-23
 -------------------------------------
