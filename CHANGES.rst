@@ -33,7 +33,8 @@ Fixed
 
 - Fix deprecation warnings in Ansible 2.1.0. [ypid_]
 
-- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
 
 - Fix password protection feature which was broken with Ansible 2.1 and above
   because of changes how ``\n`` is handled by Jinja. [Polichronucci, ypid_]
