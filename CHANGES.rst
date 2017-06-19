@@ -18,6 +18,11 @@ The current role maintainer_ is ypid_.
 
 .. _debops.cryptsetup master: https://github.com/debops/ansible-cryptsetup/compare/v0.5.1...master
 
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings. [brzhk]
+
 
 `debops.cryptsetup v0.5.1`_ - 2017-05-08
 ----------------------------------------
