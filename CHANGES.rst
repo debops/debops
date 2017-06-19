@@ -11,7 +11,8 @@ Changelog
 - Updated documentation (hyphens supported in volume group name and resize
   filesystem). [tallandtree]
 
-- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
 
 v0.1.5
 ------
