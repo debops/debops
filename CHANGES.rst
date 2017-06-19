@@ -1,6 +1,13 @@
 Changelog
 =========
 
+*Unreleased*
+
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings. [brzhk]
+
 v0.1.2
 ------
 
@@ -64,4 +71,3 @@ v0.1.0
 
 - Make sure that variables which define SNMP passwords are set on all hosts
   during Ansible playbook run, since the old issue has been resolved. [drybjed]
-
