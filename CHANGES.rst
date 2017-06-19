@@ -21,6 +21,11 @@ Changed
 
 - Mostly automated update to the lastest DebOps Standards Version. [ypid_]
 
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings. [brzhk]
+
 
 `debops.logrotate v0.1.2`_ - 2016-07-05
 ---------------------------------------
