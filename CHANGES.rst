@@ -19,7 +19,8 @@ The current role maintainer_ is drybjed_.
 Fixed
 ~~~~~
 
-- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
 
 
 `debops.php v0.2.6`_ - 2017-02-21
