@@ -38,7 +38,8 @@ Removed
 Fixed
 ~~~~~
 
-- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
 
 
 `debops.console v0.1.3`_ - 2016-11-07
