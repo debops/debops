@@ -21,7 +21,8 @@ The current role maintainer_ is drybjed_.
 Fixed
 ~~~~~
 
-- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
 
 
 debops.root_account v0.1.0 - 2017-02-21
