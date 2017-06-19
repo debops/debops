@@ -39,6 +39,7 @@ Changed
 
 - Use debops__tpl_macros.js_ to cleanup redundant code. [ypid_]
 
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
 
 `debops.apt v0.4.4`_ - 2017-03-24
 ---------------------------------
