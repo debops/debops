@@ -18,6 +18,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.root_account master: https://github.com/debops/ansible-root_account/compare/v0.1.0...master
 
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings. [brzhk]
+
 
 debops.root_account v0.1.0 - 2017-02-21
 ---------------------------------------
