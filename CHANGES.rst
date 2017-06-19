@@ -99,3 +99,6 @@ Fixed
 - Fix usage of ``item.http_frame_options``, ``item.http_xss_protection``,
   ``item.http_referrer_policy``, ``item.http_content_type_options`` and their
   corresponding default options. [ypid_]
+
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
