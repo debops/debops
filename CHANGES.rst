@@ -24,7 +24,7 @@ Changed
 Fixed
 ~~~~~
 
-- Fix Ansible 2.2 deprecation warnings. [brzhk]
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher. Support for older Ansible versions is dropped. [brzhk]
 
 
 `debops.logrotate v0.1.2`_ - 2016-07-05
