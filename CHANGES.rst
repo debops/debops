@@ -27,6 +27,8 @@ Changed
 
 - LDAP lookup script now works with binary and text attributes. [pedroluislopez_]
 
+- Fix Ansible 2.2 deprecation warnings. [brzhk]
+
 
 `debops.sshd v0.2.5`_ - 2016-10-10
 ----------------------------------
