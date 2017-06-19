@@ -32,6 +32,10 @@ To let the docker daemon trust a private registry with self-signed certificates,
 add the root CA used to sign the registry's certificate through the debops.pki_
 role.
 
+This role does not support switching from Docker CE to Docker EE on an already installed
+machine. It does support switching from distribution repository to upstream.
+However, it is recommended to start with a clean machine if possible.
+
 ``debops.docker`` relies on configuration managed by debops.core_,
 debops.ferm_, and debops.pki_ Ansible roles.
 
