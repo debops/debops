@@ -143,8 +143,7 @@
     creates: '{{ item.external_pid_file | d("/var/run/postgresql/" + (item.version | d(postgresql_server__version)) + "-" + item.name + ".pid") }}'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: (((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init != 'systemd') and
+  when: (ansible_service_mgr != 'systemd' and
          ((item.name|d() and item.name) and
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
@@ -154,9 +153,7 @@
     state: 'started'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: (((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init == 'systemd') or
-          ((ansible_service_mgr|d() and ansible_service_mgr == 'systemd'))) and
+  when: (ansible_service_mgr == 'systemd' and
          ((item.name|d() and item.name) and
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
@@ -167,8 +164,7 @@
     - '{{ postgresql_server__register_config_hba.results }}'
     - '{{ postgresql_server__register_config_ident.results }}'
     - '{{ postgresql_server__register_trusted.results }}'
-  when: ((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init != 'systemd') and
+  when: (ansible_service_mgr != 'systemd' and
          ((item.changed|d() and item.changed) and
           (item.item.start_conf is undefined or item.item.start_conf == 'auto')))
   tags: [ 'role::postgresql_server:config' ]
@@ -182,9 +178,7 @@
     - '{{ postgresql_server__register_config_hba.results }}'
     - '{{ postgresql_server__register_config_ident.results }}'
     - '{{ postgresql_server__register_trusted.results }}'
-  when: ((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init == 'systemd') and
+  when: (ansible_service_mgr == 'systemd' and
          ((item.changed|d() and item.changed) and
           (item.item.start_conf is undefined or item.item.start_conf == 'auto')))
   tags: [ 'role::postgresql_server:config' ]
-

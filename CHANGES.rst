@@ -19,14 +19,16 @@ The current role maintainer_ is drybjed_.
 Changed
 ~~~~~~~
 
-- Added postgresql_server__data_directory
- (defaults to the default '/var/lib/postgresql' ti Debian) to have a tunable
- when you need/want the default clusters to have a different data_dir base
- directory. [hvisage]
+- Added the :envvar:`postgresql_server__data_directory` variable (defaults to
+  the default ``/var/lib/postgresql`` in Debian) to have a tunable when you
+  need/want the default clusters to have a different data_dir base directory.
+  This is a server-wide variable and shouldn't be changed once set. [hvisage,
+  drybjed_]
 
- Fixed
- ~~~~~
- - changes for systemd and the ansible_local variable changes in Ansible 2.3.1+
+- Switched the init service check from custom DebOps core facts to internal
+  Ansible facts. This should allow for the role to be used without the
+  debops.core_ role. [hvisage, drybjed_]
+
 
 .. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.3...master
 
