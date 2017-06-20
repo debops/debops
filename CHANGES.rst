@@ -21,7 +21,8 @@ The current role maintainer_ is ypid_.
 Fixed
 ~~~~~
 
-- Fix Ansible 2.2 deprecation warnings. [brzhk]
+- The role now requires at least Ansible v2.2 due to use of the ``check_mode:
+  False`` directive. [brzhk]
 
 
 `debops.cryptsetup v0.5.1`_ - 2017-05-08
