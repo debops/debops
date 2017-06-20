@@ -32,6 +32,10 @@ Security
   The minimum Ansible version without known vulnerabilities is Ansible 2.2.3.
   Refer to `Ansible Security`_ for details. [ypid_]
 
+- All Ansible tags need to be specified for the "Check for Ansible version
+  without known vulnerabilities" task to ensure that it is always run even when
+  only a subset of the role is run. [ypid_]
+
 
 `debops.cryptsetup v0.5.1`_ - 2017-05-08
 ----------------------------------------

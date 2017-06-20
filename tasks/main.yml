@@ -10,7 +10,9 @@
     msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.2.3 or a newer! To skip, add "--skip-tags play::security-assertions" parameter. Refer to the changelog of debops.cryptsetup for details. Exiting.'
   run_once: True
   delegate_to: 'localhost'
-  tags: [ 'play::security-assertions' ]
+  tags:
+    - 'play::security-assertions'
+    - 'role::cryptsetup:backup'
 
 - name: Assert that combined device configuration is valid
   assert:
