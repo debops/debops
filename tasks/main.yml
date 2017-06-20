@@ -54,7 +54,7 @@
   shell: dpkg-divert --list '/etc/apt/*.dpkg-divert' | awk '{print $NF}'
   register: apt__register_diversions
   when: apt__enabled|bool
-  always_run: True
+  check_mode: False
   changed_when: False
 
 - name: Divert original /etc/apt/sources.list
