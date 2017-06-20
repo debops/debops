@@ -44,6 +44,9 @@ Changed
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
 
+- Update the default variables for Debian Stretch as the new stable release so
+  that backports get enabled for Stretch by default. [ypid_]
+
 Fixed
 ~~~~~
 
