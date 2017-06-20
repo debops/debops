@@ -120,29 +120,17 @@
 {%     endif %}
 {%   endif %}
 {%   if config.interface_present|d() %}
-{%     if config.interface_present is string %}
-{%       if hostvars[inventory_hostname]["ansible_" + config.interface_present]|d() %}
-{%         set _ = ferm__tpl_config.update({'interface_present': [ config.interface_present ] }) %}
+{%     for interface in ([ config.interface_present ] if config.interface_present is string else config.interface_present) %}
+{%       if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
+{%         set _ = ferm__tpl_config.update({'interface_present': [ interface ] }) %}
 {%       endif %}
-{%     else %}
-{%       for interface in config.interface_present %}
-{%         if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
-{%           set _ = ferm__tpl_config.update({'interface_present': [ interface ] }) %}
-{%         endif %}
-{%       endfor %}
-{%     endif %}
+{%     endfor %}
 {%   elif config.interfaces_present|d() %}
-{%     if config.interfaces_present is string %}
-{%       if hostvars[inventory_hostname]["ansible_" + config.interfaces_present]|d() %}
-{%         set _ = ferm__tpl_config.update({'interface_present': [ config.interface_present ] }) %}
+{%     for interface in ([ config.interfaces_present ] if config.interfaces_present is string else config.interfaces_present) %}
+{%       if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
+{%         set _ = ferm__tpl_config.update({'interface_present': [ interface ] }) %}
 {%       endif %}
-{%     else %}
-{%       for interface in config.interfaces_present %}
-{%         if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
-{%           set _ = ferm__tpl_config.update({'interface_present': [ interface ] }) %}
-{%         endif %}
-{%       endfor %}
-{%     endif %}
+{%     endfor %}
 {%   endif %}
 {%   if config.outerface|d() %}
 {%     set _ = ferm__tpl_config.update({'outerface': ([ config.outerface ] if config.outerface is string else config.outerface) }) %}
@@ -150,29 +138,17 @@
 {%     set _ = ferm__tpl_config.update({'outerface': ([ config.outerfaces ] if config.outerfaces is string else config.outerfaces) }) %}
 {%   endif %}
 {%   if config.outerface_present|d() %}
-{%     if config.outerface_present is string %}
-{%       if hostvars[inventory_hostname]["ansible_" + config.outerface_present]|d() %}
-{%         set _ = ferm__tpl_config.update({'outerface_present': [ config.outerface_present ] }) %}
+{%     for outerface in ([ config.outerface_present ] if config.outerface_present is string else config.outerface_present) %}
+{%       if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
+{%         set _ = ferm__tpl_config.update({'outerface_present': [ outerface ] }) %}
 {%       endif %}
-{%     else %}
-{%       for outerface in config.outerface_present %}
-{%         if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
-{%           set _ = ferm__tpl_config.update({'outerface_present': [ outerface ] }) %}
-{%         endif %}
-{%       endfor %}
-{%     endif %}
+{%     endfor %}
 {%   elif config.outerfaces_present|d() %}
-{%     if config.outerfaces_present is string %}
-{%       if hostvars[inventory_hostname]["ansible_" + config.outerfaces_present]|d() %}
-{%         set _ = ferm__tpl_config.update({'outerface_present': [ config.outerfaces_present ] }) %}
+{%     for outerface in ([ config.outerfaces_present ] if config.outerfaces_present is string else config.outerfaces_present) %}
+{%       if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
+{%         set _ = ferm__tpl_config.update({'outerface_present': [ outerface ] }) %}
 {%       endif %}
-{%     else %}
-{%       for outerface in config.outerfaces_present %}
-{%         if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
-{%           set _ = ferm__tpl_config.update({'outerface_present': [ outerface ] }) %}
-{%         endif %}
-{%       endfor %}
-{%     endif %}
+{%     endfor %}
 {%   endif %}
 {%   if config.protocol|d() %}
 {%     set _ = ferm__tpl_config.update({'protocol': ([ config.protocol ] if config.protocol is string else config.protocol) }) %}
