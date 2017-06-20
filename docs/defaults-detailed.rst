@@ -62,7 +62,7 @@ Common role options
 
 ``by_role``
   Optional, string. Name of a Ansible role in the format ``ROLE_OWNER.ROLE_NAME`` which is
-  responsable for the server configuration.
+  responsible for the server configuration.
 
 ``type``
   Optional. Specify name of the template to use to generate nginx server
@@ -193,7 +193,7 @@ HTTPS and TLS
 
 ``ssl_crt``
   Optional, string. Absolute path to a custom X.509 certificate to use. If not
-  supplied, a certificate will managed by debops.pki_ will be used.
+  supplied, a certificate managed by debops.pki_ will be used.
   FIXME: Rename to tls_cert
 
 ``ssl_key``
@@ -324,7 +324,7 @@ Locations
 
 ``location_allow``
   Optional. Dict which adds "allow" entries to each location section defined
-  above from a list. Each location needs to have corresponding entry in
+  above from a list. Each location needs to have a corresponding entry in
   ``location`` dict. If ``item.location_deny`` is not defined, 'deny all;' is
   added at the end. Examples:
 
