@@ -58,6 +58,9 @@ Changed
 
 - Improve Jinja templates by removing redundancy. [ypid_]
 
+- Role now requires at least Ansible v2.2 due to use of the ``check_mode:
+  False`` directive. [drybjed_]
+
 
 `debops.ifupdown v0.3.2`_ - 2016-12-16
 --------------------------------------
