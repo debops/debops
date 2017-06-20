@@ -249,10 +249,10 @@ Changed
 - Migrated to the DebOps project as ``debops.cryptsetup``. [drybjed_]
 
 
-`debops.cryptsetup v0.2.0`_ - 2015-10-30
-----------------------------------------
+`debops-contrib.cryptsetup v0.2.0`_ - 2015-10-30
+------------------------------------------------
 
-.. _debops.cryptsetup v0.2.0: https://github.com/debops/ansible-cryptsetup/compare/v0.1.0...v0.2.0
+.. _debops-contrib.cryptsetup v0.2.0: https://github.com/debops/ansible-cryptsetup/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
@@ -266,12 +266,12 @@ Changed
   role. [ypid_]
 
 - Moved to `DebOps Contrib`_ (the role is still available under
-  ``ypid.crypttab`` until it has been fully renamed to something like
+  ``ypid.crypttab`` until it has been fully renamed to
   ``debops.cryptsetup``). [ypid_]
 
 
-debops.cryptsetup v0.1.0 - 2015-09-07
--------------------------------------
+ypid.crypttab v0.1.0 - 2015-09-07
+---------------------------------
 
 Added
 ~~~~~
