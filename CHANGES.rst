@@ -31,6 +31,9 @@ Changed
 
 - Fix typo in variable name ``mariadb_server_backup``. [ganto]
 
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
+
 
 `debops.mariadb_server v0.2.4`_ - 2016-08-01
 --------------------------------------------
