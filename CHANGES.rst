@@ -91,7 +91,7 @@ Removed
 - Remove "short subdomain" ``CNAME`` entries from main ``dnsmasq``
   configuration file. [drybjed_]
 
-- Remove the ``debops_dnsmasq`` Ansible inventory group. Make sure you hosts
+- Remove the ``debops_dnsmasq`` Ansible inventory group. Make sure your hosts
   are in ``debops_service_dnsmasq``. [ypid_]
 
 - Remove all of the Ansible role dependencies.
