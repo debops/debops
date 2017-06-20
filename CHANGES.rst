@@ -32,6 +32,10 @@ Security
   The minimum Ansible version without known vulnerabilities is Ansible 2.2.3.
   Refer to `Ansible Security`_ for details. [ypid_]
 
+- All Ansible tags need to be specified for the "Check for Ansible version
+  without known vulnerabilities" task to ensure that it is always run even when
+  only a subset of the role is run. [ypid_]
+
 
 `debops.cryptsetup v0.5.1`_ - 2017-05-08
 ----------------------------------------
@@ -249,10 +253,10 @@ Changed
 - Migrated to the DebOps project as ``debops.cryptsetup``. [drybjed_]
 
 
-`debops.cryptsetup v0.2.0`_ - 2015-10-30
-----------------------------------------
+`debops-contrib.cryptsetup v0.2.0`_ - 2015-10-30
+------------------------------------------------
 
-.. _debops.cryptsetup v0.2.0: https://github.com/debops/ansible-cryptsetup/compare/v0.1.0...v0.2.0
+.. _debops-contrib.cryptsetup v0.2.0: https://github.com/debops/ansible-cryptsetup/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
@@ -266,12 +270,12 @@ Changed
   role. [ypid_]
 
 - Moved to `DebOps Contrib`_ (the role is still available under
-  ``ypid.crypttab`` until it has been fully renamed to something like
+  ``ypid.crypttab`` until it has been fully renamed to
   ``debops.cryptsetup``). [ypid_]
 
 
-debops.cryptsetup v0.1.0 - 2015-09-07
--------------------------------------
+ypid.crypttab v0.1.0 - 2015-09-07
+---------------------------------
 
 Added
 ~~~~~
