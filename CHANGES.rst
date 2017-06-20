@@ -36,11 +36,9 @@ Changed
   rejected by default. [gaudenz]
 
 - The data format of the firewall rules has been redesigned. Rules can now be
-  defined as nested YAML dictionaries, existing default or dependent rules can
+  defined as nested YAML lists, existing default or dependent rules can
   be easily modified through the Ansible inventory, multiple firewall rules can
-  be included in one configuration file. The role is compatible with the old,
-  list-based data format, however dictionary-based format should be preferred.
-  [drybjed_]
+  be included in one configuration file. [drybjed_]
 
 - The firewall rules are now read from the :file:`/etc/ferm/rules.d/` directory
   to help with transition to the new data format and avoid tab-completion
@@ -66,9 +64,6 @@ Changed
 
 - The :file:`/etc/ferm/ferm.conf` configuration file will be now properly
   diverted to preserve the original. [drybjed_]
-
-- The rule parser is redesigned again and support for YAML dictionaries is
-  dropped, only lists can be used. [drybjed_]
 
 Removed
 ~~~~~~~
