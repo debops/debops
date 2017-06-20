@@ -22,6 +22,9 @@ Fixed
 - Fix ``item.starttls`` for :envvar:`nullmailer__remotes` which was ignored
   previously when set to ``False``. [ypid_]
 
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
+
 
 debops.nullmailer v0.1.0 - 2016-07-26
 -------------------------------------
