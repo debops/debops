@@ -35,6 +35,12 @@ Removed
 - Remove support for ``root`` system account management. This functionality has
   been moved to a separate debops.root_account_ Ansible role. [drybjed_]
 
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
+
 
 `debops.console v0.1.3`_ - 2016-11-07
 -------------------------------------
