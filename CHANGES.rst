@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.14...master
 
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
+
 Added
 ~~~~~
 
