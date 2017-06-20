@@ -1,9 +1,10 @@
 {% if ferm__dependent_rules %}
 {%   set ferm__tpl_dependent_rules = lookup('flattened', ferm__dependent_rules) %}
 {% else %}
-{%   set ferm__tpl_dependent_rules = {} %}
+{%   set ferm__tpl_dependent_rules = [] %}
 {% endif %}
 {% set ferm__tpl_fixed_rules = {} %}
+{% set ferm__tpl_flattened_rules = [] %}
 {% if ferm__tpl_dependent_rules %}
 {%   if ferm__tpl_dependent_rules is mapping %}
 {%     set fixed_dict = ferm__tpl_dependent_rules %}
@@ -29,4 +30,7 @@
 {%     endfor %}
 {%   endif %}
 {% endif %}
-{{ ferm__tpl_fixed_rules | to_json }}
+{% for key, value in ferm__tpl_fixed_rules.iteritems() %}
+{%   set _ = ferm__tpl_flattened_rules.append(value) %}
+{% endfor %}
+{{ ferm__tpl_flattened_rules | to_json }}

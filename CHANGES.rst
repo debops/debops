@@ -67,6 +67,9 @@ Changed
 - The :file:`/etc/ferm/ferm.conf` configuration file will be now properly
   diverted to preserve the original. [drybjed_]
 
+- The rule parser is redesigned again and support for YAML dictionaries is
+  dropped, only lists can be used. [drybjed_]
+
 Removed
 ~~~~~~~
 
