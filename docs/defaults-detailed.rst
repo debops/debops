@@ -271,6 +271,10 @@ parameters:
   either a string of 1 type, or a list of types. Known source types: ``deb``,
   ``deb-src``. If not set, role will use the :envvar:`apt__source_types` value.
 
+``option`` or ``options``
+  Optional. String or list of strings of APT options. Settings are expected in
+  the form ``setting=value``.  See :manpage:`sources.list(5)` for details.
+
 ``suite`` or ``suites``
   Optional. Name of the "suite" to use for this source. The suite is usually
   a release name like ``jessie``, ``xenal``, or a "release class" like

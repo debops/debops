@@ -354,12 +354,25 @@ apt__default_sources:
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Raspbian'
 
+  - uri:          'http://repos.rcn-ee.com/debian/'
+    comment:      'rcn-ee.net repository as used on BeagleBoards for additional hardware support'
+    type:         '{{ apt__source_types }}'
+    option:       '{{ "arch=" + apt__architecture }}'
+    suite:        '{{ apt__distribution_release }}'
+    components:   [ "main" ]
+    distribution: 'Debian'
+    state:        '{{ "present"
+                      if (apt__architecture in ["armhf"] and
+                          ("cape_universal" in ansible_cmdline) or
+                          ("bone_capemgr" in ansible_cmdline))
+                      else "absent" }}'
+
   - uri:          'http://archive.ubuntu.com/ubuntu'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Ubuntu'
-    state:       '{{ "present"
-                     if (apt__architecture in ["amd64", "i386"])
-                     else "absent" }}'
+    state:        '{{ "present"
+                      if (apt__architecture in ["amd64", "i386"])
+                      else "absent" }}'
 
   - uri: 'http://ports.ubuntu.com/ubuntu-ports'
     comment: '{{ "Official " + apt__distribution + " Port repositories" }}'

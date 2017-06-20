@@ -29,6 +29,8 @@ Added
   for each distribution. ``default_mirrors`` is equivalent to
   ``default_sources_map[apt__distribution]``  [ypid_]
 
+- Add support for the ARM based BeagleBoard family. Tested with an BeagleBone Black. [ypid_]
+
 Changed
 ~~~~~~~
 
@@ -41,6 +43,13 @@ Changed
 
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
+
+Fixed
+~~~~~
+
+- Fix handling of ``option`` and ``options`` from ``apt__sources`` and add
+  missing documentation. [ypid_]
+
 
 `debops.apt v0.4.4`_ - 2017-03-24
 ---------------------------------
