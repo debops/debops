@@ -33,7 +33,7 @@
 {%           endfor %}
 {%         endif %}
 {%         if not ifupdown__tpl_ipv4_addresses %}
-{%           if hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-", "_"))].ipv4|d() %}
+{%           if hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-","_"))]|d() and hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-", "_"))].ipv4|d() %}
 {%             set ifupdown__tpl_subnet = (hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-", "_"))]["ipv4"].address + "/" + hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-", "_"))]["ipv4"].netmask) %}
 {%             set _ = ifupdown__tpl_ipv4_addresses.append(ifupdown__tpl_subnet) %}
 {%           endif %}
