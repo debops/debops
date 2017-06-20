@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.6...master
 
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
+
 
 `debops.php v0.2.6`_ - 2017-02-21
 ---------------------------------

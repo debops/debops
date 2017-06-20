@@ -39,7 +39,7 @@
     LC_ALL: 'C'
   shell: apt-cache show {{ php__version_preference | join(' ') }} | grep -E '^Package:\s+php' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
   register: php__register_version
-  always_run: True
+  check_mode: False
   changed_when: False
   tags: [ 'role::php:pools', 'role::php:config' ]
 
@@ -48,7 +48,7 @@
     LC_ALL: 'C'
   shell: apt-cache policy {{ php__version_preference | join(' ') }} | grep -E '^\s+Candidate:\s+' | grep --invert-match 'none' | head -n 1 | sed --regexp-extended 's/\s*[[:alnum:]]+:\s* ([^+-]+).*/\1/g;'
   register: php__register_long_version
-  always_run: True
+  check_mode: False
   changed_when: False
   tags: [ 'role::php:pools', 'role::php:config' ]
 
