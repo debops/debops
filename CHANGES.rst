@@ -1,6 +1,14 @@
 Changelog
 =========
 
+*Unreleased*
+
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
+
 v0.2.0
 ------
 
@@ -42,4 +50,3 @@ v0.1.0
 *Released: 2015-07-27*
 
 - Initial release. [drybjed]
-
