@@ -47,7 +47,7 @@
   register: docker__register_other_version_removed
   with_flattened:
     - '{{ "docker.io" if docker__upstream|d()
-                else docker__packagename }}'
+                else docker__upstream_packagename }}'
 
 - name: Remove startup file(s) if present
   file:
@@ -69,7 +69,7 @@
     install_recommends: False
   with_flattened:
     - '{{ docker__mandatory_packages }}'
-    - '{{ docker__packagename if docker__upstream|d() else "docker.io" }}'
+    - '{{ docker__upstream_packagename if docker__upstream|d() else "docker.io" }}'
     - '{{ docker__base_packages }}'
     - '{{ docker__packages }}'
 
