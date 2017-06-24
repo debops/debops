@@ -38,7 +38,12 @@ docker__distribution_release: '{{ ansible_local.core.distribution_release
 # upstream version of Docker.
 # Note that switching from upstream to default on one host, may not always
 # work. You may need to manually remove the upstream version and configuration.
-docker__upstream: False
+docker__upstream: '{{ True
+                      if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.distribution_release|d() and
+                          ansible_local.core.distribution_release == "stretch")
+                      else False }}'
+
 
                                                                    # ]]]
 # .. envvar:: docker__upstream_key [[[
