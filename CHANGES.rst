@@ -16,6 +16,20 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.apt_preferences master: https://github.com/debops/ansible-apt_preferences/compare/v0.2.4...master
 
+Fixed
+~~~~~
+
+- :envvar:`apt_preferences__debian_stable_default_preset_list` did not handle
+  the case where the ``ansible_distribution_release`` is not the current Debian
+  stable release. Consider you are running Debian stable and have included
+  Debian testing repositories. Now a new Debian version is released and testing
+  becomes the new stable. Because the preset pinned the currently running
+  release by codename and everything else by suite the pin for "testing" does
+  not match anymore and the new stable gets the default priority meaning
+  it has the same as packages from the currently running release.
+  This has been fixed by pinning packages from the stable suite to 100 if they
+  did not come from the currently running release. [ypid_]
+
 
 `debops.apt_preferences v0.2.4`_ - 2017-05-02
 ---------------------------------------------
@@ -25,7 +39,7 @@ The current role maintainer_ is drybjed_.
 Added
 ~~~~~
 
-- Support multiline ``item.reason``. Refer to :ref:`apt_preferences__list` for more details and examples.
+- Support multiline ``item.reason``. Refer to :ref:`apt_preferences__list` for more details and examples. [ypid_]
 
 
 `debops.apt_preferences v0.2.3`_ - 2016-09-04
