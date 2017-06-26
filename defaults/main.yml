@@ -92,6 +92,11 @@ apt_preferences__debian_stable_default_preset_list:
       Pin: release o=Debian Backports,n={{ ansible_distribution_release }}-backports
       Pin-Priority: 400
 
+      Explanation: In case ansible_distribution_release is not (anymore) the current stable release don’t automatically upgrade to it.
+      Package: *
+      Pin: release o=Debian,n=stable
+      Pin-Priority: 100
+
       Explanation: Install packages from testing if no package with the same name is available in release archives or backports or other archives.
       Package: *
       Pin: release o=Debian,a=testing
