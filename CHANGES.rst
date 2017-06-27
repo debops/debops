@@ -16,12 +16,6 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.pki master: https://github.com/debops/ansible-pki/compare/v0.2.14...master
 
-Fixed
-~~~~~
-
-- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
-  Support for older Ansible versions is dropped. [brzhk]
-
 Added
 ~~~~~
 
@@ -40,6 +34,15 @@ Added
   Note that this new default is only effective for newly created CAs.
   Refer to `A Web PKI x509 certificate primer <https://developer.mozilla.org/en-US/docs/Mozilla/Security/x509_Certificates>`_
   for details. [ypid_]
+
+Fixed
+~~~~~
+
+- Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
+  Support for older Ansible versions is dropped. [brzhk]
+
+- Sign certificate requests on Ansible Controller only for hosts that have
+  their Ansible facts gathered. [drybjed_]
 
 
 `debops.pki v0.2.14`_ - 2016-11-21
