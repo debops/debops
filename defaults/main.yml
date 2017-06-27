@@ -59,19 +59,6 @@ docker__upstream_edition: 'ce'
 docker__upstream_channel: 'stable'
 
                                                                    # ]]]
-# .. envvar:: docker__edition [[[
-#
-# For upstream repositories the edition to be installed: ce or ee. Note that Docker EE
-# is not supported on Debian.
-docker__upstream_edition: 'ce'
-
-                                                                   # ]]]
-# .. envvar:: docker__upstream_channel [[[
-#
-# For upstream repositories choose the stable or edge channel.
-docker__upstream_channel: 'stable'
-
-                                                                   # ]]]
 # .. envvar:: docker__upstream_key [[[
 #
 # APT GPG key id used to sign the upstream Docker packages.
@@ -113,7 +100,9 @@ docker__upstream_arch_map:
 # .. envvar:: docker__upstream_repository [[[
 #
 # Address of the Docker upstream APT repository.
-docker__upstream_repository: '{{ "deb https://download.docker.com/linux/"
+docker__upstream_repository: '{{ "deb [arch="
+        + docker__upstream_arch_map[ansible_architecture]
+        + "] https://download.docker.com/linux/"
         + docker__distribution|lower
         + " "
         + docker__distribution_release
