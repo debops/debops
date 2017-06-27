@@ -358,7 +358,7 @@
   environment:
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
   command: ./lib/pki-authority sign-by-host
-           {% for host in play_hosts %}{{ hostvars[host].pki_fact_fqdn }} {% endfor %}
+           {% for host in play_hosts %}{{ hostvars[host].pki_fact_fqdn | d('') }} {% endfor %}
   args:
     chdir: '{{ secret + "/pki" }}'
   delegate_to: 'localhost'
