@@ -27,6 +27,9 @@ Changed
   https://forum.opennebula.org/t/polkitd-traps-general-protection-ip-in-libmozjs-17-0-so/399/3
   [drybjed_]
 
+- Enable use of ``jessie-backports`` repository on Debian Jessie to allow for
+  VM migration between different OS releases. [drybjed_]
+
 
 `debops.libvirtd v0.3.2`_ - 2017-06-12
 --------------------------------------
