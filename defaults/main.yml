@@ -793,6 +793,20 @@ libvirtd__default_configuration:
     'unix_sock_ro_perms': '0770'
     'unix_sock_rw_perms': '0770'
 
+  # Ref: https://forum.opennebula.org/t/polkitd-traps-general-protection-ip-in-libmozjs-17-0-so/399/3
+  - name: 'auth_unix_ro'
+    value: 'none'
+    state: '{{ "present"
+               if (libvirtd__deployment_mode == "opennebula")
+               else "ignore" }}'
+
+  # Ref: https://forum.opennebula.org/t/polkitd-traps-general-protection-ip-in-libmozjs-17-0-so/399/3
+  - name: 'auth_unix_rw'
+    value: 'none'
+    state: '{{ "present"
+               if (libvirtd__deployment_mode == "opennebula")
+               else "ignore" }}'
+
                                                                    # ]]]
 # .. envvar:: libvirtd__configuration [[[
 #
