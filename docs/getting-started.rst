@@ -9,6 +9,9 @@ Getting started
 Initial configuration
 ---------------------
 
+Docker is available in two editions. Community Edition (CE) and Enterprise Edition (EE).
+Docker EE is not supported on Debian distributions. See also: `Docker variants`_.
+
 The Docker package from distribution repositories will be installed by default
 (on Jessie it means that the ``jessie-backports`` repository needs to be available,
 which is the default in DebOps). You can install the upstream version of Docker
@@ -29,8 +32,14 @@ To let the docker daemon trust a private registry with self-signed certificates,
 add the root CA used to sign the registry's certificate through the debops.pki_
 role.
 
+This role does not support switching from Docker CE to Docker EE on an already installed
+machine. It does support switching from distribution repository to upstream.
+However, it is recommended to start with a clean machine if possible.
+
 ``debops.docker`` relies on configuration managed by debops.core_,
 debops.ferm_, and debops.pki_ Ansible roles.
+
+.. _Docker variants: https://docs.docker.com/engine/installation/#docker-variants
 
 Useful variables
 ----------------

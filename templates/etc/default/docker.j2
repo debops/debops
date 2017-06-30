@@ -6,6 +6,9 @@
 #DOCKER="/usr/local/bin/docker"
 
 {% set docker__tpl_options = [] %}
+{% if docker__graph|d() %}
+{%   set _ = docker__tpl_options.append("--graph " + docker__graph) %}
+{% endif %}
 {% if docker__bridge|d() %}
 {%   set _ = docker__tpl_options.append("--bridge " + docker__bridge) %}
 {% endif %}

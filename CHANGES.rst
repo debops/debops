@@ -22,7 +22,10 @@ Added
 ~~~~~
 - Ferm hook to restart docker daemon after ferm is restarted if :envvar:`docker__ferment`
   is set to False. [tallandtree_]
+
 - Use docker upstream repository by default on stretch installations [cultcom]
+
+- Switch to docker-ce and docker-ee. [tallandtree_]
 
 Changed
 ~~~~~~~
