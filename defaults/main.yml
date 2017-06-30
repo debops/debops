@@ -18,7 +18,12 @@
 # Specify the GitLab version to install or manage. The role checks what version
 # is currently installed and can perform automatic upgrade if the installed
 # version is older than the specified. Downgrades are not supported.
-gitlab_version: '8.17'
+gitlab_version: '{{ "9.3"
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.distribution_release|d() and
+                        ansible_local.core.distribution_release == "stretch")
+                    else "8.17" }}'
+
                                                                    # ]]]
                                                                    # ]]]
 # Application features [[[
@@ -493,6 +498,23 @@ gitlab_shell_ssh_port: '22'
 gitlab_support_filesystem_acl: True
                                                                    # ]]]
                                                                    # ]]]
+# Custom APT package repositories [[[
+
+# -----------------------------------
+# .. envvar:: gitlab__yarn_apt_key_id [[[
+#
+# The OpenPGP key used to sign Yarn repository.
+gitlab__yarn_apt_key_id: '72ECF46A56B4AD39C907BBB71646B01B86E50310'
+
+                                                                   # ]]]
+# .. env/var:: gitlab__yarn_apt_repo [[[
+#
+# APT repository URL to Yarn repository.
+gitlab__yarn_apt_repo: 'deb https://dl.yarnpkg.com/debian/ stable main'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
 # GitLab source code version [[[
 # ------------------------------
 
@@ -568,6 +590,35 @@ gitlab_version_map:
     ce:    '8-17-stable'
     gitlab_workhorse: 'v1.3.0'
     pages: 'v0.3.2'
+
+  '9.0':
+    shell: 'v5.0.0'
+    ce:    '9-0-stable'
+    gitlab_workhorse: 'v1.4.2'
+    pages: 'v0.4.0'
+    gitaly: 'v0.3.0'
+
+  '9.1':
+    shell: 'v5.0.2'
+    ce:    '9-1-stable'
+    gitlab_workhorse: 'v1.4.3'
+    pages: 'v0.4.1'
+    gitaly: 'v0.6.0'
+
+  '9.2':
+    shell: 'v5.0.4'
+    ce:    '9-2-stable'
+    gitlab_workhorse: 'v2.0.0'
+    pages: 'v0.4.2'
+    gitaly: 'v0.10.0'
+
+  '9.3':
+    shell: 'v5.0.5'
+    ce:    '9-3-stable'
+    gitlab_workhorse: 'v2.1.1'
+    pages: 'v0.4.3'
+    gitaly: 'v0.11.2'
+
                                                                    # ]]]
                                                                    # ]]]
 # gitlab-shell source code [[[
@@ -677,6 +728,27 @@ gitlab_pages_dest: '{{ gitlab_src_path + "/" + gitlab_pages_repo.split("://")[1]
 #
 # Path where the GitLab Pages source code will be checked out.
 gitlab_pages_checkout: '{{ gitlab_app_root_path + "/gitlab-pages" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Gitaly source code [[[
+# --------------------------------
+
+# .. envvar:: gitlab__gitaly_repo [[[
+#
+# URL of the Gitaly repository.
+gitlab__gitaly_repo: 'https://gitlab.com/gitlab-org/gitaly.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__gitaly_dest [[[
+#
+# Path where the Gitaly source code will be cloned into a bare repository.
+gitlab__gitaly_dest: '{{ gitlab_src_path + "/" + gitaly_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__gitaly_checkout [[[
+#
+# Path where the Gitaly source code will be checked out.
+gitlab__gitaly_checkout: '{{ gitlab_app_root_path + "/gitaly" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Build and deployment commands [[[
@@ -810,12 +882,6 @@ gitlab__etc_services__dependent_list:
   - name: 'gitlab-pages'
     port: '{{ gitlab_pages_port }}'
     comment: 'GitLab Pages'
-
-                                                                   # ]]]
-# .. envvar:: gitlab__nodejs__npm_dependent_packages [[[
-#
-# List of NPM packages to install by the debops.nodejs_ Ansible role.
-gitlab__nodejs__npm_dependent_packages: [ 'yarn' ]
 
                                                                    # ]]]
 # .. envvar:: gitlab__mariadb__dependent_databases [[[

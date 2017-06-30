@@ -337,6 +337,13 @@ production: &base
   shared:
     path: {{ gitlab_shared_path }} # Default: shared
 
+{% if gitlab_version | version_compare("9.0", operator="ge", strict=True) %}
+  repositories:
+    storages:
+      default:
+        path: {{ gitlab_repositories_path + "/" }}
+{% endif %}
+
   #
   # 4. Advanced settings
   # ==========================
@@ -444,7 +451,12 @@ test:
     path: tmp/tests/gitlab-satellites/
   repositories:
     storages:
+{% if gitlab_version | version_compare("9.0", operator="ge", strict=True) %}
+      default:
+        path: tmp/tests/repositories/
+{% else %}
       default: tmp/tests/repositories/
+{% endif %}
   backup:
     path: tmp/tests/backups
   gitlab_shell:

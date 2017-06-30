@@ -32,6 +32,10 @@ Changed
 - Cleanup and simplify gitlab-workhorse service file.
   Standard input and output redirection does not work within systemd. [cultcom]
 
+- Add support for GitLab 9.0, 9.1, 9.2 and 9.3. [bfabio_] [cultcom]
+
+- Always create 'pages' directory for "rake backup" to succeed. [cultcom]
+
 
 `debops.gitlab v0.2.0`_ - 2017-04-06
 ------------------------------------
