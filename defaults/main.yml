@@ -44,7 +44,6 @@ docker__upstream: '{{ True
                           ansible_local.core.distribution_release == "stretch")
                       else False }}'
 
-
                                                                    # ]]]
 # .. envvar:: docker__upstream_edition [[[
 #
@@ -87,33 +86,30 @@ docker__upstream_arch_map:
 # Address of the Docker upstream APT repository.
 docker__upstream_repository: '{{ "deb [arch="
         + docker__upstream_arch_map[ansible_architecture]
-        + "] https://download.docker.com/linux/"
-        + docker__distribution|lower
-        + " "
-        + docker__distribution_release
-        + " "
-        + docker__upstream_channel }}'
+        + "] https://download.docker.com/linux/" + docker__distribution|lower + " "
+        + docker__distribution_release + " " + docker__upstream_channel }}'
 
                                                                    # ]]]
 # .. envvar:: docker__mandatory_packages [[[
 #
 # List of mandatory packages to install with Docker.
-docker__mandatory_packages: [ 'apt-transport-https',
-        'ca-certificates',
-        'curl',
-        'gnupg2',
-        'software-properties-common' ]
+docker__mandatory_packages:
+  - 'apt-transport-https'
+  - 'ca-certificates'
+  - 'curl'
+  - 'gnupg2'
+  - 'software-properties-common'
 
                                                                    # ]]]
 # .. envvar:: docker__base_packages [[[
 #
 # List of base packages to install with Docker.
-docker__base_packages: '{{ [
-        "aufs-tools",
-        "python-pip",
-        "python-setuptools",
-        "bridge-utils" ]
-        + ( [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] )|d(omit) }}'
+docker__base_packages:
+  - "aufs-tools"
+  - "python-pip"
+  - "python-setuptools"
+  - "bridge-utils"
+  - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: docker__packages [[[
