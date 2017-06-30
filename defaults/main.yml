@@ -92,21 +92,23 @@ gitlab_domain: [ 'code.{{ ansible_domain }}' ]
 gitlab__distribution_release: '{{ ansible_local.core.distribution_release
                                   if (ansible_local|d() and ansible_local.core|d() and
                                       ansible_local.core.distribution_release|d())
-                                  else ansible_distribution_release }}'
+                                  else "jessie" }}'
 
 #
-# .. envvar:: gitlab_packages [[[
+# .. envvar:: gitlab__base_packages [[[
 #
 # List of base APT packages required by GitLab.
-gitlab_packages:
-  jessie:        [ 'build-essential', 'zlib1g-dev', 'libyaml-dev', 'libssl-dev',
-                   'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
-                   'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
-                   'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'unzip' ]
-  stretch:        [ 'build-essential', 'zlib1g-dev', 'libyaml-dev', 'libssl1.0-dev',
-                   'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
-                   'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
-                   'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'unzip' ]
+gitlab__base_packages: [ 'build-essential', 'zlib1g-dev', 'libyaml-dev', 'libssl-dev',
+                        'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
+                        'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
+                        'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'unzip' ]
+
+#
+# .. envvar:: gitlab__release_packages [[[
+#
+# List of base APT packages required by GitLab depending on the distribution release.
+gitlab__release_packages:
+  stretch: [ 'libssl1.0-dev' ]
 
                                                                    # ]]]
 # .. envvar:: gitlab_database_packages [[[
@@ -119,6 +121,9 @@ gitlab_database_packages:
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
   stretch:
     mariadb:    [ 'default-libmysqlclient-dev', 'ruby-mysql2' ]
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+  trusty:
+    mariadb:    [ 'libmysqlclient-dev', 'ruby-mysql' ]
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
                                                                    # ]]]
                                                                    # ]]]
