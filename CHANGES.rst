@@ -8,7 +8,7 @@ Changelog
 **debops.postgresql_server**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current role maintainer_ is drybjed_.
 
@@ -20,7 +20,7 @@ Changed
 ~~~~~~~
 
 - Added the :envvar:`postgresql_server__data_directory` variable (defaults to
-  the default ``/var/lib/postgresql`` in Debian) to have a tunable when you
+  the default :file:`/var/lib/postgresql` in Debian) to have a tunable when you
   need/want the default clusters to have a different data_dir base directory.
   This is a server-wide variable and shouldn't be changed once set. [hvisage,
   drybjed_]
@@ -159,7 +159,7 @@ Changed
   multiple PostgreSQL versions are available but the preferred one is not the
   first one. [drybjed_]
 
-- Update the ``postgresql.conf`` file template to support changes in PostgreSQL
+- Update the :file:`postgresql.conf` file template to support changes in PostgreSQL
   9.5. [drybjed_]
 
 - Update debops.ferm_ configuration to work with new role templates. The
@@ -250,7 +250,7 @@ Changed
   User can install additional PostgreSQL versions as needed using separate list
   of packages to install. [drybjed_]
 
-- Merge separate version-based ``postgresql.conf`` files into one, which uses
+- Merge separate version-based :file:`postgresql.conf` files into one, which uses
   ``version_compare()`` filter to enable or disable parts of the configuration
   depending on the cluster version. The new configuration file is cleaner,
   without the extra comments that made the previous versions hard to maintain.
@@ -319,15 +319,15 @@ Changed
   ``postgresql_server_wal_level`` and ``postgresql_server_archive_command``.
   [drybjed_]
 
-- Redesign of the ``pg_hba.conf`` configuration file.
+- Redesign of the :file:`pg_hba.conf` configuration file.
 
   Instead of a mix of YAML text blocks and YAML lists,
-  debops.postgresql_server_ will now use unified dictionary-based HBA
+  ``debops.postgresql_server`` will now use unified dictionary-based HBA
   configuration stored in multiple lists. Configuration file is generated using
   a macro, which allows to use multiple lists at once and filter entries based
   on conditions.
 
-  By default ``pg_hba.conf`` will contain entries that allow access from local
+  By default :file:`pg_hba.conf` will contain entries that allow access from local
   networks to which the host is connected directly, requiring SSL to do so. If
   SSL support is disabled, these entries are disabled in the configuration file
   automatically. To allow remote access, you still need to change the list of
@@ -340,7 +340,7 @@ Changed
 
 - Set ``stats_temp_directory`` location in ``tmpfs``. [drybjed_]
 
-- Redesign of the ``pg_ident.conf`` configuration file.
+- Redesign of the :file:`pg_ident.conf` configuration file.
 
   ``postgresql_default_ident`` variable has been removed. Instead, there are
   new variables, ``postgresql_server_ident_system`` and
@@ -403,11 +403,11 @@ Changed
 Removed
 ~~~~~~~
 
-- Remove shared memory configuration from debops.postgresql_server_, they
+- Remove shared memory configuration from ``debops.postgresql_server``, they
   are now managed by debops.console_ role. [drybjed_]
 
 - Remove :file:`/etc/postgresql-common/user_clusters` configuration from
-  debops.postgresql_server_ role, it will be configured in the client role.
+  ``debops.postgresql_server`` role, it will be configured in the client role.
   [drybjed_]
 
 

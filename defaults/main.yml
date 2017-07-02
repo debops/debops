@@ -15,7 +15,7 @@
 
 # .. envvar:: postgresql_server__upstream [[[
 #
-# Enable PostgreSQL Global Developmet Group APT repository?
+# Enable PostgreSQL Global Development Group APT repository?
 # More information: https://wiki.postgresql.org/wiki/Apt
 postgresql_server__upstream: False
 
@@ -62,13 +62,13 @@ postgresql_server__preferred_version: ''
                                                                    # ]]]
 # .. envvar:: postgresql_server__user [[[
 #
-# System user which managages PostgreSQL clusters.
+# System user which manages PostgreSQL clusters.
 postgresql_server__user: 'postgres'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__group [[[
 #
-# System group which managages PostgreSQL clusters.
+# System group which manages PostgreSQL clusters.
 postgresql_server__group: 'postgres'
 
                                                                    # ]]]
@@ -292,7 +292,7 @@ postgresql_server__archive_command: ''
 # Host Based Authentication configuration [[[
 # -------------------------------------------
 
-# Host-Based Authentication is used to filter and resrict local and remote
+# Host-Based Authentication is used to filter and restrict local and remote
 # connections to the PostgreSQL databases. See :ref:`postgresql_server__ref_hba` for
 # more details.
 
@@ -396,7 +396,7 @@ postgresql_server__hba_remote:
 # Ident map configuration [[[
 # ---------------------------
 
-# Ident map in ``pg_ident.conf`` is used to map local UNIX accounts to
+# Ident map in :file:`pg_ident.conf` is used to map local UNIX accounts to
 # PostgreSQL roles. See :ref:`postgresql_server__ref_ident` for more details.
 
 # .. envvar:: postgresql_server__ident_system [[[
@@ -434,7 +434,7 @@ postgresql_server__data_directory: '/var/lib/postgresql'
 #
 # List of PostgreSQL clusters to manage. Each entry should have at least a name
 # and a port on which to bind the cluster. You can also specify configuration
-# from ``postgresql.conf`` as the cluster parameters.
+# from :file:`postgresql.conf` as the cluster parameters.
 # See :ref:`postgresql_server__ref_clusters` for more details.
 postgresql_server__clusters: [ '{{ postgresql_server__cluster_main }}' ]
 
@@ -502,7 +502,7 @@ postgresql_server__auto_backup_mail_to: 'backup@{{ ansible_domain }}'
 postgresql_server__auto_backup_create_database: True
 
                                                                    # ]]]
-# .. envvar:: postgresql_server__auto_backup_isolate_database [[[
+# .. envvar:: postgresql_server__auto_backup_isolate_databases [[[
 #
 # Use a separate backup directory and file for each database?
 postgresql_server__auto_backup_isolate_databases: True
@@ -609,7 +609,7 @@ postgresql_server__ferm__dependent_rules:
             }
         }
     }
-    
+
     {% endif %}
     {% for cluster in postgresql_server__clusters %}
     {% if cluster.name|d() and cluster.port|d() and cluster.allow|d() %}
@@ -623,6 +623,7 @@ postgresql_server__ferm__dependent_rules:
     }
     {% endif %}
     {% endfor %}
+
 # ]]]
 # ]]]
 # ]]]

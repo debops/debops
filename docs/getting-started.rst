@@ -69,7 +69,7 @@ cluster:
          address: [ '192.0.2.0/24', '2001:db8::/32' ]
          method: 'md5'
 
-The debops.postgresql_server_ role is designed to use the PKI infrastructure
+The ``debops.postgresql_server`` role is designed to use the PKI infrastructure
 managed by debops.pki_ role. See its documentation for more details.
 
 Example inventory
@@ -84,7 +84,7 @@ to the ``[debops_service_postgresql_server]`` Ansible host group::
 Example playbook
 ----------------
 
-Here's an example playbook which uses the debops.postgresql_server_ role:
+Here's an example playbook which uses the ``debops.postgresql_server`` role:
 
 .. literalinclude:: playbooks/postgresql_server.yml
    :language: yaml
@@ -95,7 +95,7 @@ Ansible tags
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
 tasks are performed during Ansible run. This can be used after the host is first
 configured to speed up playbook execution, when you are sure that most of the
-configuration has not been changed.
+configuration is already in the desired state.
 
 Available role tags:
 
