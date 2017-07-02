@@ -273,17 +273,23 @@ apt_install__firmware_packages:
   - name: 'firmware-linux-free'
     distribution: 'Debian'
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+                         and (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
   - name: 'firmware-linux-nonfree'
     distribution: 'Debian'
     area: 'non-free'
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+                             and (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
   - name: 'linux-firmware'
     distribution: 'Ubuntu'
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+                             and (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
   - name: 'linux-firmware-nonfree'
@@ -291,6 +297,8 @@ apt_install__firmware_packages:
     release: [ 'precise', 'trusty', 'wily' ]
     area: 'multiverse'
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+                             and (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
                                                                    # ]]]
