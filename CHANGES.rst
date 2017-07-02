@@ -27,6 +27,11 @@ Changed
 
 - Add support for debian 'stretch'. [cultcom]
 
+Removed
+~~~~~~~
+
+- Dropped default variable ``gitlab__fqdn`` which is not used anymore. [ypid_]
+
 
 `debops.gitlab v0.2.0`_ - 2017-04-06
 ------------------------------------
