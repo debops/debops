@@ -3,7 +3,7 @@ Default variable details
 
 .. include:: includes/all.rst
 
-Some of debops.postgresql_server_ default variables have more extensive
+Some of ``debops.postgresql_server`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
 
@@ -67,7 +67,7 @@ postgresql_server__hba_*
 ------------------------
 
 `Host-Based Authentication <http://www.postgresql.org/docs/9.4/static/auth-pg-hba-conf.html>`_
-configuration in debops.postgresql_server_ Ansible role is specified in
+configuration in ``debops.postgresql_server`` Ansible role is specified in
 a set of lists:
 
 - :envvar:`postgresql_server__hba_system`: controls the local and remote access to the
@@ -90,7 +90,7 @@ a set of lists:
   clients.
 
 Each PostgreSQL cluster by default uses all of the above lists in its
-``pg_hba.conf`` configuration file. A cluster can disable any list by
+:file:`pg_hba.conf` configuration file. A cluster can disable any list by
 specifying its abbreviated name as a parameter with ``False``. For example:
 
 .. code-block:: yaml
@@ -108,7 +108,7 @@ Above configuration will disable connections by trusted users (all users will
 be required to specify a password) and from remote clients.
 
 Additionally, each cluster can specify its own HBA entries using ``item.hba``
-parameter which will be added at the end of the ``pg_hba.conf`` file. By
+parameter which will be added at the end of the :file:`pg_hba.conf` file. By
 disabling selected global lists and adding custom entries you can redefine the
 HBA configuration file as needed. Example:
 
@@ -130,7 +130,7 @@ HBA configuration file as needed. Example:
 Each entry in a HBA list is a YAML dictionary with parameters:
 
 ``comment``
-  Optional. Comment added to a given entry in ``pg_hba.conf`` file.
+  Optional. Comment added to a given entry in :file:`pg_hba.conf` file.
 
 ``type``
   Required. Specifies connection type to use for a given entry. Known types are:
@@ -167,13 +167,13 @@ Each entry in a HBA list is a YAML dictionary with parameters:
   - ``@name``: file with a list of roles, relative to a given cluster's
     configuration directory in :file:`/etc`
 
-  - ``*postgres*``: a custom debops.postgresql_server_ name, it will be
+  - ``*postgres*``: a custom ``debops.postgresql_server`` name, it will be
     replaced by the UNIX system account name that manages a given cluster,
     usually ``postgres``
 
 ``address``
   Required by all types other than ``local``. A string or list of IP addresses
-  or CIDR networks (debops.postgresql_server_ does not support ip/netmask
+  or CIDR networks (``debops.postgresql_server`` does not support ip/netmask
   notation). You can use special names:
 
   - ``all``: any network clients
@@ -191,7 +191,7 @@ Each entry in a HBA list is a YAML dictionary with parameters:
   method.
 
 You can find different examples of how to defined HBA lists in
-:file:`defaults/main.yml` file of debops.postgresql_server_ role.
+:file:`defaults/main.yml` file of ``debops.postgresql_server`` role.
 
 .. _postgresql_server__ref_ident:
 
@@ -200,7 +200,7 @@ postgresql_server__ident_*
 
 `Ident maps
 <http://www.postgresql.org/docs/9.4/static/auth-username-maps.html>`_ stored in
-``pg_ident.conf`` configuration file is used to map local UNIX accounts to
+:file:`pg_ident.conf` configuration file is used to map local UNIX accounts to
 PostgreSQL roles. This can be used to control what UNIX accounts can login to
 the PostgreSQL server as a given role.
 
@@ -209,7 +209,7 @@ authentication method. Using them for ``ident`` method with remote clients is
 unreliable and discouraged - ``ident`` protocol is not meant to be used for
 authentication or authorization.
 
-By default, PostgreSQL clusters managed by the debops.postgresql_server_
+By default, PostgreSQL clusters managed by the ``debops.postgresql_server``
 role use global lists of ident maps:
 
 - :envvar:`postgresql_server__ident_system`: a user mapping which specifies which
@@ -272,7 +272,7 @@ Each ident map entry is a YAML dictionary with parameters:
   PostgreSQL cluster, usually ``postgres``.
 
 Examples can be found in the :file:`defaults/main.yml` file of the
-debops.postgresql_server_ Ansible role.
+``debops.postgresql_server`` Ansible role.
 
 .. _postgresql_server__ref_clusters:
 
@@ -281,7 +281,7 @@ postgresql_server__clusters
 
 On Debian and its derivatives, `PostgreSQL installation <https://wiki.debian.org/PostgreSql>`_
 is based around "clusters", each cluster being run on a particular PostgreSQL
-version and on a specific TCP port. debops.postgresql_server_ is designed
+version and on a specific TCP port. ``debops.postgresql_server`` is designed
 to be used within that system, and allows you to create separate PostgreSQL
 clusters. A default ``<version>/main`` cluster will be created, based on
 default PostgreSQL version installed on a given host.
@@ -293,11 +293,11 @@ always use separate port for each cluster you define. Role will create an entry
 for each cluster in :file:`/etc/services` as well as maintain firewall
 configuration as needed.
 
-Some of the global variables defined in debops.postgresql_server_ concerning
+Some of the global variables defined in ``debops.postgresql_server`` concerning
 clusters can be overridden on a cluster by cluster basis using their abbreviated
 names (without ``postgresql_server__`` prefix) as cluster parameters. In
 addition, almost all of the PostgreSQL parameters found in the
-``postgresql.conf`` configuration file can be specified as cluster parameters
+:file:`postgresql.conf` configuration file can be specified as cluster parameters
 as well, to change the defaults.
 
 List of some of the parameters that you can specify in a cluster configuration
