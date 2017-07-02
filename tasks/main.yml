@@ -42,7 +42,7 @@
     etype: 'group'
     permissions: 'x'
     state: 'present'
-  when: gitlab_support_filesystem_acl
+  when: gitlab_support_filesystem_acl|bool
 
 - name: Configure ~/.gitconfig
   template:
@@ -78,5 +78,4 @@
     mode: '0644'
 
 - include: ldap_account.yml
-  when: gitlab_ldap_enable
-
+  when: gitlab_ldap_enable|bool
