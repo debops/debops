@@ -319,7 +319,7 @@ Each entry is defined by a YAML dictionary. Recognized parameters:
   from :envvar:`postgresql__server` variable.
 
 ``port``
-  Optional. Specofy default TCP port to use for PostgreSQL server entry. If not
+  Optional. Specify default TCP port to use for PostgreSQL server entry. If not
   specified, :envvar:`postgresql__port` value will be used instead.
 
 ``database``
@@ -352,4 +352,3 @@ Create ``~/.pgpass`` entry for a specific database:
    postgresql__pgpass:
      - owner: 'gamma'
        database: 'gamma'
-
