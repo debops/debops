@@ -91,7 +91,7 @@ a set of lists:
 
 Each PostgreSQL cluster by default uses all of the above lists in its
 ``pg_hba.conf`` configuration file. A cluster can disable any list by
-specifying its abbrevated name as a parameter with ``False``. For example:
+specifying its abbreviated name as a parameter with ``False``. For example:
 
 .. code-block:: yaml
 
@@ -223,7 +223,7 @@ role use global lists of ident maps:
   local UNIX accounts globally for all clusters. It's not set by default.
 
 Above ident maps can be disabled in a given cluster by specifying their
-abbvevated names in a parameter with ``False`` value. Example:
+abbreviated names in a parameter with ``False`` value. Example:
 
 .. code-block:: yaml
 
@@ -294,7 +294,7 @@ for each cluster in :file:`/etc/services` as well as maintain firewall
 configuration as needed.
 
 Some of the global variables defined in debops.postgresql_server_ concerning
-clusters can be overriden on a cluster by cluster basis using their abbrevated
+clusters can be overridden on a cluster by cluster basis using their abbreviated
 names (without ``postgresql_server__`` prefix) as cluster parameters. In
 addition, almost all of the PostgreSQL parameters found in the
 ``postgresql.conf`` configuration file can be specified as cluster parameters
@@ -336,4 +336,3 @@ entry:
 ``allow``
   List of IP addresses or CIDR subnets which should be allowed to connect to
   a given cluster.
-
