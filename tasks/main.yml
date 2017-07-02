@@ -74,7 +74,7 @@
 - include: secure_installation.yml
 
 - include: manage_autopostgresqlbackup.yml
-  when: postgresql_server__autopostgresqlbackup|d() and postgresql_server__autopostgresqlbackup
+  when: postgresql_server__autopostgresqlbackup|bool
   tags: [ 'role::postgresql_server:auto_backup' ]
 
 - name: Make sure that Ansible local fact directory exists
@@ -100,4 +100,3 @@
   when: postgresql_server__register_local_facts|d() and
         postgresql_server__register_local_facts.changed
   tags: [ 'role::postgresql_server:config' ]
-
