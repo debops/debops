@@ -217,7 +217,7 @@ apt__distribution_release: '{{ ansible_local.core.distribution_release
 # map is used to configure security repositories only on the OS releases that
 # have them available.
 apt__distribution_release_map:
-  'Debian': [ 'wheezy', 'jessie', 'stretch' ]
+  'Debian': [ 'wheezy', 'jessie', 'stretch', 'buster' ]
   'Ubuntu': [ 'precise', 'trusty', 'xenial' ]
 
                                                                    # ]]]
@@ -228,9 +228,10 @@ apt__distribution_release_map:
 # repository suffixes should be configured on the current host in case the role
 # is used on a Debian Testing system.
 apt__distribution_suite_map:
-  'Debian_wheezy':    'oldstable'
-  'Debian_jessie':    'stable'
-  'Debian_stretch':   'testing'
+  'Debian_wheezy':    'oldoldstable'
+  'Debian_jessie':    'oldstable'
+  'Debian_stretch':   'stable'
+  'Debian_buster':    'testing'
   'Debian_sid':       'unstable'
   'Raspbian_wheezy':  'oldstable'
   'Raspbian_jessie':  'stable'
@@ -354,12 +355,25 @@ apt__default_sources:
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Raspbian'
 
+  - uri:          'http://repos.rcn-ee.com/debian/'
+    comment:      'rcn-ee.net repository as used on BeagleBoards for additional hardware support'
+    type:         '{{ apt__source_types }}'
+    option:       '{{ "arch=" + apt__architecture }}'
+    suite:        '{{ apt__distribution_release }}'
+    components:   [ "main" ]
+    distribution: 'Debian'
+    state:        '{{ "present"
+                      if (apt__architecture in ["armhf"] and
+                          ("cape_universal" in ansible_cmdline) or
+                          ("bone_capemgr" in ansible_cmdline))
+                      else "absent" }}'
+
   - uri:          'http://archive.ubuntu.com/ubuntu'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Ubuntu'
-    state:       '{{ "present"
-                     if (apt__architecture in ["amd64", "i386"])
-                     else "absent" }}'
+    state:        '{{ "present"
+                      if (apt__architecture in ["amd64", "i386"])
+                      else "absent" }}'
 
   - uri: 'http://ports.ubuntu.com/ubuntu-ports'
     comment: '{{ "Official " + apt__distribution + " Port repositories" }}'

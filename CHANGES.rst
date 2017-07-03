@@ -27,7 +27,9 @@ Added
 - Add the Ansible local fact ``default_sources_map`` which contains a
   dictionary with distribution name as key containing a list of default sources
   for each distribution. ``default_mirrors`` is equivalent to
-  ``default_sources_map[apt__distribution]``  [ypid_]
+  ``default_sources_map[apt__distribution]``.  [ypid_]
+
+- Add support for the ARM based BeagleBoard family. Tested with an BeagleBone Black. [ypid_]
 
 Changed
 ~~~~~~~
@@ -41,6 +43,22 @@ Changed
 
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
+
+- Update the default variables for Debian Stretch as the new stable release so
+  that backports get enabled for Stretch by default. [ypid_]
+
+Fixed
+~~~~~
+
+- Fix handling of ``option`` and ``options`` from ``apt__sources`` and add
+  missing documentation. [ypid_]
+
+- Properly handle singular and plural options for :envvar:`apt__sources`.
+  Previously certain edge cases might have caused an issue.
+  This has been achieved by cleaning up the templates to map all inputs to the
+  plural variant and eliminating redundant code.
+  Redundancy is the natural enemy of all Ansible role maintainers and should be avoided. [ypid_]
+
 
 `debops.apt v0.4.4`_ - 2017-03-24
 ---------------------------------
