@@ -10,7 +10,9 @@
 {%     endif %}
 {%   endfor %}
 {%   set entry_disabled = '# ' if (entry.state == 'disabled') else '' %}
+{%   if entry.comments|d() %}
 {{ entry.comments | join('\n') | regex_replace('\n$', '') | comment(prefix='\n', postfix='') -}}
+{%   endif %}
 {%   if entry.repo|d() %}
 {%     for entry_repo in entry.repo %}
 {{ "%s%s" | format(entry_disabled, entry_repo) }}
