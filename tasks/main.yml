@@ -6,8 +6,9 @@
     state: 'latest'
     install_recommends: False
   with_flattened:
-    - '{{ gitlab_packages }}'
-    - '{{ gitlab_database_packages[gitlab__database] }}'
+    - '{{ gitlab__base_packages }}'
+    - '{{ gitlab__release_packages[gitlab__distribution_release] | d([]) }}'
+    - '{{ gitlab__database_packages[gitlab__distribution_release][gitlab__database] | d([]) }}'
 
 - name: Create GitLab system group
   group:

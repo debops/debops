@@ -8,7 +8,7 @@ Changelog
 **debops.gitlab**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current role maintainer_ is drybjed_.
 
@@ -22,7 +22,10 @@ Changed
 ~~~~~~~
 
 - Role documentation improvements. [ypid_]
-- add PATH environment for gitlab-workhorse service for artifact uploads [cultcom]
+
+- Add PATH environment for gitlab-workhorse service for artifact uploads. [cultcom]
+
+- Add support for debian 'stretch'. [cultcom]
 
 
 `debops.gitlab v0.2.0`_ - 2017-04-06
