@@ -19,7 +19,13 @@ new release.
 `debops.apt master`_ - unreleased
 ---------------------------------
 
-.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.4.4...master
+.. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.5.0...master
+
+
+`debops.apt v0.5.0`_ - 2017-07-03
+---------------------------------
+
+.. _debops.apt v0.5.0: https://github.com/debops/ansible-apt/compare/v0.4.4...v0.5.0
 
 Added
 ~~~~~
@@ -29,7 +35,11 @@ Added
   for each distribution. ``default_mirrors`` is equivalent to
   ``default_sources_map[apt__distribution]``.  [ypid_]
 
-- Add support for the ARM based BeagleBoard family. Tested with an BeagleBone Black. [ypid_]
+- Add support for the ARM based BeagleBoard family. Tested with a BeagleBone
+  Black. [ypid_]
+
+- Add support for the `Devuan Jessie <https://devuan.org/>`_ Linux
+  distribution. [evilham]
 
 Changed
 ~~~~~~~
@@ -50,14 +60,15 @@ Changed
 Fixed
 ~~~~~
 
-- Fix handling of ``option`` and ``options`` from ``apt__sources`` and add
+- Fix handling of ``option`` and ``options`` from :envvar:`apt__sources` and add
   missing documentation. [ypid_]
 
 - Properly handle singular and plural options for :envvar:`apt__sources`.
   Previously certain edge cases might have caused an issue.
   This has been achieved by cleaning up the templates to map all inputs to the
   plural variant and eliminating redundant code.
-  Redundancy is the natural enemy of all Ansible role maintainers and should be avoided. [ypid_]
+  Redundancy is the natural enemy of all Ansible role maintainers and should be
+  avoided. [ypid_]
 
 
 `debops.apt v0.4.4`_ - 2017-03-24
