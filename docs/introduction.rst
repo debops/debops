@@ -2,7 +2,7 @@ Introduction
 ============
 
 `Mosquitto <https://mosquitto.org/>`_ is an open source
-`Message Queue Telemetry Transport <https://en.wikipedia.org/wiki/MQTT>`_
+`Message Queue Telemetry Transport (MQTT) <https://en.wikipedia.org/wiki/MQTT>`_
 broker used in the `Internet of Things <https://en.wikipedia.org/wiki/Internet_of_things>`_
 paradigm.
 
