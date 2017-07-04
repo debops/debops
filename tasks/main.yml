@@ -53,3 +53,25 @@
     group: '{{ rabbitmq_server__group }}'
     mode: '0600'
   notify: [ 'Restart rabbitmq-server' ]
+  tags: [ 'role::rabbitmq_server:config' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save RabbitMQ local facts
+  template:
+    src: 'etc/ansible/facts.d/rabbitmq_server.fact.j2'
+    dest: '/etc/ansible/facts.d/rabbitmq_server.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: rabbitmq_server__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: rabbitmq_server__register_facts|changed
