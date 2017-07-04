@@ -1,0 +1,125 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.rabbitmq_server default variables [[[
+# ============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: rabbitmq_server__base_packages [[[
+#
+# List of base APT packages to install for RabbitMQ service.
+rabbitmq_server__base_packages: [ 'rabbitmq-server' ]
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__packages [[[
+#
+# List of additional APT packages to install with RabbitMQ service.
+rabbitmq_server__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# System configuration [[[
+# ------------------------
+
+# .. envvar:: rabbitmq_server__user [[[
+#
+# Name of the UNIX system account used by RabbitMQ service.
+rabbitmq_server__user: 'rabbitmq'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group [[[
+#
+# Name of the UNIX system group used by RabbitMQ service.
+rabbitmq_server__group: 'rabbitmq'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__home [[[
+#
+# Absolute path of the RabbitMQ home directory.
+rabbitmq_server__home: '/var/lib/rabbitmq'
+                                                                   # ]]]
+                                                                   # ]]]
+# Erlang cookie [[[
+# -----------------
+
+# .. envvar:: rabbitmq_server__erlang_cookie_path [[[
+#
+# Absolute path of the Erlang cookie file used by RabbitMQ.
+rabbitmq_server__erlang_cookie_path: '{{ rabbitmq_server__home + "/.erlang.cookie" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__erlang_cookie_password [[[
+#
+# The contents of the Erlang cookie file used by RabbitMQ. It needs to be the
+# same on all nodes in the RabbitMQ cluster.
+rabbitmq_server__erlang_cookie_password: '{{ lookup("password", secret
+                                             + "/rabbitmq_server/cluster/erlang_cookie "
+                                             + "length=64") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ main configuration [[[
+# -------------------------------
+
+# These variables define the contents of the
+# :file:`/etc/rabbitmq/rabbitmq.config` configuration file.
+# See :ref:`rabbitmq_server__ref_config` for more details.
+
+# .. envvar:: rabbitmq_server__default_config [[[
+#
+# The default configuration defined by the ``debops.rabbitmq_server`` Ansible
+# role.
+rabbitmq_server__default_config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__config [[[
+#
+# List of RabbitMQ configuration options defined for all hosts in the Ansible
+# inventory.
+rabbitmq_server__config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_config [[[
+#
+# List of RabbitMQ configuration options defined for hosts in a specific
+# Ansible inventory group.
+rabbitmq_server__group_config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_config [[[
+#
+# List of RabbitMQ configuration options defined for specific hosts in the
+# Ansible inventory.
+rabbitmq_server__host_config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_config [[[
+#
+# List that combines RabbitMQ configuration variables and passes them to the
+# template file.
+rabbitmq_server__combined_config: '{{ rabbitmq_server__default_config
+                                      + rabbitmq_server__config
+                                      + rabbitmq_server__group_config
+                                      + rabbitmq_server__host_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: rabbitmq_server__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+rabbitmq_server__etc_services__dependent_list:
+
+  - name: 'einc'
+    port: '25672'
+    comment: 'Erlang Inter-Node Communication (RabbitMQ)'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

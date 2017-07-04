@@ -1,0 +1,42 @@
+---
+
+# Example of a set of verbose RabbitMQ options
+rabbitmq_server__config:
+
+  - name: 'rabbit'
+    options:
+
+      # String
+      - name: 'example_option'
+        value: 'value'
+        type: 'string'
+
+      # Simple list
+      - name: 'tcp_listeners'
+        value: [ 5672 ]
+        type: 'list'
+
+      # Boolean value
+      - name: 'reverse_dns_lookups'
+        value: True
+
+      # Numbers
+      - name: 'vm_memroy_high_watermark'
+        value: 0.4
+
+      # Bit-string (result: '<<"bit-string">>')
+      - name: 'bit_option'
+        value: 'bit-value'
+        type: 'bit-string'
+
+      # Bit-list (result: '[<<".*">>, <<".*">>, <<".*">>]')
+      - name: 'default_permissions'
+        value: [ '.*', '.*', '.*' ]
+        type: 'bit-list'
+
+      # Raw Erlang code (note absence of }, at the end)
+      - name: 'tcp_listeners'
+        value: |
+          [{"127.0.0.1", 5672},
+           {"::1",       5672}]
+        type: 'raw'
