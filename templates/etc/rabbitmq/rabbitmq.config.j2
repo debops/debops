@@ -85,37 +85,33 @@
   'state':  rabbitmq_server__tpl_options.state  | d('present'),
   'weight': rabbitmq_server__tpl_options.weight | d(0) | int
 }) %}
-{%               if option.type is defined %}
-{%                 set _ = option_params.update({ 'type': option.type }) %}
-{%               else %}
-{%                 if option_value | bool and option_value is not iterable %}
-{%                   set _ = option_params.update({ 'type': 'boolean' }) %}
-{%                 elif not option_value | bool and option_value is not iterable %}
-{%                   if option_value is not none %}
-{%                     if option_value | int or option_value | string == '0' %}
-{%                       set _ = option_params.update({ 'type': 'number' }) %}
-{%                     else %}
-{%                       set _ = option_params.update({ 'type': 'boolean' }) %}
-{%                     endif %}
+{%               if option_value | bool and option_value is not iterable %}
+{%                 set _ = option_params.update({ 'type': 'boolean' }) %}
+{%               elif not option_value | bool and option_value is not iterable %}
+{%                 if option_value is not none %}
+{%                   if option_value | int or option_value | string == '0' %}
+{%                     set _ = option_params.update({ 'type': 'number' }) %}
+{%                   else %}
+{%                     set _ = option_params.update({ 'type': 'boolean' }) %}
 {%                   endif %}
-{%                 elif option_value is string %}
-{%                   if (option_value.split('\n') | list | count > 1) %}
-{%                     set _ = option_params.update({ 'type': 'raw' }) %}
-{%                   elif option_params.type is undefined %}
-{%                     set _ = option_params.update({ 'type': 'string' }) %}
-{%                   elif option_params.type is defined and option_params.type in [ 'bit-string', 'bit-list' ] %}
-{%                     set _ = option_params.update({ 'type': 'bit-string' }) %}
-{%                   endif %}
-{%                 elif option_value is number %}
-{%                   set _ = option_params.update({ 'type': 'number' }) %}
-{%                 elif option_value is mapping %}
-{%                   set _ = option_params.update({ 'type': 'mapping' }) %}
-{%                 elif option_value is not string and option_value is not mapping %}
-{%                   if option_params.type is undefined %}
-{%                     set _ = option_params.update({ 'type': 'list' }) %}
-{%                   elif option_params.type is defined and option_params.type in [ 'bit-string', 'bit-list' ] %}
-{%                     set _ = option_params.update({ 'type': 'bit-list' }) %}
-{%                   endif %}
+{%                 endif %}
+{%               elif option_value is string %}
+{%                 if (option_value.split('\n') | list | count > 1) %}
+{%                   set _ = option_params.update({ 'type': 'raw' }) %}
+{%                 elif option_params.type is undefined %}
+{%                   set _ = option_params.update({ 'type': 'string' }) %}
+{%                 elif option_params.type is defined and option_params.type in [ 'bit-string', 'bit-list' ] %}
+{%                   set _ = option_params.update({ 'type': 'bit-string' }) %}
+{%                 endif %}
+{%               elif option_value is number %}
+{%                 set _ = option_params.update({ 'type': 'number' }) %}
+{%               elif option_value is mapping %}
+{%                 set _ = option_params.update({ 'type': 'mapping' }) %}
+{%               elif option_value is not string and option_value is not mapping %}
+{%                 if option_params.type is defined and option_params.type in [ 'bit-string', 'bit-list' ] %}
+{%                   set _ = option_params.update({ 'type': 'bit-list' }) %}
+{%                 else %}
+{%                   set _ = option_params.update({ 'type': 'list' }) %}
 {%                 endif %}
 {%               endif %}
 {%               if option_params|d() %}
@@ -142,8 +138,10 @@
 {%     endif %}
 {%   elif elements.type == 'string' %}
 {{ '"{}"'.format(elements.value) -}}
-{%   elif elements.type in [ 'number', 'list', 'raw' ] %}
+{%   elif elements.type in [ 'number', 'raw' ] %}
 {{ '{}'.format(elements.value) -}}
+{%   elif elements.type == 'list' %}
+{{ '{}'.format(elements.value | to_json) -}}
 {%   elif elements.type == 'atom' %}
 {%     if elements.value | search('^[A-Z].+') %}
 {{ "'{}'".format(elements.value) -}}
@@ -171,19 +169,21 @@
 {%     if option.type != 'raw' %}
 {{ '    {{{:<30} {}}}{}'.format((option.option | d(option.name)) + ',', print_values(option), (',\n' if not loop.last|bool else '')) }}
 {%     else %}
-{%       if option.value.split('\n') | list | count == 1 %}
+{%       if option.value is string %}
+{%         if option.value.split('\n') | list | count == 1 %}
 {{ '    {{{:<30} {}{}'.format((option.option | d(option.name)) + ',', option.value.split('\n')[0], ('},\n' if not loop.last|bool else '}')) }}
-{%       else %}
+{%         else %}
 {{ '    {{{:<30} {}'.format((option.option | d(option.name)) + ',', option.value.split('\n')[0]) }}
-{%         set outer_loop = loop %}
-{%         for line in option.value.split('\n')[1:] %}
-{%           if line %}
+{%           set outer_loop = loop %}
+{%           for line in option.value.split('\n')[1:] %}
+{%             if line %}
 {{ '    {:<31} {}'.format('', line) }}
-{%           endif %}
-{%           if loop.last|bool %}
+{%             endif %}
+{%             if loop.last|bool %}
 {{ '    }}{}'.format((',\n' if not outer_loop.last|bool else '')) }}
-{%           endif %}
-{%         endfor %}
+{%             endif %}
+{%           endfor %}
+{%         endif %}
 {%       endif %}
 {%     endif %}
 {%   endfor %}
