@@ -109,6 +109,17 @@ rabbitmq_server__combined_config: '{{ rabbitmq_server__default_config
                                       + rabbitmq_server__host_config }}'
                                                                    # ]]]
                                                                    # ]]]
+# RabbitMQ cluster configuration [[[
+# ----------------------------------
+
+# .. envvar:: rabbitmq_server__cluster_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to communicate with
+# the RabbitMQ service to form a cluster (TCP ports 4369, 25672).
+# If nothing is specified, no direct cluster communication is allowed.
+rabbitmq_server__cluster_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
@@ -120,6 +131,18 @@ rabbitmq_server__etc_services__dependent_list:
   - name: 'einc'
     port: '25672'
     comment: 'Erlang Inter-Node Communication (RabbitMQ)'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ Ansible role.
+rabbitmq_server__ferm__dependent_rules:
+
+  - name: 'rabbitmq-cluster'
+    type: 'accept'
+    saddr: '{{ rabbitmq_server__cluster_allow }}'
+    dport: [ 'epmd', 'einc' ]
+    accept_any: False
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
