@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.postgresql master: https://github.com/debops/ansible-postgresql/compare/v0.3.3...master
 
+Changed
+~~~~~~~
+
+- Use ``inventory_hostname`` in favor of ``ansible_fqdn`` as default for delegation
+  so a custom ``ansible_host`` setting will be honored [cultcom]
+
 
 `debops.postgresql v0.3.3`_ - 2016-12-14
 ----------------------------------------
