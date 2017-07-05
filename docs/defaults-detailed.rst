@@ -168,3 +168,41 @@ Examples
 
 .. literalinclude:: examples/verbose-options.yml
    :language: yaml
+
+
+.. _rabbitmq_server__ref_plugins:
+
+rabbitmq_server__plugins
+------------------------
+
+The ``rabbitmq_server__*_plugins`` lists can be used to enable or disable
+RabbitMQ plugins conditionally. You can find the available plugins on a givem
+host by running the command:
+
+.. code-block:: console
+
+   rabbitmq-plugins list
+
+Each list entry is either a RabbitMQ plugin name, or a YAML dictionary with
+specific parameters:
+
+``name``
+  The name of a RabbitMQ plugin to manage.
+
+``state``
+  Optional. If not defined or ``present``, the plugin will be enabled. If
+  ``absent``, the plugin will be disabled.
+
+``prefix``
+  Optional. Custom install prefix to a Rabbit.
+
+Examples
+~~~~~~~~
+
+Enable the RabbitMQ Management Console agent:
+
+.. code-block:: yaml
+
+   rabbitmq_server__plugins:
+
+     - 'rabbitmq_management_agent'

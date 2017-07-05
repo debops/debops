@@ -146,6 +146,50 @@ rabbitmq_server__combined_config: '{{ rabbitmq_server__default_config
                                       + rabbitmq_server__host_config }}'
                                                                    # ]]]
                                                                    # ]]]
+# RabbitMQ plugin configuration [[[
+# ---------------------------------
+
+# These variables specify what RabbitMQ plugins should be enabled on a givem
+# host. See :ref:`rabbitmq_server__ref_plugins` for more details.
+
+# .. envvar:: rabbitmq_server__default_plugins [[[
+#
+# List of default RabbitMQ plugins enabled by this Ansible role.
+rabbitmq_server__default_plugins:
+
+  # Required on all hosts by RabbitMQ Management Console
+  - name: 'rabbitmq_management_agent'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__plugins [[[
+#
+# List of RabbitMQ plugins to enable on all hosts in the Ansible inventory.
+rabbitmq_server__plugins: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_plugins [[[
+#
+# List of RabbitMQ plugins to enable on hosts in a specific Ansible inventory
+# group.
+rabbitmq_server__group_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_plugins [[[
+#
+# List of RabbitMQ plugins to enable on specific hosts in the Ansible
+# inventory.
+rabbitmq_server__host_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_plugins [[[
+#
+# Combined list of RabbitMQ plugins passed to the Ansible module.
+rabbitmq_server__combined_plugins: '{{ rabbitmq_server__default_plugins
+                                       + rabbitmq_server__plugins
+                                       + rabbitmq_server__group_plugins
+                                       + rabbitmq_server__host_plugins }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # RabbitMQ cluster configuration [[[
 # ----------------------------------
 

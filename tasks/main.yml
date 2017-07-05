@@ -78,6 +78,17 @@
   notify: [ 'Restart rabbitmq-server' ]
   tags: [ 'role::rabbitmq_server:config' ]
 
+- name: Manage RabbitMQ plugins
+  rabbitmq_plugin:
+    names:  '{{ item.name | d(item) }}'
+    state:  '{{ "enabled" if item.state|d("present") != "absent" else "disabled" }}'
+    prefix: '{{ item.prefix | d(omit) }}'
+    new_only: True
+  with_flattened:
+    - '{{ rabbitmq_server__combined_plugins }}'
+  notify: [ 'Restart rabbitmq-server' ]
+  tags: [ 'role::rabbitmq_server:config' ]
+
 - name: Save RabbitMQ dependent configuration on Ansible Controller
   template:
     src: 'secret/rabbitmq_server/dependent_config/inventory_hostname/config.json.j2'
