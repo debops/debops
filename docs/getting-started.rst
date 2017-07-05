@@ -20,7 +20,7 @@ advised to use the roles and their playbooks together.
 Example inventory
 -----------------
 
-The role is used by the debops.libvirtd_ playbook and will be enabed
+The role is used by the debops.libvirtd_ playbook and will be enabled
 automatically on hosts that are included in the ``[debops_service_libvirtd]``
 Ansible inventory group.
 
