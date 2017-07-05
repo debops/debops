@@ -55,6 +55,20 @@ See the `RabbitMQ Clustering Guide <https://www.rabbitmq.com/clustering.html>`_
 for more details.
 
 
+Inter-node communication is not encrypted
+-----------------------------------------
+
+Erlang supports encrypting communication between nodes (processes on the same
+or other hosts) using TLS, which RabbitMQ can use to
+`secure traffic between hosts <https://www.rabbitmq.com/clustering-ssl.html>`_.
+However one downside is that when inter-node traffic is encrypted,
+`Erlang uses dynamic random ports <https://groups.google.com/forum/#!msg/rabbitmq-users/rJaJWctOYKQ/q5nP2Cb-5k0J>`_
+for communication, which might interfere with the host's firewall. Therefore by
+default ``debops.rabbitmq_server`` role does not configure encrypted inter-node
+communication. You should consider alternative means of securing the traffic
+between hosts, for example a separate VLAN or use of a VPN connection.
+
+
 Example inventory
 -----------------
 
