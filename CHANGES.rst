@@ -33,6 +33,9 @@ Changed
   specific to make sure that the cluster is not removed accidentally. The
   cluster should not be removed with role Ansible facts are present. [drybjed_]
 
+- Change ``postgresql_server__delegate_to`` to ``inventory_hostname``
+  to be in sync with debops.postgresql behavior. [cultcom]
+
 
 .. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.3...master
 
