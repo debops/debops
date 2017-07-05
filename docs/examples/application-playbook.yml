@@ -1,7 +1,11 @@
 ---
 
-- name: Manage RabbitMQ service
-  hosts: [ 'debops_service_rabbitmq_server' ]
+# This is a playbook for an example 'application' role which uses
+# 'debops.rabbitmq_server' as a dependency and passes its own set of
+# configuration options to it.
+
+- name: Manage application
+  hosts: [ 'debops_service_rabbitmq_application' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -18,15 +22,12 @@
       secret__directories:
         - '{{ rabbitmq_server__secret__directories }}'
 
-    - role: debops.etc_services
-      tags: [ 'role::etc_services' ]
-      etc_services__dependent_list:
-        - '{{ rabbitmq_server__etc_services__dependent_list }}'
-
-    - role: debops.ferm
-      tags: [ 'role::ferm' ]
-      ferm__dependent_rules:
-        - '{{ rabbitmq_server__ferm__dependent_rules }}'
-
     - role: debops.rabbitmq_server
       tags: [ 'role::rabbitmq_server' ]
+      rabbitmq_server__dependent_role: 'application'
+      rabbitmq_server__dependent_state: '{{ application__deploy_state }}'
+      rabbitmq_server__dependent_config:
+        - '{{ application__rabbitmq_server__dependent_config }}'
+
+    - role: application
+      tags: [ 'role::application' ]

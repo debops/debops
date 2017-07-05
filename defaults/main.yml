@@ -99,11 +99,48 @@ rabbitmq_server__group_config: []
 rabbitmq_server__host_config: []
 
                                                                    # ]]]
+# .. envvar:: rabbitmq_server__dependent_role [[[
+#
+# A string that identifies another Ansible role that uses the
+# ``debops.rabbitmq_server`` role as a dependency. This value is needed to
+# correctly store the dependent configuration options.
+# See :ref:`rabbitmq_server__ref_dependency` for more details.
+rabbitmq_server__dependent_role: ''
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__dependent_state [[[
+#
+# Specify the state of the dependent configuration options, either ``present``
+# (options should be included in the configuration file) or ``absent`` (options
+# should be removed from the configuration file).
+# See :ref:`rabbitmq_server__ref_dependency` for more details.
+rabbitmq_server__dependent_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__dependent_config [[[
+#
+# List of RabbitMQ configuration options defined by another Ansible role
+# and specified using role dependent variables.
+rabbitmq_server__dependent_config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__dependent_config_filter [[[
+#
+# Actual variable used in the combined RabbitMQ configuration that unwraps
+# the dependent configuration specified by other Ansible roles and converts it
+# into format understood by the ``debops.rabbitmq_server`` configuration
+# template. See :ref:`rabbitmq_server__ref_dependency` for more details.
+rabbitmq_server__dependent_config_filter: '{{ lookup("template",
+                                              "lookup/rabbitmq_server__dependent_config_filter.j2")
+                                              | from_yaml }}'
+
+                                                                   # ]]]
 # .. envvar:: rabbitmq_server__combined_config [[[
 #
 # List that combines RabbitMQ configuration variables and passes them to the
 # template file.
 rabbitmq_server__combined_config: '{{ rabbitmq_server__default_config
+                                      + rabbitmq_server__dependent_config_filter
                                       + rabbitmq_server__config
                                       + rabbitmq_server__group_config
                                       + rabbitmq_server__host_config }}'

@@ -10,6 +10,7 @@ Ansible role: debops.rabbitmq_server
    getting-started
    defaults
    defaults-detailed
+   dependency
    copyright
    changelog
 

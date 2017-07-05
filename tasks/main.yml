@@ -45,6 +45,29 @@
     - '{{ rabbitmq_server__base_packages }}'
     - '{{ rabbitmq_server__packages }}'
 
+- name: Check if the dependent config file exists
+  stat:
+    path: '{{ secret + "/rabbitmq_server/dependent_config/" + inventory_hostname + "/config.json" }}'
+  register: rabbitmq_server__register_dependent_config_file
+  become: False
+  delegate_to: 'localhost'
+  when: (ansible_local|d() and ansible_local.rabbitmq_server|d() and
+         ansible_local.rabbitmq_server.installed is defined and
+         ansible_local.rabbitmq_server.installed|bool)
+  tags: [ 'role::rabbitmq_server:config' ]
+
+- name: Load the dependent configuration from Ansible Controller
+  slurp:
+    src: '{{ secret + "/rabbitmq_server/dependent_config/" + inventory_hostname + "/config.json" }}'
+  register: rabbitmq_server__register_dependent_config
+  become: False
+  delegate_to: 'localhost'
+  when: (ansible_local|d() and ansible_local.rabbitmq_server|d() and
+         ansible_local.rabbitmq_server.installed is defined and
+         ansible_local.rabbitmq_server.installed|bool and
+         rabbitmq_server__register_dependent_config_file.stat.exists|bool)
+  tags: [ 'role::rabbitmq_server:config' ]
+
 - name: Generate RabbitMQ configuration
   template:
     src: 'etc/rabbitmq/rabbitmq.config.j2'
@@ -53,6 +76,14 @@
     group: '{{ rabbitmq_server__group }}'
     mode: '0600'
   notify: [ 'Restart rabbitmq-server' ]
+  tags: [ 'role::rabbitmq_server:config' ]
+
+- name: Save RabbitMQ dependent configuration on Ansible Controller
+  template:
+    src: 'secret/rabbitmq_server/dependent_config/inventory_hostname/config.json.j2'
+    dest: '{{ secret + "/rabbitmq_server/dependent_config/" + inventory_hostname + "/config.json" }}'
+  become: False
+  delegate_to: 'localhost'
   tags: [ 'role::rabbitmq_server:config' ]
 
 - name: Make sure that Ansible local facts directory exists
