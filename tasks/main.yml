@@ -112,6 +112,16 @@
   notify: [ 'Restart rabbitmq-server' ]
   tags: [ 'role::rabbitmq_server:config' ]
 
+- name: Manage RabbitMQ virtual hosts
+  rabbitmq_vhost:
+    name:    '{{ item.name    | d(item) }}'
+    node:    '{{ item.node    | d(omit) }}'
+    state:   '{{ item.state   | d("present") }}'
+    tracing: '{{ item.tracing | d(omit) }}'
+  with_flattened:
+    - '{{ rabbitmq_server__combined_vhosts }}'
+  tags: [ 'role::rabbitmq_server:vhost', 'role::rabbitmq_server:user' ]
+
 - name: Manage RabbitMQ user accounts
   rabbitmq_user:
     user:           '{{ item.user           | d(item.name) | d(item) }}'

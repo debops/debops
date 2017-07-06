@@ -266,3 +266,41 @@ Create an administrator account and a regular user account:
        vhost: '/'
        read_priv: '.*'
        write_priv: '.*'
+
+
+.. _rabbitmq_server__ref_vhosts:
+
+rabbitmq_server__vhosts
+-----------------------
+
+The ``rabbitmq_server__*_vhosts`` list variables can be used to manage
+RabbitMQ virtual hosts. Each list entry is a YAML dictionary with specific
+parameters. The parameter names are the same as the ``rabbitmq_vhost`` Ansible
+module. Some more common parameters:
+
+``name``
+  The name of a given virtual host. If not specified, the whole list entry will
+  be used as the name (see examples).
+
+``state``
+  Optional. If not specified or ``present``, the virtual host will be created.
+  If ``absent``, the virtual host will be removed.
+
+``tracing``
+  Optional. Enable message tracing in a given virtual host.
+
+Examples
+~~~~~~~~
+
+Create a set of virtual hosts:
+
+.. code-block:: yaml
+
+   rabbitmq_server__vhosts:
+
+     - 'vhost1'
+
+     - 'vhost2'
+
+     - name: 'vhost3'
+       state: 'absent'

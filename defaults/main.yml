@@ -291,6 +291,49 @@ rabbitmq_server__combined_plugins: '{{ rabbitmq_server__default_plugins
                                        + rabbitmq_server__host_plugins }}'
                                                                    # ]]]
                                                                    # ]]]
+# RabbitMQ virtual host configuration [[[
+# ---------------------------------------
+
+# These variables can be used to configure RabbitMQ virtual hosts.
+# See :ref:`rabbitmq_server__ref_vhosts` for more details.
+
+# .. envvar:: rabbitmq_server__vhosts [[[
+#
+# List of RabbitMQ virtual hosts managed on all hosts in the Ansible inventory.
+rabbitmq_server__vhosts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_vhosts [[[
+#
+# List of RabbitMQ virtual hosts managed on hosts in specific Ansible inventory
+# group.
+rabbitmq_server__group_vhosts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_vhosts [[[
+#
+# List of RabbitMQ virtual hosts managed on specific hosts in the Ansible
+# inventory.
+rabbitmq_server__host_vhosts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__accounts_vhosts [[[
+#
+# List of RabbitMQ virtual hosts that are mentioned in user account
+# configuration. Each virtual host will be created if not already present.
+rabbitmq_server__accounts_vhosts: '{{ lookup("template",
+                                      "lookup/rabbitmq_server__accounts_vhosts.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_vhosts [[[
+#
+# Combined list of RabbitMQ virtual hosts passed to the Ansible task.
+rabbitmq_server__combined_vhosts: '{{ rabbitmq_server__vhosts
+                                      + rabbitmq_server__group_vhosts
+                                      + rabbitmq_server__host_vhosts
+                                      + rabbitmq_server__accounts_vhosts }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # RabbitMQ user account configuration [[[
 # ---------------------------------------
 
