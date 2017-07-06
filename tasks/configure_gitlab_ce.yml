@@ -42,7 +42,8 @@
 
 - name: Get commit hash of target checkout
   shell: GIT_WORK_TREE={{ gitlab_ce_git_checkout }} git rev-parse {{ gitlab_version_map[gitlab_version].ce }}
-         chdir={{ gitlab_ce_git_dest }}
+  args:
+    chdir: '{{ gitlab_ce_git_dest }}'
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_target_branch
   changed_when: gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before
@@ -55,7 +56,8 @@
 
 - name: Checkout GitLab CE
   shell: GIT_WORK_TREE={{ gitlab_ce_git_checkout }} git checkout -f {{ gitlab_version_map[gitlab_version].ce }}
-         chdir={{ gitlab_ce_git_dest }}
+  args:
+    chdir: '{{ gitlab_ce_git_dest }}'
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_checkout
   when: (gitlab_register_ce_source.before is undefined or
@@ -254,7 +256,8 @@
 
 - name: Update Ruby gems
   shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
-         chdir={{ gitlab_ce_git_checkout }}
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
 
@@ -274,7 +277,8 @@
 
 - name: Initialize GitLab database (MariaDB)
   shell: yes 'yes' | bundle exec rake gitlab:setup RAILS_ENV=production
-         chdir={{ gitlab_ce_git_checkout }}
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_setup_mariadb
   when: ((ansible_local is undefined or (ansible_local is defined and
@@ -315,7 +319,8 @@
 
 - name: Migrate GitLab database
   shell: bundle exec rake db:migrate RAILS_ENV=production
-         chdir={{ gitlab_ce_git_checkout }}
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_migrate
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
@@ -325,7 +330,8 @@
 
 - name: Clean GitLab assets
   shell: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
-         chdir={{ gitlab_ce_git_checkout }}
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
   when: ((ansible_local is defined and ansible_local.gitlab is defined and
           ansible_local.gitlab.installed) and
@@ -333,7 +339,8 @@
 
 - name: Precompile GitLab assets
   shell: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production
-         chdir={{ gitlab_ce_git_checkout }}
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
   when: (gitlab_register_bundle_setup_mariadb is defined and gitlab_register_bundle_setup_mariadb.changed) or
@@ -342,7 +349,8 @@
 
 - name: Clear GitLab cache
   shell: bundle exec rake cache:clear RAILS_ENV=production
-         chdir={{ gitlab_ce_git_checkout }}
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
   when: ((ansible_local is defined and ansible_local.gitlab is defined and
           ansible_local.gitlab.installed) and
@@ -378,4 +386,3 @@
     user: '{{ gitlab_user }}'
     job: 'cd {{ gitlab_ce_git_checkout }} ; PATH=/usr/local/bin:/usr/bin:/bin bundle exec rake gitlab:backup:create RAILS_ENV=production CRON=1'
     cron_file: 'gitlab-backup'
-
