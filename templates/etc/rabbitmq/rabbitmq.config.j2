@@ -76,7 +76,7 @@
 {%             if option_params|d() %}
 {%               set _ = rabbitmq_server__tpl_options.update({ option.name: option_params }) %}
 {%             endif %}
-{%           elif option is mapping %}
+{%           elif option is mapping and (not option.name|d() and not option.state|d()) %}
 {%             for option_key, option_value in option.iteritems() %}
 {%               set option_params = (rabbitmq_server__tpl_options[option_key].copy() if rabbitmq_server__tpl_options[option_key] is defined else {}) %}
 {%               set _ = option_params.update({
@@ -143,12 +143,28 @@
 {%   elif elements.type == 'list' %}
 {{ '{}'.format(elements.value | to_json) -}}
 {%   elif elements.type == 'atom' %}
-{%     if elements.value | search('^[A-Z].+') %}
+{%     if elements.value is string %}
+{%       if elements.value | search('^[A-Z].+') %}
 {{ "'{}'".format(elements.value) -}}
-{%     elif elements.value | search('[^a-zA-Z0-9@_].+') %}
+{%       elif elements.value | search('[^a-zA-Z0-9@_].+') %}
 {{ "'{}'".format(elements.value) -}}
-{%     else %}
+{%       else %}
 {{ '{}'.format(elements.value) -}}
+{%       endif %}
+{%     elif elements.value is not string and elements.value is not mapping %}
+{%       set rabbitmq_server__tpl_atom_list = [] %}
+{%       for thing in elements.value %}
+{%         if thing | search('^[A-Z].+') %}
+{%           set _ = rabbitmq_server__tpl_atom_list.append("'{}'".format(thing)) %}
+{%         elif thing | search('[^a-zA-Z0-9@_].+') %}
+{%          set _ = rabbitmq_server__tpl_atom_list.append("'{}'".format(thing)) %}
+{%         else %}
+{%           set _ = rabbitmq_server__tpl_atom_list.append('{}'.format(thing)) %}
+{%         endif %}
+{%       endfor %}
+{%       if rabbitmq_server__tpl_atom_list %}
+{{ '[' + (rabbitmq_server__tpl_atom_list | join(', ')) + ']' -}}
+{%       endif %}
 {%     endif %}
 {%   elif elements.type == 'boolean' %}
 {{ '{}'.format(elements.value | bool | lower) -}}
