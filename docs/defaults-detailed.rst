@@ -306,6 +306,49 @@ Create a set of virtual hosts:
        state: 'absent'
 
 
+.. _rabbitmq_server__ref_parameters:
+
+rabbitmq_server__parameters
+---------------------------
+
+The ``rabbitmq_server__*_parameters`` list variables can be used to manage
+`RabbitMQ parameters <https://www.rabbitmq.com/parameters.html>`_. Each list
+entry is a YAML dictionary with specific parameters. The parameter names are
+the same as the ``rabbitmq_parameter`` Ansible module. Some more common
+parameters:
+
+``component``
+  Required. Name of the component of which the parameter is being set.
+
+``name``
+  Required. The name of a given RabbitMQ parameter being set.
+
+``value``
+  The value of a given parameter in a JSON format. The values are usually
+  quoted using single quotes and contain double-quotes.
+
+``vhost``
+  Optional. Specify the RabbitMQ virtual host to which a given parameter
+  applies.
+
+``state``
+  Optional. If not specified or ``present``, the parameter will be created.
+  If ``absent``, the parameter will be removed.
+
+Examples
+~~~~~~~~
+
+Define a RabbitMQ parameter:
+
+.. code-block:: yaml
+
+   rabbitmq_server__parameters:
+
+     - component: 'federation'
+       name: 'local-username'
+       value: '"guest"'
+
+
 .. _rabbitmq_server__ref_policies:
 
 rabbitmq_server__policies
