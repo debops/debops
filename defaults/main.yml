@@ -99,9 +99,9 @@ gitlab__distribution_release: '{{ ansible_local.core.distribution_release
 #
 # List of base APT packages required by GitLab.
 gitlab__base_packages: [ 'build-essential', 'zlib1g-dev', 'libyaml-dev',
-                        'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
-                        'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
-                        'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'unzip' ]
+                         'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
+                         'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
+                         'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'unzip' ]
 
 #
 # .. envvar:: gitlab__release_packages [[[
@@ -247,13 +247,13 @@ gitlab_default_theme: '2'
 #
 # FQDN of the database server. It will be configured by
 # the debops.mariadb_ or debops.postgresql_ role.
-gitlab_database_server: "{{ ansible_local[gitlab__database].server }}"
+gitlab_database_server: '{{ ansible_local[gitlab__database].server }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_database_port [[[
 #
 # Port the database is listening on.
-gitlab_database_port: "{{ ansible_local[gitlab__database].port }}"
+gitlab_database_port: '{{ ansible_local[gitlab__database].port }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_database_user [[[
@@ -272,11 +272,11 @@ gitlab_database_name: 'gitlabhq_production'
 #
 # Path to database password file located on the Ansible Controller. See the
 # debops.secret_ role for more details.
-gitlab_database_password_path: "{{ secret + '/' + gitlab__database + '/' +
+gitlab_database_password_path: '{{ secret + "/" + gitlab__database + "/" +
                                    ansible_local[gitlab__database].delegate_to }}{%
-                                     if gitlab__database=='postgresql' %}/{{ ansible_local[gitlab__database].port }}{% endif
-                                   %}{{ '/credentials/' + gitlab_database_user +
-                                   '/password' }}"
+                                     if gitlab__database=="postgresql" %}/{{ ansible_local[gitlab__database].port }}{% endif
+                                   %}{{ "/credentials/" + gitlab_database_user +
+                                   "/password" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_database_password [[[
@@ -342,7 +342,7 @@ gitlab_redis_password: '{{ ansible_local.redis.password
 #
 # Connection string used in the configuration file.
 gitlab_redis_resque: 'redis://{{ ((":" + gitlab_redis_password + "@")
-                      if gitlab_redis_password else "") +
+                                  if gitlab_redis_password else "") +
                       gitlab_redis_host + ":" + gitlab_redis_port }}'
 
                                                                    # ]]]
