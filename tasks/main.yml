@@ -112,6 +112,31 @@
   notify: [ 'Restart rabbitmq-server' ]
   tags: [ 'role::rabbitmq_server:config' ]
 
+- name: Manage RabbitMQ user accounts
+  rabbitmq_user:
+    user:           '{{ item.user           | d(item.name) | d(item) }}'
+    force:          '{{ item.force          | d(omit) }}'
+    node:           '{{ item.node           | d(omit) }}'
+    permissions:    '{{ item.permissions    | d(omit) }}'
+    configure_priv: '{{ item.configure_priv | d(omit) }}'
+    read_priv:      '{{ item.read_priv      | d(omit) }}'
+    write_priv:     '{{ item.write_priv     | d(omit) }}'
+    state:          '{{ item.state          | d("present") }}'
+    vhost:          '{{ item.vhost          | d(omit) }}'
+    password:       '{{ item.password       | d(lookup("password",
+                        secret + "/rabbitmq_server/accounts/"
+                        + (item.user | d(item.name | d(item)))
+                        + "/password length="
+                        + rabbitmq_server__account_password_length)) }}'
+    tags:           '{{ (((item.tags.split(",") | list)
+                          if (item.tags|d() and item.tags is string)
+                          else item.tags) | join(","))
+                        if item.tags|d() else omit }}'
+  with_flattened:
+    - '{{ rabbitmq_server__combined_accounts }}'
+  tags: [ 'role::rabbitmq_server:user' ]
+  no_log: True
+
 - name: Save RabbitMQ dependent configuration on Ansible Controller
   template:
     src: 'secret/rabbitmq_server/dependent_config/inventory_hostname/config.json.j2'

@@ -206,3 +206,63 @@ Enable the RabbitMQ Management Console agent:
    rabbitmq_server__plugins:
 
      - 'rabbitmq_management_agent'
+
+
+.. _rabbitmq_server__ref_accounts:
+
+rabbitmq_server__accounts
+-------------------------
+
+The ``rabbitmq_server__*_accounts`` list variables can be used to manage
+RabbitMQ user accounts. Each list entry is a YAML dictionary with specific
+parameters. The parameter names are the same as the ``rabbitmq_user`` Ansible
+module. Some more common parameters:
+
+``user`` or ``name``
+  The name of a given user account.
+
+``state``
+  Optional. If not specified or ``present``, the user account will be created.
+  If ``absent``, the user account will be removed.
+
+``password``
+  Optional. Plaintext password of a given user account. If not specified, the
+  role will generate a random password and store it in the
+  :file:`secret/rabbitmq_server/accounts/` directory on the Ansible Controller.
+  See debops.secret_ Ansible role for more details.
+
+``tags``
+  Optional. A string or a YAML list of `tags <https://www.rabbitmq.com/management.html>`_
+  assigned to a given account. Possible choices: ``management``,
+  ``policymaker``, ``monitoring``, ``administrator``.
+
+``vhost``
+  Optional. Name of the virtual host to which a given set of permissions should
+  apply. If not specified, ``/`` vhost is used by default.
+
+``configure_priv``, ``read_priv``, ``write_priv``
+  Optional. A regular expression which defines what resources on a given
+  virtual host the user can configure, read from or write to. By default the
+  ``^$`` regexp is used which means no permissions are given to any resources
+  on a virtual host.
+
+Examples
+~~~~~~~~
+
+Create an administrator account and a regular user account:
+
+.. code-block:: yaml
+
+   rabbitmq_server__accounts:
+
+     - name: 'admin_account'
+       vhost: '/'
+       tags: [ 'administrator' ]
+       configure_priv: '.*'
+       read_priv: '.*'
+       write_priv: '.*'
+
+     - name: 'user_account'
+       vhost: '/'
+       read_priv: '.*'
+       write_priv: '.*'
