@@ -40,6 +40,13 @@ rabbitmq_server__user: 'rabbitmq'
 rabbitmq_server__group: 'rabbitmq'
 
                                                                    # ]]]
+# .. envvar:: rabbitmq_server__append_groups [[[
+#
+# List of additional UNIX groups to add the RabbitMQ user into. The
+# ``ssl-cert`` UNIX group is used for the X.509 private key access.
+rabbitmq_server__append_groups: '{{ ["ssl-cert"] if rabbitmq_server__pki|bool else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: rabbitmq_server__home [[[
 #
 # Absolute path of the RabbitMQ home directory.
@@ -64,6 +71,32 @@ rabbitmq_server__erlang_cookie_password: '{{ lookup("password", secret
                                              + "length=64") }}'
                                                                    # ]]]
                                                                    # ]]]
+# Advanced Message Queuing Protocol (AMQP) configuration [[[
+# ----------------------------------------------------------
+
+# .. envvar:: rabbitmq_server__amqp_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# RabbitMQ service over plaintext ``amqp://`` connection.
+#
+# If the TLS support is enabled, only the hosts and subnets specified in this
+# list will be allowed to connect.
+#
+# If the TLS support is disabled, and nothing is specified, anybody will be
+# able to connect over plaintext. You can specify the entries to limit the
+# connections to selected IPs and subnets.
+rabbitmq_server__amqp_allow: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__amqps_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# RabbitMQ service over TLS ``amqps://`` connection.
+#
+# If this list is empty, anybody can connect over encrypted connection.
+rabbitmq_server__amqps_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
 # RabbitMQ main configuration [[[
 # -------------------------------
 
@@ -75,7 +108,75 @@ rabbitmq_server__erlang_cookie_password: '{{ lookup("password", secret
 #
 # The default configuration defined by the ``debops.rabbitmq_server`` Ansible
 # role.
-rabbitmq_server__default_config: []
+rabbitmq_server__default_config:
+
+  - name: 'ssl'
+    state: '{{ "present" if rabbitmq_server__pki|bool else "ignore" }}'
+    options:
+
+      - name: 'versions'
+        value: [ 'tlsv1.2', 'tlsv1.1' ]
+        type: 'atom'
+
+      - name: 'ciphers'
+        value: |
+          [
+            {{ rabbitmq_server__ssl_ciphers | indent(2) }}
+          ]
+        type: 'raw'
+        state: '{{ "present"
+                   if rabbitmq_server__ssl_ciphers
+                   else "ignore" }}'
+
+      - client_renegotiation: False
+
+      - secure_renegotiate: True
+
+      - reuse_sessions: True
+
+      - honor_cipher_order: True
+
+      - honor_ecc_order: True
+
+  - name: 'rabbit'
+    state: '{{ "present" if rabbitmq_server__pki|bool else "ignore" }}'
+    options:
+
+      - name: 'tcp_listeners'
+        comment: |
+          Listen for TCP connections only on the 'localhost' interface
+          when the TLS support is enabled
+        value: |
+          [{"127.0.0.1", 5672},
+           {"::1",       5672}]
+        type: 'raw'
+        state: '{{ "ignore" if rabbitmq_server__amqp_allow else "present" }}'
+
+      - ssl_listeners: [ 5671 ]
+
+      - name: 'ssl_options'
+        value: |
+          [{cacertfile,           "{{ rabbitmq_server__cacertfile }}"},
+           {certfile,             "{{ rabbitmq_server__certfile }}"},
+           {keyfile,              "{{ rabbitmq_server__keyfile }}"},
+           {% if rabbitmq_server__ssl_dhparam %}
+          {dhfile,               "{{ rabbitmq_server__ssl_dhparam }}"},
+           {% endif -%}
+           {versions,             ['tlsv1.2', 'tlsv1.1']},
+           {depth,                2},
+           {% if rabbitmq_server__ssl_ciphers %}
+          {ciphers,              [
+                                    {{ rabbitmq_server__ssl_ciphers | indent(26) }}
+                                  ]},
+           {% endif -%}
+           {honor_cipher_order,   true},
+           {honor_ecc_order,      true},
+           {client_renegotiation, false},
+           {secure_renegotiate,   true},
+           {reuse_sessions,       true},
+           {verify,               verify_peer},
+           {fail_if_no_peer_cert, false}]
+        type: 'raw'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__config [[[
@@ -201,9 +302,139 @@ rabbitmq_server__combined_plugins: '{{ rabbitmq_server__default_plugins
 rabbitmq_server__cluster_allow: []
                                                                    # ]]]
                                                                    # ]]]
+# Public Key Infrastructure configuration [[[
+# -------------------------------------------
+
+# These variables configure the PKI environment for RabbitMQ service using the
+# debops.pki_ Ansible role. See its documentation for more details.
+
+# .. envvar:: rabbitmq_server__pki [[[
+#
+# Enable or disable PKI support.
+rabbitmq_server__pki: '{{ True
+                          if (ansible_local|d() and ansible_local.pki|d() and
+                              ansible_local.pki.enabled|d() and
+                              ansible_local.pki.enabled|bool) else False }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_path [[[
+#
+# Absolute path to the directory with PKI realms.
+rabbitmq_server__pki_path: '{{ ansible_local.pki.path
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.path|d())
+                               else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_realm [[[
+#
+# Name of the PKI realm to use by the RabbitMQ service.
+rabbitmq_server__pki_realm: '{{ ansible_local.pki.realm
+                                if (ansible_local|d() and ansible_local.pki|d() and
+                                    ansible_local.pki.realm|d())
+                                else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_ca [[[
+#
+# Name of the Certificate Authority certificate file to use.
+rabbitmq_server__pki_ca: '{{ ansible_local.pki.ca
+                             if (ansible_local|d() and ansible_local.pki|d() and
+                                 ansible_local.pki.ca|d())
+                             else "CA.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_crt [[[
+#
+# Name of the X.509 certificate file to use.
+rabbitmq_server__pki_crt: '{{ ansible_local.pki.crt
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.crt|d())
+                              else "default.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_key [[[
+#
+# Name of the X.509 private key file to use.
+rabbitmq_server__pki_key: '{{ ansible_local.pki.key
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.key|d())
+                              else "default.key" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__cacertfile [[[
+#
+# Absolute path of the Certificate Authority certificate to use.
+rabbitmq_server__cacertfile: '{{ rabbitmq_server__pki_path
+                                 + "/" + rabbitmq_server__pki_realm
+                                 + "/" + rabbitmq_server__pki_ca }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__certfile [[[
+#
+# Absolute path of the X.509 certificate to use.
+rabbitmq_server__certfile: '{{ rabbitmq_server__pki_path
+                               + "/" + rabbitmq_server__pki_realm
+                               + "/" + rabbitmq_server__pki_crt }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__keyfile [[[
+#
+# Absolute path of the X.509 private key to use.
+rabbitmq_server__keyfile: '{{ rabbitmq_server__pki_path
+                              + "/" + rabbitmq_server__pki_realm
+                              + "/" + rabbitmq_server__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ssl_versions [[[
+#
+# List of TLS/SSL protocol versions supported by the RabbitMQ service.
+rabbitmq_server__ssl_versions: [ 'tlsv1.2', 'tlsv1.1' ]
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ssl_ciphers [[[
+#
+# A Erlang raw string which contains a list of TLS/SSL ciphers to allow by the
+# server. Contents of this variable are gathered by the Ansible local facts.
+rabbitmq_server__ssl_ciphers: '{{ ansible_local.rabbitmq_server.raw_erlang_ssl_ciphers
+                                  if (ansible_local|d() and ansible_local.rabbitmq_server|d() and
+                                      ansible_local.rabbitmq_server.raw_erlang_ssl_ciphers|d())
+                                  else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ssl_dhparam [[[
+#
+# Path to the file with Diffie-Hellman parameters to use by the RabbitMQ
+# service. See debops.dhparam_ Ansible role for more details.
+rabbitmq_server__ssl_dhparam: '{{ (ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]
+                                   if (ansible_local|d() and ansible_local.dhparam|d() and
+                                       ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]|d())
+                                   else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ssl_dhparam_set [[[
+#
+# Name of the ``dhparam`` set to use.
+rabbitmq_server__ssl_dhparam_set: 'default'
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: rabbitmq_server__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+rabbitmq_server__apt_preferences__dependent_list:
+
+  - packages: [ 'erlang', 'erlang-*' ]
+    backports: [ 'jessie' ]
+    reason: |
+      Erlang 19.x allows for deactivation of the
+      TLS Client-Initiated Renegotiation (anti-DoS),
+      better support for Elliptic Curve Cryptography
+    by_role: 'debops.rabbitmq_server'
+
+                                                                   # ]]]
 # .. envvar:: rabbitmq_server__etc_services__dependent_list [[[
 #
 # Configuration for the debops.etc_services_ Ansible role.
@@ -218,6 +449,19 @@ rabbitmq_server__etc_services__dependent_list:
 #
 # Configuration for the debops.ferm_ Ansible role.
 rabbitmq_server__ferm__dependent_rules:
+
+  - name: 'rabbitmq-amqp'
+    type: 'accept'
+    saddr: '{{ rabbitmq_server__amqp_allow }}'
+    dport: [ 'amqp' ]
+    accept_any: '{{ False if rabbitmq_server__pki|bool else True }}'
+
+  - name: 'rabbitmq-amqps'
+    type: 'accept'
+    saddr: '{{ rabbitmq_server__amqps_allow }}'
+    dport: [ 'amqps' ]
+    accept_any: True
+    state: '{{ "present" if rabbitmq_server__pki|bool else "absent" }}'
 
   - name: 'rabbitmq-cluster'
     type: 'accept'

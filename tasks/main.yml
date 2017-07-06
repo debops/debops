@@ -10,12 +10,14 @@
   user:
     name: '{{ rabbitmq_server__user }}'
     group: '{{ rabbitmq_server__group }}'
+    groups: '{{ rabbitmq_server__append_groups | join(",") }}'
     home: '{{ rabbitmq_server__home }}'
     comment: 'RabbitMQ messaging server'
     password: '!'
     shell: '/bin/false'
     state: 'present'
     system: True
+    append: True
 
   # Without this, first Erlang cookie lookup on each host
   # returns different values.
@@ -68,6 +70,27 @@
          rabbitmq_server__register_dependent_config_file.stat.exists|bool)
   tags: [ 'role::rabbitmq_server:config' ]
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save RabbitMQ local facts
+  template:
+    src: 'etc/ansible/facts.d/rabbitmq_server.fact.j2'
+    dest: '/etc/ansible/facts.d/rabbitmq_server.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: rabbitmq_server__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: rabbitmq_server__register_facts|changed
+
 - name: Generate RabbitMQ configuration
   template:
     src: 'etc/rabbitmq/rabbitmq.config.j2'
@@ -96,24 +119,3 @@
   become: False
   delegate_to: 'localhost'
   tags: [ 'role::rabbitmq_server:config' ]
-
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save RabbitMQ local facts
-  template:
-    src: 'etc/ansible/facts.d/rabbitmq_server.fact.j2'
-    dest: '/etc/ansible/facts.d/rabbitmq_server.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: rabbitmq_server__register_facts
-
-- name: Update Ansible facts if they were modified
-  action: setup
-  when: rabbitmq_server__register_facts|changed

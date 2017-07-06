@@ -20,18 +20,18 @@ Dependent role variables
 The role exposes three default variables that can be used by other Ansible
 roles as dependent variables:
 
-``rabbitmq_server__dependent_name``
+:envvar:`rabbitmq_server__dependent_name`
   Required. Name of the role that uses the ``debops.rabbitmq_server`` as
   a dependency. This will be used to store the configuration in its own YAML
   dictionary. The selected name shouldn't be changed, otherwise configuration
   will be desynchronized.
 
-``rabbitmq_server__dependent_config``
+:envvar:`rabbitmq_server__dependent_config`
   Required. List of the RabbitMQ configuration options defined in the same
   format as the main configuration. See :ref:`rabbitmq_server__ref_config` for
   more details.
 
-``rabbitmq_server__dependent_state``
+:envvar:`rabbitmq_server__dependent_state`
   Optional. If not specified or ``present``, the configuration will be included
   in the :file:`/etc/rabbitmq/rabbitmq.config` configuration file and
   stored as Ansible local fact. if ``absent``, the configuration will be

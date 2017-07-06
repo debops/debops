@@ -16,6 +16,24 @@ RabbitMQ cluster. If you want to do things differently, change the
 :envvar:`rabbitmq_server__erlang_cookie_password` as needed.
 
 
+Erlang 19.x from 'jessie-backports' on Debian Jessie
+----------------------------------------------------
+
+On Debian Jessie hosts, the role will configure an APT preference for
+backported Erlang 19.x packages from Debian Stretch. They privde better
+Elliptic Curve Cryptography (ECC) support and allow deactivation of TLS
+client-initiated protocol renegotiation, which mitigates potential DoS attacks.
+
+
+Encrypted client connections
+----------------------------
+
+The role will check if the debops.pki_ and debops.dhparam_ Ansible roles
+configured their environment on a host, and will automatically enable or
+disable support for encrypted AMQP connections. Plaintext connections will be
+available if encryption is disabled.
+
+
 RabbitMQ clustering
 -------------------
 
