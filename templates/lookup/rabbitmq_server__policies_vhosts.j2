@@ -1,0 +1,13 @@
+{% set rabbitmq_server__tpl_policies_vhosts = [] %}
+{% for policy in lookup("flattened", rabbitmq_server__combined_policies) %}
+{%   if policy.vhost|d() and policy.state|d('present') != 'absent' %}
+{%     set _ = rabbitmq_server__tpl_policies_vhosts.append({ 'name': policy.vhost }) %}
+{%   endif %}
+{%   if policy.node|d() %}
+{%     set _ = rabbitmq_server__tpl_policies_vhosts.append({ 'node': policy.node }) %}
+{%   endif %}
+{%   if policy.tracing|d() %}
+{%     set _ = rabbitmq_server__tpl_policies_vhosts.append({ 'tracing': policy.tracing }) %}
+{%   endif %}
+{% endfor %}
+{{ rabbitmq_server__tpl_policies_vhosts }}

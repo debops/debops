@@ -120,7 +120,23 @@
     tracing: '{{ item.tracing | d(omit) }}'
   with_flattened:
     - '{{ rabbitmq_server__combined_vhosts }}'
-  tags: [ 'role::rabbitmq_server:vhost', 'role::rabbitmq_server:user' ]
+  tags: [ 'role::rabbitmq_server:vhost', 'role::rabbitmq_server:policy',
+          'role::rabbitmq_server:user' ]
+
+- name: Manage RabbitMQ policies
+  rabbitmq_policy:
+    name:     '{{ item.name }}'
+    pattern:  '{{ item.pattern }}'
+    tags:     '{{ item.tags }}'
+    apply_to: '{{ item.apply_to | d(omit) }}'
+    node:     '{{ item.node     | d(omit) }}'
+    priority: '{{ item.priority | d(omit) }}'
+    state:    '{{ item.state    | d("present") }}'
+    vhost:    '{{ item.vhost    | d(omit) }}'
+  with_flattened:
+    - '{{ rabbitmq_server__combined_policies }}'
+  when: (item.name|d() and item.pattern|d() and item.tags|d())
+  tags: [ 'role::rabbitmq_server:policy' ]
 
 - name: Manage RabbitMQ user accounts
   rabbitmq_user:

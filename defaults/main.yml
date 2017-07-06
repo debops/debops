@@ -317,6 +317,14 @@ rabbitmq_server__group_vhosts: []
 rabbitmq_server__host_vhosts: []
 
                                                                    # ]]]
+# .. envvar:: rabbitmq_server__policies_vhosts [[[
+#
+# List of RabbitMQ virtual hosts that are mentioned in policy configuration.
+# Each virtual host will be created if not already present.
+rabbitmq_server__policies_vhosts: '{{ lookup("template",
+                                      "lookup/rabbitmq_server__policies_vhosts.j2") }}'
+
+                                                                   # ]]]
 # .. envvar:: rabbitmq_server__accounts_vhosts [[[
 #
 # List of RabbitMQ virtual hosts that are mentioned in user account
@@ -331,7 +339,43 @@ rabbitmq_server__accounts_vhosts: '{{ lookup("template",
 rabbitmq_server__combined_vhosts: '{{ rabbitmq_server__vhosts
                                       + rabbitmq_server__group_vhosts
                                       + rabbitmq_server__host_vhosts
+                                      + rabbitmq_server__policies_vhosts
                                       + rabbitmq_server__accounts_vhosts }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ policy configuration [[[
+# ---------------------------------
+
+# These variables can be used to manage RabbitMQ policies.
+# See :ref:`rabbitmq_server__ref_policies` for more details.
+
+# .. envvar:: rabbitmq_server__policies [[[
+#
+# List of RabbitMQ policies which should be configured on all hosts in the
+# Ansible inventory.
+rabbitmq_server__policies: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_policies [[[
+#
+# List of RabbitMQ policies which should be configured on hosts in specific
+# Ansible inventory group.
+rabbitmq_server__group_policies: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_policies [[[
+#
+# List of RabbitMQ policies which should be configured on specific hosts in the
+# Ansible inventory.
+rabbitmq_server__host_policies: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_policies [[[
+#
+# Combined list of all RabbitMQ policies passed to the Ansible task.
+rabbitmq_server__combined_policies: '{{ rabbitmq_server__policies
+                                        + rabbitmq_server__group_policies
+                                        + rabbitmq_server__host_policies }}'
                                                                    # ]]]
                                                                    # ]]]
 # RabbitMQ user account configuration [[[

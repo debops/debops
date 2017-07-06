@@ -304,3 +304,55 @@ Create a set of virtual hosts:
 
      - name: 'vhost3'
        state: 'absent'
+
+
+.. _rabbitmq_server__ref_policies:
+
+rabbitmq_server__policies
+-------------------------
+
+The ``rabbitmq_server__*_policies`` list variables can be used to manage
+`RabbitMQ policies <https://www.rabbitmq.com/parameters.html>`_. Each list
+entry is a YAML dictionary with specific parameters. The parameter names are
+the same as the ``rabbitmq_policy`` Ansible module. Some more common
+parameters:
+
+``name``
+  Required. The name of a given RabbitMQ policy.
+
+``pattern``
+  Required. A regexp pattern of RabbitMQ queue names to which a given policy applies.
+
+``tags``
+  Required. An YAML dictionary with key/value parameters that describe the
+  policy. Relevant documentation can be found in the RabbitMQ Management
+  Console, Admin section, Policies.
+
+``vhost``
+  Optional. Specify the RabbitMQ virtual host to which a given policy applies.
+
+``apply_to``
+  Optional. The resource type to which a given policy applies to. Supported
+  choices: ``all``, ``exchanges``, ``queues``. If not specified, ``all`` is
+  used by default.
+
+``state``
+  Optional. If not specified or ``present``, the policy will be created.
+  If ``absent``, the policy will be removed.
+
+``priority``
+  Optional. The numerical priority of a given policy, used for sorting.
+
+Examples
+~~~~~~~~
+
+Create a set of RabbitMQ policies:
+
+.. code-block:: yaml
+
+   rabbitmq_server__policies:
+
+     - name: 'HA'
+       pattern: '.*'
+       tags:
+         'ha-mode': 'all'
