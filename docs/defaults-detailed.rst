@@ -68,7 +68,7 @@ programming language, which is also used for its configuration. YAML, used by
 Ansible, does not provide enough data types to directly map them to the
 `Erlang data types <http://erlang.org/doc/reference_manual/data_types.html>`_
 used in the RabbitMQ configuration file, therefore the configuration used by
-debops.rabbitmq_ focuses on description of the desired data types and
+``debops.rabbitmq_server`` focuses on description of the desired data types and
 conditional activation of the configuration sections. This means that simple
 values like strings, numbers, lists are mapped directly, however more complex
 configuration needs to be written in Erlang using YAML text blocks. The role
