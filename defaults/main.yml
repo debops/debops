@@ -26,6 +26,9 @@
 # - ``mysql-5.6_galera-3``: use MySQL 5.6 engine with Galera from Codership
 #   repository
 #
+# - ``mysql-5.7_galera-3``: use MySQL 5.7 engine with Galera from Codership
+#   repository
+#
 # - ``percona``: use Percona XtraDB engine from upstream repository
 #
 # The choice depends on availability of MariaDB packages in a distribution.
@@ -61,6 +64,7 @@ mariadb_server__apt_key: '{{ mariadb_server__apt_key_map[mariadb_server__flavor]
 mariadb_server__apt_key_map:
   'mariadb_upstream':   [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
   'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+  'mysql-5.7_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
   'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
 
                                                                    # ]]]
@@ -83,7 +87,12 @@ mariadb_server__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/r
 # if any of the listed flavors is selected.
 mariadb_server__apt_repository_map:
   'mariadb_upstream':   'deb {{ mariadb_server__upstream_mirror }} {{ ansible_distribution_release }} main'
-  'mysql-5.6_galera-3': 'deb http://releases.galeracluster.com/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+  'mysql-5.6_galera-3':
+    - 'deb http://releases.galeracluster.com/mysql-wsrep-5.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+    - 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+  'mysql-5.7_galera-3':
+    - 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+    - 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
   'percona':            'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
@@ -109,6 +118,7 @@ mariadb_server__packages_map:
   'mariadb_upstream': [ 'mariadb-server' ]
   'mysql': [ 'mysql-server' ]
   'mysql-5.6_galera-3': [ 'mysql-wsrep-server-5.6', 'galera-3', 'galera-arbitrator-3' ]
+  'mysql-5.7_galera-3': [ 'mysql-wsrep-server-5.7', 'galera-3', 'galera-arbitrator-3' ]
   'percona': [ 'percona-server-server' ]
                                                                    # ]]]
                                                                    # ]]]
