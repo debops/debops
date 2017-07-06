@@ -9,6 +9,8 @@ examples for them.
    :local:
    :depth: 1
 
+.. include:: includes/all.rst
+
 
 .. _rabbitmq_server__ref_config:
 
