@@ -104,6 +104,8 @@ Added
 
 - Add the ``debops.rabbitmq_server`` role and playbook. [drybjed_]
 
+- Add the ``debops.rabbitmq_management`` role and playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 

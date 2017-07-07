@@ -1,0 +1,55 @@
+---
+
+- name: Configure RabbitMQ Management Console
+  hosts: [ 'debops_service_rabbitmq_management' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.rabbitmq_server/env
+      tags: [ 'role::rabbitmq_server', 'role::secret', 'role::rabbitmq_server:config' ]
+      when: rabbitmq_management__local|bool
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::rabbitmq_server', 'role::rabbitmq_server:config' ]
+      secret__directories:
+        - '{{ rabbitmq_server__secret__directories }}'
+      when: rabbitmq_management__local|bool
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ rabbitmq_management__etc_services__dependent_list }}'
+      when: rabbitmq_management__local|bool
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers:
+        - '{{ rabbitmq_management__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ rabbitmq_management__nginx__dependent_upstreams }}'
+
+    - role: debops.rabbitmq_server
+      tags: [ 'role::rabbitmq_server' ]
+      rabbitmq_server__dependent_role: 'rabbitmq_management'
+      rabbitmq_server__dependent_state: '{{ rabbitmq_management__deploy_state }}'
+      rabbitmq_server__dependent_config:
+        - '{{ rabbitmq_management__rabbitmq_server__dependent_config }}'
+      when: rabbitmq_management__local|bool
+
+    - role: debops.rabbitmq_management
+      tags: [ 'role::rabbitmq_management' ]
