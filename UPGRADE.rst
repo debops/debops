@@ -7,8 +7,8 @@ The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the
 :ref:`docker__ref_changelog` for more details about what has changed.
 
-From v02.1 to - v0.3.0
-----------------------
+From v0.2.1 to - v0.3.0
+-----------------------
 
 This role should not be run on a system where docker-engine or docker.io is already
 installed either manually or through running a previous version of this role. If you
