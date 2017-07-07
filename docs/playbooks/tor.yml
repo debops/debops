@@ -1,0 +1,22 @@
+---
+
+- name: FIXME
+  hosts: [ 'debops_service_tor' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ tor__ferm__dependent_rules }}'
+
+    - role: nusenu.relayor
+      tags: [ 'role::relayor' ]
+
+    - role: debops-contrib.tor
+      tags: [ 'role::tor' ]
