@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.rabbitmq_server master: https://github.com/debops/ansible-rabbitmq_server/compare/v0.1.0...master
 
 
-debops.rabbitmq_server v0.1.0 - unreleased
+debops.rabbitmq_server v0.1.0 - 2017-07-07
 ------------------------------------------
 
 Sponsors
