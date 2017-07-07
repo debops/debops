@@ -102,6 +102,8 @@ Added
 - Add the ``debops.libvirtd_qemu`` role and playbook, update the
   ``debops.libvirtd`` playbook. [drybjed_]
 
+- Add the ``debops.rabbitmq_server`` role and playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
