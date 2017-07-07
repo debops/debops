@@ -53,6 +53,20 @@ rabbitmq_server__append_groups: '{{ ["ssl-cert"] if rabbitmq_server__pki|bool el
 rabbitmq_server__home: '/var/lib/rabbitmq'
                                                                    # ]]]
                                                                    # ]]]
+# Resource utilization [[[
+# ------------------------
+
+# .. envvar:: rabbitmq_server__relative_disk_free_limit [[[
+#
+# Floating point which tells RabbitMQ how much of the free disk space relative
+# to system RAM it should expect before allowing for operation. The default
+# value tells RabbitMQ to expect twice the amount of available RAM to be free
+# on the disk.
+#
+# See https://www.rabbitmq.com/production-checklist.html for more details.
+rabbitmq_server__relative_disk_free_limit: 2.0
+                                                                   # ]]]
+                                                                   # ]]]
 # Erlang cookie [[[
 # -----------------
 
@@ -176,6 +190,13 @@ rabbitmq_server__default_config:
            {reuse_sessions,       true},
            {verify,               verify_peer},
            {fail_if_no_peer_cert, false}]
+        type: 'raw'
+
+  - name: 'rabbit'
+    options:
+
+      - name: 'disk_free_limit'
+        value: '{mem_relative, {{ rabbitmq_server__relative_disk_free_limit }}{{ "}" }}'
         type: 'raw'
 
                                                                    # ]]]
