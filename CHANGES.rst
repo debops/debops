@@ -27,6 +27,9 @@ Changed
 
 - Add support for debian 'stretch'. [cultcom]
 
+- Cleanup and simplify gitlab-workhorse service file.
+  Standard input and output redirection does not work within systemd. [cultcom]
+
 
 `debops.gitlab v0.2.0`_ - 2017-04-06
 ------------------------------------
