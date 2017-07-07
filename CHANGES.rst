@@ -27,6 +27,8 @@ Changed
 
 - Add support for debian 'stretch'. [cultcom]
 
+- Fix base packages installation for 'stretch'. [cultcom]
+
 - Cleanup and simplify gitlab-workhorse service file.
   Standard input and output redirection does not work within systemd. [cultcom]
 
