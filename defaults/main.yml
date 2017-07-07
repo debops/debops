@@ -1,0 +1,103 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.kodi default variables [[[
+# ==========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: kodi__base_packages [[[
+#
+# List of base packages to install.
+# Suggested packages:
+# libasound2-plugins alsa-utils libbluray-bdj firmware-crystalhd libfftw3-bin libfftw3-dev alsa-base glew-utils opus-tools pulseaudio speex
+# Recommended packages:
+# kodi-visualization-spectrum libcec4 libmodplug1 libnfs8 libplist3 udisks2 libaacs0 libgl1-mesa-dri javascript-common va-driver-all | va-driver vdpau-driver-all | vdpau-driver
+kodi__base_packages:
+  - 'kodi'
+  - 'xorg'
+  - 'xserver-xorg'
+  - 'dbus-x11'
+  - 'xinit'
+
+  ## https://askubuntu.com/questions/761893/xserver-permission-denied-tty7/806459#806459
+  - 'xserver-xorg-legacy'
+
+  - 'python-dbus'
+  - 'python3-dbus'
+
+  ## dbus.exceptions.DBusException: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Accounts was not provided by any .service files
+  - 'accountsservice'
+
+
+  - 'pulseaudio'
+  - 'libasound2-plugins alsa-utils  libfftw3-bin libfftw3-dev  glew-utils opus-tools pulseaudio speex'
+                                                                   # ]]]
+# .. envvar:: kodi__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that `changeme/FIXME** is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that `changeme/FIXME** is uninstalled and it's configuration is removed.
+#
+kodi__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# System user and group [[[
+# -------------------------
+
+# .. envvar:: kodi__user [[[
+#
+# System UNIX account used by the Kodi.
+kodi__user: 'kodi'
+
+                                                                   # ]]]
+# .. envvar:: kodi__group [[[
+#
+# System UNIX group used by Kodi.
+kodi__group: 'kodi'
+
+                                                                   # ]]]
+# .. envvar:: kodi__groups [[[
+#
+# List of additional system groups of the system UNIX account.
+kodi__groups:
+  - 'cdrom'
+  - 'floppy'
+  - 'audio'
+  - 'video'
+  - 'plugdev'
+
+                                                                   # ]]]
+# .. envvar:: kodi__home_path [[[
+#
+# The Home Assistant system account home directory.
+kodi__home_path: '{{ (ansible_local.root.home
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.home|d())
+                      else "/var/local") + "/" + kodi__user }}'
+
+                                                                   # ]]]
+# .. envvar:: kodi__gecos [[[
+#
+# Contents of the GECOS field set for the Kodi account.
+kodi__gecos: 'kodi.org'
+
+                                                                   # ]]]
+# .. envvar:: kodi__shell [[[
+#
+# The default shell set on the Kodi account.
+kodi__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
