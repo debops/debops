@@ -20,6 +20,7 @@ The current role maintainer_ is drybjed_.
 
 Added
 ~~~~~
+
 - Ferm hook to restart docker daemon after ferm is restarted if :envvar:`docker__ferment`
   is set to False. [tallandtree_]
 
@@ -31,6 +32,7 @@ Changed
 ~~~~~~~
 
 - Docker daemon listens on port 2376 when TLS is used. [tallandtree_]
+
 
 `debops.docker v0.2.1`_ - 2016-08-29
 ------------------------------------
