@@ -20,21 +20,21 @@ Dependent role variables
 The role exposes three default variables that can be used by other Ansible
 roles as dependent variables:
 
-``elasticsearch__dependent_name``
+:envvar:`elasticsearch__dependent_role`
   Required. Name of the role that uses the ``debops.elasticsearch`` as
   a dependency. This will be used to store the configuration in its own YAML
   dictionary. The selected name shouldn't be changed, otherwise configuration
   will be desynchronized.
 
-``elasticsearch__dependent_configuration``
+:envvar:`elasticsearch__dependent_configuration`
   Required. List of the Elasticsearch configuration options defined in the same
   format as the main configuration. See :ref:`elasticsearch__ref_configuration`
   for more details.
 
-``elasticsearch__dependent_state``
+:envvar:`elasticsearch__dependent_state`
   Optional. If not specified or ``present``, the configuration will be included
   in the :file:`/etc/elasticsearch/elasticsearch.yml` configuration file and
-  stored as Ansible local fact. if ``absent``, the configuration will be
+  stored as Ansible local fact. If ``absent``, the configuration will be
   removed from the generated configuration file.
 
 
