@@ -34,7 +34,7 @@ roles as dependent variables:
 :envvar:`elasticsearch__dependent_state`
   Optional. If not specified or ``present``, the configuration will be included
   in the :file:`/etc/elasticsearch/elasticsearch.yml` configuration file and
-  stored as Ansible local fact. if ``absent``, the configuration will be
+  stored as Ansible local fact. If ``absent``, the configuration will be
   removed from the generated configuration file.
 
 
