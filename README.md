@@ -5,6 +5,7 @@
 
 [![Travis CI](https://img.shields.io/travis/debops/ansible-elasticsearch.svg?style=flat)](https://travis-ci.org/debops/ansible-elasticsearch)
 [![test-suite](https://img.shields.io/badge/test--suite-ansible--elasticsearch-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-elasticsearch/)
+[![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops.elasticsearch-660198.svg?style=flat)](https://galaxy.ansible.com/debops/elasticsearch)
 
 
 [Elasticsearch](https://en.wikipedia.org/wiki/Elasticsearch) is a distributed
@@ -15,6 +16,19 @@ The `debops.elasticsearch` Ansible role can be used to deploy and manage
 Elasticsearch instances on one or more (3+) hosts. The role can be used as
 a dependency by other Ansible roles to allow control over their configuration
 options in the Elasticsearch configuration file.
+
+### Installation
+
+This role requires at least Ansible `v2.3.0`. To install it, run:
+
+```Shell
+ansible-galaxy install debops.elasticsearch
+```
+
+### Documentation
+
+More information about `debops.elasticsearch` can be found in the
+[official debops.elasticsearch documentation](https://docs.debops.org/en/latest/ansible/roles/ansible-elasticsearch/docs/).
 
 
 ### Role dependencies
@@ -36,9 +50,9 @@ into your playbook.
 ### Authors and license
 
 - Nick Janetakis | [e-mail](mailto:nick.janetakis@gmail.com) | [Twitter](https://twitter.com/nickjanetakis) | [GitHub](https://github.com/nickjj)
-- Maciej Delmanowski | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
+- [Maciej Delmanowski](https://docs.debops.org/en/latest/debops-keyring/docs/entities.html#debops-keyring-entity-drybjed) (maintainer) | [e-mail](mailto:drybjed@gmail.com) | [Twitter](https://twitter.com/drybjed) | [GitHub](https://github.com/drybjed)
 
-License: [GPLv3](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
+License: [GPL-3.0](https://tldrlegal.com/license/gnu-general-public-license-v3-%28gpl-3%29)
 
 ***
 
