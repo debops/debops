@@ -97,7 +97,7 @@ Create a set of aliases:
        cc: 'user3'
 
 
-.. _etc_aliases__sections:
+.. _etc_aliases__ref_sections:
 
 etc_aliases__sections
 ---------------------
