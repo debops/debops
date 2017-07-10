@@ -10,6 +10,7 @@ Ansible role: debops.etc_aliases
    getting-started
    defaults
    defaults-detailed
+   dependency
    copyright
    changelog
 

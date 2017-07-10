@@ -254,12 +254,32 @@ etc_aliases__group_recipients: []
 etc_aliases__host_recipients: []
 
                                                                    # ]]]
+# .. envvar:: etc_aliases__dependent_recipients [[[
+#
+# List of the mail aliases and recipients defined by other roles through role
+# dependent variables. The configuration syntax differs from a normal
+# alias/recipient configuration, see :ref:`etc_aliases__ref_dependency` for
+# more details.
+etc_aliases__dependent_recipients: []
+
+                                                                   # ]]]
+# .. envvar:: etc_aliases__dependent_recipients_filter [[[
+#
+# The filtered configuration from other roles passed via role dependent
+# variables. This variable should be included in the combined list of
+# aliases/recipients. See :ref:`etc_aliases__ref_dependency` for more details.
+etc_aliases__dependent_recipients_filter: '{{ lookup("template",
+                                              "lookup/etc_aliases__dependent_recipients_filter.j2")
+                                              | from_yaml }}'
+
+                                                                   # ]]]
 # .. envvar:: etc_aliases__combined_recipients [[[
 #
 # Combined list of aliases and recipients which is passed to the configuration
 # template.
 etc_aliases__combined_recipients: '{{ etc_aliases__rfc2142_recipients
                                        + etc_aliases__default_recipients
+                                       + etc_aliases__dependent_recipients_filter
                                        + etc_aliases__recipients
                                        + etc_aliases__group_recipients
                                        + etc_aliases__host_recipients }}'

@@ -1,0 +1,38 @@
+---
+
+# This is a playbook for an example 'application' role which uses
+# 'debops.etc_aliases' as a dependency and passes its own set of
+# configuration options to it.
+
+- name: Manage application
+  hosts: [ 'debops_service_application' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_aliases/env
+      tags: [ 'role::etc_aliases', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::etc_aliases' ]
+      secret__directories:
+        - '{{ etc_aliases__secret__directories }}'
+
+    - role: debops.etc_aliases
+      tags: [ 'role::etc_aliases' ]
+      etc_aliases__dependent_recipients:
+
+        # Short form of dependent configuration
+        - application: '{{ application__etc_aliases__dependent_recipients }}'
+
+        # Alternavie form of dependent configuration
+        - role: 'application'
+          config: '{{ application__etc_aliases__dependent_recipients }}'
+          state: 'present'
+
+    - role: application
+      tags: [ 'role::application' ]
