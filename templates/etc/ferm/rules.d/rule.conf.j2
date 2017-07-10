@@ -1,4 +1,5 @@
 # {{ ansible_managed }}
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
 
 {% macro print_list(elements, prefix='', postfix='') %}{% if elements | length == 1 %}{{ ((prefix + ' ') if prefix else '') + elements | join(' ') + ((' ' + postfix) if postfix else '') }}{% else %}{{ ((prefix + ' ') if prefix else '') + '(' + (elements | join(' ')) + ')' + ((' ' + postfix) if postfix else '') }}{% endif %}{% endmacro %}
 {% macro print_rule(config) %}
@@ -22,28 +23,10 @@
 {%   if config.type|d() %}
 {%     set _ = ferm__tpl_config.update({'type': config.type }) %}
 {%   endif %}
-{%   if config.domain|d() %}
-{%     set _ = ferm__tpl_config.update({'domain': ([ config.domain ] if config.domain is string else config.domain) }) %}
-{%   elif config.domains|d() %}
-{%     set _ = ferm__tpl_config.update({'domain': ([ config.domains ] if config.domains is string else config.domains) }) %}
-{%   else %}
-{%     set _ = ferm__tpl_config.update({'domain': ([ ferm__domains ] if ferm__domains is string else ferm__domains) }) %}
-{%   endif %}
+{%   set _ = ferm__tpl_config.update({'domain': (debops__tpl_macros.flattened(config.domain|d(config.domains|d(ferm__domains))) | from_json) }) %}
 {%   if ferm__tpl_config['type'] != 'dmz' %}
-{%     if config.table|d() %}
-{%       set _ = ferm__tpl_config.update({'table': ([ config.table ] if config.table is string else config.table) }) %}
-{%     elif config.tables|d() %}
-{%       set _ = ferm__tpl_config.update({'table': ([ config.tables ] if config.tables is string else config.tables) }) %}
-{%     else %}
-{%       set _ = ferm__tpl_config.update({'table': [ 'filter' ] }) %}
-{%     endif %}
-{%     if config.chain|d() %}
-{%       set _ = ferm__tpl_config.update({'chain': ([ config.chain ] if config.chain is string else config.chain) }) %}
-{%     elif config.chains|d() %}
-{%       set _ = ferm__tpl_config.update({'chain': ([ config.chains ] if config.chains is string else config.chains) }) %}
-{%     else %}
-{%       set _ = ferm__tpl_config.update({'chain': [ 'INPUT' ] }) %}
-{%     endif %}
+{%     set _ = ferm__tpl_config.update({'table': (debops__tpl_macros.flattened(config.table|d(config.tables|d('filter'))) | from_json) }) %}
+{%     set _ = ferm__tpl_config.update({'chain': (debops__tpl_macros.flattened(config.chain|d(config.chains|d('INPUT'))) | from_json) }) %}
 {%   endif %}
 {%   if ferm__tpl_config['domain']|d() %}
 {%     set _ = ferm__tpl_config['domain_args'].append(print_list(ferm__tpl_config['domain'], prefix='domain')) %}
@@ -91,11 +74,7 @@
 {%   if config.subchain|d() %}
 {%     set _ = ferm__tpl_config.update({'subchain': (ferm__tpl_config['type'] + "-" + config.name | d((ferm__tpl_config['dport'][0] if ferm__tpl_config['dport']|d() else "rules")))}) %}
 {%   endif %}
-{%   if config.interface|d() %}
-{%     set _ = ferm__tpl_config.update({'interface': ([ config.interface ] if config.interface is string else config.interface) }) %}
-{%   elif config.interfaces|d() %}
-{%     set _ = ferm__tpl_config.update({'interface': ([ config.interfaces ] if config.interfaces is string else config.interfaces) }) %}
-{%   endif %}
+{%   set _ = ferm__tpl_config.update({'interface': (debops__tpl_macros.flattened(config.interface|d(config.interfaces)) | from_json) }) %}
 {%   if ferm__tpl_config['type'] == 'connection_tracking' %}
 {%     set _ = ferm__tpl_config.update({'tracking_invalid_target': (config.tracking_invalid_target | d('DROP'))}) %}
 {%     set _ = ferm__tpl_config.update({'tracking_active_target':  (config.tracking_active_target  | d('ACCEPT'))}) %}
@@ -113,47 +92,25 @@
 {%     if config.private_ip|d() %}
 {%       set _ = ferm__tpl_config.update({'private_ip': ([ config.private_ip ] if config.private_ip is string else config.private_ip) }) %}
 {%     endif %}
-{%     if config.port|d() %}
-{%       set _ = ferm__tpl_config.update({'dmz_ports': ([ config.port ] if config.port is string else config.port) }) %}
-{%     elif config.ports|d() %}
-{%       set _ = ferm__tpl_config.update({'dmz_ports': ([ config.ports ] if config.ports is string else config.ports) }) %}
+{%     if config.port|d() or config.ports|d() %}
+{%       set _ = ferm__tpl_config.update({'dmz_ports': (debops__tpl_macros.flattened(config.port|d(config.ports))) | from_json }) %}
 {%     endif %}
 {%   endif %}
-{%   if config.interface_present|d() %}
-{%     for interface in ([ config.interface_present ] if config.interface_present is string else config.interface_present) %}
-{%       if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
-{%         set _ = ferm__tpl_config.update({'interface_present': [ interface ] }) %}
-{%       endif %}
-{%     endfor %}
-{%   elif config.interfaces_present|d() %}
-{%     for interface in ([ config.interfaces_present ] if config.interfaces_present is string else config.interfaces_present) %}
-{%       if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
-{%         set _ = ferm__tpl_config.update({'interface_present': [ interface ] }) %}
-{%       endif %}
-{%     endfor %}
+{%   for interface in (debops__tpl_macros.flattened(config.interface_present|d(config.interfaces_present)) | from_json) %}
+{%     if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
+{%       set _ = ferm__tpl_config.update({'interface_present': [ interface ] }) %}
+{%     endif %}
+{%   endfor %}
+{%   if config.outerface|d() or config.outerfaces|d() %}
+{%     set _ = ferm__tpl_config.update({'outerface': (debops__tpl_macros.flattened(config.outerface|d(config.outerfaces)) | from_json) }) %}
 {%   endif %}
-{%   if config.outerface|d() %}
-{%     set _ = ferm__tpl_config.update({'outerface': ([ config.outerface ] if config.outerface is string else config.outerface) }) %}
-{%   elif config.outerfaces|d() %}
-{%     set _ = ferm__tpl_config.update({'outerface': ([ config.outerfaces ] if config.outerfaces is string else config.outerfaces) }) %}
-{%   endif %}
-{%   if config.outerface_present|d() %}
-{%     for outerface in ([ config.outerface_present ] if config.outerface_present is string else config.outerface_present) %}
-{%       if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
-{%         set _ = ferm__tpl_config.update({'outerface_present': [ outerface ] }) %}
-{%       endif %}
-{%     endfor %}
-{%   elif config.outerfaces_present|d() %}
-{%     for outerface in ([ config.outerfaces_present ] if config.outerfaces_present is string else config.outerfaces_present) %}
-{%       if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
-{%         set _ = ferm__tpl_config.update({'outerface_present': [ outerface ] }) %}
-{%       endif %}
-{%     endfor %}
-{%   endif %}
-{%   if config.protocol|d() %}
-{%     set _ = ferm__tpl_config.update({'protocol': ([ config.protocol ] if config.protocol is string else config.protocol) }) %}
-{%   elif config.protocols|d() %}
-{%     set _ = ferm__tpl_config.update({'protocol': ([ config.protocols ] if config.protocols is string else config.protocols) }) %}
+{%   for outerface in (debops__tpl_macros.flattened(config.outerface_present|d(config.outerfaces_present)) | from_json) %}
+{%     if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
+{%       set _ = ferm__tpl_config.update({'outerface_present': [ outerface ] }) %}
+{%     endif %}
+{%   endfor %}
+{%   if config.protocol|d() or config.protocols|d() %}
+{%     set _ = ferm__tpl_config.update({'protocol': (debops__tpl_macros.flattened(config.protocol|d(config.protocols)) | from_json) }) %}
 {%   endif %}
 {%   if config.protocol_syn|d() %}
 {%     if config.protocol_syn | bool %}
