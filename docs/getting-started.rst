@@ -35,10 +35,10 @@ See the :ref:`etc_aliases__ref_recipients` for more details about
 the configuration format.
 
 
-Support for the RFC 2142 [[[
-----------------------------
+Support for the RFC 2142
+------------------------
 
-The `RFC 2142: Mailbox Names For Common Services, Roles and Functions <https://www.ietf.org/rfc/rfc2142.txt>`_
+The :rfc:`2142`: Mailbox Names For Common Services and Functions
 defines a set of mailboxes (or aliases) that are recommended to exist on any
 DNS domain to allow easy communication between organizations. This role defines
 these recommended mail aliases by default for convenience. You can disable this
