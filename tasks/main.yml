@@ -1,0 +1,31 @@
+---
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save etc_aliases local facts
+  template:
+    src: 'etc/ansible/facts.d/etc_aliases.fact.j2'
+    dest: '/etc/ansible/facts.d/etc_aliases.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: etc_aliases__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: etc_aliases__register_facts|changed
+
+- name: Generate the /etc/aliases file
+  template:
+    src: 'etc/aliases.j2'
+    dest: '/etc/aliases'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Update /etc/aliases.db database' ]

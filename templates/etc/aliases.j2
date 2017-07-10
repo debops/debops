@@ -1,0 +1,40 @@
+# {{ ansible_managed }}
+
+# Local alias database
+# See aliases(5) for more details
+
+{% set etc_aliases__tpl_filtered_recipients = (etc_aliases__combined_recipients | etc_aliases__parse_recipients) %}
+{% set etc_aliases__tpl_section_list = ((etc_aliases__tpl_filtered_recipients | map(attribute='section')) | list | unique) %}
+{% for section in etc_aliases__sections %}
+{%   if section.state|d('present') != 'absent' %}
+{%     set section_loop = [] %}
+{%     set section_comment_prefix = ('' if loop.first|bool else '\n') %}
+{%     if section.name in etc_aliases__tpl_section_list %}
+{%       if section.title|d() %}
+{{ '{:-^78}'.format(' ' + section.title + ' ') | comment(prefix=section_comment_prefix, postfix='') }}
+{%       endif %}
+{%       for element in etc_aliases__tpl_filtered_recipients %}
+{%         if element.section == section.name and element.state|d('present') != 'absent' %}
+{%           set comment_prefix =   ('' if not section_loop else '\n') %}
+{%           set alias_name =       (('"' + (element.real_name | d(element.name)) + '"')
+                                     if (element.real_name | d(element.name)) | search('[^a-zA-Z0-9\-\_\.]')
+                                     else (element.real_name | d(element.name))) %}
+{%           if element.recipients|d() %}
+{%             set alias_recipients = ' ' + ([ element.recipients ] if element.recipients is string else element.recipients) | join(', ') %}
+{%           else %}
+{%             set alias_recipients = '' %}
+{%           endif %}
+{%           set alias_commented =  ('#' if element.state|d('present') == 'comment' else '') %}
+{%           set alias_indent =     (('29' if alias_commented else '30') if alias_recipients else '0') %}
+{%           if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix=comment_prefix, postfix='') -}}
+{%           endif %}
+{%           if element.state|d('present') != 'hidden' %}
+{{ ('{}{:<' + alias_indent + '}{}').format(alias_commented, alias_name + ':', alias_recipients) }}
+{%             set _ = section_loop.append(True) %}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
