@@ -1,0 +1,22 @@
+---
+
+- name: Manage /etc/aliases database
+  hosts: [ 'debops_service_etc_aliases' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_aliases/env
+      tags: [ 'role::etc_aliases', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::etc_aliases' ]
+      secret__directories:
+        - '{{ etc_aliases__secret__directories }}'
+
+    - role: debops.etc_aliases
+      tags: [ 'role::etc_aliases' ]
