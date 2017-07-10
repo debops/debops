@@ -17,7 +17,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.etc_aliases master: https://github.com/debops/ansible-etc_aliases/compare/v0.1.0...master
 
 
-debops.etc_aliases v0.1.0 - unreleased
+debops.etc_aliases v0.1.0 - 2017-07-10
 --------------------------------------
 
 Added
