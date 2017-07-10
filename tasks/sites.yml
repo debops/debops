@@ -8,9 +8,9 @@
     group: '{{ sftpusers_default_www_group }}'
     mode: '0711'
   with_flattened:
-    - sftpusers_list
-    - sftpusers_group_list
-    - sftpusers_host_list
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
   when: ((item.name is defined and item.name) and (item.sites is defined and item.sites) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
@@ -22,9 +22,9 @@
     group: '{{ item.group | default(item.name + sftpusers_name_suffix) }}'
     mode: '2775'
   with_flattened:
-    - sftpusers_list
-    - sftpusers_group_list
-    - sftpusers_host_list
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
   when: ((item.name is defined and item.name) and (item.sites is defined and item.sites) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
@@ -49,9 +49,9 @@
     group: '{{ item.group | default(item.name + sftpusers_name_suffix) }}'
     mode: '2775'
   with_flattened:
-    - sftpusers_list
-    - sftpusers_group_list
-    - sftpusers_host_list
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
   when: ((item.name is defined and item.name) and (item.sites is defined and item.sites) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
@@ -64,9 +64,9 @@
   args:
     removes: '{{ item.home | default(sftpusers_default_home_prefix + "/" + item.name + sftpusers_name_suffix) }}/sites/{{ item.sites[0] }}'
   with_flattened:
-    - sftpusers_list
-    - sftpusers_group_list
-    - sftpusers_host_list
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
   when: ((item.name is defined and item.name) and (item.sites is defined and item.sites) and
         (item.state is defined and item.state == 'absent'))
 
@@ -78,9 +78,9 @@
     fstype: 'none'
     state: 'absent'
   with_flattened:
-    - sftpusers_list
-    - sftpusers_group_list
-    - sftpusers_host_list
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
   when: ((item.name is defined and item.name) and (item.sites is defined and item.sites) and
         (item.state is defined and item.state == 'absent'))
 
@@ -92,9 +92,9 @@
     fstype: 'none'
     state: 'present'
   with_flattened:
-    - sftpusers_list
-    - sftpusers_group_list
-    - sftpusers_host_list
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
   when: ((item.name is defined and item.name) and (item.sites is defined and item.sites) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
@@ -103,9 +103,9 @@
   args:
     creates: '{{ item.home | default(sftpusers_default_home_prefix + "/" + item.name + sftpusers_name_suffix) }}/sites/{{ item.sites[0] }}'
   with_flattened:
-    - sftpusers_list
-    - sftpusers_group_list
-    - sftpusers_host_list
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
   when: ((item.name is defined and item.name) and (item.sites is defined and item.sites) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
