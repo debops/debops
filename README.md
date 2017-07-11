@@ -17,7 +17,7 @@ LDAP support requires `python-ldap` package installed on Ansible Controller.
 ### Documentation
 
 More information about `debops.auth` can be found in the
-[official debops.auth documentation](http://docs.debops.org/en/latest/ansible/roles/debops.auth.html).
+[official debops.auth documentation](https://docs.debops.org/en/latest/ansible/roles/ansible-auth/docs/).
 
 
 
