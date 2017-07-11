@@ -99,7 +99,7 @@ def etc_aliases__parse_recipients(*args, **kwargs):
 
     for element in input_args:
         if isinstance(element, dict):
-            if (any(x in ['name', 'alias'] for x in element) and
+            if (any(x in element for x in ['name', 'alias']) and
                     element.get('state', 'present') != 'ignore'):
 
                 alias_name = element.get('alias', element.get('name'))
