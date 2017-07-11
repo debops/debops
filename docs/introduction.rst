@@ -40,8 +40,6 @@ enable more features of the Postfix SMTP server for their own use. For
 example, debops.mailman_ role enables mail forwarding to the configured
 mailing lists, and debops.smstools_ role uses Postfix as mail-SMS gateway.
 
-.. _Postfix: http://postfix.org/
-
 
 Installation
 ~~~~~~~~~~~~
