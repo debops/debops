@@ -5,14 +5,10 @@ Ansible role: debops.postfix
    :maxdepth: 3
 
    introduction
-   installation
    getting-started
    defaults
    defaults-configuration
-   guides
-   troubleshooting
    copyright
-   credits
    changelog
 
 ..

@@ -3,33 +3,28 @@
 dependencies:
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:postfix',
-            'depend-of::postfix', 'type::dependency:hard' ]
-
-  - role: debops.ferm
-    tags: [ 'depend::ferm', 'depend::ferm:postfix',
-            'depend-of::postfix', 'type::dependency' ]
-    ferm_dependent_rules: '{{ postfix_ferm_dependent_rules }}'
-    when: postfix_dependencies|d() and postfix_dependencies | bool
 
 galaxy_info:
   author: 'Maciej Delmanowski'
-  description: 'Install and manage Postfix SMTP Server'
+  description: 'Install and manage Postfix SMTP service'
   company: 'DebOps'
-  license: 'GNU General Public License v3'
+  license: 'GPL-3.0'
   min_ansible_version: '1.7.0'
+
   platforms:
   - name: Ubuntu
     versions:
     - precise
-    - quantal
-    - raring
-    - saucy
     - trusty
+    - xenial
   - name: Debian
     versions:
     - wheezy
     - jessie
-  categories:
-  - system
+    - stretch
+
+  galaxy_tags:
+  - smtp
+  - mail
+  - lmtp
 
