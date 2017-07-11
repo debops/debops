@@ -231,6 +231,8 @@ respectively:
            - 'dns:*.{{ ansible_domain }}'
            - 'dns:{{ ansible_domain }}'
 
+.. _pki__ref_authorities:
+
 pki_authorities
 ---------------
 
