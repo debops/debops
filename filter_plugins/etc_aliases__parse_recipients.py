@@ -127,37 +127,26 @@ def etc_aliases__parse_recipients(*args, **kwargs):
                 _del_recipients(current_alias, element,
                                 'del_dest', 'del_to')
 
-                if 'real_name' in element:
-                    current_alias.update({
-                        'real_name': element.get('real_name')
-                    })
-                elif 'real_alias' in element:
-                    current_alias.update({
-                        'real_name': element.get('real_alias')
-                    })
+                if 'real_name' in element or 'real_alias' in element:
+                    current_alias['real_name'] = element.get('real_name', element.get('real_alias'))
 
                 if 'comment' in element:
-                    current_alias.update({
-                        'comment': element.get('comment')
-                    })
+                    current_alias['comment'] = element.get('comment')
 
                 if not current_alias.get('recipients', ''):
-                    current_alias.update({
-                        'state': 'comment'
-                    })
+                    current_alias['state'] = 'comment'
 
                 parsed_aliases.update({alias_name: current_alias})
 
             # These parameters are special and should not be interpreted
-            # directly as mail aliases
+            # directly as mail aliases.
             elif not all(x in ['name', 'alias', 'state', 'comment',
                                'section', 'weight', 'dest', 'to',
                                'add_dest', 'add_to', 'cc', 'bcc',
                                'del_dest', 'del_to']
                          for x in element):
                 for key, value in element.iteritems():
-                    current_alias = (parsed_aliases[key].copy()
-                                     if key in parsed_aliases else {})
+                    current_alias = parsed_aliases.get(key, {}).copy()
                     current_alias.update({
                         'name': key,
                         'recipients': (_mangle_recipients(
@@ -179,18 +168,13 @@ def etc_aliases__parse_recipients(*args, **kwargs):
                     })
 
                     if not current_alias.get('recipients', ''):
-                        current_alias.update({
-                            'state': 'comment'
-                        })
+                        current_alias['state'] = 'comment'
 
-                    parsed_aliases.update({key: current_alias})
+                    parsed_aliases[key] = current_alias
 
     # Expand the dictionary of aliases into a list,
-    # and return sorted by weight
-    output = []
-    for key, alias in parsed_aliases.iteritems():
-        output.append(alias)
-    return sorted(output, key=itemgetter('weight', 'name'))
+    # and return sorted by weight.
+    return sorted(parsed_aliases.values(), key=itemgetter('weight', 'name'))
 
 
 class FilterModule(object):
