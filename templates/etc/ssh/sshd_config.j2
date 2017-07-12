@@ -165,7 +165,7 @@ TCPKeepAlive yes
 Banner {{ sshd__banner }}
 
 # Allow client to pass locale environment variables
-AcceptEnv LANG LC_*
+AcceptEnv {{ sshd__accept_env | sort | join(" ") }}
 
 Subsystem sftp internal-sftp
 
@@ -195,4 +195,3 @@ Match {{ entry.match }}
 
 {%   endif %}
 {% endfor %}
-
