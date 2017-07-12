@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# This script is used by the tinc@.service systemd unit to execute the
+# 'tinc-down' script when a Tinc service is stopped. This is done to fix the
+# issue with Tinc not executing the 'tinc-down' script properly under systemd
+# https://bugzilla.redhat.com/show_bug.cgi?id=1307222
+
+# Usage: tinc-down-wrapper <tinc-network>
+
+
+set -o nounset -o pipefail -o errexit
+
+if [ -n "${1}" ] ; then
+    if [ -x /etc/tinc/"${1}"/tinc-down ] ; then
+        /etc/tinc/"${1}"/tinc-down
+    fi
+fi

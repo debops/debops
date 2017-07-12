@@ -14,10 +14,16 @@ EnvironmentFile=-/etc/default/tinc
 EnvironmentFile=-/etc/default/tinc-%i
 ExecStart=/usr/sbin/tincd --net %i --no-detach $EXTRA $TINC_NETWORK_OPTIONS
 ExecReload=/usr/sbin/tincd --net %i --kill=HUP
-ExecStop=/usr/sbin/tincd --net %i --kill
+
+# Fix for systemd not executing tinc-down script on network shutdown
+# https://bugzilla.redhat.com/show_bug.cgi?id=1307222
+ExecStop=/usr/local/lib/tinc-down-wrapper %i
+KillSignal=SIGTERM
+
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=10
+LimitMEMLOCK={{ tinc__ulimit_memlock }}
 
 [Install]
 WantedBy=tinc.service

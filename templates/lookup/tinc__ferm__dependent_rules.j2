@@ -1,0 +1,16 @@
+{% set tinc__tpl_rules = [] %}
+{% for key, network in tinc__combined_networks.iteritems() %}
+{%   if network.port|d() %}
+{%     set tinc__tpl_rule = {
+  "type": "accept",
+  "protocol": [ 'tcp', 'udp' ],
+  "dport": [ network.port ],
+  "saddr": ((([ network.allow ]) if network.allow is string else network.allow) if network.allow|d() else []),
+  "by_role": "debops.tinc",
+  "name": ("tinc_" + (network.name | d(key))),
+  "rule_state": (((network.state|d("present") not in ["absent"]) and network.node_reachable|d(True)| bool) | ternary("present", "absent"))
+} %}
+{%     set _ = tinc__tpl_rules.append(tinc__tpl_rule) %}
+{%   endif %}
+{% endfor %}
+{{ tinc__tpl_rules | to_yaml }}

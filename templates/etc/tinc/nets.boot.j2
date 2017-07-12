@@ -2,10 +2,8 @@
 
 ## This file contains all names of the networks to be started on system startup.
 
-{% for item in (tinc__default_networks + tinc__networks) %}
-{%   if (item.name|d() and item.tinc_options|d() and
-         (item.state is undefined or item.state != "absent") and
-         (item.boot|d()|bool)) %}
-{{ item.name }}
+{% for key, params in tinc__combined_networks.iteritems() %}
+{%   if (params.tinc_options|d() and params.state|d('present') != 'absent' and params.boot|d(True)|bool) %}
+{{ params.name | d(key) }}
 {%   endif %}
 {% endfor %}

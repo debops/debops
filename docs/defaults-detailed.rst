@@ -14,23 +14,45 @@ them.
 tinc__networks
 --------------
 
-This is a list of mesh networks managed by the ``debops.tinc`` role. Each
-network is described by a YAML dictionary which should have the following keys:
+The ``tinc__*_networks`` variables is a collection of YAML dictionaries that
+define Tinc networks. All dictionaries are recursively combined together in the
+order they appear in the :file:`defaults/main.yml` file.
+
+Each entry in the ``tinc__*_networks`` dictionaries is a YAML dictionary. The
+key of a given entry is either a network interface name (for example ``mesh0``
+or ``tap0``) or a "label" that holds the preferences for a network denoted by
+the ``name`` parameter. Configuration parameters in labeled sections will be
+merged with the real network preferences.
+
+You can also use YAML lists of dictionaries, however you cannot combine both
+dictionaries and lists in the same ``tinc__*_networks`` variable. YAML
+dictionaries specified in a list need to have the ``name`` parameter that
+specifies the interface name, otherwise they will be skipped.
+
+Each Tinc network is described by specific parameters:
+
+``port``
+  Required. TCP and UDP port used by this Tinc VPN.
 
 ``name``
-  Required. Name of the mesh network, used as the name of the directory in
-  :file:`/etc/tinc/` as well as the ``systemd`` instance argument.
+  Optional. Name of the mesh network, used as the name of the directory in
+  :file:`/etc/tinc/` as well as the ``systemd`` instance argument. If not
+  specified, the YAML dictionary key will be used as the network name.
 
 .. _tinc__ref_networks_interface:
 
 ``interface``
-  Required. Name of the virtual Ethernet device which will be managed by the
-  Tinc VPN. Using names like ``tunX`` or ``tapX`` will ensure that DNS
-  configuration received from the nameserver will be ordered correctly by
-  the ``resolvconf`` package.
+  Optional. Name of the virtual Ethernet device which will be managed by the
+  Tinc VPN.
 
-``port``
-  Required. TCP and UDP port used by this Tinc VPN.
+  If not specified, the role will generate an interface name from the network
+  name and device type (``tun`` or ``tap``). If the interface name does not
+  start with ``tun`` or ``tap``, the device type will be added as a prefix to
+  the generated interface name.
+
+  Using names like ``tunX`` or ``tapX`` will ensure that DNS configuration
+  received from the nameserver will be ordered correctly by the ``resolvconf``
+  package.
 
 ``node_reachable``
   Optional, boolean. Defaults to ``True``. Whether a node should be reachable
@@ -54,6 +76,9 @@ network is described by a YAML dictionary which should have the following keys:
   This should be set on a host that provides the DHCP and DNS services for the
   mesh.
 
+  If the ``bridge`` parameter is specified, and the ``link_type`` parameter is
+  not specified, role will automatically enable the ``static`` link type.
+
 .. _tinc__ref_networks_link_type:
 
 ``link_type``
@@ -76,6 +101,12 @@ network is described by a YAML dictionary which should have the following keys:
   Set the MAC address value to ``'*'`` to let the system
   generate a random hardware address.
 
+``metric``
+  Optional. Specify the network metric which will affect the Linux routing
+  table. If not specified, by default the role will tell :command:`dhclient` to
+  set the ``100`` metric which should prevent issues with misconfigured default
+  route.
+
 .. _tinc__ref_networks_boot:
 
 ``boot``
@@ -86,7 +117,8 @@ network is described by a YAML dictionary which should have the following keys:
 
 ``user``
   Optional. Name of the UNIX user account under which the ``tincd`` daemon will
-  be running. If not specified, ``tincd`` will be run under ``root`` account.
+  be running. If not specified, ``tincd`` will be run under ``tinc-vpn``
+  account.
 
 .. _tinc__ref_networks_mlock:
 
@@ -97,7 +129,9 @@ network is described by a YAML dictionary which should have the following keys:
   When no connection can be established, it can be tried to set this to ``False``.
   Apparently the "Error while processing METAKEY from" might not be fully
   resolved in Debian Jessie (problem also occurred with 1.0.28 from
-  jessie-backports).
+  jessie-backports). This usually happens when the amount of RAM reserved for
+  locked process memory is too low. See the :envvar:`tinc__ulimit_memlock`
+  variable for more details.
 
 ``chroot``
   Optional, boolean. If ``True``, the ``tincd`` daemon will be run chrooted to
@@ -107,21 +141,95 @@ network is described by a YAML dictionary which should have the following keys:
   Optional, string. Whether the  mesh should be ``present`` or ``absent``.
   Defaults to ``present``.
 
+``address`` or ``addresses``
+  Optional. List of IP addresses in the ``host/prefix`` form which should be
+  configured on the Tinc network interface if it's configured statically.
+
+``host_address`` or ``host_addresses``
+  Optional. List of FQDN or IP addresses which should be included in the host
+  configuration. These addresses will tell other Tinc nodes how to connect to
+  a specific host.
+
+  If not specified, the role will use the filtered list of the host's FQDN (if
+  the public IP addresses are available) and public IPv4/IPv6 addresses.
+
 .. _tinc__ref_networks_tinc_exclude_addresses:
 
-``tinc_exclude_addresses``
-  Optional. List of FQDN or IP addresses which should be excluded from the host configuration.
-  This list excludes the IP addresses of the mesh interface as
+``exclude_address`` or ``exclude_addresses``
+  Optional. List of FQDN or IP addresses which should be excluded from the host
+  configuration. This list excludes the IP addresses of the mesh interface as
   well as the bridge interface, so that Tinc doesn't try to connect to remote
   hosts over the VPN connection.
 
+``mode``
+  Optional. Specify the Tinc routing mode to use for this network connection
+  (``router``, ``switch``, ``hub``). If not specified, the ``switch`` mode is
+  used by default. See the :manpage:`tinc.conf(5)` for more details.
+
+``device_type``
+  Optional. Specify the network device type used by Tinc. If not specified,
+  ``tap`` is used by default. See the :manpage:`tinc.conf(5)` for more details.
+
+``cipher``
+  Optional. The cipher used to encrypt the connections. If not specified, the
+  role will use the AES-256-CBC algorithm.
+
+``digest``
+  Optional. The digest algorithm used to authenticate the connections. If not
+  specified, the role will use the SHA512 algorithm.
+
+``compression``
+  Optional. A level of compression used by Tinc (0-11). By default the
+  compression is disabled (0).
+
+``address_family``
+  Optional. Specify the address family to use for network connections
+  (``ipv4``, ``ipv6``, ``any``). If not specified, ``any`` is used by default.
+
+``hostname``
+  Optional. Set the hostname used by this host. If not specified, the value of
+  :envvar:`tinc__hostname` will be used automatically.
+
+``inventory_self``
+  Optional. List of inventory names that the host is known as. This is used to
+  filter out the current host from the list of hosts to connect to. If not
+  specified, th :envvar:`tinc__inventory_self` value is used instead.
+
+``inventory_groups``
+  Optional. List of names of the Ansible inventory groups that are used to
+  manage Tinc networks. This list will be used to create directories required
+  by the role in the :file:`secret/` directory on Ansible Controller.
+
+``connect_to``
+  Optional. List of hosts which a given Tinc node should connect to, the host
+  names are the names of the files in the :file`hosts/` Tinc directory. If not
+  specified, and the host is not configured as "static", the global
+  :envvar:`tinc__inventory_hosts` list is used to select which hosts to connect
+  to.
+
+``add_connect_to``
+  Optional. Additional list of hosts to connect to. This can be used to add
+  additional connections to the mesh network, for example to external hosts.
+  This list will be added to the existing autogenerated list of hosts to
+  connect to.
+
 ``tinc_options``
-  Required. Dictionary variable which specifies options stored in the
+  Optional. Dictionary variable which specifies options stored in the
   :file:`/etc/tinc/<network>/tinc.conf` configuration file. Each key of the dict is
   the option name, values can be strings or lists of strings, in which case the
   option will be repeated as many times as there are elements in the list.
 
+  If not specified, Tinc configuration will be autogenerated by the role with
+  sensible defaults. If specified, role will use the autogenerated values,
+  therefore you need to specify all required Tinc configuration.
+
   To see the list of available options, check the :manpage:`tinc.conf(5)` manual page.
+
+``add_tinc_options``
+  Optional. Dictionary variable which specifies additional options stored in
+  the :file:`/etc/tinc/<network>/tinc.conf` configuration file. Unlike
+  ``tinc_options``, this parameter will not "mask" the autogenerated values but
+  will add the specified options to the autogenerated ones.
 
 ``tinc_host_options``
   Optional. Dictionary variable which specifies options stored in the
@@ -132,6 +240,18 @@ network is described by a YAML dictionary which should have the following keys:
 
   To see the list of available options, check the :manpage:`tinc.conf(5)` manual page.
 
+``dns_nameservers``
+  Optional. Specify list of DNS nameservers to configure in
+  :file:`/etc/resolv.conf`. The configuration will be performed by the
+  :command:`resolvconf` command. This option is used only in the "static"
+  network interface configuration.
+
+``dns_search``
+  Optional. Specify list of DNS search domains to configure in
+  :file:`/etc/resolv.conf`. The configuration will be performed by the
+  :command:`resolvconf` command. This option is used only in the "static"
+  network interface configuration.
+
 Examples
 ~~~~~~~~
 
@@ -139,12 +259,18 @@ Minimal configuration of a default Tinc ``mesh0`` VPN:
 
 .. code-block:: yaml
 
-   tinc__networks: [ '{{ tinc__network_mesh0 }}' ]
+   tinc__networks:
+     'mesh0':
+       port: '655'
 
-   tinc__network_mesh0:
-     name: 'mesh0'
-     interface: 'tap0'
-     port: '655'
-     tinc_options:
-       Mode: 'switch'
-       DeviceType: 'tap'
+Create a separate Tinc network with a specific group of hosts included in the
+``[tinc_vpn]`` Ansible inventory group:
+
+.. code-block:: yaml
+
+   # inventory/group_vars/tinc_vpn/tinc.yml
+   tinc__group_networks:
+     'vpn0':
+       port: '656'
+       inventory_groups: 'tinc_vpn'
+       connect_to: '{{ groups.tinc_vpn }}'

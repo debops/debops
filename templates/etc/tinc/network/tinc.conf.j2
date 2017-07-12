@@ -1,17 +1,11 @@
 # {{ ansible_managed }}
 
+{% set network = item.value %}
+{% set network_name = item.value.name | d(item.key) %}
 {% set tinc__tpl_seen_keys = [ 'name', 'tinc-up', 'tinc-down', 'host-up', 'host-down', 'subnet-up', 'subnet-down' ] %}
-{% if item.tinc_options|d() %}
-Name = {{ item.hostname|d(item.tinc_options.Name|d(tinc__hostname )) | replace("-","_") }}
-{%   if item.port|d() %}
-Port = {{ item.port }}
-{%     set _ = tinc__tpl_seen_keys.append('port') %}
-{%   endif %}
-{%   if item.interface|d() %}
-Interface = {{ item.interface }}
-{%     set _ = tinc__tpl_seen_keys.append('interface') %}
-{%   endif %}
-{%   for key, value in item.tinc_options.iteritems() %}
+{% if network.tinc_options|d() %}
+Name = {{ network.hostname|d(network.tinc_options.Name|d(tinc__hostname )) | replace("-","_") }}
+{%   for key, value in network.tinc_options.iteritems() %}
 {%     if key | lower not in tinc__tpl_seen_keys %}
 {%       if value is string %}
 {%         if key | lower in [ 'connectto' ] %}
@@ -30,8 +24,10 @@ Interface = {{ item.interface }}
 {%       endif %}
 {%     endif %}
 {%   endfor %}
-{%   if not (item.node_reachable|d(True) | bool) and "BindToInterface"|lower not in tinc__tpl_seen_keys %}
-## Disabled because with this experimental feature enabled Tinc failed to connect to the VPN with "Error looking up [peer]: Name or service not known" as of 1.0.24-2.1+b1.
-# BindToInterface = lo
+{%   if not (network.node_reachable|d(True) | bool) and "BindToInterface"|lower not in tinc__tpl_seen_keys %}
+# Disabled because with this experimental feature enabled Tinc failed to
+# connect to the VPN with "Error looking up [peer]: Name or service not known"
+# as of 1.0.24-2.1+b1.
+#BindToInterface = lo
 {%   endif %}
 {% endif %}
