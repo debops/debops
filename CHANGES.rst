@@ -19,7 +19,13 @@ new release.
 `debops.tinc master`_ - unreleased
 ----------------------------------
 
-.. _debops.tinc master: https://github.com/debops/ansible-tinc/compare/v0.3.0...master
+.. _debops.tinc master: https://github.com/debops/ansible-tinc/compare/v0.4.0...master
+
+
+`debops.tinc v0.4.0`_ - 2017-07-12
+----------------------------------
+
+.. _debops.tinc v0.4.0: https://github.com/debops/ansible-tinc/compare/v0.3.0...v0.4.0
 
 Added
 ~~~~~
