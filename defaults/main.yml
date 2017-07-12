@@ -22,7 +22,9 @@ sshd__base_packages: [ 'openssh-server', 'openssh-client' ]
 # .. envvar:: sshd__recommended_packages [[[
 #
 # List of recommended packages that should be installed with OpenSSH.
-sshd__recommended_packages: []
+sshd__recommended_packages: '{{ [ "openssh-blacklist", "openssh-blacklist-extra" ]
+                                if (ansible_distribution_release in [ "wheezy", "jessie",
+                                    "precise", "trusty", "xenial" ]) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__optional_packages [[[
@@ -231,7 +233,7 @@ sshd__max_startups: '3:80:7'
 # .. envvar:: sshd__login_grace_time [[[
 #
 # Time after which unauthenticated sessions are disconnected.
-sshd__login_grace_time: '20s'
+sshd__login_grace_time: '30s'
 
                                                                    # ]]]
 # .. envvar:: sshd__privilege_separation [[[
@@ -603,42 +605,42 @@ sshd__ferm__dependent_rules:
 
   - type: 'accept'
     dport: '{{ sshd__ferm_ports }}'
-    weight: '{{ sshd__ferm_weight }}'
-    role: 'sshd'
-    role_weight: '10'
-    name: 'jump-filter-ssh'
+    weight: '0'
+    weight_class: 'sshd-chain'
+    name: 'sshd_jump-filter-ssh'
     target: '{{ sshd__ferm_limit_chain }}'
-    when: '{{ sshd__ferm_limit | bool }}'
-    delete: '{{ not sshd__ferm_limit | bool }}'
+    rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
+    comment: 'Create a separate "iptables" chain for SSH rules'
 
   - chain: '{{ sshd__ferm_limit_chain if sshd__ferm_limit | bool else "INPUT" }}'
     type: 'accept'
     dport: '{{ sshd__ferm_ports }}'
     saddr: '{{ sshd__whitelist + sshd__group_whitelist + sshd__host_whitelist }}'
-    weight: '{{ sshd__ferm_weight }}'
-    role: 'sshd'
-    role_weight: '20'
-    name: 'whitelist'
+    weight: '1'
+    weight_class: 'sshd-chain'
+    name: 'sshd_whitelist'
     subchain: False
     accept_any: False
+    comment: 'Accept any hosts in the whitelist unconditionally'
 
   - chain: '{{ sshd__ferm_limit_chain if sshd__ferm_limit | bool else "INPUT" }}'
     type: 'accept'
     dport: '{{ sshd__ferm_ports }}'
     saddr: '{{ sshd__allow + sshd__group_allow + sshd__host_allow }}'
-    weight: '{{ sshd__ferm_weight }}'
-    role: 'sshd'
-    role_weight: '30'
-    name: 'allow'
+    weight: '2'
+    weight_class: 'sshd-chain'
+    name: 'sshd_allow'
     subchain: False
     accept_any: '{{ False if sshd__ferm_limit | bool else True }}'
+    comment: |
+      Accept any hosts in the allow list. If there are any hosts specified,
+      block connections from other hosts using TCP Wrappers.
 
   - chain: '{{ sshd__ferm_limit_chain }}'
     type: 'recent'
-    weight: '{{ sshd__ferm_weight }}'
-    role: 'sshd'
-    role_weight: '40'
-    name: 'block-ssh'
+    weight: '3'
+    weight_class: 'sshd-chain'
+    name: 'sshd_block-ssh'
     dport: '{{ sshd__ferm_ports }}'
     state: [ 'NEW' ]
     subchain: False
@@ -647,32 +649,34 @@ sshd__ferm__dependent_rules:
     recent_seconds: '{{ sshd__ferm_limit_seconds }}'
     recent_hitcount: '{{ sshd__ferm_limit_hits }}'
     recent_target: 'REJECT'
-    when: '{{ sshd__ferm_limit | bool }}'
-    delete: '{{ not sshd__ferm_limit | bool }}'
+    rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
+    comment: |
+      Block new SSH connections that have been marked as recent if they make
+      too many new connection attempts.
 
   - chain: '{{ sshd__ferm_limit_chain }}'
     type: 'recent'
-    weight: '{{ sshd__ferm_weight }}'
-    role: 'sshd'
-    role_weight: '50'
-    name: 'mark-ssh'
+    weight: '4'
+    weight_class: 'sshd-chain'
+    name: 'sshd_mark-ssh'
     dport: '{{ sshd__ferm_ports }}'
     state: [ 'NEW' ]
     subchain: False
     recent_set_name: 'ssh-new'
     recent_log: False
-    when: '{{ sshd__ferm_limit | bool }}'
-    delete: '{{ not sshd__ferm_limit | bool }}'
+    rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
+    comment: 'Mark new connections to the SSH service for recent tracking'
 
   - chain: '{{ sshd__ferm_limit_chain }}'
     type: 'accept'
-    weight: '{{ sshd__ferm_weight }}'
+    weight: '5'
+    weight_class: 'sshd-chain'
     role: 'sshd'
     role_weight: '60'
-    name: 'ssh'
+    name: 'sshd_accept-ssh'
     dport: '{{ sshd__ferm_ports }}'
-    when: '{{ sshd__ferm_limit | bool }}'
-    delete: '{{ not sshd__ferm_limit | bool }}'
+    rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
+    comment: 'Accept connections to the SSH service'
 
                                                                    # ]]]
 # .. envvar:: sshd__tcpwrappers__dependent_allow [[[

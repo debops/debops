@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.sshd master`_ - unreleased
 ----------------------------------
 
-.. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.2.5...master
+.. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.3.0...master
+
+
+`debops.sshd v0.3.0`_ - 2017-07-12
+----------------------------------
+
+.. _debops.sshd v0.3.0: https://github.com/debops/ansible-sshd/compare/v0.2.5...v0.3.0
 
 Added
 ~~~~~
@@ -30,12 +36,26 @@ Changed
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
 
-Removed
-~~~~~~~
+- Update the :file:`sshd.fact` script to fix communication problems with an
+  external :command:`dpkg-query` command. [bfabio_]
 
-- Remove the packages ``openssh-blacklist`` and ``openssh-blacklist-extra`` from
-  the list of recommended packages as they are now obsolete. This fixes Debian Stretch support.
-  Refer to https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=859682 for details. [ypid_]
+- Update the parameters of the debops.ferm_ configuration to use new features
+  introduced in the role. This might affect the firewall rules of the SSH
+  service, therefore check first if your configuration is applied properly.
+  Ansible inventory modification shouldn't be necessary. [drybjed_]
+
+- Don't include deprecated configuration options in the
+  :file:`/etc/ssh/sshd_config` configuration file. [drybjed_]
+
+- Increase the default ``LoginGraceTime`` value from 20 to 30 seconds to help
+  solve issues with unresponsive DNS servers. [drybjed_]
+
+Deprecated
+~~~~~~~~~~
+
+- The ``openssh-blacklist*`` Debian packages have been removed from Debian
+  Archive and won't be available in Debian Stretch onwards.
+  Ref: https://bugs.debian.org/859682 [ypid_, drybjed_]
 
 
 `debops.sshd v0.2.5`_ - 2016-10-10
