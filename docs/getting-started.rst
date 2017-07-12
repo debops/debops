@@ -66,6 +66,15 @@ ones you will likely want to change are:
   Certificate Authority and Domain Certificate Authority. The value is a list
   of DN entries which define the subject.
 
+:envvar:`pki_authorities`
+  This is the list of internal Certificate Authorities managed on an Ansible
+  Controller.
+
+  ``debops.pki`` now supports the X.509 Name Constraints certificate extension by
+  default. This may break software using old version of OpenSSL and multi-domain
+  environments. Please see ``name_constraints`` under :ref:`pki__ref_authorities`
+  for more information.
+
 Example inventory
 -----------------
 
