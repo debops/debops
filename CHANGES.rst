@@ -16,7 +16,56 @@ The current role maintainer_ is drybjed_.
 `debops.ifupdown master`_ - unreleased
 --------------------------------------
 
-.. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.3.2...master
+.. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.4.0...master
+
+
+`debops.ifupdown v0.4.0`_ - 2017-07-12
+--------------------------------------
+
+.. _debops.ifupdown v0.4.0: https://github.com/debops/ansible-ifupdown/compare/v0.3.2...v0.4.0
+
+Added
+~~~~~
+
+- Add a separate ``iface@.service`` :command:`systemd` unit file which is used
+  to setup network interfaces that don't have an explicit device related to
+  them (bridges, VLAN interfaces, bonding interfaces).
+
+  This is required because of the recent changes in the ``ifupdown`` package in
+  Debian Jessie/Stretch which change the ``ifup@.service`` unit file to have
+  the related device of a given interface as a dependency. As a result, the
+  ``ifup@.service`` instances that don't have an explicit device associated
+  with them (anything other than a physical Ethernet network interface) wait
+  endlessly for a device that it's not present. This doesn't happen if the
+  network interfaces are configured using :command:`systemd-networkd`
+  facilities, but because this role provides a pure ``ifupdown``
+  implementation, this was the easiest way to solve that issue. [drybjed_]
+
+- Add support for the ``weight_class`` interface parameter which allows to
+  affect filename sorting. [drybjed_]
+
+- Add proper :command:`iptables` firewall rules to handle broadcast and
+  multicast traffic on local IPv4 network behind NAT and not masquerade or
+  forward it. This is needed for mDNS/Avahi support. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Change the weight numbers from 2 to 3 digits. This might affect network
+  configuration during the transition phase if the network interfaces are
+  configured by other roles than just internally by the ``debops.ifupdown``
+  role. [drybjed_]
+
+- The autoconfiguration of the VLAN network interfaces is changed to create
+  better interface order. The role will check what interface type the VLAN
+  interface is attached to and the VLAN interface will use the weight of the
+  parent interface to ensure that the VLAN interface is configured after the
+  parent interface. [drybjed_]
+
+- Improve Jinja templates by removing redundancy. [ypid_]
+
+- Role now requires at least Ansible v2.2 due to use of the ``check_mode:
+  False`` directive. [drybjed_]
 
 
 `debops.ifupdown v0.3.2`_ - 2016-12-16

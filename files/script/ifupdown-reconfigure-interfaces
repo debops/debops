@@ -148,7 +148,23 @@ start_networking () {
 interface_down () {
 
     if is_systemd ; then
-        systemctl stop "ifup@${1}.service"
+
+        local -a if_hotplug_interfaces
+        local -a if_boot_interfaces
+        local -a systemd_ifup_instances
+        if_hotplug_interfaces=( $(ifquery --list --allow=hotplug) )
+        if_boot_interfaces=( $(ifquery --list --allow=boot) )
+        systemd_ifup_instances=( $(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//') )
+
+        if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
+            systemctl stop "ifup@${1}.service"
+        elif [ ${#if_boot_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_boot_interfaces[@]}" ; then
+            if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && [ ${#systemd_ifup_instances[@]} -gt 0 ] && containsElement "${1}" "${systemd_ifup_instances[@]}" ; then
+                systemctl stop "ifup@${1}.service"
+            else
+                systemctl stop "iface@${1}.service"
+            fi
+        fi
     else
         ifdown "${1}"
     fi
@@ -158,8 +174,17 @@ interface_down () {
 # Check what init we are using and bring interface up correctly
 interface_up () {
 
+    local -a if_hotplug_interfaces
+    local -a if_boot_interfaces
+    if_hotplug_interfaces=( $(ifquery --list --allow=hotplug) )
+    if_boot_interfaces=( $(ifquery --list --allow=boot) )
+
     if is_systemd ; then
-        systemctl start "ifup@${1}.service"
+        if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
+            systemctl start "ifup@${1}.service"
+        elif [ ${#if_boot_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_boot_interfaces[@]}" ; then
+            systemctl start "iface@${1}.service"
+        fi
     else
         ifup "${1}"
     fi
@@ -195,16 +220,25 @@ if [ -d "${interface_request_path}" ] ; then
         #
         # This will most likely break existing bridged connections.
         declare -a systemd_ifup_instances
+        declare -a systemd_iface_instances
+        declare -a systemd_interface_instances
         if is_systemd ; then
             systemd_ifup_instances=( $(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//') )
+            systemd_iface_instances=( $(systemctl list-units --no-legend --state=active 'iface@*.service' | awk '{print $1}' | sed -e 's/^iface\@//' -e 's/\.service$//') )
 
             if [ ${#systemd_ifup_instances[@]} -gt 0 ]; then
                 log_message -m "Found active systemd ifup@ instances: $(join_by ',' "${systemd_ifup_instances[@]}")"
             fi
+            if [ ${#systemd_iface_instances[@]} -gt 0 ]; then
+                log_message -m "Found active systemd iface@ instances: $(join_by ',' "${systemd_iface_instances[@]}")"
+            fi
         else
             # Prevent issues with unbound variable
             systemd_ifup_instances=()
+            systemd_iface_instances=()
         fi
+
+        systemd_interface_instances=( "${systemd_ifup_instances[@]:-}" "${systemd_iface_instances[@]:-}" )
 
         # This will usually be used the first time the script tries to
         # reconfigure networks. At this time we don't really know what's set up
@@ -217,7 +251,7 @@ if [ -d "${interface_request_path}" ] ; then
             # This means that all 'ifup@.service' instances are
             # now desynchronized and broken. We need to stop all
             # of them and bring them later.
-            if [ ${#systemd_ifup_instances[@]} -gt 0 ]; then
+            if [ ${#systemd_interface_instances[@]} -gt 0 ]; then
                 for ifup_iface in "${systemd_ifup_instances[@]:-}" ; do
                     log_message -m "Bringing down '${ifup_iface}' interface in the unknown state"
                     interface_down "${ifup_iface}"
@@ -248,7 +282,7 @@ if [ -d "${interface_request_path}" ] ; then
                     if ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
 
                         # The interface in question was definitely not set up by 'ifup@.service'
-                        if ! containsElement "${iface_name}" "${systemd_ifup_instances[@]:-}" ; then
+                        if ! containsElement "${iface_name}" "${systemd_interface_instances[@]:-}" ; then
 
                             log_message -m "The '${iface_name}' interface is still active, shutting down networking service"
                             stop_networking
@@ -256,8 +290,8 @@ if [ -d "${interface_request_path}" ] ; then
                             # This means that all 'ifup@.service' instances are
                             # now desynchronized and broken. We need to stop all
                             # of them and bring them later.
-                            if [ ${#systemd_ifup_instances[@]} -gt 0 ]; then
-                                for ifup_iface in "${systemd_ifup_instances[@]:-}" ; do
+                            if [ ${#systemd_interface_instances[@]} -gt 0 ]; then
+                                for ifup_iface in "${systemd_interface_instances[@]:-}" ; do
                                     log_message -m "Bringing down '${ifup_iface}' interface due to desynchronized networking"
                                     interface_down "${ifup_iface}"
                                 done
@@ -323,8 +357,8 @@ if [ -d "${interface_request_path}" ] ; then
 
         # If we have some interfaces configured by 'ifup@.service', if they are
         # down, they probably should be up by now. If not, bring them up.
-        if [ ${#systemd_ifup_instances[@]} -gt 0 ]; then
-            for ifup_iface in "${systemd_ifup_instances[@]}" ; do
+        if [ ${#systemd_interface_instances[@]} -gt 0 ]; then
+            for ifup_iface in "${systemd_interface_instances[@]}" ; do
 
                 if ! containsElement "${ifup_iface}" "${removed_interfaces[@]:-}" \
                 && ! containsElement "${ifup_iface}" "${created_interfaces[@]:-}" ; then

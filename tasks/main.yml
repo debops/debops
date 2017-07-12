@@ -37,7 +37,7 @@
 
 - name: Remove network interface configuration
   file:
-    dest: '/etc/network/interfaces.config.d/{{ (ifupdown__interface_weight_map[item.value.type | d("default")] | d("90"))|int + (item.value.weight | d("0"))|int }}_iface_{{ item.value.iface | d(item.key) }}'
+    dest: '/etc/network/interfaces.config.d/{{ "%03d" | format((ifupdown__interface_weight_map[item.value.weight_class | d(item.value.type | d("default"))] | d("90"))|int + (item.value.weight | d("0"))|int) }}_iface_{{ item.value.iface | d(item.key) }}'
     state: 'absent'
   with_dict: '{{ ifupdown__combined_interfaces }}'
   register: ifupdown__register_interfaces_removed
@@ -46,7 +46,7 @@
 - name: Generate network interface configuration
   template:
     src: 'etc/network/interfaces.d/iface.j2'
-    dest: '/etc/network/interfaces.config.d/{{ (ifupdown__interface_weight_map[item.value.type | d("default")] | d("90"))|int + (item.value.weight | d("0"))|int }}_iface_{{ item.value.iface | d(item.key) }}'
+    dest: '/etc/network/interfaces.config.d/{{ "%03d" | format((ifupdown__interface_weight_map[item.value.weight_class | d(item.value.type | d("default"))] | d("90"))|int + (item.value.weight | d("0"))|int) }}_iface_{{ item.value.iface | d(item.key) }}'
     owner: 'root'
     group: 'root'
     mode: '{{ item.value.mode | d(0644) }}'
@@ -57,11 +57,11 @@
 - name: Remove unknown interface configuration
   shell: find /etc/network/interfaces.config.d -maxdepth 1 -type f
          -name '*_iface_{{ item.item.value.iface | d(item.item.key) }}'
-         ! -name '{{ (ifupdown__interface_weight_map[item.item.value.type | d("default")] | d("90"))|int + (item.item.value.weight | d("0"))|int }}_iface_{{ item.item.value.iface | d(item.item.key) }}' -exec rm -vf {} +
+         ! -name '{{ "%03d" | format((ifupdown__interface_weight_map[item.item.value.weight_class | d(item.item.value.type | d("default"))] | d("90"))|int + (item.item.value.weight | d("0"))|int) }}_iface_{{ item.item.value.iface | d(item.item.key) }}' -exec rm -vf {} +
   with_items:
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
-  when: (item.item.key|d() and item.changed|bool)
+  when: (item.item.key|d() and item|changed)
 
 - name: Mark modified interfaces for processing
   copy:
@@ -78,9 +78,9 @@
                     item.diff.after.state == "absent")
                 else "changed")) }}
     dest: '{{ "/run/network/debops-ifupdown-reconfigure," +
-              ((ifupdown__interface_weight_map[item.item.value.type]
+              ("%03d" | format(((ifupdown__interface_weight_map[item.item.value.weight_class | d(item.item.value.type | d("default"))]
                | d(ifupdown__interface_weight_map["default"] | d("90")))|int
-               + (item.item.value.weight | d("0"))|int)|string + ","
+               + (item.item.value.weight | d("0"))|int)))|string + ","
                + (item.item.value.iface | d(item.item.key)) }}'
     owner: 'root'
     group: 'root'
@@ -89,7 +89,7 @@
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
   notify: [ 'Apply ifupdown configuration' ]
-  when: (item.item.key|d() and item.changed|bool)
+  when: (item.item.key|d() and item|changed)
 
 - name: Remove custom configuration files
   file:

@@ -151,6 +151,18 @@ General interface parameters
   | ``tunnel``  | 80     | virtual network tunnel                                       |
   +-------------+--------+--------------------------------------------------------------+
 
+  If the detected interface type is ``vlan``, the role will check what parent
+  interface is a given VLAN attached to and change the configuration to reorder
+  the ``vlan`` interface after all of the parent interfaces, so that network
+  interfaces are processed in the working order. This will only happen if
+  ``weight_class`` parameter is not specified. If the interface is overriden,
+  the ``weight`` parameter will be set to ``5`` to ensure proper interface
+  order.
+
+``weight_class``
+  Optional. Override the specified ``type`` for a given interface so that the
+  weight of another type will be used instead.
+
 ``weight``
   Optional. Positive or negative number (for example ``2`` or ``-2``) which
   will be added to the base weight defined by the interface type. This can be
@@ -183,7 +195,7 @@ General interface parameters
   - ``auto``: bring the interface up at boot time by the ``networking``
     service. This might not be what you want on newer systems.
 
-  - ``boot``: bring the interface up at boot time by ``ifup@.service``
+  - ``boot``: bring the interface up at boot time by ``iface@.service``
     :command:`systemd` unit. This will put any processes related to a given
     interface in their separate cgroup, which allows for better control over
     the network interface. This is a custom implementation of the ``auto``
@@ -192,6 +204,10 @@ General interface parameters
   - ``hotplug``: bring the interface up/down at hotplug events. This condition
     is required to be present for the ``ifup@.service`` :command:`systemd` unit
     to work properly.
+
+  If this parameter is not specified, the role will use the ``boot`` value for
+  network interfaces other than physical Ethernet interfaces, which will use
+  the ``hotplug`` value by default.
 
 IPv4 and IPv6 configuration parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -619,7 +635,7 @@ Configure a restricted bridge network:
        forward_interface_ferm_rule: 'outerface (br0 br2) ACCEPT'
        forward_outerface_ferm_rule_enabled: False
        addresses:
-         - '2001:DB8::23/64'
+         - '2001:db8::23/64'
          - '192.0.2.23/24'
 
 Hosts attached to the ``br2`` bridge are allowed to talk to each other.

@@ -1,29 +1,9 @@
-{% macro merge_dict(current_dict, to_merge_dict, dict_key='name') %}
-{%   set merged_dict = current_dict %}
-{%   if to_merge_dict %}
-{%     if to_merge_dict is mapping %}
-{%       for dict_name in to_merge_dict.keys() | sort %}
-{%         if to_merge_dict[dict_name][dict_key]|d() %}
-{%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
-{%         elif to_merge_dict[dict_name][dict_key] is undefined %}
-{%           set _ = merged_dict.update({dict_name:(current_dict[dict_name]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
-{%         endif %}
-{%       endfor %}
-{%     elif to_merge_dict is not string and to_merge_dict is not mapping %}
-{%       for element in to_merge_dict %}
-{%         if element[dict_key]|d() %}
-{%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]]|d({}) | combine(element, recursive=True))}) %}
-{%         endif %}
-{%       endfor %}
-{%     endif %}
-{%   endif %}
-{{ merged_dict | to_json }}
-{% endmacro %}
-{% set ifupdown__tpl_merge_1 = (merge_dict(ifupdown__ethernet_interfaces, ifupdown__default_interfaces, 'iface') | from_json) %}
-{% set ifupdown__tpl_merge_2 = (merge_dict(ifupdown__tpl_merge_1, ifupdown__interfaces, 'iface')                 | from_json) %}
-{% set ifupdown__tpl_merge_3 = (merge_dict(ifupdown__tpl_merge_2, ifupdown__group_interfaces, 'iface')           | from_json) %}
-{% set ifupdown__tpl_merge_4 = (merge_dict(ifupdown__tpl_merge_3, ifupdown__host_interfaces, 'iface')            | from_json) %}
-{% set ifupdown__tpl_merge_5 = (merge_dict(ifupdown__tpl_merge_4, ifupdown__dependent_interfaces, 'iface')       | from_json) %}
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+{% set ifupdown__tpl_merge_1 = (debops__tpl_macros.merge_dict(ifupdown__ethernet_interfaces, ifupdown__default_interfaces, 'iface') | from_json) %}
+{% set ifupdown__tpl_merge_2 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_1, ifupdown__interfaces, 'iface')                 | from_json) %}
+{% set ifupdown__tpl_merge_3 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_2, ifupdown__group_interfaces, 'iface')           | from_json) %}
+{% set ifupdown__tpl_merge_4 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_3, ifupdown__host_interfaces, 'iface')            | from_json) %}
+{% set ifupdown__tpl_merge_5 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_4, ifupdown__dependent_interfaces, 'iface')       | from_json) %}
 {% set ifupdown__tpl_filtered_interfaces = {} %}
 {% for name, params in ifupdown__tpl_merge_5.iteritems() %}
 {%   set interface_name = (params.iface | d(name)) %}
@@ -67,7 +47,11 @@
 {%       endif %}
 {%     endif %}
 {%     if params.allow is undefined %}
-{%       set _ = params.update({"allow":["hotplug"]}) %}
+{%       if (ansible_virtualization_role == 'guest' and ansible_virtualization_type in [ 'lxc', 'openvz' ]) %}
+{%         set _ = params.update({"allow":["boot"]}) %}
+{%       else %}
+{%         set _ = params.update({"allow":["hotplug"]}) %}
+{%       endif %}
 {%     endif %}
 {%   elif params.type == 'vlan' %}
 {%     if params.inet is undefined %}
@@ -84,7 +68,7 @@
 {%       endif %}
 {%     endif %}
 {%     if params.allow is undefined %}
-{%       set _ = params.update({"allow":["boot","hotplug"]}) %}
+{%       set _ = params.update({"allow":["boot"]}) %}
 {%     endif %}
 {%   elif params.type == 'bridge' %}
 {%     if params.inet is undefined %}
@@ -111,7 +95,7 @@
 {%         endif %}
 {%       endif %}
 {%       if params.allow is undefined %}
-{%         set _ = params.update({"allow":["boot","hotplug"]}) %}
+{%         set _ = params.update({"allow":["boot"]}) %}
 {%       endif %}
 {%     endif %}
 {%   elif params.type == 'bonding' %}
@@ -138,8 +122,54 @@
 {%     endif %}
 {%   endif %}
 {%   if params.allow is undefined and ((params.inet|d() and params.inet != 'manual') or (params.inet6|d() and params.inet6 != 'manual')) %}
-{%     set _ = params.update({"allow":["boot","hotplug"]}) %}
+{%     set _ = params.update({"allow":["boot"]}) %}
 {%   endif %}
 {%   set _ = ifupdown__tpl_filtered_interfaces.update({interface_name:params}) %}
 {% endfor %}
-{{ ifupdown__tpl_filtered_interfaces | to_yaml }}
+{% set ifupdown__tpl_vlan_filtered_interfaces = {} %}
+{% for name, params in ifupdown__tpl_filtered_interfaces.iteritems() %}
+{%   set interface_name = (params.iface | d(name)) %}
+{%   if params.type == 'vlan' and params.weight_class is undefined %}
+{%     if params.vlan_raw_device|d() %}
+{%       if params.vlan_raw_device.startswith(('en','eth')) %}
+{%         set _ = params.update({"weight_class":"ether"}) %}
+{%       elif params.vlan_raw_device.startswith('sl') %}
+{%         set _ = params.update({"weight_class":"slip"}) %}
+{%       elif params.vlan_raw_device.startswith('wl') %}
+{%         set _ = params.update({"weight_class":"wlan"}) %}
+{%       elif params.vlan_raw_device.startswith('ww') %}
+{%         set _ = params.update({"weight_class":"wwan"}) %}
+{%       elif params.vlan_raw_device.startswith('br') %}
+{%         set _ = params.update({"weight_class":"bridge"}) %}
+{%       elif params.vlan_raw_device.startswith(('tap','tun','mesh','sit')) %}
+{%         set _ = params.update({"weight_class":"tunnel"}) %}
+{%       elif params.vlan_raw_device.startswith('bond') %}
+{%         set _ = params.update({"weight_class":"bonding"}) %}
+{%       elif params.vlan_raw_device.startswith('6to4') %}
+{%         set _ = params.update({"weight_class":"6to4"}) %}
+{%       endif %}
+{%       set _ = params.update({"weight": "5"}) %}
+{%     elif params.vlan_device|d() %}
+{%       if params.vlan_device.startswith(('en','eth')) %}
+{%         set _ = params.update({"weight_class":"ether"}) %}
+{%       elif params.vlan_device.startswith('sl') %}
+{%         set _ = params.update({"weight_class":"slip"}) %}
+{%       elif params.vlan_device.startswith('wl') %}
+{%         set _ = params.update({"weight_class":"wlan"}) %}
+{%       elif params.vlan_device.startswith('ww') %}
+{%         set _ = params.update({"weight_class":"wwan"}) %}
+{%       elif params.vlan_device.startswith('br') %}
+{%         set _ = params.update({"weight_class":"bridge"}) %}
+{%       elif params.vlan_device.startswith(('tap','tun','mesh','sit')) %}
+{%         set _ = params.update({"weight_class":"tunnel"}) %}
+{%       elif params.vlan_device.startswith('bond') %}
+{%         set _ = params.update({"weight_class":"bonding"}) %}
+{%       elif params.vlan_device.startswith('6to4') %}
+{%         set _ = params.update({"weight_class":"6to4"}) %}
+{%       endif %}
+{%       set _ = params.update({"weight": "5"}) %}
+{%     endif %}
+{%   endif %}
+{%   set _ = ifupdown__tpl_vlan_filtered_interfaces.update({interface_name:params}) %}
+{% endfor %}
+{{ ifupdown__tpl_vlan_filtered_interfaces | to_yaml }}
