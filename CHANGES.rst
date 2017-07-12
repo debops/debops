@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.sshd master`_ - unreleased
 ----------------------------------
 
-.. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.2.5...master
+.. _debops.sshd master: https://github.com/debops/ansible-sshd/compare/v0.3.0...master
+
+
+`debops.sshd v0.3.0`_ - 2017-07-12
+----------------------------------
+
+.. _debops.sshd v0.3.0: https://github.com/debops/ansible-sshd/compare/v0.2.5...v0.3.0
 
 Added
 ~~~~~
