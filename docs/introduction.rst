@@ -20,7 +20,7 @@ as a dependency of another role, to provide network configuration as needed.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.0.0``. To install it, run:
+This role requires at least Ansible ``v2.2.0``. To install it, run:
 
 .. code-block:: console
 
