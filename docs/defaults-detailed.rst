@@ -155,7 +155,7 @@ General interface parameters
   interface is a given VLAN attached to and change the configuration to reorder
   the ``vlan`` interface after all of the parent interfaces, so that network
   interfaces are processed in the working order. This will only happen if
-  ``weight_class`` parameter is not specified. If the interface is overriden,
+  ``weight_class`` parameter is not specified. If the interface is overridden,
   the ``weight`` parameter will be set to ``5`` to ensure proper interface
   order.
 
