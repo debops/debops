@@ -8,21 +8,29 @@ Changelog
 **debops.ferm**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
-The current role maintainer_ is drybjed_
+The current role maintainer_ is drybjed_.
 
 
 `debops.ferm master`_ - unreleased
 ----------------------------------
 
-.. _debops.ferm master: https://github.com/debops/ansible-ferm/compare/v0.2.2...master
+.. _debops.ferm master: https://github.com/debops/ansible-ferm/compare/v0.3.0...master
+
+
+`debops.ferm v0.3.0`_ - 2017-07-12
+----------------------------------
+
+.. _debops.ferm v0.3.0: https://github.com/debops/ansible-ferm/compare/v0.2.2...v0.3.0
 
 Added
 ~~~~~
 
 - Add a variable which can be used to restrict what network interfaces can be
   used for connections from Ansible Controller. [gaudenz]
+
+- Update the Ansible facts automatically if they have been changed. [drybjed_]
 
 Changed
 ~~~~~~~
@@ -32,6 +40,49 @@ Changed
 
 - Packets blocked due to rate limits will be now dropped instead of being
   rejected by default. [gaudenz]
+
+- The data format of the firewall rules has been redesigned. Rules can now be
+  defined as nested YAML lists, existing default or dependent rules can
+  be easily modified through the Ansible inventory, multiple firewall rules can
+  be included in one configuration file. [drybjed_]
+
+- The firewall rules are now read from the :file:`/etc/ferm/rules.d/` directory
+  to help with transition to the new data format and avoid tab-completion
+  collision with the :file:`/etc/ferm/ferm.conf` file. [drybjed_]
+
+- Use of multiple rule parameters that define the final filename of the
+  configuration files has been dropped, now only the ``item.name`` parameter is
+  used to define the filename. [drybjed_]
+
+- The role automatically removes duplicate configuration files (based on the
+  ``name`` parameter) when the weight of a given rule is changed to make
+  modifications easier. [drybjed_]
+
+- The scale of the "weight" used to sort the rules in the directory has been
+  changed from 00-99 to 000-999. [drybjed_]
+
+- The ``item.weight`` parameter is now relative to the "weight class" or rule
+  type defined for a given firewall rule. You can use negative weight values
+  for better control over rule order. [drybjed_]
+
+- Run the ``debconf`` task only when APT is the package manager. This should
+  allow the role to be used on OSes other than Debian/Ubuntu. [drybjed_]
+
+- The :file:`/etc/ferm/ferm.conf` configuration file will be now properly
+  diverted to preserve the original. [drybjed_]
+
+Removed
+~~~~~~~
+
+- The ``ferm__default_weight`` variable has been removed. The default rule
+  weight is defined in the weight map directly. [drybjed_]
+
+- The role will no longer create the :file:`/etc/ferm/ferm.d/` directory by
+  default. Existing directories are not removed. [drybjed_]
+
+- The ``item.when`` and ``item.delete`` parameters are no longer supported. You
+  can control rule presence conditionally using ``item.rule_state`` or
+  ``item.state`` parameters. [drybjed_]
 
 
 `debops.ferm v0.2.2`_ - 2016-12-01
@@ -44,7 +95,7 @@ Added
 
 - Write missing role documentation. [ganto_, ypid_, drybjed_]
 
-- Allow to disable :envvar:`ferm__rules_forward` using
+- Allow to disable ``ferm__rules_forward`` using
   :envvar:`ferm__forward_accept`. [ypid_]
 
 Changed
@@ -53,7 +104,7 @@ Changed
 - Use the `Ansible package module`_ which requires Ansible v2.0. [ypid_]
 
 - Be more precise about the expected format of ``item.by_role`` in
-  :ref:`default_rules`. [ypid_]
+  :ref:`ferm__ref_default_rules`. [ypid_]
 
 - Move kernel parameters to enable reverse path filtering to the
   debops.sysctl_ role. [ypid_]
@@ -76,7 +127,7 @@ Deprecated
   compatibility. [ypid_]
 
 - Deprecated ``item.role``, use ``item.by_role`` instead. Applies for:
-  :ref:`default_rules`. [ypid_]
+  :ref:`ferm__ref_default_rules`. [ypid_]
 
 
 `debops.ferm v0.2.1`_ - 2016-04-21
