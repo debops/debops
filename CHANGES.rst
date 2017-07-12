@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.ferm master`_ - unreleased
 ----------------------------------
 
-.. _debops.ferm master: https://github.com/debops/ansible-ferm/compare/v0.2.2...master
+.. _debops.ferm master: https://github.com/debops/ansible-ferm/compare/v0.3.0...master
+
+
+`debops.ferm v0.3.0`_ - 2017-07-12
+----------------------------------
+
+.. _debops.ferm v0.3.0: https://github.com/debops/ansible-ferm/compare/v0.2.2...v0.3.0
 
 Added
 ~~~~~
