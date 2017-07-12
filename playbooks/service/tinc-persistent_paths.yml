@@ -1,0 +1,37 @@
+---
+
+- name: Configure Tinc VPN and ensure persistence
+  hosts: [ 'debops_service_tinc_persistent_paths', 'debops_service_tinc_aux' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.tinc/env
+      tags: [ 'role::tinc', 'role::tinc:secret', 'role::secret', 'role::ferm' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::tinc:secret' ]
+      secret__directories: '{{ tinc__env_secret__directories }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list: '{{ tinc__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list: '{{ tinc__env_etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules: '{{ tinc__env_ferm__dependent_rules }}'
+
+    - role: debops.tinc
+      tags: [ 'role::tinc' ]
+
+    - role: debops.persistent_paths
+      tags: [ 'role::persistent_paths' ]
+      persistent_paths__dependent_paths: '{{ tinc__persistent_paths__dependent_paths }}'
