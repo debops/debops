@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.ifupdown master`_ - unreleased
 --------------------------------------
 
-.. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.3.2...master
+.. _debops.ifupdown master: https://github.com/debops/ansible-ifupdown/compare/v0.4.0...master
+
+
+`debops.ifupdown v0.4.0`_ - 2017-07-12
+--------------------------------------
+
+.. _debops.ifupdown v0.4.0: https://github.com/debops/ansible-ifupdown/compare/v0.3.2...v0.4.0
 
 Added
 ~~~~~
