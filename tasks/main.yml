@@ -28,11 +28,14 @@
 
 - name: Add custom APT repository
   apt_repository:
-    repo: '{{ mariadb_server__apt_repository_map[mariadb_server__flavor] }}'
+    repo: '{{ item }}'
     state: 'present'
     update_cache: True
     mode: '0644'
   when: mariadb_server__flavor in mariadb_server__apt_repository_map.keys()
+  with_flattened: '{{ ([ mariadb_server__apt_repository_map[mariadb_server__flavor] ]
+                       if mariadb_server__apt_repository_map[mariadb_server__flavor] is string
+                       else mariadb_server__apt_repository_map[mariadb_server__flavor]) }}'
 
 - name: Install database server packages
   apt:
