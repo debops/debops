@@ -18,7 +18,7 @@ etc_aliases__recipients
 The ``etc_aliases__*_recipients`` variables define mail aliases and their
 recipients which should be present in the :file:`/etc/aliases` file. Each
 variable is a YAML list with dictionaries as the entries. Multiple entries that
-define the same mail alias are combined together in order of apperance.
+define the same mail alias are combined together in order of appearance.
 
 Each entry can be a YAML dictionary with a dictionary key being the alias to
 define, and dictionary value being a string with one recipient, or a YAML list
@@ -36,7 +36,7 @@ The more complex version uses a set of parameters that allow greater control
 over a particular alias:
 
 ``name``, ``alias``
-  The mail alias to configure
+  The mail alias to configure.
 
 ``dest``, ``to``
   Required. The string or an YAML list of recipients for a given mail alias.
@@ -74,7 +74,7 @@ over a particular alias:
 
 ``weight``
   Optional. A numeric value which is used to sort the entries in the final
-  databse file. The entries wigh higher numbers have bigger "weight" and will
+  database file. The entries with higher numbers have bigger "weight" and will
   be put lower in the file. Negative numbers can be used to put the entries
   higher than normal. If not specified, a default ``0`` will be set.
 
