@@ -1,6 +1,7 @@
 Introduction
 ============
-Some text
+`debops.auth` manages basic user authentication and authorization on configured host, including setting up system groups with elevated
+privileges.
 
 Installation
 ~~~~~~~~~~~~
@@ -8,6 +9,8 @@ Installation
 This role requires at least Ansible ``v1.8.0``. To install it, run::
 
     ansible-galaxy install debops.auth
+
+LDAP support requires `python-ldap` package installed on Ansible Controller
 
 ..
  Local Variables:
