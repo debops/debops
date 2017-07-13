@@ -21,6 +21,9 @@ new release.
 
 .. _debops.apt master: https://github.com/debops/ansible-apt/compare/v0.5.0...master
 
+- Add ``http://security.debian.org`` as a Debian Security repository, so that
+  the fact script can recognize it as such. [drybjed_]
+
 
 `debops.apt v0.5.0`_ - 2017-07-03
 ---------------------------------

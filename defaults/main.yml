@@ -414,6 +414,17 @@ apt__security_sources:
                         in apt__distribution_release_map[apt__distribution]|d([]))
                     else "absent" }}'
 
+    # This version may be present on some installations. It's here so that the
+    # fact script knows that a given URL is a secuirity source and doesn't
+    # create normal entries. This version is not added to the final file.
+  - uri:        'http://security.debian.org'
+    comment:    'Debian Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "/updates" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Debian'
+    state: 'absent'
+
     # This version shows up in Debian Stretch APT configuration.
     # It's disabled by default to not create duplicate entries.
   - uri:        'http://security.debian.org/debian-security'
