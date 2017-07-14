@@ -1,5 +1,5 @@
 {% set kibana__tpl_output = [] %}
-{% for plugin in kibana__combined_plugins %}
+{% for plugin in ([ kibana__combined_plugins ] if kibana__combined_plugins is mapping else kibana__combined_plugins) %}
 {%   if plugin.state|d('present') != 'absent' %}
 {%     if plugin.configuration|d() %}
 {%       set _ = kibana__tpl_output.append(plugin.configuration) %}
