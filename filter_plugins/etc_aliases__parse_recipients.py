@@ -128,7 +128,9 @@ def etc_aliases__parse_recipients(*args, **kwargs):
                                 'del_dest', 'del_to')
 
                 if 'real_name' in element or 'real_alias' in element:
-                    current_alias['real_name'] = element.get('real_name', element.get('real_alias'))
+                    current_alias['real_name'] = (
+                            element.get('real_name',
+                                        element.get('real_alias')))
 
                 if 'comment' in element:
                     current_alias['comment'] = element.get('comment')
