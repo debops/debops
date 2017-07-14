@@ -23,7 +23,8 @@
   with_flattened: '{{ ([ mariadb__apt_key ]
                        if mariadb__apt_key is string
                        else mariadb__apt_key) }}'
-  when: mariadb__flavor in [ 'mariadb_upstream', 'percona' ]
+  when: (mariadb__flavor not in [ 'mariadb', 'mysql' ]) and
+        mariadb__apt_key
 
 - name: Add custom APT repository
   apt_repository:
@@ -31,7 +32,7 @@
     state: 'present'
     update_cache: True
     mode: '0644'
-  when: mariadb__flavor in [ 'mariadb_upstream', 'percona' ]
+  when: mariadb__flavor in mariadb__apt_repository_map.keys()
 
 - name: Check if local database port is open
   command: nc -z localhost {{ mariadb__port }}
