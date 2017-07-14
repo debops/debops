@@ -20,6 +20,8 @@ Fixes
 
 - Ensure that list of plugins is correctly flattened. [drybjed_]
 
+- Make sure that plugins with complex names work. [pedroluislopez, drybjed_]
+
 
 `debops.elasticsearch v0.2.0`_ - 2017-05-13
 -------------------------------------------
