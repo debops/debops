@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.kibana master`_ - unreleased
 ------------------------------------
 
-.. _debops.kibana master: https://github.com/debops/ansible-kibana/compare/v0.1.0...master
+.. _debops.kibana master: https://github.com/debops/ansible-kibana/compare/v0.1.1...master
+
+
+`debops.kibana v0.1.1`_ - 2017-07-14
+------------------------------------
+
+.. _debops.kibana v0.1.1: https://github.com/debops/ansible-kibana/compare/v0.1.0...v0.1.1
 
 Fixed
 ~~~~~
