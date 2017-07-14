@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.kibana master: https://github.com/debops/ansible-kibana/compare/v0.1.0...master
 
+Fixed
+~~~~~
+
+- Ensure that list of plugins is correctly flattened. [drybjed_]
+
 
 debops.kibana v0.1.0 - 2017-05-17
 ---------------------------------
