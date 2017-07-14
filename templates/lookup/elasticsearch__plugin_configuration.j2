@@ -1,5 +1,5 @@
 {% set elasticsearch__tpl_output = [] %}
-{% for plugin in elasticsearch__combined_plugins %}
+{% for plugin in ([ elasticsearch__combined_plugins ] if elasticsearch__combined_plugins is mapping else elasticsearch__combined_plugins) %}
 {%   if plugin.state|d('present') != 'absent' %}
 {%     if plugin.configuration|d() %}
 {%       set _ = elasticsearch__tpl_output.append(plugin.configuration) %}
