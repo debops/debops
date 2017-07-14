@@ -13,7 +13,20 @@ The current role maintainer_ is drybjed_.
 `debops.elasticsearch master`_ - unreleased
 -------------------------------------------
 
-.. _debops.elasticsearch master: https://github.com/debops/ansible-elasticsearch/compare/v0.2.0...master
+.. _debops.elasticsearch master: https://github.com/debops/ansible-elasticsearch/compare/v0.2.1...master
+
+
+`debops.elasticsearch v0.2.1`_ - 2017-07-14
+-------------------------------------------
+
+.. _debops.elasticsearch v0.2.1: https://github.com/debops/ansible-elasticsearch/compare/v0.2.0...v0.2.1
+
+Fixes
+~~~~~
+
+- Ensure that list of plugins is correctly flattened. [drybjed_]
+
+- Make sure that plugins with complex names work. [pedroluislopez, drybjed_]
 
 
 `debops.elasticsearch v0.2.0`_ - 2017-05-13
