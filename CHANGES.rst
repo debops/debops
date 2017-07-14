@@ -21,6 +21,9 @@ Fixed
 
 - Ensure that list of plugins is correctly flattened. [drybjed_]
 
+- Allow plugins with name like ``com.floragunn:search-guard-5:5.5.0-14``.
+  [drybjed_]
+
 
 debops.kibana v0.1.0 - 2017-05-17
 ---------------------------------
