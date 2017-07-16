@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.auth**
 
 This project adheres to `Semantic Versioning <http://semver.org/>`_
@@ -230,4 +232,3 @@ Added
 ~~~~~
 
 - First release. [drybjed]
-
