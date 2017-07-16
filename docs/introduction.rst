@@ -14,7 +14,7 @@ This role requires at least Ansible ``v1.8.0``. To install it, run:
 
     ansible-galaxy install debops.auth
 
-LDAP support requires `python-ldap` package installed on Ansible Controller
+LDAP support requires ``python-ldap`` package installed on Ansible Controller.
 
 ..
  Local Variables:
