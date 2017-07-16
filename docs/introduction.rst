@@ -8,13 +8,13 @@ The ``debops.auth`` role allows you to manage and configure basic user authentic
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.8.0``. To install it, run:
+This role requires at least Ansible ``v2.1.6``. To install it, run:
 
 .. code-block:: console
 
-    ansible-galaxy install debops.auth
+   ansible-galaxy install debops.auth
 
-LDAP support requires `python-ldap` package installed on Ansible Controller
+LDAP support requires ``python-ldap`` package installed on Ansible Controller.
 
 ..
  Local Variables:
