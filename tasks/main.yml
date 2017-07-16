@@ -90,9 +90,10 @@
   when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and nginx__deploy_state in [ 'present' ])
 
 - name: Get list of nameservers configured in /etc/resolv.conf
-  shell: "grep -E '^nameserver\\s' /etc/resolv.conf | awk '{print $2}'"
+  shell: awk '$1=="nameserver" {if(/%/){sub(/[0-9a-fA-F:]+/, "[&]", $2)}; print $2}' /etc/resolv.conf
   register: nginx_register_nameservers
   changed_when: False
+  check_mode: False
   when: (nginx__deploy_state in [ 'present' ])
   tags: [ 'role::nginx:servers' ]
 
