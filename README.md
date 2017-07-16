@@ -14,7 +14,7 @@ privileges.
 
 ### Installation
 
-This role requires at least Ansible `v1.8.0`. To install it, run:
+This role requires at least Ansible `v2.1.6`. To install it, run:
 
 ```Shell
 ansible-galaxy install debops.auth
