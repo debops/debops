@@ -60,8 +60,8 @@ def _update_value(current_data, new_data, data_index, *args, **kwargs):
                             'state': 'present'})
 
                         dict_element['real_weight'] = (
-                            int(dict_element.get('id')
-                                + dict_element.get('weight')))
+                            int(dict_element.get('id'))
+                                + int(dict_element.get('weight')))
 
                         dict_value.update({element: dict_element})
                         current_data.update({'value': dict_value})
@@ -79,13 +79,13 @@ def _update_value(current_data, new_data, data_index, *args, **kwargs):
                     })
 
                     if 'weight' in element:
-                        dict_element['weight'] = int(
-                            element.get('weight', dict_element.get('weight', 0)
-                                        + dict_element.get('weight', 0)))
+                        dict_element['weight'] = (
+                            int(element.get('weight', dict_element.get('weight', 0)))
+                                + int(dict_element.get('weight', 0)))
 
                     dict_element['real_weight'] = (
-                        int(dict_element.get('id')
-                            + dict_element.get('weight')))
+                        int(dict_element.get('id'))
+                            + int(dict_element.get('weight')))
 
                     dict_value.update({element_name: dict_element})
                     current_data.update({'value': dict_value})
@@ -128,12 +128,13 @@ def postfix__parse_maincf(*args, **kwargs):
                 })
 
                 if 'weight' in element:
-                    current_param['weight'] = int(
-                        element.get('weight', current_param.get('weight', 0))
-                        + current_param.get('weight', 0))
+                    current_param['weight'] = (
+                        int(element.get('weight', current_param.get('weight', 0)))
+                        + int(current_param.get('weight', 0)))
 
                 current_param['real_weight'] = (
-                    int(current_param.get('id') + current_param.get('weight')))
+                    int(current_param.get('id'))
+                    + int(current_param.get('weight')))
 
                 _update_value(current_param, element, element_index)
 
@@ -163,8 +164,8 @@ def postfix__parse_maincf(*args, **kwargs):
                     })
 
                     current_param['real_weight'] = (
-                        int(current_param.get('id')
-                            + current_param.get('weight')))
+                        int(current_param.get('id'))
+                            + int(current_param.get('weight')))
 
                     _update_value(current_param,
                                   {'value': value},
@@ -245,12 +246,13 @@ def postfix__parse_mastercf(*args, **kwargs):
                 })
 
                 if 'weight' in element:
-                    current_param['weight'] = int(
-                        element.get('weight', current_param.get('weight', 0))
-                        + current_param.get('weight', 0))
+                    current_param['weight'] = (
+                        int(element.get('weight', current_param.get('weight', 0)))
+                        + int(current_param.get('weight', 0)))
 
                 current_param['real_weight'] = (
-                    int(current_param.get('id') + current_param.get('weight')))
+                    int(current_param.get('id'))
+                    + int(current_param.get('weight')))
 
                 if current_param['command'] is None:
                     current_param['command'] = (
