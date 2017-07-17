@@ -651,6 +651,9 @@ postfix__restrictions_maincf:
   - name: 'smtpd_relay_restrictions'
     section: 'restrictions'
     weight: 640
+    state: '{{ "present"
+               if (postfix__version | version_compare("2.10.0", ">="))
+               else "ignore" }}'
 
   - name: 'smtpd_recipient_restrictions'
     section: 'restrictions'
