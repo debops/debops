@@ -14,6 +14,12 @@ The current role maintainer is drybjed.
 
 .. _debops.ntp master: https://github.com/debops/ansible-ntp/compare/v0.2.3...master
 
+Changed
+~~~~~~~
+
+- Ensure that NTP daemons get uninstalled when ``ntp__daemon_enabled``
+  evaluates to ``absent``. [ypid_]
+
 
 `debops.ntp v0.2.3`_ - 2016-08-29
 ---------------------------------

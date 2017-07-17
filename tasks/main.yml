@@ -15,6 +15,16 @@
 - include: install.yml
   when: ntp__daemon_enabled|bool
 
+- name: Ensure that daemons are not installed
+  apt:
+    name: '{{ item }}'
+    state: 'absent'
+    purge: True
+  when: not ntp__daemon_enabled|bool
+  with_flattened:
+    - 'ntp'
+    - 'openntpd'
+
 - include: timezone.yml
   when: ntp__timezone|d()
 
