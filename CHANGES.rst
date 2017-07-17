@@ -16,6 +16,42 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.postfix master: https://github.com/debops/ansible-postfix/compare/v0.1.3...master
 
+Changed
+~~~~~~~
+
+- The role has been rewritten from the ground up to be first and foremost
+  a convenient public API to the Postfix configuration for other Ansible roles.
+  Instead of configuring everything related to Postfix, ``debops.postfix`` now
+  focuses on the :file:`main.cf` and :file:`master.cf` configuration files. The
+  rest of the SMTP stack is expected to be configured using other roles.
+  [drybjed_]
+
+- All of the ``postfix_*`` default variables have been renamed to
+  ``postfix__*`` to put them in their own namespace. Most of the default
+  variables have been removed, and the Postfix configuration layout has been
+  redesigned. See the documentation for more details. [drybjed_]
+
+- Postfix by default opens access to the enabled services (``smtp``, ``smtps``,
+  ``submission``) in the firewall. You can disable that by setting the
+  :envvar:`postfix__accept_any` variable to ``False``. [drybjed_]
+
+Removed
+~~~~~~~
+
+- Almost all of the existing functionality has been removed from this role:
+
+    - SASL authentication
+    - :command:`postscreen` support
+    - mail archive options
+    - SMTP client configuration
+    - local mail aliases (moved to ``debops.etc_aliases`` Ansible role)
+    - support for :command:`saslauthd` and Dovecot
+    - various Postfix lookup tables
+    - support for DebOps pre/post task hooks
+    - a way to disable or uninstall Postfix from an existing installation
+
+  Some of these functions will be back using separate Ansible roles. [drybjed_]
+
 
 `debops.postfix v0.1.3`_ - 2017-07-11
 -------------------------------------

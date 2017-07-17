@@ -10,11 +10,13 @@
 
   roles:
 
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::ferm' ]
+
     - role: debops.ferm
       tags: [ 'role::ferm' ]
       ferm__dependent_rules:
-        - '{{ postfix_ferm_dependent_rules }}'
+        - '{{ postfix__ferm__dependent_rules }}'
 
     - role: debops.postfix
       tags: [ 'role::postfix' ]
-

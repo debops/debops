@@ -1,11 +1,24 @@
 Getting started
 ===============
 
+Default configuration
+---------------------
+
+The ``debops.postfix`` role configures a basic Postfix SMTP server with
+configuration similar to the "Internet Site" configuration enabled by default
+by the Debian package. Additional configuration is defined in separate
+variables and can be easily disabled or modified if necessary.
+
+The Postfix service will be configured to use TLS connections and strong
+encryption by default. This might interfere with SMTP service operation for
+older installations that don't support required features.
+
+
 Example inventory
 -----------------
 
-To run this role on servers, they should be included
-in the ``[debops_service_postfix]`` Ansible group:
+The install and configure Postfix on a host, it needs to be present in the
+``[debops_service_postfix]`` Ansible inventory group:
 
 .. code-block:: none
 
@@ -36,13 +49,3 @@ Available role tags:
 ``role::postfix``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``type::dependency``
-  This tag specifies which tasks are defined in role dependencies. You can use
-  this to omit them using ``--skip-tags`` parameter.
-
-``depend-of::postfix``
-  Execute all ``debops.postfix`` role dependencies in its context.
-
-``depend::ferm:postfix``
-  Run ``debops.ferm`` dependent role in ``debops.postfix`` context.

@@ -7,7 +7,9 @@ Ansible role: debops.postfix
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
+   defaults-maincf
+   defaults-mastercf
    copyright
    changelog
 
