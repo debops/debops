@@ -14,7 +14,7 @@ output = {'installed': True}
 try:
     with open(os.devnull, 'w') as devnull:
         postconf_stdout = subprocess.check_output(
-            [ "/usr/sbin/postconf -d mail_version" ],
+            ["/usr/sbin/postconf -d mail_version"],
             shell=True, stderr=devnull)
 
 except subprocess.CalledProcessError:
@@ -23,10 +23,10 @@ except subprocess.CalledProcessError:
 # The 'postfix-doc' package modifies the Postfix 'main.cf' file, so let's
 # account for that
 postfix_doc_status = ''
-postfix_doc_cmd = [ "/usr/bin/dpkg-query",
-                    "--show",
-                    "--showformat='${db:Status-Status}'",
-                    "'postfix-doc'" ]
+postfix_doc_cmd = ["/usr/bin/dpkg-query",
+                   "--show",
+                   "--showformat='${db:Status-Status}'",
+                   "'postfix-doc'"]
 
 try:
     with open(os.devnull, 'w') as devnull:
