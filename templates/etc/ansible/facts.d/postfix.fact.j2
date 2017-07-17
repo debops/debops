@@ -12,9 +12,10 @@ import os
 output = {'installed': True}
 
 try:
-    FNULL = open('/dev/null', 'w')
-    postconf_stdout = subprocess.check_output([ "/usr/sbin/postconf -d mail_version" ],
-                                              shell=True, stderr=FNULL)
+    with open(os.devnull, 'w') as devnull:
+        postconf_stdout = subprocess.check_output(
+            [ "/usr/sbin/postconf -d mail_version" ],
+            shell=True, stderr=devnull)
 
 except subprocess.CalledProcessError:
     pass
@@ -28,9 +29,9 @@ postfix_doc_cmd = [ "/usr/bin/dpkg-query",
                     "'postfix-doc'" ]
 
 try:
-    FNULL = open('/dev/null', 'w')
-    postfix_doc_status = subprocess.check_output(' '.join(postfix_doc_cmd),
-                                                 shell=True, stderr=FNULL)
+    with open(os.devnull, 'w') as devnull:
+        postfix_doc_status = subprocess.check_output(
+            ' '.join(postfix_doc_cmd), shell=True, stderr=devnull)
 
 except subprocess.CalledProcessError:
     pass
