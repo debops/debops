@@ -81,7 +81,7 @@ def _update_value(current_data, new_data, data_index, *args, **kwargs):
                     if 'weight' in element:
                         dict_element['weight'] = int(
                             element.get('weight', dict_element.get('weight', 0)
-                            + dict_element.get('weight', 0)))
+                                        + dict_element.get('weight', 0)))
 
                     dict_element['real_weight'] = (
                         int(dict_element.get('id')
