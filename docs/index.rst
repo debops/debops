@@ -13,6 +13,7 @@ Ansible role: debops.postfix
    dependency
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:
