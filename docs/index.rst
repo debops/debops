@@ -10,6 +10,7 @@ Ansible role: debops.postfix
    defaults-detailed
    defaults-maincf
    defaults-mastercf
+   dependency
    copyright
    changelog
 

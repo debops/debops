@@ -11,7 +11,12 @@
   roles:
 
     - role: debops.postfix/env
-      tags: [ 'role::postfix', 'role::ferm' ]
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ postfix__secret__directories }}'
 
     - role: debops.ferm
       tags: [ 'role::ferm' ]

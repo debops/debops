@@ -35,6 +35,10 @@ Changed
   ``submission``) in the firewall. You can disable that by setting the
   :envvar:`postfix__accept_any` variable to ``False``. [drybjed_]
 
+- New interface for dependent configuration has been implemented. The dependent
+  configuration is now stored on the Ansible Controller in per-host
+  configuration directory. [drybjed_]
+
 Removed
 ~~~~~~~
 

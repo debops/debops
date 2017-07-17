@@ -1,0 +1,50 @@
+---
+
+# This is a playbook for an example 'application' role which uses
+# 'debops.postfix' as a dependency and passes its own set of
+# configuration options to it.
+
+- name: Manage application
+  hosts: [ 'debops_service_application' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ postfix__secret__directories }}'
+
+    # Normally a 'debops.ferm' role would be here for 'debops.postfix'
+    # to manage the firewall. You don't need it if you run the main
+    # 'debops.postfix' playbook before yours.
+    #
+    #- role: debops.ferm
+    #  tags: [ 'role::ferm' ]
+    #  ferm__dependent_rules:
+    #    - '{{ postfix__ferm__dependent_rules }}'
+
+    - role: debops.postfix
+      tags: [ 'role::postfix' ]
+
+      postfix__dependent_maincf:
+
+        # Short form of dependent configuration
+        - application: '{{ application__postfix__dependent_maincf }}'
+
+      postfix__dependent_mastercf:
+
+        # Expanded form of dependent configuration
+        - role: 'application'
+          config: '{{ application__postfix__dependent_mastercf }}'
+          state: 'present'
+
+    - role: application
+      tags: [ 'role::application' ]

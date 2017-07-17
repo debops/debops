@@ -688,6 +688,26 @@ postfix__group_maincf: []
 postfix__host_maincf: []
 
                                                                    # ]]]
+# .. envvar:: postfix__dependent_maincf [[[
+#
+# List of the :file:`/etc/postfix/main.cf` configuration options defined by
+# other roles through role dependent variables. The configuration syntax
+# differs from a normal :file:`main.cf` configuration,
+# see :ref:`postfix__ref_dependency` for more details.
+postfix__dependent_maincf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_maincf_filter [[[
+#
+# The filtered configuration from other roles passed via role dependent
+# variables. This variable should be included in the combined list of
+# :file:`main.cf` configuration options. See :ref:`postfix__ref_dependency`
+# for more details.
+postfix__dependent_maincf_filter: '{{ lookup("template",
+                                              "lookup/postfix__dependent_maincf_filter.j2")
+                                              | from_yaml }}'
+
+                                                                   # ]]]
 # .. envvar:: postfix__combined_maincf [[[
 #
 # List which combines all of the :file:`main.cf`-related variables and is used
@@ -696,6 +716,7 @@ postfix__combined_maincf: '{{ postfix__original_maincf
                               + postfix__default_maincf
                               + postfix__tls_maincf
                               + postfix__restrictions_maincf
+                              + postfix__dependent_maincf_filter
                               + postfix__maincf
                               + postfix__group_maincf
                               + postfix__host_maincf }}'
@@ -1157,6 +1178,26 @@ postfix__group_mastercf: []
 postfix__host_mastercf: []
 
                                                                    # ]]]
+# .. envvar:: postfix__dependent_mastercf [[[
+#
+# List of the :file:`/etc/postfix/master.cf` configuration options defined by
+# other roles through role dependent variables. The configuration syntax
+# differs from a normal :file:`master.cf` configuration,
+# see :ref:`postfix__ref_dependency` for more details.
+postfix__dependent_mastercf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_mastercf_filter [[[
+#
+# The filtered configuration from other roles passed via role dependent
+# variables. This variable should be included in the combined list of
+# :file:`master.cf` configuration options. See :ref:`postfix__ref_dependency`
+# for more details.
+postfix__dependent_mastercf_filter: '{{ lookup("template",
+                                               "lookup/postfix__dependent_mastercf_filter.j2")
+                                               | from_yaml }}'
+
+                                                                   # ]]]
 # .. envvar:: postfix__combined_mastercf [[[
 #
 # List which combines all of the :file:`master.cf`-related variables and is used
@@ -1164,6 +1205,7 @@ postfix__host_mastercf: []
 postfix__combined_mastercf: '{{ postfix__original_mastercf
                                 + postfix__default_mastercf
                                 + postfix__tls_mastercf
+                                + postfix__dependent_mastercf_filter
                                 + postfix__mastercf
                                 + postfix__group_mastercf
                                 + postfix__host_mastercf }}'
