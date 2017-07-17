@@ -14,6 +14,12 @@
 
   roles:
 
+    # This role along with 'debops.etc_aliases' can be used to maintain the
+    # /etc/aliases database.
+    #
+    #- role: debops.etc_aliases/env
+    #  tags: [ 'role::etc_aliases', 'role::secret' ]
+
     - role: debops.postfix/env
       tags: [ 'role::postfix', 'role::secret' ]
 
@@ -29,7 +35,11 @@
     #- role: debops.ferm
     #  tags: [ 'role::ferm' ]
     #  ferm__dependent_rules:
+    #    - '{{ etc_aliases__secret__directories }}'
     #    - '{{ postfix__ferm__dependent_rules }}'
+
+    #- role: debops.etc_aliases
+    #  tags: [ 'role::etc_aliases' ]
 
     - role: debops.postfix
       tags: [ 'role::postfix' ]

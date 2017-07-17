@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.postfix master: https://github.com/debops/ansible-postfix/compare/v0.1.3...master
 
+Added
+~~~~~
+
+- Added the ``debops.etc_aliases`` Ansible role as a dependency to manage the
+  :file:`/etc/aliases` local alias database. [drybjed_]
+
 Changed
 ~~~~~~~
 
