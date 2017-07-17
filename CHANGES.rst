@@ -138,11 +138,11 @@ Added
 - Expose the ``smtpd_banner`` variable in role default variables and hide the
   "Postfix" name in the banner. [drybjed_]
 
-- debops.postfix_ incorrectly added a list value when requirement of
+- ``debops.postfix`` incorrectly added a list value when requirement of
   a capability was not present. Now role will check if ``item.capability`` or
   ``item.no_capability`` are specified before adding a value or not. [drybjed_]
 
-- debops.postfix_ incorrectly added a ``main.cf`` option with a value when
+- ``debops.postfix`` incorrectly added a ``main.cf`` option with a value when
   a required capability was specified but was ``False``. Now role will check if
   an entry has specified value before deciding if it should be added. [drybjed_]
 
