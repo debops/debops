@@ -34,6 +34,8 @@ Fixed
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
 
+- Don't paging configure on LXC guest containers, it isn't allowed. [pedroluislopez_]
+
 
 debops.sysctl v0.1.0 - 2016-09-04
 ---------------------------------
