@@ -79,7 +79,8 @@ sysctl__shared_memory_map:
 # role?
 sysctl__paging_configure: '{{ True
                               if not (ansible_virtualization_role == "guest"
-                                      and ansible_virtualization_type == "openvz")
+                                      and (ansible_virtualization_type == "openvz"
+                                      or ansible_virtualization_type == "lxc"))
                               else False }}'
 
                                                                    # ]]]

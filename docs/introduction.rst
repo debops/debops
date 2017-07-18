@@ -13,7 +13,7 @@ compatibility with DebOps.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v2.0.0``. To install it, run:
+This role requires at least Ansible ``v2.2.0``. To install it, run:
 
 .. code-block:: console
 

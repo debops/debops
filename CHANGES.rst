@@ -6,7 +6,7 @@ Changelog
 **debops.sysctl**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current role maintainer_ is ypid_.
 
@@ -33,6 +33,8 @@ Fixed
 
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
+
+- Don't configure paging on LXC guest containers, it isn't allowed. [pedroluislopez_]
 
 
 debops.sysctl v0.1.0 - 2016-09-04
