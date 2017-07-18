@@ -118,10 +118,12 @@ def fetch_or_clone_roles(roles_path, requirements_file, dry_run=False):
         # Either update or clone the role
         if os.path.exists(destination_dir):
             print("Updating", remote_uri, progress_label)
-            update_git_repository(destination_dir, dry_run)
+            update_git_repository(destination_dir, dry_run, remote_uri)
         else:
+            print()
             print("Installing", remote_uri, progress_label)
             clone_git_repository(remote_uri, role_version, destination_dir, dry_run)
+            print()
 
 
 def clone_git_repository(repo_uri, branch, destination, dry_run=False):
@@ -131,7 +133,7 @@ def clone_git_repository(repo_uri, branch, destination, dry_run=False):
         subprocess.call(['git', 'clone', '--quiet', '--branch', branch,
                          repo_uri, destination])
 
-def update_git_repository(path, dry_run=False):
+def update_git_repository(path, dry_run=False, remote_uri=False):
     """
     Update an exiting git repository.
 
@@ -153,7 +155,17 @@ def update_git_repository(path, dry_run=False):
         fetch_sha = subprocess.check_output(['git', 'rev-parse', 'FETCH_HEAD']).strip()
 
         if current_sha != fetch_sha:
+            print()
+            print('--')
             subprocess.call(['git', 'merge', fetch_sha])
+
+            if remote_uri:
+                compare_uri = remote_uri + '/compare/' + current_sha[:7] + '...' + fetch_sha[:7]
+                print()
+                print("Compare:", compare_uri)
+
+            print('--')
+            print()
 
     # Move back to the initial directory
     os.chdir(old_pwd)
