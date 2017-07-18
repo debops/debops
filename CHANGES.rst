@@ -25,6 +25,12 @@ Added
   :envvar:`users__dependent_groups` making the role usable for other roles
   which require more sophisticated user account setups. [ganto_]
 
+Changed
+~~~~~~~
+
+- Omit ``group`` parameter of :envvar:`users__accounts` by default.
+  Previously, it was set to username by default. [tootoonchian_]
+
 
 `debops.users v0.2.1`_ - 2016-10-16
 -----------------------------------
