@@ -109,15 +109,27 @@ def postfix__parse_maincf(*args, **kwargs):
                     element.get('state', 'present') != 'ignore'):
 
                 param_name = element.get('name')
+
+                if element.get('state', 'present') == 'append':
+
+                    # In append mode, don't create new config entries
+                    if param_name not in parsed_config.keys():
+                        continue
+
                 current_param = (parsed_config[param_name].copy()
                                  if param_name in parsed_config
                                  else {})
 
+                if element.get('state', 'present') != 'append':
+                    current_param['state'] = (element.get('state',
+                                              current_param.get('state',
+                                                                'present')))
+                elif element.get('state', 'present') == 'append':
+                    current_param['state'] = current_param.get('state',
+                                                               'present')
+
                 current_param.update({
                     'name': param_name,  # in case of a new entry
-                    'state': element.get('state',
-                                         current_param.get('state',
-                                                           'present')),
                     'id': int(current_param.get('id', (element_index * 10))),
                     'weight': int(current_param.get('weight', 0)),
                     'separator': element.get('separator',
@@ -212,15 +224,27 @@ def postfix__parse_mastercf(*args, **kwargs):
                     element.get('state', 'present') != 'ignore'):
 
                 param_name = element.get('name')
+
+                if element.get('state', 'present') == 'append':
+
+                    # In append mode, don't create new config entries
+                    if param_name not in parsed_config.keys():
+                        continue
+
                 current_param = (parsed_config[param_name].copy()
                                  if param_name in parsed_config
                                  else {})
 
+                if element.get('state', 'present') != 'append':
+                    current_param['state'] = (element.get('state',
+                                              current_param.get('state',
+                                                                'present')))
+                elif element.get('state', 'present') == 'append':
+                    current_param['state'] = current_param.get('state',
+                                                               'present')
+
                 current_param.update({
                     'name': param_name,  # in case of a new entry
-                    'state': element.get('state',
-                                         current_param.get('state',
-                                                           'present')),
                     'id': int(current_param.get('id', (element_index * 10))),
                     'weight': int(current_param.get('weight', 0)),
                     'separator': element.get('separator',

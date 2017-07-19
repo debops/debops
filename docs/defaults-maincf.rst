@@ -115,6 +115,9 @@ interpret the entry using specific parameters:
   If ``comment``, the option will be present, but it will be commented out.
   This can be used to add examples in the configuration file.
 
+  If ``append``, the given entry will be evaluated only if an entry with the
+  same name already exists. The current state will not be changed.
+
 ``section``
   Optional. Name of the section of the :file:`/etc/postfix/main.cf`
   configuration file in which a given option should be placed. If it's no

@@ -95,6 +95,9 @@ parameters:
   If ``comment``, the service will be present, but it will be commented out.
   This can be used to add examples in the configuration file.
 
+  If ``append``, the given entry will be evaluated only if an entry with the
+  same name already exists. The current state will not be changed.
+
 ``weight``
   Optional. A positive or negative number which affects the position of a given
   service in the configuration file. The higher the number, the more a given
