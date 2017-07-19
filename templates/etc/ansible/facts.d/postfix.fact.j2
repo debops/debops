@@ -14,7 +14,7 @@ output = {'installed': True}
 try:
     with open(os.devnull, 'w') as devnull:
         postconf_stdout = subprocess.check_output(
-            ["/usr/sbin/postconf -d mail_version"],
+            ["LC_MESSAGES=C dpkg-query -W -f='${Version}\n' 'postfix'"],
             shell=True, stderr=devnull)
 
 except subprocess.CalledProcessError:
@@ -37,7 +37,7 @@ except subprocess.CalledProcessError:
     pass
 
 if postconf_stdout:
-    output['version'] = postconf_stdout.split()[2]
+    output['version'] = postconf_stdout.split('-')[0]
 
 if postfix_doc_status == 'installed':
     output['doc_installed'] = True
