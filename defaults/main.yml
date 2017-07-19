@@ -1,0 +1,200 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.opendkim default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages, application version [[[
+# -------------------------------------
+
+# .. envvar:: opendkim__base_packages [[[
+#
+# List of APT packages to install for OpenDKIM support.
+opendkim__base_packages: [ 'opendkim', 'opendkim-tools' ]
+
+                                                                   # ]]]
+# .. envvar:: opendkim__packages [[[
+#
+# List of additional APT packages to install with OpenDKIM.
+opendkim__packages: []
+
+                                                                   # ]]]
+# .. envvar:: opendkim__version [[[
+#
+# The version of the installed OpenDKIM service, gathered automatically by
+# Ansible local facts.
+opendkim__version: '{{ ansible_local.opendkim.version
+                       if (ansible_local|d() and ansible_local.opendkim|d() and
+                           ansible_local.opendkim.version|d())
+                       else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# System environment [[[
+# ----------------------
+
+# .. envvar:: opendkim__user [[[
+#
+# The UNIX system account used by the OpenDKIM service.
+opendkim__user: 'opendkim'
+
+                                                                   # ]]]
+# .. envvar:: opendkim__group [[[
+#
+# The UNIX system group used by the OpenDKIM service.
+opendkim__group: 'opendkim'
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenDKIM main configuration [[[
+# -------------------------------
+
+# These variables define the contents of the :file:`/etc/opendkim.conf`
+# configuration file. See :ref:`opendkim__ref_config` for more details.
+
+# .. envvar:: opendkim__original_config [[[
+#
+# The configuration set by default by the Debian package after installation.
+opendkim__original_config:
+
+  - name: 'config-header'
+    comment: |
+      This is a basic configuration that can easily be adapted to suit a standard
+      installation. For more advanced options, see opendkim.conf(5) and/or
+      /usr/share/doc/opendkim/examples/opendkim.conf.sample.
+    state: 'hidden'
+
+  - name: 'Syslog'
+    comment: 'Log to syslog'
+    value: True
+
+  - name: 'UMask'
+    comment: |
+      Required to use local socket with MTAs that access the socket as a non-
+      privileged user (e.g. Postfix)
+    value: '002'
+
+  - name: 'Domain'
+    comment: |
+      Sign for example.com with key in /etc/mail/dkim.key using
+      selector '2007' (e.g. 2007._domainkey.example.com)
+    value: 'example.com'
+    state: 'comment'
+
+  - name: 'KeyFile'
+    value: '/etc/mail/dkim.key'
+    state: 'comment'
+
+  - name: 'Selector'
+    value: '2007'
+    state: 'comment'
+
+  - name: 'Canonicalization'
+    comment: 'Commonly-used options; the commented-out versions show the defaults.'
+    value: 'simple'
+    state: 'comment'
+
+  - name: 'Mode'
+    value: 'sv'
+    state: 'comment'
+
+  - name: 'Subdomains'
+    value: False
+    state: 'comment'
+
+  - name: 'ADSPAction'
+    value: 'continue'
+    state: '{{ "comment"
+               if (ansible_distribution_release in [ "wheezy", "jessie" ])
+               else "absent" }}'
+
+  - name: 'OversignHeaders'
+    comment: |
+      Always oversign From (sign using actual From and a null From to prevent
+      malicious signatures header fields (From and/or others) between the signer
+      and the verifier.  From is oversigned by default in the Debian pacakge
+      because it is often the identity key used by reputation systems and thus
+      somewhat security sensitive.
+    value: [ 'From' ]
+
+  - name: 'ResolverConfiguration'
+    comment: |
+      ResolverConfiguration filename
+          default (none)
+
+      Specifies a configuration file to be passed to the Unbound library that
+      performs DNS queries applying the DNSSEC protocol.  See the Unbound
+      documentation at http://unbound.net for the expected content of this file.
+      The results of using this and the TrustAnchorFile setting at the same
+      time are undefined.
+      In Debian, /etc/unbound/unbound.conf is shipped as part of the Suggested
+      unbound package
+    value: '/etc/unbound/unbound.conf'
+    state: '{{ "absent"
+               if (ansible_distribution_release in [ "wheezy", "jessie" ])
+               else "comment" }}'
+
+  - name: 'TrustAnchroFile'
+    comment: |
+      TrustAnchorFile filename
+          default (none)
+
+      Specifies a file from which trust anchor data should be read when doing
+      DNS queries and applying the DNSSEC protocol.  See the Unbound documentation
+      at http://unbound.net for the expected format of this file.
+    value: '/usr/share/dns/root.key'
+    state: '{{ "absent"
+               if (ansible_distribution_release in [ "wheezy", "jessie" ])
+               else "present" }}'
+
+  - name: 'ATPSDomains'
+    comment: |
+      List domains to use for RFC 6541 DKIM Authorized Third-Party Signatures
+      (ATPS) (experimental)
+    value: [ 'example.com' ]
+    state: '{{ "comment"
+               if (ansible_distribution_release in [ "wheezy", "jessie" ])
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: opendkim__default_config [[[
+#
+# The OpenDKIM configuration defined by the ``debops.opendkim`` Ansible role.
+opendkim__default_config: []
+
+                                                                   # ]]]
+# .. envvar:: opendkim__config [[[
+#
+# The configuration which should be set on all hosts in the Ansible inventory.
+opendkim__config: []
+
+                                                                   # ]]]
+# .. envvar:: opendkim__group_config [[[
+#
+# The configuration which should be set on hosts in specific Ansible inventory
+# group.
+opendkim__group_config: []
+
+                                                                   # ]]]
+# .. envvar:: opendkim__host_config [[[
+#
+# The configuration which should be set on specific hosts in the Ansible
+# inventory.
+opendkim__host_config: []
+
+                                                                   # ]]]
+# .. envvar:: opendkim__combined_config [[[
+#
+# The combined OpenDKIM configuration passed to the config file template.
+opendkim__combined_config: '{{ opendkim__original_config
+                               + opendkim__default_config
+                               + opendkim__config
+                               + opendkim__group_config
+                               + opendkim__host_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

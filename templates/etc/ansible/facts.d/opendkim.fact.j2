@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import load, loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+
+# The configuration file is diverted by Ansible before the fact
+# is executed for the first time. This way we can detect first
+# installation without additional Ansible tasks.
+output = {'installed': False}
+if os.path.isfile('/etc/opendkim.conf'):
+    output['installed'] = True
+
+try:
+    with open(os.devnull, 'w') as devnull:
+        opendkim_stdout = subprocess.check_output(
+            ["/usr/sbin/opendkim -V"],
+            shell=True, stderr=devnull)
+
+except subprocess.CalledProcessError:
+    pass
+
+if opendkim_stdout:
+    for line in opendkim_stdout.split('\n'):
+        if 'OpenDKIM Filter' in line:
+            output['version'] = line.split()[3].lstrip('v')
+
+print(dumps(output, sort_keys=True, indent=2))

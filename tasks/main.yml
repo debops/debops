@@ -1,0 +1,47 @@
+---
+
+- name: Install OpenDKIM support
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ opendkim__base_packages }}'
+    - '{{ opendkim__packages }}'
+  notify: [ 'Check opendkim and restart' ]
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Divert original OpenDKIM configuration
+  command: dpkg-divert --quiet --local --divert /etc/opendkim.conf.dpkg-divert --rename /etc/opendkim.conf
+  args:
+    creates: '/etc/opendkim.conf.dpkg-divert'
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Make sure Ansible local facts directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Configure OpenDKIM local facts
+  template:
+    src: 'etc/ansible/facts.d/opendkim.fact.j2'
+    dest: '/etc/ansible/facts.d/opendkim.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: opendkim__register_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: opendkim__register_facts|changed
+
+- name: Generate OpenDKIM configuration
+  template:
+    src: 'etc/opendkim.conf.j2'
+    dest: '/etc/opendkim.conf'
+    owner: 'root'
+    group: '{{ opendkim__group }}'
+    mode: '0640'
+  notify: [ 'Check opendkim and reload' ]
