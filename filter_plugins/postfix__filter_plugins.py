@@ -23,7 +23,7 @@ from operator import itemgetter
 __metaclass__ = type
 
 
-def _update_value(current_data, new_data, data_index, *args, **kwargs):
+def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
     """Parse the parameter values and merge
     with existing ones conditionally.
     """
@@ -92,8 +92,8 @@ def _update_value(current_data, new_data, data_index, *args, **kwargs):
                     current_data.update({'value': dict_value})
 
 
-def postfix__parse_maincf(*args, **kwargs):
-    """Return a parsed list of Postfix main.cf options"""
+def parse_kv_config(*args, **kwargs):
+    """Return a parsed list of key/value configuration options"""
 
     input_args = []
     parsed_config = {}
@@ -150,7 +150,7 @@ def postfix__parse_maincf(*args, **kwargs):
                     int(current_param.get('id'))
                     + int(current_param.get('weight')))
 
-                _update_value(current_param, element, element_index)
+                _parse_kv_value(current_param, element, element_index)
 
                 if 'option' in element:
                     current_param['option'] = element.get('option')
@@ -181,9 +181,9 @@ def postfix__parse_maincf(*args, **kwargs):
                         int(current_param.get('id'))
                         + int(current_param.get('weight')))
 
-                    _update_value(current_param,
-                                  {'value': value},
-                                  element_index)
+                    _parse_kv_value(current_param,
+                                    {'value': value},
+                                    element_index)
 
                     parsed_config.update({key: current_param})
 
@@ -297,7 +297,7 @@ def postfix__parse_mastercf(*args, **kwargs):
 
                 if 'options' in element:
                     current_options = current_param.get('options', [])
-                    new_options = postfix__parse_maincf(
+                    new_options = parse_kv_config(
                         current_options + element.get('options'))
 
                     current_param['options'] = new_options
@@ -329,6 +329,6 @@ class FilterModule(object):
 
     def filters(self):
         return {
-            'postfix__parse_maincf': postfix__parse_maincf,
+            'parse_kv_config': parse_kv_config,
             'postfix__parse_mastercf': postfix__parse_mastercf
         }

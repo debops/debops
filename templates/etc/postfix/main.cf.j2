@@ -3,7 +3,7 @@
 # See /usr/share/postfix/main.cf.dist for a commented, more complete version
 
 
-{% set postfix__tpl_maincf = (postfix__combined_maincf | postfix__parse_maincf) %}
+{% set postfix__tpl_maincf = (postfix__combined_maincf | parse_kv_config) %}
 {% set postfix__tpl_sections = ((postfix__tpl_maincf | map(attribute='section')) | list | unique) %}
 {% for section in postfix__maincf_sections %}
 {%   if section.state|d('present') != 'absent' %}
