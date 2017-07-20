@@ -207,8 +207,22 @@ def parse_kv_config(*args, **kwargs):
     return sorted(output, key=itemgetter('real_weight'))
 
 
-def postfix__parse_mastercf(*args, **kwargs):
-    """Return a parsed list of Postfix master.cf options"""
+def parse_kv_items(*args, **kwargs):
+    """Return a parsed list of with_items elements
+    Optional arguments:
+
+        empty
+            dictionary, keys are parameter names which might be empty, values
+            are key name or list of key names, first key with a value other
+            than None will be used as the specified parameter. Examples:
+                empty={'some_param':  'other_param',
+                       'empty_param': ['param2', 'param1']}
+
+        defaults
+            dictionary, keys are parameter names, values are default values to
+            use when a parameter is not specified. Examples:
+                      defaults={'some_param': 'default_value'}
+    """
 
     input_args = []
     parsed_config = {}
@@ -249,26 +263,7 @@ def postfix__parse_mastercf(*args, **kwargs):
                     'weight': int(current_param.get('weight', 0)),
                     'separator': element.get('separator',
                                              current_param.get('separator',
-                                                               False)),
-                    'type': element.get('type',
-                                        current_param.get('type')),
-                    'private': element.get('private',
-                                           current_param.get('private',
-                                                             '-')),
-                    'unpriv': element.get('unpriv',
-                                          current_param.get('unpriv',
-                                                            '-')),
-                    'chroot': element.get('chroot',
-                                          current_param.get('chroot',
-                                                            '-')),
-                    'wakeup': element.get('wakeup',
-                                          current_param.get('wakeup',
-                                                            '-')),
-                    'maxproc': element.get('maxproc',
-                                           current_param.get('maxproc',
-                                                             '-')),
-                    'command': element.get('command',
-                                           current_param.get('command'))
+                                                               False))
                 })
 
                 if 'weight' in element:
@@ -281,17 +276,6 @@ def postfix__parse_mastercf(*args, **kwargs):
                     int(current_param.get('id'))
                     + int(current_param.get('weight')))
 
-                if current_param['command'] is None:
-                    current_param['command'] = (
-                        current_param.get('service',
-                                          current_param.get('name')))
-
-                if 'service' in element:
-                    current_param['service'] = element.get('service')
-
-                if 'args' in element:
-                    current_param['args'] = element.get('args')
-
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
 
@@ -301,6 +285,37 @@ def postfix__parse_mastercf(*args, **kwargs):
                         current_options + element.get('options'))
 
                     current_param['options'] = new_options
+
+                # Set any default keys defined for the filter
+                if (kwargs.get('defaults') and
+                        isinstance(kwargs.get('defaults'), dict)):
+                    defargs = kwargs.get('defaults')
+
+                    for key in defargs.keys():
+                        current_param[key] = (
+                            element.get(key,
+                                        current_param.get(key,
+                                                          defargs.get(key))))
+
+                # Include any unknown keys
+                for unknown_key in element.keys():
+                    if unknown_key not in ['name', 'state', 'id', 'weight',
+                                           'real_weight', 'separator',
+                                           'comment', 'options']:
+                        current_param[unknown_key] = element.get(unknown_key)
+
+                # Fill any empty keys using other keys
+                if (kwargs.get('empty') and
+                        isinstance(kwargs.get('empty'), dict)):
+                    emptargs = kwargs.get('empty')
+
+                    for key in emptargs.keys():
+                        if current_param.get(key, None) is None:
+                            for thing in list(emptargs[key]):
+                                current_param[key] = current_param.get(thing,
+                                                                       None)
+                                if current_param.get(key, None) is not None:
+                                    break
 
                 parsed_config.update({param_name: current_param})
 
@@ -330,5 +345,5 @@ class FilterModule(object):
     def filters(self):
         return {
             'parse_kv_config': parse_kv_config,
-            'postfix__parse_mastercf': postfix__parse_mastercf
+            'parse_kv_items':  parse_kv_items
         }

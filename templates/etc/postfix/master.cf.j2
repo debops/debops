@@ -32,7 +32,17 @@
 {%   endif %}
 {{ output | to_json }}
 {% endmacro %}
-{% set postfix__tpl_mastercf = (postfix__combined_mastercf | postfix__parse_mastercf) %}
+{% set param_empty = {
+  'command': [ 'service', 'name' ]
+} %}
+{% set param_defaults = {
+  'private': '-',
+  'unpriv':  '-',
+  'chroot':  '-',
+  'wakeup':  '-',
+  'maxproc': '-'
+} %}
+{% set postfix__tpl_mastercf = (postfix__combined_mastercf | parse_kv_items(empty=param_empty, defaults=param_defaults)) %}
 {% for element in postfix__tpl_mastercf %}
 {%   if element.name|d() and element.state|d('present') != 'absent' %}
 {%     set option_commented = ('#' if element.state|d('present') == 'comment' else '') %}
