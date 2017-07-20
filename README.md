@@ -10,7 +10,7 @@
 
 The `debops.postfix` Ansible role can be used to install and manage
 [Postfix](http://www.postfix.org/), a SMTP server. It allows configuration
-of Postfix using Ansible inventory variables, and providea flexible API to
+of Postfix using Ansible inventory variables, and providea a flexible API to
 the Postfix configuration for other Ansible roles when it's used as a role
 dependency.
 

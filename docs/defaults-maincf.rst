@@ -135,7 +135,7 @@ interpret the entry using specific parameters:
 Examples
 ~~~~~~~~
 
-Define the previous example using comples form:
+Define the previous example using complex form:
 
 .. code-block:: yaml
 

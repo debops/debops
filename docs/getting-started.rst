@@ -17,7 +17,7 @@ older installations that don't support required features.
 Example inventory
 -----------------
 
-The install and configure Postfix on a host, it needs to be present in the
+To install and configure Postfix on a host, it needs to be present in the
 ``[debops_service_postfix]`` Ansible inventory group:
 
 .. code-block:: none
