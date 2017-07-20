@@ -233,13 +233,16 @@ def parse_kv_items(*args, **kwargs):
             input_args.append(item)
 
     for element_index, element in enumerate(input_args):
+
+        element_state = element.get('state', 'present')
+
         if isinstance(element, dict):
             if (any(x in ['name'] for x in element) and
-                    element.get('state', 'present') != 'ignore'):
+                    element_state != 'ignore'):
 
                 param_name = element.get('name')
 
-                if element.get('state', 'present') == 'append':
+                if element_state == 'append':
 
                     # In append mode, don't create new config entries
                     if param_name not in parsed_config.keys():
@@ -249,11 +252,11 @@ def parse_kv_items(*args, **kwargs):
                                  if param_name in parsed_config
                                  else {})
 
-                if element.get('state', 'present') != 'append':
+                if element_state != 'append':
                     current_param['state'] = (element.get('state',
                                               current_param.get('state',
                                                                 'present')))
-                elif element.get('state', 'present') == 'append':
+                elif element_state == 'append':
                     current_param['state'] = current_param.get('state',
                                                                'present')
 
