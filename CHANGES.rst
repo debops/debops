@@ -24,6 +24,8 @@ Added
 - Set prerequisite :program:`mysqld` options for database replication when
   using one of the cluster-aware flavors. [ganto_]
 
+- Support set MAX_ALLOWED_PACKET setting for backups. [pedroluislopez_]
+
 Changed
 ~~~~~~~
 
