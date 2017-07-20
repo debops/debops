@@ -233,11 +233,13 @@ Security
   not even managed by DebOps.
   This check became necessary because some distributions only provide Ansible
   versions with known vulnerabilities and some users are unaware.
-  Note that you will need v2.1.5 or v2.2.2 because some required fixes for
-  advanced templating features which DebOps uses have not made it into v2.1.4
-  (broke while fixing the CVEs).  Refer to `Ansible Security`_ for details.
+  Note that you will need at least v2.1.5 or v2.2.2 because only they fix all
+  currently known vulnerabilities as well as some bugs (e.g. `#20253`_) for
+  advanced templating features used by some DebOps roles such as debops.ferm_.
+  Refer to `Ansible Security`_ for details.
   [ypid_]
 
+.. _#20253: https://github.com/ansible/ansible/issues/20253
 
 `debops-playbooks v0.2.9`_ - 2016-07-07
 ---------------------------------------
