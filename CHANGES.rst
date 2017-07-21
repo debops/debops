@@ -6,7 +6,7 @@ Changelog
 **debops.dnsmasq**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current repository maintainer is drybjed_.
 
@@ -79,6 +79,9 @@ Changed
 
 - Change :envvar:`dnsmasq__domain` to point to ``ansible_domain`` instead of
   ``ansible_fqdn`` by default. [ypid_]
+
+- Disable :envvar:`dnsmasq__tftp` and :envvar:`dnsmasq__tftp_ipxe` by default.
+  It was enabled by default in previous unreleased versions of the role. [ypid_]
 
 Removed
 ~~~~~~~
