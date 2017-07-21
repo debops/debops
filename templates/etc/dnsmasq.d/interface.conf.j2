@@ -39,7 +39,7 @@ dhcp-range = set:{{ item.interface }},{{ dnsmasq__tpl_ipv4 | ipv4(item.dhcp_rang
 {%     if dnsmasq__dhcpv6|bool and dnsmasq__tpl_ipv6|d() %}
 # Enable DHCPv6 server.
 {%       for element in dnsmasq__tpl_ipv6 %}
-dhcp-range = set:{{ item.interface }},{{ element | ipv6(item.dhcp_range_start | d('10')) | ipv6('address') }},{{ element | ipv6(item.dhcp_range_end | d('-10')) | ipv6('address') }},{{ item.ipv6_mode | d('ra-names,ra-stateless,slaac') }},{{ element | ipv6('prefix') }},{{ item.dhcp_lease | d('24h') }}
+dhcp-range = set:{{ item.interface }},{{ element | ipv6(item.dhcp_range_start | d('10')) | ipv6('address') }}{% if item.ipv6_mode|d("") != "ra-only" %},{{ element | ipv6(item.dhcp_range_end | d('-10')) | ipv6('address') }}{% endif %},{{ item.ipv6_mode | d('ra-names,ra-stateless,slaac') }},{{ element | ipv6('prefix') }},{{ item.dhcp_lease | d('24h') }}
 {%       endfor %}
 {%     endif %}
 
