@@ -156,6 +156,7 @@
            --default-subdomains "{{ (item.default_subdomains | d(pki_default_subdomains)) | join('/') }}"
            --dhparam "{{ (item.dhparam | d(pki_dhparam)) | bool | lower }}"
            --dhparam-file "{{ item.dhparam_file | d(pki_dhparam_file) }}"
+           --selfsigned-sign-days "{{ item.selfsigned_sign_days|d('365') }}"
   args:
     creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
   with_flattened:

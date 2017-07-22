@@ -35,6 +35,9 @@ Added
   Refer to `A Web PKI x509 certificate primer <https://developer.mozilla.org/en-US/docs/Mozilla/Security/x509_Certificates>`_
   for details. [ypid_]
 
+- Support to change the number of days a selfsigned certificate will be valid
+  for by exposing the ``selfsigned_sign_days`` option for :envvar:`pki_realms`. [ypid_]
+
 Fixed
 ~~~~~
 

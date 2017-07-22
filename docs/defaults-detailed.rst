@@ -151,6 +151,10 @@ List of parameters related to the entire PKI realm:
   chain. If not specified, DHE parameters managed by the debops.dhparam_
   role will be used automatically, if they're available.
 
+``selfsigned_sign_days``
+  Optional. Number of days a selfsigned certificate will be valid for.
+  The default is ``365`` days.
+
 ``enabled``, ``when``
   Optional, boolean. Enable or disable management of a given realm. If
   disabled, Ansible will not execute commands related to that realm. The
