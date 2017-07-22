@@ -44,6 +44,10 @@ Fixed
 - Sign certificate requests on Ansible Controller only for hosts that have
   their Ansible facts gathered. [drybjed_]
 
+- pki-realm: Fix ``selfsigned_sign_days`` config option which was ignored previously.
+  This did not have any effect for users of the role because changing that
+  setting was not supported previously either. [ypid_]
+
 
 `debops.pki v0.2.14`_ - 2016-11-21
 ----------------------------------

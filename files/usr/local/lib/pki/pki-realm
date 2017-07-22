@@ -1987,7 +1987,7 @@ sub_new-realm () {
         if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
             if [ "${config['pki_internal']}" = "false" ] ; then
-                create_${library}_config selfsigned/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
             fi
 
             create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
@@ -1999,7 +1999,7 @@ sub_new-realm () {
         elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
             if [ "${config['pki_internal']}" = "false" ] ; then
-                create_${library}_config selfsigned/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
             fi
 
             create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
