@@ -1,18 +1,26 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.ntp**
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
-The current role maintainer is drybjed.
+The current role maintainer_ is drybjed_.
 
 
 `debops.ntp master`_ - unreleased
 ---------------------------------
 
 .. _debops.ntp master: https://github.com/debops/ansible-ntp/compare/v0.2.3...master
+
+Changed
+~~~~~~~
+
+- Ensure that NTP daemons get uninstalled when :envvar:`ntp__daemon`
+  evaluates to ``False``. [ypid_]
 
 
 `debops.ntp v0.2.3`_ - 2016-08-29
@@ -24,22 +32,22 @@ Added
 ~~~~~
 
 - Role will not uninstall the ``ntpdate`` package automatically if
-  ``ntp__ignore_ntpdate`` boolean variable is enabled. [drybjed]
+  :envvar:`ntp__ignore_ntpdate` boolean variable is enabled. [drybjed_]
 
 Changed
 ~~~~~~~
 
-- The timezone configuration tasks are moved to a separate ``timezone.yml``
-  file for ease of use. [le9i0nx]
+- The timezone configuration tasks are moved to a separate :file:`timezone.yml`
+  file for ease of use. [le9i0nx_]
 
 Fixed
 ~~~~~
 
 - Timezone should now be set correctly on hosts with ``systemd-timesyncd``
-  enabled. [drybjed]
+  enabled. [drybjed_]
 
-- Fix the idempotency loop when the ``/etc/localtime`` file is a symlink to
-  a timezone file, and ``dpkg-reconfigure tzdata`` is executed. [drybjed]
+- Fix the idempotency loop when the :file:`/etc/localtime` file is a symlink to
+  a timezone file, and ``dpkg-reconfigure tzdata`` is executed. [drybjed_]
 
 
 `debops.ntp v0.2.2`_ - 2016-07-28
@@ -51,26 +59,26 @@ Changed
 ~~~~~~~
 
 - Remove the ``ntp`` package before installing the ``openntpd`` package to
-  avoid issues with AppArmor profiles. [thiagotalma]
+  avoid issues with AppArmor profiles. [thiagotalma_]
 
 - Use the ``timedatectl`` command to set the timezone on systems with
-  ``systemd-timesyncd`` enabled. [thiagotalma]
+  ``systemd-timesyncd`` enabled. [thiagotalma_]
 
-- Update documentation and Changelog. [drybjed]
+- Update documentation and Changelog. [drybjed_]
 
-- Use different NTP server pools for Debian and ubuntu distributions. [drybjed]
+- Use different NTP server pools for Debian and ubuntu distributions. [drybjed_]
 
 - By default, use ``systemd-timesyncd`` on Ubuntu with ``systemd`` installed,
   to avoid issues with changing NTP servers. You can still select a different
-  NTP server as usual, by specifying it using ``ntp__daemon`` variable. The
-  current installations won't be changed. [drybjed]
+  NTP server as usual, by specifying it using :envvar:`ntp__daemon` variable. The
+  current installations won't be changed. [drybjed_]
 
-- Move the ``dpkg-reconfigre`` task after the NTP installation and
-  configuration tasks to avoid issues with idempotency on Ubuntu. [drybjed]
+- Move the :command:`dpkg-reconfigre` task after the NTP installation and
+  configuration tasks to avoid issues with idempotency on Ubuntu. [drybjed_]
 
-- Move the NTP daemon installation condition to a new ``ntp__daemon_enabled``
+- Move the NTP daemon installation condition to a new :envvar:`ntp__daemon_enabled`
   variable and remove ``ntp__root_flags`` since they are not needed anymore.
-  [drybjed]
+  [drybjed_]
 
 
 `debops.ntp v0.2.1`_ - 2016-05-19
@@ -81,7 +89,7 @@ Changed
 Changed
 ~~~~~~~
 
-- Completed namespace change to ``ntp__`` from v0.2.0. [ypid]
+- Completed namespace change to ``ntp__`` from v0.2.0. [ypid_]
 
 
 `debops.ntp v0.2.0`_ - 2016-05-19
@@ -94,11 +102,11 @@ Added
 
 - Support configuration of ``openntpd`` startup options. This is needed to add
   the ``-s`` flag so that the daemon will synchronize time immediately on
-  startup if the difference is large enough. [drybjed]
+  startup if the difference is large enough. [drybjed_]
 
 - Add support for ``system-timesyncd`` configuration. If other daemons are
   enabled, role will automatically disable the ``system-timesyncd`` service so
-  that it won't interfere with normal operations. [drybjed]
+  that it won't interfere with normal operations. [drybjed_]
 
 Changed
 ~~~~~~~
@@ -108,17 +116,17 @@ Changed
   repository. This results in frequent e-mail messages informing about updated
   ``tzdata`` package available to install. This change ensures that on first
   configuration of a host, ``tzdata`` package will be updated automatically,
-  which should help ensure that mentioned e-mails won't be sent. [drybjed]
+  which should help ensure that mentioned e-mails won't be sent. [drybjed_]
 
-- Configure ``/etc/timezone`` using template.
+- Configure :file:`/etc/timezone` using template.
 
   In Ansible v2, using ``copy`` module with ``content`` parameter is
   unreliable, since the "end of line" character is rendered directly in the
   file. Switching to ``template`` module ensures that generated configuration
   file has correct formatting and should stop generating idempotency issues
-  with ``tzdata`` package configuration. [drybjed]
+  with ``tzdata`` package configuration. [drybjed_]
 
-- Check if NTP daemon can be installed in Ansible facts. [drybjed]
+- Check if NTP daemon can be installed in Ansible facts. [drybjed_]
 
 - Changed variable namespace from ``ntp_`` to ``ntp__``.
   ``ntp_[^_]`` variables are hereby deprecated.
@@ -130,9 +138,9 @@ Changed
 
      git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | xargs --null sed --in-place --regexp-extended 's/\<(ntp)_([^_])/\1__\2/g;'
 
-  [drybjed]
+  [drybjed_]
 
-- Update documentation. [drybjed]
+- Update documentation. [drybjed_]
 
 
 debops.ntp v0.1.0 - 2015-11-13
@@ -141,22 +149,22 @@ debops.ntp v0.1.0 - 2015-11-13
 Added
 ~~~~~
 
-- Add Changelog [drybjed]
+- Add Changelog [drybjed_]
 
-- Added support for ``ntpdate``. [ypid]
+- Added support for ``ntpdate``. [ypid_]
 
 Changed
 ~~~~~~~
 
 - Uninstall conflicting packages before installing the requested ones. This
-  should fix `ntp and AppArmor issue`_ present in Ubuntu. [drybjed]
+  should fix `ntp and AppArmor issue`_ present in Ubuntu. [drybjed_]
 
 .. _ntp and Apparmor issue: https://bugs.launchpad.net/ubuntu/+source/openntpd/+bug/458061
 
-- Fixed ``ntp_listen: '*'`` for NTPd. [ypid]
+- Fixed ``ntp_listen: '*'`` for NTPd. [ypid_]
 
-- Rewrite the installation tasks to work correctly on Ansible v2. [drybjed]
+- Rewrite the installation tasks to work correctly on Ansible v2. [drybjed_]
 
-- Drop the dependency on ``debops.ferm`` Ansible role, firewall configuration
+- Drop the dependency on debops.ferm_ Ansible role, firewall configuration
   is now defined in role default variables, and can be used by other roles
-  through playbooks. [drybjed]
+  through playbooks. [drybjed_]

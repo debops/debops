@@ -1,15 +1,5 @@
 ---
 
-- name: Ensure that alternative daemons/programs are not installed
-  apt:
-    name: '{{ item }}'
-    state: 'absent'
-    purge: True
-  with_flattened:
-    - [ '{{ "ntpdate" if (ntp__daemon != "ntpdate" and not ntp__ignore_ntpdate|bool) else [] }}' ]
-    - [ '{{ "ntp" if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}' ]
-    - [ '{{ "openntpd" if (ntp__daemon != "openntpd") else [] }}' ]
-
 - name: Install required packages
   apt:
     name: '{{ item }}'
