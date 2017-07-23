@@ -88,6 +88,12 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                         int(dict_element.get('id'))
                         + int(dict_element.get('weight')))
 
+                    # Include any unknown keys
+                    for other_key in element.keys():
+                        if other_key not in ['name', 'state', 'id', 'weight',
+                                'real_weight', 'param']:
+                            dict_element[other_key] = element.get(other_key)
+
                     dict_value.update({element_name: dict_element})
                     current_data.update({'value': dict_value})
 
@@ -157,6 +163,14 @@ def parse_kv_config(*args, **kwargs):
 
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
+
+                # Include any unknown keys
+                for unknown_key in element.keys():
+                    if unknown_key not in ['name', 'state', 'id', 'weight',
+                                           'real_weight', 'separator',
+                                           'value', 'comment', 'option',
+                                           'section']:
+                        current_param[unknown_key] = element.get(unknown_key)
 
                 parsed_config.update({param_name: current_param})
 
