@@ -26,6 +26,8 @@ Added
   This "feature" has not required any actual code changes to the role.
   Refer to :ref:`cryptsetup__ref_devices_veracrypt` for details. [ypid_]
 
+- Add Debian Stretch to the support matrix of this role. No changes where required. [ypid_]
+
 
 Fixed
 ~~~~~
