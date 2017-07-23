@@ -29,8 +29,8 @@ filesystem (both on the Ansible controller and the remote system).
   Swap space yourself for this!
 * Setup an encrypted swap space (with random key or with persistent key).
 * Setup filesystems using a random key on boot.
-* ``cryptsetup`` LUKS and plain mode.
-* Multiple ciphers and corresponding keys to encrypt one filesystem.
+* ``cryptsetup`` plain, LUKS, TrueCrypt and VeraCrypt mode.
+* Multiple ciphers and corresponding keys chained to encrypt one filesystem.
 
 ### Installation
 

@@ -21,8 +21,8 @@ Features
   Swap space yourself for this!
 * Setup an encrypted swap space (with random key or with persistent key).
 * Setup filesystems using a random key on boot.
-* :command:`cryptsetup` LUKS and plain mode.
-* Multiple ciphers and corresponding keys to encrypt one filesystem.
+* :command:`cryptsetup` plain, LUKS, TrueCrypt and VeraCrypt mode.
+* Multiple ciphers and corresponding keys chained to encrypt one filesystem.
 
 .. _cryptsetup__ref_installation:
 
