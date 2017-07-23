@@ -91,7 +91,7 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                     # Include any unknown keys
                     for other_key in element.keys():
                         if other_key not in ['name', 'state', 'id', 'weight',
-                                'real_weight', 'param']:
+                                             'real_weight', 'param']:
                             dict_element[other_key] = element.get(other_key)
 
                     dict_value.update({element_name: dict_element})
