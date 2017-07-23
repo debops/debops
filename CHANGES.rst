@@ -18,6 +18,15 @@ The current role maintainer_ is ypid_.
 
 .. _debops.cryptsetup master: https://github.com/debops/ansible-cryptsetup/compare/v0.5.1...master
 
+Added
+~~~~~
+
+- Document that ``tcrypt`` and ``veracrypt`` is supported as :ref:`item.mode <cryptsetup__devices_mode>`.
+  This has been tested with ``veracrypt`` and it is save to assume that ``tcrypt`` also works.
+  This "feature" has not required any actual code changes to the role.
+  Refer to :ref:`cryptsetup__ref_devices_veracrypt` for details. [ypid_]
+
+
 Fixed
 ~~~~~
 

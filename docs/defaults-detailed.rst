@@ -73,6 +73,8 @@ Each item of those lists is a dictionary with the following documented keys:
 
   * ``plain``
   * ``luks``
+  * ``tcrypt``
+  * ``veracrypt``
 
   Defaults to ``luks``. There is no global variable to change this default.
   Refer to :manpage:`cryptsetup(8)` for more details.
@@ -188,6 +190,7 @@ Each item of those lists is a dictionary with the following documented keys:
   Set to ``False`` to disable header backup creation and to ensure that the
   header backup is absent on the remote system.
   This option only has an effect in ``luks`` :ref:`item.mode <cryptsetup__devices_mode>`.
+  For TrueCrypt/VeraCrypt you will need to create header backups manually!
   Defaults to :envvar:`cryptsetup__header_backup`.
 
 .. _cryptsetup__devices_swap:
@@ -594,3 +597,40 @@ will not be your weakest link. For example AES should be suitable on it’s own
 to provide reasonable `Information Security`_. You must also think about other
 areas of `Computer Security`_ and `Operations security`_ for this example to
 make sense.
+
+
+.. _cryptsetup__ref_devices_veracrypt:
+
+Example for TrueCrypt/VeraCrypt encrypted devices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``cryptsetup`` supports to open TrueCrypt `ciphertext block devices` and
+starting with ``cryptsetup`` version 1.6.7 also VeraCrypt.
+As TrueCrypt has been superseded by VeraCrypt, only the later one will be
+mentioned in this section from now on.
+
+Because VeraCrypt is uncommon in a purely GNU/Linux based environment
+and is not packaged for Debian, this role does not interact
+in any way with VeraCrypt. You don’t need to install it on hosts you run this role against.
+
+You will need to use VeraCrypt for creation as ``cryptsetup`` and this role do
+not support this.
+Note that currently only a password is supported which can be passed in the
+usual manner by writing it into the :ref:`keyfile
+<cryptsetup__devices_keyfile>` on the Ansible controller.
+The keyfile should not contain newline characters (``\n``), see
+:ref:`item.keyfile_gen_command <cryptsetup__devices_keyfile_gen_command>`.
+Note that you will need to create a header backup manually!
+
+Because VeraCrypt is great for platform portability, you might choose a
+different filesystem as done in this example:
+
+.. code:: yaml
+
+   cryptsetup__devices:
+     - name: 'mydatadisk'
+       ciphertext_block_device: '/dev/disk/by-partuuid/65ca7bc4-6cb7-11e7-b49b-00163e5e6c0f'
+       mode: 'veracrypt'
+       fstype: 'ntfs'
+       create_filesystem: False
+       mount_options: '{{ cryptsetup__mount_options + ["umask=027", "fmask=117", "uid=1000", "gid=1000"] }}'
