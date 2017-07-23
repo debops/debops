@@ -71,8 +71,8 @@ debops__ansible_git_build_dir: '{{ (ansible_local.root.src
 # The role will switch to the admin user account to perform the build. The
 # build script needs :command:`sudo` access to install the built ``*.deb`` package,
 # which the admin account should have.
-debops__ansible_git_become_user: '{{ ansible_ssh_user
-                                     if ansible_ssh_user|d()
+debops__ansible_git_become_user: '{{ ansible_user
+                                     if ansible_user|d()
                                      else lookup("env", "USER") }}'
                                                                    # ]]]
                                                                    # ]]]
