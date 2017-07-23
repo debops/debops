@@ -8,7 +8,7 @@ Changelog
 **debops.cryptsetup**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current role maintainer_ is ypid_.
 
@@ -17,6 +17,17 @@ The current role maintainer_ is ypid_.
 ----------------------------------------
 
 .. _debops.cryptsetup master: https://github.com/debops/ansible-cryptsetup/compare/v0.5.1...master
+
+Added
+~~~~~
+
+- Document that ``tcrypt`` and ``veracrypt`` is supported as :ref:`item.mode <cryptsetup__devices_mode>`.
+  This has been tested with ``veracrypt`` and it is save to assume that ``tcrypt`` also works.
+  This "feature" has not required any actual code changes to the role.
+  Refer to :ref:`cryptsetup__ref_devices_veracrypt` for details. [ypid_]
+
+- Add Debian Stretch to the support matrix of this role. No changes where required. [ypid_]
+
 
 Fixed
 ~~~~~
