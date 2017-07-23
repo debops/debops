@@ -19,8 +19,8 @@ The current role maintainer_ is drybjed_.
 Changed
 ~~~~~~~
 
-- Ensure that NTP daemons get uninstalled when :envvar:`ntp__daemon_enabled`
-  evaluates to ``absent``. [ypid_]
+- Ensure that NTP daemons get uninstalled when :envvar:`ntp__daemon`
+  evaluates to ``False``. [ypid_]
 
 
 `debops.ntp v0.2.3`_ - 2016-08-29

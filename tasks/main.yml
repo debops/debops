@@ -11,19 +11,19 @@
     install_recommends: False
   with_items: [ 'tzdata' ]
 
-  # Installs either ntpdate, NTPd or OpenNTPd on all hosts except inside containers
-- include: install.yml
-  when: ntp__daemon_enabled|bool
-
-- name: Ensure that daemons are not installed
+- name: Ensure that alternative daemons/programs are not installed
   apt:
     name: '{{ item }}'
     state: 'absent'
     purge: True
-  when: not ntp__daemon_enabled|bool
   with_flattened:
-    - 'ntp'
-    - 'openntpd'
+    - [ '{{ "ntpdate" if (ntp__daemon != "ntpdate" and not ntp__ignore_ntpdate|bool) else [] }}' ]
+    - [ '{{ "ntp" if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}' ]
+    - [ '{{ "openntpd" if (ntp__daemon != "openntpd") else [] }}' ]
+
+  # Installs either ntpdate, NTPd or OpenNTPd on all hosts except inside containers
+- include: install.yml
+  when: ntp__daemon_enabled|bool
 
 - include: timezone.yml
   when: ntp__timezone|d()
