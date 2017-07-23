@@ -42,7 +42,7 @@ Ansible’s inventory to customize LibreNMS:
 ``librenms__admin_accounts``
   List of admin accounts created in the LibreNMS database. Passwords are stored
   automatically in the ``secret/`` directory, see the ``debops.secret`` role for more
-  details. By default an admin account based on the ``ansible_ssh_user`` variable
+  details. By default an admin account based on the ``ansible_user`` variable
   is created.
 
 ``librenms__devices``
