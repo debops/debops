@@ -604,8 +604,8 @@ make sense.
 Example for TrueCrypt/VeraCrypt encrypted devices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``cryptsetup`` supports to open TrueCrypt `ciphertext block devices` and
-starting with ``cryptsetup`` version 1.6.7 also VeraCrypt.
+:command:`cryptsetup` supports to open TrueCrypt `ciphertext block devices` and
+starting with :command:`cryptsetup` version 1.6.7 also VeraCrypt.
 As TrueCrypt has been superseded by VeraCrypt, only the later one will be
 mentioned in this section from now on.
 
@@ -613,7 +613,7 @@ Because VeraCrypt is uncommon in a purely GNU/Linux based environment
 and is not packaged for Debian, this role does not interact
 in any way with VeraCrypt. You don’t need to install it on hosts you run this role against.
 
-You will need to use VeraCrypt for creation as ``cryptsetup`` and this role do
+You will need to use VeraCrypt for creation as :command:`cryptsetup` and this role do
 not support this.
 Note that currently only a password is supported which can be passed in the
 usual manner by writing it into the :ref:`keyfile
