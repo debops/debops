@@ -645,7 +645,7 @@ EOF
 challenge_password  = ${PKI_SESSION_TOKEN:-}
 
 EOF
-        elif [ -n "${PKI_SESSION_TOKEN:-}" ] && [ "${config_type}" = "selfsigned" ] ; then
+        elif [ "${config_type}" = "selfsigned" ] ; then
             cat << EOF >> "${config_file}"
 expiration_days = ${config['selfsigned_sign_days']}
 EOF
@@ -1987,7 +1987,7 @@ sub_new-realm () {
         if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
             if [ "${config['pki_internal']}" = "false" ] ; then
-                create_${library}_config selfsigned/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
             fi
 
             create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
@@ -1999,7 +1999,7 @@ sub_new-realm () {
         elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
             if [ "${config['pki_internal']}" = "false" ] ; then
-                create_${library}_config selfsigned/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
             fi
 
             create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
@@ -2096,6 +2096,12 @@ sub_init () {
                         ;;
                     internal=*)
                         args["pki_internal"]=${OPTARG#*=}
+                        ;;
+                    selfsigned-sign-days)
+                        args["selfsigned_sign_days"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
+                        ;;
+                    selfsigned-sign-days=*)
+                        args["selfsigned_sign_days"]=${OPTARG#*=}
                         ;;
                     subject)
                         args["subject"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))

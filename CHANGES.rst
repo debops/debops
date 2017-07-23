@@ -6,7 +6,7 @@ Changelog
 **debops.pki**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current role maintainer_ is drybjed_.
 
@@ -35,6 +35,9 @@ Added
   Refer to `A Web PKI x509 certificate primer <https://developer.mozilla.org/en-US/docs/Mozilla/Security/x509_Certificates>`_
   for details. [ypid_]
 
+- Support to change the number of days a selfsigned certificate will be valid
+  for by exposing the ``selfsigned_sign_days`` option for :envvar:`pki_realms`. [ypid_]
+
 Fixed
 ~~~~~
 
@@ -43,6 +46,10 @@ Fixed
 
 - Sign certificate requests on Ansible Controller only for hosts that have
   their Ansible facts gathered. [drybjed_]
+
+- pki-realm: Fix ``selfsigned_sign_days`` config option which was ignored previously.
+  This did not have any effect for users of the role because changing that
+  setting was not supported previously either. [ypid_]
 
 
 `debops.pki v0.2.14`_ - 2016-11-21
