@@ -107,3 +107,8 @@ Fixed
 - Detection of :envvar:`dnsmasq__bogus_priv` which did not work before because the
   ``bool`` filter interprets defaults to ``False`` for input it does not know
   about (like IP addresses). [ypid_]
+
+- Fix ``ra-only`` mode. Previously, if only ``ra-only`` was given as
+  ``item.ipv6_mode`` dnsmasq would still have set the "Managed address
+  configuration" flag. Clients would have done both DHCPv6 and SLAAC at the
+  same time. [ypid_]
