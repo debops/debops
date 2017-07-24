@@ -31,6 +31,6 @@ From debops.postfix v0.1.3 to debops.postfix v0.2.0
 - Most of the functionality of the old role has been removed. It will be
   brought back using separate roles in the future, however they are not yet
   written. If you are using the old role in production, change the DebOps
-  :file:`requirements.yml` configuration to pin the old role version. Other
-  roles that depend on ``debops.postfix`` will re updated as well, you might
-  want to consider pinning them too.
+  :file:`requirements.yml` configuration to pin the old role version
+  (``v0.1.3``). Other roles that depend on ``debops.postfix`` will re updated
+  as well, you might want to consider pinning them too.

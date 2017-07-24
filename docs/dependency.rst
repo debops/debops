@@ -85,7 +85,7 @@ The dependent configuration from other roles is stored in the :file:`secret/`
 directory on the Ansible Controller (see debops.secret_ for more details) in
 a JSON file (one for each variable), with each role configuration in a separate
 dictionary. The ``debops.postfix`` role reads these files when Ansible local
-facts indicate that the Postfix is installed, otherwise a new empty files are
+facts indicate that the Postfix is installed, otherwise empty files are
 created. This ensures that the stale configuration is not present on a new or
 re-installed host.
 

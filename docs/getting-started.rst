@@ -1,13 +1,25 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 Default configuration
 ---------------------
 
 The ``debops.postfix`` role configures a basic Postfix SMTP server with
 configuration similar to the "Internet Site" configuration enabled by default
-by the Debian package. Additional configuration is defined in separate
-variables and can be easily disabled or modified if necessary.
+by the Debian package. With the default configuration, SMTP service listens for
+connections on port ``25`` from all hosts. Mail relay is authorized from
+``localhost``, other hosts are deferred. The SMTP server accepts mail addressed
+for the host's FQDN, but not it's domain. There's no default relayhost, Postfix
+delivers the mail directly to other hosts. Local mail is enabled by default,
+support for mail aliases is provided by the ``debops.etc_aliases`` Ansible
+role.
+
+Additional configuration is defined in separate variables and can be easily
+disabled or modified if necessary. To do that, you can modify the values of the
+:envvar:`postfix__combined_maincf` and :envvar:`postfix__combined_mastercf`
+variables.
 
 The Postfix service will be configured to use TLS connections and strong
 encryption by default. This might interfere with SMTP service operation for
