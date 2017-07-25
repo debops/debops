@@ -24,6 +24,9 @@ Added
 - Add  :envvar:`dhparam__deploy_state` to allow to specify the desired state this
   role should achieve. State ``absent`` is not fully implemented yet. [ypid_]
 
+- Add 2048 bits size in :envvar:`dhparam__bits` in order to use it in nginx servers
+  accessed by OpenJDK 8 clients. [pedroluislopez_]
+
 Changed
 ~~~~~~~
 
