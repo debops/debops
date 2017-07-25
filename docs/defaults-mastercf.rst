@@ -105,6 +105,13 @@ parameters:
   configuration file. Negative numbers make the service "lighter" and it will
   be placed higher.
 
+``copy_id_from``
+  Optional. This is an internal role parameter which can be used to change the
+  relative position of a given option in the configuration file. If you specify
+  a name of an option, it's internal "id" number (used for sorting) will be
+  copied to the current option. This can be used to move options around to
+  different configuration file sections.
+
 
 Examples
 ~~~~~~~~

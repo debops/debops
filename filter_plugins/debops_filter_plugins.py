@@ -146,6 +146,12 @@ def parse_kv_config(*args, **kwargs):
                                                              'unknown'))
                 })
 
+                if 'copy_id_from' in element:
+                    if element.get('copy_id_from') in parsed_config.keys():
+                        id_src = element.get('copy_id_from')
+                        current_param['id'] = (
+                                parsed_config[id_src].get('id'))
+
                 if 'weight' in element:
                     current_param['weight'] = (
                         int(element.get('weight',
@@ -178,7 +184,7 @@ def parse_kv_config(*args, **kwargs):
             # These parameters are special and should not be interpreted
             # directly as configuration options
             elif not all(x in ['name', 'option', 'state', 'comment',
-                               'section', 'weight', 'value']
+                               'section', 'weight', 'value', 'copy_id_from']
                          for x in element):
                 for key, value in element.iteritems():
                     current_param = (parsed_config[key].copy()
@@ -283,6 +289,12 @@ def parse_kv_items(*args, **kwargs):
                                              current_param.get('separator',
                                                                False))
                 })
+
+                if 'copy_id_from' in element:
+                    if element.get('copy_id_from') in parsed_config.keys():
+                        id_src = element.get('copy_id_from')
+                        current_param['id'] = (
+                                parsed_config[id_src].get('id'))
 
                 if 'weight' in element:
                     current_param['weight'] = (
