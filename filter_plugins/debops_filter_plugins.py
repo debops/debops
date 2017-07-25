@@ -156,7 +156,7 @@ def parse_kv_config(*args, **kwargs):
                     int(current_param.get('id'))
                     + int(current_param.get('weight')))
 
-                _parse_kv_value(current_param, element, element_index)
+                _parse_kv_value(current_param, element, current_param.get('id'))
 
                 if 'option' in element:
                     current_param['option'] = element.get('option')
@@ -197,7 +197,7 @@ def parse_kv_config(*args, **kwargs):
 
                     _parse_kv_value(current_param,
                                     {'value': value},
-                                    element_index)
+                                    current_param.get('id'))
 
                     parsed_config.update({key: current_param})
 
