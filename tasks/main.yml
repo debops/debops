@@ -92,6 +92,15 @@
   action: setup
   when: postfix__register_facts|changed
 
+- name: Configure /etc/mailname
+  copy:
+    content: "{{ postfix__mailname + '\n' }}"
+    dest: '/etc/mailname'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Check postfix and reload' ]
+
 - name: Generate Postfix 'main.cf' configuration
   template:
     src: 'etc/postfix/main.cf.j2'
