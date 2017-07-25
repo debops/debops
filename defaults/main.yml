@@ -78,6 +78,11 @@ dhparam__default_length: '{{ dhparam__bits[0] }}'
 #
 # List of Diffie-Hellman parameter sizes to generate. First element of the list
 # will be used as default.
+#
+# WARNING: OpenJDK 8 doesn't support DH sizes greater than 2048. If you have to
+# configure nginx servers accessed by OpenJDK 8 clients, set this variable to
+# ``dhparam__bits: [ '3072', '2048' ]``, and then set the following parameter
+# in nginx servers: ``ssl_dhparam: '/etc/pki/dhparam/params/set0/dh2048.pem'``.
 dhparam__bits: [ '3072' ]
                                                                    # ]]]
                                                                    # ]]]
