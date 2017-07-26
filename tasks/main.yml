@@ -10,7 +10,7 @@
 
 - name: Remove Unbound server configuration
   file:
-    path: '/etc/unbound/unbound.conf.d/ansible.conf'
+    path: '/etc/unbound/unbound.conf.d/ansible-server.conf'
     state: 'absent'
   notify: [ 'Check unbound configuration and reload' ]
   when: not unbound__combined_server|d()
@@ -24,8 +24,8 @@
 
 - name: Generate Unbound server configuration
   template:
-    src: 'etc/unbound/unbound.conf.d/ansible.conf.j2'
-    dest: '/etc/unbound/unbound.conf.d/ansible.conf'
+    src: 'etc/unbound/unbound.conf.d/ansible-server.conf.j2'
+    dest: '/etc/unbound/unbound.conf.d/ansible-server.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'
