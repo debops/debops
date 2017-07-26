@@ -102,11 +102,3 @@
     chdir: '{{ gitlab_pages_checkout }}'
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_pages_checkout is defined and gitlab_register_pages_checkout.changed
-
-- name: Create the pages storage directory
-  file:
-    path: '{{ gitlab_pages_path }}'
-    state: 'directory'
-    owner: '{{ gitlab_user }}'
-    group: '{{ gitlab_group }}'
-    mode: '0755'

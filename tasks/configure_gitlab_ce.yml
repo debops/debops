@@ -1,5 +1,27 @@
 ---
 
+- name: Add Yarn repository APT key
+  apt_key:
+    id: '{{ gitlab__yarn_apt_key_id }}'
+    state: 'present'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+
+- name: Add Yarn repository
+  apt_repository:
+    repo: '{{ gitlab__yarn_apt_repo }}'
+    state: 'present'
+    update_cache: True
+  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
+
+- name: Install Yarn
+  apt:
+    name: 'yarn'
+    install_recommends: False
+  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
+
 # ---- git clone && git checkout ----
 
 - name: Create GitLab source directory
@@ -90,7 +112,8 @@
                 '{{ gitlab_satellites_path }}',
                 '{{ gitlab_shared_path }}',
                 '{{ gitlab_lfs_path }}',
-                '{{ gitlab_artifacts_path }}' ]
+                '{{ gitlab_artifacts_path }}',
+                '{{ gitlab_pages_path }}' ]
 
 
 # ---- Database configuration ----
@@ -173,8 +196,9 @@
     - 'gitlab-sidekiq.service'
     - 'gitlab-unicorn.service'
     - 'gitlab-workhorse.service'
+    - '{{ "gitlab-gitaly.service" if (gitlab_version | version_compare("9.0", operator="gt", strict=True)) else [] }}'
   register: gitlab__register_systemd_services
-  when: (( gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Install GitLab Pages systemd service file
@@ -215,6 +239,7 @@
     - 'gitlab-sidekiq.service'
     - 'gitlab-unicorn.service'
     - 'gitlab-workhorse.service'
+    - '{{ "gitlab-gitaly.service" if (gitlab_version | version_compare("9.0", operator="gt", strict=True)) else [] }}'
   when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
          gitlab_use_systemd|bool)
 
@@ -338,7 +363,7 @@
          gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
 
 - name: Precompile GitLab assets
-  shell: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production
+  shell: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'

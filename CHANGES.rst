@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.gitlab master`_ - unreleased
 ------------------------------------
 
-.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.0...master
+.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.1...master
+
+
+`debops.gitlab v0.2.1`_ - 2017-07-26
+------------------------------------
+
+.. _debops.gitlab v0.2.1: https://github.com/debops/ansible-gitlab/compare/v0.2.0...v0.2.1
 
 Changed
 ~~~~~~~
@@ -31,6 +37,10 @@ Changed
 
 - Cleanup and simplify gitlab-workhorse service file.
   Standard input and output redirection does not work within systemd. [cultcom]
+
+- Add support for GitLab 9.0, 9.1, 9.2 and 9.3. [bfabio_] [cultcom]
+
+- Always create 'pages' directory for "rake backup" to succeed. [cultcom]
 
 
 `debops.gitlab v0.2.0`_ - 2017-04-06
