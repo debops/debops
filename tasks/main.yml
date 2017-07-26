@@ -15,6 +15,13 @@
   notify: [ 'Check unbound configuration and reload' ]
   when: not unbound__combined_server|d()
 
+- name: Remove Unbound remote control configuration
+  file:
+    path: '/etc/unbound/unbound.conf.d/ansible-remote-control.conf'
+    state: 'absent'
+  notify: [ 'Check unbound configuration and reload' ]
+  when: not unbound__combined_remote_control|d()
+
 - name: Generate Unbound server configuration
   template:
     src: 'etc/unbound/unbound.conf.d/ansible.conf.j2'
@@ -24,6 +31,16 @@
     mode: '0644'
   notify: [ 'Check unbound configuration and reload' ]
   when: unbound__combined_server|d()
+
+- name: Generate Unbound remote control configuration
+  template:
+    src: 'etc/unbound/unbound.conf.d/ansible-remote-control.conf.j2'
+    dest: '/etc/unbound/unbound.conf.d/ansible-remote-control.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Check unbound configuration and reload' ]
+  when: unbound__combined_remote_control|d()
 
 - name: Remove DNS zones if requested
   file:

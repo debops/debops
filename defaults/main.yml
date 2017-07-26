@@ -68,6 +68,43 @@ unbound__combined_server: '{{ unbound__default_server
                               + unbound__host_server }}'
                                                                    # ]]]
                                                                    # ]]]
+# Remote control configuration [[[
+# --------------------------------
+
+# These variables can be used to configure :command:`unbound-control`
+# configuration options. The syntax is the same as the 'server' configuration.
+# See :ref:`unbound__ref_server` for more details.
+
+# .. envvar:: unbound__remote_control [[[
+#
+# The Unbound 'remote-control' configuration which should be present on all
+# hosts in the Ansible inventory.
+unbound__remote_control: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__group_remote_control [[[
+#
+# The Unbound 'remote-control' configuration which should be present on hosts
+# in a specific Ansible inventory group.
+unbound__group_remote_control: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__host_remote_control [[[
+#
+# The Unbound 'remote-control' configuration which should be present on
+# specific hosts in the Ansible inventory.
+unbound__host_remote_control: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__combined_remote_control [[[
+#
+# This variable combines the 'remote-control' configuration from other
+# variables and passes it to the configuration file template.
+unbound__combined_remote_control: '{{ unbound__remote_control
+                                      + unbound__group_remote_control
+                                      + unbound__host_remote_control }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Custom forward/stub DNS zones [[[
 # ---------------------------------
 
