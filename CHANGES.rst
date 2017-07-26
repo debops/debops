@@ -17,7 +17,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.unbound master: https://github.com/debops/ansible-unbound/compare/v0.1.0...master
 
 
-debops.unbound v0.1.0 - unreleased
+debops.unbound v0.1.0 - 2017-07-26
 ----------------------------------
 
 Added
