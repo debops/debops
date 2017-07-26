@@ -1,5 +1,9 @@
+# A set of custom Ansible filter plugins used by DebOps
+# Version: v0.1.0
+
 # Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2017 DebOps https://debops.org/
+
 
 # This file is part of DebOps.
 #
