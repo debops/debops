@@ -1,0 +1,24 @@
+---
+
+- name: Manage Unbound, local DNS resolver
+  hosts: [ 'debops_service_unbound' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ unbound__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ unbound__etc_services__dependent_list }}'
+
+    - role: debops.unbound
+      tags: [ 'role::unbound' ]

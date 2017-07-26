@@ -111,6 +111,8 @@ Added
 
 - Add the ``debops.etc_aliases`` role and playbook. [drybjed_]
 
+- Add the ``debops.unbound`` role and playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
