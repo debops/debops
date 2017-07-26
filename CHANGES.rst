@@ -19,7 +19,7 @@ The current role maintainer_ is ganto_.
 Changed
 ~~~~~~~
 
-- Set default version to 1.1.8. [ganto_]
+- Set default version to 1.1.9. [ganto_]
 
 
 Fixed
