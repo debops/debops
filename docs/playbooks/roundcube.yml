@@ -17,6 +17,11 @@
       php5_pools:
         - '{{ roundcube__php5_pool }}'
 
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'role::nginx' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
     - role: debops.nginx
       tags: [ 'role::nginx' ]
       nginx__dependent_servers:
