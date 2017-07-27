@@ -261,52 +261,48 @@ roundcube__extra_packages: []
 #   Role-dependent configuration
 # --------------------------------
 
-# .. envvar:: roundcube__nginx_server
+# .. envvar:: roundcube__nginx__dependent_servers [[[
 #
 # :program:`nginx` server configuration managed by the debops.nginx_ role.
-roundcube__nginx_server:
-  by_role: 'ansible-roundcube'
-  enabled: True
-  type: 'php5'
-  name: '{{ roundcube__domain }}'
-  root: '{{ roundcube__git_checkout }}'
-  access_policy: '{{ roundcube__nginx_access_policy }}'
-  index: 'index.php'
+roundcube__nginx__dependent_servers:
 
-  options: |
-    autoindex off;
-    client_max_body_size {{ roundcube__max_file_size }}M;
-    client_body_buffer_size 128k;
+  - type: 'default'
+    enabled: True
+    default: False
+    by_role: 'debops-contrib.roundcube'
+    filename: 'debops-contrib.roundcube'
+    name: '{{ roundcube__domain }}'
+    root: '{{ roundcube__git_checkout }}'
+    access_policy: '{{ roundcube__nginx_access_policy }}'
+    index: 'index.php'
 
-  location:
-    '/': |
-      try_files $uri $uri/ @roundcube;
+    options: |
+      autoindex off;
+      client_max_body_size {{ roundcube__max_file_size }}M;
+      client_body_buffer_size 128k;
 
-    '@roundcube': |
-      rewrite ^/favicon\.ico$       skins/larry/images/favicon.ico    last;
+    location_list:
+      - pattern: '/'
+        options: |
+          try_files $uri $uri/ @roundcube;
 
-    '~ ^/?(installer|[A-Z0-9]+$)': |
-      deny all;
+      - pattern: '@roundcube'
+        options: |
+          rewrite ^/favicon\.ico$ skins/larry/images/favicon.ico last;
 
-    '~ ^/?(\.git|\.tx|SQL|bin|config|logs|temp|tests|program\/(include|lib|localization|steps))': |
-      deny all;
+      - pattern: '~ ^/?(installer|[A-Z0-9]+$)'
+        options: |
+          deny all;
 
-    '~ /(README\.md|composer\.json-dist|composer\.json|package\.xml|Dockerfile)$': |
-      deny all;
+      - pattern: '~ ^/?(\.git|\.tx|SQL|bin|config|logs|temp|tests|program\/(include|lib|localization|steps))'
+        options: |
+          deny all;
 
-  php5: 'php5_roundcube'
-  php5_options: |
-    fastcgi_intercept_errors        on;
-    fastcgi_ignore_client_abort     off;
-    fastcgi_connect_timeout         60;
-    fastcgi_send_timeout            180;
-    fastcgi_read_timeout            180;
-    fastcgi_buffer_size             128k;
-    fastcgi_buffers               4 256k;
-    fastcgi_busy_buffers_size       256k;
-    fastcgi_temp_file_write_size    256k;
+      - pattern: '~ /(README\.md|composer\.json-dist|composer\.json|package\.xml|Dockerfile)$'
+        options: |
+          deny all;
 
-
+                                                                   # ]]]
 # .. envvar:: roundcube__nginx_access_policy
 #
 # Name of the "nginx access policy" for Roundcube webpage. See debops.nginx_
