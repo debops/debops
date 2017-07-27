@@ -9,29 +9,50 @@
 #
 # .. include:: includes/all.rst
 
+# .. Roundcube user account [[[
+#
+# --------------------------
+#   Roundcube user account
+# --------------------------
+
+# .. envvar:: roundcube__user [[[
+#
+# Roundcube system user account
+roundcube__user: 'roundcube'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__group [[[
+#
+# Roundcube system user group
+roundcube__group: 'roundcube'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__home [[[
+#
+# Path to the home directory of the Roundcube system account.
+roundcube__home: '{{ (ansible_local.root.home
+                       if (ansible_local|d() and ansible_local.root|d() and
+                           ansible_local.root.home|d())
+                       else "/var/local") + "/" + roundcube_user }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__comment [[[
+#
+# The GECOS string set for the Roundcube account.
+roundcube__comment: 'Roundcube Webmail'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__shell [[[
+#
+# The default shell of the Roundcube account.
+roundcube__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
 # .. Roundcube source and deployment [[[1
 #
 # -----------------------------------
 #   Roundcube source and deployment
 # -----------------------------------
-
-# .. envvar:: roundcube__user
-#
-# Roundcube system user account
-roundcube__user: 'roundcube'
-
-
-# .. envvar:: roundcube__group
-#
-# Roundcube system user group
-roundcube__group: 'roundcube'
-
-
-# .. envvar:: roundcube__home
-#
-# Roundcube home directory
-roundcube__home: '{{ ansible_local.root.home + "/" + roundcube__user }}'
-
 
 # .. envvar:: roundcube__src
 #
