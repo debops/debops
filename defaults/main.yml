@@ -9,6 +9,64 @@
 #
 # .. include:: includes/all.rst
 
+# .. Packages and installation [[[
+#
+# -----------------------------
+#   Packages and installation
+# -----------------------------
+
+# .. envvar:: roundcube__required_php_packages [[[
+#
+# List of PHP packages required by Roundcube.
+# Refer to the `official Roundcube documentation <https://github.com/roundcube/roundcubemail/wiki/Install-Requirements>`__ for details.
+roundcube__required_php_packages:
+  # Included in the base install:
+  # - 'dom'
+  # - 'iconv'
+  # - 'mbstring'
+  # - 'openssl'
+  # - 'session'
+  # - 'sockets'
+  # - 'xml'
+
+  - 'json'
+
+  # Bundled:
+  #  - 'mail-mime'
+  #  - 'net-smtp'
+  #  - 'net-socket'
+  #  - 'auth-sasl'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__optional_php_packages [[[
+#
+# List of recommended/optional PHP packages for Roundcube.
+# Refer to the `official Roundcube documentation <https://github.com/roundcube/roundcubemail/wiki/Install-Requirements>`__ for details.
+roundcube__optional_php_packages:
+  # Included in the base install:
+  # - 'zip'
+
+  - 'iconv'
+  - 'pspell'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__base_php_packages [[[
+#
+# List of base PHP packages required by Roundcube.
+roundcube__base_php_packages:
+  - '{{ roundcube__required_php_packages }}'
+  - '{{ roundcube__optional_php_packages }}'
+  - '{{ [ "mysql" ] if (roundcube__database_map[roundcube__database].dbtype in [ "mariadb", "mysql" ]) else [] }}'
+  - '{{ [ "sqlite" ] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__extra_packages [[[
+#
+# List of additional Debian packages (e. g. language dictionaries) that should
+# be installed with Roundcube
+roundcube__extra_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
 # .. Roundcube user account [[[
 #
 # --------------------------
@@ -248,13 +306,6 @@ roundcube__plugins: []
 roundcube__max_file_size: '30'
 
 
-# .. envvar:: roundcube__extra_packages
-#
-# List of additional Debian packages (e. g. language dictionaries) that should
-# be installed with Roundcube
-roundcube__extra_packages: []
-
-
 # .. Role-dependent configuration [[[1
 #
 # --------------------------------
@@ -322,30 +373,35 @@ roundcube__nginx__dependent_upstreams:
     php_pool: 'roundcube'
 
 
-# .. envvar:: roundcube__php5_packages
+# .. envvar:: roundcube__php__dependent_packages [[[
 #
-# List of PHP5 packages required by Roundcube.
-roundcube__php5_packages: [ 'php-auth-sasl', 'php5-gd', 'php5-intl', 'php5-json',
-                           'php5-mcrypt', 'php-mail-mime', 'php-mail-mimedecode',
-                           'php-net-smtp', 'php-net-socket', 'php-pear' ]
+# List of PHP packages to install using the debops.php_ role.
+roundcube__php__dependent_packages:
 
+  - '{{ roundcube__base_php_packages }}'
+  - '{{ roundcube__optional_php_packages }}'
+  - '{{ roundcube__custom_php_packages }}'
 
-# .. envvar:: roundcube__php5_pool
+                                                                   # ]]]
+# .. envvar:: roundcube__php__dependent_pools [[[
 #
-# PHP pool managed by the `debops.php5 <https://github.com/debops/ansible-php5>`_
-# role.
-roundcube__php5_pool:
-  enabled: True
+# PHP pools managed by the debops.php_ role.
+roundcube__php__dependent_pools:
   name: 'roundcube'
+  by_role: 'debops-contrib.roundcube'
   user: '{{ roundcube__user }}'
   group: '{{ roundcube__group }}'
 
-  php_admin_value:
+  php_values:
+    ## https://secure.php.net/manual/en/info.configuration.php#ini.upload-max-filesize
+    upload_max_filesize:        '{{ roundcube__max_file_size }}M'
+
+    ## https://secure.php.net/manual/en/ini.core.php#ini.post-max-size
+    post_max_size:              '{{ roundcube__max_file_size }}M'
+
     display_errors:             'off'
     log_errors:                 'on'
     error_log:                  'logs/errors'
-    upload_max_filesize:        '{{ roundcube__max_file_size }}M'
-    post_max_size:              '{{ roundcube__max_file_size }}M'
     memory_limit:               '64M'
     register_globals:           'off'
     zlib.output_compression:    'off'
@@ -356,3 +412,5 @@ roundcube__php5_pool:
     session.gc_maxlifetime:     '21600'
     session.gc_divisor:         '500'
     session.gc_probability:     '1'
+                                                                   # ]]]
+                                                                   # ]]]

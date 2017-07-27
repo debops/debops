@@ -10,17 +10,20 @@
 
   roles:
 
-    - role: debops.php5
-      tags: [ 'role::php5' ]
-      php5_packages:
-        - '{{ roundcube__php5_packages }}'
-      php5_pools:
-        - '{{ roundcube__php5_pool }}'
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::php:env' ]
 
     - role: debops.ferm
       tags: [ 'role::ferm', 'role::nginx' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.php
+      tags: [ 'role::php' ]
+      php__dependent_packages:
+        - '{{ roundcube__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ roundcube__php__dependent_pools }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx' ]
