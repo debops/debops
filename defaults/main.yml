@@ -314,14 +314,16 @@ roundcube__nginx_server:
 roundcube__nginx_access_policy: ''
 
 
-# .. envvar:: roundcube__nginx_upstream_php5
+# .. envvar:: roundcube__nginx__dependent_upstreams
 #
 # PHP upstream server configuration managed by the debops.nginx_ role.
-roundcube__nginx_upstream_php5:
-  enabled: True
-  name: 'php5_roundcube'
-  type: 'php5'
-  php5: 'roundcube'
+roundcube__nginx__dependent_upstreams:
+
+  - name: 'php_roundcube'
+    by_role: 'debops-contrib.roundcube'
+    enabled: True
+    type: 'php'
+    php_pool: 'roundcube'
 
 
 # .. envvar:: roundcube__php5_packages
