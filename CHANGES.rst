@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.debops master: https://github.com/debops/ansible-debops/compare/v0.2.3...master
 
+Fixed
+~~~~~
+
+- Add ``python-crypto`` package to requirements for Ansible from source. [ganto_]
+
 
 `debops.debops v0.2.3`_ - 2017-02-12
 ------------------------------------
