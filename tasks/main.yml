@@ -45,3 +45,69 @@
     group: '{{ opendkim__group }}'
     mode: '0640'
   notify: [ 'Check opendkim and reload' ]
+
+- name: Ensure that DomainKey directory exists
+  file:
+    path: '{{ opendkim__dkimkeys_path }}'
+    state: 'directory'
+    owner: '{{ opendkim__user }}'
+    group: '{{ opendkim__group }}'
+    mode: '0700'
+
+- name: Install helper scripts on Ansible Controller
+  copy:
+    src: 'secret/opendkim/lib/'
+    dest: '{{ secret + "/opendkim/lib/" }}'
+    mode: '0755'
+  become: False
+  delegate_to: 'localhost'
+  run_once: True
+
+- name: Generate DomainKeys on Ansible Controller
+  openssl_privatekey:
+    size:  '{{ item.size  | d(opendkim__default_key_size) }}'
+    type:  '{{ (item.type | d("rsa")) | upper }}'
+    path:  '{{ secret + "/opendkim/domainkeys/"
+               + (item.domain | d(opendkim__domain)) + "_"
+               + (item.selector | d(item.name | d(item))) + ".pem" }}'
+  with_flattened:
+    - '{{ opendkim__combined_keys }}'
+  become: False
+  delegate_to: 'localhost'
+  no_log: True
+
+- name: Remove DomainKeys from hosts when requested
+  file:
+    path: '{{ opendkim__dkimkeys_path + "/"
+              + (item.domain | d(opendkim__domain)) + "_"
+              + (item.selector | d(item.name | d(item))) + ".pem" }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ opendkim__combined_keys }}'
+  when: item.state|d('present') == 'absent'
+
+- name: Download DomainKeys from Ansible Controller
+  copy:
+    src:  '{{ secret + "/opendkim/domainkeys/"
+              + (item.domain | d(opendkim__domain)) + "_"
+              + (item.selector | d(item.name | d(item))) + ".pem" }}'
+    dest: '{{ opendkim__dkimkeys_path + "/"
+              + (item.domain | d(opendkim__domain)) + "_"
+              + (item.selector | d(item.name | d(item))) + ".pem" }}'
+    owner: 'root'
+    group: '{{ opendkim__group }}'
+    mode: '0640'
+  with_flattened:
+    - '{{ opendkim__combined_keys }}'
+  when: item.state|d('present') != 'absent'
+  no_log: True
+
+- name: Generate key configuration files
+  template:
+    src: 'etc/dkimkeys/{{ item }}.j2'
+    dest: '{{ opendkim__dkimkeys_path + "/" + item }}'
+    owner: 'root'
+    group: '{{ opendkim__group }}'
+    mode: '0640'
+  notify: [ 'Check opendkim and reload' ]
+  with_items: [ 'KeyTable', 'SigningTable', 'TrustedHosts' ]

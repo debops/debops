@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+# See opendkim.conf(5), 'SigningTable' parameter for more details
+
+{% for element in opendkim__combined_signing_table %}
+{%   if element.state|d('present') != 'absent' %}
+{{ '{} {}'.format(element.from, (element.domain | d(opendkim__domain)) + '_' + (element.selector | d(element.name))) }}
+{%     if ((element.subdomains | d(False)) | bool and not element.from.startswith('.')) %}
+{{ '{} {}'.format('.' + element.from, (element.domain | d(opendkim__domain)) + '_' + (element.selector | d(element.name))) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}

@@ -10,5 +10,13 @@
 
   roles:
 
+    - role: debops.opendkim/env
+      tags: [ 'role::opendkim', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::opendkim' ]
+      secret__directories:
+        - '{{ opendkim__secret__directories }}'
+
     - role: debops.opendkim
       tags: [ 'role::opendkim' ]
