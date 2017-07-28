@@ -35,8 +35,8 @@ opendkim__version: '{{ ansible_local.opendkim.version
                        else "0.0.0" }}'
                                                                    # ]]]
                                                                    # ]]]
-# System environment [[[
-# ----------------------
+# Application environment, Postfix support [[[
+# --------------------------------------------
 
 # .. envvar:: opendkim__user [[[
 #
@@ -48,6 +48,27 @@ opendkim__user: 'opendkim'
 #
 # The UNIX system group used by the OpenDKIM service.
 opendkim__group: 'opendkim'
+
+                                                                   # ]]]
+# .. envvar:: opendkim__postfix_integration [[[
+#
+# Enable or disable integration with Postfix SMTP server.
+# See :ref:`opendkim__ref_postfix` for more details.
+opendkim__postfix_integration: '{{ ansible_local.postfix.installed
+                                   if (ansible_local|d() and ansible_local.postfix|d() and
+                                       ansible_local.postfix.installed is defined)
+                                   else False }}'
+
+                                                                   # ]]]
+# .. envvar:: opendkim__postfix_group [[[
+#
+# Name of the UNIX system group used by Postfix SMTP server. This variable is
+# used to create the OpenDKIM socket directory with correct access permissions
+# for Postfix.
+opendkim__postfix_group: '{{ ansible_local.postfix.system_group
+                             if (ansible_local|d() and ansible_local.postfix|d() and
+                                 ansible_local.postfix.system_group|d())
+                             else "postfix" }}'
 
                                                                    # ]]]
 # .. envvar:: opendkim__domain [[[
@@ -351,6 +372,11 @@ opendkim__default_config:
                    (ansible_local.unbound.installed|d()) | bool)
                else "ignore" }}'
 
+  - name: 'Socket'
+    comment: 'Listen for connections in the Postfix chroot'
+    value: 'local:/var/spool/postfix/opendkim/opendkim.sock'
+    state: '{{ "present" if opendkim__postfix_integration|bool else "ignore" }}'
+
   - name: 'KeyTable'
     value: '{{ opendkim__dkimkeys_path + "/KeyTable" }}'
     copy_id_from: 'Selector'
@@ -400,6 +426,25 @@ opendkim__combined_config: '{{ opendkim__original_config
                                + opendkim__config
                                + opendkim__group_config
                                + opendkim__host_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: opendkim__postfix__dependent_maincf [[[
+#
+# The :file:`main.cf` configuration for debops.postfix_ Ansible role.
+opendkim__postfix__dependent_maincf:
+
+  - name: 'smtpd_milters'
+    value:
+      - name: 'unix:/opendkim/opendkim.sock'
+        weight: -300
+
+  - name: 'non_smtpd_milters'
+    value:
+      - name: 'unix:/opendkim/opendkim.sock'
+        weight: -300
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

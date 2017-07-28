@@ -111,3 +111,13 @@
     mode: '0640'
   notify: [ 'Check opendkim and reload' ]
   with_items: [ 'KeyTable', 'SigningTable', 'TrustedHosts' ]
+
+- name: Create OpenDKIM socket directory in Postfix chroot
+  file:
+    path: '/var/spool/postfix/opendkim'
+    state: 'directory'
+    owner: '{{ opendkim__user }}'
+    group: '{{ opendkim__postfix_group }}'
+    mode: '2750'
+  when: opendkim__postfix_integration|bool
+  notify: [ 'Check opendkim and restart' ]

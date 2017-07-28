@@ -31,6 +31,26 @@ on a given host, by checking for the Ansible local facts defined by the
 it to resolve DNS queries and check DNSSEC validity.
 
 
+.. _opendkim__ref_postfix:
+
+Postfix integration
+-------------------
+
+If the ``debops.opendkim`` role detects an installed Postfix instance by
+checking the Ansible local facts created by the debops.postfix_ Ansible role,
+Postfix support will be enabled automatically.
+
+OpenDKIM will be reconfigured to create its listening socket in
+:file:`/var/spool/postfix/opendkim/` directory.  This directory is created with
+SGID bit set, and its group is set to the Postfix main group, so that the
+socket created by OpenDKIM will be automatically accessible by Postfix.
+
+The ``debops.opendkim`` role will add Postfix :file:`main.cf` configuration
+options using the debops.postfix_ dependent role variables. OpenDKIM filter
+will be added to the ``smtpd_milters`` as well as ``non_smtpd_milters``
+configuration options.
+
+
 Example inventory
 -----------------
 
