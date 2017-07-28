@@ -1,6 +1,21 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
+.. contents::
+   :local:
+   :depth: 1
+
+Support for Unbound DNS resolver
+--------------------------------
+
+The ``debops.opendkim`` role checks if the Unbound service has been installed
+on a given host, by checking for the Ansible local facts defined by the
+``debops.unbound`` role. If Unbound is present, OpenDKIM will automatically use
+it to resolve DNS queries and check DNSSEC validity.
+
+
 Example inventory
 -----------------
 

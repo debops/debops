@@ -164,7 +164,19 @@ opendkim__original_config:
 # .. envvar:: opendkim__default_config [[[
 #
 # The OpenDKIM configuration defined by the ``debops.opendkim`` Ansible role.
-opendkim__default_config: []
+opendkim__default_config:
+
+  - name: 'ResolverConfiguration'
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.unbound|d() and
+                   (ansible_local.unbound.installed|d()) | bool)
+               else "ignore" }}'
+
+  - name: 'TrustAnchorFile'
+    state: '{{ "absent"
+               if (ansible_local|d() and ansible_local.unbound|d() and
+                   (ansible_local.unbound.installed|d()) | bool)
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: opendkim__config [[[
