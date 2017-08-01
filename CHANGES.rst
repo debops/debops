@@ -38,6 +38,8 @@ Fixed
 - Only create keyfile and backup directories on remote systems if they are
   actually needed. [jpiron]
 
+- Don’t upgrade :envvar:`cryptsetup__base_packages`, only ensure that they are installed. [ypid_]
+
 Security
 ~~~~~~~~
 
