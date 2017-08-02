@@ -253,7 +253,7 @@
     cryptsetup luksHeaderBackup {{ item.0.ciphertext_block_device | quote }} \
       --header-backup-file {{ (cryptsetup__header_backup_remote_location + "/" + item.0.name + "_header_backup.raw") | quote }}
   changed_when: False
-  when: ((item.backup_header|d(cryptsetup__header_backup) | bool) and
+  when: ((item.0.backup_header|d(cryptsetup__header_backup) | bool) and
           item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
           item.1.stat.exists and item.0.mode|d("luks") == "luks")
   with_together:
@@ -267,7 +267,7 @@
     dest: '{{ cryptsetup__secret_path + "/" + item.0.name + "/header_backup.raw" }}'
     fail_on_missing: True
     flat: True
-  when: ((item.backup_header|d(cryptsetup__header_backup) | bool) and
+  when: ((item.0.backup_header|d(cryptsetup__header_backup) | bool) and
           item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
           item.1.stat.exists and item.0.mode|d("luks") == "luks")
   with_together:
@@ -283,7 +283,7 @@
     mode:  '{{ cryptsetup__secret_mode }}'
   become: False
   delegate_to: 'localhost'
-  when: ((item.backup_header|d(cryptsetup__header_backup) | bool) and
+  when: ((item.0.backup_header|d(cryptsetup__header_backup) | bool) and
           item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
           item.1.stat.exists and item.0.mode|d("luks") == "luks" and
           not ansible_check_mode)
