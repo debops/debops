@@ -34,8 +34,9 @@ Fixed
 
 - The role now requires at least Ansible v2.2 due to use of the ``check_mode:
   False`` directive. [brzhk]
-- Prevent keyfiles content from being displayed when the ``--diff`` Ansible command line option
-  is used. [jpiron]
+
+- Prevent keyfiles content from being displayed when the ``--diff`` Ansible
+  command line option is used. [jpiron]
 
 Security
 ~~~~~~~~
