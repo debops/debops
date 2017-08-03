@@ -148,7 +148,10 @@ roundcube__git_checkout: '{{ roundcube__www + "/sites/" +
 # .. envvar:: roundcube__src [[[
 #
 # Base path for git bare repository with Roundcube source
-roundcube__src: '{{ ansible_local.root.src + "/" + roundcube__user }}'
+roundcube__src: '{{ (ansible_local.root.src
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.src|d())
+                      else "/usr/local/src") + "/" + roundcube__user }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__www [[[
