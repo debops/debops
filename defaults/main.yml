@@ -329,12 +329,11 @@ roundcube__max_file_size: '30'
 # :program:`nginx` server configuration managed by the debops.nginx_ role.
 roundcube__nginx__dependent_servers:
 
-  - type: 'default'
-    enabled: True
-    default: False
-    by_role: 'debops-contrib.roundcube'
+  - name: '{{ roundcube__domain }}'
     filename: 'debops-contrib.roundcube'
-    name: '{{ roundcube__domain }}'
+    by_role: 'debops-contrib.roundcube'
+    type: 'php'
+    default: False
     root: '{{ roundcube__git_checkout }}'
     access_policy: '{{ roundcube__nginx_access_policy }}'
     index: 'index.php'
@@ -364,6 +363,18 @@ roundcube__nginx__dependent_servers:
       - pattern: '~ /(README\.md|composer\.json-dist|composer\.json|package\.xml|Dockerfile)$'
         options: |
           deny all;
+
+    php_upstream: 'php_roundcube'
+    php_options: |
+      fastcgi_intercept_errors        on;
+      fastcgi_ignore_client_abort     off;
+      fastcgi_connect_timeout         60;
+      fastcgi_send_timeout            180;
+      fastcgi_read_timeout            180;
+      fastcgi_buffer_size             128k;
+      fastcgi_buffers               4 256k;
+      fastcgi_busy_buffers_size       256k;
+      fastcgi_temp_file_write_size    256k;
 
                                                                    # ]]]
 # .. envvar:: roundcube__nginx_access_policy
