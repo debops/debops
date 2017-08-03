@@ -38,6 +38,14 @@ Fixed
 - Prevent keyfiles content from being displayed when the ``--diff`` Ansible
   command line option is used. [jpiron]
 
+- Only create keyfile and backup directories on remote systems if they are
+  actually needed. [jpiron]
+
+- Fix handling of :ref:`item.backup_header <cryptsetup__devices_backup_header>`
+  which was previously ignored resulting in the global default to take affect. [jpiron]
+
+- Don’t upgrade :envvar:`cryptsetup__base_packages`, only ensure that they are installed. [ypid_]
+
 Security
 ~~~~~~~~
 

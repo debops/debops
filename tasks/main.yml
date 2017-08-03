@@ -31,19 +31,23 @@
 - name: Ensure specified packages are in there desired state
   package:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
   with_flattened: '{{ cryptsetup__base_packages }}'
 
-- name: Ensure keyfile and backup directories exist on the remote system
+- name: Create keyfile and backup directories on the remote system
   file:
-    path: '{{ item }}'
+    path: '{{ item.path }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0700'
+  when: item.condition
   with_flattened:
-    - '{{ cryptsetup__keyfile_remote_location }}'
-    - '{{ cryptsetup__header_backup_remote_location }}'
+    - path: '{{ cryptsetup__keyfile_remote_location }}'
+      condition: '{{ (cryptsetup__combined_devices | selectattr("remote_keyfile", "undefined") | list | length) > 0 }}'
+    - path: '{{ cryptsetup__header_backup_remote_location }}'
+      condition: '{{ ((cryptsetup__combined_devices | selectattr("backup_header", "defined") | selectattr("backup_header") | list | length) > 0) or
+                      (cryptsetup__header_backup|bool and ((cryptsetup__combined_devices | selectattr("backup_header", "undefined") | list | length) > 0)) }}'
 
 # Making the execution_strategy configurable per device would also be possible
 # using Jinja filters but that seems to fail for some reason:
