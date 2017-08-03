@@ -25,17 +25,12 @@
 
 # ---- Deployment ----
 
-- name: Install required dependencies for Roundcube
+- name: Install optional packages for Roundcube
   apt:
     pkg: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - [ '{{ roundcube__extra_packages }}' ]
-    - [ '{{ "php5-sqlite" if roundcube__database_map[roundcube__database].dbtype == "sqlite" else [] }}' ]
-    - [ '{{ "php5-mysql" if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}' ]
-    - [ '{{ "php-net-sieve" if "managesieve" in roundcube__plugins else [] }}' ]
-    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube__plugins else [] }}' ]
+  with_items: '{{ roundcube__extra_packages }}'
 
 - name: Install Roundcube packages
   apt:

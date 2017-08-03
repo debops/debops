@@ -63,6 +63,8 @@ roundcube__base_php_packages:
   - '{{ roundcube__optional_php_packages }}'
   - '{{ [ "mysql" ] if (roundcube__database_map[roundcube__database].dbtype in [ "mariadb", "mysql" ]) else [] }}'
   - '{{ [ "sqlite" ] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
+  - '{{ [ "net-sieve" ] if ("managesieve" in roundcube__plugins) else [] }}'
+  - '{{ [ "crypt-gpg" ] if ("enigma" in roundcube__plugins) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__extra_packages [[[
