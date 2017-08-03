@@ -96,7 +96,7 @@ roundcube__group: 'roundcube'
 roundcube__home: '{{ (ansible_local.root.home
                        if (ansible_local|d() and ansible_local.root|d() and
                            ansible_local.root.home|d())
-                       else "/var/local") + "/" + roundcube_user }}'
+                       else "/var/local") + "/" + roundcube__user }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__comment [[[
@@ -111,19 +111,45 @@ roundcube__comment: 'Roundcube Webmail'
 roundcube__shell: '/usr/sbin/nologin'
                                                                    # ]]]
                                                                    # ]]]
-# .. Roundcube source and deployment [[[1
+# .. Roundcube source and deployment [[[
 #
 # -----------------------------------
 #   Roundcube source and deployment
 # -----------------------------------
 
-# .. envvar:: roundcube__src
+# .. envvar:: roundcube__git_repo [[[
+#
+# Roundcube source repository
+roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__git_dest [[[
+#
+# Roundcube source directory on the host
+roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__git_tag [[[
+#
+# Roundcube release tag to deploy
+roundcube__git_version: '1.3.0'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__git_checkout [[[
+#
+# Default path where Roundcube source files will be deployed
+roundcube__git_checkout: '{{ roundcube__www + "/sites/" +
+                             (roundcube__domain if roundcube__domain is string else roundcube__domain[0]) +
+                             "/public" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__src [[[
 #
 # Base path for git bare repository with Roundcube source
 roundcube__src: '{{ ansible_local.root.src + "/" + roundcube__user }}'
 
-
-# .. envvar:: roundcube__www
+                                                                   # ]]]
+# .. envvar:: roundcube__www [[[
 #
 # Base web root directory for Roundcube website
 roundcube__www: '{{ (ansible_local.nginx.www
@@ -131,8 +157,8 @@ roundcube__www: '{{ (ansible_local.nginx.www
                         ansible_local.nginx|d())
                     else "/srv/www" ) + "/" + roundcube__user }}'
 
-
-# .. envvar:: roundcube__webserver_user
+                                                                   # ]]]
+# .. envvar:: roundcube__webserver_user [[[
 #
 # Roundcube webserver user (needs read-only access to the website code)
 roundcube__webserver_user: '{{ ansible_local.nginx.user
@@ -141,33 +167,8 @@ roundcube__webserver_user: '{{ ansible_local.nginx.user
                                   ansible_local.nginx.user|d())
                               else "www-data" }}'
 
-
-# .. envvar:: roundcube__git_repo
-#
-# Roundcube source repository
-roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
-
-
-# .. envvar:: roundcube__git_dest
-#
-# Roundcube source directory on the host
-roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
-
-
-# .. envvar:: roundcube__git_tag
-#
-# Roundcube release tag to deploy
-roundcube__git_version: '1.1.9'
-
-
-# .. envvar:: roundcube__git_checkout
-#
-# Default path where Roundcube source files will be deployed
-roundcube__git_checkout: '{{ roundcube__www + "/sites/" +
-                             (roundcube__domain if roundcube__domain is string else roundcube__domain[0]) +
-                             "/public" }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
 # .. Database configuration [[[1
 #
 # --------------------------
@@ -215,6 +216,7 @@ roundcube__database_map:
 # Roundcube database schema loaded by Ansible
 roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sql"
     if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""}}'
+
 
 
 # .. Roundcube application options [[[1
@@ -404,18 +406,13 @@ roundcube__php__dependent_pools:
     ## https://secure.php.net/manual/en/ini.core.php#ini.post-max-size
     post_max_size:              '{{ roundcube__max_file_size }}M'
 
-    display_errors:             'off'
-    log_errors:                 'on'
-    error_log:                  'logs/errors'
+    ## https://github.com/roundcube/roundcubemail/wiki/Install-Requirements
+    file_uploads:               'on'
+    mbstring.func_overload:     'off'
     memory_limit:               '64M'
-    register_globals:           'off'
-    zlib.output_compression:    'off'
-    magic_quotes_gpc:           'off'
-    magic_quites_runtime:       'off'
-    suhosin.session.encrypt:    'off'
+    magic_quotes_runtime:       'off'
+    magic_quotes_sybase:        'off'
     session.auto_start:         'off'
-    session.gc_maxlifetime:     '21600'
-    session.gc_divisor:         '500'
-    session.gc_probability:     '1'
+    suhosin.session.encrypt:    'off'
                                                                    # ]]]
                                                                    # ]]]
