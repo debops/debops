@@ -62,8 +62,8 @@ roundcube__custom_php_packages: []
 roundcube__base_php_packages:
   - '{{ roundcube__required_php_packages }}'
   - '{{ roundcube__optional_php_packages }}'
-  - '{{ [ "mysql" ] if (roundcube__database_map[roundcube__database].dbtype in [ "mariadb", "mysql" ]) else [] }}'
-  - '{{ [ "sqlite" ] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
+  - '{{ [ "mysql" ] if (roundcube__database_map[roundcube__database].dbtype == "mysql") else [] }}'
+  - '{{ [ "sqlite3" ] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
   - '{{ [ "net-sieve" ] if ("managesieve" in roundcube__plugins) else [] }}'
   - '{{ [ "crypt-gpg" ] if ("enigma" in roundcube__plugins) else [] }}'
 
@@ -181,27 +181,41 @@ roundcube__webserver_user: '{{ ansible_local.nginx.user
 #   Database configuration
 # --------------------------
 
-# .. envvar:: roundcube__database_user
+# .. envvar:: roundcube__database [[[
 #
-# Roundcube database user account
-roundcube__database_user: 'roundcube'
-
-
-# .. envvar:: roundcube__database_password
-#
-# Roundcube database password
-roundcube__database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/roundcube/' + roundcube__database + '/' + roundcube__database_user + '/password length=30') }}"
-
-
-# .. envvar:: roundcube__database
-#
-# Database definition to use from the :envvar:`roundcube__database_map`
+# Database definition to use from the :envvar:`roundcube__database_map`.
 roundcube__database: 'sqlite-default'
 
-
-# .. envvar:: roundcube__database_map
+                                                                   # ]]]
+# .. envvar:: roundcube__database_user [[[
 #
-# Database connection definitions
+# Database user account to use for Roundcube.
+roundcube__database_user: 'roundcube'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_password_path [[[
+#
+# Path to the database password file.
+roundcube__database_password_path: '{{ secret + "/credentials/" + ansible_fqdn
+                                       + "/roundcube/" + roundcube__database
+                                       + "/" + roundcube__database_user + "/password" }}'
+                                                                   # ]]]
+# .. envvar:: roundcube__database_password [[[
+#
+# Database password for the account given in :envvar:`roundcube__database_user`.
+roundcube__database_password: '{{ lookup("password", roundcube__database_password_path + " length=30") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_name [[[
+#
+# Name of the database to use for Roundcube.
+roundcube__database_name: 'roundcubemail'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_map [[[
+#
+# Database connection definitions. Selet the database connection to use in
+# :envvar:`roundcube__database`.
 roundcube__database_map:
 
   sqlite-default:
@@ -210,21 +224,21 @@ roundcube__database_map:
 
   mysql-default:
     dbtype: 'mysql'
-    dbname: 'roundcubemail'
+    dbname: '{{ roundcube__database_name }}'
     dbuser: '{{ roundcube__database_user }}'
     dbpass: '{{ roundcube__database_password }}'
     dbhost: 'localhost'
     dbtableprefix: ''
 
-
-# .. envvar:: roundcube__database_schema
+                                                                   # ]]]
+# .. envvar:: roundcube__database_schema [[[
 #
-# Roundcube database schema loaded by Ansible
+# Initial Roundcube database schema loaded by Ansible.
 roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sql"
     if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""}}'
 
-
-
+                                                                   # ]]]
+                                                                   # ]]]
 # .. Roundcube application options [[[1
 #
 # ---------------------------------
