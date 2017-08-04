@@ -30,13 +30,6 @@ roundcube__required_php_packages:
 
   - 'mbstring'
   - 'json'
-  - 'pear'
-
-  # Bundled:
-  #  - 'mail-mime'
-  #  - 'net-smtp'
-  #  - 'net-socket'
-  #  - 'auth-sasl'
 
                                                                    # ]]]
 # .. envvar:: roundcube__optional_php_packages [[[
@@ -62,10 +55,18 @@ roundcube__custom_php_packages: []
 roundcube__base_php_packages:
   - '{{ roundcube__required_php_packages }}'
   - '{{ roundcube__optional_php_packages }}'
+  - '{{ [ "crypt-gpg" ] if (ansible_distribution_release in [ "sid" ]) and ("enigma" in roundcube__plugins)
+                        else [] }}'
   - '{{ [ "mysql" ] if (roundcube__database_map[roundcube__database].dbtype == "mysql") else [] }}'
+  - '{{ [ "net-idna2" ] if ansible_distribution_release in [ "stretch", "buster", "sid", "zesty", "artful" ]
+                        else [] }}'
+  - '{{ [ "net-smtp" ] if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
+                       else [] }}'
+  - '{{ [ "mail-mime" ] if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
+                        else [] }}'
+  - '{{ [ "pear" ] if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
+                   else [] }}'
   - '{{ [ "sqlite3" ] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
-  - '{{ [ "net-sieve" ] if ("managesieve" in roundcube__plugins) else [] }}'
-  - '{{ [ "crypt-gpg" ] if ("enigma" in roundcube__plugins) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__extra_packages [[[
