@@ -90,6 +90,26 @@
   register: roundcube__register_checkout
   changed_when: roundcube__register_target_tag.stdout != roundcube__git_version
 
+- name: Read PHP composer template
+  command: cat {{ roundcube__git_checkout }}/composer.json-dist
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_composer_json
+  changed_when: False
+
+- name: Generate PHP composer.json
+  template:
+    src: 'srv/www/sites/composer.json.j2'
+    dest: '{{ roundcube__git_checkout }}/composer.json'
+    owner: 'root'
+    group: '{{ roundcube__group }}'
+    mode: '0640'
+
+- name: Install missing PHP packages via composer
+  composer:
+    command: install
+    working_dir: '{{ roundcube__git_checkout }}'
+  become_user: '{{ roundcube__user }}'
+
 - name: Enable cleandb.sh Cron job
   cron:
     name: Roundcube daily database housekeeping
