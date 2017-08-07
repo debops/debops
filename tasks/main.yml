@@ -25,7 +25,7 @@
 
 # ---- Deployment ----
 
-- name: Install optional packages for Roundcube
+- name: Install pre-requisite packages for Roundcube
   apt:
     pkg: '{{ item }}'
     state: 'present'
@@ -34,18 +34,7 @@
     - '{{ roundcube__packages }}'
     - '{{ roundcube__extra_packages }}'
 
-- name: Install Roundcube packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_items:
-    - [ 'roundcube', 'roundcube-core' ]
-  when: (ansible_distribution == 'Debian' and
-        ansible_distribution_release == 'wheezy' )
-
 - include: deploy_roundcube.yml
-  when: (ansible_distribution_release != 'wheezy' )
 
 
 # ---- Configuration ----
