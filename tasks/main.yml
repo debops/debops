@@ -30,7 +30,9 @@
     pkg: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: '{{ roundcube__extra_packages }}'
+  with_flattened:
+    - '{{ roundcube__packages }}'
+    - '{{ roundcube__extra_packages }}'
 
 - name: Install Roundcube packages
   apt:

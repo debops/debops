@@ -110,6 +110,12 @@
     working_dir: '{{ roundcube__git_checkout }}'
   become_user: '{{ roundcube__user }}'
 
+- name: Install Javascript packages
+  command: bin/install-jsdeps.sh
+  args:
+    chdir: '{{ roundcube__git_checkout }}'
+  become_user: '{{ roundcube__user }}'
+
 - name: Enable cleandb.sh Cron job
   cron:
     name: Roundcube daily database housekeeping
