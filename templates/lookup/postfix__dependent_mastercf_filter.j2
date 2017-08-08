@@ -14,7 +14,7 @@
 {%       elif element.state|d('present') == 'absent' %}
 {%         set _ = postfix__tpl_dependent_mastercf.pop(element.role, None) %}
 {%       endif %}
-{%     else %}
+{%     elif element is mapping and 'role' not in element.keys() and 'config' not in element.keys() %}
 {%       for role, config in element.iteritems() %}
 {%         set flattened_config = lookup('flattened', config) %}
 {%         set _ = postfix__tpl_dependent_mastercf.update({
