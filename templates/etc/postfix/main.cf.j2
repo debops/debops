@@ -4,7 +4,13 @@
 
 
 {% set postfix__tpl_maincf = (postfix__combined_maincf | parse_kv_config) %}
-{% set postfix__tpl_sections = ((postfix__tpl_maincf | map(attribute='section')) | list | unique) %}
+{% set postfix__tpl_filtered_maincf_sections = [] %}
+{% for element in postfix__tpl_maincf %}
+{%   if element.state|d('present') not in [ 'init', 'absent' ] %}
+{%     set _ = postfix__tpl_filtered_maincf_sections.append(element) %}
+{%   endif %}
+{% endfor %}
+{% set postfix__tpl_sections = ((postfix__tpl_filtered_maincf_sections | map(attribute='section')) | list | unique) %}
 {% for section in postfix__maincf_sections %}
 {%   if section.state|d('present') != 'absent' %}
 {%     set section_loop = [] %}
@@ -15,7 +21,7 @@
 {{ '{:-^70}'.format(' ' + section.title + ' ') | comment(prefix=section_comment_prefix, postfix='') }}
 {%       endif %}
 {%       for element in postfix__tpl_maincf %}
-{%         if element.section == section.name and element.state|d('present') != 'absent' %}
+{%         if element.section == section.name and element.state|d('present') not in [ 'init', 'absent' ] %}
 {%           set comment_prefix =   ('' if not section_loop else '\n') %}
 {%           set option_commented =  ('#' if element.state|d('present') == 'comment' else '') %}
 {%           set element_name = (element.option | d(element.name)) %}
