@@ -113,6 +113,8 @@ Added
 
 - Add the ``debops.unbound`` role and playbook. [drybjed_]
 
+- Add the ``debops.ansible_plugins`` role. [drybjed_]
+
 Changed
 ~~~~~~~
 
