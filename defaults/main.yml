@@ -1,18 +1,15 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Default variables
-# =================
+# debops-contrib.roundcube default variables [[[
+# ==============================================
 
 # .. contents:: Sections
 #    :local:
 #
 # .. include:: includes/all.rst
 
-# .. Packages and installation [[[
-#
-# -----------------------------
-#   Packages and installation
+# Packages and installation [[[
 # -----------------------------
 
 # .. envvar:: roundcube__required_php_packages [[[
@@ -104,24 +101,21 @@ roundcube__composer_phar_url: '{{ "https://getcomposer.org/composer.phar"
 
                                                                    # ]]]
                                                                    # ]]]
-# .. Roundcube user account [[[
-#
-# --------------------------
-#   Roundcube user account
+# Roundcube user account [[[
 # --------------------------
 
 # .. envvar:: roundcube__user [[[
 #
-# Roundcube system user account
+# Roundcube system user account.
 roundcube__user: 'roundcube'
 
                                                                    # ]]]
 # .. envvar:: roundcube__group [[[
 #
-# Roundcube system user group
+# Roundcube system user group.
 roundcube__group: 'roundcube'
 
-                                                                   # ]]]
+                                                                    # ]]]
 # .. envvar:: roundcube__home [[[
 #
 # Path to the home directory of the Roundcube system account.
@@ -143,33 +137,30 @@ roundcube__comment: 'Roundcube Webmail'
 roundcube__shell: '/usr/sbin/nologin'
                                                                    # ]]]
                                                                    # ]]]
-# .. Roundcube source and deployment [[[
-#
-# -----------------------------------
-#   Roundcube source and deployment
+# Roundcube source and deployment [[[
 # -----------------------------------
 
 # .. envvar:: roundcube__git_repo [[[
 #
-# Roundcube source repository
+# Roundcube source repository.
 roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_dest [[[
 #
-# Roundcube source directory on the host
+# Roundcube source directory on the host.
 roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_tag [[[
 #
-# Roundcube release tag to deploy
+# Roundcube release tag to deploy.
 roundcube__git_version: '1.3.0'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_checkout [[[
 #
-# Default path where Roundcube source files will be deployed
+# Default path where Roundcube source files will be deployed.
 roundcube__git_checkout: '{{ roundcube__www + "/sites/" +
                              (roundcube__domain if roundcube__domain is string else roundcube__domain[0]) +
                              "/public" }}'
@@ -177,7 +168,7 @@ roundcube__git_checkout: '{{ roundcube__www + "/sites/" +
                                                                    # ]]]
 # .. envvar:: roundcube__src [[[
 #
-# Base path for git bare repository with Roundcube source
+# Base path for git bare repository with Roundcube source.
 roundcube__src: '{{ (ansible_local.root.src
                       if (ansible_local|d() and ansible_local.root|d() and
                           ansible_local.root.src|d())
@@ -186,7 +177,7 @@ roundcube__src: '{{ (ansible_local.root.src
                                                                    # ]]]
 # .. envvar:: roundcube__www [[[
 #
-# Base web root directory for Roundcube website
+# Base web root directory for Roundcube website.
 roundcube__www: '{{ (ansible_local.nginx.www
                     if (ansible_local|d() and
                         ansible_local.nginx|d())
@@ -195,7 +186,7 @@ roundcube__www: '{{ (ansible_local.nginx.www
                                                                    # ]]]
 # .. envvar:: roundcube__webserver_user [[[
 #
-# Roundcube webserver user (needs read-only access to the website code)
+# Roundcube webserver user (needs read-only access to the website code).
 roundcube__webserver_user: '{{ ansible_local.nginx.user
                               if (ansible_local|d() and
                                   ansible_local.nginx|d() and
@@ -204,10 +195,7 @@ roundcube__webserver_user: '{{ ansible_local.nginx.user
 
                                                                    # ]]]
                                                                    # ]]]
-# .. Database configuration [[[1
-#
-# --------------------------
-#   Database configuration
+# Database configuration [[[
 # --------------------------
 
 # .. envvar:: roundcube__database [[[
@@ -268,104 +256,97 @@ roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sq
 
                                                                    # ]]]
                                                                    # ]]]
-# .. Roundcube application options [[[1
-#
-# ---------------------------------
-#   Roundcube application options
+# Roundcube application options [[[
 # ---------------------------------
 
-# .. envvar:: roundcube__domain
+# .. envvar:: roundcube__domain [[[
 #
 # String or List of domains which will be used to access the roundcube instance.
 roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
 
-
-# .. envvar:: roundcube__default_host
+                                                                   # ]]]
+# .. envvar:: roundcube__default_host [[[
 #
-# Mail host chosen to perform the log-in
+# Mail host chosen to perform the log-in.
 roundcube__default_host: 'localhost'
 
-
-# .. envvar:: roundcube__smtp_server
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_server [[[
 #
-# SMTP server host (for sending mails)
+# SMTP server host (for sending mails).
 roundcube__smtp_server: ''
 
-
-# .. envvar:: roundcube__smtp_port
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_port [[[
 #
-# SMTP port
+# SMTP port.
 roundcube__smtp_port: '25'
 
-
-# .. envvar:: roundcube__smtp_user
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_user [[[
 #
 # SMTP username (if required) if you use %u as the username Roundcube will
-# use the current username for login
+# use the current username for login.
 roundcube__smtp_user: ''
 
-
-# .. envvar:: roundcube__smtp_pass
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_pass [[[
 #
 # SMTP password (if required) if you use %p as the password Roundcube will
-# use the current user's password for login
+# use the current user's password for login.
 roundcube__smtp_pass: ''
 
-
-# .. envvar:: roundcube__des_key
+                                                                   # ]]]
+# .. envvar:: roundcube__des_key [[[
 #
 # Encryption key for the users imap password which is stored in the session
 # record (and the client cookie if remember password is enabled).
 roundcube__des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/des_key chars=hexdigits length=24") }}'
 
-
-# .. envvar:: roundcube__local_config_map
+                                                                   # ]]]
+# .. envvar:: roundcube__local_config_map [[[
 #
-# Custom configuration values for the Roundcube config.inc.php
+# Custom configuration values for the Roundcube config.inc.php.
 roundcube__local_config_map: {}
 
-
-# .. envvar:: roundcube__group_local_config_map
+                                                                   # ]]]
+# .. envvar:: roundcube__group_local_config_map [[[
 #
 # Custom configuration values which can be defined on a group level and
-# eventually are merged with :envvar:`roundcube__local_config_map`
+# eventually are merged with :envvar:`roundcube__local_config_map`.
 roundcube__group_local_config_map: {}
 
-
-# .. envvar:: roundcube__host_local_config_map
+                                                                   # ]]]
+# .. envvar:: roundcube__host_local_config_map [[[
 #
 # Custom configuration values which can be defined ona host level and
-# eventually are merged with :envvar:`roundcube__local_config_map`
+# eventually are merged with :envvar:`roundcube__local_config_map`.
 roundcube__host_local_config_map: {}
 
-
-# .. envvar:: roundcube__default_plugins
+                                                                   # ]]]
+# .. envvar:: roundcube__default_plugins [[[
 #
-# List of plugins shipped and enabled by default with Roundcube
+# List of plugins shipped and enabled by default with Roundcube.
 roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', 'zipdownload' ]
 
-
-# .. envvar:: roundcube__plugins
+                                                                   # ]]]
+# .. envvar:: roundcube__plugins [[[
 #
 # Additional Roundcube plugins to enable. Check the :file:`plugins/` folder for
-# the plugins shipped by default
+# the plugins shipped by default.
 roundcube__plugins: []
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Other variables [[[
 # -------------------
-#   Other variables
-# -------------------
 
-# .. envvar:: roundcube__max_file_size
+# .. envvar:: roundcube__max_file_size [[[
 #
-# Maximum upload size, in MB
+# Maximum upload size, in MB.
 roundcube__max_file_size: '30'
-
-
-# .. Role-dependent configuration [[[1
-#
-# --------------------------------
-#   Role-dependent configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# Role-dependent configuration [[[
 # --------------------------------
 
 # .. envvar:: roundcube__nginx__dependent_servers [[[
@@ -408,7 +389,6 @@ roundcube__nginx__dependent_servers:
         options: |
           deny all;
 
-    php_upstream: 'php_roundcube'
     php_options: |
       fastcgi_intercept_errors        on;
       fastcgi_ignore_client_abort     off;
@@ -420,15 +400,17 @@ roundcube__nginx__dependent_servers:
       fastcgi_busy_buffers_size       256k;
       fastcgi_temp_file_write_size    256k;
 
+    php_upstream: 'php_roundcube'
+
                                                                    # ]]]
-# .. envvar:: roundcube__nginx_access_policy
+# .. envvar:: roundcube__nginx_access_policy [[[
 #
 # Name of the "nginx access policy" for Roundcube webpage. See debops.nginx_
 # Ansible role for more details.
 roundcube__nginx_access_policy: ''
 
-
-# .. envvar:: roundcube__nginx__dependent_upstreams
+                                                                   # ]]]
+# .. envvar:: roundcube__nginx__dependent_upstreams [[[
 #
 # PHP upstream server configuration managed by the debops.nginx_ role.
 roundcube__nginx__dependent_upstreams:
@@ -439,12 +421,11 @@ roundcube__nginx__dependent_upstreams:
     type: 'php'
     php_pool: 'roundcube'
 
-
+                                                                   # ]]]
 # .. envvar:: roundcube__php__dependent_packages [[[
 #
 # List of PHP packages to install using the debops.php_ role.
 roundcube__php__dependent_packages:
-
   - '{{ roundcube__base_php_packages }}'
   - '{{ roundcube__optional_php_packages }}'
   - '{{ roundcube__custom_php_packages }}'
@@ -474,5 +455,6 @@ roundcube__php__dependent_pools:
     magic_quotes_sybase:        'off'
     session.auto_start:         'off'
     suhosin.session.encrypt:    'off'
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
