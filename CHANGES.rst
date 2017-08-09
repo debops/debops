@@ -58,6 +58,10 @@ Changed
   This changed the format and name of the following variables:
   `roundcube__php5_packages` → :envvar:`roundcube__php__dependent_packages`
   `roundcube__php5_pool` → :envvar:`roundcube__php__dependent_pools`
+  [ganto_]
+
+- Renamed ``roundcube__extra_packages`` to :envvar:`roundcube__packages` to be
+  consistent with other DebOps roles. [ganto_]
 
 
 Fixed
