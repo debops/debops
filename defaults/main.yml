@@ -742,6 +742,16 @@ postfix__combined_maincf: '{{ postfix__original_maincf
                               + postfix__host_maincf }}'
 
                                                                    # ]]]
+# .. envvar:: postfix__init_maincf [[[
+#
+# This variable contains initial state of :file:`main.cf` configuration options
+# based on the contents of `:envvar:`postfix__combined_maincf` variable. It's
+# used to dynamically assign Postfix options to configuration file sections in
+# case that a section is not specified.
+postfix__init_maincf: '{{ lookup("template",
+                          "lookup/postfix__init_maincf.j2") }}'
+
+                                                                   # ]]]
 # .. envvar:: postfix__maincf_sections [[[
 #
 # List of configuration sections which are defined in the
