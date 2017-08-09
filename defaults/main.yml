@@ -55,24 +55,44 @@ roundcube__custom_php_packages: []
 # List of base PHP packages required by Roundcube.
 roundcube__base_php_packages:
   - '{{ roundcube__required_php_packages }}'
+  - '{{ roundcube__apt_php_packages }}'
   - '{{ roundcube__optional_php_packages }}'
-  - '{{ [ "crypt-gpg" ] if (ansible_distribution_release in [ "sid" ]) and ("enigma" in roundcube__plugins)
-                        else [] }}'
   - '{{ [ "mysql" ] if (roundcube__database_map[roundcube__database].dbtype == "mysql") else [] }}'
-  - '{{ [ "net-idna2" ] if ansible_distribution_release in [ "stretch", "buster", "sid", "zesty", "artful" ]
-                        else [] }}'
-  - '{{ [ "net-smtp" ] if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
-                       else [] }}'
-  - '{{ [ "mail-mime" ] if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
-                        else [] }}'
-  - '{{ [ "pear" ] if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
-                   else [] }}'
   - '{{ [ "sqlite3" ] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__apt_php_packages [[[
+#
+# PHP packages which are installed via APT repository if they are available
+# in a sufficiently new version in the current distribution. The required
+# minimal versions are taken from the composer.json.dist of the Roundcube
+# 1.3.0 release. If you install an older version of Roundcube you may want
+# to adjust this list.
+roundcube__apt_php_packages: '{{ [ "mail-mime", "net-smtp", "pear" ]
+                                 if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
+                                 else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__composer_phar_url [[[
+#
+# URL to the composer.phar script which will be used to install PHP packages
+# not available in the APT repository on distribution releases which don't
+# package PHP composer. If this is set to `False`, :command:`composer` will
+# be installed via APT package manager.
+roundcube__composer_phar_url: '{{ "https://getcomposer.org/composer.phar"
+                                  if ansible_distribution_release in
+                                  [ "jessie", "trusty" ] else False }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__composer_packages [[[
+#
+# APT packages required to install PHP composer.
+roundcube__composer_packages: [ 'composer ']
 
                                                                    # ]]]
 # .. envvar:: roundcube__packages [[[
 #
-# Debian Packages required for the Roundcube installation.
+# APT packages required for the Roundcube installation.
 roundcube__packages: [ 'curl', 'file', 'unzip' ]
 
                                                                    # ]]]

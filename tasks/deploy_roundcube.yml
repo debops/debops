@@ -104,6 +104,14 @@
     group: '{{ roundcube__group }}'
     mode: '0640'
 
+- name: Download composer.phar if requested
+  get_url:
+    url: '{{ roundcube__composer_phar_url }}'
+    dest: '{{ roundcube__git_checkout }}'
+    mode: '0640'
+  become_user: '{{ roundcube__user }}'
+  when: roundcube__composer_phar_url
+
 - name: Install missing PHP packages via composer
   composer:
     command: install
