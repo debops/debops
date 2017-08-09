@@ -53,13 +53,13 @@
 - name: Scan SSH fingerprints of rsnapshot servers with custom hostname
   shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d(rsnapshot_ssh_port) }} {{ item.backup_host }} >> /root/.ssh/known_hosts'
   with_items: rsnapshot_register_external_known_hosts.results
-  when: ((item is defined and item.rc > 0) and
+  when: ((item.rc is defined and item.rc > 0) and
          (item.backup_host is defined and item.backup_host))
   tags: [ 'role::rsnapshot:sshkeys' ]
 
 - name: Scan SSH fingerprints of rsnapshot servers
   shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d(rsnapshot_ssh_port) }} {{ item.item.name }} >> /root/.ssh/known_hosts'
   with_items: rsnapshot_register_external_known_hosts.results
-  when: item is defined and item.rc > 0
+  when: item.rc is defined and item.rc > 0
   tags: [ 'role::rsnapshot:sshkeys' ]
 
