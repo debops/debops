@@ -47,17 +47,17 @@ Changed
 - Adjusted the debops.nginx_ configuration to make use of the role's dependent
   variables which required minor format changes and variable name adjustments to
   correspond to the DebOps naming conventions:
-  `roundcube__nginx_server` → :envvar:`roundcube__nginx__dependent_servers`
-  `roundcube__nginx_upstream_php5` → :envvar:`roundcube__nginx__dependent_upstreams`
+  ``roundcube__nginx_server`` → :envvar:`roundcube__nginx__dependent_servers`
+  ``roundcube__nginx_upstream_php5`` → :envvar:`roundcube__nginx__dependent_upstreams`
   [ganto_]
 
 - Make use of the debops.mariadb_ dependent variables in the example playbook.
   [ganto_]
 
-- Updated PHP role dependency from `debops.php5` to the more capable debops.php_.
+- Updated PHP role dependency from ``debops.php5`` to the more capable debops.php_.
   This changed the format and name of the following variables:
-  `roundcube__php5_packages` → :envvar:`roundcube__php__dependent_packages`
-  `roundcube__php5_pool` → :envvar:`roundcube__php__dependent_pools`
+  ``roundcube__php5_packages`` → :envvar:`roundcube__php__dependent_packages`
+  ``roundcube__php5_pool`` → :envvar:`roundcube__php__dependent_pools`
   [ganto_]
 
 - Renamed ``roundcube__extra_packages`` to :envvar:`roundcube__packages` to be
