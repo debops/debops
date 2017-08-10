@@ -14,6 +14,12 @@ The current role maintainer is drybjed.
 
 .. _debops.mailman master: https://github.com/debops/ansible-mailman/compare/v0.1.3...master
 
+Added
+~~~~~
+
+- Add the Ansible local fact that indicates that the Mailman has been installed
+  on a host. [drybjed_]
+
 Changed
 ~~~~~~~
 

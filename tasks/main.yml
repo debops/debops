@@ -134,3 +134,24 @@
   when: (item.name|d() and item.name and
          (item.state is undefined or item.state != 'absent'))
   no_log: True
+
+- name: Make sure Ansible local facts directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Configure Mailman local facts
+  template:
+    src: 'etc/ansible/facts.d/mailman.fact.j2'
+    dest: '/etc/ansible/facts.d/mailman.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: mailman__register_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: mailman__register_facts|changed
