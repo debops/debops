@@ -4,12 +4,23 @@ Getting started
 .. contents::
    :local:
 
+.. _mailman__ref_postfix_integration:
+
 SMTP service integration
 ------------------------
 
 The ``debops.mailman`` role provides configuration variable for
-``debops.postfix`` Ansible role (see below). The integration should work with
-or without local mail enabled (virtual mail is used if local mail is disabled).
+``debops.postfix`` Ansible role which are used in the example playbook. The
+role supports two modes of integration:
+
+- ``virtual``: messages to Mailman are passed using a Postfix transport, entire
+  installation uses virtual mail.
+
+- ``local``: messages to Mailman are passed using local mail aliases.
+
+The ``virtual`` mode is used by default. Role does not support changing the
+mode after a deployment.
+
 Refer to ``debops.postfix`` documentation for more details.
 
 HTTP service integration

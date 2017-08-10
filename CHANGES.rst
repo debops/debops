@@ -14,6 +14,12 @@ The current role maintainer is drybjed.
 
 .. _debops.mailman master: https://github.com/debops/ansible-mailman/compare/v0.1.3...master
 
+Changed
+~~~~~~~
+
+- Update the Postfix integration to support the rewritten ``debops.postfix``
+  Ansible role. [drybjed_]
+
 
 `debops.mailman v0.1.3`_ - 2016-07-18
 -------------------------------------
