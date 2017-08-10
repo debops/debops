@@ -35,7 +35,6 @@ smstools_default_country_prefix: ''
 #      state: 'permit/deny'                # optional
 smstools_default_senders:
   - name: 'root@{{ smstools_mail_domain }}'
-  - name: '{{ ansible_ssh_user }}@{{ smstools_mail_domain }}'
 
 # Additional list of mail senders
 smstools_senders: []
@@ -100,3 +99,69 @@ smstools_devices:
       baudrate: 115200
       incoming: yes
 
+# Configuration for other Ansible roles
+# -------------------------------------
+
+# Configuration for the debops.etc_services_ Ansible role.
+smstools__etc_services__dependent_list:
+
+  - name: '{{ smstools_service_name }}'
+    port: '{{ smstools_service_port }}'
+    comment: 'SMS service'
+
+
+# Configuration for the debops.tcpwrappers_ Ansible role.
+smstools__tcpwrappers__dependent_allow:
+
+  - daemon: '{{ smstools_service_name }}'
+    client: '{{ smstools_service_allow }}'
+    weight: '50'
+    filename: 'smstools_dependency_allow'
+    comment: 'Allow connections to SMS service'
+
+
+# Configuration for the debops.ferm_ Ansible role.
+smstools__ferm__dependent_rules:
+
+  - name: 'smstools_accept'
+    type: 'accept'
+    dport: [ '{{ smstools_service_name }}' ]
+    saddr: '{{ smstools_service_allow }}'
+
+
+# The Postfix 'main.cf' configuration for the debops.postfix_ Ansible role.
+smstools__postfix__dependent_maincf:
+
+  - name: 'recipient_canonical_maps'
+    value: [ 'texthash:/usr/local/lib/smstools/postfix_recipient_canonical_map' ]
+
+  - name: 'transport_maps'
+    value: [ 'texthash:/usr/local/lib/smstools/postfix_transport' ]
+
+  - name: 'relay_domains'
+    value: [ '{{ smstools_mail_transport_domain }}' ]
+
+  - name: 'relay_recipient_maps'
+    value: [ 'regexp:/usr/local/lib/smstools/postfix_relay_recipient_map' ]
+
+  - name: 'virtual_alias_domains'
+    value: [ '{{ smstools_mail_alias_domain }}' ]
+
+  - name: 'virtual_alias_maps'
+    value: [ 'texthash:/usr/local/lib/smstools/postfix_virtual_alias_map' ]
+
+  - name: 'sms_destination_recipient_limit'
+    value: 1
+
+# The Postfix 'master.cf' configuration for the debops.postfix_ Ansible role.
+smstools__postfix__dependent_mastercf:
+
+  - name: 'sms'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    maxproc: 1
+    args: |
+      flags=hqu user=smsd argv=/usr/local/lib/smstools/sms-transport
+      ${sender} ${mailbox}
+    command: 'pipe'
