@@ -33,7 +33,10 @@
   with_flattened:
     - '{{ roundcube__base_packages }}'
     - '{{ roundcube__packages }}'
-    - '{{ roundcube__composer_packages if not roundcube__composer_phar_url else [] }}'
+    - '{{ roundcube__composer_packages
+          if (not roundcube__composer_phar_url is string) and
+             (roundcube__composer_phar_url | length > 7))
+          else [] }}'
 
 - include: deploy_roundcube.yml
 

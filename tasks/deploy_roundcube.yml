@@ -110,7 +110,8 @@
     dest: '{{ roundcube__git_checkout }}'
     mode: '0640'
   become_user: '{{ roundcube__user }}'
-  when: roundcube__composer_phar_url
+  when: (roundcube__composer_phar_url is string) and
+        (roundcube__composer_phar_url | length > 7)
 
 - name: Install missing PHP packages via composer
   composer:
