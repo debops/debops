@@ -116,13 +116,14 @@ php__dependent_packages: []
 #
 # List of all PHP packages requested for installation passed to the filter
 # script as a string of arguments for further processing.
-php__combined_packages: '{{ lookup("flattened",
-                            php__server_api_packages
-                            + php__base_packages
-                            + php__packages
-                            + php__group_packages
-                            + php__host_packages
-                            + php__dependent_packages).split(",")
+php__combined_packages: '{{ (lookup("flattened",
+                             php__server_api_packages
+                             + php__base_packages
+                             + php__packages
+                             + php__group_packages
+                             + php__host_packages
+                             + php__dependent_packages).split(",")
+                            | difference(php__included_packages))
                             | join(" ") }}'
 
                                                                    # ]]]
@@ -159,43 +160,8 @@ php__release_included_map:
 # .. envvar:: php__php5_included_packages [[[
 #
 # PHP packages usually part of the php5/php5-common packaging.
-php__php5_included_packages:
-  - 'bcmath'
-  - 'bz2'
-  - 'calendar'
-  - 'ctype'
-  - 'date'
-  - 'dba'
-  - 'dom'
-  - 'ereg'
-  - 'exif'
-  - 'fileinfo'
-  - 'filter'
-  - 'ftp'
-  - 'gettext'
-  - 'hash'
-  - 'iconv'
-  - 'libxml'
-  - 'mbstring'
-  - 'opcache'
-  - 'openssl'
-  - 'pcntl'
-  - 'pcre'
-  - 'pdo'
-  - 'session'
-  - 'shmop'
-  - 'simplexml'
-  - 'soap'
-  - 'sockets'
-  - 'spl'
-  - 'standard'
-  - 'sysvmsg'
-  - 'tokenizer'
-  - 'wddx'
-  - 'xml'
-  - 'xmlreader'
-  - 'xmlwriter'
-  - 'zip'
+php__php5_included_packages: '{{ php__php_included_packages + [ "mbstring", "zip" ] }}'
+
                                                                    # ]]]
 # .. envvar:: php__php_included_packages [[[
 #
