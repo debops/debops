@@ -138,7 +138,8 @@ php__reset: False
 #
 # List of PHP packages which are shipped with the standard PHP distribution.
 # This variable is used to abstract packaging differences between different
-# PHP repositories or releases.
+# PHP repositories or releases. If you use a custom APT package for PHP,
+# you might need to adjust this list for proper package resolution.
 php__included_packages: '{{ php__release_included_map[ansible_distribution_release] }}'
 
                                                                    # ]]]
@@ -160,21 +161,27 @@ php__release_included_map:
 # .. envvar:: php__php5_included_packages [[[
 #
 # PHP packages usually part of the php5/php5-common packaging.
-php__php5_included_packages: '{{ php__php_included_packages + [ "mbstring", "zip" ] }}'
+php__php5_included_packages: '{{ php__common_included_packages
+                                 + [ "bcmath", "bz2", "dba", "dom", "ereg",
+                                     "mbstring", "mhash", "SimpleXML", "soap",
+                                     "wddx", "xml", "xmlreader", "xmlwriter",
+                                     "zip" ] }}'
 
                                                                    # ]]]
 # .. envvar:: php__php_included_packages [[[
 #
+# PHP packages usually part of the php/php-common (PHP 7.x) packaging.
+php__php_included_packages: '{{ php__common_included_packages
+                                + [ "sysvsem", "sysvshm" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__common_included_packages [[[
+#
 # PHP packages usually part of the php/php-common packaging.
-php__php_included_packages:
-  - 'bcmath'
-  - 'bz2'
+php__common_included_packages:
   - 'calendar'
   - 'ctype'
   - 'date'
-  - 'dba'
-  - 'dom'
-  - 'ereg'
   - 'exif'
   - 'fileinfo'
   - 'filter'
@@ -183,24 +190,21 @@ php__php_included_packages:
   - 'hash'
   - 'iconv'
   - 'libxml'
-  - 'opcache'
   - 'openssl'
   - 'pcntl'
   - 'pcre'
-  - 'pdo'
+  - 'PDO'
+  - 'Phar'
+  - 'posix'
+  - 'Reflection'
   - 'session'
   - 'shmop'
-  - 'simplexml'
-  - 'soap'
   - 'sockets'
-  - 'spl'
+  - 'SPL'
   - 'standard'
   - 'sysvmsg'
   - 'tokenizer'
-  - 'wddx'
-  - 'xml'
-  - 'xmlreader'
-  - 'xmlwriter'
+  - 'zlib'
                                                                    # ]]]
                                                                    # ]]]
 # Global php.ini configuration [[[
