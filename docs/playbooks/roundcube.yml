@@ -19,6 +19,11 @@
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ php__apt_preferences__dependent_list }}'
 
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
     - role: debops.ferm
       tags: [ 'role::ferm', 'role::nginx' ]
       ferm__dependent_rules:

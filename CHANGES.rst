@@ -25,6 +25,9 @@ Added
   to satisfy possible package pinning requirements of the debops.nginx_ and
   debops.php_ roles. [ganto_]
 
+- Added new soft dependency on debops.logrotate_ to the example playbook to
+  handle logfile rotation of PHP-FPM. [ganto_]
+
 - New configuration variables :envvar:`roundcube__shell` and
   :envvar:`roundcube__comment` to customize the Roundcube system account. [ganto_]
 
