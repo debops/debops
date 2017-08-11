@@ -133,6 +133,109 @@ php__combined_packages: '{{ lookup("flattened",
 # Note that this option is not idempotent. It will reset on every role run.
 php__reset: False
                                                                    # ]]]
+# .. envvar:: php__included_packages [[[
+#
+# List of PHP packages which are shipped with the standard PHP distribution.
+# This variable is used to abstract packaging differences between different
+# PHP repositories or releases.
+php__included_packages: '{{ php__release_included_map[ansible_distribution_release] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__release_included_map [[[
+#
+# Configuration dictionary mapping distribution releases to different PHP
+# packaging configurations. Also see :envvar:`php__included_packages`.
+php__release_included_map:
+  wheezy: '{{ php__php5_included_packages }}'
+  jessie: '{{ php__php5_included_packages }}'
+  stretch: '{{ php__php_included_packages }}'
+  buster: '{{ php__php_included_packages }}'
+  sid: '{{ php__php_included_packages }}'
+  trusty: '{{ php__php5_included_packages }}'
+  xenial: '{{ php__php_included_packages }}'
+  zesty: '{{ php__php_included_packages }}'
+
+                                                                   # ]]]
+# .. envvar:: php__php5_included_packages [[[
+#
+# PHP packages usually part of the php5/php5-common packaging.
+php__php5_included_packages:
+  - 'bcmath'
+  - 'bz2'
+  - 'calendar'
+  - 'ctype'
+  - 'date'
+  - 'dba'
+  - 'dom'
+  - 'ereg'
+  - 'exif'
+  - 'fileinfo'
+  - 'filter'
+  - 'ftp'
+  - 'gettext'
+  - 'hash'
+  - 'iconv'
+  - 'libxml'
+  - 'mbstring'
+  - 'opcache'
+  - 'openssl'
+  - 'pcntl'
+  - 'pcre'
+  - 'pdo'
+  - 'session'
+  - 'shmop'
+  - 'simplexml'
+  - 'soap'
+  - 'sockets'
+  - 'spl'
+  - 'standard'
+  - 'sysvmsg'
+  - 'tokenizer'
+  - 'wddx'
+  - 'xml'
+  - 'xmlreader'
+  - 'xmlwriter'
+  - 'zip'
+                                                                   # ]]]
+# .. envvar:: php__php_included_packages [[[
+#
+# PHP packages usually part of the php/php-common packaging.
+php__php_included_packages:
+  - 'bcmath'
+  - 'bz2'
+  - 'calendar'
+  - 'ctype'
+  - 'date'
+  - 'dba'
+  - 'dom'
+  - 'ereg'
+  - 'exif'
+  - 'fileinfo'
+  - 'filter'
+  - 'ftp'
+  - 'gettext'
+  - 'hash'
+  - 'iconv'
+  - 'libxml'
+  - 'opcache'
+  - 'openssl'
+  - 'pcntl'
+  - 'pcre'
+  - 'pdo'
+  - 'session'
+  - 'shmop'
+  - 'simplexml'
+  - 'soap'
+  - 'sockets'
+  - 'spl'
+  - 'standard'
+  - 'sysvmsg'
+  - 'tokenizer'
+  - 'wddx'
+  - 'xml'
+  - 'xmlreader'
+  - 'xmlwriter'
+                                                                   # ]]]
                                                                    # ]]]
 # Global php.ini configuration [[[
 # --------------------------------
