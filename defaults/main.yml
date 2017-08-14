@@ -140,7 +140,9 @@ php__reset: False
 # This variable is used to abstract packaging differences between different
 # PHP repositories or releases. If you use a custom APT package for PHP,
 # you might need to adjust this list for proper package resolution.
-php__included_packages: '{{ php__release_included_map[ansible_distribution_release] }}'
+php__included_packages: '{{ php__php_included_packages
+                            if php__sury
+                            else php__release_included_map[ansible_distribution_release] }}'
 
                                                                    # ]]]
 # .. envvar:: php__release_included_map [[[
