@@ -318,3 +318,21 @@ dovecot_custom_localconf: False
 # Choose to use firewall with debops.ferm to drive iptables or not.
 #
 dovecot_firewall: True
+
+# Configuration for other Ansible roles
+# -------------------------------------
+
+# .. envvar:: dovecot__postfix__dependent_maincf
+#
+# The :file:`main.cf` configuration for ``debops.postfix`` Ansible role.
+dovecot__postfix__dependent_maincf:
+
+  - name: 'mailbox_transport'
+    value: '{{ dovecot_postfix_transport }}'
+    state: '{{ "present" if "lmtp" in dovecot_protocols else "ignore" }}'
+
+
+# .. envvar:: dovecot__postfix__dependent_mastercf
+#
+# The :file:`master.cf` configuration for ``debops.postfix`` Ansible role.
+dovecot__postfix__dependent_mastercf: []

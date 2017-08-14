@@ -1,18 +1,6 @@
 ---
 
-dependencies:
-  - role: debops.ferm
-    when: (dovecot_firewall is defined and dovecot_firewall)
-
-  - role: debops.postfix
-    postfix_dependent_maincf:
-      - param: 'mailbox_transport'
-        value: '{{ dovecot_postfix_transport }}'
-        capability: 'local'
-    when: (dovecot_dependencies is defined and dovecot_dependencies) and
-          (dovecot_postfix_transport is defined and dovecot_postfix_transport) and
-          'lmtp' in dovecot_protocols
-    tags: postfix
+dependencies: []
 
 galaxy_info:
   author: 'Reto Gantenbein'
