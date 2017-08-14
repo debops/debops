@@ -596,6 +596,11 @@ Error pages
          location_options: |
            internal;
 
+``maintenance_file``
+  Optional. Path of the maintenance HTML page (by default
+  :file:`maintenance.html`) located in the website's document root directory.
+  If the file is present, all requests will be redirected to the maintenance
+  page with error "503 Service Unavailable".
 
 Welcome page
 ~~~~~~~~~~~~

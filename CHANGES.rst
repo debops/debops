@@ -21,6 +21,9 @@ Added
 
 - Support to disable :envvar:`nginx_acme_domain`. [ypid_]
 
+- Support simple maintenance mode using a static HTML page in the document root
+  directory. [drybjed_]
+
 Changed
 ~~~~~~~
 
