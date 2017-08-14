@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.6...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.7...master
+
+
+`debops.php v0.2.7`_ - 2017-08-14
+---------------------------------
+
+.. _debops.php v0.2.7: https://github.com/debops/ansible-php/compare/v0.2.6...v0.2.7
 
 Added
 ~~~~~
