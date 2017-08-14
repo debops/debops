@@ -116,13 +116,14 @@ php__dependent_packages: []
 #
 # List of all PHP packages requested for installation passed to the filter
 # script as a string of arguments for further processing.
-php__combined_packages: '{{ lookup("flattened",
-                            php__server_api_packages
-                            + php__base_packages
-                            + php__packages
-                            + php__group_packages
-                            + php__host_packages
-                            + php__dependent_packages).split(",")
+php__combined_packages: '{{ (lookup("flattened",
+                             php__server_api_packages
+                             + php__base_packages
+                             + php__packages
+                             + php__group_packages
+                             + php__host_packages
+                             + php__dependent_packages).split(",")
+                            | difference(php__included_packages))
                             | join(" ") }}'
 
                                                                    # ]]]
@@ -132,6 +133,81 @@ php__combined_packages: '{{ lookup("flattened",
 # remove older PHP versions on the next Ansible run.
 # Note that this option is not idempotent. It will reset on every role run.
 php__reset: False
+
+                                                                   # ]]]
+# .. envvar:: php__included_packages [[[
+#
+# List of PHP packages which are shipped with the standard PHP distribution.
+# This variable is used to abstract packaging differences between different
+# PHP repositories or releases. If you use a custom APT package for PHP,
+# you might need to adjust this list for proper package resolution.
+php__included_packages: '{{ php__php_included_packages
+                            if php__sury
+                            else php__release_included_map[ansible_distribution_release] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__release_included_map [[[
+#
+# Configuration dictionary mapping distribution releases to different PHP
+# packaging configurations. Also see :envvar:`php__included_packages`.
+php__release_included_map:
+  wheezy:  '{{ php__php5_included_packages }}'
+  jessie:  '{{ php__php5_included_packages }}'
+  stretch: '{{ php__php_included_packages }}'
+  buster:  '{{ php__php_included_packages }}'
+  sid:     '{{ php__php_included_packages }}'
+  trusty:  '{{ php__php5_included_packages }}'
+  xenial:  '{{ php__php_included_packages }}'
+  zesty:   '{{ php__php_included_packages }}'
+
+                                                                   # ]]]
+# .. envvar:: php__php5_included_packages [[[
+#
+# PHP packages usually part of the php5/php5-common packaging.
+php__php5_included_packages: '{{ php__common_included_packages
+                                 + [ "bcmath", "bz2", "dba", "dom", "ereg",
+                                     "mbstring", "mhash", "SimpleXML", "soap",
+                                     "wddx", "xml", "xmlreader", "xmlwriter",
+                                     "zip" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__php_included_packages [[[
+#
+# PHP packages usually part of the php/php-common (PHP 7.x) packaging.
+php__php_included_packages: '{{ php__common_included_packages
+                                + [ "sysvsem", "sysvshm" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__common_included_packages [[[
+#
+# PHP packages usually part of the php/php-common packaging.
+php__common_included_packages:
+  - 'calendar'
+  - 'ctype'
+  - 'date'
+  - 'exif'
+  - 'fileinfo'
+  - 'filter'
+  - 'ftp'
+  - 'gettext'
+  - 'hash'
+  - 'iconv'
+  - 'libxml'
+  - 'openssl'
+  - 'pcntl'
+  - 'pcre'
+  - 'PDO'
+  - 'Phar'
+  - 'posix'
+  - 'Reflection'
+  - 'session'
+  - 'shmop'
+  - 'sockets'
+  - 'SPL'
+  - 'standard'
+  - 'sysvmsg'
+  - 'tokenizer'
+  - 'zlib'
                                                                    # ]]]
                                                                    # ]]]
 # Global php.ini configuration [[[

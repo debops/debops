@@ -14,7 +14,21 @@ The current role maintainer_ is drybjed_.
 `debops.php master`_ - unreleased
 ---------------------------------
 
-.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.6...master
+.. _debops.php master: https://github.com/debops/ansible-php/compare/v0.2.7...master
+
+
+`debops.php v0.2.7`_ - 2017-08-14
+---------------------------------
+
+.. _debops.php v0.2.7: https://github.com/debops/ansible-php/compare/v0.2.6...v0.2.7
+
+Added
+~~~~~
+
+- Introduce :envvar:`php__included_packages` and enable filtering of PHP
+  packages which are shipped with the ``php-common`` APT package. The
+  variable is already defined according to the PHP packages shipped with
+  the supported distribution releases. [ganto_]
 
 Fixed
 ~~~~~
