@@ -22,7 +22,7 @@ ExecStart={{ gitlab_app_root_path }}/gitlab-workhorse/gitlab-workhorse \
     -listenUmask 0 \
     -listenNetwork unix \
     -listenAddr {{ gitlab_app_root_path }}/gitlab/tmp/sockets/gitlab-workhorse.socket \
-    -authBackend http://127.0.0.1:8080 \
+    -authBackend http://127.0.0.1:{{ gitlab_unicorn_port | default('8080') }} \
     -authSocket {{ gitlab_app_root_path }}/gitlab/tmp/sockets/gitlab.socket \
     -secretPath {{ gitlab_app_root_path }}/gitlab/.gitlab_workhorse_secret \
     -documentRoot {{ gitlab_app_root_path }}/gitlab/public
