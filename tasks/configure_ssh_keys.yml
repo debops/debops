@@ -52,13 +52,13 @@
 - name: Scan SSH fingerprints of rsnapshot servers with custom hostname
   shell: 'ssh-keyscan -H -T 10 -p {{ hostvars[item].rsnapshot_ssh_port if (hostvars[item].rsnapshot_ssh_port|d() and hostvars[item].rsnapshot_ssh_port) else rsnapshot_ssh_port }} {{ hostvars[item].rsnapshot_backup_host }} >> /root/.ssh/known_hosts'
   with_items: '{{ rsnapshot_register_known_hosts.results }}'
-  when: ((item is defined and item.rc > 0) and
+  when: ((item.rc is defined and item.rc > 0) and
          (item.rsnapshot_backup_host is defined and item.rsnapshot_backup_host))
 
 - name: Scan SSH fingerprints of rsnapshot servers
   shell: 'ssh-keyscan -H -T 10 -p {{ hostvars[item.item].rsnapshot_ssh_port if (hostvars[item.item].rsnapshot_ssh_port|d() and hostvars[item.item].rsnapshot_ssh_port) else rsnapshot_ssh_port }} {{ hostvars[item.item].ansible_fqdn }} >> /root/.ssh/known_hosts'
   with_items: '{{ rsnapshot_register_known_hosts.results }}'
-  when: item is defined and item.rc > 0
+  when: item.rc is defined and item.rc > 0
 
 - name: Check if ~/.profile file exists on root account
   stat:
