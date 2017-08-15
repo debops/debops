@@ -410,8 +410,13 @@ production: &base
     # google_analytics_id: '_your_tracking_id'
 
     ## Piwik analytics.
+{% if gitlab__piwik_url is defined and gitlab__piwik_url %}
+    piwik_url: '{{ gitlab__piwik_url }}'
+    piwik_site_id: '{{ gitlab__piwik_site_id }}'
+{% else %}
     # piwik_url: '_your_piwik_url'
     # piwik_site_id: '_your_piwik_site_id'
+{% endif %}
 
   rack_attack:
     git_basic_auth:
