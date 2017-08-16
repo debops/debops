@@ -28,6 +28,9 @@ Added
 
 - Switch to docker-ce and docker-ee. [tallandtree_]
 
+- Add the Ansible local facts for the ``debops.docker`` role so that other
+  roles can detect if Docker is installed. [drybjed_]
+
 Changed
 ~~~~~~~
 
