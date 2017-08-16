@@ -33,6 +33,8 @@ Changed
 
 - Fixed Ansible warnings during task execution. [drybjed_]
 
+- Update APT cache before first package installation. [azman0101, drybjed_]
+
 - Convert the Ansible local facts to a Python script. The GitLab Runner state
   is stored in a separate, secure JSON file. [drybjed_]
 

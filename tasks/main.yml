@@ -53,6 +53,11 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
+    update_cache: True
+    cache_valid_time: '{{ ansible_local.core.cache_valid_time
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.cache_valid_time|d())
+                           else "86400" }}'
   with_items: [ 'apt-transport-https', 'openssl', 'ca-certificates' ]
 
 - name: Add gitlab-runner APT key
