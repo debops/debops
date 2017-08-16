@@ -349,6 +349,27 @@ concurrent = {{ gitlab_runner__concurrent }}
     MaxBuilds = {{ runner.machine_max_builds | d(gitlab_runner__machine_max_builds) }}
     MachineName = "{{ runner.machine_name | d(gitlab_runner__machine_name) }}"
     MachineDriver = "{{ runner.machine_driver | d(gitlab_runner__machine_driver) }}"
+    {% if runner.machine_offpeakperiods|d() or gitlab_runner__machine_offpeakperiods %}
+     OffPeakPeriods = [
+         {%         if runner.machine_offpeakperiods|d() %}
+         {%           for offpeakperiod in runner.machine_offpeakperiods %}
+               "{{ offpeakperiod }}"{% if not loop.last %},
+         {% endif %}
+         {%           endfor %}
+         {%         else %}
+         {%           for offpeakperiod in gitlab_runner__machine_offpeakperiods %}
+               "{{ offpeakperiod }}"{% if not loop.last %},
+         {% endif %}
+         {%           endfor %}
+         {%         endif %}
+     ]
+ {% endif %}
+ {% if runner.machine_offpeakidlecount|d() or gitlab_runner__machine_offpeakidlecount %}
+     OffPeakIdleCount = {{ runner.machine_offpeakidlecount | d(gitlab_runner__machine_offpeakidlecount) }}
+ {% endif %}
+ {% if runner.machine_offpeakidletime|d() or gitlab_runner__machine_offpeakidletime %}
+     OffPeakIdleTime = {{ runner.machine_offpeakidletime | d(gitlab_runner__machine_offpeakidletime) }}
+ {% endif %}
 {%       if runner.machine_options|d() or gitlab_runner__machine_options %}
     MachineOptions = [
 {%         if runner.machine_options|d() %}
