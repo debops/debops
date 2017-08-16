@@ -25,6 +25,8 @@ The current role maintainer_ is drybjed.
 Added
 ~~~~~
 
+- Add improved autoscaling off-peak support. [azman0101]
+
 - Add a separate list of tags defined for shell executors that describe the
   host in a greater detail. [drybjed_]
 
