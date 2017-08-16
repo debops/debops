@@ -18,7 +18,7 @@
 # Specify the GitLab version to install or manage. The role checks what version
 # is currently installed and can perform automatic upgrade if the installed
 # version is older than the specified. Downgrades are not supported.
-gitlab_version: '{{ "9.3"
+gitlab_version: '{{ "9.4"
                     if (ansible_local|d() and ansible_local.core|d() and
                         ansible_local.core.distribution_release|d() and
                         ansible_local.core.distribution_release == "stretch")
@@ -99,7 +99,7 @@ gitlab__distribution_release: '{{ ansible_local.core.distribution_release
                                       ansible_local.core.distribution_release|d())
                                   else "jessie" }}'
 
-#
+                                                                   # ]]]
 # .. envvar:: gitlab__base_packages [[[
 #
 # List of base APT packages required by GitLab.
@@ -108,16 +108,16 @@ gitlab__base_packages: [ 'build-essential', 'zlib1g-dev', 'libyaml-dev',
                          'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
                          'libicu-dev', 'python-docutils', 'cmake', 'pkg-config', 'unzip' ]
 
-#
+                                                                   # ]]]
 # .. envvar:: gitlab__release_packages [[[
 #
 # List of base APT packages required by GitLab depending on the distribution release.
 gitlab__release_packages:
   jessie:  [ 'libssl-dev' ]
-  stretch: [ 'libssl1.0-dev' ]
+  stretch: [ 'libssl1.0-dev', 'libre2-dev' ]
   precise: [ 'libssl-dev' ]
   trusty:  [ 'libssl-dev' ]
-  xenial:  [ 'libssl-dev' ]
+  xenial:  [ 'libssl-dev', 'libre2-dev' ]
 
                                                                    # ]]]
 # .. envvar:: gitlab__database_packages [[[
@@ -442,6 +442,12 @@ gitlab_group: 'git'
 # The ``sshusers`` UNIX group is used in DebOps to limit SSH access. See the
 # debops.auth_ role for more details.
 gitlab_user_append_groups: [ 'sshusers' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab__shell [[[
+#
+# The default shell used by the GitLab UNIX account.
+gitlab__shell: '/bin/bash'
                                                                    # ]]]
                                                                    # ]]]
 # Internal application options [[[
@@ -611,12 +617,18 @@ gitlab_version_map:
     gitaly: 'v0.10.0'
 
   '9.3':
-    shell: 'v5.0.5'
+    shell: 'v5.1.1'
     ce:    '9-3-stable'
     gitlab_workhorse: 'v2.1.1'
     pages: 'v0.4.3'
     gitaly: 'v0.11.2'
 
+  '9.4':
+    shell: 'v5.3.1'
+    ce:    '9-4-stable'
+    gitlab_workhorse: 'v2.3.0'
+    pages: 'v0.5.0'
+    gitaly: 'v0.21.2'
                                                                    # ]]]
                                                                    # ]]]
 # gitlab-shell source code [[[
@@ -740,7 +752,7 @@ gitlab__gitaly_repo: 'https://gitlab.com/gitlab-org/gitaly.git'
 # .. envvar:: gitlab__gitaly_dest [[[
 #
 # Path where the Gitaly source code will be cloned into a bare repository.
-gitlab__gitaly_dest: '{{ gitlab_src_path + "/" + gitaly_repo.split("://")[1] }}'
+gitlab__gitaly_dest: '{{ gitlab_src_path + "/" + gitlab__gitaly_repo.split("://")[1] }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__gitaly_checkout [[[

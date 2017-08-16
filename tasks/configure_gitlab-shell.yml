@@ -107,7 +107,7 @@
   with_items: [ '{{ gitlab_repositories_path }}', '{{ gitlab_satellites_path }}' ]
 
 - name: Setup gitlab-shell
-  shell: ./bin/install
+  shell: ./bin/install ; test ! -x './bin/compile' || ./bin/compile
   args:
     chdir: '{{ gitlab_shell_git_checkout }}'
   become_user: '{{ gitlab_user }}'

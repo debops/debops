@@ -16,7 +16,32 @@ The current role maintainer_ is drybjed_.
 `debops.gitlab master`_ - unreleased
 ------------------------------------
 
-.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.1...master
+.. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.2...master
+
+
+`debops.gitlab v0.2.2`_ - 2017-08-16
+------------------------------------
+
+.. _debops.gitlab v0.2.2: https://github.com/debops/ansible-gitlab/compare/v0.2.1...v0.2.2
+
+Added
+~~~~~
+
+- Add support for connecting GitLab to Piwik Analytics. [jpeeters]
+
+- Add the ``libre2-dev`` APT package to required dependencies. [drybjed_]
+
+- Add support for GitLab 9.4. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Compile required Go binaries in :command:`gitlab-shell` installation.
+  [drybjed_]
+
+- Stop and start running :command:`gitaly` service during an upgrade because
+  the binary cannot be replaced without errors. Small bugs rlated to
+  :command:`gitaly` service have been fixed. [drybjed_]
 
 
 `debops.gitlab v0.2.1`_ - 2017-07-26
