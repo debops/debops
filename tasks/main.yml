@@ -47,6 +47,8 @@
   with_flattened:
     - '{{ "docker.io" if docker__upstream|d()
                 else docker__upstream_packagename }}'
+    - '{{ "docker-engine" if docker__upstream|d()
+                else [] }}'
 
 - name: Remove startup file(s) if present
   file:
