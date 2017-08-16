@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed.
 `debops.gitlab_runner master`_ - unreleased
 -------------------------------------------
 
-.. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.2...master
+.. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.2.0...master
+
+
+`debops.gitlab_runner v0.2.0`_ - 2017-08-16
+-------------------------------------------
+
+.. _debops.gitlab_runner v0.2.0: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.2...v0.2.0
 
 Added
 ~~~~~
