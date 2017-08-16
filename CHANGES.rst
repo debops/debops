@@ -24,6 +24,11 @@ Changed
 - Convert the Ansible local facts to a Python script. The GitLab Runner state
   is stored in a separate, secure JSON file. [drybjed_]
 
+Fixed
+~~~~~
+
+- Fixed an error with missing Ansible facts breaking GitLab Runner registration. [drybjed_]
+
 
 `debops.gitlab_runner v0.1.2`_ - 2016-10-05
 -------------------------------------------

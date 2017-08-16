@@ -96,9 +96,10 @@
   when: (gitlab_runner__register_api.status|d() and gitlab_runner__register_api.status == 200 and
          (item.token | d() or gitlab_runner__token) and item.name and
          (item.state is undefined or item.state != 'absent') and
-         (ansible_local|d(True) and
-          (ansible_local.gitlab_runner is undefined or
-           item.name not in ansible_local.gitlab_runner.instances)) and
+         (ansible_local is undefined or
+          (ansible_local|d() and (ansible_local.gitlab_runner is undefined or
+           (ansible_local.gitlab_runner|d() and ansible_local.gitlab_runner.instances is defined and
+            item.name not in ansible_local.gitlab_runner.instances)))) and
         (gitlab_runner__run_untagged|d()))
 
 - name: Generate GitLab Runner configuration files
