@@ -79,6 +79,7 @@
   register: gitlab_runner__register_api
   when: gitlab_runner__api_url|d() and gitlab_runner__api_url
   failed_when: False
+  no_log: True
 
 - name: Register new GitLab Runners
   uri:
@@ -145,7 +146,7 @@
     owner: '{{ gitlab_runner__user }}'
     group: '{{ gitlab_runner__group }}'
     mode: '0700'
-  when: gitlab_runner__ssh_known_hosts
+  when: gitlab_runner__ssh_known_hosts|d()
 
 - name: Make sure the ~/.ssh/known_hosts file exists
   copy:
@@ -155,12 +156,12 @@
     group: '{{ gitlab_runner__group }}'
     mode: '0644'
     force: False
-  when: gitlab_runner__ssh_known_hosts
+  when: gitlab_runner__ssh_known_hosts|d()
 
 - name: Get list of already scanned host fingerprints
   shell: ssh-keygen -f {{ gitlab_runner__home }}/.ssh/known_hosts -F {{ item }} | grep -q '^# Host {{ item }} found'
   with_items: '{{ gitlab_runner__ssh_known_hosts }}'
-  when: gitlab_runner__ssh_known_hosts
+  when: gitlab_runner__ssh_known_hosts|d()
   register: gitlab_runner__register_known_hosts
   changed_when: False
   failed_when: False

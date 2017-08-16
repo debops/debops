@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed.
 
 .. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.2...master
 
+Changed
+~~~~~~~
+
+- Fixed Ansible warnings during task execution. [drybjed_]
+
 
 `debops.gitlab_runner v0.1.2`_ - 2016-10-05
 -------------------------------------------
