@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed.
 
 .. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.1.2...master
 
+Added
+~~~~~
+
+- Add a separate list of tags defined for shell executors that describe the
+  host in a greater detail. [drybjed_]
+
 Changed
 ~~~~~~~
 
