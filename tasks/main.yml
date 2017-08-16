@@ -101,13 +101,14 @@
            item.name not in ansible_local.gitlab_runner.instances)) and
         (gitlab_runner__run_untagged|d()))
 
-- name: Generate gitlab-runner configuration file
+- name: Generate GitLab Runner configuration files
   template:
-    src: 'etc/gitlab-runner/config.toml.j2'
-    dest: '/etc/gitlab-runner/config.toml'
+    src: 'etc/gitlab-runner/{{ item }}.j2'
+    dest: '/etc/gitlab-runner/{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0600'
+  with_items: [ 'config.toml', 'ansible.json' ]
 
 - name: Delete GitLab Runners if requested
   uri:
@@ -186,4 +187,4 @@
     dest: '/etc/ansible/facts.d/gitlab_runner.fact'
     owner: 'root'
     group: 'root'
-    mode: '0600'
+    mode: '0755'
