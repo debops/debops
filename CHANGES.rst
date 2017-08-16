@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.docker master`_ - unreleased
 ------------------------------------
 
-.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.2.1...master
+.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.3.0...master
+
+
+`debops.docker v0.3.0`_ - 2017-08-16
+------------------------------------
+
+.. _debops.docker v0.3.0: https://github.com/debops/ansible-docker/compare/v0.2.1...v0.3.0
 
 Added
 ~~~~~
