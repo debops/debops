@@ -39,9 +39,11 @@ Initial configuration
 ---------------------
 
 By default, ``debops.gitlab_runner`` will configure a single Runner instance
-which uses a shell executor. To use different executors like SSH or Docker, you
-need to provide additional configuration and ensure that required software
-(:command:`ssh`, Docker, Docker Machine, etc.) is installed if required.
+which uses a shell executor. If a Docker installation is detected via Ansible
+local facts, the role will disable the shell executor and configure two Docker
+executors - one unprivileged, and one privileged. The executors will have a set
+of tags that identify them, shell executors will have additional tags that
+describe the host's architecture, OS release, etc.
 
 The Runner instances can be configured with variables specified as the keys of
 the dictionary that holds the specific Runner configuration. If any required

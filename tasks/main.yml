@@ -23,6 +23,14 @@
     generate_ssh_key: '{{ gitlab_runner__ssh_generate | bool }}'
     ssh_key_bits: '{{ gitlab_runner__ssh_generate_bits }}'
 
+- name: Allow Docker access for gitlab-runner user
+  user:
+    name: '{{ gitlab_runner__user }}'
+    groups: 'docker'
+    append: True
+  when: (ansible_local|d() and ansible_local.docker|d() and
+         (ansible_local.docker.installed|d()) | bool)
+
 - name: Copy custom files to GitLab Runner host
   copy:
     src: '{{ item.src | d(omit) }}'

@@ -30,6 +30,18 @@ Changed
 - Convert the Ansible local facts to a Python script. The GitLab Runner state
   is stored in a separate, secure JSON file. [drybjed_]
 
+- Redesign the list of default GitLab Runner executors. The role will create
+  a 'shell' executor, unless Docker is detected in which case the 'shell'
+  executor will be disabled. Two Docker executors will be created, one
+  privileged and one unprivileged, with respective tags. [drybjed_]
+
+- If Docker is detected, the ``gitlab-runner`` user will be added to the
+  ``docker`` group to allow access to Docker containers. [drybjed_]
+
+- On hosts with Docker executors, number of concurrent jobs will depend on
+  number of vCPUs available. Hosts with 'shell' executor will be allowed to run
+  only 1 job at a time. [drybjed_]
+
 Fixed
 ~~~~~
 
