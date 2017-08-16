@@ -47,6 +47,8 @@
   with_flattened:
     - '{{ "docker.io" if docker__upstream|d()
                 else docker__upstream_packagename }}'
+    - '{{ "docker-engine" if docker__upstream|d()
+                else [] }}'
 
 - name: Remove startup file(s) if present
   file:
@@ -172,3 +174,24 @@
   with_items: '{{ docker__admins }}'
   when: item|d()
   tags: [ 'role::docker:config', 'role::docker:admins' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save APT local facts
+  template:
+    src: 'etc/ansible/facts.d/docker.fact.j2'
+    dest: '/etc/ansible/facts.d/docker.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: docker__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: docker__register_facts|changed
