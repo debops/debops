@@ -224,6 +224,7 @@ gitlab_runner__default_instances:
 
   - name: '{{ ansible_hostname + "-shell" }}'
     executor: 'shell'
+    run_untagged: False
     state: '{{ "absent"
                if (ansible_local|d() and ansible_local.docker|d() and
                    (ansible_local.docker.installed|d()) | bool)
@@ -241,6 +242,7 @@ gitlab_runner__default_instances:
     executor: 'docker'
     concurrent: '{{ ansible_processor_vcpus }}'
     docker_privileged: True
+    run_untagged: False
     tags: [ 'docker-privileged' ]
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.docker|d() and

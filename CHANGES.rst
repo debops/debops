@@ -42,6 +42,10 @@ Changed
   number of vCPUs available. Hosts with 'shell' executor will be allowed to run
   only 1 job at a time. [drybjed_]
 
+- The default 'shell' and privileged Docker executors will not be allowed to
+  run untagged jobs for security reasons. The default unprivileged Docker
+  executor can still run untagged jobs. [drybjed_]
+
 Fixed
 ~~~~~
 
