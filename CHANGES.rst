@@ -66,6 +66,10 @@ Changed
 - Renamed ``roundcube__extra_packages`` to :envvar:`roundcube__packages` to be
   consistent with other DebOps roles. [ganto_]
 
+- Changed default configuration of :envvar:`roundcube__www` from
+  ``/srv/www/{{ roundcube__user }}`` to ``/srv/www`` to be more consistent with
+  other system-wide Web applications. [ganto_]
+
 
 Fixed
 ~~~~~

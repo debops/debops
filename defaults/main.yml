@@ -188,10 +188,9 @@ roundcube__src: '{{ (ansible_local.root.src
 # .. envvar:: roundcube__www [[[
 #
 # Base web root directory for Roundcube website.
-roundcube__www: '{{ (ansible_local.nginx.www
-                    if (ansible_local|d() and
-                        ansible_local.nginx|d())
-                    else "/srv/www" ) + "/" + roundcube__user }}'
+roundcube__www: '{{ ansible_local.nginx.www
+                    if (ansible_local|d() and ansible_local.nginx|d())
+                    else "/srv/www" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__webserver_user [[[
