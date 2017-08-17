@@ -34,9 +34,7 @@
     - '{{ roundcube__base_packages }}'
     - '{{ roundcube__packages }}'
     - '{{ roundcube__composer_packages
-          if (not roundcube__composer_phar_url is string) and
-             (roundcube__composer_phar_url | length > 7)
-          else [] }}'
+          if roundcube__composer_phar|bool else [] }}'
 
 - include: deploy_roundcube.yml
 

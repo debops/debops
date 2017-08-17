@@ -86,15 +86,28 @@ roundcube__base_packages: [ 'curl', 'file', 'unzip' ]
 roundcube__composer_packages: [ 'composer ']
 
                                                                    # ]]]
+# .. envvar:: roundcube__composer_phar [[[
+#
+# If this is set to ``True`` the ``composer.phar`` script will be downloaded
+# from the :envvar:`roundcube__composer_phar_url` and used to install the
+# missing PHP packages. If this is set to ``False`` the system-wide
+# :command:`composer` is used.
+# WARNING: Setting this variable to ``True`` has some security implications as
+# the download is not cryptographically verified. This is only meant to be a
+# work-around for old distribution releases not supporting the downstream
+# packaged :command:`composer`.
+roundcube__composer_phar: '{{ True
+                              if ansible_distribution_release in [ "jessie", "trusty" ]
+                              else False }}'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__composer_phar_url [[[
 #
 # URL to the composer.phar script which will be used to install PHP packages
 # not available in the APT repository on distribution releases which don't
 # package PHP composer. If this is set to `False`, :command:`composer` will
 # be installed via APT package manager.
-roundcube__composer_phar_url: '{{ "https://getcomposer.org/composer.phar"
-                                  if ansible_distribution_release in
-                                  [ "jessie", "trusty" ] else False }}'
+roundcube__composer_phar_url: 'https://getcomposer.org/composer.phar'
 
                                                                    # ]]]
                                                                    # ]]]
