@@ -118,6 +118,8 @@
     chdir: '{{ roundcube__git_checkout }}'
   become_user: '{{ roundcube__user }}'
   when: roundcube__composer_phar|bool
+  register: roundcube__register_composer_phar
+  changed_when: not "Nothing to install or update" in roundcube__register_composer_phar.stderr|d('')
 
 - name: Install missing PHP packages via system-wide composer
   composer:
