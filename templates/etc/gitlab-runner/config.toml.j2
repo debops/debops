@@ -308,6 +308,9 @@ concurrent = {{ gitlab_runner__concurrent }}
 {%       if gitlab_runner__tpl_docker_allowed_services %}
     allowed_services = [ "{{ gitlab_runner__tpl_docker_allowed_services | join('", "') }}" ]
 {%       endif %}
+{%       if runner.docker_pull_policy|d() %}
+    pull_policy = "{{ runner.docker_pull_policy }}"
+{%       endif %}
 {%     endif %}
 {%     if ((runner.executor|d() and runner.executor in [ 'parallels' ]) or
            (gitlab_runner__executor in [ 'parallels' ])) %}
