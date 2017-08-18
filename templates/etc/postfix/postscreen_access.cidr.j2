@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+# CIDR table of hosts/subnets blacklisted or whitelisted in postscreen service.
+#
+# Documentation: http://www.postfix.org/POSTSCREEN_README.html#perm_white_black
+# Documentation: http://www.postfix.org/postconf.5.html#postscreen_access_list
+
+{% set default_action = 'permit' %}
+{% for element in postscreen__combined_access %}
+{%   if element.state|d('present') != 'absent' %}
+{%     if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='\n', postfix='') -}}
+{%     endif %}
+{{ "{:<32} {}".format(element.cidr | d(element.name | d(element)), element.action | d(element.value | d(default_action))) }}
+{%   endif %}
+{% endfor %}

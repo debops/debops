@@ -1,0 +1,13 @@
+---
+
+- name: Generate Postscreen configuration files
+  template:
+    src: 'etc/postfix/{{ item }}.j2'
+    dest: '/etc/postfix/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'postscreen_access.cidr'
+    - 'postscreen_dnsbl_reply_map.pcre'
+  notify: [ 'Check postfix and reload' ]
