@@ -28,7 +28,7 @@
   file:
     path: '/etc/stunnel/{{ item.filename | default(item.name) }}.conf'
     state: 'absent'
-  with_items: stunnel_services
+  with_items: "{{ stunnel_services }}"
   when: ((item.name is defined and item.name) and
          (item.delete is defined and item.delete | bool))
   notify: [ 'Restart stunnel' ]
@@ -40,7 +40,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: stunnel_services
+  with_items: "{{ stunnel_services }}"
   when: ((item.name is defined and item.name) and
          (item.delete is undefined or not item.delete | bool))
   notify: [ 'Restart stunnel' ]
