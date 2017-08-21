@@ -127,7 +127,9 @@ def parse_kv_config(*args, **kwargs):
                 if element.get('state', 'present') == 'append':
 
                     # In append mode, don't create new config entries
-                    if param_name not in parsed_config.keys():
+                    if (param_name not in parsed_config.keys() or
+                        parsed_config[param_name].get('state',
+                                                      'present') == 'init'):
                         continue
 
                 current_param = (parsed_config[param_name].copy()
@@ -278,7 +280,9 @@ def parse_kv_items(*args, **kwargs):
                 if element_state == 'append':
 
                     # In append mode, don't create new config entries
-                    if param_name not in parsed_config.keys():
+                    if (param_name not in parsed_config.keys() or
+                        parsed_config[param_name].get('state',
+                                                      'present') == 'init'):
                         continue
 
                 current_param = (parsed_config[param_name].copy()
