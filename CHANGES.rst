@@ -1,3 +1,5 @@
+.. _roundcube__ref_changelog:
+
 Changelog
 =========
 
@@ -9,6 +11,9 @@ This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html
 and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current role maintainer_ is ganto_.
+
+Refer to the :ref:`roundcube__ref_upgrade_notes` when you intend to upgrade to a
+new release of this role.
 
 
 `debops-contrib.roundcube master`_ - unreleased
