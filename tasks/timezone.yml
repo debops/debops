@@ -42,8 +42,7 @@
 
 - name: Configure timezone with timedatectl
   shell: 'timedatectl set-timezone {{ ntp__timezone }}'
-  when: ((ansible_local|d() and ansible_local.init|d() and
-                ansible_local.init == "systemd") and
+  when: ((ansible_service_mgr == "systemd") and
             ntp__daemon == 'systemd-timesyncd') and
         (ansible_local is undefined or
             (ansible_local|d() and ansible_local.timezone|d() and
