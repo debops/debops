@@ -1,13 +1,16 @@
 ---
 
-- name: Get version of previous Roundcube installation
+- name: Get version of current Roundcube installation
   command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
            {{ roundcube__git_checkout }}/program/include/iniset.php
   changed_when: False
   failed_when: False
   register: roundcube__register_version
 
-- name: Get version of old Roundcube installation
+# this task is necessary, to trigger proper database upgrades after
+# updating the role to v0.2.0 because the default installation path
+# has changed.
+- name: Get version of deprecated Roundcube installation on role upgrade
   command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
            /srv/www/roundcube/sites/{{
                roundcube__domain if roundcube__domain is string
@@ -15,7 +18,10 @@
   changed_when: False
   failed_when: False
   register: roundcube__register_version_old
-  when: roundcube__register_version.stdout == ''
+  when: (roundcube__register_version.stdout == '') and
+        (not roundcube__git_checkout == '/srv/www/roundcube/sites/'
+         + (roundcube__domain if roundcube__domain is string
+                              else roundcube__domain[0]) + '/public')
 
 # ---- Deployment ----
 
