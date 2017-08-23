@@ -161,7 +161,8 @@
   changed_when: not roundcube__register_updatedb.stdout == ''
   when: (not roundcube__register_version.stdout == '' and
          roundcube__git_version | version_compare(roundcube__register_version.stdout, '>')) or
-        (not roundcube__register_version_old | skipped)
+        (not roundcube__register_version_old | skipped and
+         not roundcube__register_version_old.stdout == '')
 
 - name: Enable cleandb.sh Cron job
   cron:
