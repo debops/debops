@@ -10,8 +10,8 @@ to your setup in order to use a new role release. Refer to the
 :ref:`roundcube__ref_changelog` for more details about what has changed.
 
 
-From v0.1.3 to v.0.2.0
-----------------------
+From v0.1.3 to v0.2.0
+---------------------
 
 Due to changes in the role dependencies and some adjustments in the role's
 default values, your setup is likely to break if you simply execute the
@@ -90,7 +90,8 @@ defined in the example playbook.
    .. code:: shell
 
       # su roundcube -s /bin/bash \
-        -c "php /srv/www/sites/roundcube.example.com/public/bin/update.sh --version=1.1.9"
+        -c "php /srv/www/sites/roundcube.example.com/public/bin/updatedb.sh \
+        --package=roundcube --dir=/srv/www/sites/roundcube.example.com/public/SQL"
 
 7. If you manually installed some additional plugins you might need to re-
    install or update them for the new Roundcube version.
