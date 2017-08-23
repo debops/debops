@@ -1,5 +1,22 @@
 ---
 
+- name: Get version of previous Roundcube installation
+  command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
+           {{ roundcube__git_checkout }}/program/include/iniset.php
+  changed_when: False
+  failed_when: False
+  register: roundcube__register_version
+
+- name: Get version of old Roundcube installation
+  command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
+           /srv/www/roundcube/sites/{{
+               roundcube__domain if roundcube__domain is string
+               else roundcube__domain[0] }}/public/program/include/iniset.php
+  changed_when: False
+  failed_when: False
+  register: roundcube__register_version_old
+  when: roundcube__register_version.stdout == ''
+
 # ---- Deployment ----
 
 # roundcube is checked out based on tags instead of branches, and since we
@@ -134,6 +151,17 @@
     chdir: '{{ roundcube__git_checkout }}'
     creates: 'program/js/jquery.min.js'
   become_user: '{{ roundcube__user }}'
+
+- name: Update database schema
+  command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_checkout }}/SQL'
+  args:
+    chdir: '{{ roundcube__git_checkout }}'
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_updatedb
+  changed_when: not roundcube__register_updatedb.stdout == ''
+  when: (not roundcube__register_version.stdout == '' and
+         roundcube__git_version | version_compare(roundcube__register_version.stdout, '>')) or
+        (not roundcube__register_version_old | skipped)
 
 - name: Enable cleandb.sh Cron job
   cron:
