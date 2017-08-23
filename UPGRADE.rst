@@ -3,6 +3,8 @@
 Upgrade notes
 =============
 
+.. include:: includes/all.rst
+
 The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the
 :ref:`roundcube__ref_changelog` for more details about what has changed.
@@ -79,5 +81,16 @@ defined in the example playbook.
       $ cp /srv/www/roundcube/sites/roundcube.example.com/public/db/roundcube.db \
         /srv/www/sites/roundcube.example.com/public/db
 
-6. If you manually installed some additional plugins you might need to re-
+6. In case Roundcube was installed into a new directory but you didn't use the
+   default :envvar:`roundcube__www` configuration before the update or you
+   experience SQL schema issues, you need to manually run the upstream post
+   update script on the Roundcube server. The given ``--version`` parameter
+   indicates the previous Roundcube version you were updating from.
+
+   .. code:: shell
+
+      # su roundcube -s /bin/bash \
+        -c "php /srv/www/sites/roundcube.example.com/public/bin/update.sh --version=1.1.9"
+
+7. If you manually installed some additional plugins you might need to re-
    install or update them for the new Roundcube version.
