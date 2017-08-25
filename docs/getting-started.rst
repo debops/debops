@@ -46,7 +46,7 @@ without DebOps you might need to adapt them to make them work in your setup.
 This playbook is also shipped with the role under :file:`docs/playbooks/`.
 
 
-.. _roundcube__ref_default_setup:
+.. _roundcube__ref_ansible_tags:
 
 Ansible tags
 ------------
