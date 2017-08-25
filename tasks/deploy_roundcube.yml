@@ -23,6 +23,7 @@
          + (roundcube__domain if roundcube__domain is string
                               else roundcube__domain[0]) + '/public')
 
+
 # ---- Deployment ----
 
 # roundcube is checked out based on tags instead of branches, and since we
@@ -119,6 +120,9 @@
   register: roundcube__register_composer_json
   changed_when: False
 
+
+# ---- Post deployment ----
+
 - name: Generate PHP composer.json
   template:
     src: 'srv/www/sites/composer.json.j2'
@@ -157,18 +161,6 @@
     chdir: '{{ roundcube__git_checkout }}'
     creates: 'program/js/jquery.min.js'
   become_user: '{{ roundcube__user }}'
-
-- name: Update database schema
-  command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_checkout }}/SQL'
-  args:
-    chdir: '{{ roundcube__git_checkout }}'
-  become_user: '{{ roundcube__user }}'
-  register: roundcube__register_updatedb
-  changed_when: not roundcube__register_updatedb.stdout == ''
-  when: (not roundcube__register_version.stdout == '' and
-         roundcube__git_version | version_compare(roundcube__register_version.stdout, '>')) or
-        (not roundcube__register_version_old | skipped and
-         not roundcube__register_version_old.stdout == '')
 
 - name: Enable cleandb.sh Cron job
   cron:

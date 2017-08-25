@@ -61,5 +61,17 @@
     group: '{{ roundcube__group }}'
     mode: '0640'
 
+- name: Update database schema
+  command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_checkout }}/SQL'
+  args:
+    chdir: '{{ roundcube__git_checkout }}'
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_updatedb
+  changed_when: not roundcube__register_updatedb.stdout == ''
+  when: (not roundcube__register_version.stdout == '' and
+         roundcube__git_version | version_compare(roundcube__register_version.stdout, '>')) or
+        (not roundcube__register_version_old | skipped and
+         not roundcube__register_version_old.stdout == '')
+
 - name: Post hooks
   include: '{{ lookup("task_src", "roundcube/post_main.yml") }}'
