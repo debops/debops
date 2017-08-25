@@ -81,15 +81,6 @@
   register: gitlab_register_gitlab__gitaly_checkout
   when: (gitlab_version_map[gitlab_version].gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
 
-  # Gitaly cannot be upgraded while the service is running
-- name: Check if gitaly service is running
-  command: systemctl is-active gitlab-gitaly.service
-  register: gitlab__register_gitaly_service
-  when: (ansible_local|d() and ansible_local.gitlab|d() and
-         (ansible_local.gitlab.installed|d()) | bool and
-         ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed)
-
 - name: Stop gitaly service for an upgrade
   service:
     name: 'gitlab-gitaly.service'
@@ -97,8 +88,7 @@
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d()) | bool and
          ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed and
-         gitlab__register_gitaly_service.stdout == 'active')
+         gitlab_register_gitlab__gitaly_checkout|changed)
 
 - name: Setup gitaly
   make:
@@ -113,8 +103,7 @@
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d()) | bool and
          ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed and
-         gitlab__register_gitaly_service.stdout == 'active')
+         gitlab_register_gitlab__gitaly_checkout|changed)
 
 - name: Configure Gitaly
   template:
