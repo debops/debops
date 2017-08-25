@@ -89,7 +89,7 @@ Removed
 - Remove support for Debian (oldoldstable) wheezy. [ganto_]
 
 
-`debops-contrib.roundcube v0.1.3_` - 2017-07-26
+`debops-contrib.roundcube v0.1.3`_ - 2017-07-26
 -----------------------------------------------
 
 .. _debops-contrib.roundcube v0.1.3: https://github.com/debops-contrib/ansible-roundcube/compare/v0.1.2...v0.1.3
@@ -108,7 +108,7 @@ Fixed
 - Probe if :envvar:`roundcube__domain` is a string and construct :envvar:`roundcube__git_checkout` accordingly.  [cultcom]
 
 
-`debops-contrib.roundcube v0.1.2_` - 2017-03-09
+`debops-contrib.roundcube v0.1.2`_ - 2017-03-09
 -----------------------------------------------
 
 .. _debops-contrib.roundcube v0.1.2: https://github.com/debops-contrib/ansible-roundcube/compare/v0.1.1...v0.1.2
@@ -134,7 +134,7 @@ Fixed
   indentation of example playbook. [ganto_]
 
 
-`debops-contrib.roundcube v0.1.1_` - 2016-08-03
+`debops-contrib.roundcube v0.1.1`_ - 2016-08-03
 -----------------------------------------------
 
 .. _debops-contrib.roundcube v0.1.1: https://github.com/debops-contrib/ansible-roundcube/compare/v0.1.0...v0.1.1
