@@ -1,7 +1,0 @@
-{% set _apt_php_packages = [] %}
-{% for _pkg in roundcube__apt_php_package_map.keys() %}
-{%   if ansible_distribution_release in roundcube__apt_php_package_map[_pkg] %}
-{%     set _ = _apt_php_packages.append(_pkg | replace("_", "-")) %}
-{%   endif %}
-{% endfor %}
-{{ _apt_php_packages | to_json }}
