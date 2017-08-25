@@ -33,19 +33,17 @@ gitlab_version: '{{ "9.4"
 #
 # What database to use for GitLab instance? Supported options:
 #
-# - ``postgresql``: use PostgreSQL database (preferred)
-#
-# - ``mariadb``: use MariaDB database
+# - ``postgresql``: use PostgreSQL database
 #
 # The role expects the selected database server to be configured. See the
-# documentation of the debops.mariadb_server_ or debops.postgresql_server_
-# roles for information about their features.
+# documentation of the debops.postgresql_server_ role for information about
+# its features.
 gitlab__database: '{{ ansible_local.gitlab.database
                       if (ansible_local|d() and ansible_local.gitlab|d() and
                           ansible_local.gitlab.database|d())
                       else ("postgresql"
                             if (ansible_local|d() and ansible_local.postgresql is defined)
-                            else ("mariadb"
+                            else ("mariadb-is-deprecated"
                                   if (ansible_local|d() and ansible_local.mariadb is defined)
                                   else "no-database-detected")) }}'
 
@@ -126,19 +124,14 @@ gitlab__release_packages:
 # database server.
 gitlab__database_packages:
   jessie:
-    mariadb:    [ 'libmysqlclient-dev', 'ruby-mysql' ]
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
   stretch:
-    mariadb:    [ 'default-libmysqlclient-dev', 'ruby-mysql2' ]
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
   precise:
-    mariadb:    [ 'libmysqlclient-dev', 'ruby-mysql' ]
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
   trusty:
-    mariadb:    [ 'libmysqlclient-dev', 'ruby-mysql' ]
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
   xenial:
-    mariadb:    [ 'libmysqlclient-dev', 'ruby-mysql' ]
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
                                                                    # ]]]
                                                                    # ]]]
@@ -250,8 +243,8 @@ gitlab_default_theme: '2'
 
 # .. envvar:: gitlab_database_server [[[
 #
-# FQDN of the database server. It will be configured by
-# the debops.mariadb_ or debops.postgresql_ role.
+# FQDN of the database server. It will be configured by the debops.postgresql_
+# role.
 gitlab_database_server: '{{ ansible_local[gitlab__database].server }}'
 
                                                                    # ]]]
@@ -788,7 +781,6 @@ gitlab_assets_compile: '{{ "gitlab:assets:compile"
 # YAML dictionary which maps Bundler parameters to the selected database
 # backend.
 gitlab_ce_bundle_install_without:
-  'mariadb':    'development test aws postgres'
   'postgresql': 'development test aws mysql'
                                                                    # ]]]
                                                                    # ]]]
@@ -911,24 +903,6 @@ gitlab__etc_services__dependent_list:
   - name: 'gitlab-pages'
     port: '{{ gitlab_pages_port }}'
     comment: 'GitLab Pages'
-
-                                                                   # ]]]
-# .. envvar:: gitlab__mariadb__dependent_databases [[[
-#
-# Database configuration for debops.mariadb_ Ansible role.
-gitlab__mariadb__dependent_databases:
-
-  - database: '{{ gitlab_database_name }}'
-
-                                                                   # ]]]
-# .. envvar:: gitlab__mariadb__dependent_users [[[
-#
-# User configuration for debops.mariadb_ Ansible role.
-gitlab__mariadb__dependent_users:
-
-  - database: '{{ gitlab_database_name }}'
-    user: '{{ gitlab_database_user }}'
-    password: '{{ gitlab_database_password }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__postgresql__dependent_roles [[[
