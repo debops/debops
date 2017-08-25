@@ -11,7 +11,7 @@
   roles:
 
     - role: debops.gitlab/env
-      tags: [ 'role::gitlab', 'role::postgresql', 'role::mariadb' ]
+      tags: [ 'role::gitlab', 'role::postgresql' ]
 
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
@@ -61,14 +61,6 @@
       postgresql__dependent_pgpass:
         - '{{ gitlab__postgresql__dependent_pgpass }}'
       when: gitlab__database == 'postgresql'
-
-    - role: debops.mariadb
-      tags: [ 'role::mariadb' ]
-      mariadb__dependent_databases:
-        - '{{ gitlab__mariadb__dependent_databases }}'
-      mariadb__dependent_users:
-        - '{{ gitlab__mariadb__dependent_users }}'
-      when: gitlab__database == 'mariadb'
 
     - role: debops.nginx
       tags: [ 'role::nginx' ]
