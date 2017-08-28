@@ -6,7 +6,6 @@
     state: 'present'
   delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
   register: roundcube__register_database_status
-  tags: [ 'role::roundcube:database' ]
 
 - name: Import initial database schema
   mysql_db:
@@ -17,4 +16,3 @@
     login_password: '{{ roundcube__database_map[roundcube__database].dbpass }}'
     login_host: '{{ ansible_local.mariadb.server }}'
   when: (roundcube__register_database_status|d() is defined and roundcube__register_database_status.changed)
-  tags: [ 'role::roundcube:database' ]

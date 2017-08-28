@@ -1,4 +1,4 @@
-.. _debops.roundcube:
+.. _debops-contrib.roundcube:
 
 Ansible role: debops-contrib.roundcube
 ======================================
@@ -13,6 +13,7 @@ Ansible role: debops-contrib.roundcube
    copyright
    credits
    changelog
+   upgrade
 
 ..
  Local Variables:

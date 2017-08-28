@@ -6,50 +6,48 @@
 
 # ---- Environment ----
 
-- name: Create Roundcube group
-  group:
-    name: '{{ roundcube__group }}'
-    system: True
-    state: 'present'
+- name: Get version of current Roundcube installation
+  command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
+           {{ roundcube__git_checkout }}/program/include/iniset.php
+  changed_when: False
+  failed_when: False
+  register: roundcube__register_version
+  tags: [ 'role::roundcube:database' ]
 
-- name: Create Roundcube user
-  user:
-    name: '{{ roundcube__user }}'
-    group: '{{ roundcube__group }}'
-    home: '{{ roundcube__home }}'
-    shell: '/usr/sbin/nologin'
-    comment: 'Roundcube'
-    createhome: False
-    system: True
-    state: 'present'
+# this task is necessary, to trigger proper database upgrades after
+# updating the role to v0.2.0 because the default installation path
+# has changed.
+- name: Get version of deprecated Roundcube installation on role upgrade
+  command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
+           /srv/www/roundcube/sites/{{
+               roundcube__domain if roundcube__domain is string
+               else roundcube__domain[0] }}/public/program/include/iniset.php
+  changed_when: False
+  failed_when: False
+  register: roundcube__register_version_old
+  when: (roundcube__register_version.stdout == '') and
+        (not roundcube__git_checkout == '/srv/www/roundcube/sites/'
+         + (roundcube__domain if roundcube__domain is string
+                              else roundcube__domain[0]) + '/public')
+  tags: [ 'role::roundcube:database' ]
 
 
 # ---- Deployment ----
 
-- name: Install required dependencies for Roundcube
+- name: Install pre-requisite packages for Roundcube
   apt:
     pkg: '{{ item }}'
     state: 'present'
     install_recommends: False
   with_flattened:
-    - [ '{{ roundcube__extra_packages }}' ]
-    - [ '{{ "php5-sqlite" if roundcube__database_map[roundcube__database].dbtype == "sqlite" else [] }}' ]
-    - [ '{{ "php5-mysql" if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}' ]
-    - [ '{{ "php-net-sieve" if "managesieve" in roundcube__plugins else [] }}' ]
-    - [ '{{ "php-crypt-gpg" if "enigma" in roundcube__plugins else [] }}' ]
-
-- name: Install Roundcube packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_items:
-    - [ 'roundcube', 'roundcube-core' ]
-  when: (ansible_distribution == 'Debian' and
-        ansible_distribution_release == 'wheezy' )
+    - '{{ roundcube__base_packages }}'
+    - '{{ roundcube__packages }}'
+    - '{{ roundcube__composer_packages
+          if not roundcube__composer_phar|bool else [] }}'
+  tags: [ 'role::roundcube:pkg' ]
 
 - include: deploy_roundcube.yml
-  when: (ansible_distribution_release != 'wheezy' )
+  tags: [ 'role::roundcube:deployment' ]
 
 
 # ---- Configuration ----
@@ -62,9 +60,11 @@
     group: '{{ roundcube__group }}'
     mode: '0750'
   when: roundcube__database_map[roundcube__database].dbtype == 'sqlite'
+  tags: [ 'role::roundcube:database' ]
 
 - include: configure_mysql.yml
   when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
+  tags: [ 'role::roundcube:database' ]
 
 - name: Configure Roundcube
   template:
@@ -73,6 +73,20 @@
     owner: 'root'
     group: '{{ roundcube__group }}'
     mode: '0640'
+  tags: [ 'role::roundcube:config' ]
+
+- name: Update database schema
+  command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_checkout }}/SQL'
+  args:
+    chdir: '{{ roundcube__git_checkout }}'
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_updatedb
+  changed_when: not roundcube__register_updatedb.stdout == ''
+  when: (not roundcube__register_version.stdout == '' and
+         roundcube__git_version | version_compare(roundcube__register_version.stdout, '>')) or
+        (not roundcube__register_version_old | skipped and
+         not roundcube__register_version_old.stdout == '')
+  tags: [ 'role::roundcube:database' ]
 
 - name: Post hooks
   include: '{{ lookup("task_src", "roundcube/post_main.yml") }}'

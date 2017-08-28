@@ -10,23 +10,42 @@
 
   roles:
 
-    - role: debops.php5
-      tags: [ 'role::php5' ]
-      php5_packages:
-        - '{{ roundcube__php5_packages }}'
-      php5_pools:
-        - '{{ roundcube__php5_pool }}'
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::php:env' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'role::nginx', 'role::php' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ php__apt_preferences__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'role::nginx' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.php
+      tags: [ 'role::php' ]
+      php__dependent_packages:
+        - '{{ roundcube__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ roundcube__php__dependent_pools }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx' ]
-      nginx_servers:
-        - '{{ roundcube__nginx_server }}'
-      nginx_upstreams:
-        - '{{ roundcube__nginx_upstream_php5 }}'
+      nginx__dependent_servers:
+        - '{{ roundcube__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ roundcube__nginx__dependent_upstreams }}'
 
     - role: debops.mariadb
       tags: [ 'role::mariadb' ]
-      mariadb_users:
+      mariadb__dependent_users:
         - database: '{{ roundcube__database_map[roundcube__database].dbname }}'
           user: '{{ roundcube__database_map[roundcube__database].dbuser }}'
           password: '{{ roundcube__database_map[roundcube__database].dbpass }}'
