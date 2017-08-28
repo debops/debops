@@ -19,7 +19,13 @@ new release of this role.
 `debops-contrib.roundcube master`_ - unreleased
 -----------------------------------------------
 
-.. _debops-contrib.roundcube master: https://github.com/debops-contrib/ansible-roundcube/compare/v0.1.3...master
+.. _debops-contrib.roundcube master: https://github.com/debops-contrib/ansible-roundcube/compare/v0.2.0...master
+
+
+`debops-contrib.roundcube v0.2.0`_ - 2017-08-28
+-----------------------------------------------
+
+.. _debops-contrib.roundcube v0.2.0: https://github.com/debops-contrib/ansible-roundcube/compare/v0.1.3...v0.2.0
 
 Added
 ~~~~~
