@@ -11,7 +11,6 @@ Ansible role: debops-contrib.roundcube
    defaults
    guides
    copyright
-   credits
    changelog
    upgrade
 

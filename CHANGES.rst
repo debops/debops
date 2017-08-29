@@ -110,7 +110,7 @@ Fixed
 ~~~~~
 
 - Fix documentation build error due to deleted link definition to deprecated
-  `debops.php5` role repository. [ganto_]
+  ``debops.php5`` role repository. [ganto_]
 - Probe if :envvar:`roundcube__domain` is a string and construct :envvar:`roundcube__git_checkout` accordingly.  [cultcom]
 
 

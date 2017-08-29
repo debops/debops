@@ -10,7 +10,7 @@ IMAP Web client written in PHP.
 Installation
 ~~~~~~~~~~~~
 
-This role requires at least Ansible ``v1.8.0``. To install it, run:
+This role requires at least Ansible ``v2.3.0``. To install it, run:
 
 .. code-block:: console
 
