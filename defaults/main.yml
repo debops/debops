@@ -1,0 +1,239 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.postwhite default variables [[[
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Application environment [[[
+# ---------------------------
+
+# .. envvar:: postwhite__base_packages [[[
+#
+# List of base APT packages required by Postwhite.
+postwhite__base_packages: [ 'curl' ]
+
+                                                                   # ]]]
+# .. envvar:: postwhite__packages [[[
+#
+# List of additional APT packages to install with Postwhite.
+postwhite__packages: []
+
+                                                                   # ]]]
+# .. envvar:: postwhite__user [[[
+#
+# The UNIX system account which will be used to manage the whitelist.
+postwhite__user: 'postwhite'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__group [[[
+#
+# The UNIX system group which will be used to manage the whitelist.
+postwhite__group: 'postwhite'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__shell [[[
+#
+# The default shell of the UNIX system account.
+postwhite__shell: '/usr/sbin/nologin'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__gecos [[[
+#
+# The GECOS field of the UNIX system account.
+postwhite__gecos: 'Postscreen SPF Whitelist'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__home [[[
+#
+# The home directory of the UNIX system account.
+postwhite__home: '{{ (ansible_local.root.home
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.home|d())
+                      else "/var/local") + "/" + postwhite__user }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Software stack [[[
+# ------------------
+
+# .. envvar:: postwhite__src [[[
+#
+# Base directory where the Postwhite and spf-tools source code will be cloned.
+postwhite__src: '{{ (ansible_local.root.src
+                     if (ansible_local|d() and ansible_local.root|d() and
+                         ansible_local.root.src|d())
+                     else "/usr/local/src") + "/" + postwhite__user }}'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__spftools_git_repo [[[
+#
+# The URL of the 'spf-tools' git repository.
+postwhite__spftools_git_repo: 'https://github.com/jsarenik/spf-tools'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__spftools_git_version [[[
+#
+# The 'spf-tools' git branch/tag to check out.
+postwhite__spftools_git_version: 'master'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__spftools_git_dest [[[
+#
+# Directory where 'spf-tools' repository will be checked out.
+postwhite__spftools_git_dest: '{{ postwhite__src + "/"
+                                  + postwhite__spftools_git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__git_repo [[[
+#
+# The URL of the 'postwhite' git repository.
+postwhite__git_repo: 'https://github.com/stevejenkins/postwhite'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__git_version [[[
+#
+# The 'postwhite' git branch/tag to check out.
+postwhite__git_version: 'master'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__git_dest [[[
+#
+# Directory where 'postwhite' repository will be checked out.
+postwhite__git_dest: '{{ postwhite__src + "/"
+                         + postwhite__git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__software_stack [[[
+#
+# Map of the required git repositories to clone, passed to the role tasks.
+postwhite__software_stack:
+
+  - git_repo:    '{{ postwhite__spftools_git_repo }}'
+    git_dest:    '{{ postwhite__spftools_git_dest }}'
+    git_version: '{{ postwhite__spftools_git_version }}'
+
+  - git_repo:    '{{ postwhite__git_repo }}'
+    git_dest:    '{{ postwhite__git_dest }}'
+    git_version: '{{ postwhite__git_version }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Postwhite configuration options [[[
+# -----------------------------------
+
+# .. envvar:: postwhite__spf_whitelist_path [[[
+#
+# Absolute path to the SPF whitelist file.
+postwhite__spf_whitelist_path: '{{ postwhite__home + "/postscreen_spf_whitelist.cidr" }}'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__spf_blacklist_path [[[
+#
+# Absolute path to the SPF blacklist file.
+postwhite__spf_blacklist_path: '{{ postwhite__home + "/postscreen_spf_blacklist.cidr" }}'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__whitelist_hosts [[[
+#
+# List of additional hosts or domains to add to the whitelist in addition to
+# the list predefined by Postwhite.
+postwhite__whitelist_hosts: []
+
+                                                                   # ]]]
+# .. envvar:: postwhite__include_yahoo [[[
+#
+# Enable or disable inclusion of the custom list of Yahoo! mail servers.
+postwhite__include_yahoo: True
+
+                                                                   # ]]]
+# .. envvar:: postwhite__blacklist [[[
+#
+# If enabled, :command:`postwhite` will generate an additional file with
+# blacklisted SMTP servers.
+postwhite__blacklist: '{{ True if postwhite__blacklist_hosts|d() else False }}'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__blacklist_hosts [[[
+#
+# List of DNS domain names which will be added to the blacklist.
+postwhite__blacklist_hosts: []
+
+                                                                   # ]]]
+# .. envvar:: postwhite__invalid_ipv4 [[[
+#
+# Specify what Postwhite should do with invalid IPv4 addresses (see Postwhite
+# documentation for details). Possible values: ``remove``, ``keep``, ``fix``.
+postwhite__invalid_ipv4: 'remove'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__simplify [[[
+#
+# if enabled, Postwhite will remove the single IP addresses included in
+# a bigger CIDR ranges, however this might slow down whitelist generation.
+postwhite__simplify: False
+
+                                                                   # ]]]
+# .. envvar:: postwhite__reload_postfix [[[
+#
+# Enable or disable automatic reload of Postfix after the script is finished.
+# In DebOps this should be disabled, Postfix is reloaded independently by the
+# wrapper script.
+postwhite__reload_postfix: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Other options [[[
+# -----------------
+
+# .. envvar:: postwhite__cron_whitelist_update_frequency [[[
+#
+# Specify the frequency (``hourly``, ``daily``, ``weekly``) of the whitelist
+# update job.
+postwhite__cron_whitelist_update_frequency: 'daily'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__cron_yahoo_update_frequency [[[
+#
+# Specify the frequency (``hourly``, ``daily``, ``weekly``) of the Yahoo!
+# address list update job.
+postwhite__cron_yahoo_update_frequency: 'weekly'
+
+                                                                   # ]]]
+# .. envvar:: postwhite__initial_update_method [[[
+#
+# Select the method which will be used to update the whitelist in the
+# background after the role configures Postwhite:
+#
+# - ``async``: use Ansible ``async`` task execution method
+#
+# - ``batch``: use :command:`batch` command managed by :command:`at` service
+#
+postwhite__initial_update_method: '{{ "batch"
+                                     if (ansible_local|d() and ansible_local.atd|d() and
+                                         (ansible_local.atd.enabled|d())|bool)
+                                     else "async" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: postwhite__postfix__dependent_maincf [[[
+#
+# The :file:`main.cf` configuration for the debops.postfix_ Ansible role.
+postwhite__postfix__dependent_maincf:
+
+  - name: 'postscreen_access_list'
+    state: 'append'
+    value:
+      - name: 'cidr:{{ postwhite__spf_whitelist_path }}'
+        weight: 100
+
+      - name: 'cidr:{{ postwhite__spf_blacklist_path }}'
+        weight: 110
+        state: '{{ "present" if postwhite__blacklist|bool else "ignore" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,36 @@
+# {{ ansible_managed }}
+
+# CONFIGURATION OPTIONS FOR POSTWHITE
+# https://github.com/stevejenkins/postwhite
+# POSTWHITE WILL LOOK FOR THIS FILE IN /etc/postwhite.conf
+
+# FILE PATHS
+spftoolspath="{{ postwhite__spftools_git_dest }}"
+postfixpath="{{ postwhite__home }}"
+postfixbinarypath="/usr/sbin"
+whitelist="{{ postwhite__spf_whitelist_path | basename }}"
+blacklist="{{ postwhite__spf_blacklist_path | basename }}"
+yahoo_static_hosts="{{ postwhite__home }}/yahoo_static_hosts.txt"
+
+# CUSTOM HOSTS
+# Enter custom hosts separated by a space, ex: "example.com example2.com example3.com"
+custom_hosts="{{ ([ postwhite__whitelist_hosts ] if postwhite__whitelist_hosts is string else postwhite__whitelist_hosts) | join(' ') }}"
+
+# Include list of Yahoo Outbound IPs from https://help.yahoo.com/kb/SLN23997.html?
+include_yahoo="{{ 'yes' if postwhite__include_yahoo|bool else 'no' }}"
+
+# Do you also want to build a blacklist?
+enable_blacklist="{{ 'yes' if postwhite__blacklist|bool else 'no' }}"
+blacklist_hosts="{{ ([ postwhite__blacklist_hosts ] if postwhite__blacklist_hosts is string else postwhite__blacklist_hosts) | join(' ') }}"
+
+# Do what to invalid IPv4 addresses and CIDRs?
+# Valid settings are 'remove' 'fix' or 'keep'
+invalid_ip4="{{ postwhite__invalid_ipv4 }}"
+
+# Simplify (remove) IP addresses from the whitelist that are already covered by CIDRs?
+# WARNING: Enabling this option can dramatically increase the time Postwhite takes to
+# run if you have many mailers selected. Try it once, then come back and turn it off. :)
+simplify="{{ 'yes' if postwhite__simplify|bool else 'no' }}"
+
+# Reload Postfix Automatically when done?
+reload_postfix="{{ 'yes' if postwhite__reload_postfix|bool else 'no' }}"

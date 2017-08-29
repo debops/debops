@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# This is a wrapper script for Postwhite, a Postscreen SPF Whitelist Generator
+
+set -o nounset -o pipefail -o errexit
+
+
+readonly POSTWHITE_SCRIPT="{{ postwhite__git_dest }}/postwhite"
+readonly POSTWHITE_USER="{{ postwhite__user }}"
+readonly LOCK_FILE="/run/lock/postwhite.lock"
+readonly LOCK_FD="200"
+
+acquire_lock () {
+    local fd="${LOCK_FD}"
+    local lock_file="${LOCK_FILE}"
+
+    # Create lock file
+    eval "exec ${fd}>${lock_file}"
+
+    # Acquire lock
+    if flock -n "${fd}" ; then
+        trap "clean_up" EXIT
+        return 0
+    else
+        return 1
+    fi
+}
+
+clean_up () {
+    if [ -n "${LOCK_FILE}" ] && [ -r "${LOCK_FILE}" ] ; then
+        rm -f "${LOCK_FILE}"
+    fi
+
+    exit 0
+}
+
+error_exit () {
+    local message="${*}"
+
+    printf "Error: %s\n" "${message}"
+    exit 1
+}
+
+update_access_list () {
+    if [ -x "${POSTWHITE_SCRIPT}" ] ; then
+        if tty -s > /dev/null 2>&1 ; then
+            su --shell /bin/sh -c "umask 0022 ; nice ${POSTWHITE_SCRIPT}" "${POSTWHITE_USER}"
+            if [ -x "/usr/sbin/postfix" ] ; then
+                /usr/sbin/postfix reload
+            fi
+        else
+            su --shell /bin/sh -c "umask 0022 ; nice ${POSTWHITE_SCRIPT} > /dev/null 2>&1" "${POSTWHITE_USER}"
+            if [ -x "/usr/sbin/postfix" ] ; then
+                /usr/sbin/postfix reload > /dev/null 2>&1
+            fi
+        fi
+    fi
+}
+
+main () {
+    acquire_lock || error_exit "Cannot acquire lock on \"${LOCK_FILE}\""
+    update_access_list
+}
+
+main
