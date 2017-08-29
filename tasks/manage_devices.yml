@@ -27,7 +27,7 @@
   become: False
   delegate_to: 'localhost'
   when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
-         and (item.mode|d("luks") == "luks" or 'remote_keyfile' not in item))
+         and 'remote_keyfile' not in item)
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 ## ]]]
 
