@@ -4,7 +4,7 @@
      instead have a look at the files in the ./meta/ directory. -->
 
 [![Travis CI](https://img.shields.io/travis/debops-contrib/ansible-roundcube.svg?style=flat)](https://travis-ci.org/debops-contrib/ansible-roundcube)
-[![test-suite](https://img.shields.io/badge/test--suite-ansible--roundcube-blue.svg?style=flat)](https://github.com/debops-contrib/test-suite/tree/master/ansible-roundcube/)
+[![test-suite](https://img.shields.io/badge/test--suite-ansible--roundcube-blue.svg?style=flat)](https://github.com/debops/test-suite/tree/master/ansible-roundcube/)
 [![Ansible Galaxy](https://img.shields.io/badge/galaxy-debops--contrib.roundcube-660198.svg?style=flat)](https://galaxy.ansible.com/debops-contrib/roundcube/)
 
 
@@ -21,7 +21,7 @@ ansible-galaxy install debops-contrib.roundcube
 ### Documentation
 
 More information about `debops-contrib.roundcube` can be found in the
-[official debops-contrib.roundcube documentation](https://docs.debops.org/en/latest/ansible/roles/ansible-roundcube/docs/).
+[official debops-contrib.roundcube documentation](https://debops-contrib.readthedocs.io/en/latest/ansible/roles/ansible-roundcube/docs/).
 
 
 ### Role dependencies
