@@ -78,8 +78,8 @@ Changed
   consistent with other DebOps roles. [ganto_]
 
 - Changed default configuration of :envvar:`roundcube__www` from
-  ``/srv/www/{{ roundcube__user }}`` to ``/srv/www`` to be more consistent with
-  other system-wide Web applications. [ganto_]
+  :file:`/srv/www/{{ roundcube__user }}` to :file:`/srv/www` to be more
+  consistent with other system-wide Web applications. [ganto_]
 
 
 Fixed

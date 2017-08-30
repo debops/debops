@@ -67,7 +67,7 @@ defined in the example playbook.
       # rm /etc/nginx/{sites-available,sites-enabled}/roundcube.example.com.conf
       # rm /etc/nginx/conf.d/upstream_php5_roundcube.conf
 
-4. Run the role (e.g. via example playbook):
+4. Run the role (e. g. via example playbook):
 
    .. code:: shell
 
