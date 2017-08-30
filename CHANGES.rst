@@ -16,7 +16,19 @@ The current role maintainer_ is drybjed_.
 `debops.gunicorn master`_ - unreleased
 --------------------------------------
 
-.. _debops.gunicorn master: https://github.com/debops/ansible-apt/compare/v0.1.0...master
+.. _debops.gunicorn master: https://github.com/debops/ansible-gunicorn/compare/v0.1.1...master
+
+
+`debops.gunicorn v0.1.1`_ - 2017-08-30
+--------------------------------------
+
+.. _debops.gunicorn v0.1.1: https://github.com/debops/ansible-gunicorn/compare/v0.1.0...v0.1.1
+
+Added
+~~~~~
+
+- On Debian Jessie, install the :command:`gunicorn` package from Debian Stretch
+  for feature parity with current stable release. [drybjed_]
 
 
 debops.gunicorn v0.1.0 - 2016-10-16

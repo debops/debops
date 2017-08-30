@@ -43,4 +43,18 @@ gunicorn__applications: []
 gunicorn__dependent_applications: []
                                                                    # ]]]
                                                                    # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: gunicorn__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+gunicorn__apt_preferences__dependent_list:
+
+  - packages: [ 'gunicorn', 'gunicorn-*' ]
+    backports: [ 'jessie' ]
+    reason: 'Feature parity with Debian Stretch'
+    by_role: 'debops.gunicorn'
+                                                                   # ]]]
+                                                                   # ]]]
                                                                    # ]]]
