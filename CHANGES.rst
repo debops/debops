@@ -46,6 +46,10 @@ Fixed
 
 - Don’t upgrade :envvar:`cryptsetup__base_packages`, only ensure that they are installed. [ypid_]
 
+- Fix secrets directories creation which was ignoring
+  :ref:`item.remote_keyfile <cryptsetup__devices_remote_keyfile>` and occuring only when
+  :ref:`item.mode <cryptsetup_devices_mode>` was set to ``luks``. [jpiron, ypid_]
+
 Security
 ~~~~~~~~
 
