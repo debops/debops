@@ -9,6 +9,7 @@
 #
 # .. include:: includes/all.rst
 
+
 # Packages and installation [[[
 # -----------------------------
 
@@ -43,7 +44,7 @@ roundcube__optional_php_packages:
 # List of user defined PHP packages for Roundcube.
 roundcube__custom_php_packages: []
 
-                                                                    # ]]]
+                                                                   # ]]]
 # .. envvar:: roundcube__base_php_packages [[[
 #
 # List of base PHP packages required by Roundcube.
@@ -108,7 +109,6 @@ roundcube__composer_phar: '{{ True
 # don't package PHP composer. If this is set to ``False``, :command:`composer`
 # will be installed via APT package manager.
 roundcube__composer_phar_url: 'https://getcomposer.org/composer.phar'
-
                                                                    # ]]]
                                                                    # ]]]
 # Roundcube user account [[[
@@ -125,7 +125,7 @@ roundcube__user: 'roundcube'
 # Roundcube system user group.
 roundcube__group: 'roundcube'
 
-                                                                    # ]]]
+                                                                   # ]]]
 # .. envvar:: roundcube__home [[[
 #
 # Path to the home directory of the Roundcube system account.
@@ -162,7 +162,7 @@ roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
 roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
 
                                                                    # ]]]
-# .. envvar:: roundcube__git_tag [[[
+# .. envvar:: roundcube__git_version [[[
 #
 # Roundcube release tag to deploy.
 roundcube__git_version: '1.3.0'
@@ -201,7 +201,6 @@ roundcube__webserver_user: '{{ ansible_local.nginx.user
                                   ansible_local.nginx|d() and
                                   ansible_local.nginx.user|d())
                               else "www-data" }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Database configuration [[[
@@ -225,6 +224,7 @@ roundcube__database_user: 'roundcube'
 roundcube__database_password_path: '{{ secret + "/credentials/" + ansible_fqdn
                                        + "/roundcube/" + roundcube__database
                                        + "/" + roundcube__database_user + "/password" }}'
+
                                                                    # ]]]
 # .. envvar:: roundcube__database_password [[[
 #
@@ -262,7 +262,6 @@ roundcube__database_map:
 # Initial Roundcube database schema loaded by Ansible.
 roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sql"
     if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""}}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Roundcube application options [[[
