@@ -1,32 +1,33 @@
 {% set postfix__tpl_init_maincf = [] %}
 {% for entry in postfix__combined_maincf %}
 {%   if 'section' not in entry.keys() %}
-{%     if entry.name | search('_sasl_') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'auth'}) %}
-{%     elif entry.name.startswith('smtpd_tls_') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'smtpd-tls'}) %}
-{%     elif entry.name.startswith('smtp_tls_') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'smtp-tls'}) %}
-{%     elif entry.name.startswith('lmtp_tls_') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'lmtp-tls'}) %}
-{%     elif entry.name.startswith('virtual_') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'virtual'}) %}
-{%     elif entry.name.startswith('postscreen_') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'postscreen'}) %}
-{%     elif entry.name.startswith('anvil_') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'limit'}) %}
-{%     elif entry.name.endswith('_limit') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'limit'}) %}
-{%     elif entry.name.endswith('_canonical_maps') %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'route'}) %}
-{%     elif entry.name in [ 'canonical_maps', 'relay_domains', 'local_recipient_maps', 'relay_recipient_maps', 'transport_maps' ] %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'route'}) %}
-{%     elif entry.name in [ 'smtpd_milters', 'non_smtpd_milters', 'milter_mail_macros', 'header_checks', 'body_checks', 'content_filter' ] %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'filter'}) %}
-{%     elif entry.name in [ 'smtpd_client_event_limit_exceptions', 'smtpd_error_sleep_time' ] %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'limit'}) %}
-{%     elif entry.name in [ 'smtpd_sender_login_maps' ] %}
-{%       set _ = postfix__tpl_init_maincf.append({'name': entry.name, 'state': 'init', 'section': 'auth'}) %}
+{%     set entry_name = (entry.name | d(entry.keys()[0])) %}
+{%     if entry_name | search('_sasl_') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'auth'}) %}
+{%     elif entry_name.startswith('smtpd_tls_') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'smtpd-tls'}) %}
+{%     elif entry_name.startswith('smtp_tls_') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'smtp-tls'}) %}
+{%     elif entry_name.startswith('lmtp_tls_') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'lmtp-tls'}) %}
+{%     elif entry_name.startswith('virtual_') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'virtual'}) %}
+{%     elif entry_name.startswith('postscreen_') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'postscreen'}) %}
+{%     elif entry_name.startswith('anvil_') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'limit'}) %}
+{%     elif entry_name.endswith('_limit') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'limit'}) %}
+{%     elif entry_name.endswith('_canonical_maps') %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'route'}) %}
+{%     elif entry_name in [ 'canonical_maps', 'relay_domains', 'local_recipient_maps', 'relay_recipient_maps', 'transport_maps' ] %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'route'}) %}
+{%     elif entry_name in [ 'smtpd_milters', 'non_smtpd_milters', 'milter_mail_macros', 'header_checks', 'body_checks', 'content_filter' ] %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'filter'}) %}
+{%     elif entry_name in [ 'smtpd_client_event_limit_exceptions', 'smtpd_error_sleep_time' ] %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'limit'}) %}
+{%     elif entry_name in [ 'smtpd_sender_login_maps' ] %}
+{%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'auth'}) %}
 {%     endif %}
 {%   endif %}
 {% endfor %}
