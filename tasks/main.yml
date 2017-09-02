@@ -101,6 +101,14 @@
     mode: '0644'
   notify: [ 'Check postfix and reload' ]
 
+- name: Install /etc/postfix/Makefile
+  template:
+    src: 'etc/postfix/Makefile.j2'
+    dest: '/etc/postfix/Makefile'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
 - name: Generate Postfix 'main.cf' configuration
   template:
     src: 'etc/postfix/main.cf.j2'
