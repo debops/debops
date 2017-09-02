@@ -1247,6 +1247,61 @@ postfix__combined_mastercf: '{{ postfix__original_mastercf
                                 + postfix__host_mastercf }}'
                                                                    # ]]]
                                                                    # ]]]
+# Postfix lookup tables [[[
+# -------------------------
+
+# These variables define the contents of the various Postfix lookup tables
+# which will be placed in the :file:`/etc/postfix/` directory.
+# See :ref:`postfix__ref_lookup_tables` for more details.
+
+# .. envvar:: postfix__lookup_tables [[[
+#
+# List of lookup tables which will be managed on all hosts in the Ansible
+# inventory.
+postfix__lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__group_lookup_tables [[[
+#
+# List of lookup tables which will be managed on hosts in specific Ansible
+# inventory group.
+postfix__group_lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__host_lookup_tables [[[
+#
+# List of lookup tables which will be managed on specific hosts in the Ansible
+# inventory.
+postfix__host_lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_lookup_tables [[[
+#
+# List of lookup tables which are defined by other Ansible roles through role
+# dependent variables.
+postfix__dependent_lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_lookup_tables_filter [[[
+#
+# This variable filters the configuration defined by other Ansible roles to be
+# usable with the rest of the lookup tables configuration.
+postfix__dependent_lookup_tables_filter: '{{ lookup("flattened",
+                                             postfix__dependent_lookup_tables) }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__combined_lookup_tables [[[
+#
+# Variable which combines all lookup table lists and passes them to the Ansible
+# tasks. It also defines the order in which the entries are processed.
+postfix__combined_lookup_tables: '{{ ([ postfix__dependent_lookup_tables_filter ]
+                                      if postfix__dependent_lookup_tables_filter is mapping
+                                      else postfix__dependent_lookup_tables_filter)
+                                     + postfix__lookup_tables
+                                     + postfix__group_lookup_tables
+                                     + postfix__host_lookup_tables }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
