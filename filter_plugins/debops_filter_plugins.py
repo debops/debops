@@ -86,6 +86,14 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                             'state': element.get('state', 'present')
                         })
 
+                        if 'copy_id_from' in element:
+                            if (element.get('copy_id_from')
+                                    in dict_value.keys()):
+                                id_src = element.get('copy_id_from')
+                                dict_element['id'] = (
+                                    int(dict_value[id_src].get('id'))
+                                    + int(dict_value[id_src].get('weight', 0)))
+
                         if 'weight' in element:
                             dict_element['weight'] = (
                                 int(element.get('weight',
@@ -99,7 +107,8 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                         # Include any unknown keys
                         for key in element.keys():
                             if key not in ['name', 'state', 'id', 'weight',
-                                           'real_weight', 'param']:
+                                           'real_weight', 'param',
+                                           'copy_id_from']:
                                 dict_element[key] = element.get(key)
 
                         dict_value.update({cursor: dict_element})
@@ -164,7 +173,8 @@ def parse_kv_config(*args, **kwargs):
                     if element.get('copy_id_from') in parsed_config.keys():
                         id_src = element.get('copy_id_from')
                         current_param['id'] = (
-                                parsed_config[id_src].get('id'))
+                            int(parsed_config[id_src].get('id'))
+                            + int(parsed_config[id_src].get('weight', 0)))
 
                 if 'weight' in element:
                     current_param['weight'] = (
@@ -314,7 +324,8 @@ def parse_kv_items(*args, **kwargs):
                     if element.get('copy_id_from') in parsed_config.keys():
                         id_src = element.get('copy_id_from')
                         current_param['id'] = (
-                                parsed_config[id_src].get('id'))
+                            int(parsed_config[id_src].get('id'))
+                            + int(parsed_config[id_src].get('weight', 0)))
 
                 if 'weight' in element:
                     current_param['weight'] = (

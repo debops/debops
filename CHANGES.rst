@@ -14,7 +14,25 @@ The current role maintainer_ is drybjed_.
 `debops.ansible_plugins master`_ - unreleased
 ---------------------------------------------
 
-.. _debops.ansible_plugins master: https://github.com/debops/ansible-ansible_plugins/compare/v0.1.1...master
+.. _debops.ansible_plugins master: https://github.com/debops/ansible-ansible_plugins/compare/v0.1.2...master
+
+
+`debops.ansible_plugins v0.1.2`_ - 2017-09-03
+---------------------------------------------
+
+.. _debops.ansible_plugins v0.1.2: https://github.com/debops/ansible-ansible_plugins/compare/v0.1.1...v0.1.2
+
+Added
+~~~~~
+
+- Allow use of ``copy_id_from`` parameter with lists of values. [drybjed_]
+
+Changed
+~~~~~~~
+
+- When ``copy_id_from`` parameter is used, add any additional ``weight`` of
+  a given entry as well. This should allow for more intuitive sorting.
+  [drybjed_]
 
 
 `debops.ansible_plugins v0.1.1`_ - 2017-08-21
