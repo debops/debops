@@ -66,6 +66,13 @@ Supported Postfix capabilities and their effects:
   Otherwise, mail messages directed to this MX won't be deliverable, therefore
   it's better to reject the messages early.
 
+``unauth-sender``
+  Autodetected. Enabled by default when ``auth`` capability is enabled.
+
+  With this capability, Postfix will check the sender e-mail addresses against
+  a list of its own domains. If any messages are sent from these domains
+  unauthenticated, they will be rejected.
+
 
 Example inventory
 -----------------

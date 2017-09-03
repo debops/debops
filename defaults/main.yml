@@ -60,6 +60,35 @@ postconf__combined_capabilities: '{{ postconf__autodetect_capabilities
                                      + postconf__host_capabilities }}'
                                                                    # ]]]
                                                                    # ]]]
+# Postfix configuration variables [[[
+# -----------------------------------
+
+# .. envvar:: postconf__fqdn [[[
+#
+# The Fully Qualified Domain Name of this SMTP host.
+postconf__fqdn: '{{ ansible_local.core.fqdn
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.fqdn|d())
+                    else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: postconf__unauth_sender_domains [[[
+#
+# List of FQDN domains which are handled by this Postfix instance. Any
+# unauthenticated mail messages from these domains that are sent from external
+# hosts will be blocked. This list should be synchronized with the Postfix
+# ``$mydestination``, ``$relay_domains``, ``$virtual_mailbox_domains`` and
+# ``$virtual_alias_domains`` configuration parameters.
+postconf__unauth_sender_domains: [ '{{ postconf__fqdn }}' ]
+
+                                                                   # ]]]
+# .. envvar:: postconf__unauth_sender_default_action [[[
+#
+# The error message which will be sent to the SMTP servers that try to deliver
+# unauthenticated mail messages.
+postconf__unauth_sender_default_action: 'REJECT This server requires SMTP authentication'
+                                                                   # ]]]
+                                                                   # ]]]
 # Postfix lookup tables [[[
 # -------------------------
 
@@ -116,6 +145,21 @@ postconf__default_lookup_tables:
       - 'fec0::/10':       'REJECT Domain MX in Site-local unicast network'
     state: '{{ "present"
                if ("public-mx-required" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'unauth_sender_access.in'
+    by_role: 'debops.postconf'
+    comment: |
+      Block any unauthenticated external mail that uses our domain names. Users
+      that send this mail need to enable SMTP authentication and use the
+      'submission' service.
+
+      Documentation: https://serverfault.com/a/51122
+    default_action: '{{ postconf__unauth_sender_default_action }}'
+    content: '{{ postconf__unauth_sender_domains }}'
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities and
+                   "unauth-sender" in postconf__combined_capabilities)
                else "ignore" }}'
 
                                                                    # ]]]
@@ -221,8 +265,27 @@ postconf__postfix__dependent_maincf:
   - name: 'smtpd_sender_restrictions'
     value:
       - name: 'check_sender_mx_access cidr:${config_directory}/mx_access.cidr'
+        weight: 50
     state: '{{ "present"
                if ("public-mx-required" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_sender_restrictions'
+    value:
+
+      - name: 'permit_mynetworks'
+
+      - name: 'permit_sasl_authenticated'
+        copy_id_from: 'permit_mynetworks'
+        weight: 10
+
+      - name: 'check_sender_access hash:${config_directory}/unauth_sender_access'
+        copy_id_from: 'permit_sasl_authenticated'
+        weight: 10
+
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities and
+                   "unauth-sender" in postconf__combined_capabilities)
                else "ignore" }}'
 
                                                                    # ]]]
