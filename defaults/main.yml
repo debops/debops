@@ -649,20 +649,24 @@ postfix__restrictions_maincf:
     value:
 
       - name: 'reject_invalid_helo_hostname'
-        weight: 10
+        weight: -30
 
       - name: 'reject_non_fqdn_helo_hostname'
-        weight: 20
+        weight: -20
 
       - name: 'reject_unknown_helo_hostname'
-        weight: 30
+        weight: -10
 
   - name: 'smtpd_sender_restrictions'
     section: 'restrictions'
     weight: 30
     value:
-      - 'reject_non_fqdn_sender'
-      - 'reject_unknown_sender_domain'
+
+      - name: 'reject_non_fqdn_sender'
+        weight: -20
+
+      - name: 'reject_unknown_sender_domain'
+        weight: -10
 
   - name: 'smtpd_relay_restrictions'
     section: 'restrictions'
@@ -676,15 +680,21 @@ postfix__restrictions_maincf:
     section: 'restrictions'
     weight: 50
     value:
-      - 'reject_non_fqdn_recipient'
-      - 'reject_unknown_recipient_domain'
+
+      - name: 'reject_non_fqdn_recipient'
+        weight: -20
+      - name: 'reject_unknown_recipient_domain'
+        weight: -10
 
   - name: 'smtpd_data_restrictions'
     section: 'restrictions'
     weight: 60
     value:
-      - 'reject_unauth_pipelining'
-      - 'reject_multi_recipient_bounce'
+
+      - name: 'reject_unauth_pipelining'
+        weight: -20
+      - name: 'reject_multi_recipient_bounce'
+        weight: -10
 
                                                                    # ]]]
 # .. envvar:: postfix__maincf [[[
