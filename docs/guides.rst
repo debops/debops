@@ -9,16 +9,20 @@ To enable local spell checking of your email content, you have to install
 dictionaries. For example for english and french spell checking, you would
 add the following packages to your Roundcube role configuration:
 
-    roundcube__extra_packages: [ 'php5-enchant', 'aspell', 'aspell-en', 'aspell-fr' ]
+.. code:: yaml
+
+   roundcube__packages: [ 'php5-enchant', 'aspell', 'aspell-en', 'aspell-fr' ]
 
 Additionally you have to tell Roundcube that you want to use the local
 spell checking library:
 
-    roundcube__local_config_map:
-      spellcheck_engine: 'enchant'
-      spellcheck_languages: "array('en', 'fr')"
+.. code:: yaml
+
+   roundcube__local_config_map:
+     spellcheck_engine: 'enchant'
+     spellcheck_languages: "array('en', 'fr')"
 
 Of course, many more languages are supported. You can find more information
-about the required packages and configuration at the Roundcube `Aspell-Howto`_.
+about the required packages and configuration in the Roundcube `Aspell-Howto`_.
 
 .. _Aspell-Howto: http://trac.roundcube.net/wiki/Howto_Config/Aspell

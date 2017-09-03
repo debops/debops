@@ -78,8 +78,8 @@ Changed
   consistent with other DebOps roles. [ganto_]
 
 - Changed default configuration of :envvar:`roundcube__www` from
-  ``/srv/www/{{ roundcube__user }}`` to ``/srv/www`` to be more consistent with
-  other system-wide Web applications. [ganto_]
+  :file:`/srv/www/{{ roundcube__user }}` to :file:`/srv/www` to be more
+  consistent with other system-wide Web applications. [ganto_]
 
 
 Fixed
@@ -110,7 +110,7 @@ Fixed
 ~~~~~
 
 - Fix documentation build error due to deleted link definition to deprecated
-  `debops.php5` role repository. [ganto_]
+  ``debops.php5`` role repository. [ganto_]
 - Probe if :envvar:`roundcube__domain` is a string and construct :envvar:`roundcube__git_checkout` accordingly.  [cultcom]
 
 

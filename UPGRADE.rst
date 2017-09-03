@@ -18,7 +18,7 @@ default values, your setup is likely to break if you simply execute the
 updated role. To avoid this, take care of the following issues:
 
 - If you are using a custom playbook, make sure to review the changes in
-  :ref:`roundcube__ref_example_playbook`.
+  the :ref:`roundcube__ref_example_playbook`.
 
 - The following variables were replaced and therefore are not defined
   anymore in the default variables:
@@ -67,7 +67,7 @@ defined in the example playbook.
       # rm /etc/nginx/{sites-available,sites-enabled}/roundcube.example.com.conf
       # rm /etc/nginx/conf.d/upstream_php5_roundcube.conf
 
-4. Run the role (e.g. via example playbook):
+4. Run the role (e. g. via example playbook):
 
    .. code:: shell
 
@@ -84,8 +84,7 @@ defined in the example playbook.
 6. In case Roundcube was installed into a new directory but you didn't use the
    default :envvar:`roundcube__www` configuration before the update or you
    experience SQL schema issues, you need to manually run the upstream post
-   update script on the Roundcube server. The given ``--version`` parameter
-   indicates the previous Roundcube version you were updating from.
+   update script on the Roundcube server.
 
    .. code:: shell
 
@@ -93,5 +92,5 @@ defined in the example playbook.
         -c "php /srv/www/sites/roundcube.example.com/public/bin/updatedb.sh \
         --package=roundcube --dir=/srv/www/sites/roundcube.example.com/public/SQL"
 
-7. If you manually installed some additional plugins you might need to re-
-   install or update them for the new Roundcube version.
+7. If you manually installed some additional plugins you might need to reinstall
+   or update them for the new Roundcube version.
