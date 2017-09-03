@@ -25,7 +25,7 @@ postconf__autodetect_capabilities: '{{ postconf__env_capabilities }}'
 # .. envvar:: postconf__default_capabilities [[[
 #
 # List of Postfix capabilities enabled by default by the role.
-postconf__default_capabilities: []
+postconf__default_capabilities: [ 'overhead' ]
 
                                                                    # ]]]
 # .. envvar:: postconf__capabilities [[[
@@ -162,6 +162,20 @@ postconf__default_lookup_tables:
                    "unauth-sender" in postconf__combined_capabilities)
                else "ignore" }}'
 
+  - name: 'overhead_checks.pcre'
+    by_role: 'debops.postconf'
+    comment: |
+      "A man is not dead while his name is still spoken."
+                - Going Postal, Chapter 4 prologue
+
+      Ref: http://www.gnuterrypratchett.com/
+    options:
+      - '/^X-Clacks-Overhead:/': 'IGNORE'
+      - '/^To:/': 'PREPEND X-Clacks-Overhead: GNU Terry Pratchett'
+    state: '{{ "present"
+               if ("overhead" in postconf__combined_capabilities)
+               else "ignore" }}'
+
                                                                    # ]]]
 # .. envvar:: postconf__lookup_tables [[[
 #
@@ -286,6 +300,12 @@ postconf__postfix__dependent_maincf:
     state: '{{ "present"
                if ("auth" in postconf__combined_capabilities and
                    "unauth-sender" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'header_checks'
+    value: [ 'pcre:${config_directory}/overhead_checks.pcre' ]
+    state: '{{ "present"
+               if ("overhead" in postconf__combined_capabilities)
                else "ignore" }}'
 
                                                                    # ]]]

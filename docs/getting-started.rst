@@ -56,6 +56,11 @@ Supported Postfix capabilities and their effects:
     ``auth`` capability;
 
 
+``overhead``
+  Enabled by default. Add a `custom header <http://www.gnuterrypratchett.com/>`_
+  to every message that passes through this system.
+
+
 ``public-mx-required``
   Autodetected. Enabled if a host has a public IPv4 or IPv6 address, with
   assumption that the host will receive mail messages from public Internet
@@ -65,6 +70,7 @@ Supported Postfix capabilities and their effects:
   a given HELO domain or sender domain MX host has a public IP address.
   Otherwise, mail messages directed to this MX won't be deliverable, therefore
   it's better to reject the messages early.
+
 
 ``unauth-sender``
   Autodetected. Enabled by default when ``auth`` capability is enabled.
