@@ -17,7 +17,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.saslauthd master: https://github.com/debops/ansible-saslauthd/compare/v0.1.0...master
 
 
-debops.saslauthd v0.1.0 - unreleased
+debops.saslauthd v0.1.0 - 2017-09-04
 ------------------------------------
 
 Added
