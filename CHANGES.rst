@@ -17,7 +17,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.postscreen master: https://github.com/debops/ansible-postscreen/compare/v0.1.0...master
 
 
-debops.postscreen v0.1.0 - unreleased
+debops.postscreen v0.1.0 - 2017-09-04
 -------------------------------------
 
 Added
