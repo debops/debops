@@ -78,6 +78,21 @@ postscreen__dnsbl_enabled: '{{ True
                                else False }}'
 
                                                                    # ]]]
+# .. envvar:: postscreen__dnsbl_providers [[[
+#
+# Simple list of DNSBL providers, useful to easily enable or disable specific
+# providers as needed. Some providers are not enabled by default due to issues
+# encountered during testing.
+postscreen__dnsbl_providers:
+  - 'spamhaus'
+  #- 'barracuda'
+  - 'cbl'
+  #- 'spameatingmonkey'
+  - 'spamcop'
+  #- 'psbl'
+  - 'mailspike'
+
+                                                                   # ]]]
 # .. envvar:: postscreen__dnsbl_sites [[[
 #
 # List of DNS Blacklists used by Postscreen.
@@ -87,26 +102,54 @@ postscreen__dnsbl_sites:
 
   # Spamhaus ZEN: https://www.spamhaus.org/zen/
   # Might require registration.
-  - 'zen.spamhaus.org*3'
+  - name: 'zen.spamhaus.org*3'
+    state: '{{ "present"
+               if "spamhaus" in postscreen__dnsbl_providers
+               else "absent" }}'
 
   # Barracuda Reputation Block List: http://barracudacentral.org/rbl
   # Requires registration.
-  #- 'b.barracudacentral.org*2'
+  - name: 'b.barracudacentral.org*2'
+    state: '{{ "present"
+               if "barracuda" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  # Composite Blocking List: https://www.abuseat.org/
+  - name: 'cbl.abuseat.org*2'
+    state: '{{ "present"
+               if "cbl" in postscreen__dnsbl_providers
+               else "absent" }}'
 
   # Spam Eating Monkey: http://spameatingmonkey.com/lists.html
   # Might require registration.
-  - 'bl.spameatingmonkey.net*2'
-  - 'backscatter.spameatingmonkey.net*2'
+  - name: 'bl.spameatingmonkey.net*2'
+    state: '{{ "present"
+               if "spameatingmonkey" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  - name: 'backscatter.spameatingmonkey.net*2'
+    state: '{{ "present"
+               if "spameatingmonkey" in postscreen__dnsbl_providers
+               else "absent" }}'
 
   # SpamCop Blocking List: https://www.spamcop.net/bl.shtml
-  - 'bl.spamcop.net'
+  - name: 'bl.spamcop.net'
+    state: '{{ "present"
+               if "spamcop" in postscreen__dnsbl_providers
+               else "absent" }}'
 
   # Passive Spam Block List: http://psbl.org/
-  - 'psbl.surriel.com'
+  - name: 'psbl.surriel.com'
+    state: '{{ "present"
+               if "psbl" in postscreen__dnsbl_providers
+               else "absent" }}'
 
   # mailspike: http://mailspike.net/usage.html
   # Might require contact.
-  - 'bl.mailspike.net'
+  - name: 'bl.mailspike.net'
+    state: '{{ "present"
+               if "mailspike" in postscreen__dnsbl_providers
+               else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: postscreen__dnsbl_wl_sites [[[
