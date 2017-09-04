@@ -54,7 +54,7 @@ the current host domain, or a YAML dictionary with specific parameters:
 
 ``type``
   Optional. The private key tyle (``rsa`` or ``dsa``) which should be generated
-  by the :commnd:`openssl` command. Currently only ``rsa`` makes sense.
+  by the :command:`openssl` command. Currently only ``rsa`` makes sense.
 
 ``state``
   Optional. If not defined or ``present``, the key will be generated on the
