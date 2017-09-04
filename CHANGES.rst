@@ -4,7 +4,7 @@ Changelog
 v0.3.0
 ------
 
-*Unreleased*
+*Released: 2017-09-04*
 
 - Move the hard role dependencies to an example playbook. [drybjed]
 
