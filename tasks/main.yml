@@ -84,7 +84,7 @@
   when: mailman__register_postfix_transport.changed|bool
 
 - name: Create Mailman site list
-  shell: yes | newlist --language={{ mailman__site_language }} {{ mailman__site_list }} {{ mailman__site_admin }}
+  shell: echo | newlist --language={{ mailman__site_language }} {{ mailman__site_list }} {{ mailman__site_admin }}
          {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + mailman__site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
   args:
     creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
@@ -112,7 +112,7 @@
   when: item.name|d() and item.state|d() and item.state == 'absent'
 
 - name: Create Mailman lists
-  shell: yes | newlist --language={{ item.language | default(mailman__site_language) }}
+  shell: echo | newlist --language={{ item.language | default(mailman__site_language) }}
          {% if item.notify|d() and not item.notify|bool %} --quiet {% endif %}
          {% if item.domain|d() and item.domain %}
          --urlhost={{ item.domain }} --emailhost={{ item.domain }}
@@ -134,3 +134,24 @@
   when: (item.name|d() and item.name and
          (item.state is undefined or item.state != 'absent'))
   no_log: True
+
+- name: Make sure Ansible local facts directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Configure Mailman local facts
+  template:
+    src: 'etc/ansible/facts.d/mailman.fact.j2'
+    dest: '/etc/ansible/facts.d/mailman.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: mailman__register_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: mailman__register_facts|changed

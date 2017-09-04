@@ -1,23 +1,36 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
+
+.. _mailman__ref_postfix_integration:
 
 SMTP service integration
 ------------------------
 
-The ``debops.mailman`` role provides configuration variable for
-``debops.postfix`` Ansible role (see below). The integration should work with
-or without local mail enabled (virtual mail is used if local mail is disabled).
-Refer to ``debops.postfix`` documentation for more details.
+The debops.mailman_ role provides configuration variable for
+debops.postfix_ Ansible role which are used in the example playbook. The
+role supports two modes of integration:
+
+- ``virtual``: messages to Mailman are passed using a Postfix transport, entire
+  installation uses virtual mail.
+
+- ``local``: messages to Mailman are passed using local mail aliases.
+
+The ``virtual`` mode is used by default. Role does not support changing the
+mode after a deployment.
+
+Refer to debops.postfix_ documentation for more details.
 
 HTTP service integration
 ------------------------
 
-The role provides configuration for ``debops.nginx`` role which will configure
-the Mailman web interface using ``nginx`` and ``fcgiwrap`` instance (using
-``debops.fcgiwrap`` Ansible role). The webserver will be configured with
+The role provides configuration for debops.nginx_ role which will configure
+the Mailman web interface using :program:`nginx` and ``fcgiwrap`` instance (using
+debops.fcgiwrap_ Ansible role). The webserver will be configured with
 a restricted list of allowed referers, to prevent hijacking of the web
 interface forms by other sites.
 
@@ -25,7 +38,7 @@ Backscatter prevention
 ----------------------
 
 The default Mailman installation is very prone to `backscatter <https://en.wikipedia.org/wiki/Backscatter_(email)>`_
-attacks. Therefore, ``debops.mailman`` will try to reduce this possibility by
+attacks. Therefore, debops.mailman_ will try to reduce this possibility by
 taking a few measures:
 
 - some of the mailing list aliases will be disabled by a patch, only
@@ -46,12 +59,12 @@ This role will configure GNU Mailman on the host using the APT ``mailman``
 package. The version provided in Debian Wheezy and Debian Jessie packages
 requires some additional modifications that are provided as source code
 patches. They will be applied automatically in the source code located in
-``/usr/lib/mailman/`` directory (this can be disabled by setting the
-``mailman__patch`` variable to ``False``).
+:file:`/usr/lib/mailman/` directory (this can be disabled by setting the
+:envvar:`mailman__patch` variable to ``False``).
 
 Modification of the package source code might cause issues during updates,
 therefore automatic upgrades of the ``mailman`` package will be disabled in the
-``unattended-upgrades`` package using ``debops.unattended_upgrades`` Ansible
+``unattended-upgrades`` package using debops.unattended_upgrades_ Ansible
 role, if patching is enabled.
 
 To apply the patches manually after an upgrade, you can use the provided
@@ -95,7 +108,7 @@ To configure Mailman on a host, you need to add it to
 Example playbook
 ----------------
 
-The ``debops.mailman`` uses a set of other roles to configure additional
+The debops.mailman_ uses a set of other roles to configure additional
 services like HTTP and SMTP server. Here's an example playbook with all of the
 required DebOps services:
 

@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: includes/all.rst
 
 
 # Packages and installation [[[
@@ -96,6 +98,18 @@ mailman__site_list: 'mailman'
 mailman__max_message_size: '100'
 
                                                                    # ]]]
+# .. envvar:: mailman__postfix_integration_type [[[
+#
+# Select how the role should configure Postfix to interface with Mailman:
+#
+# - ``virtual``: use virtual transport to pass messages to Mailman;
+#
+# - ``local``: use local mail aliases to pass messages to Mailman;
+#
+# See :ref:`mailman__ref_postfix_integration` for more details.
+mailman__postfix_integration_type: 'virtual'
+
+                                                                   # ]]]
 # .. envvar:: mailman__smtp_max_recipients [[[
 #
 # Maximum number of recipients in each SMTP session.
@@ -182,7 +196,7 @@ mailman__referers: '{{ ([ mailman__site_domain ] + mailman__virtual_domains +
 # .. envvar:: mailman__custom_options [[[
 #
 # Additional Mailman options in a text block format.
-# You can find more options in ``/usr/lib/mailman/Mailman/Defaults.py``
+# You can find more options in :file:`/usr/lib/mailman/Mailman/Defaults.py`
 mailman__custom_options: ''
 
                                                                    # ]]]
@@ -226,7 +240,7 @@ mailman__patch_list:
 
 # .. envvar:: mailman__apt_preferences__dependent_list [[[
 #
-# Configuration of custom ``debops.apt_preferences`` role.
+# Configuration of custom debops.apt_preferences_ role.
 mailman__apt_preferences__dependent_list:
 
   - package: 'mailman'
@@ -237,7 +251,7 @@ mailman__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: mailman__unattended_upgrades__dependent_blacklist [[[
 #
-# Configuration of the ``debops.unattended_upgrades`` role.
+# Configuration of the debops.unattended_upgrades_ role.
 mailman__unattended_upgrades__dependent_blacklist:
 
   # Don't upgrade ``mailman`` package automatically if patches are enabled.
@@ -247,62 +261,66 @@ mailman__unattended_upgrades__dependent_blacklist:
                                                                    # ]]]
 # .. envvar:: mailman__fcgiwrap__instance [[[
 #
-# Configure ``fcgiwrap`` instance for Mailman using ``debops.fcgiwrap`` role.
+# Configure ``fcgiwrap`` instance for Mailman using debops.fcgiwrap_ role.
 mailman__fcgiwrap__instance:
   name: 'mailman'
   user: 'list'
   group: 'list'
 
                                                                    # ]]]
-# .. envvar:: mailman__postfix__dependent_lists [[[
-#
-# Configuration of Postfix list variables in ``debops.postfix`` role.
-mailman__postfix__dependent_lists:
-  alias_maps:
-    - capability: 'local'
-      list: [ 'hash:/var/lib/mailman/data/aliases' ]
-  relay_domains:
-    - no_capability: 'local'
-      list: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
-  relay_recipient_maps:
-    - no_capability: 'local'
-      list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
-  transport_maps:
-    - no_capability: 'local'
-      list: [ 'hash:/etc/mailman/postfix_transport' ]
-  mydestination:
-    - capability: 'local'
-      list: [ '{{ mailman__site_domain }}' ]
-  virtual_alias_domains:
-    - capability: 'local'
-      list: '{{ mailman__virtual_domains }}'
-  virtual_alias_maps:
-    - capability: 'local'
-      list: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
-
-                                                                   # ]]]
 # .. envvar:: mailman__postfix__dependent_maincf [[[
 #
-# Configuration of Postfix ``main.cf`` in ``debops.postfix`` role.
+# Configuration of Postfix ``main.cf`` in debops.postfix_ role.
 mailman__postfix__dependent_maincf:
-  - param: 'mailman_destination_recipient_limit'
-    value: '1'
-    no_capability: 'local'
 
-                                                                   # ]]]
-# .. envvar:: mailman__postfix__dependent_mastercf [[[
-#
-# Configuration of Postfix ``master.cf`` in ``debops.postfix`` role.
-mailman__postfix__dependent_mastercf:
-  - service: 'mailman'
-    type: 'unix'
-    unpriv: 'n'
-    chroot: 'n'
-    command: 'pipe'
-    options: |
-      flags=FR user=list
-      argv=/var/lib/mailman/bin/postfix-to-mailman.py ${nexthop} ${user}
-    no_capability: 'local'
+  - name: 'alias_maps'
+    value: [ 'hash:/var/lib/mailman/data/aliases' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "local")
+               else "ignore" }}'
+
+  - name: 'mydestination'
+    value: [ '{{ mailman__site_domain }}' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "local")
+               else "ignore" }}'
+
+  - name: 'virtual_alias_domains'
+    value: [ '{{ mailman__virtual_domains }}' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "local" and
+                   mailman__virtual_domains)
+               else "ignore" }}'
+
+  - name: 'virtual_alias_maps'
+    value: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "local")
+               else "ignore" }}'
+
+  - name: 'mailman_destination_recipient_limit'
+    value: 1
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "virtual")
+               else "absent" }}'
+
+  - name: 'relay_domains'
+    value: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "virtual")
+               else "ignore" }}'
+
+  - name: 'relay_recipient_maps'
+    value: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "virtual")
+               else "ignore" }}'
+
+  - name: 'transport_maps'
+    value: [ 'hash:/etc/mailman/postfix_transport' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "virtual")
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__nginx_server_options [[[
@@ -314,8 +332,8 @@ mailman__nginx_server_options: |
 # ]]]
 # .. envvar:: mailman__nginx__servers [[[
 #
-# Configuration of ``nginx`` server to access Mailman web interface, using
-# ``debops.nginx`` Ansible role.
+# Configuration of :program:`nginx` server to access Mailman web interface, using
+# debops.nginx_ Ansible role.
 mailman__nginx__servers:
   - by_role: 'debops.mailman'
     enabled: True

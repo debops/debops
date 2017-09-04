@@ -1,7 +1,9 @@
-Default variables: configuration
-================================
+Default variable details
+========================
 
-some of ``debops.mailman`` default variables have more extensive configuration
+.. include:: includes/all.rst
+
+some of debops.mailman_ default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
@@ -39,7 +41,7 @@ Each list is defined as a dictionary with following keys:
 ``password``
   Optional. Specify the mailing list owner password. If not specified, a random
   password will be generated automatically and stored in the ``secret/``
-  directory (highly recommended). See the ``debops.secret`` role documentation
+  directory (highly recommended). See the debops.secret_ role documentation
   for more details.
 
 ``state``

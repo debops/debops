@@ -4,7 +4,19 @@
   hosts: [ 'debops_service_mailman' ]
   become: True
 
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
   roles:
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ postfix__secret__directories }}'
 
     - role: debops.fcgiwrap
       tags: [ 'role::fcgiwrap' ]
@@ -29,9 +41,9 @@
 
     - role: debops.postfix
       tags: [ 'role::postfix' ]
-      postfix__dependent_lists:    '{{ mailman__postfix__dependent_lists }}'
-      postfix__dependent_maincf:   '{{ mailman__postfix__dependent_maincf }}'
-      postfix__dependent_mastercf: '{{ mailman__postfix__dependent_mastercf }}'
+      postfix__dependent_maincf:
+        - role: 'mailman'
+          config: '{{ mailman__postfix__dependent_maincf }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx' ]
