@@ -1,7 +1,7 @@
 ---
 
 - name: Manage Dovecot service
-  hosts: [ 'debops_service_dovecot', 'debops_dovecot' ]
+  hosts: [ 'debops_service_dovecot' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,6 +10,27 @@
 
   roles:
 
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ postfix__secret__directories }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ postfix__ferm__dependent_rules }}'
+
+    - role: debops.postfix
+      tags: [ 'role::postfix' ]
+      postfix__dependent_maincf:
+        - role: 'dovecot'
+          config: '{{ dovecot__postfix__dependent_maincf }}'
+      postfix__dependent_mastercf:
+        - role: 'dovecot'
+          config: '{{ dovecot__postfix__dependent_mastercf }}'
+
     - role: debops.dovecot
       tags: [ 'role::dovecot' ]
-
