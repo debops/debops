@@ -1,6 +1,8 @@
 Changelog
 =========
 
+.. include:: includes/all.rst
+
 **debops.mailman**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_
@@ -12,7 +14,13 @@ The current role maintainer is drybjed.
 `debops.mailman master`_ - unreleased
 -------------------------------------
 
-.. _debops.mailman master: https://github.com/debops/ansible-mailman/compare/v0.1.3...master
+.. _debops.mailman master: https://github.com/debops/ansible-mailman/compare/v0.2.0...master
+
+
+`debops.mailman v0.2.0`_ - 2017-09-04
+-------------------------------------
+
+.. _debops.mailman v0.2.0: https://github.com/debops/ansible-mailman/compare/v0.1.3...v0.2.0
 
 Added
 ~~~~~
