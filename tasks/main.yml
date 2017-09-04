@@ -83,9 +83,6 @@
   command: /usr/sbin/postmap /etc/mailman/postfix_transport
   when: mailman__register_postfix_transport.changed|bool
 
-- debug: var=mailman__site_domain
-- debug: var=mailman__site_admin
-
 - name: Create Mailman site list
   shell: echo | newlist --language={{ mailman__site_language }} {{ mailman__site_list }} {{ mailman__site_admin }}
          {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + mailman__site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
@@ -93,7 +90,7 @@
     creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
   become_user: 'list'
   register: mailman__register_site_list
-  #no_log: True
+  no_log: True
 
 - name: Set site administrator password
   command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
