@@ -15,3 +15,7 @@ v0.1.0
 - Restart ``smsd`` after configuration has changed, needed on ``systemd``-based
   systems. [drybjed]
 
+- Move the hard role dependencies to an example Ansible playbook. [drybjed]
+
+- Update the Postfix integration to support latest ``debops.postfix`` rewrite.
+  [drybjed]

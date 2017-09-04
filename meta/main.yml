@@ -1,54 +1,6 @@
 ---
 
-dependencies:
-
-  - role: debops.etc_services
-    etc_services_list:
-      - name: '{{ smstools_service_name }}'
-        port: '{{ smstools_service_port }}'
-        protocol: 'tcp'
-        comment: 'SMS service'
-
-  - role: debops.rsyslog
-
-  - role: debops.tcpwrappers
-    tcpwrappers_allow:
-      - daemon: '{{ smstools_service_name }}'
-        client: '{{ smstools_service_allow }}'
-        weight: '50'
-        filename: 'smstools_dependency_allow'
-        comment: 'Allow connections to SMS service'
-
-  - role: debops.ferm
-    ferm_input_list:
-      - type: 'dport_accept'
-        dport: [ '{{ smstools_service_name }}' ]
-        saddr: '{{ smstools_service_allow }}'
-        weight: '50'
-        filename: 'smstools_dependency_accept'
-
-  - role: debops.postfix
-    postfix_dependent_lists:
-      recipient_canonical_maps: [ 'texthash:/usr/local/lib/smstools/postfix_recipient_canonical_map' ]
-      transport_maps: [ 'texthash:/usr/local/lib/smstools/postfix_transport' ]
-      relay_domains: [ '{{ smstools_mail_transport_domain }}' ]
-      relay_recipient_maps: [ 'regexp:/usr/local/lib/smstools/postfix_relay_recipient_map' ]
-      virtual_alias_domains: [ '{{ smstools_mail_alias_domain }}' ]
-      virtual_alias_maps: [ 'texthash:/usr/local/lib/smstools/postfix_virtual_alias_map' ]
-    postfix_dependent_maincf:
-      - param: 'sms_destination_recipient_limit'
-        value: '1'
-      - param: 'recipient_canonical_maps'
-    postfix_dependent_mastercf:
-      - service: 'sms'
-        type: 'unix'
-        command: 'pipe'
-        unpriv: 'n'
-        chroot: 'n'
-        maxproc: '1'
-        options: |
-          flags=hqu user=smsd argv=/usr/local/lib/smstools/sms-transport ${sender} ${mailbox}
-    tags: postfix
+dependencies: []
 
 galaxy_info:
   author: 'Maciej Delmanowski'
