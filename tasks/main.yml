@@ -90,7 +90,7 @@
     creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
   become_user: 'list'
   register: mailman__register_site_list
-  no_log: True
+  #no_log: True
 
 - name: Set site administrator password
   command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
