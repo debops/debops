@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.postfix master`_ - unreleased
 -------------------------------------
 
-.. _debops.postfix master: https://github.com/debops/ansible-postfix/compare/v0.1.3...master
+.. _debops.postfix master: https://github.com/debops/ansible-postfix/compare/v0.2.0...master
+
+
+`debops.postfix v0.2.0`_ - 2017-09-04
+-------------------------------------
+
+.. _debops.postfix v0.2.0: https://github.com/debops/ansible-postfix/compare/v0.1.3...v0.2.0
 
 Added
 ~~~~~
