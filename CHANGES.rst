@@ -17,7 +17,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.opendkim master: https://github.com/debops/ansible-opendkim/compare/v0.1.0...master
 
 
-debops.opendkim v0.1.0 - unreleased
+debops.opendkim v0.1.0 - 2017-09-04
 -----------------------------------
 
 Sponsors
