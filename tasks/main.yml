@@ -74,7 +74,7 @@
     - '{{ opendkim__combined_keys }}'
   become: False
   delegate_to: 'localhost'
-  no_log: True
+  no_log: '{{ secret__no_log | bool }}'
 
 - name: Remove DomainKeys from hosts when requested
   file:
@@ -100,7 +100,7 @@
   with_flattened:
     - '{{ opendkim__combined_keys }}'
   when: item.state|d('present') != 'absent'
-  no_log: True
+  no_log: '{{ secret__no_log | bool }}'
 
 - name: Generate key configuration files
   template:
