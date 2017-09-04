@@ -194,6 +194,9 @@ Changed
 - Update the debops.elasticsearch_ playbook with new release of the role.
   [drybjed_]
 
+- Update playbooks for new versions of debops.postfix_, debops.mailman_,
+  debops.dovecot_ and debops.smstools_ roles. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
