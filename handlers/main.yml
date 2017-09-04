@@ -1,22 +1,29 @@
 ---
 
-- name: Run postfix Makefile
-  command: make chdir=/etc/postfix
-  notify: [ 'Check postfix and restart' ]
-
-- name: Generate mail alias database
-  command: newaliases
+- name: Process Postfix Makefile
+  environment:
+    LC_MESSAGES: 'C'
+  command: make
+  args:
+    chdir: '/etc/postfix'
+  register: postfix__register_make
+  notify: [ 'Check postfix and reload' ]
+  changed_when: 'not postfix__register_make.stdout.startswith("make: Nothing to be done")'
 
 - name: Check postfix and restart
   command: /usr/sbin/postfix -c /etc/postfix check
   notify: [ 'Restart postfix' ]
+
+- name: Check postfix and reload
+  command: /usr/sbin/postfix -c /etc/postfix check
+  notify: [ 'Reload postfix' ]
 
 - name: Restart postfix
   service:
     name: 'postfix'
     state: 'restarted'
 
-- name: Restart saslauthd
+- name: Reload postfix
   service:
-    name: 'saslauthd'
-    state: 'restarted'
+    name: 'postfix'
+    state: 'reloaded'

@@ -1,0 +1,101 @@
+# {{ ansible_managed }}
+
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+
+
+{% set postfix__tpl_maincf = ((postfix__init_maincf + postfix__combined_maincf) | parse_kv_config) %}
+{% set postfix__tpl_filtered_maincf_sections = [] %}
+{% for element in postfix__tpl_maincf %}
+{%   if element.state|d('present') not in [ 'init', 'absent' ] %}
+{%     set _ = postfix__tpl_filtered_maincf_sections.append(element) %}
+{%   endif %}
+{% endfor %}
+{% set postfix__tpl_sections = ((postfix__tpl_filtered_maincf_sections | map(attribute='section')) | list | unique) %}
+{% for section in postfix__maincf_sections %}
+{%   if section.state|d('present') != 'absent' %}
+{%     set section_loop = [] %}
+{%     set section_comment_prefix = ('' if loop.first|bool else '\n') %}
+{%     if section.name in postfix__tpl_sections %}
+{%       if section.title|d() %}
+
+{{ '{:-^70}'.format(' ' + section.title + ' ') | comment(prefix=section_comment_prefix, postfix='') }}
+{%       endif %}
+{%       for element in postfix__tpl_maincf %}
+{%         if element.section == section.name and element.state|d('present') not in [ 'init', 'absent' ] %}
+{%           set comment_prefix =   ('' if not section_loop else '\n') %}
+{%           set option_commented =  ('#' if element.state|d('present') == 'comment' else '') %}
+{%           set element_name = (element.option | d(element.name)) %}
+{%           if element.value is defined %}
+{%             if element.value | bool and element.value is not iterable %}
+{%               if element.value | int and element.value | string != 'True' %}
+{%                 set element_value = element.value %}
+{%               else %}
+{%                 set element_value = 'yes' %}
+{%               endif %}
+{%             elif not element.value | bool and element.value is not iterable %}
+{%               if element.value is not none %}
+{%                 if element.value | int or element.value | string == '0' %}
+{%                   set element_value = element.value %}
+{%                 else %}
+{%                   set element_value = 'no' %}
+{%                 endif %}
+{%               endif %}
+{%             elif element.value is not string and element.value is not mapping and element.value is iterable %}
+{%               set element_value = [] %}
+{%               for option in element.value %}
+{%                 if option.state|d('present') != 'absent' %}
+{%                   set _ = element_value.append(option.name) %}
+{%                 endif %}
+{%               endfor %}
+{%             else %}
+{%               set element_value = element.value %}
+{%             endif %}
+{%           else %}
+{%             set element_value = [] %}
+{%           endif %}
+{%           if element.comment|d() %}
+{%             set comment_footer = ('#\n' if (element.comment.split('\n') | list | count >= 5) else '') %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix=comment_prefix, postfix=comment_footer) -}}
+{%             if element.state|d('present') == 'hidden' %}
+
+{%             endif %}
+{%           elif element.separator is defined and element.separator|bool %}
+
+{%           endif %}
+{%           if element.state|d('present') != 'hidden' %}
+{%             if element_value is not string and element_value is not mapping and element_value is iterable %}
+{%               if element_value | ipwrap | join(', ') | length <= 50 %}
+{{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value | ipwrap | join(', ')) }}
+{%               else %}
+{{ ('{}{} =').format(option_commented, element_name) }}
+{%                 for thing in element_value %}
+{{ ('{}{:<4}{}').format(option_commented, '', (thing | ipwrap) + ('' if loop.last|bool else ',')) }}
+{%                 endfor %}
+
+{%               endif %}
+{%             elif element_value is string %}
+{%               if element_value.split('\n') | list | count > 1 %}
+{{ ('{}{} =').format(option_commented, element_name) }}
+{%                 set element_value_strip = element_value | regex_replace('\n$','') %}
+{%                 for thing in element_value_strip.split('\n') | list %}
+{{ ('{}{:<4}{}').format(option_commented, '', thing | ipwrap) }}
+{%                 endfor %}
+{%                 if not option_commented %}
+
+{%                 endif %}
+{%               else %}
+{{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value | ipwrap) }}
+{%               endif %}
+{%             else %}
+{{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value) }}
+{%             endif %}
+{%             if option_commented|d() and element.comment|d() %}
+
+{%             endif %}
+{%             set _ = section_loop.append(True) %}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

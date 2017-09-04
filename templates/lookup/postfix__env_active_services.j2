@@ -1,0 +1,8 @@
+{% set postfix__tpl_active_services = [] %}
+{% set postfix__tpl_mastercf = (postfix__combined_mastercf | parse_kv_items) %}
+{% for element in postfix__tpl_mastercf %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'comment', 'hidden' ] %}
+{%     set _ = postfix__tpl_active_services.append((element.service | d(element.name))) %}
+{%   endif %}
+{% endfor %}
+{{ postfix__tpl_active_services | to_yaml }}

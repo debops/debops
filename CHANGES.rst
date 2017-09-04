@@ -14,7 +14,59 @@ The current role maintainer_ is drybjed_.
 `debops.postfix master`_ - unreleased
 -------------------------------------
 
-.. _debops.postfix master: https://github.com/debops/ansible-postfix/compare/v0.1.3...master
+.. _debops.postfix master: https://github.com/debops/ansible-postfix/compare/v0.2.0...master
+
+
+`debops.postfix v0.2.0`_ - 2017-09-04
+-------------------------------------
+
+.. _debops.postfix v0.2.0: https://github.com/debops/ansible-postfix/compare/v0.1.3...v0.2.0
+
+Added
+~~~~~
+
+- Added the ``debops.etc_aliases`` Ansible role as a dependency to manage the
+  :file:`/etc/aliases` local alias database. [drybjed_]
+
+Changed
+~~~~~~~
+
+- The role has been rewritten from the ground up to be first and foremost
+  a convenient public API to the Postfix configuration for other Ansible roles.
+  Instead of configuring everything related to Postfix, ``debops.postfix`` now
+  focuses on the :file:`main.cf` and :file:`master.cf` configuration files. The
+  rest of the SMTP stack is expected to be configured using other roles.
+  [drybjed_]
+
+- All of the ``postfix_*`` default variables have been renamed to
+  ``postfix__*`` to put them in their own namespace. Most of the default
+  variables have been removed, and the Postfix configuration layout has been
+  redesigned. See the documentation for more details. [drybjed_]
+
+- Postfix by default opens access to the enabled services (``smtp``, ``smtps``,
+  ``submission``) in the firewall. You can disable that by setting the
+  :envvar:`postfix__accept_any` variable to ``False``. [drybjed_]
+
+- New interface for dependent configuration has been implemented. The dependent
+  configuration is now stored on the Ansible Controller in per-host
+  configuration directory. [drybjed_]
+
+Removed
+~~~~~~~
+
+- Almost all of the existing functionality has been removed from this role:
+
+    - SASL authentication
+    - :command:`postscreen` support
+    - mail archive options
+    - SMTP client configuration
+    - local mail aliases (moved to ``debops.etc_aliases`` Ansible role)
+    - support for :command:`saslauthd` and Dovecot
+    - various Postfix lookup tables
+    - support for DebOps pre/post task hooks
+    - a way to disable or uninstall Postfix from an existing installation
+
+  Some of these functions will be back using separate Ansible roles. [drybjed_]
 
 
 `debops.postfix v0.1.3`_ - 2017-07-11
@@ -98,11 +150,11 @@ Added
 - Expose the ``smtpd_banner`` variable in role default variables and hide the
   "Postfix" name in the banner. [drybjed_]
 
-- debops.postfix_ incorrectly added a list value when requirement of
+- ``debops.postfix`` incorrectly added a list value when requirement of
   a capability was not present. Now role will check if ``item.capability`` or
   ``item.no_capability`` are specified before adding a value or not. [drybjed_]
 
-- debops.postfix_ incorrectly added a ``main.cf`` option with a value when
+- ``debops.postfix`` incorrectly added a ``main.cf`` option with a value when
   a required capability was specified but was ``False``. Now role will check if
   an entry has specified value before deciding if it should be added. [drybjed_]
 

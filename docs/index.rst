@@ -7,9 +7,13 @@ Ansible role: debops.postfix
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
+   defaults-maincf
+   defaults-mastercf
+   dependency
    copyright
    changelog
+   upgrade
 
 ..
  Local Variables:

@@ -1,22 +1,18 @@
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
-# Manage all postmap and postalias files
-HASH_ALIASES = $(patsubst hash_aliases/%.in,hash_aliases/%.db,$(wildcard hash_aliases/*.in))
-HASH_TABLES = $(patsubst hash_tables/%.in,hash_tables/%.db,$(wildcard hash_tables/*.in))
-PRIVATE_HASH_TABLES = $(patsubst private_hash_tables/%.in,private_hash_tables/%.db,$(wildcard private_hash_tables/*.in))
-
-
-all: $(HASH_ALIASES) $(HASH_TABLES) $(PRIVATE_HASH_TABLES)
+# Manage Postfix hash tables idempotently.
+#
+# Documentation: http://www.postfix.org/DATABASE_README.html#safe_db
 
 
-hash_aliases/%.db: hash_aliases/%.in
-	@postalias "$<" && mv -- "$<.db" "$@"
+# All '*.in' files in current directory are hash tables that need to be
+# processed by 'postmap'.
+HASH_TABLES = $(patsubst %.in,%.db,$(wildcard *.in))
 
-hash_tables/%.db: hash_tables/%.in
+all: $(HASH_TABLES)
+
+%.db: %.in
 	@postmap "$<" && mv -- "$<.db" "$@"
 
-private_hash_tables/%.db: private_hash_tables/%.in
-	@postmap "$<" && mv -- "$<.db" "$@" && touch "$(patsubst %.in,%.lock,$<)" && rm -f "$<"
-
 clean:
-	@rm -f hash_aliases/*.db hash_tables/*.db private_hash_tables/*.db
+	@rm -f *.db

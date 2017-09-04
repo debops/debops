@@ -1,0 +1,27 @@
+---
+
+- name: Check if the dependent master.cf configuration exists
+  stat:
+    path: '{{ secret + "/postfix/dependent_config/" + inventory_hostname + "/mastercf.json" }}'
+  register: postfix__register_dependent_mastercf_file
+  become: False
+  delegate_to: 'localhost'
+  when: (ansible_local|d() and ansible_local.postfix|d() and
+         ansible_local.postfix.installed is defined and
+         ansible_local.postfix.installed|bool)
+
+- name: Load the dependent master.cf configuration from Ansible Controller
+  slurp:
+    src: '{{ secret + "/postfix/dependent_config/" + inventory_hostname + "/mastercf.json" }}'
+  register: postfix__register_dependent_mastercf
+  become: False
+  delegate_to: 'localhost'
+  when: (ansible_local|d() and ansible_local.postfix|d() and
+         ansible_local.postfix.installed is defined and
+         ansible_local.postfix.installed|bool and
+         postfix__register_dependent_mastercf_file.stat.exists|bool)
+
+- name: Prepare Postfix environment
+  set_fact:
+    postfix__env_active_services: '{{ lookup("template", "lookup/postfix__env_active_services.j2") | from_yaml }}'
+    postfix__secret__directories: '{{ lookup("template", "lookup/postfix__secret__directories.j2") | from_yaml }}'

@@ -1,352 +1,47 @@
-{#
-    Abusing Jinja2 templates 101: Postfix local facts
+#!/usr/bin/env python
 
-    This template manages contents of /etc/ansible/facts.d/postfix.fact
-    and allows to configure Postfix via multiple separate roles using
-    dependency variables. Configuration will be stored and preserved
-    idempotently between ansible-playbook runs.
-#}
-{#
+# {{ ansible_managed }}
 
-    ---- Postfix capabilities ----
-#}
-{% set postfix_tpl_local_capabilities_result = []                                     %}
-{% set postfix = postfix or []                                                        %}
-{% for capability in postfix                                                          %}
-{%   set _ = postfix_tpl_local_capabilities_result.append(capability)                 %}
-{% endfor                                                                             %}
-{#
+from __future__ import print_function
+from json import load, loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
 
-    ---- postfix_dependent_lists ----
-#}
-{% set postfix_tpl_local_lists_result = {}                                            %}
-{% set postfix_tpl_seen_local_lists = []                                              %}
-{% if (ansible_local is defined and ansible_local) and
-      (ansible_local.postfix is defined and ansible_local.postfix) and
-      (ansible_local.postfix.lists is defined and ansible_local.postfix.lists)        %}
-{%   for fact_key, fact_values in ansible_local.postfix.lists.iteritems()             %}
-{%     set postfix_tpl_local_list = []                                                %}
-{%     for element in fact_values                                                     %}
-{%       set _ = postfix_tpl_local_list.append(element)                               %}
-{%     endfor                                                                         %}
-{%     if postfix_dependent_lists is defined and postfix_dependent_lists              %}
-{%       if fact_key in postfix_dependent_lists.keys()                                %}
-{%         for new_element in postfix_dependent_lists[fact_key]                       %}
-{%           if new_element is mapping                                                %}
-{%             if (new_element.capability is defined and new_element.capability) and
-                  (new_element.capability in postfix)                                 %}
-{%               if new_element.list is defined and new_element.list                  %}
-{%                 for x in new_element.list                                          %}
-{%                   if x not in postfix_tpl_local_list                               %}
-{%                     set _ = postfix_tpl_local_list.append(x)                       %}
-{%                   endif                                                            %}
-{%                 endfor                                                             %}
-{%               endif                                                                %}
-{%             elif (new_element.no_capability is defined and new_element.no_capability) and
-                    (new_element.no_capability not in postfix)                        %}
-{%               if new_element.list is defined and new_element.list                  %}
-{%                 for x in new_element.list                                          %}
-{%                   if x not in postfix_tpl_local_list                               %}
-{%                     set _ = postfix_tpl_local_list.append(x)                       %}
-{%                   endif                                                            %}
-{%                 endfor                                                             %}
-{%               endif                                                                %}
-{%             elif (new_element.capability is undefined and new_element.no_capability is undefined) %}
-{%               if new_element.list is defined and new_element.list                  %}
-{%                 for x in new_element.list                                          %}
-{%                   if x not in postfix_tpl_local_list                               %}
-{%                     set _ = postfix_tpl_local_list.append(x)                       %}
-{%                   endif                                                            %}
-{%                 endfor                                                             %}
-{%               endif                                                                %}
-{%             endif                                                                  %}
-{%           else                                                                     %}
-{%             if new_element not in postfix_tpl_local_list                           %}
-{%               set _ = postfix_tpl_local_list.append(new_element)                   %}
-{%             endif                                                                  %}
-{%           endif                                                                    %}
-{%         endfor                                                                     %}
-{%         set _ = postfix_tpl_seen_local_lists.append(fact_key)                      %}
-{%       endif                                                                        %}
-{%     endif                                                                          %}
-{%     set _ = postfix_tpl_local_lists_result.update({ fact_key: postfix_tpl_local_list }) %}
-{%   endfor                                                                           %}
-{% endif                                                                              %}
-{% if (postfix_dependent_lists is defined and postfix_dependent_lists) and
-      ((postfix_dependent_lists.keys() | length) > (postfix_tpl_seen_local_lists | length)) %}
-{%   for list_key, list_values in postfix_dependent_lists.iteritems()                 %}
-{%     if list_key not in postfix_tpl_seen_local_lists                                %}
-{%       set postfix_tpl_local_list = []                                              %}
-{%       for element in list_values                                                   %}
-{%         if element is mapping                                                      %}
-{%           if (element.capability is defined and element.capability) and
-                (element.capability in postfix)                                       %}
-{%             if element.list is defined and element.list                            %}
-{%               for x in element.list                                                %}
-{%                 if x not in postfix_tpl_local_list                                 %}
-{%                   set _ = postfix_tpl_local_list.append(x)                         %}
-{%                 endif                                                              %}
-{%               endfor                                                               %}
-{%             endif                                                                  %}
-{%           elif (element.no_capability is defined and element.no_capability) and
-                  (element.no_capability not in postfix)                              %}
-{%             if element.list is defined and element.list                            %}
-{%               for x in element.list                                                %}
-{%                 if x not in postfix_tpl_local_list                                 %}
-{%                   set _ = postfix_tpl_local_list.append(x)                         %}
-{%                 endif                                                              %}
-{%               endfor                                                               %}
-{%             endif                                                                  %}
-{%           elif (element.capability is undefined and element.no_capability is undefined) and                                                                (element.list is defined and element.list)                        %}
-{%             for x in element.list                                                  %}
-{%               if x not in postfix_tpl_local_list                                   %}
-{%                 set _ = postfix_tpl_local_list.append(x)                           %}
-{%               endif                                                                %}
-{%             endfor                                                                 %}
-{%           endif                                                                    %}
-{%         else                                                                       %}
-{%           if element not in postfix_tpl_local_list                                 %}
-{%             set _ = postfix_tpl_local_list.append(element)                         %}
-{%           endif                                                                    %}
-{%         endif                                                                      %}
-{%       endfor                                                                       %}
-{%       set _ = postfix_tpl_local_lists_result.update({ list_key: postfix_tpl_local_list }) %}
-{%     endif                                                                          %}
-{%   endfor                                                                           %}
-{% endif                                                                              %}
-{#
+output = {'installed': True}
 
-    ---- postfix_dependent_maincf ----
-#}
-{% set postfix_tpl_local_maincf_result = {}                                           %}
-{% set postfix_tpl_seen_local_maincf = []                                             %}
-{% if (ansible_local is defined and ansible_local) and
-      (ansible_local.postfix is defined and ansible_local.postfix) and
-      (ansible_local.postfix.maincf is defined and ansible_local.postfix.maincf)      %}
-{%   for fact_key, fact_value in ansible_local.postfix.maincf.iteritems()             %}
-{%     set postfix_tpl_local_value = fact_value                                       %}
-{%     for entry in postfix_dependent_maincf                                          %}
-{%       if (entry.param is defined and entry.param) and (entry.param == fact_key)    %}
-{%         if (entry.capability is defined and entry.capability) and
-              (entry.capability in postfix)                                           %}
-{%           if entry.value is defined and entry.value                                %}
-{%             set postfix_tpl_local_value = entry.value                              %}
-{%           endif                                                                    %}
-{%         elif (entry.no_capability is defined and entry.no_capability) and
-                (entry.no_capability not in postfix)                                  %}
-{%           if entry.value is defined and entry.value                                %}
-{%             set postfix_tpl_local_value = entry.value                              %}
-{%           endif                                                                    %}
-{%         elif (entry.capability is undefined and entry.no_capability is undefined) and
-                (entry.value is defined and entry.value)                              %}
-{%           set postfix_tpl_local_value = entry.value                                %}
-{%         endif                                                                      %}
-{%         set _ = postfix_tpl_seen_local_maincf.append(fact_key)                     %}
-{%       endif                                                                        %}
-{%     endfor                                                                         %}
-{%     set _ = postfix_tpl_local_maincf_result.update({fact_key: postfix_tpl_local_value}) %}
-{%   endfor                                                                           %}
-{% endif                                                                              %}
-{% if (postfix_dependent_maincf is defined and postfix_dependent_maincf) and
-      ((postfix_dependent_maincf | length) > (postfix_tpl_seen_local_maincf | length)) %}
-{%   for entry in postfix_dependent_maincf                                            %}
-{%     if (entry.param is defined and entry.param) and (entry.param not in postfix_tpl_seen_local_maincf) %}
-{%       set postfix_tpl_local_value = ''                                             %}
-{%       if (entry.capability is defined and entry.capability) and
-            (entry.capability in postfix)                                             %}
-{%         if entry.value is defined and entry.value                                  %}
-{%           set postfix_tpl_local_value = entry.value                                %}
-{%         endif                                                                      %}
-{%       elif (entry.no_capability is defined and entry.no_capability) and
-              (entry.no_capability not in postfix)                                    %}
-{%         if entry.value is defined and entry.value                                  %}
-{%           set postfix_tpl_local_value = entry.value                                %}
-{%         endif                                                                      %}
-{%       elif (entry.capability is undefined and entry.no_capability is undefined) and
-              (entry.value is defined and entry.value)                                %}
-{%         set postfix_tpl_local_value = entry.value                                  %}
-{%       endif                                                                        %}
-{%       if postfix_tpl_local_value is defined and postfix_tpl_local_value            %}
-{%         set _ = postfix_tpl_local_maincf_result.update({entry.param: postfix_tpl_local_value}) %}
-{%       elif entry.value is undefined or not entry.value                                         %}
-{%         set _ = postfix_tpl_local_maincf_result.update({entry.param: ''})          %}
-{%       endif                                                                        %}
-{%     endif                                                                          %}
-{%   endfor                                                                           %}
-{% endif                                                                              %}
-{#
+try:
+    with open(os.devnull, 'w') as devnull:
+        postconf_stdout = subprocess.check_output(
+            ["LC_MESSAGES=C dpkg-query -W -f='${Version}\n' 'postfix'"],
+            shell=True, stderr=devnull)
 
-    ---- postfix_dependent_mastercf ----
-#}
-{% set postfix_tpl_local_mastercf_result = []                                           %}
-{% set postfix_tpl_seen_local_mastercf = []                                             %}
-{% if (ansible_local is defined and ansible_local) and
-      (ansible_local.postfix is defined and ansible_local.postfix) and
-      (ansible_local.postfix.mastercf is defined and ansible_local.postfix.mastercf)    %}
-{%   for fact_service in ansible_local.postfix.mastercf                                 %}
-{%     set postfix_tpl_local_service = fact_service.service                             %}
-{%     set postfix_tpl_local_type = fact_service.type                                   %}
-{%     set postfix_tpl_local_private = fact_service.private | default('-')              %}
-{%     set postfix_tpl_local_unpriv = fact_service.unpriv | default('-')                %}
-{%     set postfix_tpl_local_chroot = fact_service.chroot | default('-')                %}
-{%     set postfix_tpl_local_wakeup = fact_service.wakeup | default('-')                %}
-{%     set postfix_tpl_local_maxproc = fact_service.maxproc | default('-')              %}
-{%     set postfix_tpl_local_command = fact_service.command                             %}
-{%     set postfix_tpl_local_options = fact_service.options                             %}
-{%     for entry in postfix_dependent_mastercf                                          %}
-{%       if (entry.service is defined and entry.service) and (entry.service == fact_service.service) %}
-{%         if (entry.capability is defined and entry.capability) and
-              (entry.capability in postfix)                                             %}
-{%           if entry.type is defined and entry.type                                    %}
-{%             set postfix_tpl_local_type = entry.type                                  %}
-{%           endif                                                                      %}
-{%           if entry.private is defined and entry.private                              %}
-{%             set postfix_tpl_local_private = entry.private                            %}
-{%           endif                                                                      %}
-{%           if entry.unpriv is defined and entry.unpriv                                %}
-{%             set postfix_tpl_local_unpriv = entry.unpriv                              %}
-{%           endif                                                                      %}
-{%           if entry.chroot is defined and entry.chroot                                %}
-{%             set postfix_tpl_local_chroot = entry.chroot                              %}
-{%           endif                                                                      %}
-{%           if entry.wakeup is defined and entry.wakeup                                %}
-{%             set postfix_tpl_local_wakeup = entry.wakeup                              %}
-{%           endif                                                                      %}
-{%           if entry.maxproc is defined and entry.maxproc                              %}
-{%             set postfix_tpl_local_maxproc = entry.maxproc                            %}
-{%           endif                                                                      %}
-{%           if entry.command is defined and entry.command                              %}
-{%             set postfix_tpl_local_command = entry.command                            %}
-{%           endif                                                                      %}
-{%           if entry.options is defined and entry.options                              %}
-{%             set postfix_tpl_local_options = entry.options                            %}
-{%           endif                                                                      %}
-{%         elif (entry.no_capability is defined and entry.no_capability) and
-                (entry.no_capability not in postfix)                                    %}
-{%           if entry.type is defined and entry.type                                    %}
-{%             set postfix_tpl_local_type = entry.type                                  %}
-{%           endif                                                                      %}
-{%           if entry.private is defined and entry.private                              %}
-{%             set postfix_tpl_local_private = entry.private                            %}
-{%           endif                                                                      %}
-{%           if entry.unpriv is defined and entry.unpriv                                %}
-{%             set postfix_tpl_local_unpriv = entry.unpriv                              %}
-{%           endif                                                                      %}
-{%           if entry.chroot is defined and entry.chroot                                %}
-{%             set postfix_tpl_local_chroot = entry.chroot                              %}
-{%           endif                                                                      %}
-{%           if entry.wakeup is defined and entry.wakeup                                %}
-{%             set postfix_tpl_local_wakeup = entry.wakeup                              %}
-{%           endif                                                                      %}
-{%           if entry.maxproc is defined and entry.maxproc                              %}
-{%             set postfix_tpl_local_maxproc = entry.maxproc                            %}
-{%           endif                                                                      %}
-{%           if entry.command is defined and entry.command                              %}
-{%             set postfix_tpl_local_command = entry.command                            %}
-{%           endif                                                                      %}
-{%           if entry.options is defined and entry.options                              %}
-{%             set postfix_tpl_local_options = entry.options                            %}
-{%           endif                                                                      %}
-{%         elif (entry.capability is undefined and entry.no_capability is undefined) and
-                (entry.service is defined and entry.service)                            %}
-{%           if entry.type is defined and entry.type                                    %}
-{%             set postfix_tpl_local_type = entry.type                                  %}
-{%           endif                                                                      %}
-{%           if entry.private is defined and entry.private                              %}
-{%             set postfix_tpl_local_private = entry.private                            %}
-{%           endif                                                                      %}
-{%           if entry.unpriv is defined and entry.unpriv                                %}
-{%             set postfix_tpl_local_unpriv = entry.unpriv                              %}
-{%           endif                                                                      %}
-{%           if entry.chroot is defined and entry.chroot                                %}
-{%             set postfix_tpl_local_chroot = entry.chroot                              %}
-{%           endif                                                                      %}
-{%           if entry.wakeup is defined and entry.wakeup                                %}
-{%             set postfix_tpl_local_wakeup = entry.wakeup                              %}
-{%           endif                                                                      %}
-{%           if entry.maxproc is defined and entry.maxproc                              %}
-{%             set postfix_tpl_local_maxproc = entry.maxproc                            %}
-{%           endif                                                                      %}
-{%           if entry.command is defined and entry.command                              %}
-{%             set postfix_tpl_local_command = entry.command                            %}
-{%           endif                                                                      %}
-{%           if entry.options is defined and entry.options                              %}
-{%             set postfix_tpl_local_options = entry.options                            %}
-{%           endif                                                                      %}
-{%         endif                                                                        %}
-{%         set _ = postfix_tpl_seen_local_mastercf.append(fact_service.service)         %}
-{%       endif                                                                          %}
-{%     endfor                                                                           %}
-{%     set postfix_tpl_local_mastercf_entry = {}                                        %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'service': postfix_tpl_local_service}) %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'type': postfix_tpl_local_type}) %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'private': postfix_tpl_local_private}) %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'unpriv': postfix_tpl_local_unpriv}) %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'chroot': postfix_tpl_local_chroot}) %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'wakeup': postfix_tpl_local_wakeup}) %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'maxproc': postfix_tpl_local_maxproc}) %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'command': postfix_tpl_local_command}) %}
-{%     set _ = postfix_tpl_local_mastercf_entry.update({'options': postfix_tpl_local_options}) %}
-{%     set _ = postfix_tpl_local_mastercf_result.append(postfix_tpl_local_mastercf_entry) %}
-{%   endfor                                                                             %}
-{% endif                                                                                %}
-{% if (postfix_dependent_mastercf is defined and postfix_dependent_mastercf) and
-      ((postfix_dependent_mastercf | length) > (postfix_tpl_seen_local_mastercf | length)) %}
-{%   for entry in postfix_dependent_mastercf                                            %}
-{%     if (entry.service is defined and entry.service) and (entry.service not in postfix_tpl_seen_local_mastercf) %}
-{%       if (entry.capability is defined and entry.capability) and
-            (entry.capability in postfix)                                               %}
-{%         set postfix_tpl_local_service = entry.service                                %}
-{%         set postfix_tpl_local_type = entry.type                                      %}
-{%         set postfix_tpl_local_private = entry.private | default('-')                 %}
-{%         set postfix_tpl_local_unpriv = entry.unpriv | default('-')                   %}
-{%         set postfix_tpl_local_chroot = entry.chroot | default('-')                   %}
-{%         set postfix_tpl_local_wakeup = entry.wakeup | default('-')                   %}
-{%         set postfix_tpl_local_maxproc = entry.maxproc | default('-')                 %}
-{%         set postfix_tpl_local_command = entry.command                                %}
-{%         set postfix_tpl_local_options = entry.options                                %}
-{%       elif (entry.no_capability is defined and entry.no_capability) and
-              (entry.no_capability not in postfix)                                      %}
-{%         set postfix_tpl_local_service = entry.service                                %}
-{%         set postfix_tpl_local_type = entry.type                                      %}
-{%         set postfix_tpl_local_private = entry.private | default('-')                 %}
-{%         set postfix_tpl_local_unpriv = entry.unpriv | default('-')                   %}
-{%         set postfix_tpl_local_chroot = entry.chroot | default('-')                   %}
-{%         set postfix_tpl_local_wakeup = entry.wakeup | default('-')                   %}
-{%         set postfix_tpl_local_maxproc = entry.maxproc | default('-')                 %}
-{%         set postfix_tpl_local_command = entry.command                                %}
-{%         set postfix_tpl_local_options = entry.options                                %}
-{%       elif (entry.capability is undefined and entry.no_capability is undefined) and
-              (entry.service is defined and entry.service)                              %}
-{%         set postfix_tpl_local_service = entry.service                                %}
-{%         set postfix_tpl_local_type = entry.type                                      %}
-{%         set postfix_tpl_local_private = entry.private | default('-')                 %}
-{%         set postfix_tpl_local_unpriv = entry.unpriv | default('-')                   %}
-{%         set postfix_tpl_local_chroot = entry.chroot | default('-')                   %}
-{%         set postfix_tpl_local_wakeup = entry.wakeup | default('-')                   %}
-{%         set postfix_tpl_local_maxproc = entry.maxproc | default('-')                 %}
-{%         set postfix_tpl_local_command = entry.command                                %}
-{%         set postfix_tpl_local_options = entry.options                                %}
-{%       endif                                                                          %}
-{%       set postfix_tpl_local_mastercf_entry = {}                                      %}
-{%       if postfix_tpl_local_service is defined and postfix_tpl_local_service          %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'service': postfix_tpl_local_service}) %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'type': postfix_tpl_local_type}) %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'private': postfix_tpl_local_private}) %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'unpriv': postfix_tpl_local_unpriv}) %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'chroot': postfix_tpl_local_chroot}) %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'wakeup': postfix_tpl_local_wakeup}) %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'maxproc': postfix_tpl_local_maxproc}) %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'command': postfix_tpl_local_command}) %}
-{%         set _ = postfix_tpl_local_mastercf_entry.update({'options': postfix_tpl_local_options}) %}
-{%         set _ = postfix_tpl_local_mastercf_result.append(postfix_tpl_local_mastercf_entry) %}
-{%       endif                                                                          %}
-{%     endif                                                                            %}
-{%   endfor                                                                             %}
-{% endif                                                                                %}
-{
-"capabilities": {{ postfix_tpl_local_capabilities_result | to_nice_json }},
-"lists": {{ postfix_tpl_local_lists_result | to_nice_json }},
-"maincf": {{ postfix_tpl_local_maincf_result | to_nice_json }},
-"mastercf": {{ postfix_tpl_local_mastercf_result | to_nice_json }}
-}
+except subprocess.CalledProcessError:
+    pass
+
+# The 'postfix-doc' package modifies the Postfix 'main.cf' file, so let's
+# account for that
+postfix_doc_status = ''
+postfix_doc_cmd = ["/usr/bin/dpkg-query",
+                   "--show",
+                   "--showformat='${db:Status-Status}'",
+                   "'postfix-doc'"]
+
+try:
+    with open(os.devnull, 'w') as devnull:
+        postfix_doc_status = subprocess.check_output(
+            ' '.join(postfix_doc_cmd), shell=True, stderr=devnull)
+
+except subprocess.CalledProcessError:
+    pass
+
+if postconf_stdout:
+    output['version'] = postconf_stdout.split('-')[0]
+
+if postfix_doc_status == 'installed':
+    output['doc_installed'] = True
+else:
+    output['doc_installed'] = False
+
+print(dumps(output, sort_keys=True, indent=2))
