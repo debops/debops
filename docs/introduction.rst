@@ -1,6 +1,8 @@
 Introduction
 ============
 
+.. include:: includes/all.rst
+
 The debops.mailman_ Ansible role can be used to create and manage mailing
 lists using `GNU Mailman <http://list.org/>`_ package.
 
