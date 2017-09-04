@@ -27,6 +27,9 @@ More information about `debops.unbound` can be found in the
 [official debops.unbound documentation](https://docs.debops.org/en/latest/ansible/roles/ansible-unbound/docs/).
 
 
+### Role dependencies
+
+- `debops.ansible_plugins`
 
 ### Are you using this as a standalone role without DebOps?
 
