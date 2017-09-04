@@ -1,6 +1,17 @@
 Changelog
 =========
 
+v0.3.0
+------
+
+*Released: 2017-09-04*
+
+- Move the hard role dependencies to an example playbook. [drybjed]
+
+- Update the Postfix integration to support new ``debops.postfix`` Ansible role
+  features. [drybjed]
+
+
 v0.2.2
 ------
 
