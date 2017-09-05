@@ -34,6 +34,26 @@
   when: item.name|d() and item.socket_path|d() and
         item.state|d('present') != 'absent'
 
+- name: Ensure that required UNIX groups exist
+  group:
+    name: '{{ item.group }}'
+    state: 'present'
+    system: '{{ (item.system | d(True)) | bool }}'
+  with_items: '{{ saslauthd__combined_instances | parse_kv_items }}'
+  when: item.name|d() and item.group|d() and
+        item.state|d('present') != 'absent'
+
+- name: Create SASL config directory
+  file:
+    path: '{{ item.config_path | dirname }}'
+    state: 'directory'
+    owner: '{{ item.config_dir_owner | d("root") }}'
+    group: '{{ item.config_dir_group | d("root") }}'
+    mode: '{{ item.config_dir_mode   | d("0755") }}'
+  with_items: '{{ saslauthd__combined_instances | parse_kv_items }}'
+  when: item.name|d() and item.config_path|d() and
+        item.state|d('present') != 'absent'
+
 - name: Generate SASL configuration
   template:
     src: 'etc/saslauthd.conf.j2'
