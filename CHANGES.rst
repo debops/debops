@@ -17,7 +17,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.postconf master: https://github.com/debops/ansible-postconf/compare/v0.1.0...master
 
 
-debops.postconf v0.1.0 - unreleased
+debops.postconf v0.1.0 - 2017-09-05
 -----------------------------------
 
 Added
