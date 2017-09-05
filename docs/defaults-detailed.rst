@@ -44,6 +44,16 @@ parameters:
   configured. If ``absent``, a given instance will be removed. If ``ignore``,
   a given instance will not be managed by the role.
 
+``group``
+  Optional. Ensure that the specified UNIX group is present on the host. This
+  might be needed if directories or files should use non-default UNIX groups.
+  Only one group can be specified at once.
+
+``system``
+  Optional, boolean. If not specified or ``True``, the created UNIX group will
+  be a system group with GID < 1000. If ``False``, it will be a normal group
+  with GID >= 1000.
+
 The parameters specified next are used and related to the :command:`saslauthd`
 daemon configuration files located in :file:`/etc/default/saslauthd-*`:
 
@@ -74,6 +84,18 @@ daemon configuration files located in :file:`/etc/default/saslauthd-*`:
 
 The following parameters are related to the SASL configuration file generated
 for a given instance:
+
+``config_dir_owner``
+  Optional. The owner of the directory with the configuration file. If not
+  specfied, ``root`` is used by default.
+
+``config_dir_group``
+  Optional. The primary group of the directory with the configuration file. If
+  not specified, ``root`` is used by default.
+
+``config_dir_mode``
+  Optional. The permissions of the directory with the configuration file. If
+  not specified, ``0755`` is set by default.
 
 ``config_owner``
   Optional. The UNIX account which will be the owner of the configuration file.

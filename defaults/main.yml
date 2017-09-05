@@ -37,6 +37,7 @@ saslauthd__packages: []
 saslauthd__default_instances:
 
   - name: 'smtpd'
+    group: 'postfix'
     description: 'Postfix SASL Authentication Daemon'
     config_path: '/etc/postfix/sasl/smtpd.conf'
     config_group: 'postfix'
@@ -46,8 +47,9 @@ saslauthd__default_instances:
     socket_path: '/var/spool/postfix/var/run/saslauthd'
     socket_group: 'postfix'
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.postfix|d() and
-                   (ansible_local.postfix.installed|d())|bool)
+               if ((ansible_local|d() and ansible_local.postfix|d() and
+                    (ansible_local.postfix.installed|d())|bool) or
+                   ("debops_service_postfix" in group_names))
                else "ignore" }}'
 
                                                                    # ]]]
