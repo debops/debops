@@ -115,6 +115,9 @@ Added
 
 - Add the ``debops.ansible_plugins`` role. [drybjed_]
 
+- Add Postfix-related roles: ``debops.saslauthd``, ``debops.opendkim``,
+  ``debops.postscreen``, ``debops.postwhite``, ``debops.postconf``. [drybjed_]
+
 Changed
 ~~~~~~~
 
