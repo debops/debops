@@ -2,23 +2,23 @@
 
 - name: Install required Etherpad packages
   apt:
-    pkg: '{{ item }}'
-    state: 'latest'
-    install_recommends: no
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
   with_items:
-    - build-essential
-    - pkg-config
-    - libssl-dev
-    - libpq-dev
-    - curl
-    - git
+    - 'build-essential'
+    - 'pkg-config'
+    - 'libssl-dev'
+    - 'libpq-dev'
+    - 'curl'
+    - 'git'
 
 - name: Install Abiword if enabled
   apt:
-    pkg: 'abiword'
-    state: 'latest'
-    install_recommends: no
-  when: etherpad_abiword is defined and etherpad_abiword
+    name: 'abiword'
+    state: 'present'
+    install_recommends: False
+  when: etherpad_abiword|bool
 
 - name: Create Etherpad system group
   group:
@@ -184,7 +184,7 @@
     path: '{{ etherpad_home + "/" + etherpad_repository }}'
     state: 'present'
     production: yes
-  with_flattened: etherpad_plugins
+  with_flattened: '{{ etherpad_plugins }}'
   become_user: '{{ etherpad_user }}'
   notify: [ 'Restart etherpad-lite' ]
   when: etherpad_plugins is defined and etherpad_plugins
@@ -214,7 +214,7 @@
   command: cat {{ etherpad_api_key_file }}
   register: etherpad_api_key
   changed_when: False
-  always_run: yes
+  check_mode: False
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
 - name: Make API calls
@@ -223,7 +223,7 @@
   register: etherpad_api_calls_exec
   ## error while evaluating conditional???
   # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()
-  with_items: etherpad_api_calls
+  with_items: '{{ etherpad_api_calls }}'
   no_log: True
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
