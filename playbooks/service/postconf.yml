@@ -1,0 +1,44 @@
+---
+
+- name: Manage Postfix configuration
+  hosts: [ 'debops_service_postconf' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.postconf/env
+      tags: [ 'role::postconf', 'role::postfix', 'role::ferm' ]
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+      postfix__dependent_mastercf:
+        - role: 'postconf'
+          config: '{{ postconf__postfix__dependent_mastercf }}'
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ postfix__secret__directories }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ postfix__ferm__dependent_rules }}'
+
+    - role: debops.postfix
+      tags: [ 'role::postfix' ]
+      postfix__dependent_maincf:
+        - role: 'postconf'
+          config: '{{ postconf__postfix__dependent_maincf }}'
+      postfix__dependent_mastercf:
+        - role: 'postconf'
+          config: '{{ postconf__postfix__dependent_mastercf }}'
+      postfix__dependent_lookup_tables:
+        - '{{ postconf__postfix__dependent_lookup_tables }}'
+
+    - role: debops.postconf
+      tags: [ 'role::postconf' ]

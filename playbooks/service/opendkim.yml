@@ -1,0 +1,34 @@
+---
+
+- name: Manage OpenDKIM service
+  hosts: [ 'debops_service_opendkim' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret' ]
+      when: opendkim__postfix_integration|bool
+
+    - role: debops.opendkim/env
+      tags: [ 'role::opendkim', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::opendkim', 'role::postfix' ]
+      secret__directories:
+        - '{{ postfix__secret__directories  | d([]) }}'
+        - '{{ opendkim__secret__directories | d([]) }}'
+
+    - role: debops.postfix
+      tags: [ 'role::postfix' ]
+      postfix__dependent_maincf:
+        - role: 'opendkim'
+          config: '{{ opendkim__postfix__dependent_maincf }}'
+      when: opendkim__postfix_integration|bool
+
+    - role: debops.opendkim
+      tags: [ 'role::opendkim' ]
