@@ -37,6 +37,8 @@ Changed
 - Register the :command:`etherpad-lite` TCP port in :file:`/etc/services` using
   role dependent variables. [drybjed_]
 
+- Configure log rotation through role dependent variables. [drybjed_]
+
 
 debops.etherpad v0.1.0 - 2015-09-15
 -----------------------------------

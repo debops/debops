@@ -119,14 +119,11 @@
 
 - name: Configure etherpad-lite system service
   template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
+    src: 'etc/default/etherpad-lite.j2'
+    dest: '/etc/default/etherpad-lite'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items:
-    - 'etc/default/etherpad-lite'
-    - 'etc/logrotate.d/etherpad-lite'
 
 - name: Install etherpad-lite init script
   template:

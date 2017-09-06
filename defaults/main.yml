@@ -425,6 +425,23 @@ etherpad__etc_services__dependent_list:
     comment: 'Etherpad Lite'
 
                                                                    # ]]]
+# .. envvar:: etherpad__logrotate__dependent_config [[[
+#
+# Configuration for the debops.logrotate_ Ansible role.
+etherpad__logrotate__dependent_config:
+
+  - filename: 'etherpad-lite'
+    log: '{{ etherpad_log_dir + "/*.log" }}'
+    options: |
+      weekly
+      missingok
+      rotate 4
+      compress
+      notifempty
+      create 644 {{ etherpad_user }} {{ etherpad_group }}
+    comment: 'Logrotate configuration for etherpad-lite'
+
+                                                                   # ]]]
 # .. envvar:: etherpad__mariadb__dependent_users [[[
 #
 # User configuration for the debops.mariadb_ Ansible role.
