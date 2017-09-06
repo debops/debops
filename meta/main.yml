@@ -3,32 +3,6 @@
 dependencies:
 
   - role: debops.secret
-    tags: [ 'depend::secret', 'depend::secret:etherpad', 'depend-of::etherpad', 'type::dependency:hard' ]
-
-  - role: debops.etc_services
-    tags: [ 'depend::etc_services', 'depend::etc_services:etherpad', 'depend-of::etherpad', 'type::dependency' ]
-
-  - role: debops.nodejs
-    tags: [ 'depend::nodejs', 'depend::nodejs:etherpad', 'depend-of::etherpad', 'type::dependency' ]
-
-  - role: debops.mariadb
-    tags: [ 'depend::mariadb', 'depend::mariadb:etherpad', 'depend-of::etherpad', 'type::dependency' ]
-    mariadb_users:
-      - name: '{{ etherpad_database_user }}'
-        password: '{{ etherpad_database_password }}'
-        owner: '{{ etherpad_user }}'
-        group: '{{ etherpad_group }}'
-        home: '{{ etherpad_home }}'
-    mariadb_databases:
-      - database: '{{ etherpad_database_name }}'
-    when: (etherpad_dependencies is defined and etherpad_dependencies) and
-          (etherpad_database is defined and etherpad_database and etherpad_database in ['mysql'])
-
-  - role: debops.nginx
-    tags: [ 'depend::nginx', 'depend::nginx:etherpad', 'depend-of::etherpad', 'type::dependency' ]
-    nginx_servers: [ '{{ etherpad_nginx_server }}' ]
-    nginx_upstreams: [ '{{ etherpad_nginx_upstream }}' ]
-    when: (etherpad_dependencies is defined and etherpad_dependencies)
 
 galaxy_info:
   author: 'Maciej Delmanowski'

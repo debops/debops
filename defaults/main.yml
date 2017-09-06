@@ -140,12 +140,14 @@ etherpad_database_password: "{{ lookup('password', secret + '/mariadb/' +
                                 '/password length=48') }}"
 
 
-# .. envvar:: etherpad_database
+# .. envvar:: etherpad__database
 #
 # Database to use for data storage (choices: sqlite, mysql, postgresql,
 # dirty). Choose mysql even when you use different mysql flavors. More
 # databases will be available in the future.
-etherpad_database: sqlite
+etherpad__database: '{{ "mysql"
+                        if (ansible_local|d() and ansible_local.mariadb is defined)
+                        else "sqlite" }}'
 
 
 # Connection type used for the database
@@ -334,3 +336,100 @@ etherpad_api_version: '1.2.12'
 # If True, you will get debugging output for the API calls defined by
 # :ref:`etherpad_api_calls`. Default is False.
 etherpad_api_calls_debug: False
+
+
+# Configuration for other Ansible roles
+# -------------------------------------
+
+# .. envvar:: etherpad__mariadb__dependent_users
+#
+# User configuration for the debops.mariadb_ Ansible role.
+etherpad__mariadb__dependent_users:
+
+  - name: '{{ etherpad_database_user }}'
+    password: '{{ etherpad_database_password }}'
+    owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    home: '{{ etherpad_home }}'
+
+
+# .. envvar:: etherpad__mariadb__dependent_databases
+#
+# Database configuration for the debops.mariadb_ Ansible role.
+etherpad__mariadb__dependent_databases:
+
+  - database: '{{ etherpad_database_name }}'
+
+
+# .. envvar:: etherpad__nginx__dependent_upstreams
+#
+# Upstream configuration for the debops.nginx_ Ansible role.
+etherpad__nginx__dependent_upstreams:
+
+  - name: '{{ etherpad_system_name }}'
+    enabled: True
+    server: '127.0.0.1:{{ etherpad_port }}'
+
+
+# .. envvar:: etherpad__nginx__dependent_servers
+#
+# Server configuration for the debops.nginx_ Ansible role.
+etherpad__nginx__dependent_servers:
+  - by_role: 'debops.etherpad'
+    enabled: True
+    favicon: False
+    name: '{{ etherpad_domain }}'
+    filename: 'debops.etherpad'
+
+    location:
+
+      # Allow normal files to pass through
+      '~ ^/(locales/|locales.json|admin/|static/|pluginfw/|javascripts/|socket.io/|ep/|minified/|api/|ro/|error/|jserror/|favicon.ico|robots.txt)': |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_pass http://{{ etherpad_system_name }};
+
+      # Redirect to force /p/* URLs to the friendly version
+      '/p/': |
+        rewrite ^/p/(.*) /$1 redirect;
+
+      # Handle redirects
+      '/redirect': |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_pass http://{{ etherpad_system_name }};
+
+      # Match the home page
+      '~ ^/$': |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_pass http://{{ etherpad_system_name }};
+
+      # Handle pad URLs here
+      '/': |
+        rewrite ^/admin(.*) /admin/$1 redirect;
+        rewrite ^/list(.*) /list break;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_pass http://{{ etherpad_system_name }}/p/;
+        proxy_redirect / /p/;
+
+    location_allow:
+
+      '~ ^/(locales/|locales.json|admin/|static/|pluginfw/|javascripts/|socket.io/|ep/|minified/|api/|ro/|error/|jserror/|favicon.ico|robots.txt)': '{{ etherpad_allow }}'
+
+      '/p/': '{{ etherpad_allow }}'
+
+      '/redirect': '{{ etherpad_allow }}'
+
+      '~ ^/$': '{{ etherpad_allow }}'
+
+      '/': '{{ etherpad_allow }}'

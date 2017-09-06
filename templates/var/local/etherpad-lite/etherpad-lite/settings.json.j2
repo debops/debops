@@ -47,20 +47,20 @@ See also: https://github.com/debops/ansible-etherpad/pull/16/files#r41485963
 
   // The Type of the database. You can choose between dirty, postgres, sqlite and mysql
   // You shouldn't use "dirty" for for anything else than testing or development
-  "dbType" : "{{ etherpad_database }}",
+  "dbType" : "{{ etherpad__database }}",
   "dbSettings" : {
-  {% if etherpad_database in ['dirty', 'sqlite'] -%}
-      "filename" : "{{ etherpad_database_config[etherpad_database].filename }}"
-  {% elif etherpad_database in ['mysql', 'postgresql'] -%}
-      "user"    : "{{ etherpad_database_config[etherpad_database].username }}",
-      "host"    : "{{ etherpad_database_config[etherpad_database].hostname }}",
+  {% if etherpad__database in ['dirty', 'sqlite'] -%}
+      "filename" : "{{ etherpad_database_config[etherpad__database].filename }}"
+  {% elif etherpad__database in ['mysql', 'postgresql'] -%}
+      "user"    : "{{ etherpad_database_config[etherpad__database].username }}",
+      "host"    : "{{ etherpad_database_config[etherpad__database].hostname }}",
       {% if etherpad_database_connection == 'port' %}
-        "port"    : "{{ etherpad_database_config[etherpad_database].port }}",
+        "port"    : "{{ etherpad_database_config[etherpad__database].port }}",
       {% else %}
-         "port"    : "{{ etherpad_database_config[etherpad_database].socket }}",
+         "port"    : "{{ etherpad_database_config[etherpad__database].socket }}",
       {% endif %}
-      "password": "{{ etherpad_database_config[etherpad_database].password | default('') }}",
-      "database": "{{ etherpad_database_config[etherpad_database].database }}"
+      "password": "{{ etherpad_database_config[etherpad__database].password | default('') }}",
+      "database": "{{ etherpad_database_config[etherpad__database].database }}"
    {% endif %}
    },
 
