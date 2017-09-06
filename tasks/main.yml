@@ -5,20 +5,10 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items:
-    - 'build-essential'
-    - 'pkg-config'
-    - 'libssl-dev'
-    - 'libpq-dev'
-    - 'curl'
-    - 'git'
-
-- name: Install Abiword if enabled
-  apt:
-    name: 'abiword'
-    state: 'present'
-    install_recommends: False
-  when: etherpad_abiword|bool
+  with_flattened:
+    - '{{ etherpad__base_packages }}'
+    - '{{ etherpad__document_packages if etherpad_abiword|bool else [] }}'
+    - '{{ etherpad__packages }}'
 
 - name: Create Etherpad system group
   group:
