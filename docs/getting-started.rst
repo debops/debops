@@ -1,42 +1,56 @@
 Getting started
 ===============
 
+.. include:: includes/all.rst
+
 .. contents::
    :local:
+
+
+Default configuration
+---------------------
+
+The role will detect presence of a MariaDB database server and use it if
+available. If not, a SQLite databse will be automatically configured on the
+server. You can configure MariaDB database using the debops.mariadb_server_
+Ansible role.
+
+
+Example inventory
+-----------------
+
+To install and configure Etherpad on a host, it needs to be present in the
+``[debops_service_etherpad]`` Ansible inventory group:
+
+.. code-block:: none
+
+   [debops_service_etherpad]
+   hostname
+
+
+Example playbook
+----------------
+
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.etherpad`` role:
+
+.. literalinclude:: playbooks/etherpad.yml
+   :language: yaml
 
 
 Ansible tags
 ------------
 
 You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
-tasks are performed during Ansible run. This can be used after host is first
+tasks are performed during Ansible run. This can be used after a host was first
 configured to speed up playbook execution, when you are sure that most of the
-configuration has not been changed.
+configuration is already in the desired state.
 
 Available role tags:
 
 ``role::etherpad``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``type::dependency``
-  This tag specifies which tasks are defined in role dependencies. You can use
-  this to omit them using ``--skip-tags`` parameter.
-
-``depend-of::etherpad``
-  Execute all ``debops.etherpad`` role dependencies in its context.
-
-``depend::etc_services:etherpad``
-  Run ``debops.etc_services`` dependent role in ``debops.etherpad`` context.
-
-``depend::nodejs:etherpad``
-  Run ``debops.nodejs`` dependent role in ``debops.etherpad`` context.
-
-``depend::mariadb:etherpad``
-  Run ``debops.mariadb`` dependent role in ``debops.etherpad`` context.
-
-``depend::nginx:etherpad``
-  Run ``debops.nginx`` dependent role in ``debops.etherpad`` context.
 
 ``role::etherpad:source``
   Run tasks related to install Etherpad from source.
@@ -53,4 +67,3 @@ Available role tags:
 ``role::etherpad:api``
   Same as ``role::etherpad:api:call`` but ensures that the service is running
   and waiting for it to start before trying.
-
