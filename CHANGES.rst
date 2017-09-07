@@ -29,6 +29,9 @@ Changed
 - Update ``bootstrap-ansible.sh`` script so it again can install recent Ansible
   versions. [drybjed_]
 
+- Switch from the ``hostfile`` parameter to the ``inventory`` parameter in
+  :file:`ansible.cfg`. The former was removed in Ansible 2.4. [drybjed_]
+
 Removed
 ~~~~~~~
 
