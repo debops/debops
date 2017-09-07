@@ -15,7 +15,13 @@ The current repository maintainer_ is drybjed_.
 `debops-tools master`_ - unreleased
 -----------------------------------
 
-.. _debops-tools master: https://github.com/debops/debops-tools/compare/v0.4.4...master
+.. _debops-tools master: https://github.com/debops/debops-tools/compare/v0.5.0...master
+
+
+`debops-tools v0.5.0`_ - 2017-09-07
+-----------------------------------
+
+.. _debops-tools v0.5.0: https://github.com/debops/debops-tools/compare/v0.4.4...v0.5.0
 
 Changed
 ~~~~~~~
