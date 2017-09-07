@@ -63,7 +63,7 @@ A :command:`debops` script included in the package is used as a wrapper for the
 roles and playbooks in different environments.
 
 The optional :command:`debops-padlock` script can be used to create an
-encrypted directory backed by `EncFS https://en.wikipedia.org/wiki/EncFS>`_ and
+encrypted directory backed by `EncFS <https://en.wikipedia.org/wiki/EncFS>`_ and
 secured using a `GPG <https://gnupg.org/>`_ key to allow for secure storage of
 passwords and other sensitive data.
 
