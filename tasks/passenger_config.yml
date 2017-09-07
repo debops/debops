@@ -12,6 +12,8 @@
 
 - name: Detect passenger ruby
   shell: "passenger-config about ruby-command | grep Command | tail -1 | awk -F: '{print $2}'"
+  args:
+      executable: '/bin/sh'
   register: nginx_register_passenger_ruby
   changed_when: False
 
