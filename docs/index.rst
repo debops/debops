@@ -8,7 +8,6 @@ DebOps scripts
 
    introduction
    installation
-   getting-started
    configuration
    scripts/debops-update
    scripts/debops-init
@@ -18,7 +17,6 @@ DebOps scripts
    scripts/debops-task
    contributing
    copyright
-   credits
    changelog
 
 ..

@@ -67,7 +67,7 @@ quit and fix your issues.
 What if you want to keep your encrypted secrets in a git repository?
 --------------------------------------------------------------------
 
-Debops by default creates an entry in ``.gitignore`` file to prevent committing
+DebOps by default creates an entry in ``.gitignore`` file to prevent committing
 encrypted files to the git repository. If you are sure that you want to do it,
 just comment or remove the `.encfs.secret` line from ``.gitignore``.
 
