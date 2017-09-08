@@ -221,3 +221,24 @@
   debug: var=etherpad_api_calls_exec
   when: etherpad_api_calls_exec|d() and etherpad_api_calls_debug
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Etherpad local facts
+  template:
+    src: 'etc/ansible/facts.d/etherpad.fact.j2'
+    dest: '/etc/ansible/facts.d/etherpad.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: etherpad__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: etherpad__register_facts|changed
