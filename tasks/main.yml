@@ -117,28 +117,6 @@
     group: 'adm'
     mode: '0755'
 
-- name: Configure etherpad-lite system service
-  template:
-    src: 'etc/default/etherpad-lite.j2'
-    dest: '/etc/default/etherpad-lite'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
-- name: Install etherpad-lite init script
-  template:
-    src: 'etc/init.d/etherpad-lite.j2'
-    dest: '/etc/init.d/etherpad-lite'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  notify: [ 'Restart etherpad-lite' ]
-
-- name: Enable etherpad-lite service
-  service:
-    name: 'etherpad-lite'
-    enabled: yes
-
 - name: Install Etherpad dependencies
   command: bin/installDeps.sh
   args:
@@ -168,25 +146,58 @@
   when: etherpad_plugins is defined and etherpad_plugins
   tags: [ 'role::etherpad:plugins' ]
 
-- meta: flush_handlers
+- name: Configure etherpad-lite system service
+  template:
+    src: 'etc/default/etherpad-lite.j2'
+    dest: '/etc/default/etherpad-lite'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: ansible_service_mgr != 'systemd'
+
+- name: Install etherpad-lite init script
+  template:
+    src: 'etc/init.d/etherpad-lite.j2'
+    dest: '/etc/init.d/etherpad-lite'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: etherpad__register_sysvinit
+  when: ansible_service_mgr != 'systemd'
+
+- name: Install etherpad-lite systemd unit
+  template:
+    src: 'etc/systemd/system/etherpad-lite.service.j2'
+    dest: '/etc/systemd/system/etherpad-lite.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: etherpad__register_systemd
+  when: ansible_service_mgr == 'systemd'
+
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  when: (ansible_service_mgr == 'systemd' and
+         (etherpad__register_sysvinit|changed or
+          etherpad__register_systemd|changed))
 
 - name: Ensure that etherpad-lite is started
   service:
     name: 'etherpad-lite'
     state: 'started'
-  tags: [ 'role::etherpad:api' ]
+    enabled: True
+  when: (etherpad__register_sysvinit|changed or
+         etherpad__register_systemd|changed)
 
 - name: Wait for the API key file generation
   wait_for:
     path: '{{ etherpad_api_key_file }}'
     timeout: 30
-  tags: [ 'role::etherpad:api' ]
 
 - name: Wait for Etherpad application port to be reachable
   wait_for:
     port: '{{ etherpad_port }}'
     timeout: 30
-  tags: [ 'role::etherpad:api' ]
 
 - name: Get the generated API key
   command: cat {{ etherpad_api_key_file }}

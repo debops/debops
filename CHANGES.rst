@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.etherpad master: https://github.com/debops/ansible-etherpad/compare/v0.1.0...master
 
+Added
+~~~~~
+
+- Add support for running Etherpad via a :command:`systemd` service. [drybjed_]
+
 Changed
 ~~~~~~~
 
