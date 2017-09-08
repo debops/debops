@@ -123,6 +123,7 @@
     chdir: '{{ etherpad_home + "/" + etherpad_repository }}'
     creates: '{{ etherpad_home }}/.node-gyp'
   become_user: '{{ etherpad_user }}'
+  when: etherpad_register_checkout|changed
 
 - name: Install sqlite3 NPM dependency for Etherpad
   npm:
