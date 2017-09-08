@@ -132,13 +132,21 @@ See also: https://github.com/debops/ansible-etherpad/pull/16/files#r41485963
   "users": {
 {% for name in etherpad_admins %}
     "{{ name }}": {
-      "password": "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/etherpad/admins/' + name) }}",
+{% if 'ep_hash_auth' in (etherpad__default_plugins + etherpad_plugins) %}
+      "hash": "{{ lookup('pipe', 'printf "%s" "' + lookup('password', secret + '/credentials/' + inventory_hostname + '/etherpad/admins/' + name) + '" | sha512sum | cut -f1 -d" "') }}",
+{% else %}
+      "password": "{{ lookup('password', secret + '/credentials/' + inventory_hostname + '/etherpad/admins/' + name) }}",
+{% endif %}
       "is_admin": true
     },
 {% endfor %}
 {% for name in etherpad_users %}
     "{{ name }}": {
-      "password": "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/etherpad/users/' + name) }}",
+{% if 'ep_hash_auth' in (etherpad__default_plugins + etherpad_plugins) %}
+      "hash": "{{ lookup('pipe', 'printf "%s\n" "' + lookup('password', secret + '/credentials/' + inventory_hostname + '/etherpad/users/' + name) + '" | sha512sum | cut -f1 -d" "') }}",
+{% else %}
+      "password": "{{ lookup('password', secret + '/credentials/' + inventory_hostname + '/etherpad/users/' + name) }}",
+{% endif %}
       "is_admin": false
     },
 {% endfor %}

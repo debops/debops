@@ -21,6 +21,9 @@ Added
 
 - Add support for running Etherpad via a :command:`systemd` service. [drybjed_]
 
+- Add support for storing a SHA512 hashed passwords in the Etherpad
+  configuration file. [drybjed_]
+
 Changed
 ~~~~~~~
 
@@ -43,6 +46,9 @@ Changed
   role dependent variables. [drybjed_]
 
 - Configure log rotation through role dependent variables. [drybjed_]
+
+- The admin and user passwords are now stored in the :file:`secret/` directory
+  based on the inventory hostname instead of the DNS domain. [drybjed_]
 
 
 debops.etherpad v0.1.0 - 2015-09-15

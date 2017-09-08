@@ -248,10 +248,10 @@ etherpad_users: []
                                                                    # ]]]
 # .. envvar:: etherpad_password_hashing_algo [[[
 #
-# TODO: Not implemented yet.
 # Hashing algorithm to use for handling passwords.
 # See https://github.com/LaKing/ep_hash_auth for details.
-etherpad_password_hashing_algo: 'bcrypt'
+# Currently only 'sha512' is supported by the role.
+etherpad_password_hashing_algo: 'sha512'
 
                                                                    # ]]]
 # .. envvar:: etherpad_password_hashing_rounds [[[
@@ -314,16 +314,13 @@ etherpad__default_plugins:
                if (etherpad__database == "sqlite")
                else "absent" }}'
 
+  - 'bcrypt'
   - 'ep_adminpads'
   - 'ep_align'
   - 'ep_font_color'
   - 'ep_font_family'
   - 'ep_font_size'
-
-  # TODO(ypid_): The current version (1.0.2) only supports SHA2. I replaced the
-  # SHA2 with bcrypt and am wanting for response from the maintainer.
-  # - 'ep_hash_auth'
-
+  - 'ep_hash_auth'
   - 'ep_headings'
   - 'ep_hide_referrer'
   - 'ep_line_height'
