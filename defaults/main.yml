@@ -305,18 +305,15 @@ etherpad_trust_proxy: False
 etherpad_abiword: True
 
                                                                    # ]]]
-# .. envvar:: etherpad_plugins [[[
-#
-# List of Etherpad plugins to enable.
-# Checkout the list of available plugins for more: https://static.etherpad.org/plugins.html.
-etherpad_plugins:
-  - '{{ etherpad_default_plugins }}'
-
-                                                                   # ]]]
-# .. envvar:: etherpad_default_plugins [[[
+# .. envvar:: etherpad__default_plugins [[[
 #
 # Default Etherpad plugin list (alphabetically sorted).
-etherpad_default_plugins:
+etherpad__default_plugins:
+  - name: 'sqlite3'
+    state: '{{ "present"
+               if (etherpad__database == "sqlite")
+               else "absent" }}'
+
   - 'ep_adminpads'
   - 'ep_align'
   - 'ep_font_color'
@@ -339,6 +336,14 @@ etherpad_default_plugins:
   - 'ep_scrollto'
   - 'ep_subscript'
   - 'ep_superscript'
+
+                                                                   # ]]]
+# .. envvar:: etherpad_plugins [[[
+#
+# List of additional Etherpad plugins to enable.
+# Checkout the list of available plugins for more:
+# https://static.etherpad.org/plugins.html.
+etherpad_plugins: []
                                                                    # ]]]
                                                                    # ]]]
 # Other options [[[
