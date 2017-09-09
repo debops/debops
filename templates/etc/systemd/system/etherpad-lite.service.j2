@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Etherpad-lite, the collaborative editor.
+After=syslog.target network-online.target mysql.service postgresql.service
+Conflicts=shutdown.target
+
+[Service]
+Type=simple
+User={{ etherpad_user }}
+Group={{ etherpad_group }}
+WorkingDirectory={{ etherpad_home + "/" + etherpad_repository }}
+ExecStart=/usr/bin/nodejs {{ etherpad_home + "/" + etherpad_repository }}/node_modules/ep_etherpad-lite/node/server.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -2,23 +2,13 @@
 
 - name: Install required Etherpad packages
   apt:
-    pkg: '{{ item }}'
-    state: 'latest'
-    install_recommends: no
-  with_items:
-    - build-essential
-    - pkg-config
-    - libssl-dev
-    - libpq-dev
-    - curl
-    - git
-
-- name: Install Abiword if enabled
-  apt:
-    pkg: 'abiword'
-    state: 'latest'
-    install_recommends: no
-  when: etherpad_abiword is defined and etherpad_abiword
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - '{{ etherpad__base_packages }}'
+    - '{{ etherpad__document_packages if etherpad_abiword|bool else [] }}'
+    - '{{ etherpad__packages }}'
 
 - name: Create Etherpad system group
   group:
@@ -119,15 +109,6 @@
   notify: [ 'Restart etherpad-lite' ]
   tags: [ 'role::etherpad:config' ]
 
-- name: Reserve Etherpad port
-  template:
-    src: 'etc/services.d/50_etherpad-lite.j2'
-    dest: '/etc/services.d/50_etherpad-lite'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Assemble services.d' ]
-
 - name: Create log directory
   file:
     path: '/var/log/etherpad-lite'
@@ -136,16 +117,35 @@
     group: 'adm'
     mode: '0755'
 
+- name: Install Etherpad dependencies
+  command: bin/installDeps.sh
+  args:
+    chdir: '{{ etherpad_home + "/" + etherpad_repository }}'
+    creates: '{{ etherpad_home }}/.node-gyp'
+  become_user: '{{ etherpad_user }}'
+  when: etherpad_register_checkout|changed
+
+- name: Manage Etherpad plugins
+  npm:
+    name: '{{ item.name | d(item) }}'
+    path: '{{ etherpad_home + "/" + etherpad_repository }}'
+    state: '{{ item.state | d("present") }}'
+    production: yes
+  with_flattened:
+    - '{{ etherpad__default_plugins }}'
+    - '{{ etherpad_plugins }}'
+  become_user: '{{ etherpad_user }}'
+  notify: [ 'Restart etherpad-lite' ]
+  tags: [ 'role::etherpad:plugins' ]
+
 - name: Configure etherpad-lite system service
   template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
+    src: 'etc/default/etherpad-lite.j2'
+    dest: '/etc/default/etherpad-lite'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items:
-    - 'etc/default/etherpad-lite'
-    - 'etc/logrotate.d/etherpad-lite'
+  when: ansible_service_mgr != 'systemd'
 
 - name: Install etherpad-lite init script
   template:
@@ -154,67 +154,48 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  notify: [ 'Restart etherpad-lite' ]
+  register: etherpad__register_sysvinit
+  when: ansible_service_mgr != 'systemd'
 
-- name: Enable etherpad-lite service
-  service:
-    name: 'etherpad-lite'
-    enabled: yes
+- name: Install etherpad-lite systemd unit
+  template:
+    src: 'etc/systemd/system/etherpad-lite.service.j2'
+    dest: '/etc/systemd/system/etherpad-lite.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: etherpad__register_systemd
+  when: ansible_service_mgr == 'systemd'
 
-- name: Install Etherpad dependencies
-  command: bin/installDeps.sh
-  args:
-    chdir: '{{ etherpad_home + "/" + etherpad_repository }}'
-    creates: '{{ etherpad_home }}/.node-gyp'
-  become_user: '{{ etherpad_user }}'
-
-- name: Install sqlite3 NPM dependency for Etherpad
-  npm:
-    name: 'sqlite3'
-    path: '{{ etherpad_home + "/" + etherpad_repository }}'
-    state: 'present'
-    production: yes
-  become_user: '{{ etherpad_user }}'
-  notify: [ 'Restart etherpad-lite' ]
-  when: etherpad_database == 'sqlite'
-
-- name: Manage Etherpad plugins
-  npm:
-    name: 'ep_{{ item }}'
-    path: '{{ etherpad_home + "/" + etherpad_repository }}'
-    state: 'present'
-    production: yes
-  with_flattened: etherpad_plugins
-  become_user: '{{ etherpad_user }}'
-  notify: [ 'Restart etherpad-lite' ]
-  when: etherpad_plugins is defined and etherpad_plugins
-  tags: [ 'role::etherpad:plugins' ]
-
-- meta: flush_handlers
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  when: (ansible_service_mgr == 'systemd' and
+         (etherpad__register_sysvinit|changed or
+          etherpad__register_systemd|changed))
 
 - name: Ensure that etherpad-lite is started
   service:
     name: 'etherpad-lite'
     state: 'started'
-  tags: [ 'role::etherpad:api' ]
+    enabled: True
+  when: (etherpad__register_sysvinit|changed or
+         etherpad__register_systemd|changed)
 
 - name: Wait for the API key file generation
   wait_for:
     path: '{{ etherpad_api_key_file }}'
     timeout: 30
-  tags: [ 'role::etherpad:api' ]
 
 - name: Wait for Etherpad application port to be reachable
   wait_for:
     port: '{{ etherpad_port }}'
     timeout: 30
-  tags: [ 'role::etherpad:api' ]
 
 - name: Get the generated API key
   command: cat {{ etherpad_api_key_file }}
   register: etherpad_api_key
   changed_when: False
-  always_run: yes
+  check_mode: False
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
 - name: Make API calls
@@ -223,7 +204,7 @@
   register: etherpad_api_calls_exec
   ## error while evaluating conditional???
   # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()
-  with_items: etherpad_api_calls
+  with_items: '{{ etherpad_api_calls }}'
   no_log: True
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
@@ -231,3 +212,24 @@
   debug: var=etherpad_api_calls_exec
   when: etherpad_api_calls_exec|d() and etherpad_api_calls_debug
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Etherpad local facts
+  template:
+    src: 'etc/ansible/facts.d/etherpad.fact.j2'
+    dest: '/etc/ansible/facts.d/etherpad.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: etherpad__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: etherpad__register_facts|changed

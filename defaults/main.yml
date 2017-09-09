@@ -1,95 +1,132 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.etherpad default variables [[[
+# =====================================
 
 # .. contents:: Sections
 #    :local:
 #
-# ----------------------------------------
-#   Application user, group, directories
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: etherpad__base_packages [[[
+#
+# List of base APT packages required for Etherpad.
+etherpad__base_packages: [ 'build-essential', 'pkg-config', 'libssl-dev',
+                           'libpq-dev', 'curl', 'git' ]
+
+                                                                   # ]]]
+# .. envvar:: etherpad__document_packages [[[
+#
+# List of APT packages to install for document import/export support.
+etherpad__document_packages: [ 'abiword' ]
+
+                                                                   # ]]]
+# .. envvar:: etherpad__packages [[[
+#
+# List of additional APT packages to install with Etherpad.
+etherpad__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Application user, group, directories [[[
 # ----------------------------------------
 
-# .. envvar:: etherpad_system_name
+# .. envvar:: etherpad_system_name [[[
 #
 # Base name for Etherpad instance
 etherpad_system_name: 'etherpad-lite'
 
-
-# .. envvar:: etherpad_user
+                                                                   # ]]]
+# .. envvar:: etherpad_user [[[
 #
 # Name of the system user account for Etherpad.
 etherpad_user: '{{ etherpad_system_name }}'
 
-
-# .. envvar:: etherpad_group
+                                                                   # ]]]
+# .. envvar:: etherpad_group [[[
 #
 # Name of the system group account for Etherpad.
 etherpad_group: '{{ etherpad_system_name }}'
 
-
-# .. envvar:: etherpad_home
+                                                                   # ]]]
+# .. envvar:: etherpad_home [[[
 #
 # Home directory of Etherpad.
 etherpad_home: '{{ (ansible_local.root.app
-                if (ansible_local|d() and ansible_local.root|d() and
-                    ansible_local.root.app|d())
-                else "/var/local") + "/" + etherpad_user }}'
+                    if (ansible_local|d() and ansible_local.root|d() and
+                        ansible_local.root.app|d())
+                    else "/var/local") + "/" + etherpad_user }}'
 
-
-# .. envvar:: etherpad_src_dir
+                                                                   # ]]]
+# .. envvar:: etherpad_src_dir [[[
 #
 # Etherpad sources root directory.
 etherpad_src_dir: '{{ (ansible_local.root.src
-                         if (ansible_local|d() and ansible_local.root|d() and
-                             ansible_local.root.src|d())
-                         else "/usr/local/src") + "/" + etherpad_system_name }}'
+                       if (ansible_local|d() and ansible_local.root|d() and
+                           ansible_local.root.src|d())
+                       else "/usr/local/src") + "/" + etherpad_system_name }}'
 
-
-# .. envvar:: etherpad_log_dir
+                                                                   # ]]]
+# .. envvar:: etherpad_log_dir [[[
 #
 # Path where Etherpad logs are stored.
 etherpad_log_dir: '{{ (ansible_local.root.log
-                         if (ansible_local|d() and ansible_local.root|d() and
-                             ansible_local.root.log|d())
-                         else "/var/log") + "/" + etherpad_system_name }}'
+                       if (ansible_local|d() and ansible_local.root|d() and
+                           ansible_local.root.log|d())
+                       else "/var/log") + "/" + etherpad_system_name }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
 
-
-# -------------------
-#   Basic configuration
-# -------------------
-
-# .. envvar:: etherpad_version
+# .. envvar:: etherpad_version [[[
 #
 # Etherpad git version to install.
 etherpad_version: 'develop'
 
+                                                                   # ]]]
+# .. envvar:: etherpad_source_address [[[
+#
+# git repository address.
+etherpad_source_address: 'https://github.com/ether'
 
-# .. envvar:: etherpad_dependencies
+                                                                   # ]]]
+# .. envvar:: etherpad_repository [[[
+#
+# git repository name.
+etherpad_repository: 'etherpad-lite'
+
+                                                                   # ]]]
+# .. envvar:: etherpad_dependencies [[[
 #
 # Should the ``debops.etherpad`` role manage it's own dependencies (database, web server)?
 etherpad_dependencies: True
 
-
-# .. envvar:: etherpad_domain
+                                                                   # ]]]
+# .. envvar:: etherpad_domain [[[
 #
 # What domain will be configured for Etherpad.
 etherpad_domain: [ 'pad.{{ ansible_domain }}' ]
 
-
-# .. envvar:: etherpad_title
+                                                                   # ]]]
+# .. envvar:: etherpad_title [[[
 #
 # Title of the Etherpad instance.
 etherpad_title: 'Etherpad'
 
-
-# .. envvar:: etherpad_mail_admin
+                                                                   # ]]]
+# .. envvar:: etherpad_mail_admin [[[
 #
 # E-mail address of the instance administrator, will be shown on each new pad
 # (see ``etherpad_welcome_text`` below).
 etherpad_mail_admin: 'root@{{ ansible_domain }}'
 
-
-# .. envvar:: etherpad_welcome_text
+                                                                   # ]]]
+# .. envvar:: etherpad_welcome_text [[[
 #
 # Text displayed on all new pads by default.
 etherpad_welcome_text: |
@@ -98,221 +135,257 @@ etherpad_welcome_text: |
   This pad is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents.
 
   Contact with administrator: mailto:{{ etherpad_mail_admin }}
+# ]]]
+# ]]]
+# Database and network [[[
+# ------------------------
 
-
-# -------------------
-#   Database and network
-# -------------------
-
-# .. envvar:: etherpad_database_server
+# .. envvar:: etherpad_database_server [[[
 #
 # FQDN of the MariaDB database host. It will be configured by
-# the ``debops.mariadb`` role.
+# the debops.mariadb_ role.
 etherpad_database_server: '{{ ansible_local.mariadb.server
-                  if (ansible_local|d() and ansible_local.mariadb|d() and
-                      ansible_local.mariadb.server|d())
-                  else "" }}'
+                              if (ansible_local|d() and ansible_local.mariadb|d() and
+                                  ansible_local.mariadb.server|d())
+                              else "" }}'
 
-
-# .. envvar:: etherpad_database_user
+                                                                   # ]]]
+# .. envvar:: etherpad_database_user [[[
 #
 # MariaDB database user to use for Etherpad.
 etherpad_database_user: '{{ etherpad_system_name }}'
 
-
-# .. envvar:: etherpad_database_name
+                                                                   # ]]]
+# .. envvar:: etherpad_database_name [[[
 #
 # Name of the MariaDB database to use for Etherpad.
 etherpad_database_name: '{{ etherpad_system_name }}'
 
-
-# .. envvar:: etherpad_database_password
+                                                                   # ]]]
+# .. envvar:: etherpad_database_password [[[
 #
 # MariaDB database password for the Etherpad database user.
-etherpad_database_password: "{{ lookup('password', secret + '/mariadb/' +
-                                (ansible_local.mariadb.delegate_to + '/'
-                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()
-                                    else '') +
-                                (ansible_local.mariadb.port + '/'
-                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d()
-                                    else '') +
-                                '/credentials/' + etherpad_database_user +
-                                '/password length=48') }}"
+etherpad_database_password: "{{ lookup('password', secret + '/mariadb/'
+                                + (ansible_local.mariadb.delegate_to + '/'
+                                   if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()
+                                   else '')
+                                + (ansible_local.mariadb.port + '/'
+                                   if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d()
+                                   else '')
+                                + '/credentials/' + etherpad_database_user + '/password length=48') }}"
 
-
-# .. envvar:: etherpad_database
+                                                                   # ]]]
+# .. envvar:: etherpad__database [[[
 #
 # Database to use for data storage (choices: sqlite, mysql, postgresql,
 # dirty). Choose mysql even when you use different mysql flavors. More
 # databases will be available in the future.
-etherpad_database: sqlite
+etherpad__database: '{{ "mysql"
+                        if (ansible_local|d() and ansible_local.mariadb is defined)
+                        else "sqlite" }}'
 
-
-# Connection type used for the database
+                                                                   # ]]]
+# .. envvar:: etherpad_database_connection [[[
+#
+# Connection type used for the database.
 etherpad_database_connection: 'socket'
 
-# IP address and port where etherpad-lite daemon will listen for connections
+                                                                   # ]]]
+# .. envvar:: etherpad_database_config [[[
+#
+# Etherpad database configuration map.
+etherpad_database_config:
+  dirty:
+    filename: 'var/dirty.db'
+  sqlite:
+    filename: 'var/sqlite.db'
+  mysql:
+    hostname: '{{ etherpad_database_server }}'
+    username: '{{ etherpad_database_user }}'
+    database: '{{ etherpad_database_name }}'
+    password: '{{ etherpad_database_password }}'
+    socket:   '/var/run/mysqld/mysqld.sock'
+    port:     '3306'
+  postgresql:
+    hostname: 'localhost'
+    username: '{{ etherpad_database_user }}'
+    database: '{{ etherpad_database_name }}'
+    password: '{{ etherpad_database_password }}'
+    socket:   '/var/run/postgresql'
+    port:     '5432'
+
+                                                                   # ]]]
+# .. envvar:: etherpad_bind [[[
+#
+# IP address where etherpad-lite daemon will listen for connections.
 etherpad_bind: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: etherpad_port [[[
+#
+# Port where etherpad-lite daemon will listen for connections.
 etherpad_port: '9001'
+                                                                   # ]]]
+                                                                   # ]]]
+# Authentication [[[
+# ------------------
 
-
-# -------------------
-#   Authentication
-# -------------------
-
-# .. envvar:: etherpad_admins
+# .. envvar:: etherpad_admins [[[
 #
 # List of Etherpad administrative accounts. Passwords are generated
 # automatically and are saved in the secret/ directory. Refer to the
-# ``debops.secret`` role for more details.
+# debops.secret_ role for more details.
 etherpad_admins: [ 'admin' ]
 
-# .. envvar:: etherpad_admins
+                                                                   # ]]]
+# .. envvar:: etherpad_users [[[
 #
 # List of Etherpad user accounts. Passwords are generated automatically and
-# are saved in the secret/ directory. Refer to the ``debops.secret`` role for
+# are saved in the secret/ directory. Refer to the debops.secret_ role for
 # more details.
 etherpad_users: []
 
-
-# .. envvar:: etherpad_password_hashing_algo
+                                                                   # ]]]
+# .. envvar:: etherpad_password_hashing_algo [[[
 #
-# TODO: Not implemented yet.
 # Hashing algorithm to use for handling passwords.
 # See https://github.com/LaKing/ep_hash_auth for details.
-etherpad_password_hashing_algo: 'bcrypt'
+# Currently only 'sha512' is supported by the role.
+etherpad_password_hashing_algo: 'sha512'
 
-
-# .. envvar:: etherpad_password_hashing_rounds
+                                                                   # ]]]
+# .. envvar:: etherpad_password_hashing_rounds [[[
 #
 # TODO: Not implemented yet.
-# How much rounds the hashing algorithm should do before using using the password hash.
-# This option depends on the hashing algorithm selected by :ref:`etherpad_password_hashing_algo`.
-# Some hashing algorithms implementations may not support rounds. The SHA
-# family currently does not and defaults to one round which is considered
-# insecure. bcrypt however does support it.
+# How much rounds the hashing algorithm should do before using using the
+# password hash.  This option depends on the hashing algorithm selected by
+# :envvar:`etherpad_password_hashing_algo`. Some hashing algorithms
+# implementations may not support rounds. The SHA family currently does not and
+# defaults to one round which is considered insecure. bcrypt however does
+# support it.
 etherpad_password_hashing_rounds: '10'
 
-
-# .. envvar:: etherpad_require_authentication
+                                                                   # ]]]
+# .. envvar:: etherpad_require_authentication [[[
 #
 # Require authentication from all users.
 etherpad_require_authentication: False
 
-
-# .. envvar:: etherpad_require_authorization
+                                                                   # ]]]
+# .. envvar:: etherpad_require_authorization [[[
 #
 # Require authorization by a module or user with ``is_admin = True``.
 etherpad_require_authorization: False
 
-
-# .. envvar:: etherpad_require_session
+                                                                   # ]]]
+# .. envvar:: etherpad_require_session [[[
 #
 # Require session to access pads.
 etherpad_require_session: False
 
-
-# .. envvar:: etherpad_edit_only
+                                                                   # ]]]
+# .. envvar:: etherpad_edit_only [[[
 #
 # Users may edit pads but not create new ones. Pad creation is only via the
 # API. This applies both to group pads and regular pads.
 etherpad_edit_only: False
 
-
-# .. envvar:: etherpad_trust_proxy
+                                                                   # ]]]
+# .. envvar:: etherpad_trust_proxy [[[
 #
 # Trust the reverse proxy (nginx)?
 etherpad_trust_proxy: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Etherpad customization [[[
+# --------------------------
 
-
-# -------------------
-#   Etherpad customization
-# -------------------
-
-# .. envvar:: etherpad_abiword
+# .. envvar:: etherpad_abiword [[[
 #
 # Enable Abiword support (for document import)?
 etherpad_abiword: True
 
-
-# .. envvar:: etherpad_plugins
-#
-# List of Etherpad plugins to enable.
-# Checkout the list of available plugins for more: https://static.etherpad.org/plugins.html.
-etherpad_plugins:
-  - '{{ etherpad_default_plugins }}'
-
-
-# .. envvar:: etherpad_default_plugins
+                                                                   # ]]]
+# .. envvar:: etherpad__default_plugins [[[
 #
 # Default Etherpad plugin list (alphabetically sorted).
-etherpad_default_plugins:
-  - 'adminpads'
-  - 'align'
-  - 'font_color'
-  - 'font_family'
-  - 'font_size'
+etherpad__default_plugins:
+  - name: 'sqlite3'
+    state: '{{ "present"
+               if (etherpad__database == "sqlite")
+               else "absent" }}'
 
-  ## TODO(ypid): The current version (1.0.2) only supports SHA2. I replaced the SHA2 with bcrypt and am wanting for response from the maintainer.
-  # - 'hash_auth'
+  - 'bcrypt'
+  - 'ep_adminpads'
+  - 'ep_align'
+  - 'ep_font_color'
+  - 'ep_font_family'
+  - 'ep_font_size'
+  - 'ep_hash_auth'
+  - 'ep_headings'
+  - 'ep_hide_referrer'
+  - 'ep_line_height'
+  - 'ep_linkify'
+  - 'ep_message_all'
+  - 'ep_padlist'
+  - 'ep_page_view'
+  - 'ep_print'
+  - 'ep_rss'
+  - 'ep_scrollto'
+  - 'ep_subscript'
+  - 'ep_superscript'
 
-  - 'headings'
-  - 'hide_referrer'
-  - 'line_height'
-  - 'linkify'
-  - 'message_all'
-  - 'padlist'
-  - 'page_view'
-  - 'print'
-  - 'rss'
-  - 'scrollto'
-  - 'subscript'
-  - 'superscript'
+                                                                   # ]]]
+# .. envvar:: etherpad_plugins [[[
+#
+# List of additional Etherpad plugins to enable.
+# Checkout the list of available plugins for more:
+# https://static.etherpad.org/plugins.html.
+etherpad_plugins: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Other options [[[
+# -----------------
 
-
-# -------------------
-#   Other options
-# -------------------
-
-# .. envvar:: etherpad_allow
+# .. envvar:: etherpad_allow [[[
 #
 # Allow access only from selected IP addresses/CIDR networks. If empty, allow
 # access from everywhere.
 etherpad_allow: []
 
-
-# .. envvar:: etherpad_minify
+                                                                   # ]]]
+# .. envvar:: etherpad_minify [[[
 #
 # Minify CSS and JS assets?
 etherpad_minify: True
 
-
-# .. envvar:: etherpad_max_age
+                                                                   # ]]]
+# .. envvar:: etherpad_max_age [[[
 #
 # Maximum age of cached assets (6 hours by default).
 etherpad_max_age: '{{ (60 * 60 * 6) }}'
 
-
-# .. envvar:: etherpad_disable_ip_logging
+                                                                   # ]]]
+# .. envvar:: etherpad_disable_ip_logging [[[
 #
 # Disable IP addresses in logs?
 etherpad_disable_ip_logging: False
 
-
-# .. envvar:: etherpad_loglevel
+                                                                   # ]]]
+# .. envvar:: etherpad_loglevel [[[
 #
 # Etherpad log level (choices: DEBUG, INFO, WARN, ERROR)
 etherpad_loglevel: 'INFO'
 
-
-# .. envvar:: etherpad_custom_json
+                                                                   # ]]]
+# .. envvar:: etherpad_custom_json [[[
 #
 # Here you can define custom settings.json entries in YAML format, which will
 # be converted to JSON and put at the end of the configuration file.
 etherpad_custom_json: False
 
-
-# .. envvar:: etherpad_api_calls
+                                                                   # ]]]
+# .. envvar:: etherpad_api_calls [[[
 #
 # Allows you configure all aspects of Etherpad via its API.
 # See http://etherpad.org/doc/v1.5.1/#index_api_methods for details.
@@ -321,16 +394,149 @@ etherpad_api_calls: []
   #   args:
   #     'padID': 'testing'
 
-
-# .. envvar:: etherpad_api_version
+                                                                   # ]]]
+# .. envvar:: etherpad_api_version [[[
 #
 # Against which API version should the API calls be executed?
-# Only applies for :ref:`etherpad_api_calls`.
+# Only applies for :envvar:`etherpad_api_calls`.
 etherpad_api_version: '1.2.12'
 
+                                                                   # ]]]
+# .. envvar:: etherpad_apki_key_file [[[
+#
+# Filepath of the API key file.
+etherpad_api_key_file: '{{ etherpad_home + "/" + etherpad_repository }}/APIKEY.txt'
 
-# .. envvar:: etherpad_api_calls_debug
+                                                                   # ]]]
+# .. envvar:: etherpad_api_calls_debug [[[
 #
 # If True, you will get debugging output for the API calls defined by
-# :ref:`etherpad_api_calls`. Default is False.
+# :envvar:`etherpad_api_calls`. Default is False.
 etherpad_api_calls_debug: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: etherpad__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+etherpad__etc_services__dependent_list:
+
+  - name: 'etherpad-lite'
+    port: '{{ etherpad_port }}'
+    comment: 'Etherpad Lite'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__logrotate__dependent_config [[[
+#
+# Configuration for the debops.logrotate_ Ansible role.
+etherpad__logrotate__dependent_config:
+
+  - filename: 'etherpad-lite'
+    log: '{{ etherpad_log_dir + "/*.log" }}'
+    options: |
+      weekly
+      missingok
+      rotate 4
+      compress
+      notifempty
+      create 644 {{ etherpad_user }} {{ etherpad_group }}
+    comment: 'Logrotate configuration for etherpad-lite'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__mariadb__dependent_users [[[
+#
+# User configuration for the debops.mariadb_ Ansible role.
+etherpad__mariadb__dependent_users:
+
+  - name: '{{ etherpad_database_user }}'
+    password: '{{ etherpad_database_password }}'
+    owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    home: '{{ etherpad_home }}'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__mariadb__dependent_databases [[[
+#
+# Database configuration for the debops.mariadb_ Ansible role.
+etherpad__mariadb__dependent_databases:
+
+  - database: '{{ etherpad_database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the debops.nginx_ Ansible role.
+etherpad__nginx__dependent_upstreams:
+
+  - name: '{{ etherpad_system_name }}'
+    enabled: True
+    server: '127.0.0.1:{{ etherpad_port }}'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__nginx__dependent_servers [[[
+#
+# Server configuration for the debops.nginx_ Ansible role.
+etherpad__nginx__dependent_servers:
+  - by_role: 'debops.etherpad'
+    enabled: True
+    favicon: False
+    name: '{{ etherpad_domain }}'
+    filename: 'debops.etherpad'
+
+    location:
+
+      # Allow normal files to pass through
+      '~ ^/(locales/|locales.json|admin/|static/|pluginfw/|javascripts/|socket.io/|ep/|minified/|api/|ro/|error/|jserror/|favicon.ico|robots.txt)': |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_pass http://{{ etherpad_system_name }};
+
+      # Redirect to force /p/* URLs to the friendly version
+      '/p/': |
+        rewrite ^/p/(.*) /$1 redirect;
+
+      # Handle redirects
+      '/redirect': |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_pass http://{{ etherpad_system_name }};
+
+      # Match the home page
+      '~ ^/$': |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_pass http://{{ etherpad_system_name }};
+
+      # Handle pad URLs here
+      '/': |
+        rewrite ^/admin(.*) /admin/$1 redirect;
+        rewrite ^/list(.*) /list break;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_pass http://{{ etherpad_system_name }}/p/;
+        proxy_redirect / /p/;
+
+    location_allow:
+
+      '~ ^/(locales/|locales.json|admin/|static/|pluginfw/|javascripts/|socket.io/|ep/|minified/|api/|ro/|error/|jserror/|favicon.ico|robots.txt)': '{{ etherpad_allow }}'
+
+      '/p/': '{{ etherpad_allow }}'
+
+      '/redirect': '{{ etherpad_allow }}'
+
+      '~ ^/$': '{{ etherpad_allow }}'
+
+      '/': '{{ etherpad_allow }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

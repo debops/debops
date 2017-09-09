@@ -1,0 +1,52 @@
+---
+
+- name: Manage Etherpad service
+  hosts: [ 'debops_service_etherpad' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ etherpad__etc_services__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ etherpad__logrotate__dependent_config }}'
+
+    - role: debops.nodejs
+      tags: [ 'role::nodejs' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb__dependent_users:
+        - '{{ etherpad__mariadb__dependent_users }}'
+      mariadb__dependent_databases:
+        - '{{ etherpad__mariadb__dependent_databases }}'
+      when: etherpad__database == 'mysql'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers:
+        - '{{ etherpad__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ etherpad__nginx__dependent_upstreams }}'
+
+    - role: debops.etherpad
+      tags: [ 'role::etherpad' ]
