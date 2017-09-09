@@ -200,6 +200,8 @@ Changed
 - Update playbooks for new versions of debops.postfix_, debops.mailman_,
   debops.dovecot_ and debops.smstools_ roles. [drybjed_]
 
+- Update the debops.etherpad_ playbook. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
