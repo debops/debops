@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.etherpad master`_ - unreleased
 --------------------------------------
 
-.. _debops.etherpad master: https://github.com/debops/ansible-etherpad/compare/v0.1.0...master
+.. _debops.etherpad master: https://github.com/debops/ansible-etherpad/compare/v0.2.0...master
+
+
+`debops.etherpad v0.2.0`_ - 2017-09-09
+--------------------------------------
+
+.. _debops.etherpad v0.2.0: https://github.com/debops/ansible-etherpad/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
