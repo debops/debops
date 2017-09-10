@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.mariadb_server master`_ - unreleased
 --------------------------------------------
 
-.. _debops.mariadb_server master: https://github.com/debops/ansible-mariadb_server/compare/v0.2.4...master
+.. _debops.mariadb_server master: https://github.com/debops/ansible-mariadb_server/compare/v0.2.5...master
+
+
+`debops.mariadb_server v0.2.5`_ - 2017-09-10
+--------------------------------------------
+
+.. _debops.mariadb_server v0.2.5: https://github.com/debops/ansible-mariadb_server/compare/v0.2.4...v0.2.5
 
 Added
 ~~~~~
