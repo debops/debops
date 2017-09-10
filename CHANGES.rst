@@ -37,6 +37,10 @@ Changed
   and server are setup on the same host and the inventory name doesn't
   correspond with the FQDN of the host. [ganto_]
 
+- Generate client configuration in different files depending on the presence of
+  :file:`/etc/mysql/mariadb.conf.d/` directory. This should fix problems with
+  Ansible configuration not applied on MariaDB on newer OS releases. [drybjed_]
+
 
 `debops.mariadb v0.2.2`_ - 2016-08-01
 -------------------------------------

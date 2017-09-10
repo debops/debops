@@ -64,10 +64,15 @@
     - '{{ mariadb__packages_map[mariadb__flavor] }}'
     - '{{ mariadb__packages }}'
 
+- name: Check if MariaDB config directory exists
+  stat:
+    path: '/etc/mysql/mariadb.conf.d'
+  register: mariadb__register_confd
+
 - name: Configure database client defaults
   template:
     src: 'etc/mysql/conf.d/client.cnf.j2'
-    dest: '/etc/mysql/conf.d/client.cnf'
+    dest: '{{ mariadb__client_cnf_file }}'
     owner: 'root'
     group: 'root'
     mode: '0644'

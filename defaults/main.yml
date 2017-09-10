@@ -229,6 +229,15 @@ mariadb__client_options:
 #
 # Dictionary or list with custom MariaDB client options.
 mariadb__options: {}
+
+                                                                   # ]]]
+# .. envvar:: mariadb__client_cnf_file [[[
+#
+# Absolute path for the client configuration file managed by the
+# ``debops.mariadb`` Ansible role.
+mariadb__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
+                              if (mariadb__register_confd.stat.exists|bool)
+                              else "/etc/mysql/conf.d/zz-client.cnf" }}'
                                                                    # ]]]
                                                                    # ]]]
 # SSL configuration [[[
