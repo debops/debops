@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.mariadb_server master`_ - unreleased
 --------------------------------------------
 
-.. _debops.mariadb_server master: https://github.com/debops/ansible-mariadb_server/compare/v0.2.4...master
+.. _debops.mariadb_server master: https://github.com/debops/ansible-mariadb_server/compare/v0.2.5...master
+
+
+`debops.mariadb_server v0.2.5`_ - 2017-09-10
+--------------------------------------------
+
+.. _debops.mariadb_server v0.2.5: https://github.com/debops/ansible-mariadb_server/compare/v0.2.4...v0.2.5
 
 Added
 ~~~~~
@@ -37,6 +43,11 @@ Changed
 
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
+
+- Generate server and client configuration in different files depending on the
+  presence of :file:`/etc/mysql/mariadb.conf.d/` directory. This should fix
+  problems with Ansible configuration not applied on MariaDB on newer OS
+  releases. [drybjed_]
 
 
 `debops.mariadb_server v0.2.4`_ - 2016-08-01
