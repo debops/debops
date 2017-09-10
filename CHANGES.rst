@@ -19,7 +19,13 @@ new release.
 `debops.mariadb master`_ - unreleased
 -------------------------------------
 
-.. _debops.mariadb master: https://github.com/debops/ansible-mariadb/compare/v0.2.2...master
+.. _debops.mariadb master: https://github.com/debops/ansible-mariadb/compare/v0.2.3...master
+
+
+`debops.mariadb v0.2.3`_ - 2017-09-10
+-------------------------------------
+
+.. _debops.mariadb v0.2.3: https://github.com/debops/ansible-mariadb/compare/v0.2.2...v0.2.3
 
 Added
 ~~~~~
@@ -36,6 +42,10 @@ Changed
   manual definition of :envvar:`mariadb__delegate_to` unnecessary in case the client
   and server are setup on the same host and the inventory name doesn't
   correspond with the FQDN of the host. [ganto_]
+
+- Generate client configuration in different files depending on the presence of
+  :file:`/etc/mysql/mariadb.conf.d/` directory. This should fix problems with
+  Ansible configuration not applied on MariaDB on newer OS releases. [drybjed_]
 
 
 `debops.mariadb v0.2.2`_ - 2016-08-01
