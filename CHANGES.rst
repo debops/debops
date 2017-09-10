@@ -19,7 +19,13 @@ new release.
 `debops.mariadb master`_ - unreleased
 -------------------------------------
 
-.. _debops.mariadb master: https://github.com/debops/ansible-mariadb/compare/v0.2.2...master
+.. _debops.mariadb master: https://github.com/debops/ansible-mariadb/compare/v0.2.3...master
+
+
+`debops.mariadb v0.2.3`_ - 2017-09-10
+-------------------------------------
+
+.. _debops.mariadb v0.2.3: https://github.com/debops/ansible-mariadb/compare/v0.2.2...v0.2.3
 
 Added
 ~~~~~
