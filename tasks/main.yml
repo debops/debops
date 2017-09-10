@@ -57,10 +57,15 @@
     createhome: False
   when: mariadb_server__pki|bool
 
+- name: Check if MariaDB config directory exists
+  stat:
+    path: '/etc/mysql/mariadb.conf.d'
+  register: mariadb_server__register_confd
+
 - name: Configure database client on first install
   template:
     src: 'etc/mysql/conf.d/client.cnf.j2'
-    dest: '/etc/mysql/conf.d/client.cnf'
+    dest: '{{ mariadb_server__client_cnf_file }}'
     owner: 'root'
     group: 'root'
     mode: '0644'

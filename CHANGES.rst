@@ -38,6 +38,11 @@ Changed
 - Fix Ansible 2.2 deprecation warnings which requires Ansible 2.2 or higher.
   Support for older Ansible versions is dropped. [brzhk]
 
+- Generate server and client configuration in different files depending on the
+  presence of :file:`/etc/mysql/mariadb.conf.d/` directory. This should fix
+  problems with Ansible configuration not applied on MariaDB on newer OS
+  releases. [drybjed_]
+
 
 `debops.mariadb_server v0.2.4`_ - 2016-08-01
 --------------------------------------------

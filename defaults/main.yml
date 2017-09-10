@@ -272,6 +272,24 @@ mariadb_server__client_options:
 #
 # Dictionary or list with custom :program:`mysqld` options.
 mariadb_server__options: {}
+
+                                                                   # ]]]
+# .. envvar:: mariadb_server__client_cnf_file [[[
+#
+# Absolute path for the client configuration file managed by the
+# ``debops.mariadb_server`` Ansible role.
+mariadb_server__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
+                                     if (mariadb_server__register_confd.stat.exists|bool)
+                                     else "/etc/mysql/conf.d/zz-client.cnf" }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb_server__mysqld_cnf_file [[[
+#
+# Absolute path for the server configuration file managed by the
+# ``debops.mariadb_server`` Ansible role.
+mariadb_server__mysqld_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-mysqld.cnf"
+                                     if (mariadb_server__register_confd.stat.exists|bool)
+                                     else "/etc/mysql/conf.d/zz-mysqld.cnf" }}'
                                                                    # ]]]
                                                                    # ]]]
 # SSL configuration [[[
