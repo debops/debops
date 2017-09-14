@@ -62,6 +62,14 @@
     path: '/etc/mysql/mariadb.conf.d'
   register: mariadb_server__register_confd
 
+- name: Ensure MariaDB data directory exists
+  file:
+    path: '{{ mariadb_server__datadir }}'
+    state: 'directory'
+    owner: 'mysql'
+    group: 'mysql'
+    mode: '0755'
+
 - name: Configure database client on first install
   template:
     src: 'etc/mysql/conf.d/client.cnf.j2'
