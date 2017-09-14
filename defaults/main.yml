@@ -157,6 +157,12 @@ mariadb_server__allow: []
 mariadb_server__max_connections: '100'
 
                                                                    # ]]]
+# .. envvar:: mariadb_server__datadir [[[
+#
+# Directory to store data
+mariadb_server__datadir: '/var/lib/mysql'
+
+                                                                   # ]]]
 # .. envvar:: mariadb_server__delegate_to [[[
 #
 # Hostname of the server to which Ansible roles will delegate tasks. It should
@@ -242,6 +248,13 @@ mariadb_server__mysqld_cluster_options:
     'innodb_autoinc_lock_mode': '2'
 
                                                                    # ]]]
+# .. envvar:: mariadb_server__mysqld_directory_options [[[
+#
+# Configuration options related to directory (e.g. datadir)
+mariadb_server__mysqld_directory_options:
+  'datadir': '{{ mariadb_server__datadir }}'
+
+                                                                   # ]]]
 # .. envvar:: mariadb_server__mysqld_options [[[
 #
 # Configuration options set in :file:`/etc/mysql/conf.d/mysqld.cnf` file. This is
@@ -255,6 +268,7 @@ mariadb_server__mysqld_options:
       - '{{ mariadb_server__mysqld_network_options }}'
       - '{{ mariadb_server__mysqld_pki_options }}'
       - '{{ mariadb_server__mysqld_cluster_options }}'
+      - '{{ mariadb_server__mysqld_directory_options }}'
       - '{{ mariadb_server__options }}'
 
                                                                    # ]]]
