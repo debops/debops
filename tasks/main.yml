@@ -64,7 +64,7 @@
     name: '{{ item.name | d(item.role) }}'
     port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     password: '{{ item.password | d(lookup("password",
-                  secret + "/postgresql/" + postgresql__delegate_to +
+                  secret + "/postgresql/" + postgresql__password_hostname +
                   "/" + (item.port | d(postgresql__port)) +
                   "/credentials/" + item.name | d(item.role) + "/password " +
                   "length=" + postgresql__password_length + " chars=" + postgresql__password_characters)) }}'
