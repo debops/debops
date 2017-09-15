@@ -22,7 +22,7 @@ ssl = yes
 {% set dovecot_tpl_tls_key_file     = dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_key %}
 ssl_cert    = <{{ dovecot_tpl_tls_cert_file }}
 ssl_key     = <{{ dovecot_tpl_tls_key_file }}
-ssl_protocols   = !SSLv2 !SSLv3
+ssl_protocols   = {{ dovecot_ssl_protocols }}
 ssl_cipher_list = {{ dovecot_ssl_cipher_list }}
 {% else %}
 ssl = no
