@@ -16,6 +16,14 @@ The current role maintainer_ is drybjed_.
 `debops.postgresql_server master`_ - unreleased
 -----------------------------------------------
 
+.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.4...master
+
+
+`debops.postgresql_server v0.3.4`_ - 2017-09-15
+-----------------------------------------------
+
+.. _debops.postgresql_server v0.3.4: https://github.com/debops/ansible-postgresql_server/compare/v0.3.3...v0.3.4
+
 Changed
 ~~~~~~~
 
@@ -36,13 +44,10 @@ Changed
 - Change ``postgresql_server__delegate_to`` to ``inventory_hostname``
   to be in sync with debops.postgresql behavior. [cultcom]
 
-
-.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.3...master
-
 Fixed
 ~~~~~
 
-- Fix a wrong postgres version check on the main postgresql.conf template.
+- Fix a wrong postgres version check on the main postgresql.conf template. [Erethon]
 
 
 `debops.postgresql_server v0.3.3`_ - 2016-12-14
