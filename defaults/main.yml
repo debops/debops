@@ -92,7 +92,18 @@ postgresql__port: '5432'
 postgresql__delegate_to: '{{ postgresql__server
                              if (postgresql__server|d() and
                                  (postgresql__server != "localhost" or not postgresql__server))
-                             else inventory_hostname }}'
+                             else omit }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql__password_hostname [[[
+#
+# The hostname used in the password lookup if the ``password`` parameter for
+# a given PostgreSQL role is not set. Passwords are stored on the Ansible
+# Controller in the :file:`secret/` directory; see debops.secret_ role for more
+# details.
+postgresql__password_hostname: '{{ postgresql__delegate_to
+                                   if (postgresql__delegate_to != omit)
+                                   else inventory_hostname }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql__password_length [[[
