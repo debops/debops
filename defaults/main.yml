@@ -228,8 +228,12 @@ dovecot_ssl_protocols: '!SSLv2 !SSLv3'
 # .. envvar:: dovecot_ssl_cipher_list
 #
 # SSL ciphers to use
-dovecot_ssl_cipher_list: 'TLSv1+HIGH:!SSLv2:!EXPORT:!RC4:!aNULL:!eNULL:!3DES:@STRENGTH'
+dovecot_ssl_cipher_list: '{{ dovecot_ssl_cipher_list_default }}'
 
+dovecot_ssl_cipher_list_default: 'TLSv1+HIGH:!SSLv2:!EXPORT:!RC4:!aNULL:!eNULL:!3DES:@STRENGTH'
+
+# https://bettercrypto.org/
+dovecot_ssl_cipher_list_better_cypto: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
 
 # --------------------------------
 #   Dovecot custom configuration

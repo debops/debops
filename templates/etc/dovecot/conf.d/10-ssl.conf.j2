@@ -18,6 +18,12 @@ ssl = required
 ssl = yes
 {%   endif %}
 
+# Prefer the server's order of ciphers over client's. (Dovecot >=2.2.6 Required)
+ssl_prefer_server_ciphers = yes
+
+# Diffie-Hellman parameters length (Default is 1024, Dovecot >=2.2.7 Required)
+ssl_dh_parameters_length = 2048
+
 {% set dovecot_tpl_tls_cert_file    = dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_crt %}
 {% set dovecot_tpl_tls_key_file     = dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_key %}
 ssl_cert    = <{{ dovecot_tpl_tls_cert_file }}
