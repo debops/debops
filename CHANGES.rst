@@ -16,7 +16,18 @@ The current role maintainer_ is drybjed.
 `debops.golang master`_ - unreleased
 ------------------------------------
 
-.. _debops.golang master: https://github.com/debops/ansible-golang/compare/v0.1.1...master
+.. _debops.golang master: https://github.com/debops/ansible-golang/compare/v0.1.2...master
+
+
+`debops.golang v0.1.2`_ - 2017-09-16
+------------------------------------
+
+.. _debops.golang v0.1.2: https://github.com/debops/ansible-golang/compare/v0.1.1...v0.1.2
+
+Changed
+~~~~~~~
+
+- Switch tests on Travis CI to Ubuntu Trusty. [drybjed_]
 
 
 `debops.golang v0.1.1`_ - 2016-10-21
