@@ -74,11 +74,26 @@
     - '{{ docker__base_packages }}'
     - '{{ docker__packages }}'
 
-- name: Install ferment generator
+- name: Install Python packages in virtualenv
   pip:
-    name: '{{ docker__ferment_pip_package }}'
-    state: 'present'
-  when: docker__ferment|d() | bool
+    name: '{{ item.name | d(item) }}'
+    version: '{{ item.version | d(omit) }}'
+    virtualenv: '{{ docker__virtualenv }}'
+    state: '{{ item.state | d("present") }}'
+  with_flattened:
+    - '{{ docker__default_pip_packages }}'
+    - '{{ docker__pip_packages }}'
+
+- name: Symlink selected Python scripts to /usr/local/bin
+  file:
+    path: '{{ item.path }}'
+    src: '{{ item.src }}'
+    state: 'link'
+  with_flattened:
+    - '{{ docker__default_pip_packages }}'
+    - '{{ docker__pip_packages }}'
+  when: item.path|d() and item.src|d() and
+        item.state|d('present') != 'absent'
 
 - name: Install ferment wrapper script
   template:
@@ -87,7 +102,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: docker__ferment|d() | bool
+  when: docker__ferment | bool
 
 - name: Install ferm post hook
   template:

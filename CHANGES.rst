@@ -18,11 +18,23 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.3.0...master
 
+Added
+~~~~~
+
+- Install :command:`docker-compose` from PyPI in a Python virtualenv
+  environment, when upstream Docker support is enabled. The script will be
+  available system-wide via a symlink in :file:`/usr/local/bin/` directory.
+  [drybjed_]
+
 Changed
 ~~~~~~~
 
 - Change the :command:`ferm` post-hook script into an Ansible template.
   [drybjed_]
+
+- Install :command:`ferment` from PyPI in a Python virtualenv environment to
+  separate it from the system Python environment. Ferment is only installed
+  when upstream Docker is not enabled. [drybjed_]
 
 Fixed
 ~~~~~
