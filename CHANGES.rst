@@ -16,7 +16,42 @@ The current role maintainer_ is drybjed_.
 `debops.docker master`_ - unreleased
 ------------------------------------
 
-.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.3.0...master
+.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.4.0...master
+
+
+`debops.docker v0.4.0`_ - 2017-09-18
+------------------------------------
+
+.. _debops.docker v0.4.0: https://github.com/debops/ansible-docker/compare/v0.3.0...v0.4.0
+
+Added
+~~~~~
+
+- Install :command:`docker-compose` from PyPI in a Python virtualenv
+  environment, when upstream Docker support is enabled. The script will be
+  available system-wide via a symlink in :file:`/usr/local/bin/` directory.
+  [drybjed_]
+
+Changed
+~~~~~~~
+
+- Change the :command:`ferm` post-hook script into an Ansible template.
+  [drybjed_]
+
+- Install :command:`ferment` from PyPI in a Python virtualenv environment to
+  separate it from the system Python environment. Ferment is only installed
+  when upstream Docker is not enabled. [drybjed_]
+
+Fixed
+~~~~~
+
+- Be more careful about interactions of the firewall with Docker and the init
+  system. This should fix an issue where the host did not boot properly under
+  :command:`systemd` since :command:`ferm` tried to restart Docker too early
+  during the boot process. [drybjed_]
+
+- The :command:`ferment` wrapper script should correctly skip
+  :command:`ferment` execution if Docker service is not running. [drybjed_]
 
 
 `debops.docker v0.3.0`_ - 2017-08-16

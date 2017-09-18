@@ -16,17 +16,29 @@ The Docker package from distribution repositories will be installed by default
 (on Jessie it means that the ``jessie-backports`` repository needs to be available,
 which is the default in DebOps). You can install the upstream version of Docker
 by setting the ``docker__upstream: True`` variable in Ansible’s inventory.
+Upstream Docker is installed on Debian Stretch by default, since the this
+release does not provide included Docker packages.
 
 If debops.pki_ was configured on the host, Docker will automatically listen
 on its TCP port for incoming TLS connections, which is by default blocked by
 the :program:`ferm` firewall. If you don't use a firewall or have it disabled, you might
 want to set :envvar:`docker__tcp` to ``False`` to disable this behavior.
 
-Docker manages its own network bridge and :command:`iptables` entries. The :program:`ferment`
-Python script will be installed to allow :program:`ferm` firewall to reload Docker
-firewall rules automatically, however it does not fully support Docker yet, so
-be aware of this when you modify the firewall configuration. You can restart
-:command:`docker` daemon to make sure that all firewall rules are set up correctly.
+Docker manages its own network bridge and :command:`iptables` entries. On hosts
+that don't use upstream Docker packages, the :program:`ferment` Python script
+will be installed in a Python virtualenv to allow :program:`ferm` firewall to
+reload Docker firewall rules automatically, however it does not fully support
+Docker yet, so be aware of this when you modify the firewall configuration.You
+can restart :command:`docker` daemon to make sure that all firewall rules are
+set up correctly.
+
+On hosts with upstream Docker enabled and :command:`ferm`, a special post-hook
+script will be installed that restarts the Docker daemon after :command:`ferm`
+is restarted. In this case, :command:`ferment` will not be installed.
+
+The :command:`docker-compose` script will be installed on hosts with upstream
+Docker, in a Python virtualenv. It will be automatically available system-wide
+via a symlink in :file:`/usr/local/bin/` directory.
 
 To let the docker daemon trust a private registry with self-signed certificates,
 add the root CA used to sign the registry's certificate through the debops.pki_

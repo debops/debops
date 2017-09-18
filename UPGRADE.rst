@@ -7,8 +7,16 @@ The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the
 :ref:`docker__ref_changelog` for more details about what has changed.
 
-From v0.2.1 to - v0.3.0
------------------------
+From v0.3.0 to v0.4.0
+---------------------
+
+The :command:`ferment` script is now installed in a Python virtualenv, and
+symlinked in the :file:`/usr/local/bin/` directory. On existing installation
+you will need to remove the existing :file:`/usr/local/bin/ferment` script to
+not cause an error when Ansible creates the symlink.
+
+From v0.2.1 to v0.3.0
+---------------------
 
 This role should not be run on a system where docker-engine or docker.io is already
 installed either manually or through running a previous version of this role. If you

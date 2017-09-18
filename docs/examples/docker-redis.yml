@@ -1,0 +1,24 @@
+---
+
+- name: Set up a Redis Docker container
+  hosts: 'docker-host'
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  vars:
+
+    # Use Python from Docker virtualenv
+    ansible_python_interpreter: '/usr/bin/env docker-python'
+
+  tasks:
+
+    - name: Manage redis container
+      docker_container:
+        name: 'local-redis'
+        image: 'redis'
+        published_ports: [ '127.0.0.1:6379:6379' ]
+        restart_policy: 'always'
+        state: 'started'

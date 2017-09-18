@@ -108,6 +108,8 @@ docker__base_packages:
   - "aufs-tools"
   - "python-pip"
   - "python-setuptools"
+  - "python-virtualenv"
+  - "virtualenv"
   - "bridge-utils"
   - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
 
@@ -116,8 +118,69 @@ docker__base_packages:
 #
 # List of additional packages to install with Docker.
 docker__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker Python environment [[[
+# -----------------------------
+
+# The role prepares a separate Python virtualenv for Docker-related commands
+# and Ansible modules. See :ref:`docker__ref_virtualenv` for more details.
+
+# .. envvar:: docker__virtualenv [[[
+#
+# Absolute path of the location of Docker virtualenv.
+docker__virtualenv: '/usr/local/lib/docker/virtualenv'
 
                                                                    # ]]]
+# .. envvar:: docker__virtualenv_python_interpreter [[[
+#
+# Absolute path to the Python interpreter which will be exposed for Ansible
+# modules to work correctly with Docker virtualenv.
+docker__virtualenv_python_interpreter: '{{ docker__virtualenv + "/bin/python" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__virtualenv_python_symlink [[[
+#
+# Absolute path for the :command:`docker-python` symlink.
+docker__virtualenv_python_symlink: '/usr/local/bin/docker-python'
+
+                                                                   # ]]]
+# .. envvar:: docker__default_pip_packages [[[
+#
+# List od default Python packages to install in Docker virtualenv. The
+# corresponding binaries will be symlinked in the :file:`/usr/local/bin/`
+# directory to allow access from outside of the Python virtualenv.
+# See :ref:`docker__ref_pip_packages` for more details.
+docker__default_pip_packages:
+
+  - name: 'docker'
+    state: '{{ "present" if docker__upstream|bool else "absent" }}'
+
+  - name: 'docker-compose'
+    path: '/usr/local/bin/docker-compose'
+    src:  '{{ docker__virtualenv + "/bin/docker-compose" }}'
+    state: '{{ "present" if docker__upstream|bool else "absent" }}'
+
+  - name: 'docker-py'
+    version: '0.5.3'
+    state: '{{ "present" if docker__ferment|bool else "absent" }}'
+
+  - name: 'ferment'
+    path: '/usr/local/bin/ferment'
+    src:  '{{ docker__virtualenv + "/bin/ferment" }}'
+    state: '{{ "present" if docker__ferment|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pip_packages [[[
+#
+# List of additional Python packages to install in Docker virtualenv.
+# See :ref:`docker__ref_pip_packages` for more details.
+docker__pip_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker authentication [[[
+# -------------------------
+
 # .. envvar:: docker__admins [[[
 #
 # List of UNIX accounts which should be added to :command:`docker` system group which
@@ -386,20 +449,17 @@ docker__pki_key: 'default.key'
 # is disabled.
 docker__ferm_post_hook: '{{ True
                             if (ansible_local|d() and ansible_local.ferm|d() and
-                                docker__ferment|bool) else False }}'
+                                not docker__ferment|bool) else False }}'
 
                                                                    # ]]]
 # .. envvar:: docker__ferment [[[
 #
 # Enable or disable support for :program:`ferment` script, which can generate :program:`ferm`
 # configuration with the current Docker state.
-docker__ferment: True
-
-                                                                   # ]]]
-# .. envvar:: docker__ferment_pip_package [[[
-#
-# Packages to install ferment from PyPI using the ``pip`` command.
-docker__ferment_pip_package: 'ferment'
+docker__ferment: '{{ True
+                     if (ansible_local|d() and ansible_local.ferm|d() and
+                         not docker__upstream|bool)
+                     else False }}'
 
                                                                    # ]]]
 # .. envvar:: docker__ferment_wrapper [[[
@@ -444,6 +504,7 @@ docker__ferm__dependent_rules:
       @if $DOCKER_FERMENT {
           @include '{{ docker__ferment_wrapper + (" " + docker__bridge if docker__bridge else "") }}|';
       }
+    state: '{{ "present" if docker__ferment|bool else "absent" }}'
 
   - type: 'accept'
     dport: '{{ [ docker__tcp_port ] + docker__custom_ports }}'

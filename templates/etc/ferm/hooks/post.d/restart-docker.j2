@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# After ferm is restarted, Docker needs to be restarted so that it adds its own
+# iptables rules where needed
+
+set -o nounset -o pipefail -o errexit
+
+# Check if we are running under systemd
+if pidof systemd > /dev/null 2>&1 ; then
+
+    if [ "$(systemctl is-active docker.service)" == "active" ] ; then
+        logger -t "ferm-post-hook" "Restarting Docker via ferm post hook..."
+        systemctl restart docker.service
+    fi
+
+else
+
+    # I'm not sure if that's a good way to check for running Docker under
+    # non-systemd systems, if there are issues please provide a better solution
+    if [ -r /var/run/docker/metrics.sock ] ; then
+        logger -t "ferm-post-hook" "Restarting Docker via ferm post hook..."
+        service docker restart
+    fi
+
+fi
