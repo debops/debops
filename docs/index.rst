@@ -9,6 +9,7 @@ Ansible role: debops.docker
    introduction
    getting-started
    defaults
+   defaults-detailed
    copyright
    changelog
    upgrade
