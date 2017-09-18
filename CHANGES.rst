@@ -18,6 +18,17 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.3.0...master
 
+Fixed
+~~~~~
+
+- Be more careful about interactions of the firewall with Docker and the init
+  system. This should fix an issue where the host did not boot properly under
+  :command:`systemd` since :command:`ferm` tried to restart Docker too early
+  during the boot process. [drybjed_]
+
+- The :command:`ferment` wrapper script should correctly skip
+  :command:`ferment` execution if Docker service is not running.  [drybjed_]
+
 
 `debops.docker v0.3.0`_ - 2017-08-16
 ------------------------------------

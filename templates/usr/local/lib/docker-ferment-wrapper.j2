@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # {{ ansible_managed }}
 
@@ -8,7 +8,22 @@ interface="${1:-docker0}"
 if [ -x ${script} ] ; then
 
     if $(ip link show ${interface} > /dev/null 2>&1) ; then
-        ${script} docker -i ${interface} -c $(ip address show dev ${interface} scope global | grep inet | awk '{print $2}') config
+
+        # Check if we are running under systemd
+        if pidof systemd > /dev/null 2>&1 ; then
+
+            if [ "$(systemctl is-active docker.service)" == "active" ] ; then
+                ${script} docker -i ${interface} -c $(ip address show dev ${interface} scope global | grep inet | awk '{print $2}') config
+            fi
+
+        else
+
+            # I'm not sure if that's a good way to check for running Docker under
+            # non-systemd systems, if there are issues please provide a better solution
+            if [ -r /var/run/docker/metrics.sock ] ; then
+                ${script} docker -i ${interface} -c $(ip address show dev ${interface} scope global | grep inet | awk '{print $2}') config
+            fi
+
+        fi
     fi
 fi
-
