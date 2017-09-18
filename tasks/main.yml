@@ -84,6 +84,12 @@
     - '{{ docker__default_pip_packages }}'
     - '{{ docker__pip_packages }}'
 
+- name: Expose Docker virtualenv for Ansible modules
+  file:
+    path: '{{ docker__virtualenv_python_symlink }}'
+    src:  '{{ docker__virtualenv_python_interpreter }}'
+    state: 'link'
+
 - name: Symlink selected Python scripts to /usr/local/bin
   file:
     path: '{{ item.path }}'
