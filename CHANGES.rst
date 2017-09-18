@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.3.0...master
 
+Changed
+~~~~~~~
+
+- Change the :command:`ferm` post-hook script into an Ansible template.
+  [drybjed_]
+
 Fixed
 ~~~~~
 
@@ -27,7 +33,7 @@ Fixed
   during the boot process. [drybjed_]
 
 - The :command:`ferment` wrapper script should correctly skip
-  :command:`ferment` execution if Docker service is not running.  [drybjed_]
+  :command:`ferment` execution if Docker service is not running. [drybjed_]
 
 
 `debops.docker v0.3.0`_ - 2017-08-16

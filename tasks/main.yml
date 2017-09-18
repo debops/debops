@@ -90,8 +90,8 @@
   when: docker__ferment|d() | bool
 
 - name: Install ferm post hook
-  copy:
-    src: 'etc/ferm/hooks/post.d/restart-docker'
+  template:
+    src: 'etc/ferm/hooks/post.d/restart-docker.j2'
     dest: '/etc/ferm/hooks/post.d/restart-docker'
     owner: 'root'
     group: 'root'
