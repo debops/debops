@@ -1,5 +1,8 @@
 ---
 
+- name: Pre hooks
+  include: '{{ lookup("task_src", "stunnel/pre_main.yml") }}'
+
 - name: Install required packages
   apt:
     name: '{{ item }}'
@@ -44,4 +47,7 @@
   when: ((item.name is defined and item.name) and
          (item.delete is undefined or not item.delete | bool))
   notify: [ 'Restart stunnel' ]
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "stunnel/post_main.yml") }}'
 
