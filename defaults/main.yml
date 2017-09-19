@@ -223,7 +223,10 @@ dovecot_ssl_required: True
 # .. envvar:: dovecot_ssl_protocols
 #
 # SSL ciphers to use
-dovecot_ssl_protocols: '!SSLv2 !SSLv3'
+dovecot_ssl_protocols: '{{ "!SSLv2 !SSLv3"
+                           if (ansible_distribution_release in
+                               [ "wheezy", "jessie", "precise", "trusty" ])
+                           else "!SSLv3" }}'
 
 # .. envvar:: dovecot_ssl_cipher_list
 #
