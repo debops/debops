@@ -1,23 +1,28 @@
 ---
 
-- name: Restart isc-dhcp-server
+- name: Restart dhcp server
   service:
-    name: 'isc-dhcp-server'
+    name: '{{ item }}'
     state: 'restarted'
+  with_items: "{{ dhcpd_services.server }}"
 
-- name: Restart isc-dhcp-relay
+- name: Restart dhcp relay
   service:
-    name: 'isc-dhcp-relay'
+    name: '{{ item }}'
     state: 'restarted'
+  with_items: "{{ dhcpd_services.relay }}"
 
-- name: Restart dhcp-probe
+- name: Restart dhcp probe
   service:
-    name: 'dhcp-probe'
+    name: '{{ item }}'
     state: 'stopped'
-  notify: [ 'Start dhcp-probe' ]
+  with_items: "{{ dhcpd_services.probe }}"
+  notify: [ 'Start dhcp probe' ]
 
-- name: Start dhcp-probe
+- name: Start dhcp probe
   service:
-    name: 'dhcp-probe'
+    name: '{{ item }}'
     state: 'started'
+  with_items: "{{ dhcpd_services.probe }}"
 
+# vim: set ts=2 sw=2:
