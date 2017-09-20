@@ -202,6 +202,9 @@ Changed
 
 - Update the debops.etherpad_ playbook. [drybjed_]
 
+- Update the ``profile_tasks.py`` callback to work correctly on Ansible 2.4.
+  [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
