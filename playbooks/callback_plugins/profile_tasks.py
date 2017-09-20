@@ -27,9 +27,10 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+from ansible.plugins.callback import CallbackBase
 import time
 
-class CallbackModule(object):
+class CallbackModule(CallbackBase):
     """
     A plugin for timing tasks
     """
@@ -66,5 +67,3 @@ class CallbackModule(object):
         # Print the timings
         for name, elapsed in results:
             print "{0:-<70}{1:->9}".format('{0} '.format(name), ' {0:.02f}s'.format(elapsed))
-
-
