@@ -640,7 +640,7 @@ but query the local fact of the ferm role:
 .. code-block:: yaml
 
    is_firewall_enabled: '{{ ansible_local.ferm.enabled
-                            if (ansible_local|d() and ansible_local.ferm|d and
+                            if (ansible_local|d() and ansible_local.ferm|d() and
                                 ansible_local.ferm.enabled|d())
                             else "unknown" }}'
 
