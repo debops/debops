@@ -18,17 +18,12 @@
     creates: '/etc/fail2ban/jail.conf'
   notify: [ 'Restart fail2ban' ]
 
-- name: Adjust upstream ssh jail configuration
+- name: Disable default upstream jail
   lineinfile:
     dest: '/etc/fail2ban/jail.conf'
-    regexp: '{{ item.regexp }}'
-    line: '{{ item.line }}'
+    regexp: '^(enabled  = )true'
+    line: '\1false'
     backrefs: yes
-  with_items:
-    - regexp: '^\[ssh\-iptables\]'
-      line: '[ssh]'
-    - regexp: '^(enabled\s*=\s*)true'
-      line: '\1false'
   notify: [ 'Reload fail2ban jails' ]
 
 - name: Install custom fail2ban rule files
