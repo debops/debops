@@ -16,7 +16,19 @@ The current role maintainer_ is drybjed_.
 `debops.docker master`_ - unreleased
 ------------------------------------
 
-.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.4.0...master
+.. _debops.docker master: https://github.com/debops/ansible-docker/compare/v0.4.1...master
+
+
+`debops.docker v0.4.1`_ - 2017-09-21
+------------------------------------
+
+.. _debops.docker v0.4.1: https://github.com/debops/ansible-docker/compare/v0.4.0...v0.4.1
+
+Changed
+~~~~~~~
+
+- Install the ``virtualenv`` APT package conditionally depending on
+  distribution release. [gasuketsu]
 
 
 `debops.docker v0.4.0`_ - 2017-09-18
