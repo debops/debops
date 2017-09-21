@@ -1,31 +1,7 @@
 ---
 
-- name: Configure DHCP relay in debconf
-  debconf:
-    name: 'isc-dhcp-relay'
-    question: 'isc-dhcp-relay/{{ item.key }}'
-    vtype: 'string'
-    value: '{{ item.value }}'
-  with_dict:
-    servers:    '{{ dhcpd_relay_servers | join(" ") }}'
-    interfaces: '{{ dhcpd_relay_interfaces | join(" ") }}'
-    options:    '{{ dhcpd_relay_options }}'
-  register: dhcpd_register_relay_debconf
-  when: dhcpd_mode == 'relay'
-
-- name: Install DHCP packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ dhcpd_base_packages_map[dhcpd_mode] }}'
-    - [ '{{ "dhcp-probe" if (dhcpd_probe|d() and dhcpd_probe) else [] }}' ]
-
-- name: Reconfigure ISC DHCP relay
-  command: dpkg-reconfigure --frontend=noninteractive isc-dhcp-relay
-  notify: [ 'Restart isc-dhcp-relay' ]
-  when: dhcpd_register_relay_debconf|d() and dhcpd_register_relay_debconf.changed
+- include: dist_vars.yml
+- include: install.yml
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}'
@@ -46,8 +22,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: [ 'etc/default/isc-dhcp-server', 'etc/dhcp/dhcpd.conf' ]
-  notify: [ 'Restart isc-dhcp-server' ]
+  with_items: "{{ dhcpd_templates }}"
+  notify: [ 'Restart dhcp server' ]
   register: dhcpd_register_config
   when: dhcpd_mode == 'server'
 
@@ -59,7 +35,7 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ dhcpd_includes }}'
-  notify: [ 'Restart isc-dhcp-server' ]
+  notify: [ 'Restart dhcp server' ]
   when: ((item is defined and item) and dhcpd_mode == 'server' and
          (dhcpd_register_config is defined and dhcpd_register_config.changed))
 
@@ -69,4 +45,3 @@
 
 - include: dhcp-probe.yml
   when: dhcpd_probe|d() and dhcpd_probe
-
