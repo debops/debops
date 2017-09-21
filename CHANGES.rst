@@ -3,6 +3,11 @@ Changelog
 
 *Unreleased*
 
+v0.1.3
+------
+
+*Released: 2017-09-21*
+
 Changed
 ~~~~~~~
 
