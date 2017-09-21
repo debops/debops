@@ -41,7 +41,10 @@ snmpd_custom_options: ''
 # .. envvar:: snmpd_download_mibs
 #
 # Download MIB definitions by default?
-snmpd_download_mibs: True
+snmpd_download_mibs: '{{ True
+                         if (ansible_local|d() and ansible_local.apt|d() and
+                             (ansible_local.apt.nonfree|d())|bool)
+                         else False }}'
 
 
 # .. envvar:: snmpd_extension_scripts

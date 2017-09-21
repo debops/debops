@@ -3,6 +3,12 @@ Changelog
 
 *Unreleased*
 
+Changed
+~~~~~~~
+
+- Install the non-free MIBs only if support for non-free repositories is
+  enabled by the ``debops.apt`` Ansible role. [drybjed]
+
 Fixed
 ~~~~~
 
