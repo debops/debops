@@ -171,8 +171,27 @@ fail2ban_filters: []
 # List of dicts which define ``fail2ban`` jails. See :ref:`fail2ban_jails` for
 # more details. This list is meant for all hosts in the cluster.
 fail2ban_jails:
-  - name: 'ssh'
+  - name: '{{ fail2ban_ssh_jail_name }}'
     enabled: 'true'
+
+
+# .. envvar:: fail2ban_ssh_jail_name
+#
+# Most distributions already pre-configure a SSH jail. If the default SSH jail
+# is enabled in :envvar:`fail2ban_jails` make sure the name corresponds with the
+# distributions :file:`jail.conf` to leverage possible ``logpath`` and other
+# service specific configurations.
+fail2ban_ssh_jail_name: '{{ fail2ban_ssh_jail_distribution_map[ansible_distribution_release]
+                            if ansible_distribution_release in fail2ban_ssh_jail_distribution_map.keys()
+                            else "sshd" }}'
+
+
+# .. envvar:: fail2ban_ssh_jail_distribution_map
+#
+# Dictionary for release to default SSH jail name mappings.
+fail2ban_ssh_jail_distribution_map:
+  'trusty': 'ssh'
+  'jessie': 'ssh'
 
 
 # .. envvar:: fail2ban_group_jails
