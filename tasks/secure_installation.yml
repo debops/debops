@@ -10,7 +10,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
   no_log: True
 
 - name: Revoke all privileges on template1 from PUBLIC
@@ -24,7 +24,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
 
 - name: Revoke all privileges on schema public from PUBLIC
   postgresql_privs:
@@ -38,7 +38,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
 
 - name: Grant connect on postgres to PUBLIC
   postgresql_privs:
@@ -51,7 +51,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
 
 - name: Revoke temporary on postgres from PUBLIC
   postgresql_privs:
@@ -64,5 +64,4 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d() and item.name
-
+  when: item.name|d()
