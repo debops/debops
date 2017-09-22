@@ -177,11 +177,12 @@
 {# This macro does what the flattened lookup from Ansible fails to do in Jinja templates as of Ansible 2.2.
 ## All macro arguments are flattened into one "flat" list.
 ## Uses a less known feature of Jinja for using the *args and *kwargs syntax as known from
-## Python. Even if the macro does not declare any arguments, it will happily
+## Python. Even if the macro does not declare any arguments, it will happyily
 ## flatten any non-key-value arguments you provide.
-## Additional key-value arguments can be used to influence the behavior of the macro.
+## Additional key-value arguments can be used to influence the behavoir of the macro.
 ## The macro uses recursion to flatten nested lists.
 ## Ref: https://stackoverflow.com/questions/13944751/args-kwargs-in-jinja2-macros
+## Retruns flattened object as JSON which you will need to deserialize using `from_json`.
 ## Usage:
 ##
 ## {{ debops__tpl_macros.flattened(['list1', 55, ["deeplist1", "deeplist elem", True, False, undefined], {'mapping': True}], 'raw1', 22, True, False) }}
