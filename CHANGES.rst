@@ -233,6 +233,13 @@ Fixed
   Ansible 2.1. This is a non-backwards compatible change and it breaks
   compatibility with Ansible 2.0. [anzil]
 
+- Fix compatibility of :file:`playbooks/tools/dist-upgrade.yml` and
+  ``apt_preferences__debian_stable_default_preset_list``.
+  Previously,
+  :file:`/etc/apt/preferences.d/debops_apt_preferences_all_Debian.pref` might
+  not have been removed resulting in packages from backports getting installed
+  during the upgrade. [ypid_]
+
 Security
 ~~~~~~~~
 

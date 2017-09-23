@@ -105,7 +105,7 @@
 
     - name: Remove all APT preferences for backported packages
       shell: >
-              grep -lrIZ 'Pin: release a={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --
+              grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --
       when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace|changed
 
     - name: Create a lockfile
