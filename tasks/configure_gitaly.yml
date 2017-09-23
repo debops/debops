@@ -86,7 +86,7 @@
     name: 'gitlab-gitaly.service'
     state: 'stopped'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
-         (ansible_local.gitlab.installed|d()) | bool and
+         (ansible_local.gitlab.installed|d() | bool) and
          ansible_service_mgr == 'systemd' and
          gitlab_register_gitlab__gitaly_checkout|changed)
 
@@ -101,7 +101,7 @@
     name: 'gitlab-gitaly.service'
     state: 'started'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
-         (ansible_local.gitlab.installed|d()) | bool and
+         (ansible_local.gitlab.installed|d() | bool) and
          ansible_service_mgr == 'systemd' and
          gitlab_register_gitlab__gitaly_checkout|changed)
 

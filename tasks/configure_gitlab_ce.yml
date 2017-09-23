@@ -71,8 +71,8 @@
   changed_when: gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before
 
 - include: gitlab_ce_pre_upgrade.yml
-  when: ((ansible_local is defined and ansible_local.gitlab is defined and
-          ansible_local.gitlab.installed is defined and ansible_local.gitlab.installed) and
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
          ((gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before) or
          (ansible_local.gitlab.version is defined and ansible_local.gitlab.version != gitlab_version)))
 
@@ -335,8 +335,8 @@
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_migrate
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
-  when: ((ansible_local is defined and ansible_local.gitlab is defined and
-          ansible_local.gitlab.installed) and
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
          gitlab_register_ce_checkout|changed)
 
 - name: Clean GitLab assets
@@ -344,8 +344,8 @@
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
-  when: ((ansible_local is defined and ansible_local.gitlab is defined and
-          ansible_local.gitlab.installed) and
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
          gitlab_register_bundle_migrate|changed)
 
 - name: Precompile GitLab assets
@@ -362,8 +362,8 @@
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
-  when: ((ansible_local is defined and ansible_local.gitlab is defined and
-          ansible_local.gitlab.installed) and
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
          gitlab_register_bundle_migrate|changed)
 
 - name: Start GitLab instance (SysVinit)
