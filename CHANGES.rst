@@ -25,6 +25,12 @@ Removed
   https://github.com/gitlabhq/gitlab-recipes/tree/master/database/migrate-mysql-to-postgres
   [bfabio_]
 
+Fixed
+~~~~~
+
+- Ensure version requirement of GitLab 8.17 (Git version >= 2.7.3) is met on Debian Jessie.
+  [ypid_]
+
 
 `debops.gitlab v0.2.2`_ - 2017-08-16
 ------------------------------------
