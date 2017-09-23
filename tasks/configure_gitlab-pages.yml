@@ -92,7 +92,7 @@
     GOBIN: '{{ gitlab_app_root_path}}/go/bin'
     GOPATH: '{{ gitlab_app_root_path }}/go'
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_pages_checkout is defined and gitlab_register_pages_checkout.changed
+  when: gitlab_register_pages_checkout|changed
 
 - name: Setup gitlab-pages
   shell: >
@@ -101,4 +101,4 @@
   args:
     chdir: '{{ gitlab_pages_checkout }}'
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_pages_checkout is defined and gitlab_register_pages_checkout.changed
+  when: gitlab_register_pages_checkout|changed
