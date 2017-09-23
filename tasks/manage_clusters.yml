@@ -21,7 +21,7 @@
     creates: '/etc/postgresql/{{ item.version | d(postgresql_server__version) }}/{{ item.name }}/postgresql.conf'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: item.name|d() and item.name and item.port|d() and item.port
+  when: item.name|d() and item.port|d()
 
 - name: Configure PostgreSQL clusters
   template:
@@ -32,7 +32,7 @@
     mode: '0644'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
   register: postgresql_server__register_config
   tags: [ 'role::postgresql_server:config' ]
 
@@ -45,7 +45,7 @@
     mode: '0644'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
   register: postgresql_server__register_config_environment
   tags: [ 'role::postgresql_server:config' ]
 
@@ -58,7 +58,7 @@
     mode: '0640'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
   register: postgresql_server__register_config_ident
   tags: [ 'role::postgresql_server:config' ]
 
@@ -71,7 +71,7 @@
     mode: '0640'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
   register: postgresql_server__register_config_hba
   tags: [ 'role::postgresql_server:config' ]
 
@@ -84,7 +84,7 @@
     mode: '0640'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
   register: postgresql_server__register_trusted
   tags: [ 'role::postgresql_server:config' ]
 
@@ -97,7 +97,7 @@
     mode: '0644'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: item.name|d() and item.name
+  when: item.name|d()
   register: postgresql_server__register_config_start
   tags: [ 'role::postgresql_server:config' ]
 
@@ -109,7 +109,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: ((postgresql_server__pki|d() and postgresql_server__pki | bool) and
-         (item.name|d() and item.name) and
+         (item.name|d()) and
          ((item.version|d() and item.version == '9.1') or
           (postgresql_server__version|d() and postgresql_server__version == '9.1')))
 
@@ -121,7 +121,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: ((postgresql_server__pki|d() and postgresql_server__pki | bool) and
-         (item.name|d() and item.name) and
+         (item.name|d()) and
          ((item.version|d() and item.version == '9.1') or
           (postgresql_server__version|d() and postgresql_server__version == '9.1')))
 
@@ -133,7 +133,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: ((postgresql_server__pki|d() and postgresql_server__pki | bool) and
-         (item.name|d() and item.name) and
+         (item.name|d()) and
          ((item.version|d() and item.version == '9.1') or
           (postgresql_server__version|d() and postgresql_server__version == '9.1')))
 
@@ -144,7 +144,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: (ansible_service_mgr != 'systemd' and
-         ((item.name|d() and item.name) and
+         ((item.name|d()) and
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
 - name: Start PostgreSQL clusters when not started (systemd)
@@ -154,7 +154,7 @@
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: (ansible_service_mgr == 'systemd' and
-         ((item.name|d() and item.name) and
+         ((item.name|d()) and
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
 - name: Reload PostgreSQL clusters when needed
