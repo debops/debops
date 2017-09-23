@@ -47,7 +47,7 @@ Changed
   [drybjed_]
 
 - Stop and start running :command:`gitaly` service during an upgrade because
-  the binary cannot be replaced without errors. Small bugs rlated to
+  the binary cannot be replaced without errors. Small bugs related to
   :command:`gitaly` service have been fixed. [drybjed_]
 
 
