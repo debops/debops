@@ -10,7 +10,7 @@
   register: gitlab_register_pages_cloned
 
 - name: Save current checkout hash for update
-  shell: git rev-parse HEAD
+  command: git rev-parse HEAD
   args:
     chdir: '{{ gitlab_pages_dest }}'
   register: gitlab_register_pages_current_head
@@ -20,7 +20,7 @@
         gitlab_register_pages_cloned.stat.exists
 
 - name: Change current HEAD to master in bare repository for update
-  shell: git symbolic-ref HEAD refs/heads/master
+  command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ gitlab_pages_dest }}'
   changed_when: False
@@ -69,7 +69,9 @@
     mode: '0644'
 
 - name: Get currently checked out git tag
-  shell: GIT_WORK_TREE={{ gitlab_pages_checkout }} git describe --tags
+  command: git describe --tags
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_pages_checkout }}'
   args:
     chdir: '{{ gitlab_pages_dest }}'
   become_user: '{{ gitlab_user }}'
@@ -77,7 +79,9 @@
   changed_when: gitlab_register_pages_target_tag.stdout != gitlab_version_map[gitlab_version].pages
 
 - name: Checkout gitlab-pages
-  shell: GIT_WORK_TREE={{ gitlab_pages_checkout }} git checkout -f {{ gitlab_version_map[gitlab_version].pages }}
+  command: git checkout -f {{ gitlab_version_map[gitlab_version].pages }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_pages_checkout }}'
   args:
     chdir: '{{ gitlab_pages_dest }}'
   become_user: '{{ gitlab_user }}'
@@ -85,7 +89,7 @@
   when: (gitlab_version_map[gitlab_version].pages|d() != gitlab_register_pages_target_tag.stdout|d()) or (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
 
 - name: Get gitlab-pages dependencies
-  shell: go get
+  command: go get
   args:
     chdir: '{{ gitlab_pages_checkout }}'
   environment:
@@ -95,10 +99,9 @@
   when: gitlab_register_pages_checkout|changed
 
 - name: Setup gitlab-pages
-  shell: >
-    GOPATH={{ gitlab_app_root_path }}/go
-    make
-  args:
+  make:
     chdir: '{{ gitlab_pages_checkout }}'
+  environment:
+    GOPATH: '{{ gitlab_app_root_path }}/go'
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_pages_checkout|changed

@@ -1,12 +1,12 @@
 ---
 
 - name: Display deploy.html page
-  shell: cp {{ gitlab_ce_git_checkout + "/public/deploy.html" }} {{ gitlab_ce_git_checkout + "/public/index.html" }}
+  command: cp {{ gitlab_ce_git_checkout + "/public/deploy.html" }} {{ gitlab_ce_git_checkout + "/public/index.html" }}
   args:
     creates: '{{ gitlab_ce_git_checkout + "/public/index.html" }}'
 
 - name: Stop Sidekiq before upgrade (sysvinit)
-  shell: bundle exec rake sidekiq:stop RAILS_ENV=production
+  command: bundle exec rake sidekiq:stop RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
@@ -19,7 +19,7 @@
   when: gitlab_use_systemd | bool
 
 - name: Create backup of GitLab instance
-  shell: bundle exec rake gitlab:backup:create RAILS_ENV=production
+  command: bundle exec rake gitlab:backup:create RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'

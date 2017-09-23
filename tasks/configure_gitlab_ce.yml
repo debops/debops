@@ -63,7 +63,9 @@
     mode: '0644'
 
 - name: Get commit hash of target checkout
-  shell: GIT_WORK_TREE={{ gitlab_ce_git_checkout }} git rev-parse {{ gitlab_version_map[gitlab_version].ce }}
+  command: git rev-parse {{ gitlab_version_map[gitlab_version].ce }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
   args:
     chdir: '{{ gitlab_ce_git_dest }}'
   become_user: '{{ gitlab_user }}'
@@ -77,7 +79,9 @@
          (ansible_local.gitlab.version is defined and ansible_local.gitlab.version != gitlab_version)))
 
 - name: Checkout GitLab CE
-  shell: GIT_WORK_TREE={{ gitlab_ce_git_checkout }} git checkout -f {{ gitlab_version_map[gitlab_version].ce }}
+  command: git checkout -f {{ gitlab_version_map[gitlab_version].ce }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
   args:
     chdir: '{{ gitlab_ce_git_dest }}'
   become_user: '{{ gitlab_user }}'
@@ -181,7 +185,7 @@
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
 
 - name: Install GitLab SysVinit script
-  shell: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
+  command: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
   register: gitlab__register_sysvinit_script
   when: (gitlab_register_ce_checkout|changed and
          (gitlab_use_systemd is defined and not gitlab_use_systemd))
@@ -263,7 +267,7 @@
 # ---- GitLab installation / upgrade ----
 
 - name: NPM install
-  shell: npm install --production
+  command: npm install --production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
@@ -271,7 +275,7 @@
         and gitlab_register_ce_checkout|changed
 
 - name: Yarn install
-  shell: yarn install --production
+  command: yarn install --production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
@@ -279,7 +283,7 @@
         and gitlab_register_ce_checkout|changed
 
 - name: Update Ruby gems
-  shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
+  command: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
@@ -329,7 +333,7 @@
            not ansible_local.gitlab.installed))))))
 
 - name: Migrate GitLab database
-  shell: bundle exec rake db:migrate RAILS_ENV=production
+  command: bundle exec rake db:migrate RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
@@ -340,7 +344,7 @@
          gitlab_register_ce_checkout|changed)
 
 - name: Clean GitLab assets
-  shell: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
+  command: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
@@ -349,7 +353,7 @@
          gitlab_register_bundle_migrate|changed)
 
 - name: Precompile GitLab assets
-  shell: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
+  command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
@@ -358,7 +362,7 @@
         gitlab_register_bundle_migrate|changed
 
 - name: Clear GitLab cache
-  shell: bundle exec rake cache:clear RAILS_ENV=production
+  command: bundle exec rake cache:clear RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become_user: '{{ gitlab_user }}'
