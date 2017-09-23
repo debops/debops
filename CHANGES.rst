@@ -8,7 +8,7 @@ Changelog
 **debops.owncloud**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/0.3.0/>`__.
+and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current role maintainer_ is ypid_.
 
@@ -95,7 +95,7 @@ Fixed
 
 - Fix custom directory creating. Previously, the Ansible role did not ensure
   that custom directories the administrator might had configured using
-  ``owncloud__data_path`` and ``owncloud__nginx_client_body_temp_path``
+  :envvar:`owncloud__data_path` and :envvar:`owncloud__nginx_client_body_temp_path`
   actually existed and failed when reloading the respective services. [ypid_]
 
 Security
