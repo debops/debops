@@ -31,6 +31,10 @@ Fixed
 - Ensure version requirement of GitLab 8.17 (Git version >= 2.7.3) is met on Debian Jessie.
   [ypid_]
 
+- Fix upgrade path for older deployments setup by the role. The issue was that
+  the task "Stop gitaly service for an upgrade" tried to stop a service which
+  which is created later in the run. [ypid_]
+
 
 `debops.gitlab v0.2.2`_ - 2017-08-16
 ------------------------------------
