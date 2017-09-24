@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import load, loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+
+output = {'installed': True, 'services': []}
+
+try:
+    with open(os.devnull, 'w') as devnull:
+        monit_stdout = subprocess.check_output(
+            ["/usr/bin/monit --version"],
+            shell=True, stderr=devnull)
+
+    with open(os.devnull, 'w') as devnull:
+        monit_services = subprocess.check_output(
+            ["/usr/bin/monit -B summary | sed -e '1,3d' | awk '{print $1}'"],
+            shell=True, stderr=devnull)
+
+except subprocess.CalledProcessError:
+    pass
+
+if monit_stdout:
+    for line in monit_stdout.split('\n'):
+        if 'This is Monit version' in line:
+            output['version'] = line.split()[4]
+
+if monit_services:
+    output['services'] = monit_services.strip().split('\n')
+
+print(dumps(output, sort_keys=True, indent=2))

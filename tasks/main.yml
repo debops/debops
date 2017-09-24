@@ -1,38 +1,51 @@
 ---
 
-- name: Install Monit
-  apt:
-    name: 'monit'
-    state: 'latest'
-    install_recommends: False
-
-- name: Configure Monit
-  template: src=etc/monit/monitrc.j2 dest=/etc/monit/monitrc
-            owner=root group=root mode=0700
-  notify: [ 'Test monit and reload' ]
-
-- name: Delete unwanted configs
-  file: state=absent
-        path=/etc/monit/conf.d/{{ item.type | default('base') }}_{{ item.process | default(item.pid | basename | replace('.pid', '')) }}.conf
+- name: Install Monit packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
   with_flattened:
-    - monit_process_list
-    - monit_process_group_list
-    - monit_process_host_list
-    - monit_process_dependent_list
-  when: item.delete is defined and item.delete and
-        item.pid is defined and item.pid
-  notify: [ 'Test monit and reload' ]
+    - '{{ monit__base_packages }}'
+    - '{{ monit__packages }}'
 
-- name: Create configs
-  template: src=etc/monit/conf.d/{{ item.type | default('base') }}.conf.j2
-            dest=/etc/monit/conf.d/{{ item.type | default('base') }}_{{ item.process | default(item.pid | basename | replace('.pid', '')) }}.conf
-            owner=root group=root mode=0644
-  with_flattened:
-    - monit_process_list
-    - monit_process_group_list
-    - monit_process_host_list
-    - monit_process_dependent_list
-  when: item.delete is undefined and not item.delete and
-        item.pid is defined and item.pid
+- name: Remove Monit configuration if requested
+  file:
+    path: '/etc/monit/conf.d/{{ ((item.weight|string + "_") if (item.weight != 0) else "") + item.name }}'
+    state: 'absent'
+  with_items: '{{ monit__combined_config | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
   notify: [ 'Test monit and reload' ]
+  no_log: '{{ True if (item.mode|d("0644") == "0600") else False }}'
 
+- name: Generate Monit configuration
+  template:
+    src: 'etc/monit/conf.d/template.j2'
+    dest: '/etc/monit/conf.d/{{ ((item.weight|string + "_") if (item.weight != 0) else "") + item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '{{ item.mode | d("0600") }}'
+  with_items: '{{ monit__combined_config | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'init', 'absent' ]
+  notify: [ 'Test monit and reload' ]
+  no_log: '{{ True if (item.mode|d("0644") == "0600") else False }}'
+
+- name: Make sure Ansible local facts directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Configure Monit local facts
+  template:
+    src: 'etc/ansible/facts.d/monit.fact.j2'
+    dest: '/etc/ansible/facts.d/monit.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: monit__register_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: monit__register_facts|changed
