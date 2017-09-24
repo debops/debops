@@ -78,7 +78,7 @@
   when: ((item.0.name is defined and item.0.name) and
          (item.1.item.name is defined and item.0.name == item.1.item.name) and
          (item.0.state|d("present") in ['stopped', 'absent']) and
-         (item.1.stdout_lines[0] == 'RUNNING'))
+         (item.1.stdout_lines  and  item.1.stdout_lines[0] == 'RUNNING'))
 
 - name: Destroy LXC containers when requested
   command: lxc-destroy -n {{ item.name }}
