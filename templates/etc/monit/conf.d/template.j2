@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+{% if item.comment|d() %}
+{{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{% endif %}
+{% if item.content|d() %}
+{{ item.content -}}
+{% endif %}

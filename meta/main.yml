@@ -2,18 +2,9 @@
 
 dependencies:
 
-- role: debops.apt_preferences
-  tags: apt_preferences
-  apt_preferences_dependent_list:
-    - package: 'monit'
-      backports: [ 'wheezy' ]
-      reason: 'Critical bugs in older versions - http://mmonit.com/monit/dist/CHANGES.txt'
-      by_role: 'debops.monit'
+  - role: debops.ansible_plugins
 
-- role: debops.etc_services
-  etc_services_dependency_list:
-    - name: 'monit'
-      port: '{{ monit_http_port }}'
+  - role: debops.secret
 
 galaxy_info:
   author: 'Nick Janetakis'
