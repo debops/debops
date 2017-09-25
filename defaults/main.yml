@@ -95,8 +95,7 @@ libvirtd__deployment_mode: '{{ "opennebula"
 # .. envvar:: libvirtd__admins [[[
 #
 # List of administrator accounts which should have access to :program:`libvirtd`.
-libvirtd__admins: [ '{{ (ansible_ssh_user
-                        if (ansible_ssh_user | d()) else ansible_user | d(lookup("env", "USER"))) }}' ]
+libvirtd__admins: [ '{{ ansible_user | d(lookup("env", "USER")) }}' ]
 
                                                                    # ]]]
 # .. envvar:: libvirtd__unix_sock_group [[[
