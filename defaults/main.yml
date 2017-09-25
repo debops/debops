@@ -100,12 +100,9 @@ bootstrap__admin_system: True
 # List of default user accounts created by the role. See
 # :ref:`bootstrap__ref_admin_users` for more details.
 bootstrap__admin_default_users:
-  - name: '{{ ansible_ssh_user
-              if (ansible_ssh_user | d() and
-                  ansible_ssh_user != "root")
-              else ansible_user
-                   if (ansible_user | d() and
-                   ansible_user != "root")
+  - name: '{{ ansible_user
+              if (ansible_user | d() and
+                  ansible_user != "root")
               else lookup("env", "USER") }}'
 
                                                                    # ]]]
