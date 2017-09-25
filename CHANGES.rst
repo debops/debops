@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.auth master: https://github.com/debops/ansible-auth/compare/v0.3.5...master
 
+Changed
+~~~~~~~
+
+- Update the role documentation. [AnBuKu_, ypid_, drybjed_]
+
 
 `debops.auth v0.3.5`_ - 2017-04-07
 ----------------------------------
