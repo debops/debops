@@ -74,6 +74,9 @@ reprepro_spool: '{{ (ansible_local.root.spool
 # Directory where uploaded packages are stored
 reprepro_upload: '{{ reprepro_spool + "/incoming" }}'
 
+# Wheter to configure Nginx with DAV and inoticoming for uploads
+reprepro_enable_inoticoming: True
+
 # Directory where reprepro will create its repository structure.
 # It will be served publicly by a HTTP/HTTPS webserver.
 reprepro_repository_path: '/srv/www/sites/{{ reprepro_domains[0] }}/public'
@@ -608,24 +611,25 @@ reprepro_nginx_server_https:
   options: |
     client_max_body_size {{ reprepro_max_body_size }}M;
 
-  location:
-    '/': |
-      try_files $uri $uri/ =404;
-      autoindex on;
-      autoindex_exact_size off;
-      autoindex_localtime on;
+  location_list:
+    - pattern: '/'
+      options: |
+        try_files $uri $uri/ =404;
+        autoindex on;
+        autoindex_exact_size off;
+        autoindex_localtime on;
+      allow: '{{ reprepro_allow }}'
 
-    '/upload': |
-      alias {{ reprepro_upload }};
-      dav_access all:rw;
-      dav_methods PUT;
-      limit_except PUT {
-              deny all;
-      }
-
-  location_allow:
-    '/': '{{ reprepro_allow }}'
-    '/upload': '{{ reprepro_allow_upload }}'
+    - pattern: '/upload'
+      options: |
+        alias {{ reprepro_upload }};
+        dav_access all:rw;
+        dav_methods PUT;
+        limit_except PUT {
+                deny all;
+        }
+      allow: '{{ reprepro_allow_upload }}'
+      enabled: '{{ reprepro_enable_inoticoming }}'
 
 # Debian previous releases
 reprepro_debian_previous:
