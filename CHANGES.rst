@@ -18,6 +18,13 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.2...master
 
+Removed
+~~~~~~~
+
+- Remove support for MySQL / MariaDB. If you used it, you must migrate the database:
+  https://github.com/gitlabhq/gitlab-recipes/tree/master/database/migrate-mysql-to-postgres
+  [bfabio_]
+
 
 `debops.gitlab v0.2.2`_ - 2017-08-16
 ------------------------------------
