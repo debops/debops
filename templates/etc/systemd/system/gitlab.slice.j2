@@ -3,12 +3,12 @@
 [Unit]
 Description=GitLab Slice
 Requires=redis-server.service
-Wants=mysqld.service postgresql.service gitlab-gitaly.service gitlab-unicorn.service gitlab-sidekiq.service gitlab-workhorse.service gitlab-mailroom.service
+Wants=postgresql.service gitlab-gitaly.service gitlab-unicorn.service gitlab-sidekiq.service gitlab-workhorse.service gitlab-mailroom.service
 {% if gitlab_enable_pages|bool %}
 Wants=gitlab-pages.service
 {% endif %}
 Before=slices.target
-After=redis-server.service mysqld.service postgresql.service
+After=redis-server.service postgresql.service
 
 [Install]
 WantedBy=multi-user.target
