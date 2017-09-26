@@ -16,7 +16,19 @@ The current role maintainer_ is drybjed_.
 `debops.postgresql_server master`_ - unreleased
 -----------------------------------------------
 
-.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.4...master
+.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.5...master
+
+
+`debops.postgresql_server v0.3.5`_ - 2017-09-26
+-----------------------------------------------
+
+.. _debops.postgresql_server v0.3.5: https://github.com/debops/ansible-postgresql_server/compare/v0.3.4...v0.3.5
+
+Added
+~~~~~
+
+- Allow local connections over IP addresses, in case that PostgreSQL cannot
+  correctly resolve the ``localhost`` DNS entry. [drybjed_]
 
 
 `debops.postgresql_server v0.3.4`_ - 2017-09-15
