@@ -18,6 +18,11 @@ The current role maintainer_ is drybjed.
 
 .. _debops.golang master: https://github.com/debops/ansible-golang/compare/v0.1.2...master
 
+Changed
+~~~~~~~
+
+- Enable backported Go 1.8 packages in Debian Stretch. [bfabio]
+
 
 `debops.golang v0.1.2`_ - 2017-09-16
 ------------------------------------
