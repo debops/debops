@@ -64,6 +64,12 @@ Unattended-Upgrade::MinimalSteps "{{ unattended_upgrades__minimal_steps | bool |
 // This will (obviously) make shutdown slower
 Unattended-Upgrade::InstallOnShutdown "{{ unattended_upgrades__install_on_shutdown | bool | lower }}";
 
+
+{% if unattended_upgrades__mail_from %}
+// Send email FROM this address
+Unattended-Upgrade::Sender "{{ unattended_upgrades__mail_from }}";
+{% endif %}
+
 // Send email to this address for problems or packages upgrades
 // If empty or unset then no email is sent, make sure that you
 // have a working mail setup on your system. A package that provides
