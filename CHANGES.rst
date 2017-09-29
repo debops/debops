@@ -24,6 +24,10 @@ Added
 - Support simple maintenance mode using a static HTML page in the document root
   directory. [drybjed_]
 
+- Add :envvar:`nginx_extra_options` variable which can be used to add
+  :command:`nginx` configuration outside of the ``http`` block in the
+  :file:`/etc/nginx/nginx.conf` configuration file. [drybjed_]
+
 Changed
 ~~~~~~~
 
