@@ -1,5 +1,23 @@
 ---
 
+- name: Install requested system packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable|bool
+  with_flattened:
+    - '{{ apt_proxy__base_packages }}'
+
+- name: Copy get-reachable-apt-proxy to remote host
+  copy:
+    dest:     '/usr/local/sbin/get-reachable-apt-proxy'
+    src:      'usr/local/sbin/get-reachable-apt-proxy'
+    validate: '%s "https://example.org/"'
+    owner:    'root'
+    group:    'root'
+    mode:     '0755'
+  when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable|bool
+
 - name: Remove APT proxy configuration
   file:
     path: '/etc/apt/apt.conf.d/{{ apt_proxy__filename }}'
