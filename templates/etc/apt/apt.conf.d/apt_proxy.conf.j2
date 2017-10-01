@@ -3,7 +3,7 @@
 {% if apt_proxy__http_url %}
 Acquire::HTTP {
 {%   if apt_proxy__temporally_avoid_unreachable|bool %}
-  Proxy-Auto-Detect "/usr/local/sbin/get-reachable-apt-proxy";
+  Proxy-Auto-Detect "/usr/local/lib/get-reachable-apt-proxy";
 {%   endif %}
   Proxy "{{ apt_proxy__http_url }}";
 {%   if apt_proxy__http_direct %}
@@ -18,12 +18,12 @@ Acquire::HTTP {
 {%   endif %}
 };
 {% elif apt_proxy__temporally_avoid_unreachable|bool %}
-Acquire::HTTP::Proxy-Auto-Detect "/usr/local/sbin/get-reachable-apt-proxy";
+Acquire::HTTP::Proxy-Auto-Detect "/usr/local/lib/get-reachable-apt-proxy";
 {% endif %}
 {% if apt_proxy__https_url %}
 Acquire::HTTPS {
 {%   if apt_proxy__temporally_avoid_unreachable|bool %}
-  Proxy-Auto-Detect "/usr/local/sbin/get-reachable-apt-proxy";
+  Proxy-Auto-Detect "/usr/local/lib/get-reachable-apt-proxy";
 {%   endif %}
   Proxy "{{ apt_proxy__https_url }}";
 {%   if apt_proxy__https_direct %}
@@ -38,7 +38,7 @@ Acquire::HTTPS {
 {%   endif %}
 };
 {% elif apt_proxy__temporally_avoid_unreachable|bool %}
-Acquire::HTTPS::Proxy-Auto-Detect "/usr/local/sbin/get-reachable-apt-proxy";
+Acquire::HTTPS::Proxy-Auto-Detect "/usr/local/lib/get-reachable-apt-proxy";
 {% endif %}
 {% if apt_proxy__ftp_url %}
 Acquire::FTP {
