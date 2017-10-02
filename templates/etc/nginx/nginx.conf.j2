@@ -6,6 +6,8 @@ user {{ nginx_user }};
 {% endif %}
 pid {{ nginx_run_path }}/nginx.pid;
 
+include /etc/nginx/modules-enabled/*.conf;
+
 # Default error_log
 error_log {{ nginx_http_error_log | default(nginx_log_path + '/error.log') }};
 
