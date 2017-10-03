@@ -174,5 +174,14 @@ apt_proxy__ftp_options: {}
 # This is currently only supported for HTTPS and HTTP proxies.
 apt_proxy__temporally_avoid_unreachable: False
                                                                    # ]]]
+
+# .. envvar:: apt_proxy__proxy_auto_detect [[[
+#
+# Value to set as `Acquire::HTTP::Proxy-Auto-Detect`. Set to `{{ omit }}` to
+# avoid setting it.
+apt_proxy__proxy_auto_detect: '{{ "/usr/local/lib/get-reachable-apt-proxy"
+                                  if (apt_proxy__temporally_avoid_unreachable|bool)
+                                  else omit }}'
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]

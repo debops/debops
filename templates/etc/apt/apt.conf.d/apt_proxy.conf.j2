@@ -2,8 +2,8 @@
 
 {% if apt_proxy__http_url %}
 Acquire::HTTP {
-{%   if apt_proxy__temporally_avoid_unreachable|bool %}
-  Proxy-Auto-Detect "/usr/local/lib/get-reachable-apt-proxy";
+{%   if apt_proxy__proxy_auto_detect != omit %}
+  Proxy-Auto-Detect "{{ apt_proxy__proxy_auto_detect }}";
 {%   endif %}
   Proxy "{{ apt_proxy__http_url }}";
 {%   if apt_proxy__http_direct %}
@@ -17,13 +17,13 @@ Acquire::HTTP {
 {%     endfor %}
 {%   endif %}
 };
-{% elif apt_proxy__temporally_avoid_unreachable|bool %}
-Acquire::HTTP::Proxy-Auto-Detect "/usr/local/lib/get-reachable-apt-proxy";
+{% elif apt_proxy__proxy_auto_detect != omit %}
+Acquire::HTTP::Proxy-Auto-Detect "{{ apt_proxy__proxy_auto_detect }}";
 {% endif %}
 {% if apt_proxy__https_url %}
 Acquire::HTTPS {
-{%   if apt_proxy__temporally_avoid_unreachable|bool %}
-  Proxy-Auto-Detect "/usr/local/lib/get-reachable-apt-proxy";
+{%   if apt_proxy__proxy_auto_detect != omit %}
+  Proxy-Auto-Detect "{{ apt_proxy__proxy_auto_detect }}";
 {%   endif %}
   Proxy "{{ apt_proxy__https_url }}";
 {%   if apt_proxy__https_direct %}
@@ -37,8 +37,8 @@ Acquire::HTTPS {
 {%     endfor %}
 {%   endif %}
 };
-{% elif apt_proxy__temporally_avoid_unreachable|bool %}
-Acquire::HTTPS::Proxy-Auto-Detect "/usr/local/lib/get-reachable-apt-proxy";
+{% elif apt_proxy__proxy_auto_detect != omit %}
+Acquire::HTTPS::Proxy-Auto-Detect "{{ apt_proxy__proxy_auto_detect }}";
 {% endif %}
 {% if apt_proxy__ftp_url %}
 Acquire::FTP {
