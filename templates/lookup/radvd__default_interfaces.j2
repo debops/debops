@@ -1,0 +1,49 @@
+{% set radvd__tpl_output = [] %}
+{% if (ansible_all_ipv6_addresses | difference(ansible_all_ipv6_addresses | ipv6('link-local'))) %}
+{%   set _ = radvd__tpl_output.append({'addresses': (ansible_all_ipv6_addresses | difference(ansible_all_ipv6_addresses | ipv6('link-local')))}) %}
+{%   for interface in ansible_interfaces %}
+{%     if interface != 'lo' %}
+{%       set radvd__tpl_interface = {
+  'name': interface,
+  'options': [
+    {'AdvSendAdvert': True},
+    {'IgnoreIfMissing': True},
+    {'MinRtrAdvInterval': radvd__minimum_advertisement_interval},
+    {'MaxRtrAdvInterval': radvd__maximum_advertisement_interval}
+  ],
+  'state': 'init'
+} %}
+{%       if hostvars[inventory_hostname]['ansible_' + interface].ipv6|d() %}
+{%         set radvd__tpl_prefixes = [] %}
+{%         for element in hostvars[inventory_hostname]['ansible_' + interface].ipv6 %}
+{%           if element.scope == 'global' %}
+{%             set _ = radvd__tpl_prefixes.append({
+  'name': (element.address + '/' + element.prefix),
+  'options': [
+    {'AdvOnLink': True},
+    {'AdvAutonomous': True}
+  ],
+  'state': 'present'
+}) %}
+{%           endif %}
+{%         endfor %}
+{%         set _ = radvd__tpl_interface.update({'prefixes': radvd__tpl_prefixes}) %}
+{%         set radvd__tpl_rdnss = [] %}
+{%         if radvd__rdnss|d() %}
+{%           set _ = radvd__tpl_rdnss.extend([ radvd__rdnss ] if radvd__rdnss is string else radvd__rdnss) %}
+{%         endif %}
+{%         set _ = radvd__tpl_interface.update({'rdnss': radvd__tpl_rdnss}) %}
+{%         set radvd__tpl_dnssl = [] %}
+{%         if radvd__dnssl|d() %}
+{%           set _ = radvd__tpl_dnssl.extend([ radvd__dnssl ] if radvd__dnssl is string else radvd__dnssl) %}
+{%         endif %}
+{%         set _ = radvd__tpl_interface.update({'dnssl': radvd__tpl_dnssl}) %}
+{%         if hostvars[inventory_hostname]['ansible_' + interface].type in [ 'bridge' ] and radvd__tpl_prefixes %}
+{%           set _ = radvd__tpl_interface.update({'state': 'present'}) %}
+{%         endif %}
+{%       endif %}
+{%       set _ = radvd__tpl_output.append(radvd__tpl_interface) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{{ radvd__tpl_output }}

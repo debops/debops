@@ -1,42 +1,39 @@
 ---
 
-- name: Install radvd package
-  apt:
-    name: 'radvd'
-    state: 'latest'
-    install_recommends: False
+- name: Install radvd support
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ radvd__base_packages }}'
+    - '{{ radvd__packages }}'
 
-- name: Create /etc/radvd.conf.d directory
+- name: Generate radvd configuration
+  template:
+    src: 'etc/radvd.conf.j2'
+    dest: '/etc/radvd.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test radvd and restart' ]
+
+- name: Make sure that Ansible local facts directory exists
   file:
-    path: '/etc/radvd.conf.d'
+    path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
 
-- name: Create configuration header
+- name: Save radvd local facts
   template:
-    src: 'etc/radvd.conf.d/00_ansible.j2'
-    dest: '/etc/radvd.conf.d/00_ansible'
+    src: 'etc/ansible/facts.d/radvd.fact.j2'
+    dest: '/etc/ansible/facts.d/radvd.fact'
     owner: 'root'
     group: 'root'
-    mode: '0644'
+    mode: '0755'
+  register: radvd__register_facts
 
-- name: Configure radvd interfaces
-  template:
-    src: 'etc/radvd.conf.d/interface.j2'
-    dest: '/etc/radvd.conf.d/interface_{{ item.interface }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_items: radvd_interfaces
-
-- name: Assemble /etc/radvd.conf
-  assemble:
-    src: '/etc/radvd.conf.d'
-    dest: '/etc/radvd.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Test radvd and reload' ]
-
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: radvd__register_facts|changed
