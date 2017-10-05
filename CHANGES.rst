@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.radvd master: https://github.com/debops/ansible-radvd/compare/v0.1.0...master
 
 
-debops.radvd v0.1.0 - unreleased
+debops.radvd v0.1.0 - 2017-10-05
 --------------------------------
 
 Added
