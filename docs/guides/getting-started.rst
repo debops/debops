@@ -108,9 +108,8 @@ To make sure that these variables apply to all hosts in your environment, you
 can include them in :command:`ansible/inventory/group_vars/all/` directory. A common
 practice is to name the files inside inventory directories after variable
 prefixes, separately for each Ansible role. For example, variables related to
-debops.sshd_ role are stored in
-:file:`ansible/inventory/group_vars/all/sshd.yml`, variables used by the
-debops.postfix_ role are written in
+[debops.sshd](https://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/) role are stored in :file:`ansible/inventory/group_vars/all/sshd.yml`, variables used by the
+[debops.postfix](https://docs.debops.org/en/latest/ansible/roles/ansible-postfix/docs/) role are written in
 :file:`ansible/inventory/group_vars/all/postfix.yml`, and so on. The same scheme
 can be used in other inventory groups or for separate hosts.
 
@@ -149,10 +148,7 @@ specified username will be used to create an administrator account.
 bootstrap__domain
 ~~~~~~~~~~~~~~~~~
 
-If hosts that you want to manage don't have a DNS domain set, or it's incorrect
-(for example your VPS provider's domain instead of your own), the
-debops.bootstrap_ role can be used to easily fix that and configure your own
-domain. By setting this variable to, for example:
+If hosts that you want to manage don't have a DNS domain set, or it's incorrect (for example your VPS provider's domain instead of your own), the [debops.bootstrap](https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/) role can be used to easily fix that and configure your own domain. By setting this variable to, for example:
 
 .. code-block:: yaml
 
@@ -192,10 +188,9 @@ To do that, in :file:`ansible/inventory/group_vars/all/sshd.yml` add:
    ---
    sshd__whitelist: [ '192.0.2.0/24', '2001:db8::/32' ]
 
-This will configure the debops.ferm_ and debops.tcpwrappers_ roles
-to allow connections to the :command:`ssh` service from specified networks.
+This will configure the [debops.ferm](https://docs.debops.org/en/latest/ansible/roles/ansible-ferm/docs/) and [debops.tcpwrappers](https://docs.debops.org/en/latest/ansible/roles/ansible-tcpwrappers/docs/) roles to allow connections to the :command:`ssh` service from specified networks.
 
-The debops.sshd_ role has `many more variables <https://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/defaults.html>`_, you can checkout to see the default configuration used by DebOps and what can be changed as needed.
+The [debops.sshd](https://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/) role has `many more variables <https://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/defaults.html>`_, you can checkout to see the default configuration used by DebOps and what can be changed as needed.
 
 ntp__timezone
 ~~~~~~~~~~~~~
@@ -241,8 +236,7 @@ should use a set of X.509 certificates which are trusted by the host.
 
 The ``nullmailer`` service can be configured to a large extent using `the debops.nullmailer role variables <https://docs.debops.org/en/latest/ansible/roles/ansible-nullmailer/docs/defaults.html>`_ - you can use them to configure SMTP authentication, use multiple relay servers, and so on.
 
-If you need a more powerful SMTP server, DebOps includes support for Postfix as
-well - check the debops.postfix_ Ansible role.
+If you need a more powerful SMTP server, DebOps includes support for Postfix as well - check the [debops.postfix](https://docs.debops.org/en/latest/ansible/roles/ansible-postfix/docs/) Ansible role.
 
 apt__default_mirrors_lookup, apt__default_sources_lookup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -252,12 +246,7 @@ it accordingly. Currently selected Debian and Ubuntu releases are recognized
 and the package sources for these operating systems should be configured
 without issues.
 
-The Raspbian operating system is a little difficult to detect, because Ansible
-currently classifies it as "Debian", however its package repositories are
-completely different. To avoid issues with incompatible package sources on your
-Raspberry Pi/Pi2, you should change the default debops.apt_ configuration
-manually to use the Raspbian repositories. To do that, add these values in
-relevant inventory files:
+The Raspbian operating system is a little difficult to detect, because Ansible currently classifies it as "Debian", however its package repositories are completely different. To avoid issues with incompatible package sources on your Raspberry Pi/Pi2, you should change the default [debops.apt](https://docs.debops.org/en/latest/ansible/roles/ansible-apt/docs/) configuration manually to use the Raspbian repositories. To do that, add these values in relevant inventory files:
 
 .. code-block:: yaml
 
@@ -289,12 +278,7 @@ Or, for short:
 
    alice@laptop:~/myproject$ debops bootstrap -l server -u root -k
 
-This command will execute the debops.bootstrap_
-role and use it to install a base set of packages needed by Ansible like
-``python`` and :command:`sudo`, prepare a new administrator account named after your
-system user (``alice`` in our example) and allow that account full access to
-the ``root`` account using :command:`sudo`. Your SSH keys will be installed on both
-the ``root`` and administrator accounts.
+This command will execute the [debops.bootstrap](https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/) role and use it to install a base set of packages needed by Ansible like ``python`` and :command:`sudo`, prepare a new administrator account named after your system user (``alice`` in our example) and allow that account full access to the ``root`` account using :command:`sudo`. Your SSH keys will be installed on both the ``root`` and administrator accounts.
 
 .. note::
 
@@ -354,11 +338,7 @@ Each host configured by common DebOps playbook should have the same set of base
 services. After a host is configured, you can enable additional Ansible roles
 to install and configure software and applications of your choice.
 
-We will use `DokuWiki <http://dokuwiki.org/>`_ as an example application. The
-role that manages the installation is called debops.dokuwiki_, it uses
-debops.nginx_ and ``debops.php5`` roles to configure a webserver and PHP5
-environment. The debops.nginx_ role calls some additional roles, such as
-debops.ferm_ to configure needed services.
+We will use `DokuWiki <http://dokuwiki.org/>`_ as an example application. The role that manages the installation is called [debops.dokuwiki](https://docs.debops.org/en/latest/ansible/roles/ansible-dokuwiki/docs/), it uses [debops.nginx](https://docs.debops.org/en/latest/ansible/roles/ansible-nginx/docs/) and ``debops.php5`` roles to configure a webserver and PHP5 environment. The [debops.nginx](https://docs.debops.org/en/latest/ansible/roles/ansible-nginx/docs/) role calls some additional roles, such as [debops.ferm](https://docs.debops.org/en/latest/ansible/roles/ansible-ferm/docs/) to configure needed services.
 
 To install DokuWiki on your new remote host, you need to enable the respective
 role in Ansible inventory. This is done by creating a new host group,
@@ -376,8 +356,7 @@ hosts to it:
 As you can see, you don't need to copy the whole host entry, only the short
 name is enough.
 
-The debops.dokuwiki_ has `many default variables
-<https://docs.debops.org/en/latest/ansible/roles/ansible-dokuwiki/docs/defaults.html>`_
+The [debops.dokuwiki](https://docs.debops.org/en/latest/ansible/roles/ansible-dokuwiki/docs/) has `many default variables <https://docs.debops.org/en/latest/ansible/roles/ansible-dokuwiki/docs/defaults.html>`_
 you can use to customize the installation. One of the more useful ones is
 ``dokuwiki_main_domain``; it's a list which specifies what DNS subdomains are
 used to access the wiki (each application in the DebOps set of roles is
@@ -432,8 +411,7 @@ process.
 At this time you might find that the web browser you are using does not
 recognize the CA certificates served by the host. This happens when server uses
 certificates signed by internal DebOps Certificate Authority instead of the
-"regular" ones. To fix that, consult the debops.pki_ role documentation
-(when it's available).
+"regular" ones. To fix that, consult the [debops.pki](https://docs.debops.org/en/latest/ansible/roles/ansible-pki/docs/) role documentation (when it's available).
 
 Where to go from here
 ---------------------
@@ -449,8 +427,7 @@ some example configurations and useful tips. Note that parts of the
 documentation are currently outdated - if a given role has only one page, you
 should check the role files directly.
 
-You can check the `DebOps Changelog <https://log.debops.org/>`_ for updates
-related to roles and playbooks (there's also an `Atom feed <https://log.debops.org/atom.xml>`_ available for your feed reader).
+You can check the `DebOps Changelog <https://log.debops.org/>`_ for updates related to roles and playbooks (there's also an `Atom feed <https://log.debops.org/atom.xml>`_ available for your feed reader).
 
 ..
  Local Variables:
