@@ -296,9 +296,15 @@ configuration as needed.
 Some of the global variables defined in ``debops.postgresql_server`` concerning
 clusters can be overridden on a cluster by cluster basis using their abbreviated
 names (without ``postgresql_server__`` prefix) as cluster parameters. In
-addition, almost all of the PostgreSQL parameters found in the
+addition, **almost all of the PostgreSQL parameters found in the
 :file:`postgresql.conf` configuration file can be specified as cluster parameters
-as well, to change the defaults.
+as well, to change the defaults**.
+
+Each cluster configuration directory contains the :file:`conf.d/` subdirectory
+where you can put :file:`postgresql.conf` configuration snippets; file names
+should end with ``.conf`` extension. These files will be included in the main
+:file:`postgresql.conf` configuration file and can be used to override the
+database configuration.
 
 List of some of the parameters that you can specify in a cluster configuration
 entry:

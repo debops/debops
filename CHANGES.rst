@@ -18,6 +18,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.5...master
 
+Added
+~~~~~
+
+- Include custom configuration files from the :file:`conf.d/` directory located
+  in the PostgreSQL cluster configuration directory. [drybjed_]
+
 
 `debops.postgresql_server v0.3.5`_ - 2017-09-26
 -----------------------------------------------

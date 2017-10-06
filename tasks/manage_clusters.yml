@@ -23,6 +23,18 @@
     - '{{ postgresql_server__clusters }}'
   when: item.name|d() and item.port|d()
 
+- name: Ensure that conf.d directories exist
+  file:
+    path: '/etc/postgresql/{{ item.version | d(postgresql_server__version) }}/{{ item.name }}/conf.d'
+    state: 'directory'
+    owner: '{{ item.user | d(postgresql_server__user) }}'
+    group: '{{ item.group | d(postgresql_server__group) }}'
+    mode: '0755'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  when: item.name|d()
+  tags: [ 'role::postgresql_server:config' ]
+
 - name: Configure PostgreSQL clusters
   template:
     src: 'etc/postgresql/postgresql.conf.j2'
