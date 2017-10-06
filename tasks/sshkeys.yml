@@ -23,6 +23,7 @@
     path: '~/.ssh/authorized_keys'
     state: 'absent'
   become_user: '{{ item.name }}'
+  become: True
   with_flattened:
     - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'
