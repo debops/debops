@@ -8,6 +8,7 @@
     state: '{{ item.forward_state | d("present") }}'
     create: True
   become_user: '{{ item.name }}'
+  become: True
   with_flattened:
     - '{{ users__default_accounts }}'
     - '{{ users__admin_accounts }}'

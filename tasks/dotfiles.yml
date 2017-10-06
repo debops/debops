@@ -2,6 +2,7 @@
 
 - name: Get users dotfiles from git repository
   become_user: '{{ item.name }}'
+  become: True
   git:
     repo: '{{ item.dotfiles_repo | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].repo) }}'
     dest: '{{ item.dotfiles_dest | d(users__dotfiles_dest) }}'
@@ -20,6 +21,7 @@
 
 - name: Configure users dotfiles
   become_user: '{{ item.name }}'
+  become: True
   command: '{{ item.dotfiles_command | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].command) }}'
   args:
     chdir: '{{ item.dotfiles_dest | d(users__dotfiles_dest) }}'
