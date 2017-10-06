@@ -9,6 +9,7 @@
     force:   '{{ item.force   | d(omit) }}'
     recurse: '{{ item.recurse | d(omit) }}'
   become_user: '{{ item.name }}'
+  become: True
   with_flattened:
     - '{{ users__resources }}'
     - '{{ users__group_resources }}'
@@ -25,6 +26,7 @@
     recurse: '{{ item.parent_recurse | d(omit) }}'
     state:   'directory'
   become_user: '{{ item.name }}'
+  become: True
   with_flattened:
     - '{{ users__resources }}'
     - '{{ users__group_resources }}'
@@ -41,6 +43,7 @@
     mode:    '{{ item.mode    | d(omit) }}'
     force:   '{{ item.force   | d(omit) }}'
   become_user: '{{ item.name }}'
+  become: True
   with_flattened:
     - '{{ users__resources }}'
     - '{{ users__group_resources }}'
@@ -54,6 +57,7 @@
     path: '{{ item.path | d(item.dest) }}'
     state: 'absent'
   become_user: '{{ item.name }}'
+  become: True
   with_flattened:
     - '{{ users__resources }}'
     - '{{ users__group_resources }}'
