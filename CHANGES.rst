@@ -31,6 +31,9 @@ Changed
   ``item.max_worker_processes`` to use the same name as the configuration
   option. [hvisage, drybjed_]
 
+- Remove the ``sql_inheritance`` option in PostgreSQL 10 configuration files.
+  [drybjed_]
+
 
 `debops.postgresql_server v0.3.5`_ - 2017-09-26
 -----------------------------------------------

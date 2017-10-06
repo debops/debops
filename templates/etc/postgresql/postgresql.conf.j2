@@ -467,7 +467,9 @@ default_with_oids = {{ item.default_with_oids | d('off') }}
 escape_string_warning = {{ item.escape_string_warning | d('on') }}
 lo_compat_privileges = {{ item.lo_compat_privileges | d('off') }}
 quote_all_identifiers = {{ item.quote_all_identifiers | d('off') }}
+{% if ((item.version | d(postgresql_server__version)) | version_compare('10','<')) %}
 sql_inheritance = {{ item.sql_inheritance | d('on') }}
+{% endif %}
 standard_conforming_strings = {{ item.standard_conforming_strings | d('on') }}
 synchronize_seqscans = {{ item.synchronize_seqscans | d('on') }}
 
