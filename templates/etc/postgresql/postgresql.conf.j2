@@ -146,7 +146,7 @@ bgwriter_lru_multiplier = {{ item.bgwriter_lru_multiplier | d('2.0') }}
 
 effective_io_concurrency = {{ item.effective_io_concurrency | d('1') }}
 {% if (item.version | d(postgresql_server__version)) | version_compare('9.4','>=') %}
-max_worker_processes = {{ item.maxworker_processes | d('8') }}
+max_worker_processes = {{ item.max_worker_processes | d('8') }}
 {% endif %}
 
 
@@ -467,7 +467,9 @@ default_with_oids = {{ item.default_with_oids | d('off') }}
 escape_string_warning = {{ item.escape_string_warning | d('on') }}
 lo_compat_privileges = {{ item.lo_compat_privileges | d('off') }}
 quote_all_identifiers = {{ item.quote_all_identifiers | d('off') }}
+{% if ((item.version | d(postgresql_server__version)) | version_compare('10','<')) %}
 sql_inheritance = {{ item.sql_inheritance | d('on') }}
+{% endif %}
 standard_conforming_strings = {{ item.standard_conforming_strings | d('on') }}
 synchronize_seqscans = {{ item.synchronize_seqscans | d('on') }}
 
@@ -491,7 +493,7 @@ restart_after_crash = {{ item.restart_after_crash | d('on') }}
 # These options allow settings to be loaded from files other than the
 # default postgresql.conf.
 
-#include_dir = 'conf.d'                 # include files ending in '.conf' from
+include_dir = 'conf.d'                  # include files ending in '.conf' from
                                         # directory 'conf.d'
 #include_if_exists = 'exists.conf'      # include file only if it exists
 #include = 'special.conf'               # include file

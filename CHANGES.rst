@@ -16,7 +16,29 @@ The current role maintainer_ is drybjed_.
 `debops.postgresql_server master`_ - unreleased
 -----------------------------------------------
 
-.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.5...master
+.. _debops.postgresql_server master: https://github.com/debops/ansible-postgresql_server/compare/v0.3.6...master
+
+
+`debops.postgresql_server v0.3.6`_ - 2017-10-06
+-----------------------------------------------
+
+.. _debops.postgresql_server v0.3.6: https://github.com/debops/ansible-postgresql_server/compare/v0.3.5...v0.3.6
+
+Added
+~~~~~
+
+- Include custom configuration files from the :file:`conf.d/` directory located
+  in the PostgreSQL cluster configuration directory. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Rename the ``item.maxworker_processes`` parameter to
+  ``item.max_worker_processes`` to use the same name as the configuration
+  option. [hvisage, drybjed_]
+
+- Remove the ``sql_inheritance`` option in PostgreSQL 10 configuration files.
+  [drybjed_]
 
 
 `debops.postgresql_server v0.3.5`_ - 2017-09-26
