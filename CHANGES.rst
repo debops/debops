@@ -30,6 +30,12 @@ Changed
 - Enable use of ``jessie-backports`` repository on Debian Jessie to allow for
   VM migration between different OS releases. [drybjed_]
 
+Fixed
+~~~~~
+
+- Fix a bug in the configuration template that resulted in
+  "AnsibleUndefinedVariable: 'parameters' is undefined" error. [drybjed_]
+
 
 `debops.libvirtd v0.3.2`_ - 2017-06-12
 --------------------------------------
