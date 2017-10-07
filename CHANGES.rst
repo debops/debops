@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.libvirtd master`_ - unreleased
 --------------------------------------
 
-.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.3.2...master
+.. _debops.libvirtd master: https://github.com/debops/ansible-libvirtd/compare/v0.3.3...master
+
+
+`debops.libvirtd v0.3.3`_ - 2017-10-07
+--------------------------------------
+
+.. _debops.libvirtd v0.3.3: https://github.com/debops/ansible-libvirtd/compare/v0.3.2...v0.3.3
 
 Changed
 ~~~~~~~
@@ -29,6 +35,12 @@ Changed
 
 - Enable use of ``jessie-backports`` repository on Debian Jessie to allow for
   VM migration between different OS releases. [drybjed_]
+
+Fixed
+~~~~~
+
+- Fix a bug in the configuration template that resulted in
+  "AnsibleUndefinedVariable: 'parameters' is undefined" error. [drybjed_]
 
 
 `debops.libvirtd v0.3.2`_ - 2017-06-12
