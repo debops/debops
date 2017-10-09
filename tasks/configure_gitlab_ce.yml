@@ -287,8 +287,11 @@
   when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
         and gitlab_register_ce_checkout|changed
 
+  # The RubyGems.org website has frequent timeouts, so we will try and install
+  # everything again as long as there are errors.
 - name: Update Ruby gems
-  command: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
+  shell: until bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }} ; do
+         sleep 1 ; logger -t ansible-command-bundle "GitLab RubyGems installation failed, retrying..." ; done
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True

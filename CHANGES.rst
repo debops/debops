@@ -35,6 +35,10 @@ Fixed
   the task "Stop gitaly service for an upgrade" tried to stop a service which
   which is created later in the run. [ypid_]
 
+- Execute the :command:`bundle install` command until it runs correctly to
+  ensure that https://rubygems.org/ timeouts don't break the installation
+  process. [drybjed_]
+
 
 `debops.gitlab v0.2.2`_ - 2017-08-16
 ------------------------------------
