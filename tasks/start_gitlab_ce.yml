@@ -1,0 +1,23 @@
+---
+
+- name: Start GitLab instance (SysVinit)
+  service:
+    name: 'gitlab'
+    state: 'started'
+  notify: [ 'Deactivate GitLab deploy.html page' ]
+  when: ((ansible_local is undefined or (ansible_local is defined and
+         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+           not ansible_local.gitlab.installed)))))) and
+          (gitlab_use_systemd is defined and not gitlab_use_systemd))
+
+- name: Start GitLab instance (systemd)
+  service:
+    name: 'gitlab.slice'
+    state: 'started'
+  notify: [ 'Deactivate GitLab deploy.html page' ]
+  when: ((ansible_local is undefined or (ansible_local is defined and
+         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+           not ansible_local.gitlab.installed)))))) and
+          (gitlab_use_systemd is defined and gitlab_use_systemd))

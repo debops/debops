@@ -60,10 +60,12 @@
 
 - include: configure_gitlab-workhorse.yml
 
+- include: configure_gitlab_ce.yml
+
 - include: configure_gitaly.yml
   when: gitlab_version | version_compare("9.0", operator="gt", strict=True)
 
-- include: configure_gitlab_ce.yml
+- include: start_gitlab_ce.yml
 
 - name: Make sure that Ansible local facts directory exists
   file:

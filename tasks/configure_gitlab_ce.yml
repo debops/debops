@@ -38,6 +38,7 @@
     dest: '{{ gitlab_ce_git_dest }}'
     bare: True
     update: True
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_source
 
@@ -63,23 +64,29 @@
     mode: '0644'
 
 - name: Get commit hash of target checkout
-  shell: GIT_WORK_TREE={{ gitlab_ce_git_checkout }} git rev-parse {{ gitlab_version_map[gitlab_version].ce }}
+  command: git rev-parse {{ gitlab_version_map[gitlab_version].ce }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
   args:
     chdir: '{{ gitlab_ce_git_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_target_branch
   changed_when: gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before
 
 - include: gitlab_ce_pre_upgrade.yml
-  when: ((ansible_local is defined and ansible_local.gitlab is defined and
-          ansible_local.gitlab.installed is defined and ansible_local.gitlab.installed) and
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
          ((gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before) or
          (ansible_local.gitlab.version is defined and ansible_local.gitlab.version != gitlab_version)))
 
 - name: Checkout GitLab CE
-  shell: GIT_WORK_TREE={{ gitlab_ce_git_checkout }} git checkout -f {{ gitlab_version_map[gitlab_version].ce }}
+  command: git checkout -f {{ gitlab_version_map[gitlab_version].ce }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
   args:
     chdir: '{{ gitlab_ce_git_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_checkout
   when: (gitlab_register_ce_source.before is undefined or
@@ -181,9 +188,9 @@
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
 
 - name: Install GitLab SysVinit script
-  shell: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
+  command: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
   register: gitlab__register_sysvinit_script
-  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+  when: (gitlab_register_ce_checkout|changed and
          (gitlab_use_systemd is defined and not gitlab_use_systemd))
 
 - name: Install GitLab systemd service files
@@ -198,7 +205,7 @@
     - 'gitlab-workhorse.service'
     - '{{ "gitlab-gitaly.service" if (gitlab_version | version_compare("9.0", operator="gt", strict=True)) else [] }}'
   register: gitlab__register_systemd_services
-  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+  when: (gitlab_register_ce_checkout|changed and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Install GitLab Pages systemd service file
@@ -207,7 +214,7 @@
     dest: '/etc/systemd/system/gitlab-pages.service'
   register: gitlab__register_pages_systemd_services
   when: (gitlab_enable_pages and
-         (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+         gitlab_register_ce_checkout|changed and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Reload systemd daemons
@@ -221,12 +228,12 @@
   service:
     name: 'gitlab'
     enabled: True
-  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+  when: (gitlab_register_ce_checkout|changed and
          ansible_service_mgr != 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab SysVinit service (systemd)
   command: systemctl enable gitlab
-  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+  when: (gitlab_register_ce_checkout|changed and
          ansible_service_mgr == 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab systemd services
@@ -240,7 +247,7 @@
     - 'gitlab-unicorn.service'
     - 'gitlab-workhorse.service'
     - '{{ "gitlab-gitaly.service" if (gitlab_version | version_compare("9.0", operator="gt", strict=True)) else [] }}'
-  when: ((gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+  when: (gitlab_register_ce_checkout|changed and
          gitlab_use_systemd|bool)
 
 - name: Enable GitLab Pages systemd service
@@ -248,7 +255,7 @@
     name: 'gitlab-pages.service'
     enabled: True
   when: (gitlab_enable_pages and
-         (gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed) and
+         gitlab_register_ce_checkout|changed and
          gitlab_use_systemd|bool)
 
 - name: Setup GitLab CE logrotate configuration
@@ -263,28 +270,33 @@
 # ---- GitLab installation / upgrade ----
 
 - name: NPM install
-  shell: npm install --production
+  command: npm install --production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_version | version_compare("8.17", operator="lt", strict=True)
-        and gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
+        and gitlab_register_ce_checkout|changed
 
 - name: Yarn install
-  shell: yarn install --production
+  command: yarn install --production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
-        and gitlab_register_ce_checkout is defined
-        and gitlab_register_ce_checkout.changed
+        and gitlab_register_ce_checkout|changed
 
+  # The RubyGems.org website has frequent timeouts, so we will try and install
+  # everything again as long as there are errors.
 - name: Update Ruby gems
-  shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
+  shell: until bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }} ; do
+         sleep 1 ; logger -t ansible-command-bundle "GitLab RubyGems installation failed, retrying..." ; done
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed
+  when: gitlab_register_ce_checkout|changed
 
 - name: Set default administrator email address and password
   replace:
@@ -306,13 +318,14 @@
   command: 'bundle exec rake db:schema:load setup_postgresql db:seed_fu'
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_setup_postgresql
   when: ((ansible_local is undefined or (ansible_local is defined and
           (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
            (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
             not ansible_local.gitlab.installed)))))) and
-         gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed and
+         gitlab_register_ce_checkout|changed and
          gitlab__database == 'postgresql')
 
 - name: Reset default administrator email address and password
@@ -330,64 +343,46 @@
            not ansible_local.gitlab.installed))))))
 
 - name: Migrate GitLab database
-  shell: bundle exec rake db:migrate RAILS_ENV=production
+  command: bundle exec rake db:migrate RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_migrate
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
-  when: ((ansible_local is defined and ansible_local.gitlab is defined and
-          ansible_local.gitlab.installed) and
-         gitlab_register_ce_checkout is defined and gitlab_register_ce_checkout.changed)
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         gitlab_register_ce_checkout|changed)
 
 - name: Clean GitLab assets
-  shell: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
+  command: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
-  when: ((ansible_local is defined and ansible_local.gitlab is defined and
-          ansible_local.gitlab.installed) and
-         gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         gitlab_register_bundle_migrate|changed)
 
 - name: Precompile GitLab assets
-  shell: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
+  command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
-  when: (gitlab_register_bundle_setup_postgresql is defined and gitlab_register_bundle_setup_postgresql.changed) or
-        (gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
+  when: gitlab_register_bundle_setup_postgresql|changed or
+        gitlab_register_bundle_migrate|changed
 
 - name: Clear GitLab cache
-  shell: bundle exec rake cache:clear RAILS_ENV=production
+  command: bundle exec rake cache:clear RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
-  when: ((ansible_local is defined and ansible_local.gitlab is defined and
-          ansible_local.gitlab.installed) and
-         gitlab_register_bundle_migrate is defined and gitlab_register_bundle_migrate.changed)
-
-- name: Start GitLab instance (SysVinit)
-  service:
-    name: 'gitlab'
-    state: 'started'
-  notify: [ 'Deactivate GitLab deploy.html page' ]
-  when: ((ansible_local is undefined or (ansible_local is defined and
-         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
-          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
-           not ansible_local.gitlab.installed)))))) and
-          (gitlab_use_systemd is defined and not gitlab_use_systemd))
-
-- name: Start GitLab instance (systemd)
-  service:
-    name: 'gitlab.slice'
-    state: 'started'
-  notify: [ 'Deactivate GitLab deploy.html page' ]
-  when: ((ansible_local is undefined or (ansible_local is defined and
-         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
-          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
-           not ansible_local.gitlab.installed)))))) and
-          (gitlab_use_systemd is defined and gitlab_use_systemd))
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         gitlab_register_bundle_migrate|changed)
 
 - name: Configure periodical GitLab backups
   cron:

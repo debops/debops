@@ -10,21 +10,23 @@
   register: gitlab_register_shell_cloned
 
 - name: Save current checkout hash for update
-  shell: git rev-parse HEAD
+  command: git rev-parse HEAD
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
     warn: False
   register: gitlab_register_shell_current_head
   changed_when: False
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_cloned.stat.exists
 
 - name: Change current HEAD to master in bare repository for update
-  shell: git symbolic-ref HEAD refs/heads/master
+  command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
     warn: False
   changed_when: False
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_cloned.stat.exists
 
@@ -42,6 +44,7 @@
     dest: '{{ gitlab_shell_git_dest }}'
     bare: True
     update: True
+  become: True
   become_user: '{{ gitlab_user }}'
 
 - name: Restore HEAD to previous checkout
@@ -71,19 +74,23 @@
     mode: '0644'
 
 - name: Get currently checked out git tag
-  shell: GIT_WORK_TREE={{ gitlab_shell_git_checkout }} git describe --tags
+  command: git describe --tags
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_target_tag
   changed_when: gitlab_register_shell_target_tag.stdout != gitlab_version_map[gitlab_version].shell
 
 - name: Checkout gitlab-shell
-  shell: git checkout --force {{ gitlab_version_map[gitlab_version].shell }}
+  command: git checkout --force {{ gitlab_version_map[gitlab_version].shell }}
   environment:
     GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_checkout
   when: ((gitlab_version_map[gitlab_version].shell != gitlab_register_shell_target_tag.stdout) or
@@ -110,6 +117,6 @@
   shell: ./bin/install ; test ! -x './bin/compile' || ./bin/compile
   args:
     chdir: '{{ gitlab_shell_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_shell_checkout is defined and gitlab_register_shell_checkout.changed
-
+  when: gitlab_register_shell_checkout|changed

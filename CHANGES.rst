@@ -25,6 +25,20 @@ Removed
   https://github.com/gitlabhq/gitlab-recipes/tree/master/database/migrate-mysql-to-postgres
   [bfabio_]
 
+Fixed
+~~~~~
+
+- Ensure version requirement of GitLab 8.17 (Git version >= 2.7.3) is met on Debian Jessie.
+  [ypid_]
+
+- Fix upgrade path for older deployments setup by the role. The issue was that
+  the task "Stop gitaly service for an upgrade" tried to stop a service which
+  which is created later in the run. [ypid_]
+
+- Execute the :command:`bundle install` command until it runs correctly to
+  ensure that https://rubygems.org/ timeouts don't break the installation
+  process. [drybjed_]
+
 
 `debops.gitlab v0.2.2`_ - 2017-08-16
 ------------------------------------
@@ -47,7 +61,7 @@ Changed
   [drybjed_]
 
 - Stop and start running :command:`gitaly` service during an upgrade because
-  the binary cannot be replaced without errors. Small bugs rlated to
+  the binary cannot be replaced without errors. Small bugs related to
   :command:`gitaly` service have been fixed. [drybjed_]
 
 

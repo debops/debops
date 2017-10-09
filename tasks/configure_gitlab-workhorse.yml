@@ -10,19 +10,21 @@
   register: gitlab_register_gitlab_workhorse_cloned
 
 - name: Save current checkout hash for update
-  shell: git rev-parse HEAD
+  command: git rev-parse HEAD
   args:
     chdir: '{{ gitlab_workhorse_dest }}'
   register: gitlab_register_gitlab_workhorse_current_head
   changed_when: False
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab_workhorse_cloned.stat.exists
 
 - name: Change current HEAD to master in bare repository for update
-  shell: git symbolic-ref HEAD refs/heads/master
+  command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ gitlab_workhorse_dest }}'
   changed_when: False
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab_workhorse_cloned.stat.exists
 
@@ -32,6 +34,7 @@
     dest: '{{ gitlab_workhorse_dest }}'
     bare: True
     update: True
+  become: True
   become_user: '{{ gitlab_user }}'
 
 - name: Restore HEAD to previous checkout
@@ -66,17 +69,23 @@
     mode: '0644'
 
 - name: Get currently checked out git tag
-  shell: GIT_WORK_TREE={{ gitlab_workhorse_checkout }} git describe --tags
+  command: git describe --tags
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_workhorse_checkout }}'
   args:
     chdir: '{{ gitlab_workhorse_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_target_tag
   changed_when: gitlab_register_gitlab_workhorse_target_tag.stdout != gitlab_version_map[gitlab_version].gitlab_workhorse
 
 - name: Checkout gitlab-workhorse
-  shell: GIT_WORK_TREE={{ gitlab_workhorse_checkout }} git checkout -f {{ gitlab_version_map[gitlab_version].gitlab_workhorse }}
+  command: git checkout -f {{ gitlab_version_map[gitlab_version].gitlab_workhorse }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_workhorse_checkout }}'
   args:
     chdir: '{{ gitlab_workhorse_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_checkout
   when: (gitlab_version_map[gitlab_version].gitlab_workhorse != gitlab_register_gitlab_workhorse_target_tag.stdout) or not gitlab_register_gitlab_workhorse_cloned.stat.exists
@@ -84,5 +93,6 @@
 - name: Setup gitlab-workhorse
   make:
     chdir: '{{ gitlab_workhorse_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab_workhorse_checkout|changed
