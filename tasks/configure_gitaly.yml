@@ -15,6 +15,7 @@
     chdir: '{{ gitlab__gitaly_dest }}'
   register: gitlab_register_gitaly_current_head
   changed_when: False
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitaly_cloned.stat.exists
 
@@ -23,6 +24,7 @@
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
   changed_when: False
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitaly_cloned.stat.exists
 
@@ -32,6 +34,7 @@
     dest: '{{ gitlab__gitaly_dest }}'
     bare: True
     update: True
+  become: True
   become_user: '{{ gitlab_user }}'
 
 - name: Restore HEAD to previous checkout
@@ -71,6 +74,7 @@
     GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitaly_target_tag
   changed_when: gitlab_register_gitaly_target_tag.stdout != gitlab_version_map[gitlab_version].gitaly
@@ -81,6 +85,7 @@
     GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab__gitaly_checkout
   when: (gitlab_version_map[gitlab_version].gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
@@ -97,6 +102,7 @@
 - name: Setup gitaly
   make:
     chdir: '{{ gitlab__gitaly_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab__gitaly_checkout|changed
 

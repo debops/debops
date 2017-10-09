@@ -16,6 +16,7 @@
     warn: False
   register: gitlab_register_shell_current_head
   changed_when: False
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_cloned.stat.exists
 
@@ -25,6 +26,7 @@
     chdir: '{{ gitlab_shell_git_dest }}'
     warn: False
   changed_when: False
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_cloned.stat.exists
 
@@ -42,6 +44,7 @@
     dest: '{{ gitlab_shell_git_dest }}'
     bare: True
     update: True
+  become: True
   become_user: '{{ gitlab_user }}'
 
 - name: Restore HEAD to previous checkout
@@ -76,6 +79,7 @@
     GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_target_tag
   changed_when: gitlab_register_shell_target_tag.stdout != gitlab_version_map[gitlab_version].shell
@@ -86,6 +90,7 @@
     GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_checkout
   when: ((gitlab_version_map[gitlab_version].shell != gitlab_register_shell_target_tag.stdout) or
@@ -112,5 +117,6 @@
   shell: ./bin/install ; test ! -x './bin/compile' || ./bin/compile
   args:
     chdir: '{{ gitlab_shell_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_shell_checkout|changed

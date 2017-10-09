@@ -38,6 +38,7 @@
     dest: '{{ gitlab_ce_git_dest }}'
     bare: True
     update: True
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_source
 
@@ -68,6 +69,7 @@
     GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
   args:
     chdir: '{{ gitlab_ce_git_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_target_branch
   changed_when: gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before
@@ -84,6 +86,7 @@
     GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
   args:
     chdir: '{{ gitlab_ce_git_dest }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_ce_checkout
   when: (gitlab_register_ce_source.before is undefined or
@@ -270,6 +273,7 @@
   command: npm install --production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_version | version_compare("8.17", operator="lt", strict=True)
         and gitlab_register_ce_checkout|changed
@@ -278,6 +282,7 @@
   command: yarn install --production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
         and gitlab_register_ce_checkout|changed
@@ -286,6 +291,7 @@
   command: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_ce_checkout|changed
 
@@ -309,6 +315,7 @@
   command: 'bundle exec rake db:schema:load setup_postgresql db:seed_fu'
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_setup_postgresql
   when: ((ansible_local is undefined or (ansible_local is defined and
@@ -336,6 +343,7 @@
   command: bundle exec rake db:migrate RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_migrate
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
@@ -347,6 +355,7 @@
   command: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
@@ -356,6 +365,7 @@
   command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
   when: gitlab_register_bundle_setup_postgresql|changed or
@@ -365,6 +375,7 @@
   command: bundle exec rake cache:clear RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and

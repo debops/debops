@@ -9,6 +9,7 @@
   command: bundle exec rake sidekiq:stop RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
   when: not gitlab_use_systemd | bool
 
@@ -22,6 +23,7 @@
   command: bundle exec rake gitlab:backup:create RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
   become_user: '{{ gitlab_user }}'
 
 - name: Stop GitLab before upgrade (sysvinit)
