@@ -14,7 +14,24 @@ The current role maintainer_ is drybjed.
 `debops.gitlab_runner master`_ - unreleased
 -------------------------------------------
 
-.. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.2.0...master
+.. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.3.0...master
+
+
+`debops.gitlab_runner v0.3.0`_ - 2017-10-13
+-------------------------------------------
+
+.. _debops.gitlab_runner v0.3.0: https://github.com/debops/ansible-gitlab_runner/compare/v0.2.0...v0.3.0
+
+Added
+~~~~~
+
+- Add support for `Vagrant LXC <https://github.com/fgrehm/vagrant-lxc>`_
+  provider when LXC is configured on a compatible host. [drybjed_]
+
+Changed
+~~~~~~~
+
+- Switch from GitLab API v1 to GitLab API v4 for Runner management. [drybjed_]
 
 
 `debops.gitlab_runner v0.2.0`_ - 2017-08-16

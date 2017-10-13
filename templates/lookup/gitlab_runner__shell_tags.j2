@@ -9,6 +9,13 @@
        (ansible_local.docker.installed|d()) | bool) %}
 {%   set _ = output.append('docker-host') %}
 {% endif %}
+{% if (ansible_local|d() and ansible_local.lxc|d() and
+       (ansible_local.lxc.installed|d()) | bool) %}
+{%   set _ = output.append('lxc-host') %}
+{% endif %}
+{% if gitlab_runner__vagrant_lxc|bool %}
+{%   set _ = output.append('vagrant-lxc') %}
+{% endif %}
 {% set _ = output.append((ansible_local.core.distribution
                           if (ansible_local|d() and ansible_local.core|d() and
                               ansible_local.core.distribution|d())

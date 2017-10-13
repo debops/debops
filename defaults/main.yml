@@ -34,7 +34,9 @@ gitlab_runner__apt_repo: 'deb https://packages.gitlab.com/runner/gitlab-ci-multi
 # .. envvar:: gitlab_runner__base_packages [[[
 #
 # List of APT packages which will be installed by the role.
-gitlab_runner__base_packages: [ 'gitlab-ci-multi-runner' ]
+gitlab_runner__base_packages:
+  - 'gitlab-ci-multi-runner'
+  - '{{ "vagrant-lxc" if gitlab_runner__vagrant_lxc|bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__packages [[[
@@ -134,9 +136,18 @@ gitlab_runner__api_fqdn: 'code.{{ gitlab_runner__domain }}'
                                                                    # ]]]
 # .. envvar:: gitlab_runner__api_url [[[
 #
-# The HTTP API endpoint of the GitLab CI server to use for Runner registration.
+# The HTTP API endpoint of the GitLab CI server.
 # The role will check if the API server is available before trying to use it.
-gitlab_runner__api_url: 'https://{{ gitlab_runner__api_fqdn }}/ci'
+gitlab_runner__api_url: 'https://{{ gitlab_runner__api_fqdn }}/'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__api_token [[[
+#
+# The personal GitLab API access token used for API operations, for example
+# removal of existing Runners. This is not a Runner registration token. You can
+# generate an access token in GitLab "User Settings", "Access Tokens"
+# configuration page.
+gitlab_runner__api_token: ''
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__executor [[[
@@ -293,6 +304,26 @@ gitlab_runner__group_custom_files: []
 # a dictionary with keys the same as the ``copy`` module options.
 # This list is meant to be configured for specific hosts.
 gitlab_runner__host_custom_files: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Shell executor configuration [[[
+# --------------------------------
+
+# These variables control what features are configured on the GitLab Runner
+# host to use by the shell executor.
+
+# .. envvar:: gitlab_runner__vagrant_lxc [[[
+#
+# Enable or disable support for Vagrant LXC plugin (configuration of this
+# support also implies installation of :command:`vagrant` on the GitLab Runner
+# host). Enabling Vagrant LXC will give limited :command:`sudo` access for the
+# GitLab Runner UNIX account to allow access to LXC commands.
+gitlab_runner__vagrant_lxc: '{{ True
+                                if (ansible_local|d() and ansible_local.lxc|d() and
+                                    (ansible_local.lxc.installed|d())|bool and
+                                    (ansible_distribution_release not in
+                                     [ "wheezy", "jessie", "precise", "trusty" ]))
+                                else False }}'
                                                                    # ]]]
                                                                    # ]]]
 # SSH key and host management [[[
