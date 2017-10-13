@@ -188,6 +188,15 @@
   when: gitlab_runner__ssh_known_hosts and item is defined and item.rc > 0
   failed_when: False
 
+- name: Configure Vagrant LXC sudo access
+  template:
+    src: 'etc/sudoers.d/gitlab-runner-vagrant-lxc.j2'
+    dest: '/etc/sudoers.d/gitlab-runner-vagrant-lxc'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+  when: gitlab_runner__vagrant_lxc|bool
+
 - name: Make sure that Ansible fact directory exists
   file:
     path: '/etc/ansible/facts.d'

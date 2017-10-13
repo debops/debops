@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed.
 
 .. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Add support for `Vagrant LXC <https://github.com/fgrehm/vagrant-lxc>`_
+  provider when LXC is configured on a compatible host. [drybjed_]
+
 Changed
 ~~~~~~~
 
