@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed.
 
 .. _debops.gitlab_runner master: https://github.com/debops/ansible-gitlab_runner/compare/v0.2.0...master
 
+Changed
+~~~~~~~
+
+- Switch from GitLab API v1 to GitLab API v4 for Runner management. [drybjed_]
+
 
 `debops.gitlab_runner v0.2.0`_ - 2017-08-16
 -------------------------------------------

@@ -96,7 +96,7 @@
 
 - name: Register new GitLab Runners
   uri:
-    url: '{{ (item.api_url | d(gitlab_runner__api_url)) + "/api/v1/runners/register.json" }}'
+    url: '{{ (item.api_url | d(gitlab_runner__api_url)) + "api/v4/runners" }}'
     method: 'POST'
     body: 'token={{ item.token | d(gitlab_runner__token) }}&description={{ item.name | urlencode }}&tag_list={{ ((item.tags|d([]) + (gitlab_runner__shell_tags if (item.executor == "shell") else []) + gitlab_runner__combined_tags) | unique | join(",")) | urlencode }}&run_untagged={{ item.run_untagged | d(gitlab_runner__run_untagged) }}'
     status_code: '200,201'
@@ -125,16 +125,18 @@
 
 - name: Delete GitLab Runners if requested
   uri:
-    url: '{{ (item.0.api_url | d(gitlab_runner__api_url)) + "/api/v1/runners/delete" }}'
+    url: '{{ (item.0.api_url | d(gitlab_runner__api_url)) + "api/v4/runners/" + item.1.id | string }}'
     method: 'DELETE'
-    body: 'token={{ item.1.token }}'
+    headers:
+      'PRIVATE-TOKEN': '{{ gitlab_runner__api_token }}'
   with_together:
     - '{{ gitlab_runner__default_instances + gitlab_runner__instances + gitlab_runner__group_instances + gitlab_runner__host_instances }}'
     - '{{ ansible_local.gitlab_runner.instance_tokens if (ansible_local|d() and ansible_local.gitlab_runner|d() and ansible_local.gitlab_runner.instance_tokens|d()) else [] }}'
   when: (gitlab_runner__register_api.status|d() and gitlab_runner__register_api.status == 200 and
-         item.0.name|d() and item.1.name|d() and item.0.name == item.1.name and
+         gitlab_runner__api_token and item.0.name|d() and item.1.name|d() and item.0.name == item.1.name and
          (item.0.state|d() and item.0.state == 'absent'))
   failed_when: False
+  no_log: True
 
 - name: Get the SSH key from the remote host
   slurp:
