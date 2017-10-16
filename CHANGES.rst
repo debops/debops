@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 .. _debops.elasticsearch master: https://github.com/debops/ansible-elasticsearch/compare/v0.2.1...master
 
 
+Fixes
+~~~~~
+
+- Fix ``discovery.zen.minimum_master_nodes`` calculation for odd number of nodes. [scibi_]
+
+
 `debops.elasticsearch v0.2.1`_ - 2017-07-14
 -------------------------------------------
 
