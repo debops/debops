@@ -57,7 +57,12 @@ java__base_packages: '{{ ([ "openjdk-8-jre-headless" ] if java__install_v8|bool 
 #
 # List of default APT packages which should be installed for Java Development
 # Kit.
-java__jdk_packages: '{{ ([ "openjdk-8-jdk-headless" ] if java__install_v8|bool else [ "default-jdk-headless" ])
+java__jdk_packages: '{{ ([ "openjdk-8-jdk-headless" ]
+                         if java__install_v8|bool
+                         else ([ "default-jdk" ]
+                               if (ansible_distribution_release in
+                                   [ "wheezy", "jessie", "precise", "trusty" ])
+                               else [ "default-jdk-headless" ]))
                         if java__install_jdk|bool else [] }}'
 
                                                                    # ]]]
