@@ -188,7 +188,7 @@ elasticsearch__discovery_hosts: '{{ elasticsearch__inventory_master_hosts }}'
 #
 # Minimum number of master-eligible nodes that are required to achieve quorum.
 elasticsearch__discovery_minimum_master_nodes: '{{ "1" if (elasticsearch__inventory_master_hosts | count <= 2)
-                                                       else ((elasticsearch__inventory_master_hosts | count / 2) | round | int + 1) }}'
+                                                       else ((elasticsearch__inventory_master_hosts | count / 2) | round(0, "floor") | int + 1) }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__gateway_recover_after_nodes [[[
