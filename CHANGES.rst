@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed_.
 .. _debops.cran master: https://github.com/debops/ansible-cran/compare/v0.1.0...master
 
 
-debops.cran v0.1.0 - unreleased
+debops.cran v0.1.0 - 2017-10-17
 -------------------------------
 
 Added
