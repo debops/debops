@@ -28,6 +28,11 @@
     - '{{ cran__host_packages }}'
     - '{{ cran__dependent_packages }}'
 
+- name: Configure Java environment in R
+  command: R CMD javareconf
+  when: (cran__java_integration|bool and
+         (ansible_local|d() and ansible_local.cran is undefined))
+
 - name: Manage R packages
   cran:
     name:  '{{ item.name  | d(item) }}'

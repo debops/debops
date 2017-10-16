@@ -26,6 +26,23 @@ To configure the R environment on a host, it needs to be included in the
    [debops_service_cran]
    hostname
 
+The role can automatically enable Java support in R, if Java environment
+installed by the ``debops.java`` Ansible role is detected. To do that, add the
+host to the ``[debops_service_java]`` Ansible inventory group:
+
+.. code-block:: none
+
+   [debops_service_java]
+   hostname
+
+   [debops_service_cran]
+   hostname
+
+If you already configured R and you want to enable Java support, remove the
+:file:`/etc/ansible/facts.d/cran.fact` file from the remote host; this will
+tell the role to configure Java support in the R environment on the next
+Ansible run.
+
 
 Example playbook
 ----------------

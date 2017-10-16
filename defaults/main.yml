@@ -139,6 +139,19 @@ cran__host_r_packages: []
 cran__dependent_r_packages: []
                                                                    # ]]]
                                                                    # ]]]
+# Other configuration options [[[
+# -------------------------------
+
+# .. envvar:: cran__java_integration [[[
+#
+# Enable or disable Java integration if Java environment is detected on a host.
+# Java might be required to install some R packages.
+cran__java_integration: '{{ True
+                            if (ansible_local|d() and ansible_local.java|d() and
+                                (ansible_local.java.installed|d())|bool)
+                            else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
