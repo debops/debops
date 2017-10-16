@@ -16,6 +16,11 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.java master: https://github.com/debops/ansible-java/compare/v0.2.0...master
 
+Added
+~~~~~
+
+- Add Ansible local facts for the ``debops.java`` role. [drybjed_]
+
 
 `debops.java v0.2.0`_ - 2017-05-01
 ----------------------------------
