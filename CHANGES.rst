@@ -14,7 +14,13 @@ The current role maintainer_ is drybjed_.
 `debops.java master`_ - unreleased
 ----------------------------------
 
-.. _debops.java master: https://github.com/debops/ansible-java/compare/v0.2.0...master
+.. _debops.java master: https://github.com/debops/ansible-java/compare/v0.2.1...master
+
+
+`debops.java v0.2.1`_ - 2017-10-16
+----------------------------------
+
+.. _debops.java v0.2.1: https://github.com/debops/ansible-java/compare/v0.2.0...v0.2.1
 
 Added
 ~~~~~
