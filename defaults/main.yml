@@ -796,7 +796,15 @@ nginx__maps: []
 # .. envvar:: nginx__default_maps [[[
 #
 # List of default nginx map definitions
-nginx__default_maps: []
+nginx__default_maps:
+
+  # Support WebSocket connection upgrade as a proxy
+  # Documentation: https://nginx.org/en/docs/http/websocket.html
+  - name: 'connection_upgrade'
+    map: '$http_upgrade $connection_upgrade'
+    mapping: |
+      ''      Close;
+    default: 'Upgrade'
 
                                                                    # ]]]
 # .. envvar:: nginx__dependent_maps [[[

@@ -28,13 +28,15 @@ Added
   :command:`nginx` configuration outside of the ``http`` block in the
   :file:`/etc/nginx/nginx.conf` configuration file. [drybjed_]
 
+- Add a default :command:`nginx` map used to upgrade HTTP connections to
+  WebSockets, usually used in reverse proxy configuration. [drybjed_]
+
 Changed
 ~~~~~~~
 
 - ``item.frame_option`` and ``item.content_type_options`` can now be set to the
   special value ``{{ omit }}`` to omit their corresponding HTTP headers in
   nginx servers. [ypid_]
-
 
 Fixed
 ~~~~~
