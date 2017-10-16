@@ -21,6 +21,9 @@ Added
 
 - Add Ansible local facts for the ``debops.java`` role. [drybjed_]
 
+- Add a way to conditionally install the Java Development Kit environment if
+  needed. [drybjed_]
+
 
 `debops.java v0.2.0`_ - 2017-05-01
 ----------------------------------

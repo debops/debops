@@ -28,6 +28,16 @@ can change the default Java package in :envvar:`java__base_packages` list to you
 preferred version.
 
 
+Conditional installation of Java Development Kit (JDK)
+------------------------------------------------------
+
+Some environments might require a full Java Development Kit to work correctly,
+however by default the ``debops.java`` role installs only the Java Runtime
+Environment (JRE). To install the full JDK in a compatible version, you can set
+the :envvar:`java__install_jdk` boolean variable to ``True``, either via
+Ansible inventory variables or via role dependent variables.
+
+
 Example inventory
 -----------------
 

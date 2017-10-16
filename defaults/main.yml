@@ -10,12 +10,12 @@
 # .. include:: includes/all.rst
 
 
-# Support for backported OpenJDK 8 environment [[[
+# Support for backported OpenJRE 8 environment [[[
 # ------------------------------------------------
 
 # .. envvar:: java__install_v8 [[[
 #
-# The role will install OpenJDK 8 on older OS releases that provide backported
+# The role will install OpenJRE 8 on older OS releases that provide backported
 # packages. For this to work correctly, the host needs to have enabled
 # Backports repositories. See debops.apt_ role for more details.
 #
@@ -28,9 +28,17 @@ java__install_v8: '{{ True
                       else False }}'
 
                                                                    # ]]]
+# .. envvar:: java__install_jdk [[[
+#
+# By default the role installs only the Java Runtime Environment (JRE)
+# packages. Other Ansible roles can request installation of the compatible Java
+# Development Kit (JDK) by enabling this variable.
+java__install_jdk: False
+
+                                                                   # ]]]
 # .. envvar:: java__v8_backported_releases [[[
 #
-# List of OS releases which provide OpenJDK 8 packages through Backports.
+# List of OS releases which provide OpenJRE 8 packages through Backports.
 java__v8_backported_releases: [ 'jessie' ]
                                                                    # ]]]
                                                                    # ]]]
@@ -39,9 +47,18 @@ java__v8_backported_releases: [ 'jessie' ]
 
 # .. envvar:: java__base_packages [[[
 #
-# List of default APT packages which should be installed for Java environment.
+# List of default APT packages which should be installed for Java Runtime
+# Environment.
 java__base_packages: '{{ ([ "openjdk-8-jre-headless" ] if java__install_v8|bool else [ "default-jre-headless" ])
                         + [ "ca-certificates-java" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: java__jdk_packages [[[
+#
+# List of default APT packages which should be installed for Java Development
+# Kit.
+java__jdk_packages: '{{ ([ "openjdk-8-jdk-headless" ] if java__install_v8|bool else [ "default-jdk-headless" ])
+                        if java__install_jdk|bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: java__packages [[[
@@ -87,7 +104,7 @@ java__apt_preferences__dependent_list:
 
   - package: 'ca-certificates-java'
     backports: [ 'jessie' ]
-    reason:  'Requied by OpenJDK 8 from Backports'
+    reason:  'Requied by OpenJRE/OpenJDK 8 from Backports'
     by_role: 'debops.java'
     state:   '{{ "present" if java__install_v8|bool else "absent" }}'
                                                                    # ]]]
