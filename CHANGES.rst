@@ -118,6 +118,8 @@ Added
 - Add Postfix-related roles: ``debops.saslauthd``, ``debops.opendkim``,
   ``debops.postscreen``, ``debops.postwhite``, ``debops.postconf``. [drybjed_]
 
+- Add ``debops.cran`` Ansible role with the corresponding playbook. [drybjed_]
+
 Changed
 ~~~~~~~
 
