@@ -7,18 +7,6 @@ Getting started
    :local:
 
 
-User and password configuration is insecure
--------------------------------------------
-
-Before using user authentication in your ``nullmailer`` installation, be aware
-that the ``nullmailer`` package in Debian uses the ``debconf`` service which
-`can leak the user and password <https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=831813>`_
-to unprivileged users on your system. If you need to use authenticated user
-accounts to forward mail on hosts where other users can login, you should
-either set up an intermediate mail relay on another host you control and use
-that to forward the messages, or use different MTA, for example Postfix.
-
-
 Correct DNS configuration is recommended
 ----------------------------------------
 
