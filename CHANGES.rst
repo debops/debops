@@ -207,6 +207,8 @@ Changed
 - Update the ``profile_tasks.py`` callback to work correctly on Ansible 2.4.
   [drybjed_]
 
+- Update the debops.rstudio_server_ playbook. [drybjed_]
+
 Deprecated
 ~~~~~~~~~~
 
