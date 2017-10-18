@@ -25,7 +25,10 @@
     name: '{{ item }}'
     state: 'latest'
     install_recommends: False
-    cache_valid_time: 86400
+    cache_valid_time: '{{ ansible_local.core.cache_valid_time
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.cache_valid_time|d())
+                          else "86400" }}'
   with_flattened:
     - '{{ pki_base_packages }}'
     - '{{ pki_acme_packages
