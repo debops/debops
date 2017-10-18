@@ -1,38 +1,126 @@
 ---
 
-- name: Add CRAN signing key
-  apt_key:
-    keyserver: 'sks-keyservers.net'
-    id: '{{ rstudio_server_cran_apt_key[ansible_distribution] }}'
-    state: 'present'
-
-- name: Add CRAN repository
-  apt_repository:
-    repo: 'deb {{ rstudio_server_cran_apt_mirror }} {{ rstudio_server_cran_release[ansible_distribution] }}'
-    state: 'present'
-
-- name: Install R packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_items: rstudio_server_cran_packages
+- name: Check if libssl1.0.0 package is available
+  shell: apt-cache pkgnames | grep libssl1.0.0 || true
+  register: rstudio_server__register_package_libssl
+  changed_when: False
+  check_mode: False
 
 - name: Check if rstudio-server package is available
   shell: apt-cache pkgnames | grep rstudio-server || true
-  register: rstudio_server_register_package_rstudio
+  register: rstudio_server__register_package_rstudio
   changed_when: False
+  check_mode: False
 
-- name: Check if libssl0.9.8 package is available
-  shell: apt-cache pkgnames | grep libssl0.9.8 || true
-  register: rstudio_server_register_package_libssl
-  changed_when: False
+- name: Create required system groups
+  group:
+    name: '{{ item }}'
+    state: 'present'
+    system: True
+  with_items:
+    - '{{ rstudio_server__group }}'
+    - '{{ rstudio_server__auth_group }}'
 
-- name: Configure RStudio Server when it is available
-  include: configure_rstudio_server.yml
-  when: ((rstudio_server_enabled|d() and rstudio_server_enabled) and
-         (rstudio_server_register_package_rstudio|d() and
-          rstudio_server_register_package_rstudio.stdout) and
-         (rstudio_server_register_package_libssl|d() and
-          rstudio_server_register_package_libssl.stdout))
+- name: Create system account for RStudio Server
+  user:
+    name: '{{ rstudio_server__user }}'
+    group: '{{ rstudio_server__group }}'
+    home: '{{ rstudio_server__home }}'
+    shell: '{{ rstudio_server__shell }}'
+    comment: '{{ rstudio_server__comment }}'
+    createhome: False
+    system: True
+    state: 'present'
 
+- name: Get the current user accounts
+  getent:
+    database: 'passwd'
+
+- name: Allow specified user accounts to access RStudio Server
+  user:
+    name: '{{ item.name|d(item) }}'
+    groups: '{{ rstudio_server__auth_group }}'
+    append: True
+  with_flattened:
+    - '{{ rstudio_server__allow_users }}'
+    - '{{ rstudio_server__group_allow_users }}'
+    - '{{ rstudio_server__host_allow_users }}'
+  when: item.name|d(item) in getent_passwd.keys() and
+        item.state|d('present') != 'absent'
+
+- name: Install RStudio Server packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ rstudio_server__base_packages }}'
+    - '{{ rstudio_server__packages }}'
+
+- name: Create source directory
+  file:
+    path: '{{ rstudio_server__src }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (not rstudio_server__rstudio_in_apt|bool or
+         not rstudio_server__libssl_in_apt|bool)
+
+- name: Download libssl 1.0.0 .deb package
+  get_url:
+    url: '{{ rstudio_server__libssl_deb_url }}'
+    dest: '{{ rstudio_server__src + "/" + rstudio_server__libssl_deb_url | basename }}'
+    checksum: '{{ rstudio_server__libssl_deb_checksum }}'
+  when: rstudio_server__libssl_downgrade|bool and
+        not rstudio_server__libssl_in_apt|bool
+
+- name: Download RStudio Server .deb package
+  get_url:
+    url: '{{ rstudio_server__rstudio_deb_url }}'
+    dest: '{{ rstudio_server__src + "/" + rstudio_server__rstudio_deb_url | basename }}'
+    checksum: '{{ rstudio_server__rstudio_deb_checksum }}'
+  when: not rstudio_server__rstudio_in_apt|bool
+
+- name: Install libssl 1.0.0 .deb package
+  apt:
+    deb: '{{ rstudio_server__src + "/" + rstudio_server__libssl_deb_url | basename }}'
+    state: 'present'
+  when: rstudio_server__libssl_downgrade|bool and
+        not rstudio_server__libssl_in_apt|bool
+
+- name: Install RStudio Server .deb package
+  apt:
+    deb: '{{ rstudio_server__src + "/" + rstudio_server__rstudio_deb_url | basename }}'
+    state: 'present'
+  when: not rstudio_server__rstudio_in_apt|bool
+
+- name: Configure RStudio Server
+  template:
+    src: 'etc/rstudio/{{ item }}.j2'
+    dest: '/etc/rstudio/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'rserver.conf', 'rsession.conf' ]
+  notify: [ 'Verify rstudio-server' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save RStudio Server local facts
+  template:
+    src: 'etc/ansible/facts.d/rstudio_server.fact.j2'
+    dest: '/etc/ansible/facts.d/rstudio_server.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: rstudio_server__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: rstudio_server__register_facts|changed
