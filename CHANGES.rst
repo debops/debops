@@ -16,7 +16,13 @@ The current role maintainer_ is drybjed_.
 `debops.rstudio_server master`_ - unreleased
 --------------------------------------------
 
-.. _debops.rstudio_server master: https://github.com/debops/ansible-rstudio_server/compare/v0.1.0...master
+.. _debops.rstudio_server master: https://github.com/debops/ansible-rstudio_server/compare/v0.2.0...master
+
+
+`debops.rstudio_server v0.2.0`_ - 2017-10-18
+--------------------------------------------
+
+.. _debops.rstudio_server v0.2.0: https://github.com/debops/ansible-rstudio_server/compare/v0.1.0...v0.2.0
 
 Added
 ~~~~~
