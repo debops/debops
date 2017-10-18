@@ -1,0 +1,47 @@
+---
+
+- name: Manage RStudio Server service
+  hosts: [ 'debops_service_rstudio_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ rstudio_server__etc_services__dependent_list }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ cran__apt_preferences__dependent_list }}'
+        - '{{ java__apt_preferences__dependent_list
+              if cran__java_integration|bool else [] }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers:
+        - '{{ rstudio_server__nginx__dependent_servers }}'
+
+    - role: debops.java
+      tags: [ 'role::java' ]
+      java__install_jdk: True
+      when: cran__java_integration|bool
+
+    - role: debops.cran
+      tags: [ 'role::cran' ]
+      cran__dependent_packages:
+        - '{{ rstudio_server__cran__dependent_packages }}'
+
+    - role: debops.rstudio_server
+      tags: [ 'role::rstudio_server' ]

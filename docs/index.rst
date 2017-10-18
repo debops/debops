@@ -7,11 +7,10 @@ Ansible role: debops.rstudio_server
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
+   defaults-detailed
    copyright
-   credits
    changelog
 
 ..

@@ -1,9 +1,17 @@
 # {{ ansible_managed }}
 
 # Server Configuration File
-# Documentation: https://support.rstudio.com/hc/en-us/articles/200552316-Configuring-the-Server
 
-www-address={{ rstudio_server_bind }}
-www-port={{ rstudio_server_port }}
-auth-required-user-group={{ rstudio_server_auth_group }}
-
+{% for element in rstudio_server__rserver_conf %}
+{%   if element is mapping %}
+{%     if 'name' in element.keys() %}
+{%       if element.value|d() and element.state|d('present') != 'absent' %}
+{{ "{}={}".format(element.name, element.value) }}
+{%       endif %}
+{%     else %}
+{%       for key, value in element.iteritems() %}
+{{ "{}={}".format(key, value) }}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
