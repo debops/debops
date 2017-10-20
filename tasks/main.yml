@@ -113,6 +113,16 @@
   when: (inventory_hostname in rsnapshot_servers and
          inventory_hostname not in rsnapshot_clients)
 
+- name: Install pre-backup scripts
+  copy:
+    src: '{{ rsnapshot_backup_script }}'
+    dest: '/usr/local/lib/rsnapshot_backup_script'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (inventory_hostname in rsnapshot_clients and
+         rsnapshot_backup_script is defined and rsnapshot_backup_script)
+
 - include: configure_ssh_keys.yml
   when: inventory_hostname in rsnapshot_clients
   tags: [ 'role::rsnapshot:sshkeys' ]
@@ -138,4 +148,3 @@
     group: 'root'
     mode: '0644'
   when: inventory_hostname in rsnapshot_clients
-
