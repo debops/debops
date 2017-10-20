@@ -4,10 +4,10 @@
 [{{ item.name }}]
 {% for key, value in item.iteritems() %}
 {%   if key not in [ 'name', 'filename', 'delete', 'comment', 'action', 'ignoreip' ] %}
-{%     if value is string %}
-{{ "%-14s = %s" | format(key, value) }}
-{%     else %}
+{%     if value is iterable and value is not string %}
 {{ "%-14s = %s" | format(key, value | join(",")) }}
+{%     else %}
+{{ "%-14s = %s" | format(key, value) }}
 {%     endif %}
 {%   elif key == 'action' %}
 action         = {{ "%(" + value + ")s" }}
