@@ -27,7 +27,7 @@ schema_dn="$(grep -E '^^dn:\s' ${schema_file})"
 
 # Get list of already installed schema's from local LDAP server
 schema_list() {
-  ldapsearch -Y EXTERNAL -H ldapi:/// -LLLQ -b 'cn=schema,cn=config' dn | sed -e '/^$/d' -e 's/{.}//'
+  ldapsearch -Y EXTERNAL -H ldapi:/// -LLLQ -b 'cn=schema,cn=config' dn | sed -e '/^$/d' -e 's/{[0-9]\+}//'
 }
 
 if $(schema_list | grep -q "${schema_dn}") ; then
