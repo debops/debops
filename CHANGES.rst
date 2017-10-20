@@ -22,6 +22,13 @@ Changed
 - Change the ``extract-domainkey-zone`` script to be more friendly to BIND
   servers. [fpoulain, drybjed_]
 
+Fixed
+~~~~~
+
+- Fix issues with OpenDKIM on Debian Stretch by enforcing the PIDFile and
+  Socket paths in the OpenDKIM configuration file and :command:`systemd` unit.
+  [fpoulain, drybjed_]
+
 
 debops.opendkim v0.1.0 - 2017-09-04
 -----------------------------------
