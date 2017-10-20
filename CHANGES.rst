@@ -16,6 +16,12 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.opendkim master: https://github.com/debops/ansible-opendkim/compare/v0.1.0...master
 
+Changed
+~~~~~~~
+
+- Change the ``extract-domainkey-zone`` script to be more friendly to BIND
+  servers. [fpoulain, drybjed_]
+
 
 debops.opendkim v0.1.0 - 2017-09-04
 -----------------------------------
