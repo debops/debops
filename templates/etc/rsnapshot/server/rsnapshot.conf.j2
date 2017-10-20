@@ -270,6 +270,10 @@ sync_first	{{ host.rsnapshot_sync_first | default(rsnapshot_sync_first | default
 
 backup	{{ rsnapshot_tpl_user + "@" + rsnapshot_tpl_host + ":" + rsnapshot_tpl_path }}	./
 
+{% if (rsnapshot_backup_script is defined and rsnapshot_backup_script) %}
+backup_script	/usr/local/bin/rsnapshot_backup_script.sh	./{{ rsnapshot_backup_script_dest }}
+{% endif %}
+
 # LOCALHOST
 #backup	/home/		localhost/
 #backup	/etc/		localhost/
