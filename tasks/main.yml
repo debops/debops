@@ -46,6 +46,37 @@
     mode: '0640'
   notify: [ 'Check opendkim and reload' ]
 
+- name: Ensure that opendkim.service.d directory exists
+  file:
+    path: '/etc/systemd/system/opendkim.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (ansible_service_mgr == 'systemd' and
+         ansible_distribution_release not in
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ])
+
+- name: Fix OpenDKIM issues with systemd
+  template:
+    src: 'etc/systemd/system/opendkim.service.d/pid-socket.conf.j2'
+    dest: '/etc/systemd/system/opendkim.service.d/pid-socket.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: opendkim__register_pid_socket
+  when: (ansible_service_mgr == 'systemd' and
+         ansible_distribution_release not in
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ])
+
+- name: Update systemd runtime configuration
+  command: systemctl daemon-reload
+  notify: [ 'Check opendkim and reload' ]
+  when: (ansible_service_mgr == 'systemd' and
+         ansible_distribution_release not in
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] and
+         opendkim__register_pid_socket|changed)
+
 - name: Ensure that DomainKey directory exists
   file:
     path: '{{ opendkim__dkimkeys_path }}'

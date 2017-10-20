@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+# Fix issues with OpenDKIM on Debian Stretch
+# https://unix.stackexchange.com/questions/351584/
+
+# Empty 'ExecStart=' is require to reset the current value since ExecStart can
+# be present multiple times in an unit, and we don't want that.
+
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/opendkim -x /etc/opendkim.conf -P {{ opendkim__pidfile }} -p local:{{ opendkim__socket }}

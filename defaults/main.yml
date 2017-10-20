@@ -71,6 +71,20 @@ opendkim__postfix_group: '{{ ansible_local.postfix.system_group
                              else "postfix" }}'
 
                                                                    # ]]]
+# .. envvar:: opendkim__pidfile [[[
+#
+# Path to the PID file used by OpenDKIM.
+opendkim__pidfile: '/var/run/opendkim/opendkim.pid'
+
+                                                                   # ]]]
+# .. envvar:: opendkim__socket [[[
+#
+# path to the UNIX socket used by OpenDKIM.
+opendkim__socket: '{{ "/var/spool/postfix/opendkim/opendkim.sock"
+                      if opendkim__postfix_integration|bool
+                      else "/var/run/opendkim/opendkim.sock" }}'
+
+                                                                   # ]]]
 # .. envvar:: opendkim__domain [[[
 #
 # The main DNS domain used in the OpenDKIM configuration.
@@ -374,8 +388,22 @@ opendkim__default_config:
 
   - name: 'Socket'
     comment: 'Listen for connections in the Postfix chroot'
-    value: 'local:/var/spool/postfix/opendkim/opendkim.sock'
+    value: 'local:{{ opendkim__socket }}'
     state: '{{ "present" if opendkim__postfix_integration|bool else "ignore" }}'
+
+  - name: 'UserID'
+    comment: 'Required by the systemd opendkim.service unit'
+    value: '{{ opendkim__user + ":" + opendkim__group }}'
+    state: '{{ "comment"
+               if (ansible_distribution_release in [ "wheezy", "jessie" ])
+               else "present" }}'
+
+  - name: 'PidFile'
+    comment: 'Required by the systemd opendkim.service unit'
+    value: '/run/opendkim/opendkim.pid'
+    state: '{{ "comment"
+               if (ansible_distribution_release in [ "wheezy", "jessie" ])
+               else "present" }}'
 
   - name: 'KeyTable'
     value: '{{ opendkim__dkimkeys_path + "/KeyTable" }}'

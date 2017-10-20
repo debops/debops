@@ -14,7 +14,26 @@ The current role maintainer_ is drybjed_.
 `debops.opendkim master`_ - unreleased
 --------------------------------------
 
-.. _debops.opendkim master: https://github.com/debops/ansible-opendkim/compare/v0.1.0...master
+.. _debops.opendkim master: https://github.com/debops/ansible-opendkim/compare/v0.2.0...master
+
+
+`debops.opendkim v0.2.0`_ - 2017-10-20
+--------------------------------------
+
+.. _debops.opendkim v0.2.0: https://github.com/debops/ansible-opendkim/compare/v0.1.0...v0.2.0
+
+Changed
+~~~~~~~
+
+- Change the ``extract-domainkey-zone`` script to be more friendly to BIND
+  servers. [fpoulain, drybjed_]
+
+Fixed
+~~~~~
+
+- Fix issues with OpenDKIM on Debian Stretch by enforcing the PIDFile and
+  Socket paths in the OpenDKIM configuration file and :command:`systemd` unit.
+  [fpoulain, drybjed_]
 
 
 debops.opendkim v0.1.0 - 2017-09-04
