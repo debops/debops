@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+# Bootstrap new OpenVZ Debian-based container for Ansible management.
+# Run this script after starting your new container for best
+# results.
+
+container=${1}
+
+if [ -z "${container}" ]; then
+	echo "Usage: vzbootstrap-ansible CTID"
+	exit 1
+fi
+
+check_container=$(vzlist -1 | grep ${container})
+if [ -z "${check_container}" ]; then
+        echo "Error: Container ${container} is stopped or doesn't exist"
+        exit 1
+fi
+
+if $(vzctl exec ${container} stat /etc/ansible > /dev/null 2>&1) ; then
+	echo "Container ${container} already bootstrapped"
+	exit 1
+fi
+
+
+# ---- Script executed inside OpenVZ container ----
+
+cat <<EOF | vzctl exec ${container} -
+
+{% if openvz_template_salt is defined and openvz_template_salt %}
+cat > /usr/sbin/policy-rc.d <<EOT
+#!/bin/sh
+echo "All runlevel operations denied by policy" >&2
+exit 101
+EOT
+chmod +x /usr/sbin/policy-rc.d
+echo "{{ openvz_template_salt_upstream_repository }}" >> /etc/apt/sources.list
+wget -q -O- "{{ openvz_template_salt_apt_key_url }}" | apt-key add -
+apt-get -yq update
+apt-get -yq install {{ openvz_template_salt_packages | join(" ") }}
+{% if openvz_template_salt_options is defined and openvz_template_salt_options %}
+cat > /etc/salt/minion.d/ansible.conf <<EOT
+{{ openvz_template_salt_options }}
+EOT
+{% endif %}
+rm -rf /usr/sbin/policy-rc.d
+service salt-minion start
+
+{% else %}
+apt-get -yq update
+{% endif %}
+apt-get -yq install python python-apt sudo lsb-release
+
+{% if openvz_template_admin is defined and openvz_template_admin %}
+openvz_template_admin_name="{{ openvz_template_admin_name }}"
+openvz_template_admin_groups=( {{ openvz_template_admin_groups | join(' ') }} )
+openvz_template_admin_groups_useradd="{{ openvz_template_admin_groups | join(',') }}"
+openvz_template_admin_comment="{{ openvz_template_admin_comment }}"
+openvz_template_admin_shell="{{ openvz_template_admin_shell }}"
+{% if openvz_template_admin_system is defined and openvz_template_admin_system %}
+openvz_template_admin_home="{{ openvz_template_admin_system_home }}"
+{% else %}
+openvz_template_admin_home="{{ openvz_template_admin_home }}"
+{% endif %}
+{% if openvz_template_sudo is defined and openvz_template_sudo %}
+openvz_template_sudo_group="{{ openvz_template_sudo_group }}"
+{% endif %}
+openvz_template_admin_home_group="{{ openvz_template_admin_home_group }}"
+openvz_template_admin_home_mode="{{ openvz_template_admin_home_mode }}"
+
+# Create required system groups if not present
+if [ \${{ '{' }}#openvz_template_admin_groups[@]} -ge 0 ] ; then
+    for system_group in \${openvz_template_admin_groups[@]} ; do
+        getent group \${system_group} > /dev/null || groupadd --system \${system_group}
+    done
+fi
+
+{% if openvz_template_sudo is defined and openvz_template_sudo %}
+# Configure admin group in sudo
+echo "%\${openvz_template_sudo_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > /etc/sudoers.d/\${openvz_template_sudo_group}
+chmod 0440 /etc/sudoers.d/\${openvz_template_sudo_group}
+
+{% endif %}
+# Create administrator account
+{% if openvz_template_admin_system is defined and openvz_template_admin_system %}
+if ! getent passwd \${openvz_template_admin_name} > /dev/null ; then
+    useradd --system --user-group --groups \${openvz_template_admin_groups_useradd} --create-home --home \${openvz_template_admin_home} --comment "\${openvz_template_admin_comment}" --shell \${openvz_template_admin_shell} \${openvz_template_admin_name}
+    chgrp \${openvz_template_admin_home_group} \${openvz_template_admin_home}
+    chmod \${openvz_template_admin_home_mode} \${openvz_template_admin_home}
+fi
+{% else %}
+if ! getent passwd \${openvz_template_admin_name} > /dev/null ; then
+    adduser --disabled-password --home \${openvz_template_admin_home} --gecos "\${openvz_template_admin_comment}" --shell \${openvz_template_admin_shell} \${openvz_template_admin_name}
+    chgrp \${openvz_template_admin_home_group} \${openvz_template_admin_home}
+    chmod \${openvz_template_admin_home_mode} \${openvz_template_admin_home}
+
+    if [ \${{ '{' }}#openvz_template_admin_groups[@]} -ge 0 ] ; then
+        for system_group in \${openvz_template_admin_groups[@]} ; do
+            adduser \${openvz_template_admin_name} \${system_group}
+        done
+    fi
+fi
+
+{% endif %}
+
+{% endif %}
+{% if openvz_template_admin_sshkeys is defined and openvz_template_admin_sshkeys %}
+openvz_template_admin_sshkeys="{{ openvz_template_admin_sshkeys|d([]) | join('\n') }}"
+{% else %}
+openvz_template_admin_sshkeys=""
+{% endif %}
+
+if [ -n "\${openvz_template_admin_sshkeys}" ] ; then
+
+    mkdir -p -m 700 /root/.ssh
+    echo "\${openvz_template_admin_sshkeys}" > /root/.ssh/authorized_keys
+
+{% if openvz_template_admin is defined and openvz_template_admin %}
+    admin_home="\$(getent passwd \${openvz_template_admin_name} | cut -d: -f6)"
+    mkdir -p -m 700 \${admin_home}/.ssh
+    touch \${admin_home}/.ssh/authorized_keys
+    echo "\${openvz_template_admin_sshkeys}" >> \${admin_home}/.ssh/authorized_keys
+    chown -R \${openvz_template_admin_name}:\${openvz_template_admin_name} \${admin_home}/.ssh
+
+{% endif %}
+fi
+
+mkdir -p /etc/ansible
+
+EOF
+

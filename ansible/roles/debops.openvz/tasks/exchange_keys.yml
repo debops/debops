@@ -1,0 +1,78 @@
+---
+
+- name: Create SSH key on root account for OpenVZ live migration
+  user:
+    name: 'root'
+    generate_ssh_key: True
+    ssh_key_bits: '{{ openvz_root_ssh_key_bits }}'
+    ssh_key_comment: 'root@{{ ansible_hostname }}'
+
+- name: Get root SSH key from OpenVZ hosts
+  slurp:
+    src: '/root/.ssh/id_rsa.pub'
+  register: openvz_slurp_ssh_key
+
+- name: Decode SSH key
+  set_fact:
+    openvz_root_ssh_key: '{{ openvz_slurp_ssh_key.content | b64decode | trim }}'
+
+- name: Configure root SSH key on other OpenVZ cluster nodes
+  authorized_key:
+    user: 'root'
+    key: '{{ hostvars[inventory_hostname].openvz_root_ssh_key }}'
+    key_options: 'no-X11-forwarding,no-agent-forwarding,no-port-forwarding'
+    state: 'present'
+  delegate_to: '{{ item }}'
+  with_items: '{{ openvz_cluster }}'
+  when: (item is defined and item != inventory_hostname and
+         hostvars[item].ansible_hostname is defined)
+
+- name: Make sure that /root/.ssh/known_hosts file exists
+  copy:
+    force: false
+    dest: '{{ openvz_root_ssh_known_hosts_file }}'
+    content: ''
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Get list of already scanned hostname fingerprints
+  shell: ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_hostname }} | grep -q '^# Host {{ hostvars[item].ansible_hostname }} found'
+  with_items: '{{ openvz_cluster }}'
+  when: ((item is defined and item) and item != inventory_hostname and
+         hostvars[item].ansible_hostname is defined)
+  register: openvz_register_root_ssh_known_hosts_hostname
+  changed_when: False
+  failed_when: False
+
+- name: Get list of already scanned FQDN fingerprints
+  shell: ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_fqdn }} | grep -q '^# Host {{ hostvars[item].ansible_fqdn }} found'
+  with_items: '{{ openvz_cluster }}'
+  when: ((item is defined and item) and item != inventory_hostname and
+         hostvars[item].ansible_fqdn is defined)
+  register: openvz_register_root_ssh_known_hosts_fqdn
+  changed_when: False
+  failed_when: False
+
+- name: Get list of already scanned custom host fingerprints
+  shell: ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
+  with_items: '{{ openvz_root_ssh_known_hosts }}'
+  when: item is defined and item
+  register: openvz_register_root_ssh_known_hosts_custom
+  changed_when: False
+  failed_when: False
+
+  # If you use '--limit', hosts not included in the limit will not have their
+  # fingerprint scanned. Use '--tags openvz' without '--limit' to fix that
+- name: Scan SSH fingerprints of OpenVZ hosts
+  shell: '{{ openvz_root_ssh_known_hosts_command }} {{ hostvars[item.item].ansible_hostname }} {{ hostvars[item.item].ansible_fqdn }} >> {{ openvz_root_ssh_known_hosts_file }}'
+  with_flattened:
+    - '{{ openvz_register_root_ssh_known_hosts_hostname.results }}'
+    - '{{ openvz_register_root_ssh_known_hosts_fqdn.results }}'
+  when: item is defined and item.rc is defined and item.rc > 0
+
+- name: Scan SSH fingerprints of custom hosts
+  shell: '{{ openvz_root_ssh_known_hosts_command }} {{ item.item.split(".") | first }} {{ item.item }} >> {{ openvz_root_ssh_known_hosts_file }}'
+  with_items: '{{ openvz_register_root_ssh_known_hosts_custom.results }}'
+  when: item is defined and item.rc is defined and item.rc > 0
+

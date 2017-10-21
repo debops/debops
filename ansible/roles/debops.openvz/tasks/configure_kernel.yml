@@ -1,0 +1,36 @@
+---
+
+- name: Install OpenVZ kernel
+  apt:
+    name: '{{ openvz_kernel_name }}'
+    state: 'latest'
+    install_recommends: False
+  register: openvz_kernel_status
+
+- name: Set default kernel in GRUB
+  lineinfile:
+    dest: '/etc/default/grub'
+    regexp: '^GRUB_DEFAULT='
+    state: 'present'
+    line: 'GRUB_DEFAULT={{ openvz_grub_default }}'
+  register: openvz_grub_configuration
+
+- name: Update grub
+  shell: update-grub 2>&1
+  register: openvz_grub_status
+  when: (openvz_kernel_status is defined and openvz_kernel_status.changed) or
+        (openvz_grub_configuration is defined and openvz_grub_configuration.changed)
+
+- name: List current OpenVZ containers
+  shell: vzlist --all 2>&1
+  register: openvz_vzlist_status
+  when: openvz_kernel_status is defined and openvz_kernel_status.changed
+
+- name: Send mail to administrator about new or updated kernel
+  mail:
+    from: 'root@{{ ansible_fqdn }}'
+    subject: '{{ openvz_mail_kernel_subject }}'
+    to: '{{ openvz_mail_to | join(",") }}'
+    charset: 'utf8'
+    body: '{{ openvz_mail_kernel_body }}'
+  when: openvz_kernel_status is defined and openvz_kernel_status.changed

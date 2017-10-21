@@ -1,0 +1,65 @@
+# This file is managed by Ansible, all changes will be lost
+
+## Global parameters
+VIRTUOZZO=yes
+LOCKDIR=/var/lib/vz/lock
+DUMPDIR=/var/lib/vz/dump
+VE0CPUUNITS=1000
+VE_STOP_MODE=suspend
+
+## Logging parameters
+LOGGING=yes
+LOGFILE=/var/log/vzctl.log
+LOG_LEVEL=0
+VERBOSE=0
+
+## Disk quota parameters
+DISK_QUOTA=yes
+VZFASTBOOT=no
+
+# Disable module loading. If set, vz initscript does not load any modules.
+#MODULES_DISABLED=yes
+
+# The name of the device whose IP address will be used as source IP for CT.
+# By default automatically assigned.
+#VE_ROUTE_SRC_DEV="eth0"
+
+# Uncomment to limit CT IP ARP announces only to network interfaces
+# having IPs within the same IP network as a container IP.
+# Leave commented out to use all interfaces.
+#NEIGHBOUR_DEVS=detect
+
+## Fail if there is another machine in the network with the same IP
+ERROR_ON_ARPFAIL="no"
+
+## Template parameters
+TEMPLATE=/var/lib/vz/template
+
+## Defaults for containers
+VE_ROOT=/var/lib/vz/root/$VEID
+VE_PRIVATE=/var/lib/vz/private/$VEID
+CONFIGFILE="{{ openvz_configfile | default('vswap-256m') }}"
+DEF_OSTEMPLATE="{{ openvz_template | default('debian-7.0-x86') }}"
+NAMESERVER=inherit # Copy from host system's /etc/resolv.conf
+## Filesystem layout for new CTs: either simfs (default) or ploop
+VE_LAYOUT={{ openvz_storage_layout | default('simfs') }}
+
+# User namespace configuration
+LOCAL_UID=100000
+LOCAL_GID=100000
+
+## Load vzwdog module
+VZWDOG="no"
+
+## IPv4 iptables kernel modules to be enabled in CTs by default
+IPTABLES="{% for module in openvz_iptables %}{{ module }}{% if not loop.last %} {% endif %}{% endfor %}"
+
+## IPv4 iptables kernel modules to be loaded by init.d/vz script
+IPTABLES_MODULES="$IPTABLES"
+
+## Enable IPv6
+IPV6="yes"
+
+## IPv6 ip6tables kernel modules
+IP6TABLES="ip6_tables ip6table_filter ip6table_mangle ip6t_REJECT"
+SKIP_SYSCTL_SETUP=yes

@@ -1,0 +1,58 @@
+---
+
+- name: Download OpenVZ template signing key
+  command: 'gpg --keyserver {{ openvz_gnupg_keyserver }} --recv {{ openvz_gnupg_key_id }}'
+  changed_when: False
+
+- name: Add OpenVZ APT key
+  apt_key:
+    url: '{{ openvz_apt_repository_key_url }}'
+    id: '{{ openvz_apt_repository_key_id }}'
+    state: 'present'
+
+- name: Add OpenVZ APT repository
+  apt_repository:
+    repo: 'deb {{ openvz_apt_repository }} {{ openvz_apt_distribution }} main'
+    state: 'present'
+    update_cache: 'yes'
+
+- name: Install OpenVZ packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: [ 'vzctl', 'vzquota', 'vzdump', 'ploop', 'uuid-runtime' ]
+
+- name: Symlink container storage to /vz
+  file:
+    src: '{{ openvz_container_storage }}'
+    dest: '/vz'
+    state: 'link'
+
+- include: calculate_default_config.yml
+
+- name: Configure OpenVZ
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'etc/vz/download.conf', 'etc/vz/vz.conf',
+                'etc/vz/conf/ve-vswap-debops.conf-sample' ]
+
+- name: Configure OpenVZ scripts
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: [ 'usr/local/sbin/easymac.sh', 'usr/local/sbin/vzbackup',
+                'usr/local/sbin/vzbootstrap-ansible' ]
+
+- include: exchange_keys.yml
+
+- include: configure_kernel.yml
+  when: openvz_kernel is defined and openvz_kernel
+
