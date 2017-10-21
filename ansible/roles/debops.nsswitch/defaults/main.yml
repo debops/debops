@@ -1,0 +1,175 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.nsswitch default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: nsswitch__enabled [[[
+#
+# Enable or disable management of the :file:`/etc/nsswitch.conf` configuration
+# file by Ansible.
+nsswitch__enabled: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Name Service Switch services [[[
+# --------------------------------
+
+# These variables define what NSS services are active on a given host.
+# See :ref:`nsswitch__ref_services` for more details.
+
+# .. envvar:: nsswitch__default_services [[[
+#
+# List of default NSS services that should be active on the host and present in
+# the :file:`/etc/nsswitch.conf` configuration file.
+nsswitch__default_services: [ 'compat', 'files', 'dns', 'db', 'nis' ]
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__services [[[
+#
+# List of NSS services that should be active on all hosts in the Ansible
+# inventory.
+nsswitch__services: []
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__group_services [[[
+#
+# List of NSS services that should be active on groups in a specific Ansible
+# inventory group.
+nsswitch__group_services: []
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__host_services [[[
+#
+# List of NSS services that should be active on specific hosts in the Ansible
+# inventory.
+nsswitch__host_services: []
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__dependent_services [[[
+#
+# List of NSS services that should be active on a given host, requested by
+# other Ansible roles using dependent role variables.
+nsswitch__dependent_services: []
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__remove_services [[[
+#
+# List of NSS services which should be explicitly removed from the
+# :file:`/etc/nsswitch.conf` configuration file.
+nsswitch__remove_services: []
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__combined_services [[[
+#
+# The combined list of NSS services to manage by the role. This variable is
+# used in the template file to configure what services should be present.
+nsswitch__combined_services: '{{ lookup("flattened", (nsswitch__default_services
+                                 + nsswitch__services + nsswitch__group_services
+                                 + nsswitch__host_services + nsswitch__dependent_services)
+                                 | difference(nsswitch__remove_services)).split(",") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Name Service Switch databases [[[
+# ---------------------------------
+
+# .. envvar:: nsswitch__default_database_map [[[
+#
+# This YAML dictionary defines a mapping between NSS databases and NSS
+# services. The presence of a given NSS service here doesn't mean that it will
+# be activated. See :ref:`nsswitch__ref_database_map` for more details.
+nsswitch__default_database_map:
+  'passwd':     [ 'compat', 'sss', 'ldap', 'winbind' ]
+  'group':      [ 'compat', 'sss', 'ldap', 'winbind' ]
+  'shadow':     [ 'compat', 'sss', 'ldap' ]
+  'gshadow':    [ 'files' ]
+  'initgroups': []
+
+  'hosts':
+
+    - 'files'
+
+    - [ 'mdns_minimal', '[NOTFOUND=return]' ]
+
+    - replace: 'mdns4_minimal'
+      service: '{{ "mdns_minimal" if (ansible_local|d() and ansible_local.avahi|d() and
+                                      ansible_local.avahi.ipv6|bool) else "mdns4_minimal" }}'
+      action:  '[NOTFOUND=return]'
+
+    - 'dns'
+
+    - 'wins'
+
+  'networks':   [ 'files' ]
+  'protocols':  [ 'db',  'files' ]
+  'services':   [ 'db',  'files', 'sss' ]
+  'ethers':     [ 'db',  'files' ]
+  'rpc':        [ 'db',  'files' ]
+  'netgroup':   [ 'nis', 'sss' ]
+  'publickey':  []
+  'aliases':    []
+  'sudoers':
+
+    - { service: 'files', require: False }
+    - { service: 'sss',   require: False }
+    - { service: 'ldap',  require: False }
+
+  'automount':
+
+    - { service: 'files', require: False }
+    - { service: 'sss',   require: False }
+    - { service: 'ldap',  require: False }
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__database_map [[[
+#
+# YAML dictionary which defines the mapping between NSS databases and NSS
+# services for all hosts in Ansible inventory.
+nsswitch__database_map: {}
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__group_database_map [[[
+#
+# YAML dictionary which defines the mapping between NSS databases and NSS
+# services for hosts in specific Ansible inventory group.
+nsswitch__group_database_map: {}
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__host_database_map [[[
+#
+# YAML dictionary which defines the mapping between NSS databases and NSS
+# services for specific hosts in Ansible inventory.
+nsswitch__host_database_map: {}
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__combined_database_map [[[
+#
+# The combined default and custom database map variable used in the template.
+nsswitch__combined_database_map: '{{ nsswitch__default_database_map
+                                     | combine(nsswitch__database_map)
+                                     | combine(nsswitch__group_database_map)
+                                     | combine(nsswitch__host_database_map) }}'
+
+                                                                   # ]]]
+# .. envvar:: nsswitch__database_groups [[[
+#
+# This list variable defines the "layout" of the generated
+# :file:`/etc/nsswitch.conf` configuration file. Each list contains a list of
+# NSS databases grouped together for convenience and aestethic purposes.
+nsswitch__database_groups:
+  - [ 'passwd', 'group', 'shadow', 'gshadow', 'initgroups' ]
+  - [ 'hosts', 'networks' ]
+  - [ 'protocols', 'services', 'ethers', 'rpc' ]
+  - [ 'netgroup' ]
+  - [ 'aliases', 'sudoers', 'automount' ]
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

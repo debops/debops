@@ -1,0 +1,19 @@
+---
+
+- name: Configure application with NSS service
+  hosts: [ 'debops_service_application' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: application
+      tags: [ 'role::application' ]
+
+    - role: debops.nsswitch
+      tags: [ 'role::nsswitch' ]
+      nsswitch__dependent_services:
+        - '{{ application__nsswitch__dependent_services }}'

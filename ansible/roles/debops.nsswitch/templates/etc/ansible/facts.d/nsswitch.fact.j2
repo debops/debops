@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+
+nsswitch_conf = '/etc/nsswitch.conf'
+
+nss_databases = loads('''{{ nsswitch__combined_database_map.keys() | to_nice_json }}''')
+
+output = loads('''{{ ({
+    "enabled": nsswitch__enabled | bool
+}) | to_nice_json }}''')
+
+output_conf = {}
+
+try:
+    fh = open(nsswitch_conf)
+
+    for line in fh:
+
+        if line != '\n' and not line.startswith('#'):
+            words = line.split()
+            database = words[0].split(':')
+            if database[0] in nss_databases:
+                service_actions = {}
+                for i in range(len(words[1:])):
+                    if words[i+1].startswith('[') and words[i+1].endswith(']'):
+                        service_actions.update({ words[i]: words[i+1]})
+                service_list = []
+                for service in words[1:]:
+                    if service in service_actions.keys():
+                        service_list.append([ service, service_actions[service] ])
+                    else:
+                        if service not in service_actions.values():
+                            service_list.append(service)
+                output_conf.update({ database[0]: service_list })
+
+    fh.close()
+
+    output.update({ "conf": output_conf })
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=2))

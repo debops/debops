@@ -1,0 +1,57 @@
+# {{ ansible_managed }}
+
+# /etc/nsswitch.conf
+#
+# Example configuration of GNU Name Service Switch functionality.
+# If you have the `glibc-doc-reference' and `info' packages installed, try:
+# `info libc "Name Service Switch"' for information about this file.
+
+{% set nsswitch__tpl_active_database_map = (ansible_local.nsswitch.conf if (ansible_local|d() and ansible_local.nsswitch|d() and ansible_local.nsswitch.conf|d()) else {}) %}
+{% set nsswitch__tpl_filtered_database_map = {} %}
+{% for database, service_list in nsswitch__combined_database_map.iteritems() %}
+{%   if service_list and service_list is not string and service_list is not mapping %}
+{%     set nsswitch__tpl_service_list = [] %}
+{%     for element in service_list %}
+{%       if element is string %}
+{%         if (element in nsswitch__combined_services or (database in nsswitch__tpl_active_database_map.keys() and element in (lookup("flattened", nsswitch__tpl_active_database_map[database]).split(',')) and element not in nsswitch__remove_services)) %}
+{%           set _ = nsswitch__tpl_service_list.append(element) %}
+{%         endif %}
+{%       elif element is mapping %}
+{%         if element.service|d() and element.replace|d() and element.state|d('present') != 'absent' %}
+{%           if ((element.service in nsswitch__combined_services and element.require|d(True)|bool) or (database in nsswitch__tpl_active_database_map.keys() and element.replace in (lookup("flattened", nsswitch__tpl_active_database_map[database]).split(',')) and element.service not in nsswitch__remove_services)) %}
+{%             if element.action|d() %}
+{%               set _ = nsswitch__tpl_service_list.append([ element.service, element.action ]) %}
+{%             else %}
+{%               set _ = nsswitch__tpl_service_list.append(element.service) %}
+{%             endif %}
+{%           endif %}
+{%         elif element.service|d() and element.state|d('present') != 'absent' %}
+{%           if ((element.service in nsswitch__combined_services and element.require|d(True)|bool) or (database in nsswitch__tpl_active_database_map.keys() and element.service in (lookup("flattened", nsswitch__tpl_active_database_map[database]).split(',')) and element.service not in nsswitch__remove_services)) %}
+{%             if element.action|d() %}
+{%               set _ = nsswitch__tpl_service_list.append([ element.service, element.action ]) %}
+{%             else %}
+{%               set _ = nsswitch__tpl_service_list.append(element.service) %}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       elif element is not string and element is not mapping %}
+{%         if (element[0] in nsswitch__combined_services or (database in nsswitch__tpl_active_database_map.keys() and element[0] in (lookup("flattened", nsswitch__tpl_active_database_map[database]).split(',')) and element[0] not in nsswitch__remove_services)) %}
+{%           set _ = nsswitch__tpl_service_list.append(element) %}
+{%         endif %}
+{%       endif %}
+{%     endfor %}
+{%     if nsswitch__tpl_service_list %}
+{%       set _ = nsswitch__tpl_filtered_database_map.update({ database: nsswitch__tpl_service_list }) %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{% for db_group in nsswitch__database_groups %}
+{%   if not loop.first|bool and (db_group | intersect(nsswitch__tpl_filtered_database_map.keys())) %}
+
+{%   endif %}
+{%   for database in db_group %}
+{%     if database in nsswitch__tpl_filtered_database_map.keys() %}
+{{ "%-15s %s" | format(database + ':', lookup('flattened', nsswitch__tpl_filtered_database_map[database]).split(',') | join(' ')) }}
+{%     endif %}
+{%   endfor %}
+{% endfor %}
