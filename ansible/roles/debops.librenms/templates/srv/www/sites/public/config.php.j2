@@ -1,0 +1,76 @@
+<?php
+
+# {{ ansible_managed }}
+
+# Have a look in defaults.inc.php for examples of settings you can set here. DO NOT EDIT defaults.inc.php!
+{% macro print_config(data, key_list = [], array = False) %}
+{%   set chain = [] %}
+{%   for part in key_list %}
+{%     if part is number %}
+{%       set _ = chain.append("[" + part | string + "]") %}
+{%     else %}
+{%       set _ = chain.append("['" + part + "']") %}
+{%     endif %}
+{%   endfor %}
+{%   if data is number %}
+$config{{ chain | join('') }} = {{ data }};
+{%   elif data is string %}
+{%     if data in [ True, False, 'True', 'False', 'true', 'false', 'TRUE', 'FALSE' ] %}
+$config{{ chain | join('') }} = {{ data | upper }};
+{%     else %}
+$config{{ chain | join('') }} = "{{ data }}";
+{%     endif %}
+{%   elif data is mapping %}
+{%     set output = [] %}
+{%     for key, value in data.iteritems() %}
+{%       if key == 'array' %}
+{%         set _ = output.append(print_config(value, key_list, array = True)) %}
+{%       else %}
+{%         set subkey_list = key_list + [ key ] %}
+{%         set _ = output.append(print_config(value, subkey_list, array)) %}
+{%       endif %}
+{%     endfor %}
+{%     for line in output %}
+{{ line }}{% endfor %}
+{%   else %}
+{%     set list_of_mappings = [] %}
+{%     set list_of_elements = [] %}
+{%     for value in data %}
+{%       if value is mapping %}
+{%         set _ = list_of_mappings.append(value) %}
+{%       else %}
+{%         set _ = list_of_elements.append(value) %}
+{%       endif %}
+{%     endfor %}
+{%     if list_of_mappings %}
+{%       for mapped_element in list_of_mappings %}
+{%         set map_loop = loop %}
+{%         for element_key, element_value in mapped_element.iteritems() %}
+{%           set subkey_list = key_list + [ map_loop.index0, element_key ] %}
+{{ print_config(element_value, subkey_list, array) }}{%         endfor %}
+{%       endfor %}
+{%     endif %}
+{%     if list_of_elements %}
+{%       if array %}
+$config{{ chain | join('') }} = array({{ '"' + list_of_elements | join('", "') + '"' }});
+{%       else %}
+{%         for value in list_of_elements %}
+$config{{ chain | join('') + '[]' }} = "{{ value }}";
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
+{% for configuration_map in librenms__configuration_maps %}
+{%   if 'comment' in configuration_map.keys() and configuration_map['comment'] %}
+
+### {{ configuration_map["comment"] }}
+{%   endif %}
+{%   for config_key, config_value in configuration_map.iteritems() %}
+{%     if config_key not in [ 'comment' ] %}
+{%       set subkey_list = [ config_key ] %}
+{{ print_config(config_value, subkey_list) }}{% endif %}
+{%   endfor %}
+{% endfor %}
+
+# vim:ft=php

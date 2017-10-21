@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+# Using this cron file requires an additional user on your system, please see install docs.
+
+33  */6   * * *   {{ librenms__user }}    {{ librenms__install_path }}/discovery.php -h all >> /dev/null 2>&1
+*/5  *    * * *   {{ librenms__user }}    {{ librenms__install_path }}/discovery.php -h new >> /dev/null 2>&1
+*/5  *    * * *   {{ librenms__user }}    {{ librenms__install_path }}/cronic {{ librenms__install_path }}/poller-wrapper.py {{ librenms__cron_threads }} >> /dev/null 2>&1
+*/5  *    * * *   {{ librenms__user }}    {{ librenms__install_path }}/check-services.php >> /dev/null 2>&1
+15   0    * * *   {{ librenms__user }}    {{ librenms__install_path }}/daily.sh >> /dev/null 2>&1
+*    *    * * *   {{ librenms__user }}    {{ librenms__install_path }}/alerts.php >> /dev/null 2>&1
