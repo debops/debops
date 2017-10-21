@@ -1,0 +1,66 @@
+---
+
+- name: Check available SSH key types
+  shell: ssh -Q key 2>/dev/null || echo "ssh-rsa"
+  register: root_account__register_key_types
+  changed_when: False
+  check_mode: False
+
+- name: Enforce root system group
+  group:
+    name: 'root'
+    gid: '0'
+    system: True
+    state: 'present'
+  when: root_account__enabled|bool
+
+- name: Enforce root system account
+  user:
+    name: 'root'
+    state: 'present'
+    group: 'root'
+    home: '/root'
+    uid: '0'
+    groups: ''
+    append: False
+    system: True
+    generate_ssh_key: '{{ root_account__generate_ssh_key | bool }}'
+    ssh_key_bits:     '{{ root_account__ssh_key_bits }}'
+    ssh_key_type:     '{{ root_account__ssh_key_type }}'
+    ssh_key_file:     '{{ root_account__ssh_key_file }}'
+    ssh_key_comment:  '{{ root_account__ssh_key_comment }}'
+    update_password:  '{{ "always" if root_account__password_update | bool else "on_create" }}'
+    password:         '{{ root_account__password if root_account__password else omit }}'
+    shell:            '{{ root_account__shell if root_account__shell else omit }}'
+  when: root_account__enabled|bool
+  no_log: '{{ True if root_account__password else False }}'
+
+- name: Enforce root home permissions
+  file:
+    path: '/root'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+  when: root_account__enabled|bool
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Setup root account local facts
+  template:
+    src: 'etc/ansible/facts.d/root_account.fact.j2'
+    dest: '/etc/ansible/facts.d/root_account.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: root_account__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: root_account__register_facts|changed
