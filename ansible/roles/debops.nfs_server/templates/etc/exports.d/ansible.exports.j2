@@ -1,0 +1,89 @@
+# {{ ansible_managed }}
+
+{% macro print_export(export) %}
+{%   if export is mapping and export.state|d('present') != 'absent' and export.path|d() and export.acl|d() %}
+{%     set nfs_server__tpl_export_path = export.path %}
+{%     set nfs_server__tpl_export_options = [] %}
+{%     set nfs_server__tpl_export_acl = [] %}
+{%     if export.options|d() %}
+{%         set _ = nfs_server__tpl_export_options.append('-' + (export.options if export.options is string else export.options | join(','))) %}
+{%     endif %}
+{%     if export.acl is string %}
+{%       set _ = nfs_server__tpl_export_acl.append(export.acl) %}
+{%     elif export.acl is not string and export.acl is not mapping %}
+{%       for element in export.acl %}
+{%         if element is string %}
+{%           set _ = nfs_server__tpl_export_acl.append(element) %}
+{%         elif element is mapping and element.state|d('present') != 'absent' %}
+{%           if element.client|d() %}
+{%             if element.client is string %}
+{%               if element.options|d() %}
+{%                 set _ = nfs_server__tpl_export_acl.append(element.client + '(' + (element.options if element.options is string else element.options | join(',')) + ')') %}
+{%               else %}
+{%                 set _ = nfs_server__tpl_export_acl.append(element.client) %}
+{%               endif %}
+{%             elif element.client is not string and element.client is not mapping %}
+{%               for host in element.client %}
+{%                 if element.options|d() %}
+{%                   set _ = nfs_server__tpl_export_acl.append(host + '(' + (element.options if element.options is string else element.options | join(',')) + ')') %}
+{%                 else %}
+{%                   set _ = nfs_server__tpl_export_acl.append(host) %}
+{%                 endif %}
+{%               endfor %}
+{%             endif %}
+{%           elif element.clients|d() %}
+{%             if element.clients is string %}
+{%               if element.options|d() %}
+{%                 set _ = nfs_server__tpl_export_acl.append(element.clients + '(' + (element.options if element.options is string else element.options | join(',')) + ')') %}
+{%               else %}
+{%                 set _ = nfs_server__tpl_export_acl.append(element.clients) %}
+{%               endif %}
+{%             elif element.clients is not string and element.clients is not mapping %}
+{%               for host in element.clients %}
+{%                 if element.options|d() %}
+{%                   set _ = nfs_server__tpl_export_acl.append(host + '(' + (element.options if element.options is string else element.options | join(',')) + ')') %}
+{%                 else %}
+{%                   set _ = nfs_server__tpl_export_acl.append(host) %}
+{%                 endif %}
+{%               endfor %}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%     if export.comment|d() %}
+{{ (export.comment if export.comment is string else export.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='\n', postfix='') -}}
+{%     endif %}
+{%     if nfs_server__tpl_export_acl | length > 1 %}
+{%       if nfs_server__tpl_export_options %}
+{{ "%-30s %s \\" | format(nfs_server__tpl_export_path, nfs_server__tpl_export_options | join(' ')) }}
+{%         for acl_entry in nfs_server__tpl_export_acl %}
+{%           if not loop.last | bool %}
+{{ "%-34s %s \\" | format('', acl_entry) }}
+{%           else %}
+{{ "%-34s %s" | format('', acl_entry) }}
+{%           endif %}
+{%         endfor %}
+{%       else %}
+{{ "%-30s %s \\" | format(nfs_server__tpl_export_path, (nfs_server__tpl_export_options + [ nfs_server__tpl_export_acl[0] ]) | join(" ")) }}
+{%         for acl_entry in nfs_server__tpl_export_acl[1:] %}
+{%           if not loop.last | bool %}
+{{ "%-30s %s \\" | format('', acl_entry) }}
+{%           else %}
+{{ "%-30s %s" | format('', acl_entry) }}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     else %}
+{{ "%-30s %s" | format(nfs_server__tpl_export_path, (nfs_server__tpl_export_options + nfs_server__tpl_export_acl) | join(" ")) }}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
+{% for entry in (nfs_server__combined_exports) %}
+{%   if entry is mapping and entry.state|d('present') != 'absent' and entry.path|d() and entry.acl|d() %}
+{%     if not loop.first | bool and not entry.comment|d() %}
+
+{%     endif %}
+{{ print_export(entry) -}}
+{%   endif %}
+{% endfor %}

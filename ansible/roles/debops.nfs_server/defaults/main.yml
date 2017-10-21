@@ -1,0 +1,259 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.nfs_server default variables [[[
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: nfs_server__base_packages [[[
+#
+# List of base APT packages required by the NFS server.
+nfs_server__base_packages: [ 'nfs-kernel-server' ]
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__packages [[[
+#
+# List of additional APT packages to install with the NFS server.
+nfs_server__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: nfs_server__allow [[[
+#
+# List of IP addresses or CIDR subnets which can access the NFS server.
+nfs_server__allow: []
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__accept_any [[[
+#
+# By default the firewall does not accept connections to the NFS server if no
+# networks are specified. If you change this variable to ``True``, any hosts
+# will be able to connect to the NFS server unless list of allowed hosts is
+# specified.
+nfs_server__accept_any: False
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__firewall_protocols [[[
+#
+# List of protocols which should be opened for NFS communication through the
+# firewall.
+nfs_server__firewall_protocols: '{{ [ "tcp", "udp" ] if nfs_server__v3|bool else "tcp" }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__anchor_port [[[
+#
+# The various NFSv3 services use first available port to listen for
+# connections. To change that and allow connections through the firewall, the
+# role defines a static set of ports to use. This variable is used to specify
+# the first port of that set.
+nfs_server__anchor_port: '3550'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__service_ports [[[
+#
+# This variable is a YAML dictionary which defines all port numbers used by
+# various NFSv3 services.
+nfs_server__service_ports:
+  'rpc.nfs-cb':   '{{ (nfs_server__anchor_port | int + 0) }}'
+  'rpc.lockd':    '{{ (nfs_server__anchor_port | int + 1) }}'
+  'rpc.mountd':   '{{ (nfs_server__anchor_port | int + 2) }}'
+  'rpc.statd':    '{{ (nfs_server__anchor_port | int + 3) }}'
+  'rpc.statd-bc': '{{ (nfs_server__anchor_port | int + 4) }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__firewall_ports {{{
+#
+# List of TCP/UDP ports which should be opened in the firewall for NFS access.
+nfs_server__firewall_ports: '{{ ([ "nfs", "sunrpc" ] + nfs_server__service_ports.keys())
+                                if nfs_server__v3|bool else [ "nfs" ] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# NFS server configuration [[[
+# ----------------------------
+
+# .. envvar:: nfs_server__v3 [[[
+#
+# Enable or disable support for NFSv3 features. By default the NFSv3 support is
+# disabled to ensure better service security.
+nfs_server__v3: False
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__threads [[[
+#
+# Number of :command:`nfsd` threads to run. This depends on several factors,
+# for example number of NFS clients that access the NFS shares. Check the
+# :command:`nfsstat` command to diagnose possible issues and adjust this number
+# as necessary.
+nfs_server__threads: '{{ ansible_processor_vcpus | int * 2 }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__priority [[[
+#
+# Server thread priority, see :manpage:`nice(1)` for more details.
+nfs_server__priority: '0'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__mountd_options [[[
+#
+# The arguments passed to the ;command:`rpc.mountd` process.
+nfs_server__mountd_options: '--manage-gids --port {{ nfs_server__service_ports["rpc.mountd"] }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__kerberos [[[
+#
+# Enable or disable Kerberos support.
+nfs_server__kerberos: False
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__svcgssd_options [[[
+#
+# Arguments passed to the ``rpc.svcgssd`` process.
+nfs_server__svcgssd_options: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# NFS4 root pseudo-filesystem [[[
+# -------------------------------
+
+# .. envvar:: nfs_server__root_path [[[
+#
+# Absolute path of the NFS4 root filesystem. All other NFS4 shares should be
+# served as subdirectories of this directory.
+nfs_server__root_path: '{{ (ansible_local.root.data
+                            if (ansible_local|d() and ansible_local.root|d() and
+                                ansible_local.root.data|d())
+                            else "/srv") + "/nfs" }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__root_options [[[
+#
+# List of options that are used to export the NFS4 root filesystem.
+nfs_server__root_options: [ 'rw', 'fsid=root', 'sync', 'subtree_check', 'crossmnt' ]
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__root_security_options [[[
+#
+# List of NFS4 security options that are used to export the NFS4 root
+# filesystem.
+nfs_server__root_security_options: '{{ [ "sec=krb5p" ] if nfs_server__kerberos|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__root_acl [[[
+#
+# The Access Control List of NFS clients that are allowed to mount the NFS4
+# root filesystem. See :ref:`nfs_server__ref_exports` for more details.
+nfs_server__root_acl: '{{ "*" if nfs_server__accept_any|bool else nfs_server__allow }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# NFS server exports [[[
+# ----------------------
+
+# The list of YAML dictionaries that define NFS exports.
+# See :ref:`nfs_server__ref_exports` for more details.
+
+# .. envvar:: nfs_server__default_exports [[[
+#
+# The default NFS exports defined on the server. This usually includes the NFS4
+# root pseudo-filesystem.
+nfs_server__default_exports:
+  - path: '{{ nfs_server__root_path }}'
+    acl: '{{ nfs_server__root_acl }}'
+    options: '{{ (nfs_server__root_security_options.split(",")
+                  if nfs_server__root_security_options is string
+                  else nfs_server__root_security_options) +
+                 (nfs_server__root_options.split(",")
+                  if nfs_server__root_options is string
+                  else nfs_server__root_options) }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__exports [[[
+#
+# List of NFS server exports defined on all hosts in the Ansible inventory.
+nfs_server__exports: []
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__group_exports [[[
+#
+# List of NFS server exports defined on hosts in specific Ansible inventory
+# group.
+nfs_server__group_exports: []
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__host_exports [[[
+#
+# List of NFS server exports defined on specific hosts in Ansible inventory.
+nfs_server__host_exports: []
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__combined_exports [[[
+#
+# All of the NFS exports lists are combined in this variable and passed to
+# tasks and templates in the role.
+nfs_server__combined_exports: '{{ lookup("flattened", nfs_server__default_exports
+                                  + nfs_server__exports + nfs_server__group_exports
+                                  + nfs_server__host_exports) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: nfs_server__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+nfs_server__etc_services__dependent_list:
+
+  - name: 'rpc.nfs-cb'
+    port: '{{ nfs_server__service_ports["rpc.nfs-cb"] }}'
+    comment: 'RPC NFS callback'
+
+  - name: 'rpc.lockd'
+    port: '{{ nfs_server__service_ports["rpc.lockd"] }}'
+    comment: 'RPC lockd'
+
+  - name: 'rpc.mountd'
+    port: '{{ nfs_server__service_ports["rpc.mountd"] }}'
+    comment: 'RPC mountd'
+
+  - name: 'rpc.statd'
+    port: '{{ nfs_server__service_ports["rpc.statd"] }}'
+    comment: 'RPC statd'
+
+  - name: 'rpc.statd-bc'
+    port: '{{ nfs_server__service_ports["rpc.statd-bc"] }}'
+    comment: 'RPC statd broadcast'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__tcpwrappers__dependent_allow [[[
+#
+# Configuration for the debops.tcpwrappers_ Ansible role.
+nfs_server__tcpwrappers__dependent_allow:
+
+  - daemon: [ 'rpcbind', 'mountd', 'lockd', 'statd' ]
+    client: '{{ nfs_server__allow }}'
+    accept_any: '{{ nfs_server__accept_any }}'
+    filename: 'nfs-server'
+    state: '{{ "present" if nfs_server__v3|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs_server__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ Ansible role.
+nfs_server__ferm__dependent_rules:
+  - name: 'nfs_server'
+    type: 'accept'
+    dport: '{{ nfs_server__firewall_ports }}'
+    protocol: '{{ nfs_server__firewall_protocols }}'
+    saddr: '{{ nfs_server__allow }}'
+    accept_any: '{{ nfs_server__accept_any }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
