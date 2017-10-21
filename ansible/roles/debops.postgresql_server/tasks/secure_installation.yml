@@ -1,0 +1,67 @@
+---
+
+- name: Update default admin password
+  postgresql_user:
+    name: '{{ item.user | d(postgresql_server__user) }}'
+    password: '{{ item.admin_password | d(postgresql_server__admin_password) }}'
+    encrypted: True
+    port: '{{ item.port }}'
+    state: 'present'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when: item.name|d()
+  no_log: True
+
+- name: Revoke all privileges on template1 from PUBLIC
+  postgresql_privs:
+    database: 'template1'
+    port: '{{ item.port }}'
+    role: 'PUBLIC'
+    type: 'database'
+    privs: 'ALL'
+    state: 'absent'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when: item.name|d()
+
+- name: Revoke all privileges on schema public from PUBLIC
+  postgresql_privs:
+    database: 'template1'
+    port: '{{ item.port }}'
+    role: 'PUBLIC'
+    type: 'schema'
+    obj: 'public'
+    privs: 'ALL'
+    state: 'absent'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when: item.name|d()
+
+- name: Grant connect on postgres to PUBLIC
+  postgresql_privs:
+    database: 'postgres'
+    port: '{{ item.port }}'
+    role: 'PUBLIC'
+    type: 'database'
+    privs: 'CONNECT'
+    state: 'present'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when: item.name|d()
+
+- name: Revoke temporary on postgres from PUBLIC
+  postgresql_privs:
+    database: 'postgres'
+    port: '{{ item.port }}'
+    role: 'PUBLIC'
+    type: 'database'
+    privs: 'TEMPORARY'
+    state: 'absent'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when: item.name|d()

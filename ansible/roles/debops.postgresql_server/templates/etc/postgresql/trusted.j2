@@ -1,0 +1,47 @@
+{% set postgresql_server__tpl_trusted = [] %}
+{% if item.trusted|d() and item.trusted %}
+{%   if item.trusted is string %}
+{%     if item.trusted == '*postgres*' %}
+{%       set postgresql_server__tpl_trusted = [ item.user | d(postgresql_server__user) ] %}
+{%     else %}
+{%       set postgresql_server__tpl_trusted = [ item.trusted ] %}
+{%     endif %}
+{%   else %}
+{%     for element in item.trusted %}
+{%       if element %}
+{%         if element == '*postgres*' %}
+{%           set _ = postgresql_server__tpl_trusted.append(item.user | d(postgresql_server__user)) %}
+{%         else %}
+{%           set _ = postgresql_server__tpl_trusted.append(element) %}
+{%         endif %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% elif postgresql_server__trusted|d() and postgresql_server__trusted %}
+{%   if postgresql_server__trusted is string %}
+{%     if postgresql_server__trusted == '*postgres*' %}
+{%       set postgresql_server__tpl_trusted = [ item.user | d(postgresql_server__user) ] %}
+{%     else %}
+{%       set postgresql_server__tpl_trusted = [ postgresql_server__trusted ] %}
+{%     endif %}
+{%   else %}
+{%     for element in postgresql_server__trusted %}
+{%       if element %}
+{%         if element == '*postgres*' %}
+{%           set _ = postgresql_server__tpl_trusted.append(item.user | d(postgresql_server__user)) %}
+{%         else %}
+{%           set _ = postgresql_server__tpl_trusted.append(element) %}
+{%         endif %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+{% if (item.trusted is undefined or item.trusted) %}
+{%   if postgresql_server__tpl_trusted %}
+{%     for element in postgresql_server__tpl_trusted %}
+{%       if element %}
+{{ element }}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endif %}

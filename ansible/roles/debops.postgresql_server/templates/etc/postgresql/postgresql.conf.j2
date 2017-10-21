@@ -1,0 +1,505 @@
+# {{ ansible_managed }}
+
+#------------------------------------------------------------------------------
+# PostgreSQL {{ item.version | d(postgresql_server__version) + '/' + item.name }} configuration file
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# FILE LOCATIONS
+#------------------------------------------------------------------------------
+
+data_directory = '{{ item.data_directory | d(postgresql_server__data_directory + "/" + item.version | d(postgresql_server__version) + "/" + item.name) }}'
+hba_file = '{{ item.hba_file | d("/etc/postgresql/" + item.version | d(postgresql_server__version) + "/" + item.name + "/pg_hba.conf") }}'
+ident_file = '{{ item.ident_file | d("/etc/postgresql/" + item.version | d(postgresql_server__version) + "/" + item.name + "/pg_ident.conf") }}'
+external_pid_file = '{{ item.external_pid_file | d("/var/run/postgresql/" + item.version | d(postgresql_server__version) + "-" + item.name + ".pid") }}'
+
+
+#------------------------------------------------------------------------------
+# CONNECTIONS AND AUTHENTICATION
+#------------------------------------------------------------------------------
+
+# - Connection Settings -
+
+listen_addresses = '{{ item.listen_addresses | d(postgresql_server__listen_addresses) | join(",") }}'
+port = {{ item.port }}
+max_connections = {{ item.max_connections | d(postgresql_server__max_connections) }}
+superuser_reserved_connections = {{ item.superuser_reserved_connections | d('3') }}
+
+{% if ((item.version | d(postgresql_server__version)) | version_compare('9.1','<=')) %}
+unix_socket_directory = '{{ item.unix_socket_directories | d("/var/run/postgresql") }}'
+{% else %}
+unix_socket_directories = '{{ item.unix_socket_directories | d("/var/run/postgresql") }}'
+{% endif %}
+unix_socket_group = '{{ item.unix_socket_group | d("") }}'
+unix_socket_permissions = {{ item.unix_socnet_permissions | d('0777') }}
+
+bonjour = {{ item.bonjour | d('off') }}
+bonjour_name = '{{ item.bonjour_name | d("") }}'
+
+
+# - Security and Authentication -
+
+authentication_timeout = {{ item.authentication_timeout | d('1min') }}
+
+ssl = {{ item.ssl | d(postgresql_server__pki | bool | lower) }}
+ssl_ciphers = '{{ item.ssl_ciphers | d(postgresql_server__ssl_ciphers) }}'
+{% if ((item.version | d(postgresql_server__version)) | version_compare('9.3','>')) %}
+ssl_prefer_server_ciphers = {{ item.ssl_prefer_server_ciphers | d('on') }}
+
+ssl_ecdh_curve = {{ item.ssl_ecdh_curve | d('prime256v1') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.5','<') %}
+ssl_renegotiation_limit = {{ item.ssl_renegotiation_limit | d('512MB') }}
+{% endif %}
+
+ssl_cert_file = '{{ item.ssl_cert_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_crt | d(postgresql_server__pki_crt))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
+ssl_key_file = '{{ item.ssl_key_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_key | d(postgresql_server__pki_key))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
+ssl_ca_file = '{{ item.ssl_ca_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_ca | d(postgresql_server__pki_ca))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
+#ssl_crl_file = ''
+{% endif %}
+
+password_encryption = {{ item.password_encryption | d('on') }}
+db_user_namespace = {{ item.db_user_namespace | d('off') }}
+
+
+# - Kerberos and GSSAPI -
+
+krb_server_keyfile = '{{ item.krb_server_keyfile | d("") }}'
+# does not seem to work correctly, comment it out in the ansible template
+#krb_srvname = '{{ item.krb_srvname | d(item.name) }}'
+krb_caseins_users = {{ item.krb_caseins_users | d('off') }}
+
+
+# - TCP Keepalives -
+
+tcp_keepalives_idle = {{ item.tcp_keepalives_idle | d('0') }}
+tcp_keepalives_interval = {{ item.tcp_keepalives_interval | d('0') }}
+tcp_keepalives_count = {{ item.tcp_keepalives_count | d('0') }}
+
+
+#------------------------------------------------------------------------------
+# RESOURCE USAGE (except WAL)
+#------------------------------------------------------------------------------
+
+# - Memory -
+
+{% if item.max_connections is defined and item.max_connections %}
+{%   set postgresql_server__tpl_max_connections = item.max_connections|int %}
+{% else %}
+{%   set postgresql_server__tpl_max_connections = postgresql_server__max_connections|int %}
+{% endif %}
+{% if (postgresql_server__register_sysctl_shmmax.stdout|int >= (ansible_memtotal_mb|int * 1024 * 1024)) %}
+{%   set postgresql_server__tpl_shmmax = ((ansible_memtotal_mb|int * 1024 * 1024) * postgresql_server__shm_memory_limiter|float) | round | int %}
+{% else %}
+{%   set postgresql_server__tpl_shmmax = postgresql_server__register_sysctl_shmmax.stdout %}
+{% endif %}
+{% if not item.shared_buffers|d() %}
+# (( {{ (postgresql_server__tpl_shmmax|int / 1024 / 1024)|round|int }} MB of maximum shared buffer size * {{ postgresql_server__shmmax_limiter }} ) - ( 16 kB * {{ postgresql_server__tpl_max_connections }} max connections )) / {{ postgresql_server__fact_cluster_count }} cluster(s)
+{% endif %}
+shared_buffers = {{ item.shared_buffers | d((((((postgresql_server__tpl_shmmax|int * postgresql_server__shmmax_limiter|float)|round|int - (16384 * postgresql_server__tpl_max_connections|int)) / postgresql_server__fact_cluster_count|int) / 1024 / 1024))|round|int|string + 'MB') }}
+temp_buffers = {{ item.temp_buffers | d('8MB') }}
+max_prepared_transactions = {{ item.max_prepared_transactions | d('0') }}
+work_mem = {{ item.work_mem | d('1MB') }}
+maintenance_work_mem = {{ item.maintenance_work_mem | d('16MB') }}
+max_stack_depth = {{ item.max_stack_depth | d('2MB') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.4','>=') %}
+huge_pages = {{ item.huge_pages | d('try') }}
+autovacuum_work_mem = {{ item.autovacuum_work_mem | d('-1') }}
+{% endif %}
+
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.3','>') %}
+{% if postgresql_server__register_shm|d() and postgresql_server__register_shm.stdout %}
+dynamic_shared_memory_type = {{ item.dynamic_shared_memory_type | d('posix') }}
+{% else %}
+dynamic_shared_memory_type = {{ item.dynamic_shared_memory_type | d('sysv') }}
+{% endif %}
+{% endif %}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+
+# - Disk -
+
+temp_file_limit = {{ item.temp_file_limit | d('-1') }}
+{% endif %}
+
+# - Kernel Resource Usage -
+
+max_files_per_process = {{ item.max_files_per_process | d('1000') }}
+shared_preload_libraries = '{{ item.shared_preload_libraries | d("") }}'
+
+
+# - Cost-Based Vacuum Delay -
+
+vacuum_cost_delay = {{ item.vacuum_cost_delay | d('0ms') }}
+vacuum_cost_page_hit = {{ item.vacuum_cost_page_hit | d('1') }}
+vacuum_cost_page_miss = {{ item.vcuum_cost_page_miss | d('10') }}
+vacuum_cost_page_dirty = {{ item.vacuum_cost_page_dirty | d('20') }}
+vacuum_cost_limit = {{ item.vacuum_cost_limit | d('200') }}
+
+
+# - Background Writer -
+
+bgwriter_delay = {{ item.bgwriter_delay | d('200ms') }}
+bgwriter_lru_maxpages = {{ item.bgwriter_lru_maxpages | d('100') }}
+bgwriter_lru_multiplier = {{ item.bgwriter_lru_multiplier | d('2.0') }}
+
+
+# - Asynchronous Behavior -
+
+effective_io_concurrency = {{ item.effective_io_concurrency | d('1') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.4','>=') %}
+max_worker_processes = {{ item.max_worker_processes | d('8') }}
+{% endif %}
+
+
+#------------------------------------------------------------------------------
+# WRITE AHEAD LOG
+#------------------------------------------------------------------------------
+
+# - Settings -
+
+wal_level = {{ item.wal_level | d(postgresql_server__wal_level) }}
+fsync = {{ item.fsync | d('on') }}
+synchronous_commit = {{ item.synchronous_commit | d('on') }}
+wal_sync_method = {{ item.wal_sync_method | d('fsync') }}
+full_page_writes = {{ item.full_page_writes | d('on') }}
+wal_buffers = {{ item.wal_buffers | d('-1') }}
+wal_writer_delay = {{ item.wal_writer_delay | d('200ms') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.3','>') %}
+wal_log_hints = {{ item.wal_log_hints | d('off') }}
+{% endif %}
+
+commit_delay = {{ item.commit_delay | d('0') }}
+commit_siblings = {{ item.commit_siblings | d('5') }}
+
+
+# - Checkpoints -
+
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.5','<') %}
+checkpoint_segments = {{ item.checkpoint_segments | d('3') }}
+{% endif %}
+checkpoint_timeout = {{ item.checkpoint_timeout | d('5min') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.5','>=') %}
+min_wal_size = {{ item.min_wal_size | d('80MB') }}
+max_wal_size = {{ item.max_wal_size | d('1GB') }}
+{% endif %}
+checkpoint_completion_target = {{ item.checkpoint_completion_target | d('0.5') }}
+checkpoint_warning = {{ item.checkpoint_warning | d('30s') }}
+
+
+# - Archiving -
+
+{% if item.archive_mode|d() and item.archive_mode %}
+archive_mode = {{ item.archive_mode }}
+{% elif item.wal_level|d() and item.wal_level == 'archive' %}
+archive_mode = on
+{% elif postgresql_server__wal_level|d() and postgresql_server__wal_level == 'archive' %}
+archive_mode = on
+{% else %}
+archive_mode = off
+{% endif %}
+archive_command = '{{ item.archive_command | d(postgresql_server__archive_command) }}'
+archive_timeout = {{ item.archive_timeout | d('0') }}
+
+
+#------------------------------------------------------------------------------
+# REPLICATION
+#------------------------------------------------------------------------------
+
+# - Sending Server(s) -
+
+# Set these on the master and on any standby that will send replication data
+max_wal_senders = {{ item.max_wal_senders | d('0') }}
+wal_keep_segments = {{ item.wal_keep_segments | d('0') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+wal_sender_timeout = {{ item.wal_sender_timeout | d('60s') }}
+{% endif %}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.3','>') %}
+max_replication_slots = {{ item.max_replication_slots | d('0') }}
+{% endif %}
+
+# - Master Server -
+
+# These settings are ignored on a standby server
+synchronous_standby_names = '{{ item.synchronous_standby_names | d("") }}'
+vacuum_defer_cleanup_age = {{ item.vacuum_defer_cleanup_age | d('0') }}
+
+
+# - Standby Servers -
+
+# These settings are ignored on a master server
+hot_standby = {{ item.hot_standby | d('off') }}
+max_standby_archive_delay = {{ item.max_standby_archive_delay | d('30s') }}
+max_standby_streaming_delay = {{ item.max_standby_streaming_delay | d('30s') }}
+wal_receiver_status_interval = {{ item.wal_receiver_status_interval | d('10s') }}
+hot_standby_feedback = {{ item.hot_standby_feedback | d('off') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+wal_receiver_timeout = {{ item.wal_receiver_timeout | d('60s') }}
+{% endif %}
+
+
+#------------------------------------------------------------------------------
+# QUERY TUNING
+#------------------------------------------------------------------------------
+
+# - Planner Method Configuration -
+
+enable_bitmapscan = {{ item.enable_bitmapscan | d('on') }}
+enable_hashagg = {{ item.enable_hashagg | d('on') }}
+enable_hashjoin = {{ item.enable_hashjoin | d('on') }}
+enable_indexscan = {{ item.enable_indexscan | d('on') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+enable_indexonlyscan = {{ item.enable_indexonlyscan | d('on') }}
+{% endif %}
+enable_material = {{ item.enable_material | d('on') }}
+enable_mergejoin = {{ item.enable_mergejoin | d('on') }}
+enable_nestloop = {{ item.enable_nestloop | d('on') }}
+enable_seqscan = {{ item.enable_seqscan | d('on') }}
+enable_sort = {{ item.enable_sort | d('on') }}
+enable_tidscan = {{ item.enable_tidscan | d('on') }}
+
+
+# - Planner Cost Constants -
+
+seq_page_cost = {{ item.seq_page_cost | d('1.0') }}
+random_page_cost = {{ item.random_page_cost | d('4.0') }}
+cpu_tuple_cost = {{ item.cpu_tuple_cost | d('0.01') }}
+cpu_index_tuple_cost = {{ item.cpu_index_tuple_cost | d('0.005') }}
+cpu_operator_cost = {{ item.cpu_operator_cost | d('0.0025') }}
+effective_cache_size = {{ item.effective_cache_size | d('128MB') }}
+
+
+# - Genetic Query Optimizer -
+
+geqo = {{ item.geqo | d('on') }}
+geqo_threshold = {{ item.geqo_threshold | d('12') }}
+geqo_effort = {{ item.geqo_effort | d('5') }}
+geqo_pool_size = {{ item.geqo_pool_size | d('0') }}
+geqo_generations = {{ item.geqo_generations | d('0') }}
+geqo_selection_bias = {{ item.geqo_selection_bias | d('2.0') }}
+geqo_seed = {{ item.geqo_seed | d('0.0') }}
+
+
+# - Other Planner Options -
+
+default_statistics_target = {{ item.default_statistics_target | d('100') }}
+constraint_exclusion = {{ item.constraint_exclusion | d('partition') }}
+cursor_tuple_fraction = {{ item.cursor_tuple_fraction | d('0.1') }}
+from_collapse_limit = {{ item.from_collapse_limit | d('8') }}
+join_collapse_limit = {{ item.join_collapse_limit | d('8') }}
+
+
+#------------------------------------------------------------------------------
+# ERROR REPORTING AND LOGGING
+#------------------------------------------------------------------------------
+
+# - Where to Log -
+
+log_destination = '{{ item.log_destination | d(postgresql_server__log_destination) }}'
+
+# This is used when logging to stderr:
+logging_collector = {{ item.logging_collector | d('off') }}
+
+# These are only used if logging_collector is on:
+log_directory = '{{ item.log_directory | d("pg_log") }}'
+log_filename = '{{ item.log_filename | d("postgresql-%Y-%m-%d_%H%M%S.log") }}'
+log_file_mode = {{ item.log_file_mode | d('0600') }}
+log_truncate_on_rotation = {{ item.log_truncate_on_rotation | d('off') }}
+log_rotation_age = {{ item.log_rotation_age | d('1d') }}
+log_rotation_size = {{ item.log_rotation_size | d('10MB') }}
+
+# These are relevant when logging to syslog:
+syslog_facility = '{{ item.syslog_facility | d("LOCAL0") }}'
+syslog_ident = '{{ item.syslog_ident | d("postgres-" + item.name) }}'
+
+
+# - When to Log -
+
+client_min_messages = {{ item.client_min_messages | d('notice') }}
+log_min_messages = {{ item.log_min_messages | d('warning') }}
+log_min_error_statement = {{ item.log_min_error_statement | d('error') }}
+log_min_duration_statement = {{ item.log_min_duration_statement | d('-1') }}
+
+
+# - What to Log -
+
+debug_print_parse = {{ item.debug_print_parse | d('off') }}
+debug_print_rewritten = {{ item.debug_print_rewritten | d('off') }}
+debug_print_plan = {{ item.debug_print_plan | d('off') }}
+debug_pretty_print = {{ item.debug_pretty_print | d('on') }}
+log_checkpoints = {{ item.log_checkpoints | d('off') }}
+log_connections = {{ item.log_connections | d('off') }}
+log_disconnections = {{ item.log_disconnections | d('off') }}
+log_duration = {{ item.log_duration | d('off') }}
+log_error_verbosity = {{ item.log_error_verbosity | d('default') }}
+log_hostname = {{ item.log_hostname | d('off') }}
+log_line_prefix = '{{ item.log_line_prefix | d("%t [%p-%l] %q%u@%d ") }}'
+log_lock_waits = {{ item.log_lock_waits | d('off') }}
+log_statement = '{{ item.log_statement | d("none") }}'
+log_temp_files = {{ item.log_temp_files | d('-1') }}
+log_timezone = '{{ item.log_timezone | d(postgresql_server__timezone) }}'
+
+
+#------------------------------------------------------------------------------
+# RUNTIME STATISTICS
+#------------------------------------------------------------------------------
+
+# - Query/Index Statistics Collector -
+
+track_activities = {{ item.track_activities | d('on') }}
+track_counts = {{ item.track_counts | d('on') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+track_io_timing = {{ item.track_io_timing | d('off') }}
+{% endif %}
+track_functions = {{ item.track_functions | d('none') }}
+track_activity_query_size = {{ item.track_activity_query_size | d('1024') }}
+update_process_title = {{ item.update_process_title | d('on') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+stats_temp_directory = '{{ item.stats_temp_directory | d("/var/run/postgresql/" + (item.version | d(postgresql_server__version)) + "-" + item.name + ".pg_stat_tmp") }}'
+{% else %}
+stats_temp_directory = '{{ item.stats_temp_directory | d("pg_stat_tmp") }}'
+{% endif %}
+
+
+# - Statistics Monitoring -
+
+log_parser_stats = {{ item.log_parser_stats | d('off') }}
+log_planner_stats = {{ item.log_planner_stats | d('off') }}
+log_executor_stats = {{ item.log_executor_stats | d('off') }}
+log_statement_stats = {{ item.log_statement_stats | d('off') }}
+
+
+#------------------------------------------------------------------------------
+# AUTOVACUUM PARAMETERS
+#------------------------------------------------------------------------------
+
+autovacuum = {{ item.autovacuum | d('on') }}
+log_autovacuum_min_duration = {{ item.log_autovacuum_min_duration | d('-1') }}
+autovacuum_max_workers = {{ item.autovacuum_max_workers | d('3') }}
+autovacuum_naptime = {{ item.autovacuum_naptime | d('1min') }}
+autovacuum_vacuum_threshold = {{ item.autovacuum_vacuum_threshold | d('50') }}
+autovacuum_analyze_threshold = {{ item.autovacuum_analyze_threshold | d('50') }}
+autovacuum_vacuum_scale_factor = {{ item.autovacuum_vacuum_scale_factor | d('0.2') }}
+autovacuum_analyze_scale_factor = {{ item.autovacuum_analyze_scale_factor | d('0.1') }}
+autovacuum_freeze_max_age = {{ item.autovacuum_freeze_max_age | d('200000000') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+autovacuum_multixact_freeze_max_age = {{ item.autovacuum_multixact_freeze_max_age | d('400000000') }}
+{% endif %}
+autovacuum_vacuum_cost_delay = {{ item.autovacuum_vacuum_cost_delay | d('20ms') }}
+autovacuum_vacuum_cost_limit = {{ item.autovacuum_vacuum_cost_limit | d('-1') }}
+
+
+#------------------------------------------------------------------------------
+# CLIENT CONNECTION DEFAULTS
+#------------------------------------------------------------------------------
+
+# - Statement Behavior -
+
+search_path = '{{ item.search_path | d("\"$user\",public") }}'
+default_tablespace = '{{ item.default_tablespace | d("") }}'
+temp_tablespaces = '{{ item.temp_tablespaces | d("") }}'
+check_function_bodies = {{ item.check_function_bodies | d('on') }}
+default_transaction_isolation = '{{ item.default_transaction_isolation | d("read committed") }}'
+default_transaction_read_only = {{ item.default_transaction_read_only | d('off') }}
+default_transaction_deferrable = {{ item.default_transaction_deferrable | d('off') }}
+session_replication_role = '{{ item.session_replication_role | d("origin") }}'
+statement_timeout = {{ item.statement_timeout | d('0') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+lock_timeout = {{ item.lock_timeout | d('0') }}
+{% endif %}
+vacuum_freeze_min_age = {{ item.vacuum_freeze_min_age | d('50000000') }}
+vacuum_freeze_table_age = {{ item.vacuum_freeze_table_age | d('150000000') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+vacuum_multixact_freeze_min_age = {{ item.vacuum_multixact_freeze_min_age | d('5000000') }}
+vacuum_multixact_freeze_table_age = {{ item.vacuum_multixact_freeze_table_age | d('150000000') }}
+{% endif %}
+bytea_output = '{{ item.bytea_output | d("hex") }}'
+xmlbinary = '{{ item.xmlbinary | d("base64") }}'
+xmloption = '{{ item.xmloption | d("content") }}'
+
+
+# - Locale and Formatting -
+
+datestyle = '{{ item.datestyle | d("iso, dmy") }}'
+intervalstyle = '{{ item.intervalstyle | d("postgres") }}'
+timezone = '{{ item.timezone | d(postgresql_server__timezone) }}'
+timezone_abbreviations = '{{ item.timezone_abbreviations | d("Default") }}'
+extra_float_digits = {{ item.extra_float_digits | d('0') }}
+{% if item.client_encoding|d() %}
+client_encoding = {{ item.client_encoding }}
+{% else %}
+#client_encoding = # based on the database encoding
+{% endif %}
+lc_messages = '{{ item.locale_messages | d(postgresql_server__locale_messages) }}'
+lc_monetary = '{{ item.locale | d(postgresql_server__locale) }}'
+lc_numeric = '{{ item.locale | d(postgresql_server__locale) }}'
+lc_time = '{{ item.locale | d(postgresql_server__locale) }}'
+
+# default configuration for text search
+default_text_search_config = '{{ item.default_text_search_config | d("pg_catalog.simple") }}'
+
+
+# - Other Defaults -
+
+dynamic_library_path = '{{ item.dynamic_library_path | d("$libdir") }}'
+local_preload_libraries = '{{ item.local_preload_libraries | d("") }}'
+{% if (item.version | d(postgresql_server__version)) | version_compare('9.3','>') %}
+session_preload_libraries = '{{ item.session_preload_libraries | d("") }}'
+{% endif %}
+
+
+#------------------------------------------------------------------------------
+# LOCK MANAGEMENT
+#------------------------------------------------------------------------------
+
+deadlock_timeout = {{ item.deadlock_timeout | d('1s') }}
+max_locks_per_transaction = {{ item.max_locks_per_transaction | d('64') }}
+max_pred_locks_per_transaction = {{ item.max_pred_locks_per_transaction | d('64') }}
+
+
+#------------------------------------------------------------------------------
+# VERSION/PLATFORM COMPATIBILITY
+#------------------------------------------------------------------------------
+
+# - Previous PostgreSQL Versions -
+
+array_nulls = {{ item.array_nulls | d('on') }}
+backslash_quote = {{ item.backslash_quote | d('safe_encoding') }}
+default_with_oids = {{ item.default_with_oids | d('off') }}
+escape_string_warning = {{ item.escape_string_warning | d('on') }}
+lo_compat_privileges = {{ item.lo_compat_privileges | d('off') }}
+quote_all_identifiers = {{ item.quote_all_identifiers | d('off') }}
+{% if ((item.version | d(postgresql_server__version)) | version_compare('10','<')) %}
+sql_inheritance = {{ item.sql_inheritance | d('on') }}
+{% endif %}
+standard_conforming_strings = {{ item.standard_conforming_strings | d('on') }}
+synchronize_seqscans = {{ item.synchronize_seqscans | d('on') }}
+
+
+# - Other Platforms and Clients -
+
+transform_null_equals = {{ item.transform_null_equals | d('off') }}
+
+
+#------------------------------------------------------------------------------
+# ERROR HANDLING
+#------------------------------------------------------------------------------
+
+exit_on_error = {{ item.exit_on_error | d('off') }}
+restart_after_crash = {{ item.restart_after_crash | d('on') }}
+
+
+#------------------------------------------------------------------------------
+# CONFIG FILE INCLUDES
+#------------------------------------------------------------------------------
+# These options allow settings to be loaded from files other than the
+# default postgresql.conf.
+
+include_dir = 'conf.d'                  # include files ending in '.conf' from
+                                        # directory 'conf.d'
+#include_if_exists = 'exists.conf'      # include file only if it exists
+#include = 'special.conf'               # include file
+
+#------------------------------------------------------------------------------
+# CUSTOMIZED OPTIONS
+#------------------------------------------------------------------------------
+
+# Add settings for extensions here

@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+# Automatic startup configuration
+# auto: automatically start/stop the cluster in the init script
+# manual: do not start/stop in init scripts, but allow manual startup with
+#         pg_ctlcluster
+# disabled: do not allow manual startup with pg_ctlcluster (this can be easily
+#           circumvented and is only meant to be a small protection for
+#           accidents).
+
+{{ item.start_conf | default(postgresql_server__start_conf) }}
+
+

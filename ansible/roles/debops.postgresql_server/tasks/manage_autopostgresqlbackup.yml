@@ -1,0 +1,55 @@
+---
+
+- name: Divert the original autopostgresqlbackup script
+  command: dpkg-divert --quiet --local
+           --divert /usr/share/doc/autopostgresqlbackup/script.dpkg-divert
+           --rename /usr/sbin/autopostgresqlbackup
+  args:
+    creates: '/usr/share/doc/autopostgresqlbackup/script.dpkg-divert'
+
+- name: Divert the original autopostgresqlbackup cron
+  command: dpkg-divert --quiet --local
+           --divert /usr/share/doc/autopostgresqlbackup/cron.dpkg-divert
+           --rename /etc/cron.daily/autopostgresqlbackup
+  args:
+    creates: '/usr/share/doc/autopostgresqlbackup/cron.dpkg-divert'
+
+- name: Configure autopostgresqlbackup defaults
+  template:
+    src: 'etc/default/autopostgresqlbackup.j2'
+    dest: '/etc/default/autopostgresqlbackup-{{ item.version | d(postgresql_server__version) }}-{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+
+- name: Configure autopostgresqlbackup
+  template:
+    src: 'usr/sbin/autopostgresqlbackup.j2'
+    dest: '/usr/sbin/autopostgresqlbackup-{{ item.version | d(postgresql_server__version) }}-{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+
+- name: Disable autopostgresqlbackup from running daily
+  file:
+    path: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version)) | replace(".","_") }}-{{ item.name }}'
+    state: 'absent'
+  when: ((item.auto_backup|d() and not item.auto_backup | bool) or not postgresql_server__auto_backup | bool)
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+
+- name: Enable autopostgresqlbackup to run daily
+  template:
+    src: 'etc/cron.daily/autopostgresqlbackup.j2'
+    dest: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version)) | replace(".","_") }}-{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: ((item.auto_backup is undefined or item.auto_backup | bool) and postgresql_server__auto_backup | bool)
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+

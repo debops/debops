@@ -1,0 +1,127 @@
+# {{ ansible_managed }}
+{% macro print_hba(postgresql_server__tpl_hba_list) %}
+{% if postgresql_server__tpl_hba_list|d() and postgresql_server__tpl_hba_list %}
+{%   for entry in postgresql_server__tpl_hba_list %}
+{%     set entry_tpl_skip = False %}
+{%     set entry_tpl_database = [] %}
+{%     if entry.database is string %}
+{%       set entry_tpl_database = [ entry.database ] %}
+{%     else %}
+{%       set entry_tpl_database = entry.database %}
+{%     endif %}
+{%     set entry_tpl_user = [] %}
+{%     if entry.user is string %}
+{%       if entry.user == '*postgres*' %}
+{%         set entry_tpl_user = [ item.user | d(postgresql_server__user) ] %}
+{%       else %}
+{%         set entry_tpl_user = [ entry.user ] %}
+{%       endif %}
+{%     else %}
+{%       for element in entry.user %}
+{%         if element == '*postgres*' %}
+{%           set _ = entry_tpl_user.append(item.user | d(postgresql_server__user)) %}
+{%         else %}
+{%           set _ = entry_tpl_user.append(element) %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%     set entry_tpl_address = [] %}
+{%     if entry.type not in [ 'local' ] %}
+{%       if entry.address|d() and entry.address %}
+{%         if entry.address is string %}
+{%           set entry_tpl_address = [ entry.address ] %}
+{%         else %}
+{%           set entry_tpl_address = entry.address %}
+{%         endif %}
+{%       elif entry.hosts|d() and entry.hosts %}
+{%         if entry.hosts is string %}
+{%           set entry_tpl_hosts = [ entry.hosts ] %}
+{%         else %}
+{%           set entry_tpl_hosts = entry.hosts %}
+{%         endif %}
+{%         for host in entry_tpl_hosts %}
+{%           if host != inventory_hostname and hostvars[host]|d() and hostvars[host].ansible_all_ipv4_addresses|d() %}
+{%             set element_tpl_address = [] %}
+{%             set element_tpl_address4 = hostvars[host].ansible_all_ipv4_addresses|d([]) %}
+{%             if element_tpl_address4 %}
+{%               for part in element_tpl_address4 %}
+{%                 set _ = element_tpl_address.append(part | ipaddr('cidr')) %}
+{%               endfor %}
+{%             endif %}
+{%             if hostvars[host].ansible_all_ipv6_addresses|d() %}
+{%               set element_tpl_address6 = (hostvars[host].ansible_all_ipv6_addresses | difference(hostvars[host].ansible_all_ipv6_addresses | ipaddr('link-local'))) %}
+{%               if element_tpl_address6 %}
+{%                 for part in element_tpl_address6 %}
+{%                   set _ = element_tpl_address.append(part | ipaddr('cidr')) %}
+{%                 endfor %}
+{%               endif %}
+{%             endif %}
+{%             for part in element_tpl_address %}
+{%               set _ = entry_tpl_address.append(part) %}
+{%             endfor %}
+{%           elif host == inventory_hostname %}
+{%             set _ = entry_tpl_address.append('localhost') %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     set entry_tpl_options = [] %}
+{%     if entry.options|d() and entry.options %}
+{%       if entry.options is string %}
+{%         set entry_tpl_options = [ entry.options ] %}
+{%       else %}
+{%         set entry_tpl_options = entry.options %}
+{%       endif %}
+{%     endif %}
+{%     if ((entry_tpl_address and entry.type not in [ 'local' ]) and (entry.state is undefined or entry.state not in [ 'absent' ])) %}
+{%       if entry.comment|d() and entry.comment %}
+# {{ entry.comment }}
+{%       endif %}
+{%       if (entry.type in [ 'hostssl' ] and (item.ssl is undefined or not item.ssl) and not postgresql_server__pki | bool) %}
+# SSL not available, hostssl entry disabled
+{%       else %}
+{%         for address in entry_tpl_address %}
+{{ "%-10s %-15s %-15s %-28s %s%s" | format(entry.type, entry_tpl_database | join(","), entry_tpl_user | join(","), address, entry.method, ((" " + entry_tpl_options | join(" ")) if entry_tpl_options else "")) }}
+{%         endfor %}
+{%       endif %}
+{%     elif entry.type in [ 'local' ] and (entry.state is undefined or entry.state not in [ 'absent' ]) %}
+{%       if entry.comment|d() and entry.comment %}
+# {{ entry.comment }}
+{%       endif %}
+{{ "%-10s %-15s %-15s %-28s %s%s" | format(entry.type, entry_tpl_database | join(","), entry_tpl_user | join(","), "", entry.method, ((" " + entry_tpl_options | join(" ")) if entry_tpl_options else "")) }}
+{%     elif not entry_tpl_skip and (entry.state is undefined or entry.state not in [ 'absent' ]) %}
+# Error in HBA entry: {{ entry | to_json }}
+{%     endif %}
+
+{%   endfor %}
+{% endif %}
+{% endmacro %}
+
+# PostgreSQL Client Authentication Configuration File
+# ===================================================
+
+# TYPE	   DATABASE        USER            ADDRESS                      METHOD
+
+{% if postgresql_server__hba_system|d() and postgresql_server__hba_system %}
+{{ print_hba(postgresql_server__hba_system) }}{% endif %}
+{% if ((postgresql_server__hba_replication|d() and postgresql_server__hba_replication) and
+       (item.hba_replication is undefined or item.hba_replication)) %}
+{{ print_hba(item.hba_replication | d(postgresql_server__hba_replication)) }}{% endif %}
+{% if ((postgresql_server__hba_public|d() and postgresql_server__hba_public) and
+       (item.hba_public is undefined or item.hba_public)) %}
+{{ print_hba(item.hba_public | d(postgresql_server__hba_public)) }}{% endif %}
+{% if ((postgresql_server__trusted|d() and postgresql_server__trusted) and
+       (item.trusted is undefined or item.trusted)) %}
+{% if ((postgresql_server__hba_trusted|d() and postgresql_server__hba_trusted) and
+       (item.hba_trusted is undefined or item.hba_trusted)) %}
+{{ print_hba(item.hba_trusted | d(postgresql_server__hba_trusted)) }}{% endif %}
+{% endif %}
+{% if ((postgresql_server__hba_local|d() and postgresql_server__hba_local) and
+       (item.hba_local is undefined or item.hba_local)) %}
+{{ print_hba(item.hba_local | d(postgresql_server__hba_local)) }}{% endif %}
+{% if ((postgresql_server__hba_remote|d() and postgresql_server__hba_remote) and
+       (item.hba_remote is undefined or item.hba_remote)) %}
+{{ print_hba(item.hba_remote | d(postgresql_server__hba_remote)) }}{% endif %}
+{% if (item.hba|d() and item.hba) %}
+{{ print_hba(item.hba) }}
+{% endif %}
