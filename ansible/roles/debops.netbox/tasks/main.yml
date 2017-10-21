@@ -1,0 +1,212 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ netbox__base_packages }}'
+    - '{{ netbox__packages }}'
+
+- name: Create NetBox system group
+  group:
+    name: '{{ netbox__group }}'
+    state: 'present'
+    system: True
+
+- name: Create NetBox system user
+  user:
+    name: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    home: '{{ netbox__home }}'
+    comment: '{{ netbox__gecos }}'
+    shell: '{{ netbox__shell }}'
+    state: 'present'
+    system: True
+
+- name: Create source and library directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    mode: '0755'
+  with_items: [ '{{ netbox__src }}', '{{ netbox__lib }}' ]
+
+- name: Create Python virtualenv for NetBox
+  pip:
+    name: 'wsgiref'
+    virtualenv: '{{ netbox__virtualenv }}'
+  become_user: '{{ netbox__user }}'
+  register: netbox__register_virtualenv
+  changed_when: (netbox__register_virtualenv|success and
+                 netbox__register_virtualenv.stdout|search('New python executable in'))
+
+- name: Clone NetBox source code
+  git:
+    repo: '{{ netbox__git_repo }}'
+    dest: '{{ netbox__git_dest }}'
+    version: '{{ netbox__git_version }}'
+    bare: True
+    update: True
+  become_user: '{{ netbox__user }}'
+  register: netbox__register_source
+
+- name: Check if NetBox is installed
+  stat:
+    path: '{{ netbox__git_checkout }}'
+  register: netbox__register_installed
+
+- name: Create NetBox checkout directory
+  file:
+    path: '{{ netbox__git_checkout }}'
+    state: 'directory'
+    owner: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    mode: '0755'
+
+- name: Prepare NetBox git worktree
+  copy:
+    content: 'gitdir: {{ netbox__git_dest }}'
+    dest: '{{ netbox__git_checkout + "/.git" }}'
+    owner: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    mode: '0644'
+
+- name: Get commit hash of target checkout
+  environment:
+    GIT_WORK_TREE: '{{ netbox__git_checkout }}'
+  command: git rev-parse {{ netbox__git_version }}
+  args:
+    chdir: '{{ netbox__git_dest }}'
+    warn: False
+  become_user: '{{ netbox__user }}'
+  register: netbox__register_target_branch
+  changed_when: netbox__register_target_branch.stdout != netbox__register_source.before
+
+- name: Checkout NetBox
+  environment:
+    GIT_WORK_TREE: '{{ netbox__git_checkout }}'
+  command: git checkout -f {{ netbox__git_version }}
+  args:
+    chdir: '{{ netbox__git_dest }}'
+    warn: False
+  become_user: '{{ netbox__user }}'
+  register: netbox__register_checkout
+  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  when: (netbox__register_source.before is undefined or
+         (netbox__register_source.before|d() and netbox__register_target_branch.stdout|d() and
+          netbox__register_source.before != netbox__register_target_branch.stdout) or
+          not netbox__register_installed.stat.exists|bool)
+
+# This is required due to an issue with setuptools
+# https://github.com/digitalocean/netbox/issues/864
+- name: Upgrade pip and setuptools in the virtualenv
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
+  shell: pip install --upgrade --force-reinstall pip setuptools
+  args:
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+  become_user: '{{ netbox__user }}'
+  when: netbox__register_checkout|changed
+
+- name: Install NetBox requirements in virtualenv
+  pip:
+    virtualenv: '{{ netbox__virtualenv }}'
+    requirements: '{{ netbox__git_checkout + "/requirements.txt" }}'
+  become_user: '{{ netbox__user }}'
+  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  when: netbox__register_checkout|changed
+
+- name: Install additional Python modules in virtualenv
+  pip:
+    name:       '{{ item.name | d(item) }}'
+    version:    '{{ item.version | d(omit) }}'
+    virtualenv: '{{ netbox__virtualenv }}'
+  become_user: '{{ netbox__user }}'
+  with_flattened: '{{ netbox__virtualenv_pip_packages }}'
+  when: netbox__register_checkout|changed
+
+- name: Generate NetBox configuration
+  template:
+    src: 'usr/local/lib/netbox/configuration.py.j2'
+    dest: '{{ netbox__git_checkout + "/netbox/netbox/configuration.py" }}'
+    owner: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    mode: '0640'
+  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  tags: [ 'role::netbox:config' ]
+
+- name: Perform database installation or migration
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
+  shell: ./manage.py migrate
+  args:
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+  become_user: '{{ netbox__user }}'
+  when: netbox__register_checkout|changed
+  register: netbox__register_migration
+
+- name: Create superuser account
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
+    SUPERUSER_NAME: '{{ netbox__superuser_name }}'
+    SUPERUSER_EMAIL: '{{ netbox__superuser_email }}'
+    SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
+  shell: echo "from django.contrib.auth.models import User;
+               User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
+         | ./manage.py shell
+  args:
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+  become_user: '{{ netbox__user }}'
+  when: (not netbox__register_installed.stat.exists|bool and
+         not netbox__register_migration.stdout|search('No migrations to apply.'))
+  no_log: True
+
+- name: Generate static assets
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
+  shell: ./manage.py collectstatic --no-input
+  args:
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+  become_user: '{{ netbox__user }}'
+  when: netbox__register_checkout|changed
+
+- name: Load initial data
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
+  shell: ./manage.py loaddata initial_data
+  args:
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+  become_user: '{{ netbox__user }}'
+  when: (netbox__load_initial_data|bool and not netbox__register_installed.stat.exists|bool and
+         not netbox__register_migration.stdout|search('No migrations to apply.'))
+
+- name: Generate systemd service unit
+  template:
+    src: 'etc/systemd/system/netbox.service.j2'
+    dest: '/etc/systemd/system/netbox.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: netbox__register_systemd
+  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  when: netbox__app_internal_appserver|bool
+
+- name: Reload systemd configuration
+  command: systemctl daemon-reload
+  when: (ansible_service_mgr == 'systemd' and
+         netbox__register_systemd|changed)
+
+- name: Enable and start netbox internal appserver
+  service:
+    name: 'netbox'
+    state: 'started'
+    enabled: True
+  when: (netbox__app_internal_appserver|bool and ansible_service_mgr == 'systemd' and
+         netbox__register_systemd|changed and not netbox__register_installed.stat.exists|bool)

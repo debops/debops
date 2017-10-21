@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+# netbox.service unit file
+# Copyright (C) Maciej Delmanowski <drybjed@gmail.com>
+# Homepage: https://debops.org/
+
+[Unit]
+Description=NetBox
+Documentation=https://netbox.readthedocs.io/en/latest/
+After=network.target
+
+[Service]
+User={{ netbox__user }}
+Group={{ netbox__group }}
+RuntimeDirectory={{ netbox__app_runtime_dir }}
+RuntimeDirectoryMode=0755
+WorkingDirectory={{ netbox__git_checkout + "/netbox" }}
+ExecStart={{ netbox__virtualenv }}/bin/gunicorn {{ netbox__app_params | join(' ') }}
+
+[Install]
+WantedBy=multi-user.target

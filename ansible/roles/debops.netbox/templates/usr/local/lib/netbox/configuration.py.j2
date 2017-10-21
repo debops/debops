@@ -1,0 +1,99 @@
+# {{ ansible_managed }}
+
+#########################
+#                       #
+#   Required settings   #
+#                       #
+#########################
+
+# This is a list of valid fully-qualified domain names (FQDNs) for the NetBox server. NetBox will not permit write
+# access to the server via any other hostnames. The first FQDN in the list will be treated as the preferred name.
+#
+# Example: ALLOWED_HOSTS = ['netbox.example.com', 'netbox.internal.local']
+ALLOWED_HOSTS = [ '{{ ( [ netbox__config_allowed_hosts ] if netbox__config_allowed_hosts is string else netbox__config_allowed_hosts) | join("', '") }}' ]
+
+# PostgreSQL database configuration.
+DATABASE = {
+    'NAME': '{{ netbox__database_name }}',         # Database name
+    'USER': '{{ netbox__database_user }}',               # PostgreSQL username
+    'PASSWORD': '{{ netbox__database_password }}',           # PostgreSQL password
+    'HOST': '{{ netbox__database_host }}',      # Database server
+    'PORT': '{{ netbox__database_port }}',               # Database port (leave blank for default)
+}
+
+# This key is used for secure generation of random numbers and strings. It must never be exposed outside of this file.
+# For optimal security, SECRET_KEY should be at least 50 characters in length and contain a mix of letters, numbers, and
+# symbols. NetBox will not run without this defined. For more information, see
+# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
+SECRET_KEY = '{{ netbox__config_secret_key }}'
+
+
+#########################
+#                       #
+#   Optional settings   #
+#                       #
+#########################
+
+# Specify one or more name and email address tuples representing NetBox administrators. These people will be notified of
+# application errors (assuming correct email settings are provided).
+ADMINS = [
+    # ['John Doe', 'jdoe@example.com'],
+{% if netbox__config_admins %}
+{%   for element in netbox__config_admins %}
+    [ '{{ element[0] }}', '{{ element[1] }}' ],
+{%   endfor %}
+{% endif %}
+]
+
+# Email settings
+EMAIL = {
+    'SERVER': '{{ netbox__config_email_server }}',
+    'PORT': {{ netbox__config_email_port }},
+    'USERNAME': '{{ netbox__config_email_username }}',
+    'PASSWORD': '{{ netbox__config_email_password }}',
+    'TIMEOUT': {{ netbox__config_email_timeout }},  # seconds
+    'FROM_EMAIL': '{{ netbox__config_email_from }}',
+}
+
+# Setting this to True will permit only authenticated users to access any part of NetBox. By default, anonymous users
+# are permitted to access most data in NetBox (excluding secrets) but not make any changes.
+LOGIN_REQUIRED = {{ netbox__config_login_required | bool }}
+
+# Base URL path if accessing NetBox within a directory. For example, if installed at http://example.com/netbox/, set:
+# BASE_PATH = 'netbox/'
+BASE_PATH = '{{ netbox__config_base_path }}'
+
+# Setting this to True will display a "maintenance mode" banner at the top of every page.
+MAINTENANCE_MODE = {{ netbox__config_maintenance_mode | bool }}
+
+# Credentials that NetBox will use to access live devices.
+NETBOX_USERNAME = '{{ netbox__config_netbox_username }}'
+NETBOX_PASSWORD = '{{ netbox__config_netbox_password }}'
+
+# Determine how many objects to display per page within a list. (Default: 50)
+PAGINATE_COUNT = {{ netbox__config_paginate_count }}
+
+# Time zone (default: UTC)
+TIME_ZONE = '{{ netbox__config_time_zone }}'
+
+# Date/time formatting. See the following link for supported formats:
+# https://docs.djangoproject.com/en/dev/ref/templates/builtins/#date
+DATE_FORMAT = '{{ netbox__config_date_format }}'
+SHORT_DATE_FORMAT = '{{ netbox__config_short_date_format }}'
+TIME_FORMAT = '{{ netbox__config_time_format }}'
+SHORT_TIME_FORMAT = '{{ netbox__config_short_time_format }}'
+DATETIME_FORMAT = '{{ netbox__config_datetime_format }}'
+SHORT_DATETIME_FORMAT = '{{ netbox__config_short_datetime_format }}'
+
+# Optionally display a persistent banner at the top and/or bottom of every page. To display the same content in both
+# banners, define BANNER_TOP and set BANNER_BOTTOM = BANNER_TOP.
+BANNER_TOP = '{{ netbox__config_banner_top }}'
+BANNER_BOTTOM = '{{ netbox__config_banner_bottom }}'
+
+# When determining the primary IP address for a device, IPv6 is preferred over IPv4 by default. Set this to True to
+# prefer IPv4 instead.
+PREFER_IPV4 = {{ netbox__config_prefer_ipv4 | bool }}
+
+# Enforcement of unique IP space can be toggled on a per-VRF basis. To enforce unique IP space within the global table
+# (all prefixes and IP addresses not assigned to a VRF), set ENFORCE_GLOBAL_UNIQUE to True.
+ENFORCE_GLOBAL_UNIQUE = {{ netbox__config_enforce_global_unique | bool }}

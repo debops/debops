@@ -1,0 +1,583 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.netbox default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Domain name configuration [[[
+# -----------------------------
+
+# .. envvar:: netbox__fqdn [[[
+#
+# String or list of the Fully Qualified domain names on which the NetBox
+# application will be available, used by the webserver. The first item will be
+# used as the e-mail sender domain name.
+netbox__fqdn: [ 'dcim.{{ netbox__domain }}', 'ipam.{{ netbox__domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: netbox__domain [[[
+#
+# The DNS domain used by other variables in the ``debops.netbox`` role.
+netbox__domain: '{{ ansible_local.core.domain
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.domain|d())
+                    else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: netbox__base_packages [[[
+#
+# List of APT packages which are requied by the NetBox application.
+netbox__base_packages:
+  - 'git'
+  - 'build-essential'
+  - 'python-dev'
+  - 'python-pip'
+  - 'libxml2-dev'
+  - 'libxslt1-dev'
+  - 'libffi-dev'
+  - 'graphviz'
+  - 'libpq-dev'
+  - 'libssl-dev'
+  - '{{ "python-virtualenv"
+        if (ansible_distribution_release in [ "wheezy", "precise" ])
+        else "virtualenv" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__packages [[[
+#
+# List of additional APT packages to install with NetBox.
+netbox__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Application user, group, home [[[
+# ---------------------------------
+
+# .. envvar:: netbox__user [[[
+#
+# Name of the UNIX system account used to manage NetBox.
+netbox__user: 'netbox'
+
+                                                                   # ]]]
+# .. envvar:: netbox__group [[[
+#
+# Name of the UNIX primary group used to manage NetBox.
+netbox__group: 'netbox'
+
+                                                                   # ]]]
+# .. envvar:: netbox__gecos [[[
+#
+# Contents of the GECOS field set for the NetBox account.
+netbox__gecos: 'NetBox'
+
+                                                                   # ]]]
+# .. envvar:: netbox__shell [[[
+#
+# The default shell set on the NetBox account.
+netbox__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: netbox__home [[[
+#
+# The NetBox account home directory.
+netbox__home: '{{ (ansible_local.root.home
+                   if (ansible_local|d() and ansible_local.root|d() and
+                       ansible_local.root.home|d())
+                   else "/var/local") + "/" + netbox__user }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__src [[[
+#
+# Directory where the role stores NetBox sources from GitHub.
+netbox__src: '{{ (ansible_local.root.src
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.src|d())
+                  else "/usr/local/src") + "/" + netbox__user }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__lib [[[
+#
+# Directory where the NetBox application directory is located.
+netbox__lib: '{{ (ansible_local.root.lib
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.lib|d())
+                  else "/usr/local/lib") + "/" + netbox__user }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Application sources and deployment [[[
+# --------------------------------------
+
+# .. envvar:: netbox__git_repo [[[
+#
+# The URI of the NetBox :command:`git` source repository.
+netbox__git_repo: 'https://github.com/digitalocean/netbox.git'
+
+                                                                   # ]]]
+# .. envvar:: netbox__git_version [[[
+#
+# The :command:`git` branch or tag which will be installed.
+netbox__git_version: 'master'
+
+                                                                   # ]]]
+# .. envvar:: netbox__git_dest [[[
+#
+# Path where the :command:`git` source bare repository will be stored.
+netbox__git_dest: '{{ netbox__src + "/" + netbox__git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__git_checkout [[[
+#
+# Path where NetBox sources will be checked out (installation path).
+netbox__git_checkout: '{{ netbox__virtualenv + "/app" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Python virtualenv configuration [[[
+# -----------------------------------
+
+# .. envvar:: netbox__virtualenv [[[
+#
+# Path where the NetBox ``virtualenv`` directory will be stored.
+netbox__virtualenv: '{{ netbox__lib + "/virtualenv" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__virtualenv_env_path [[[
+#
+# The contents of the ``$PATH`` environment variable set for the Ansible tasks
+# which are executed inside of the NetBox Python environment.
+netbox__virtualenv_env_path: '{{ netbox__virtualenv }}/bin:/usr/local/bin:/usr/bin:/bin'
+
+                                                                   # ]]]
+# .. envvar:: netbox__virtualenv_pip_packages [[[
+#
+# List of additional Python modules installed inside of the NetBox
+# ``virtualenv`` environment. See :ref:`netbox__ref_virtualenv_pip_packages`
+# for more details.
+netbox__virtualenv_pip_packages:
+  - name: 'gunicorn'
+    version: '{{ ansible_local.gunicorn.version
+                 if (ansible_local|d() and ansible_local.gunicorn|d() and
+                     ansible_local.gunicorn.version|d())
+                 else omit }}'
+  - 'setproctitle'
+                                                                   # ]]]
+                                                                   # ]]]
+# PostgreSQL database configuration [[[
+# -------------------------------------
+
+# The NetBox database configuration is managed by the debops.postgresql_
+# Ansible role. See its documentation for details about the default variable
+# values used in the NetBox role.
+
+# .. envvar:: netbox__database_host [[[
+#
+# The hostname or IP address of the PostgreSQL database server to use for the
+# NetBox database.
+netbox__database_host: '{{ ansible_local.postgresql.server
+                           if (ansible_local|d() and ansible_local.postgresql|d() and
+                               ansible_local.postgresql.server|d())
+                           else "localhost" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__database_port [[[
+#
+# The TCP port of the PostgreSQL database server which should be used by Netbox.
+netbox__database_port: '{{ ansible_local.postgresql.port
+                           if (ansible_local|d() and ansible_local.postgresql|d() and
+                               ansible_local.postgresql.port|d())
+                           else "5432" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__database_name [[[
+#
+# Name of the PostgreSQL database and its corresponding role used by NetBox.
+# This role won't be able to login to the database server directly.
+netbox__database_name: 'netbox_production'
+
+                                                                   # ]]]
+# .. envvar:: netbox__database_user [[[
+#
+# Name of the PostgreSQL role used by NetBox. This role will be able to login
+# to the PostgreSQL server and access the NetBox database.
+netbox__database_user: '{{ netbox__user }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__database_password [[[
+#
+# Autogenerated password to the NetBox PostgreSQL user role.
+netbox__database_password: '{{ lookup("password", secret + "/postgresql/" +
+                               (ansible_local.postgresql.delegate_to
+                                if (ansible_local|d() and ansible_local.postgresql|d() and
+                                    ansible_local.postgresql.delegate_to|d())
+                                else "localhost") + "/" +
+                               (ansible_local.postgresql.port
+                                if (ansible_local|d() and ansible_local.postgresql|d() and
+                                    ansible_local.postgresql.port|d())
+                                else "5432") + "/credentials/" +
+                               netbox__database_user + "/password") }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__load_initial_data [[[
+#
+# If ``True``, the role will populate the NetBox database with the initial data
+# provided with the application on installation.
+netbox__load_initial_data: True
+                                                                   # ]]]
+                                                                   # ]]]
+# NetBox configuration options [[[
+# --------------------------------
+
+# .. envvar:: netbox__config_allowed_hosts [[[
+#
+# List of domain names under which the NetBox application will accept
+# connections. Specify ``*`` to accept connections to any domain name.
+netbox__config_allowed_hosts: '{{ netbox__fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_secret_key [[[
+#
+# The Django secret key used by the NetBox application. It will be shared by
+# all hosts on the same domain.
+netbox__config_secret_key: '{{ lookup("password", secret + "/netbox/" +
+                               netbox__domain + "/config/secret_key length=64") }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_admins [[[
+#
+# A YAML list of tuples, ``[ 'Name', 'email' ]``, of the NetBox administrators.
+# They will receive e-mail messages about NetBox application errors.
+#
+# By default the role uses the list of private admin e-mails from the
+# debops.core_ Ansible role.
+netbox__config_admins: '{{ lookup("template", "lookup/netbox__config_admins.j2") | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_email_server [[[
+#
+# The address of the SMTP server used by NetBox. By default the application
+# uses locally-installed SMTP server.
+netbox__config_email_server: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_email_port [[[
+#
+# The TCP port of the SMTP server used by NetBox.
+netbox__config_email_port: '25'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_email_username [[[
+#
+# The username used to login to the SMTP server.
+netbox__config_email_username: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_email_password [[[
+#
+# The password used to login to the SMTP server.
+netbox__config_email_password: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_email_timeout [[[
+#
+# The SMTP server connection timeout, in seconds.
+netbox__config_email_timeout: '10'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_email_from [[[
+#
+# The e-mail address for the NetBox application, it will be used in the
+# ``From:`` header of the NetBox e-mail messages.
+netbox__config_email_from: '{{ netbox__user }}@{{ netbox__fqdn
+                                                  if netbox__fdqn is string
+                                                  else netbox__fqdn[0] }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_login_required [[[
+#
+# If ``True``, access to NetBox is only allowed for logged-in users. If
+# ``False``, some information stored in the NetBox database is accessible in
+# the read-only mode for anonymous users.
+netbox__config_login_required: True
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_base_path [[[
+#
+# Set the "base path" of the NetBox application if it's installed in
+# a subdirectory of the webserver.
+netbox__config_base_path: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_maintenance_mode [[[
+#
+# Enable or disable maintenance mode banner.
+netbox__config_maintenance_mode: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_netbox_username [[[
+#
+# Specify the username which should be used by NetBox to access live devices.
+netbox__config_netbox_username: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_netbox_password [[[
+#
+# Specify the password which should be used by NetBox to access live devices.
+netbox__config_netbox_password: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_paginate_count [[[
+#
+# Specify maximum number of list items per page.
+netbox__config_paginate_count: '64'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_time_zone [[[
+#
+# Specify the timezone used by NetBox.
+netbox__config_time_zone: '{{ ansible_local.timezone
+                              if (ansible_local|d() and
+                                  ansible_local.timezone|d())
+                              else "Etc/UTC" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_date_format [[[
+#
+# Specify the date format which NetBox uses to display information.
+# See https://docs.djangoproject.com/en/dev/ref/templates/builtins/#date for
+# more details.
+netbox__config_date_format: 'N j, Y'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_short_date_format [[[
+#
+# Specify the short date format used by NetBox to display information.
+netbox__config_short_date_format: 'Y-m-d'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_time_format [[[
+#
+# Specify the time format used by NetBox to display information.
+netbox__config_time_format: 'g:i a'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_short_time_format [[[
+#
+# Specify the short time format used by NetBox to display information.
+netbox__config_short_time_format: 'H:i:s'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_datetime_format [[[
+#
+# Specify the date and time format used by NetBox to display information.
+netbox__config_datetime_format: 'N j, Y g:i a'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_short_datetime_format [[[
+#
+# Specify the short date and time format used by NetBox to display information.
+netbox__config_short_datetime_format: 'Y-m-d H:i'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_banner_top [[[
+#
+# Specify a custom message displayed on the top of every page.
+netbox__config_banner_top: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_banner_bottom [[[
+#
+# Specify a custom message displayed on the bottom of every page.
+netbox__config_banner_bottom: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_prefer_ipv4 [[[
+#
+# By default NetBox prefers to use IPv6 addresses as primary device addresses.
+# Set this variable to ``True`` to change that to IPv4 instead.
+netbox__config_prefer_ipv4: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_enforce_global_unique [[[
+#
+# If enabled, NetBox will enforce unique IP space in the "global" table (all
+# prefixes and IP addresses not included in a VRF).
+netbox__config_enforce_global_unique: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Initial superuser account [[[
+# -----------------------------
+
+# .. envvar:: netbox__superuser_name [[[
+#
+# Name of the initial admin account created by the role.
+netbox__superuser_name: '{{ ansible_local.core.admin_users[0]
+                            if (ansible_local|d() and ansible_local.core|d() and
+                                ansible_local.core.admin_users|d())
+                            else "admin" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__superuser_email [[[
+#
+# E-mail address of the initial admin account created by the role.
+netbox__superuser_email: '{{ ansible_local.core.admin_private_email[0]
+                             if (ansible_local|d() and ansible_local.core|d() and
+                                 ansible_local.core.admin_private_email|d())
+                             else ("root@" + netbox__domain) }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__superuser_password [[[
+#
+# Password set for the initial admin account created by the role.
+netbox__superuser_password: '{{ lookup("password", secret + "/netbox/" +
+                                netbox__domain + "/superuser/" +
+                                netbox__superuser_name + "/password") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Internal application settings [[[
+# ---------------------------------
+
+# .. envvar:: netbox__app_internal_appserver [[[
+#
+# Enable or disable support for internal ``gunicorn`` application server.
+netbox__app_internal_appserver: '{{ False
+                                    if (ansible_local|d() and ansible_local.gunicorn|d() and
+                                        ansible_local.gunicorn.installed|bool)
+                                    else (True if ansible_service_mgr == "systemd" else False) }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__app_name [[[
+#
+# Name of the NetBox application processes (workers) set by the master process.
+netbox__app_name: '{{ netbox__user }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__app_runtime_dir [[[
+#
+# Name of the subdirectory in the :file:`/run/` directory where the NetBox
+# application will bind its UNIX socket. The default is selected so that
+# configuration of the ``gunicorn`` service is idempotent.
+netbox__app_runtime_dir: 'gunicorn'
+
+                                                                   # ]]]
+# .. envvar:: netbox__app_bind [[[
+#
+# Specify either an UNIX or TCP socket on which the NetBox application should
+# bind and listen for connections.
+netbox__app_bind: 'unix:/run/{{ netbox__app_runtime_dir }}/netbox.sock'
+
+                                                                   # ]]]
+# .. envvar:: netbox__app_workers [[[
+#
+# Number of worker threads to start for NetBox application.
+netbox__app_workers: '{{ ansible_processor_vcpus|int + 1 }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__app_timeout [[[
+#
+# Number of seconds after which non-responsive worker threads will be killed
+# and restarted.
+netbox__app_timeout: '10'
+
+                                                                   # ]]]
+# .. envvar:: netbox__app_params [[[
+#
+# List of parameters passed to the ``gunicorn`` process manager.
+netbox__app_params:
+  - '--name={{ netbox__app_name }}'
+  - '--bind={{ netbox__app_bind }}'
+  - '--workers={{ netbox__app_workers }}'
+  - '--timeout={{ netbox__app_timeout }}'
+  - 'netbox.wsgi'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration variables for other Ansible roles [[[
+# ---------------------------------------------------
+
+# .. envvar:: netbox__gunicorn__dependent_applications [[[
+#
+# Configuration for the ``debops.gunicorn`` Ansible role.
+netbox__gunicorn__dependent_applications:
+  - name: 'netbox'
+    mode: 'wsgi'
+    working_dir: '{{ netbox__git_checkout + "/netbox" }}'
+    python: '{{ netbox__virtualenv + "/bin/python" }}'
+    user: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    args: '{{ netbox__app_params }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__postgresql__dependent_roles [[[
+#
+# Role configuration for the debops.postgresql_ Ansible role.
+netbox__postgresql__dependent_roles:
+  - name: '{{ netbox__database_user }}'
+  - name: '{{ netbox__database_name }}'
+    flags: [ 'NOLOGIN' ]
+
+                                                                   # ]]]
+# .. envvar:: netbox__postgresql__dependent_groups [[[
+#
+# Group configuration for the debops.postgresql_ Ansible role.
+netbox__postgresql__dependent_groups:
+  - roles: [ '{{ netbox__database_user }}' ]
+    groups: [ '{{ netbox__database_name }}' ]
+    database: '{{ netbox__database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__postgresql__dependent_databases [[[
+#
+# Database configuration for the debops.postgresql_ Ansible role.
+netbox__postgresql__dependent_databases:
+  - name: '{{ netbox__database_name }}'
+    owner: '{{ netbox__database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__postgresql__dependent_pgpass [[[
+#
+# ``~/.pgpass`` configuration for the debops.postgresql_ Ansible role.
+netbox__postgresql__dependent_pgpass:
+  - owner: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    home: '{{ netbox__home }}'
+    system: True
+
+                                                                   # ]]]
+# .. envvar:: netbox__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the debops.nginx_ Ansible role.
+netbox__nginx__dependent_upstreams:
+  - name: 'netbox'
+    server: '{{ netbox__app_bind }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__nginx__dependent_servers [[[
+#
+# Server configuration for the debops.nginx_ Ansible role.
+netbox__nginx__dependent_servers:
+  - name: '{{ netbox__fqdn }}'
+    by_role: 'debops.netbox'
+    filename: 'debops.netbox'
+    location:
+      '/static/': |
+        alias {{ netbox__git_checkout }}/netbox/static/;
+
+      '/': |
+        proxy_pass http://netbox;
+        proxy_set_header X-Forwarded-Host $server_name;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        add_header P3P 'CP="ALL DSP COR PSAa PSDa OUR NOR ONL UNI COM NAV"';
+# ]]]
+# ]]]
+# ]]]
