@@ -1,0 +1,25 @@
+---
+
+- name: Configure /etc/environment
+  blockinfile:
+    dest: '{{ environment__file }}'
+    state: '{{ "present" if environment__enabled|bool else "absent" }}'
+    block: '{{ lookup("template", "lookup/environment__variables.j2") }}'
+    insertbefore: '{{ "BOF" if environment__placement == "before" else omit }}'
+    insertafter: '{{ "EOF" if environment__placement == "after" else omit }}'
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Update Ansible local facts
+  template:
+    src: 'etc/ansible/facts.d/environment.fact.j2'
+    dest: '/etc/ansible/facts.d/environment.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'

@@ -1,0 +1,69 @@
+{% macro print_environment(element) %}
+{%   if element is mapping %}
+{%     if 'name' in element.keys() and 'value' in element.keys() %}
+{%       if element.state|d('present') != 'absent' %}
+{%         if ((element.case is undefined and environment__case == 'upper') or (element.case|d() and element.case == 'upper')) %}
+{{ element.name | upper }}: '{{ element.value }}'
+{%         elif ((element.case is undefined and environment__case == 'lower') or (element.case|d() and element.case == 'lower')) %}
+{{ element.name | lower }}: '{{ element.value }}'
+{%         else %}
+{{ element.name }}: '{{ element.value }}'
+{%         endif %}
+{%       endif %}
+{%     else %}
+{%       for key, value in element.iteritems() %}
+{%         if environment__case == 'upper' %}
+{{ key | upper }}: '{{ value }}'
+{%         elif environment__case == 'lower' %}
+{{ key | lower }}: '{{ value }}'
+{%         else %}
+{{ key }}: '{{ value }}'
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   elif element is string %}
+{%     set environment__tpl_key = element.split('=')[0] %}
+{%     set environment__tpl_value = element.split('=')[1:] | join('=') %}
+{%     if environment__case == 'upper' %}
+{{ environment__tpl_key | upper }}: '{{ environment__tpl_value }}'
+{%     elif environment__case == 'lower' %}
+{{ environment__tpl_key | lower }}: '{{ environment__tpl_value }}'
+{%     else %}
+{{ environment__tpl_key }}: '{{ environment__tpl_value }}'
+{%     endif %}
+{%   else %}
+{%     for widget in element %}
+{{ print_environment(widget) }}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% set environment__tpl_default_variables = print_environment(environment__default_variables) | from_yaml %}
+{% set environment__tpl_variables = print_environment(environment__variables) | from_yaml %}
+{% set environment__tpl_group_variables = print_environment(environment__group_variables) | from_yaml %}
+{% set environment__tpl_host_variables = print_environment(environment__host_variables) | from_yaml %}
+{% set environment__tpl_fact_variables = (print_environment(ansible_local.environment.variables) | from_yaml) if (ansible_local|d() and ansible_local.environment|d() and ansible_local.environment.variables|d()) else {} %}
+{% set environment__tpl_dependent_variables = print_environment(environment__dependent_variables) | from_yaml %}
+{% set environment__tpl_entries = {} %}
+{% if environment__tpl_default_variables %}
+{%   set environment__tpl_entries = environment__tpl_entries | combine(environment__tpl_default_variables) %}
+{% endif %}
+{% if environment__tpl_variables %}
+{%   set environment__tpl_entries = environment__tpl_entries | combine(environment__tpl_variables) %}
+{% endif %}
+{% if environment__tpl_group_variables %}
+{%   set environment__tpl_entries = environment__tpl_entries | combine(environment__tpl_group_variables) %}
+{% endif %}
+{% if environment__tpl_host_variables %}
+{%   set environment__tpl_entries = environment__tpl_entries | combine(environment__tpl_host_variables) %}
+{% endif %}
+{% if environment__tpl_fact_variables %}
+{%   set environment__tpl_entries = environment__tpl_entries | combine(environment__tpl_fact_variables) %}
+{% endif %}
+{% if environment__tpl_dependent_variables %}
+{%   set environment__tpl_entries = environment__tpl_entries | combine(environment__tpl_dependent_variables) %}
+{% endif %}
+
+{% for key in environment__tpl_entries.keys() | sort %}
+{{ key }}={{ environment__tpl_entries[key] }}
+{% endfor %}
+
