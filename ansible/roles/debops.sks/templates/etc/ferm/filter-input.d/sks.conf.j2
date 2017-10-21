@@ -1,0 +1,50 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% if sks_hkp_allow is defined %}
+# Access to hkp service from outside
+protocol tcp dport (hkp) {
+{% if sks_hkp_allow %}
+	@def $ITEMS = ( @ipfilter( ({{ sks_hkp_allow | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
+{% else %}
+        ACCEPT;
+{% endif %}
+}
+{% endif %}
+
+{% if sks_cluster is defined and (sks_cluster | count > 1) %}
+# SKS reconcilliation service between cluster hosts
+protocol tcp dport ({{ sks_recon_name }}) {
+{% for host in sks_cluster %}
+{% if host != inventory_hostname %}
+{% if host in play_hosts and hostvars[host].ansible_all_ipv4_addresses is defined %}
+        @if @eq($DOMAIN, ip) saddr ({{ hostvars[host].ansible_all_ipv4_addresses | join(' ') }}) ACCEPT;
+{% endif %}
+{% if host in play_hosts and hostvars[host].ansible_all_ipv6_addresses is defined %}
+{% for host in hostvars[host].ansible_all_ipv6_addresses %}
+{% if not host.startswith('fe80:') %}
+        @if @eq($DOMAIN, ip6) saddr {{ host }} ACCEPT;
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% endfor %}
+}
+{% endif %}
+
+{% if sks_public_list is defined and sks_public_list %}
+# Access to SKS reconcilliation service from the outside of local cluster
+{% for host in sks_public_list %}
+protocol tcp dport ({{ sks_recon_name }}) {
+{% if host.name is defined and host.name %}
+	@def $ITEMS = ( @ipfilter( ({{ host.name | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
+{% endif %}
+}
+{% endfor %}
+{% endif %}
+

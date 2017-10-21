@@ -1,0 +1,41 @@
+---
+
+# Automatically create keyserver database? Database will be empty
+# If you want to seed the database with public GPG keys or connect to public
+# SKS Keyserver network, you should set this variable to "False" and seed the
+# database manually. See: http://keysigning.org/sks/
+sks_autoinit: False
+
+# GPG fingerprint of server administrator
+sks_contact: ''
+
+# From header for outgoing mail
+sks_from: 'PGP Key Server <pgp-public-keys@{{ ansible_fqdn }}>'
+
+# DNS domain on which SKS frontend webserver should be configured
+sks_domain: [ 'keyserver.{{ ansible_domain }}' ]
+
+# Ansible group of hosts which are included in SKS cluster
+sks_cluster: '{{ groups.debops_sks }}'
+
+# List of inventory hosts which provide frontend web service
+sks_frontends: [ '{{ sks_cluster[0] }}' ]
+
+# List of hosts which can connect to hkp service. If this list is empty,
+# anybody can connect.
+sks_hkp_allow: []
+
+# List of public SKS keyservers you want to peer with. It's a list of simple
+# lines, which allows you to include custom ports and comments (see sks(8)
+# documentation). It's good etiquette to ask someone for permission before you
+# add their server to this list (and their server needs to have yours for the
+# communication to work).
+# You should probably connect only one of your private keyservers to the public
+# keyserver network, your other servers will propagate the changes between
+# themselves.
+sks_public_list: []
+#  - name: 'keyserver.example.org'
+#    port: '{{ sks_recon_port }}'
+#    email: 'Server Administrator <root@example.org'
+#    gpg: '0xDEADBEEF'
+

@@ -1,0 +1,17 @@
+---
+
+- name: Check if index.html page exists
+  stat:
+    path: '/srv/www/sites/{{ sks_domain[0] }}/public/index.html'
+  register: sks_register_index_html
+
+- name: Configure SKS Keyserver webpage if not present
+  copy:
+    src: 'srv/www/sites/default/public/{{ item }}'
+    dest: '/srv/www/sites/{{ sks_domain[0] }}/public/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'index.html', 'robots.txt' ]
+  when: sks_register_index_html is defined and not sks_register_index_html.stat.exists
+

@@ -1,0 +1,60 @@
+# This file is managed by Ansible, all changes will be lost
+
+# /etc/sks/sksconf
+#
+# The configuration file for your SKS server.
+# You can find more options in sks(8) manpage.
+
+# Set server hostname
+hostname: {{ ansible_fqdn }}
+
+# Set recon binding address
+#recon_address: 0.0.0.0
+
+# Set recon port number
+#recon_port: {{ sks_recon_port | default('11370') }}
+
+# Set hkp binding address
+{% if inventory_hostname in sks_frontends %}
+hkp_address: 127.0.0.1
+{% else %}
+hkp_address: 0.0.0.0
+{% endif %}
+
+# Set hkp port number
+{% if inventory_hostname in sks_frontends %}
+hkp_port: {{ sks_hkp_frontend_port }}
+{% else %}
+hkp_port: 11371
+{% endif %}
+
+# Have the HKP interface listen on port 80, as well as the hkp_port
+#use_port_80:
+
+# From address used in synchronization emails used to communicate with PKS
+from_addr: "{{ sks_from }}"
+
+# Command used for sending mail (you can use -f option to specify the
+# envelope sender address, if your MTA trusts the sks user)
+#sendmail_cmd: /usr/lib/sendmail -t -oi
+
+# Disable mail-based synchronization
+disable_mailsync:
+
+# Runs database statistics calculation on boot (time and cpu expensive)
+initial_stat:
+
+# bdb's db_tune program suggests a pagesize of 65536 for [K]DB/key. In practice
+# this caused page deadlocks. I found 8K (16) and 16K (32) to be better values
+pagesize:          16
+#
+# The tuner recommended 4096 (8) for the pagesize for PTree/ptree. I have had
+# very good results with 8196
+ptree_pagesize:    16
+
+{% if sks_contact is defined and sks_contact %}
+# Contact to server administrator
+server_contact: {{ sks_contact }}
+{% endif %}
+
+
