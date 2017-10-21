@@ -1,0 +1,27 @@
+#
+# {{ ansible_managed }}
+#
+#####################################################
+#
+# GitLab version    : 9.x+
+# Contributors      : Markus Wigge (cultcom)
+#
+####################################################
+
+[Unit]
+Description=GitLab Gitaly Server
+After=redis-server.service
+PartOf=gitlab.slice
+
+[Service]
+Slice=gitlab.slice
+Type=simple
+User={{ gitlab_user }}
+WorkingDirectory={{ gitlab_app_root_path }}/gitlab
+SyslogIdentifier=gitlab-gitaly
+PIDFile={{ gitlab_app_root_path }}/gitlab/tmp/pids/gitaly.pid
+
+ExecStart={{ gitlab_app_root_path }}/gitaly/gitaly {{ gitlab_app_root_path }}/gitaly/config.toml
+
+[Install]
+WantedBy=multi-user.target

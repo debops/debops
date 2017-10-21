@@ -1,0 +1,122 @@
+---
+
+# gitlab-shell is checked out based on tags instead of branches, and since we
+# cannot work with tags from a bare repository, we need to work around it
+# a little.
+
+- name: Check if bare repository is cloned
+  stat:
+    path: '{{ gitlab_shell_git_dest }}'
+  register: gitlab_register_shell_cloned
+
+- name: Save current checkout hash for update
+  command: git rev-parse HEAD
+  args:
+    chdir: '{{ gitlab_shell_git_dest }}'
+    warn: False
+  register: gitlab_register_shell_current_head
+  changed_when: False
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_shell_cloned.stat.exists
+
+- name: Change current HEAD to master in bare repository for update
+  command: git symbolic-ref HEAD refs/heads/master
+  args:
+    chdir: '{{ gitlab_shell_git_dest }}'
+    warn: False
+  changed_when: False
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_shell_cloned.stat.exists
+
+- name: Create GitLab source directory
+  file:
+    path: '{{ gitlab_src_path }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+
+- name: Clone gitlab-shell source code
+  git:
+    repo: '{{ gitlab_shell_git_repo }}'
+    dest: '{{ gitlab_shell_git_dest }}'
+    bare: True
+    update: True
+  become: True
+  become_user: '{{ gitlab_user }}'
+
+- name: Restore HEAD to previous checkout
+  copy:
+    content: '{{ gitlab_register_shell_current_head.stdout }}'
+    dest: '{{ gitlab_shell_git_dest + "/HEAD" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+  changed_when: False
+  when: gitlab_register_shell_cloned.stat.exists
+
+- name: Create gitlab-shell checkout directory
+  file:
+    path: '{{ gitlab_shell_git_checkout }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0755'
+
+- name: Prepare gitlab-shell worktree
+  copy:
+    content: 'gitdir: {{ gitlab_shell_git_dest }}'
+    dest: '{{ gitlab_shell_git_checkout + "/.git" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+
+- name: Get currently checked out git tag
+  command: git describe --tags
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
+  args:
+    chdir: '{{ gitlab_shell_git_dest }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_shell_target_tag
+  changed_when: gitlab_register_shell_target_tag.stdout != gitlab_version_map[gitlab_version].shell
+
+- name: Checkout gitlab-shell
+  command: git checkout --force {{ gitlab_version_map[gitlab_version].shell }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
+  args:
+    chdir: '{{ gitlab_shell_git_dest }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_shell_checkout
+  when: ((gitlab_version_map[gitlab_version].shell != gitlab_register_shell_target_tag.stdout) or
+         not gitlab_register_shell_cloned.stat.exists | bool)
+
+- name: Configure gitlab-shell
+  template:
+    src: 'var/local/git/gitlab-shell/config.yml.j2'
+    dest: '{{ gitlab_shell_git_checkout + "/config.yml" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0640'
+
+- name: Create GitLab data root directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+  with_items: [ '{{ gitlab_repositories_path }}', '{{ gitlab_satellites_path }}' ]
+
+- name: Setup gitlab-shell
+  shell: ./bin/install ; test ! -x './bin/compile' || ./bin/compile
+  args:
+    chdir: '{{ gitlab_shell_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_shell_checkout|changed

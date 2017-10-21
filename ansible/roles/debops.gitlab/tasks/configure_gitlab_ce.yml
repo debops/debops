@@ -1,0 +1,394 @@
+---
+
+- name: Add Yarn repository APT key
+  apt_key:
+    id: '{{ gitlab__yarn_apt_key_id }}'
+    state: 'present'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+
+- name: Add Yarn repository
+  apt_repository:
+    repo: '{{ gitlab__yarn_apt_repo }}'
+    state: 'present'
+    update_cache: True
+  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
+
+- name: Install Yarn
+  apt:
+    name: 'yarn'
+    install_recommends: False
+  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
+
+# ---- git clone && git checkout ----
+
+- name: Create GitLab source directory
+  file:
+    path: '{{ gitlab_src_path }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+
+- name: Clone GitLab CE source code
+  git:
+    repo: '{{ gitlab_ce_git_repo }}'
+    dest: '{{ gitlab_ce_git_dest }}'
+    bare: True
+    update: True
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_ce_source
+
+- name: Check if GitLab CE is checked out
+  stat:
+    path: '{{ gitlab_ce_git_checkout }}'
+  register: gitlab_register_ce_directory
+
+- name: Create GitLab CE checkout directory
+  file:
+    path: '{{ gitlab_ce_git_checkout }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0755'
+
+- name: Prepare GitLab CE worktree
+  copy:
+    content: 'gitdir: {{ gitlab_ce_git_dest }}'
+    dest: '{{ gitlab_ce_git_checkout + "/.git" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+
+- name: Get commit hash of target checkout
+  command: git rev-parse {{ gitlab_version_map[gitlab_version].ce }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
+  args:
+    chdir: '{{ gitlab_ce_git_dest }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_ce_target_branch
+  changed_when: gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before
+
+- include: gitlab_ce_pre_upgrade.yml
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         ((gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before) or
+         (ansible_local.gitlab.version is defined and ansible_local.gitlab.version != gitlab_version)))
+
+- name: Checkout GitLab CE
+  command: git checkout -f {{ gitlab_version_map[gitlab_version].ce }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
+  args:
+    chdir: '{{ gitlab_ce_git_dest }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_ce_checkout
+  when: (gitlab_register_ce_source.before is undefined or
+         (gitlab_register_ce_source.before is defined and
+          gitlab_register_ce_target_branch.stdout is defined and
+          gitlab_register_ce_source.before != gitlab_register_ce_target_branch.stdout))
+
+- name: Manage other GitLab CE directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0755'
+  with_items: [ '{{ gitlab_ce_git_checkout + "/tmp" }}',
+                '{{ gitlab_ce_git_checkout + "/log" }}',
+                '{{ gitlab_ce_git_checkout + "/tmp/pids" }}',
+                '{{ gitlab_ce_git_checkout + "/tmp/sockets" }}',
+                '{{ gitlab_ce_git_checkout + "/public/uploads" }}' ]
+
+- name: Manage secure GitLab directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+  with_items: [ '{{ gitlab_backup_path }}',
+                '{{ gitlab_repositories_path }}',
+                '{{ gitlab_satellites_path }}',
+                '{{ gitlab_shared_path }}',
+                '{{ gitlab_lfs_path }}',
+                '{{ gitlab_artifacts_path }}',
+                '{{ gitlab_pages_path }}' ]
+
+
+# ---- Database configuration ----
+
+- name: Configure GitLab CE database
+  template:
+    src: 'var/local/git/gitlab/config/database.{{ gitlab__database }}.yml.j2'
+    dest: '{{ gitlab_ce_git_checkout + "/config/database.yml" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0600'
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
+
+
+# ---- Application configuration ----
+
+- name: Setup GitLab CE main configuration
+  template:
+    src: 'var/local/git/gitlab/config/gitlab.yml.j2'
+    dest: '{{ gitlab_ce_git_checkout + "/config/gitlab.yml" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0600'
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
+
+- name: Configure custom redis server
+  lineinfile:
+    dest: '{{ gitlab_ce_git_checkout + "/config/resque.yml" }}'
+    regexp: '^production:'
+    line: 'production: {{ gitlab_redis_resque }}'
+    state: 'present'
+    create: True
+    backup: False
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0640'
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
+  no_log: True
+
+- name: Setup GitLab CE unicorn configuration
+  template:
+    src: 'var/local/git/gitlab/config/unicorn.rb.j2'
+    dest: '{{ gitlab_ce_git_checkout + "/config/unicorn.rb" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
+
+- name: Setup GitLab CE rack_attack configuration
+  template:
+    src: 'var/local/git/gitlab/config/initializers/rack_attack.rb.j2'
+    dest: '{{ gitlab_ce_git_checkout + "/config/initializers/rack_attack.rb" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
+
+- name: Setup GitLab CE default variables
+  template:
+    src: 'etc/default/gitlab.j2'
+    dest: '/etc/default/gitlab'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
+
+- name: Install GitLab SysVinit script
+  command: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
+  register: gitlab__register_sysvinit_script
+  when: (gitlab_register_ce_checkout|changed and
+         (gitlab_use_systemd is defined and not gitlab_use_systemd))
+
+- name: Install GitLab systemd service files
+  template:
+    src: 'etc/systemd/system/{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+  with_items:
+    - 'gitlab.slice'
+    - 'gitlab-mailroom.service'
+    - 'gitlab-sidekiq.service'
+    - 'gitlab-unicorn.service'
+    - 'gitlab-workhorse.service'
+    - '{{ "gitlab-gitaly.service" if (gitlab_version | version_compare("9.0", operator="gt", strict=True)) else [] }}'
+  register: gitlab__register_systemd_services
+  when: (gitlab_register_ce_checkout|changed and
+         (gitlab_use_systemd is defined and gitlab_use_systemd))
+
+- name: Install GitLab Pages systemd service file
+  template:
+    src: 'etc/systemd/system/gitlab-pages.service.j2'
+    dest: '/etc/systemd/system/gitlab-pages.service'
+  register: gitlab__register_pages_systemd_services
+  when: (gitlab_enable_pages and
+         gitlab_register_ce_checkout|changed and
+         (gitlab_use_systemd is defined and gitlab_use_systemd))
+
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  when: (ansible_service_mgr == "systemd" and
+         (gitlab__register_sysvinit_script|changed or
+          gitlab__register_systemd_services|changed or
+          gitlab__register_pages_systemd_services|changed))
+
+- name: Enable GitLab SysVinit service
+  service:
+    name: 'gitlab'
+    enabled: True
+  when: (gitlab_register_ce_checkout|changed and
+         ansible_service_mgr != 'systemd' and not gitlab_use_systemd|bool)
+
+- name: Enable GitLab SysVinit service (systemd)
+  command: systemctl enable gitlab
+  when: (gitlab_register_ce_checkout|changed and
+         ansible_service_mgr == 'systemd' and not gitlab_use_systemd|bool)
+
+- name: Enable GitLab systemd services
+  service:
+    name: '{{ item }}'
+    enabled: True
+  with_items:
+    - 'gitlab.slice'
+    - 'gitlab-mailroom.service'
+    - 'gitlab-sidekiq.service'
+    - 'gitlab-unicorn.service'
+    - 'gitlab-workhorse.service'
+    - '{{ "gitlab-gitaly.service" if (gitlab_version | version_compare("9.0", operator="gt", strict=True)) else [] }}'
+  when: (gitlab_register_ce_checkout|changed and
+         gitlab_use_systemd|bool)
+
+- name: Enable GitLab Pages systemd service
+  service:
+    name: 'gitlab-pages.service'
+    enabled: True
+  when: (gitlab_enable_pages and
+         gitlab_register_ce_checkout|changed and
+         gitlab_use_systemd|bool)
+
+- name: Setup GitLab CE logrotate configuration
+  template:
+    src: 'etc/logrotate.d/gitlab.j2'
+    dest: '/etc/logrotate.d/gitlab'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+
+# ---- GitLab installation / upgrade ----
+
+- name: NPM install
+  command: npm install --production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_version | version_compare("8.17", operator="lt", strict=True)
+        and gitlab_register_ce_checkout|changed
+
+- name: Yarn install
+  command: yarn install --production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
+        and gitlab_register_ce_checkout|changed
+
+  # The RubyGems.org website has frequent timeouts, so we will try and install
+  # everything again as long as there are errors.
+- name: Update Ruby gems
+  shell: until bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }} ; do
+         sleep 1 ; logger -t ansible-command-bundle "GitLab RubyGems installation failed, retrying..." ; done
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_ce_checkout|changed
+
+- name: Set default administrator email address and password
+  replace:
+    dest: '{{ gitlab_ce_git_checkout + "/db/fixtures/production/001_admin.rb" }}'
+    regexp: '{{ item.0 }}'
+    replace: '{{ item.1 }}'
+  with_together:
+    - [ 'admin@example\.com', '5iveL!fe' ]
+    - [ '{{ gitlab_admin_email }}', '{{ gitlab_admin_password }}' ]
+  no_log: True
+  when: (ansible_local is undefined or (ansible_local is defined and
+         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+           not ansible_local.gitlab.installed))))))
+
+- name: Initialize GitLab database (PostgreSQL)
+  environment:
+    RAILS_ENV: 'production'
+  command: 'bundle exec rake db:schema:load setup_postgresql db:seed_fu'
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_bundle_setup_postgresql
+  when: ((ansible_local is undefined or (ansible_local is defined and
+          (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+           (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+            not ansible_local.gitlab.installed)))))) and
+         gitlab_register_ce_checkout|changed and
+         gitlab__database == 'postgresql')
+
+- name: Reset default administrator email address and password
+  replace:
+    dest: '{{ gitlab_ce_git_checkout + "/db/fixtures/production/001_admin.rb" }}'
+    regexp: '{{ item.0 }}'
+    replace: '{{ item.1 }}'
+  with_together:
+    - [ '{{ gitlab_admin_email | replace(".","\.") }}', '{{ gitlab_admin_password }}' ]
+    - [ 'admin@example.com', '5iveL!fe' ]
+  no_log: True
+  when: (ansible_local is undefined or (ansible_local is defined and
+         (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
+          (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
+           not ansible_local.gitlab.installed))))))
+
+- name: Migrate GitLab database
+  command: bundle exec rake db:migrate RAILS_ENV=production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_bundle_migrate
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         gitlab_register_ce_checkout|changed)
+
+- name: Clean GitLab assets
+  command: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         gitlab_register_bundle_migrate|changed)
+
+- name: Precompile GitLab assets
+  command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
+  when: gitlab_register_bundle_setup_postgresql|changed or
+        gitlab_register_bundle_migrate|changed
+
+- name: Clear GitLab cache
+  command: bundle exec rake cache:clear RAILS_ENV=production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         gitlab_register_bundle_migrate|changed)
+
+- name: Configure periodical GitLab backups
+  cron:
+    name: 'Create GitLab backup'
+    special_time: '{{ gitlab_backup_frequency }}'
+    state: 'present'
+    user: '{{ gitlab_user }}'
+    job: 'cd {{ gitlab_ce_git_checkout }} ; PATH=/usr/local/bin:/usr/bin:/bin bundle exec rake gitlab:backup:create RAILS_ENV=production CRON=1'
+    cron_file: 'gitlab-backup'

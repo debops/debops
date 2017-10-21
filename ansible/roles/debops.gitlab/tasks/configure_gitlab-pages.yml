@@ -1,0 +1,114 @@
+---
+
+# gitlab-pages checked out based on tags instead of branches, and since we
+# cannot work with tags from a bare repository, we need to work around it
+# a little.
+
+- name: Check if bare repository is cloned
+  stat:
+    path: '{{ gitlab_pages_dest }}'
+  register: gitlab_register_pages_cloned
+
+- name: Save current checkout hash for update
+  command: git rev-parse HEAD
+  args:
+    chdir: '{{ gitlab_pages_dest }}'
+  register: gitlab_register_pages_current_head
+  changed_when: False
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_pages_cloned.stat|d() and
+        gitlab_register_pages_cloned.stat.exists
+
+- name: Change current HEAD to master in bare repository for update
+  command: git symbolic-ref HEAD refs/heads/master
+  args:
+    chdir: '{{ gitlab_pages_dest }}'
+  changed_when: False
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_pages_cloned.stat|d() and
+        gitlab_register_pages_cloned.stat.exists
+
+- name: Clone gitlab-pages source code
+  git:
+    repo: '{{ gitlab_pages_repo }}'
+    dest: '{{ gitlab_pages_dest }}'
+    bare: True
+    update: True
+  become: True
+  become_user: '{{ gitlab_user }}'
+
+- name: Restore HEAD to previous checkout
+  copy:
+    content: '{{ gitlab_register_pages_current_head.stdout }}'
+    dest: '{{ gitlab_pages_dest + "/HEAD" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+  changed_when: False
+  when: gitlab_register_pages_cloned.stat|d() and
+        gitlab_register_pages_cloned.stat.exists
+
+- name: Check if gitlab-pages is checked out
+  stat:
+    path: '{{ gitlab_pages_checkout }}'
+  register: gitlab_register_pages_directory
+
+- name: Create gitlab-pages checkout directory
+  file:
+    path: '{{ gitlab_pages_checkout }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0755'
+
+- name: Prepare gitlab-pages worktree
+  copy:
+    content: 'gitdir: {{ gitlab_pages_dest }}'
+    dest: '{{ gitlab_pages_checkout + "/.git" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+
+- name: Get currently checked out git tag
+  command: git describe --tags
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_pages_checkout }}'
+  args:
+    chdir: '{{ gitlab_pages_dest }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_pages_target_tag
+  changed_when: gitlab_register_pages_target_tag.stdout != gitlab_version_map[gitlab_version].pages
+
+- name: Checkout gitlab-pages
+  command: git checkout -f {{ gitlab_version_map[gitlab_version].pages }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_pages_checkout }}'
+  args:
+    chdir: '{{ gitlab_pages_dest }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_pages_checkout
+  when: (gitlab_version_map[gitlab_version].pages|d() != gitlab_register_pages_target_tag.stdout|d()) or (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
+
+- name: Get gitlab-pages dependencies
+  command: go get
+  args:
+    chdir: '{{ gitlab_pages_checkout }}'
+  environment:
+    GOBIN: '{{ gitlab_app_root_path}}/go/bin'
+    GOPATH: '{{ gitlab_app_root_path }}/go'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_pages_checkout|changed
+
+- name: Setup gitlab-pages
+  make:
+    chdir: '{{ gitlab_pages_checkout }}'
+  environment:
+    GOPATH: '{{ gitlab_app_root_path }}/go'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_pages_checkout|changed

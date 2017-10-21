@@ -1,0 +1,8 @@
+{% set gitlab__tpl_systemd_services = (ansible_local.gitlab.systemd_services if (ansible_local|d() and ansible_local.gitlab|d() and ansible_local.gitlab.systemd_services|d()) else gitlab_use_systemd) %}
+{% set gitlab__tpl_database = (ansible_local.gitlab.database if (ansible_local|d() and ansible_local.gitlab|d() and ansible_local.gitlab.database|d()) else gitlab__database) %}
+{
+"database": "{{ gitlab__tpl_database }}",
+"installed": true,
+"systemd_services": {{ gitlab__tpl_systemd_services | bool | lower }},
+"version": "{{ gitlab_version }}"
+}

@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+[core]
+	autocrlf	= input
+
+[user]
+	name		= {{ gitlab_email_name | default('GitLab') }}
+	email		= {{ gitlab_email_from | default('git@' + gitlab_domain[0]) }}
+
+{% if gitlab_version | version_compare("8.7", operator="ge", strict=True) %}
+[gc]
+	auto		= 0
+{% endif %}
+
+[repack]
+	writeBitmaps = true

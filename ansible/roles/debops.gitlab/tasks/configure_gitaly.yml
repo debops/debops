@@ -1,0 +1,125 @@
+---
+
+# gitaly is checked out based on tags instead of branches, and since we
+# cannot work with tags from a bare repository, we need to work around it
+# a little.
+
+- name: Check if bare repository is cloned
+  stat:
+    path: '{{ gitlab__gitaly_dest }}'
+  register: gitlab_register_gitaly_cloned
+
+- name: Save current checkout hash for update
+  command: git rev-parse HEAD
+  args:
+    chdir: '{{ gitlab__gitaly_dest }}'
+  register: gitlab_register_gitaly_current_head
+  changed_when: False
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_gitaly_cloned.stat.exists
+
+- name: Change current HEAD to master in bare repository for update
+  command: git symbolic-ref HEAD refs/heads/master
+  args:
+    chdir: '{{ gitlab__gitaly_dest }}'
+  changed_when: False
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_gitaly_cloned.stat.exists
+
+- name: Clone gitaly source code
+  git:
+    repo: '{{ gitlab__gitaly_repo }}'
+    dest: '{{ gitlab__gitaly_dest }}'
+    bare: True
+    update: True
+  become: True
+  become_user: '{{ gitlab_user }}'
+
+- name: Restore HEAD to previous checkout
+  copy:
+    content: '{{ gitlab_register_gitaly_current_head.stdout }}'
+    dest: '{{ gitlab__gitaly_dest + "/HEAD" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+  changed_when: False
+  when: gitlab_register_gitaly_cloned.stat.exists
+
+- name: Check if gitaly is checked out
+  stat:
+    path: '{{ gitlab__gitaly_checkout }}'
+  register: gitlab_register_gitaly_directory
+
+- name: Create gitaly checkout directory
+  file:
+    path: '{{ gitlab__gitaly_checkout }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0755'
+
+- name: Prepare gitaly worktree
+  copy:
+    content: 'gitdir: {{ gitlab__gitaly_dest }}'
+    dest: '{{ gitlab__gitaly_checkout + "/.git" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+
+- name: Get currently checked out git tag
+  command: git describe --tags
+  environment:
+    GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
+  args:
+    chdir: '{{ gitlab__gitaly_dest }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_gitaly_target_tag
+  changed_when: gitlab_register_gitaly_target_tag.stdout != gitlab_version_map[gitlab_version].gitaly
+
+- name: Checkout gitaly
+  command: git checkout -f {{ gitlab_version_map[gitlab_version].gitaly }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
+  args:
+    chdir: '{{ gitlab__gitaly_dest }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_gitlab__gitaly_checkout
+  when: (gitlab_version_map[gitlab_version].gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
+
+- name: Stop gitaly service for an upgrade
+  service:
+    name: 'gitlab-gitaly.service'
+    state: 'stopped'
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         ansible_service_mgr == 'systemd' and
+         gitlab_register_gitlab__gitaly_checkout|changed)
+
+- name: Setup gitaly
+  make:
+    chdir: '{{ gitlab__gitaly_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: gitlab_register_gitlab__gitaly_checkout|changed
+
+- name: Start gitaly service after an upgrade
+  service:
+    name: 'gitlab-gitaly.service'
+    state: 'started'
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         ansible_service_mgr == 'systemd' and
+         gitlab_register_gitlab__gitaly_checkout|changed)
+
+- name: Configure Gitaly
+  template:
+    src: 'var/local/git/gitaly/config.toml.j2'
+    dest: '{{ gitlab__gitaly_checkout + "/config.toml" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+  notify: 'Restart gitaly'

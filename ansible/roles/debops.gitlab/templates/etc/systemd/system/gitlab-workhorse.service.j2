@@ -1,0 +1,32 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=Gitlab Workhorse handles slow HTTP requests for Gitlab.
+Requires=gitlab-unicorn.service
+Wants=gitlab-unicorn.service
+After=gitlab-unicorn.service
+PartOf=gitlab.slice
+
+[Service]
+Slice=gitlab.slice
+Type=simple
+User={{ gitlab_user }}
+WorkingDirectory={{ gitlab_app_root_path }}/gitlab-workhorse
+SyslogIdentifier=gitlab-workhorse
+PIDFile={{ gitlab_app_root_path }}/gitlab/tmp/pids/gitlab-workhorse.pid
+Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:{{ gitlab_app_root_path }}/gitlab-workhorse"
+
+ExecStart={{ gitlab_app_root_path }}/gitlab-workhorse/gitlab-workhorse \
+    -listenUmask 0 \
+    -listenNetwork unix \
+    -listenAddr {{ gitlab_app_root_path }}/gitlab/tmp/sockets/gitlab-workhorse.socket \
+    -authBackend http://127.0.0.1:{{ gitlab_unicorn_port | default('8080') }} \
+    -authSocket {{ gitlab_app_root_path }}/gitlab/tmp/sockets/gitlab.socket \
+    -secretPath {{ gitlab_app_root_path }}/gitlab/.gitlab_workhorse_secret \
+    -documentRoot {{ gitlab_app_root_path }}/gitlab/public
+
+[Install]
+WantedBy=multi-user.target
+

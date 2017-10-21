@@ -1,0 +1,32 @@
+#
+# {{ ansible_managed }}
+#
+#####################################################
+#
+# GitLab version    : 5.x - 7.x
+# Contributors      : davispuh, mtorromeo, axilleas, boeserwolf91, Stefan Tatschner (rumpelsepp)
+# Downloaded from   : https://gitlab.com/gitlab-org/gitlab-recipes/tree/master/init/systemd
+#
+####################################################
+
+[Unit]
+Description=GitLab Sidekiq Worker
+Requires=redis-server.service
+Wants=postgresql.service
+After=redis-server.service postgresql.service
+PartOf=gitlab.slice
+
+[Service]
+Slice=gitlab.slice
+Type=forking
+User={{ gitlab_user }}
+WorkingDirectory={{ gitlab_app_root_path }}/gitlab
+Environment=RAILS_ENV=production
+SyslogIdentifier=gitlab-sidekiq
+PIDFile={{ gitlab_app_root_path }}/gitlab/tmp/pids/sidekiq.pid
+
+ExecStart=/usr/bin/bundle exec "sidekiq -d -C config/sidekiq_queues.yml -e production -P tmp/pids/sidekiq.pid -d -L log/sidekiq.log >> log/sidekiq.log 2>&1"
+ExecStop=/usr/bin/bundle exec "sidekiqctl stop tmp/pids/sidekiq.pid >> log/sidekiq.log 2>&1"
+
+[Install]
+WantedBy=multi-user.target

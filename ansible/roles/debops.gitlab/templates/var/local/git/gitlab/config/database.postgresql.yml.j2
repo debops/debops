@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+
+#
+# PRODUCTION
+#
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: {{ gitlab_database_name }}
+  pool: 10
+  username: {{ gitlab_database_user }}
+{# {% if gitlab_database_map[gitlab__database].dbconn == 'inet'                  %} #}
+  password: "{{ gitlab_database_password }}"
+  host: {{ gitlab_database_server }}
+  port: {{ gitlab_database_port | d('5432') }}
+{# {% else                                                                         %}
+  socket: {{ gitlab_database_map[gitlab__database].dbhost | d('/var/run/postgresql') }}
+{% endif                                                                        %} #}
+

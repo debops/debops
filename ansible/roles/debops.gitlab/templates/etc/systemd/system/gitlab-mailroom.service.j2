@@ -1,0 +1,33 @@
+#
+# {{ ansible_managed }}
+#
+#####################################################
+#
+# GitLab version    : 8.x - 8.x
+# Contributors      : davispuh, mtorromeo, axilleas, boeserwolf91, Stefan Tatschner (rumpelsepp)
+# Downloaded from   : https://gitlab.com/gitlab-org/gitlab-recipes/tree/master/init/systemd
+#
+####################################################
+
+[Unit]
+Description=Gitlab mailroom Worker
+Requires=gitlab-unicorn.service
+Wants=gitlab-unicorn.service
+After=gitlab-unicorn.service
+PartOf=gitlab.slice
+
+[Service]
+Slice=gitlab.slice
+User={{ gitlab_user }}
+Environment=RAILS_ENV=production
+WorkingDirectory={{ gitlab_app_root_path }}/gitlab
+SyslogIdentifier=gitlab-mailroom
+PIDFile={{ gitlab_app_root_path }}/gitlab/tmp/pids/gitlab-mailroom.pid
+Type=oneshot
+RemainAfterExit=yes
+
+ExecStart={{ gitlab_app_root_path }}/gitlab/bin/mail_room start
+ExecStop={{ gitlab_app_root_path }}/gitlab/bin/mail_room stop
+
+[Install]
+WantedBy=multi-user.target

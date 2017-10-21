@@ -1,0 +1,39 @@
+---
+
+- name: Display deploy.html page
+  command: cp {{ gitlab_ce_git_checkout + "/public/deploy.html" }} {{ gitlab_ce_git_checkout + "/public/index.html" }}
+  args:
+    creates: '{{ gitlab_ce_git_checkout + "/public/index.html" }}'
+
+- name: Stop Sidekiq before upgrade (sysvinit)
+  command: bundle exec rake sidekiq:stop RAILS_ENV=production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+  when: not gitlab_use_systemd | bool
+
+- name: Stop Sidekiq before upgrade (systemd)
+  service:
+    name: 'gitlab-sidekiq.service'
+    state: 'stopped'
+  when: gitlab_use_systemd | bool
+
+- name: Create backup of GitLab instance
+  command: bundle exec rake gitlab:backup:create RAILS_ENV=production
+  args:
+    chdir: '{{ gitlab_ce_git_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
+
+- name: Stop GitLab before upgrade (sysvinit)
+  service:
+    name: 'gitlab'
+    state: 'stopped'
+  when: not gitlab_use_systemd | bool
+
+- name: Stop GitLab before upgrade (systemd)
+  service:
+    name: 'gitlab.slice'
+    state: 'stopped'
+  when: gitlab_use_systemd | bool

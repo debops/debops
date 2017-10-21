@@ -1,0 +1,20 @@
+#
+# {{ ansible_managed }}
+#
+
+[Unit]
+Description=GitLab Pages daemon
+PartOf=gitlab.slice
+
+[Service]
+Slice=gitlab.slice
+Type=simple
+User={{ gitlab_user }}
+WorkingDirectory={{ gitlab_pages_path }}
+SyslogIdentifier=gitlab-pages
+PIDFile={{ gitlab_app_root_path }}/gitlab/tmp/pids/gitlab-pages.pid
+
+ExecStart={{ gitlab_app_root_path }}/gitlab-pages/gitlab-pages -pages-domain {{ gitlab_pages_domain }} -pages-root {{ gitlab_pages_path }} -listen-proxy 127.0.0.1:{{ gitlab_pages_port }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,47 @@
+---
+
+- name: Make sure that services OU exists
+  ldap_entry:
+    dn: '{{ secret_ldap_services_dn }}'
+    objectClass: [ 'organizationalUnit' ]
+    state: 'present'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
+    bind_dn: '{{ secret_ldap_admin_bind_dn }}'
+    bind_pw: '{{ secret_ldap_admin_bind_pw }}'
+  become: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
+  no_log: True
+
+
+- name: Make sure that ldap account exists
+  ldap_entry:
+    dn: '{{ gitlab_ldap_binddn }}'
+    objectClass: [ 'organizationalRole', 'simpleSecurityObject' ]
+    attributes:
+      cn: 'gitlab'
+      userPassword: '{{ gitlab_ldap_password | ldappassword("SHA") }}'
+    state: 'present'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
+    bind_dn: '{{ secret_ldap_admin_bind_dn }}'
+    bind_pw: '{{ secret_ldap_admin_bind_pw }}'
+  become: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
+  no_log: True
+
+- name: Set host bind password in LDAP
+  ldap_attr:
+    dn: '{{ gitlab_ldap_binddn }}'
+    name: '{{ item.key }}'
+    values: '{{ item.value }}'
+    state: 'exact'
+    server_uri: '{{ secret_ldap_server_uri }}'
+    start_tls:  '{{ secret_ldap_start_tls }}'
+    bind_dn: '{{ secret_ldap_admin_bind_dn }}'
+    bind_pw: '{{ secret_ldap_admin_bind_pw }}'
+  become: '{{ secret_ldap_sudo }}'
+  delegate_to: '{{ secret_ldap_delegate_to }}'
+  with_dict:
+    userPassword: '{{ gitlab_ldap_password | ldappassword("SHA") }}'
+  no_log: True
