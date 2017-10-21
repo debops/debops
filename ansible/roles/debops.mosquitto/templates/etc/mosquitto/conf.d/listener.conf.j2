@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+{% set listener = item.value %}
+{% set listener_port = (item.value.listener | d(item.key)) %}
+{% if listener.comment|d() %}
+{{ (listener.comment if listener.comment is string else listener.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{% endif %}
+listener {{ listener_port }}
+{% for config_key, config_value in listener.iteritems() %}
+{%   if (config_key not in [ 'listener', 'state', 'comment' ] and not config_key.startswith('avahi_')) %}
+{%     if config_value is string and config_value != '' %}
+{{ "%s %s" | format(config_key, config_value) }}
+{%     elif config_value is not string and config_value is not mapping %}
+{%       for thing in config_value %}
+{%         if thing is string and thing != '' %}
+{{ "%s %s" | format(config_key, thing) }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

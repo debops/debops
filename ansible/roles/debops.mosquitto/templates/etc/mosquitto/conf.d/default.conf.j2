@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+
+{% set options = mosquitto__combined_options %}
+{% if options.comment|d() %}
+{{ (options.comment if options.comment is string else options.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{% endif %}
+{% for config_key, config_value in options.iteritems() %}
+{%   if config_value is string and config_value != '' %}
+{{ "%s %s" | format(config_key, config_value) }}
+{%   elif config_value is not string and config_value is not mapping %}
+{%     for thing in config_value %}
+{%       if thing is string and thing != '' %}
+{{ "%s %s" | format(config_key, thing) }}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}

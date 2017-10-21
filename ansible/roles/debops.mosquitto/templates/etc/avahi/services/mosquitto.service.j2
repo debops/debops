@@ -1,0 +1,28 @@
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+
+<!-- {{ ansible_managed }} -->
+
+<service-group>
+
+  <name replace-wildcards="yes">{{ mosquitto__avahi_name }}</name>
+{% for listener_key, listener_args in mosquitto__combined_listeners.iteritems() %}
+{%   if listener_args.avahi_state|d("present") != "absent" and listener_args.avahi_type|d() and listener_args.avahi_port|d() %}
+
+  <service>
+    <type>{{ listener_args.avahi_type }}</type>
+    <port>{{ listener_args.avahi_port }}</port>
+{%     if listener_args.avahi_txt|d() %}
+{%       if listener_args.avahi_txt is string %}
+    <txt-record>{{ listener_args.avahi_txt }}</txt-record>
+{%       elif listener_args.avahi_txt is not string and listener_args.avahi_txt is not mapping %}
+{%         for element in listener_args.avahi_txt %}
+    <txt-record>{{ element }}</txt-record>
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+  </service>
+{%   endif %}
+{% endfor %}
+
+</service-group>

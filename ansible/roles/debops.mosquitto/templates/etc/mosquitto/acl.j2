@@ -1,0 +1,35 @@
+# {{ ansible_managed }}
+
+{% if mosquitto__auth_anonymous %}
+{%   if mosquitto__auth_anonymous is string %}
+{{ mosquitto__auth_anonymous }}
+{%   elif mosquitto__auth_anonymous is not string and mosquitto__auth_anonymous is not mapping %}
+{%     for entry in mosquitto__auth_anonymous %}
+{{ entry }}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+{% for entry in (mosquitto__auth_users + mosquitto__auth_group_users + mosquitto__auth_host_users) %}
+{%   if entry is mapping %}
+{%     if entry.state|d("present") != "absent" and entry.name|d() and entry.acl|d() %}
+
+user {{ entry.name }}
+{%       if entry.acl is string %}
+{{ entry.acl }}
+{%       elif entry.acl is not string and entry.acl is not mapping %}
+{%         for element in entry.acl %}
+{{ element }}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{% if mosquitto__auth_patterns %}
+{%   if mosquitto__auth_patterns is string %}
+{{ mosquitto__auth_patterns }}
+{%   elif mosquitto__auth_patterns is not string and mosquitto__auth_patterns is not mapping %}
+{%     for entry in mosquitto__auth_patterns %}
+{{ entry }}
+{%     endfor %}
+{%   endif %}
+{% endif %}
