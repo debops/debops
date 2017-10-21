@@ -1,0 +1,300 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.hashicorp default variables [[[
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT package management [[[
+# --------------------------
+
+# .. envvar:: hashicorp__base_packages [[[
+#
+# List of APT packages required by the role to function.
+hashicorp__base_packages: [ 'rsync', 'openssl', 'ca-certificates', 'unzip' ]
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__packages [[[
+#
+# List of additional APT packages to install on hosts managed by the role.
+hashicorp__packages: []
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__dependent_packages [[[
+#
+# List of APT packages to install requested by other Ansible roles.
+hashicorp__dependent_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# HashiCorp user account [[[
+# --------------------------
+
+# .. envvar:: hashicorp__user [[[
+#
+# Name of the system account which will perform signature and archive
+# verification.
+hashicorp__user: 'hashicorp'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__group [[[
+#
+# Name of the primary system group of the HashiCorp_ account.
+hashicorp__group: 'hashicorp'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__home [[[
+#
+# Path to the home directory of the HashiCorp_ account.
+hashicorp__home: '{{ (ansible_local.root.home
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.home|d())
+                      else "/var/local") + "/" + hashicorp__user }}'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__comment [[[
+#
+# The GECOS string set for the HashiCorp_ account.
+hashicorp__comment: 'HashiCorp Application Manager'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__shell [[[
+#
+# The default shell of the HashiCorp_ account.
+hashicorp__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenPGP key and keyserver [[[
+# -----------------------------
+
+# See :ref:`hashicorp__ref_security` for details about how the role uses the
+# HashiCorp_ company OpenPGP keys.
+
+# .. envvar:: hashicorp__gpg_key_id [[[
+#
+# The OpenPGP key fingerprint of the HashiCorp_ company.
+hashicorp__gpg_key_id: '91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__keyserver [[[
+#
+# URL of the OpenPGP keyserver used to obtain the HashiCorp_ OpenPGP key.
+hashicorp__keyserver: '{{ ansible_local.core.keyserver
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.keyserver|d())
+                          else "hkp://pool.sks-keyservers.net" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# HashiCorp Application lists [[[
+# -------------------------------
+
+# .. envvar:: hashicorp__applications [[[
+#
+# List of HashiCorp_ applications that should be installed on a given host.
+# To find out what applications are supported, check the names of the keys
+# in the :envvar:`hashicorp__default_version_map` dictionary.
+hashicorp__applications: []
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__dependent_applications [[[
+#
+# List of HashiCorp_ applications that are requested by other Ansible roles
+# using dependent variables.
+hashicorp__dependent_applications: []
+                                                                   # ]]]
+                                                                   # ]]]
+# HashiCorp application versions [[[
+# ----------------------------------
+
+# .. envvar:: hashicorp__default_version_map [[[
+#
+# YAML dictionary which maps the HashiCorp_ application names to their versions.
+# This is the main dictionary and shouldn't be modified by the user if
+# possible.
+hashicorp__default_version_map:
+  'atlas-upload-cli':  '0.2.0'
+  'consul':            '0.8.3'
+  'consul-replicate':  '0.3.1'
+  'consul-template':   '0.18.3'
+  'docker-base':       '0.0.4'
+  'docker-basetool':   '0.0.3'
+  'envconsul':         '0.6.2'
+  'nomad':             '0.5.6'
+  'otto':              '0.2.0'
+  'packer':            '1.0.0'
+  'serf':              '0.8.1'
+  'terraform':         '0.9.5'
+  'vault':             '0.7.2'
+  'vault-ssh-helper':  '0.1.3'
+
+  # The applications below have incompatible release formats:
+  #'vagrant':          '1.9.5'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__version_map [[[
+#
+# An additional YAML dictionary which defines mapping between HashiCorp_
+# applications and their versions. This dictionary should be used to override
+# the default version if necessary.
+hashicorp__version_map: {}
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__combined_version_map [[[
+#
+# The YAML dictionary used by the role to lookup specific versions of HashiCorp_
+# applications to install.
+hashicorp__combined_version_map: '{{ hashicorp__default_version_map
+                                     | combine(hashicorp__version_map) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Archive binary overrides [[[
+# ----------------------------
+
+# .. envvar:: hashicorp__default_binary_map [[[
+#
+# Some of the HashiCorp_ applications use different location or name of binaries
+# in their archives. This YAML dictionary is used to override the default
+# binary name(s) to the correct ones when necessary. Paths are relative to the
+# specific archive directory.
+hashicorp__default_binary_map:
+  'atlas-upload-cli': 'atlas-upload'
+  'docker-base':      [ 'bin/dumb-init', 'bin/gosu' ]
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__binary_map [[[
+#
+# Custom YAML dictionary with binary name overrides. This variable can be used
+# by the user when necessary.
+hashicorp__binary_map: {}
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__combined_binary_map [[[
+#
+# The YAML dictionary variable used by the role to override paths to the
+# specific archive binaries.
+hashicorp__combined_binary_map: '{{ hashicorp__default_binary_map
+                                    | combine(hashicorp__binary_map) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Base directory paths [[[
+# ------------------------
+
+# .. envvar:: hashicorp__src [[[
+#
+# Base path to the directory with HashiCorp_ binary archives, their hash
+# signatures and OpenPGP signatures.
+hashicorp__src: '{{ (ansible_local.root.src
+                     if (ansible_local|d() and ansible_local.root|d() and
+                         ansible_local.root.src|d())
+                     else "/usr/local/src") + "/" + hashicorp__user + "/" +
+                     (hashicorp__base_url.split("://")|last | split("/") | first) }}'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__lib [[[
+#
+# Base path to the directory where HashiCorp_ archives are unpacked after
+# verification.
+hashicorp__lib: '{{ (ansible_local.root.lib
+                     if (ansible_local|d() and ansible_local.root|d() and
+                         ansible_local.root.lib|d())
+                     else "/usr/local/lib") + "/" + hashicorp__user }}'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__bin [[[
+#
+# Base path to the directory where HashiCorp_ application binaries will be
+# installed by the ``root`` account.
+hashicorp__bin: '{{ (ansible_local.root.bin
+                     if (ansible_local|d() and ansible_local.root|d() and
+                         ansible_local.root.bin|d())
+                     else "/usr/local/bin") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# HashiCorp application repositories [[[
+# --------------------------------------
+
+# .. envvar:: hashicorp__base_url [[[
+#
+# The base URL of the HashiCorp_ webserver with application releases.
+hashicorp__base_url: 'https://releases.hashicorp.com/'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__platform [[[
+#
+# Name of the current OS platform in the format used by the HashiCorp_
+# application archive filenames.
+hashicorp__platform: '{{ ansible_system | lower }}'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__architecture [[[
+#
+# Key used to lookup current system architecture.
+hashicorp__architecture: '{{ ansible_architecture }}'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__architecture_map [[[
+#
+# YAML dictionary that maps the system architecture as used by Ansible to the
+# architecture names used in the HashiCorp_ archive filenames.
+hashicorp__architecture_map:
+  'x86_64': 'amd64'
+  'i386': '386'
+  'armhf': 'arm'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__tar_suffix [[[
+#
+# The filename suffix of the HashiCorp_ application archive.
+hashicorp__tar_suffix: '{{ hashicorp__platform + "_"
+                           + hashicorp__architecture_map[hashicorp__architecture]
+                           + ".zip" }}'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__hash_suffix [[[
+#
+# The filename suffix of the file which contains SHA256 hashes of the released
+# files.
+hashicorp__hash_suffix: 'SHA256SUMS'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__sig_suffix [[[
+#
+# The filename suffix of the file which contains OpenPGP signature of the file
+# with SHA256 hashes, signed by the HashiCorp_ OpenPGP key.
+hashicorp__sig_suffix: '{{ hashicorp__hash_suffix + ".sig" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Consul Web UI configuration [[[
+# -------------------------------
+
+# .. envvar:: hashicorp__consul_webui [[[
+#
+# Boolean variable which controls if the Consul Web UI should be installed
+# alongside ``consul``. By default the Web UI files are not installed to allow
+# headless installation.
+hashicorp__consul_webui: '{{ (ansible_local.hashicorp.consul_webui
+                              if (ansible_local|d() and ansible_local.hashicorp|d() and
+                                  ansible_local.hashicorp.consul_webui|d())
+                              else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__consul_webui_suffix [[[
+#
+# The filename suffix of the Consul Web UI archive file.
+hashicorp__consul_webui_suffix: 'web_ui.zip'
+
+                                                                   # ]]]
+# .. envvar:: hashicorp__consul_webui_path [[[
+#
+# Absolute path where the Consul Web UI files should be installed.
+hashicorp__consul_webui_path: '{{ (ansible_local.nginx.www
+                                   if (ansible_local|d() and ansible_local.nginx|d()
+                                       and ansible_local.nginx.www|d())
+                                   else "/srv/www") + "/consul/sites/public" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
