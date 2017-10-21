@@ -1,0 +1,646 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.monit default variables [[[
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: monit__base_packages [[[
+#
+# List of base APT packages to install for Monit support.
+monit__base_packages: [ 'monit' ]
+
+                                                                   # ]]]
+# .. envvar:: monit__packages [[[
+#
+# List of additional APT packages to install with Monit.
+monit__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Monit deployment options [[[
+# ----------------------------
+
+# .. envvar:: monit__fqdn [[[
+#
+# The Fully Qualified Domain Name of the host Monit is running on.
+monit__fqdn: '{{ ansible_local.core.fqdn
+                 if (ansible_local|d() and ansible_local.core|d() and
+                     ansible_local.core.fqdn|d())
+                 else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: monit__domain [[[
+#
+# This variable is used to define the default e-mail address to which Monit
+# alerts will be sent.
+monit__domain: '{{ ansible_local.core.domain
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.domain|d())
+                   else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: monit__check_interval [[[
+#
+# Time in seconds between Monit checks.
+monit__check_interval: '120'
+
+                                                                   # ]]]
+# .. envvar:: monit__start_delay [[[
+#
+# Time in seconds to delay the initial check after Monit is started.
+monit__start_delay: '240'
+
+                                                                   # ]]]
+# .. envvar:: monit__alerts_to [[[
+#
+# Specify the e-mail address where Monit should sent the e-mail alerts to.
+monit__alerts_to: [ 'root@{{ monit__domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: monit__httpd_port [[[
+#
+# The TCP port used by the Monit HTTP server.
+monit__httpd_port: '2812'
+
+                                                                   # ]]]
+# .. envvar:: monit__httpd_username [[[
+#
+# The username used by the Monit CLI to access the HTTP server.
+monit__httpd_username: 'monit'
+
+                                                                   # ]]]
+# .. envvar:: monit__httpd_password [[[
+#
+# The password used by the Monit CLI to access the HTTP server.
+monit__httpd_password: '{{ lookup("password", secret + "/credentials/"
+                           + inventory_hostname + "/monit/httpd/password "
+                           + "chars=ascii,digits length=32") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Monit configuration [[[
+# -----------------------
+
+# These lists define contents of the Monit configuration files, located in the
+# :file:`/etc/monit/conf.d/` directory. See :ref:`monit__ref_config` for more
+# details.
+
+# .. envvar:: monit__default_config [[[
+#
+# The default configuration defined by the ``debops.monit`` Ansible role.
+monit__default_config:
+
+  - name: 'daemon'
+    content: |
+      set daemon {{ monit__check_interval }}
+          with start delay {{ monit__start_delay }}
+    weight: 10
+
+  - name: 'logfile'
+    content: |
+      set logfile syslog facility log_daemon
+    weight: 15
+
+  - name: 'http_server'
+    comment: 'HTTP server is used by the command line tool'
+    content: |
+      set httpd port {{ monit__httpd_port }} and
+          use address localhost
+          allow localhost
+          allow {{ monit__httpd_username + ':' + monit__httpd_password }}
+    weight: 20
+    mode: '0600'
+
+  - name: 'mailserver'
+    content: |
+      set mailserver localhost
+    weight: 25
+
+  - name: 'global_alerts'
+    content: |
+      {% for address in ([ monit__alerts_to ]
+                         if monit__alerts_to is string
+                         else monit__alerts_to) %}
+      set alert {{ address }} not on { instance, action }
+      {% endfor %}
+    weight: 30
+
+  - name: 'check_system'
+    content: |
+      check system {{ monit__fqdn }}
+        if loadavg (1min)     > {{ ansible_processor_vcpus * 2 }} for 5 cycles then alert
+        if loadavg (5min)     > {{ ansible_processor_vcpus }} for 5 cycles then alert
+        if memory usage       > 75% for 5 cycles then alert
+        if swap usage         > 25% for 5 cycles then alert
+        if cpu usage (user)   > 70% for 5 cycles then alert
+        if cpu usage (system) > 30% for 5 cycles then alert
+        if cpu usage (wait)   > 30% for 5 cycles then alert
+    weight: 35
+
+                                                                   # ]]]
+# .. envvar:: monit__service_config [[[
+#
+# The service configuration shipped with the Debian Monit package. This
+# configuration is modified to work correctly with :command:`systemd` and will
+# be activated when Ansible local facts for specific services are present.
+monit__service_config:
+
+  - name: 'atd'
+    content: |
+      check process atd with pidfile /var/run/atd.pid
+        group system
+        group atd
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start atd.service"
+        stop  program = "/bin/systemctl stop  atd.service"
+      {% else %}
+        start program = "/etc/init.d/atd start"
+        stop  program = "/etc/init.d/atd stop"
+      {% endif %}
+        if 5 restarts within 5 cycles then timeout
+        depends on atd_bin
+      {% if ansible_service_mgr == 'systemd' %}
+        depends on atd_unit
+      {% else %}
+        depends on atd_rc
+      {% endif %}
+
+      check file atd_bin with path "/usr/sbin/atd"
+        group atd
+        include /etc/monit/templates/rootbin
+
+      {% if ansible_service_mgr == 'systemd' %}
+      check file atd_unit with path "/lib/systemd/system/atd.service"
+        group atd
+        include /etc/monit/templates/rootrc
+      {% else %}
+      check file atd_rc with path "/etc/init.d/atd"
+        group atd
+        include /etc/monit/templates/rootbin
+      {% endif %}
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.atd|d() and
+                   (ansible_local.atd.enabled|d())|bool)
+               else "init" }}'
+
+  - name: 'cron'
+    content: |
+      check process crond with pidfile /var/run/crond.pid
+        group system
+        group crond
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start cron.service"
+        stop  program = "/bin/systemctl stop  cron.service"
+      {% else %}
+        start program = "/etc/init.d/cron start"
+        stop  program = "/etc/init.d/cron stop"
+      {% endif %}
+        if 5 restarts with 5 cycles then timeout
+        depend cron_bin
+      {% if ansible_service_mgr == 'systemd' %}
+        depend cron_unit
+      {% else %}
+        depend cron_rc
+      {% endif %}
+        depend cron_spool
+
+      check file cron_bin with path /usr/sbin/cron
+        group crond
+        include /etc/monit/templates/rootbin
+
+      {% if ansible_service_mgr == 'systemd' %}
+      check file cron_unit with path "/lib/systemd/system/cron.service"
+        group crond
+        include /etc/monit/templates/rootrc
+      {% else %}
+      check file cron_rc with path "/etc/init.d/cron"
+        group crond
+        include /etc/monit/templates/rootbin
+      {% endif %}
+
+      check directory cron_spool with path /var/spool/cron/crontabs
+        group crond
+        if failed permission 1730 then unmonitor
+        if failed uid root        then unmonitor
+        if failed gid crontab     then unmonitor
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.cron|d() and
+                   (ansible_local.cron.enabled|d())|bool)
+               else "init" }}'
+
+  - name: 'memcached'
+    content: |
+      check process memcached matching "^/usr/bin/memcached"
+        group cache
+        group memcached
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start memcached.service"
+        stop  program = "/bin/systemctl stop  memcached.service"
+      {% else %}
+        start program = "/etc/init.d/memcached start"
+        stop  program = "/etc/init.d/memcached stop"
+      {% endif %}
+        if failed host 127.0.0.1 port 11211 and protocol memcache then restart
+        if cpu > 60% for 2 cycles then alert
+        if cpu > 98% for 5 cycles then restart
+        if 5 restarts within 20 cycles then timeout
+        depend memcache_bin
+      {% if ansible_service_mgr == 'systemd' %}
+        depend memcache_unit
+      {% else %}
+        depend memcache_rc
+      {% endif %}
+
+      check file memcache_bin with path /usr/bin/memcached
+        group memcached
+        include /etc/monit/templates/rootbin
+
+      {% if ansible_service_mgr == 'systemd' %}
+      check file memcache_unit with path /lib/systemd/system/memcached.service
+        group memcached
+        include /etc/monit/templates/rootrc
+      {% else %}
+      check file memcache_rc with path /etc/init.d/memcached
+        group memcached
+        include /etc/monit/templates/rootbin
+      {% endif %}
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.memcached|d() and
+                   (ansible_local.memcached.installed|d())|bool)
+               else "init" }}'
+
+  - name: 'mysql'
+    content: |
+      check process mysqld with pidfile /var/run/mysqld/mysqld.pid
+        group database
+        group mysql
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start mysql.service"
+        stop  program = "/bin/systemctl stop  mysql.service"
+      {% else %}
+        start program = "/etc/init.d/mysql start"
+        stop  program = "/etc/init.d/mysql stop"
+      {% endif %}
+        if failed host localhost port 3306 protocol mysql with timeout 15 seconds for 3 times within 4 cycles then restart
+        if failed unixsocket /var/run/mysqld/mysqld.sock protocol mysql for 3 times within 4 cycles then restart
+        if 5 restarts with 5 cycles then timeout
+        depend mysql_bin
+        depend mysql_rc
+
+      check file mysql_bin with path /usr/sbin/mysqld
+        group mysql
+        include /etc/monit/templates/rootbin
+
+      check file mysql_rc with path /etc/init.d/mysql
+        group mysql
+        include /etc/monit/templates/rootbin
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.mariadb|d() and
+                   ansible_local.mariadb.server|d("") == "localhost")
+               else "init" }}'
+
+  - name: 'nginx'
+    content: |
+      check process nginx with pidfile /var/run/nginx.pid
+        group www
+        group nginx
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start nginx.service"
+        stop  program = "/bin/systemctl stop  nginx.service"
+      {% else %}
+        start program = "/etc/init.d/nginx start"
+        stop  program = "/etc/init.d/nginx stop"
+      {% endif %}
+        if failed port 80 protocol http request "/" then restart
+        if 5 restarts with 5 cycles then timeout
+        depend nginx_bin
+      {% if ansible_service_mgr == 'systemd' %}
+        depend nginx_unit
+      {% else %}
+        depend nginx_rc
+      {% endif %}
+
+      check file nginx_bin with path /usr/sbin/nginx
+        group nginx
+        include /etc/monit/templates/rootbin
+
+      {% if ansible_service_mgr == 'systemd' %}
+      check file nginx_unit with path /lib/systemd/system/nginx.service
+        group nginx
+        include /etc/monit/templates/rootrc
+      {% else %}
+      check file nginx_rc with path /etc/init.d/nginx
+        group nginx
+        include /etc/monit/templates/rootbin
+      {% endif %}
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.nginx|d() and
+                   (ansible_local.nginx.enabled|d())|bool)
+               else "init" }}'
+
+  - name: 'openntpd'
+    content: |
+      check process ntpd matching "^/usr/sbin/ntpd -f /etc/openntpd/ntpd.conf"
+        group system
+        group ntpd
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start openntpd.service"
+        stop  program = "/bin/systemctl stop  openntpd.service"
+      {% else %}
+        start program = "/etc/init.d/openntpd start"
+        stop  program = "/etc/init.d/openntpd stop"
+      {% endif %}
+        if 4 restarts within 12 cycles then timeout
+        depend ntpd_bin
+      {% if ansible_service_mgr == 'systemd' %}
+        depend ntpd_unit
+      {% else %}
+        depend ntpd_rc
+      {% endif %}
+
+      check file ntpd_bin with path /usr/sbin/ntpd
+        group ntpd
+        include /etc/monit/templates/rootbin
+
+      {% if ansible_service_mgr == 'systemd' %}
+      check file ntpd_unit with path /lib/systemd/system/openntpd.service
+        group ntpd
+        include /etc/monit/templates/rootrc
+      {% else %}
+      check file ntpd_rc with path /etc/init.d/openntpd
+        group ntpd
+        include /etc/monit/templates/rootbin
+      {% endif %}
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.ntp|d() and
+                   (ansible_local.ntp.configured|d())|bool and
+                   ansible_local.ntp.daemon|d("") == "openntpd")
+               else "init" }}'
+
+  - name: 'postfix'
+    content: |
+      check process postfix with pidfile /var/spool/postfix/pid/master.pid
+        group system
+        group mail
+        group postfix
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start postfix.service"
+        stop  program = "/bin/systemctl stop  postfix.service"
+      {% else %}
+        start program = "/etc/init.d/postfix start"
+        stop  program = "/etc/init.d/postfix stop"
+      {% endif %}
+        if failed host localhost port 25 with protocol smtp for 2 times within 3 cycles then restart
+        if 5 restarts with 5 cycles then timeout
+        depend master_bin
+      {% if ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] %}
+        depend postfix_rc
+      {% else %}
+        depend postfix_unit
+      {% endif %}
+        depend postdrop_bin
+        depend postqueue_bin
+        depend master_cf
+        depend main_cf
+
+      {% if ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] %}
+      check file master_bin with path /usr/lib/postfix/master
+      {% else %}
+      check file master_bin with path /usr/lib/postfix/sbin/master
+      {% endif %}
+        group postfix
+        include /etc/monit/templates/rootbin
+
+      check file postdrop_bin with path /usr/sbin/postdrop
+        group postfix
+        if failed checksum        then unmonitor
+        if failed permission 2555 then unmonitor
+        if failed uid root        then unmonitor
+        if failed gid postdrop    then unmonitor
+
+      check file postqueue_bin with path /usr/sbin/postqueue
+        group postfix
+        if failed checksum        then unmonitor
+        if failed permission 2555 then unmonitor
+        if failed uid root        then unmonitor
+        if failed gid postdrop    then unmonitor
+
+      check file master_cf with path /etc/postfix/master.cf
+        group postfix
+        include /etc/monit/templates/rootrc
+
+      check file main_cf with path /etc/postfix/main.cf
+        group postfix
+        include /etc/monit/templates/rootrc
+
+      {% if ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] %}
+      check file postfix_rc with path /etc/init.d/postfix
+        group postfix
+        include /etc/monit/templates/rootbin
+      {% else %}
+      check file postfix_unit with path /lib/systemd/system/postfix.service
+        group postfix
+        include /etc/monit/templates/rootrc
+      {% endif %}
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.postfix|d() and
+                   (ansible_local.postfix.installed|d())|bool)
+               else "init" }}'
+
+  - name: 'rsyslog'
+    content: |
+      check process rsyslogd with pidfile /var/run/rsyslogd.pid
+        group system
+        group rsyslogd
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start rsyslog.service"
+        stop  program = "/bin/systemctl stop  rsyslog.service"
+      {% else %}
+        start program = "/etc/init.d/rsyslog start"
+        stop  program = "/etc/init.d/rsyslog stop"
+      {% endif %}
+        if 5 restarts with 5 cycles then timeout
+        depend on rsyslogd_bin
+      {% if ansible_service_mgr == 'systemd' %}
+        depend on rsyslogd_unit
+      {% else %}
+        depend on rsyslogd_rc
+      {% endif %}
+        depend on rsyslog_file
+
+      check file rsyslogd_bin with path /usr/sbin/rsyslogd
+        group rsyslogd
+        include /etc/monit/templates/rootbin
+
+      {% if ansible_service_mgr == 'systemd' %}
+      check file rsyslogd_unit with path "/lib/systemd/system/rsyslog.service"
+        group rsyslogd
+        include /etc/monit/templates/rootrc
+      {% else %}
+      check file rsyslogd_rc with path "/etc/init.d/rsyslog"
+        group rsyslogd
+        include /etc/monit/templates/rootbin
+      {% endif %}
+
+      check file rsyslog_file with path /var/log/messages
+        group rsyslogd
+        if timestamp > 65 minutes then alert
+        if failed permission 640  then unmonitor
+        if failed uid root        then unmonitor
+        if failed gid adm         then unmonitor
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.rsyslog|d() and
+                   (ansible_local.rsyslog.enabled|d())|bool)
+               else "init" }}'
+
+  - name: 'snmpd'
+    content: |
+      check process snmpd with pidfile /var/run/snmpd.pid
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start snmpd"
+        stop  program = "/bin/systemctl stop  snmpd"
+      {% else %}
+        start program = "/etc/init.d/snmpd start"
+        stop  program = "/etc/init.d/snmpd stop"
+      {% endif %}
+        if failed host localhost port 161 type udp then restart
+        if 5 restarts within 5 cycles then timeout
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.snmpd|d() and
+                   (ansible_local.snmpd.installed|d())|bool)
+               else "init" }}'
+
+  - name: 'sshd'
+    content: |
+      check process sshd with pidfile /var/run/sshd.pid
+        group system
+        group sshd
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start ssh.service"
+        stop  program = "/bin/systemctl stop  ssh.service"
+      {% else %}
+        start program = "/etc/init.d/ssh start"
+        stop  program = "/etc/init.d/ssh stop"
+      {% endif %}
+        if failed host localhost port 22 with proto ssh then restart
+        if 5 restarts with 5 cycles then timeout
+        depend on sshd_bin
+        depend on sftp_bin
+      {% if ansible_service_mgr == 'systemd' %}
+        depend on sshd_unit
+      {% else %}
+        depend on sshd_rc
+      {% endif %}
+        depend on sshd_rsa_key
+        depend on sshd_ecdsa_key
+        depend on sshd_ed25519_key
+
+      check file sshd_bin with path /usr/sbin/sshd
+        group sshd
+        include /etc/monit/templates/rootbin
+
+      check file sftp_bin with path /usr/lib/openssh/sftp-server
+        group sshd
+        include /etc/monit/templates/rootbin
+
+      {% if ansible_service_mgr == 'systemd' %}
+      check file sshd_unit with path /lib/systemd/system/ssh.service
+        group sshd
+        include /etc/monit/templates/rootrc
+      {% else %}
+      check file sshd_rc with path /etc/init.d/ssh
+        group sshd
+        include /etc/monit/templates/rootbin
+      {% endif %}
+
+      check file sshd_rsa_key with path /etc/ssh/ssh_host_rsa_key
+        group sshd
+        include /etc/monit/templates/rootstrict
+
+      check file sshd_ecdsa_key with path /etc/ssh/ssh_host_ecdsa_key
+        group sshd
+        include /etc/monit/templates/rootstrict
+
+      check file sshd_ed25519_key with path /etc/ssh/ssh_host_ed25519_key
+        group sshd
+        include /etc/monit/templates/rootstrict
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.sshd|d() and
+                   (ansible_local.sshd.configured|d())|bool)
+               else "init" }}'
+
+                                                                   # ]]]
+# .. envvar:: monit__config [[[
+#
+# Monit configuration which should be present on all hosts in the Ansible
+# inventory.
+monit__config: []
+
+                                                                   # ]]]
+# .. envvar:: monit__group_config [[[
+#
+# Monit configuration which should be present on hosts in specific Ansible
+# inventory group.
+monit__group_config: []
+
+                                                                   # ]]]
+# .. envvar:: monit__host_config [[[
+#
+# Monit configuration which should be present on specific hosts in the Ansible
+# inventory.
+monit__host_config: []
+
+                                                                   # ]]]
+# .. envvar:: monit__dependent_config [[[
+#
+# Monit configuration defined by other Ansible roles through role dependent
+# variables. The dependent configuration it not tracked by the role, therefore
+# try to avoid modifying existing configuration to not cause idempotency
+# loops. The dependent configuration can be overridden by the Ansible
+# inventory.
+monit__dependent_config: []
+
+                                                                   # ]]]
+# .. envvar:: monit__combined_config [[[
+#
+# List which combines all of the defined Monit configuration and passed it to
+# the Ansible tasks.
+monit__combined_config: '{{ monit__default_config
+                            + monit__service_config
+                            + monit__dependent_config
+                            + monit__config
+                            + monit__group_config
+                            + monit__host_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: monit__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+monit__apt_preferences__dependent_list:
+
+  - package: 'monit'
+    backports: [ 'wheezy', 'jessie' ]
+    reason: 'Feature parity with newer Debian releases'
+    by_role: 'debops.monit'
+
+                                                                   # ]]]
+# .. envvar:: monit__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+monit__etc_services__dependent_list:
+
+  - name: 'monit'
+    port: '{{ monit__httpd_port }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
