@@ -1,0 +1,35 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Defaults for isc-dhcp-server initscript
+# sourced by /etc/init.d/isc-dhcp-server
+# installed at /etc/default/isc-dhcp-server by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Path to dhcpd's config file (default: /etc/dhcp/dhcpd.conf).
+#DHCPD_CONF=/etc/dhcp/dhcpd.conf
+
+# Path to dhcpd's PID file (default: /var/run/dhcpd.pid).
+#DHCPD_PID=/var/run/dhcpd.pid
+
+# Additional options to start dhcpd with.
+#	Don't use options -cf or -pf here; use DHCPD_CONF/ DHCPD_PID instead
+OPTIONS="{{ dhcpd_server_options }}"
+
+# On what interfaces should the DHCP server (dhcpd) serve DHCP requests?
+#	Separate multiple interfaces with spaces, e.g. "eth0 eth1".
+{% if dhcpd_interfaces is defined and dhcpd_interfaces %}
+INTERFACES="{{ dhcpd_interfaces | join(' ') }}"
+{% else %}
+{% set dhcpd_tpl_interfaces = [] %}
+{% for interface in ansible_interfaces %}
+{% if interface != 'lo' and ((hostvars[inventory_hostname]['ansible_'+interface].ipv4 is defined and hostvars[inventory_hostname]['ansible_'+interface].ipv4) or (hostvars[inventory_hostname]['ansible_'+interface].ipv6 is defined and hostvars[inventory_hostname]['ansible_'+interface].ipv6)) %}
+{% if dhcpd_tpl_interfaces.append(interface) %}{% endif %}
+{% endif %}
+{% endfor %}
+INTERFACES="{{ dhcpd_tpl_interfaces | join(' ') }}"
+{% endif %}
+
+

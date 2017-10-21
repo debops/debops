@@ -1,0 +1,94 @@
+{% import 'macros.j2' as tpl with context %}
+# {{ ansible_managed }}
+
+{% if dhcpd_authoritative is defined and dhcpd_authoritative %}
+authoritative;
+
+{% elif dhcpd_authoritative is undefined or (dhcpd_authoritative is defined and not dhcpd_authoritative) %}
+not authoritative;
+
+{% endif %}
+{% if dhcpd_global_default_lease_time|d() and dhcpd_global_default_lease_time %}
+default-lease-time {{ dhcpd_global_default_lease_time }};
+{% endif %}
+{% if dhcpd_global_max_lease_time|d() and dhcpd_global_max_lease_time %}
+max-lease-time {{ dhcpd_global_max_lease_time }};
+
+{% endif %}
+{% if dhcpd_log_facility|d() and dhcpd_log_facility %}
+log-facility {{ dhcpd_log_facility }};
+
+{% endif %}
+{% if dhcpd_auto_options|d() and dhcpd_auto_options %}
+{% include 'auto_options.j2' %}
+{% endif %}
+{% if dhcpd_options is defined and dhcpd_options %}
+# Configuration options
+{{ dhcpd_options }}
+
+{% endif %}
+{% include 'ipxe.j2' %}
+{% if dhcpd_keys is defined and dhcpd_keys %}
+{% for key in dhcpd_keys %}
+{{ tpl.print_key(key) }}
+{% endfor %}
+{% endif %}
+{% if dhcpd_zones is defined and dhcpd_zones %}
+{% for zone in dhcpd_zones %}
+{{ tpl.print_zone(zone) }}
+{% endfor %}
+{% endif %}
+{% if dhcpd_classes is defined and dhcpd_classes %}
+{% for class in dhcpd_classes %}
+{{ tpl.print_class(class) }}
+{% endfor %}
+{% endif %}
+{% if dhcpd_failovers is defined and dhcpd_failovers %}
+{% for failover in dhcpd_failovers %}
+{{ tpl.print_failover(failover) }}
+{% endfor %}
+{% endif %}
+{% if dhcpd_shared_networks is defined and dhcpd_shared_networks %}
+{% for network in dhcpd_shared_networks %}
+{% if network.subnets is defined and network.subnets %}
+{% if network.comment is defined and network.comment %}
+# {{ network.comment }}
+{% endif %}
+shared-network "{{ network.name }}" {
+{% if network.options is defined and network.options %}
+{{ network.options | indent(8,true) }}
+{% endif %}
+{% if network.include is defined and network.include %}
+        include "{{ network.include }}";
+{% endif %}
+{% for subnet in network.subnets %}
+
+{{ tpl.print_subnet(subnet) | indent(8,true) }}
+{% endfor %}
+}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if dhcpd_groups is defined and dhcpd_groups %}
+{% for group in dhcpd_groups %}
+{{ tpl.print_group(group) }}
+{% endfor %}
+{% endif %}
+{% if dhcpd_subnets is defined and dhcpd_subnets %}
+{% for subnet in dhcpd_subnets %}
+{{ tpl.print_subnet(subnet) }}
+{% endfor %}
+{% endif %}
+{% if dhcpd_hosts is defined and dhcpd_hosts %}
+{{ tpl.print_hosts(dhcpd_hosts) }}
+{% endif %}
+{% if dhcpd_includes is defined and dhcpd_includes %}
+{% for include in dhcpd_includes %}
+include "{{ include }}";
+{% endfor %}
+
+{% endif %}
+{#
+    vim: ft=dhcpd
+#}

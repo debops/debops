@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+
+# Send mail messages about unauthorized DHCP servers
+alert_program_name2 {{ ansible_local.root.lib + "/dhcp-probe/dhcp_probe_notify2" }}
+
+{% if dhcpd_probe_legal_servers|d() and dhcpd_probe_legal_servers %}
+# Legal DHCP servers
+{% for address in dhcpd_probe_legal_servers %}
+legal_server {{ address }}
+{% endfor %}
+
+{% endif %}
+{% if dhcpd_probe_options|d() and dhcpd_probe_options %}
+# Other options
+{{ dhcpd_probe_options }}
+
+{% endif %}

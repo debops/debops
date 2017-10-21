@@ -1,0 +1,262 @@
+{#
+#   List of macros for ISC DHCP configuration, IPv4
+#   ===============================================
+#
+#   ---- Macro: print_class() ----
+#}
+{% set print = self %}
+{% macro print_class(class) %}
+{% if class.comment is defined and class.comment %}
+# {{ class.comment }}
+{% endif %}
+class "{{ class.class }}" {
+{% if class.options is defined and class.options %}
+{{ class.options | indent(8,true) }}
+{% endif %}
+{% if class.include is defined and class.include %}
+        include "{{ class.include }}";
+{% endif %}
+}
+{% if class.subclass is defined and class.subclass %}
+
+{% for key, value in class.subclass.iteritems() %}
+{% if value is defined and value %}
+subclass "{{ class.class }}" "{{ key }}" {
+{{ value | indent(8,true) }}
+}
+
+{% else %}
+subclass "{{ class.class }}" {{ key }};
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+{#
+#
+#   ---- Macro: print_group() ----
+#}
+{% macro print_group(group) %}
+{% if group.comment is defined and group.comment %}
+# {{ group.comment }}
+{% endif %}
+group {
+{% if group.options is defined and group.options %}
+{{ group.options | indent(8,true) }}
+{% endif %}
+{% if group.include is defined and group.include %}
+{% if group.include is string %}
+        include "{{ group.include }}";
+{% else %}
+{% for filename in group.include %}
+        include "{{ filename }}";
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if group.groups is defined and group.groups %}
+{% for group in group.groups %}
+{{ print_group(group) | indent(8, true) }}
+{% endfor %}
+{% endif %}
+{% if group.subnets is defined and group.subnets %}
+{% for subnet in group.subnets %}
+{{ print_subnet(subnet) | indent(8, true) }}
+{% endfor %}
+{% endif %}
+{% if group.hosts is defined and group.hosts %}
+{{ print_hosts(group.hosts) | indent(8, true) }}
+{% endif %}
+}
+{% endmacro %}
+{#
+#
+#   ---- Macro: print_subnet() ----
+#}
+{% macro print_subnet(subnet) %}
+{% if subnet.comment is defined and subnet.comment %}
+# {{ subnet.comment }}
+{% endif %}
+{% if dhcpd_ipversion is defined and dhcpd_ipversion == '6' %}
+subnet6 {{ subnet.subnet | ipaddr('network') + '/' + subnet.subnet | ipaddr('prefix') | string }} {
+{% else %}
+{% if (subnet.netmask is defined and (subnet.subnet + '/' + subnet.netmask) | ipaddr('cidr') | ipaddr('network')) %}
+subnet {{ (subnet.subnet + '/' + subnet.netmask) | ipaddr('cidr') | ipaddr('network') }} netmask {{ subnet.netmask }} {
+{% elif subnet.subnet | ipaddr('cidr') | ipaddr('network') %}
+subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('network') }} netmask {{ subnet.subnet | ipaddr('netmask') }} {
+{% else %}
+subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('address') }} netmask 255.255.255.255 {
+{% endif %}
+{% endif %}
+{% if subnet.routers is defined and subnet.routers %}
+{% if subnet.routers is string %}
+        option routers {{ subnet.routers }};
+{% else %}
+        option routers {{ subnet.routers | join(', ') }};
+{% endif %}
+{% endif %}
+{% if subnet.options is defined and subnet.options %}
+{{ subnet.options | indent(8,true) }}
+{% endif %}
+{% if subnet.include is defined and subnet.include %}
+        include "{{ subnet.include }}";
+{% endif %}
+{% if subnet.pools is defined and subnet.pools %}
+{% for pool in subnet.pools %}
+        pool {
+{% if pool.comment is defined and pool.comment %}
+                # {{ pool.comment }}
+{% endif %}
+{% if dhcpd_ipversion is defined and dhcpd_ipversion == '6' %}
+                range6 {{ pool.range }};
+{% else %}
+                range {{ pool.range }};
+{% endif %}
+{% if pool.options is defined and pool.options %}
+{{ pool.options | indent(16,true) }}
+{% endif %}
+{% if pool.include is defined and pool.include %}
+        include "{{ pool.include }}";
+{% endif %}
+        }
+{% endfor %}
+{% endif %}
+{% if subnet.hosts is defined and subnet.hosts %}
+{{ print_hosts(subnet.hosts) | indent(8, true) }}
+{% endif %}
+}
+{% endmacro %}
+{#
+#
+#   ---- Macro: print_hosts() ----
+#}
+{% macro print_hosts(hosts) %}
+{% if hosts is string %}
+include "{{ hosts }}";
+{% else %}
+{% for host in hosts %}
+{% if host.comment is defined and host.comment %}
+# {{ host.comment }}
+{% endif %}
+{# Hack to support host with multiple MACs #}
+{% if host.ethernet is defined and host.ethernet is sequence and not host.ethernet is string %}
+{% for hwaddr in host.ethernet %}
+host {{ host.hostname }}-hw{{ loop.index }} {
+{% if host.options is defined and host.options %}
+{{ host.options | indent(8,true) }}
+{% endif %}
+        hardware ethernet {{ hwaddr }};
+{% if not host.options is defined or (host.options and not 'host-name' in host.options) %}
+        option host-name "{{ host.hostname }}";
+{% endif %}
+{% if host.address is defined and host.address %}
+        fixed-address {{ host.address }};
+{% endif %}
+}
+{% endfor %}
+{% else %}
+host {{ host.hostname }} {
+{% if host.options is defined and host.options %}
+{{ host.options | indent(8,true) }}
+{% endif %}
+{% if host.ethernet is defined and host.ethernet %}
+        hardware ethernet {{ host.ethernet }};
+{% endif %}
+{% if host.address is defined and host.address %}
+{% if dhcpd_ipversion is defined and dhcpd_ipversion == '6' %}
+        fixed-address6 {{ host.address }};
+{% else %}
+        fixed-address {{ host.address }};
+{% endif %}
+{% endif %}
+}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+{#
+#
+#   ---- Macro: print_failover() ----
+#}
+{% macro print_failover(failover) %}
+{% if failover.comment is defined and failover.comment %}
+# {{ failover.comment }}
+{% endif %}
+failover peer "{{ failover.failover }}" {
+{% if failover.primary is defined and failover.primary in ansible_all_ipv4_addresses|d([]) %}
+        primary;
+        mclt {{ failover.mclt|default(3600) }};
+{% if failover.primary_fo_addr is defined and failover.primary_fo_addr %}
+        address {{ failover.primary_fo_addr }};
+{% else %}
+        address {{ failover.primary }};
+{% endif %}
+{% if failover.secondary_fo_addr is defined and failover.secondary_fo_addr %}
+        peer address {{ failover.secondary_fo_addr }};
+{% else %}
+        peer address {{ failover.secondary }};
+{% endif %}
+{% if failover.split is defined and failover.split %}
+        split {{ failover.split }};
+{% elif failover.hba is defined and failover.hba %}
+        hba {{ failover.hba }};
+{% endif %}
+{% else %}
+        secondary;
+{% if failover.secondary_fo_addr is defined and failover.secondary_fo_addr %}
+        address {{ failover.secondary_fo_addr }};
+{% else %}
+        address {{ failover.secondary }};
+{% endif %}
+{% if failover.primary_fo_addr is defined and failover.primary_fo_addr %}
+        peer address {{ failover.primary_fo_addr }};
+{% else %}
+        peer address {{ failover.primary }};
+{% endif %}
+{% endif %}
+        max-response-delay {{ failover.max_response_delay|default(30) }};
+        max-unacked-updates {{ failover.max_unacked_updates|default(10) }};
+{% if failover.load_balance_max_seconds is defined and failover.load_balance_max_seconds %}
+        load balance max seconds {{ failover.load_balance_max_seconds }};
+{% endif %}
+{% if failover.max_lease_misbalance is defined and failover.max_lease_misbalance %}
+        max-lease-misbalance {{ failover.max_lease_misbalance }};
+{% endif %}
+{% if failover.max_lease_ownership is defined and failover.max_lease_ownership %}
+        max-lease-ownership {{ failover.max_lease_ownership }};
+{% endif %}
+{% if failover.min_balance is defined and failover.min_balance %}
+        min-balance {{ failover.min_balance }};
+{% endif %}
+{% if failover.max_balance is defined and failover.max_balance %}
+        max-balance {{ failover.max_balance }};
+{% endif %}
+{% if failover.auto_partner_down is defined and failover.auto_partner_down %}
+        auto-partner-down {{ failover.auto_partner_down }};
+{% endif %}
+}
+{% endmacro %}
+{#
+#
+#   ---- Macro: print_key() ----
+#}
+{% macro print_key(key) %}
+{% if key.comment is defined and key.comment %}
+# {{ key.comment }}
+{% endif %}
+key {{ key.key }} {
+        algorithm {{ key.algorithm|default('hmac-md5') }};
+        secret {{ key.secret }};
+}
+{% endmacro %}
+{#
+#
+#   ---- Macro: print_zone() ----
+#}
+{% macro print_zone(zone) %}
+{% if zone.comment is defined and zone.comment %}
+# {{ zone.comment }}
+{% endif %}
+zone {{ zone.zone }} {
+        primary {{ zone.primary }};
+        key {{ zone.key }};
+}
+{% endmacro %}

@@ -1,0 +1,307 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# -------------------
+#   General options
+# -------------------
+
+# .. envvar:: dhcpd_mode
+#
+# What service type to configure on this host:
+#
+# - ``server``: host is an ISC DHCP server, see ``dhcpd(8)``
+#
+# - ``relay``: host is an ISC DHCP relay, see dhcrelay(8)
+#
+# - ``probe``: configure only ``dhcp-probe`` when enabled
+#
+dhcpd_mode: 'server'
+
+
+# .. envvar:: dhcpd_ipversion
+#
+# Internet Protocol version to configure: ``4`` or ``6``
+dhcpd_ipversion: '4'
+
+
+# --------------------------------
+#   ISC DHCP Relay configuration
+# --------------------------------
+
+# .. envvar:: dhcpd_relay_servers
+#
+# List of DHCP servers which should receive the relayed packets
+dhcpd_relay_servers: [ '{{ ansible_default_ipv4.gateway
+                           if (ansible_default_ipv4.gateway|d())
+                           else [] }}' ]
+
+
+# .. envvar:: dhcpd_relay_interfaces
+#
+# List of network interfaces that dhcrelay should listen on
+dhcpd_relay_interfaces: []
+
+
+# .. envvar:: dhcpd_relay_options
+#
+# Additional dhcrelay options
+dhcpd_relay_options: '{{ "-" + dhcpd_ipversion }}'
+
+
+# ---------------------------------
+#   ISC DHCP Server configuration
+# ---------------------------------
+
+# .. envvar:: dhcpd_server_options
+#
+# dhcpd(8) options
+dhcpd_server_options: '{{ "-" + dhcpd_ipversion }}'
+
+
+# ---------------------------
+#   DHCP main configuration
+# ---------------------------
+
+# .. envvar:: dhcpd_authoritative
+#
+# Is this DHCP server authoritative?
+dhcpd_authoritative: False
+
+
+# .. envvar:: dhcpd_log_facility
+#
+# Log facility to use
+dhcpd_log_facility: 'local7'
+
+
+# .. envvar:: dhcpd_interfaces
+#
+# List of network interfaces to listen on for DHCP requests
+# If this list is empty, Ansible will try to guess correct interfaces
+# automatically
+dhcpd_interfaces: []
+
+
+# .. envvar:: dhcpd_lease_time
+#
+# Max lease time in hours (default lease time is calculated below)
+dhcpd_lease_time: '24'
+
+
+# .. envvar:: dhcpd_global_default_lease_time
+#
+# Default lease time for all IP address leases (18 hours)
+dhcpd_global_default_lease_time: '{{ (((dhcpd_lease_time|int / 2) + 6) * 60 * 60)|round|int }}'
+
+
+# .. envvar:: dhcpd_global_max_lease_time
+#
+# Maximum lease time for all IP addresses (24 hours)
+dhcpd_global_max_lease_time: '{{ (dhcpd_lease_time|int * 60 * 60)|round|int }}'
+
+
+# ---------------------------
+#   DHCP advertised options
+# ---------------------------
+
+# .. envvar:: dhcpd_auto_options
+#
+# If enabled, ISC DHCP server will be configured with a set of automatically
+# detected options. See ``auto_options.j2`` template for more details.
+dhcpd_auto_options: True
+
+
+# .. envvar:: dhcpd_domain_name
+#
+# Default host domain to advertise
+dhcpd_domain_name: '{{ ansible_domain }}'
+
+
+# .. envvar:: dhcpd_domain_search
+#
+# List of additional domains which should be checked when looking for hostnames
+dhcpd_domain_search: []
+
+
+# .. envvar:: dhcpd_nameservers
+#
+# List of nameservers to advertise by default
+# If it's not specified, nameservers from ``/etc/resolv.conf`` will be used
+# instead.
+dhcpd_nameservers: []
+
+
+# .. envvar:: dhcpd_options
+#
+# Custom global options formatted as a text block
+dhcpd_options: False
+
+
+# ----------------
+#   iPXE support
+# ----------------
+
+# .. envvar:: dhcpd_ipxe
+#
+# Add iPXE-specific options to ISC DHCP server configuration.
+dhcpd_ipxe: False
+
+
+# .. envvar:: dhcpd_ipxe_dhcp_space
+#
+# Add DHCP options iPXE namespace in ``dhcpd.conf`` required to support
+# iPXE-specific DHCP options in the DHCP server configuration.
+dhcpd_ipxe_dhcp_space: True
+
+
+# .. envvar:: dhcpd_ipxe_chain_filename
+#
+# Initial file sent to hosts which requested a PXE boot, used to chain-load
+# iPXE boot loader.
+dhcpd_ipxe_chain_filename: 'undionly.kpxe'
+
+
+# .. envvar:: dhcpd_ipxe_filename
+#
+# File sent to hosts booted with iPXE, by default load the standard menu file.
+dhcpd_ipxe_filename: 'menu.ipxe'
+
+
+# .. envvar:: dhcpd_ipxe_options
+#
+# Additional DHCP options in a YAML text block format, added in the iPXE
+# section of the configuration.
+dhcpd_ipxe_options: ''
+
+
+# ----------------------------------------
+#   ISC DHCP Server configuration scopes
+# ----------------------------------------
+
+# These lists allow you to generate nested configuration scopes in
+# dhcpd.conf. Most of the information about them can be found in dhcpd.conf(5)
+# manual page. You can create nested configuration using Ansible variable
+# expansion.
+
+# .. envvar:: dhcpd_keys
+#
+# List of secret keys used for Dynamic DNS configuration. See
+# :ref:`dhcpd_keys` for more details.
+dhcpd_keys: []
+
+
+# .. envvar:: dhcpd_zones
+#
+# List of DNS zones to update with Dynamic DNS configuration. See
+# :ref:`dhcpd_zones` for more details.
+dhcpd_zones: []
+
+
+# .. envvar:: dhcpd_classes
+#
+# List of client classes (see dhcpd.conf(5)). More informaction can be found in
+# :ref:`dhcpd_classes`.
+dhcpd_classes: []
+
+
+# .. envvar:: dhcpd_groups
+#
+# List of configuration scopes groped together. See :ref:`dhcpd_groups` for
+# more details.
+dhcpd_groups: []
+
+
+# .. envvar:: dhcpd_shared_networks
+#
+# List of shared networks grouping specified subnets together. See
+# :ref:`dhcpd_shared_networks` for more details.
+dhcpd_shared_networks: []
+
+
+# .. envvar:: dhcpd_subnets
+#
+# List of subnets not in a shared network. See :ref:`dhcpd_subnets` for more
+# details.
+dhcpd_subnets: [ '{{ dhcpd_subnet_default[dhcpd_ipversion] }}' ]
+
+# Default subnet managed automatically
+dhcpd_subnet_default:
+  '4':
+    subnet: '{{ ansible_default_ipv4.network + "/" + ansible_default_ipv4.netmask }}'
+    routers: '{{ ansible_default_ipv4.gateway | default("") }}'
+    comment: 'Generated automatically by Ansible'
+  '6':
+    subnet: '{{ ((ansible_default_ipv6.address + "/" + ansible_default_ipv6.prefix)
+                 if ansible_default_ipv6.address|d() else "") }}'
+    comment: 'Generated automatically by Ansible'
+
+
+# .. envvar:: dhcpd_hosts
+#
+# Global list of hosts in DHCP. See ref:`dhcpd_hosts` for more details.
+dhcpd_hosts: []
+
+
+# List of external files to include. See :ref:`dhcpd_includes` for more
+# details.
+dhcpd_includes: []
+
+
+# .. envvar:: dhcpd_failovers
+#
+# DHCP failover configuration. See :ref:`dhcpd_failovers` for more details.
+dhcpd_failovers: []
+
+
+# -----------------------------
+#   dhcp-probe configuration
+# -----------------------------
+
+# .. envvar:: dhcpd_probe
+#
+# Enable or disable ``dhcp-probe`` script
+dhcpd_probe: False
+
+
+# .. envvar:: dhcpd_probe_mail_to
+#
+# List of mail recipients which will receive messages about unauthorized DHCP
+# servers. Set to ``[]`` to disable.
+dhcpd_probe_mail_to: [ 'root@{{ ansible_domain }}' ]
+
+
+# .. envvar:: dhcpd_probe_page_to
+#
+# Alternative list of mail recipients which will receive mail messages. Meant
+# to be used as a "pager service", you can use ``debops.smstools`` role to
+# setup a mail-SMS gateway and send the SMS messages that way.
+dhcpd_probe_page_to: []
+
+
+# .. envvar:: dhcpd_probe_mail_timeout
+#
+# Number of seconds between to wait between sending new mail messages
+dhcpd_probe_mail_timeout: '{{ (20 * 60) }}'
+
+
+# .. envvar:: dhcpd_probe_page_timeout
+#
+# Number of seconds between to wait between sending new pager messages
+dhcpd_probe_page_timeout: '{{ (20 * 60) }}'
+
+
+# .. envvar:: dhcpd_probe_legal_servers
+#
+# List of IP addresses of the host which are authorized DHCP servers.
+dhcpd_probe_legal_servers: []
+
+
+# .. envvar:: dhcpd_probe_options
+#
+# Additional ``dhcp-probe`` options specified as a YAML text block.
+dhcpd_probe_options: ''
+

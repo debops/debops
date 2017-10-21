@@ -1,0 +1,31 @@
+---
+
+- name: Configure DHCP relay in debconf
+  debconf:
+    name: 'isc-dhcp-relay'
+    question: 'isc-dhcp-relay/{{ item.key }}'
+    vtype: 'string'
+    value: '{{ item.value }}'
+  with_dict:
+    servers:    '{{ dhcpd_relay_servers | join(" ") }}'
+    interfaces: '{{ dhcpd_relay_interfaces | join(" ") }}'
+    options:    '{{ dhcpd_relay_options }}'
+  register: dhcpd_register_relay_debconf
+  when:
+    - ansible_os_family == "Debian"
+    - dhcpd_mode == 'relay'
+
+- name: Install DHCP packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ dhcpd_base_packages_map[dhcpd_mode] }}'
+    - '{{ dhcpd_base_packages_map["probe"] }}'
+
+- name: Reconfigure ISC DHCP relay
+  command: dpkg-reconfigure --frontend=noninteractive isc-dhcp-relay
+  notify: [ 'Restart dhcp relay' ]
+  when:
+    - ansible_os_family == "Debian"
+    - dhcpd_register_relay_debconf|d() and dhcpd_register_relay_debconf.changed
