@@ -1,0 +1,63 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+# Skeleton copied from debops.resources.
+
+- name: Ensure that parent directories exist
+  file:
+    path:    '{{ (owncloud__data_path + "/" + item.dest) | dirname }}'
+    state:   'directory'
+    recurse: '{{ item.parent_dirs_recurse | d(True) }}'
+    owner:   '{{ item.parent_dirs_owner   | d(owncloud__app_user) }}'
+    group:   '{{ item.parent_dirs_group   | d(owncloud__app_group) }}'
+    mode:    '{{ item.parent_dirs_mode    | d("0755") }}'
+  when: ((item.parent_dirs_create|d(True)| bool) and item.dest|d() and item.state|d("present") != 'absent')
+  with_flattened:
+    - '{{ owncloud__user_files }}'
+    - '{{ owncloud__user_files_group }}'
+    - '{{ owncloud__user_files_host }}'
+
+- name: Copy files to ownCloud user profiles
+  copy:
+    dest:     '{{ owncloud__data_path + "/" + item.dest }}'
+    src:      '{{ item.src      | d(omit) }}'
+    content:  '{{ item.content  | d(omit) }}'
+    owner:    '{{ item.owner    | d(owncloud__app_user) }}'
+    group:    '{{ item.group    | d(owncloud__app_group) }}'
+    mode:     '{{ item.mode     | d("u=rwX,g=rX,o=rX") }}'
+    selevel:  '{{ item.selevel  | d(omit) }}'
+    serole:   '{{ item.serole   | d(omit) }}'
+    setype:   '{{ item.setype   | d(omit) }}'
+    seuser:   '{{ item.seuser   | d(omit) }}'
+    follow:   '{{ item.follow   | d(omit) }}'
+    force:    '{{ item.force    | d(omit) }}'
+    backup:   '{{ item.backup   | d(omit) }}'
+    validate: '{{ item.validate | d(omit) }}'
+    remote_src: '{{ item.remote_src | d(omit) }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+  register: owncloud__register_create_user_files
+  with_flattened:
+    - '{{ owncloud__user_files }}'
+    - '{{ owncloud__user_files_group }}'
+    - '{{ owncloud__user_files_host }}'
+  when: ((item.src|d() or item.content|d()) and item.dest|d() and
+         (item.state|d('present') != 'absent'))
+
+- name: Delete files on remote hosts
+  file:
+    path:  '{{ owncloud__data_path + "/" + item.dest }}'
+    state: 'absent'
+  register: owncloud__register_delete_user_files
+  with_flattened:
+    - '{{ owncloud__user_files }}'
+    - '{{ owncloud__user_files_group }}'
+    - '{{ owncloud__user_files_host }}'
+  when: (item.dest|d() and (item.state|d('present') == 'absent'))
+
+- name: Run occ commands as specified in the inventory
+  include: 'run_occ.yml'
+  loop_control:
+    loop_var: 'owncloud__files_scan_item'
+  when: owncloud__files_scan_item|changed
+  with_items: '{{ (owncloud__register_create_user_files.results|d([]) + owncloud__register_delete_user_files.results|d([]))
+                  if (owncloud__register_create_user_files is defined and not owncloud__register_create_user_files|skipped)
+                  else [] }}'

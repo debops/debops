@@ -1,0 +1,78 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# TODO: Switch to scripting occ interface when available: https://github.com/owncloud/core/issues/16068
+#
+#
+# Already tried to fix:
+#  The loop variable 'owncloud__occ_item' is already in
+#  use. You should set the `loop_var` value in the `loop_control` option for the
+#  task to something else to avoid variable collisions and unexpected behavior.
+#
+# using owncloud__occ_item. Did not work.
+
+- name: Construct occ command for ownCloud apps configuration
+  set_fact:
+    owncloud__occ_item:
+      command: 'config:app:set {{ owncloud__apps_item.key | quote }} {{ owncloud__apps_setting_item.key | quote }} --value={{ owncloud__apps_setting_item.value|string | quote }}'
+  when: (owncloud__apps_setting_item is defined)
+
+- name: 'Construct occ command for ownCloud files:scan configuration'
+  set_fact:
+    owncloud__occ_item:
+      ## Does not support JSON output although it is listed in the help as of ownCloud 9.0.4.
+      ## Refer to https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html#file-operations
+      ## for details.
+      command: 'files:scan --path {{ owncloud__files_scan_item.item.dest | quote }}'
+  when: (owncloud__files_scan_item is defined)
+
+  # An alternative would be https://doc.owncloud.org/server/9.1/admin_manual/configuration_user/user_provisioning_api.html
+  # but `occ` is preferred in the case of Ansible.
+- name: Run given occ commands
+  command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }} {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
+  environment: '{{ owncloud__occ_item.env|d({}) }}'
+  ## TODO: Upstream needs to fix this. See above.
+  changed_when: False
+  # changed_when: (owncloud__occ_item.command|d(omit) | match("config:app:set") and
+  ## Has changed in ownCloud 9.0 and does not work anymore.
+  # changed_when: ('No such app enabled:' not in owncloud__occ_run.stdout and
+                  # ' already ' not in owncloud__occ_run.stdout)
+  failed_when: ((owncloud__occ_run.rc != 0 and 'already exists' not in owncloud__occ_run.stdout) or
+                ('An unhandled exception has been thrown:' in owncloud__occ_run.stdout))
+  ## ownCloud 8.0.11-1.1: An unhandled exception has been thrown
+  no_log: True
+  register: owncloud__occ_run
+  become: True
+  become_user: '{{ owncloud__app_user }}'
+  ## https://github.com/debops/ansible-owncloud/issues/62
+  when: (owncloud__occ_item|d() and
+         owncloud__occ_item.command|d("") != "" and
+         (owncloud__occ_item.when|d(True) | bool) and not (
+           ansible_local|d() and ansible_local.owncloud|d() and
+           ansible_local.owncloud.maintenance|d() | bool and (
+             owncloud__occ_item.command.startswith("dav") or
+             owncloud__occ_item.command.startswith("federation") or
+             owncloud__occ_item.command.startswith("files") or
+             owncloud__occ_item.command.startswith("trashbin") or
+             owncloud__occ_item.command.startswith("versions")
+           )
+         )
+         )
+
+# - name: Debug occ command
+#   debug:
+#     var: 'owncloud__occ_run'
+
+# Note: --format=json does not ensure that a valid JSON is returned:
+#
+# $ occ status --output=json
+# ownCloud or one of the apps require upgrade - only a limited number of commands are available
+# You may use your browser or the occ upgrade command to do the upgrade
+# {"installed":true,"version":"9.0.3.2","versionstring":"9.0.3","edition":""}
+
+- name: Convert occ output into Ansible data structure
+  set_fact:
+    ## regex_replace: Relies on the fact that `json_pretty` indents the JSON encoded object.
+    owncloud__occ_run_output: '{{ owncloud__occ_run.stdout_lines | map("regex_replace", "^[^{} ].*$", "") | join("") | from_json }}'
+  when: (owncloud__occ_item|d() and (owncloud__occ_item.get_output|d() | bool) and (not ansible_check_mode))
+  tags: [ 'role::owncloud:occ_config' ]

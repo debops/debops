@@ -1,0 +1,97 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Combine theme copy dictionaries [[[
+- name: Combine theme copy dictionaries
+  set_fact:
+    owncloud__theme_copy_files_combined: '{{
+                owncloud__theme_copy_files
+      | combine(owncloud__theme_copy_files_host_group)
+      | combine(owncloud__theme_copy_files_host      ) }}'
+  tags: [ 'role::owncloud:theme:copy' ]
+# .. ]]]
+
+# Create [[[
+
+- name: Ensure the theme directory is present
+  file:
+    path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name }}'
+    state: 'directory'
+  when: (owncloud__theme_directory_name != "")
+  tags:
+    - 'role::owncloud:theme:common_settings'
+
+- name: Apply common theming options using the defaults.php file
+  template:
+    src: 'srv/www/sites/themes/debops-template/defaults.php.j2'
+    dest: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/defaults.php" }}'
+    owner: 'root'
+    ## ownCloud itself does not need to change this file and does not even allow to do so.
+    group: '{{ owncloud__app_group }}'
+    mode: '0640'
+    validate: 'php -f %s'
+  when: (owncloud__theme_directory_name != "")
+  tags: [ 'role::owncloud:theme:common_settings' ]
+
+- name: Ensure that parent directories exist
+  file:
+    path: '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) | dirname }}'
+    state: 'directory'
+    owner: '{{ item.value.base_directory_owner | d(omit) }}'
+    group: '{{ item.value.base_directory_group | d(omit) }}'
+    mode:  '{{ item.value.base_directory_mode  | d(omit) }}'
+  with_dict: '{{ owncloud__theme_copy_files_combined }}'
+  when: (owncloud__theme_directory_name != "" and item.value.state|d("present") == "present")
+  tags: [ 'role::owncloud:theme:copy' ]
+
+- name: Copy additional theme files
+  copy:
+    dest:           '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) if (not item.key.startswith("/")) else item.key }}'
+    backup:         '{{ item.value.backup         | d(omit) }}'
+    content:        '{{ item.value.content        | d(omit) }}'
+    directory_mode: '{{ item.value.directory_mode | d(omit) }}'
+    follow:         '{{ item.value.follow         | d(omit) }}'
+    force:          '{{ item.value.force          | d(omit) }}'
+    owner:          '{{ item.value.owner          | d(omit) }}'
+    group:          '{{ item.value.group          | d(omit) }}'
+    mode:           '{{ item.value.mode           | d(omit) }}'
+    selevel:        '{{ item.value.selevel        | d(omit) }}'
+    serole:         '{{ item.value.serole         | d(omit) }}'
+    setype:         '{{ item.value.setype         | d(omit) }}'
+    seuser:         '{{ item.value.seuser         | d(omit) }}'
+    src:            '{{ item.value.src            | d(omit) }}'
+    validate:       '{{ item.value.validate       | d(omit) }}'
+  with_dict: '{{ owncloud__theme_copy_files_combined }}'
+  when: (owncloud__theme_directory_name != "" and item.value.state|d("present") == "present")
+  tags: [ 'role::owncloud:theme:copy' ]
+
+- name: Activate custom theme
+  template:
+    src: 'srv/www/sites/config/theme.config.php.j2'
+    dest: '{{ owncloud__deploy_path }}/config/theme.config.php'
+    owner: 'root'
+    group: '{{ owncloud__app_group }}'
+    mode: '0640'
+  when: (owncloud__theme_active != "")
+  tags: [ 'role::owncloud:theme:activate' ]
+
+# .. ]]]
+
+# Teardown [[[
+
+- name: Deactivate custom theme
+  file:
+    path: '{{ owncloud__deploy_path }}/config/theme.config.php'
+    state: 'absent'
+  when: (owncloud__theme_active == "")
+  tags: [ 'role::owncloud:theme:activate' ]
+
+- name: Delete additional theme files
+  file:
+    path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key }}'
+    state: 'absent'
+  when: (owncloud__theme_directory_name != "" and item.value.state|d("present") == "absent")
+  with_dict: '{{ owncloud__theme_copy_files_combined }}'
+  tags: [ 'role::owncloud:theme:copy' ]
+
+# .. ]]]

@@ -1,0 +1,59 @@
+#!/bin/bash
+# {{ ansible_managed }}
+#
+# Package manager hook script for auto ownCloud DB upgrades.
+# This script is run for each single package being installed or upgraded.
+#
+# https://unix.stackexchange.com/questions/226993/whats-the-difference-between-dpkgpost-invoke-and-dpkgpost-invoke-success
+# https://unix.stackexchange.com/questions/236833/apt-hook-to-check-for-specific-package-changes
+# FIXME: Check `man dpkg` and debops.nullmailer
+#
+# Note:
+# This script requires that 'requiretty' is disabled in `sudo` for the user
+# under which this script is running (normally root). '!requiretty' is the
+# default of `sudo` so if you changed that, you will need to ensure that it is
+# disabled for unattended-upgrades!
+
+set -e
+
+## Silently exit if PHP is not installed (invoked from {{ owncloud__occ_bin_file_path }}).
+command -v php >/dev/null 2>&1 || exit 0
+
+## Check if one of the trigger packages was touched by `dpkg`.
+## The script might not be executed as `dpkg` hook.
+## Unfortunately, checking against `$SUDO_COMMAND` does not work when the upgrade is done by `unattended-upgrades`.
+# echo "$SUDO_COMMAND" | egrep -q '\<(:?{{ owncloud__auto_database_upgrade_hook_script_packages_trigger | join("|") }})\>' || exit 0
+
+## Check if ownCloud is installed.
+test -r '{{ owncloud__deploy_path }}/config/config.php' || exit 0
+grep -q 'installed.*true' '{{ owncloud__deploy_path }}/config/config.php' || exit 0
+
+## Performance optimization. Check if ownCloud is in maintenance mode.
+## The `postinst` script of the owncloud-deps-php5 package puts ownCloud in maintenance mode.
+grep -q 'maintenance.*true' '{{ owncloud__deploy_path }}/config/config.php' || exit 0
+
+## Check if ownCloud requires an upgrade.
+'{{ owncloud__occ_bin_file_path }}' status | egrep -q 'require upgrade' || exit 0
+
+## The ownCloud system package puts ownCloud into maintenance mode as of ownCloud 9.0. Ensure it anyway.
+'{{ owncloud__occ_bin_file_path }}' maintenance:mode --on
+
+## Do the upgrade.
+'{{ owncloud__occ_bin_file_path }}' upgrade{{ "" if (owncloud__auto_database_upgrade_migration_test | bool) else " --skip-migration-test" }}{{ "" if (owncloud__auto_database_upgrade_3party_app_disable | bool) else " --no-app-disable" }}
+
+## Run post update scripts when defined.
+{% for item in (owncloud__post_upgrade_hook_role_list +
+				owncloud__post_upgrade_hook_list +
+				owncloud__post_upgrade_hook_group_list +
+				owncloud__post_upgrade_hook_host_list) %}
+{%   if item is string %}
+{{     item | quote }}
+{%   elif item is mapping %}
+{%     if item.path|d() and item.state|d("present") == "present" %}
+{{       item.path | quote }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+
+## Turn maintenance mode off.
+'{{ owncloud__occ_bin_file_path }}' maintenance:mode --off

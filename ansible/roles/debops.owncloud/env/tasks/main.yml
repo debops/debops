@@ -1,0 +1,64 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Ensure the custom nginx client body temp directory does exist
+  file:
+    path: '{{ owncloud__nginx_client_body_temp_path }}'
+    state: 'directory'
+    owner: '{{ ansible_local.nginx.user
+              if (ansible_local|d() and ansible_local.nginx|d() and
+                  ansible_local.nginx.user|d())
+              else "www-data" }}'
+    group: 'root'
+    mode: '0700'
+  when: (owncloud__webserver in ["nginx"] and owncloud__nginx_client_body_temp_path != "")
+
+# ownCloud directories [[[
+
+- name: Ensure the custom temp directories are setup
+  file:
+    path: '{{ item.path }}'
+    state: 'directory'
+    owner: '{{ owncloud__app_user }}'
+    group: '{{ owncloud__app_group }}'
+    mode: '{{ item.mode|d("1750") }}'
+  when: (item.path != "")
+  with_items:
+    - path: '{{ owncloud__temp_path }}'
+    - path: '{{ owncloud__php_temp_path }}'
+    - path: '{{ owncloud__nginx_client_body_temp_path }}'
+      mode: '0700'
+
+- name: Ensure a custom data directory is setup
+  file:
+    path: '{{ owncloud__data_path }}'
+    state: 'directory'
+    owner: '{{ owncloud__app_user }}'
+    group: '{{ owncloud__app_group }}'
+    mode: '0770'
+
+# .. ]]]
+
+# Ansible local facts [[[
+
+- name: Make sure that Ansible local facts directory is present
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save ownCloud local facts
+  template:
+    src: 'etc/ansible/facts.d/owncloud.fact.j2'
+    dest: '/etc/ansible/facts.d/owncloud.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: owncloud__register_local_facts
+
+- name: Gather facts if they were modified
+  action: setup
+  when: owncloud__register_local_facts|changed
+                                                                   # ]]]

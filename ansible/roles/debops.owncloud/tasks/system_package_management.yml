@@ -1,0 +1,116 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Ensure the application source directory exists
+  file:
+    dest: '{{ owncloud__src_remote_dir }}/keyring'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (owncloud__variant in ["owncloud"])
+
+- name: Copy the application keyring to the remote host
+  copy:
+    src: 'usr/local/src/owncloud/keyring/0x47AE7F72479BC94B'
+    dest: '{{ owncloud__src_remote_dir }}/keyring/0x47AE7F72479BC94B'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (owncloud__variant in ["owncloud"])
+
+- name: Add ownCloud APT OpenPGP public key
+  apt_key:
+    ## OpenPGP keys are still tracked in this repository as fallback.
+    ## https://github.com/debops/ansible-owncloud/pull/44#discussion_r73565798
+    file: '{{ owncloud__src_remote_dir }}/keyring/0x47AE7F72479BC94B'
+    # url: '{{ owncloud__apt_repo_key_url }}'
+    id: '{{ owncloud__apt_repo_key_id }}'
+    # Usage of keyserver vulnerable, use file for now.
+    # Refer to: https://github.com/ansible/ansible-modules-core/issues/5237
+    # keyserver: '{{ ansible_local.core.keyserver
+    #                if (ansible_local|d() and ansible_local.core|d() and
+    #                    ansible_local.core.keyserver|d())
+    #                else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  register: owncloud__register_apt_key
+  when: (owncloud__variant in ["owncloud"])
+
+- name: Ensure old APT OpenPGP public key are absent
+  apt_key:
+    id: '{{ item }}'
+    state: 'absent'
+  with_flattened: '{{ owncloud__old_apt_repo_keys }}'
+
+- name: Ensure deprecated APT sources files are absent
+  file:
+    path: '/etc/apt/sources.list.d/{{ item }}'
+    state: 'absent'
+  with_items:
+    - 'download_opensuse_org_repositories_isv_ownCloud_community_8_1_Debian_8_0.list'
+    - 'download_owncloud_org_download_repositories_stable_Debian_8_0.list'
+
+- name: Configure ownCloud APT repository
+  template:
+    src: 'etc/apt/sources.list.d/debops_owncloud.list.j2'
+    dest: '/etc/apt/sources.list.d/debops_owncloud.list'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: owncloud__register_apt_repository
+  when: (owncloud__variant in ["owncloud"])
+
+- name: Update APT repository cache
+  apt:
+    update_cache: True
+  when: owncloud__register_apt_key|changed or owncloud__register_apt_repository|changed
+
+  ## Use filename when available (2.1.0) https://github.com/ansible/ansible-modules-core/pull/2696
+  ## To avoid multiple of those source files.
+  ## ypid: Does not help much. When the URL changes, the old source entry will
+  ## need to be made absent so stay with the current way.
+  ## Disabled because each repository URLs would need to be made absent
+  ## manually with using `apt_repository`. If that is solved, then go with
+  ## `apt_repository` again.
+# - name: Configure ownCloud APT repository
+#   apt_repository:
+#     repo: '{{ owncloud__apt_repo_source }}'
+#     state: 'present'
+#     update_cache: True
+
+- name: Ensure specified packages are in there desired state
+  package:
+    name: '{{ item }}'
+    state: '{{ "absent" if (owncloud__deploy_state in [ "absent" ]) else (
+                 "latest"
+                 if (ansible_local|d() and ansible_local.owncloud|d() and (
+                     (ansible_local.owncloud.release|d(owncloud__release) != owncloud__release) or
+                     (ansible_local.owncloud.auto_security_updates_enabled|d()|bool)
+                   ))
+                 else "present") }}'
+  register: owncloud__register_apt_install
+  with_flattened:
+    - '{{ owncloud__base_packages }}'
+    - '{{ owncloud__packages }}'
+    - '{{ owncloud__group_packages }}'
+    - '{{ owncloud__host_packages }}'
+    - '{{ owncloud__dependent_packages }}'
+
+- name: Install the package manager hook script for ownCloud
+  template:
+    src: 'usr/local/lib/owncloud_dpkg_hook.j2'
+    dest: '{{ owncloud__dpkg_hook_script }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  tags: [ 'role::owncloud:auto_upgrade' ]
+  when: (owncloud__variant in ["owncloud"])
+
+  ## FIXME: Remove when the DPKG hook is 100 % reliable and/or
+  ## ownCloud/NextCloud provide a native hook/support.
+- name: Ensure that the ownCloud upgrade has completed
+  command: '{{ owncloud__dpkg_hook_script }}'
+  when: (owncloud__variant in ["owncloud"] and
+         owncloud__register_apt_install|changed and
+         (ansible_local|d() and ansible_local.owncloud|d() and
+         ansible_local.owncloud.auto_security_updates_enabled|d()|bool))
