@@ -1,0 +1,45 @@
+---
+
+- name: Install LVM support
+  apt:
+    name:  '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: '{{ lvm__packages }}'
+
+- name: Divert original lvm.conf
+  command: dpkg-divert --quiet --local --divert /etc/lvm/lvm.conf.dpkg-divert --rename /etc/lvm/lvm.conf
+  args:
+    creates: '/etc/lvm/lvm.conf.dpkg-divert'
+
+- name: Check LVM version
+  environment:
+    LC_MESSAGES: 'C'
+  shell: dpkg-query -W -f='${Version}\n' 'lvm2' | grep -v '^$' | cut -d- -f1
+  register: lvm__register_version
+  changed_when: False
+  check_mode: False
+
+- name: Lookup base LVM configuration
+  include_vars: '{{ item }}'
+  with_first_found:
+    - '{{ "lvm_config_" + lvm__config_lookup + ".yml" }}'
+    - '{{ "lvm_config_" + lvm__register_version.stdout + ".yml" }}'
+    - '{{ "lvm_config_" + ansible_distribution | lower + "_" + ansible_distribution_release + ".yml" }}'
+    - '{{ "lvm_config_" + ansible_distribution | lower + ".yml" }}'
+    - 'lvm_config_default.yml'
+
+- name: Configure LVM
+  template:
+    src: 'etc/lvm/lvm.conf.j2'
+    dest: '/etc/lvm/lvm.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Manage LVM
+  include: manage_lvm.yml
+  when: (ansible_local|d() and ((ansible_local.root and 'ignore-cap12s' in ansible_local.root.flags) or
+         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
+
