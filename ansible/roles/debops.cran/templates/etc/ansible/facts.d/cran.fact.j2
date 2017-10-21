@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+output = loads('''{{ {"installed": True, "mirror": cran__upstream_mirror} | to_json }}''')
+
+try:
+    with open(os.devnull, 'w') as devnull:
+        cran_stdout = subprocess.check_output(
+            ["/usr/bin/R --version"],
+            shell=True, stderr=devnull)
+
+except subprocess.CalledProcessError:
+    pass
+
+if cran_stdout:
+    for line in cran_stdout.split('\n'):
+        if 'R version' in line:
+            output['version'] = line.split()[2]
+
+print(dumps(output, sort_keys=True, indent=2))

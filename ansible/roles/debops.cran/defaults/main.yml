@@ -1,0 +1,174 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.cran default variables [[[
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Upstream configuration [[[
+# --------------------------
+
+# .. envvar:: cran__upstream [[[
+#
+# Enable or disable configuration of upstream CRAN APT repositories. If
+# disabled, R APT packages from the current OS release will be used instead.
+# You can find more information about upstream R packages at
+# https://cran.r-project.org/bin/linux/debian/
+cran__upstream: True
+
+                                                                   # ]]]
+# .. envvar:: cran__upstream_mirror [[[
+#
+# The default CRAN mirror used by the APT package manager, as well as the
+# source of R packages to install system-wide.
+# See https://cran.r-project.org/mirrors.html for more details.
+cran__upstream_mirror: 'https://cloud.r-project.org/'
+
+                                                                   # ]]]
+# .. envvar:: cran__upstream_apt_key_map [[[
+#
+# YAML dictionary that maps GPG keys of the upstream CRAN APT repositories to
+# the OS distributions.
+cran__upstream_apt_key_map:
+  'Debian': 'E19F5F87128899B192B1A2C2AD5F960A256A04AF'
+  'Ubuntu': 'E298A3A825C0D65DFD57CBB651716619E084DAB9'
+
+                                                                   # ]]]
+# .. envvar:: cran__upstream_apt_key [[[
+#
+# The GPG key of the upstream CRAN APT repository.
+cran__upstream_apt_key: '{{ cran__upstream_apt_key_map[ansible_distribution] }}'
+
+                                                                   # ]]]
+# .. envvar:: cran__upstream_apt_suite_map [[[
+#
+# YAML dictionary that maps APT suites of the CRAN APT repository to OS
+# distributions.
+cran__upstream_apt_suite_map:
+  'Debian': '{{ ansible_distribution_release + "-cran34/" }}'
+  'Ubuntu': '{{ ansible_distribution_release + "/" }}'
+
+                                                                   # ]]]
+# .. envvar:: cran__upstream_apt_suite [[[
+#
+# The APT suite of the upstream CRAN APT repository.
+cran__upstream_apt_suite: '{{ cran__upstream_apt_suite_map[ansible_distribution] }}'
+
+                                                                   # ]]]
+# .. envvar:: cran__upstream_apt_repo [[[
+#
+# The URL of the upstream CRAN APT repository to configure on the host.
+cran__upstream_apt_repo: '{{ "deb " + cran__upstream_mirror + "bin/linux/"
+                             + ansible_distribution|lower + " "
+                             + cran__upstream_apt_suite }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: cran__base_packages [[[
+#
+# List of the default APT packages to install for R support.
+cran__base_packages: [ 'r-base', 'r-base-dev', 'r-recommended' ]
+
+                                                                   # ]]]
+# .. envvar:: cran__packages [[[
+#
+# List of APT packages to install with R on all hosts in the Ansible inventory.
+cran__packages: []
+
+                                                                   # ]]]
+# .. envvar:: cran__group_packages [[[
+#
+# List of APT packages to install with R on hosts in a specific Ansible
+# inventory group.
+cran__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: cran__host_packages [[[
+#
+# List of APT packages to install with R on specific hosts in the Ansible
+# inventory.
+cran__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: cran__dependent_packages [[[
+#
+# List of APT packages to install with R that are requested by other Ansible
+# roles via role dependent variables.
+cran__dependent_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# R packages [[[
+# --------------
+
+# These variables define what R packages will be installed or removed
+# system-wide (in :file:`/usr/local/lib/R/site-library/` directory).
+# See :ref:`cran__ref_r_packages` for more details.
+
+# .. envvar:: cran__r_packages [[[
+#
+# List of the R packages to manage system-wide on all hosts in the Ansible
+# inventory.
+cran__r_packages: []
+
+                                                                   # ]]]
+# .. envvar:: cran__group_r_packages [[[
+#
+# List of the R packages to manage system-wide on hosts in a specific Ansible
+# inventory group.
+cran__group_r_packages: []
+
+                                                                   # ]]]
+# .. envvar:: cran__host_r_packages [[[
+#
+# List of the R packages to manage system-wide on specific hosts in the Ansible
+# inventory.
+cran__host_r_packages: []
+
+                                                                   # ]]]
+# .. envvar:: cran__dependent_r_packages [[[
+#
+# List of the R packages to manage system-wide requested by other Ansible roles
+# via role dependent variables.
+cran__dependent_r_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Other configuration options [[[
+# -------------------------------
+
+# .. envvar:: cran__java_integration [[[
+#
+# Enable or disable Java integration if Java environment is detected on a host.
+# Java might be required to install some R packages.
+cran__java_integration: '{{ True
+                            if (ansible_local|d() and ansible_local.java|d() and
+                                (ansible_local.java.installed|d())|bool)
+                            else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# Configuration for the debops.apt_preferences Ansible role.
+cran__apt_preferences__dependent_list:
+
+  - packages: [ 'r-cran-coda', 'rkward' ]
+    pin: 'release o=CRAN'
+    priority: '600'
+    by_role: 'debops_cran'
+    reason: |
+      Packages in Debian Archive incompatible with upstream CRAN packages
+      https://cran.r-project.org/bin/linux/debian/#debian-stretch-stable
+    filename: 'debops_cran.pref'
+    state: '{{ "present"
+               if (ansible_distribution == "Debian" and cran__upstream|bool)
+               else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
