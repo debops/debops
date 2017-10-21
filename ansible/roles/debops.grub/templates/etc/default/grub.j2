@@ -1,0 +1,84 @@
+# {{ ansible_managed }}
+#
+# If you change this file, run 'update-grub' afterwards to update
+# /boot/grub/grub.cfg.
+# For full documentation of the options in this file, see:
+#   info -f grub -n 'Simple configuration'
+
+{% set grub_tpl_local_kernel_options = [] %}
+{% set grub_tpl_default_kernel_params = [] %}
+{% if ansible_local|d() and ansible_local.grub|d() and ansible_local.grub.kernel_options|d() %}
+{%   set grub_tpl_local_kernel_options = ansible_local.grub.kernel_options %}
+{% endif %}
+{% set grub_tpl_kernel_params = grub_kernel_options %}
+{% if grub_save_options %}
+{%   set grub_tpl_default_kernel_params = grub_fact_default_kernel_parameters %}
+{%   set grub_tpl_kernel_params = ((grub_tpl_kernel_params + grub_fact_old_kernel_parameters + grub_tpl_local_kernel_options + grub_dependent_kernel_options) | sort | unique) %}
+{% endif %}
+{% set grub_tpl_default = "0" %}
+{% if ansible_local|d() and ansible_local.grub|d() and ansible_local.grub.default|d() %}
+{%   set grub_tpl_default = ansible_local.grub.default %}
+{% elif grub_dependent_default %}
+{%   set grub_tpl_default = grub_dependent_default %}
+{% endif %}
+{% if grub_default %}
+{%   set grub_tpl_default = grub_default %}
+{% endif %}
+{% if grub_serial_console %}
+{%   set _ = grub_tpl_kernel_params.append('console=tty0') %}
+{%   set _ = grub_tpl_kernel_params.append('console=ttyS{},{}n8'.format(grub_serial_console_unit,grub_serial_console_speed)) %}
+{% endif %}
+GRUB_DEFAULT={{ grub_tpl_default }}
+{% if grub_hidden_timeout %}
+GRUB_HIDDEN_TIMEOUT={{ grub_hidden_timeout }}
+GRUB_HIDDEN_TIMEOUT_QUIET={{ grub_hidden_timeout_quiet }}
+{% endif %}
+{% if ansible_virtualization_role is undefined or ansible_virtualization_role not in [ 'guest' ] %}
+GRUB_TIMEOUT={{ grub_timeout_hardware }}
+{% else %}
+GRUB_TIMEOUT={{ grub_timeout_virtual }}
+{% endif %}
+GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
+GRUB_CMDLINE_LINUX_DEFAULT="{{ grub_tpl_default_kernel_params | join(' ')}}"
+GRUB_CMDLINE_LINUX="{{ grub_tpl_kernel_params | join(' ') }}"
+
+# Uncomment to enable BadRAM filtering, modify to suit your needs
+# This works with Linux (no patch required) and with any kernel that obtains
+# the memory map information from GRUB (GNU Mach, kernel of FreeBSD ...)
+#GRUB_BADRAM="0x01234567,0xfefefefe,0x89abcdef,0xefefefef"
+
+{% if grub_terminal %}
+GRUB_TERMINAL="{{ grub_terminal }}"
+{% else %}
+# Uncomment to disable graphical terminal (grub-pc only)
+#GRUB_TERMINAL=console
+{% endif %}
+
+# The resolution used on graphical terminal
+# note that you can use only modes which your graphic card supports via VBE
+# you can see them in real GRUB with the command `vbeinfo'
+#GRUB_GFXMODE=640x480
+
+# Uncomment if you don't want GRUB to pass "root=UUID=xxx" parameter to Linux
+#GRUB_DISABLE_LINUX_UUID=true
+
+# Uncomment to disable generation of recovery mode menu entries
+#GRUB_DISABLE_RECOVERY="true"
+
+# Uncomment to get a beep at grub start
+#GRUB_INIT_TUNE="480 440 1"
+{% if grub_serial_console %}
+
+GRUB_SERIAL_COMMAND="serial --unit={{ grub_serial_console_unit }} --speed={{ grub_serial_console_speed }} --word=8 --parity=no --stop=1"
+{% endif %}
+{% if grub_combined_users|length > 0 and grub_menuentry_access is string %}
+
+# Needs to be exported until it is patched upstream.
+## FIXME: Remove `export` when patched upstream has reached Debian stable.
+## Currently unlikely because the patch was not accepted upstream.
+export GRUB_LINUX_MENUENTRY_CLASS_ADDITIONAL="{{ grub_menuentry_access }}"
+{% endif %}
+{% if grub_custom_options %}
+
+{{ grub_custom_options }}
+{% endif %}
