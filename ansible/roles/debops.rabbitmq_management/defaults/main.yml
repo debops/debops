@@ -1,0 +1,190 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.rabbitmq_management default variables [[[
+# ================================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: rabbitmq_management__local [[[
+#
+# Enable or disable configuration of the RabbitMQ Management Console on a given
+# host. Other services like :command:`nginx` will still be configured if this
+# variable is set to ``False``, the role just assumes that the Management
+# Console is on a different host.
+rabbitmq_management__local: '{{ True
+                                if (ansible_local|d() and ansible_local.rabbitmq_server|d() and
+                                    ansible_local.rabbitmq_server.installed|d() and
+                                    ansible_local.rabbitmq_server.installed|bool)
+                                else False }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__deploy_state [[[
+#
+# If ``present``, RabbitMQ Management Console will be configured on a given
+# host. If ``absent``, the RabbitMQ Management Console will be uninstalled.
+rabbitmq_management__deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__fqdn [[[
+#
+# The Fully Qualified Domain Name address on which the RabbitMQ Management
+# Console will be accessible.
+rabbitmq_management__fqdn: 'rabbitmq.{{ rabbitmq_management__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__domain [[[
+#
+# The DNS domain used by default to configure the main application FQDN.
+rabbitmq_management__domain: '{{ ansible_local.core.domain
+                                 if (ansible_local|d() and ansible_local.core|d() and
+                                     ansible_local.core.domain|d())
+                                 else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__webserver_allow [[[
+#
+# List of IP addresses or CIDR subnets which will be permitted to access the
+# RabbitMQ Management Console web interface. If the list is empty, anybody can
+# access the service.
+rabbitmq_management__webserver_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ plugins [[[
+# --------------------
+
+# .. envvar:: rabbitmq_management__default_plugins [[[
+#
+# List of default RabbitMQ plugins to enable.
+rabbitmq_management__default_plugins: [ 'rabbitmq_management' ]
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__plugins [[[
+#
+# List of additional RabbitMQ plugins to enable.
+rabbitmq_management__plugins: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Backend plugin configuration [[[
+# --------------------------------
+
+# .. envvar:: rabbitmq_management__app_port [[[
+#
+# The TCP port used by the RabbitMQ Management Console plugin.
+rabbitmq_management__app_port: '15672'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__app_bind [[[
+#
+# The interface to which the plugin will be bound. Keep in mind that the
+# Management Console needs to be accessed over an interface different than the
+# ``localhost``, otherwise the ``loopback_users`` RabbitMQ configuration option
+# will not work. A firewall is very useful to protect the external TCP port.
+#
+# With the default configuration, the plugin will listen on both IPv4 and IPv6
+# networks.
+rabbitmq_management__app_bind: '::'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__app_host [[[
+#
+# The FQDN address on which the plugin will be accessed by the reverse proxy
+# (:command:`nginx`). By default it's the host's own FQDN.
+rabbitmq_management__app_host: '{{ ansible_local.core.fqdn
+                                   if (ansible_local|d() and ansible_local.core|d() and
+                                       ansible_local.core.fqdn|d()) else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__app_protocol [[[
+#
+# The HTTP protocol to use to contact the backend service. If the service is
+# installed locally, ``http://`` is used by default, else the ``https://`` is
+# assumed as default.
+rabbitmq_management__app_protocol: '{{ "http"
+                                       if rabbitmq_management__local|bool
+                                       else "https" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ main configuration [[[
+# -------------------------------
+
+# .. envvar:: rabbitmq_management__default_config [[[
+#
+# Default configuration options for the RabbitMQ Management Console. See the
+# documentation of the ``debops.rabbitmq_server`` Ansible role for more
+# details.
+rabbitmq_management__default_config:
+
+  - name: 'rabbitmq_management'
+    state: '{{ rabbitmq_management__deploy_state }}'
+    options:
+
+      - name: 'listener'
+        value: |
+          [{port, {{ rabbitmq_management__app_port + '}' }},
+           {ip, "{{ rabbitmq_management__app_bind }}"}]
+        comment: |
+          Communication with the Management Console is done using
+          a reverse proxy at 'https://{{ rabbitmq_management__fqdn }}/'
+        type: 'raw'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__config [[[
+#
+# Additional configuration options set in the RabbitMQ configuration file.
+rabbitmq_management__config: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: rabbitmq_management__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+rabbitmq_management__etc_services__dependent_list:
+
+  - name: 'rabbitmq-mgmt'
+    port: '{{ rabbitmq_management__app_port }}'
+    comment: 'RabbitMQ Management Console'
+    state: '{{ rabbitmq_management__deploy_state }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__rabbitmq_server__dependent_config [[[
+#
+# Configuration for the ``debops.rabbitmq_server`` Ansible role.
+rabbitmq_management__rabbitmq_server__dependent_config:
+  - '{{ rabbitmq_management__default_config }}'
+  - '{{ rabbitmq_management__config }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__nginx__dependent_servers [[[
+#
+# Server configuration for the debops.nginx_ Ansible role.
+rabbitmq_management__nginx__dependent_servers:
+  - name: '{{ rabbitmq_management__fqdn }}'
+    by_role: 'debops.rabbitmq_management'
+    filename: 'debops.rabbitmq_management'
+    state: '{{ rabbitmq_management__deploy_state }}'
+    type: 'proxy'
+    proxy_pass: '{{ rabbitmq_management__app_protocol }}://rabbitmq_management'
+    proxy_redirect: 'default'
+    allow: '{{ rabbitmq_management__webserver_allow }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_management__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the debops.nginx_ Ansible role.
+rabbitmq_management__nginx__dependent_upstreams:
+  - name: 'rabbitmq_management'
+    server: '{{ rabbitmq_management__app_host + ":" + rabbitmq_management__app_port }}'
+    state: '{{ rabbitmq_management__deploy_state }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
