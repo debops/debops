@@ -1,0 +1,117 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.java default variables [[[
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Support for backported OpenJRE 8 environment [[[
+# ------------------------------------------------
+
+# .. envvar:: java__install_v8 [[[
+#
+# The role will install OpenJRE 8 on older OS releases that provide backported
+# packages. For this to work correctly, the host needs to have enabled
+# Backports repositories. See debops.apt_ role for more details.
+#
+# If the APT configuration is not detected, the role will install the default
+# Java packages for a given OS release.
+java__install_v8: '{{ True
+                      if ((ansible_local|d() and ansible_local.apt|d() and
+                           ansible_local.apt.configured|d()) and
+                          (ansible_distribution_release in java__v8_backported_releases))
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: java__install_jdk [[[
+#
+# By default the role installs only the Java Runtime Environment (JRE)
+# packages. Other Ansible roles can request installation of the compatible Java
+# Development Kit (JDK) by enabling this variable.
+java__install_jdk: False
+
+                                                                   # ]]]
+# .. envvar:: java__v8_backported_releases [[[
+#
+# List of OS releases which provide OpenJRE 8 packages through Backports.
+java__v8_backported_releases: [ 'jessie' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Java APT packages [[[
+# ---------------------
+
+# .. envvar:: java__base_packages [[[
+#
+# List of default APT packages which should be installed for Java Runtime
+# Environment.
+java__base_packages: '{{ ([ "openjdk-8-jre-headless" ] if java__install_v8|bool else [ "default-jre-headless" ])
+                        + [ "ca-certificates-java" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: java__jdk_packages [[[
+#
+# List of default APT packages which should be installed for Java Development
+# Kit.
+java__jdk_packages: '{{ ([ "openjdk-8-jdk-headless" ]
+                         if java__install_v8|bool
+                         else ([ "default-jdk" ]
+                               if (ansible_distribution_release in
+                                   [ "wheezy", "jessie", "precise", "trusty" ])
+                               else [ "default-jdk-headless" ]))
+                        if java__install_jdk|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: java__packages [[[
+#
+# List of APT packages which should be installed on all hosts in Ansible
+# inventory.
+java__packages: []
+
+                                                                   # ]]]
+# .. envvar:: java__group_packages [[[
+#
+# List of APT packages which should be installed on a group of hosts in Ansible
+# inventory.
+java__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: java__host_packages [[[
+#
+# List of APT packages which should be installed on specific hosts in Ansible
+# inventory.
+java__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: java__dependent_packages [[[
+#
+# List of APT packages requested by other Ansible roles.
+java__dependent_packages: []
+
+                                                                   # ]]]
+# .. envvar:: java__alternatives [[[
+#
+# Set java alternatives.
+java__alternatives: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: java__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+java__apt_preferences__dependent_list:
+
+  - package: 'ca-certificates-java'
+    backports: [ 'jessie' ]
+    reason:  'Requied by OpenJRE/OpenJDK 8 from Backports'
+    by_role: 'debops.java'
+    state:   '{{ "present" if java__install_v8|bool else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

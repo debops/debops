@@ -1,0 +1,38 @@
+---
+
+- name: Install Java packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ java__base_packages }}'
+    - '{{ java__jdk_packages }}'
+    - '{{ java__packages }}'
+    - '{{ java__group_packages }}'
+    - '{{ java__host_packages }}'
+    - '{{ java__dependent_packages }}'
+
+- name: Update Java alternatives
+  command: 'update-java-alternatives -s {{ java__alternatives }}'
+  when: java__alternatives|d()
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Java local facts
+  template:
+    src: 'etc/ansible/facts.d/java.fact.j2'
+    dest: '/etc/ansible/facts.d/java.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: java__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: java__register_facts|changed

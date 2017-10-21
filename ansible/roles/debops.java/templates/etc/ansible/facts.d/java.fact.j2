@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+output = {"installed": True}
+
+try:
+    with open(os.devnull, 'w') as devnull:
+        java_stdout = subprocess.check_output(
+            ["/usr/bin/java -version 2>&1"],
+            shell=True)
+
+except subprocess.CalledProcessError:
+    pass
+
+if java_stdout:
+    for line in java_stdout.split('\n'):
+        if 'version' in line:
+            output['version'] = line.split()[2].strip('"').split('_')[0]
+
+print(dumps(output, sort_keys=True, indent=2))
