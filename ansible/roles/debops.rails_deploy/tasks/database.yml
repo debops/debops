@@ -1,0 +1,60 @@
+---
+
+- name: Create PostgreSQL user
+  postgresql_user:
+    login_host: '{{ rails_deploy_database_host }}'
+    port: '{{ rails_deploy_database_port }}'
+    login_user: '{{ rails_deploy_postgresql_super_username }}'
+    login_password: '{{ rails_deploy_database_super_password }}'
+    name: '{{ rails_deploy_service }}'
+    password: '{{ rails_deploy_database_user_password }}'
+    encrypted: False
+    state: 'present'
+    role_attr_flags: '{{ rails_deploy_database_user_role_attrs }}'
+
+  when: rails_deploy_database_adapter == 'postgresql' and
+        inventory_hostname == rails_deploy_hosts_master
+  become_user: '{{ rails_deploy_postgresql_super_username }}'
+
+- name: Create PostgreSQL database if enabled
+  postgresql_db:
+    login_host: '{{ rails_deploy_database_host }}'
+    port: '{{ rails_deploy_database_port }}'
+    login_user: '{{ rails_deploy_postgresql_super_username }}'
+    login_password: '{{ rails_deploy_database_super_password }}'
+    name: '{{ rails_deploy_service }}_{{ rails_deploy_system_env }}'
+    owner: '{{ rails_deploy_service }}'
+    encoding: 'UTF-8'
+    state: 'present'
+    template: 'template1'
+  register: rails_deploy_register_database_created
+  when: rails_deploy_database_adapter == 'postgresql' and
+        inventory_hostname == rails_deploy_hosts_master
+  become_user: '{{ rails_deploy_postgresql_super_username }}'
+
+- name: Create MySQL user
+  mysql_user:
+    login_host: '{{ rails_deploy_database_host }}'
+    login_port: '{{ rails_deploy_database_port }}'
+    login_user: '{{ rails_deploy_mysql_super_username }}'
+    login_password: '{{ rails_deploy_database_super_password }}'
+    name: '{{ rails_deploy_service }}'
+    password: '{{ rails_deploy_mysql_user_password }}'
+    state: 'present'
+  when: rails_deploy_database_adapter == 'mysql' and
+        inventory_hostname == rails_deploy_hosts_master
+  become_user: '{{ rails_deploy_mysql_super_username }}'
+
+- name: Create MySQL database if enabled
+  mysql_db:
+    login_host: '{{ rails_deploy_database_host }}'
+    login_port: '{{ rails_deploy_database_port }}'
+    login_user: '{{ rails_deploy_mysql_super_username }}'
+    login_password: '{{ rails_deploy_database_super_password }}'
+    name: '{{ rails_deploy_service }}_{{ rails_deploy_system_env }}'
+    encoding: 'UTF-8'
+    state: 'present'
+  register: rails_deploy_register_database_created
+  when: rails_deploy_database_adapter == 'mysql' and
+        inventory_hostname == rails_deploy_hosts_master
+  become_user: '{{ rails_deploy_mysql_super_username }}'

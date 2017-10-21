@@ -1,0 +1,22 @@
+---
+
+# Break down the git location.
+rails_deploy_git_location_pieces: "{{ rails_deploy_git_location.split('@')[1].split('/') if not 'file://' in rails_deploy_git_location else False }}"
+rails_deploy_git_host: "{{ (rails_deploy_git_location_pieces[0] if 'ssh://' in rails_deploy_git_location else rails_deploy_git_location_pieces[0].split(':')[0]) if rails_deploy_git_location_pieces else '' }}"
+rails_deploy_git_account: "{{ (rails_deploy_git_location_pieces[-2] if 'ssh://' in rails_deploy_git_location else rails_deploy_git_location_pieces[0].split(':')[1]) if rails_deploy_git_location_pieces else '' }}"
+rails_deploy_git_repo: "{{ rails_deploy_git_location | basename | replace('.git', '') if not 'file://' in rails_deploy_git_location else '' }}"
+
+# Service/Worker related paths.
+rails_deploy_env_source: '. /etc/default/{{ rails_deploy_service }}'
+rails_deploy_log: '/var/log/{{ rails_deploy_service }}'
+rails_deploy_run: '/var/run/{{ rails_deploy_service }}'
+rails_deploy_service_socket: '{{ rails_deploy_run }}/{{ rails_deploy_service }}'
+rails_deploy_service_pid: '{{ rails_deploy_run }}/{{ rails_deploy_service }}.pid'
+rails_deploy_worker_pid: '{{ rails_deploy_run }}/{{ rails_deploy_worker }}.pid'
+
+# Database related values.
+rails_deploy_database_package: "{{ 'libpq-dev' if rails_deploy_database_adapter == 'postgresql' else 'libmysqlclient-dev' }}"
+
+rails_deploy_database_super_password: "{{ lookup('password', secret + '/credentials/' + rails_deploy_database_host + '/postgresql/default/' + rails_deploy_postgresql_super_username + '/password length=20') if 'postgresql' in rails_deploy_database_adapter else lookup('password', secret + '/credentials/' + rails_deploy_database_host + '/mysql/' + rails_deploy_mysql_super_username + '/password length=20') }}"
+
+rails_deploy_database_user_password: "{{ lookup('password', secret + '/credentials/' + rails_deploy_database_host + '/postgresql/' + rails_deploy_postgresql_cluster + rails_deploy_service + '/password length=20') if 'postgresql' in rails_deploy_database_adapter else lookup('password', secret + '/credentials/' + rails_deploy_database_host + '/mysql/' + rails_deploy_service + '/password length=20') }}"

@@ -1,0 +1,315 @@
+#! /bin/bash
+{% set rails_deploy_tpl_label = rails_deploy_service if item == 'service' else rails_deploy_worker -%}
+{% set rails_deploy_tpl_bin = rails_deploy_backend if item == 'service' else rails_deploy_worker -%}
+{% set rails_deploy_tpl_pid = rails_deploy_service_pid if item == 'service' else rails_deploy_worker_pid -%}
+{% set rails_deploy_tpl_config = rails_deploy_backend + '.rb' if item == 'service' else rails_deploy_worker + '.yml' -%}
+{% set rails_deploy_tpl_respond_to = 'start|stop|restart|reload|status' if item == 'service' else 'start|stop|restart|status}' -%}
+# This file is managed by Ansible, all changes will be lost
+
+# Heavily inspired by: https://github.com/gitlabhq/gitlabhq
+
+### BEGIN INIT INFO
+# Provides:          {{ rails_deploy_tpl_label }}
+# Required-Start:    $local_fs $remote_fs $network $rsyslog
+# Required-Stop:     $local_fs $remote_fs $network $rsyslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Manage {{ rails_deploy_tpl_label }}
+# Description:       Manage {{ rails_deploy_tpl_label }}
+### END INIT INFO
+
+# ---------------------------------------------------------------------------
+# configuration options
+# ---------------------------------------------------------------------------
+bundle="bundle"
+
+service="{{ rails_deploy_tpl_label }}"
+user="{{ rails_deploy_service }}"
+home="{{ rails_deploy_home }}"
+src="{{ rails_deploy_src }}"
+env_source="{{ rails_deploy_env_source }}"
+run="{{ rails_deploy_run }}"
+bin="{{ rails_deploy_src }}/bin/{{ rails_deploy_tpl_bin }}"
+
+{% if item == 'service' %}
+socket="{{ rails_deploy_service_socket }}"
+{% endif %}
+pid="{{ rails_deploy_tpl_pid }}"
+service_timeout="{{ rails_deploy_service_timeout }}"
+
+{% if rails_deploy_tpl_bin == 'puma' or rails_deploy_tpl_bin == 'sidekiq' -%}
+config="C"
+daemon="d"
+{% elif rails_deploy_tpl_bin == 'unicorn' -%}
+config="c"
+daemon="D"
+{% endif -%}
+
+config_flag="-$config $src/config/{{ rails_deploy_tpl_config }}"
+
+# ---------------------------------------------------------------------------
+# source the environment, ensure correct user, and set the path
+# ---------------------------------------------------------------------------
+if ! $env_source ; then
+ echo "failed to source environment for $service, exiting"; exit 1;
+fi
+
+if [ "$USER" != "$user" ]; then
+  eval su - "$user" -c $(echo \")$0 "$@"$(echo \"); exit;
+fi
+
+if ! cd "$src" ; then
+ echo "failed to cd into $src, exiting"; exit 1;
+fi
+
+# ---------------------------------------------------------------------------
+# private commands to control {{ rails_deploy_tpl_label }}
+# ---------------------------------------------------------------------------
+{% if item == 'service' %}
+service_start(){
+$bundle exec $bin $config_flag -$daemon 2>&1 | logger -t {{ rails_deploy_backend }} &
+}
+
+service_stop(){
+  kill -KILL $wpid
+}
+
+service_reload(){
+  kill -USR2 $wpid
+}
+{% else %}
+service_start(){
+$bundle exec $bin $config_flag -$daemon 2>&1 | logger -t {{ rails_deploy_worker }} &
+}
+
+service_stop(){
+  $bundle exec bin/sidekiqctl stop $pid
+}
+{% endif %}
+
+# ---------------------------------------------------------------------------
+# get the pid from the file
+# ---------------------------------------------------------------------------
+check_pids(){
+  if ! mkdir -p "$run"; then
+    echo "could not create the path $run needed to store the pids"; exit 1
+  fi
+  if [ -f "$pid" ]; then
+    # read an existing pid file
+    wpid=$(cat "$pid")
+  else
+    wpid=0
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# used after starting the service and are waiting for its pid
+# ---------------------------------------------------------------------------
+wait_for_pids(){
+  # sleep for a bit to give it time
+  i=0;
+  while [ ! -f $pid ]; do
+    sleep 0.1;
+    i=$((i+1))
+    if [ $((i%10)) = 0 ]; then
+      echo -n "."
+    elif [ $((i)) = $(( ${service_timeout} * 10 + 1 )) ]; then
+      echo "waited ${service_timeout}s for the process to write its pid, something went wrong, exiting"
+      exit 1;
+    fi
+  done
+  echo
+}
+
+# ---------------------------------------------------------------------------
+# always check the pid
+# ---------------------------------------------------------------------------
+check_pids
+
+# ---------------------------------------------------------------------------
+# determine if the service is running or not
+# ---------------------------------------------------------------------------
+check_status(){
+  check_pids
+
+  # if the service is running kill -0 $pid returns true, or rather 0
+  # checks of *_status should only check for == 0 or != 0, never anything else
+  if [ $wpid -ne "0" ]; then
+    kill -0 "$wpid" 2>/dev/null
+    service_status="$?"
+  else
+    service_status="-1"
+  fi
+  if [ $service_status = 0 ]; then
+    exit_status=0
+  else
+    # http://refspecs.linuxbase.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html
+    # code 3 means 'program is not running'
+    exit_status=3
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# check for stale pids and remove them if necessary
+# ---------------------------------------------------------------------------
+check_stale_pids(){
+  check_status
+  # if there is a pid it is something else than 0, the service is running if
+  # *_status is == 0
+  if [ "$wpid" != "0" -a "$service_status" != "0" ]; then
+    echo "removing stale $service pid, this is most likely caused by $service crashing the last time it ran"
+    if ! rm "$pid"; then
+      echo "unable to remove stale pid, exiting"
+      exit 1
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# nothing is running so it is safe to exit
+# ---------------------------------------------------------------------------
+exit_if_not_running(){
+  check_stale_pids
+  if [ "$service_status" != "0" ]; then
+    echo "$service is not running"
+    exit
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# start the service if it is not running
+# ---------------------------------------------------------------------------
+start() {
+  check_stale_pids
+
+  if [ "$service_status" != "0" ]; then
+    echo -n "starting $service"
+  fi
+
+  # then check if the service is running
+  # if it is, don't start again
+  if [ "$service_status" = "0" ]; then
+    echo "$service is already running with pid $wpid, not restarting"
+  else
+{% if item == 'service' %}
+    # remove old socket if it exists before starting
+    rm -f "$socket" 2>/dev/null
+{% endif %}
+    service_start
+  fi
+
+  # wait for the pids to be planted
+  wait_for_pids
+
+  # finally check the status to tell whether or not the service is running
+  print_status
+}
+
+# ---------------------------------------------------------------------------
+# stop the service if it is running
+# ---------------------------------------------------------------------------
+stop() {
+  exit_if_not_running
+
+  # if the service is running, stop it
+  if [ "$service_status" = "0" ]; then
+    echo -n "shutting down $service"
+    service_stop
+  fi
+
+  # if something needs to be stopped, wait for it because
+  # using SIGKILL is bad in a script
+  while [ "$service_status" = "0" ]; do
+    sleep 1
+    check_status
+    printf "."
+    if [ "$service_status" != "0" ]; then
+      printf "\n"
+      break
+    fi
+  done
+
+  sleep 1
+
+  # clean up the pid file
+  rm "$pid" 2>/dev/null
+
+  print_status
+}
+
+# ---------------------------------------------------------------------------
+# output the status of the service
+# ---------------------------------------------------------------------------
+print_status() {
+  check_status
+  if [ "$service_status" != "0" ]; then
+    echo "$service is not running"
+    return
+  fi
+  if [ "$service_status" = "0" ]; then
+      echo "$service with pid $wpid is running"
+  else
+      printf "$service is \033[31mnot running\033[0m\n"
+  fi
+  if [ "$service_status" = "0" ]; then
+    printf "$service is \033[32mup and running\033[0m\n"
+  fi
+}
+{% if item == 'service' %}
+# ---------------------------------------------------------------------------
+# reload the app process
+# ---------------------------------------------------------------------------
+reload(){
+  exit_if_not_running
+  if [ "$wpid" = "0" ];then
+    echo "$service is not running, its configuration can't be reloaded, exiting"
+    exit 1
+  fi
+  printf "reloading $service configuration..."
+  service_reload
+  echo "done!"
+
+  wait_for_pids
+  print_status
+}
+{% endif %}
+# ---------------------------------------------------------------------------
+# restart the app process by stopping it and then starting it
+# ---------------------------------------------------------------------------
+restart(){
+  check_status
+  if [ "$service_status" = "0" ]; then
+    stop
+  fi
+  start
+}
+
+# ---------------------------------------------------------------------------
+# handle the input
+# ---------------------------------------------------------------------------
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        restart
+        ;;
+{% if item == 'service' %}
+  reload|force-reload)
+        reload
+        ;;
+{% endif %}
+  status)
+        print_status
+        exit $exit_status
+        ;;
+  *)
+        echo "Usage: service $service { {{ rails_deploy_tpl_respond_to }} }"
+        exit 1
+        ;;
+esac
+
+exit

@@ -1,0 +1,81 @@
+---
+
+- name: Install app packages
+  apt: pkg={{ item }} state=latest install_recommends=False
+  with_items: rails_deploy_packages + [ 'git' ]
+
+- name: Create app group
+  group: name={{ rails_deploy_service }} system=True state=present
+  when: rails_deploy_service is defined and rails_deploy_service
+
+- name: Create app user
+  user: name={{ rails_deploy_service }}
+        group={{ rails_deploy_service }}
+        home={{ rails_deploy_home }}
+        generate_ssh_key=True
+        comment={{ rails_deploy_service }}
+        groups={{ rails_deploy_user_groups | join(',') }}
+        shell=/bin/bash append=True system=True state=present
+  when: rails_deploy_service is defined and rails_deploy_service
+
+- name: Allow ssh access from the app user
+  authorized_key: key='{{ rails_deploy_user_sshkey }}'
+                  user={{ rails_deploy_service }}
+                  manage_dir=False
+  when: rails_deploy_service is defined and rails_deploy_service and
+        'sshusers' in rails_deploy_user_groups and rails_deploy_user_sshkey
+
+- name: Create backup copy of the host's ssh keys
+  fetch: dest={{ secret }}/storage/sensitive/{{ rails_deploy_service }}
+         src={{ item }} validate_md5=True
+  when: rails_deploy_service is defined and rails_deploy_service and
+        secret is defined and secret
+  with_items:
+    - '{{ rails_deploy_home }}/.ssh/id_rsa'
+    - '{{ rails_deploy_home }}/.ssh/id_rsa.pub'
+  tags: system_backup
+
+- name: Secure app home directory
+  file: path={{ rails_deploy_home }}
+        state=directory
+        owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
+        mode=0751
+  when: rails_deploy_service is defined and rails_deploy_service
+
+- name: Create src, log and run state paths
+  file: path={{ item }}
+        state=directory
+        owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
+        mode=0755
+  when: rails_deploy_service is defined and rails_deploy_service
+  with_items:
+    - '{{ rails_deploy_src }}'
+    - '{{ rails_deploy_log }}'
+    - '{{ rails_deploy_run }}'
+
+- name: Create logrotate file
+  template: src=etc/logrotate.d/service.j2
+            dest=/etc/logrotate.d/{{ rails_deploy_service }}
+            owner=root group=root mode=0644
+  when: rails_deploy_service is defined and rails_deploy_service
+
+- name: Create /etc/default/app file
+  template: src=etc/default/app.j2 dest=/etc/default/{{ rails_deploy_service }}
+            owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
+            mode=0644
+  when: rails_deploy_service is defined and rails_deploy_service
+
+- name: Create application service
+  template: src=etc/init.d/service.j2 dest=/etc/init.d/{{ rails_deploy_service }}
+            owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
+            mode=0755
+  when: rails_deploy_service is defined and rails_deploy_service and rails_deploy_backend
+  with_items: [ 'service' ]
+
+- name: Create background worker service
+  template: src=etc/init.d/service.j2 dest=/etc/init.d/{{ rails_deploy_worker }}
+            owner={{ rails_deploy_service }} group={{ rails_deploy_service }}
+            mode=0755
+  when: rails_deploy_worker_enabled and
+        rails_deploy_worker is defined and rails_deploy_worker
+  with_items: [ 'worker' ]

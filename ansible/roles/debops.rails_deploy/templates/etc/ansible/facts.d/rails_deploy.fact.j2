@@ -1,0 +1,22 @@
+{# mtime.config: -#}
+{% set rails_deploy_tpl_mtime_config_readable = rails_deploy_register_mtime_config is defined and rails_deploy_register_mtime_config.has_key('stat') -%}
+{% set rails_deploy_tpl_mtime_config = rails_deploy_register_mtime_config.stat.mtime if rails_deploy_tpl_mtime_config_readable else False -%}
+{# mtime.schema: -#}
+{% set rails_deploy_tpl_mtime_schema_readable = rails_deploy_register_mtime_schema is defined and rails_deploy_register_mtime_schema.has_key('stat') -%}
+{% set rails_deploy_tpl_mtime_schema = rails_deploy_register_mtime_schema.stat.mtime if rails_deploy_tpl_mtime_schema_readable else False -%}
+{# stat.migrated: #}
+{% set rails_deploy_tpl_migrated_readable = rails_deploy_tpl_mtime_config_readable and ansible_local is defined and ansible_local.rails_deploy is defined and ansible_local.rails_deploy[rails_deploy_service] is defined -%}
+{% set rails_deploy_tpl_migrated = rails_deploy_database_force_migrate or rails_deploy_register_mtime_schema.stat.mtime != ansible_local.rails_deploy[rails_deploy_service].mtime.schema if rails_deploy_tpl_migrated_readable else False -%}
+{
+"{{ rails_deploy_service }}": {
+  "mtime": {
+    "config": {{ rails_deploy_tpl_mtime_config | to_nice_json }},
+    "schema": {{ rails_deploy_tpl_mtime_schema | to_nice_json }}
+  },
+  "stat": {
+    "version": {{ rails_deploy_git_version | to_nice_json }},
+    "migrated": {{ rails_deploy_tpl_migrated | to_nice_json }},
+    "bind": {{ rails_deploy_backend_bind | to_nice_json }}
+  }
+}
+}

@@ -1,0 +1,23 @@
+---
+
+# Use postgresql 9.3 instead of 9.1 (default).
+postgresql_version: '9.3'
+postgresql_pgdg: True
+
+# Setup the default cluster.
+postgresql_default_cluster:
+  - name: 'main'
+    port: '5432'
+
+    # The amount in MB to use as the shared buffer, adjust this if you have
+    # memory issues on your host. It will calculate a value based off your total
+    # RAM by default.
+    # shared_buffers: '256'
+
+    listen_addresses: '0.0.0.0'
+    hba:
+      # Allow your master app host to communicate to this database server.
+      - hosts: '{{ rails_deploy_hosts_master }}'
+
+    # Make sure the firewall also allows your master app host access.
+    allow: rails_deploy_hosts_master
