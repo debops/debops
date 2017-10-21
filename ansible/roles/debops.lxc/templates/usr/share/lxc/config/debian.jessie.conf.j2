@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+# Prepare file systems for systemd
+lxc.mount.auto = cgroup:mixed
+lxc.mount.entry = tmpfs dev/shm tmpfs rw,nosuid,nodev,create=dir 0 0
+lxc.mount.entry = tmpfs run tmpfs rw,nosuid,nodev,mode=755,create=dir 0 0
+lxc.mount.entry = tmpfs run/lock tmpfs rw,nosuid,nodev,noexec,relatime,size=5120k,create=dir 0 0
+lxc.mount.entry = debugfs sys/kernel/debug debugfs rw,relatime 0 0
+lxc.mount.entry = mqueue dev/mqueue mqueue rw,relatime,create=dir 0 0
+lxc.mount.entry = hugetlbfs dev/hugepages hugetlbfs rw,relatime,create=dir 0 0

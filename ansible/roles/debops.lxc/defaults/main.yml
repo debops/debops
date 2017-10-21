@@ -1,0 +1,465 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.lxc default variables [[[
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# LXC packages and installation [[[
+# ---------------------------------
+
+# .. envvar:: lxc_kernel_package [[[
+#
+# Name of Linux kernel package to install from Debian Backports on Debian
+# Wheezy.
+lxc_kernel_package: 'linux-image-{{ (ansible_kernel | split("-") | last) | d("amd64") }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_kernel_mail_to [[[
+#
+# List of recipients to which a mail will be send in case a reboot is required
+# after a kernel upgrade.
+lxc_kernel_mail_to: [ 'root@{{ ansible_domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: lxc_kernel_mail_subject [[[
+#
+# Subject of the Email to be send in case a reboot is required to boot into a
+# updated kernel version.
+lxc_kernel_mail_subject: 'Reboot required by LXC on {{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_kernel_mail_body [[[
+#
+# Body of the Email to be send in case a reboot is required to boot into a
+# updated kernel version.
+lxc_kernel_mail_body: |
+  Ansible has updated the Linux kernel to support LXC on host {{ ansible_fqdn }}.
+  You should check the status of the host and reboot it when convenient.
+
+  Current kernel: {{ ansible_kernel }}
+
+  Output of install command:
+  ---------------------------------------------------------------
+  {% for line in lxc_register_kernel_upgrade.stdout_lines %}
+  {{ line }}
+  {% endfor %}
+  ---------------------------------------------------------------
+
+  Output of lxc-ls -f:
+  ---------------------------------------------------------------
+  {% for line in lxc_list_status.stdout_lines %}
+  {{ line }}
+  {% endfor %}
+  ---------------------------------------------------------------
+
+# ]]]
+# ]]]
+# Configure LXC environment [[[
+# -----------------------------
+
+# .. envvar:: lxc_root_path [[[
+#
+# Path where containers and their configuration is stored.
+lxc_root_path: '/var/lib/lxc'
+
+                                                                   # ]]]
+# .. envvar:: lxc_interface_external [[[
+#
+# Configuration of the default network interface to use for "normal" containers
+# (in DebOps, it's configured by default through the debops.ifupdown_ role).
+# This is the external interface in a two-interface setup.
+lxc_interface_external: 'br0'
+
+                                                                   # ]]]
+# .. envvar:: lxc_interface_internal [[[
+#
+# Configuration of default network interface to use for "normal" containers
+# (in DebOps, it's configured by default through the debops.ifupdown_ role).
+# This is the internal interface in two-interface setup.
+lxc_interface_internal: 'br1'
+
+                                                                   # ]]]
+# .. envvar:: lxc_interface_nat [[[
+#
+# Configuration of default network interface to use for "NATted" containers.
+# For setting up a NAT have a look at the debops.ifupdown_ role.
+lxc_interface_nat: 'br2'
+
+                                                                   # ]]]
+# .. envvar:: lxc_configuration_default [[[
+#
+# :file:`/etc/lxc/` configuration file which will be set as default.
+lxc_configuration_default: 'external'
+
+                                                                   # ]]]
+# .. envvar:: lxc_capabilities_drop [[[
+#
+# List of default POSIX capabilities which should be dropped in all LXC containers.
+lxc_capabilities_drop: [ 'mknod', 'sys_admin', 'sys_rawio', 'syslog', 'wake_alarm' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Configure custom templates [[[
+# ------------------------------
+
+# .. envvar:: lxc_template_autostart [[[
+#
+# Mark new containers start automatically after reboot.
+lxc_template_autostart: True
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin [[[
+#
+# Enable or disable creation of an administrator account.
+lxc_template_admin: True
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_system [[[
+#
+# Should the admin account be created as system account (UID/GID below <1000)?
+lxc_template_admin_system: True
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_name [[[
+#
+# Name of administrator account to create (by default, your username).
+lxc_template_admin_name: '{{ ansible_ssh_user
+                             if (ansible_ssh_user|d() and
+                                 ansible_ssh_user != "root")
+                             else lookup("env","USER") }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_groups [[[
+#
+# Admin account will have its own group, here you can specify a system group
+# which will be created for administrative access through 'sudo'.
+lxc_template_admin_groups: [ 'admins', 'staff', 'adm' ]
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_home [[[
+#
+# Home directory for administrator account (normal).
+lxc_template_admin_home: '{{ "/home/" + lxc_template_admin_name }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_system_home [[[
+#
+# Home directory for administrator account (system).
+lxc_template_admin_system_home: '{{ ansible_local.root.home + "/" + lxc_template_admin_name }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_home_group [[[
+#
+# Specify administrator account home directory group.
+lxc_template_admin_home_group: '{{ lxc_template_admin_groups[0] }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_home_mode [[[
+#
+# Specify permissions for administrator account home directory.
+lxc_template_admin_home_mode: '0750'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_comment [[[
+#
+# GECOS comment which will be set on the admin account.
+lxc_template_admin_comment: 'System Administrator'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_shell [[[
+#
+# Default shell set on the admin account.
+lxc_template_admin_shell: '/bin/bash'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_sudo [[[
+#
+# Configure passwordless sudo access for selected accounts.
+lxc_template_sudo: True
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_sudo_group [[[
+#
+# A group which grants passwordless sudo access.
+lxc_template_sudo_group: '{{ lxc_template_admin_groups[0] | default("") }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_admin_sshkeys [[[
+#
+# SSH public key to put in administrator account of new container.
+lxc_template_admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_debootstrap_mirror [[[
+#
+# Address of a Debian mirror to use in :command:`debootstrap`.
+# Example usage with local apt-cacher-ng proxy::
+#
+#   lxc_template_debootstrap_mirror: 'http://cache.{{ ansible_domain }}:3142/debian'
+#
+lxc_template_debootstrap_mirror: 'http://httpredir.debian.org/debian'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_debootstrap_release [[[
+#
+# Default release installed by :command:`debootstrap` if no release was specified.
+lxc_template_debootstrap_release: '{{ ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_security_upgrade [[[
+#
+# Automatically add the ``security.debian.org`` repository and perform
+# :command:`apt-get upgrade` during container creation to get the latest
+# security updates.  Container creation takes longer, but the resulting system
+# is more up-to-date.
+lxc_template_security_upgrade: True
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_security_mirror [[[
+#
+# Address of a Debian mirror to use by APT for security updates.
+# Note that ``http://security.debian.org/`` is still going to be configured as
+# fallback security update source.
+# Example usage with local apt-cacher-ng proxy::
+#
+#   lxc_template_security_mirror: 'http://cache.{{ ansible_domain }}:3142/security.debian.org/'
+#
+lxc_template_security_mirror: ''
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_debootstrap_base_packages [[[
+#
+# Lists of packages downloaded and installed by :command:`debootstrap`.
+lxc_template_debootstrap_base_packages: [ 'ifupdown', 'locales', 'libui-dialog-perl', 'dialog',
+                                          'isc-dhcp-client', 'netbase', 'net-tools', 'iproute',
+                                          'openssh-server' ]
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_debootstrap_ansible_packages [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
+lxc_template_debootstrap_ansible_packages: [ 'sudo', 'lsb-release', 'make', 'git',
+                                             'python', 'python-apt', 'python-pycurl' ]
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_debootstrap_system_packages [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
+lxc_template_debootstrap_system_packages: [ 'ncurses-term', 'debian-archive-keyring',
+                                            'apt-transport-https', 'vim-tiny', 'cron', 'curl',
+                                            'openssl', 'ca-certificates' ]
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_debootstrap_network_packages [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
+lxc_template_debootstrap_network_packages: [ 'iputils-ping', 'resolvconf', 'rdnssd' ]
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_debootstrap_packages [[[
+#
+# Combined lists of packages downloaded and installed by :command:`debootstrap`.
+lxc_template_debootstrap_packages: '{{ lxc_template_debootstrap_base_packages +
+                                       lxc_template_debootstrap_ansible_packages +
+                                       lxc_template_debootstrap_system_packages +
+                                       lxc_template_debootstrap_network_packages }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_capabilities_drop [[[
+#
+# List of POSIX capabilities which should be automatically dropped in all
+# containers created by the 'debops' template, without the 'cap_' prefix.
+lxc_template_capabilities_drop: []
+
+                                                                   # ]]]
+# .. envvar:: lxc_hidepid [[[
+#
+# Hide processes of other users in created LXC containers.
+lxc_hidepid: True
+
+                                                                   # ]]]
+# .. envvar:: lxc_hidepid_level [[[
+#
+# hidepid= level to use (choices: 0, 1, 2).
+lxc_hidepid_level: '2'
+
+                                                                   # ]]]
+# .. envvar:: lxc_hidepid_group [[[
+#
+# System group which will see all processes in the container.
+lxc_hidepid_group: 'procadmins'
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_config_options [[[
+#
+# Additional LXC configuration added to the container configuration files
+# created by the 'debops' template, in text block format.
+lxc_template_config_options: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Salt integration [[[
+# --------------------
+
+# .. envvar:: lxc_template_salt [[[
+#
+# Enable or disable Salt integration. SaltStack upstream repository will be
+# configured in the container and packages listed below will be installed.
+lxc_template_salt: False
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_salt_packages [[[
+#
+# List of Salt packages to install in LXC containers.
+lxc_template_salt_packages: [ 'salt-minion' ]
+
+                                                                   # ]]]
+# .. envvar:: lxc_template_salt_options [[[
+#
+# Additional options to set for salt-minion, in YAML text block format.
+# Contents will be inserted into a Bash template script on the LXC host and
+# echoed to the :file:`/etc/salt/minion.d/ansible.conf` file on container creation.
+lxc_template_salt_options: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage LXC containers [[[
+# -------------------------
+
+# .. envvar:: lxc_default_template [[[
+#
+# Default template used by :command:`lxc-create`, from :file:`/usr/share/lxc/templates/`.
+lxc_default_template: 'debops'
+
+                                                                   # ]]]
+# LXC containers managed by Ansible are defined in a list below. Each entry is
+# a hash with keys as container parameters. Container configuration parameters
+# are interpreted only on initial container creation and are not updated
+# automatically afterwards.
+
+# List of required parameters:
+#   - name: ''               container name, will be used as subdomain
+#                            in dnsmasq NAT configuration.
+
+# List of optional parameters:
+#   - state: ''              defines what state should that container be in on
+#                            the next Ansible run. Recognized states:
+#                              - started    (container should be running)
+#                              - stopped    (container should be stopped)
+#                              - absent     (container will be destroyed)
+#                              - present     (container will be created)
+#                            Without this parameter container will be created
+#                            ``present``, but not started automatically.
+#   - config: True or ''     enables usage of custom configuration instead of
+#                            default from :file:`/etc/lxc/default.conf`
+#                            If True, container will be created with configuration
+#                            generated by Ansible from :file:`/tmp/lxc_temp_*.conf`
+#                            Otherwise specify absolute path to a configuration
+#                            file to use (for example :file:`/etc/lxc/nat.conf`).
+#   - template: ''           template from :file:`/usr/share/lxc/templates/` to use for
+#                            this container, instead of the default.
+#   - template_options: ''   string of freeform options added at the end of
+#                            lxc-create command, after "--".
+#   - storage: ''            string of freeform storage options added to :command:`lxc-create`
+#                            command after -B (for example: ``lvm --fssize 10G``)
+#                            See ``man lxc-create`` for available options.
+#   - network: ''            if the 'config' option is not set, 'network' value becomes
+#                            a "shortcut" to select specific config file from :file:`/etc/lxc/*`
+#                            (for example, you can specify 'network: "nat"' and host
+#                            will be configured with config file from :file:`/etc/lxc/nat.conf`).
+#   - capabilities_drop: []  POSIX capabilities which should be dropped in this container,
+#                            without the "cap_" prefix. See capabilities(7) for list of
+#                            available capabilities.
+#   - options: |             text block, will be added at the end of the configuration
+#                            file.
+
+# List of parameters recognized with 'config: True' (generated configuration):
+#   - network: ''            currently you can specify 'external' or 'nat'
+#                            to connect default network interface of a container
+#                            to specified network interface of a host.
+#   - hwaddr: ''             if 'network' option is set, you can specify Ethernet
+#                            address of container network interface.
+#   - auto: True/False       by default containers are configured to start
+#                            automatically at boot; using this option you can
+#                            disable autostart of a container.
+
+# .. envvar:: lxc_containers [[[
+#
+# List of LXC containers managed by Ansible.
+# Examples:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#    lxc_containers:
+#
+#      # Simple container, not started by default, autostart on boot enabled
+#      - name: 'example-container'
+#
+#      # Simple container started automatically
+#      - name: 'container'
+#        state: 'started'
+#
+#      # Debian container, started automatically, network behind NAT
+#      - name: 'natted-container'
+#        config: True
+#        network: 'nat'
+#        state: 'started'
+#        template: 'debian'
+#
+lxc_containers: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: lxc__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ role.
+lxc__apt_preferences__dependent_list:
+
+  - package: '{{ lxc_kernel_package }}'
+    backports: [ 'wheezy' ]
+    reason: 'Bug in LXC + iptables recent module - https://bugzilla.netfilter.org/show_bug.cgi?id=759'
+    by_role: 'debops.lxc'
+    state: 'absent'
+
+  - package: 'initramfs-tools'
+    backports: [ 'wheezy' ]
+    reason: 'Requred by newer Linux kernel installed by debops.lxc'
+    by_role: 'debops.lxc'
+    state: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: lxc__ferm__forward [[[
+#
+# Configuration for the debops.ferm_ role.
+lxc__ferm__forward: True
+
+                                                                   # ]]]
+# .. envvar:: lxc__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ role.
+lxc__ferm__dependent_rules:
+
+  - type: 'custom'
+    by_role: 'debops.lxc'
+    filename: 'lxc_bootp_checksum'
+    weight: '30'
+    rule_state: 'absent'
+
+  - type: 'custom'
+    by_role: 'debops.lxc'
+    name: 'bootp_checksum'
+    weight: '30'
+    rules: |
+      # Add checksums to BOOTP packets for LXC containers
+      # https://www.redhat.com/archives/libvir-list/2010-August/msg00035.html
+      @hook post "iptables -A POSTROUTING -t mangle -p udp --dport bootpc -j CHECKSUM --checksum-fill";
+
+# ]]]
+# ]]]
+# ]]]

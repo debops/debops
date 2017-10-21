@@ -1,0 +1,16 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Temporary configuration file for new container {{ item.name }}
+
+{% if item.network is defined and item.network %}
+lxc.network.type = veth
+lxc.network.flags = up
+{% if item.network == 'external' %}
+lxc.network.link = {{ lxc_interface_external }}
+{% elif item.network == 'nat' %}
+lxc.network.link = {{ lxc_interface_nat }}
+{% endif %}
+{% if item.hwaddr is defined and item.hwaddr %}
+lxc.network.hwaddr = {{ item.hwaddr }}
+{% endif %}
+{% endif %}
