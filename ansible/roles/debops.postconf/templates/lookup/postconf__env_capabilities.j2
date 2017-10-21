@@ -1,0 +1,10 @@
+{% set postconf__tpl_env_capabilities = [] %}
+{% if (ansible_local|d() and
+       ((ansible_local.saslauthd|d() and (ansible_local.saslauthd.installed|d())|bool and 'smtpd' in ansible_local.saslauthd.instances) or
+        (ansible_local.dovecot|d() and (ansible_local.dovecot.installed|d())|bool))) %}
+{%   set _ = postconf__tpl_env_capabilities.extend([ 'auth', 'unauth-sender' ]) %}
+{% endif %}
+{% if (ansible_all_ipv4_addresses|d([]) + ansible_all_ipv6_addresses|d([])) | ipaddr('public') %}
+{%   set _ = postconf__tpl_env_capabilities.append('public-mx-required') %}
+{% endif %}
+{{ postconf__tpl_env_capabilities | list }}
