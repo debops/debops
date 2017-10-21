@@ -1,0 +1,11 @@
+{% set tinc__tpl_groups = [] %}
+{% for key, network in tinc__combined_networks.iteritems() %}
+{%   if network.state|d('present') != 'absent' %}
+{%     if network.inventory_groups|d() %}
+{%       for group in ([ network.inventory_groups ] if network.inventory_groups is string else network.inventory_groups) %}
+{% set _ = tinc__tpl_groups.append(group) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{{ tinc__tpl_groups | to_yaml }}

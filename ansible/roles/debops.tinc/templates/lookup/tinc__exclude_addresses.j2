@@ -1,0 +1,30 @@
+{% set tinc__tpl_exclude_addresses = [] %}
+{% for key, network in tinc__combined_networks.iteritems() %}
+{%   if hostvars[inventory_hostname]["ansible_" + (network.interface | replace('-','_') | replace('.','_'))]|d() %}
+{%     set tinc__tpl_interface = hostvars[inventory_hostname]["ansible_" + (network.interface | replace('-','_') | replace('.','_'))] %}
+{%     if tinc__tpl_interface.ipv4|d() and tinc__tpl_interface.ipv4.address|d() %}
+{%       set _ = tinc__tpl_exclude_addresses.append(tinc__tpl_interface.ipv4.address) %}
+{%     endif %}
+{%     if tinc__tpl_interface.ipv4_secondaries|d() %}
+{%       set _ = tinc__tpl_exclude_addresses.extend(tinc__tpl_interface.ipv4_secondaries | map(attribute="address") | list) %}
+{%     endif %}
+{%     if tinc__tpl_interface.ipv6|d() %}
+{%       set _ = tinc__tpl_exclude_addresses.extend(tinc__tpl_interface.ipv6 | map(attribute="address") | list) %}
+{%     endif %}
+{%   endif %}
+{%   if network.bridge|d() %}
+{%     if hostvars[inventory_hostname]["ansible_" + (network.bridge | replace('-','_') | replace('.','_'))]|d() %}
+{%       set tinc__tpl_bridge = hostvars[inventory_hostname]["ansible_" + (network.bridge | replace('-','_') | replace('.','_'))] %}
+{%       if tinc__tpl_bridge.ipv4|d() and tinc__tpl_bridge.ipv4.address|d() %}
+{%         set _ = tinc__tpl_exclude_addresses.append(tinc__tpl_bridge.ipv4.address) %}
+{%       endif %}
+{%       if tinc__tpl_bridge.ipv4_secondaries|d() %}
+{%         set _ = tinc__tpl_exclude_addresses.extend(tinc__tpl_bridge.ipv4_secondaries | map(attribute="address") | list) %}
+{%       endif %}
+{%       if tinc__tpl_bridge.ipv6|d() %}
+{%         set _ = tinc__tpl_exclude_addresses.extend(tinc__tpl_bridge.ipv6 | map(attribute="address") | list) %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{{ tinc__tpl_exclude_addresses | to_yaml }}

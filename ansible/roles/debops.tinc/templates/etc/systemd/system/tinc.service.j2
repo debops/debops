@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+
+# This is a mostly empty service, but allows commands like stop, start, reload
+# to propagate to all tinc@ service instances.
+
+[Unit]
+Description=Tinc VPN
+Documentation=man:tinc(8) man:tinc.conf(5)
+Documentation=http://tinc-vpn.org/docs/
+Wants=network-online.target
+After=local-fs.target network-pre.target apparmor.service systemd-sysctl.service systemd-modules-load.service networking.service ifup-allow-all-auto.service ifup-allow-boot.service
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecReload=/bin/true
+ExecStop=/bin/true
+WorkingDirectory=/etc/tinc
+
+[Install]
+WantedBy=multi-user.target

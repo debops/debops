@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+{% set network = item.value %}
+{% set network_name = item.value.name | d(item.key) %}
+{% if network.tinc_down is undefined %}
+{%   if network.link_type|d() %}
+{%     if network.link_type == 'static' %}
+{%       set tinc__tpl_resolvconf = [] %}
+{%       if network.dns_nameservers|d() %}
+{%         for dns_ns in ([ network.dns_nameservers ] if network.dns_nameservers is string else network.dns_nameservers) %}
+{%           set _ = tinc__tpl_resolvconf.append("nameserver " + dns_ns) %}
+{%         endfor %}
+{%       endif %}
+{%       if network.dns_search|d() %}
+{%         for dns_search in ([ network.dns_search ] if network.dns_search is string else network.dns_search) %}
+{%           set _ = tinc__tpl_resolvconf.append("search " + dns_search) %}
+{%         endfor %}
+{%       endif %}
+{%       if tinc__tpl_resolvconf %}
+if type resolvconf > /dev/null 2>&1 ; then
+    resolvconf -d "${INTERFACE}.inet"
+fi
+{%       endif %}
+{%       if network.bridge|d() %}
+ip link set "${INTERFACE}" nomaster
+
+{%       endif %}
+{%       set tinc__tpl_addresses = [] %}
+{%       if network.address|d() %}
+{%         set _ = tinc__tpl_addresses.extend(([ network.address ] if network.address is string else network.address) | ipaddr('host/prefix')) %}
+{%       endif %}
+{%       if network.addresses|d() %}
+{%         set _ = tinc__tpl_addresses.extend(([ network.addresses ] if network.addresses is string else network.addresses) | ipaddr('host/prefix')) %}
+{%       endif %}
+{%       if tinc__tpl_addresses %}
+{%         for entry in tinc__tpl_addresses %}
+ip addr del {{ entry | quote }} dev "${INTERFACE}"
+{%         endfor %}
+{%       else %}
+ip addr del '0.0.0.0/32' dev "${INTERFACE}"
+{%       endif %}
+ip link set "${INTERFACE}" down
+{%     elif network.link_type == 'dynamic' %}
+{%       if ((network.dhclient is undefined or network.dhclient|bool) and
+             network.tinc_options|d() and network.tinc_options.Mode|d() and network.tinc_options.Mode == 'switch') %}
+metric="{{ network.metric }}"
+dhclient -r -v -pf "/run/dhclient.${INTERFACE}.pid" -e IF_METRIC=${metric} \
+         -lf "/var/lib/dhcp/dhclient.${INTERFACE}.leases"
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% else %}
+{{ network.tinc_down }}
+{% endif %}

@@ -1,0 +1,111 @@
+{% macro merge_dict(current_dict, to_merge_dict, dict_key='name') %}
+{%   set merged_dict = current_dict %}
+{%   if to_merge_dict %}
+{%     if to_merge_dict is mapping %}
+{%       for dict_name in to_merge_dict.keys() | sort %}
+{%         if to_merge_dict[dict_name][dict_key]|d() %}
+{%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%         elif to_merge_dict[dict_name][dict_key] is undefined %}
+{%           set _ = merged_dict.update({dict_name:(current_dict[dict_name]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%         endif %}
+{%       endfor %}
+{%     elif to_merge_dict is not string and to_merge_dict is not mapping %}
+{%       set flattened_dict = lookup("flattened", to_merge_dict) %}
+{%       for element in ([ flattened_dict ] if flattened_dict is mapping else flattened_dict) %}
+{%         if element[dict_key]|d() %}
+{%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]]|d({}) | combine(element, recursive=True))}) %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{{ merged_dict | to_json }}
+{% endmacro %}
+{% set tinc__tpl_merge_all =   (merge_dict(tinc__default_networks, tinc__networks,       'name') | from_json) %}
+{% set tinc__tpl_merge_group = (merge_dict(tinc__tpl_merge_all,    tinc__group_networks, 'name') | from_json) %}
+{% set tinc__tpl_networks =    (merge_dict(tinc__tpl_merge_group,  tinc__host_networks,  'name') | from_json) %}
+{% set tinc__tpl_filtered_networks = {} %}
+{% for name, params in tinc__tpl_networks.iteritems() %}
+{%   set network_name = (params["name"] | d(name)) %}
+{%   if params["boot"] is undefined %}
+{%     set _ = params.update({"boot":True}) %}
+{%   endif %}
+{%   if params["mlock"] is undefined %}
+{%     set _ = params.update({"mlock":True}) %}
+{%   endif %}
+{%   if params["chroot"] is undefined %}
+{%     set _ = params.update({"chroot":True}) %}
+{%   endif %}
+{%   if params["user"] is undefined %}
+{%     set _ = params.update({"user":tinc__user}) %}
+{%   endif %}
+{%   if params["link_type"] is undefined %}
+{%     if params["bridge"]|d() %}
+{%       set _ = params.update({"link_type":"static"}) %}
+{%     else %}
+{%       set _ = params.update({"link_type":"dynamic"}) %}
+{%     endif %}
+{%   endif %}
+{%   if params["metric"] is undefined %}
+{%     set _ = params.update({"metric":tinc__metric}) %}
+{%   endif %}
+{%   if params["host_address"] is undefined and params["host_addresses"] is undefined %}
+{%     set _ = params.update({"host_addresses":tinc__host_addresses}) %}
+{%   endif %}
+{%   if params["mode"] is undefined %}
+{%     set _ = params.update({"mode":"switch"}) %}
+{%   endif %}
+{%   if params["device_type"] is undefined %}
+{%     set _ = params.update({"device_type":"tap"}) %}
+{%   endif %}
+{%   if params["cipher"] is undefined %}
+{%     set _ = params.update({"cipher":"aes-256-cbc"}) %}
+{%   endif %}
+{%   if params["digest"] is undefined %}
+{%     set _ = params.update({"digest":"SHA512"}) %}
+{%   endif %}
+{%   if params["compression"] is undefined %}
+{%     set _ = params.update({"compression":"0"}) %}
+{%   endif %}
+{%   if params["address_family"] is undefined %}
+{%     set _ = params.update({"address_family":"any"}) %}
+{%   endif %}
+{%   if params["hostname"] is undefined %}
+{%     set _ = params.update({"hostname":tinc__hostname}) %}
+{%   endif %}
+{%   if params["interface"] is undefined %}
+{%     if network_name.startswith(('tun','tap')) %}
+{%       set _ = params.update({"interface":network_name}) %}
+{%     else %}
+{%       set _ = params.update({"interface":(params["device_type"] + '-' + network_name)}) %}
+{%     endif %}
+{%   endif %}
+{%   if params["inventory_self"] is undefined %}
+{%     set _ = params.update({"inventory_self":(([ tinc__inventory_self ] if tinc__inventory_self is string else tinc__inventory_self)|unique)}) %}
+{%   endif %}
+{%   if params["connect_to"] is undefined %}
+{%     if params["link_type"] != 'static' %}
+{%       set _ = params.update({"connect_to":(tinc__inventory_hosts | difference(params["inventory_self"]))}) %}
+{%     else %}
+{%       set _ = params.update({"connect_to":[]}) %}
+{%     endif %}
+{%   elif params["connect_to"] %}
+{%     set _ = params.update({"connect_to":(( [ params["connect_to"] ] if params["connect_to"] is string else params["connect_to"]) | difference(params["inventory_self"]))}) %}
+{%   endif %}
+{%   if params["tinc_options"] is undefined %}
+{%     set tinc__tpl_tinc_options = {
+  "Name":          params["hostname"],
+  "Port":          params["port"],
+  "Mode":          params["mode"],
+  "DeviceType":    params["device_type"],
+  "Cipher":        params["cipher"],
+  "Digest":        params["digest"],
+  "Compression":   params["compression"],
+  "AddressFamily": params["address_family"],
+  "Interface":     params["interface"],
+  "ConnectTo":     ((params["connect_to"] + (( [ params["add_connect_to"] ] if params["add_connect_to"] is string else params["add_connect_to"]) if params["add_connect_to"]|d() else [])) | unique)
+} %}
+{%     set _ = params.update({"tinc_options":tinc__tpl_tinc_options | combine(params["add_tinc_options"]|d({}))}) %}
+{%   endif %}
+{%   set _ = tinc__tpl_filtered_networks.update({network_name:params}) %}
+{% endfor %}
+{{ tinc__tpl_filtered_networks | to_yaml }}

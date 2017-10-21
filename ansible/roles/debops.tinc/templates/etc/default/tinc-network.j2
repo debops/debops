@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+{% set network = item.value %}
+{% set tinc__tpl_options = [] %}
+{% if network.interface|d() %}
+{%   set _ = tinc__tpl_options.append("-o Interface=" + network.interface) %}
+{% endif %}
+{% if network.mlock|d() | bool %}
+{%   set _ = tinc__tpl_options.append("--mlock") %}
+{% endif %}
+{% if network.chroot|d() | bool %}
+{%   set _ = tinc__tpl_options.append("--chroot") %}
+{% endif %}
+{% if network.user|d() %}
+{%   set _ = tinc__tpl_options.append("--user=" + network.user) %}
+{% endif %}
+# Configuration for {{ item.value.name | d(item.key) }} tinc network
+TINC_NETWORK_OPTIONS="{{ tinc__tpl_options | join(' ') }}"
+
+# Variables used by custom scripts
+INTERFACE="{{ network.interface }}"

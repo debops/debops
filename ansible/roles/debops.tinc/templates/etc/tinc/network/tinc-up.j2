@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+{% set network = item.value %}
+{% set network_name = item.value.name | d(item.key) %}
+{% if network.tinc_up is undefined %}
+{%   if network.hwaddr is undefined or not network.hwaddr %}
+# Create random but predictable MAC address
+hwaddr="$(echo "$(hostname -f)${INTERFACE}" | md5sum | sed 's/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/{{ network.hwaddr_prefix|d(tinc__hwaddr_prefix) }}:\1:\2:\3:\4:\5/')"
+{%   endif %}
+{%   if network.hwaddr|d() and network.hwaddr == "*" %}
+ip link set dev "${INTERFACE}"  up
+{%   else %}
+ip link set dev "${INTERFACE}" address {{ network.hwaddr if network.hwaddr|d() else '${hwaddr}' }} up
+{%   endif %}
+
+{%   if network.link_type|d() %}
+{%     if network.link_type == 'static' %}
+{%       set tinc__tpl_addresses = [] %}
+{%       if network.address|d() %}
+{%         set _ = tinc__tpl_addresses.extend(([ network.address ] if network.address is string else network.address) | ipaddr('host/prefix')) %}
+{%       endif %}
+{%       if network.addresses|d() %}
+{%         set _ = tinc__tpl_addresses.extend(([ network.addresses ] if network.addresses is string else network.addresses) | ipaddr('host/prefix')) %}
+{%       endif %}
+{%       if tinc__tpl_addresses %}
+{%         for entry in tinc__tpl_addresses %}
+ip addr add {{ entry | quote }} dev "${INTERFACE}"
+{%         endfor %}
+{%       else %}
+ip addr add '0.0.0.0/32' dev "${INTERFACE}"
+{%       endif %}
+
+{%       if network.bridge|d() %}
+tinc_bridge="{{ network.bridge }}"
+if [ -d "/sys/class/net/${tinc_bridge}/bridge" ] ; then
+    ip link set "${INTERFACE}" master "${tinc_bridge}"
+fi
+
+{%       endif %}
+{%     set tinc__tpl_resolvconf = [] %}
+{%     if network.dns_nameservers|d() %}
+{%       for dns_ns in ([ network.dns_nameservers ] if network.dns_nameservers is string else network.dns_nameservers) %}
+{%         set _ = tinc__tpl_resolvconf.append("nameserver " + dns_ns) %}
+{%       endfor %}
+{%     endif %}
+{%     if network.dns_search|d() %}
+{%       for dns_search in ([ network.dns_search ] if network.dns_search is string else network.dns_search) %}
+{%         set _ = tinc__tpl_resolvconf.append("search " + dns_search) %}
+{%       endfor %}
+{%     endif %}
+{%     if tinc__tpl_resolvconf %}
+read -r -d '' tinc_resolvconf <<'EOF'
+{%       for line in tinc__tpl_resolvconf %}
+{{ line }}
+{%       endfor %}
+EOF
+if type resolvconf > /dev/null 2>&1 ; then
+    echo "${tinc_resolvconf}" | resolvconf -a "${INTERFACE}.inet"
+fi
+{%     endif %}
+{%     elif network.link_type == 'dynamic' %}
+{%       if ((network.dhclient is undefined or network.dhclient|bool) and
+             network.tinc_options|d() and network.tinc_options.Mode|d() and network.tinc_options.Mode == 'switch') %}
+metric="{{ network.metric }}"
+dhclient -v -pf "/run/dhclient.${INTERFACE}.pid" -e IF_METRIC=${metric} \
+         -lf "/var/lib/dhcp/dhclient.${INTERFACE}.leases" \
+         "${INTERFACE}" &
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% else %}
+{{ network.tinc_up }}
+{% endif %}

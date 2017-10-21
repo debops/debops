@@ -1,0 +1,335 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.tinc default variables [[[
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Network configuration [[[
+# -------------------------
+
+# This is a set of YAML dictionary variables which contain configuration of
+# Tinc mesh networks. Each network is a YAML dictionary with specific
+# parameters. See :ref:`tinc__ref_networks` for more details.
+
+# .. envvar:: tinc__default_networks [[[
+#
+# YAML dictionary that contains the configuration of the default Tinc mesh
+# network.
+tinc__default_networks:
+  'mesh0':
+    port: '655'
+
+                                                                   # ]]]
+# .. envvar:: tinc__networks [[[
+#
+# YAML dictionary that contains the configuration of the Tinc mesh networks
+# configured on all hosts in the Ansible inventory.
+tinc__networks: {}
+
+                                                                   # ]]]
+# .. envvar:: tinc__group_networks [[[
+#
+# YAML dictionary that contains the configuration of the Tinc mesh networks
+# configured on a group of hosts in Ansible inventory.
+tinc__group_networks: {}
+
+                                                                   # ]]]
+# .. envvar:: tinc__host_networks [[[
+#
+# YAML dictionary that contains the configuration of the Tinc mesh networks
+# configured on specific hosts in Ansible inventory.
+tinc__host_networks: {}
+
+                                                                   # ]]]
+# .. envvar:: tinc__combined_networks [[[
+#
+# YAML dictionary which contains configuration of Tinc networks combined using
+# other dictionaries configured in the Ansible inventory. This variable is used
+# by the role tasks and templates.
+tinc__combined_networks: '{{ lookup("template",
+                             "lookup/tinc__combined_networks.j2",
+                             convert_data=False) | from_yaml }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: tinc__base_packages [[[
+#
+# List of APT packages to install for ``tinc`` support.
+tinc__base_packages: [ 'tinc' ]
+
+                                                                   # ]]]
+# .. envvar:: tinc__packages [[[
+#
+# List of additional APT packages to install during ``tinc`` configuration.
+tinc__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Ansible inventory parameters [[[
+# --------------------------------
+
+# .. envvar:: tinc__inventory_hosts [[[
+#
+# This list defines which hosts in Ansible inventory participate in a Tinc VPN.
+# They will have their own directories in the :file:`secret/` store on the Ansible
+# Controller used to distribute public host keys.
+tinc__inventory_hosts: '{{ groups.debops_service_tinc|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__inventory_self [[[
+#
+# This list specifies what inventory hostnames the node considers as its own.
+# These hostnames will be ignored when they appear on the list of the hosts to
+# connect to.
+tinc__inventory_self:
+  - '{{ tinc__hostname }}'
+  - '{{ tinc__inventory_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__inventory_hostname [[[
+#
+# Name of this node in Ansible’s inventory. This variable is used during the
+# file upload/download to have consistent mapping between directories and
+# Ansible’s inventory.
+tinc__inventory_hostname: '{{ inventory_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__hostname [[[
+#
+# Name of this node used in configuration files of the mesh. Don't
+# change this unless you know what you are doing.
+tinc__hostname: '{{ inventory_hostname_short }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Application environment [[[
+# ---------------------------
+
+# .. envvar:: tinc__user [[[
+#
+# System user account which is used to run ``tincd``.
+# For more details refer to :ref:`item.user <tinc__ref_networks_user>`.
+tinc__user: 'tinc-vpn'
+
+                                                                   # ]]]
+# .. envvar:: tinc__group [[[
+#
+# System group which is used to access ``tincd`` configuration files.
+tinc__group: 'tinc-vpn'
+
+                                                                   # ]]]
+# .. envvar:: tinc__home [[[
+#
+# Home directory of the ``tincd`` user.
+tinc__home: '/etc/tinc'
+
+                                                                   # ]]]
+# .. envvar:: tinc__ulimit_memlock [[[
+#
+# Specify the maximum amount of memory that shouldn't be moved to swap
+# ("memlock) by the kernel. This value is passed to the :command:`ulimit`
+# command and defined in the :command:`tinc` :command:`systemd` unit file.
+tinc__ulimit_memlock: '{{ (1024 * tinc__rsa_key_length|int * 16) }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__ulimit_options [[[
+#
+# List of options passed to ``ulimit`` command before starting ``tincd``
+# processes. Set the maximum size of address space locked into memory, in KB.
+tinc__ulimit_options: '-l {{ tinc__ulimit_memlock }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__extra_options [[[
+#
+# String with extra options to be passed to all ``tincd`` instances in the
+# :file:`/etc/default/tinc` config file and :command:`systemd` unit.
+tinc__extra_options: ''
+
+                                                                   # ]]]
+# .. envvar:: tinc__systemd [[[
+#
+# Enable support for ``systemd`` if it is detected as the init system.
+tinc__systemd: '{{ True
+                   if (ansible_service_mgr|d("unknown") == "systemd")
+                   else False }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__vcs_ignore_patterns [[[
+#
+# This list of ignore patterns for files below :file:`/etc/tinc` that version
+# control systems should ignore.
+# :file:`/etc` is not tracked by default by a version control system.
+# This definition exists preliminary in case you decide to use :program:`etckeeper` for
+# example to track changes in :file:`/etc`.
+#
+# Note that currently, only :command:`git` as version control system is supported. If
+# you use another version control system, be sure to add support for it to
+# this role.
+# Ignore patterns are specified using the :file:`.gitignore` file format
+# documented in :manpage:`gitignore(5)`.
+# By default, any file below :file:`/etc/tinc/` called :file:`rsa_key.priv`
+# will not be tracked.
+#
+# .. note:: When you started using this role before version 0.3.0 and
+#    sensitive files are already tracked by version control you will need to
+#    manually deleted them from version control history!
+#
+tinc__vcs_ignore_patterns: [ 'rsa_key.priv' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# tinc daemon configuration [[[
+# -----------------------------
+
+# .. envvar:: tinc__rsa_key_length [[[
+#
+# Length of the RSA private key generated on each node.
+tinc__rsa_key_length: '8192'
+
+                                                                   # ]]]
+# .. envvar:: tinc__hwaddr_prefix [[[
+#
+# A stable MAC address prefix that will make sure that the randomly generated
+# MAC address of any Tinc interface is located within a set of Locally
+# Administered Address Ranges. https://serverfault.com/questions/40712/
+# Reserved prefixes: `[0-9a-f]2`, `[0-9a-f]6`, `[0-9a-f]a`, `[0-9a-f]e`.
+tinc__hwaddr_prefix: 'de'
+
+                                                                   # ]]]
+# .. envvar:: tinc__metric [[[
+#
+# The default route metric configued by the :command:`dhclient` daemon.
+tinc__metric: '100'
+
+                                                                   # ]]]
+# .. envvar:: tinc__host_addresses [[[
+#
+# List of FQDN or IP addresses which are included in the public key file of
+# a given host. Other hosts will use these addresses to connect to that host.
+tinc__host_addresses: '{{ tinc__host_addresses_fqdn +
+                          tinc__host_addresses_ip_public }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__host_addresses_fqdn [[[
+#
+# Include the host FQDN if public IP addresses are available.
+tinc__host_addresses_fqdn: '{{ [ ansible_fqdn ]
+                               if ((ansible_all_ipv4_addresses|d([]) + (ansible_all_ipv6_addresses|d([]) |
+                                   difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local")))
+                                   ) | ipaddr("public")) else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__host_addresses_ip_public [[[
+#
+# Include all public IP addresses, without IPv6 link-local.
+tinc__host_addresses_ip_public: '{{ (ansible_all_ipv4_addresses|d([]) + (ansible_all_ipv6_addresses|d([]) |
+                                     difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local")))
+                                    ) | ipaddr("public") }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__host_addresses_ip_private [[[
+#
+# Include all private IP addresses, without IPv6 link-local.
+tinc__host_addresses_ip_private: '{{ (ansible_all_ipv4_addresses|d([]) + (ansible_all_ipv6_addresses|d([]) |
+                                      difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local")))
+                                     ) | ipaddr("private") }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__exclude_addresses [[[
+#
+# List of FQDN host entries or IP addresses which should be excluded from the
+# list of connection addresses in the public key file.
+tinc__exclude_addresses: '{{ lookup("template",
+                             "lookup/tinc__exclude_addresses.j2",
+                             convert_data=False) | from_yaml }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Kernel modules [[[
+# ------------------
+
+# .. envvar:: tinc__modprobe [[[
+#
+# Load required kernel modules if they are not present, and ensure that they
+# are loaded at boot time.
+tinc__modprobe: True
+
+                                                                   # ]]]
+# .. envvar:: tinc__modprobe_modules [[[
+#
+# List of kernel modules to load.
+tinc__modprobe_modules: [ 'tun' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: tinc__secret__directories [[[
+#
+# Configuration for the debops.secret_ Ansible role.
+tinc__secret__directories: '{{ lookup("template",
+                               "lookup/tinc__secret_directories.j2",
+                               convert_data=False) | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ role.
+tinc__apt_preferences__dependent_list:
+
+  - package: 'tinc'
+    backports: [ 'wheezy' ]
+    reason:  'Backport installed on Wheezy for version parity with Debian Jessie'
+    by_role: 'debops.tinc'
+
+                                                                   # ]]]
+# .. envvar:: tinc__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+tinc__etc_services__dependent_list: '{{ lookup("template",
+                                        "lookup/tinc__etc_services__dependent_list.j2",
+                                        convert_data=False) | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ Ansible role.
+tinc__ferm__dependent_rules: '{{ lookup("template",
+                                 "lookup/tinc__ferm__dependent_rules.j2",
+                                 convert_data=False) | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: tinc__persistent_paths__dependent_paths [[[
+#
+# Configuration for the debops.persistent_paths_ Ansible role.
+#
+# Note that when the same network gets deleted and then added again to
+# :envvar:`tinc__combined_networks`, the role might need two runs to also
+# update the defaults file in the persistent location.
+#
+# Note that bind-dirs in Qubes OS currently does not restore symlinks (only their destination).
+# (:file:`/etc/systemd/system/multi-user.target.wants/tinc.service` is a symlink).
+# This works for ypid_ as he does not want auto start on Qubes OS AppVMs anyway.
+# If you need it on Qubes OS, feel free to discuss and patch bind-dirs.
+tinc__persistent_paths__dependent_paths:
+
+  '50_debops_tinc':
+    by_role: 'debops.tinc'
+    paths: |
+      {{ [
+        '/etc/tinc',
+        '/etc/systemd/system/tinc.service',
+        '/etc/systemd/system/tinc@.service',
+        '/etc/systemd/system/multi-user.target.wants/tinc.service',
+      ] + ((ansible_local.tinc.networks.keys() | map("regex_replace", "^", "/etc/default/tinc-") | list)
+           if (ansible_local|d() and ansible_local.tinc|d() and
+               ansible_local.tinc.networks|d())
+           else [])
+      }}
+# ]]]
+# ]]]
+# ]]]

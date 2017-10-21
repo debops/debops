@@ -1,0 +1,29 @@
+#{{ ansible_managed }}
+
+[Unit]
+Description=Tinc VPN for %i network
+Documentation=man:tincd(8) man:tinc.conf(5)
+Documentation=http://tinc-vpn.org/docs/
+PartOf=tinc.service
+ReloadPropagatedFrom=tinc.service
+
+[Service]
+Type=simple
+WorkingDirectory=/etc/tinc/%i
+EnvironmentFile=-/etc/default/tinc
+EnvironmentFile=-/etc/default/tinc-%i
+ExecStart=/usr/sbin/tincd --net %i --no-detach $EXTRA $TINC_NETWORK_OPTIONS
+ExecReload=/usr/sbin/tincd --net %i --kill=HUP
+
+# Fix for systemd not executing tinc-down script on network shutdown
+# https://bugzilla.redhat.com/show_bug.cgi?id=1307222
+ExecStop=/usr/local/lib/tinc-down-wrapper %i
+KillSignal=SIGTERM
+
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+LimitMEMLOCK={{ tinc__ulimit_memlock }}
+
+[Install]
+WantedBy=tinc.service

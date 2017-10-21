@@ -1,0 +1,45 @@
+# {{ ansible_managed }}
+
+{% set network = item.value %}
+{% set network_name = item.value.name | d(item.key) %}
+{% set tinc__tpl_host_keys_seen = [] %}
+{% if network.tinc_host_options|d() %}
+{%   for key, value in network.tinc_host_options.iteritems() %}
+{%     if key | lower not in [ '{{ (network.hostname | d(tinc__hostname)) | replace("-","_") }}-up', '{{ (network.hostname | d(tinc__hostname)) | replace("-","_") }}-down', 'host-up', 'host-down' ] %}
+{%       if key not in tinc__tpl_host_keys_seen %}
+{%         if value is string %}
+{{ key }} = {{ value }}
+{%         else %}
+{%           for element in value %}
+{{ key }} = {{ element }}
+{%           endfor %}
+{%         endif %}
+{%         set _ = tinc__tpl_host_keys_seen.append(key) %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if (('Address' not in tinc__tpl_host_keys_seen) or ('address' not in tinc__tpl_host_keys_seen)) %}
+{%   set tinc__tpl_host_addresses = [] %}
+{%   set tinc__tpl_exclude_addresses = [] %}
+{%   if network.host_address|d() %}
+{%     set _ = tinc__tpl_host_addresses.extend([ network.host_address ] if network.host_address is string else network.host_address) %}
+{%   endif %}
+{%   if network.host_addresses|d() %}
+{%     set _ = tinc__tpl_host_addresses.extend([ network.host_addresses ] if network.host_addresses is string else network.host_addresses) %}
+{%   endif %}
+{%   if network.exclude_address|d() %}
+{%     set _ = tinc__tpl_exclude_addresses.extend([ network.exclude_address ] if network.exclude_address is string else network.exclude_address) %}
+{%   endif %}
+{%   if network.exclude_addresses|d() %}
+{%     set _ = tinc__tpl_exclude_addresses.extend([ network.exclude_addresses ] if network.exclude_addresses is string else network.exclude_addresses) %}
+{%   endif %}
+{%   if not tinc__tpl_exclude_addresses %}
+{%     set _ = tinc__tpl_exclude_addresses.extend([ tinc__exclude_addresses ] if tinc__exclude_addresses is string else tinc__exclude_addresses) %}
+{%   endif %}
+{%   for address in tinc__tpl_host_addresses %}
+{%     if address not in tinc__tpl_exclude_addresses %}
+Address = {{ address }} {{ network.tinc_options.Port if network.tinc_options.Port|d() else network.port }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
