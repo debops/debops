@@ -1,0 +1,8 @@
+{% set atd_tpl_batch_interval = (ansible_local.atd.batch_interval if (ansible_local|d() and ansible_local.atd|d() and ansible_local.atd.batch_interval|d()) else (atd_fact_batch_interval | d(''))) %}
+{% set atd_tpl_batch_load = (ansible_local.atd.batch_load if (ansible_local|d() and ansible_local.atd|d() and ansible_local.atd.batch_load|d()) else (atd_fact_batch_load | d(''))) %}
+{% set atd_tpl_enabled = atd_enabled | bool | lower %}
+{
+"batch_interval": "{{ atd_tpl_batch_interval }}",
+"batch_load": "{{ atd_tpl_batch_load }}",
+"enabled": "{{ atd_tpl_enabled }}"
+}
