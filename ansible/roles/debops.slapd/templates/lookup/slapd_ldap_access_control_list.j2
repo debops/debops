@@ -1,0 +1,11 @@
+{% set disable_counter = False %}
+{% if slapd_ldap_access_control_list|d([]) and slapd_ldap_access_control_list[0] | search("^{") %}
+{% set disable_counter = True %}
+{% endif %}
+{% for item in slapd_ldap_access_control_list %}
+{% if disable_counter %}
+  - '{{ item }}'
+{% else %}
+  - '{{ "{" + loop.index0 | string + "}" }}{{ item }}'
+{% endif %}
+{% endfor %}

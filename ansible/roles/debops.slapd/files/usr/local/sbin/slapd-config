@@ -1,0 +1,719 @@
+#!/bin/bash
+#
+# This file is managed by Ansible, all changes will be lost
+#
+# slapd runtime configuration management tool
+# Homepage: http://blog.toxa.de/archives/484
+#
+# written by Thomas Urban <thomas.urban@cepharum.de>
+# (c) 2012-2013, cepharum GmbH, Berlin
+#
+# $Date: 2012-04-14 22:50:40 +0000 (Sa, 14. Apr 2012) $ $Revision: 4 $
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# use SASL/EXTERNAL authentication by default
+AUTHENTICATION="${AUTHENTICATION:--Q -H ldapi:/// -Y EXTERNAL}"
+
+
+# detect base64 encoder/decoder
+if which base64 &>/dev/null; then
+	B64ENC="base64"
+	B64DEC="base64 -d"
+elif which openssl &>/dev/null; then
+	B64ENC="openssl base64"
+	B64DEC="openssl base64 -d"
+elif which recode &>/dev/null; then
+	B64ENC="recode ..base64"
+	B64DEC="recode base64.."
+else
+	B64ENC="echo 'missing base64 encoder' >&2 && exit 5"
+	B64DEC="echo 'missing base64 decoder' >&2 && exit 5"
+fi
+
+
+
+findEntries()
+{
+	if [ "${1}" = "-dn" ]
+	then
+		basedn="${2}"
+		shift 2
+	else
+		basedn="cn=config"
+	fi
+
+	query="${1}"
+	[ -z "$query" ] && query='objectClass=*'
+
+	shift
+
+	ldapsearch $AUTHENTICATION -LLL -b "$basedn" "$query" "$@" | sed -ne '/^ *$/!p' | sed -ne '1h;1!H;${;x;s/\n //g;p;}'
+}
+
+DBName2DN()
+{
+	for dn in `listDatabaseDNs`; do
+		name="`DBDN2Name "$dn"`"
+		[ "${1}" = "$name" -o "${1}" = "${name#*\}}" ] && { echo $dn; return 0; }
+	done
+
+	echo "invalid database: ${1}" >&2
+	exit 1
+}
+
+DBDN2Name()
+{
+	[ "${2}" = "unique" ] && DN="${1#*=}" || DN="${1#*\}}"
+	echo "${DN%%,*}"
+}
+
+values2LDIF()
+{
+	values=
+	i=0
+
+	while read line; do
+		# insert line break
+		[ $i -eq 0 ] || values="$values\n"
+
+		# add numeric indices to lines of values unless disabled
+		[ "${2}" = "nonumbers" ] || line="{$i}${line}"
+
+		# base64-encode line if required
+		echo -n "$line" | awk '/^[\x01-\x09\x0B\x0C\x0E-\x1F\x21-\x39\x3B\x3D-\x7F][\x01-\x09\x0B\x0C\x0E-\x7F]*$/ {print "valid"}' | grep valid &>/dev/null || {
+			line="$(echo -n "$line" | $B64ENC)"
+		}
+
+		values="$values${1}: ${line}"
+		i=$((i+1))
+	done
+
+	{ [ $i -lt 2 -a "${2}" != "nonumbers" ] && sed 's/^\([^:]\+: \){0}/\1/' <<<"$values" || echo "$values"; } | sed 's/\\n/\n/g' | sed -n ':p;s/\([^\n]\{78\}\)\([^\n]\)/\1\n \2/;tp;p'
+}
+
+listEntries()
+{
+	dn="${1}"
+	scope="${2:-sub}"
+
+	shift 2
+
+	findEntries -dn "${dn}" "objectClass=*" dn -s "$scope" "$@" | sed -n '/^ *$/!s/[^:]*::? ?//p'
+}
+
+showEntry()
+{
+	dn="${1}"
+
+	shift
+
+	findEntries -dn "${dn}" "objectClass=*" -s base | sed -n '/^ *$/!p'
+}
+
+readAttribute()
+{
+	dn="${1}"
+	attr="${2}"
+
+	findEntries -dn "$dn" "$attr=*" "$attr" -s base | sed -n '
+/^'"$attr"':/!d
+s/^'"$attr"': *\({\(-\?[0-9][0-9]*\)}\)\?/=/
+s/^'"$attr"':: */!/
+p' | while read line; do
+		case "${line:0:1}" in
+			"=")
+				echo "${line:1}"
+				;;
+			'!')
+				echo -n "${line:1}" | $B64DEC
+				;;
+		esac
+	done
+}
+
+writeAttribute()
+{
+	dn="${1}"
+	attr="${2}"
+	[ "${3}" = "nonumbers" ] && mode=nonumbers || mode=
+
+	ldapmodify $AUTHENTICATION <<EOT
+dn: $dn
+changetype: modify
+replace: $attr
+$(values2LDIF "$attr" $mode)
+-
+EOT
+}
+
+insertAttributeLine()
+{
+	dn="${1}"
+	attr="${2}"
+	idx="${3}"
+	rule="${4//;/\\;}"
+
+	[ $idx -lt 1 ] && idx=1
+
+	{
+		readAttribute "$dn" "$attr" | {
+			if [ $idx -le $(readAttribute "$dn" "$attr" | wc -l) ]; then
+				sed "${idx}i${rule}"
+			else
+				sed -n "p;\$i${rule}"
+			fi
+		}
+	} | writeAttribute "$dn" "$attr" "${5}"
+}
+
+deleteAttributeLine()
+{
+	dn="${1}"
+	attr="${2}"
+	idx="${3}"
+
+	[ $idx -ge 1 -a $idx -le `readAttribute "$dn" "$attr" | wc -l` ] || { echo "index out of bound" >&2; return 1; }
+
+	readAttribute "$dn" "$attr" | sed "${idx}d" | writeAttribute "$dn" "$attr" "${4}"
+}
+
+schema2CN()
+{
+	name="${1}"
+
+	grep -E '^[1-9][0-9]*$' <<<$name &>/dev/null && index="$((name-1))" || index="x"
+
+	cn=`findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed "/^dn: cn={$index}.\|}$name,cn=schema,cn=config\$/!d;s/^[^{]\+\({[^,]\+\),cn=schema,cn=config\$/\1/"`
+
+	if [ $? -ne 0 -o -z "`echo "$cn"`" ]; then
+		if [ -n "${2}" ]; then
+			idx=-1
+			for cidx in `findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed -n 's/^[^{]\+{\([0-9]\+\)}.*$/\1/p'`; do
+				[ $cidx -gt $idx ] && idx=$cidx
+			done
+
+			echo "{$((idx+1))}$name"
+		else
+			return 1
+		fi
+	else
+		echo $cn
+	fi
+}
+
+schema2DN()
+{
+	cn="`schema2CN "${1}"`" || return 1
+	echo "cn=${cn},cn=schema,cn=config"
+}
+
+DN2Schema()
+{
+	dn="${dn#*\}}"
+	echo "${dn%%,*}"
+}
+
+listSchemata()
+{
+	findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed -n '/^ *$/!s/^dn: *cn={-\?[0-9]*}//;s/,.*$//p'
+}
+
+testSchema()
+{
+	schema2CN "${1}" &>/dev/null && return 0 || return 1
+}
+
+readSchema()
+{
+	dn="`schema2DN "${1}"`" || { echo "invalid or missing schema" >&2; exit 1; }
+
+	cat <<EOT
+# Copy of schema `readAttribute "$dn" cn`
+# DN in LDAP is $dn
+
+`readAttribute "$dn" olcObjectIdentifier | sed 's/^/\nobjectidentifier /;s/ \(NAME\|DESC\|EQUALITY\|SUBSTR\|SYNTAX\|SINGLE-VALUE\|SUP\)/\n\t\1/g'`
+
+`readAttribute "$dn" olcAttributeTypes | sed 's/^/\nattributetype /;s/ \(NAME\|DESC\|EQUALITY\|SUBSTR\|SYNTAX\|SINGLE-VALUE\|SUP\)/\n\t\1/g'`
+
+`readAttribute "$dn" olcObjectClasses | sed 's/^/\nobjectclass /;s/ \(NAME\|DESC\|SUP\|STRUCTURAL\|AUXILIARY\|MAY\|MUST\)/\n\t\1/g'`
+EOT
+}
+
+schemaFileToLDIF()
+{
+	sed -e '/^#/d;/^ *$/d' | sed -ne '1h;1!H;${;x;s/[ \t]\+/ /g;s/ \?\n / /g;p;}' | (
+		iidx=0
+		aidx=0
+		oidx=0
+
+		iline=""
+		aline=""
+		cline=""
+
+		while read rule; do
+			ruletype="${rule%% *}"
+			case "${ruletype,,}" in
+				objectidentifier)
+					[ $iidx -eq 0 ] || iline="${iline}\n"
+					iline="${iline}olcObjectIdentifier: {$iidx}${rule#* }"
+					iidx=$((iidx+1))
+					;;
+				attributetype)
+					[ $aidx -eq 0 ] || aline="${aline}\n"
+					aline="${aline}olcAttributeTypes: {$aidx}${rule#* }"
+					aidx=$((aidx+1))
+					;;
+				objectclass)
+					[ $oidx -eq 0 ] || cline="${cline}\n"
+					cline="${cline}olcObjectClasses: {$oidx}${rule#* }"
+					oidx=$((oidx+1))
+					;;
+				*)
+					echo -e "invalid rule in schema file:\n$rule" >&2
+					exit 2
+			esac
+		done
+
+
+		cat <<-EOT
+$iline
+$aline
+$cline
+		EOT
+	)
+}
+
+writeSchema()
+{
+	schemaFileToLDIF | (
+		read -r identifiers
+		read -r attributes
+		read -r classes
+
+		testSchema "${1}"
+		if [ $? -eq 0 ]; then
+			dn="$(schema2DN "${1}")"
+
+			ldif="dn: ${dn}
+changetype: modify
+"
+
+			[ -n "$identifiers" ] && ldif="${ldif}replace: olcObjectIdentifier
+$(sed 's/\\n/\n/g' <<<"$identifiers")
+-
+"
+
+			[ -n "$attributes" ] && ldif="${ldif}replace: olcAttributeTypes
+$(sed 's/\\n/\n/g' <<<"$attributes")
+-
+"
+
+			[ -n "$classes" ] && ldif="${ldif}replace: olcObjectClasses
+$(sed 's/\\n/\n/g' <<<"$classes")
+-
+"
+
+			ldapmodify $AUTHENTICATION <<<"$ldif"
+		else
+			cn="$(schema2CN "${1}" y)"
+
+			ldif="dn: cn=${cn},cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: ${cn}
+"
+
+			[ -n "$identifiers" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$identifiers")
+"
+
+			[ -n "$attributes" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$attributes")
+"
+
+			[ -n "$classes" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$classes")
+"
+
+			ldapadd $AUTHENTICATION <<<"$ldif"
+		fi
+	)
+}
+
+deleteSchema()
+{
+	dn="`schema2DN "${1}"`" || { echo "invalid or missing schema" >&2; exit 1; }
+
+	idx="${dn#*{}"
+	idx="${idx%%\}*}"
+
+	ldapdelete $AUTHENTICATION "${dn}" || { echo "failed to delete schema ${dn}" >&2; exit 2; }
+
+	while testSchema "$((idx+1))"; do
+		olddn="`schema2DN "$((idx+1))"`"
+		newcn="`DN2Schema "${olddn}"`"
+		newcn="{$idx}$newcn"
+
+		ldapmodify $AUTHENTICATION <<-EOT
+dn: ${olddn}
+changetype: modrdn
+newrdn: cn=${newcn}
+deleteoldrdn: 1
+newsuperior: cn=schema,cn=config
+-
+		EOT
+
+		[ $? -ne 0 ] && { echo "failed to move schema $olddn to cn=$newcn,cn=schema,cn=config" >&2; exit 2; }
+	done
+}
+
+listDatabaseDNs()
+{
+	findEntries "olcDatabase=*" dn | awk '$1 ~ /dn:/ {print substr($0,5)}'
+}
+
+listAllDatabases()
+{
+	for dn in `listDatabaseDNs`; do
+		echo "`DBDN2Name "$dn"`	$dn"
+	done
+}
+
+listDatabases()
+{
+	for dn in `listDatabaseDNs`
+	do
+		if suffix=`findEntries -dn "$dn" "olcSuffix=*" olcSuffix | grep -E '^olcSuffix: '`; then
+			echo "`DBDN2Name "$dn"`	${suffix#*: }	$dn"
+		fi
+	done
+}
+
+writeSslCertificate()
+{
+	certFilename="${1}"
+	keyFilename="${2}"
+	caFilename="${3}"
+
+	[ -f "$certFilename" ] || { echo "missing certificate file: $certFilename" >&2; exit 1; }
+	[ -f "$keyFilename" ] || { echo "missing key file: $keyFilename" >&2; exit 1; }
+
+	if [ -n "$caFilename" ]
+	then
+		[ -f "$caFilename" ] || { echo "missing CA certificate file: $caFilename" >&2; exit 1; }
+
+		echo "setting up CA certificate file" >&2
+		ldapmodify $AUTHENTICATION <<-EOT
+dn: cn=config
+changetype: modify
+replace: olcTLSCACertificateFile
+`values2LDIF olcTLSCACertificateFile <<<"$caFilename"`
+-
+		EOT
+	fi
+
+	echo "setting up certificate/key files" >&2
+	ldapmodify $AUTHENTICATION <<-EOT
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateFile
+`values2LDIF olcTLSCertificateFile <<<"$certFilename"`
+-
+replace: olcTLSCertificateKeyFile
+`values2LDIF olcTLSCertificateKeyFile <<<"$keyFilename"`
+-
+	EOT
+}
+
+deleteSslCertificate()
+{
+	if [ -n "$(readAttribute "cn=config" "olcTLSCertificateFile")" ]
+	then
+		echo "dropping certificate/key file" >&2
+		ldapmodify $AUTHENTICATION <<-EOT
+dn: cn=config
+changetype: modify
+delete: olcTLSCertificateFile
+-
+delete: olcTLSCertificateKeyFile
+-
+		EOT
+	fi
+
+	if [ -n "$(readAttribute "cn=config" "olcTLSCACertificateFile")" ]
+	then
+		echo "dropping CA certificate file" >&2
+		ldapmodify $AUTHENTICATION <<-EOT
+dn: cn=config
+changetype: modify
+delete: olcTLSCACertificateFile
+-
+		EOT
+	fi
+}
+
+
+
+usage()
+{
+	cat >&2 <<EOT
+OpenLDAP (slapd) runtime configuration utility
+(c) 2012-2013, cepharum GmbH, Berlin (distributed under terms of GPLv3)
+
+common usage: $APPNAME <module> <action> [ <parameters> ]
+
+EOT
+
+	sed 's/\\n/\n/g' >&2
+
+	exit 1
+}
+
+badaction()
+{
+	cat >&2 <<EOT
+missing or invalid action: $ACTION
+
+read help available by invoking
+
+$APPNAME $MODULE help
+
+EOT
+
+	exit 1
+}
+
+
+
+APPNAME="${0}"
+MODULE="${1}"
+ACTION="${2}"
+
+shift 2
+
+[ -z "$MODULE" ] && { echo "missing module" >&2; MODULE=help; }
+
+
+
+
+
+
+case "$MODULE" in
+
+	-h|--help|help)
+		usage <<-EOT
+available modules are: db raw schema ssl
+
+module-specific help is available with:
+
+  $APPNAME <module> help
+
+		EOT
+		;;
+
+	raw)
+		case "$ACTION" in
+			help)
+				usage <<-EOT
+module: raw
+
+actions are:
+
+  read      read all value lines from a single DNs attribute
+  write     write all value lines of a single DNs attribute read from stdin
+  insert    insert value line before selected one in attribute of single DN
+  delete    remove selected value line from attribute of single DN
+  list      list DNs of subordinated entries using scope one or sub
+  show      list all entries and their values of entry selected by DN
+
+				EOT
+				;;
+			"read")
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME raw read <DN> <attr>\n"
+				readAttribute "$@"
+				;;
+			write)
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME raw write <DN> <attr> [ nonumbers ]\n       (providing value lines on stdin)\n"
+				writeAttribute "$@"
+				;;
+			insert)
+				[ $# -lt 4 ] && usage <<<"usage: $APPNAME raw insert <DN> <attr> <linenum> \"<value>\" [ nonumbers ]\n"
+				insertAttributeLine "$@"
+				;;
+			delete)
+				[ $# -lt 3 ] && usage <<<"usage: $APPNAME raw delete <DN> <attr> <linenum> [ nonumbers ]\n"
+				deleteAttributeLine "$@"
+				;;
+			list)
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME raw list <baseDN> [ one | sub ]\n"
+				listEntries "$@"
+				;;
+			show)
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME raw show <DN>\n"
+				showEntry "$@"
+				;;
+			*)
+				badaction
+				;;
+		esac
+		;;
+
+	schema)
+		case "$ACTION" in
+			help)
+				usage <<-EOT
+module: schema
+
+actions are:
+
+  list    list declared schemata
+  exists  test whether schema selected by name or index exists or not
+  read    read schema selected by name or index
+  write   write schema selected by name or index (file read from stdin)
+  delete  delete schema selected by name or index (not supported by OpenLDAP)
+
+				EOT
+				;;
+			list)
+				listSchemata "$@"
+				;;
+			exists)
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema exists <schema>\n"
+				testSchema "$@"
+				;;
+			"read")
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema read <schema>\n"
+				readSchema "$@"
+				;;
+			write)
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema write <schema> \"<\" <file>\n"
+				writeSchema "$@"
+				;;
+			delete)
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema delete <schema>\n"
+				deleteSchema "$@"
+				;;
+			*)
+				badaction
+				;;
+		esac
+		;;
+
+	db)
+		case "$ACTION" in
+			help)
+				usage <<-EOT
+module: db
+
+actions are:
+
+  list          list name, suffix and DN of every DB containing LDAP thread
+  list-all      list name and DN of every DB (incl. config databases etc.)
+  show          provide properties of a single DB selected in parameter
+  read          read attribute from configuration of selected DB
+  write         write attribute in configuration of selected DB
+  insert        insert value line before selected one in attribute of DB
+  delete        remove selected value line from attribute of DB
+  read-access   read access rules from DB selected in parameter
+  write-access  write access rules to DB selected in parameter (rules on stdin)
+  insert-access insert single access rule in set of rules of selected DB
+  delete-access remove single access rule from set of rules of selected DB
+
+				EOT
+				;;
+			list)
+				listDatabases "$@"
+				;;
+			list-all)
+				listAllDatabases "$@"
+				;;
+			show)
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db show <dbname>\n"
+				findEntries -dn "$(DBName2DN "${1}")"
+				;;
+			read)
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db read <dbname> <attr>\n"
+				readAttribute "$(DBName2DN "${1}")" "${2}"
+				;;
+			write)
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db write <dbname> <attr> [ nonumbers ]\n       (providing value lines on stdin)\n"
+				writeAttribute "$(DBName2DN "${1}")" "${2}" ${3}
+				;;
+			insert)
+				[ $# -lt 4 ] && usage <<<"usage: $APPNAME db insert <dbname> <attr> <linenum> \"<value>\" [ nonumbers ]\n"
+				insertAttributeLine "$(DBName2DN "${1}")" "${2}" "${3}" "${4}" ${5}
+				;;
+			delete)
+				[ $# -lt 3 ] && usage <<<"usage: $APPNAME db delete <dbname> <attr> <linenum> [ nonumbers ]\n"
+				deleteAttributeLine "$(DBName2DN "${1}")" "${2}" "${3}" ${4}
+				;;
+			read-access)
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db read-access <dbname>\n"
+				readAttribute "$(DBName2DN "${1}")" olcAccess
+				;;
+			write-access)
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db write-access <dbname>\n"
+				writeAttribute "$(DBName2DN "${1}")" olcAccess
+				;;
+			insert-access)
+				[ $# -lt 3 ] && usage <<<"usage: $APPNAME db insert-access <dbname> <ruleindex> \"<rule>\"\n"
+				insertAttributeLine "$(DBName2DN "${1}")" olcAccess "${2}" "${3}"
+				;;
+			delete-access)
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db delete-access <dbname> <ruleindex>\n"
+				deleteAttributeLine "$(DBName2DN "${1}")" olcAccess "${2}"
+				;;
+			*)
+				badaction
+				;;
+		esac
+		;;
+
+	ssl)
+		case "$ACTION" in
+			help)
+				usage <<-EOT
+module: ssl
+
+actions are:
+
+  write    update SSL/TLS certificate and key of server
+  delete   delete any existing SSL/TLS certificate of server
+  show     display configured SSL/TLS certificate and key of server
+
+				EOT
+				;;
+			write)
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME ssl write <cert-filename> <key-filename>\n"
+				writeSslCertificate "$@"
+				;;
+			delete)
+				deleteSslCertificate
+				;;
+			show)
+				findEntries -dn "cn=config" | awk '/^olcTLS/ {print $0}'
+				;;
+			*)
+				badaction
+				;;
+		esac
+		;;
+
+	*)
+		cat >&2 <<-EOT
+unknown module: $MODULE
+
+use "$APPNAME help" for list of available modules
+
+EOT
+		;;
+esac

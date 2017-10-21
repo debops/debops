@@ -1,0 +1,26 @@
+---
+
+- name: Install ldapscripts packages
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_items: [ 'ldapscripts', 'ldap-utils', 'pwgen' ]
+
+- name: Configure ldapscripts
+  template:
+    src: 'etc/ldapscripts/ldapscripts.conf.j2'
+    dest: '/etc/ldapscripts/ldapscripts.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Configure ldapscripts password
+  template:
+    src: 'etc/ldapscripts/ldapscripts.passwd.j2'
+    dest: '/etc/ldapscripts/ldapscripts.passwd'
+    owner: 'root'
+    group: 'root'
+    mode: '0640'
+  no_log: True
+

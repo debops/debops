@@ -1,0 +1,44 @@
+---
+
+- name: Allow anonymous bind
+  ldap_attr:
+    dn: 'cn=config'
+    name: '{{ item.key }}'
+    values: '{{ item.value }}'
+    state: 'absent'
+  with_dict:
+    olcDisallows: 'bind_anon'
+    olcRequires: 'authc'
+  when: slapd_anonymous_bind|bool
+
+- name: Allow anonymous bind (frontend)
+  ldap_attr:
+    dn: 'olcDatabase={-1}frontend,cn=config'
+    name: '{{ item.key }}'
+    values: '{{ item.value }}'
+    state: 'absent'
+  with_dict:
+    olcRequires: 'authc'
+  when: slapd_anonymous_bind|bool
+
+- name: Deny anonymous bind, require authentication
+  ldap_attr:
+    dn: 'cn=config'
+    name: '{{ item.key }}'
+    values: '{{ item.value }}'
+    state: 'exact'
+  with_dict:
+    olcDisallows: 'bind_anon'
+    olcRequires: 'authc'
+  when: not slapd_anonymous_bind|bool
+
+- name: Deny anonymous bind, require authentication (frontend)
+  ldap_attr:
+    dn: 'olcDatabase={-1}frontend,cn=config'
+    name: '{{ item.key }}'
+    values: '{{ item.value }}'
+    state: 'exact'
+  with_dict:
+    olcRequires: 'authc'
+  when: not slapd_anonymous_bind|bool
+
