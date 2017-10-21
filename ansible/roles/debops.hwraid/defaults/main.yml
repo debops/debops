@@ -1,0 +1,73 @@
+---
+
+# OS distribution used to lookup available releases
+hwraid_distribution: '{{ ansible_distribution }}'
+
+# OS release used to lookup available releases
+hwraid_release: '{{ ansible_distribution_release }}'
+
+# Ignore specified kernel modules
+hwraid_blacklist: []
+
+
+
+# HWRaid repository GPG key
+hwraid_repository_key_url: 'http://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key'
+
+# OS releases available in HWRaid repository
+# it is important to have the latest release first
+hwraid_distribution_releases:
+  'Debian': [ 'jessie', 'wheezy', 'squeeze','sid' ]
+  'Ubuntu': [ 'wily' , 'vivid', 'trusty', 'precise' ]
+
+# List of known RAID device drivers and corresponding packages
+hwraid_device_database:
+
+  # 3Ware Eskalad
+  # http://hwraid.le-vert.net/wiki/3Ware
+  - module:   '3w_xxxx'
+    packages: [ 'tw_cli', '3ware-status' ]
+    daemons: [ '3ware-statusd' ]
+  - module:   '3w_9xxx'
+    packages: [ 'tw_cli', '3ware-status' ]
+    daemons: [ '3ware-statusd' ]
+
+  # LSI Fusion MPT SAS
+  # http://hwraid.le-vert.net/wiki/LSIFusionMPT
+  - module:   'mptsas'
+    packages: [ 'mpt-status' ]
+    daemons: [ 'mpt-statusd' ]
+
+  # LSI Fusion MPT SAS2
+  # http://hwraid.le-vert.net/wiki/LSIFusionMPTSAS2
+  - module:   'mpt2sas'
+    packages: [ 'sas2ircu', 'sas2ircu-status' ]
+    daemons: [ 'sas2ircu-statusd' ]
+
+  # LSI MegaRAID
+  # http://hwraid.le-vert.net/wiki/LSIMegaRAID
+  - module:   'megaraid_mm'
+    packages: [ 'megactl', 'megaraid-status' ]
+    daemons: [ 'megaraid-statusd' ]
+  - module:   'megaraid_mbox'
+    packages: [ 'megactl', 'megaraid-status' ]
+    daemons: [ 'megaraid-statusd' ]
+
+  # LSI MegaRAID SAS
+  # http://hwraid.le-vert.net/wiki/LSIMegaRAIDSAS
+  - module:   'megaraid_sas'
+    packages: [ 'megactl', 'megaraid-status' ]
+    daemons: [ 'megaraidsas-statusd' ]
+
+  # Adaptec AACRaid
+  # http://hwraid.le-vert.net/wiki/Adaptec
+  - module:   'aacraid'
+    packages: [ 'arcconf', 'aacraid-status' ]
+    daemons: [ 'aacraid-statusd' ]
+
+  # HP/Compaq SmartArray
+  # http://hwraid.le-vert.net/wiki/SmartArray
+  - module:   'cciss'
+    packages: [ 'cciss-vol-status' ]
+    daemons: [ 'cciss-vol-statusd' ]
+

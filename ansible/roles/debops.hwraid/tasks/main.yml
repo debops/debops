@@ -1,0 +1,55 @@
+---
+
+- name: Configure HWRaid APT repository key
+  apt_key:
+    url: '{{ hwraid_repository_key_url }}'
+    state: 'present'
+
+- name: Select supported release for current distribution
+  set_fact:
+    hwraid_register_release: '{{ hwraid_release }}'
+  when: hwraid_release in hwraid_distribution_releases[hwraid_distribution]
+
+# if the current linux distribution is not available yet, we try to use the latest one
+- name: Select latest release for current distribution if no match found
+  set_fact:
+    hwraid_register_release: '{{ hwraid_distribution_releases[hwraid_distribution][0] }}'
+  when: hwraid_register_release is undefined
+
+- name: Configure HWRaid APT repository
+  apt_repository:
+    repo: 'deb http://hwraid.le-vert.net/{{ hwraid_distribution | lower }} {{ hwraid_register_release | lower }} main'
+    state: 'present'
+    update_cache: True
+  when: hwraid_register_release is defined and hwraid_register_release
+
+- name: Get list of active kernel modules
+  shell: lsmod | awk '{print $1}'
+  register: hwraid_register_modules
+  changed_when: False
+
+- name: Install packages for recognized RAID devices
+  apt:
+    name: '{{ item.1 }}'
+    state: 'present'
+    install_recommends: False
+  with_subelements:
+    - '{{ hwraid_device_database }}'
+    - 'packages'
+  when: ((hwraid_register_release is defined and hwraid_register_release) and
+         item.0.module not in hwraid_blacklist and
+         item.0.module in hwraid_register_modules.stdout_lines)
+
+- name: Make sure service starts at boot
+  service:
+    name: '{{ item.1 }}'
+    state: 'started'
+    enabled: yes
+  with_subelements:
+    - '{{ hwraid_device_database }}'
+    - 'daemons'
+  when: ((hwraid_register_release is defined and hwraid_register_release) and
+         item.0.module not in hwraid_blacklist and
+         item.0.module in hwraid_register_modules.stdout_lines)
+
+# vim: syntax=yaml ts=2 sw=2 et sr softtabstop=2 autoindent paste
