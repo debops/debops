@@ -1,0 +1,27 @@
+{% set gitlab_runner__tpl_instances = [] %}
+{% set gitlab_runner__tpl_instance_tokens = [] %}
+{% if gitlab_runner__register_new_instances|d() and gitlab_runner__register_new_instances.results %}
+{%   for item in gitlab_runner__register_new_instances.results %}
+{%     if item.item.name|d() and item.json|d() and item.json.id|d() and item.json.token|d() %}
+{%       set _ = gitlab_runner__tpl_instances.append(item.item.name) %}
+{%       set _ = gitlab_runner__tpl_instance_tokens.append({ "id": item.json.id, "name": item.item.name, "token": item.json.token }) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if ansible_local|d() and ansible_local.gitlab_runner|d() and ansible_local.gitlab_runner.instance_tokens|d() %}
+{%   for item in ansible_local.gitlab_runner.instance_tokens %}
+{%     if item.name not in gitlab_runner__tpl_instances %}
+{%       for element in (gitlab_runner__default_instances + gitlab_runner__instances + gitlab_runner__group_instances + gitlab_runner__host_instances) %}
+{%         if (item.name == element.name and (element.state is undefined or element.state != 'absent')) %}
+{%           set _ = gitlab_runner__tpl_instances.append(item.name) %}
+{%           set _ = gitlab_runner__tpl_instance_tokens.append({ "id": item.id, "name": item.name, "token": item.token }) %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% set output = {
+    "instance_tokens": gitlab_runner__tpl_instance_tokens,
+    "instances": gitlab_runner__tpl_instances
+} %}
+{{ output | to_nice_json }}

@@ -1,0 +1,31 @@
+{% set output = [ 'shell' ] %}
+{% set _ = output.append(ansible_pkg_mgr) %}
+{% set _ = output.append(ansible_service_mgr) %}
+{% set _ = output.append(ansible_system | lower) %}
+{% if (ansible_local|d() and ansible_local.tags|d()) %}
+{%   set _ = output.extend(ansible_local.tags) %}
+{% endif %}
+{% if (ansible_local|d() and ansible_local.docker|d() and
+       (ansible_local.docker.installed|d()) | bool) %}
+{%   set _ = output.append('docker-host') %}
+{% endif %}
+{% if (ansible_local|d() and ansible_local.lxc|d() and
+       (ansible_local.lxc.installed|d()) | bool) %}
+{%   set _ = output.append('lxc-host') %}
+{% endif %}
+{% if gitlab_runner__vagrant_lxc|bool %}
+{%   set _ = output.append('vagrant-lxc') %}
+{% endif %}
+{% set _ = output.append((ansible_local.core.distribution
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.distribution|d())
+                          else ansible_distribution) | lower) %}
+{% set _ = output.append((ansible_local.core.distribution_release
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.distribution_release|d())
+                          else ansible_distribution_release) | lower) %}
+{% if ansible_virtualization_type not in [ 'NA' ] %}
+{%   set _ = output.append(ansible_virtualization_type + '-' + ansible_virtualization_role) %}
+{% endif %}
+{% set _ = output.append('amd64' if (ansible_architecture == 'x86_64') else ansible_architecture) %}
+{{ output | unique }}

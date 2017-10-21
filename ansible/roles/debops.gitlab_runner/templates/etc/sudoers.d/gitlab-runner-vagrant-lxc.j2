@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+
+# lxc
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-ls
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-info *
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-config *
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-attach *
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env which lxc-*
+
+# vagrant-lxc (startup)
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env cat /var/lib/lxc/*/config
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-start -d --name *
+
+# vagrant-lxc (create)
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-create --version
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-create -B * --template * --name * -- --tarball {{ gitlab_runner__home }}/.vagrant.d/boxes/* --config {{ gitlab_runner__home }}/.vagrant.d/boxes/*
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env tar --numeric-owner -cvzf /tmp/*/rootfs.tar.gz -C /var/lib/lxc/* ./rootfs
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env cp -f /tmp/lxc-config* /var/lib/lxc/*/config
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env chown root\:root /var/lib/lxc/*/config
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env chown *\:* /tmp/*/rootfs.tar.gz
+
+# vagrant-lxc (shutdown & destroy)
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-shutdown --name *
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-stop --name *
+{{ gitlab_runner__user }}   ALL=(root) NOPASSWD: /usr/bin/env lxc-destroy --name *
