@@ -1,0 +1,44 @@
+# {{ ansible_managed }}
+
+agentAddress  {{ snmpd_agent_address | join(",") }}
+
+sysName       {{ snmpd_sys_name }}
+sysLocation   {{ snmpd_sys_location }}
+sysContact    {{ snmpd_sys_contact }}
+
+sysServices   72
+
+{% if snmpd_account|d() and snmpd_account %}
+{% if snmpd_register_version|d() and not snmpd_register_version.stdout %}
+rwuser        {{ snmpd_account_admin_username }}   priv
+{% endif %}
+rouser        {{ snmpd_account_agent_username }}   priv
+rouser        {{ snmpd_account_local_username }}   priv
+
+iquerySecName {{ snmpd_account_agent_username }}
+agentSecName  {{ snmpd_account_agent_username }}
+
+{% endif %}
+master agentx
+
+{% if snmpd_load|d() and snmpd_load %}
+# CPU load average monitoring
+# ===========================
+# Profile: {{ snmpd_load_profile }}
+# {{ "%-5s = (%s * %-5s * %s" | format("1min", snmpd_load_base, snmpd_load_percent_map[snmpd_load_percent][0] + "%)", snmpd_load_weight_map[snmpd_load_weight][0]) }}
+# {{ "%-5s = (%s * %-5s * %s" | format("5min", snmpd_load_base, snmpd_load_percent_map[snmpd_load_percent][1] + "%)", snmpd_load_weight_map[snmpd_load_weight][1]) }}
+# {{ "%-5s = (%s * %-5s * %s" | format("15min", snmpd_load_base, snmpd_load_percent_map[snmpd_load_percent][2] + "%)", snmpd_load_weight_map[snmpd_load_weight][2]) }}
+
+load {{ snmpd_load_1min }} {{ snmpd_load_5min }} {{ snmpd_load_15min }}
+
+{% endif %}
+{% if snmpd_custom_options|d() and snmpd_custom_options %}
+{{ snmpd_custom_options }}
+{% endif %}
+
+# Extension scripts
+# =================
+
+# LibreNMS - Operating System release detection
+extend .1.3.6.1.4.1.2021.7890.1 distro {{ snmpd_extension_scripts }}/os-release
+

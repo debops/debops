@@ -1,0 +1,35 @@
+# {{ ansible_managed }}
+
+{% if ansible_distribution_release in [ 'wheezy', 'precise', 'trusty' ] %}
+# This file controls the activity of snmpd and snmptrapd
+{% else %}
+# This file controls the activity of snmpd
+{% endif %}
+
+# Don't load any MIBs by default.
+# You might comment this lines once you have the MIBs downloaded.
+{% if snmpd_download_mibs|d() and snmpd_download_mibs %}
+#export MIBS=
+{% else %}
+export MIBS=
+{% endif %}
+
+# snmpd control (yes means start daemon).
+SNMPDRUN=yes
+
+# snmpd options (use syslog, close stdin/out/err).
+SNMPDOPTS='{{ snmpd_logging_options }} -Lf /dev/null -u {{ snmpd_user }} -g snmp -I -smux,mteTrigger,mteTriggerConf -p /run/snmpd.pid'
+
+{% if ansible_distribution_release in [ 'wheezy', 'precise', 'trusty' ] %}
+# snmptrapd control (yes means start daemon).  As of net-snmp version
+# 5.0, master agentx support must be enabled in snmpd before snmptrapd
+# can be run.  See snmpd.conf(5) for how to do this.
+TRAPDRUN=no
+
+# snmptrapd options (use syslog).
+TRAPDOPTS='-Lsd -p /var/run/snmptrapd.pid'
+
+# create symlink on Debian legacy location to official RFC path
+SNMPDCOMPAT=yes
+{% endif %}
+
