@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+{% import 'dovecot_macros.j2' as macros with context %}
+
+##
+## ManageSieve specific settings
+##
+{% if 'managesieve' in dovecot_protocols %}
+
+# Service definitions
+
+{%   if dovecot_managesieve_config_map is defined and dovecot_managesieve_config_map %}
+{%     if 'login-service' in dovecot_managesieve_config_map %}
+{%       set dovecot_tpl_sieve_login_map = dovecot_managesieve_config_map['login-service'] %}
+{%     endif %}
+{%     if 'service' in dovecot_managesieve_config_map %}
+{%       set dovecot_tpl_sieve_svc_map = dovecot_managesieve_config_map['service'] %}
+{%     endif %}
+{%     if 'protocol' in dovecot_managesieve_config_map %}
+{%       set dovecot_tpl_sieve_proto_map = dovecot_managesieve_config_map['protocol'] %}
+{%     endif %}
+{%   endif %}
+{{ macros.dovecot_cfg_section('service', 'managesieve-login', dovecot_tpl_sieve_login_map|default({}), listeners=dovecot_managesieve_listeners|default([])) }}
+{{ macros.dovecot_cfg_section('service', 'managesieve', dovecot_tpl_sieve_svc_map|default({})) }}
+
+# Service configuration
+{{ macros.dovecot_cfg_section('protocol', 'sieve', dovecot_tpl_sieve_proto_map|default({})) }}
+{% endif %}

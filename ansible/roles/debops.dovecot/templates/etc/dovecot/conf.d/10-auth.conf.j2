@@ -1,0 +1,42 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+##
+## Authentication processes
+##
+
+{% if ('imap' in dovecot_protocols or 'pop3' in dovecot_protocols) and
+      ('plain' in dovecot_auth_mechanisms or 'login' in dovecot_auth_mechanisms) and
+      (not dovecot_pki is defined or not dovecot_pki) %}
+# !!! WARNING !!!: This allows cleartext passwords to be sent over the network. If you
+# want your passwords to be safe, enable tls or disable plaintext authentication!
+disable_plaintext_auth=no
+{% endif %}
+
+auth_mechanisms = {{ " ".join(dovecot_auth_mechanisms) }}
+
+##
+## Password and user databases
+##
+
+{% if 'deny' not in dovecot_user_accounts %}
+# 'deny' not in dovecot_user_accounts: {{ dovecot_user_accounts }}
+# dovecot_deny_users: {{ dovecot_deny_users }}
+{% elif dovecot_deny_users is defined and dovecot_deny_users %}
+!include auth-deny.conf.ext
+{% endif %}
+{% if 'system' in dovecot_user_accounts %}
+!include auth-system.conf.ext
+{% endif %}
+{% if 'sql' in dovecot_user_accounts %}
+!include auth-sql.conf.ext
+{% endif %}
+{% if 'passwdfile' in dovecot_user_accounts %}
+!include auth-passwdfile.conf.ext
+{% endif %}

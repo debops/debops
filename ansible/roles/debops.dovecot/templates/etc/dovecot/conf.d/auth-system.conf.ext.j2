@@ -1,0 +1,32 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+{% if dovecot_user_accounts is defined and dovecot_user_accounts %}
+{%   if 'system' in dovecot_user_accounts %}
+# Authentication for system users. Included from 10-auth.conf.
+
+passdb {
+    driver  = pam
+    args    = session=yes dovecot
+}
+
+##
+## User databases
+##
+
+userdb {
+    driver  = passwd
+    args    = blocking=no
+}
+{%   else %}
+# DebOps variable dovecot_user_accounts={{ dovecot_user_accounts }}
+{%   endif %}
+{% else %}
+# DebOps variable dovecot_user_accounts={{ dovecot_user_accounts|default([]) }}
+{% endif %}

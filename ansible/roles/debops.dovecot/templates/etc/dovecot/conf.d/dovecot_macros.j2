@@ -1,0 +1,95 @@
+{#
+ # The dovecot_properties() macro will list dovecot properties taken from
+ # a dictionnary (map). Optionally, a list of property keys to ignore can
+ # be given.
+ #}
+
+{% macro dovecot_properties(map, ignore_keys=[]) %}
+{% if map is defined and map %}
+{%   for property in map.keys()|difference(ignore_keys) %}
+  {{ property }} = {{ map[property] }}
+{%   endfor %}
+{% endif %}
+{% endmacro %}
+
+
+{#
+ # The dovecot_inet_listeners() macro will generate one or multiple dovecot
+ # inet_listener configuration sections. The arguments must be a list of
+ # listener names (listeners) and a dictionary of configuration properties
+ # (map) with the key of each property set being the listener name.
+ #}
+
+{% macro dovecot_inet_listeners(listeners, map) %}
+{% set listener_ignore = [ 'allow' ] %}{# Properties to ignore when defining listener #}
+{% for name in listeners %}
+  inet_listener {{ name }} {
+{%   if map is defined and map %}
+{%     if 'inet_listener' in map.keys() %}
+{%       if name in map['inet_listener'].keys() %}
+{%         for property in map['inet_listener'][name].keys()|difference(listener_ignore) %}
+{%           if property in map['inet_listener'][name].keys() %}
+    {{ property }} = {{ map['inet_listener'][name][property] }}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+  }
+{% endfor %}
+{% endmacro %}
+
+
+{#
+ # The dovecot_unix_listeners() macro will generate one or multiple dovecot
+ # unix_listener configuration sections. The arguments must be a list of
+ # socket names (listeners) and a dictionary of configuration properties
+ # (map) with the key of each property set being the listener name.
+ #}
+
+{% macro dovecot_unix_listeners(listeners, map) %}
+{% for socket in listeners %}
+  unix_listener {{ socket }} {
+{%   if map is defined and map %}
+{%     if 'unix_listener' in map.keys() %}
+{%       if socket in map['unix_listener'].keys() %}
+{%         for property in map['unix_listener'][socket].keys() %}
+    {{ property }} = {{ map['unix_listener'][socket][property] }}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+  }
+{% endfor %}
+{% endmacro %}
+
+
+{#
+ # The dovecot_cfg_section() macro will define a dovecot configuration file
+ # section, as it is used for protocols or services. It accepts the following
+ # arguments:
+ #   section: Section identifier, e.g. 'service'
+ #   name: Section name
+ #   map: Configuration dict for given configration section
+ #   listeners: List of (default) listeners to enable
+ #
+ # Listeners listed in 'listeners' but not referenced in the configuration
+ # map are created as inet_listeners. unix_listeners always must be mentioned
+ # in the configuration map.
+ #}
+
+{% macro dovecot_cfg_section(section, name, map, listeners=[]) %}
+{{ section }} {{ name }} {
+{% if map is defined and map %}
+{%   if 'unix_listener' in map.keys() %}
+{{ dovecot_inet_listeners(listeners|difference(map['unix_listener'].keys()), map) }}
+{{ dovecot_unix_listeners(listeners|intersect(map['unix_listener'].keys()), map) }}
+{%   else %}
+{{ dovecot_inet_listeners(listeners, map) }}
+{%   endif %}
+{% else %}
+{{ dovecot_inet_listeners(listeners, map) }}
+{% endif %}
+{{ dovecot_properties(map, ignore_keys=['inet_listener', 'unix_listener']) }}
+}
+{% endmacro %}

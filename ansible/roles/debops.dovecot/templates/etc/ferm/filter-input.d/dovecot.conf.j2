@@ -1,0 +1,76 @@
+# {{ ansible_managed }}
+{#
+ # The dovecot_ferm() macro will generate a ferm input filter section
+ # for a network service. The arguments must be a service name and
+ # (service) and a dictionary of inet_listener properties (properties).
+ #}
+{% macro dovecot_ferm(service, properties) %}
+{% if properties %}
+{%   if 'port' in properties %}{% set ferm_service = properties['port'] %}{% endif %}
+{%   if 'allow' in properties %}{% set ferm_allow = properties['allow'] %}{% endif %}
+{% endif %}
+{% if not ferm_allow is defined %}{% set ferm_allow = [] %}{% endif %}
+{% if ferm_allow != False %}
+protocol tcp dport {{ ferm_service|default(service) }} {
+{%   if ferm_allow %}
+	@def $ITEMS = ( @ipfilter( ({{ ferm_allow | unique | join(" ") }}) ) );
+	@if @ne($ITEMS,"") {
+		saddr $ITEMS ACCEPT;
+	}
+{%   else %}
+    ACCEPT;
+{%   endif %}
+}
+{% endif %}
+{% endmacro %}
+
+{% if 'imap' in dovecot_protocols %}
+{%   for service in dovecot_imap_listeners|default([]) %}
+{%     if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
+{%       if 'login-service' in dovecot_imap_config_map %}
+{%         if 'inet_listener' in dovecot_imap_config_map['login-service'] %}
+{%           set dovecot_tpl_imap_svc_props = dovecot_imap_config_map['login-service']['inet_listener'][service]|default({}) %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{{ dovecot_ferm(service, dovecot_tpl_imap_svc_props|default({})) }}
+{%   endfor %}
+{% endif %}
+{% if 'pop3' in dovecot_protocols %}
+{%   for service in dovecot_pop3_listeners|default([]) %}
+{%     if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
+{%       if 'login-service' in dovecot_pop3_config_map %}
+{%         if 'inet_listener' in dovecot_pop3_config_map['login-service'] %}
+{%           set dovecot_tpl_pop3_svc_props = dovecot_pop3_config_map['login-service']['inet_listener'][service]|default({}) %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{{ dovecot_ferm(service, dovecot_tpl_pop3_svc_props|default({})) }}
+{%   endfor %}
+{% endif %}
+{% if 'managesieve' in dovecot_protocols %}
+{%   for service in dovecot_managesieve_listeners|default([]) %}
+{%     if dovecot_managesieve_config_map is defined and dovecot_managesieve_config_map %}
+{%       if 'login-service' in dovecot_managesieve_config_map %}
+{%         if 'inet_listener' in dovecot_managesieve_config_map['login-service'] %}
+{%           set dovecot_tpl_sieve_svc_props = dovecot_managesieve_config_map['login-service']['inet_listener'][service]|default({}) %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{{ dovecot_ferm(service, dovecot_tpl_sieve_svc_props|default({})) }}
+{%   endfor %}
+{% endif %}
+{% if 'lmtp' in dovecot_protocols %}
+{%   for service in dovecot_lmtp_listeners|default([]) %}
+{%     if dovecot_lmtp_config_map is defined and dovecot_lmtp_config_map %}
+{%       if 'service' in dovecot_lmtp_config_map %}
+{%         if 'inet_listener' in dovecot_lmtp_config_map['service'] %}
+{%           set dovecot_tpl_lmtp_svc_props = dovecot_lmtp_config_map['service']['inet_listener'][service]|default({}) %}
+{%           if dovecot_tpl_lmtp_svc_props is defined and dovecot_tpl_lmtp_svc_props %}
+{{ dovecot_ferm(service, dovecot_tpl_lmtp_svc_props|default({})) }}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}

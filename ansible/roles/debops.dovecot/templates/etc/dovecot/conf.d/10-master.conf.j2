@@ -1,0 +1,60 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+{% import 'dovecot_macros.j2' as macros with context %}
+
+{% if 'imap' in dovecot_protocols %}
+{%   if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
+{%     if 'login-service' in dovecot_imap_config_map %}
+{%       set dovecot_tpl_imap_login_map = dovecot_imap_config_map['login-service'] %}
+{%     endif %}
+{%     if 'service' in dovecot_imap_config_map %}
+{%       set dovecot_tpl_imap_svc_map = dovecot_imap_config_map['service'] %}
+{%     endif %}
+{%   endif %}
+{{ macros.dovecot_cfg_section('service', 'imap-login', dovecot_tpl_imap_login_map|default({}), listeners=dovecot_imap_listeners|default([])) }}
+{% endif %}
+{% if 'pop3' in dovecot_protocols %}
+{%   if dovecot_pop3_config_map is defined and dovecot_pop3_config_map %}
+{%     if 'login-service' in dovecot_pop3_config_map %}
+{%       set dovecot_tpl_pop3_login_map = dovecot_pop3_config_map['login-service'] %}
+{%     endif %}
+{%     if 'service' in dovecot_pop3_config_map %}
+{%       set dovecot_tpl_pop3_svc_map = dovecot_pop3_config_map['service'] %}
+{%     endif %}
+{%   endif %}
+{{ macros.dovecot_cfg_section('service', 'pop3-login', dovecot_tpl_pop3_login_map|default({}), listeners=dovecot_pop3_listeners|default([])) }}
+{% endif %}
+{% if 'lmtp' in dovecot_protocols %}
+{%   if dovecot_lmtp_config_map is defined and dovecot_lmtp_config_map %}
+{%     if 'service' in dovecot_lmtp_config_map %}
+{%       set dovecot_tpl_lmtp_svc_map = dovecot_lmtp_config_map['service'] %}
+{%     endif %}
+{%   endif %}
+{{ macros.dovecot_cfg_section('service', 'lmtp', dovecot_tpl_lmtp_svc_map|default({}), listeners=dovecot_lmtp_listeners|default([])) }}
+{% endif %}
+{% if 'imap' in dovecot_protocols %}
+{{ macros.dovecot_cfg_section('service', 'imap', dovecot_tpl_imap_svc_map|default({})) }}
+{% endif %}
+{% if 'pop3' in dovecot_protocols %}
+{{ macros.dovecot_cfg_section('service', 'pop3', dovecot_tpl_pop3_svc_map|default({})) }}
+{% endif %}
+{% if dovecot_auth_config_map is defined and dovecot_auth_config_map %}
+{%   if 'service' in dovecot_auth_config_map %}
+{%     set dovecot_tpl_auth_svc_map = dovecot_auth_config_map['service'] %}
+{%   endif %}
+{% endif %}
+{{ macros.dovecot_cfg_section('service', 'auth', dovecot_tpl_auth_svc_map|default({}), listeners=dovecot_auth_listeners|default([])) }}
+
+service auth-worker {
+}
+
+service dict {
+  unix_listener dict {
+  }
+}
