@@ -1,0 +1,64 @@
+// {{ ansible_managed }}
+
+{% if apt_proxy__http_url %}
+Acquire::HTTP {
+{%   if apt_proxy__proxy_auto_detect != omit %}
+  Proxy-Auto-Detect "{{ apt_proxy__proxy_auto_detect }}";
+{%   endif %}
+  Proxy "{{ apt_proxy__http_url }}";
+{%   if apt_proxy__http_direct %}
+{%     for host in apt_proxy__http_direct %}
+  Proxy::{{ host }} "DIRECT";
+{%     endfor %}
+{%   endif %}
+{%   if apt_proxy__http_options %}
+{%     for key, value in apt_proxy__http_options | dictsort %}
+{{ ('%s "%s";' | format(key, value)) | indent(2, true) }}
+{%     endfor %}
+{%   endif %}
+};
+{% elif apt_proxy__proxy_auto_detect != omit %}
+Acquire::HTTP::Proxy-Auto-Detect "{{ apt_proxy__proxy_auto_detect }}";
+{% endif %}
+{% if apt_proxy__https_url %}
+Acquire::HTTPS {
+{%   if apt_proxy__proxy_auto_detect != omit %}
+  Proxy-Auto-Detect "{{ apt_proxy__proxy_auto_detect }}";
+{%   endif %}
+  Proxy "{{ apt_proxy__https_url }}";
+{%   if apt_proxy__https_direct %}
+{%     for host in apt_proxy__https_direct %}
+  Proxy::{{ host }} "DIRECT";
+{%     endfor %}
+{%   endif %}
+{%   if apt_proxy__https_options %}
+{%     for key, value in apt_proxy__https_options | dictsort %}
+{{ ('%s "%s";' | format(key, value)) | indent(2, true) }}
+{%     endfor %}
+{%   endif %}
+};
+{% elif apt_proxy__proxy_auto_detect != omit %}
+Acquire::HTTPS::Proxy-Auto-Detect "{{ apt_proxy__proxy_auto_detect }}";
+{% endif %}
+{% if apt_proxy__ftp_url %}
+Acquire::FTP {
+  Proxy "{{ apt_proxy__ftp_url }}";
+{%   if apt_proxy__ftp_direct %}
+{%     for host in apt_proxy__ftp_direct %}
+  Proxy::{{ host }} "DIRECT";
+{%     endfor %}
+{%   endif %}
+{%   if apt_proxy__ftp_login %}
+  ProxyLogin {
+{%     for line in apt_proxy__ftp_login %}
+{{ ('"%s";' | format(line)) | indent(4, true) }}
+{%     endfor %}
+  };
+{%   endif %}
+{%   if apt_proxy__ftp_options %}
+{%     for key, value in apt_proxy__ftp_options | dictsort %}
+{{ ('%s "%s";' | format(key, value)) | indent(2, true) }}
+{%     endfor %}
+{%   endif %}
+};
+{% endif %}

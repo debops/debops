@@ -1,0 +1,187 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.apt_proxy default variables [[[
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Required packages [[[
+# ---------------------
+
+# .. envvar:: apt_proxy__base_packages [[[
+#
+# List of base packages to install.
+apt_proxy__base_packages:
+  - '{{ [ "python3-future", "python3-apt"  ]
+        if (apt_proxy__temporally_avoid_unreachable|bool)
+        else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Main configuration [[[
+# ----------------------
+
+# .. envvar:: apt_proxy__deploy_state [[[
+#
+# Specify if an APT proxy configuration should be present or absent. It will be
+# automatically enabled if :envvar:`apt_proxy__http_url`, :envvar:`apt_proxy__https_url` or
+# :envvar:`apt_proxy__ftp_url` are set in the host environment. See
+# debops.environment_ role for more details.
+apt_proxy__deploy_state: '{{ "present"
+                             if (apt_proxy__http_url or
+                                 apt_proxy__https_url or
+                                 apt_proxy__ftp_url)
+                             else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__filename [[[
+#
+# Name of the configuration file used by the role in :file:`/etc/apt/apt.conf.d/`.
+# You shouldn't change this name when ``debops.apt_proxy`` is enabled.
+apt_proxy__filename: '00apt_proxy'
+                                                                   # ]]]
+                                                                   # ]]]
+# HTTP proxy configuration [[[
+# ----------------------------
+
+# .. envvar:: apt_proxy__http_url [[[
+#
+# The URL of the HTTP proxy used by APT. If empty, HTTP proxy won't be enabled.
+apt_proxy__http_url: '{{ ansible_env.http_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__http_direct [[[
+#
+# List of hostnames to which APT should connect directly instead of through
+# HTTP proxy.
+apt_proxy__http_direct: []
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__http_options [[[
+#
+# A YAML dictionary with key/value parameters for the HTTP proxy. Each key is
+# the name of the ``Acquire::HTTP::*`` APT configuration option, and value is
+# it's value. The keys containing ``::`` sequences need to be quoted.
+# See :manpage:`apt.conf(5)` for more information. Example:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    apt_proxy__http_options:
+#      User-Agent: 'Debian APT-HTTP/1.3'
+#
+apt_proxy__http_options: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# HTTPS proxy configuration [[[
+# -----------------------------
+
+# .. envvar:: apt_proxy__https_url [[[
+#
+# The URL of the HTTPS proxy used by APT. If empty, HTTPS proxy won't be
+# enabled.
+apt_proxy__https_url: '{{ ansible_env.https_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__https_direct [[[
+#
+# List of hostnames to which APT should connect directly instead of through
+# HTTPS proxy.
+apt_proxy__https_direct: []
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__https_options [[[
+#
+# A YAML dictionary with key/value parameters for the HTTPS proxy. Each key is
+# the name of the ``Acquire::HTTPS::*`` APT configuration option, and value is
+# it's value. The keys containing ``::`` sequences need to be quoted.
+# See :manpage:`apt.conf(5)` for more information. Example:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    apt_proxy__https_options:
+#      User-Agent: 'Debian APT-HTTP/1.3'
+#
+apt_proxy__https_options: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# FTP proxy configuration [[[
+# ---------------------------
+
+# .. envvar:: apt_proxy__ftp_url [[[
+#
+# The URL of the FTP proxy used by APT. If empty, FTP proxy won't be
+# enabled.
+apt_proxy__ftp_url: '{{ ansible_env.ftp_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__ftp_direct [[[
+#
+# List of hostnames to which APT should connect directly instead of through
+# FTP proxy.
+apt_proxy__ftp_direct: []
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__ftp_login [[[
+#
+# List of commands sent to the FTP proxy to login to it and specify what host
+# to connect to. See :manpage:`apt.conf(5)` for more details.
+apt_proxy__ftp_login:
+  - 'USER $(PROXY_USER)'
+  - 'PASS $(PROXY_PASS)'
+  - 'USER $(SITE_USER)@$(SITE):$(SITE_PORT)'
+  - 'PASS $(SITE_PASS)'
+
+                                                                   # ]]]
+# .. envvar:: apt_proxy__ftp_options [[[
+#
+# A YAML dictionary with key/value parameters for the FTP proxy. Each key is
+# the name of the ``Acquire::FTP::*`` APT configuration option, and value is
+# it's value. The keys containing ``::`` sequences need to be quoted.
+# See :manpage:`apt.conf(5)` for more information. Example:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    apt_proxy__ftp_options:
+#      'Proxy::Passive": 'true'
+#
+apt_proxy__ftp_options: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# Proxy online detection [[[
+# --------------------------
+
+# By default (Debian, DebOps), APT will fail when the configured proxy can not
+# be reached.
+#
+# DebOps provides a script which hooks into APT using a
+# `Acquire::HTTP::Proxy-Auto-Detect` script which checks if the proxy is
+# currently reachable.
+# With this, APT will fall back to "DIRECT" (no proxy) if the proxy
+# is (temporally) not reachable.
+
+# .. envvar:: apt_proxy__temporally_avoid_unreachable [[[
+#
+# Configures the behaviour if the proxy is not reachable.
+# ``True`` will cause APT to silently ignore offline proxies.
+# ``False`` will cause APT to return with an error if the proxy is offline.
+# This is currently only supported for HTTPS and HTTP proxies.
+apt_proxy__temporally_avoid_unreachable: False
+                                                                   # ]]]
+
+# .. envvar:: apt_proxy__proxy_auto_detect [[[
+#
+# Value to set as `Acquire::HTTP::Proxy-Auto-Detect`. Set to `{{ omit }}` to
+# avoid setting it.
+apt_proxy__proxy_auto_detect: '{{ "/usr/local/lib/get-reachable-apt-proxy"
+                                  if (apt_proxy__temporally_avoid_unreachable|bool)
+                                  else omit }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
