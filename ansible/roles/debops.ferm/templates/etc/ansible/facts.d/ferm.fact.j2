@@ -1,0 +1,31 @@
+{% set ferm__tpl_forward = False                                                      %}
+{% if (ferm__forward | bool or
+       (ansible_local|d() and ansible_local.ferm|d() and
+        (ansible_local.ferm.forward|d() | bool)))                                     %}
+{%   set ferm__tpl_forward = True                                                     %}
+{% endif                                                                              %}
+{% set ferm__tpl_ansible_controllers = []                                             %}
+{% if ansible_local|d() and ansible_local.ferm|d() and
+      ansible_local.ferm.ansible_controllers|d() %}
+{%   for element in ansible_local.ferm.ansible_controllers                            %}
+{%     set _ = ferm__tpl_ansible_controllers.append(element)                          %}
+{%   endfor                                                                           %}
+{% endif                                                                              %}
+{% if ferm__ansible_controllers|d()                                                   %}
+{%   for element in ferm__ansible_controllers                                         %}
+{%     if element not in ferm__tpl_ansible_controllers                                %}
+{%       set _ = ferm__tpl_ansible_controllers.append(element)                        %}
+{%     endif                                                                          %}
+{%   endfor                                                                           %}
+{% endif                                                                              %}
+{% if ansible_controller|d()                                                          %}
+{%   if ansible_controller not in ferm__tpl_ansible_controllers                       %}
+{%     set _ = ferm__tpl_ansible_controllers.append(ansible_controller)               %}
+{%   endif                                                                            %}
+{% endif                                                                              %}
+{% set ferm__tpl_ansible_controllers_result = ferm__tpl_ansible_controllers | unique | sort %}
+{
+"enabled": "{{ ferm__enabled     | bool | lower }}",
+"forward": "{{ ferm__tpl_forward | bool | lower }}",
+"ansible_controllers": {{ ferm__tpl_ansible_controllers_result | to_nice_json }}
+}

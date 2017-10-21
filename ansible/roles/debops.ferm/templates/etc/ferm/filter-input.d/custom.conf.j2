@@ -1,0 +1,34 @@
+{#
+#    ==== Custom ip(6)tables rules for debops.ferm role ====
+#
+# You need to define 'item.dport: []' in your rule definition for debops.ferm
+# role to work correctly.
+#
+# Rules created by this template should be defined in ferm configuration
+# format, in 'item.rules' variable as YAML text block. See ferm(1) manual for
+# information abut ferm syntax.
+#
+# Remember that ferm by default configures both iptables and ip6tables at the
+# same time and write your rules accordingly. All rules defined using this
+# template will be included inside:
+#
+#   domain (ip ip6) table filter chain INPUT { }
+#
+# You can use @if ferm function to specify only a particular domain:
+#
+#   @if @eq($DOMAIN, ip) { }
+#
+# To filter list of IP addresses for a particular domain, you can use
+# ipfilter() ferm function. See examples of dport_* rules for usage patterns.
+#
+#}
+# {{ ansible_managed }}
+
+{% if item.by_role is defined and item.by_role %}
+# ip(6)tables rules defined by Ansible role: {{ item.by_role }}
+
+{% endif %}
+{% if item.rules is defined and item.rules %}
+{{ item.rules }}
+{% endif %}
+

@@ -1,0 +1,174 @@
+# {{ ansible_managed }}
+
+{# Domain, table, chain #}
+{# ==================== #}
+{% set ferm__tpl_domain = ferm__domains %}
+{% set ferm__tpl_table = [ 'filter' ] %}
+{% set ferm__tpl_chain = [ 'INPUT' ] %}
+{% if item.domain|d() %}
+{%   if item.domain is string %}
+{%     set ferm__tpl_domain = [ item.domain ] %}
+{%   else %}
+{%     set ferm__tpl_domain = item.domain | unique %}
+{%   endif %}
+{% elif item.domains|d() %}
+{%   if item.domains is string %}
+{%     set ferm__tpl_domain = [ item.domains ] %}
+{%   else %}
+{%     set ferm__tpl_domain = item.domains | unique %}
+{%   endif %}
+{% endif %}
+{% if item.table|d() %}
+{%   if item.table is string %}
+{%     set ferm__tpl_table = [ item.table ] %}
+{%   else %}
+{%     set ferm__tpl_table = item.table | unique %}
+{%   endif %}
+{% elif item.tables|d() %}
+{%   if item.tables is string %}
+{%     set ferm__tpl_table = [ item.tables ] %}
+{%   else %}
+{%     set ferm__tpl_table = item.tables | unique %}
+{%   endif %}
+{% endif %}
+{% if item.chain|d() %}
+{%   if item.chain is string %}
+{%     set ferm__tpl_chain = [ item.chain ] %}
+{%   else %}
+{%     set ferm__tpl_chain = item.chain | unique %}
+{%   endif %}
+{% elif item.chains|d() %}
+{%   if item.chains is string %}
+{%     set ferm__tpl_chain = [ item.chains ] %}
+{%   else %}
+{%     set ferm__tpl_chain = item.chains | unique %}
+{%   endif %}
+{% endif %}
+{% set ferm__tpl_domain_args = [] %}
+{% if ferm__tpl_domain %}
+{%   if ferm__tpl_domain | length == 1 %}
+{%     set _ = ferm__tpl_domain_args.append("domain " +  ferm__tpl_domain | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_domain_args.append("domain (" + ferm__tpl_domain | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{% if ferm__tpl_table %}
+{%   if ferm__tpl_table | length == 1 %}
+{%     set _ = ferm__tpl_domain_args.append("table " +  ferm__tpl_table | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_domain_args.append("table (" + ferm__tpl_table | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{% if ferm__tpl_chain %}
+{%   if ferm__tpl_chain | length == 1 %}
+{%     set _ = ferm__tpl_domain_args.append("chain " +  ferm__tpl_chain | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_domain_args.append("chain (" + ferm__tpl_chain | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{# Rule arguments #}
+{# ============== #}
+{% set ferm__tpl_log_target = 'LOG' %}
+{% set ferm__tpl_target = '' %}
+{% set ferm__tpl_reject_with = 'icmp-admin-prohibited' %}
+{% set ferm__tpl_log_limit = ferm__log_limit %}
+{% set ferm__tpl_log_burst = ferm__log_burst %}
+{% set ferm__tpl_log_ip_options = True %}
+{% set ferm__tpl_log_tcp_options = False %}
+{% set ferm__tpl_log_tcp_sequence = False %}
+{% set ferm__tpl_log_level = 'warning' %}
+{% set ferm__tpl_log_prefix = 'iptables-log: ' %}
+{% if item.log_target|d() %}
+{%   set ferm__tpl_log_target = item.log_target %}
+{% endif %}
+{% if item.target|d() %}
+{%   set ferm__tpl_target = item.target %}
+{% endif %}
+{% if item.reject_with|d() %}
+{%   set ferm__tpl_reject_with = item.reject_with %}
+{% endif %}
+{% if item.log_limit|d() %}
+{%   set ferm__tpl_log_limit = item.log_limit %}
+{% endif %}
+{% if item.log_burst|d() %}
+{%   set ferm__tpl_log_burst = item.log_burst %}
+{% endif %}
+{% if item.log_ip_options is defined %}
+{%   set ferm__tpl_log_ip_options = item.log_ip_options | bool %}
+{% endif %}
+{% if item.log_tcp_options is defined %}
+{%   set ferm__tpl_log_tcp_options = item.log_tcp_options | bool %}
+{% endif %}
+{% if item.log_tcp_sequence is defined %}
+{%   set ferm__tpl_log_tcp_sequence = item.log_tcp_sequence | bool %}
+{% endif %}
+{% if item.log_prefix|d() %}
+{%   set ferm__tpl_log_prefix = item.log_prefix %}
+{% endif %}
+{% if item.log_level|d() %}
+{%   set ferm__tpl_log_level = item.log_level %}
+{% endif %}
+{% set ferm__tpl_arguments = [] %}
+{% if ferm__tpl_log_limit %}
+{%   set _ = ferm__tpl_arguments.append('mod limit limit ' + ferm__tpl_log_limit) %}
+{%   if ferm__tpl_log_burst %}
+{%     set _ = ferm__tpl_arguments.append('limit-burst ' + ferm__tpl_log_burst) %}
+{%   endif %}
+{% endif %}
+{% set ferm__tpl_log_args = [] %}
+{% if ferm__tpl_log_target == 'LOG' %}
+{%   if ferm__tpl_log_ip_options | bool %}
+{%     set _ = ferm__tpl_log_args.append('log-ip-options') %}
+{%   endif %}
+{%   if ferm__tpl_log_tcp_options | bool %}
+{%     set _ = ferm__tpl_log_args.append('log-tcp-options') %}
+{%   endif %}
+{%   if ferm__tpl_log_tcp_sequence | bool %}
+{%     set _ = ferm__tpl_log_args.append('log-tcp-sequence') %}
+{%   endif %}
+{%   if ferm__tpl_log_level %}
+{%     set _ = ferm__tpl_log_args.append('log-level ' + ferm__tpl_log_level) %}
+{%   endif %}
+{%   if ferm__tpl_log_prefix %}
+{%     set _ = ferm__tpl_log_args.append('log-prefix "' + ferm__tpl_log_prefix + '"') %}
+{%   endif %}
+{% endif %}
+{# Main template #}
+{# ============= #}
+{% if item.comment|d() %}
+# {{ item.comment }}
+
+{% endif %}
+{% if item.when is undefined or item.when | bool %}
+{%   if ferm__tpl_domain_args %}{{ ferm__tpl_domain_args | join(" ") }} {% endif %}{
+    {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
+{% if ferm__tpl_log_target in [ 'LOG', 'ULOG', 'NFLOG' ] %}
+
+        {{ ferm__tpl_log_target }} {{ ferm__tpl_log_args | join(" ") }};
+{% endif %}
+    }
+{%   if ferm__tpl_target %}
+{%     if ferm__tpl_target not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%       if item.include|d() %}
+
+    @include "{{ item.include }}";
+{%       elif item.realgoto is undefined or not item.realgoto | bool %}
+
+    jump "{{ ferm__tpl_target }}";
+{%       elif item.realgoto|d() and item.realgoto | bool %}
+
+    realgoto "{{ ferm__tpl_target }}";
+{%       endif %}
+{%     elif ferm__tpl_target in [ 'REJECT' ] %}
+
+    REJECT reject-with {{ ferm__tpl_reject_with }};
+{%     else %}
+
+    {{ ferm__tpl_target }};
+{%     endif %}
+{%   endif %}
+}
+{% else %}
+# Rule disabled by 'item.when' condition
+{% endif %}
+

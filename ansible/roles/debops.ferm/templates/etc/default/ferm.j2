@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+
+# configuration for /etc/init.d/ferm
+
+# use iptables-restore for fast firewall initialization?
+FAST=no
+
+# cache the output of ferm --lines in /var/cache/ferm?
+CACHE=no
+
+# additional parameters for ferm (like --def '=bar')
+OPTIONS=
+
+# Enable the ferm init script? (i.e. run on bootup)
+{% if ferm__enabled | bool %}
+ENABLED="yes"
+{% else %}
+{% if ((ansible_local|d() and ansible_local.ferm|d() and ansible_local.ferm.enabled|d() | bool) and
+       not ferm__enabled | bool) %}
+ENABLED="yes"
+{% else %}
+ENABLED="no"
+{% endif %}
+{% endif %}

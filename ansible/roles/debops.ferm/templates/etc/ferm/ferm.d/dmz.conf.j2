@@ -1,0 +1,146 @@
+# {{ ansible_managed }}
+
+{#
+   dmz - forward connections on a given IP/port to another host
+
+List of parameters:
+
+Required:
+  item.public_ip           IP address on the public network which accepts connections
+  item.private_ip          IP address of the host on the internal network
+
+Optional:
+  item.protocol(s)         list of protocols to forward, by default (tcp)
+  item.port(s)             list of ports to forward, if not specified, all traffic is forwarded
+  item.dport               destination port to forward to
+
+#}
+{# Domain, table, chain #}
+{# ==================== #}
+{% set ferm__tpl_domain = ferm__domains %}
+{% if item.domain|d() %}
+{%   if item.domain is string %}
+{%     set ferm__tpl_domain = [ item.domain ] %}
+{%   else %}
+{%     set ferm__tpl_domain = item.domain | unique %}
+{%   endif %}
+{% elif item.domains|d() %}
+{%   if item.domains is string %}
+{%     set ferm__tpl_domain = [ item.domains ] %}
+{%   else %}
+{%     set ferm__tpl_domain = item.domains | unique %}
+{%   endif %}
+{% endif %}
+{% set ferm__tpl_domain_args = [] %}
+{% if ferm__tpl_domain %}
+{%   if ferm__tpl_domain | length == 1 %}
+{%     set _ = ferm__tpl_domain_args.append("domain " +  ferm__tpl_domain | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_domain_args.append("domain (" + ferm__tpl_domain | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{# Rule arguments #}
+{# ============== #}
+{% set ferm__tpl_public_ip = [] %}
+{% set ferm__tpl_private_ip = [] %}
+{% set ferm__tpl_protocols = [ 'tcp' ] %}
+{% set ferm__tpl_ports = [] %}
+{% if item.public_ip is defined and item.public_ip %}
+{% if item.public_ip is string %}
+{% set _ = ferm__tpl_public_ip.append(item.public_ip) %}
+{% else %}
+{% set ferm__tpl_public_ip = item.public_ip %}
+{% endif %}
+{% endif %}
+{% if item.private_ip is defined and item.private_ip %}
+{% if item.private_ip is string %}
+{% set _ = ferm__tpl_private_ip.append(item.private_ip) %}
+{% else %}
+{% set ferm__tpl_private_ip = item.private_ip %}
+{% endif %}
+{% endif %}
+{% if item.protocol is defined and item.protocol %}
+{% if item.protocol is string %}
+{% set ferm__tpl_protocols = item.protocol.split(" ") %}
+{% else %}
+{% set ferm__tpl_protocols = item.protocol %}
+{% endif %}
+{% elif item.protocols is defined and item.protocols %}
+{% if item.protocols is string %}
+{% set ferm__tpl_protocols = item.protocols.split(" ") %}
+{% else %}
+{% set ferm__tpl_protocols = item.protocols %}
+{% endif %}
+{% endif %}
+{% if item.port is defined and item.port %}
+{% if item.port is string %}
+{% set ferm__tpl_ports = item.port.split(" ") %}
+{% else %}
+{% set ferm__tpl_ports = item.port %}
+{% endif %}
+{% elif item.ports is defined and item.ports %}
+{% if item.ports is string %}
+{% set ferm__tpl_ports = item.ports.split(" ") %}
+{% else %}
+{% set ferm__tpl_ports = item.ports %}
+{% endif %}
+{% endif %}
+{# Main template #}
+{# ============= #}
+{% if item.comment|d() %}
+# {{ item.comment }}
+
+{% endif %}
+{% if ferm__tpl_public_ip and ferm__tpl_private_ip %}
+{%   if ferm__tpl_domain_args %}{{ ferm__tpl_domain_args | join(" ") }} {% endif %}table filter chain FORWARD {
+	@def $PUBLIC_IP  = ( @ipfilter( ({{ ferm__tpl_public_ip  | unique | join(" ") }}) ) );
+	@def $PRIVATE_IP = ( @ipfilter( ({{ ferm__tpl_private_ip | unique | join(" ") }}) ) );
+	@if @ne($PUBLIC_IP,"") @if @ne($PRIVATE_IP,"") {
+{% if ferm__tpl_ports %}
+                protocol ({{ ferm__tpl_protocols | join(" ") }}) {
+{% if ferm__tpl_ports | length > 1 %}
+                        mod multiport destination-ports ({{ ferm__tpl_ports | join(" ") }}) {
+{% else %}
+                        dport ({{ ferm__tpl_ports | join(" ") }}) {
+{% endif %}
+                                destination $PRIVATE_IP ACCEPT;
+                        }
+                }
+{% else %}
+		destination $PRIVATE_IP ACCEPT;
+{% endif %}
+	}
+}
+
+{%   if ferm__tpl_domain_args %}{{ ferm__tpl_domain_args | join(" ") }} {% endif %}table nat {
+	@def $PUBLIC_IP  = ( @ipfilter( ({{ ferm__tpl_public_ip  | unique | join(" ") }}) ) );
+	@def $PRIVATE_IP = ( @ipfilter( ({{ ferm__tpl_private_ip | unique | join(" ") }}) ) );
+	@if @ne($PUBLIC_IP,"") @if @ne($PRIVATE_IP,"") {
+		chain PREROUTING {
+{% if ferm__tpl_ports %}
+                        protocol ({{ ferm__tpl_protocols | join(" ") }}) {
+{% if ferm__tpl_ports | length > 1 %}
+                                mod multiport destination-ports ({{ ferm__tpl_ports | join(" ") }}) {
+{% else %}
+                                dport ({{ ferm__tpl_ports | join(" ") }}) {
+{% endif %}
+{% if item.dport | d() %}
+                                        destination $PUBLIC_IP DNAT to @cat($PRIVATE_IP, ":{{ item.dport }}");
+{% else %}
+                                        destination $PUBLIC_IP DNAT to $PRIVATE_IP;
+{% endif %}
+                                }
+                        }
+{% else %}
+			destination $PUBLIC_IP DNAT to $PRIVATE_IP;
+{% endif %}
+		}
+		chain POSTROUTING {
+			source $PRIVATE_IP SNAT to $PUBLIC_IP;
+		}
+	}
+}
+
+{% else %}
+# Cannot configure DMZ, public or private IP addresses not specified
+{% endif %}

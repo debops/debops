@@ -1,0 +1,44 @@
+{% set ferm__tpl_filtered_rules = {} %}
+{% for element in ferm__combined_rules %}
+{%   if element.name|d() and element.rule_state|d(element.state|d('present')) != 'ignore' %}
+{%     set rule_parameters = (ferm__tpl_filtered_rules[element.name].copy() if ferm__tpl_filtered_rules[element.name] is defined else {}) %}
+{%     if rule_parameters.rules is undefined and element.rules is undefined %}
+{%       set ferm__tpl_rule = {} %}
+{%       for parameter in element.keys() | sort %}
+{%         if parameter not in [ 'comment', 'rule_state', 'name', 'rules', 'template', 'weight', 'weight_class', 'role', 'role_weight', 'delete', 'when', 'enabled' ] %}
+{%           if parameter == 'state' %}
+{%             if element["state"] not in [ 'present', 'absent', 'ignore' ] %}
+{%               set _ = ferm__tpl_rule.update({parameter: element[parameter]}) %}
+{%             endif %}
+{%           else %}
+{%             set _ = ferm__tpl_rule.update({parameter: element[parameter]}) %}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%       if ferm__tpl_rule %}
+{%         set _ = rule_parameters.update({"rules":[]}) %}
+{%         set _ = rule_parameters["rules"].append(ferm__tpl_rule) %}
+{%       endif %}
+{%     endif %}
+{%     if element["state"] is undefined or element["state"] not in [ 'present', 'absent', 'ignore' ] %}
+{%       if element["enabled"]|d() %}
+{%         if element["enabled"]|bool %}
+{%           set _ = rule_parameters.update({"rule_state":"present"}) %}
+{%         else %}
+{%           set _ = rule_parameters.update({"rule_state":"absent"}) %}
+{%         endif %}
+{%       elif element["rule_state"]|d() %}
+{%         set _ = rule_parameters.update({"rule_state":element["rule_state"]}) %}
+{%       else %}
+{%         set _ = rule_parameters.update({"rule_state":"present"}) %}
+{%       endif %}
+{%     endif %}
+{%     for param_key in element.keys() %}
+{%       set _ = rule_parameters.update({ param_key: element[param_key] }) %}
+{%     endfor %}
+{%     if element.name|d() %}
+{%       set _ = ferm__tpl_filtered_rules.update({element.name: rule_parameters}) %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{{ ferm__tpl_filtered_rules | to_yaml }}

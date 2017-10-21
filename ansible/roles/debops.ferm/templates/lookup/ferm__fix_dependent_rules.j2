@@ -1,0 +1,36 @@
+{% if ferm__dependent_rules %}
+{%   set ferm__tpl_dependent_rules = lookup('flattened', ferm__dependent_rules) %}
+{% else %}
+{%   set ferm__tpl_dependent_rules = [] %}
+{% endif %}
+{% set ferm__tpl_fixed_rules = {} %}
+{% set ferm__tpl_flattened_rules = [] %}
+{% if ferm__tpl_dependent_rules %}
+{%   if ferm__tpl_dependent_rules is mapping %}
+{%     set fixed_dict = ferm__tpl_dependent_rules %}
+{%     if 'name' not in fixed_dict.keys() %}
+{%       if 'filename' in fixed_dict.keys() %}
+{%         set _ = fixed_dict.update({"name": ('filename_' + (fixed_dict.filename if fixed_dict.filename is string else fixed_dict.filename[0]))}) %}
+{%       elif 'dport' in fixed_dict.keys() %}
+{%         set _ = fixed_dict.update({"name": ('dport_' + (fixed_dict.dport if fixed_dict.dport is string else fixed_dict.dport[0]))}) %}
+{%       endif %}
+{%     endif %}
+{%     set _ = ferm__tpl_fixed_rules.update({fixed_dict['name']:fixed_dict}) %}
+{%   elif ferm__tpl_dependent_rules is not string and ferm__tpl_dependent_rules is not mapping %}
+{%     for element in ferm__tpl_dependent_rules %}
+{%       set fixed_dict = element %}
+{%       if 'name' not in fixed_dict.keys() %}
+{%         if 'filename' in fixed_dict.keys() %}
+{%           set _ = fixed_dict.update({"name": ('filename_' + (fixed_dict.filename if fixed_dict.filename is string else fixed_dict.filename[0]))}) %}
+{%         elif 'dport' in fixed_dict.keys() %}
+{%           set _ = fixed_dict.update({"name": ('dport_' + (fixed_dict.dport if fixed_dict.dport is string else fixed_dict.dport[0]))}) %}
+{%         endif %}
+{%       endif %}
+{%       set _ = ferm__tpl_fixed_rules.update({fixed_dict['name']:fixed_dict}) %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+{% for key, value in ferm__tpl_fixed_rules.iteritems() %}
+{%   set _ = ferm__tpl_flattened_rules.append(value) %}
+{% endfor %}
+{{ ferm__tpl_flattened_rules | to_json }}

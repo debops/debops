@@ -1,0 +1,106 @@
+{% set ferm__tpl_protocol = [] %}
+{% if item.protocol is defined %}
+{%   if item.protocol is string %}
+{%     set _ = ferm__tpl_protocol.append(item.protocol) %}
+{%   else %}
+{%     for element in item.protocol %}
+{%       set _ = ferm__tpl_protocol.append(element) %}
+{%     endfor %}
+{%   endif %}
+{% elif item.protocols is defined %}
+{%   if item.protocols is string %}
+{%     set _ = ferm__tpl_protocol.append(item.protocols) %}
+{%   else %}
+{%     for element in item.protocols %}
+{%       set _ = ferm__tpl_protocol.append(element) %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+{% set ferm__tpl_state = item.default_state | default('enabled') %}
+{% if item.disabled is defined %}
+{%   set ferm__tpl_state = 'enabled' %}
+{%   if item.disabled is string %}
+{%     if item.disabled | bool %}
+{%       set ferm__tpl_state = 'disabled' %}
+{%     endif %}
+{%   else %}
+{%     if item.disabled %}
+{%       set ferm__tpl_state = 'disabled' %}
+{%     endif %}
+{%   endif %}
+{% elif item.enabled is defined %}
+{%   set ferm__tpl_state = 'disabled' %}
+{%   if item.enabled is string %}
+{%     if item.enabled | bool %}
+{%       set ferm__tpl_state = 'enabled' %}
+{%     endif %}
+{%   else %}
+{%     if item.enabled %}
+{%       set ferm__tpl_state = 'enabled' %}
+{%     endif %}
+{%   endif %}
+{% else %}
+{%   set ferm__tpl_state = 'enabled' %}
+{% endif %}
+# {{ ansible_managed }}
+
+{% if ferm__filter_recent|d() and ferm__filter_recent | bool %}
+# Limit new connections on {{ item.dport | join(',') }} port.
+# Allow no more than {{ item.hits | default('5') }} connection attempts from a source IP in {{ item.seconds | default('300') }} seconds.
+{% else %}
+# iptables recent filter is not available, connections are not filtered.
+{% endif %}
+{#
+
+List of parameters:
+
+Required:
+  item.dport		list of destination ports to configure
+
+Optional:
+  item.protocol(s)	list of protocols to configure (tcp, udp)
+  item.syn              if defined and True, match SYN packets, if defined and
+                        False, match !SYN packets
+  item.seconds		time in seconds to count between hits
+  item.hits		how many connections in item.seconds to allow
+  item.destination      name of the ip(6)tables recent list where IP address will be added
+  item.disabled		if True, disable the rule (can be used to toggle rule via variable)
+  item.enabled		if True, enable the rule (can be used to toggle rule via variable)
+
+#}
+
+{% if ((item.syn is defined and item.syn) or
+       (item.syn is defined and item.syn in [ 'True', 'true', 'Yes', 'yes' ])) %}
+{%   set ferm_tpl_syn = 'syn' %}
+{% elif ((item.syn is defined and not item.syn) or
+        (item.syn is defined and item.syn in [ 'False', 'false', 'no', 'no' ])) %}
+{%   set ferm_tpl_syn = '!syn' %}
+{% endif %}
+{% if ferm__tpl_state == 'enabled' %}
+protocol ({{ (ferm__tpl_protocol if ferm__tpl_protocol else ['tcp']) | join(' ') }}){% if ferm__tpl_syn is defined %} {{ ferm__tpl_syn }}{% endif %} dport ({{ item.dport | join(' ') }}) {
+{% if ferm__filter_recent|d() and ferm__filter_recent | bool %}
+
+	@subchain "dport-limit-{{ item.dport[0] }}" {
+		mod recent name {{ item.dport[0] | upper }} {
+			set NOP;
+			update seconds {{ item.seconds | default('300') }} hitcount {{ item.hits | default('5') }} @subchain "dport-log-{{ item.dport[0] }}" {
+				mod recent set name "{{ item.destination | default('badguys') }}" {
+{% if ferm__log_issues is defined and ferm__log_issues %}
+					mod limit limit 3/hour limit-burst 5 {
+						LOG log-prefix "iptables-blocked-{{ item.dport[0] }}: " log-level warning;
+					}
+{% endif %}
+					DROP;
+				}
+			}
+		}
+	}
+
+{% endif %}
+	ACCEPT;
+}
+{% else %}
+# dport_limit rule has been disabled by a variable
+{% endif %}
+
+

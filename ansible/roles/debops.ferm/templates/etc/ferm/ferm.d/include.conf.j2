@@ -1,0 +1,82 @@
+# {{ ansible_managed }}
+
+{# Domain, table, chain #}
+{# ==================== #}
+{% set ferm__tpl_domain = ferm__domains %}
+{% set ferm__tpl_table = [ 'filter' ] %}
+{% set ferm__tpl_chain = [ 'INPUT' ] %}
+{% if item.domain|d() %}
+{%   if item.domain is string %}
+{%     set ferm__tpl_domain = [ item.domain ] %}
+{%   else %}
+{%     set ferm__tpl_domain = item.domain | unique %}
+{%   endif %}
+{% elif item.domains|d() %}
+{%   if item.domains is string %}
+{%     set ferm__tpl_domain = [ item.domains ] %}
+{%   else %}
+{%     set ferm__tpl_domain = item.domains | unique %}
+{%   endif %}
+{% endif %}
+{% if item.table|d() %}
+{%   if item.table is string %}
+{%     set ferm__tpl_table = [ item.table ] %}
+{%   else %}
+{%     set ferm__tpl_table = item.table | unique %}
+{%   endif %}
+{% elif item.tables|d() %}
+{%   if item.tables is string %}
+{%     set ferm__tpl_table = [ item.tables ] %}
+{%   else %}
+{%     set ferm__tpl_table = item.tables | unique %}
+{%   endif %}
+{% endif %}
+{% if item.chain|d() %}
+{%   if item.chain is string %}
+{%     set ferm__tpl_chain = [ item.chain ] %}
+{%   else %}
+{%     set ferm__tpl_chain = item.chain | unique %}
+{%   endif %}
+{% elif item.chains|d() %}
+{%   if item.chains is string %}
+{%     set ferm__tpl_chain = [ item.chains ] %}
+{%   else %}
+{%     set ferm__tpl_chain = item.chains | unique %}
+{%   endif %}
+{% endif %}
+{% set ferm__tpl_domain_args = [] %}
+{% if ferm__tpl_domain %}
+{%   if ferm__tpl_domain | length == 1 %}
+{%     set _ = ferm__tpl_domain_args.append("domain " +  ferm__tpl_domain | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_domain_args.append("domain (" + ferm__tpl_domain | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{% if ferm__tpl_table %}
+{%   if ferm__tpl_table | length == 1 %}
+{%     set _ = ferm__tpl_domain_args.append("table " +  ferm__tpl_table | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_domain_args.append("table (" + ferm__tpl_table | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{% if ferm__tpl_chain %}
+{%   if ferm__tpl_chain | length == 1 %}
+{%     set _ = ferm__tpl_domain_args.append("chain " +  ferm__tpl_chain | join(" ")) %}
+{%   else %}
+{%     set _ = ferm__tpl_domain_args.append("chain (" + ferm__tpl_chain | join(" ") + ")") %}
+{%   endif %}
+{% endif %}
+{# Main template #}
+{# ============= #}
+{% if item.comment|d() %}
+# {{ item.comment }}
+
+{% endif %}
+{% if item.when is undefined or item.when | bool %}
+{%   if ferm__tpl_domain_args %}{{ ferm__tpl_domain_args | join(" ") }} {% endif %}{
+    @include "{{ item.include }}";
+}
+{% else %}
+# Rule disabled by 'item.when' condition
+{% endif %}
+

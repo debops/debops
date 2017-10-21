@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+{% if item.comment|d() %}
+# {{ item.comment }}
+
+{% endif %}
+{% if item.when is undefined or item.when | bool %}
+@hook post "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true";
+@hook flush "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true";
+{% else %}
+# Rule disabled by 'item.when' condition
+{% endif %}
+
