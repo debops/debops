@@ -1,0 +1,14 @@
+---
+
+- name: Manage Cyrus SASL authentication service
+  hosts: [ 'debops_service_saslauthd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.saslauthd
+      tags: [ 'role::saslauthd' ]

@@ -1,0 +1,63 @@
+# {{ ansible_managed }}
+#
+# Settings for saslauthd daemon
+# Please read /usr/share/doc/sasl2-bin/README.Debian for details.
+#
+
+# Should saslauthd run automatically on startup? (default: no)
+START={{ 'yes' if ((item.start | d(True)) |bool) else 'no' }}
+
+# Description of this saslauthd instance. Recommended.
+# (suggestion: SASL Authentication Daemon)
+DESC="{{ item.desc | d(item.description | d(item.name | capitalize + ' SASL Authentication Daemon')) }}"
+
+# Short name of this saslauthd instance. Strongly recommended.
+# (suggestion: saslauthd)
+NAME="saslauthd-{{ item.name }}"
+
+# Which authentication mechanisms should saslauthd use? (default: pam)
+#
+# Available options in this Debian package:
+# getpwent  -- use the getpwent() library function
+# kerberos5 -- use Kerberos 5
+# pam       -- use PAM
+# rimap     -- use a remote IMAP server
+# shadow    -- use the local shadow password file
+# sasldb    -- use the local sasldb database file
+# ldap      -- use LDAP (configuration is in /etc/saslauthd.conf)
+#
+# Only one option may be used at a time. See the saslauthd man page
+# for more information.
+#
+# Example: MECHANISMS="pam"
+MECHANISMS="{{ item.mech | d(item.mechanism | d(item.mechanisms | d('pam'))) }}"
+
+# Additional options for this mechanism. (default: none)
+# See the saslauthd man page for information about mech-specific options.
+MECH_OPTIONS="{{ item.mech_options | d('') }}"
+
+# How many saslauthd processes should we run? (default: 5)
+# A value of 0 will fork a new process for each connection.
+THREADS={{ item.threads | d(ansible_processor_vcpus) }}
+
+# Other options (default: -c -m /var/run/saslauthd)
+# Note: You MUST specify the -m option or saslauthd won't run!
+#
+# WARNING: DO NOT SPECIFY THE -d OPTION.
+# The -d option will cause saslauthd to run in the foreground instead of as
+# a daemon. This will PREVENT YOUR SYSTEM FROM BOOTING PROPERLY. If you wish
+# to run saslauthd in debug mode, please run it by hand to be safe.
+#
+# See /usr/share/doc/sasl2-bin/README.Debian for Debian-specific information.
+# See the saslauthd man page and the output of 'saslauthd -h' for general
+# information about these options.
+#
+# Example for chroot Postfix users: "-c -m /var/spool/postfix/var/run/saslauthd"
+# Example for non-chroot Postfix users: "-c -m /var/run/saslauthd"
+#
+# To know if your Postfix is running chroot, check /etc/postfix/master.cf.
+# If it has the line "smtp inet n - y - - smtpd" or "smtp inet n - - - - smtpd"
+# then your Postfix is running in a chroot.
+# If it has the line "smtp inet n - n - - smtpd" then your Postfix is NOT
+# running in a chroot.
+OPTIONS="{{ item.daemon_options | d('-c') + ' -m ' + item.socket_path }}"

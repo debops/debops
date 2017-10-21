@@ -1,0 +1,86 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.saslauthd default variables [[[
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: saslauthd__base_packages [[[
+#
+# List of base APT packages to install for SASL support.
+saslauthd__base_packages: [ 'sasl2-bin', 'libsasl2-modules' ]
+
+                                                                   # ]]]
+# .. envvar:: sslauthd__packages [[[
+#
+# List of additional APT packages to install with SASL support.
+saslauthd__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration of saslauthd instances [[[
+# ----------------------------------------
+
+# These variables define the instances of :command:`saslauthd` managed by this
+# role. See :ref:`saslauthd__ref_instances` for more details.
+
+# .. envvar:: saslauthd__default_instances [[[
+#
+# The list of default :command:`saslauthd` instances defined by the role.
+saslauthd__default_instances:
+
+  - name: 'smtpd'
+    group: 'postfix'
+    description: 'Postfix SASL Authentication Daemon'
+    config_path: '/etc/postfix/sasl/smtpd.conf'
+    config_group: 'postfix'
+    config_raw: |
+      pwcheck_method: saslauthd
+      mech_list: PLAIN LOGIN
+    socket_path: '/var/spool/postfix/var/run/saslauthd'
+    socket_group: 'postfix'
+    state: '{{ "present"
+               if ((ansible_local|d() and ansible_local.postfix|d() and
+                    (ansible_local.postfix.installed|d())|bool) or
+                   ("debops_service_postfix" in group_names))
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: saslauthd__instances [[[
+#
+# List of :command:`saslauthd` instances defined on all hosts in the Ansible
+# inventory.
+saslauthd__instances: []
+
+                                                                   # ]]]
+# .. envvar:: saslauthd__group_instances [[[
+#
+# List of :command:`saslauthd` instances defined on hosts in specific Ansible
+# inventory group.
+saslauthd__group_instances: []
+
+                                                                   # ]]]
+# .. envvar:: saslauthd__host_instances [[[
+#
+# List of :command:`saslauthd` instances defined on specific hosts in the
+# Ansible inventory.
+saslauthd__host_instances: []
+
+                                                                   # ]]]
+# .. envvar:: saslauthd__combined_instances [[[
+#
+# The combined list of instances passed to the Ansible tasks.
+saslauthd__combined_instances: '{{ saslauthd__default_instances
+                                   + saslauthd__instances
+                                   + saslauthd__group_instances
+                                   + saslauthd__host_instances }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
