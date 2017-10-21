@@ -1,0 +1,184 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.salt default variables [[[
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Upstream configuration [[[
+# --------------------------
+
+# .. envvar:: salt__upstream [[[
+#
+# Enable or disable upstream APT repository.
+salt__upstream: '{{ True
+                    if (ansible_distribution_release in
+                        [ "precise", "trusty", "wheezy" ])
+                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: salt__upstream_branch [[[
+#
+# Specify the SaltStack "branch" to install from upstream APT repository.
+# See https://repo.saltstack.com/#debian for more details about available
+# upstream branches.
+salt__upstream_branch: 'latest'
+
+                                                                   # ]]]
+# .. envvar:: salt__upstream_arch_map [[[
+#
+# A YAML dictionary that maps the ``ansible_architecture`` variable with its
+# corresponding processor architecture used in the SaltStack repository URLs.
+salt__upstream_arch_map:
+  'x86_64': 'amd64'
+  'armhf':  'armhf'
+
+                                                                   # ]]]
+# .. envvar:: salt__upstream_apt_key_id [[[
+#
+# Specify the upstream APT repository GPG key id to configure.
+salt__upstream_apt_key_id: '754A1A7AE731F165D5E6D4BD0E08A149DE57BFBE'
+
+                                                                   # ]]]
+# .. envvar:: salt__upstream_apt_repo_map [[[
+#
+# A YAML dictionary that defines the upstream APT repository URLs depending on
+# the current OS distribution, release and processor architecture.
+salt__upstream_apt_repo_map:
+  Debian: '{{ "deb http://repo.saltstack.com/apt/debian/"
+              + ansible_distribution_major_version + "/" + salt__upstream_arch_map[ansible_architecture]
+              + "/" + salt__upstream_branch + " " + ansible_distribution_release + " main" }}'
+  Ubuntu: '{{ "deb http://repo.saltstack.com/apt/ubuntu/"
+              + ansible_distribution_version + "/" + salt__upstream_arch_map[ansible_architecture]
+              + "/" + salt__upstream_branch + " " + ansible_distribution_release + " main" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: salt__base_packages [[[
+#
+# List of base APT packages to install for Salt Master service.
+salt__base_packages: [ 'salt-master' ]
+
+                                                                   # ]]]
+# .. envvar:: salt__packages [[[
+#
+# List of additional APT packages to install with Salt Master.
+salt__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: salt__allow [[[
+#
+# List of IP addresses or CIDR subnets that can connect to the Salt Master
+# service. If the list is empty, any host is allowed to connect.
+salt__allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Salt Master configuration [[[
+# -----------------------------
+
+# .. envvar:: salt__configuration [[[
+#
+# Enable or disable configuration of Salt Master by Ansible.
+salt__configuration: True
+
+                                                                   # ]]]
+# .. envvar:: salt__configuration_file [[[
+#
+# Absolute path of the Salt Master configuration file which will be managed by
+# Ansible.
+salt__configuration_file: '/etc/salt/master.d/ansible.conf'
+                                                                   # ]]]
+                                                                   # ]]]
+# Salt configuration options [[[
+# ------------------------------
+
+# .. envvar:: salt__interface [[[
+#
+# Specify the network interface the Salt Master will listen on for connections,
+# using an IP address specification.
+salt__interface: '{{ "::" if salt__ipv6|bool else "0.0.0.0" }}'
+
+                                                                   # ]]]
+# .. envvar:: salt__ipv6 [[[
+#
+# Enable/disable IPv6 support in Salt Master.
+salt__ipv6: True
+
+                                                                   # ]]]
+# .. envvar:: salt__publish_port [[[
+#
+# The network port to set up the publication interface.
+salt__publish_port: '4505'
+
+                                                                   # ]]]
+# .. envvar:: salt__return_port [[[
+#
+# The port used by the return server, this is the server used by Salt to
+# receive execution returns and command executions.
+salt__return_port: '4506'
+
+                                                                   # ]]]
+# .. envvar:: salt__worker_threads [[[
+#
+# Number of Salt Master workers to run.
+salt__worker_threads: '{{ ansible_processor_vcpus }}'
+
+                                                                   # ]]]
+# .. envvar:: salt__custom_options [[[
+#
+# Additional Salt Master options in YAML text block format.
+salt__custom_options: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: salt__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+salt__apt_preferences__dependent_list:
+
+  - packages:  [ 'salt-*', 'python-tornado' ]
+    backports: [ 'jessie' ]
+    reason: 'Newer Salt features available in backported packages'
+    by_role: 'debops.salt'
+    state: '{{ "absent" if salt__upstream|bool else "present" }}'
+
+                                                                   # ]]]
+# .. envvar:: salt__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+salt__etc_services__dependent_list:
+
+  - name: 'salt-publish'
+    port: '{{ salt__publish_port }}'
+    comment: 'Salt Master (publish)'
+
+  - name: 'salt-return'
+    port: '{{ salt__return_port }}'
+    comment: 'Salt Master (return)'
+
+                                                                   # ]]]
+# .. envvar:: salt__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ Ansible role.
+salt__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'salt-publish', 'salt-return' ]
+    saddr: '{{ salt__allow }}'
+    accept_any: True
+    name: 'salt_accept'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

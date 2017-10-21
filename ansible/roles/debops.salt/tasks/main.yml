@@ -1,0 +1,43 @@
+---
+
+- name: Get upstream APT GPG key
+  apt_key:
+    id: '{{ salt__upstream_apt_key_id | replace(" ","") }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  when: salt__upstream|bool
+
+- name: Configure upstream APT repository
+  apt_repository:
+    repo: '{{ salt__upstream_apt_repo_map[ansible_distribution] }}'
+    state: 'present'
+    update_cache: True
+  when: salt__upstream|bool
+
+- name: Install Salt Master packages
+  package:
+    name: '{{ item }}'
+    state: 'latest'
+  with_flattened:
+    - '{{ salt__base_packages }}'
+    - '{{ salt__packages }}'
+
+- name: Configure Salt Master using Ansible
+  template:
+    src: 'etc/salt/master.d/ansible.conf.j2'
+    dest: '{{ salt__configuration_file }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart salt-master' ]
+  when: salt__configuration|bool
+
+- name: Remove Salt Master configuration file if disabled
+  file:
+    path: '{{ salt__configuration_file }}'
+    state: 'absent'
+  notify: [ 'Restart salt-master' ]
+  when: not salt__configuration|bool
