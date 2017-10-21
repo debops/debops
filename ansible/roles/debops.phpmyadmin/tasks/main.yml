@@ -1,0 +1,27 @@
+---
+
+- name: Install dbconfig-common
+  apt: pkg=dbconfig-common state=latest install_recommends=no
+
+- name: Pre-configure PHPMyAdmin database
+  template: src=etc/dbconfig-common/phpmyadmin.conf.j2
+            dest=/etc/dbconfig-common/phpmyadmin.conf
+            owner=root group=root mode=0600
+
+- name: Install PHPMyAdmin packages
+  apt: pkg=phpmyadmin state=latest install_recommends=no
+
+- name: Create database for PHPMyAdmin
+  mysql_db: name={{ phpmyadmin_control_database | default('phpmyadmin') }} state=present
+  register: phpmyadmin_database
+
+- name: Import PHPMyAdmin schema
+  mysql_db: name={{ phpmyadmin_control_database | default('phpmyadmin') }} state=import
+            target=/usr/share/dbconfig-common/data/phpmyadmin/install/mysql
+  when: phpmyadmin_database is defined and phpmyadmin_database.changed == True
+
+- name: Create PHPMyAdmin control user
+  mysql_user: name={{ phpmyadmin_control_user | default('phpmyadmin') }} state=present
+              password={{ phpmyadmin_control_password }} priv='{{ phpmyadmin_control_database | default('phpmyadmin') }}.*:ALL'
+
+

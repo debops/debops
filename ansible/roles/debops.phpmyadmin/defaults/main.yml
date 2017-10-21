@@ -1,0 +1,25 @@
+---
+
+# Should PHPMyAdmin role manage its own dependencies?
+phpmyadmin_dependencies: True
+
+# What subdomain should be used for PHPMyAdmin in nginx configuration
+phpmyadmin_domain: [ 'mysql.{{ ansible_domain }}' ]
+
+# Default length of generated passwords
+phpmyadmin_password_length: '20'
+
+# Default PHPMyAdmin control password
+phpmyadmin_control_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/phpmyadmin/password length=' + phpmyadmin_password_length) }}"
+
+# List of IP addresses or network ranges in CIDR format, allowed to access
+# PHPMyAdmin. Leave empty to allow access from all IP addresses/networks
+phpmyadmin_allow: []
+
+# Max upload size for nginx and php5
+phpmyadmin_upload_size: '64M'
+
+# Maximum number of PHP5 processes for PHPMyAdmin
+phpmyadmin_php5_max_children: '20'
+
+
