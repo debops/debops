@@ -1,0 +1,79 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.etc_services default variables [[[
+# =========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Role configuration and internals [[[
+# ------------------------------------
+
+# .. envvar:: etc_services__enabled [[[
+#
+# Enable :file:`/etc/services.d/` support?
+etc_services__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: etc_services__diversion [[[
+#
+# Name of diverted :file:`/etc/services` file, do not change if the diversion
+# already is active!
+etc_services__diversion: '/etc/services.d/10_debian_etc_services'
+                                                                   # ]]]
+                                                                   # ]]]
+# Service database definitions [[[
+# --------------------------------
+
+# The following lists define custom local service entries in
+# :file:`/etc/services`. See :ref:`etc_services__ref_list` for more details.
+
+# .. envvar:: etc_services__list [[[
+#
+# List of local service entries configured on all hosts in Ansible inventory.
+etc_services__list: []
+
+                                                                   # ]]]
+# .. envvar:: etc_services__group_list [[[
+#
+# List of local service entries configured on a group of hosts in Ansible
+# inventory.
+etc_services__group_list: []
+
+                                                                   # ]]]
+# .. envvar:: etc_services__host_list [[[
+#
+# List of local service entries configured on specific hosts in Ansible
+# inventory.
+etc_services__host_list: []
+
+                                                                   # ]]]
+# .. envvar:: etc_services__dependent_list [[[
+#
+# List of local service entries configured by other Ansible roles using role
+# dependent variables.
+etc_services__dependent_list: []
+
+                                                                   # ]]]
+# .. envvar:: etc_services__combined_list [[[
+#
+# List of all of the service definitions combined into one, used in the tasks.
+# Some variables are deprecated but still present to allow for backwards
+# compatibility.
+etc_services__combined_list:
+  - '{{ etc_services__list }}'
+  - '{{ etc_services__group_list }}'
+  - '{{ etc_services__host_list }}'
+  - '{{ etc_services__dependent_list }}'
+  - '{{ etc_services_list            | d([]) }}'
+  - '{{ etc_services_group_list      | d([]) }}'
+  - '{{ etc_services_host_list       | d([]) }}'
+  - '{{ etc_services_dependent_list  | d([]) }}'
+  - '{{ etc_services_dependency_list | d([]) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

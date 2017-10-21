@@ -1,0 +1,13 @@
+{% if item.custom|d() %}
+{{   item.custom }}
+{% elif item.name|d() and item.port|d() %}
+{%   set etc_services__tpl_protocols = (item.protocols|d(item.protocol)|d([ 'tcp', 'udp' ])) | list %}
+{%   for transport_layer_protocol in etc_services__tpl_protocols %}
+{{     "%-15s %s/%-26s%s" | format(
+          item.name,
+          item.port,
+          transport_layer_protocol,
+          (" # " + item.comment) if (item.comment|d()) else "")
+}}
+{%   endfor %}
+{% endif %}

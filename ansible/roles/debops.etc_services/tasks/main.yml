@@ -1,0 +1,60 @@
+---
+
+- name: Make sure /etc/services.d directory exists
+  file:
+    path:  '/etc/services.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode:  '0755'
+
+- name: Create /etc/services.d/00_ansible
+  template:
+    src:  'etc/services.d/00_ansible.j2'
+    dest: '/etc/services.d/00_ansible'
+    owner: 'root'
+    group: 'root'
+    mode:  '0644'
+
+- name: Divert original /etc/services
+  command: dpkg-divert --quiet --local --divert "{{ etc_services__diversion }}" --rename "/etc/services"
+  args:
+    creates: '{{ etc_services__diversion }}'
+  when: etc_services__enabled|bool
+
+- name: Generate list of local services if requested
+  template:
+    src:  'etc/services.d/local_service.j2'
+    dest: '/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}'
+    owner: 'root'
+    group: 'root'
+    mode:  '0644'
+  with_flattened: '{{ etc_services__combined_list }}'
+  when: (etc_services__enabled|bool and
+         ((item.name|d() and item.port|d()) or item.custom|d()) and
+         (item.state is undefined or item.state != 'absent'))
+
+- name: Remove list of local services if requested
+  file:
+    path: '/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}'
+    state: 'absent'
+  with_flattened: '{{ etc_services__combined_list }}'
+  when: ((not etc_services__enabled|bool or item.delete|d() or
+          (item.state|d() and item.state == 'absent')) and ((item.name|d() and item.port|d()) or item.custom|d()))
+
+- name: Assemble services.d
+  assemble:
+    src:  '/etc/services.d'
+    dest: '/etc/services'
+    backup: False
+    owner: 'root'
+    group: 'root'
+    mode:  '0644'
+  when: etc_services__enabled|bool
+
+- name: Remove diversion of /etc/services
+  shell: rm -f /etc/services ; dpkg-divert --quiet --local --rename --remove /etc/services
+  args:
+    removes: '{{ etc_services__diversion }}'
+    warn: False
+  when: not etc_services__enabled|bool
