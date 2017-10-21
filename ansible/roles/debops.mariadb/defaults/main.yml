@@ -1,0 +1,369 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.mariadb default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# MariaDB server configuration [[[
+# --------------------------------
+
+# .. envvar:: mariadb__server [[[
+#
+# FQDN hostname of the MariaDB server. If a local MariaDB server is detected, it
+# will override this variable automatically. Only one server at a time is
+# currently supported per host.
+mariadb__server: ''
+
+                                                                   # ]]]
+# .. envvar:: mariadb__port [[[
+#
+# Port number on which to connect to the server. You usually don't need to
+# change this.
+mariadb__port: '3306'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__client [[[
+#
+# When the database server is used remotely, this variable defines the "host"
+# part of the client username. If a local MariaDB server is detected, this
+# variable will be automatically changed to ``localhost``.
+mariadb__client: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__delegate_to [[[
+#
+# When the MariaDB server is used remotely, Ansible needs to run tasks on the
+# correct host. This variable controls the task delegation to the correct
+# database server.
+#
+# If the MariaDB server is run locally, this should point to the inventory name
+# of the current host, NOT ``localhost`` because that would delegate the tasks
+# to the Ansible Controller.
+mariadb__delegate_to: '{{ mariadb__server
+                          if (mariadb__server|d() and
+                              mariadb__server != "localhost")
+                          else inventory_hostname }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# MariaDB APT packages [[[
+# ------------------------
+
+# .. envvar:: mariadb__flavor [[[
+#
+# Variable which defines what database engine to use:
+#
+# - ``mariadb``: default, use MariaDB engine from Debian repository
+#
+# - ``mariadb_upstream``: use MariaDB engine from upstream repository
+#
+# - ``mysql``: use MySQL engine from Debian repository
+#
+# - ``mysql-5.6_galera-3``: use MySQL 5.6 engine with Galera from Codership
+#   repository
+#
+# - ``mysql-5.7_galera-3``: use MySQL 5.7 engine with Galera from Codership
+#   repository
+#
+# - ``percona``: use Percona XtraDB engine from upstream repository
+#
+# The choice depends on availability of MariaDB packages in a distribution.
+# Percona needs to be selected explicitly.
+mariadb__flavor: '{{ (ansible_local.mariadb.flavor
+                      if (ansible_local|d() and ansible_local.mariadb|d() and
+                          ansible_local.mariadb.flavor|d())
+                      else (mariadb__flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__flavor_map [[[
+#
+# List of Linux distributions where the default MariaDB packages are not
+# available and MySQL should be used instead.
+mariadb__flavor_map:
+  'wheezy': 'mysql'
+  'precise': 'mysql'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__apt_key [[[
+#
+# String or list of GPG keys which should be added to the APT key database to
+# authenticate the external repositories. If this value is set to `False` no
+# extra APT key will be added.
+mariadb__apt_key: '{{ mariadb__apt_key_map[mariadb__flavor] | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__apt_key_map [[[
+#
+# A YAML dictionary map which keeps GPG key ids for APT repository keys of
+# different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
+# downloaded if any of the listed flavors is selected.
+mariadb__apt_key_map:
+  'mariadb_upstream':   [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
+  'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+  'mysql-5.7_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+  'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__upstream_version [[[
+#
+# Version of the MariaDB upstream.
+mariadb__upstream_version: '10.1'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__upstream_mirror [[[
+#
+# URL of the MariaDB upstream mirror.
+mariadb__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb__upstream_version }}/{{ ansible_distribution | lower }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__apt_repository_map [[[
+#
+# A YAML dictionary map which keeps APT repository configuration of different
+# MariaDB/MySQL/Percona APT repositories. These repositories will be configured
+# if any of the listed flavors is selected.
+mariadb__apt_repository_map:
+  'mariadb_upstream':   'deb {{ mariadb__upstream_mirror }} {{ ansible_distribution_release }} main'
+  'mysql-5.6_galera-3': 'deb http://releases.galeracluster.com/mysql-wsrep-5.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+  'mysql-5.7_galera-3': 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+  'percona':            'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__base_packages [[[
+#
+# List of APT packages that should be installed with any database engine
+# selected.
+mariadb__base_packages: [ 'python-mysqldb' ]
+
+                                                                   # ]]]
+# .. envvar:: mariadb__packages [[[
+#
+# List of additional packages to install with the database client.
+mariadb__packages: []
+
+                                                                   # ]]]
+# .. envvar:: mariadb__packages_map [[[
+#
+# Dictionary with list of packages that will be installed with a particular
+# database engine.
+mariadb__packages_map:
+  'mariadb': [ 'mariadb-client' ]
+  'mariadb_upstream': [ 'mariadb-client' ]
+  'mysql': [ 'mysql-client' ]
+  'mysql-5.6_galera-3': [ 'mysql-wsrep-client-5.6' ]
+  'mysql-5.7_galera-3': [ 'mysql-wsrep-client-5.7' ]
+  'percona': [ 'percona-server-client' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# MariaDB client system-wide configuration [[[
+# --------------------------------------------
+
+# The MariaDB/MySQL client configuration is managed in
+# :file:`/etc/mysql/conf.d/client.cnf` configuration file, generated by an Ansible
+# template. Check :ref:`mariadb__ref_options` for more details about the
+# syntax used to configure the server.
+
+# .. envvar:: mariadb__client_charset_options [[[
+#
+# Configuration options related to charset and string encoding on the client.
+mariadb__client_charset_options:
+  'default_character_set': 'utf8'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__client_remote_host_options [[[
+#
+# These options will be enabled only if local MariaDB/MySQL server is not
+# detected. The configuration will detect the presence of an SSL tunnel and
+# configure the server connection details accordingly.
+mariadb__client_remote_host_options:
+  - name: 'remote-host-options'
+    state: '{{ "present"
+               if (not mariadb__register_version.stdout|d(False))
+               else "absent" }}'
+    options:
+
+      - name: 'remote-host-not-tunnel'
+        state: '{{ "present"
+                   if (mariadb__register_tunnel.rc|d() != 0)
+                   else "absent" }}'
+        options:
+          'host': '{{ mariadb__server }}'
+          'port': '{{ mariadb__port }}'
+
+      - name: 'remote-host-tunnel'
+        state: '{{ "present"
+                   if (mariadb__register_tunnel.rc|d() == 0)
+                   else "absent" }}'
+        options:
+          'host': '127.0.0.1'
+          'port': '{{ mariadb__port }}'
+
+      - name: 'pki-options'
+        comment: 'Support for SSL connections'
+        state: '{{ "present" if mariadb__pki|bool else "absent" }}'
+        options:
+          'ssl':
+          'ssl_ca':     '{{ mariadb__pki_path + "/" + mariadb__pki_realm + "/" + mariadb__pki_ca }}'
+          'ssl_cert':   '{{ mariadb__pki_path + "/" + mariadb__pki_realm + "/" + mariadb__pki_crt }}'
+          'ssl_key':    '{{ mariadb__pki_path + "/" + mariadb__pki_realm + "/" + mariadb__pki_key }}'
+          'ssl_cipher': '{{ mariadb__pki_cipher }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__client_options [[[
+#
+# Configuration options set in :file:`/etc/mysql/conf.d/client.cnf` file. This is
+# a "master variable" for the rest of the configuration variables.
+mariadb__client_options:
+  - section: 'client'
+    options:
+      - '{{ mariadb__client_charset_options }}'
+      - '{{ mariadb__client_remote_host_options }}'
+      - '{{ mariadb__options }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__options [[[
+#
+# Dictionary or list with custom MariaDB client options.
+mariadb__options: {}
+
+                                                                   # ]]]
+# .. envvar:: mariadb__client_cnf_file [[[
+#
+# Absolute path for the client configuration file managed by the
+# ``debops.mariadb`` Ansible role.
+mariadb__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
+                              if (mariadb__register_confd.stat.exists|bool)
+                              else "/etc/mysql/conf.d/zz-client.cnf" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: mariadb__pki [[[
+#
+# Enable or disable support for SSL in MariaDB (using debops.pki_).
+mariadb__pki: '{{ (True
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.enabled|d() and
+                       mariadb__pki_realm in ansible_local.pki.known_realms)
+                   else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__pki_path [[[
+#
+# Base path for PKI directory.
+mariadb__pki_path: '{{ (ansible_local.pki.base_path
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.base_path|d())
+                        else "/etc/pki") }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__pki_realm [[[
+#
+# Default PKI realm used by MariaDB (Debian MariaDB packages do not support chained
+# certificates, see https://bugs.debian.org/630625).
+mariadb__pki_realm: '{{ ansible_local.pki.realm
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.realm|d())
+                        else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__pki_ca [[[
+#
+# Root CA certificate used by MariaDB, relative to :envvar:`mariadb__pki_realm`.
+mariadb__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__pki_crt [[[
+#
+# Host certificate used by MariaDB, relative to :envvar:`mariadb__pki_realm`.
+mariadb__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__pki_key [[[
+#
+# Host private key used by MariaDB, relative to :envvar:`mariadb__pki_realm`.
+mariadb__pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__pki_cipher [[[
+#
+# Cipher suite used for encrypted connections.
+mariadb__pki_cipher: 'DHE-RSA-AES256-SHA'
+                                                                   # ]]]
+                                                                   # ]]]
+# User account privileges [[[
+# ---------------------------
+
+# .. envvar:: mariadb__default_privileges [[[
+#
+# Should ``debops.mariadb`` automatically grant all privileges to a database
+# named the same as the username for a given user account? This is equivalent
+# to::
+#
+#     GRANT ALL PRIVILEGES ON `<user>`.* TO `<user>`@`<host>`;
+#
+mariadb__default_privileges: True
+
+                                                                   # ]]]
+# .. envvar:: mariadb__default_privileges_aux [[[
+#
+# Should ``debops.mariadb`` automatically grant all privileges to databases
+# with the same prefix as the username for a given user account? This is
+# equivalent to::
+#
+#     GRANT ALL PRIVILEGES ON `<user>\_%`.* TO `<user>`@`<host>`;
+#
+mariadb__default_privileges_aux: True
+
+                                                                   # ]]]
+# .. envvar:: mariadb__default_privileges_grant [[[
+#
+# Default privileges granted automatically. See Ansible ``mysql_user`` module
+# for list and format of privileges.
+mariadb__default_privileges_grant: 'ALL'
+                                                                   # ]]]
+                                                                   # ]]]
+# Databases, user accounts [[[
+# ----------------------------
+
+# .. envvar:: mariadb__password_length [[[
+#
+# Length of automatically generated user accounts, saved in the ``secret/``
+# directory. See debops.secret_ role for more details about passwords.
+mariadb__password_length: '48'
+
+                                                                   # ]]]
+# .. envvar:: mariadb__databases [[[
+#
+# List of databases configured on the MariaDB server. See
+# :ref:`mariadb__databases` for more details.
+mariadb__databases: []
+
+                                                                   # ]]]
+# .. envvar:: mariadb__dependent_databases [[[
+#
+# List of databases configured on the MariaDB server, defined by another
+# Ansible role.
+mariadb__dependent_databases: []
+
+                                                                   # ]]]
+# .. envvar:: mariadb__users [[[
+#
+# List of user accounts configured on the MariaDB server. See
+# :ref:`mariadb__users` for more details.
+mariadb__users: []
+
+                                                                   # ]]]
+# .. envvar:: mariadb__dependent_users [[[
+#
+# List of user accounts configured on the MariaDB server, defined by another
+# Ansible role.
+mariadb__dependent_users: []
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
