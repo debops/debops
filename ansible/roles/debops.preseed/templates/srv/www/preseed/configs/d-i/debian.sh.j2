@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+export HOME=/root
+
+# Prevent service startup while we are working in chroot
+cat > /usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+echo "All runlevel operations denied by policy" >&2
+exit 101
+EOF
+chmod +x /usr/sbin/policy-rc.d
+
+## Move APT proxy configuration to the same location that debops.apt uses to configure APT proxy settings.
+mv /etc/apt/apt.conf /etc/apt/apt.conf.d/000apt-cacher-ng-proxy || true
+
+{% if preseed__grub_preseed | bool %}
+# Setup grub, cgroup, LXC
+
+if [ -r "/etc/default/grub" ]; then
+    dpkg-divert --quiet --local --divert /etc/default/grub.dpkg-divert --rename /etc/default/grub
+    cp /etc/default/grub.dpkg-divert /etc/default/grub
+    perl -pi -e 's,^GRUB_TIMEOUT=5$,GRUB_TIMEOUT={{ preseed__grub_timeout|string }},' /etc/default/grub
+{% if preseed__grub_kernel_options | length >= 1 %}
+    perl -pi -e 's,GRUB_CMDLINE_LINUX="(.*)"$,GRUB_CMDLINE_LINUX="$1 {{ preseed__grub_kernel_options | join(" ") }}",' /etc/default/grub
+{% endif %}
+    update-grub
+fi
+{% endif %}
+
+{% if ((item.salt is defined and item.salt) or (preseed__salt is defined and preseed__salt)) %}
+# Configure Salt APT repository
+echo "{{ preseed__salt_upstream_repository }}" >> /etc/apt/sources.list
+wget --no-proxy -q -O- "{{ preseed__salt_apt_key_url }}" | apt-key add -
+apt-get update
+
+# Install Salt packages
+apt-get -yq install {{ preseed__salt_packages | join(" ") }}
+
+{% if ((item.salt_options is defined and item.salt_options) or (preseed__salt_options is defined and preseed__salt_options)) %}
+
+# Configuration for Salt minion
+cat > /etc/salt/minion.d/ansible.conf <<EOF
+{{ item.salt_options | default(preseed__salt_options) }}
+EOF
+
+{% endif %}
+{% endif %}
+{% if ((item.admin is undefined or item.admin) and (preseed__admin is defined and preseed__admin)) %}
+preseed__admin_name="{{ item.admin_name | default(preseed__admin_name) }}"
+preseed__admin_groups=( {{ (item.admin_groups | default(preseed__admin_groups)) | join(" ") }} )
+preseed__admin_groups_useradd="{{ (item.admin_groups | default(preseed__admin_groups)) | join(',') }}"
+preseed__admin_comment="{{ item.admin_comment | default(preseed__admin_comment | default('System Administrator')) }}"
+preseed__admin_shell="{{ item.admin_shell | default(preseed__admin_shell | default('/bin/bash')) }}"
+{% if ((item.admin_system is defined and item.admin_system) or (preseed__admin_system is defined and preseed__admin_system)) %}
+preseed__admin_home="{{ item.admin_system_home | default(preseed__admin_system_home | default('/var/local/' + item.admin_name | default(preseed__admin_name))) }}"
+{% else %}
+preseed__admin_home="{{ item.admin_home | default(preseed__admin_home | default('/home/' + item.admin_name | default(preseed__admin_name))) }}"
+{% endif %}
+preseed__admin_home_group="{{ preseed__admin_home_group }}"
+preseed__admin_home_mode="{{ preseed__admin_home_mode }}"
+{% if ((item.sudo is undefined or item.sudo) and (preseed__sudo is defined and preseed__sudo)) %}
+preseed__sudo_group="{{ preseed__sudo_group }}"
+{% endif %}
+
+# Create required system groups if not present
+if [ ${{ '{' }}#preseed__admin_groups[@]} -ge 0 ] ; then
+    for system_group in ${preseed__admin_groups[@]} ; do
+        getent group ${system_group} > /dev/null || groupadd --system ${system_group}
+    done
+fi
+
+{% if ((item.sudo is undefined or item.sudo) and (preseed__sudo is defined and preseed__sudo)) %}
+# Configure admin group in sudo
+echo "%${preseed__sudo_group} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > /etc/sudoers.d/${preseed__sudo_group}
+chmod 0440 /etc/sudoers.d/${preseed__sudo_group}
+
+{% endif %}
+# Create administrator account
+{% if ((item.admin_system is defined and item.admin_system) or (preseed__admin_system is defined and preseed__admin_system)) %}
+if ! getent passwd ${preseed__admin_name} ; then
+    useradd --system --user-group --groups ${preseed__admin_groups_useradd} --create-home --home ${preseed__admin_home} --comment "${preseed__admin_comment}" --shell ${preseed__admin_shell} ${preseed__admin_name}
+    chgrp ${preseed__admin_home_group} ${preseed__admin_home}
+    chmod ${preseed__admin_home_mode} ${preseed__admin_home}
+fi
+{% else %}
+if ! getent passwd ${preseed__admin_name} ; then
+    adduser --disabled-password --home ${preseed__admin_home} --gecos "${preseed__admin_comment}" --shell ${preseed__admin_shell} ${preseed__admin_name}
+    chgrp ${preseed__admin_home_group} ${preseed__admin_home}
+    chmod ${preseed__admin_home_mode} ${preseed__admin_home}
+
+    if [ ${{ '{' }}#preseed__admin_groups[@]} -ge 0 ] ; then
+        for system_group in ${preseed__admin_groups[@]} ; do
+            adduser ${preseed__admin_name} ${system_group}
+        done
+    fi
+fi
+{% endif %}
+
+{% endif %}
+{% if ((item.admin_sshkeys is defined and item.admin_sshkeys) or (preseed__admin_sshkeys is defined and preseed__admin_sshkeys)) %}
+preseed__admin_sshkeys="{{ (item.admin_sshkeys|d([]) + preseed__admin_sshkeys|d([])) | join('\n') }}"
+{% else %}
+preseed__admin_sshkeys=""
+{% endif %}
+
+if [ -n "${preseed__admin_sshkeys}" ] ; then
+
+    mkdir -p -m 700 /root/.ssh
+    echo "${preseed__admin_sshkeys}" > /root/.ssh/authorized_keys
+
+{% if ((item.admin is undefined or item.admin) and (preseed__admin is defined and preseed__admin)) %}
+    admin_home="$(getent passwd ${preseed__admin_name} | cut -d: -f6)"
+    mkdir -p -m 700 "${admin_home}/.ssh"
+    touch "${admin_home}/.ssh/authorized_keys"
+    echo "${preseed__admin_sshkeys}" >> "${admin_home}/.ssh/authorized_keys"
+    chown -R "${preseed__admin_name}:${preseed__admin_name}" "${admin_home}/.ssh"
+
+{% endif %}
+fi
+
+{% if preseed__debian_postinst_commands is defined and preseed__debian_postinst_commands %}
+{{ preseed__debian_postinst_commands }}
+
+{% endif %}
+{% if item.postinst_commands is defined and item.postinst_commands %}
+{{ item.postinst_commands }}
+
+{% endif %}
+# Unlock service startup
+rm -rf /usr/sbin/policy-rc.d
+
