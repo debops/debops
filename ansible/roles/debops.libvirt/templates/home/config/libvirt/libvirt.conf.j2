@@ -1,0 +1,27 @@
+# {{ ansible_managed }}
+
+# This can be used to setup URI aliases for frequently
+# used connection URIs. Aliases may contain only the
+# characters  a-Z, 0-9, _, -.
+#
+# Following the '=' may be any valid libvirt connection
+# URI, including arbitrary parameters
+#uri_aliases = [
+#  "hail=qemu+ssh://root@hail.cloud.example.com/system",
+#  "sleet=qemu+ssh://root@sleet.cloud.example.com/system",
+#]
+
+uri_aliases = [
+{% for key, value in libvirt__connections.iteritems() %}
+    "{{ key + '=' + value }}",
+{% endfor %}
+]
+
+# This can be used to prevent probing of the hypervisor
+# driver when no URI is supplied by the application.
+#uri_default = "qemu:///system"
+
+{% if libvirt__uri|d() %}
+uri_default = "{{ libvirt__connections[libvirt__uri] }}"
+{% endif %}
+

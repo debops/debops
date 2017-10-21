@@ -1,0 +1,44 @@
+{% set libvirt__tpl_dhcp_range_start = 10 %}
+{% set libvirt__tpl_dhcp_range_end   = 250 %}
+{% if item.dhcp_range|d() %}
+{% set libvirt__tpl_dhcp_range_start = item.dhcp_range[0] | int %}
+{% set libvirt__tpl_dhcp_range_end   = item.dhcp_range[1] | int %}
+{% endif %}
+<network>
+  <name>{{ item.name }}</name>
+{% if item.uuid|d() %}
+  <uuid>{{ item.uuid }}</uuid>
+{% endif %}
+{% if item.bridge|d() %}
+  <bridge name="{{ item.bridge }}"/>
+{% endif %}
+{% if item.forward|d() %}
+  <forward mode="{{ item.forward_mode | d('nat') }}"/>
+{% endif %}
+{% if item.domain|d() %}
+  <domain name="{{ item.domain }}" localOnly="{{ "yes" if item.domain_local|d() else "no" }}"/>
+{% endif %}
+{% if item.addresses|d() %}
+{% for subnet in item.addresses | ipv4('host/prefix') %}
+  <ip family="ipv4" address="{{ subnet | ipaddr('address') }}" netmask="{{ subnet | ipaddr('netmask') }}">
+{% if item.dhcp|d() and loop.first %}
+    <dhcp>
+{% if item.bootp|d() %}
+      <bootp file="{{ item.bootp_file | d('/undionly.kpxe') }}"{% if item.bootp_server|d() %} server="{{ item.bootp_server }}"{% endif %}/>
+{% endif %}
+      <range start="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_start) | ipaddr('address') }}" end="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_end) | ipaddr('address') }}"/>
+    </dhcp>
+{% endif %}
+  </ip>
+{% endfor %}
+{% for subnet in item.addresses | ipv6('host/prefix') %}
+  <ip family="ipv6" address="{{ subnet | ipaddr('address') }}" prefix="{{ subnet | ipaddr('prefix') }}">
+{% if item.dhcp|d() and loop.first %}
+    <dhcp>
+      <range start="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_start) | ipaddr('address') }}" end="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_end) | ipaddr('address') }}"/>
+    </dhcp>
+{% endif %}
+  </ip>
+{% endfor %}
+{% endif %}
+</network>

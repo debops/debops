@@ -1,0 +1,57 @@
+---
+
+- name: Stop networks if requested
+  virt_net:
+    name: '{{ item.name }}'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
+    state: 'inactive'
+  with_flattened: '{{ libvirt__networks }}'
+  become: False
+  when: (item.name|d() and (item.state|d() in [ 'inactive', 'undefined', 'absent' ]))
+
+- name: Undefine networks if requested
+  virt_net:
+    name: '{{ item.name }}'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
+    state: 'absent'
+  with_flattened: '{{ libvirt__networks }}'
+  become: False
+  when: (item.name|d() and (item.state|d() in [ 'undefined', 'absent' ]))
+
+- name: Define networks
+  virt_net:
+    name: '{{ item.name }}'
+    xml: '{{ lookup("template", "lookup/network/" + item.type + ".xml.j2") }}'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
+    state: 'present'
+  with_flattened: '{{ libvirt__networks }}'
+  become: False
+  when: ((item.name|d()) and
+         (item.state|d("active") not in [ 'undefined', 'absent' ]) and
+         (item.interface_present is undefined or
+          (item.interface_present in ansible_interfaces and not item.uri|d())))
+
+- name: Start networks if not started
+  virt_net:
+    name: '{{ item.name }}'
+    state: 'active'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
+  with_flattened: '{{ libvirt__networks }}'
+  become: False
+  when: ((item.name|d()) and
+         (item.state is undefined or item.state in [ 'active' ]) and
+         (item.interface_present is undefined or
+          (item.interface_present in ansible_interfaces and not item.uri|d())))
+
+- name: Set autostart attribute on networks
+  virt_net:
+    name: '{{ item.name }}'
+    autostart: '{{ "yes" if (item.autostart|d(True)) else "no" }}'
+    uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
+  with_flattened: '{{ libvirt__networks }}'
+  become: False
+  when: ((item.name|d()) and
+         (item.state is undefined or item.state not in [ 'undefined', 'absent' ]) and
+         (item.interface_present is undefined or
+          (item.interface_present in ansible_interfaces and not item.uri|d())))
+
