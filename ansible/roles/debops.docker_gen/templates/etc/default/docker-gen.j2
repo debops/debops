@@ -1,0 +1,20 @@
+# {{ ansible_managed }}
+
+# docker-gen Upstart and SysVinit configuration file
+
+# Customize location of docker-gen binary
+DOCKER_GEN="{{ docker_gen__lib }}/docker-gen"
+
+# docker-gen options
+{% set docker_gen__tpl_options = [] %}
+{% if (docker_gen__remote | bool and docker_gen__remote_host|d()) %}
+{%   set _ = docker_gen__tpl_options.append("--endpoint " + docker_gen__remote_endpoint) %}
+{% if docker_gen__pki|d() and docker_gen__pki | bool %}
+{%   set _ = docker_gen__tpl_options.append("--tlsverify") %}
+{%   set _ = docker_gen__tpl_options.append("--tlscacert " + docker_gen__pki_path + "/" + docker_gen__pki_realm + "/" + docker_gen__pki_ca) %}
+{%   set _ = docker_gen__tpl_options.append("--tlscert " + docker_gen__pki_path + "/" + docker_gen__pki_realm + "/" + docker_gen__pki_crt) %}
+{%   set _ = docker_gen__tpl_options.append("--tlskey " + docker_gen__pki_path + "/" + docker_gen__pki_realm + "/" + docker_gen__pki_key) %}
+{% endif %}
+{% endif %}
+DOCKER_GEN__OPTIONS="{{ docker_gen__tpl_options | join(' ') }}"
+

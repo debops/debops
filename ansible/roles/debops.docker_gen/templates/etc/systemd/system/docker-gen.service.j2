@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Docker meta-data file generator
+Documentation=https://github.com/jwilder/docker-gen
+After=network.target
+
+[Service]
+EnvironmentFile=-/etc/default/docker-gen
+ExecStart={{ docker_gen__lib }}/docker-gen $DOCKER_GEN__OPTIONS -config=/etc/docker-gen.conf
+
+[Install]
+WantedBy=multi-user.target

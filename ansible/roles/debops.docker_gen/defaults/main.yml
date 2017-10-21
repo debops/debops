@@ -1,0 +1,214 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.docker_gen default variables [[[
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# Docker_gen installation [[[
+# ---------------------------
+
+# .. envvar:: docker_gen__repo [[[
+#
+# Address of the :command:`docker-gen` GitHub repository.
+docker_gen__repo: 'https://github.com/jwilder/docker-gen'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__os_arch [[[
+#
+# Operating System and Architecture of the :command:`docker-gen` tarball to install.
+docker_gen__os_arch: 'linux-amd64'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__version [[[
+#
+# Version of :command:`docker-gen` to install.
+docker_gen__version: '0.4.1'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__release [[[
+#
+# Templated URL of the :command:`docker-gen` release which will be downloaded from
+# GitHub.
+docker_gen__release: '{{ docker_gen__repo }}/releases/download/{{ docker_gen__version }}/docker-gen-{{ docker_gen__os_arch }}-{{ docker_gen__version }}.tar.gz'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__src [[[
+#
+# Location of :command:`docker-gen` sources on remote host where source tarball will
+# be stored.
+docker_gen__src: '{{ (ansible_local.root.src
+                     if (ansible_local|d() and ansible_local.root|d() and
+                         ansible_local.root.src|d())
+                     else "/usr/local/src") + "/docker-gen" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__lib [[[
+#
+# Location where the :command:`docker-gen` binary will be installed (not in the ``$PATH``
+# since this binary won't be used by the user, but as a service).
+docker_gen__lib: '{{ (ansible_local.root.lib
+                     if (ansible_local|d() and ansible_local.root|d() and
+                         ansible_local.root.lib|d())
+                     else "/usr/local/lib") + "/docker-gen" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__templates [[[
+#
+# Location where :command:`docker-gen` templates will be installed.
+docker_gen__templates: '{{ docker_gen__lib + "/templates" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__config [[[
+#
+# Custom configuration in the YAML text block format, added at the end of the
+# generated :file:`/etc/docker-gen.conf` configuration file. Should be in the
+# format::
+#
+#   docker_gen__config: |
+#     [[config]]
+#     key = "value"
+#     option = true
+#
+docker_gen__config: ''
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Remote Docker support [[[
+# -------------------------
+
+# .. envvar:: docker_gen__remote [[[
+#
+# By default :command:`docker-gen` expects Docker to be installed and available
+# locally. With this option set to ``True`` you can enable support for remote
+# Docker TCP connection over TLS.
+docker_gen__remote: False
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__remote_host [[[
+#
+# Specify FQDN hostname or IP address of the remote Docker host.
+docker_gen__remote_host: ''
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__remote_port [[[
+#
+# Specify the TCP port used to connect to Docker using TLS.
+docker_gen__remote_port: '2375'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__remote_endpoint [[[
+#
+# This is the ``-endpoint`` option passed to the :command:`docker-gen` binary when the
+# remote support is enabled.
+docker_gen__remote_endpoint: 'tcp://{{ docker_gen__remote_host }}:{{ docker_gen__remote_port }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# nginx upstream support [[[
+# --------------------------
+
+# .. envvar:: docker_gen__nginx [[[
+#
+# Enable support for generating :program:`nginx` upstream definitions. :command:`docker-gen`
+# will create entry for each container which has ``NGINX_UPSTREAM`` variable set
+# in its environment, for example::
+#
+#     docker run -e NGINX_UPSTREAM=docker_upstream -d ...
+#
+docker_gen__nginx: True
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__nginx_template [[[
+#
+# Path to the template file used by :command:`docker-gen` to generate :program:`nginx`
+# configuration.
+docker_gen__nginx_template: '{{ docker_gen__templates + "/nginx-upstreams.conf.tmpl" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__nginx_dest [[[
+#
+# Path where :command:`docker-gen` saves the generated :program:`nginx` configuration.
+docker_gen__nginx_dest: '/etc/nginx/conf.d/docker-gen-upstreams.conf'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__nginx_options [[[
+#
+# Additional options added to the :program:`nginx` configuration section in
+# :command:`docker-gen` config file, in YAML text block format.
+docker_gen__nginx_options: |
+  onlyexposed = true
+  watch = true
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__nginx_notify [[[
+#
+# Notify command used by :command:`docker-gen` to reload :program:`nginx`, depending on the
+# init system used.
+docker_gen__nginx_notify: '{{ docker_gen__nginx_notify_map[(ansible_local.init
+                             if (ansible_local|d() and ansible_local.init|d())
+                                 else "systemd")] }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__nginx_notify_map [[[
+#
+# Dictionary map fo commands used to reload :program:`nginx` by :command:`docker-gen`.
+docker_gen__nginx_notify_map:
+  systemd:  'nginx -t && systemctl reload nginx'
+  sysvinit: 'nginx -t && service nginx reload'
+  upstart:  'nginx -t && service nginx reload'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# PKI and certificates [[[
+# ------------------------
+
+# .. envvar:: docker_gen__pki [[[
+#
+# Enable or disable support for PKI certificates managed by ``debops.pki``.
+docker_gen__pki: '{{ (True
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.enabled|d() | bool)
+                     else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__pki_path [[[
+#
+# Directory where PKI files are located on the remote host.
+docker_gen__pki_path: '{{ ansible_local.pki.base_path
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.base_path|d())
+                         else "/etc/pki" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__pki_realm [[[
+#
+# Name of the PKI realm used by :command:`docker-gen`.
+docker_gen__pki_realm: '{{ ansible_local.pki.realm
+                          if (ansible_local|d() and ansible_local.pki|d() and
+                              ansible_local.pki.realm|d())
+                          else "system" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__pki_ca [[[
+#
+# Name of the Root CA certificate file used by :command:`docker-gen`.
+docker_gen__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__pki_crt [[[
+#
+# Name of the host certificate used by :command:`docker`.
+docker_gen__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: docker_gen__pki_key [[[
+#
+# Name of the private key file used by :command:`docker-gen`.
+docker_gen__pki_key: 'default.key'
+
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

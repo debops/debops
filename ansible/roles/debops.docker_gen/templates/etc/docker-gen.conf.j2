@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+
+{% if docker_gen__nginx|d() and docker_gen__nginx %}
+# nginx configuration
+[[config]]
+template = "{{ docker_gen__nginx_template }}"
+dest = "{{ docker_gen__nginx_dest }}"
+notifycmd = "{{ docker_gen__nginx_notify }}"
+{% if docker_gen__nginx_options|d() and docker_gen__nginx_options %}
+{{ docker_gen__nginx_options }}
+{% endif %}
+
+{% endif %}
+{% if docker_gen__config|d() and docker_gen__config %}
+{{ docker_gen__config }}
+
+{% endif %}

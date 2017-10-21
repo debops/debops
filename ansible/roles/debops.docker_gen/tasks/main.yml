@@ -1,0 +1,92 @@
+---
+
+- name: Create required directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_flattened:
+    - [ '{{ docker_gen__src }}', '{{ docker_gen__lib }}', '{{ docker_gen__templates }}' ]
+    - [ '{{ ((docker_gen__nginx_dest | dirname)
+             if (docker_gen__nginx|d() and docker_gen__nginx)
+             else []) }}' ]
+
+- name: Download docker-gen sources
+  get_url:
+    url: '{{ docker_gen__release }}'
+    dest: '{{ docker_gen__src + "/" + docker_gen__release | basename }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Unpack docker-gen
+  unarchive:
+    src: '{{ docker_gen__src + "/" + docker_gen__release | basename }}'
+    dest: '{{ docker_gen__lib }}'
+    copy: False
+    owner: 'root'
+    group: 'root'
+  register: docker_gen__register_install
+
+- name: Copy docker-gen templates to remote host
+  copy:
+    src: 'usr/local/lib/templates/'
+    dest: '{{ docker_gen__templates + "/" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart docker-gen' ]
+
+- name: Configure docker-gen
+  template:
+    src: 'etc/docker-gen.conf.j2'
+    dest: '/etc/docker-gen.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart docker-gen' ]
+
+- name: Configure docker-gen service options
+  template:
+    src: 'etc/default/docker-gen.j2'
+    dest: '/etc/default/docker-gen'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart docker-gen' ]
+
+- name: Configure docker-gen init script
+  template:
+    src: 'etc/init.d/docker-gen.j2'
+    dest: '/etc/init.d/docker-gen'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Restart docker-gen' ]
+  when: (ansible_local|d() and ansible_local.init|d() and
+         ansible_local.init != "systemd")
+
+- name: Configure docker-gen systemd service
+  template:
+    src: 'etc/systemd/system/docker-gen.service.j2'
+    dest: '/etc/systemd/system/docker-gen.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: docker_gen__register_service
+  notify: [ 'Restart docker-gen' ]
+
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  when: ((ansible_local|d() and ansible_local.init|d() and ansible_local.init == 'systemd') and
+         (docker_gen__register_service|d() and docker_gen__register_service|changed))
+
+- name: Start docker-gen on install
+  service:
+    name: 'docker-gen'
+    state: 'started'
+    enabled: True
+  when: docker_gen__register_install|d() and
+        docker_gen__register_install|changed

@@ -1,0 +1,108 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+set -e
+
+### BEGIN INIT INFO
+# Provides:           docker-gen
+# Required-Start:     $syslog $remote_fs
+# Required-Stop:      $syslog $remote_fs
+# Default-Start:      2 3 4 5
+# Default-Stop:       0 1 6
+# Short-Description:  Generate configuration files from Docker meta-data
+# Description:
+#  docker-gen is a daemon which connects to specified Docker instance and using
+#  Docker API can generate configuration files for other services using
+#  templates.
+### END INIT INFO
+
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+
+BASE=$(basename $0)
+
+# modify these in /etc/default/$BASE (/etc/default/docker-gen)
+DOCKER_GEN=/usr/bin/$BASE
+
+# This is the pid file created/managed by start-stop-daemon
+DOCKER_GEN__SSD_PIDFILE=/var/run/$BASE.pid
+DOCKER_GEN__LOGFILE=/var/log/$BASE.log
+DOCKER_GEN__CONFIG=/etc/$BASE.conf
+DOCKER_GEN__OPTIONS=
+DOCKER_GEN__DESC="docker-gen"
+
+# Get lsb functions
+. /lib/lsb/init-functions
+
+if [ -f /etc/default/$BASE ]; then
+	. /etc/default/$BASE
+fi
+
+# Check docker-gen is present
+if [ ! -x $DOCKER_GEN ]; then
+	log_failure_msg "$DOCKER_GEN not present or not executable"
+	exit 1
+fi
+
+fail_unless_root() {
+	if [ "$(id -u)" != '0' ]; then
+		log_failure_msg "$DOCKER_GEN__DESC must be run as root"
+		exit 1
+	fi
+}
+
+case "$1" in
+	start)
+		fail_unless_root
+
+		touch "$DOCKER_GEN__LOGFILE"
+
+		ulimit -n 1048576
+		if [ "$BASH" ]; then
+			ulimit -u 1048576
+		else
+			ulimit -p 1048576
+		fi
+
+		log_begin_msg "Starting $DOCKER_GEN__DESC: $BASE"
+		start-stop-daemon --start --background \
+			--no-close \
+			--exec "$DOCKER_GEN" \
+			--pidfile "$DOCKER_GEN__SSD_PIDFILE" \
+			--make-pidfile \
+			-- \
+				$DOCKER_GEN__OPTIONS -config=$DOCKER_GEN__CONFIG \
+					>> "$DOCKER_GEN__LOGFILE" 2>&1
+		log_end_msg $?
+		;;
+
+	stop)
+		fail_unless_root
+		log_begin_msg "Stopping $DOCKER_GEN__DESC: $BASE"
+		start-stop-daemon --stop --pidfile "$DOCKER_GEN__SSD_PIDFILE"
+		log_end_msg $?
+		;;
+
+	restart)
+		fail_unless_root
+		docker_gen__pid=`cat "$DOCKER_GEN__SSD_PIDFILE" 2>/dev/null`
+		[ -n "$docker_gen__pid" ] \
+			&& ps -p $docker_gen__pid > /dev/null 2>&1 \
+			&& $0 stop
+		$0 start
+		;;
+
+	force-reload)
+		fail_unless_root
+		$0 restart
+		;;
+
+	status)
+		status_of_proc -p "$DOCKER_GEN__SSD_PIDFILE" "$DOCKER_GEN" "$DOCKER_GEN__DESC"
+		;;
+
+	*)
+		echo "Usage: service docker-gen {start|stop|restart|status}"
+		exit 1
+		;;
+esac
