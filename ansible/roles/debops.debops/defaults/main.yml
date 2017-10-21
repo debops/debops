@@ -1,0 +1,155 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.debops default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# DebOps packages [[[
+# -------------------
+
+# .. envvar:: debops__base_packages [[[
+#
+# List of APT packages required by DebOps on Ansible Controller.
+debops__base_packages: [ 'python-netaddr', 'python-passlib', 'uuid-runtime', 'python-setuptools' ]
+
+                                                                   # ]]]
+# .. envvar:: debops__ansible_packages [[[
+#
+# Ansible should be installed using APT, but available packages might be too
+# old. If you want to install Ansible by other means, you can disable the APT
+# package installation here.
+debops__ansible_packages: [ 'ansible' ]
+
+                                                                   # ]]]
+# .. envvar:: debops__packages [[[
+#
+# List of additional APT packages to install with DebOps.
+debops__packages: []
+
+                                                                   # ]]]
+# .. envvar:: debops__pip_packages [[[
+#
+# List of packages to install from PyPI using the ``pip`` command.
+debops__pip_packages: [ 'debops' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Ansible git source installation [[[
+# -----------------------------------
+
+# .. envvar:: debops__ansible_git [[[
+#
+# If enabled and ``True``, role will clone the Ansible source from GitHub,
+# build the Ansible Debian package and install it. On repeated runs, Ansible
+# will be automatically updated on the selected :command:`git` branch.
+debops__ansible_git: False
+
+                                                                   # ]]]
+# .. envvar:: debops__ansible_git_branch [[[
+#
+# Specify the :command:`git` branch to use for installing Ansible from source. By
+# default, current development branch is used.
+debops__ansible_git_branch: 'devel'
+
+                                                                   # ]]]
+# .. envvar:: debops__ansible_git_build_dir [[[
+#
+# Path where Ansible :command:`git` source is stored and where builds happen.
+debops__ansible_git_build_dir: '{{ (ansible_local.root.src
+                                    if (ansible_local|d() and ansible_local.root|d() and
+                                        ansible_local.root.src|d())
+                                    else "/usr/local/src") + "/debops" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops__ansible_git_become_user [[[
+#
+# The role will switch to the admin user account to perform the build. The
+# build script needs :command:`sudo` access to install the built ``*.deb`` package,
+# which the admin account should have.
+debops__ansible_git_become_user: '{{ ansible_user
+                                     if ansible_user|d()
+                                     else lookup("env", "USER") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Playbook and role installation [[[
+# ----------------------------------
+
+# .. envvar:: debops__install_systemwide [[[
+#
+# Download playbooks and roles to a system-wide location, on installation. If
+# set to ``False`` the playbooks and roles will be installed locally for the
+# current Ansible user.
+debops__install_systemwide: True
+
+                                                                   # ]]]
+# .. envvar:: debops__update_method [[[
+#
+# Specify the method which should be used to download playbooks and roles:
+#
+# - ``batch``: use the ``batch`` command from the ``at`` package, depends on system
+#   load, sends back email with results;
+#
+# - ``async``: use ``async`` Ansible support, does not create any output;
+#
+# - ``sync``: immediately sync and only continue after everything is in place
+#
+debops__update_method: '{{ ("batch"
+                            if (ansible_local|d() and ansible_local.atd|d() and
+                                ansible_local.atd.enabled|bool)
+                            else "async") }}'
+
+                                                                   # ]]]
+# .. envvar:: debops__async_timeout [[[
+#
+# Specify timeout of the ``async`` Ansible command that downloads DebOps
+# playbooks and roles, in seconds.
+debops__async_timeout: '{{ (60 * 20) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps system-wide configuration [[[
+# ------------------------------------
+
+# .. envvar:: debops__data_path [[[
+#
+# Path where DebOps playbooks and roles will be installed system-wide.
+debops__data_path: '{{ (ansible_local.root.share
+                        if (ansible_local|d() and ansible_local.root|d() and
+                            ansible_local.root.share|d())
+                        else "/usr/local/share") + "/debops" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps project configuration [[[
+# --------------------------------
+
+# .. envvar:: debops__project_git_repo [[[
+#
+# Git URL to a DebOps project repository which will be cloned after installing
+# DebOps.
+debops__project_git_repo: ''
+
+                                                                   # ]]]
+# .. envvar:: debops__project_name [[[
+#
+# Name of a new DebOps project to initialize or name of the project download
+# directory in case :envvar:`debops__project_git_repo` is defined.
+debops__project_name: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: debops__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ role.
+debops__apt_preferences__dependent_list:
+  - package: 'ansible'
+    backports: [ 'jessie' ]
+    reason: 'Use Ansible from Debian Backports'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
