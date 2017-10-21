@@ -1,0 +1,74 @@
+---
+
+- name: Get upstream APT GPG key
+  apt_key:
+    id: '{{ nodejs__upstream_key_id }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  when: nodejs__upstream|bool
+
+- name: Configure upstream APT repository
+  apt_repository:
+    repo: '{{ nodejs__upstream_repository }}'
+    state: 'present'
+    update_cache: True
+  when: nodejs__upstream|bool
+
+- name: Install APT packages
+  package:
+    name: '{{ item }}'
+    state: '{{ "latest"
+               if (nodejs__upstream | bool and
+                   (ansible_local|d() and ansible_local.nodejs|d() and
+                    ansible_local.nodejs.upstream is defined and
+                    not ansible_local.nodejs.upstream|bool))
+               else "present" }}'
+    autoremove: '{{ True
+                    if (nodejs__upstream | bool and
+                        (ansible_local|d() and ansible_local.nodejs|d() and
+                         ansible_local.nodejs.upstream is defined and
+                         not ansible_local.nodejs.upstream|bool))
+                    else omit }}'
+  with_flattened:
+    - '{{ nodejs__base_packages }}'
+    - '{{ nodejs__distribution_packages }}'
+    - '{{ nodejs__packages }}'
+    - '{{ nodejs__group_packages }}'
+    - '{{ nodejs__host_packages }}'
+    - '{{ nodejs__dependent_packages }}'
+
+- name: Install NPM packages
+  npm:
+    name:           '{{ item.name           | d(item) }}'
+    state:          '{{ item.state          | d("present") }}'
+    global:         '{{ (item.global        | d(True)) | bool }}'
+    production:     '{{ (item.production    | d(nodejs__npm_production_mode)) | bool }}'
+    version:        '{{ item.version        | d(omit) }}'
+    registry:       '{{ item.registry       | d(omit) }}'
+    executable:     '{{ item.executable     | d(omit) }}'
+    ignore_scripts: '{{ item.ignore_scripts | d(omit) }}'
+    path:           '{{ item.path           | d(omit) }}'
+  with_flattened:
+    - '{{ nodejs__npm_packages }}'
+    - '{{ nodejs__npm_group_packages }}'
+    - '{{ nodejs__npm_host_packages }}'
+    - '{{ nodejs__npm_dependent_packages }}'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save NodeJS local facts
+  template:
+    src: 'etc/ansible/facts.d/nodejs.fact.j2'
+    dest: '/etc/ansible/facts.d/nodejs.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'

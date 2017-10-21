@@ -1,0 +1,155 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.nodejs default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Upstream configuration [[[
+# --------------------------
+
+# .. envvar:: nodejs__upstream [[[
+#
+# Enable or disable support for NodeSource APT repositories. By default the
+# OS-distributed package will be installed.
+nodejs__upstream: '{{ True
+                      if (ansible_local|d() and ansible_local.nodejs|d() and
+                          ansible_local.nodejs.upstream is defined and
+                          ansible_local.nodejs.upstream|bool)
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__upstream_version [[[
+#
+# Specify the NodeSource APT repository to configure. Available versions:
+#
+# - ``node_0.10``
+#
+# - ``node_0.12``
+#
+# - ``node_4.x``
+#
+# - ``node_5.x``
+#
+# - ``node_6.x``
+#
+# - ``node_7.x``
+#
+# - ``iojs_1.x``
+#
+# - ``iojs_2.x``
+#
+# If you switch to the ``iojs`` version, you need to update the list of
+# installed APT packages manually.
+nodejs__upstream_version: 'node_6.x'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__upstream_key_id [[[
+#
+# GPG fingerprint of APT repository signing key.
+nodejs__upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__upstream_repository [[[
+#
+# URL of the NodeSource APT repository in ``sources.list`` format.
+nodejs__upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__upstream_version }} {{ ansible_distribution_release }} main'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: nodejs__base_packages [[[
+#
+# List of base APT packages to install.
+nodejs__base_packages: [ 'nodejs' ]
+
+                                                                   # ]]]
+# .. envvar:: nodejs__distribution_packages [[[
+#
+# List of APT packages which are only needed when NodeJS is installed from
+# current OS release repositories.
+nodejs__distribution_packages: '{{ (["npm"]
+                                    if not nodejs__upstream|bool
+                                    else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__packages [[[
+#
+# List of APT packages to install on all hosts in Ansible inventory.
+nodejs__packages: []
+
+                                                                   # ]]]
+# .. envvar:: nodejs__group_packages [[[
+#
+# List of APT packages to install ona group of hosts in Ansible inventory.
+nodejs__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: nodejs__host_packages [[[
+#
+# List of APT packages to install on specific hosts in Ansible inventory.
+nodejs__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: nodejs__dependent_packages [[[
+#
+# List of APT packages to install specified by other Ansible roles.
+nodejs__dependent_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# NPM packages [[[
+# ----------------
+
+# You can use the lists below to install NPM packages. Each element of a list
+# is either a NPM package name, or a YAML dictionary with parameters supported
+# by the ``npm`` Ansible module. See that module documentation for list of
+# supported parameters. An example:
+#
+# .. code-block:: yaml
+#
+#    nodejs__npm_packages:
+#      - 'bower'
+#
+#      - name: 'gulp'
+#        version: '3'
+
+# .. envvar:: nodejs__npm_packages [[[
+#
+# List of NPM packages to install on all hosts in Ansible inventory.
+nodejs__npm_packages: []
+
+                                                                   # ]]]
+# .. envvar:: nodejs__npm_group_packages [[[
+#
+# List of NPM packages to install on a group of hosts in Ansible inventory.
+nodejs__npm_group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: nodejs__npm_host_packages [[[
+#
+# List of NPM packages to install on specific hosts in Ansible inventory.
+nodejs__npm_host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: nodejs__npm_dependent_packages [[[
+#
+# List of NPM packages to install specified by other Ansible roles.
+nodejs__npm_dependent_packages: []
+
+                                                                   # ]]]
+# .. envvar:: nodejs__npm_production_mode [[[
+#
+# If production mode is not specified for an NPM package, the default value set
+# here will be used instead. By default role does no install development
+# dependencies of a given package. You can override this value using
+# ``item.production`` parameter.
+nodejs__npm_production_mode: True
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
