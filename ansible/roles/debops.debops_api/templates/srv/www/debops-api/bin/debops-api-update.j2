@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+# {{ ansible_managed }}
+{% macro flatten_app_parameters_list(nested_list) %}{# [[[ #}
+{% for item in nested_list %}
+{%   if item is string %}
+{%     set _ = debops_api__tpl_app_parameters_flattened.append(item) %}
+{%   else %}
+{%     set _ = flatten_app_parameters_list(item) %}
+{%   endif %}
+{% endfor %}
+{% endmacro %}{# ]]] #}
+
+{% if debops_api__app_update %}
+git -C {{ debops_api__app_repo_dest | quote }} pull --ff-only
+{% endif %}
+
+git -C {{ debops_api__input_data_repo_dest | quote }} pull --ff-only
+git -C {{ debops_api__input_data_repo_dest | quote }} submodule update --init
+
+{% set debops_api__tpl_app_parameters_flattened = [ 'linebreak' ] %}
+{% set _ = flatten_app_parameters_list(
+   (debops_api__app_parameters | list) +
+   [ '--role-path', debops_api__input_data_role_path, 'linebreak' ] +
+   [ '--api-dir', debops_api__public_api_dir ]
+) %}
+python{{ debops_api__python_version|string }} {{ (debops_api__app_repo_dest + "/bin/debops-api") | quote }} {{ debops_api__tpl_app_parameters_flattened
+      | map("quote") | map("regex_replace", "^linebreak$", "\\\n    ") | join(" ") }}

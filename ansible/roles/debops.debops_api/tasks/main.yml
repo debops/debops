@@ -1,0 +1,140 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# System packages [[[
+
+- name: Ensure specified packages are in there desired state
+  apt:
+    name: '{{ item }}'
+    state: '{{ "present" if (debops_api__deploy_state == "present") else "absent" }}'
+    install_recommends: False
+    purge: True
+  with_flattened:
+    - '{{ debops_api__python3_packages
+          if (debops_api__python_version|int == 3)
+          else debops_api__python2_packages }}'
+  tags: [ 'role::debops_api:pkts' ]
+
+# ]]]
+
+# System user [[[
+
+- name: Ensure DebOps API system group is present
+  group:
+    name: '{{ debops_api__group }}'
+    system: True
+    state: 'present'
+
+- name: Ensure DebOps API system user is present
+  user:
+    name: '{{ debops_api__user }}'
+    group: '{{ debops_api__group }}'
+    home: '{{ debops_api__home }}'
+    shell: '/sbin/nologin'
+    comment: 'DebOps API'
+    system: True
+    state: 'present'
+
+- name: Ensure the webserver can access the public directory
+  file:
+    path: '{{ debops_api__home }}'
+    state: 'directory'
+    owner: '{{ debops_api__user }}'
+    group: '{{ debops_api__group }}'
+    mode: '0755'
+
+# ]]]
+
+# DebOps API input data [[[
+
+- name: Ensure that input data directory is present
+  file:
+    path: '{{ debops_api__input_data_dir }}'
+    state: 'directory'
+    owner: '{{ debops_api__user }}'
+    group: '{{ debops_api__group }}'
+
+- name: Clone DebOps API input data
+  git:
+    repo: '{{ debops_api__input_data_repo_url }}'
+    dest: '{{ debops_api__input_data_repo_dest }}'
+    update: '{{ debops_api__input_data_repo_update | bool }}'
+    recursive: True
+  become_user: '{{ debops_api__user }}'
+  tags: [ 'role::debops_api:git' ]
+
+# ]]]
+
+# DebOps API script installation [[[
+
+- name: Ensure DebOps API source code directory is owned by the DebOps API user
+  file:
+    path: '{{ debops_api__app_repo_dest }}'
+    state: 'directory'
+    owner: '{{ debops_api__user }}'
+    group: '{{ debops_api__group }}'
+
+- name: Clone debops-api source code
+  git:
+    repo: '{{ debops_api__app_repo_url }}'
+    dest: '{{ debops_api__app_repo_dest }}'
+    update: True
+    # verify_commit:
+    # version:
+  become_user: '{{ debops_api__user }}'
+  tags: [ 'role::debops_api:git' ]
+
+# ]]]
+
+# DebOps API script setup [[[
+
+- name: Ensure DebOps API user bin directory is present
+  file:
+    path: '{{ debops_api__home + "/bin" }}'
+    state: 'directory'
+    owner: '{{ debops_api__user }}'
+    group: '{{ debops_api__group }}'
+
+- name: Ensure that the DebOps API data update script is present
+  template:
+    src: 'srv/www/debops-api/bin/debops-api-update.j2'
+    dest: '{{ debops_api__cron_script }}'
+    owner: 'root'
+    group: '{{ debops_api__group }}'
+    mode: '0754'
+
+# ]]]
+
+# DebOps API cron jobs [[[
+
+- name: Configuring cron jobs
+  cron:
+    cron_file:    '{{ item.cron_file    | d(omit) }}'
+    day:          '{{ item.day          | d(omit) }}'
+    hour:         '{{ item.hour         | d(omit) }}'
+    job:          '{{ item.job          | d(debops_api__cron_script) }}'
+    minute:       '{{ item.minute       | d(omit) }}'
+    month:        '{{ item.month        | d(omit) }}'
+    name:         '{{ item.name         | d(item) }}'
+    special_time: '{{ item.special_time | d(omit) }}'
+    state:        '{{ item.state        | d(omit) }}'
+    user:         '{{ item.user         | d(debops_api__user) }}'
+    weekday:      '{{ item.weekday      | d(omit) }}'
+  with_flattened: '{{ debops_api__cron_entries }}'
+  tags: [ 'role::debops_api:cron' ]
+
+# ]]]
+
+# Run initial DebOps API data build [[[
+
+- name: Check if DebOps API data build has run before
+  stat:
+    path: '{{ debops_api__public_api_dir }}'
+  register: debops_api__register_public_api_dir
+
+- name: Run initial DebOps API data build
+  command: '{{ debops_api__cron_script }}'
+  when: not debops_api__register_public_api_dir.stat.exists
+  become_user: '{{ debops_api__user }}'
+
+# ]]]
