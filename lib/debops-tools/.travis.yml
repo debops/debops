@@ -1,0 +1,19 @@
+---
+
+sudo: required
+language: 'python'
+python: '2.7'
+
+virtualenv:
+  system_site_packages: true
+
+before_install:
+  - 'sudo apt-get -q update'
+  - 'sudo apt-get -yq install python-unittest2'
+
+install: True
+
+script:
+  - 'nosetests'
+  - 'git clone --depth 1 https://github.com/nickjj/rolespec'
+  - 'cd rolespec ; bin/rolespec -r https://github.com/debops/test-suite'

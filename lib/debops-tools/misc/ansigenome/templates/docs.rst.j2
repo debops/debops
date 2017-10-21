@@ -1,0 +1,65 @@
+{% extends "README.rst.j2" %}
+{% block title %}
+{%- set title_length = (role.galaxy_name | length | int) -%}
+{{ role.galaxy_name }}
+{{ "#" * title_length }}
+{% endblock %}
+{% block badges %}
+`Source code on GitHub`_
+
+.. _Source code on GitHub: https://github.com/{{ scm.user + "/" + role.slug }}/
+{% endblock %}
+{% block beta %}
+{% endblock %}
+{% block toc %}
+
+.. contents:: Table of Contents
+   :local:
+   :depth: 2
+   :backlinks: top
+
+{% endblock %}
+{% block installation %}
+Installation
+~~~~~~~~~~~~
+
+{% if galaxy_info.min_ansible_version is defined and galaxy_info.min_ansible_version %}This role requires at least Ansible ``v{{ galaxy_info.min_ansible_version }}``. {% endif %}To install it, run::
+
+    ansible-galaxy install {{ role.galaxy_name }}
+
+{% endblock %}
+{% block defaults %}
+
+Role variables
+~~~~~~~~~~~~~~
+
+List of default variables available in the inventory::
+
+{{ ansigenome_info.defaults | trim | indent(4, true) }}
+{% endblock %}
+{% block facts %}
+List of internal variables used by the role::
+
+{{ ansigenome_info.facts | trim | indent(4, true) }}{% endblock %}
+{% block usage %}
+
+Detailed usage guide
+~~~~~~~~~~~~~~~~~~~~
+
+{{ ansigenome_info.usage | trim }}
+{% endblock %}
+{% block authors %}
+Authors and license
+~~~~~~~~~~~~~~~~~~~
+
+``{{ role.galaxy_name }}`` role was written by:
+
+{% for credit in authors %}
+- {% if credit.url is defined and credit.url %}`{% endif %}{{ credit.name }}{% if credit.url is defined and credit.url %} <{{ credit.url }}>`__{% endif %}{% if credit.email is defined and credit.email %} | `e-mail <mailto:{{ credit.email }}>`__{% endif %}{% if credit.twitter is defined and credit.twitter %} | `Twitter <https://twitter.com/{{ credit.twitter }}>`__{% endif %}{% if credit.github is defined and credit.github %} | `GitHub <https://github.com/{{ credit.github }}>`__{% endif %}
+
+{% endfor %}
+
+License: `{{ license.type | trim }} <{{ license.url | trim }}>`_
+{% endblock %}
+{% block footer %}
+{% endblock %}
