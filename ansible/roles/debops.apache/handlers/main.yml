@@ -1,0 +1,21 @@
+---
+
+- name: Test apache and reload
+  command: apache2ctl configtest
+  notify: [ 'Reload apache' ]
+
+# - name: Test apache and restart
+#   command: apache2ctl configtest
+#   notify: [ 'Restart apache' ]
+
+- name: Reload apache
+  service:
+    name: '{{ apache__service_name }}'
+    state: 'reloaded'
+
+## Listed here for completeness but not used.
+## Refer to ../docs/ansible-integration.rst
+# - name: Restart apache
+#   service:
+#     name: '{{ apache__service_name }}'
+#     state: 'restarted'

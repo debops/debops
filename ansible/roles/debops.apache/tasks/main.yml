@@ -1,0 +1,147 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Check for supported Ansible version
+  assert:
+    that:
+      - 'ansible_version.full | version_compare("2.1.5.0", ">=")'
+      - '((ansible_version.minor == 2) and (ansible_version.full | version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
+    msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! Exiting.'
+  run_once: True
+  delegate_to: 'localhost'
+
+# Manage optional system packages [[[1
+- name: Ensure optional packages are in there desired state
+  package:
+    name: '{{ item }}'
+    state: '{{ "present" if (apache__deploy_state == "present") else "absent" }}'
+  with_flattened:
+    - '{{ apache__packages }}'
+    - '{{ apache__dependent_packages }}'
+
+# Manage Apache modules [[[1
+- name: Get list of available modules
+  find:
+    file_type: 'file'
+    paths: [ '{{ apache__config_path + "/mods-available/" }}' ]
+    patterns: [ '*.load' ]
+  register: apache__register_mods_available
+  tags: [ 'role::apache:modules' ]
+
+- name: Set list of available modules
+  set_fact:
+    apache__tpl_available_modules: '{{ apache__register_mods_available.files|d({}) | map(attribute="path") | map("replace", apache__config_path + "/mods-available/", "") | map("regex_replace", "\.load$", "") | list }}'
+  tags: [ 'role::apache:modules' ]
+
+- include: apache_module_state.yml
+
+# Manage Apache configuration snippets [[[1
+- name: Divert conf-available configuration
+  command: dpkg-divert --quiet --local
+             --divert {{ ((item.value.divert | d(apache__config_path + "/conf-available/" + (item.value.divert_filename|d(item.key)) + ".conf"))
+                         + item.value.divert_suffix|d(".dpkg-divert")) | quote }}
+             --rename {{ (apache__config_path + "/conf-available/" + item.key + ".conf") | quote }}
+  args:
+    creates: '{{ ( item.value.divert | d(apache__config_path + "/conf-available/" + (item.value.divert_filename|d(item.key)) + ".conf"))
+                 + item.value.divert_suffix|d(".dpkg-divert") }}'
+  when: (item.value.type|d("default") in ["divert"])
+  with_dict: '{{ apache__combined_snippets }}'
+
+- name: Remove conf-available snippets
+  file:
+    path: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
+    state: 'absent'
+  when: (item.value.state|d("present") == "absent")
+  with_dict: '{{ apache__combined_snippets }}'
+  tags: [ 'role::apache:vhosts' ]
+
+- name: Create conf-available snippets
+  template:
+    src: 'etc/apache2/conf-available/{{ "raw" if (item.value.type|d("default") in ["divert", "raw"] and item.value.raw|d()) else item.key }}.conf.j2'
+    dest: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (item.value.state|d("present") != "absent" and
+         (item.value.type|d("default") not in ["divert", "dont-create"] or item.value.raw|d()))
+  with_dict: '{{ apache__combined_snippets }}'
+  notify: [ 'Test apache and reload' ]
+
+- name: Enable/disable configuration snippets
+  file:
+    path: '{{ apache__config_path + "/conf-enabled/" + item.key + ".conf" }}'
+    src: '../conf-available/{{ item.key }}.conf'
+    force: '{{ ansible_check_mode|d() | bool }}'
+    state: '{{ (((item.value.enabled|d(True)
+                  if (item.value is mapping)
+                  else item.value|d(True)))
+                 if (item.value.state|d("present") != "absent")
+                 else False) | bool | ternary("link", "absent") }}'
+  when: (item.value.type|d("default") not in ["divert"])
+  with_dict: '{{ apache__combined_snippets }}'
+  notify: [ 'Test apache and reload' ]
+
+# Manage Apache virtual hosts [[[1
+- name: Divert sites-available configuration
+  command: dpkg-divert --quiet --local
+             --divert {{ ((item.divert | d(apache__config_path + "/sites-available/"
+                                           + (item.divert_filename|d(item.filename | d(item.name if (item.name is string) else item.name[0] | d("default"))))
+                                           + ".conf"))
+                          + item.divert_suffix|d(".dpkg-divert")) | quote }}
+             --rename {{ (apache__config_path + "/sites-available/"
+                          + (item.filename | d(item.name if (item.name is string) else item.name[0] | d("default"))) + ".conf") | quote }}
+  args:
+    creates: '{{ (item.divert | d(apache__config_path + "/sites-available/"
+                                  + (item.divert_filename|d(item.filename | d(item.name if (item.name is string) else item.name[0] | d("default"))))
+                                  + ".conf"))
+                 + item.divert_suffix|d(".dpkg-divert") }}'
+  when: (item.type|d(apache__vhost_type) in ["divert"])
+  with_flattened: '{{ apache__combined_vhosts }}'
+
+- name: Remove sites-available configuration
+  file:
+    path: '{{ apache__config_path }}/sites-available/{{ item.filename | d(item.name if (item.name is string) else item.name[0] | d("default")) }}.conf'
+    state: 'absent'
+  when: (item.state|d("present") == 'absent')
+  with_flattened: '{{ apache__combined_vhosts }}'
+  tags: [ 'role::apache:vhosts' ]
+
+- name: Create sites-available configuration
+  template:
+    src: 'etc/apache2/sites-available/{{ item.type | d(apache__vhost_type) }}.conf.j2'
+    dest: '{{ apache__config_path }}/sites-available/{{ item.filename | d(item.name if (item.name is string) else item.name[0] | d("default")) }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test apache and reload' ]
+  when: (item.state|d("present") != "absent" and item.type|d(apache__vhost_type) not in ["divert"])
+  with_flattened: '{{ apache__combined_vhosts }}'
+  tags: [ 'role::apache:vhosts' ]
+
+- name: Enable/disable Apache virtual hosts
+  file:
+    path: '{{ apache__config_path }}/sites-enabled/{{ item.filename | d(item.name if (item.name is string) else item.name[0] | d("default")) }}.conf'
+    src: '../sites-available/{{ item.filename | d(item.name if (item.name is string) else item.name[0] | d("default")) }}.conf'
+    force: '{{ ansible_check_mode|d() | bool }}'
+    state: '{{ item.enabled|d(True) | bool | ternary("link", "absent")
+               if (item.state|d("present") != "absent")
+               else "absent" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test apache and reload' ]
+  when: (item.type|d(apache__vhost_type) not in ["divert"])
+  with_flattened: '{{ apache__combined_vhosts }}'
+  tags: [ 'role::apache:vhosts' ]
+
+
+# Manage Apache modules, part 2 [[[1
+- name: Detect if the rewrite module has been used in the active configuration
+  shell: grep --ignore-case '^\s*RewriteEngine On' {{ apache__config_path | quote }}/sites-enabled/* {{ apache__config_path | quote }}/conf-enabled/*
+  register: apache__register_mod_rewrite_used
+  check_mode: False
+  failed_when: apache__register_mod_rewrite_used.rc not in [ 0, 1 ]
+  changed_when: False
+  when: apache__register_mod_rewrite_used is undefined
+
+- include: apache_module_state.yml

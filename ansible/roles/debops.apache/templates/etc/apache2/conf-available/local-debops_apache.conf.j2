@@ -1,0 +1,44 @@
+# {{ ansible_managed }}
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+{% import 'debops__tpl_macros.j2' as debops__tpl_macros with context %}
+{% import 'apache__tpl_macros.j2' as apache__tpl_macros with context %}
+
+{#
+# It seems that Apache does not allow to overwrite directives in the same context (server config):
+# Examples: LogLevel
+# It is probably not good practice to change that in server context anyway.
+#}
+
+MaxConnectionsPerChild {{ apache__mpm_max_connections_per_child | quote }}
+
+ExtendedStatus {{ apache__status_extended_enabled|bool | ternary("On", "Off") }}
+
+
+{% for module_name, value in apache__combined_modules|dictsort %}
+{%   if value is mapping and 'config' in value %}
+
+<IfModule {{ module_name }}_module>
+    {{ value.config | indent(4) }}
+</IfModule>
+{%   endif %}
+{% endfor %}
+
+ServerTokens {{ apache__server_tokens }}
+ServerSignature {{ apache__server_signature }}
+TraceEnable {{ apache__trace_enabled }}
+LogLevel {{ apache__log_level }}
+
+{{ apache__tpl_macros.get_common_headers(item) | indent(4) }}
+
+{# Don’t use apache__combined_modules because of heavy use of template macros. #}
+<IfModule ssl_module>
+{{ apache__tpl_macros.get_default_tls_directives(item.value|d({})) }}
+
+{% if debops__tpl_macros.get_openssl_version()|version_compare("0.9.8h", ">=") %}
+SSLStaplingCache {{ apache__ocsp_stapling_cache | quote }}
+SSLStaplingResponseMaxAge {{ apache__ocsp_stapling_response_max_age|string }}
+{%   if apache__ocsp_stapling_force_url %}
+SSLStaplingForceURL {{ apache__ocsp_stapling_force_url | quote }}
+{%   endif %}
+{% endif %}
+</IfModule>

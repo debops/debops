@@ -1,0 +1,33 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Manage required system packages [[[1
+- name: Ensure base packages are in there desired state
+  package:
+    name: '{{ item }}'
+    state: '{{ "present" if (apache__deploy_state == "present") else "absent" }}'
+  with_flattened:
+    - '{{ apache__base_packages  }}'
+  tags: [ 'role::apache:pkgs' ]
+
+# Ansible facts [[[1
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create local facts of Apache
+  template:
+    src: 'etc/ansible/facts.d/apache.fact.j2'
+    dest: '/etc/ansible/facts.d/apache.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: apache__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: apache__register_facts|changed

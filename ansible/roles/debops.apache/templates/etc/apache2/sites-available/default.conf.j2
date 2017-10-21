@@ -1,0 +1,37 @@
+# {{ ansible_managed }}
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+{% import 'debops__tpl_macros.j2' as debops__tpl_macros with context %}
+{% import 'apache__tpl_macros.j2' as apache__tpl_macros with context %}
+{% set apache__tpl_vhost_http_enabled = True if (apache__tpl_macros.get_listen_sockets(item.listen_http|d([]), apache__http_listen)) else False %}
+{% set apache__tpl_vhost_https_enabled = True if (item.https_enabled|d(apache__https_enabled)|bool and apache__tpl_macros.get_listen_sockets(item.listen_https|d([]), apache__https_listen)) else False %}
+{{ apache__tpl_macros.get_header_comments(item) }}
+
+{% if apache__tpl_vhost_http_enabled|bool %}
+# Virtual host handling HTTP [[[
+<VirtualHost {{ apache__tpl_macros.get_listen_sockets(item.listen_http|d([]), apache__http_listen) }}>
+
+    {{ debops__tpl_macros.indent(apache__tpl_macros.get_server_directives(item), 4) }}
+
+    {{ debops__tpl_macros.indent(apache__tpl_macros.get_vhost_content_directives(item, mode='http', https_enabled=apache__tpl_vhost_https_enabled), 4) }}
+
+</VirtualHost>
+# ]]]
+{% endif %}
+
+{% if apache__tpl_vhost_https_enabled|bool %}
+# Virtual host handling HTTPS  [[[
+<IfModule ssl_module>
+<VirtualHost {{ apache__tpl_macros.get_listen_sockets(item.listen_https|d([]), apache__https_listen) }}>
+
+    {{ debops__tpl_macros.indent(apache__tpl_macros.get_server_directives(item), 4) }}
+
+    {{ debops__tpl_macros.indent(apache__tpl_macros.get_https_directives(item), 4) }}
+    {{ debops__tpl_macros.indent(apache__tpl_macros.get_http_security_headers(item), 4) }}
+    {{ debops__tpl_macros.indent(apache__tpl_macros.get_common_headers(item), 4) }}
+
+    {{ debops__tpl_macros.indent(apache__tpl_macros.get_vhost_content_directives(item, mode='https'), 4) }}
+
+</VirtualHost>
+</IfModule>
+# ]]]
+{% endif %}

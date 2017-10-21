@@ -1,0 +1,22 @@
+---
+
+- name: Manage and configure the Apache HTTP Server
+  hosts: [ 'debops_service_apache' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apache/env
+      tags: [ 'role::apache', 'role::apache:env' ]
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ apache__ferm__dependent_rules }}'
+
+    - role: debops.apache
+      tags: [ 'role::apache' ]
