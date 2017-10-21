@@ -1,0 +1,59 @@
+{% macro print_option(option_name, option_values, value_indent='30') %}
+{%   if option_values | bool and option_values is not iterable %}
+{%     if option_values | int and option_values | string != 'True' %}
+{{ ('    {:<' + value_indent + '} {}').format(option_name + ':', option_values) }}
+{%     else %}
+{{ ('    {:<' + value_indent + '} {}').format(option_name + ':', 'yes') }}
+{%     endif %}
+{%   elif not option_values | bool and option_values is not iterable %}
+{%     if option_values is not none %}
+{%       if option_values | int or option_values | string == '0' %}
+{{ ('    {:<' + value_indent + '} {}').format(option_name + ':', option_values) }}
+{%       else %}
+{{ ('    {:<' + value_indent + '} {}').format(option_name + ':', 'no') }}
+{%       endif %}
+{%     endif %}
+{%   elif option_values is string %}
+{%     if option_values | ipaddr %}
+{{ ('    {:<' + value_indent + '} {}').format(option_name + ':', option_values) }}
+{%     elif ('@' in option_values and option_values.split('@')[0] | ipaddr and option_values.split('@')[1] | int) %}
+{{ ('    {:<' + value_indent + '} {}').format(option_name + ':', option_values) }}
+{%     elif '"' in option_values %}
+{{ ("    {:<" + value_indent + "} '{}'").format(option_name + ':', option_values) }}
+{%     else %}
+{{ ('    {:<' + value_indent + '} "{}"').format(option_name + ':', option_values) }}
+{%     endif %}
+{%   elif option_values is not string and option_values is not mapping %}
+{%     for value in ([ option_values ] if option_values is mapping else option_values) %}
+{%       set option_args = '' %}
+{%       if value.args is defined and value.args is string %}
+{%         set option_args = value.args %}
+{%       endif %}
+{%       if value.name | bool and value.name is not iterable %}
+{%         if value.name | int and value.name | string != 'True' %}
+{{ ('    {:<' + value_indent + '} {}{}').format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}
+{%         else %}
+{{ ('    {:<' + value_indent + '} {}').format(option_name + ':', 'yes') }}
+{%         endif %}
+{%       elif not value.name | bool and value.name is not iterable %}
+{%         if value.name is not none %}
+{%           if value.name | int or value.name | string == '0' %}
+{{ ('    {:<' + value_indent + '} {}{}').format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}
+{%           else %}
+{{ ('    {:<' + value_indent + '} {}').format(option_name + ':', 'no') }}
+{%           endif %}
+{%         endif %}
+{%       elif value.name is string %}
+{%         if value.name | ipaddr %}
+{{ ('    {:<' + value_indent + '} {}{}').format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}
+{%         elif ('@' in value.name and value.name.split('@')[0] | ipaddr and value.name.split('@')[1] | int) %}
+{{ ('    {:<' + value_indent + '} {}{}').format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}
+{%         elif '"' in value.name %}
+{{ ("    {:<" + value_indent + "} '{}'{}").format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}
+{%         else %}
+{{ ('    {:<' + value_indent + '} "{}"{}').format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}
+{%         endif %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}

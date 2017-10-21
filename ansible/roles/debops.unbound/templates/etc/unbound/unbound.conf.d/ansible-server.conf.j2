@@ -1,0 +1,24 @@
+{% import 'macros.j2' as get with context %}
+# {{ ansible_managed }}
+
+{% set unbound__tpl_server = (unbound__combined_server | parse_kv_config) %}
+server:
+{% for element in unbound__tpl_server %}
+{%   set element_name = (element.option | d(element.name)) %}
+{%   if element.state | d('present') != 'absent' %}
+{%     if element.comment|d() %}
+
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') | indent(4, true) }}
+{%       if element.state|d('present') == 'hidden' %}
+
+{%       endif %}
+{%     elif element.separator is defined and element.separator|bool %}
+
+{%     endif %}
+{%     if element.value is not string and element.value is not mapping %}
+{{ get.print_option(element_name, element.value) -}}
+{%     else %}
+{{ get.print_option(element_name, [{'name': element.value}]) -}}
+{%     endif %}
+{%   endif %}
+{% endfor %}
