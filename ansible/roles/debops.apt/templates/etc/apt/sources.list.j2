@@ -1,0 +1,110 @@
+# {{ ansible_managed }}
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+{% macro print_entry(input_entry) %}
+{%   set entry = {} %}
+{%   for key, value in input_entry.iteritems() %}
+{%     if key in [ 'state' ] %}
+{%       set _ = entry.update({ key: value | unique }) %}
+{%     else %}
+{%       set _ = entry.update({ key: debops__tpl_macros.flattened(value) | from_json | unique }) %}
+{%     endif %}
+{%   endfor %}
+{%   set entry_disabled = '# ' if (entry.state == 'disabled') else '' %}
+{%   if entry.comments|d() %}
+{{ entry.comments | join('\n') | regex_replace('\n$', '') | comment(prefix='\n', postfix='') -}}
+{%   endif %}
+{%   if entry.repo|d() %}
+{%     for entry_repo in entry.repo %}
+{{ "%s%s" | format(entry_disabled, entry_repo) }}
+{%     endfor %}
+{%   else %}
+{%     for entry_uri in entry.uris %}
+{%       set apt__tpl_seen_suites = apt__tpl_seen_sources[entry_uri]|d([]) %}
+{%       for entry_suite in entry.suites %}
+{%         if entry.state == 'disabled' or (entry_uri in apt__tpl_seen_sources.keys() and entry_suite in apt__tpl_seen_sources[entry_uri] and apt__sources_filter_duplicates|bool) %}
+{%           set entry_disabled = '# ' %}
+{%         else %}
+{%           set entry_disabled = '' %}
+{%         endif %}
+{%         for entry_type in entry.types %}
+{%           if entry.options %}
+{{ "%s%s [%s] %s %s %s" | format(entry_disabled, entry_type, entry.options|join(' '), entry_uri, entry_suite, entry.components | unique | join(' ')) }}
+{%           else %}
+{{ "%s%s %s %s %s" | format(entry_disabled, entry_type, entry_uri, entry_suite, entry.components | unique | join(' ')) }}
+{%           endif %}
+{%         endfor %}
+{%         if entry.types | count > 1 and not loop.last %}
+
+{%         endif %}
+{%         set _ = apt__tpl_seen_suites.append(entry_suite) %}
+{%       endfor %}
+{%       set _ = apt__tpl_seen_sources.update({entry_uri: apt__tpl_seen_suites}) %}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% set apt__tpl_seen_sources = {} %}
+{% set apt__tpl_suites = [] %}
+{% for apt__tpl_suffix in debops__tpl_macros.flattened(apt__distribution_suffixes) | from_json %}
+{%   set _ = apt__tpl_suites.append(apt__distribution_release + apt__tpl_suffix) %}
+{% endfor %}
+{% set apt__tpl_sources = [] %}
+{% for element in apt__combined_sources %}
+{%   set apt__tpl_source = {
+  "types": [],
+  "options": [],
+  "uris": [],
+  "suites": [],
+  "components": [],
+  "comments": [],
+  "state": "present",
+  "architecture": apt__architecture,
+  "distribution": apt__distribution,
+  "distribution_release": apt__distribution_release
+} %}
+{%   if element is string %}
+{%     set _ = apt__tpl_source.update({ "uris": [ element ]}) %}
+{%   elif element is mapping %}
+{%     set _ = apt__tpl_source.update({
+         "types": debops__tpl_macros.flattened(element.type, element.types) | from_json,
+         "options": debops__tpl_macros.flattened(element.option, element.options) | from_json,
+         "uris": debops__tpl_macros.flattened(element.uri, element.uris) | from_json,
+         "suites": debops__tpl_macros.flattened(element.suite, element.suites) | from_json,
+         "components": debops__tpl_macros.flattened(element.component, element.components) | from_json,
+         "comments": debops__tpl_macros.flattened(element.comment, element.comments) | from_json,
+         "state": element.state|d(apt__tpl_source.state),
+         "architecture": element.architecture|d(apt__tpl_source.architecture),
+         "distribution": element.distribution|d(apt__tpl_source.distribution),
+         "distribution_release": element.distribution_release|d(apt__tpl_source.distribution_release),
+      }) %}
+{%     if "repo" in element %}
+{%       set _ = apt__tpl_source.update({ "repo": element.repo }) %}
+{%     endif %}
+{%   else %}
+{%     set _ = apt__tpl_source.update({ "uris": element }) %}
+{%   endif %}
+{%   if not apt__tpl_source.types %}
+{%     set _ = apt__tpl_source.types.extend(debops__tpl_macros.flattened(apt__source_types) | from_json) %}
+{%   endif %}
+{%   if not apt__tpl_source.uris %}
+{%     if element is mapping %}
+{%       if apt__distribution in element.keys() %}
+{%         set _ = apt__tpl_source.uris.extend(debops__tpl_macros.flattened(element[apt__distribution]) | from_json) %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{%   if not apt__tpl_source.suites %}
+{%     set _ = apt__tpl_source.suites.extend(apt__tpl_suites) %}
+{%   endif %}
+{%   if not apt__tpl_source.components %}
+{%     set _ = apt__tpl_source.components.extend(debops__tpl_macros.flattened(apt__distribution_components) | from_json) %}
+{%   endif %}
+{%   set _ = apt__tpl_sources.append(apt__tpl_source) %}
+{% endfor %}
+{% for entry in apt__tpl_sources %}
+{%   if (entry.state in [ "present", "disabled" ] and entry.architecture == apt__architecture and entry.distribution == apt__distribution and entry.distribution_release == apt__distribution_release) %}
+{%     if loop.first and not entry.comments %}
+
+{%     endif %}
+{{     print_entry(entry) -}}
+{%   endif %}
+{% endfor %}

@@ -1,0 +1,523 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.apt default variables [[[
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: apt__enabled [[[
+#
+# Enable or disable this role.
+apt__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: apt__sources_deploy_state [[[
+#
+# Enable (if ``present``) or disable (if ``absent``) management of
+# :file:`/etc/apt/sources.list` file by the role.
+apt__sources_deploy_state: '{{ "present"
+                               if (apt__distribution in [ "Debian", "Raspbian", "Ubuntu", "Devuan" ])
+                               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__sources_filter_duplicates [[[
+#
+# By default role disables duplicate :file:`/etc/apt/sources.list` entries to
+# avoid sending mail messages about them by :command:`cron`. You can set this
+# variable to ``False`` to disable the automatic filtering.
+apt__sources_filter_duplicates: True
+
+                                                                   # ]]]
+# .. envvar:: apt__nonfree [[[
+#
+# Boolean. If enabled, non-free repositories of a given distribution will be
+# enabled, otherwise they won't be present.
+#
+# By default non-free repositories are enabled on hardware-based hosts due to
+# a possible requirement for non-free firmware packages.
+apt__nonfree: '{{ True if (ansible_virtualization_role is undefined or
+                           ansible_virtualization_role not in [ "guest" ])
+                       else False }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__source_types [[[
+#
+# List of source types to configure for the default package sources. Supported
+# choices: ``deb``, ``deb-src``.
+apt__source_types: [ 'deb' ]
+
+                                                                   # ]]]
+# .. envvar:: apt__remove_default_configuration [[[
+#
+# Ensure that :file:`/etc/apt/apt.conf` is absent.
+# This file might contain APT proxy or other settings which overwrite options
+# set by ``debops.apt`` if present.
+# Thus the default is to ensure that this file is absent.
+apt__remove_default_configuration: True
+
+                                                                   # ]]]
+# .. envvar:: apt__cache_valid_time [[[
+#
+# Update APT cache early in the playbook if it's older than 24h
+# Set to False to disable update (useful when changing APT mirrors)
+apt__cache_valid_time: '{{ ansible_local.core.cache_valid_time
+                           if (ansible_local|d() and ansible_local.core|d() and
+                               ansible_local.core.cache_valid_time|d())
+                           else (60 * 60 * 24) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__install_recommends [[[
+#
+# Enable or disable automatic installation of recommended APT packages.
+apt__install_recommends: False
+
+                                                                   # ]]]
+# .. envvar:: apt__autoremove_recommends [[[
+#
+# Enable or disable automatic removal of recommended APT packages by the
+# ``apt-get autoremove`` command.
+apt__autoremove_recommends: False
+
+                                                                   # ]]]
+# .. envvar:: apt__install_suggests [[[
+#
+# Enable or disable automatic installation of suggested APT packages.
+apt__install_suggests: False
+
+                                                                   # ]]]
+# .. envvar:: apt__autoremove_suggests [[[
+#
+# Enable or disable automatic removal of suggested APT packages by the
+# ``apt-get autoremove`` command.
+apt__autoremove_suggests: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Packages to install [[[
+# -----------------------
+
+# .. envvar:: apt__base_packages [[[
+#
+# Default base packages to install.
+apt__base_packages: [ 'python-apt', 'apt-transport-https', 'ca-certificates' ]
+
+                                                                   # ]]]
+# .. envvar:: apt__packages [[[
+#
+# List of additional APT packages to install for APT support.
+apt__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# APT repository keys [[[
+# -----------------------
+
+# These lists define APT GPG keys to configure on hosts to enable authenticated
+# access to additional APT repositories. See :ref:`apt__ref_keys` for more
+# details.
+
+# .. envvar:: apt__keys [[[
+#
+# List of APT GPG keys to configure on all hosts in Ansible inventory.
+apt__keys: []
+
+                                                                   # ]]]
+# .. envvar:: apt__group_keys [[[
+#
+# List of APT GPG keys to configure on hosts in specific Ansible inventory
+# group.
+apt__group_keys: []
+
+                                                                   # ]]]
+# .. envvar:: apt__host_keys [[[
+#
+# List of APT GPG keys to configure on specific hosts in Ansible inventory.
+apt__host_keys: []
+                                                                   # ]]]
+                                                                   # ]]]
+# APT repositories [[[
+# --------------------
+
+# These lists define additional APT repositories in
+# :file:`/etc/apt/sources.list.d/` directory. See :ref:`apt__ref_repositories` for
+# more details.
+
+# .. envvar:: apt__repositories [[[
+#
+# List of additional APT repositories for all hosts in Ansible inventory.
+apt__repositories: []
+
+                                                                   # ]]]
+# .. envvar:: apt__group_repositories [[[
+#
+# List of additional APT repositories for hosts in specific Ansible inventory
+# group.
+apt__group_repositories: []
+
+                                                                   # ]]]
+# .. envvar:: apt__host_repositories [[[
+#
+# List of additional APT repositories for specific hosts in Ansible inventory.
+apt__host_repositories: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Distribution and release detection [[[
+# --------------------------------------
+
+# .. envvar:: apt__architecture [[[
+#
+# The system architecture present on the host.
+apt__architecture: '{{ apt__architecture_map[ansible_architecture]
+                       | d(ansible_architecture) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__architecture_map [[[
+#
+# A YAML dictionary which defines a mapping between Ansible architectures and
+# Debian/Ubuntu ports. Only definitions that are different from the detected
+# ones are listed here, otherwise the value of ``ansible_architecture`` is
+# used.
+apt__architecture_map:
+  'x86_64': 'amd64'
+  'i386':   'i386'
+  'armv7l': 'armhf'
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution [[[
+#
+# The OS distribution present on the host.
+apt__distribution: '{{ ansible_local.core.distribution
+                       if (ansible_local|d() and ansible_local.core|d() and
+                           ansible_local.core.distribution|d())
+                       else (ansible_lsb.id
+                             if (ansible_lsb|d() and ansible_lsb.id|d())
+                             else ansible_distribution) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_release [[[
+#
+# The OS release present on the host.
+apt__distribution_release: '{{ ansible_local.core.distribution_release
+                              if (ansible_local|d() and ansible_local.core|d() and
+                                ansible_local.core.distribution_release|d())
+                            else ansible_lsb.codename
+                              if (ansible_lsb|d() and ansible_lsb.codename|d())
+                            else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_release_map [[[
+#
+# YAML dictionary which holds the information about official OS releases. This
+# map is used to configure security repositories only on the OS releases that
+# have them available.
+apt__distribution_release_map:
+  'Debian': [ 'wheezy', 'jessie', 'stretch', 'buster' ]
+  'Ubuntu': [ 'precise', 'trusty', 'xenial' ]
+  'Devuan': [ 'jessie' ]
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_suite_map [[[
+#
+# YAML dictionary which maps current Debian releases to their respective suites
+# (this is currently not used in Ubuntu). This map is used to select what
+# repository suffixes should be configured on the current host in case the role
+# is used on a Debian Testing system.
+apt__distribution_suite_map:
+  'Debian_wheezy':    'oldoldstable'
+  'Debian_jessie':    'oldstable'
+  'Debian_stretch':   'stable'
+  'Debian_buster':    'testing'
+  'Debian_sid':       'unstable'
+  'Raspbian_wheezy':  'oldstable'
+  'Raspbian_jessie':  'stable'
+  'Raspbian_stretch': 'testing'
+  'Raspbian_sid':     'unstable'
+  'Devuan_jessie':    'stable'
+  'Devuan_ascii':     'testing'
+  'Devuan_ceres':     'unstable'
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_suffix_map [[[
+#
+# YAML dictionary which maps the installed OS distribution and release to a set
+# of repository "suffixes". Each suffix will be added to the release name to
+# create repository name; empty suffixes are permitted.
+#
+# If the combination of OS distribution and release is not found, the default
+# list of suffixes will be used automatically.
+apt__distribution_suffix_map:
+  'Debian_stable':   [ '', '-updates', '-backports' ]
+  'Debian_testing':  [ '', '-updates' ]
+  'Debian_unstable': [ '' ]
+  'Raspbian':        [ '' ]
+  'Devuan_stable':   [ '', '-updates', '-backports' ]
+  'Devuan_testing':  [ '', '-updates' ]
+  'Devuan_unstable': [ '' ]
+  'default':         [ '', '-updates', '-backports' ]
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_suffixes [[[
+#
+# List of repository suffixes to use in the generated APT sources.
+apt__distribution_suffixes: '{{ apt__distribution_suffix_map[apt__distribution + "_" +
+                                apt__distribution_suite_map[apt__distribution + "_" +
+                                apt__distribution_release]|d()] |
+                                d(apt__distribution_suffix_map[apt__distribution] |
+                                  d(apt__distribution_suffix_map["default"])) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_components_free [[[
+#
+# YAML dictionary which contains information about repository components with
+# only Free/Open Source software packages. These components will be enabled by
+# default.
+apt__distribution_components_free:
+  'Debian':   [ 'main' ]
+  'Raspbian': [ 'main', 'rpi' ]
+  'Ubuntu':   [ 'main', 'universe' ]
+  'Devuan':   [ 'main' ]
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_components_nonfree [[[
+#
+# YAML dictionary which contains information about repository components with
+# non-free software packages, or packages which depend on non-free software.
+# These components are enabled or disabled by the :envvar:`apt__nonfree`
+# boolean variable.
+apt__distribution_components_nonfree:
+  'Debian':   [ 'contrib', 'non-free' ]
+  'Raspbian': [ 'contrib', 'non-free' ]
+  'Ubuntu':   [ 'restricted', 'multiverse' ]
+  'Devuan':   [ 'contrib', 'non-free' ]
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_components [[[
+#
+# List of APT repository components which should be enabled in the distribution
+# package sources.
+apt__distribution_components: '{{ apt__distribution_components_free[apt__distribution] +
+                                  (apt__distribution_components_nonfree[apt__distribution]
+                                   if apt__nonfree|bool else []) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Default APT package sources [[[
+# -------------------------------
+
+# These lists define contents of :file:`/etc/apt/sources.list` configuration file.
+# See :ref:`apt__ref_sources` for more details.
+
+# .. envvar:: apt__sources [[[
+#
+# List of APT source repositories for all hosts in Ansible inventory.
+apt__sources: []
+
+                                                                   # ]]]
+# .. envvar:: apt__group_sources [[[
+#
+# List of APT source repositories for hosts in specific Ansible inventory
+# group.
+apt__group_sources: []
+
+                                                                   # ]]]
+# .. envvar:: apt__host_sources [[[
+#
+# List of APT source repositories for specific hosts in Ansible inventory.
+apt__host_sources: []
+
+                                                                   # ]]]
+# .. envvar:: apt__original_sources [[[
+#
+# List of APT sources from the original :file:`/etc/apt/sources.list` file detected
+# using Ansible local facts.
+apt__original_sources:
+  - comment: 'Original APT package sources gathered by Ansible'
+    uris: '{{ ansible_local.apt.original_mirrors_deb
+              if (ansible_local|d() and ansible_local.apt|d() and
+                  ansible_local.apt.original_mirrors_deb|d())
+              else [] }}'
+    state: '{{ "present" if (ansible_local|d() and ansible_local.apt|d() and
+                             ansible_local.apt.original_mirrors_deb|d())
+                         else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__default_sources [[[
+#
+# List of the default APT package sources for specific distributions. These are
+# usually mirror redirectors provided by the distributions.
+#
+# This variable is used by Ansible local fact script to expose the default APT
+# source for use through the Ansible inventory. It's structure shouldn't be
+# changed.
+apt__default_sources:
+
+  - uri:          'http://deb.debian.org/debian'
+    comment:      '{{ "Official " + apt__distribution + " repositories" }}'
+    distribution: 'Debian'
+
+  - uri:          'http://mirrordirector.raspbian.org/raspbian/'
+    comment:      '{{ "Official " + apt__distribution + " repositories" }}'
+    distribution: 'Raspbian'
+
+  - uri:          'http://repos.rcn-ee.com/debian/'
+    comment:      'rcn-ee.net repository as used on BeagleBoards for additional hardware support'
+    type:         '{{ apt__source_types }}'
+    option:       '{{ "arch=" + apt__architecture }}'
+    suite:        '{{ apt__distribution_release }}'
+    components:   [ "main" ]
+    distribution: 'Debian'
+    state:        '{{ "present"
+                      if (apt__architecture in ["armhf"] and
+                          ("cape_universal" in ansible_cmdline) or
+                          ("bone_capemgr" in ansible_cmdline))
+                      else "absent" }}'
+
+  - uri:          'http://archive.ubuntu.com/ubuntu'
+    comment:      '{{ "Official " + apt__distribution + " repositories" }}'
+    distribution: 'Ubuntu'
+    state:        '{{ "present"
+                      if (apt__architecture in ["amd64", "i386"])
+                      else "absent" }}'
+
+  - uri: 'http://ports.ubuntu.com/ubuntu-ports'
+    comment: '{{ "Official " + apt__distribution + " Port repositories" }}'
+    distribution: 'Ubuntu'
+    state:       '{{ "present"
+                     if (apt__architecture not in ["amd64", "i386"])
+                     else "absent" }}'
+
+  - uri:          'http://auto.mirror.devuan.org/merged'
+    comment:      '{{ "Official " + apt__distribution + " repositories" }}'
+    distribution: 'Devuan'
+
+                                                                   # ]]]
+# .. envvar:: apt__security_sources [[[
+#
+# List of APT package sources that provide security updates. This list is used
+# in the Ansible local facts script to filter out the security repositories
+# from normal repositories.
+apt__security_sources:
+
+  - uri:        'http://security.debian.org/'
+    comment:    'Debian Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "/updates" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Debian'
+    state:      '{{ "present"
+                    if (apt__distribution_release|d("unknown")
+                        in apt__distribution_release_map[apt__distribution]|d([]))
+                    else "absent" }}'
+
+    # This version may be present on some installations. It's here so that the
+    # fact script knows that a given URL is a secuirity source and doesn't
+    # create normal entries. This version is not added to the final file.
+  - uri:        'http://security.debian.org'
+    comment:    'Debian Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "/updates" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Debian'
+    state: 'absent'
+
+    # This version shows up in Debian Stretch APT configuration.
+    # It's disabled by default to not create duplicate entries.
+  - uri:        'http://security.debian.org/debian-security'
+    comment:    'Debian Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "/updates" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Debian'
+    state: 'absent'
+
+  - uri:        'http://security.ubuntu.com/ubuntu'
+    comment:    'Ubuntu Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "-security" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Ubuntu'
+    state:      '{{ "present"
+                    if (apt__architecture in ["amd64", "i386"])
+                    else "absent" }}'
+
+  - uri:        'http://ports.ubuntu.com/ubuntu-ports'
+    comment:    'Ubuntu Ports Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "-security" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Ubuntu'
+    state:      '{{ "present"
+                    if (apt__architecture not in ["amd64", "i386"])
+                    else "absent" }}'
+
+  - uri:        'http://auto.mirror.devuan.org/merged'
+    comment:    'Devuan Security repository'
+    type:       '{{ apt__source_types }}'
+    suite:      '{{ apt__distribution_release + "-security" }}'
+    components: '{{ apt__distribution_components }}'
+    distribution: 'Devuan'
+    state:      '{{ "present"
+                    if (apt__distribution_release|d("unknown")
+                        in apt__distribution_release_map[apt__distribution]|d([]))
+                    else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__combined_sources [[[
+#
+# Final list of APT sources to configure. This variable defines an order in
+# which various package sources are written in the :file:`/etc/apt/sources.list` as
+# well as what sources will be present there.
+apt__combined_sources: '{{ apt__sources +
+                           apt__group_sources +
+                           apt__host_sources +
+                           apt__original_sources +
+                           apt__default_sources +
+                           apt__security_sources }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: apt__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ role.
+apt__apt_preferences__dependent_list:
+
+    ## Remove configuration from `debops.apt` context which is now managed by
+    ## `debops.apt_install`.
+  - package: 'git git-*'
+    delete: True
+    backports: [ 'wheezy' ]
+    reason:  'Better support for git submodules - https://stackoverflow.com/a/7593496'
+    by_role: 'debops.apt'
+
+    ## Remove configuration from `debops.apt` context which is now managed by
+    ## `debops.apt_install`.
+  - package: 'irqbalance'
+    delete: True
+    backports: [ 'wheezy' ]
+    reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
+    by_role: 'debops.apt'
+
+    ## Remove configuration from `debops.apt` context which is now managed by
+    ## `debops.apt_install`.
+  - package: 'irqbalance'
+    delete: True
+    backports: [ 'jessie' ]
+    reason:  'Bug fixes and memory leak fixes.'
+    by_role: 'debops.apt'
+
+    ## Remove configuration from `debops.apt` context which is now managed by
+    ## debops.apt_cacher_ng_.
+  - package: 'apt-cacher-ng'
+    delete: True
+    by_role: 'debops.apt'
+    backports: [ 'jessie' ]
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

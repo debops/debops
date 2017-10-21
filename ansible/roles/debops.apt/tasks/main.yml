@@ -1,0 +1,157 @@
+---
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save APT local facts
+  template:
+    src: 'etc/ansible/facts.d/apt.fact.j2'
+    dest: '/etc/ansible/facts.d/apt.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: apt__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: (apt__enabled|bool and apt__register_facts|changed)
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - '{{ apt__base_packages }}'
+    - '{{ apt__packages }}'
+  when: apt__enabled|bool
+
+- name: Ensure that APT default configuration is absent
+  file:
+    path: '/etc/apt/apt.conf'
+    state: 'absent'
+  when: (apt__enabled|bool and apt__remove_default_configuration|bool)
+
+- name: Generate APT configuration files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - 'etc/apt/apt.conf.d/25no-recommends.conf'
+  when: apt__enabled|bool
+
+- name: Check current APT diversions
+  environment:
+    LC_ALL: 'C'
+  shell: dpkg-divert --list '/etc/apt/*.dpkg-divert' | awk '{print $NF}'
+  register: apt__register_diversions
+  when: apt__enabled|bool
+  check_mode: False
+  changed_when: False
+
+- name: Divert original /etc/apt/sources.list
+  command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
+  when: (apt__enabled|bool and apt__sources_deploy_state == 'present' and
+         '/etc/apt/sources.list.dpkg-divert' not in apt__register_diversions.stdout_lines)
+
+- name: Configure APT distribution sources
+  template:
+    src: 'etc/apt/sources.list.j2'
+    dest: '/etc/apt/sources.list'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: apt__register_sources_template
+  when: (apt__enabled|bool and apt__sources_deploy_state == 'present')
+
+- name: Remove diversion of original /etc/apt/sources.list
+  shell: rm -f /etc/apt/sources.list ; dpkg-divert --quiet --local --rename --remove /etc/apt/sources.list
+  args:
+    warn: False
+  register: apt__register_sources_diversion
+  when: (apt__enabled|bool and apt__sources_deploy_state == 'absent' and
+         '/etc/apt/sources.list.dpkg-divert' in apt__register_diversions.stdout_lines)
+
+- name: Configure custom APT keys
+  apt_key:
+    data:      '{{ item.data      | d(omit) }}'
+    file:      '{{ item.file      | d(omit) }}'
+    id:        '{{ item.id        | d(omit) }}'
+    keyring:   '{{ item.keyring   | d(omit) }}'
+    keyserver: '{{ item.keyserver | d(omit) }}'
+    url:       '{{ item.url       | d(omit) }}'
+    state:     '{{ item.state     | d("present"
+                                      if (item.architecture|d(apt__architecture) == apt__architecture and
+                                          item.distribution|d(apt__distribution) == apt__distribution and
+                                          item.distribution_release|d(apt__distribution_release) == apt__distribution_release)
+                                      else omit) }}'
+  with_flattened:
+    - '{{ apt__keys }}'
+    - '{{ apt__group_keys }}'
+    - '{{ apt__host_keys }}'
+  # `item.state`, `item.architecture`, `item.distribution` and `item.distribution_release` need to be checked here.
+  # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
+  when: (apt__enabled|bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
+         (item.state|d("present") == 'present' and
+          (item.architecture|d(apt__architecture) == apt__architecture and
+           item.distribution|d(apt__distribution) == apt__distribution and
+           item.distribution_release|d(apt__distribution_release) == apt__distribution_release)))
+
+- name: Configure custom APT repositories
+  apt_repository:
+    update_cache: False
+    repo:     '{{ item.repo }}'
+    mode:     '{{ item.mode     | d(omit) }}'
+    filename: '{{ item.filename | d(omit) }}'
+    state:    '{{ item.state    | d("present"
+                                    if (item.architecture|d(apt__architecture) == apt__architecture and
+                                        item.distribution|d(apt__distribution) == apt__distribution and
+                                        item.distribution_release|d(apt__distribution_release) == apt__distribution_release)
+                                    else "absent") }}'
+  with_flattened:
+    - '{{ apt__repositories }}'
+    - '{{ apt__group_repositories }}'
+    - '{{ apt__host_repositories }}'
+  register: apt__register_repositories
+  when: (apt__enabled|bool and item.repo|d())
+
+- name: Remove old unattended-upgrades configuration
+  file:
+    path: '/etc/apt/apt.conf.d/{{ item }}'
+    state: 'absent'
+  with_items:
+    - '25auto-upgrades.conf'
+    - '55unattended-upgrades.conf'
+  when: apt__enabled|bool
+
+- name: Update APT cache
+  apt:
+    update_cache: True
+    cache_valid_time: '{{ omit
+                         if (apt__register_sources_template|changed or
+                             apt__register_sources_diversion|changed or
+                             apt__register_repositories|changed)
+                         else apt__cache_valid_time }}'
+  when: apt__enabled|bool
+
+- name: Update the role status in local facts
+  lineinfile:
+    dest: '/etc/ansible/facts.d/apt.fact'
+    regexp: '^\s+"configured":\s+'
+    line: '    "configured": true,'
+    state: 'present'
+  register: apt__register_facts_status
+  when: (apt__enabled|bool and ansible_local|d() and ansible_local.apt|d() and
+         not ansible_local.apt.configured|bool)
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: (apt__enabled|bool and apt__register_facts_status|changed)
