@@ -1,0 +1,68 @@
+---
+
+- name: Disable swap files when requested
+  shell: test -f {{ item.path | d(item) }} && swapoff {{ item.path | d(item) }} || true
+  changed_when: False
+  with_items: '{{ swapfile__files }}'
+  when: (item.state|d("present") == 'absent' and
+         (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
+
+- name: Create swap files
+  command: |
+    {% if swapfile__use_dd|bool %}
+    dd if=/dev/zero of={{ item.path | d(item) }} bs=1M count={{ item.size | d(swapfile__size) }}
+    {% else %}
+    fallocate -l {{ ((item.size | d(swapfile__size))|int * 1024 * 1024) }} {{ item.path | d(item) }}
+    {% endif %}
+  args:
+    creates: '{{ item.path | d(item) }}'
+  register: swapfile__register_allocation
+  with_items: '{{ swapfile__files }}'
+  when: (item.state|d("present") != 'absent')
+
+- name: Enforce permissions
+  file:
+    path: '{{ item.path | d(item) }}'
+    state: 'file'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  with_items: '{{ swapfile__files }}'
+  when: (item.state|d("present") != 'absent' and not ansible_check_mode)
+
+- name: Initialize swap files
+  command: mkswap {{ item.item.path | d(item.item) }}
+  register: swapfile__register_init
+  with_items: '{{ swapfile__register_allocation.results|d([]) }}'
+  when: (item|changed and item.state|d("present") != 'absent')
+
+- name: Enable swap files
+  command: swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}
+  with_items: '{{ swapfile__register_allocation.results|d([]) }}'
+  when: (item|changed and item.state|d("present") != 'absent' and
+          (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
+
+- name: Manage swap files in /etc/fstab
+  mount:
+    src: '{{ item.path | d(item) }}'
+    name:   'none'
+    fstype: 'swap'
+    opts:   'sw,nofail,pri={{ item.priority | d(swapfile__priority) }}'
+    dump:   '0'
+    passno: '0'
+    state:  '{{ item.state | d("present") }}'
+  with_items: '{{ swapfile__files }}'
+
+- name: Remove swap files
+  file:
+    path: '{{ item.path | d(item) }}'
+    state: 'absent'
+  with_items: '{{ swapfile__files }}'
+  when: (item.state|d("present") == 'absent')
+
+- name: Remove legacy kernel parameters file
+  file:
+    path: '{{ swapfile__sysctl_file|d("/etc/sysctl.d/30-debops.swapfile.conf") }}'
+    state: 'absent'

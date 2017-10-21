@@ -1,0 +1,47 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.swapfile default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Swap file configuration [[[
+# ---------------------------
+
+# .. envvar:: swapfile__size [[[
+#
+# Default size of swap files, in MB.
+swapfile__size: '{{ ((ansible_memtotal_mb|int * 2)
+                     if (ansible_memtotal_mb|int <= 2048)
+                     else "512") }}'
+
+                                                                   # ]]]
+# .. envvar:: swapfile__priority [[[
+#
+# Default swap file priority, from ``-1`` to ``32767``.
+# Higher numbers indicate higher  priority.
+# Refer to :manpage:`swapon(8)` for details.
+swapfile__priority: '-1'
+
+                                                                   # ]]]
+# .. envvar:: swapfile__use_dd [[[
+#
+# By default ``debops.swapfile`` uses the ``fallocate`` command to create the swap
+# files. If you use unsupported filesystems (``ext4`` is supported) you can
+# enable this variable to use ``dd`` command to create the files.
+swapfile__use_dd: False
+
+                                                                   # ]]]
+# .. envvar:: swapfile__files [[[
+#
+# List of swap files. Specify either a path to a file on a filesystem, or
+# a YAML dict. See :ref:`swapfile__files` for more details.
+swapfile__files: [ '/swapfile' ]
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
