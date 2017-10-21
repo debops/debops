@@ -1,0 +1,446 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.core default variables [[[
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Custom local facts [[[
+# ----------------------
+
+# .. envvar:: core__facts [[[
+#
+# Dictionary of custom facts that are set globally on all hosts.
+core__facts: {}
+
+                                                                   # ]]]
+# .. envvar:: core__group_facts [[[
+#
+# Dictionary of custom facts that are set in a group of hosts.
+core__group_facts: {}
+
+                                                                   # ]]]
+# .. envvar:: core__host_facts [[[
+#
+# Dictionary of custom facts that are set on specific hosts.
+core__host_facts: {}
+
+                                                                   # ]]]
+# .. envvar:: core__remove_facts [[[
+#
+# List of custom fact keys which will be removed if found.
+core__remove_facts: []
+
+                                                                   # ]]]
+# .. envvar:: core__reset_facts [[[
+#
+# If ``True``, Ansible will not add facts that are already present on a host to
+# the dictionary, and only store those specified in inventory.
+core__reset_facts: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Tags stored as local facts [[[
+# ------------------------------
+
+# .. envvar:: core__tags [[[
+#
+# Global list of tags to set on all hosts.
+core__tags: []
+
+                                                                   # ]]]
+# .. envvar:: core__group_tags [[[
+#
+# List of tags to set for a group of hosts.
+core__group_tags: []
+
+                                                                   # ]]]
+# .. envvar:: core__host_tags [[[
+#
+# List of tags to set on a given host.
+core__host_tags: []
+
+                                                                   # ]]]
+# .. envvar:: core__static_tags [[[
+#
+# Override any combination of global, group or host tags with a static set.
+core__static_tags: []
+
+                                                                   # ]]]
+# .. envvar:: core__remove_tags [[[
+#
+# Specify a list of tags to remove from a tag list, if they're present.
+core__remove_tags: []
+
+                                                                   # ]]]
+# .. envvar:: core__reset_tags [[[
+#
+# If ``True``, Ansible will not merge current set of tags on a host and will
+# create a new list of tags from inventory variables.
+core__reset_tags: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Core facts [[[
+# --------------
+
+# .. envvar:: core__ansible_controllers [[[
+#
+# List of IP addresses or CIDR subnets which contain hosts that are used to
+# execute Ansible playbooks. Other roles that maintain host security can source
+# the ``ansible_local.core.ansible_controllers`` list and add the entries found
+# there to IP address whitelist.
+core__ansible_controllers: []
+
+                                                                   # ]]]
+# .. envvar:: core__active_controller [[[
+#
+# IP address from which the SSH connection to a given host originates. It
+# usually is the external IP address of Ansible Controller host, but it might be
+# an internal IP address of a gateway or SSH jumphost through which the
+# connection is proxied. This IP address will be added to list of Ansible
+# Controllers defined above.
+core__active_controller: '{{ ((ansible_env.SSH_CLIENT.split(" ") | first)
+                              if (ansible_env|d() and ansible_env.SSH_CLIENT|d())
+                              else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: core__admin_groups [[[
+#
+# List of the system groups which contain the system administrator accounts.
+# If you don't want this functionality, make this list empty.
+core__admin_groups: [ 'admins' ]
+
+                                                                   # ]]]
+# .. envvar:: core__admin_users [[[
+#
+# List of system administrator accounts. Ansible will check what accounts are
+# in the groups specified above and include them in this list automatically.
+# These accounts are used in different roles to automatically create
+# administrative accounts in different services.
+#
+# To override the admin accounts autodetected by Ansible, specify them in this
+# list.
+core__admin_users: '{{ (ansible_user
+                        if ansible_user|d()
+                        else (ansible_ssh_user
+                              if ansible_ssh_user|d()
+                              else lookup("env", "USER"))) }}'
+
+                                                                   # ]]]
+# .. envvar:: core__admin_blacklist_default_users [[[
+#
+# List of user accounts which will not be included by Ansible in the system
+# administrator account list. This is used to avoid creating common, static
+# admin account names in various services.
+core__admin_blacklist_default_users:
+  - 'admin'
+  - 'ansible'
+  - 'debian'
+  - 'root'
+  - 'ubuntu'
+  - 'user'
+
+                                                                   # ]]]
+# .. envvar:: core__admin_blacklist_users [[[
+#
+# Additional list of user accounts to not include in the system administrator
+# account list.
+core__admin_blacklist_users: []
+
+                                                                   # ]]]
+# .. envvar:: core__admin_public_email [[[
+#
+# List of public system administrator e-mail addresses. The addresses specified
+# here will be used as publicly visible admin contact information by the
+# Ansible roles that use them.
+#
+# This variable can be used as a final destination by the system MTA.
+core__admin_public_email: [ 'root@{{ core__domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: core__admin_private_email [[[
+#
+# List of private system administrator e-mail addresses. They will be used by
+# other Ansible roles to sent important system messages to the administrator.
+# These e-mail addresses are visible to all users on a given host, but should
+# not be visible from outside of a host.
+#
+# If none are specified, list of admin user accounts will be used instead. The
+# mail delivery to these accounts is left to the system MTA.
+#
+# This variable shouldn't be used as a final destination by the system MTA,
+# otherwise it might result in an undeliverable error. It can be used as an
+# alias.
+core__admin_private_email: []
+
+                                                                   # ]]]
+# .. envvar:: core__cache_valid_time [[[
+#
+# Time in seconds which specifies how long APT cache should be considered
+# valid between updates.
+core__cache_valid_time: '{{ (60 * 60 * 24) }}'
+
+                                                                   # ]]]
+# .. envvar:: core__distribution [[[
+#
+# Some of the OS distributions are not detected by Ansible correctly. This
+# variable can be used to fix that issue across all roles that use it.
+core__distribution: '{{ ansible_lsb.id
+                        if (ansible_lsb|d() and ansible_lsb.id|d())
+                        else ansible_distribution }}'
+
+                                                                   # ]]]
+# .. envvar:: core__distribution_release [[[
+#
+# Some of the OS releases are not detected by Ansible correctly. This variable
+# can be used to fix that issue across all roles that use it.
+core__distribution_release: '{{ ansible_lsb.codename
+                                if (ansible_lsb|d() and ansible_lsb.codename|d())
+                                else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: core__domain [[[
+#
+# The default host domain which can be used by the other roles to configure
+# network services.
+core__domain: '{{ ansible_domain if ansible_domain else ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: core__fqdn [[[
+#
+# The default Fully Qualified Domain Name of the host which can be used by the
+# other roles to configure network services.
+core__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: core__keyserver [[[
+#
+# URL for the GnuPG keyserver on which Ansible will search for encryption keys.
+core__keyserver: 'hkp://pool.sks-keyservers.net'
+
+                                                                   # ]]]
+# .. envvar:: core__uuid_random [[[
+#
+# Ansible will try and read the UUID value from the host using ``dmidecode``.
+# If it's not available, this value will be used as the UUID source.
+core__uuid_random: '{{ ansible_fqdn | to_uuid }}'
+                                                                   # ]]]
+# .. envvar:: core__homedir_umask [[[
+#
+# Default umask for home directories.
+core__homedir_umask: '0027'
+
+                                                                   # ]]]
+# .. envvar:: core__unsafe_writes [[[
+#
+# Enable or disable use of the ``unsafe_writes`` parameter in Ansible tasks
+# that deal with files. See :ref:`core__ref_unsafe_writes` for more details.
+core__unsafe_writes: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Core packages [[[
+# -----------------
+
+# .. envvar:: core__base_packages [[[
+#
+# List of packages required by Ansible local fact scripts.
+core__base_packages: [ 'libcap2-bin' ]
+
+                                                                   # ]]]
+# .. envvar:: core__packages [[[
+#
+# List of additional packages to install.
+core__packages: []
+
+                                                                   # ]]]
+# .. envvar:: core__group_packages [[[
+#
+# List of additional packages to install for a group.
+core__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: core__host_packages [[[
+#
+# List of additional packages to install for a host.
+core__host_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: core__root_facts [[[
+#
+# Path where Ansible local facts are stored. This shouldn't really be changed
+# because many Ansible roles use this path explicitly. This variable is set here
+# so that it can be used by the directory creation task to ensure that the
+# ``facts.d`` directory is present.
+core__root_facts: '/etc/ansible/facts.d'
+
+                                                                   # ]]]
+# .. envvar:: core__root_bin [[[
+#
+# Directory where user binaries accessible via ``$PATH`` should be stored.
+core__root_bin: '/usr/local/bin'
+
+                                                                   # ]]]
+# .. envvar:: core__root_etc [[[
+#
+# Directory where additional configuration files not related to existing
+# services will be stored. Very rarely used.
+core__root_etc: '/usr/local/etc'
+
+                                                                   # ]]]
+# .. envvar:: core__root_lib [[[
+#
+# Directory where various scripts which don't or shouldn't be directly
+# accessible from the interactive shell should be stored, so that they don't
+# pollute Tab-completion. Roles can create subdirectories here in case when
+# more than a handful of scripts are used.
+core__root_lib: '/usr/local/lib'
+
+                                                                   # ]]]
+# .. envvar:: core__root_sbin [[[
+#
+# Directory where administrator binaries accessible via ``$PATH`` should be
+# stored.
+core__root_sbin: '/usr/local/sbin'
+
+                                                                   # ]]]
+# .. envvar:: core__root_share [[[
+#
+# Path where static data files should be stored, similar to :file:`/usr/share`.
+# Rarely used.
+core__root_share: '/usr/local/share'
+
+                                                                   # ]]]
+# .. envvar:: core__root_src [[[
+#
+# Path where application sources (tarballs, :command:`git` repositories) can be stored
+# and operated on, usually in a separate subdirectory for each role or user.
+core__root_src: '/usr/local/src'
+
+                                                                   # ]]]
+# .. envvar:: core__root_data [[[
+#
+# Directory that stores application data, things served by a given host, for
+# example webpages. Web application system accounts may have their home
+# directories there, as well as ``sftpusers`` websites and home directories.
+core__root_data: '/srv'
+
+                                                                   # ]]]
+# .. envvar:: core__root_srv [[[
+#
+# Alternative directory for application data.
+core__root_srv: '/srv'
+
+                                                                   # ]]]
+# .. envvar:: core__root_backup [[[
+#
+# Path where local backups generated by automated scripts are stored, usually
+# in separate subdirectories for each user/role.
+core__root_backup: '/var/backups'
+
+                                                                   # ]]]
+# .. envvar:: core__root_var [[[
+#
+# Path where variable internal data are stored. Examples include databases,
+# spools, transient files. Usually a separate subdirectory is used, especially
+# when the application has its own home directory.
+core__root_var: '/var/local'
+
+                                                                   # ]]]
+# .. envvar:: core__root_home [[[
+#
+# Path where home directories of local system accounts are stored (:file:`/home` is
+# reserved for regular users and home directories of users stored in remote
+# databases like LDAP).
+core__root_home: '/var/local'
+
+                                                                   # ]]]
+# .. envvar:: core__root_app [[[
+#
+# Directory where non-web applications are installed. By default it's in
+# a subdirectory, usually home directory of an application, but the root path
+# might be different.
+core__root_app: '/var/local'
+
+                                                                   # ]]]
+# .. envvar:: core__root_cache [[[
+#
+# Path where cache files are stored, optionally with a separate subdirectory.
+core__root_cache: '/var/cache'
+
+                                                                   # ]]]
+# .. envvar:: core__root_log [[[
+#
+# Path where log files are stored, optionally with a separate subdirectory.
+core__root_log: '/var/log'
+
+                                                                   # ]]]
+# .. envvar:: core__root_spool [[[
+#
+# Path where spool files are stored, optionally with a separate subdirectory.
+core__root_spool: '/var/spool'
+
+                                                                   # ]]]
+# .. envvar:: core__root_directories [[[
+#
+# List of directories and their ``ansible_local.root.*`` variable names, passed
+# to a task that creates them in the filesystem and the template that generates
+# Ansible local facts.
+core__root_directories:
+
+  - path: '{{ core__root_facts }}'
+    fact: 'facts'
+
+  - path: '{{ core__root_bin }}'
+    fact: 'bin'
+
+  - path: '{{ core__root_etc }}'
+    fact: 'etc'
+
+  - path: '{{ core__root_lib }}'
+    fact: 'lib'
+
+  - path: '{{ core__root_sbin }}'
+    fact: 'sbin'
+
+  - path: '{{ core__root_share }}'
+    fact: 'share'
+
+  - path: '{{ core__root_src }}'
+    fact: 'src'
+
+  - path: '{{ core__root_data }}'
+    fact: 'data'
+
+  - path: '{{ core__root_srv }}'
+    fact: 'srv'
+
+  - path: '{{ core__root_backup }}'
+    fact: 'backup'
+
+  - path: '{{ core__root_home }}'
+    fact: 'home'
+
+  - path: '{{ core__root_app }}'
+    fact: 'app'
+
+  - path: '{{ core__root_var }}'
+    fact: 'var'
+
+  - path: '{{ core__root_cache }}'
+    fact: 'cache'
+
+  - path: '{{ core__root_log }}'
+    fact: 'log'
+
+  - path: '{{ core__root_spool }}'
+    fact: 'spool'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

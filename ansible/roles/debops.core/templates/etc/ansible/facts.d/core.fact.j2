@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+from grp import getgrall
+
+{% set core__tpl_facts = {} %}
+{% if not core__reset_facts|d(False) %}
+{%   if ansible_local|d() and ansible_local.core|d() %}
+{%     for key, value in ansible_local.core.iteritems() %}
+{%       if key not in (core__remove_facts|d([]) + [ 'admin_users' ]) %}
+{%         set _ = core__tpl_facts.update({ key: value }) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+{% if core__facts|d() %}
+{%   for key, value in core__facts.iteritems() %}
+{%     if key not in core__remove_facts|d([]) %}
+{%       set _ = core__tpl_facts.update({ key: value }) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if core__group_facts|d() %}
+{%   for key, value in core__group_facts.iteritems() %}
+{%     if key not in core__remove_facts|d([]) %}
+{%       set _ = core__tpl_facts.update({ key: value }) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if core__host_facts|d() %}
+{%   for key, value in core__host_facts.iteritems() %}
+{%     if key not in core__remove_facts|d([]) %}
+{%       set _ = core__tpl_facts.update({ key: value }) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% set core__tpl_ansible_controllers = [] %}
+{% if ansible_local|d() and ansible_local.core|d() and ansible_local.core.ansible_controllers|d() %}
+{%   for element in ansible_local.core.ansible_controllers %}
+{%     set _ = core__tpl_ansible_controllers.append(element) %}
+{%   endfor %}
+{% endif %}
+{% if core__ansible_controllers|d() %}
+{%   for element in core__ansible_controllers %}
+{%     set _ = core__tpl_ansible_controllers.append(element) %}
+{%   endfor %}
+{% endif %}
+{% if core__fact_ansible_controller|d() %}
+{%   set _ = core__tpl_ansible_controllers.append(core__fact_ansible_controller) %}
+{% endif %}
+{% if core__tpl_ansible_controllers %}
+{%   set _ = core__tpl_facts.update({ "ansible_controllers": core__tpl_ansible_controllers | sort | unique }) %}
+{% endif %}
+{%   set _ = core__tpl_facts.update({ "admin_groups": core__admin_groups }) %}
+{%   set _ = core__tpl_facts.update({ "admin_users": core__admin_users }) %}
+{%   set _ = core__tpl_facts.update({ "admin_public_email": core__admin_public_email }) %}
+{%   set _ = core__tpl_facts.update({ "admin_private_email": core__admin_private_email }) %}
+{%   set _ = core__tpl_facts.update({ "distribution": core__distribution }) %}
+{%   set _ = core__tpl_facts.update({ "distribution_release": core__distribution_release }) %}
+{%   set _ = core__tpl_facts.update({ "domain": core__domain }) %}
+{%   set _ = core__tpl_facts.update({ "fqdn": core__fqdn }) %}
+{%   set _ = core__tpl_facts.update({ "homedir_umask": core__homedir_umask }) %}
+{%   set _ = core__tpl_facts.update({ "keyserver": core__keyserver }) %}
+{%   set _ = core__tpl_facts.update({ "cache_valid_time": core__cache_valid_time }) %}
+{%   set _ = core__tpl_facts.update({ "unsafe_writes": core__unsafe_writes | bool }) %}
+output = loads('''{{ core__tpl_facts | to_nice_json }}''')
+
+admin_blacklist_users = loads('''{{ (core__admin_blacklist_default_users + core__admin_blacklist_users) | unique | to_nice_json }}''')
+
+groups = getgrall()
+admin_users = set()
+
+if output['admin_users']:
+    if isinstance(output['admin_users'], basestring):
+        admin_users.add(output['admin_users'])
+    elif isinstance(output['admin_users'], list):
+        admin_users.update(set(output['admin_users']))
+    else:
+        raise RuntimeError("Expected basestring or list, but got %r" % (
+            output['admin_users']))
+
+if output['admin_groups']:
+    for group in groups:
+        if group.gr_name in output['admin_groups']:
+            for name in group.gr_mem:
+                if name not in admin_blacklist_users:
+                    admin_users.add(name)
+
+if admin_users:
+    output.update({ "admin_users": sorted(list(admin_users)) })
+
+if not output['admin_private_email']:
+    if output['admin_users']:
+        output.update({ "admin_private_email": sorted(list(admin_users)) })
+    else:
+        output.update({ "admin_private_email": [ "root" ] })
+
+print(dumps(output, sort_keys=True, indent=2))

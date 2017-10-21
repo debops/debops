@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# This file is managed remotely, all changes will be lost
+
+# resolver: gather information from /etc/resolv.conf
+
+nameserver=( $(grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}' | xargs) )
+search=( $(grep -E '^search\s' /etc/resolv.conf | sed -e 's/^\s*search\s*//' | xargs) )
+
+output="{"
+
+IFS=,
+output="${output}\"nameserver\": ["
+first=1
+for address in ${nameserver[@]} ; do
+    [ -z "${first}" ] && output="${output}, "
+    first=
+    output="${output}\"${address}\""
+done
+output="${output}],"
+
+output="${output} \"search\": ["
+first=1
+for address in ${search[@]} ; do
+    [ -z "${first}" ] && output="${output}, "
+    first=
+    output="${output}\"${address}\""
+done
+output="${output}]"
+
+output="${output}}"
+IFS=
+
+echo ${output}
+
