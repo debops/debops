@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+
+# See ldap.conf(5) for details
+# This file should be world readable but not world writable.
+
+{% set auth_tpl_ldap_conf_domain = [] %}
+{% set auth_tpl_ldap_conf_hostdn = [] %}
+{% if auth_ldap_conf_domain is defined and auth_ldap_conf_domain %}
+{% for element in auth_ldap_conf_domain.split(".") %}
+{% set _ = auth_tpl_ldap_conf_domain.append("dc=" + element) %}
+{% endfor %}
+{% endif %}
+{% if auth_ldap_conf_hostdn is defined and auth_ldap_conf_hostdn %}
+{% for element in auth_ldap_conf_hostdn %}
+{% set _ = auth_tpl_ldap_conf_hostdn.append(element | replace(",","2C")) %}
+{% endfor %}
+{% endif %}
+BASE	{{ (auth_tpl_ldap_conf_hostdn + auth_tpl_ldap_conf_domain) | join(",") }}
+URI	{{ auth_ldap_conf_uri | join(" ") }}
+
+# TLS options
+TLS_CACERT {{ auth_ldap_conf_tls_cacert }}
+TLS_REQCERT {{ auth_ldap_conf_tls_reqcert }}
+
+{% if auth_ldap_conf_options is defined and auth_ldap_conf_options %}
+
+# Other options
+{{ auth_ldap_conf_options }}
+{% endif %}
+

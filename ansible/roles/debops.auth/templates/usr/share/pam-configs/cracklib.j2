@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+# Enable support for libpam-cracklib in PAM
+
+Name: Cracklib password strength checking
+Default: yes
+Priority: 1024
+Conflicts: unix-zany
+Password-Type: Primary
+Password:
+	requisite			pam_cracklib.so reject_username retry={{ auth_cracklib_retry | d('3') }} minlen={{ auth_cracklib_minlen | d('18') }} difok={{ auth_cracklib_difok | d('3') }} maxrepeat={{ auth_cracklib_maxrepeat | d('2') }} minclass={{ auth_cracklib_minclass | d('4') }} lcredit={{ auth_cracklib_lcredit | d('0') }} ucredit={{ auth_cracklib_ucredit | d('2') }} dcredit={{ auth_cracklib_dcredit | d('1') }} ocredit={{ auth_cracklib_ocredit | d('1') }} use_authtok
+Password-Initial:
+	requisite			pam_cracklib.so reject_username retry={{ auth_cracklib_retry | d('3') }} minlen={{ auth_cracklib_minlen | d('18') }} difok={{ auth_cracklib_difok | d('3') }} maxrepeat={{ auth_cracklib_maxrepeat | d('2') }} minclass={{ auth_cracklib_minclass | d('4') }} lcredit={{ auth_cracklib_lcredit | d('0') }} ucredit={{ auth_cracklib_ucredit | d('2') }} dcredit={{ auth_cracklib_dcredit | d('1') }} ocredit={{ auth_cracklib_ocredit | d('1') }}

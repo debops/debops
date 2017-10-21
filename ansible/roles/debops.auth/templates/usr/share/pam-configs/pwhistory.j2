@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+# Remember previous local passwords to enforce rotation
+
+Name: Unix password history
+Default: yes
+Priority: 500
+Auth-Type: Primary
+Password-Type: Primary
+Password:
+	required			pam_pwhistory.so use_authtok enforce_for_root remember={{ auth_pwhistory_remember }}
+Password-Initial:
+	required			pam_pwhistory.so enforce_for_root remember={{ auth_pwhistory_remember }}

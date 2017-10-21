@@ -1,0 +1,53 @@
+# {{ ansible_managed }}
+
+# /etc/nslcd.conf
+# nslcd configuration file. See nslcd.conf(5)
+# for details.
+
+# The user and group nslcd should run as.
+uid nslcd
+gid nslcd
+
+# The location at which the LDAP server(s) should be reachable.
+{% for address in auth_nslcd_uri %}
+uri {{ address }}
+{% endfor %}
+
+# The search base that will be used for all queries.
+{% for basedn in auth_nslcd_base %}
+base {{ basedn }}
+{% endfor %}
+
+# The LDAP protocol version to use.
+#ldap_version 3
+
+# The DN to bind with for normal lookups.
+binddn {{ auth_nslcd_bind_host_dn }}
+bindpw {{ lookup('password', auth_nslcd_bind_host_password + ' length=' + auth_nslcd_password_length) }}
+
+# The DN used for password modifications by root.
+#rootpwmoddn cn=admin,dc=example,dc=com
+
+# SSL options
+ssl start_tls
+tls_reqcert {{ auth_nslcd_tls_reqcert | default('demand') }}
+tls_cacertfile {{ auth_nslcd_tls_cacertfile }}
+
+# The search scope.
+#scope sub
+
+{% if auth_nslcd_nss_min_uid is defined and auth_nslcd_nss_min_uid %}
+# Lookup users above this uidNumber in LDAP
+nss_min_uid {{ auth_nslcd_nss_min_uid }}
+
+{% endif %}
+{% if auth_nslcd_pam_authz_search is defined and auth_nslcd_pam_authz_search %}
+# Allow/Deny access according to LDAP attributes
+{% for entry in auth_nslcd_pam_authz_search %}
+pam_authz_search {{ entry }}
+{% endfor %}
+
+{% endif %}
+{% if auth_nslcd_options is defined and auth_nslcd_options %}
+{{ auth_nslcd_options }}{% endif %}
+
