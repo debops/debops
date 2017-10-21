@@ -1,0 +1,748 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.pki default variables [[[
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Global PKI configuration [[[
+# ----------------------------
+
+# .. envvar:: pki_enabled [[[
+#
+# Enable or disable PKI support.
+pki_enabled: '{{ (True
+                  if pki_default_domain
+                  else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_download_extra [[[
+#
+# Enable or disable extra file copying.
+pki_download_extra: True
+
+                                                                   # ]]]
+# .. envvar:: pki_internal [[[
+#
+# Enable or disable support for internal certificates. If the support is
+# disabled, the PKI realm will generate its own set of self-signed
+# certificates on remote hosts.
+pki_internal: '{{ (True
+                   if pki_default_domain
+                   else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_fqdn [[[
+#
+# Fully Qualified Domain Name of the remote host that is managed by
+# the ``debops.pki`` role. This variable is important in Ansible tasks that
+# maintain files in the :file:`secret/` directory, as well as correct
+# identification of hosts which should have certificates signed by the internal
+# Certificate Authority.
+pki_fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_inventory_groups [[[
+#
+# List of Ansible inventory group names which are taken into account while
+# managing the PKI realms. These inventory groups will have their own
+# directories inside the :file:`secret/pki/realms/by-group/` directory on the
+# Ansible Controller, and files put there will be copied to remote hosts.
+pki_inventory_groups: [ 'debops_service_pki' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_vcs_ignore_patterns_role [[[
+#
+# This list of ignore patterns for files below :file:`/etc/pki` that version
+# control systems should ignore.
+# :file:`/etc` is not tracked by default by a version control system.
+# This definition exists preliminary in case you decide to use
+# :program:`etckeeper` for example to track changes in :file:`/etc`. In case
+# you want to track sensitive files by a version control system specify:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#    pki_vcs_ignore_patterns_role: []
+#
+# in your inventory and be sure that you know what you are doing!
+#
+# Note that currently, only :command:`git` as version control system is supported. If
+# you use another version control system, be sure to add support for it to
+# this role.
+# Ignore patterns are specified using the :file:`.gitignore` file format
+# documented in :manpage:`gitignore(5)`.
+# By default, any file path below :file:`/etc/pki` contained in a subdirectory
+# called :file:`private` will not be tracked.
+#
+# .. note:: When you started using this role before version 0.2.11 and
+#    sensitive files are already tracked by version control you will need to
+#    manually deleted them from version control history!
+#
+pki_vcs_ignore_patterns_role: [ '**/private/**' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_vcs_ignore_patterns [[[
+#
+# Refer to  :envvar:`pki_vcs_ignore_patterns_role` for details.
+# This variable is intended to be used in Ansible’s global inventory and allows
+# you to define additional file patterns without having to overwrite the
+# recommended ignore list maintained by this role.
+pki_vcs_ignore_patterns: []
+
+                                                                   # ]]]
+# .. envvar:: pki_vcs_ignore_patterns_group [[[
+#
+# Refer to  :envvar:`pki_vcs_ignore_patterns_role` for details.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported) and allows you to define additional file
+# patterns without having to overwrite the recommended ignore list maintained by
+# this role.
+pki_vcs_ignore_patterns_group: []
+
+                                                                   # ]]]
+# .. envvar:: pki_vcs_ignore_patterns_host [[[
+#
+# Refer to  :envvar:`pki_vcs_ignore_patterns_role` for details.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported) and allows you to define additional file
+# patterns without having to overwrite the recommended ignore list maintained by
+# this role.
+pki_vcs_ignore_patterns_host: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Automatic Certificate Management Environment [[[
+# ------------------------------------------------
+
+# .. envvar:: pki_acme [[[
+#
+# Enable or disable support for ACME certificates.
+pki_acme: '{{ (True
+               if ((ansible_all_ipv4_addresses|d([]) +
+                    ansible_all_ipv6_addresses|d([])) | ipaddr("public") and
+                    pki_default_domain)
+               else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_install [[[
+#
+# Install ACME support but don't enable it by default for each realm.
+pki_acme_install: '{{ pki_acme | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_library [[[
+#
+# The crypto library used to generate Certificate Signing Requests for ACME
+# certificates, either :command:`openssl` or :command:`gnutls`. Currently
+# OpenSSL is recommended due to issues with GnuTLS generation.
+pki_acme_library: 'openssl'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_user [[[
+#
+# Name of the system user account which will be used to interact with the ACME
+# Certificate Authority.
+pki_acme_user: 'pki-acme'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_group [[[
+#
+# Name of the system group which will be used to interact with the ACME
+# Certificate Authority.
+pki_acme_group: 'pki-acme'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_home [[[
+#
+# Home of the user account that interacts with the ACME Certificate Authority.
+pki_acme_home: '/run/pki-acme'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_default_subdomains [[[
+#
+# List of DNS subdomains that will be added by default to each apex (root)
+# domain configured in ACME Certificate Signing Requests.
+pki_acme_default_subdomains: []
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_type [[[
+#
+# ACME client to use to interact with the ACME Certificate Authority. At the
+# moment only :program:`acme-tiny` is supported.
+pki_acme_type: 'acme-tiny'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_tiny_repo [[[
+#
+# URL of the :program:`acme-tiny` :command:`git` repository.
+pki_acme_tiny_repo: 'https://github.com/diafygi/acme-tiny'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_tiny_version [[[
+#
+# Branch or version of the :program:`acme-tiny` source which should be used.
+pki_acme_tiny_version: 'master'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_tiny_src [[[
+#
+# Directory where :program:`acme-tiny` source code will be cloned into for deployment.
+pki_acme_tiny_src: '{{ (ansible_local.root.src
+                        if (ansible_local|d() and ansible_local.root|d() and
+                            ansible_local.root.src|d())
+                        else "/usr/local/src") + "/" + pki_acme_user }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_tiny_bin [[[
+#
+# Path where the :program:`acme-tiny` script will be installed.
+pki_acme_tiny_bin: '/usr/local/lib/pki/acme-tiny'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_ca [[[
+#
+# Name of the ACME API endpoint used by the ACME client. The name-URL mapping
+# is done in :envvar:`pki_acme_ca_api_map` dictionary variable.
+pki_acme_ca: 'le-live'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_ca_api_map [[[
+#
+# Dictionary map of the ACME API endpoints, mapped to custom names, used by the
+# ACME client.
+# Refer to the `Let's Encrypt Staging Environment documentation <https://letsencrypt.org/docs/staging-environment/>`__
+# for details about ``le-staging``.
+pki_acme_ca_api_map:
+  'le-live':    'https://acme-v01.api.letsencrypt.org'
+  'le-staging': 'https://acme-staging.api.letsencrypt.org'
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_challenge_dir [[[
+#
+# Directory where the ACME client should store responses to ACME CA challenges.
+# By default it's defined by the debops.nginx_ Ansible role using Ansible
+# facts.
+pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
+                             if (ansible_local|d() and ansible_local.nginx|d() and
+                                 ansible_local.nginx.acme_root|d())
+                             else "/srv/www/sites/acme/public") +
+                             "/.well-known/acme-challenge" }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_create_acme_challenge_dir [[[
+#
+# Whether the directory where the ACME client should store responses
+# should be created.
+pki_create_acme_challenge_dir: '{{ True if (ansible_local|d() and ansible_local.nginx|d() and
+                                            ansible_local.nginx.acme|d() and
+                                            ansible_local.nginx.acme|bool) else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Required software packages [[[
+# ------------------------------
+
+# .. envvar:: pki_base_packages [[[
+#
+# List of APT packages to install by default on the remote host for
+# cryptographic support.
+pki_base_packages: [ 'ssl-cert', 'make', 'ca-certificates',
+                     'gnutls-bin', 'openssl', 'acl' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_acme_packages [[[
+#
+# List of APT packages required by ACME support.
+# :program:`acme-tiny` itself is not yet available in Debian Stable.
+# Ref: https://packages.debian.org/source/stretch/acme-tiny
+pki_acme_packages: [ 'curl', 'git' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_packages [[[
+#
+# List of additional APT packages to install.
+pki_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory, file and user/group configuration [[[
+# ------------------------------------------------
+
+# .. envvar:: pki_root [[[
+#
+# Root directory of the PKI configuration on remote hosts.
+pki_root: '/etc/pki'
+
+                                                                   # ]]]
+# .. envvar:: pki_public_group [[[
+#
+# Default system group which owns the public files and directories.
+pki_public_group: 'root'
+
+                                                                   # ]]]
+# .. envvar:: pki_private_group [[[
+#
+# Default system group which owns the private files and directories.
+pki_private_group: 'ssl-cert'
+
+                                                                   # ]]]
+# .. envvar:: pki_public_dir_mode [[[
+#
+# Octal permissions of the public directories.
+pki_public_dir_mode: '0755'
+
+                                                                   # ]]]
+# .. envvar:: pki_private_dir_mode [[[
+#
+# Octal permissions of private directories.
+pki_private_dir_mode: '0750'
+
+                                                                   # ]]]
+# .. envvar:: pki_public_mode [[[
+#
+# Octal permissions of public files.
+pki_public_mode: '0644'
+
+                                                                   # ]]]
+# .. envvar:: pki_private_mode [[[
+#
+# Octal permissions of private files.
+pki_private_mode: '0640'
+
+                                                                   # ]]]
+# .. envvar:: pki_private_groups_present [[[
+#
+# Create system group specified here if they don't exist. This can be used to
+# ensure that private directories and files are owned by correct group before the
+# role that creates the group is run by Ansible. See
+# :ref:`pki__ref_private_groups_present` for more details.
+pki_private_groups_present: []
+
+                                                                   # ]]]
+# .. envvar:: pki_private_dir_acl_groups [[[
+#
+# List of system groups which should have access to the ``private`` directory
+# of each realm, unless specified otherwise. The execute access will be granted
+# using the filesystem ACL table.
+pki_private_dir_acl_groups: []
+
+                                                                   # ]]]
+# .. envvar:: pki_private_file_acl_groups [[[
+#
+# List of system groups which should have read access to key files in
+# :file:`private/` directory of each realm, unless specified otherwise. The read
+# access will be granted using the filesystem ACL table.
+pki_private_file_acl_groups: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Certificate sign times [[[
+# --------------------------
+
+# .. envvar:: pki_default_sign_base [[[
+#
+# The base amount of time in days which is used for signing various
+# certificates. By default, 1 year.
+pki_default_sign_base: '365'
+
+                                                                   # ]]]
+# .. envvar:: pki_default_root_sign_multiplier [[[
+#
+# Amount of time which Root Certificate Authority will be valid, multiplied by
+# the base time amount.
+pki_default_root_sign_multiplier: '12'
+
+                                                                   # ]]]
+# .. envvar:: pki_default_ca_sign_multiplier [[[
+#
+# Amount of time which intermediate CA certificates will be valid, multiplied
+# by the base time amount.
+pki_default_ca_sign_multiplier: '10'
+
+                                                                   # ]]]
+# .. envvar:: pki_default_cert_sign_multiplier [[[
+#
+# Amount of time which client/server certificates will be valid, multiplied by
+# the base time amount.
+pki_default_cert_sign_multiplier: '3'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration of PKI Realms [[[
+# -------------------------------
+
+# .. envvar:: pki_library [[[
+#
+# The crypto library used to manage PKI realms on remote hosts, either
+# :command:`gnutls` or :command:`openssl`. GnuTLS is preferred on Debian hosts.
+pki_library: 'gnutls'
+
+                                                                   # ]]]
+# .. envvar:: pki_realm_key_size [[[
+#
+# The key size in bits to use when generating realm RSA keys.
+pki_realm_key_size: '2048'
+
+                                                                   # ]]]
+# .. envvar:: pki_system_realm [[[
+#
+# System-wide PKI realm which is used by services by default for server
+# certificates. It will be set in Ansible local facts for use by other Ansible
+# roles.
+pki_system_realm: '{{ ansible_local.pki.realm
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.realm|d())
+                      else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_system_ca_realm [[[
+#
+# System-wide PKI realm which is used by services by default for CA certificate
+# (client authentication). It will be set in Ansible local facts for use by other
+# Ansible roles.
+pki_system_ca_realm: '{{ pki_system_realm }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_default_domain [[[
+#
+# Default DNS domain used to create Certificate Signing Requests. It will be
+# specified in the certificate Subject if it's not redefined, as well as in the
+# certificate SubjectAltName field.
+pki_default_domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_default_subdomains [[[
+#
+# List of additional subdomains added by default to all domain specified in the
+# Certificate Signing Request. The ``_wildcard_`` is a replacement for the ``*``
+# character and means that each domain will have an alternative wildcard
+# SubjectAltName.
+pki_default_subdomains: [ '_wildcard_' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_authority_preference [[[
+#
+# Order in which different certificate types are used. First certificate type
+# found wins.
+pki_authority_preference: [ 'external', 'acme', 'internal', 'selfsigned' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_realms [[[
+#
+# List of PKI realms configured on all hosts.
+# Refer to the :ref:`documentation of all options <pki__ref_realms>` for
+# more details.
+pki_realms: []
+
+                                                                   # ]]]
+# .. envvar:: pki_default_realms [[[
+#
+# List of the default PKI realms configured on all hosts.
+pki_default_realms:
+
+  - name: 'domain'
+    acme: False
+    default_subdomains: [ '{{ ansible_hostname }}', '_wildcard_' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_group_realms [[[
+#
+# List of PKI realms configured in specific inventory groups.
+pki_group_realms: []
+
+                                                                   # ]]]
+# .. envvar:: pki_host_realms [[[
+#
+# List of PKI realms configured on specific hosts.
+pki_host_realms: []
+
+                                                                   # ]]]
+# .. envvar:: pki_dependent_realms [[[
+#
+# List of PKI realms configured in a role dependency.
+pki_dependent_realms: []
+
+                                                                   # ]]]
+# .. envvar:: pki_scheduler [[[
+#
+# Enable periodic runs of :program:`pki-realm` script for all PKI realms. The
+# script will check realm structure and renew certificates that are near their
+# expiration date.
+pki_scheduler: True
+
+                                                                   # ]]]
+# .. envvar:: pki_scheduler_interval [[[
+#
+# Specify the interval of periodical tasks: ``hourly``, ``daily``, ``weekly``
+# or ``monthly``.
+pki_scheduler_interval: 'weekly'
+
+                                                                   # ]]]
+# .. envvar:: pki_dhparam [[[
+#
+# Specify if Diffie-Hellman parameters should be appended to the certificate
+# chain. This is required by applications that don't support DHE parameters in
+# a separate file like HAproxy, ZNC.
+pki_dhparam: '{{ (True
+                  if (ansible_local|d() and ansible_local.dhparam|d() and
+                      ansible_local.dhparam.default|d())
+                  else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_dhparam_file [[[
+#
+# Path to the Diffie-Hellman parameters file which will be appended to the
+# certificate chain, if specified.
+pki_dhparam_file: '{{ ansible_local.dhparam.default
+                      if (ansible_local|d() and ansible_local.dhparam|d() and
+                          ansible_local.dhparam.default)
+                      else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Internal Certificate Authorities [[[
+# ------------------------------------
+
+# .. envvar:: pki_ca_library [[[
+#
+# The crypto library used by the Certificate Authorities on the Ansible
+# Controller, either :command:`openssl` or :command:`gnutls`. Currently OpenSSL library is
+# preferred due to rich functionality.
+pki_ca_library: 'openssl'
+
+                                                                   # ]]]
+# .. envvar:: pki_default_authority [[[
+#
+# Name of the default Certificate Authority to which host certificates are
+# directed if a PKI realm does not specify a default Authority.
+pki_default_authority: 'domain'
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_domain [[[
+#
+# The DNS domain used by default for an Certificate Authority configuration if
+# no specific ``item.domain`` is configured.
+pki_ca_domain: '{{ ansible_domain if ansible_domain else ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_organization [[[
+#
+# The organizations name to be used in Distinguished Names (subject).
+pki_ca_organization: '{{ pki_ca_domain.split(".") | first | capitalize }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_root_dn [[[
+#
+# The Distinguished Name (subject) of the Root Certificate Authority.
+pki_ca_root_dn: [ 'o={{ pki_ca_organization }} Certificate Authority' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_root_key_size [[[
+#
+# The key size in bits to use when generating the RSA Root CA key.
+pki_ca_root_key_size: '4096'
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_domain_dn [[[
+#
+# The Distinguished Name (subject) of the Domain Certificate Authority.
+pki_ca_domain_dn: [ 'o={{ pki_ca_organization }}', 'ou=Domain CA' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_domain_key_size [[[
+#
+# The key size in bits to use when generating the RSA Domain CA key.
+pki_ca_domain_key_size: '4096'
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_service_enabled [[[
+#
+# Enable or disable special Service Certificate Authority, which is a Root CA
+# without intermediate CA and sign server certificates directly. This might be
+# needed by specific applications like MySQL which do not support an
+# intermediate CA.
+pki_ca_service_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_service_dn [[[
+#
+# The Distinguished Name (subject) of the Service Certificate Authority.
+pki_ca_service_dn: [ 'o={{ pki_ca_organization }}', 'ou=Internal Services CA' ]
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_service_key_size [[[
+#
+# The key size in bits to use when generating the RSA Service CA key.
+pki_ca_service_key_size: '4096'
+
+                                                                   # ]]]
+# .. envvar:: pki_authorities_ca_root [[[
+#
+# Configuration of the Root Certificate Authority.
+pki_authorities_ca_root:
+  name: 'root'
+  subdomain: 'root-ca'
+  subject: '{{ pki_ca_root_dn }}'
+  key_size: '{{ pki_ca_root_key_size }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_authorities_ca_domain [[[
+#
+# Configuration of the Domain Certificate Authority.
+pki_authorities_ca_domain:
+  name: 'domain'
+  subdomain: 'domain-ca'
+  subject: '{{ pki_ca_domain_dn }}'
+  issuer_name: 'root'
+  key_size: '{{ pki_ca_domain_key_size }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_authorities_ca_service [[[
+#
+# Configuration of the Service Certificate Authority.
+pki_authorities_ca_service:
+  name: 'service'
+  subdomain: 'service-ca'
+  subject: '{{ pki_ca_service_dn }}'
+  type: 'service'
+  enabled: '{{ pki_ca_service_enabled | bool }}'
+  key_size: '{{ pki_ca_service_key_size }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_authorities [[[
+#
+# List of internal Certificate Authorities managed on an Ansible Controller.
+# Each CA is defined as a dictionary variable.
+pki_authorities:
+  - '{{ pki_authorities_ca_root }}'
+  - '{{ pki_authorities_ca_domain }}'
+  - '{{ pki_authorities_ca_service }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_dependent_authorities [[[
+#
+# List of Certificate Authorities defined as a role dependency.
+pki_dependent_authorities: []
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_certificates_path [[[
+#
+# The path inside :file:`secret/ca-certificates/` directory located on Ansible
+# Controller where Root CA certificates will be symlinked by default. Can be
+# one of:
+#
+# - ``by-group/all`` - certificates copied to all hosts;
+#
+# - ``by-group/{{ group_name }}`` - certificates copied to hosts in a specified
+#   inventory group;
+#
+# - ``by-host/{{ pki_fqdn }}`` - certificates copied to a specific host;
+#
+pki_ca_certificates_path: 'by-group/all'
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom file management [[[
+# --------------------------
+
+# You can use custom file lists to copy files to remote hosts or install
+# the content of Jinja variables. See :ref:`custom_file_management` for more
+# details.
+
+# .. envvar:: pki_private_files [[[
+#
+# Copy private files to all hosts in inventory.
+pki_private_files: []
+
+                                                                   # ]]]
+# .. envvar:: pki_group_private_files [[[
+#
+# Copy private files to hosts in specific inventory groups.
+pki_group_private_files: []
+
+                                                                   # ]]]
+# .. envvar:: pki_host_private_files [[[
+#
+# Copy private files to specific hosts in inventory.
+pki_host_private_files: []
+
+                                                                   # ]]]
+# .. envvar:: pki_public_files [[[
+#
+# Copy public files to all hosts in inventory.
+pki_public_files: []
+
+                                                                   # ]]]
+# .. envvar:: pki_group_public_files [[[
+#
+# Copy public files to hosts in specific inventory group.
+pki_group_public_files: []
+
+                                                                   # ]]]
+# .. envvar:: pki_host_public_files [[[
+#
+# Copy public files to specific hosts in inventory.
+pki_host_public_files: []
+                                                                   # ]]]
+                                                                   # ]]]
+# System-wide CA Certificates [[[
+# -------------------------------
+
+# See :ref:`system_ca_certificates` for more details about management of
+# system-wide CA certificates.
+
+# .. envvar:: pki_system_ca_certificates_trust_new [[[
+#
+# Set default trust policy for new certificates added to ``ca-certificates``
+# system package.
+pki_system_ca_certificates_trust_new: True
+
+                                                                   # ]]]
+# .. envvar:: pki_system_ca_certificates_blacklist [[[
+#
+# List of blacklisted CA certificates. You can specify either exact names of
+# certificate files or use regular expressions. If a certificate is
+# found in both lists, it will be blacklisted.
+pki_system_ca_certificates_blacklist:
+
+  # Blacklist CNNIC Root Certificates
+  # https://security.googleblog.com/2015/03/maintaining-digital-certificate-security.html
+  - 'mozilla/CNNIC_ROOT.crt'
+  - 'mozilla/China_Internet_Network_Information_Center_EV_Certificates_Root.crt'
+
+                                                                   # ]]]
+# .. envvar:: pki_system_ca_certificates_whitelist [[[
+#
+# List of whitelisted CA certificates. You can specify either exact names of
+# certificate files or use regular expressions.
+pki_system_ca_certificates_whitelist: []
+
+                                                                   # ]]]
+# .. envvar:: pki_system_ca_certificates_download_by_host [[[
+#
+# If ``True``, by hosts CA certificates are downloaded on remote hosts.
+pki_system_ca_certificates_download_by_host: '{{ pki_enabled|bool }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_system_ca_certificates_download_by_group [[[
+#
+# If ``True``, by group CA certificates are downloaded on remote hosts.
+pki_system_ca_certificates_download_by_group: '{{ pki_enabled|bool }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_system_ca_certificates_download_all_hosts [[[
+#
+# If ``True``, CA certificates intended for all hosts are downloaded on remote
+# hosts.
+pki_system_ca_certificates_download_all_hosts: '{{ pki_enabled|bool }}'
+
+                                                                   # ]]]
+# .. envvar:: pki_system_ca_certificates_download_all_hosts_force [[[
+#
+# If ``True``, force the download of CA certificates intended for all hosts.
+# Note that this will overwrite by-host and by-group CA certificates.
+# This option can be used to push new root certificates from a internal CA to
+# hosts.
+pki_system_ca_certificates_download_all_hosts_force: False
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

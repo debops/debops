@@ -1,0 +1,23 @@
+---
+
+- name: Gather PKI facts
+  action: setup
+
+- name: Update ca-certificates.crt
+  command: update-ca-certificates
+  notify: [ 'Install ca-certificates.crt into Postfix chroot' ]
+
+- name: Regenerate ca-certificates.crt
+  command: update-ca-certificates --fresh
+  notify: [ 'Install ca-certificates.crt into Postfix chroot' ]
+
+- name: Reconfigure ca-certificates
+  environment:
+    DEBIAN_FRONTEND: 'noninteractive'
+    DEBCONF_NONINTERACTIVE_SEEN: 'true'
+  command: dpkg-reconfigure --frontend=noninteractive ca-certificates
+  notify: [ 'Install ca-certificates.crt into Postfix chroot' ]
+
+- name: Install ca-certificates.crt into Postfix chroot
+  shell: test -d /var/spool/postfix &&
+         cp -f /etc/ssl/certs/ca-certificates.crt /var/spool/postfix/etc/ssl/certs/ca-certificates.crt || true

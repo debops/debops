@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import subprocess
+import re
+
+{% set pki_tpl_known_realms = [] %}
+{% if pki_enabled | bool %}
+{%   for realm in (pki_realms + pki_default_realms + pki_group_realms + pki_host_realms + pki_dependent_realms) %}
+{%     if (realm.name is defined and ((realm.enabled is undefined or realm.enabled|bool) and (realm.when is undefined or realm.when|bool))) %}
+{%       set _ = pki_tpl_known_realms.append(realm.name) %}
+{%     endif %}
+{%   endfor %}
+{%   if (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d()) %}
+{%     for realm in ansible_local.pki.known_realms %}
+{%       if realm not in pki_tpl_known_realms %}
+{%         set _ = pki_tpl_known_realms.append(realm) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+
+output = loads('''{{ ({
+        "acme": (pki_acme | bool | lower),
+        "base_path": (pki_root + "/realms"),
+        "ca": "CA.crt",
+        "ca_realm": pki_system_ca_realm,
+        "crt": "default.crt",
+        "enabled": (pki_enabled | bool | lower),
+        "hooks": (pki_root + "/hooks"),
+        "internal": pki_internal | bool | lower,
+        "key": "default.key",
+        "known_realms": pki_tpl_known_realms,
+        "path": (pki_root + "/realms"),
+        "pem": "default.pem",
+        "realm": pki_system_realm,
+        "trusted": "trusted.crt",
+    }) | to_nice_json }}''')
+
+try:
+    openssl_version_stdout = subprocess.check_output(['openssl', 'version'])
+    _re = re.match(r'\w+ (?P<full_version>(?P<strict_version>[^a-z ]+)[^ ]*)', openssl_version_stdout, re.IGNORECASE)
+    if _re:
+        output['openssl_strict_version'] = _re.group('strict_version')
+        output['openssl_version'] = _re.group('full_version')
+except:
+    pass
+
+try:
+    certtool_version_stdout = subprocess.check_output(['certtool', '--version']).split('\n')[0]
+    _re = re.match(r'\w+ (?P<version>[^ ]+)', certtool_version_stdout)
+    if _re:
+        output['gnutls_version'] = _re.group('version')
+except:
+    pass
+
+print(dumps(output, sort_keys=True, indent=2))
