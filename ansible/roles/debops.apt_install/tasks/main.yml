@@ -1,0 +1,61 @@
+---
+
+- name: Pre hooks
+  include: '{{ lookup("task_src", "apt_install/pre_main.yml") }}'
+
+- name: Install requested APT packages
+  apt:
+    name: '{{ item }}'
+    state: '{{ apt_install__state }}'
+    install_recommends: '{{ apt_install__recommends|bool }}'
+    update_cache: '{{ apt_install__update_cache|bool }}'
+    cache_valid_time: '{{ apt_install__cache_valid_time }}'
+  with_flattened: '{{ lookup("template",
+                      "lookup/apt_install__all_packages.j2",
+                      convert_data=False) | from_json }}'
+  when: apt_install__enabled|bool
+
+- name: Configure alternative symlinks
+  alternatives:
+    name:     '{{ item.name }}'
+    path:     '{{ item.path }}'
+    link:     '{{ item.link | d(omit) }}'
+    priority: '{{ item.priority | d(omit) }}'
+  with_flattened:
+    - '{{ apt_install__alternatives }}'
+    - '{{ apt_install__group_alternatives }}'
+    - '{{ apt_install__host_alternatives }}'
+  when: item.name|d() and item.path|d()
+
+- name: Configure automatic alternatives
+  command: update-alternatives --auto {{ item.name }}
+  register: apt_install__register_alternatives
+  with_flattened:
+    - '{{ apt_install__alternatives }}'
+    - '{{ apt_install__group_alternatives }}'
+    - '{{ apt_install__host_alternatives }}'
+  when: item.name|d() and not item.path|d()
+  changed_when: apt_install__register_alternatives.stdout != ''
+
+- name: Make sure that Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: apt_install__enabled|bool
+
+- name: Save local Ansible facts
+  template:
+    src: 'etc/ansible/facts.d/apt_install.fact.j2'
+    dest: '/etc/ansible/facts.d/apt_install.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: apt_install__enabled|bool
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "apt_install/post_main.yml") }}'
+
+

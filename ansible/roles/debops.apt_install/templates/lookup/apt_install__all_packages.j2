@@ -1,0 +1,42 @@
+{% macro get_yaml_list_from_string_or_list(package_map, item) %}{# ((( #}
+{{ ([ package_map[item] ]
+   if (package_map[item] is string)
+   else (package_map[item]|list)) | to_json }}
+{% endmacro %}{# ))) #}
+{% macro process_packages(packages, apt_install__tpl_package_list) %}{# ((( #}
+{%   for element in packages %}
+{%     if element is string %}
+{%       set _ = apt_install__tpl_package_list.append(element) %}
+{%     elif element is mapping %}
+{%       if element.state|d('present') == 'present' and element.name|d() %}
+{%         set apt_install__tpl_to_meet_condition_list = apt_install__condition_map.keys() %}
+{%         set apt_install__tpl_met_condition_list = [] %}
+{%         for condition_name_to_meet in apt_install__tpl_to_meet_condition_list %}
+{%           if element[condition_name_to_meet] is defined %}
+{%             for condition_item_to_meet in get_yaml_list_from_string_or_list(element, condition_name_to_meet) | from_json | map('lower') %}
+{%               if condition_item_to_meet in (get_yaml_list_from_string_or_list(apt_install__condition_map, condition_name_to_meet) | from_json | map('lower')) %}
+{%                 set _ = apt_install__tpl_met_condition_list.append(condition_name_to_meet) %}
+{%               endif %}
+{%             endfor %}
+{%           else %}
+{%             set _ = apt_install__tpl_met_condition_list.append(condition_name_to_meet) %}
+{%           endif %}
+{%         endfor %}
+{%         if (apt_install__tpl_met_condition_list|unique|length) == (apt_install__tpl_to_meet_condition_list|unique|length) %}
+{%           set _ = apt_install__tpl_package_list.append(get_yaml_list_from_string_or_list(element, 'name')|from_json
+                       | intersect(element.whitelist|d(get_yaml_list_from_string_or_list(element, 'name')|from_json)) | list) %}
+{%         endif %}
+{%       endif %}
+{%     else %}
+{%       for things in element %}
+{%         set _ = process_packages(things, apt_install__tpl_package_list) %}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}{# ))) #}
+
+{% set apt_install__tpl_package_list = [] %}
+{% for elements in apt_install__all_packages %}
+{%   set _ = process_packages(elements, apt_install__tpl_package_list) %}
+{% endfor %}
+{{ [ apt_install__tpl_package_list ] | to_nice_json }}

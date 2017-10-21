@@ -1,0 +1,379 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.apt_install default variables [[[
+# ========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Role configuration [[[
+# ----------------------
+
+# .. envvar:: apt_install__enabled [[[
+#
+# Enable or disable support for ``debops.apt_install`` role.
+apt_install__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: apt_install__distribution [[[
+#
+# The variable that indicates host operating system distribution, used to
+# conditionally select packages for installation.
+apt_install__distribution:  '{{ ansible_local.core.distribution
+                                if (ansible_local|d() and ansible_local.core|d() and
+                                    ansible_local.core.distribution|d())
+                                else (ansible_lsb.id
+                                      if (ansible_lsb|d() and ansible_lsb.id|d())
+                                      else ansible_distribution) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__distribution_release [[[
+#
+# The variable that indicates host distribution release, used to conditionally
+# select packages for installation.
+apt_install__distribution_release:  '{{ ansible_local.core.distribution_release
+                                        if (ansible_local|d() and ansible_local.core|d() and
+                                          ansible_local.core.distribution_release|d())
+                                        else (ansible_lsb.codename
+                                              if (ansible_lsb|d() and ansible_lsb.codename|d())
+                                              else ansible_distribution_release) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__archive_areas_map [[[
+#
+# A dictionary that maps different parts of the package archive to each
+# distribution. By default the role expects all of the archives to be enabled.
+apt_install__archive_areas_map:
+  'Debian': [ 'main', 'contrib', 'non-free' ]
+  'Ubuntu': [ 'main', 'restricted', 'universe', 'multiverse' ]
+
+                                                                   # ]]]
+# .. envvar:: apt_install__archive_areas [[[
+#
+# List of package archive areas which are currently available. This list is
+# used to conditionally enable packages for installation, depending on
+# availability of a given archive area.
+apt_install__archive_areas: '{{ ansible_local.apt.archive_areas
+                                if (ansible_local|d() and ansible_local.apt|d() and
+                                    ansible_local.apt.archive_areas|d())
+                                else (apt_install__archive_areas_map[apt_install__distribution] | d([])) }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__condition_map [[[
+#
+# Definition of the values to compare :ref:`apt_install__all_packages` against.
+# This map is used internally in the :envvar:`apt_install__all_packages` lookup
+# template.
+apt_install__condition_map:
+  'distribution': '{{ apt_install__distribution }}'
+  'release': '{{ apt_install__distribution_release }}'
+  'areas': '{{ apt_install__archive_areas }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__state [[[
+#
+# How the :command:`apt` Ansible module should install the selected packages:
+#
+# ``present``
+#   Only make sure that the packages on the list are present on the host.
+#
+# ``latest``
+#   Install the latest version of available packages, according to APT
+#   preferences.
+#
+# By default role will make sure to update the packages to their latest version
+# on first run, and just keep the current version on subsequent runs.
+apt_install__state: '{{ "present"
+                        if (ansible_local|d() and ansible_local.apt_install|d() and
+                            (ansible_local.apt_install.configured|d(True))|bool)
+                        else "latest" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__recommends [[[
+#
+# Boolean variable that controls installation of recommended packages.
+apt_install__recommends: False
+
+                                                                   # ]]]
+# .. envvar:: apt_install__update_cache [[[
+#
+# Enable or disable APT cache updates.
+apt_install__update_cache: True
+
+                                                                   # ]]]
+# .. envvar:: apt_install__cache_valid_time [[[
+#
+# Amount of time between APT cache updates in seconds.
+apt_install__cache_valid_time: '{{ ansible_local.core.cache_valid_time
+                                   if (ansible_local|d() and ansible_local.core|d() and
+                                       ansible_local.core.cache_valid_time)
+                                   else (60 * 60 * 24 * 7) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT package lists [[[
+# ---------------------
+
+# The APT packages to install are split into multiple lists to easier
+# modification. You can specify name of each package directly or use a YAML
+# dictionary to better control when a package should be installed. See
+# :ref:`apt_install__all_packages` for more details.
+
+# .. envvar:: apt_install__base_packages [[[
+#
+# Default base packages to install.
+apt_install__base_packages:
+  - 'ed'
+  - 'lsb-release'
+  - 'make'
+  - 'sudo'
+  - 'git'
+  - 'curl'
+  - 'rsync'
+  - 'bsdutils'
+  - 'acl'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__python_packages [[[
+#
+# List of Python packages to install.
+apt_install__python_packages:
+  - 'python'
+  - 'python-apt'
+  - 'python-pip'
+  - 'python-pycurl'
+  - 'python-httplib2'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__shell_packages [[[
+#
+# Command line creature comforts, when you need to login to the remote host.
+apt_install__shell_packages:
+  - 'ncurses-term'
+  - 'zsh'
+  - 'tmux'
+  - 'less'
+  - 'file'
+  - 'psmisc'
+  - 'lsof'
+  - 'tree'
+  - 'htop'
+  - 'iftop'
+  - 'nload'
+  - 'nmon'
+  - 'mtr-tiny'
+  - 'mc'
+  - 'ranger'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__editor_packages [[[
+#
+# List of text editors to install.
+apt_install__editor_packages:
+  - 'vim'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__packages [[[
+#
+# List of APT packages to install on all hosts in Ansible inventory.
+apt_install__packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__group_packages [[[
+#
+# List of APT packages to install on hosts in a specific group in Ansible
+# inventory.
+apt_install__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__host_packages [[[
+#
+# List of APT packages to install on specific hosts in Ansible inventory.
+apt_install__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__dependent_packages [[[
+#
+# List of APT packages to install for other Ansible roles, for usage as
+# a dependent role.
+apt_install__dependent_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__conditional_whitelist_packages [[[
+#
+# List of APT package names which will be used to compare against packages
+# requested for installation. This list is exposed in the defaults so that you
+# don't need to modify the conditional list below to enable or disable
+# packages.
+apt_install__conditional_whitelist_packages:
+  - 'irqbalance'
+  - 'uptimed'
+  - 'libpam-systemd'
+  - 'haveged'
+  - 'gnupg-curl'
+  - 'needrestart'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__conditional_packages [[[
+#
+# List of APT packages installed under certain conditions.
+apt_install__conditional_packages:
+
+  - name: 'irqbalance'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if (ansible_processor_cores >= 2 and
+                             (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ]))
+                         else "absent" }}'
+
+  - name: 'uptimed'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
+                         else "absent" }}'
+
+  - name: 'libpam-systemd'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if (ansible_service_mgr == "systemd") else "absent" }}'
+
+  - name: 'haveged'
+    # KVM is capable of providing entropy to guests however this needs to be
+    # configured on the hypervisor host and thus can not always be done if one
+    # only controls a guest.
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present"
+               if (ansible_virtualization_role|d("guest") in [ "guest" ] and
+                   ansible_virtualization_type|d("unknown") not in ["lxc", "openvz"]
+               )
+               else "absent" }}'
+
+  - name: 'gnupg-curl'
+    # This package is needed when you want to access HKPS keyservers.
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if ansible_distribution_release in
+               [ "wheezy", "jessie", "precise", "trusty", "xenial" ]
+               else "absent" }}'
+
+  - name: 'needrestart'
+    # Install the package on newer OS releases.
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present" if ansible_distribution_release not in
+               [ "precise" ] else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__firmware_packages [[[
+#
+# Certain systems require free or non-free firmware for correct operation. This
+# list of packages will ensure that the required firmware is installed.
+apt_install__firmware_packages:
+
+  - name: 'firmware-linux-free'
+    distribution: 'Debian'
+    state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+                         and (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
+                         else "absent" }}'
+
+  - name: 'firmware-linux-nonfree'
+    distribution: 'Debian'
+    area: 'non-free'
+    state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+                             and (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
+                         else "absent" }}'
+
+  - name: 'linux-firmware'
+    distribution: 'Ubuntu'
+    state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+                             and (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
+                         else "absent" }}'
+
+  - name: 'linux-firmware-nonfree'
+    distribution: 'Ubuntu'
+    release: [ 'precise', 'trusty', 'wily' ]
+    area: 'multiverse'
+    state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+                             and (ansible_virtualization_role is undefined or
+                              ansible_virtualization_role not in [ "guest" ])
+                         else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_install__all_packages [[[
+#
+# The master list of APT packages to install, passed to the lookup template for
+# conditional processing.
+apt_install__all_packages:
+  - '{{ apt_install__base_packages }}'
+  - '{{ apt_install__python_packages }}'
+  - '{{ apt_install__shell_packages }}'
+  - '{{ apt_install__editor_packages }}'
+  - '{{ apt_install__packages }}'
+  - '{{ apt_install__group_packages }}'
+  - '{{ apt_install__host_packages }}'
+  - '{{ apt_install__dependent_packages }}'
+  - '{{ apt_install__conditional_packages }}'
+  - '{{ apt_install__firmware_packages }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Alternative package symlinks [[[
+# --------------------------------
+
+# These lists can be used to define alternative symlinks for certain packages
+# which provide similar functionality, using ``update-alternatives`` package.
+# See :ref:`apt_install__ref_alternatives` for more details.
+
+# .. envvar:: apt_install__alternatives [[[
+#
+# List of alternative symlinks configured for all packages in the Ansible
+# inventory.
+apt_install__alternatives: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__group_alternatives [[[
+#
+# List of alternative symlinks configured for hosts in specific Ansible
+# inventory group.
+apt_install__group_alternatives: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__host_alternatives [[[
+#
+# List of alternative symlinks configured for specific hosts in the Ansible
+# inventory.
+apt_install__host_alternatives: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: apt_install__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ role.
+apt_install__apt_preferences__dependent_list:
+
+  - package: 'git git-*'
+    backports: [ 'wheezy' ]
+    reason:  'Better support for git submodules - https://stackoverflow.com/a/7593496'
+    by_role: 'debops.apt_install'
+
+  - package: 'irqbalance'
+    backports: [ 'wheezy' ]
+    reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
+    by_role: 'debops.apt_install'
+
+  - package: 'irqbalance'
+    backports: [ 'jessie' ]
+    reason:  'Bug fixes and memory leak fixes.'
+    by_role: 'debops.apt_install'
+
+  - package: 'needrestart needrestart-*'
+    backports: [ 'wheezy', 'jessie', 'trusty' ]
+    reason: 'Better support for container technologies'
+    by_role: 'debops.apt_install'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
