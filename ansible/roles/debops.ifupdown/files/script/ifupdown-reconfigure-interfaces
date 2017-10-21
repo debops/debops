@@ -1,0 +1,382 @@
+#!/bin/bash
+
+# Reconfigure changed network interfaces
+# Part of the debops.ifupdown Ansible role
+# See https://github.com/debops/ansible-ifupdown/ for more details
+
+set -o nounset -o pipefail -o errexit
+
+# Get current PID for logging
+pid="$$"
+
+# Script filename to use in log messages
+script=$( basename "${0}" )
+
+# Path where reconfigure requests are stored
+interface_request_path="/run/network"
+
+# Filename prefix of reconfigure requests
+interface_request_prefix="debops-ifupdown-reconfigure"
+
+# Name of the reconfiguration request for all interfaces
+interface_reconfigure_all="networking"
+
+key_exists () {
+    # Check if an associative array has a specified key present
+    # shellcheck disable=SC2016
+    # shellcheck disable=SC2086
+    eval '[ ${'$1'[$2]+test_of_existence} ]'
+}
+
+join_by () {
+    local IFS="$1"
+    shift
+    echo "$*"
+}
+
+# Check if the init system in use is systemd
+is_systemd () {
+    if [ -d /run/systemd/system ] ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Advanced message logger
+log_message () {
+
+    local -A args
+
+    local OPTIND optchar
+
+    local optspec=":mflth-:"
+    while getopts "${optspec}" optchar; do
+        case "${optchar}" in
+            -)
+                case "${OPTARG}" in
+                    message)
+                        # shellcheck disable=SC2154
+                        args["message"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
+                        ;;
+                    message=*)
+                        args["message"]=${OPTARG#*=}
+                        ;;
+                    tag)
+                        # shellcheck disable=SC2154
+                        args["tag"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
+                        ;;
+                    tag=*)
+                        args["tag"]=${OPTARG#*=}
+                        ;;
+                    *)
+                        if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
+                            echo "Unknown option --${OPTARG}" >&2
+                        fi
+                        ;;
+                esac
+                ;;
+            h)
+                echo "usage: log_message <-t|--tag[=]tag> <-m|--message[=]message>" >&2
+                exit 2
+                ;;
+            m)
+                args["message"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
+                ;;
+            t)
+                args["tag"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
+                ;;
+            *)
+                if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
+                    echo "Non-option argument: '-${OPTARG}'" >&2
+                fi
+                ;;
+        esac
+    done
+
+    if key_exists args "message" ; then
+
+        # We are talking to a human! *wiggles tail*
+        if tty -s > /dev/null 2>&1 ; then
+            echo "${args['message']}"
+        fi
+
+        # We are talking to a syslog daemon! *wiggles tail*
+        if type logger > /dev/null 2>&1 ; then
+            logger -t "${args['tag']:-${script}}[${pid}]" "${args['message']}"
+        fi
+
+    fi
+}
+
+# Cleanup
+on_exit () {
+    rm -f "${interface_request_path}/${interface_request_prefix}",*
+}
+
+trap on_exit EXIT
+
+containsElement () {
+    local e
+    for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+    return 1
+}
+
+# Stop the entre networking service at once
+stop_networking () {
+
+    if is_systemd ; then
+        systemctl stop networking.service
+    else
+        service networking stop
+    fi
+
+}
+
+# Start the entre networking service at once
+start_networking () {
+
+    if is_systemd ; then
+        systemctl start networking.service
+    else
+        service networking start
+    fi
+
+}
+
+# Check what init we are using and bring interface down correctly
+interface_down () {
+
+    if is_systemd ; then
+
+        local -a if_hotplug_interfaces
+        local -a if_boot_interfaces
+        local -a systemd_ifup_instances
+        if_hotplug_interfaces=( $(ifquery --list --allow=hotplug) )
+        if_boot_interfaces=( $(ifquery --list --allow=boot) )
+        systemd_ifup_instances=( $(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//') )
+
+        if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
+            systemctl stop "ifup@${1}.service"
+        elif [ ${#if_boot_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_boot_interfaces[@]}" ; then
+            if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && [ ${#systemd_ifup_instances[@]} -gt 0 ] && containsElement "${1}" "${systemd_ifup_instances[@]}" ; then
+                systemctl stop "ifup@${1}.service"
+            else
+                systemctl stop "iface@${1}.service"
+            fi
+        fi
+    else
+        ifdown "${1}"
+    fi
+
+}
+
+# Check what init we are using and bring interface up correctly
+interface_up () {
+
+    local -a if_hotplug_interfaces
+    local -a if_boot_interfaces
+    if_hotplug_interfaces=( $(ifquery --list --allow=hotplug) )
+    if_boot_interfaces=( $(ifquery --list --allow=boot) )
+
+    if is_systemd ; then
+        if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
+            systemctl start "ifup@${1}.service"
+        elif [ ${#if_boot_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_boot_interfaces[@]}" ; then
+            systemctl start "iface@${1}.service"
+        fi
+    else
+        ifup "${1}"
+    fi
+
+}
+
+# Check if any interfaces have changed, if so, first stop all of them using
+# current configuration, apply the new configuration and bring the modified
+# interfaces back up
+
+if [ -d "${interface_request_path}" ] ; then
+
+    declare -a changed_interfaces
+    declare -a changed_interface_names
+    declare -a created_interfaces
+    declare -a removed_interfaces
+
+    changed_interfaces=( $(find "${interface_request_path}" -type f -name "${interface_request_prefix},*" | sed -e "s#^${interface_request_path}/${interface_request_prefix},##" | sort -n)  )
+    changed_interface_names=( $(find "${interface_request_path}" -type f -name "${interface_request_prefix},*" | sed -e "s#^${interface_request_path}/${interface_request_prefix},##" | sort -n | sed -e 's/^.*\,//')  )
+
+    if [ ${#changed_interfaces[@]} -gt 0 ]; then
+
+        log_message -m "Detected interfaces to reconfigure: $(join_by ',' "${changed_interface_names[@]}")"
+
+        # On hosts with systemd, the specific interface to configure might
+        # still be managed by the 'networking.service' unit, in which case it
+        # will be impossible to reconfigure it by 'ifup@.service' unit alone.
+        # Let's try to detect sich interfaces, and if detected, bring the entire
+        # networking down and hope that all of the other interfaces are
+        # configured correctly to be brought up, either by hotplug mechanism in
+        # 'networking.service', or by being in separate 'ifup@.service'
+        # instances.
+        #
+        # This will most likely break existing bridged connections.
+        declare -a systemd_ifup_instances
+        declare -a systemd_iface_instances
+        declare -a systemd_interface_instances
+        if is_systemd ; then
+            systemd_ifup_instances=( $(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//') )
+            systemd_iface_instances=( $(systemctl list-units --no-legend --state=active 'iface@*.service' | awk '{print $1}' | sed -e 's/^iface\@//' -e 's/\.service$//') )
+
+            if [ ${#systemd_ifup_instances[@]} -gt 0 ]; then
+                log_message -m "Found active systemd ifup@ instances: $(join_by ',' "${systemd_ifup_instances[@]}")"
+            fi
+            if [ ${#systemd_iface_instances[@]} -gt 0 ]; then
+                log_message -m "Found active systemd iface@ instances: $(join_by ',' "${systemd_iface_instances[@]}")"
+            fi
+        else
+            # Prevent issues with unbound variable
+            systemd_ifup_instances=()
+            systemd_iface_instances=()
+        fi
+
+        systemd_interface_instances=( "${systemd_ifup_instances[@]:-}" "${systemd_iface_instances[@]:-}" )
+
+        # This will usually be used the first time the script tries to
+        # reconfigure networks. At this time we don't really know what's set up
+        # where, so disable all networking.
+        if containsElement "${interface_reconfigure_all}" "${changed_interface_names[@]}" ; then
+
+            log_message -m "Shutting down networking service in the unknown state"
+            stop_networking
+
+            # This means that all 'ifup@.service' instances are
+            # now desynchronized and broken. We need to stop all
+            # of them and bring them later.
+            if [ ${#systemd_interface_instances[@]} -gt 0 ]; then
+                for ifup_iface in "${systemd_ifup_instances[@]:-}" ; do
+                    log_message -m "Bringing down '${ifup_iface}' interface in the unknown state"
+                    interface_down "${ifup_iface}"
+                done
+            fi
+        fi
+
+        # Make sure that all relevant interfaces are down, shutting them down in reverse order
+        #for iface in ${changed_interfaces[@]} ; do
+        for ((i=${#changed_interfaces[@]}-1; i>=0; i--)) ; do
+            iface="${changed_interfaces[${i}]}"
+            # shellcheck disable=SC2001
+            iface_name=$(echo "${iface}" | sed -e s'/^.*\,//')
+            if [ "${iface}" != "${interface_reconfigure_all}" ] ; then
+                if [ "$(<"${interface_request_path}/${interface_request_prefix},${iface}")" != "created" ] ; then
+
+                    if ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
+                        log_message -m "Bringing down '${iface_name}' interface"
+                        interface_down "${iface_name}"
+                    else
+                        log_message -m "The '${iface_name}' interface is inactive"
+                    fi
+
+                    # If the interface is still up it probably means that it's
+                    # stuck in the systemd 'networking.service' unit.
+                    # It's time to bring down everything, and then bring it
+                    # back up to get back to the known state.
+                    if ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
+
+                        # The interface in question was definitely not set up by 'ifup@.service'
+                        if ! containsElement "${iface_name}" "${systemd_interface_instances[@]:-}" ; then
+
+                            log_message -m "The '${iface_name}' interface is still active, shutting down networking service"
+                            stop_networking
+
+                            # This means that all 'ifup@.service' instances are
+                            # now desynchronized and broken. We need to stop all
+                            # of them and bring them later.
+                            if [ ${#systemd_interface_instances[@]} -gt 0 ]; then
+                                for ifup_iface in "${systemd_interface_instances[@]:-}" ; do
+                                    log_message -m "Bringing down '${ifup_iface}' interface due to desynchronized networking"
+                                    interface_down "${ifup_iface}"
+                                done
+                            fi
+
+                        else
+
+                            # This probably shouldn't happen
+                            log_message -m "Error: Script was working on '${iface_name}' network interface when it lost knowledge about the network interface state. The '/etc/network/interfaces.d/' might be desynchronized. Exiting to avoid loss of connectivity, investigate the issue."
+                            exit 1
+
+                        fi
+
+                    fi
+
+                else
+                    log_message -m "The '${iface_name}' network interface is a new interface, nothing to bring down"
+                    created_interfaces+=( "${iface_name}" )
+                fi
+            fi
+        done
+
+        # Apply new interface configuration
+        log_message -m "Synchronizing /etc/network/interfaces.d/ configuration"
+        rsync -a --delete /etc/network/interfaces.config.d/ /etc/network/interfaces.d
+
+        # This is usually used the first time the network interfaces are reconfigured
+        if containsElement "${interface_reconfigure_all}" "${changed_interface_names[@]}" ; then
+
+            log_message -m "Starting up networking service"
+            start_networking
+
+        fi
+
+        # On systemd hosts it might be possible that the networking was
+        # disabled because interfaces were desynchronized. In this case, let's
+        # bring it back up first
+        if is_systemd ; then
+            if ! systemctl is-active networking.service > /dev/null 2>&1 ; then
+                log_message -m "Starting up networking service after desynchronization"
+                start_networking
+            fi
+        fi
+
+        # Make sure that all relevant interface are up
+        for iface in "${changed_interfaces[@]}" ; do
+            # shellcheck disable=SC2001
+            iface_name=$(echo "${iface}" | sed -e s'/^.*\,//')
+            if [ "${iface}" != "${interface_reconfigure_all}" ] ; then
+                if [ "$(<"${interface_request_path}/${interface_request_prefix},${iface}")" != "removed" ] ; then
+
+                    if ! ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
+                        log_message -m "Bringing up '${iface_name}' interface"
+                        interface_up "${iface_name}"
+                    fi
+
+                else
+                    log_message -m "The '${iface_name}' network interface was removed, nothing to bring up"
+                    removed_interfaces+=( "${iface_name}" )
+                fi
+            fi
+        done
+
+        # If we have some interfaces configured by 'ifup@.service', if they are
+        # down, they probably should be up by now. If not, bring them up.
+        if [ ${#systemd_interface_instances[@]} -gt 0 ]; then
+            for ifup_iface in "${systemd_interface_instances[@]}" ; do
+
+                if ! containsElement "${ifup_iface}" "${removed_interfaces[@]:-}" \
+                && ! containsElement "${ifup_iface}" "${created_interfaces[@]:-}" ; then
+                    if ! ifquery --state "${ifup_iface}" > /dev/null 2>&1 ; then
+                        log_message -m "Bringing up '${ifup_iface}' interface after desynchronization"
+                        interface_up "${ifup_iface}"
+                    fi
+                fi
+
+            done
+        fi
+
+        log_message -m "Interface configuration finished, have a nice day"
+
+    else
+
+        log_message -m "No interface reconfiguration requested"
+
+    fi
+
+fi

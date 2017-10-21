@@ -1,0 +1,67 @@
+{% set ifupdown__tpl_ferm__dependent_rules = [] %}
+{% if ifupdown__combined_interfaces %}
+{%   for interface, params in ifupdown__combined_interfaces.iteritems() %}
+{%     set interface_name = (params.iface | d(interface)) %}
+{%     if params.state|d('present') in [ 'present', 'absent' ] %}
+{%       set ifupdown__tpl_forward_rules = '' %}
+{%       set ifupdown__tpl_nat_rules = [] %}
+{%       if params.forward|d()|bool %}
+{%         set ifupdown__tpl_forward_rules = (['domain $domains table filter chain FORWARD {']
+             + (['    interface ' + interface_name + ' ' + params.forward_interface_ferm_rule|d("ACCEPT") + ";"]
+                if params.forward_interface_ferm_rule|d() != omit
+                else [])
+             + (['    outerface ' + interface_name + ' ' + params.forward_outerface_ferm_rule|d("ACCEPT") + ";"]
+                if params.forward_outerface_ferm_rule_enabled|d(True)|bool
+                else [])
+             + ['}']) | join("\n")
+%}
+{%       endif %}
+{%       if params.inet|d() and params.nat|d()|bool %}
+{%         set ifupdown__tpl_ipv4_addresses = [] %}
+{%         if params.address|d() %}
+{%           for element in ([ params.address ] if params.address is string else params.address) %}
+{%             if element | ipv4('host/prefix') %}
+{%               set _ = ifupdown__tpl_ipv4_addresses.append(element) %}
+{%             endif %}
+{%           endfor %}
+{%         endif %}
+{%         if params.addresses|d() %}
+{%           for element in ([ params.addresses ] if params.addresses is string else params.addresses) %}
+{%             if element | ipv4('host/prefix') %}
+{%               set _ = ifupdown__tpl_ipv4_addresses.append(element) %}
+{%             endif %}
+{%           endfor %}
+{%         endif %}
+{%         if not ifupdown__tpl_ipv4_addresses %}
+{%           if hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-","_"))]|d() and hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-", "_"))].ipv4|d() %}
+{%             set ifupdown__tpl_subnet = (hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-", "_"))]["ipv4"].address + "/" + hostvars[inventory_hostname]["ansible_" + (interface_name|replace("-", "_"))]["ipv4"].netmask) %}
+{%             set _ = ifupdown__tpl_ipv4_addresses.append(ifupdown__tpl_subnet) %}
+{%           endif %}
+{%         endif %}
+{%         for network in ifupdown__tpl_ipv4_addresses %}
+{%           set _ = ifupdown__tpl_nat_rules.append('
+
+@if $ipv4_enabled {
+    domain ip table nat chain POSTROUTING {
+        source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' destination 224.0.0.0/255.255.255.0 RETURN;
+        source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' destination 255.255.255.255 RETURN;
+        destination ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' RETURN;
+        source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + (' MASQUERADE' if ((params.nat_masquerade|d(ifupdown__default_nat_masquerade))|bool) else ' SNAT to ' + (params.nat_snat_address if (params.nat_snat_address|d() and params.nat_snat_address | ipv4('address')) else (hostvars[inventory_hostname]["ansible_" + params.nat_snat_interface]["ipv4"].address if params.nat_snat_interface|d() else ansible_default_ipv4.address))) + ';
+    }
+}') %}
+{%         endfor %}
+{%       endif %}
+{%       if ifupdown__tpl_forward_rules %}
+{%         set ifupdown__tpl_firewall_rule = {
+"type":"custom",
+"weight":"50",
+"by_role":"debops.ifupdown",
+"rule_state":("present" if params.state|d('present') == 'present' else "absent"),
+"name":"forward_bridge_" + interface_name,
+"rules":(ifupdown__tpl_forward_rules + (ifupdown__tpl_nat_rules | join('')))} %}
+{%         set _ = ifupdown__tpl_ferm__dependent_rules.append(ifupdown__tpl_firewall_rule) %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{{ ifupdown__tpl_ferm__dependent_rules | to_yaml }}

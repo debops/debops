@@ -1,0 +1,37 @@
+---
+
+- name: Check systemd version
+  shell: systemd --version | head -n 1 | awk '{print $2}'
+  register: ifupdown__register_systemd_version
+  check_mode: False
+  changed_when: False
+
+- name: Install custom ifupdown services
+  template:
+    src: 'etc/systemd/system/{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'iface@.service'
+    - 'ifup-wait-all-auto.service'
+    - 'ifup-allow-boot.service'
+  register: ifupdown__register_systemd_services
+
+- name: Reload systemd services
+  command: systemctl daemon-reload
+  when: ansible_service_mgr == 'systemd' and ifupdown__register_systemd_services|changed
+
+  ## https://stackoverflow.com/a/28888474
+- name: Test if Ansible is running in check mode
+  command: /bin/true
+  changed_when: False
+  register: ifupdown__register_check_mode
+
+- name: Enable custom ifupdown services
+  service:
+    name: '{{ item }}'
+    enabled: True
+  with_items: [ 'ifup-wait-all-auto', 'ifup-allow-boot' ]
+  when: (ansible_service_mgr == 'systemd' and not ifupdown__register_check_mode|skipped)

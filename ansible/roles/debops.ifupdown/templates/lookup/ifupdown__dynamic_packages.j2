@@ -1,0 +1,19 @@
+{% set ifupdown__tpl_packages = [] %}
+{% if ifupdown__combined_interfaces|d() %}
+{%   for interface, params in ifupdown__combined_interfaces.iteritems() %}
+{%     if (params.state|d('present') == 'present' and params.type|d()) %}
+{%       if params.type == 'bridge' %}
+{%         set _ = ifupdown__tpl_packages.append('bridge-utils') %}
+{%       elif params.type == 'vlan' %}
+{%         set _ = ifupdown__tpl_packages.append('vlan') %}
+{%       elif params.type == 'bonding' %}
+{%         if ansible_distribution_release == 'wheezy' %}
+{%           set _ = ifupdown__tpl_packages.append('ifenslave-2.6') %}
+{%         else %}
+{%           set _ = ifupdown__tpl_packages.append('ifenslave') %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{{ ifupdown__tpl_packages | unique | to_yaml }}

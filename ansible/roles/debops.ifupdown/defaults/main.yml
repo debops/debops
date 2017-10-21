@@ -1,0 +1,355 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.ifupdown default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: ifupdown__base_packages [[[
+#
+# List of base APT packages to install.
+ifupdown__base_packages: [ 'resolvconf', 'rdnssd', 'bsdutils', 'rsync' ]
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__dynamic_packages [[[
+#
+# List of APT packages to install based on the requirements of the interface
+# types that are configured by the role (support for bridges, bonding, VLANs,
+# depends on the presence of a given interface type).
+ifupdown__dynamic_packages: '{{ lookup("template", "lookup/ifupdown__dynamic_packages.j2", convert_data=False) | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__packages [[[
+#
+# List of additional APT packages to install with the role.
+ifupdown__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# General role configuration [[[
+# ------------------------------
+
+# .. envvar:: ifupdown__interface_weight_map [[[
+#
+# This is a YAML dictionary which maps the interface type to a number which is
+# prepended to the configuration file names to ensure correct order of the
+# network interfaces. It also defines the order the interfaces are brought down
+# and up.
+#
+# You shouldn't change the map after the :command:`ifupdown` configuration is
+# deployed, otherwise the role will lose track of the configuration files and
+# duplicate configuration might be created.
+ifupdown__interface_weight_map:
+  'mapping':   '00'
+  'bonding':   '10'
+  'ether':     '20'
+  'slip':      '30'
+  'wlan':      '30'
+  'wwan':      '30'
+  'vlan':      '40'
+  'bridge':    '60'
+  '6to4':      '80'
+  'tunnel':    '80'
+  'default':   '80'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__reconfigure_auto [[[
+#
+# If ``True``, the role will reconfigure interfaces automatically after changes
+# are detected by Ansible. If ``False``, role will install the reconfiguration
+# script on the remote host so that the user can run it to apply the changes by
+# hand.
+ifupdown__reconfigure_auto: True
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__reconfigure_script_path [[[
+#
+# Path where the reconfiguration script will be installed if automatic
+# reconfiguration is disabled.
+ifupdown__reconfigure_script_path: '{{ (ansible_local.root.lib
+                                        if (ansible_local|d() and ansible_local.root|d() and
+                                            ansible_local.root.lib|d())
+                                        else "/usr/local/lib") + "/ifupdown-reconfigure-interfaces" }}'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__reconfigure_init_file [[[
+#
+# Path where the original :file:`/etc/network/interfaces` file will be copied
+# to on the first role run to allow for reconfiguration of existing interfaces.
+ifupdown__reconfigure_init_file: '/etc/network/interfaces.d/old-interfaces'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__default_nat_masquerade [[[
+#
+# By default, when IPv4 NAT is enabled on a bridge interface, the role will
+# configure a SNAT firewall rule using the primary IP address of the default
+# gateway interface. This is good for hosts in a static environment, where the
+# host's IP address doesn't change.
+#
+# If your host is used in a dynamic environment or switches between different
+# environments, you can set this variable to ``True`` and the role will use the
+# MASQUERADE firewall rule instead to modify packets on the fly with current
+# outgoing IPv4 address. This can be changed on the interface level as well.
+ifupdown__default_nat_masquerade: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Default network interface layout [[[
+# ------------------------------------
+
+# .. envvar:: ifupdown__external_interface [[[
+#
+# Name of the physical network interface which is assumed by the role to be an
+# "external" interface. This is usually the default network interface.
+ifupdown__external_interface: '{{ ansible_local.ifupdown.external_interface
+                                  if (ansible_local|d() and ansible_local.ifupdown|d() and
+                                      ansible_local.ifupdown.external_interface|d())
+                                  else (lookup("template", "lookup/ifupdown__external_interface.j2", convert_data=False) | from_yaml) }}'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__internal_interface [[[
+#
+# Name of the physical network interface which is assumed by the role to be an
+# "internal" interface. This will be one of the non-default network interfaces,
+# chosen in alphabetical order.
+ifupdown__internal_interface: '{{ ansible_local.ifupdown.internal_interface
+                                  if (ansible_local|d() and ansible_local.ifupdown|d() and
+                                      ansible_local.ifupdown.internal_interface|d())
+                                  else (lookup("template", "lookup/ifupdown__internal_interface.j2", convert_data=False) | from_yaml) }}'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__interface_layout [[[
+#
+# Name of the "network interface layout" defined in the
+# :envvar:`ifupdown__default_interfaces_map` which will be used to configure
+# initial state of the network interfaces. This name is used in the
+# :envvar:`ifupdown__default_interfaces` variable to select a network layout.
+ifupdown__interface_layout: '{{ "dynamic"
+                                if (ansible_virtualization_type in [ "lxc","openvz" ] and
+                                    ansible_virtualization_role == "guest")
+                                else "bridge" }}'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__default_interfaces_map [[[
+#
+# A YAML dictionary with different network interface configurations:
+#
+# ``static``
+#   One Ethernet primary interface with static configuration taken from Ansible
+#   facts.
+#
+# ``dynamic``
+#   One or two Ethernet interfaces with DHCP configuration.
+#
+# ``bridge``
+#   One or two Ethernet interfaces with bridges attached to them, each bridge
+#   uses DHCP configuration.
+#
+# ``manual``
+#   Do not use any network interface layout and do not configure any interface.
+#
+# The default interface configuration can be modified by other
+# ``ifupdown__*_interfaces`` variables if necessary.
+# See the :ref:`ifupdown__ref_interfaces` documentation for more details.
+ifupdown__default_interfaces_map:
+
+  'static':
+
+    'external':
+      iface: '{{ ansible_default_ipv4.interface|d("") }}'
+      inet: 'static'
+      inet6: 'auto'
+      address: '{{ (ansible_default_ipv4.address|d("") + "/" +
+                    ansible_default_ipv4.netmask|d("")) }}'
+      gateway: '{{ ansible_default_ipv4.gateway|d("") }}'
+      dns_nameservers: '{{ ansible_dns.nameservers|d(False) }}'
+      dns_search: '{{ ansible_dns.search|d(False) }}'
+
+  'dynamic':
+
+    'external':
+      iface: '{{ ifupdown__external_interface }}'
+      inet: 'dhcp'
+      inet6: 'auto'
+      state: '{{ "present"
+                 if ifupdown__external_interface in ansible_interfaces
+                 else "ignore" }}'
+
+    'internal':
+      iface: '{{ ifupdown__internal_interface }}'
+      inet: 'dhcp'
+      inet6: 'auto'
+      state: '{{ "present"
+                 if ifupdown__internal_interface in ansible_interfaces
+                 else "ignore" }}'
+
+    'br0':
+      state: '{{ "absent"
+                 if (ansible_local|d() and ansible_local.ifupdown|d() and
+                     ansible_local.ifupdown.interface_layout|d() and
+                     ansible_local.ifupdown.interface_layout == "bridge")
+                 else "ignore" }}'
+
+    'br1':
+      state: '{{ "absent"
+                 if (ansible_local|d() and ansible_local.ifupdown|d() and
+                     ansible_local.ifupdown.interface_layout|d() and
+                     ansible_local.ifupdown.interface_layout == "bridge")
+                 else "ignore" }}'
+
+  'bridge':
+
+    'external':
+      iface: '{{ ifupdown__external_interface }}'
+      inet: 'manual'
+      inet6: False
+      state: '{{ "present"
+                 if ifupdown__external_interface in ansible_interfaces
+                 else "ignore" }}'
+
+    'internal':
+      iface: '{{ ifupdown__internal_interface }}'
+      inet: 'manual'
+      inet6: False
+      state: '{{ "present"
+                 if ifupdown__internal_interface in ansible_interfaces
+                 else "ignore" }}'
+
+    'br0':
+      inet: 'dhcp'
+      inet6: 'auto'
+      type: 'bridge'
+      forward: True
+      bridge_ports: '{{ ifupdown__external_interface }}'
+      state: '{{ "present"
+                 if ifupdown__external_interface in ansible_interfaces
+                 else "ignore" }}'
+
+    'br1':
+      inet: 'dhcp'
+      inet6: 'auto'
+      type: 'bridge'
+      forward: True
+      bridge_ports: '{{ ifupdown__internal_interface }}'
+      state: '{{ "present"
+                 if ifupdown__internal_interface in ansible_interfaces
+                 else "ignore" }}'
+
+  'manual': {}
+                                                                   # ]]]
+                                                                   # ]]]
+# Network interface configuration [[[
+# -----------------------------------
+
+# These variables are YAML dictionaries with network interface definitions.
+# See :ref:`ifupdown__ref_interfaces` documentation for more details.
+
+# .. envvar:: ifupdown__ethernet_interfaces [[[
+#
+# YAML dictionary which holds the basic information about the Ethernet
+# interfaces detected by the role.
+ifupdown__ethernet_interfaces: '{{ lookup("template", "lookup/ifupdown__ethernet_interfaces.j2", convert_data=False) | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__default_interfaces [[[
+#
+# YAML dictionary which holds the default configuration applied to the network
+# interfaces, depending on the selected interface layout.
+ifupdown__default_interfaces: '{{ ifupdown__default_interfaces_map[ifupdown__interface_layout] | d({}) }}'
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__interfaces [[[
+#
+# YAML dictionary which holds the configuration of network interfaces for all
+# hosts in the Ansible inventory.
+ifupdown__interfaces: {}
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__group_interfaces [[[
+#
+# YAML dictionary which holds the configuration of network interfaces for hosts
+# in a specific Ansible inventory group.
+ifupdown__group_interfaces: {}
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__host_interfaces [[[
+#
+# YAML dictionary which holds the configuration of network interfaces for
+# specific hosts in the Ansible inventory.
+ifupdown__host_interfaces: {}
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__dependent_interfaces [[[
+#
+# YAML dictionary which holds the configuration of network interfaces defined
+# by other Ansible roles via dependent variables.
+ifupdown__dependent_interfaces: {}
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__combined_interfaces [[[
+#
+# YAML dictionary which combines all of the other network interface
+# configuration variables and is used in the role tasks and templates to
+# generate the configuration.
+ifupdown__combined_interfaces: '{{ lookup("template", "lookup/ifupdown__combined_interfaces.j2", convert_data=False) | from_yaml }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom configuration files [[[
+# ------------------------------
+
+# You can create custom configuration files on remote hosts if needed to
+# further configure the network interfaces.
+# See :ref:`ifupdown__ref_custom_files` for more details.
+
+# .. envvar:: ifupdown__custom_files [[[
+#
+# Manage custom files on all hosts in Ansible inventory.
+ifupdown__custom_files: []
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__custom_group_files [[[
+#
+# Manage custom files on hosts in specific Ansible inventory group.
+ifupdown__custom_group_files: []
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__custom_host_files [[[
+#
+# Manage custom files on specific hosts in Ansible inventory.
+ifupdown__custom_host_files: []
+
+                                                                   # ]]]
+# .. envvar:: ifupdown__custom_dependent_files [[[
+#
+# Manage custom files defined by other Ansible roles through the role dependent
+# variables.
+ifupdown__custom_dependent_files: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: ifupdown__ferm__dependent_rules [[[
+#
+# Configuration for debops.ferm_ Ansible role, generated dynamically from the
+# network interface configuration and passed to the role through a variable.
+ifupdown__ferm__dependent_rules: '{{ lookup("template", "lookup/ifupdown__ferm__dependent_rules.j2", convert_data=False) | from_yaml }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Role metadata [[[
+# -----------------
+
+# .. envvar:: ifupdown__role_metadata [[[
+#
+# This is a variable with the role metadata used internally by DebOps.
+ifupdown__role_metadata:
+  version: '0.3.0'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

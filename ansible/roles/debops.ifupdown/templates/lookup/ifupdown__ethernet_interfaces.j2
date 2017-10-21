@@ -1,0 +1,13 @@
+{% set ifupdown__tpl_interfaces = {} %}
+{% for interface in ansible_interfaces | sort %}
+{%   set ifupdown__tpl_interface = {} %}
+{%   if interface.startswith(('en', 'eth')) %}
+{%     if hostvars[inventory_hostname]["ansible_" + (interface|replace("-", "_"))].type|d() %}
+{%       set _ = ifupdown__tpl_interface.update({
+  "type": hostvars[inventory_hostname]["ansible_" + (interface|replace("-", "_"))]["type"]
+}) %}
+{%       set _ = ifupdown__tpl_interfaces.update({ interface: ifupdown__tpl_interface }) %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{{ ifupdown__tpl_interfaces | to_yaml }}

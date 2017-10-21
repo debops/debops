@@ -1,0 +1,189 @@
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+# {{ ansible_managed }}
+
+{% set interface_name = (item.value.iface | d(item.key)) %}
+{% set interface = item.value %}
+{% set ifupdown__tpl_addresses = [] %}
+{% set ifupdown__tpl_ipv4_addresses = [] %}
+{% set ifupdown__tpl_ipv6_addresses = [] %}
+{% if interface.no_addresses is undefined or not interface.no_addresses|bool %}
+{%   set ifupdown__tpl_addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_json) | unique %}
+{%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4 %}
+{%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6 %}
+{%   set ifupdown__tpl_gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_json) | unique %}
+{%   set ifupdown__tpl_ipv4_gateways = ifupdown__tpl_gateways | unique | ipv4 %}
+{%   set ifupdown__tpl_ipv6_gateways = ifupdown__tpl_gateways | unique | ipv6 %}
+{% endif %}
+{% if interface.inet|d() and interface.inet in [ 'static', 'tunnel' ] and not ifupdown__tpl_ipv4_addresses %}
+{%   set _ = interface.update({"inet":"manual"}) %}
+{% endif %}
+{% if interface.inet6|d() and interface.inet6 in [ 'static', 'v4tunnel' ] and not ifupdown__tpl_ipv6_addresses %}
+{%   set _ = interface.update({"inet6":"manual"}) %}
+{% endif %}
+{% if interface.comment|d() %}
+{{ (interface.comment if interface.comment is string else interface.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{% endif %}
+{% set ifupdown__tpl_allow = [] %}
+{% if interface.auto|d() and interface.auto|bool %}
+{%   set _ = ifupdown__tpl_allow.append('auto') %}
+{% endif %}
+{% if interface.allow|d() %}
+{%   if interface.allow is iterable %}
+{%     for thing in ([ interface.allow ] if interface.allow is string else interface.allow) %}
+{%       set _ = ifupdown__tpl_allow.append(thing) %}
+{%     endfor %}
+{%   else %}
+{%     if interface.allow|bool %}
+{%       set _ = ifupdown__tpl_allow.append('hotplug') %}
+{%     endif %}
+{%   endif %}
+{% endif %}
+{% if ifupdown__tpl_allow %}
+{%   for thing in ifupdown__tpl_allow | unique %}
+allow-{{ thing }} {{ interface_name }}
+{%   endfor %}
+{% if interface.comment4|d() %}
+
+{% endif %}
+{% endif %}
+{% set ifupdown__tpl_separate_stanza = [] %}
+{% if interface.comment6|d() %}
+{%   set _ = ifupdown__tpl_separate_stanza.append(True) %}
+{% endif %}
+{% if interface.type|d('ether') in [ 'ether', 'bridge', 'bonding', 'vlan', '6to4', 'tunnel', 'ppp' ] %}
+{%   if interface.inet|d() and interface.inet in [ 'loopback', 'static', 'manual', 'dhcp', 'bootp', 'tunnel', 'ppp', 'wvdial', 'ipv4ll' ] %}
+{%     if interface.comment4|d() %}
+{{ (interface.comment4 if interface.comment4 is string else interface.comment4 | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{%     endif %}
+iface {{ interface_name }} inet {{ interface.inet }}
+{%     if interface.inet == 'static' and ifupdown__tpl_ipv4_addresses %}
+    address         {{ ifupdown__tpl_ipv4_addresses[0] | ipaddr('address') }}
+    netmask         {{ ifupdown__tpl_ipv4_addresses[0] | ipaddr('netmask') }}
+{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
+{%       if ifupdown__tpl_ipv4_addresses | length > 1 %}
+{%         for address in ifupdown__tpl_ipv4_addresses[1:] %}
+    up              ip addr add {{ address }} dev {{ interface_name }} label {{ interface_name }}:{{ loop.index0 }}
+    down            ip addr del {{ address }} dev {{ interface_name }} label {{ interface_name }}:{{ loop.index0 }}
+{%         endfor %}
+{%       endif %}
+{%     elif interface.inet != 'static' and ifupdown__tpl_ipv4_addresses %}
+{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
+{%       for address in ifupdown__tpl_ipv4_addresses %}
+    up              ip addr add {{ address }} dev {{ interface_name }} label {{ interface_name }}:{{ loop.index0 }}
+    down            ip addr del {{ address }} dev {{ interface_name }} label {{ interface_name }}:{{ loop.index0 }}
+{%       endfor %}
+{%     endif %}
+{%     if ifupdown__tpl_ipv4_gateways %}
+{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
+    gateway         {{ ifupdown__tpl_ipv4_gateways | first }}
+{%     endif %}
+{%     if interface.dns_nameservers|d() %}
+{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
+    dns-nameservers {{ (([ interface.dns_nameservers ]) if interface.dns_nameservers is string else interface.dns_nameservers) | join(' ') }}
+{%     endif %}
+{%     if interface.dns_search|d() %}
+{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
+    dns-search      {{ (([ interface.dns_search ]) if interface.dns_search is string else interface.dns_search) | join(' ') }}
+{%     endif %}
+{%     if interface.type|d() and interface.type == 'bridge' %}
+{%       for param_name in interface.keys() | sort %}
+{%         if param_name.startswith(('bridge_', 'bridge-')) and interface[param_name] %}
+{%           set _ = ifupdown__tpl_separate_stanza.append(True) %}
+    {{ param_name }} {{ (([ interface[param_name] ]) if (interface[param_name] is string) else interface[param_name]) | join(' ') }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%     if interface.type|d() and interface.type == 'vlan' %}
+{%       if interface.vlan_device|d() %}
+{%         set _ = ifupdown__tpl_separate_stanza.append(True) %}
+    vlan_raw_device {{ interface.vlan_device }}
+{%       elif interface.vlan_raw_device|d() %}
+{%         set _ = ifupdown__tpl_separate_stanza.append(True) %}
+    vlan_raw_device {{ interface.vlan_raw_device }}
+{%       endif %}
+{%     endif %}
+{%     if interface.type|d() and interface.type == 'bonding' %}
+{%       if interface.slaves|d() %}
+{%         set _ = ifupdown__tpl_separate_stanza.append(True) %}
+    slaves          {{ (([ interface.slaves ]) if interface.slaves is string else interface.slaves) | join(' ') }}
+{%       endif %}
+{%       for param_name in interface.keys() | sort %}
+{%         if param_name.startswith(('bond_', 'bond-')) and interface[param_name] %}
+{%           set _ = ifupdown__tpl_separate_stanza.append(True) %}
+    {{ param_name }} {{ (([ interface[param_name] ]) if (interface[param_name] is string) else interface[param_name]) | join(' ') }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%     if interface.options4 | d(interface.options|d()) %}
+{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
+{{ (interface.options4 | d(interface.options)) | indent(4, true) }}
+{%     endif %}
+{%     if interface.add_options4 | d(interface.add_options|d()) %}
+{%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
+{{ (interface.add_options4 | d(interface.add_options)) | indent(4, true) }}
+{%     endif %}
+{%     if (interface.inet6|d() and ifupdown__tpl_separate_stanza) %}
+
+{%     endif %}
+{%   endif %}
+{%   if interface.inet6|d() and interface.inet6 in [ 'auto', 'loopback', 'static', 'manual', 'dhcp', 'v4tunnel', '6to4' ] %}
+{%     if interface.comment6|d() %}
+{{ (interface.comment6 if interface.comment6 is string else interface.comment6 | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{%     endif %}
+iface {{ interface_name }} inet6 {{ interface.inet6 }}
+{%     if interface.inet6 == 'static' and ifupdown__tpl_ipv6_addresses %}
+    address         {{ ifupdown__tpl_ipv6_addresses[0] }}
+{%       if ifupdown__tpl_ipv6_addresses | length > 1 %}
+{%         for address in ifupdown__tpl_ipv6_addresses[1:] %}
+    up              ip addr add {{ address }} dev {{ interface_name }}
+    down            ip addr del {{ address }} dev {{ interface_name }}
+{%         endfor %}
+{%       endif %}
+{%     elif interface.inet6 != 'static' and ifupdown__tpl_ipv6_addresses %}
+{%       for address in ifupdown__tpl_ipv6_addresses %}
+    up              ip addr add {{ address }} dev {{ interface_name }}
+    down            ip addr del {{ address }} dev {{ interface_name }}
+{%       endfor %}
+{%     endif %}
+{%     if ifupdown__tpl_ipv6_gateways %}
+    gateway         {{ ifupdown__tpl_ipv6_gateways | first }}
+{%     endif %}
+{%     if interface.type == '6to4' and interface.local|d() %}
+    local           {{ interface.local }}
+{%     endif %}
+{%     if ((interface.inet is undefined or not interface.inet) and interface.dns_nameservers|d()) %}
+    dns-nameservers {{ (([ interface.dns_nameservers ]) if interface.dns_nameservers is string else interface.dns_nameservers) | join(' ') }}
+{%     endif %}
+{%     if ((interface.inet is undefined or not interface.inet) and interface.dns_search|d()) %}
+    dns-search      {{ (([ interface.dns_search ]) if interface.dns_search is string else interface.dns_search) | join(' ') }}
+{%     endif %}
+{%     if ((interface.inet is undefined or not interface.inet) and interface.options|d()) %}
+{{ interface.options | indent(4, true) }}
+{%     endif %}
+{%     if ((interface.inet is undefined or not interface.inet) and interface.add_options|d()) %}
+{{ interface.add_options | indent(4, true) }}
+{%     endif %}
+{%     if interface.options6|d() %}
+{{ interface.options6 | indent(4, true) }}
+{%     endif %}
+{%     if interface.add_options6|d() %}
+{{ interface.add_options6 | indent(4, true) }}
+{%     endif %}
+{%   endif %}
+{% elif interface.type|d('ether') in [ 'mapping' ] %}
+mapping {{ interface_name }}
+{%   if interface.script|d() %}
+    script {{ interface.script }}
+{%   endif %}
+{%   if interface.options|d() %}
+{{ interface.options | indent(4, true) }}
+{%   endif %}
+{%   if interface.add_options|d() %}
+{{ interface.add_options | indent(4, true) }}
+{%   endif %}
+{% endif %}
+{% if interface.debug|d() | bool %}
+
+{{ ("interface_name: " + (interface_name | to_nice_json)) | replace('\n$','') | comment(prefix='',postfix='') -}}
+{{ ("interface: " + (interface | to_nice_json)) | replace('\n$','') | comment(prefix='',postfix='') -}}
+{% endif %}
