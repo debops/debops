@@ -1,0 +1,81 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.debops_fact default variables [[[
+# ========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# DebOps fact main configuration [[[
+# ----------------------------------
+
+# .. envvar:: debops_fact__enabled [[[
+#
+# Enable or disable support for DebOps facts.
+debops_fact__enabled: True
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps fact storage configuration [[[
+# -------------------------------------
+
+# .. envvar:: debops_fact__public_path [[[
+#
+# Path to the file which holds the public parameters.
+debops_fact__public_path: '/etc/ansible/debops_fact.ini'
+
+                                                                   # ]]]
+# .. envvar:: debops_fact__private_path [[[
+#
+# Path to the file which holds the private parameters.
+debops_fact__private_path: '/etc/ansible/debops_fact_priv.ini'
+
+                                                                   # ]]]
+# .. envvar:: debops_fact__private_group [[[
+#
+# The system group which will be able to access the private facts file. It will
+# be automatically created if it doesn't exist.
+debops_fact__private_group: 'root'
+
+                                                                   # ]]]
+# .. envvar:: debops_fact__private_mode [[[
+#
+# The file permissions of the private Ansible facts file.
+debops_fact__private_mode: '0640'
+
+                                                                   # ]]]
+# .. envvar:: debops_fact__config_files [[[
+#
+# List of INI configuration files to read by the fact script.
+debops_fact__config_files:
+  - '{{ debops_fact__public_path }}'
+  - '{{ debops_fact__private_path }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps fact sections [[[
+# ------------------------
+
+# .. envvar:: debops_fact__default_section [[[
+#
+# Name of the "default" INI section, not added in a subkey.
+debops_fact__default_section: 'default'
+
+                                                                   # ]]]
+# .. envvar:: debops_fact__public_section [[[
+#
+# Name of the "public" section available by default, stored in the public fact
+# file.
+debops_fact__public_section: 'global'
+
+                                                                   # ]]]
+# .. envvar:: debops_fact__private_section [[[
+#
+# Name of the "private" section available by default, stored in the private
+# fact file.
+debops_fact__private_section: 'secret'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

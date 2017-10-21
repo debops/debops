@@ -1,0 +1,51 @@
+---
+
+- name: Ensure that the private fact group exists
+  group:
+    name: '{{ debops_fact__private_group }}'
+    system: True
+    state: 'present'
+  when: debops_fact__enabled|bool
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: debops_fact__enabled|bool
+
+- name: Install local fact script
+  template:
+    src: 'etc/ansible/facts.d/debops_fact.fact.j2'
+    dest: '/etc/ansible/facts.d/debops_fact.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: debops_fact__register_facts
+  when: debops_fact__enabled|bool
+
+- name: Initialize public DebOps fact file
+  template:
+    src: 'etc/ansible/debops_fact.ini.j2'
+    dest: '{{ debops_fact__public_path }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    force: False
+  when: debops_fact__enabled|bool
+
+- name: Initialize private DebOps fact file
+  template:
+    src: 'etc/ansible/debops_fact_priv.ini.j2'
+    dest: '{{ debops_fact__private_path }}'
+    owner: 'root'
+    group: '{{ debops_fact__private_group }}'
+    mode: '{{ debops_fact__private_mode }}'
+    force: False
+  when: debops_fact__enabled|bool
+
+- name: Reload facts if they were modified
+  action: setup
+  when: debops_fact__enabled|bool and debops_fact__register_facts|changed

@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from os import path, access, R_OK
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
+
+conf_files = loads('''{{ debops_fact__config_files | to_json }}''')
+default_section = '{{ debops_fact__default_section }}'
+output = {}
+
+
+def read_facts(config_file, data):
+
+    out_facts = data
+
+    if path.isfile(config_file) and access(config_file, R_OK):
+        config = ConfigParser()
+        config.read(conf_file)
+
+        for section in config.sections():
+
+            if section == default_section:
+                for name, value in config.items(section):
+                    try:
+                        out_facts[name] = loads(value)
+                    except ValueError:
+                        out_facts[name] = value
+
+            else:
+                out_facts[section] = {}
+
+                for name, value in config.items(section):
+                    try:
+                        out_facts[section][name] = loads(value)
+                    except ValueError:
+                        out_facts[section][name] = value
+
+    return out_facts
+
+for conf_file in conf_files:
+    output = read_facts(conf_file, output)
+
+print(dumps(output, sort_keys=True, indent=2))
