@@ -1,0 +1,218 @@
+---
+
+- name: Get upstream APT GPG key
+  apt_key:
+    id: '{{ docker__upstream_key }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  when: docker__upstream|d() | bool
+
+- name: Configure upstream APT repository
+  apt_repository:
+    repo: '{{ docker__upstream_repository }}'
+    state: 'present'
+    update_cache: True
+  when: docker__upstream|d() | bool
+
+- name: Make sure that systemd directory exists
+  file:
+    path: '/etc/systemd/system'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: ansible_service_mgr == 'systemd'
+  tags: [ 'role::docker:config' ]
+
+- name: Make sure that docker.service.d directory exists
+  file:
+    path: '/etc/systemd/system/docker.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (ansible_service_mgr == 'systemd' and
+        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
+  tags: [ 'role::docker:config' ]
+
+- name: Remove other version if upstream is modified
+  apt:
+    name: '{{ item }}'
+    state: 'absent'
+    install_recommends: False
+  register: docker__register_other_version_removed
+  with_flattened:
+    - '{{ "docker.io" if docker__upstream|d()
+                else docker__upstream_packagename }}'
+    - '{{ "docker-engine" if docker__upstream|d()
+                else [] }}'
+
+- name: Remove startup file(s) if present
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  tags: [ 'role::docker:config' ]
+  with_flattened:
+    - '/etc/systemd/system/docker.service'
+    - '/lib/systemd/system/docker.service'
+    - '/etc/default/docker'
+    - '/etc/docker/daemon.json'
+    - '/etc/systemd/system/docker.service.d/http-proxy.conf'
+  when: (docker__register_other_version_removed|changed)
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - '{{ docker__mandatory_packages }}'
+    - '{{ docker__upstream_packagename if docker__upstream|d() else "docker.io" }}'
+    - '{{ docker__base_packages }}'
+    - '{{ docker__packages }}'
+
+- name: Install Python packages in virtualenv
+  pip:
+    name: '{{ item.name | d(item) }}'
+    version: '{{ item.version | d(omit) }}'
+    virtualenv: '{{ docker__virtualenv }}'
+    state: '{{ item.state | d("present") }}'
+  with_flattened:
+    - '{{ docker__default_pip_packages }}'
+    - '{{ docker__pip_packages }}'
+
+- name: Expose Docker virtualenv for Ansible modules
+  file:
+    path: '{{ docker__virtualenv_python_symlink }}'
+    src:  '{{ docker__virtualenv_python_interpreter }}'
+    state: 'link'
+
+- name: Symlink selected Python scripts to /usr/local/bin
+  file:
+    path: '{{ item.path }}'
+    src: '{{ item.src }}'
+    state: 'link'
+  with_flattened:
+    - '{{ docker__default_pip_packages }}'
+    - '{{ docker__pip_packages }}'
+  when: item.path|d() and item.src|d() and
+        item.state|d('present') != 'absent'
+
+- name: Install ferment wrapper script
+  template:
+    src: 'usr/local/lib/docker-ferment-wrapper.j2'
+    dest: '{{ docker__ferment_wrapper }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: docker__ferment | bool
+
+- name: Install ferm post hook
+  template:
+    src: 'etc/ferm/hooks/post.d/restart-docker.j2'
+    dest: '/etc/ferm/hooks/post.d/restart-docker'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: docker__ferm_post_hook|bool
+
+- name: Check Docker version
+  environment:
+    LC_MESSAGES: 'C'
+  shell: dpkg-query -W -f='${Version}\n' '{{ ("docker-ce" if docker__upstream|d() else "docker.io") }}' | cut -d- -f1
+  register: docker__register_version
+  changed_when: False
+  failed_when: False
+  tags: [ 'role::docker:config' ]
+
+- name: Configure Docker options
+  template:
+    src: 'etc/default/docker.j2'
+    dest: '/etc/default/docker'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart docker' ]
+  tags: [ 'role::docker:config' ]
+  when: (ansible_service_mgr != 'systemd' or docker__register_version.stdout | version_compare('1.10', '<'))
+
+- name: Configure Docker systemd options
+  template:
+    src: 'etc/docker/daemon.json.j2'
+    dest: '/etc/docker/daemon.json'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart docker' ]
+  tags: [ 'role::docker:config' ]
+  when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout | version_compare('1.10', '>='))
+
+- name: Install Debian systemd service unit
+  template:
+    src: 'etc/systemd/system/docker.service.j2'
+    dest: '/etc/systemd/system/docker.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: docker__register_systemd_service
+  notify: ['Restart docker' ]
+  when: ansible_service_mgr == 'systemd'
+  tags: [ 'role::docker:config' ]
+
+- name: Configure Docker proxy
+  template:
+    src: 'etc/systemd/system/docker.service.d/http-proxy.conf.j2'
+    dest: '/etc/systemd/system/docker.service.d/http-proxy.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: docker__register_systemd_proxy_present
+  notify: ['Restart docker' ]
+  when: (ansible_service_mgr == 'systemd' and
+        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
+  tags: [ 'role::docker:config' ]
+
+- name: Reload systemd daemons
+  command: systemctl daemon-reload
+  notify: [ 'Restart docker']
+  when: (ansible_service_mgr == 'systemd' and
+         ((docker__register_systemd_service|d() and
+         docker__register_systemd_service|changed) or
+         (docker__register_systemd_proxy_present|d() and
+         docker__register_systemd_proxy_present|changed) or
+         (docker__register_systemd_proxy_absent|d() and
+         docker__register_systemd_proxy_absent|changed)))
+  tags: [ 'role::docker:config' ]
+
+- name: Add specified users to 'docker' group
+  user:
+    name: '{{ item }}'
+    groups: 'docker'
+    append: True
+  with_items: '{{ docker__admins }}'
+  when: item|d()
+  tags: [ 'role::docker:config', 'role::docker:admins' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save APT local facts
+  template:
+    src: 'etc/ansible/facts.d/docker.fact.j2'
+    dest: '/etc/ansible/facts.d/docker.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: docker__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: docker__register_facts|changed

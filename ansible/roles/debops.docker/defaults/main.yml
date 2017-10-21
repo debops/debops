@@ -1,0 +1,519 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.docker default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Docker packages and installation [[[
+# ------------------------------------
+
+# .. envvar:: docker__distribution [[[
+#
+# The OS distribution which is used to select upstream APT repository.
+docker__distribution: '{{ ansible_local.core.distribution
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.distribution|d())
+                          else ansible_distribution }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__distribution_release [[[
+#
+# The OS distribution relese which is used to select upstream APT repository.
+docker__distribution_release: '{{ ansible_local.core.distribution_release
+                                  if (ansible_local|d() and ansible_local.core|d() and
+                                      ansible_local.core.distribution_release|d())
+                                  else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream [[[
+#
+# By default ``debops.docker`` installs Docker from the system distribution
+# repositories. Here you can enable upstream repositories and install the
+# upstream version of Docker.
+# Note that switching from upstream to default on one host, may not always
+# work. You may need to manually remove the upstream version and configuration.
+docker__upstream: '{{ True
+                      if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.distribution_release|d() and
+                          ansible_local.core.distribution_release == "stretch")
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_edition [[[
+#
+# For upstream repositories the edition to be installed: ce or ee. Note that Docker EE
+# is not supported on Debian.
+docker__upstream_edition: 'ce'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_channel [[[
+#
+# For upstream repositories choose the stable or edge channel.
+docker__upstream_channel: 'stable'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_key [[[
+#
+# APT GPG key id used to sign the upstream Docker packages.
+docker__upstream_key: '{{ "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+                           if (docker__upstream_edition == "ce")
+                           else "DD911E995A64A202E85907D6BC14F10B6D085F96" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_packagename [[[
+#
+# The full docker packagename to be installed.
+docker__upstream_packagename: '{{ "docker-" + docker__upstream_edition }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_arch_map [[[
+#
+# A YAML dictionary that maps the ``ansible_architecture`` variable with its
+# corresponding processor architecture used in the Docker repository URLs.
+docker__upstream_arch_map:
+  'x86_64': 'amd64'
+  'armhf':  'armhf'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_repository [[[
+#
+# Address of the Docker upstream APT repository.
+docker__upstream_repository: '{{ "deb [arch="
+        + docker__upstream_arch_map[ansible_architecture]
+        + "] https://download.docker.com/linux/" + docker__distribution|lower + " "
+        + docker__distribution_release + " " + docker__upstream_channel }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__mandatory_packages [[[
+#
+# List of mandatory packages to install with Docker.
+docker__mandatory_packages:
+  - 'apt-transport-https'
+  - 'ca-certificates'
+  - 'curl'
+  - 'gnupg2'
+  - 'software-properties-common'
+
+                                                                   # ]]]
+# .. envvar:: docker__base_packages [[[
+#
+# List of base packages to install with Docker.
+docker__base_packages:
+  - "aufs-tools"
+  - "python-pip"
+  - "python-setuptools"
+  - "python-virtualenv"
+  - '{{ [ "virtualenv" ] if (ansible_distribution_release not in ["trusty", "wheezy"]) else [] }}'
+  - "bridge-utils"
+  - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__packages [[[
+#
+# List of additional packages to install with Docker.
+docker__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker Python environment [[[
+# -----------------------------
+
+# The role prepares a separate Python virtualenv for Docker-related commands
+# and Ansible modules. See :ref:`docker__ref_virtualenv` for more details.
+
+# .. envvar:: docker__virtualenv [[[
+#
+# Absolute path of the location of Docker virtualenv.
+docker__virtualenv: '/usr/local/lib/docker/virtualenv'
+
+                                                                   # ]]]
+# .. envvar:: docker__virtualenv_python_interpreter [[[
+#
+# Absolute path to the Python interpreter which will be exposed for Ansible
+# modules to work correctly with Docker virtualenv.
+docker__virtualenv_python_interpreter: '{{ docker__virtualenv + "/bin/python" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__virtualenv_python_symlink [[[
+#
+# Absolute path for the :command:`docker-python` symlink.
+docker__virtualenv_python_symlink: '/usr/local/bin/docker-python'
+
+                                                                   # ]]]
+# .. envvar:: docker__default_pip_packages [[[
+#
+# List od default Python packages to install in Docker virtualenv. The
+# corresponding binaries will be symlinked in the :file:`/usr/local/bin/`
+# directory to allow access from outside of the Python virtualenv.
+# See :ref:`docker__ref_pip_packages` for more details.
+docker__default_pip_packages:
+
+  - name: 'docker'
+    state: '{{ "present" if docker__upstream|bool else "absent" }}'
+
+  - name: 'docker-compose'
+    path: '/usr/local/bin/docker-compose'
+    src:  '{{ docker__virtualenv + "/bin/docker-compose" }}'
+    state: '{{ "present" if docker__upstream|bool else "absent" }}'
+
+  - name: 'docker-py'
+    version: '0.5.3'
+    state: '{{ "present" if docker__ferment|bool else "absent" }}'
+
+  - name: 'ferment'
+    path: '/usr/local/bin/ferment'
+    src:  '{{ docker__virtualenv + "/bin/ferment" }}'
+    state: '{{ "present" if docker__ferment|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pip_packages [[[
+#
+# List of additional Python packages to install in Docker virtualenv.
+# See :ref:`docker__ref_pip_packages` for more details.
+docker__pip_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker authentication [[[
+# -------------------------
+
+# .. envvar:: docker__admins [[[
+#
+# List of UNIX accounts which should be added to :command:`docker` system group which
+# has access to the Docker UNIX socket.
+docker__admins: '{{ ansible_local.core.admin_users
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.admin_users|d())
+                    else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
+# -------------------------
+
+# .. envvar:: docker__bridge [[[
+#
+# Name of the bridge to use instead of the autogenerated ``docker0`` bridge.
+# The bridge should already exist on the server.
+docker__bridge: ''
+
+                                                                   # ]]]
+# .. envvar:: docker__fixed_cidr [[[
+#
+# Fixed subnet in CIDR format to confine dynamically allocated IP addresses.
+# Should be included in the IP address range set on the bridge.
+docker__fixed_cidr: ''
+
+                                                                   # ]]]
+# .. envvar:: docker__dns_nameserver [[[
+#
+# List of IP addresses of nameservers used by Docker. By default they
+# are gathered by the debops.core_ role from the :file:`/etc/resolv.conf` file of
+# the remote host.
+docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
+                            if (ansible_local|d() and ansible_local.resolver|d() and
+                                ansible_local.resolver.nameserver|d())
+                            else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__dns_search [[[
+#
+# List of DNS search domains to use by Docker. By default they are gathered by
+# the debops.core_ role from the :file:`/etc/resolv.conf` file of the remote host.
+docker__dns_search: '{{ ansible_local.resolver.search
+                        if (ansible_local|d() and ansible_local.resolver|d() and
+                            ansible_local.resolver.search|d())
+                        else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Remote Docker connection (TCP) [[[
+# ----------------------------------
+
+# .. envvar:: docker__tcp [[[
+#
+# Enable or disable listening for TLS connections on the TCP docker port. By
+# default remote connections are enabled if the debops.pki_ role has been
+# configured on remote host (access is controlled by the firewall).
+docker__tcp: '{{ docker__pki | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__tcp_bind [[[
+#
+# IP address of the interface to listen on for incoming connections (all
+# interfaces by default).
+docker__tcp_bind: '0.0.0.0'
+
+                                                                   # ]]]
+# .. envvar:: docker__unencrypted_tcp_port [[[
+#
+# Port on which to listen for incoming unencrypted connections.
+docker__unencrypted_tcp_port: '2375'
+
+                                                                   # ]]]
+# .. envvar:: docker__tls_tcp_port [[[
+#
+# Port on which to listen for incoming TLS connections.
+docker__tls_tcp_port: '2376'
+
+                                                                   # ]]]
+# .. envvar:: docker__tcp_port [[[
+#
+# Port on which to listen for incoming TLS connections.
+docker__tcp_port: '{{ docker__tls_tcp_port if (docker__pki|d() | bool) else docker__unencrypted_tcp_port }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__tcp_allow [[[
+#
+# List of IP addresses or subnets in CIDR format which are allowed to connect
+# to the Docker daemon over TLS. If it's not specified, remote connections are
+# denied by the firewall.
+docker__tcp_allow: []
+
+                                                                   # ]]]
+# .. envvar:: docker__tcp_listen [[[
+#
+# Default connection configured in addition to local socket connection, using
+# TCP over TLS.
+docker__tcp_listen: '{{ ("tcp://" + docker__tcp_bind + ":" + docker__tcp_port)
+                         if (docker__tcp|d() | bool) else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__custom_ports [[[
+#
+# List of additional TCP/UDP ports to allow in the firewall, useful for other
+# Docker-related services, like Swarm, Consul.
+docker__custom_ports: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker configuration options [[[
+# --------------------------------
+
+# .. envvar:: docker__env_http_proxy [[[
+#
+# Http Proxy settings for the docker daemon
+docker__env_http_proxy: '{{ ansible_env.http_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__env_https_proxy [[[
+#
+# Https Proxy settings for the docker daemon
+docker__env_https_proxy: '{{ ansible_env.https_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__env_no_proxy [[[
+#
+# No Proxy settings for the docker daemon
+docker__env_no_proxy: '{{ ansible_env.no_proxy | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__listen [[[
+#
+# List of host connections configured in the Docker daemon (``--host`` parameter).
+docker__listen:
+  - '{{ "fd://" if ansible_service_mgr == "systemd" else "unix:///var/run/docker.sock" }}'
+  - '{{ docker__tcp_listen }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__labels [[[
+#
+# Dictionary with labels configured on the Docker daemon, each key is the label
+# name and value is the label attribute. Examples:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    docker__labels:
+#      'com.example.environment': 'production'
+#      'com.example.storage':     'extfs'
+#
+docker__labels: {}
+
+                                                                   # ]]]
+# .. envvar:: docker__debug [[[
+#
+# Start docker daemon in debug mode.
+docker__debug: False
+
+                                                                   # ]]]
+# .. envvar:: docker__live_restore [[[
+#
+# Enables keeping containers alive during daemon downtime. Only supported from
+# docker version 1.12 and above.
+docker__live_restore: False
+
+                                                                   # ]]]
+# .. envvar:: docker__graph [[[
+#
+# Alternative root path of the docker runtime.
+docker__graph: '/var/lib/docker'
+
+                                                                   # ]]]
+# .. envvar:: docker__registry_mirrors [[[
+#
+# List of registry mirrors.
+docker__registry_mirrors: []
+
+                                                                   # ]]]
+# .. envvar:: docker__storage_driver [[[
+#
+# Storage driver for docker volumes.
+docker__storage_driver: '{{ "aufs"
+                             if (ansible_distribution_release in ["wheezy", "jessie" ])
+                             else "overlay" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__storage_options [[[
+#
+# Additional docker storage driver options.
+docker__storage_options: {}
+
+                                                                   # ]]]
+# .. envvar:: docker__custom_daemon_options [[[
+#
+# Allows passing of arbitrary/unsupported configuration options to
+# 'daemon.json'.
+docker__custom_daemon_options: {}
+
+                                                                   # ]]]
+# .. envvar:: docker__options [[[
+#
+# List of additional options passed to :command:`docker` daemon. Examples:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    docker__options:
+#      - '--icc=false'
+#      - '--insecure-registry=10.1.0.0/16'
+#
+docker__options: []
+                                                                   # ]]]
+                                                                   # ]]]
+# PKI and certificates [[[
+# ------------------------
+
+# .. envvar:: docker__pki [[[
+#
+# Enable or disable support for PKI certificates managed by debops.pki_.
+docker__pki: '{{ (True
+                  if (ansible_local|d() and ansible_local.pki|d() and
+                      ansible_local.pki.enabled|d() | bool)
+                  else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_path [[[
+#
+# Directory where PKI files are located on the remote host.
+docker__pki_path: '{{ ansible_local.pki.base_path
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.base_path|d())
+                      else "/etc/pki" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_realm [[[
+#
+# Name of the PKI realm used by Docker.
+docker__pki_realm: '{{ ansible_local.pki.realm
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.realm|d())
+                       else "system" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_ca [[[
+#
+# Name of the Root CA certificate file used by Docker.
+docker__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_crt [[[
+#
+# Name of the host certificate used by Docker.
+docker__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_key [[[
+#
+# Name of the private key file used by Docker.
+docker__pki_key: 'default.key'
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall and ferment support [[[
+# --------------------------------
+
+# .. envvar:: docker__ferm_post_hook [[[
+#
+# Enable or disable installation for the :program:`ferm` post hook when :program:`ferment`
+# is disabled.
+docker__ferm_post_hook: '{{ True
+                            if (ansible_local|d() and ansible_local.ferm|d() and
+                                not docker__ferment|bool) else False }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__ferment [[[
+#
+# Enable or disable support for :program:`ferment` script, which can generate :program:`ferm`
+# configuration with the current Docker state.
+docker__ferment: '{{ True
+                     if (ansible_local|d() and ansible_local.ferm|d() and
+                         not docker__upstream|bool)
+                     else False }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__ferment_wrapper [[[
+#
+# Path to the :program:`ferment` wrapper script used to generate :program:`ferm` configuration.
+docker__ferment_wrapper: '{{ (ansible_local.root.lib
+                              if (ansible_local|d() and ansible_local.root|d() and
+                                  ansible_local.root.lib|d())
+                              else "/usr/local/lib") + "/docker-ferment-wrapper" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: docker__etc_services__dependent_list [[[
+#
+# Configuration for debops.etc_services_ role which registers port numbers
+# for Docker REST API.
+docker__etc_services__dependent_list:
+
+  - name: 'docker'
+    port: '{{ docker__unencrypted_tcp_port }}'
+    comment: 'Docker REST API (plain text)'
+
+  - name: 'docker-s'
+    port: '{{ docker__tls_tcp_port }}'
+    comment: 'Docker REST API (SSL)'
+
+                                                                   # ]]]
+# .. envvar:: docker__ferm__dependent_rules [[[
+#
+# Configuration for debops.ferm_ role which enables support for :program:`ferment`
+# script and opens access to the Docker REST API in the firewall.
+docker__ferm__dependent_rules:
+
+  - type: 'custom'
+    weight: '99'
+    role: 'docker'
+    name: 'ferment_rules'
+    rules: |
+      @def $DOCKER_FERMENT = `test -x {{ docker__ferment_wrapper }} && echo 1 || echo 0`;
+      @if $DOCKER_FERMENT {
+          @include '{{ docker__ferment_wrapper + (" " + docker__bridge if docker__bridge else "") }}|';
+      }
+    state: '{{ "present" if docker__ferment|bool else "absent" }}'
+
+  - type: 'accept'
+    dport: '{{ [ docker__tcp_port ] + docker__custom_ports }}'
+    protocol: [ 'tcp', 'udp' ]
+    saddr: '{{ docker__tcp_allow }}'
+    accept_any: False
+    weight: '50'
+    role: 'docker'
+    name: 'service_rules'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

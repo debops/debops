@@ -1,0 +1,80 @@
+# {{ ansible_managed }}
+
+# Docker Upstart and SysVinit configuration file
+
+# Customize location of Docker binary (especially for development testing).
+#DOCKER="/usr/local/bin/docker"
+
+{% set docker__tpl_options = [] %}
+{% if docker__graph|d() %}
+{%   set _ = docker__tpl_options.append("--graph " + docker__graph) %}
+{% endif %}
+{% if docker__bridge|d() %}
+{%   set _ = docker__tpl_options.append("--bridge " + docker__bridge) %}
+{% endif %}
+{% if docker__fixed_cidr|d() %}
+{%   set _ = docker__tpl_options.append("--fixed-cidr " + docker__fixed_cidr) %}
+{% endif %}
+{% if docker__dns_nameserver|d() %}
+{%   for nameserver in docker__dns_nameserver %}
+{%     set _ = docker__tpl_options.append("--dns " + nameserver) %}
+{%   endfor %}
+{% endif %}
+{% if docker__dns_search|d() %}
+{%   for domain in docker__dns_search %}
+{%     set _ = docker__tpl_options.append("--dns-search " + domain) %}
+{%   endfor %}
+{% endif %}
+{% if docker__listen|d() %}
+{%   for host in docker__listen %}
+{%     if host %}
+{%       set _ = docker__tpl_options.append("-H " + host) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if docker__pki|d() | bool %}
+{%   set _ = docker__tpl_options.append("--tlsverify") %}
+{%   set _ = docker__tpl_options.append("--tlscacert " + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_ca) %}
+{%   set _ = docker__tpl_options.append("--tlscert " + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_crt) %}
+{%   set _ = docker__tpl_options.append("--tlskey " + docker__pki_path + "/" + docker__pki_realm + "/" + docker__pki_key) %}
+{% endif %}
+{% if docker__labels|d() %}
+{%   for key, value in docker__labels.iteritems() %}
+{%     set _ = docker__tpl_options.append("--label " + key + '="' + value + '"') %}
+{%   endfor %}
+{% endif %}
+{% if docker__debug|d() | bool %}
+{%   set _ = docker__tpl_options.append("--debug=true") %}
+{% endif %}
+{% if docker__registry_mirrors|d() %}
+{%   for registry_mirror in docker__registry_mirrors %}
+{%     if registry_mirror %}
+{%       set _ = docker__tpl_options.append("--registry-mirror" + " " + registry_mirror) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if docker__options|d() %}
+{%   for option in docker__options %}
+{%     if option %}
+{%       set _ = docker__tpl_options.append(option) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+# Use DOCKER_OPTS to modify the daemon startup options.
+{% if docker__tpl_options %}
+DOCKER_OPTS='{{ docker__tpl_options | join(" ") }}'
+{% else %}
+#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"
+{% endif %}
+
+{% if docker__env_http_proxy|d() %}
+export http_proxy={{ docker__env_http_proxy }}
+{% endif %}
+{% if docker__env_https_proxy|d() %}
+export https_proxy={{ docker__env_https_proxy }}
+{% endif %}
+{% if docker__env_no_proxy|d() %}
+export no_proxy={{ docker__env_no_proxy }}
+{% endif %}
+# This is also a handy place to tweak where Docker's temporary files go.
+#export TMPDIR="/mnt/bigdrive/docker-tmp"
