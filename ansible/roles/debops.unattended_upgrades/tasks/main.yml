@@ -1,0 +1,86 @@
+---
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - '{{ unattended_upgrades__base_packages }}'
+    - '{{ unattended_upgrades__packages }}'
+  when: unattended_upgrades__enabled | bool
+
+- name: Configure debconf answer
+  debconf:
+    name: 'unattended-upgrades'
+    question: 'unattended-upgrades/enable_auto_updates'
+    vtype: 'boolean'
+    value: '{{ "true" if unattended_upgrades__enabled|bool else "false" }}'
+
+- name: Configure periodic APT updates
+  template:
+    src: 'etc/apt/apt.conf.d/20periodic.j2'
+    dest: '/etc/apt/apt.conf.d/20periodic'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: ((unattended_upgrades__periodic|bool) or
+         (ansible_local|d() and ansible_local.unattended_upgrades|d() and
+          ansible_local.unattended_upgrades.periodic|bool))
+
+- name: Configure periodic APT upgrades
+  template:
+    src: 'etc/apt/apt.conf.d/20auto-upgrades.j2'
+    dest: '/etc/apt/apt.conf.d/20auto-upgrades'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: ((unattended_upgrades__enabled|bool) or
+         (ansible_local|d() and ansible_local.unattended_upgrades|d() and
+          ansible_local.unattended_upgrades.enabled|bool))
+
+- name: Divert unattended-upgrades configuration
+  command: dpkg-divert --quiet --local --divert /etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert
+           --rename /etc/apt/apt.conf.d/50unattended-upgrades
+  args:
+    creates: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
+  when: unattended_upgrades__enabled | bool
+
+- name: Configure unattended-upgrades
+  template:
+    src: 'etc/apt/apt.conf.d/50unattended-upgrades.j2'
+    dest: '/etc/apt/apt.conf.d/50unattended-upgrades'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: unattended_upgrades__enabled | bool
+
+- name: Remove configs out of the way before reversion
+  command: rm -f /etc/apt/apt.conf.d/50unattended-upgrades
+  args:
+    removes: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
+    warn: False
+  when: not unattended_upgrades__enabled | bool
+
+- name: Revert unattended-upgrades configuration
+  command: dpkg-divert --quiet --local --rename
+           --remove /etc/apt/apt.conf.d/50unattended-upgrades
+  args:
+    removes: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
+  when: not unattended_upgrades__enabled | bool
+
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Ansible local facts
+  template:
+    src: 'etc/ansible/facts.d/unattended_upgrades.fact.j2'
+    dest: '/etc/ansible/facts.d/unattended_upgrades.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'

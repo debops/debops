@@ -1,0 +1,105 @@
+{% import 'unattended_upgrades__tpl_macros.j2' as unattended_upgrades__tpl_macros with context %}
+// {{ ansible_managed }}
+
+// Unattended-Upgrade::Origins-Pattern controls which packages are
+// upgraded.
+Unattended-Upgrade::Origins-Pattern {
+{% set unattended_upgrades__tpl_origins = [] %}
+{% set unattended_upgrades__tpl_security_origins_found = False %}
+{% set unattended_upgrades__tpl_release_origins_found = False %}
+{% for element in unattended_upgrades__origins_lookup if not unattended_upgrades__tpl_security_origins_found|bool %}
+{%   if element in unattended_upgrades__security_origins.keys() %}
+{%     for item in unattended_upgrades__security_origins[element] %}
+{%       set _ = unattended_upgrades__tpl_origins.append(item) %}
+{%     endfor %}
+{%     set unattended_upgrades__tpl_security_origins_found = True %}
+{%   endif %}
+{% endfor %}
+{% if unattended_upgrades__release | bool %}
+{%   for element in unattended_upgrades__origins_lookup if not unattended_upgrades__tpl_release_origins_found|bool %}
+{%     if element in unattended_upgrades__release_origins.keys() %}
+{%       for item in unattended_upgrades__release_origins[element] %}
+{%         set _ = unattended_upgrades__tpl_origins.append(item) %}
+{%       endfor %}
+{%       set unattended_upgrades__tpl_release_origins_found = True %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% set unattended_upgrades__tpl_origins = unattended_upgrades__tpl_macros.get_origins_as_json(unattended_upgrades__tpl_origins) | from_json %}
+{% for item in unattended_upgrades__tpl_origins %}
+        "{{ item }}";
+{% endfor %}
+};
+
+// List of packages to not update (regexp are supported)
+Unattended-Upgrade::Package-Blacklist {
+{% set unattended_upgrades__tpl_blacklist = unattended_upgrades__tpl_macros.get_blacklist_as_json(
+    unattended_upgrades__default_blacklist +
+    unattended_upgrades__blacklist +
+    unattended_upgrades__group_blacklist) | from_json %}
+{% for item in unattended_upgrades__tpl_blacklist %}
+        "{{ item }}";
+{% endfor %}
+};
+
+// This option allows you to control if on a unclean dpkg exit
+// unattended-upgrades will automatically run
+//   dpkg --force-confold --configure -a
+// The default is true, to ensure updates keep getting installed
+Unattended-Upgrade::AutoFixInterruptedDpkg "{{ unattended_upgrades__auto_fix_interrupted_dpkg | bool | lower }}";
+
+// By default unattended-upgrade script performs upgrades of all packages, even
+// if they require a service restart. Set this parameter to "false" to not
+// perform automatic upgrades of such services.
+Unattended-Upgrade::IgnoreAppsRequireRestart "{{ unattended_upgrades__ignore_app_require_restart | bool | lower }}";
+
+// Split the upgrade into the smallest possible chunks so that
+// they can be interrupted with SIGUSR1. This makes the upgrade
+// a bit slower but it has the benefit that shutdown while a upgrade
+// is running is possible (with a small delay)
+Unattended-Upgrade::MinimalSteps "{{ unattended_upgrades__minimal_steps | bool | lower }}";
+
+// Install all unattended-upgrades when the machine is shuting down
+// instead of doing it in the background while the machine is running
+// This will (obviously) make shutdown slower
+Unattended-Upgrade::InstallOnShutdown "{{ unattended_upgrades__install_on_shutdown | bool | lower }}";
+
+
+{% if unattended_upgrades__mail_from %}
+// Send email FROM this address
+Unattended-Upgrade::Sender "{{ unattended_upgrades__mail_from }}";
+{% endif %}
+
+// Send email to this address for problems or packages upgrades
+// If empty or unset then no email is sent, make sure that you
+// have a working mail setup on your system. A package that provides
+// 'mailx' must be installed. E.g. "user@example.com"
+Unattended-Upgrade::Mail "{{ unattended_upgrades__mail_to | join(',') }}";
+
+// Set this value to "true" to get emails only on errors. Default
+// is to always send a mail if Unattended-Upgrade::Mail is set
+Unattended-Upgrade::MailOnlyOnError "{{ unattended_upgrades__mail_only_on_error | bool | lower }}";
+
+// Do automatic removal of new unused dependencies after the upgrade
+// (equivalent to apt-get autoremove)
+Unattended-Upgrade::Remove-Unused-Dependencies "{{ unattended_upgrades__remove_unused | bool | lower }}";
+
+// Automatically reboot *WITHOUT CONFIRMATION* if
+//  the file /var/run/reboot-required is found after the upgrade
+Unattended-Upgrade::Automatic-Reboot "{{ unattended_upgrades__auto_reboot | bool | lower }}";
+
+// If automatic reboot is enabled and needed, reboot at the specific
+// time instead of immediately
+//  Default: "now"
+//  Example: "02:00"
+Unattended-Upgrade::Automatic-Reboot-Time "{{ unattended_upgrades__auto_reboot_time }}";
+
+// Use apt bandwidth limit feature, this example limits the download
+// speed to 70kb/sec
+{% if unattended_upgrades__bandwidth_limit %}
+Acquire::http::Dl-Limit "{{ unattended_upgrades__bandwidth_limit }}";
+{% else %}
+//Acquire::http::Dl-Limit "70";
+{% endif %}
+
+// vim:ft=aptconf

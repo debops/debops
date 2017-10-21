@@ -1,0 +1,84 @@
+{# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+#}
+
+{% macro get_string_or_list_as_json_list(item) %}{# [[[ #}
+{{ ([ item ]
+   if (item is string)
+   else (item|list)) | to_nice_json }}
+{% endmacro %}{# ]]] #}
+
+{% macro assemble_origins_list(origins, unattended_upgrades__tpl_origins, unattended_upgrades__tpl_origins_absent) %}{# [[[ #}
+{% for item in origins %}
+{%   if item is string %}
+{%     set _ = unattended_upgrades__tpl_origins.append(item) %}
+{%   elif item is mapping %}
+{%     if item.origin|d(item.origins|d()) and "state" in item and item.state is string %}
+{%       if item.state == "present" %}
+{%         for origin in (get_string_or_list_as_json_list(item.origin|d(item.origins|d())) | from_json) %}
+{%           set _ = unattended_upgrades__tpl_origins.append(origin) %}
+{%         endfor %}
+{%       else %}
+{%         for origin in (get_string_or_list_as_json_list(item.origin|d(item.origins|d())) | from_json) %}
+{%           set _ = unattended_upgrades__tpl_origins_absent.append(origin) %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   else %}
+{%     set _ = assemble_origins_list(item, unattended_upgrades__tpl_origins, unattended_upgrades__tpl_origins_absent) %}
+{%   endif %}
+{% endfor %}
+{% endmacro %}{# ]]] #}
+
+{% macro get_origins_as_json(origins=[]) %}{# [[[ #}
+{% set unattended_upgrades__tpl_origins = origins %}
+{% set unattended_upgrades__tpl_origins_absent = [] %}
+{% set _ = assemble_origins_list(
+   (origins + unattended_upgrades__origins + unattended_upgrades__dependent_origins),
+   unattended_upgrades__tpl_origins,
+   unattended_upgrades__tpl_origins_absent) %}
+{% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
+       ansible_local.unattended_upgrades.origins|d()) %}
+{%   for item in ansible_local.unattended_upgrades.origins %}
+{%     set _ = unattended_upgrades__tpl_origins.append(item) %}
+{%   endfor %}
+{% endif %}
+{{ unattended_upgrades__tpl_origins | difference(unattended_upgrades__tpl_origins_absent) | sort | unique | to_nice_json }}
+{% endmacro %}{# ]]] #}
+
+{% macro assemble_blacklist(blacklist, unattended_upgrades__tpl_blacklist, unattended_upgrades__tpl_blacklist_absent) %}{# [[[ #}
+{% for item in blacklist %}
+{%   if item is string %}
+{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
+{%   elif item is mapping %}
+{%     if "name" in item and "state" in item and item.state is string %}
+{%       if item.state == "present" %}
+{%         for name in (get_string_or_list_as_json_list(item.name) | from_json) %}
+{%           set _ = unattended_upgrades__tpl_blacklist.append(name) %}
+{%         endfor %}
+{%       else %}
+{%         for name in (get_string_or_list_as_json_list(item.name) | from_json) %}
+{%           set _ = unattended_upgrades__tpl_blacklist_absent.append(name) %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   else %}
+{%     set _ = assemble_blacklist(item, unattended_upgrades__tpl_blacklist, unattended_upgrades__tpl_blacklist_absent) %}
+{%   endif %}
+{% endfor %}
+{% endmacro %}{# ]]] #}
+
+{% macro get_blacklist_as_json(blacklist=[]) %}{# [[[ #}
+{% set unattended_upgrades__tpl_blacklist = [] %}
+{% set unattended_upgrades__tpl_blacklist_absent = [] %}
+{% set _ = assemble_blacklist(
+   (blacklist + unattended_upgrades__dependent_blacklist),
+   unattended_upgrades__tpl_blacklist,
+   unattended_upgrades__tpl_blacklist_absent) %}
+{% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
+       ansible_local.unattended_upgrades.blacklist|d()) %}
+{%   for item in ansible_local.unattended_upgrades.blacklist %}
+{%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
+{%   endfor %}
+{% endif %}
+{{ unattended_upgrades__tpl_blacklist | difference(unattended_upgrades__tpl_blacklist_absent) | sort | unique | to_nice_json }}
+{% endmacro %}{# ]]] #}

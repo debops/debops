@@ -1,0 +1,21 @@
+// {{ ansible_managed }}
+
+// Enable the update/upgrade script (0=disable)
+APT::Periodic::Enable "{{ '1' if unattended_upgrades__periodic|bool else '0' }}";
+
+// Do "apt-get update" automatically every n-days (0=disable)
+APT::Periodic::Update-Package-Lists "{{ '1' if unattended_upgrades__periodic|bool else '0' }}";
+
+// Do "apt-get upgrade --download-only" every n-days (0=disable)
+APT::Periodic::Download-Upgradeable-Packages "{{ "1" if unattended_upgrades__periodic_download|bool else '0' }}";
+
+// Do "apt-get autoclean" every n-days (0=disable)
+APT::Periodic::AutocleanInterval "{{ unattended_upgrades__periodic_autoclean }}";
+
+// Send report mail to root
+//  0:  no report             (or null string)
+//  1:  progress report       (actually any string)
+//  2:  + command outputs     (remove -qq, remove 2>/dev/null, add -d)
+//  3:  + trace on
+APT::Periodic::Verbose "{{ unattended_upgrades__periodic_verbosity }}";
+
