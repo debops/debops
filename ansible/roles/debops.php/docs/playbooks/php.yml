@@ -1,0 +1,21 @@
+---
+
+- hosts: [ 'debops_service_php' ]
+  become: True
+
+  roles:
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::apt_preferences', 'role::logrotate' ]
+
+    - role: debops.apt_preferences
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: debops.php
+      tags: [ 'role::php' ]

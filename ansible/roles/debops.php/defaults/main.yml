@@ -1,0 +1,715 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.php default variables [[[
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Custom APT package repositories [[[
+# -----------------------------------
+
+# .. envvar:: php__version_preference [[[
+#
+# List of APT package names which are scanned to check available PHP versions.
+# The first found package wins.
+php__version_preference: [ 'php7.0', 'php5' ]
+
+                                                                   # ]]]
+# .. envvar:: php__sury [[[
+#
+# Enable custom APT repositories of Ondřej Surý, Debian and Ubuntu PHP package
+# maintainer. You can enable these repositories to install PHP 7.0 on Debian
+# Jessie. See :ref:`php__ref_sury` for more details.
+php__sury: '{{ (ansible_local.php.sury
+                if (ansible_local|d() and ansible_local.php|d() and
+                    ansible_local.php.sury|d())
+                else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: php__sury_apt_key_id [[[
+#
+# The OpenPGP key used to sign Ondřej Surý APT repository, dependent on the current
+# OS distribution.
+php__sury_apt_key_id: '{{ php__sury_apt_key_id_map[ansible_distribution] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__sury_apt_repo [[[
+#
+# APT repository URL to Ondřej Surý repository, dependent on the current OS
+# distribution.
+php__sury_apt_repo: '{{ php__sury_apt_repo_map[ansible_distribution] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__sury_apt_key_id_map [[[
+#
+# YAML dictionary map of OpenPGP key ids used to sign APT repository information,
+# dependent on the OS distribution.
+php__sury_apt_key_id_map:
+  'Debian': 'DF3D585DB8F0EB658690A554AC0E47584A7A714D'
+  'Ubuntu': '14AA40EC0831756756D7F66C4F4EA0AAE5267A6C'
+
+                                                                   # ]]]
+# .. envvar:: php__sury_apt_repo_map [[[
+#
+# YAML dictionary map of APT repository URLs, dependent on the OS distribution.
+php__sury_apt_repo_map:
+  'Debian': 'deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main'
+  'Ubuntu': 'ppa:ondrej/php'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT package installation [[[
+# ----------------------------
+
+# The role uses a special filtering for APT package names to ensure support for
+# different PHP versions. PHP APT packages are named in the format::
+#
+#     php<version>-<suffix>
+#
+# For the automatic filter to work, all you need to do to install a package is
+# to specify the ``<suffix>`` part. See :ref:`php__ref_packages` for more
+# details.
+
+# .. envvar:: php__server_api_packages [[[
+#
+# List of PHP Server API packages to install. This list is checked against to
+# enable certain parts of the role if needed. It should contain only the names
+# of the SAPI packages.
+php__server_api_packages: [ 'cli', 'fpm' ]
+
+                                                                   # ]]]
+# .. envvar:: php__base_packages [[[
+#
+# Install set of standard PHP packages.
+php__base_packages: [ '{{ "php" + php__version }}', 'curl', 'gd', 'mcrypt' ]
+
+                                                                   # ]]]
+# .. envvar:: php__packages [[[
+#
+# List of additional "global" APT packages to install.
+php__packages: []
+
+                                                                   # ]]]
+# .. envvar:: php__group_packages [[[
+#
+# List of APT packages for a group of hosts (only one group is supported).
+php__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: php__host_packages [[[
+#
+# List of APT packages to install on a specific host.
+php__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: php__dependent_packages [[[
+#
+# List of APT packages to install, requested by a role dependency.
+php__dependent_packages: []
+
+                                                                   # ]]]
+# .. envvar:: php__combined_packages [[[
+#
+# List of all PHP packages requested for installation passed to the filter
+# script as a string of arguments for further processing.
+php__combined_packages: '{{ (lookup("flattened",
+                             php__server_api_packages
+                             + php__base_packages
+                             + php__packages
+                             + php__group_packages
+                             + php__host_packages
+                             + php__dependent_packages).split(",")
+                            | difference(php__included_packages))
+                            | join(" ") }}'
+
+                                                                   # ]]]
+# .. envvar:: php__reset [[[
+#
+# Can be temporally set to ``True`` to reevaluate the preferred PHP version and
+# remove older PHP versions on the next Ansible run.
+# Note that this option is not idempotent. It will reset on every role run.
+php__reset: False
+
+                                                                   # ]]]
+# .. envvar:: php__included_packages [[[
+#
+# List of PHP packages which are shipped with the standard PHP distribution.
+# This variable is used to abstract packaging differences between different
+# PHP repositories or releases. If you use a custom APT package for PHP,
+# you might need to adjust this list for proper package resolution.
+php__included_packages: '{{ php__php_included_packages
+                            if php__sury
+                            else php__release_included_map[ansible_distribution_release] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__release_included_map [[[
+#
+# Configuration dictionary mapping distribution releases to different PHP
+# packaging configurations. Also see :envvar:`php__included_packages`.
+php__release_included_map:
+  wheezy:  '{{ php__php5_included_packages }}'
+  jessie:  '{{ php__php5_included_packages }}'
+  stretch: '{{ php__php_included_packages }}'
+  buster:  '{{ php__php_included_packages }}'
+  sid:     '{{ php__php_included_packages }}'
+  trusty:  '{{ php__php5_included_packages }}'
+  xenial:  '{{ php__php_included_packages }}'
+  zesty:   '{{ php__php_included_packages }}'
+
+                                                                   # ]]]
+# .. envvar:: php__php5_included_packages [[[
+#
+# PHP packages usually part of the php5/php5-common packaging.
+php__php5_included_packages: '{{ php__common_included_packages
+                                 + [ "bcmath", "bz2", "dba", "dom", "ereg",
+                                     "mbstring", "mhash", "SimpleXML", "soap",
+                                     "wddx", "xml", "xmlreader", "xmlwriter",
+                                     "zip" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__php_included_packages [[[
+#
+# PHP packages usually part of the php/php-common (PHP 7.x) packaging.
+php__php_included_packages: '{{ php__common_included_packages
+                                + [ "sysvsem", "sysvshm" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: php__common_included_packages [[[
+#
+# PHP packages usually part of the php/php-common packaging.
+php__common_included_packages:
+  - 'calendar'
+  - 'ctype'
+  - 'date'
+  - 'exif'
+  - 'fileinfo'
+  - 'filter'
+  - 'ftp'
+  - 'gettext'
+  - 'hash'
+  - 'iconv'
+  - 'libxml'
+  - 'openssl'
+  - 'pcntl'
+  - 'pcre'
+  - 'PDO'
+  - 'Phar'
+  - 'posix'
+  - 'Reflection'
+  - 'session'
+  - 'shmop'
+  - 'sockets'
+  - 'SPL'
+  - 'standard'
+  - 'sysvmsg'
+  - 'tokenizer'
+  - 'zlib'
+                                                                   # ]]]
+                                                                   # ]]]
+# Global php.ini configuration [[[
+# --------------------------------
+
+# .. envvar:: php__production [[[
+#
+# This variable determines if the :file:`php.ini` configuration will be
+# configured towards "production" systems (don't display errors), or
+# "development" systems (display all errors).
+php__production: True
+
+                                                                   # ]]]
+# .. envvar:: php__ini_cgi_fix_pathinfo [[[
+#
+# Enable or disable ``cgi.fix_pathinfo`` option in PHP. This is highly
+# dependent on the used webserver (:program:`nginx` should have the option disabled,
+# ``apache2`` needs it to be enabled).
+php__ini_cgi_fix_pathinfo: False
+
+                                                                   # ]]]
+# .. envvar:: php__ini_max_execution_time [[[
+#
+# Specify default maximum execution time, in seconds.
+php__ini_max_execution_time: '30'
+
+                                                                   # ]]]
+# .. envvar:: php__ini_max_input_time [[[
+#
+# Specify default maximum input time, in seconds.
+php__ini_max_input_time: '60'
+
+                                                                   # ]]]
+# .. envvar:: php__ini_memory_limit [[[
+#
+# Specify maximum memory limit for PHP processes, in megabytes.
+php__ini_memory_limit: '128M'
+
+                                                                   # ]]]
+# .. envvar:: php__ini_post_max_size [[[
+#
+# Specify maximum size of the POST data, in megabytes.
+php__ini_post_max_size: '8M'
+
+                                                                   # ]]]
+# .. envvar:: php__ini_file_uploads [[[
+#
+# Enable or disable file uploading in PHP applications.
+php__ini_file_uploads: True
+
+                                                                   # ]]]
+# .. envvar:: php__ini_upload_max_filesize [[[
+#
+# Specify maximum size of uploaded files, in megabytes.
+php__ini_upload_max_filesize: '{{ php__ini_post_max_size }}'
+
+                                                                   # ]]]
+# .. envvar:: php__ini_max_file_uploads [[[
+#
+# Specify maximum number of files uploaded at once.
+php__ini_max_file_uploads: '20'
+
+                                                                   # ]]]
+# .. envvar:: php__ini_default_charset [[[
+#
+# Specify default charset used in PHP environment.
+php__ini_default_charset: 'UTF-8'
+
+                                                                   # ]]]
+# .. envvar:: php__ini_allow_url_fopen [[[
+#
+# Enable or disable access to remote URLs in PHP applications.
+php__ini_allow_url_fopen: True
+
+                                                                   # ]]]
+# .. envvar:: php__ini_date_timezone [[[
+#
+# Configure the PHP timezone. This variable uses configuration provided by the
+# debops.core_ Ansible role.
+php__ini_date_timezone: '{{ ansible_local.timezone
+                            if (ansible_local|d() and ansible_local.timezone|d())
+                            else "Etc/UTC" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration added to php.ini [[[
+# ----------------------------------
+
+# The role uses custom :file:`php.ini` configuration files managed by Ansible. See
+# :ref:`php__ref_configuration` for more details.
+
+# .. envvar:: php__default_configuration [[[
+#
+# Default configuration of the :file:`php.ini` added by the role.
+php__default_configuration:
+
+  - filename: '00-ansible'
+    name: 'PHP'
+    sections:
+
+      - options: |
+          max_execution_time =     {{  php__ini_max_execution_time }}
+          max_input_time =         {{  php__ini_max_input_time }}
+          memory_limit =           {{  php__ini_memory_limit }}
+          error_reporting =        {{ (php__production|bool)|ternary('E_ALL & ~E_DEPRECATED & ~E_STRICT', 'E_ALL') }}
+          display_errors =         {{ (php__production|bool)|ternary('Off', 'On') }}
+          display_startup_errors = {{ (php__production|bool)|ternary('Off', 'On') }}
+          track_errors =           {{ (php__production|bool)|ternary('Off', 'On') }}
+          post_max_size =          {{  php__ini_post_max_size }}
+          default_charset =        {{  php__ini_default_charset }}
+          file_uploads =           {{ (php__ini_file_uploads|bool)|ternary('On', 'Off') }}
+          upload_max_filesize =    {{  php__ini_upload_max_filesize }}
+          max_file_uploads =       {{  php__ini_max_file_uploads }}
+          allow_url_fopen =        {{ (php__ini_allow_url_fopen|bool)|ternary('On','Off') }}
+
+      - name: 'CGI'
+        options: |
+          cgi.fix_pathinfo =       {{ (php__ini_cgi_fix_pathinfo|bool)|ternary('1','0') }}
+
+      - name: 'Date'
+        options: |
+          date.timezone =          {{ php__ini_date_timezone }}
+
+  - filename: '../cli/conf.d/30-memory_limit'
+    name: 'PHP'
+    options: |
+      ; Don't limit memory for php-cli execution
+      memory_limit = -1
+
+# ]]]
+# .. envvar:: php__configuration [[[
+#
+# Custom :file:`php.ini` configuration added on all hosts in Ansible inventory.
+php__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: php__group_configuration [[[
+#
+# Custom :file:`php.ini` configuration added on a group of hosts in Ansible
+# inventory.
+php__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: php__host_configuration [[[
+#
+# Custom :file:`php.ini` configuration added on specific hosts in Ansible
+# inventory.
+php__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: php__dependent_configuration [[[
+#
+# Custom :file:`php.ini` configuration by other Ansible roles using dependent
+# variables.
+php__dependent_configuration: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Global PHP-FPM configuration [[[
+# --------------------------------
+
+# .. envvar:: php__fpm_privileged_group [[[
+#
+# What system group has privileged access to :program:`php-fpm` service.
+php__fpm_privileged_group: 'webadmins'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_syslog [[[
+#
+# Enable or disable error logging to ``syslog``. Currently the ``syslog``
+# logging in PHP has some issues: https://bugs.php.net/bug.php?id=67764
+php__fpm_syslog: False
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_error_log [[[
+#
+# Path to the ``error.log`` file which is used by PHP-FPM to log error
+# messages.
+#
+# If it's set to ``syslog``, error logs are sent to the local log daemon.
+php__fpm_error_log: '{{ ("/var/log/php" + php__version + "-fpm.log")
+                        if not php__fpm_syslog|bool else "syslog" }}'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_syslog_ident [[[
+#
+# When ``syslog`` logging is enabled, specify the program identification string
+# used by PHP-FPM. This should be one word string, without spaces.
+php__fpm_syslog_ident: 'php-fpm'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_syslog_facility [[[
+#
+# When ``syslog`` logging is enabled, specify the ``syslog`` facility to use.
+php__fpm_syslog_facility: 'daemon'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_log_level [[[
+#
+# When ``syslog`` logging is enabled, specify the log level used by PHP-FPM.
+php__fpm_log_level: 'notice'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_emergency_restart_threshold [[[
+#
+# Specify number of PHP-FPM child processes that exit with errors during
+# a given interval (see below) that will trigger an automatic restart of the
+# master PHP-FPM process.
+php__fpm_emergency_restart_threshold: '0'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_emergency_restart_interval [[[
+#
+# Specify the interval which is used to determine number of PHP-FPM child
+# processes that exit with errors.
+php__fpm_emergency_restart_interval: '0'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_process_control_timeout [[[
+#
+# Specify maximum wait time the master PHP-FPM process waits for a reaction on
+# the signals sent to the child processes.
+php__fpm_process_control_timeout: '0'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_process_max [[[
+#
+# Maximum number of PHP-FPM child processes.
+php__fpm_process_max: '128'
+                                                                   # ]]]
+                                                                   # ]]]
+# PHP-FPM pool defaults [[[
+# -------------------------
+
+# These configuration variables are used as default values in PHP-FPM pool
+# configuration. They can be specified as the keys of the YAML dictionaries
+# that define specific PHP-FPM pool configuration, after removing the
+# ``php__fpm_`` prefix from the variable name.
+
+# .. envvar:: php__fpm_listen_owner [[[
+#
+# The system user that will be the owner of the PHP-FPM socket. This should be
+# the username of the webserver account, so that it can use the socket to
+# communicate with the PHP-FPM process. This account needs to exist before the
+# PHP-FPM process is started (the ``www-data`` account is created by default on
+# Debian/Ubuntu systems).
+php__fpm_listen_owner: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_listen_group [[[
+#
+# The system group that will be the primary group of the PHP-FPM socket. This
+# should be the group that the webserver belongs to, so that it can use the
+# socket to communicate with the PHP-FPM process. This group needs to exist
+# before the PHP-FPM process is started (the ``www-data`` group is created by
+# default on Debian/Ubuntu systems).
+php__fpm_listen_group: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_listen_mode [[[
+#
+# The default permissions applied to the PHP-FPM pool sockets.
+php__fpm_listen_mode: '0660'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm [[[
+#
+# Select the default way the PHP-FPM master process will manage pool child
+# processes. Possible values: ``static``, ``dynamic``, ``ondemand``.
+php__fpm_pm: 'ondemand'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm_max_children [[[
+#
+# Maximum number of child processes in a PHP-FPM pool for any management mode.
+php__fpm_pm_max_children: '{{ ansible_processor_vcpus }}'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm_start_servers [[[
+#
+# The number of pool child processes created at startup, used by the
+# ``dynamic`` management mode.
+php__fpm_pm_start_servers: '{{ ansible_processor_cores }}'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm_min_spare_servers [[[
+#
+# Number of minimum idle spare servers that should be kept around, used by the
+# ``dynamic`` management mode.
+php__fpm_pm_min_spare_servers: '1'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm_max_spare_servers [[[
+#
+# Number of maximum idle spare servers that should be kept around, used by the
+# ``dynamic`` management mode.
+php__fpm_pm_max_spare_servers: '{{ php__fpm_pm_max_children }}'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm_process_idle_timeout [[[
+#
+# Timeout in seconds for the PHP-FPM pool child processes, used by the
+# ``ondemand`` management mode.
+php__fpm_pm_process_idle_timeout: '10s'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm_max_requests [[[
+#
+# Maximum number of requests after which PHP-FPM pool child processes will be
+# respawned.
+php__fpm_pm_max_requests: '500'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm_status [[[
+#
+# Enable or disable pool status page in all PHP-FPM pools. You might need to
+# configure the webserver to allow access to this page as well.
+php__fpm_pm_status: False
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_pm_status_path [[[
+#
+# The URL path of the pool status page. It needs to start with ``/``, the
+# ``.php`` prefix is discouraged to not create issues with passing the request
+# to the PHP-FPM process.
+php__fpm_pm_status_path: '/php_status'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_ping_path [[[
+#
+# The URL path of the "ping" request for all PHP-FPM pools.
+php__fpm_ping_path: '/php_ping'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_ping_response [[[
+#
+# A string that defines the expected response of the "ping" request.
+php__fpm_ping_response: 'pong'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_access_log [[[
+#
+# Enable or disable request log in :file:`/var/log/php{5,7.0}-fpm/$pool_access.log`
+# for all PHP-FPM pools.
+php__fpm_access_log: False
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_request_terminate_timeout [[[
+#
+# Specify maximum request time after which the worker process will be killed.
+php__fpm_request_terminate_timeout: '{{ php__ini_max_execution_time }}'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_rlimit_files [[[
+#
+# Specify maximum number of opened file descriptors.
+php__fpm_rlimit_files: '1024'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_rlimit_core [[[
+#
+# Specify maximum size of the ``core`` files.
+php__fpm_rlimit_core: '0'
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_catch_workers_output [[[
+#
+# If enabled, redirect ``stdout`` and ``stderr`` streams of the worker
+# processes to the main ``error.log`` file. Might impact performance.
+php__fpm_catch_workers_output: False
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_security_limit_extensions [[[
+#
+# List of file extensions which are considered to be PHP scripts by the
+# interpreter.
+php__fpm_security_limit_extensions:  [ '.php' ]
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_clear_env [[[
+#
+# If enabled, the PHP-FPM pool will clear the child process environment before
+# adding the specified environment variables.
+php__fpm_clear_env: False
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_environment [[[
+#
+# A YAML dictionary with environment variables that should be set in all
+# PHP-FPM pools on all hosts in Ansible inventory. Each key of the dictionary
+# is a variable name, and its value is the variable value.
+php__fpm_environment: {}
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_group_environment [[[
+#
+# A YAML dictionary with environment variables that should be set in all
+# PHP-FPM pools on a group of hosts in Ansible inventory. Each key of the
+# dictionary is a variable name, and its value is the variable value.
+php__fpm_group_environment: {}
+
+                                                                   # ]]]
+# .. envvar:: php__fpm_host_environment [[[
+#
+# A YAML dictionary with environment variables that should be set in all
+# PHP-FPM pools on a specific hosts in Ansible inventory. Each key of the
+# dictionary is a variable name, and its value is the variable value.
+php__fpm_host_environment: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# PHP-FPM pools [[[
+# -----------------
+
+# Lists of PHP-FPM pools managed by the ``debops.php`` role. Each PHP-FPM pool
+# is defined as a YAML dictionary. See :ref:`php__ref_pools` for more details.
+
+# .. envvar:: php__default_pools [[[
+#
+# List of default PHP-FPM pools configured on all hosts. At least 1 pool is
+# required at all times, otherwise the service will not start properly.
+php__default_pools: [ '{{ php__pool_www_data }}' ]
+
+                                                                   # ]]]
+# .. envvar:: php__pools [[[
+#
+# List of PHP-FPM pools configured on all hosts in Ansible inventory.
+php__pools: []
+
+                                                                   # ]]]
+# .. envvar:: php__group_pools [[[
+#
+# List of PHP-FPM pools configured on a group of hosts in Ansible inventory.
+php__group_pools: []
+
+                                                                   # ]]]
+# .. envvar:: php__host_pools [[[
+#
+# List of PHP-FPM pools configured on specific hosts in Ansible inventory.
+php__host_pools: []
+
+                                                                   # ]]]
+# .. envvar:: php__dependent_pools [[[
+#
+# List of PHP-FPM pools configured by other Ansible roles using dependent
+# variables.
+php__dependent_pools: []
+
+                                                                   # ]]]
+# .. envvar:: php__pool_www_data [[[
+#
+# The default PHP-FPM pool for the ``www-data`` system account.
+php__pool_www_data:
+  name: 'www-data'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: php__apt_preferences__dependent_list [[[
+#
+# Configuration of the debops.apt_preferences_ role.
+php__apt_preferences__dependent_list:
+
+  - package: '*'
+    pin: 'origin "packages.sury.org"'
+    priority: '100'
+    reason: "Don't upgrade software automatically using packages from external repository"
+    role: 'debops.php'
+    suffix: '_packages_sury_org'
+    state: '{{ "present" if php__sury|bool else "absent" }}'
+
+  - packages: [ 'php5', 'php5-*', 'php7.0', 'php7.0-*', 'dh-php', 'php-*' ]
+    pin: 'origin "packages.sury.org"'
+    priority: '500'
+    reason: 'Prefer PHP packages from the same repository for consistency'
+    role: 'debops.php'
+    suffix: '_packages_sury_org'
+    state: '{{ "present" if php__sury|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: php__logrotate__dependent_config [[[
+#
+# Configuration of the debops.logrotate_ role.
+php__logrotate__dependent_config:
+
+  - filename: 'php{{ php__version }}-fpm'
+    divert: True
+    logs:
+      - '/var/log/php{{ php__version }}-fpm.log'
+      - '/var/log/php{{ php__version }}-fpm/*.log'
+    options: |
+      rotate 12
+      missingok
+      weekly
+      notifempty
+      compress
+      delaycompress
+    postrotate: |
+      {% if php__long_version | version_compare("5.5","<") %}
+      invoke-rc.d php{{ php__version }}-fpm reopen-logs > /dev/null
+      {% else %}
+      {{ php__logrotate_lib_base }}/php{{ php__version }}-fpm-reopenlogs
+      {% endif %}
+
+# ]]]
+# ]]]
+# ]]]

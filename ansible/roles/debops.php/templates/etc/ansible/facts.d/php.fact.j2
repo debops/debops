@@ -1,0 +1,14 @@
+{% set php__tpl_sury = (ansible_local.php.sury if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.sury|d()) else php__sury) | bool %}
+{% if php__sury | bool %}
+{%   set php__tpl_sury = php__sury | bool %}
+{% endif %}
+{
+"enabled": "true",
+"long_version": "{{ php__long_version }}",
+"sury": "{{ php__tpl_sury | bool | lower }}",
+"version": "{{ php__version }}",
+"etc_base": "{{ php__etc_base }}",
+"lib_base": "{{ php__lib_base }}",
+"run_base": "{{ php__run_base }}",
+"logrotate_lib_base": "{{ php__logrotate_lib_base }}"
+}
