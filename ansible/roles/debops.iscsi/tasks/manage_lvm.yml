@@ -1,0 +1,79 @@
+---
+
+- name: Unmount filesystems if requested
+  mount:
+    name:   '{{ item.mount }}'
+    src:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
+    fstype: '{{ item.fs_type | d(iscsi__default_fs_type) }}'
+    state:  'absent'
+  with_items: '{{ iscsi__logical_volumes }}'
+  when: iscsi__logical_volumes|d(False) and
+        item.vg|d() and item.lv|d() and item.size|d() and
+        item.mount|d(False) and
+        (item.state is defined and item.state == 'absent')
+
+- name: Remove Logical Volumes if requested
+  lvol:
+    vg:    '{{ item.vg }}'
+    lv:    '{{ item.lv }}'
+    size:  '{{ item.size }}'
+    force: '{{ item.force | d(omit) }}'
+    state: 'absent'
+  with_items: '{{ iscsi__logical_volumes }}'
+  when: iscsi__logical_volumes|d(False) and
+        item.vg|d() and item.lv|d() and item.size|d() and
+        item.state|d() and item.state == 'absent'
+
+- name: Manage LVM Volume Groups
+  lvg:
+    vg:         '{{ item.item.lvm_vg }}'
+    pvs:        '{{ item.devicenodes      | join(",") }}'
+    state:      '{{ item.item.lvm_state   | d("present") }}'
+    pesize:     '{{ item.item.lvm_pesize  | d(omit) }}'
+    force:      '{{ item.item.lvm_force   | d(omit) }}'
+    vg_options: '{{ item.item.lvm_options | d(omit) }}'
+  with_items: '{{ iscsi__register_targets.results }}'
+  when: iscsi__register_targets|d(False) and iscsi__register_targets.results|d() and
+        item.devicenodes|d() and item.item.lvm_vg|d()
+
+- name: Manage LVM Logical Volumes
+  lvol:
+    vg:    '{{ item.vg }}'
+    lv:    '{{ item.lv }}'
+    size:  '{{ item.size }}'
+    force: '{{ item.force | d(omit) }}'
+    state: 'present'
+  with_items: '{{ iscsi__logical_volumes }}'
+  when: iscsi__logical_volumes|d(False) and
+        item.vg|d() and item.lv|d() and item.size|d() and
+        (item.state is undefined or item.state != 'absent')
+
+- name: Manage filesystems
+  filesystem:
+    dev:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
+    fstype: '{{ item.fs_type  | d(iscsi__default_fs_type) }}'
+    force:  '{{ item.fs_force | d(omit) }}'
+    opts:   '{{ item.fs_opts  | d(omit) }}'
+  with_items: '{{ iscsi__logical_volumes }}'
+  when: iscsi__logical_volumes|d(False) and
+        item.vg|d() and item.lv|d() and item.size|d() and
+        (item.state is undefined or item.state != 'absent') and
+        ((item.mount|d() and (item.fs is undefined or item.fs|d()) or
+         item.fs|d()))
+
+- name: Manage mount points
+  mount:
+    name:   '{{ item.mount }}'
+    src:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
+    fstype: '{{ item.fs_type      | d(iscsi__default_fs_type) }}'
+    opts:   '{{ item.mount_opts   | d(iscsi__default_mount_options) }}'
+    state:  '{{ item.mount_state  | d("mounted") }}'
+    dump:   '{{ item.mount_dump   | d(omit) }}'
+    passno: '{{ item.mount_passno | d(omit) }}'
+    fstab:  '{{ item.mount_fstab  | d(omit) }}'
+  with_items: '{{ iscsi__logical_volumes }}'
+  when: iscsi__logical_volumes|d(False) and
+        item.vg|d() and item.lv|d() and item.size|d() and
+        item.mount|d(False) and
+        (item.state is undefined or item.state != 'absent')
+

@@ -1,0 +1,19 @@
+{% set iscsi__tpl_iqn = (ansible_local.iscsi.iqn
+                         if (ansible_local|d() and ansible_local.iscsi|d() and
+                             ansible_local.iscsi.iqn|d())
+                         else iscsi__iqn) %}
+{% set iscsi__tpl_discovered_portals = [] %}
+{% if ansible_local|d() and ansible_local.iscsi|d() and ansible_local.iscsi.discovered_portals|d() %}
+{% set iscsi__tpl_discovered_portals = ansible_local.iscsi.discovered_portals %}
+{% endif %}
+{% if iscsi__register_discover_targets|d() and iscsi__register_discover_targets.results|d() %}
+{% for element in iscsi__register_discover_targets.results %}
+{% if "item" in element.keys() %}
+{% set _ = iscsi__tpl_discovered_portals.append(element.item) %}
+{% endif %}
+{% endfor %}
+{% endif %}
+{
+"iqn":"{{ iscsi__tpl_iqn }}",
+"discovered_portals": {{ iscsi__tpl_discovered_portals | unique | to_nice_json }}
+}
