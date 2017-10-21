@@ -1,0 +1,12 @@
+---
+
+- name: Update Postwhite in the background using async
+  command: /usr/local/lib/postwhite
+  async: '1800'
+  poll: '0'
+  when: postwhite__initial_update_method == 'async'
+
+- name: Update Postwhite in the background using batch
+  shell: |
+    echo '/usr/local/lib/postwhite' | batch > /dev/null 2>&1
+  when: postwhite__initial_update_method == 'batch'

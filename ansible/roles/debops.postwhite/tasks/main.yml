@@ -1,0 +1,125 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ postwhite__base_packages }}'
+    - '{{ postwhite__packages }}'
+
+- name: Create the UNIX system group
+  group:
+    name: '{{ postwhite__group }}'
+    state: 'present'
+    system: True
+
+- name: Create the UNIX system account
+  user:
+    name: '{{ postwhite__user }}'
+    group: '{{ postwhite__group }}'
+    home: '{{ postwhite__home }}'
+    comment: '{{ postwhite__gecos }}'
+    shell: '{{ postwhite__shell }}'
+    state: 'present'
+    system: True
+
+- name: Create the source directory
+  file:
+    path: '{{ postwhite__src }}'
+    state: 'directory'
+    owner: '{{ postwhite__user }}'
+    group: '{{ postwhite__group }}'
+    mode: '0755'
+
+- name: Clone and install the software stack
+  git:
+    repo: '{{ item.git_repo }}'
+    dest: '{{ item.git_dest }}'
+    version: '{{ item.git_version }}'
+    update: True
+  with_items: '{{ postwhite__software_stack }}'
+  become: True
+  become_user: '{{ postwhite__user }}'
+
+- name: Generate Postwhite configuration
+  template:
+    src: 'etc/postwhite.conf.j2'
+    dest: '/etc/postwhite.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Install the Postwhite wrapper script
+  template:
+    src: 'usr/local/lib/postwhite.j2'
+    dest: '/usr/local/lib/postwhite'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Update Yahoo! static host list
+  command: bash {{ postwhite__git_dest }}/scrape_yahoo
+  become: True
+  become_user: '{{ postwhite__user }}'
+  notify:
+    - 'Update Postwhite in the background using async'
+    - 'Update Postwhite in the background using batch'
+  when: (ansible_local is undefined or
+         (ansible_local|d() and ansible_local.postwhite is undefined or
+          (ansible_local.postwhite|d() and
+           not (ansible_local.postwhite.installed|d())|bool)))
+
+- name: Initialize whitelist/blacklist files
+  file:
+    path: '{{ item }}'
+    state: 'touch'
+    owner: '{{ postwhite__user }}'
+    group: '{{ postwhite__group }}'
+    mode: '0644'
+  with_items:
+    - '{{ postwhite__spf_whitelist_path }}'
+    - '{{ postwhite__spf_blacklist_path }}'
+  when: (ansible_local is undefined or
+         (ansible_local|d() and ansible_local.postwhite is undefined or
+          (ansible_local.postwhite|d() and
+           not (ansible_local.postwhite.installed|d())|bool)))
+
+- name: Update Postwhite access lists daily
+  cron:
+    job: '/usr/local/lib/postwhite'
+    cron_file: 'postwhite'
+    name: 'Update Postwhite access lists'
+    special_time: '{{ postwhite__cron_whitelist_update_frequency }}'
+    user: 'root'
+    state: 'present'
+
+- name: Update Yahoo IP address list weekly
+  cron:
+    job: 'bash {{ postwhite__git_dest + "/scrap_yahoo" }} > /dev/null'
+    cron_file: 'postwhite'
+    name: 'Update Yahoo IP address list'
+    special_time: '{{ postwhite__cron_yahoo_update_frequency }}'
+    user: 'postwhite'
+    state: 'present'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Postwhite local facts
+  template:
+    src: 'etc/ansible/facts.d/postwhite.fact.j2'
+    dest: '/etc/ansible/facts.d/postwhite.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: postwhite__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: postwhite__register_facts|changed
