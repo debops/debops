@@ -1,0 +1,35 @@
+{% macro print_target(target) %}
+{% if target.iqn is undefined %}
+{% set tgt_tpl_target_iqn = tgt_iqn_base + ":" + item.name %}
+{% elif target.iqn %}
+{% set tgt_tpl_target_iqn = target.iqn %}
+{% endif %}
+<target {{ tgt_tpl_target_iqn }}>
+{% if target.backing_stores is defined and target.backing_stores %}
+{% for element in target.backing_stores | sort | unique %}
+{{ print_store('backing', element) }}
+{% endfor %}
+{% endif %}
+{% if target.direct_stores is defined and target.direct_stores %}
+{% for element in target.direct_stores | sort | unique %}
+{{ print_store('direct', element) }}
+{% endfor %}
+{% endif %}
+{% if target.options is defined and target.options %}
+{{ target.options | indent(4,true) }}
+{% endif %}
+</target>
+
+{% endmacro %}
+{% macro print_store(type, store) %}
+{% if store is mapping %}
+{{ "<%s-store %s>" | format(type, store.store) | indent(4, true) }}
+{% if store.options is defined and store.options %}
+{{ store.options | indent(8, true) }}
+{% endif %}
+{{ "</%s-store>" | format(type) | indent(4,true) }}
+{% else %}{{ "%s-store %s" | format(type, store) | indent(4, true) }}{% endif %}
+{% endmacro %}
+# {{ ansible_managed }}
+
+{{ print_target(item) }}
