@@ -1,0 +1,71 @@
+#!/bin/sh
+
+# This file is managed by Ansible, all changes will be lost
+
+# This script is run whenever bbackupd changes state or encounters a
+# problem which requires the system administrator to assist:
+#
+# 1) The store is full, and no more data can be uploaded.
+# 2) Some files or directories were not readable.
+# 3) A backup run starts or finishes.
+#
+# The default script emails the system administrator, except for backups
+# starting and stopping, where it does nothing.
+
+SUBJECT="BACKUP PROBLEM on host {{ ansible_fqdn }}"
+SENDTO="{{ boxbackup_email }}"
+
+if [ "$1" = "" ]; then
+	echo "Usage: $0 <store-full|read-error|backup-error|backup-start|backup-finish>" >&2
+	exit 2
+elif [ "$1" = store-full ]; then
+	/usr/sbin/sendmail $SENDTO <<EOM
+Subject: $SUBJECT (store full)
+To: $SENDTO
+
+The store account for {{ ansible_fqdn }} is full.
+
+=============================
+FILES ARE NOT BEING BACKED UP
+=============================
+
+Please adjust the limits on account {{ boxbackup_account }} on server {{ boxbackup_server }}.
+
+EOM
+elif [ "$1" = read-error ]; then
+/usr/sbin/sendmail $SENDTO <<EOM
+Subject: $SUBJECT (read errors)
+To: $SENDTO
+
+Errors occured reading some files or directories for backup on {{ ansible_fqdn }}.
+
+===================================
+THESE FILES ARE NOT BEING BACKED UP
+===================================
+
+Check the logs on {{ ansible_fqdn }} for the files and directories which caused
+these errors, and take appropriate action.
+
+Other files are being backed up.
+
+EOM
+elif [ "$1" = backup-start -o "$1" = backup-finish -o "$1" = backup-ok ]; then
+	# do nothing by default
+	true
+else
+/usr/sbin/sendmail $SENDTO <<EOM
+Subject: $SUBJECT (unknown)
+To: $SENDTO
+
+The backup daemon on {{ ansible_fqdn }} reported an unknown error ($1).
+
+==========================
+FILES MAY NOT BE BACKED UP
+==========================
+
+Please check the logs on {{ ansible_fqdn }}.
+
+EOM
+fi
+
+

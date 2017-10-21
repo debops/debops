@@ -1,0 +1,203 @@
+# This file is managed by Ansible, all changes will be lost
+
+StoreHostname = {{ boxbackup_server }}
+AccountNumber = 0x{{ boxbackup_account }}
+KeysFile = /etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw
+
+CertificateFile = /etc/pki/boxbackup-client/default.crt
+PrivateKeyFile = /etc/pki/boxbackup-client/default.key
+TrustedCAsFile = /etc/pki/boxbackup-client/CA.crt
+
+DataDirectory = /var/run
+
+{#	# This script is run whenever bbackupd changes state or encounters a
+	# problem which requires the system administrator to assist:
+	#
+	# 1) The store is full, and no more data can be uploaded.
+	# 2) Some files or directories were not readable.
+	# 3) A backup run starts or finishes.
+	#
+	# The default script emails the system administrator, except for backups
+	# starting and stopping, where it does nothing. #}
+NotifyScript = /etc/boxbackup/bbackupd/NotifySysadmin.sh
+
+{% if boxbackup_mode is defined and boxbackup_mode == 'lazy' %}
+{#	# The number of seconds between backup runs under normal conditions. To avoid
+	# cycles of load on the server, this time is randomly adjusted by a small
+	# percentage as the daemon runs. #}
+UpdateStoreInterval = {{ (boxbackup_interval | default(60) * 60|int)|round|int|string }}
+{#
+	# The minimum age of a file, in seconds, that will be uploaded. Avoids
+	# repeated uploads of a file which is constantly being modified. #}
+MinimumFileAge = {{ (boxbackup_MinimumFileAge | default(6) * 60 * 60|int)|round|int|string }}
+{#
+	# If a file is modified repeated, it won't be uploaded immediately in case
+	# it's modified again, due to the MinimumFileAge specified above. However, it
+	# should be uploaded eventually even if it is being modified repeatedly. This
+	# is how long we should wait, in seconds, after first noticing a change.
+	# (86400 seconds = 1 day) #}
+MaxUploadWait = {{ (boxbackup_MaxUploadWait | default(24) * 60 * 60|int)|round|int|string }}
+{#
+	# If the connection is idle for some time (e.g. over 10 minutes or 600
+	# seconds, not sure exactly how long) then the server will give up and
+	# disconnect the client, resulting in Connection Protocol_Timeout errors
+	# on the server and TLSReadFailed or TLSWriteFailed errors on the client.
+	# Also, some firewalls and NAT gateways will kill idle connections after
+	# similar lengths of time.
+	#
+	# This can happen for example when most files are backed up already and
+	# don't need to be sent to the store again, while scanning a large
+	# directory, or while calculating diffs of a large file. To avoid this,
+	# KeepAliveTime specifies that special keep-alive messages should be sent
+	# when the connection is otherwise idle for a certain length of time,
+	# specified here in seconds.
+	#
+	# The default is that these messages are never sent, equivalent to setting
+	# this option to zero, but we recommend that all users enable this. #}
+KeepAliveTime = 120
+{% elif boxbackup_mode is defined and boxbackup_mode == 'snapshot' %}
+# This configuration file is written for snapshot mode.
+# You will need to run bbackupctl to instruct the daemon to upload files.
+
+AutomaticBackup = no
+UpdateStoreInterval = 0
+MinimumFileAge = 0
+MaxUploadWait = 0
+{% endif %}
+
+{#	# Files above this size (in bytes) are tracked, and if they are renamed they will simply be
+	# renamed on the server, rather than being uploaded again. (64k - 1) #}
+FileTrackingSizeThreshold = {{ boxbackup_FileTrackingSizeThreshold | default('65535') }}
+{#
+	# The daemon does "changes only" uploads for files above this size (in bytes).
+	# Files less than it are uploaded whole without this extra processing. #}
+DiffingUploadSizeThreshold = {{ boxbackup_DiffingUploadSizeThreshold | default('8192') }}
+{#
+	# The limit on how much time is spent diffing files, in seconds. Most files
+	# shouldn't take very long, but if you have really big files you can use this
+	# to limit the time spent diffing them.
+	#
+	# * Reduce if you are having problems with processor usage.
+	#
+	# * Increase if you have large files, and think the upload of changes is too
+	#   large and you want bbackupd to spend more time searching for unchanged
+	#   blocks. #}
+MaximumDiffingTime = {{ boxbackup_MaximumDiffingTime | default('120') }}
+
+{#	# More verbose logging #}
+ExtendedLogging = {{ boxbackup_verbose | default('no') }}
+
+{#	# This specifies a program or script which is run just before each
+	# sync, and ideally the full path to the interpreter. It will be run as the
+	# same user bbackupd is running as, usually root.
+	#
+	# The script must output (print) either "now" or a number to STDOUT (and a
+	# terminating newline, no quotes).
+	#
+	# If the result was "now", then the sync will happen. If it's a number, then
+	# no backup will happen for that number of seconds (bbackupd will pause) and
+	# then the script will be run again.
+	#
+	# Use this to temporarily stop bbackupd from syncronising or connecting to the
+	# store. For example, you could use this on a laptop to only backup when on a
+	# specific network, or when it has a working Internet connection.
+	# SyncAllowScript = /path/to/intepreter/or/exe script-name parameters etc #}
+{% if boxbackup_SyncAllowScript is defined and boxbackup_SyncAllowScript %}
+SyncAllowScript = {{ boxbackup_SyncAllowScript }}
+
+{% endif %}
+{# # Where the command socket is created in the filesystem. #}
+CommandSocket = /var/run/bbackupd.sock
+
+{#	# Uncomment the StoreObjectInfoFile to enable the experimental archiving
+	# of the daemon's state (including client store marker and configuration)
+	# between backup runs. This saves time and increases efficiency when
+	# bbackupd is frequently stopped and started, since it removes the need
+	# to rescan all directories on the remote server. However, it is new and
+	# not yet heavily tested, so use with caution.
+	# StoreObjectInfoFile = /var/run/bbackupd.state #}
+Server
+{
+	PidFile = /var/run/bbackupd.pid
+}
+
+{#	# BackupLocations specifies which locations on disc should be backed up. Each
+	# directory is in the format
+	#
+	#	name
+	#	{
+	#		Path = /path/of/directory
+	#		(optional exclude directives)
+	#	}
+	#
+	# 'name' is derived from the Path by the config script, but should merely be
+	# unique.
+	#
+	# The exclude directives are of the form
+	#
+	#	[Exclude|AlwaysInclude][File|Dir][|sRegex] = regex or full pathname
+	#
+	# (The regex suffix is shown as 'sRegex' to make File or Dir plural)
+	#
+	# For example:
+	#
+	#	ExcludeDir = /home/guest-user
+	#	ExcludeFilesRegex = .(mp3|MP3)$
+	#	AlwaysIncludeFile = /home/username/veryimportant.mp3
+	#
+	# This excludes the directory /home/guest-user from the backup along with all mp3
+	# files, except one MP3 file in particular.
+	#
+	# In general, Exclude excludes a file or directory, unless the directory is
+	# explicitly mentioned in a AlwaysInclude directive. However, Box Backup
+	# does NOT scan inside excluded directories and will never back up an
+	# AlwaysIncluded file or directory inside an excluded directory or any
+	# subdirectory thereof.
+	#
+	# To back up a directory inside an excluded directory, use a configuration
+	# like this, to ensure that each directory in the path to the important
+	# files is included, but none of their contents will be backed up except
+	# the directories further down that path to the important one.
+	#
+	# ExcludeDirsRegex = ^/home/user/bigfiles/
+	# ExcludeFilesRegex = ^/home/user/bigfiles/
+	# AlwaysIncludeDir = /home/user/bigfiles/path
+	# AlwaysIncludeDir = /home/user/bigfiles/path/to
+	# AlwaysIncludeDir = /home/user/bigfiles/path/important
+	# AlwaysIncludeDir = /home/user/bigfiles/path/important/files
+	# AlwaysIncludeDirsRegex = ^/home/user/bigfiles/path/important/files/
+	# AlwaysIncludeFilesRegex = ^/home/user/bigfiles/path/important/files/
+	#
+	# If a directive ends in Regex, then it is a regular expression rather than a
+	# explicit full pathname. See
+	#
+	#	man 7 re_format
+	#
+	# for the regex syntax on your platform. #}
+BackupLocations
+{
+{% if boxbackup_locations is defined and boxbackup_locations %}
+{% for location, options in boxbackup_locations.iteritems() %}
+{{ location | replace("/","",1) | replace("/","-") | indent(8,true) }}
+        {
+                Path = {{ location }}
+{% if options is defined and options %}
+{{ options | indent(16,true) }}
+{% endif %}
+        }
+{% endfor %}
+{% endif %}
+{% if boxbackup_locations_custom is defined and boxbackup_locations_custom %}
+{% for location, options in boxbackup_locations_custom.iteritems() %}
+{{ location | replace("/","",1) | replace("/","-") | indent(8,true) }}
+        {
+                Path = {{ location }}
+{% if options is defined and options %}
+{{ options | indent(16,true) }}
+{% endif %}
+        }
+{% endfor %}
+{% endif %}
+}
+
+

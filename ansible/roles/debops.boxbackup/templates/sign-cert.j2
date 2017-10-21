@@ -1,0 +1,161 @@
+#!/usr/bin/perl
+use strict;
+
+# This file is managed by Ansible, all changes will be lost
+
+# Modified script based on the "bbstored-certs" Perl script from
+# boxbackup-server Debian package
+
+# validity period for client certificates
+my $sign_period = '{{ boxbackup_ssl_sign }}';
+
+# check and get command line parameters
+if($#ARGV < 0)
+{
+	print <<__E;
+
+sign-cert helper script
+
+Bad command line parameters.
+Usage:
+	sign-cert path/to/account-id-csr.pem
+
+Signing requires confirmation that the certificate is correct and should be signed.
+
+__E
+	exit(1);
+}
+
+# check for OPENSSL_CONF environment var being set
+if(exists $ENV{'OPENSSL_CONF'})
+{
+	print <<__E;
+
+---------------------------------------
+
+WARNING:
+    You have the OPENSSL_CONF environment variable set.
+    Use of non-standard openssl configs may cause problems.
+
+---------------------------------------
+
+__E
+}
+
+# check parameters
+my $cert_dir = "{{ secret }}/storage/boxbackup/servers/{{ boxbackup_server }}/ca";
+my @args = @ARGV;
+
+if(!-d $cert_dir)
+{
+	die "$cert_dir does not exist";
+}
+
+&cmd_sign;
+
+sub cmd_sign
+{
+	my $csr = $args[0];
+
+	if(!-f $csr)
+	{
+		die "$csr does not exist";
+	}
+
+	# get the common name specified in this certificate
+	my $common_name = get_csr_common_name($csr);
+
+	# look OK?
+	unless($common_name =~ m/\ABACKUP-([A-Fa-f0-9]+)\Z/)
+	{
+		die "The certificate presented does not appear to be a backup client certificate"
+	}
+
+	my $acc = $1;
+
+	# check against filename
+	if(!($csr =~ m/(\A|\/)([A-Fa-f0-9]+)-/) || $2 ne $acc)
+	{
+		die "Certificate request filename does not match name in certificate ($common_name)"
+	}
+
+	print <<__E;
+
+This certificate is for backup account
+
+   $acc
+
+Ensure this matches the account number you are expecting. The filename is
+
+   $csr
+
+which should include this account number, and additionally, you should check
+that you received it from the right person.
+
+Signing the wrong certificate compromises the security of your backup system.
+
+Would you like to sign this certificate? (type 'yes' to confirm)
+__E
+
+	return unless get_confirmation();
+
+	# out certificate
+	my $out_cert = "$cert_dir/clients/$acc"."-cert.pem";
+
+	# sign it!
+	if(system("openssl x509 -req -in $csr -sha1 -extensions usr_crt -CAserial $cert_dir/roots/clientCA.srl -CAcreateserial -CA $cert_dir/roots/clientCA.pem -CAkey $cert_dir/keys/clientRootKey.pem -out $out_cert -days $sign_period") != 0)
+	{
+		die "Signing failed"
+	}
+
+	# tell user what to do next
+	print <<__E;
+
+
+Certificate signed.
+
+Send the files
+
+   $out_cert
+   $cert_dir/roots/serverCA.pem
+
+to the client.
+
+__E
+}
+
+sub get_csr_common_name
+{
+	my $csr = $_[0];
+
+	open CSRTEXT,"openssl req -text -in $csr |" or die "Can't open openssl for reading";
+
+	my $subject;
+	while(<CSRTEXT>)
+	{
+		$subject = $1 if m/Subject:.+?CN=([-\.\w]+)/
+	}
+	close CSRTEXT;
+
+	if($subject eq '')
+	{
+		die "No subject found in CSR $csr"
+	}
+
+	return $subject
+}
+
+sub get_confirmation()
+{
+	my $line = <STDIN>;
+	chomp $line;
+	if(lc $line ne 'yes')
+	{
+		print "CANCELLED\n";
+		return 0;
+	}
+
+	return 1;
+}
+
+

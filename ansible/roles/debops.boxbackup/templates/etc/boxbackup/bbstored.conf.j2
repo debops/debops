@@ -1,0 +1,22 @@
+# This file is managed by Ansible, all changes will be lost
+
+RaidFileConf = /etc/boxbackup/raidfile.conf
+AccountDatabase = /etc/boxbackup/bbstored/accounts.txt
+
+# More verbose logging
+ExtendedLogging = {{ boxbackup_verbose | default('no') }}
+
+# scan all accounts for files which need deleting every {{ boxbackup_housekeeping | default(15) }} minutes.
+TimeBetweenHousekeeping = {{ (boxbackup_housekeeping | default(15) * 60|int)|round|int|string }}
+
+Server
+{
+	User = bbstored
+	PidFile = /var/run/bbstored.pid
+	ListenAddresses = inet:{{ boxbackup_listenAddresses | default('0.0.0.0') }}
+	CertificateFile = /etc/pki/boxbackup-server/default.crt
+	PrivateKeyFile = /etc/pki/boxbackup-server/default.key
+	TrustedCAsFile = /etc/pki/boxbackup-server/CA.crt
+}
+
+

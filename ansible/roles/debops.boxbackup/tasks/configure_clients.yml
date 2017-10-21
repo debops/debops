@@ -1,0 +1,61 @@
+---
+
+- name: Install Box Backup client package
+  apt: pkg=boxbackup-client state=latest install_recommends=no
+
+- name: Set backup softlimit size for client hosts
+  set_fact:
+    boxbackup_softlimit: '{{ (ansible_mounts|sum(attribute="size_total")/1024/1024 + boxbackup_softlimit_padding)|int }}'
+  when: (boxbackup_softlimit is undefined or not boxbackup_softlimit)
+
+- name: Set backup hardlimit size for client hosts
+  set_fact:
+    boxbackup_hardlimit: '{{ (boxbackup_softlimit|float * boxbackup_hardlimit_multiplier|float)|int }}'
+  when: (boxbackup_hardlimit is undefined or not boxbackup_hardlimit)
+
+- name: Create accounts for client hosts
+  command: bbstoreaccounts create {{ boxbackup_account }} {{ boxbackup_discnum }} {{ boxbackup_softlimit }}M {{ boxbackup_hardlimit }}M
+           creates={{ boxbackup_storage }}/backup/{{ boxbackup_account }}/info.rfw
+  delegate_to: '{{ boxbackup_server }}'
+
+- name: Make sure that boxbackup client directories exists
+  file: path={{ item }} state=directory owner=root group=root mode=0700
+  with_items: [ '/etc/boxbackup', '/etc/boxbackup/bbackupd', '/etc/boxbackup/servers/{{ boxbackup_server }}' ]
+
+- name: Check if encryption key exists on Ansible Controller
+  stat:
+    path: '{{ secret + "/storage/boxbackup/clients/" + ansible_fqdn + "/" + boxbackup_account + "-FileEncKeys.raw" }}'
+  register: boxbackup_register_enckeys
+  delegate_to: 'localhost'
+  become: False
+
+- name: Download BoxBackup encryption key from archive
+  copy:
+    src: '{{ secret + "/storage/boxbackup/clients/" + ansible_fqdn + "/" + boxbackup_account + "-FileEncKeys.raw" }}'
+    dest: '/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  when: boxbackup_register_enckeys.stat.exists
+  notify: [ 'Restart boxbackup-client' ]
+
+- name: Create encryption key on client hosts
+  command: openssl rand -out /etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw {{ boxbackup_encrypt_bits }}
+           creates=/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw
+  notify:
+    - Restart boxbackup-client
+
+- name: Archive client encryption key
+  fetch: src=/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw flat=yes
+         dest={{ secret }}/storage/boxbackup/clients/{{ ansible_fqdn }}/{{ boxbackup_account }}-FileEncKeys.raw
+
+- name: Install notification script on client hosts
+  template: src=etc/boxbackup/bbackupd/NotifySysadmin.sh.j2 dest=/etc/boxbackup/bbackupd/NotifySysadmin.sh
+            owner=root group=root mode=0700
+
+- name: Configure client hosts
+  template: src=etc/boxbackup/bbackupd.conf.j2 dest=/etc/boxbackup/bbackupd.conf
+            owner=root group=root mode=0600
+  notify:
+    - Restart boxbackup-client
+
