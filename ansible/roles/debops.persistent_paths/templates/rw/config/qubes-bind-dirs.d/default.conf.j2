@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+{% if item.value.by_role|d() %}
+# Managed by role: {{ item.value.by_role }}
+{% endif %}
+
+{% set persistent_paths__tpl_paths = [] %}
+{% for path in item.value.paths %}
+{%   set include_path = { "include": True } %}
+{%   for filter_out_path in persistent_paths__qubes_os_default_persistent_paths %}
+{%     if path.startswith(filter_out_path) %}
+{%       set _ = include_path.update({ "include": False }) %}
+{%     endif %}
+{%   endfor %}
+{%   if include_path.include|bool %}
+{%     set _ = persistent_paths__tpl_paths.append(path) %}
+{%   endif %}
+{% endfor %}
+binds+=( {{ persistent_paths__tpl_paths | map("regex_replace", "^", "'") | map("regex_replace", "$", "'") | sort | join(" ") }} )
+{# Does not work yet:
+binds+=( {{ item.value.paths | map("quote") | join(" ") }} )
+#}

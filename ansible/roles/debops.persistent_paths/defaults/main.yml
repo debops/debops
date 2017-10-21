@@ -1,0 +1,104 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.persistent_paths default variables [[[
+# =============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Persistent paths [[[
+# --------------------
+
+# The following dictionary variables can be used to manage the persistence of paths.
+# See :ref:`persistent_paths__ref_paths` for more details.
+
+# .. envvar:: persistent_paths__paths [[[
+#
+# Dict for specifying persistent paths.
+# This variable is intended to be used in Ansible’s global inventory.
+persistent_paths__paths: {}
+
+                                                                   # ]]]
+# .. envvar:: persistent_paths__group_paths [[[
+#
+# Dict for specifying persistent paths.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+persistent_paths__group_paths: {}
+
+                                                                   # ]]]
+# .. envvar:: persistent_paths__host_paths [[[
+#
+# Dict for specifying persistent paths.
+# This variable is intended to be used in the inventory of hosts.
+persistent_paths__host_paths: {}
+
+                                                                   # ]]]
+# .. envvar:: persistent_paths__dependent_paths [[[
+#
+# Dict for specifying persistent paths. This variable is intended for other Ansible
+# roles to be used when using ``debops.persistent_paths`` as role dependency.
+persistent_paths__dependent_paths: {}
+
+                                                                   # ]]]
+# .. envvar:: persistent_paths__combined_paths [[[
+#
+# Combined dictionary of persistent paths as it is used by the role.
+# This defines the order in which dictionary keys might "mask" previous once.
+persistent_paths__combined_paths: '{{
+  persistent_paths__dependent_paths
+  | combine(persistent_paths__paths)
+  | combine(persistent_paths__group_paths)
+  | combine(persistent_paths__host_paths) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Qubes OS [[[
+# ------------
+
+# .. envvar:: persistent_paths__qubes_os_enabled [[[
+#
+# Should the role run Qubes OS specific tasks?
+persistent_paths__qubes_os_enabled: '{{
+  True if (
+    ansible_virtualization_role == "guest" and
+    "qubes" in (ansible_kernel|lower)
+  ) else False }}'
+
+                                                                   # ]]]
+# .. envvar:: persistent_paths__qubes_os_config_dir [[[
+#
+# Directory path where the role should maintain the configuration for
+# bind-dirs.sh_.
+persistent_paths__qubes_os_config_dir: '/rw/config/qubes-bind-dirs.d'
+
+                                                                   # ]]]
+# .. envvar:: persistent_paths__qubes_os_storage_path [[[
+#
+# Persistent directory path where the files/directories are stored and from
+# which these source paths are then bind mounted to their canonical/original
+# location.
+persistent_paths__qubes_os_storage_path: '/rw/bind-dirs'
+
+                                                                   # ]]]
+# .. envvar:: persistent_paths__qubes_os_handler [[[
+#
+# File path to the executable bind-dirs.sh_ script.
+persistent_paths__qubes_os_handler: '/usr/lib/qubes/bind-dirs.sh'
+
+                                                                   # ]]]
+# .. envvar:: persistent_paths__qubes_os_default_persistent_paths [[[
+#
+# Paths which are persistent by default and should be filtered out/not handled
+# by bind-dirs.sh_.
+persistent_paths__qubes_os_default_persistent_paths:
+  - '/home'
+  - '/usr/local'
+  - '/var/spool/cron'
+  - '/rw'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

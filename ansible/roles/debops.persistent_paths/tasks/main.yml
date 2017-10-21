@@ -1,0 +1,56 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- when: persistent_paths__qubes_os_enabled|bool
+  tags: [ 'role::persistent_paths:qubes_os' ]
+  block:
+
+  - name: Ensure the qubes-bind-dirs.d directory does exist
+    file:
+      path: '{{ persistent_paths__qubes_os_config_dir }}'
+      state: 'directory'
+      owner: 'root'
+      group: 'root'
+      mode: '0750'
+
+  - name: Configuration persistent paths on Qubes OS
+    template:
+      src: 'rw/config/qubes-bind-dirs.d/default.conf.j2'
+      dest: '{{ persistent_paths__qubes_os_config_dir + "/" + item.key + ".conf" }}'
+      owner: 'root'
+      group: 'root'
+      mode: '0644'
+    when: (item.value.state|d("present") == "present")
+    with_dict: '{{ persistent_paths__combined_paths }}'
+    notify: [ 'Run bind-dirs' ]
+
+  - name: Remove configuration of persistent paths on Qubes OS
+    file:
+      path: '{{ persistent_paths__qubes_os_config_dir + "/" + item.key + ".conf" }}'
+      state: 'absent'
+    when: (item.value.state|d("present") == "absent")
+    with_dict: '{{ persistent_paths__combined_paths }}'
+    notify: [ 'Run bind-dirs' ]
+
+# Ansible facts [[[
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create local facts of persistent_paths
+  template:
+    src: 'etc/ansible/facts.d/persistent_paths.fact.j2'
+    dest: '/etc/ansible/facts.d/persistent_paths.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: persistent_paths__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: persistent_paths__register_facts|changed
+# ]]]
