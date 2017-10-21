@@ -1,0 +1,10 @@
+---
+
+- name: Verify rstudio-server
+  command: rstudio-server verify-installation
+  notify: [ 'Restart rstudio-server' ]
+
+- name: Restart rstudio-server
+  service:
+    name: 'rstudio-server'
+    state: 'restarted'

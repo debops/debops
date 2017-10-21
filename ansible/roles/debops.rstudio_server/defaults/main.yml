@@ -1,0 +1,298 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.rstudio_server default variables [[[
+# ===========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Application sources [[[
+# -----------------------
+
+# .. envvar:: rstudio_server__libssl_in_apt [[[
+#
+# Variable which contains the information about presence of the ``libssl1.0.0``
+# package in APT. If it's not available, the ``.deb`` package containing
+# ``libssl`` v1.0.0 from Debian Jessie will be downloaded by the role and
+# installed directly.
+rstudio_server__libssl_in_apt: '{{ True
+                                   if (rstudio_server__register_package_libssl.stdout)
+                                   else False }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__rstudio_in_apt [[[
+#
+# Variable which contains the information about presence of the
+# ``rstudio-server`` package in APT. If not, the ``.deb`` package containing
+# RStudio Server will be downloaded by the role and installed directly.
+rstudio_server__rstudio_in_apt: '{{ True
+                                    if (rstudio_server__register_package_rstudio.stdout)
+                                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__src [[[
+#
+# Directory where downloaded packages will be stored.
+rstudio_server__src: '{{ (ansible_local.root.src
+                          if (ansible_local|d() and ansible_local.root|d() and
+                              ansible_local.root.src|d())
+                          else "/usr/local/src") + "/" + rstudio_server__user }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__libssl_downgrade [[[
+#
+# This variable controls if the role should download and install the
+# ``libssl1.0.0`` package if it's not available through APT.
+# See :ref:`rstudio_server__ref_installation_issues` for more details.
+rstudio_server__libssl_downgrade: True
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__libssl_deb_url [[[
+#
+# The URL of the ``libssl1.0.0`` ``.deb`` package to download.
+rstudio_server__libssl_deb_url: 'https://deb.debian.org/debian/pool/main/o/openssl/libssl1.0.0_1.0.2l-1~bpo8+1_amd64.deb'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__libssl_deb_checksum [[[
+#
+# The SHA256 checksum of the ``libssl1.0.0`` ``.deb`` package.
+rstudio_server__libssl_deb_checksum: 'sha256:6e85968afe1a6643f4e82e1cc168f848c5967a131bb1c7392f11974953db0e67'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__rstudio_deb_url [[[
+#
+# The URL of the ``rstudio-server`` ``.deb`` package to download.
+rstudio_server__rstudio_deb_url: 'https://download2.rstudio.org/rstudio-server-1.1.383-amd64.deb'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__rstudio_deb_checksum [[[
+#
+# The SHA256 checksum of the ``rstudio-server`` ``.deb`` package.
+rstudio_server__rstudio_deb_checksum: 'sha256:6f8d7b7d56cdd1618f06fe58f1b5046954eb60a51b1f956488f4cda56dd80033'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: rstudio_server__base_packages [[[
+#
+# List of APT packages required by RStudio Server.
+rstudio_server__base_packages:
+  - '{{ "libssl1.0.0"
+        if (rstudio_server__libssl_downgrade|bool and
+            rstudio_server__libssl_in_apt|bool)
+        else [] }}'
+  - '{{ "rstudio-server"
+        if rstudio_server__rstudio_in_apt|bool
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__packages [[[
+#
+# List of additional APT packages to install with RStudio Server.
+rstudio_server__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# RStudio system account [[[
+# --------------------------
+
+# .. envvar:: rstudio_server__user [[[
+#
+# The UNIX system account used by RStudio Server.
+rstudio_server__user: 'rstudio-server'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__group [[[
+#
+# The UNIX system group used by RStudio Server.
+rstudio_server__group: 'rstudio-server'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__home [[[
+#
+# RStudio Server home directory.
+rstudio_server__home: '{{ (ansible_local.root.home
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.home|d())
+                           else "/var/local") + "/" + rstudio_server__user }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__shell [[[
+#
+# The UNIX shell used by the RStudio user account.
+rstudio_server__shell: '/bin/false'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__comment [[[
+#
+# The comment/GECOS field of the RStudio Server account.
+rstudio_server__comment: 'RStudio Server'
+                                                                   # ]]]
+                                                                   # ]]]
+# User account access [[[
+# -----------------------
+
+# These variables can be used to grant access to the RStudio Server service to
+# specific UNIX accounts. Only existing accounts will be added to the
+# authentication group. See :ref:`rstudio_server__ref_allow_users` for more
+# details.
+
+# .. envvar:: rstudio_server__allow_users [[[
+#
+# Specify list of UNIX user accounts that will be allowed to access RStudio
+# Server on all hosts in the Ansible inventory.
+rstudio_server__allow_users: []
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__group_allow_users [[[
+#
+# Specify list of UNIX user accounts that will be allowed to access RStudio
+# Server on hosts in a specifc Ansible inventory group.
+rstudio_server__group_allow_users: []
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__host_allow_users [[[
+#
+# Specify list of UNIX user accounts that will be allowed to access RStudio
+# Server on specific hosts in the Ansible inventory.
+rstudio_server__host_allow_users: []
+                                                                   # ]]]
+                                                                   # ]]]
+# RStudio Server options [[[
+# --------------------------
+
+# .. envvar:: rstudio_server__bind [[[
+#
+# IP address of the interface on which :command:`rstudio-server` listens for
+# connections.
+rstudio_server__bind: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__port [[[
+#
+# The TCP port used by RServer Studio service.
+rstudio_server__port: '8787'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__auth_group [[[
+#
+# The UNIX system group which allows access to RStudio Server.
+rstudio_server__auth_group: 'rstudio-users'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__session_timeout [[[
+#
+# RStudio session timeout in minutes. When it passes, idle sessions will be
+# saved on disk and disabled.
+rstudio_server__session_timeout: '120'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__cran_mirror [[[
+#
+# The URL of the Comprehensive R Archive Network mirror which should be used by
+# RStudio Server.
+rstudio_server__cran_mirror: '{{ ansible_local.cran.mirror
+                                 if (ansible_local|d() and ansible_local.cran|d() and
+                                     ansible_local.cran.mirror|d())
+                                 else "https://cloud.r-project.org/" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RStudio Server configuration files [[[
+# --------------------------------------
+
+# These variables define the contents of the RStudio Server configuration
+# files. See :ref:`rstudio_server__ref_conf` for more details.
+
+# .. envvar:: rstudio_server__rserver_conf [[[
+#
+# The contents of the :file:`/etc/rstudio/rserver.conf` configuration file.
+rstudio_server__rserver_conf:
+
+  - 'www-address':              '{{ rstudio_server__bind }}'
+  - 'www-port':                 '{{ rstudio_server__port }}'
+  - 'auth-required-user-group': '{{ rstudio_server__auth_group }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__rsession_conf [[[
+#
+# The contents of the :file:`/etc/rstudio/rsession.conf` configuration file.
+rstudio_server__rsession_conf:
+
+  - 'session-timeout-minutes': '{{ rstudio_server__session_timeout }}'
+  - 'r-cran-repos':            '{{ rstudio_server__cran_mirror }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Webserver configuration [[[
+# ---------------------------
+
+# .. envvar:: rstudio_server__fqdn [[[
+#
+# The Fully Qualified Domain Name of the RStudio Server web service.
+rstudio_server__fqdn: 'rstudio.{{ rstudio_server__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__domain [[[
+#
+# The DNS domain on which RStudio Server will be available.
+rstudio_server__domain: '{{ ansible_local.core.domain
+                            if (ansible_local|d() and ansible_local.core|d() and
+                                ansible_local.core.domain|d())
+                            else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__upload_size [[[
+#
+# Maximum upload size allowed by the webserver, in megabytes.
+rstudio_server__upload_size: '50m'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: rstudio_server__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+rstudio_server__etc_services__dependent_list:
+
+  - name: 'rstudio'
+    port: '{{ rstudio_server__port }}'
+    comment: 'RStudio Server'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__cran__dependent_packages [[[
+#
+# Configuration for the ``debops.cran`` Ansible role.
+rstudio_server__cran__dependent_packages:
+
+  - 'r-doc-html'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__nginx__dependent_servers [[[
+#
+# Configuration for the debops.nginx_ Ansible role.
+rstudio_server__nginx__dependent_servers:
+
+  - by_role: 'debops.rstudio_server'
+    name: '{{ rstudio_server__fqdn }}'
+    filename: 'debops.rstudio_server'
+
+    options: |
+        client_max_body_size {{ rstudio_server__upload_size }};
+
+    location_list:
+      - pattern: '/'
+        options: |
+          proxy_pass http://127.0.0.1:{{ rstudio_server__port }};
+          proxy_redirect http://127.0.0.1:{{ rstudio_server__port }}/ $scheme://$host/;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+          proxy_read_timeout 20d;
+        state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
