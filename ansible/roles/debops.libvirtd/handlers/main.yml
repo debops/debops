@@ -1,0 +1,20 @@
+---
+
+- name: 'Restart sysfsutils'
+  service:
+    name: 'sysfsutils'
+    state: 'restarted'
+  when: (libvirtd__register_sysfs|d() and
+         'rw' in libvirtd__register_sysfs.stdout_lines)
+
+- name: 'Restart libvirtd'
+  service:
+    name: 'libvirtd'
+    state: 'restarted'
+  when: ansible_distribution_release not in [ 'precise', 'trusty', 'xenial' ]
+
+- name: 'Restart libvirt-bin'
+  service:
+    name: 'libvirt-bin'
+    state: 'restarted'
+  when: ansible_distribution_release in [ 'precise', 'trusty', 'xenial' ]

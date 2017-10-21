@@ -1,0 +1,91 @@
+---
+
+- name: Install libvirtd support
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - '{{ libvirtd__network_packages }}'
+    - '{{ libvirtd__misc_packages }}'
+    - '{{ libvirtd__packages }}'
+    - [ '{{ libvirtd__base_packages_map[ansible_distribution_release]
+            if (ansible_distribution_release in libvirtd__base_packages_map.keys())
+            else libvirtd__base_packages }}' ]
+    - [ '{{ [] if (ansible_virtualization_type in [ "kvm" ] and
+                   ansible_virtualization_role in [ "guest" ])
+                   else libvirtd__kvm_packages }}' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save libvirtd local facts
+  template:
+    src: 'etc/ansible/facts.d/libvirtd.fact.j2'
+    dest: '/etc/ansible/facts.d/libvirtd.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: libvirtd__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: libvirtd__register_facts|changed
+
+- name: Divert managed configuration files
+  command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'
+  args:
+    creates: '{{ item }}.dpkg-divert'
+  with_items:
+    - '/etc/libvirt/libvirt.conf'
+    - '/etc/libvirt/libvirtd.conf'
+
+- name: Generate libvirt configuration files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/libvirt/libvirt.conf'
+
+- name: Generate libvirtd configuration files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/libvirt/libvirtd.conf'
+  notify: [ 'Restart libvirtd', 'Restart libvirt-bin' ]
+
+- name: Add administrators to libvirtd access group
+  user:
+    name: '{{ item }}'
+    groups: "{{ libvirtd__unix_sock_group }}"
+    append: True
+  with_items: '{{ libvirtd__admins }}'
+  when: libvirtd__admins|d()
+
+- name: Configure Kernel Same-page Merging
+  template:
+    src: 'etc/sysfs.d/ksm.conf.j2'
+    dest: '/etc/sysfs.d/ksm.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart sysfsutils' ]
+  when: ansible_distribution_release not in [ 'wheezy' ]
+
+- name: Check /sys filesystem mount options
+  shell: findmnt -n -o FS-OPTIONS --target /sys | tr ',' '\n'
+  register: libvirtd__register_sysfs
+  changed_when: False
+  check_mode: False

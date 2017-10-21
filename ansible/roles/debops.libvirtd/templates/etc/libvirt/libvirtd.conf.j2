@@ -1,0 +1,126 @@
+# {{ ansible_managed }}
+
+# Master libvirt daemon configuration file
+#
+# For further information consult https://libvirt.org/format.html
+#
+# NOTE: the tests/daemon-conf regression test script requires
+# that each "PARAMETER = VALUE" line in this file have the parameter
+# name just after a leading "#".
+
+{% set libvirtd__tpl_configuration = {} %}
+{% set libvirtd__tpl_configuration_list = [] %}
+{% set libvirtd__tpl_known_sections = [] %}
+{% set libvirtd__tpl_seen_sections = [] %}
+{#
+#  --- Transform the list of configuration parameters to a merged YAML dictionary structure ---
+#}
+{% for element in libvirtd__combined_configuration %}
+{%   if element is mapping %}
+{%     if element.name|d() and element.state|d('present') != 'ignore' %}
+{%       set parameters = (libvirtd__tpl_configuration[element.name].copy() if libvirtd__tpl_configuration[element.name] is defined else {}) %}
+{%       set _ = parameters.update({ 'name': element.name, 'state': element.state|d(parameters.state|d('present')), 'section': element.section|d(parameters.section|d('unknown')), 'weight': element.weight|d(parameters.weight|d(0))|int }) %}
+{%       if element.value is defined %}
+{%         set _ = parameters.update({ 'value': element.value }) %}
+{%       else %}
+{%         set _ = parameters.update({ 'value': parameters.value|d("") }) %}
+{%         set _ = parameters.update({ 'state': parameters.state|d('comment') }) %}
+{%       endif %}
+{%       if element.comment is defined %}
+{%         set _ = parameters.update({ 'comment': element.comment }) %}
+{%       endif %}
+{%     elif not element.name|d() %}
+{%       for key, value in element.iteritems() %}
+{%         set loop_parameters = (libvirtd__tpl_configuration[key].copy() if libvirtd__tpl_configuration[key] is defined else {}) %}
+{%         set _ = loop_parameters.update({ 'name': key, 'value': value, 'state': 'present', 'section': loop_parameters.section|d('unknown'), 'weight': loop_parameters.weight|d(0)|int }) %}
+{%         set _ = libvirtd__tpl_configuration.update({ loop_parameters.name: loop_parameters }) %}
+{%       endfor %}
+{%     endif %}
+{%     if parameters|d() and parameters.name|d() %}
+{%       set _ = libvirtd__tpl_configuration.update({ parameters.name: parameters }) %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{#
+#  --- Transform the YAML dictionary structure into a list ---
+#}
+{% for key, value in libvirtd__tpl_configuration.iteritems() %}
+{%   set _ = libvirtd__tpl_configuration_list.append(value) %}
+{%   if value.state|d('present') != 'absent' %}
+{%     set _ = libvirtd__tpl_known_sections.append(value.section) %}
+{%   endif %}
+{% endfor %}
+{#
+#  --- Macro that prints a single parameter ---
+#}
+{% macro print_parameter(param, next_option) %}
+{%   if param.state|d('present') != 'absent' %}
+{%     if param.comment|d() %}
+{%       if next_option %}
+
+{%       endif %}
+{{ param.comment | regex_replace('\n$','') | comment(prefix='\n',postfix='') -}}
+{%     endif %}
+{%     if param.value is defined %}
+{%       if param.value | bool and param.value is not iterable %}
+{{ '{}{} = {}'.format(('#' if param.state|d('present') == 'comment' else ''), param.name, 1) -}}
+{%       elif not param.value | bool and param.value is not iterable %}
+{%         if param.value is not none %}
+{%           if param.value | int or param.value | string == '0' %}
+{{ '{}{} = {}'.format(('#' if param.state|d('present') == 'comment' else ''), param.name, param.value) -}}
+{%           else %}
+{{ '{}{} = {}'.format(('#' if param.state|d('present') == 'comment' else ''), param.name, 0) -}}
+{%           endif %}
+{%         endif %}
+{%       elif param.value is string %}
+{{ '{}{} = "{}"'.format(('#' if param.state|d('present') == 'comment' else ''), param.name, param.value) -}}
+{%       elif param.value is number %}
+{{ '{}{} = {}'.format(('#' if param.state|d('present') == 'comment' else ''), param.name, param.value) -}}
+{%       elif param.value is not string and param.value is not mapping %}
+{%         if param.value | count <= 4 %}
+{{ '{}{} = {}'.format(('#' if param.state|d('present') == 'comment' else ''), param.name, '[ "' + param.value | join('", "') + '" ]') -}}
+{%         else %}
+{{ '{}{} = ['.format(('#' if param.state|d('present') == 'comment' else ''), param.name) }}
+{%           for thing in param.value %}
+{{ '{:<4}"{}"{}'.format(('#' if param.state|d('present') == 'comment' else ''), thing, (',' if not loop.last|bool else '')) }}
+{%           endfor %}
+{{ '{}]'.format(('#' if param.state|d('present') == 'comment' else '')) -}}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
+{#
+#  --- Macro that prints a single section with parameters of that section ordered by weight ---
+#}
+{% macro print_section(element, section_name='') %}
+{%   if element.state|d('present') != 'hidden' %}
+#################################################################
+{{ element.title | comment }}
+{%     if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='',postfix='') -}}
+{%     endif %}
+{%   else %}
+
+{%   endif %}
+{%   set option_counter = [] %}
+{%   for option in libvirtd__tpl_configuration_list | sort(attribute='weight') %}
+{%     if option.section|d() == section_name and option.state|d('present') != 'absent' %}
+{{ print_parameter(option, option_counter) }}
+{%       set _ = option_counter.append(True) %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+{#
+#  --- Go through configuration sections and print them and their parameters ---
+#}
+{% for section in libvirtd__configuration_sections %}
+{%   if not loop.first|bool and section.state|d('present') not in ['hidden', 'absent' ] and section.name in libvirtd__tpl_known_sections %}
+
+
+{% endif %}
+{%   if section.state|d('present') != 'absent' and section.name in libvirtd__tpl_known_sections %}
+{{ print_section(section, section_name=section.name) -}}
+{%     set _ = libvirtd__tpl_seen_sections.append(section.name) %}
+{%   endif %}
+{% endfor %}
