@@ -1,0 +1,79 @@
+# {{ ansible_managed }}
+
+{% macro print_config(section) %}
+{%   if section.state is undefined or section.state != 'absent' %}
+{%     if section.comment|d() %}
+# {{ section.comment }}
+{%     endif %}
+{%     if section.log|d() %}
+{%       if section.log is string %}
+{{ section.log }} {
+{%       else %}
+{%         if section.log|length <= 2 %}
+{{ section.log | join(" ") }} {
+{%         else %}
+{%           for element in section.log %}
+{{ element }}
+{%           endfor %}
+{
+{%         endif %}
+{%       endif %}
+{%     elif section.logs|d() %}
+{%       if section.logs is string %}
+{{ section.logs }} {
+{%       else %}
+{%         if section.logs|length <= 2 %}
+{{ section.logs | join(" ") }} {
+{%         else %}
+{%           for element in section.logs %}
+{{ element }}
+{%           endfor %}
+{
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%     if section.options|d() %}
+{%       if section.log|d() or section.logs|d() %}
+{{ section.options | indent(4, true) }}
+{%       else %}
+{{ section.options }}
+{%       endif %}
+{%     endif %}
+{%     if section.log|d() or section.logs|d() %}
+{%       if section.firstaction|d() %}
+    firstaction
+{{ section.firstaction | indent(8, true) }}
+    endscript
+{%       endif %}
+{%       if section.prerotate|d() %}
+    prerotate
+{{ section.prerotate | indent(8, true) }}
+    endscript
+{%       endif %}
+{%       if section.postrotate|d() %}
+    postrotate
+{{ section.postrotate | indent(8, true) }}
+    endscript
+{%       endif %}
+{%       if section.preremove|d() %}
+    preremove
+{{ section.preremove | indent(8, true) }}
+    endscript
+{%       endif %}
+{%       if section.lastaction|d() %}
+    lastaction
+{{ section.lastaction | indent(8, true) }}
+    endscript
+{%       endif %}
+}
+{%     endif %}
+{%   endif %}
+
+{% endmacro %}
+{% if item.sections|d() %}
+{%   for section in item.sections %}
+{{ print_config(section) -}}
+{%   endfor %}
+{% else %}
+{{ print_config(item) -}}
+{% endif %}
