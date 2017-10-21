@@ -1,0 +1,163 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.ruby default variables [[[
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Ruby APT packages [[[
+# ---------------------
+
+# .. envvar:: ruby__base_packages [[[
+#
+# List of base APT packages to install.
+ruby__base_packages: [ 'ruby', 'libruby', 'rubygems-integration',
+                       'ruby-bundler' ]
+
+                                                                   # ]]]
+# .. envvar:: ruby__dev_packages [[[
+#
+# List of development packages to install, which are required to compile native
+# Ruby extensions. They will be installed if any Ruby gems are requested using
+# the default lists.
+ruby__dev_packages: '{{ ["ruby-dev","build-essential"]
+	                if (ruby__dev_support|bool or
+	                    ruby__gems or ruby__group_gems or
+	                    ruby__host_gems or ruby__dependent_gems or
+	                    ruby__user_gems or ruby__group_user_gems or
+	                    ruby__host_user_gems or ruby__dependent_user_gems)
+	                else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: ruby__dev_support [[[
+#
+# By default ``debops.ruby`` installs only the base Ruby packages, unless any
+# Ruby gems are requested. If this variable is set to ``True``, the role will
+# install the build environment automatically without any gems set. This can be
+# used by other roles to request the development packages ahead of time.
+ruby__dev_support: False
+
+                                                                   # ]]]
+# .. envvar:: ruby__packages [[[
+#
+# List of APT packages to install for all hosts in the Ansible inventory.
+ruby__packages: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__group_packages [[[
+#
+# List of APT packages to install on a group of hosts in the Ansible inventory.
+ruby__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__host_packages [[[
+#
+# List of APT packages to install on specific hosts in the Ansible inventory.
+ruby__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__dependent_packages [[[
+#
+# List of APT packages to install specified by other roles via dependency
+# variables.
+ruby__dependent_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Ruby gems [[[
+# -------------
+
+# You can specify a list of Ruby gems to install on a host. Each entry in the
+# list is either a gem name, or a YAML dictionary with parameters known by the
+# ``gem`` Ansible module. All specified gems will be installed system-wide.
+#
+# If any gems are specified, role will install additional APT packages required
+# to build native extensions. List of these packages is specified in
+# :envvar:`ruby__dev_packages` variable.
+#
+# See :ref:`ruby__ref_gems` for more details.
+
+# .. envvar:: ruby__gems [[[
+#
+# List of gems that should be installed on all hosts in Ansible inventory.
+ruby__gems: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__group_gems [[[
+#
+# List of gems that should be installed on a group of hosts in Ansible
+# inventory.
+ruby__group_gems: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__host_gems [[[
+#
+# List of gems that should be installed on a specific host in Ansible
+# inventory.
+ruby__host_gems: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__dependent_gems [[[
+#
+# List of gems configured by other Ansible role via role dependency variables.
+ruby__dependent_gems: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Ruby user gems [[[
+# ------------------
+
+# You can specify a list of Ruby gems to install on a host on an user account.
+# Each entry in the list a YAML dictionary with parameters known by the ``gem``
+# Ansible module. All gems will be installed on a specified user account.
+#
+# If any gems are specified, role will install additional APT packages required
+# to build native extensions. List of these packages is specified in
+# :envvar:`ruby__dev_packages` variable.
+#
+# See :ref:`ruby__ref_user_gems` for more details.
+
+# .. envvar:: ruby__user_gems [[[
+#
+# List of gems that should be installed on all hosts in Ansible inventory.
+ruby__user_gems: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__group_user_gems [[[
+#
+# List of gems that should be installed on a group of hosts in Ansible
+# inventory.
+ruby__group_user_gems: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__host_user_gems [[[
+#
+# List of gems that should be installed on a specific host in Ansible
+# inventory.
+ruby__host_user_gems: []
+
+                                                                   # ]]]
+# .. envvar:: ruby__dependent_user_gems [[[
+#
+# List of gems configured by other Ansible role via role dependency variables.
+ruby__dependent_user_gems: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration of other roles [[[
+# --------------------------------
+
+# .. envvar:: ruby__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ role.
+ruby__apt_preferences__dependent_list:
+
+  - package: 'bundler ruby-bundler'
+    backports: [ 'jessie' ]
+    reason: 'Closer feature parity with upstream'
+    role: 'debops.ruby'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

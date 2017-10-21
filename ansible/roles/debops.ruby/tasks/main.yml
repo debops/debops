@@ -1,0 +1,79 @@
+---
+
+- name: Install Ruby packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ ruby__base_packages }}'
+    - '{{ ruby__dev_packages }}'
+    - '{{ ruby__packages }}'
+    - '{{ ruby__group_packages }}'
+    - '{{ ruby__host_packages }}'
+    - '{{ ruby__dependent_packages }}'
+
+- name: Install Ruby gems
+  gem:
+    name:                 '{{ item.name if item.name|d() else item }}'
+    state:                '{{ item.state                | d("present") }}'
+    user_install:         '{{ item.user_install         | d(False) }}'
+    version:              '{{ item.version              | d(omit) }}'
+    repository:           '{{ item.repository           | d(omit) }}'
+    include_doc:          '{{ item.include_doc          | d(omit) }}'
+    build_flags:          '{{ item.build_flags          | d(omit) }}'
+    executable:           '{{ item.executable           | d(omit) }}'
+    include_dependencies: '{{ item.include_dependencies | d(omit) }}'
+  with_flattened:
+    - '{{ ruby__gems }}'
+    - '{{ ruby__group_gems }}'
+    - '{{ ruby__host_gems }}'
+    - '{{ ruby__dependent_gems }}'
+
+- name: Make sure that required groups exist
+  group:
+    name: '{{ item.group | d(item.owner) }}'
+    system: '{{ (item.system | d(True)) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ ruby__user_gems }}'
+    - '{{ ruby__group_user_gems }}'
+    - '{{ ruby__host_user_gems }}'
+    - '{{ ruby__dependent_user_gems }}'
+  when: (item.group|d() or item.owner|d())
+
+- name: Make sure that required users exist
+  user:
+    name: '{{ item.owner }}'
+    group: '{{ item.group | d(item.owner) }}'
+    home: '{{ item.home | d((ansible_local.root.home
+                             if (ansible_local|d() and ansible_local.root|d() and
+                                 ansible_local.root.home|d())
+                             else "/var/local") + "/" + item.owner) }}'
+    system: '{{ (item.system | d(True)) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ ruby__user_gems }}'
+    - '{{ ruby__group_user_gems }}'
+    - '{{ ruby__host_user_gems }}'
+    - '{{ ruby__dependent_user_gems }}'
+  when: item.owner|d()
+
+- name: Install Ruby user gems
+  gem:
+    name:                 '{{ item.name }}'
+    state:                '{{ item.state                | d("present") }}'
+    user_install:         '{{ item.user_install         | d(True) }}'
+    version:              '{{ item.version              | d(omit) }}'
+    repository:           '{{ item.repository           | d(omit) }}'
+    include_doc:          '{{ item.include_doc          | d(omit) }}'
+    build_flags:          '{{ item.build_flags          | d(omit) }}'
+    executable:           '{{ item.executable           | d(omit) }}'
+    include_dependencies: '{{ item.include_dependencies | d(omit) }}'
+  with_flattened:
+    - '{{ ruby__user_gems }}'
+    - '{{ ruby__group_user_gems }}'
+    - '{{ ruby__host_user_gems }}'
+    - '{{ ruby__dependent_user_gems }}'
+  become_user: '{{ item.user | d(item.owner) }}'
+  when: (item.user|d() or item.owner|d())
+
