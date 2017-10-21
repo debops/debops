@@ -1,0 +1,50 @@
+---
+
+- name: Install required packages for phpipam-scripts
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: [ 'python-mysqldb' ]
+
+- name: Clone phpipam-scripts
+  git:
+    repo: '{{ phpipam_scripts_git_repo }}'
+    dest: '{{ phpipam_scripts_git_dest }}'
+    version: '{{ phpipam_scripts_git_version }}'
+    update: True
+  register: phpipam_register_scripts_src
+
+- name: Install phpipam-scripts
+  command: make install
+  args:
+    chdir: '{{ phpipam_scripts_git_dest }}'
+  when: phpipam_register_scripts_src is defined and
+        phpipam_register_scripts_src.changed
+
+- name: Configure phpipam-scripts
+  template:
+    src: 'etc/dhcp/phpipam.conf.j2'
+    dest: '/etc/dhcp/phpipam.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+
+- name: Configure phpipam-scripts-wrapper
+  template:
+    src: 'usr/local/sbin/phpipam-hosts-wrapper.j2'
+    dest: '/usr/local/sbin/phpipam-hosts-wrapper'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: phpipam_register_hosts_wrapper
+
+- name: Create wrapper script entry in cron
+  cron:
+    name: 'Regenerate DHCP hosts files'
+    cron_file: 'phpipam-scripts'
+    minute: '{{ phpipam_scripts_cron_period }}'
+    job: '/usr/local/sbin/phpipam-hosts-wrapper'
+    user: 'root'
+    state: 'present'
+

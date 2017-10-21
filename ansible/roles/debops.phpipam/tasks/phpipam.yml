@@ -1,0 +1,130 @@
+---
+
+# ---- Environment ----
+
+- name: Create phpIPAM group
+  group:
+    name: '{{ phpipam_group }}'
+    system: True
+    state: 'present'
+
+- name: Create phpIPAM user
+  user:
+    name: '{{ phpipam_user }}'
+    group: '{{ phpipam_group }}'
+    home: '{{ phpipam_home }}'
+    shell: '/bin/false'
+    comment: 'phpIPAM'
+    system: True
+    state: 'present'
+    createhome: False
+
+
+# ---- Deployment ----
+
+- name: Create phpIPAM source directory
+  file:
+    path: '{{ phpipam_src }}'
+    state: 'directory'
+    owner: '{{ phpipam_user }}'
+    group: '{{ phpipam_group }}'
+    mode: '0750'
+
+- name: Clone phpIPAM source from deploy server
+  git:
+    repo: '{{ phpipam_git_repo }}'
+    dest: '{{ phpipam_git_dest }}'
+    bare: True
+    update: True
+  become_user: '{{ phpipam_user }}'
+  register: phpipam_register_source
+  no_log: True
+
+- name: Create phpIPAM checkout directory
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ phpipam_user }}'
+    group: '{{ phpipam_webserver_user }}'
+    mode: '0750'
+  with_items: [ '{{ phpipam_www }}', '{{ phpipam_git_checkout }}' ]
+
+- name: Prepare phpIPAM worktree
+  copy:
+    content: 'gitdir: {{ phpipam_git_dest }}'
+    dest: '{{ phpipam_git_checkout + "/.git" }}'
+    owner: '{{ phpipam_user }}'
+    group: '{{ phpipam_group }}'
+    mode: '0644'
+
+- name: Get commit hash of target checkout
+  shell: GIT_WORK_TREE={{ phpipam_git_checkout }} git rev-parse {{ phpipam_git_version }}
+         chdir={{ phpipam_git_dest }}
+  become_user: '{{ phpipam_user }}'
+  register: phpipam_register_target_branch
+  changed_when: phpipam_register_target_branch.stdout != phpipam_register_source.before
+
+- name: Checkout phpIPAM
+  shell: GIT_WORK_TREE={{ phpipam_git_checkout }} git checkout -f {{ phpipam_git_version }}
+         chdir={{ phpipam_git_dest }}
+  become_user: '{{ phpipam_user }}'
+  register: phpipam_register_checkout
+  when: (phpipam_register_source.before is undefined or
+         (phpipam_register_source.before is defined and
+          phpipam_register_target_branch.stdout is defined and
+          phpipam_register_source.before != phpipam_register_target_branch.stdout))
+
+
+# ---- Configuration ----
+
+- name: Check if phpIPAM configuration exists
+  stat:
+    path: '{{ phpipam_git_checkout + "/config.php" }}'
+  register: phpipam_register_configuration
+
+- name: Check if MySQL server is installed
+  stat:
+    path: '/var/lib/mysql'
+  register: phpipam_register_mysql
+
+- name: Create phpIPAM database user in local MySQL instance
+  mysql_user:
+    name: '{{ phpipam_database_user }}'
+    state: 'present'
+    password: '{{ phpipam_database_password }}'
+    priv: '{{ phpipam_database_name }}.*:ALL'
+    host: 'localhost'
+  when: phpipam_database_host == 'localhost' and phpipam_register_mysql.stat.exists
+
+- name: Create phpIPAM database in local MySQL instance
+  mysql_db:
+    name: '{{ phpipam_database_name }}'
+    state: 'present'
+  when: phpipam_database_host == 'localhost' and phpipam_register_mysql.stat.exists
+  register: phpipam_register_database_status
+
+- name: Import initial database schema
+  mysql_db:
+    name: '{{ phpipam_database_name }}'
+    state: 'import'
+    target: '{{ phpipam_database_schema }}'
+  when: (phpipam_database_host == 'localhost' and
+         (phpipam_register_database_status is defined and phpipam_register_database_status.changed) and
+         (phpipam_register_configuration is defined and not phpipam_register_configuration.stat.exists))
+
+- name: Configure phpIPAM
+  template:
+    src: 'srv/www/sites/config.php.j2'
+    dest: '{{ phpipam_git_checkout + "/config.php" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Create import directory
+  file:
+    path: '{{ phpipam_git_checkout + "/site/admin/csvupload" }}'
+    state: 'directory'
+    owner: '{{ phpipam_user }}'
+    group: '{{ phpipam_group }}'
+    mode: '0755'
+

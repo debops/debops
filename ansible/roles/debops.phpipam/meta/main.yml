@@ -1,0 +1,41 @@
+---
+
+dependencies:
+
+  - role: debops.secret
+
+  - role: debops.php5
+    php5_packages: [ 'php5-mysql', 'php5-gmp', 'php5-gd', 'php5-curl', 'php5-mcrypt', 'php-net-ipv4', 'php5-ldap' ]
+    php5_pools: [ '{{ phpipam_php5_pool }}' ]
+    when: ((phpipam_dependencies is defined and phpipam_dependencies) and
+           (phpipam_mode is defined and 'webui' in phpipam_mode))
+
+  - role: debops.nginx
+    nginx_servers: [ '{{ phpipam_nginx_server }}' ]
+    nginx_upstreams: [ '{{ phpipam_nginx_upstream_php5 }}' ]
+    when: ((phpipam_dependencies is defined and phpipam_dependencies) and
+           (phpipam_mode is defined and 'webui' in phpipam_mode))
+    tags: nginx
+
+galaxy_info:
+  author: 'Maciej Delmanowski'
+  description: 'Install phpIPAM, an Open Source IP Address Manager'
+  company: 'DebOps'
+  license: 'GNU General Public License v3'
+  min_ansible_version: '1.7.0'
+  platforms:
+  - name: Ubuntu
+    versions:
+    - precise
+    - quantal
+    - raring
+    - saucy
+    - trusty
+  - name: Debian
+    versions:
+    - wheezy
+    - jessie
+  categories:
+  - networking
+  - system
+

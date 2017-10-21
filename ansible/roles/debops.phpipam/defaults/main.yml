@@ -1,0 +1,121 @@
+---
+
+# What parts of the "phpIPAM stack" to enable:
+#
+# - ``webui``: configure the Web interface
+#
+# - ``scripts``: configure phpipam-scripts
+#
+phpipam_mode: [ 'webui', 'scripts' ]
+
+
+# ---- Basic configuration options ----
+
+# Should phpipam role manage it's own dependencies?
+phpipam_dependencies: True
+
+# Domain on which phpIPAM is configured in nginx
+phpipam_domain: [ 'ipam.{{ ansible_domain }}' ]
+
+phpipam_nginx_auth_realm: 'IPAM access is restricted'
+phpipam_nginx_access_policy: ''
+
+
+# ---- User, group, database configuration ----
+
+# System user and group for phpIPAM application
+phpipam_user: 'phpipam'
+phpipam_group: 'phpipam'
+phpipam_home: '{{ ansible_local.root.home + "/" + phpipam_user }}'
+
+# phpIPAM MySQL database configuration
+phpipam_database_user: 'phpipam'
+phpipam_database_host: 'localhost'
+phpipam_database_name: 'phpipam'
+phpipam_database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/mysql/' + phpipam_database_user + '/password length=30') }}"
+
+
+# ---- Base application directories ----
+
+# Base path for git bare repository with phpIPAM source
+phpipam_src: '{{ ansible_local.root.src + "/" + phpipam_user }}'
+
+# Base web root directory for phpIPAM website
+phpipam_www: '{{ (ansible_local.nginx.www if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.www is defined) else "/srv/www") + "/" + phpipam_user }}'
+
+# phpIPAM webserver user (needs read-only access to the website code)
+phpipam_webserver_user: '{{ ansible_local.nginx.user if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.user is defined) else "www-data" }}'
+
+
+# ---- git repository and checkout ----
+
+# phpIPAM source repository
+phpipam_git_repo: 'https://github.com/debops/phpipam.git'
+
+# phpIPAM source directory on the host
+phpipam_git_dest: '{{ phpipam_src + "/" + phpipam_git_repo.split("://")[1] }}'
+
+# phpIPAM git branch to deploy
+phpipam_git_version: 'master'
+
+# Default path where phpIPAM source files will be deployed
+phpipam_git_checkout: '{{ phpipam_www + "/sites/" + phpipam_domain[0] + "/public" }}'
+
+
+# ---- Other variables ----
+
+# Custom PHP session name
+phpipam_php_session_name: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/php_session_name chars=hexdigits length=30') }}"
+
+
+# ---- phpipam-scripts ----
+
+# phpIPAM scripts source repository
+phpipam_scripts_git_repo: 'https://github.com/debops/phpipam-scripts'
+
+# phpIPAM scripts source directory on the host
+phpipam_scripts_git_dest: '{{ "/usr/local/src/phpipam/" + phpipam_scripts_git_repo.split("://")[1] }}'
+
+# phpIPAM scripts git branch to deploy
+phpipam_scripts_git_version: 'master'
+
+# Database configuration for phpipam scripts
+phpipam_scripts_database_user: '{{ phpipam_database_user }}'
+phpipam_scripts_database_host: '{{ phpipam_database_host }}'
+phpipam_scripts_database_name: '{{ phpipam_database_name }}'
+phpipam_scripts_database_password: '{{ phpipam_database_password }}'
+
+# List of phpIPAM sections to include in generated default configuration. If
+# none are specified, all sections will be included.
+phpipam_scripts_config_sections: []
+
+# List of phpIPAM subnets to include in generated default configuration. If
+# none are specified, all subnets will be included.
+phpipam_scripts_config_subnets: []
+
+# Default configuration file location
+phpipam_scripts_config_output: '/etc/dhcp/dhcpd-hosts.conf'
+
+# A command to issue after the configuration file is generated and changes were
+# noticed.
+phpipam_scripts_config_restart_command: '/etc/init.d/isc-dhcp-server restart'
+
+# Default configuration for phpipam-hosts script. It will create
+# a ``/etc/dhcp/dhcpd-hosts.conf`` file with all hosts configured in phpIPAM,
+# or just the sections/subnets specified above. If any changes are detected,
+# DHCP server (by default ISC DHCP) will be restarted.
+phpipam_scripts_config_groups:
+  'hosts':
+    sections: '{{ phpipam_scripts_config_sections }}'
+    subnets: '{{ phpipam_scripts_config_subnets }}'
+    active: 'true'
+    reserved: 'false'
+    offline: 'false'
+    dhcp: 'false'
+    output: '{{ phpipam_scripts_config_output }}'
+    restart_command: '{{ phpipam_scripts_config_restart_command }}'
+    restart: 'true'
+
+# phpipam-hosts regeneration period in minutes (cron format)
+phpipam_scripts_cron_period: '*/5'
+
