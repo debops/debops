@@ -1,0 +1,7 @@
+---
+
+- name: Update /etc/aliases.db database
+  command: newaliases
+  when: ansible_local|d() and ansible_local.etc_aliases|d() and
+        ansible_local.etc_aliases.newaliases is defined and
+        ansible_local.etc_aliases.newaliases|bool
