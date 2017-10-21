@@ -1,0 +1,134 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.apt_listchanges default variables [[[
+# ============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT package and installation [[[
+# --------------------------------
+
+# .. envvar:: apt_listchanges__deploy_state [[[
+#
+# Specify if the :command:`apt-listchanges` package should be installed (``present``)
+# or not installed (``absent``). All specified packages will be purged if the
+# role is disabled using this variable.
+apt_listchanges__deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__base_packages [[[
+#
+# List of APT packages to install.
+apt_listchanges__base_packages: [ 'apt-listchanges' ]
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__packages [[[
+#
+# List of additional APT packages to install with :command:`apt-listpackages`.
+apt_listchanges__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Main configuration options [[[
+# ------------------------------
+
+# .. envvar:: apt_listchanges__mail_to [[[
+#
+# List of e-mail accounts to which messages from :command:`apt-listchanges` will be
+# sent.
+apt_listchanges__mail_to: '{{ ansible_local.core.admin_private_email
+                              if (ansible_local|d() and ansible_local.core|d() and
+                                  ansible_local.core.admin_private_email|d())
+                              else [ "root" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__apt_frontend [[[
+#
+# Specify which :command:`apt-listchanges` frontend to use when the script is executed
+# by APT operations. By default the frontend is ``mail`` unless ``apticron`` is
+# detected in which case the APT frontend is disabled, since ``apticron`` will
+# send virtually the same e-mails anyway.
+#
+# See :command:`apt-listchanges(1)` for list of available frontends.
+apt_listchanges__apt_frontend: '{{ "none"
+                                   if (ansible_local|d() and ansible_local.apticron|d() and
+                                       ansible_local.apticron.enabled|bool)
+                                   else (ansible_local.apt_listchanges.apt.frontend
+                                         if (ansible_local|d() and ansible_local.apt_listchanges|d() and
+                                             ansible_local.apt_listchanges.apt|d() and
+                                             ansible_local.apt_listchanges.apt.frontend|d())
+                                         else "mail") }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__apt_which [[[
+#
+# Specify what information should be sent when the script is run by APT
+# operations. Choices: ``news``, ``changelogs``, ``both``. By default only
+# important NEWS items will be sent.
+apt_listchanges__apt_which: 'news'
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__apticron_frontend [[[
+#
+# Specify what frontend to use when the script is executed by ``apticron``. See
+# :command:`apt-listchanges(1)` for information about available frontends.
+apt_listchanges__apticron_frontend: 'mail'
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__apticron_which [[[
+#
+# Specify what information should be sent when the script is run by
+# ``apticron``. Choices: ``news``, ``changelogs``, ``both``.
+apt_listchanges__apticron_which: 'both'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration profiles [[[
+# --------------------------
+
+# .. envvar:: apt_listchanges__profiles [[[
+#
+# YAML dictionary with information about :command:`apt-listchanges` profiles which
+# should be configured. Each value should be a YAML dictionary with key: value
+# pairs which define the configuration options. See :command:`apt-listchanges(1)` for
+# information about what options can be configured in a profile.
+apt_listchanges__profiles:
+  'cmdline':  '{{ apt_listchanges__profile_cmdline }}'
+  'apt':      '{{ apt_listchanges__profile_apt }}'
+  'apticron': '{{ apt_listchanges__profile_apticron }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__profile_cmdline [[[
+#
+# Profile used when :command:`apt-listchanges` is run from the command line, according
+# th the manual.
+apt_listchanges__profile_cmdline:
+  frontend: 'pager'
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__profile_apt [[[
+#
+# Profile used when :command:`apt-listchanges` is executed during APT operations.
+apt_listchanges__profile_apt:
+  frontend: '{{ apt_listchanges__apt_frontend }}'
+  email_address: '{{ apt_listchanges__mail_to | join(",") }}'
+  confirm: '0'
+  which: '{{ apt_listchanges__apt_which }}'
+  save_seen: '/var/lib/apt/listchanges.db'
+
+                                                                   # ]]]
+# .. envvar:: apt_listchanges__profile_apticron [[[
+#
+# Profile used when :command:`apt-listchanges` is run by ``apticron``.
+apt_listchanges__profile_apticron:
+  frontend: '{{ apt_listchanges__apticron_frontend }}'
+  email_address: '{{ apt_listchanges__mail_to | join(",") }}'
+  confirm: '0'
+  which: '{{ apt_listchanges__apticron_which }}'
+  save_seen: '/var/lib/apt/listchanges.db'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

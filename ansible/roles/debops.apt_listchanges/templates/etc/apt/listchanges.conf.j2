@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+{% for name, profile in apt_listchanges__profiles | dictsort %}
+[{{ name }}]
+{% for key, value in profile | dictsort %}
+{{ key }} = {{ value }}
+{% endfor %}
+
+{% endfor %}

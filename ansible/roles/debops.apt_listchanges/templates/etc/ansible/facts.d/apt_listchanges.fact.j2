@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+from sys import exit
+from os import path
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
+
+conf_file = '/etc/apt/listchanges.conf'
+output = {"installed": True}
+
+if path.isfile(conf_file):
+    config = ConfigParser()
+    config.read(conf_file)
+
+    for section in config.sections():
+        output[section] = {}
+
+        for name, value in config.items(section):
+            output[section][name] = [x.strip() for x in value.split() if x]
+            if len(output[section][name]) == 1:
+                output[section][name] = output[section][name][0]
+            elif len(output[section][name]) == 0:
+                output[section][name] = ''
+
+else:
+    output = {"installed": False}
+
+print(dumps(output, sort_keys=True, indent=2))
