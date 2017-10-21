@@ -1,0 +1,33 @@
+{% if item.raw is undefined %}
+{%   if item.role|d( item.by_role|d() ) %}
+Explanation: Pin added by role: {{ item.role | d(item.by_role) }}
+{%   endif %}
+Explanation: {{ (item.reason|d('Reason not specified')).split('\n') | join('\nExplanation: ') }}
+{%   if item.package|d() %}
+{%     if item.package is string %}
+Package: {{ item.package }}
+{%     else %}
+Package: {{ item.package | join(" ") }}
+{%     endif %}
+{%   elif item.packages|d() %}
+{%     if item.packages is string %}
+Package: {{ item.packages }}
+{%     else %}
+Package: {{ item.packages | join(" ") }}
+{%     endif %}
+{%   endif %}
+{%   if item.when|d(True) | bool %}
+{%     if item.version|d() %}
+Pin: version {{ item.version + '*' }}
+Pin-Priority: {{ item.priority | d(apt_preferences__priority_version) }}
+{%     else %}
+Pin: {{ item.pin | d('release a=' + ansible_distribution_release + '-backports') }}
+Pin-Priority: {{ item.priority | d(apt_preferences__priority_default) }}
+{%     endif %}
+{%   else %}
+Explanation: Pin disabled by item.when condition
+{%   endif %}
+{% elif item.raw|d() %}
+{{ item.raw }}
+{% endif %}
+

@@ -1,0 +1,185 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# apt_preferences default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# APT preferences lists [[[
+# -------------------------
+
+# .. envvar:: apt_preferences__list [[[
+#
+# List of :manpage:`apt_preferences(5)` pins to configure in
+# :file:`/etc/apt/preferences.d/`.  These pins will be configured on all hosts
+# in the cluster, if set in :file:`inventory/group_vars/all/`. See
+# :ref:`apt_preferences__list` for more details.
+apt_preferences__list: []
+
+                                                                   # ]]]
+# .. envvar:: apt_preferences__group_list [[[
+#
+# List of :manpage:`apt_preferences(5)` pins to configure in
+# :file:`/etc/apt/preferences.d/`.  These pins will be configured on hosts in a
+# specified group, if set in :file:`inventory/group_vars/group_name/`. Only one
+# group "level" is supported.
+apt_preferences__group_list: []
+
+                                                                   # ]]]
+# .. envvar:: apt_preferences__host_list [[[
+#
+# List of :manpage:`apt_preferences(5)` pins to configure in
+# :file:`/etc/apt/preferences.d/`.  These pins will be configured on specific
+# hosts, if set in :file:`inventory/host_vars/host_name/`.
+apt_preferences__host_list: []
+
+                                                                   # ]]]
+# .. envvar:: apt_preferences__dependent_list [[[
+#
+# List of :manpage:`apt_preferences(5)` pins to configure in
+# :file:`/etc/apt/preferences.d/`.  This variable is meant to be used from a
+# role dependency in :file:`role/meta/main.yml` or in a playbook.
+apt_preferences__dependent_list: []
+                                                                   # ]]]
+                                                                   # ]]]
+# APT preference presets [[[
+# --------------------------
+
+# This section contains presets of APT preferences intended for advanced users
+# who want to install software from different releases but want to keep there
+# main system on the stable release.
+#
+# When enabling these presets, you will need to set explicit preferences for
+# packages you want to install from different releases.
+# Examples for such explicit preferences can be found in the
+# `defaults file of the ypid.packages`_ (search for "Package origin presets for
+# Debian GNU/Linux").
+#
+# .. Debian backports have a priority of 100 by default so you will automatically
+#    not upgrade to packages from them.
+#
+
+# .. envvar:: apt_preferences__debian_stable_default_preset_list [[[
+#
+# Preset for the stable release of Debian GNU/Linux.
+#
+# Configuring this in APT is needed because releases (stable, testing,
+# unstable) have by default the same priority 500 so when including different
+# releases, APT would just select the newest version (usually unstable). To
+# avoid this, APT preferences are used to change the preferences to prefer
+# stable over testing over unstable.
+apt_preferences__debian_stable_default_preset_list:
+  - package: '*'
+    by_role: 'debops.apt_preferences'
+    suffix: '_Debian'
+    raw: |
+      Explanation: Configure the installed release explicitly to the default priority of 500 so that release packages are preferred.
+      Package: *
+      Pin: release o=Debian,n={{ ansible_distribution_release }}
+      Pin-Priority: 500
+
+      Explanation: Configure the installed release explicitly to the default priority of 500 so that release packages are preferred.
+      Package: *
+      Pin: release o=Qubes Debian,n={{ ansible_distribution_release }}
+      Pin-Priority: 500
+
+      Explanation: The default priority of packages from backports is 100 which is even lower then testing and unstable (500).
+      Explanation: Prefer backports over testing and unstable but don’t automatically upgrade to them.
+      Package: *
+      Pin: release o=Debian Backports,n={{ ansible_distribution_release }}-backports
+      Pin-Priority: 400
+
+      Explanation: In case ansible_distribution_release is not (anymore) the current stable release don’t automatically upgrade to it.
+      Package: *
+      Pin: release o=Debian,a=stable
+      Pin-Priority: 100
+
+      Explanation: Install packages from testing if no package with the same name is available in release archives or backports or other archives.
+      Package: *
+      Pin: release o=Debian,a=testing
+      Pin-Priority: 50
+
+      Explanation: Only install packages from unstable if explicitly asked for or the package is pinned.
+      Package: *
+      Pin: release o=Debian,a=unstable
+      Pin-Priority: -1
+
+      Explanation: Only install packages from experimental if explicitly asked for or the package is pinned.
+      Package: *
+      Pin: release o=Debian,a=experimental
+      Pin-Priority: -1
+
+# ]]]
+# .. envvar:: apt_preferences__preset_list [[[
+#
+# Appropriate preset for your distribution, when one is available.
+# To use it, add the following:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    apt_preferences__list:
+#      - '{{ apt_preferences__preset_list | list }}'
+#
+# to your inventory.
+#
+apt_preferences__preset_list: '{{
+    ( (apt_preferences__debian_stable_default_preset_list | list) if (ansible_distribution == "Debian") else [])
+  }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Role pin defaults [[[
+# ---------------------
+
+# .. envvar:: apt_preferences__priority_default [[[
+#
+# Default pin priority used, if custom priority is not specified in a pin
+# definition.
+apt_preferences__priority_default: 500
+
+                                                                   # ]]]
+# .. envvar:: apt_preferences__priority_version [[[
+#
+# Default pin priority used if custom priority is not specified in a versioned
+# pin definition.
+apt_preferences__priority_version: 1001
+                                                                   # ]]]
+                                                                   # ]]]
+# Role internals [[[
+# ------------------
+
+# .. envvar:: apt_preferences__next_release [[[
+#
+# Dictionary of future releases of current stable distributions. This is used to
+# check if the role can create autogenerated pins with preference for backported
+# packages from the ``<release>-backports`` repository.
+apt_preferences__next_release:
+
+  # Debian releases
+  'lenny':    'squeeze'
+  'squeeze':  'wheezy'
+  'wheezy':   'jessie'
+  'jessie':   'stretch'
+  'stretch':  'buster'
+
+  # Ubuntu releases
+  'precise':  'quantal'
+  'quantal':  'raring'
+  'raring':   'saucy'
+  'saucy':    'trusty'
+  'trusty':   'utopic'
+  'utopic':   'vivid'
+  'vivid':    'wily'
+  'wily':     'xenial'
+  'xenial':   'yakkety'
+
+                                                                   # ]]]
+# .. Documentation, external links [[[
+
+# .. _`defaults file of the ypid.packages`: https://github.com/ypid/ansible-packages/blob/master/defaults/main.yml
+# ]]]
+# ]]]
+# ]]]
