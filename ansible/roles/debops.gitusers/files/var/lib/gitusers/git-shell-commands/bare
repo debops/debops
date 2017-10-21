@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+set -e
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: $(basename ${0}) <repository>
+
+	Convert <repository> to bare repository (no work directory)
+	EOF
+	exit 1
+fi
+
+# Sanitize repository name
+repository="${1//[^a-zA-Z0-9\.\/\_-]/}"
+project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+
+if [ -d ${project} ] ; then
+	cd "${HOME}/${project}"
+else
+	echo "Error: Repository ${repository} not found" && exit 1
+fi
+
+set +e
+worktree="$(git config --get core.worktree)"
+denybranch="$(git config --get receive.denyCurrentBranch)"
+set -e
+
+if [ -n "${worktree}" ] ; then
+	if [ -d ${worktree} ] ; then
+		rm -rf ${worktree}
+		echo "Work directory of ${repository} deleted"
+	fi
+	git config --unset-all core.worktree
+fi
+
+git config deploy.bare true
+git config core.bare true
+
+if [ -n "${denybranch}" ] ; then
+	git config --unset-all receive.denyCurrentBranch
+fi
+
+echo "Repository ${repository} is now bare"
+

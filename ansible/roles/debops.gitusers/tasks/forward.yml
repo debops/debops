@@ -1,0 +1,29 @@
+---
+
+#- name: Configure ~/.forward for users
+#  template:
+#    src: 'srv/gitusers/forward.j2'
+#    dest: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}/.forward'
+#    owner: '{{ item.name + gitusers_name_suffix }}'
+#    group: '{{ item.group | default(item.name + gitusers_name_suffix) }}'
+#    mode: '0644'
+#  with_flattened:
+#    - gitusers_list
+#    - gitusers_group_list
+#    - gitusers_host_list
+#  when: ((item.name is defined and item.name) and
+#         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
+#         (item.forward is defined and item.forward))
+#
+#- name: Remove ~/.forward from user account when disabled
+#  file:
+#    dest: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}/.forward'
+#    state: 'absent'
+#  with_flattened:
+#    - gitusers_list
+#    - gitusers_group_list
+#    - gitusers_host_list
+#  when: ((item.name is defined and item.name) and
+#         (item.state is undefined or (item.state is defined and item.state != 'absent')) and
+#         (item.forward is defined and item.forward == False))
+

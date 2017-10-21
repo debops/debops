@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+set -e
+
+# Directory with available post-receive hooks
+git_hooks="$(git config --global --get gitusers.init.hooks)"
+
+# List of post-receive hooks installed by default
+default_hooks=( post-receive.d/00_checkout )
+
+# If no project name is given, display help
+if [ $# -eq 0 ] ; then
+	cat <<-EOF
+	Usage: $(basename ${0}) <repository>
+
+	Create a snapshot from the public dir of given repository
+	EOF
+	exit 1
+fi
+
+
+# ---- Prepare environment ----
+
+# Sanitize repository name
+repository=${1//[^a-zA-Z0-9\.\/\_-]/}
+project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+
+if [ ! -d ${project} ] ; then
+	echo "Project '${project}' not found" && exit 1
+fi
+
+cd "${HOME}/${project}"
+
+set +e
+branch=$(git config --get deploy.branch)
+public=$(git config --get deploy.public)
+set -e
+
+snapshot="${HOME}/$(dirname ${project})/$(basename ${project} .git).snapshot.git"
+
+if [ -z "${public}" ] ; then
+	echo "Error: Public directory is not configured" && exit 1
+fi
+
+if [ ! -d "${public}" ] ; then
+	echo "Error: Public directory does not exist" && exit 1
+fi
+
+cd ${public}
+
+git init --separate-git-dir="${snapshot}"
+git config deploy.bare false
+git config deploy.worktree ${public}
+git config deploy.public ${public}
+git config deploy.branch master
+git config deploy.snapshot true
+git add .
+git commit -m "Snapshot of '${USER}@$(hostname --fqdn):${public} [${branch}]'"
+
+cd ${snapshot}
+
+if [ -n "${default_hooks}" ] ; then
+	for hook in ${default_hooks[@]} ; do
+		hook_dir=$(dirname ${hook})
+		hook_type=$(echo ${hook_dir} | sed -e 's/\.d$//')
+		echo "Installing ${hook_type} hook: $(basename ${hook})"
+		test -d hooks/${hook_dir} || mkdir -p hooks/${hook_dir}
+		test -x ${git_hooks}/${hook} && ln -sf ${git_hooks}/${hook} hooks/${hook_dir}/$(basename ${hook})
+		test -L hooks/hook-chain || ln -sf ${git_hooks}/hook-chain hooks/hook-chain
+		test -L hooks/${hook_type} || ln -sf hook-chain hooks/${hook_type}
+	done
+fi
+

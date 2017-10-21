@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Build Jekyll website
+
+oldrev="${1}"
+newrev="${2}"
+flag="${3}"
+
+worktree=$(git config --get deploy.worktree)
+branch=$(git config deploy.branch)
+public=$(git config --get deploy.public)
+
+set -e
+
+test -d ${worktree} || mkdir -p ${worktree}
+
+cd ${worktree}
+
+if [ -n "${public}" ] ; then
+  if $(which jekyll > /dev/null) ; then
+    jekyll build --destination ${public}
+  fi
+fi
+

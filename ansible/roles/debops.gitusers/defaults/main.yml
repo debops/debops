@@ -1,0 +1,90 @@
+---
+
+# --- An example account entry, everything except 'name' is optional
+# List of all recognized values, default value listed first
+#
+#  - name: 'username'               # mandatory, default group if not defined
+#    state: 'present,absent'
+#    group: 'name'                  # default group
+#    groups: []                     # list of groups to set
+#    append: yes/no                 # add to, or set groups
+#    gid: ''
+#    uid: ''
+#    comment: 'GECOS entry'
+#    systemuser: False/True         # create system user
+#    systemgroup: False/True        # create system group
+#
+#    domain: '{{ ansible_domain }}' # for git users
+#
+#    # Create ~/.forward file (set to False to remove ~/.forward)
+#    forward: [ 'user@domain', 'account' ]
+#
+#    # Add or disable ssh authorized keys (set to False to remove ~/.ssh/authorized_keys
+#    sshkeys: [ 'list', 'of', 'keys' ]
+#
+#    # List of permissions for a particular user account
+#    permissions: [ 'deploy' ]
+
+
+# --- Lists of different accounts to create/manage ---
+
+# "Global" users
+gitusers_list: []
+
+# "Host group" users
+gitusers_group_list: []
+
+# "Host" users
+gitusers_host_list: []
+
+
+# --- Global defaults ---
+
+# Add a suffix to an account name, for example '-git'
+gitusers_name_suffix: ""
+
+# Shell enforced on all git-shell accounts
+gitusers_default_shell: '/usr/bin/git-shell'
+
+# List of groups git-shell users belong to (git-shell requires SSH access)
+gitusers_default_groups_list: [ 'sshusers' ]
+
+# Should default groups be added to, or replace current user groups? Set to
+# 'no' to enforce your preferred list of groups
+gitusers_default_groups_append: 'yes'
+
+# Directory where git-shell user home will be created
+gitusers_default_home_prefix: '{{ ansible_local.root.data + "/gitusers" }}'
+
+# Unix permissions enforced on users home directories
+gitusers_default_home_mode: '0750'
+
+# Main location of gitusers scripts
+gitusers_git_scripts: '{{ ansible_local.root.home + "/gitusers" }}'
+
+# Path to directory where websites are stored
+gitusers_default_www_prefix: '{{ ansible_local.nginx.www if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.www is defined) else "/srv/www" }}'
+
+# System group which should be allowed access to website directory
+gitusers_default_www_group: '{{ ansible_local.nginx.user if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.user is defined) else "www-data" }}'
+
+# What domain should git users use for publishing websites
+gitusers_default_domain: '{{ ansible_domain }}'
+
+# Domain used for userdir repositories
+gitusers_default_user_domain: '{{ ansible_fqdn }}'
+
+# List of default permissions for users that don't have specific
+# 'item.permissions' key set. Known permissions:
+# - ``deploy``: allow execution of custom ./deploy script in repository
+gitusers_default_permissions: []
+
+# Default set of git hooks installed in a new repository
+gitusers_default_hook_list: 'jekyll'
+
+# A map of git hooks that can be installed in a repository by users via 'init'
+# command
+gitusers_default_hooks:
+  'jekyll':    [ 'post-receive.d/00_checkout', 'post-checkout.d/00_submodule', 'post-checkout.d/jekyll' ]
+  'deploy':    [ 'post-receive.d/00_checkout', 'post-checkout.d/00_submodule', 'post-checkout.d/deploy' ]
+
