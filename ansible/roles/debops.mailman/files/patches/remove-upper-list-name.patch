@@ -1,0 +1,14 @@
+# Remove automatic capitalization of list names
+# https://mail.python.org/pipermail/mailman-users/2002-January/016732.html
+
+--- Mailman/MailList.py
++++ Mailman/MailList.py
+@@ -349,7 +349,7 @@
+         self.header_filter_rules = []
+         self.anonymous_list = mm_cfg.DEFAULT_ANONYMOUS_LIST
+         internalname = self.internal_name()
+-        self.real_name = internalname[0].upper() + internalname[1:]
++        self.real_name = internalname[0] + internalname[1:]
+         self.description = ''
+         self.info = ''
+         self.welcome_msg = ''

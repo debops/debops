@@ -1,0 +1,25 @@
+# Remove extra aliases that are not needed (reduces backscatter)
+# https://mail.python.org/pipermail/mailman-users/2008-March/060870.html
+
+--- Mailman/MTA/Utils.py	2014-04-06 13:28:19.999618729 +0200
++++ Mailman/MTA/Utils.py	2014-04-06 13:30:35.760827740 +0200
+@@ -53,8 +53,7 @@
+     # Seed this with the special cases.
+     aliases = [(listname,          '"|%s post %s"' % (wrapper, safename)),
+                ]
+-    for ext in ('admin', 'bounces', 'confirm', 'join', 'leave', 'owner',
+-                'request', 'subscribe', 'unsubscribe'):
++    for ext in ('bounces', 'confirm', 'owner', 'request'):
+         aliases.append(('%s-%s' % (listname, ext),
+                         '"|%s %s %s"' % (wrapper, ext, safename)))
+     return aliases
+@@ -71,8 +70,7 @@
+     # Note, don't use this unless your MTA leaves the envelope recipient in
+     # Delivered-To:, Envelope-To:, or Apparently-To:
+     aliases = [(listname, maildir)]
+-    for ext in ('admin', 'bounces', 'confirm', 'join', 'leave', 'owner',
+-                'request', 'subscribe', 'unsubscribe'):
++    for ext in ('bounces', 'confirm', 'owner', 'request'):
+         aliases.append(('%s-%s' % (listname, ext), maildir))
+     return aliases
+ 

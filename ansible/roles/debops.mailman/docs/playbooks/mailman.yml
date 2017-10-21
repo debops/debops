@@ -1,0 +1,53 @@
+---
+
+- name: Manage Mailman service
+  hosts: [ 'debops_service_mailman' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ postfix__secret__directories }}'
+
+    - role: debops.fcgiwrap
+      tags: [ 'role::fcgiwrap' ]
+      fcgiwrap__instances:
+        - '{{ mailman__fcgiwrap__instance }}'
+
+    - role: debops.unattended_upgrades
+      tags: [ 'role::unattended_upgrades' ]
+      unattended_upgrades__dependent_blacklist: '{{ mailman__unattended_upgrades__dependent_blacklist }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ mailman__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ postfix__ferm__dependent_rules }}'
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.postfix
+      tags: [ 'role::postfix' ]
+      postfix__dependent_maincf:
+        - role: 'mailman'
+          config: '{{ mailman__postfix__dependent_maincf }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__servers: '{{ mailman__nginx__servers }}'
+
+    - role: debops.mailman
+      tags: [ 'role::mailman' ]

@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+# Postfix Transport maps for Virtual Mailman
+# To update the transport map, run:
+#     postmap /etc/mailman/postfix_transport
+
+{% for domain in ([ mailman__site_domain ] + mailman__virtual_domains) %}
+{{ "%-30s mailman:" | format(domain) }}
+{% endfor %}
+

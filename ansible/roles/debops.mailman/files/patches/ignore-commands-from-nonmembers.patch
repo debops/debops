@@ -1,0 +1,15 @@
+# Ignore commands from non-members (reduces backscatter, but blocks mail registration)
+# https://mail.python.org/pipermail/mailman-users/2013-June/075270.html
+
+--- Mailman/Queue/CommandRunner.py.orig	2012-06-16 20:02:08.000000000 +0200
++++ Mailman/Queue/CommandRunner.py	2014-04-07 12:09:22.125072110 +0200
+@@ -115,6 +115,9 @@
+             if line and line.strip():
+                 args = line.split()
+                 cmd = args.pop(0).lower()
++                if not self.mlist.isMember(self.msg.get_sender()):
++                    self.respond = False
++                    break
+                 ret = self.do_command(cmd, args)
+                 if ret == STOP or ret == CONTINUE:
+                     found = ret
