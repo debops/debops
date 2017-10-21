@@ -1,0 +1,254 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.secret default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Local storage of sensitive data [[[
+# -----------------------------------
+
+# .. envvar:: secret [[[
+#
+# Absolute path to directory with sensitive data. It will be configured as
+# relative to current inventory directory. Use this variable in file and
+# password lookups.
+secret: '{{ secret__root + "/" + ((secret__levels + "/")
+            if secret__levels else "") + secret__name }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__root [[[
+#
+# Path to a directory in which a relative secret directory will be created.
+# By default, it will be relative to Ansible inventory.
+secret__root: '{{ inventory_dir | realpath }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__name [[[
+#
+# Name of the directory which contains sensitive data.
+secret__name: 'secret'
+
+                                                                   # ]]]
+# .. envvar:: secret__levels [[[
+#
+# How many directory levels to add relative to secret_root, by default 1 level.
+# For example, to go 2 levels up, set this variable to ``../..``.
+secret__levels: '..'
+
+                                                                   # ]]]
+# .. envvar:: secret__directories [[[
+#
+# List of subdirectories which should be present in the :file:`secret/` directory.
+secret__directories: []
+
+                                                                   # ]]]
+# .. envvar:: secret__no_log [[[
+#
+# This variable can be used in the Ansible tasks to set the ``no_log``
+# parameter. Changing it to ``False`` can help with debugging issues with the
+# roles, but otherwise it should be set to ``True`` to ensure that Ansible
+# doesn't leak sensitive data in its logs.
+secret__no_log: True
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP server admin access [[[
+# ----------------------------
+
+# The ``secret__ldap_*`` variables are used by ``ldap_*`` Ansible modules to
+# access LDAP server for the current domain with administrative privileges, by
+# binding to the admin account with specified bind DN and password. Because
+# these need to be provided with every task that uses ``ldap_*`` modules,
+# variables below are used as a convenient central location.
+
+# .. envvar:: secret__ldap_domain [[[
+#
+# Domain used for LDAP base DN and to select default LDAP server.
+secret__ldap_domain: '{{ ansible_local.core.domain
+                         if (ansible_local|d() and ansible_local.core|d() and
+                             ansible_local.core.domain|d())
+                         else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_fqdn [[[
+#
+# LDAP server hostname / IP address which holds the database. ``ldap_*``
+# modules will connect to it natively, so it should be available at least from
+# the Ansible Controller.
+secret__ldap_fqdn: '{{ "ldap." + secret__ldap_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_server_uri [[[
+#
+# URI used in tasks to connect to LDAP server natively, it should be used in
+# ``ldap_attr`` and ``ldap_entry`` tasks.
+secret__ldap_server_uri: '{{ "ldap://" + secret__ldap_fqdn + "/" }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_start_tls [[[
+#
+# Enable or disable STARTTLS for encrypted communication with the LDAP server.
+# Should always be enabled.
+secret__ldap_start_tls: True
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_basedn [[[
+#
+# LDAP Base DN used for to create bind DN.
+secret__ldap_basedn: '{{ "dc=" + secret__ldap_domain.split(".") | join(",dc=") }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_bind_dn [[[
+#
+# LDAP administrator account.
+secret__ldap_bind_dn: '{{ "cn=admin," + secret__ldap_basedn }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_bind_pw [[[
+#
+# LDAP administrator password.
+secret__ldap_bind_pw: '{{ lookup("password", secret__ldap_admin_password) }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_admin_password [[[
+#
+# Path to a file in :file:`secret/` directory which stores password for specified
+# admin account on configured LDAP server. This file will be populated by
+# debops.slapd_ role if a server is configured with it.
+secret__ldap_admin_password: '{{ secret + "/ldap/" + secret__ldap_domain
+                                 + "/credentials/" + secret__ldap_fqdn + "/"
+                                 + secret__ldap_bind_dn + ".password" }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_delegate_to [[[
+#
+# Each LDAP administrative task should be delegated to either ``localhost``
+# (Ansible Controller), or to the LDAP server itself. This host will have
+# access to LDAP admin password, and requires installed ``python-ldap``
+# package.
+secret__ldap_delegate_to: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_become [[[
+#
+# Access through :command:`sudo` is not required on ``localhost``, but if LDAP tasks
+# are delegated to different hosts, it might be required there.
+secret__ldap_become: False
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_ou_groups_dn [[[
+#
+# Base DN for LDAP groups.
+secret__ldap_ou_groups_dn: '{{ "ou=Groups," + secret__ldap_basedn }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_ou_machines_dn [[[
+#
+# Base DN for LDAP machine accounts.
+secret__ldap_ou_machines_dn: '{{ "ou=Machines," + secret__ldap_basedn }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_ou_people_dn [[[
+#
+# Base DN for LDAP people accounts.
+secret__ldap_ou_people_dn: '{{ "ou=People," + secret__ldap_basedn }}'
+
+                                                                   # ]]]
+# .. envvar:: secret__ldap_ou_services_dn [[[
+#
+# Base DN for LDAP service accounts.
+secret__ldap_ou_services_dn: '{{ "ou=Services," + secret__ldap_basedn }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Old LDAP server admin access [[[
+# --------------------------------
+
+# The variables below are here to provide backwards compatibility with older
+# Ansible roles that haven't yet switched to the new LDAP variable naming
+# scheme. You should treat these variables as deprecated and switch to the new
+# ones. Keep in mind that the old and new variables currently might contain
+# different values therefore you should synchronize them using Ansible
+# inventory if necessary.
+
+# .. envvar:: secret_ldap_domain [[[
+#
+# Domain used for LDAP base DN and to select default LDAP server.
+secret_ldap_domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_server [[[
+#
+# LDAP server hostname / IP address which holds the database. ``ldap_*``
+# modules will connect to it natively, so it should be available at least from
+# the Ansible Controller.
+secret_ldap_server: '{{ "ldap." + secret_ldap_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_server_uri [[[
+#
+# URI used in tasks to connect to LDAP server natively, it should be used in
+# ``ldap_attr`` and ``ldap_entry`` tasks.
+secret_ldap_server_uri: '{{ "ldap://" + secret_ldap_server + "/" }}'
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_start_tls [[[
+#
+# Enable or disable STARTTLS for encrypted communication with the LDAP server.
+# Should always be enabled.
+secret_ldap_start_tls: True
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_basedn [[[
+#
+# LDAP Base DN used for to create bind DN.
+secret_ldap_basedn: '{{ "dc=" + secret_ldap_domain.split(".") | join(",dc=") }}'
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_admin_bind_dn [[[
+#
+# LDAP administrator account.
+secret_ldap_admin_bind_dn: '{{ "cn=admin," + secret_ldap_basedn }}'
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_admin_password [[[
+#
+# Path to a file in :file:`secret/` directory which stores password for specified
+# admin account on configured LDAP server. This file will be populated by
+# debops.slapd_ role if a server is configured with it.
+secret_ldap_admin_password: '{{ secret + "/ldap/" + ansible_domain + "/credentials/" + secret_ldap_server + "/" + secret_ldap_admin_bind_dn + ".password" }}'
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_admin_bind_pw [[[
+#
+# LDAP administrator password.
+secret_ldap_admin_bind_pw: '{{ lookup("password", secret_ldap_admin_password) }}'
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_delegate_to [[[
+#
+# Each LDAP administrative task should be delegated to either ``localhost``
+# (Ansible Controller), or to the LDAP server itself. This host will have
+# access to LDAP admin password, and requires installed ``python-ldap``
+# package.
+secret_ldap_delegate_to: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_sudo [[[
+#
+# Access through :command:`sudo` is not required on ``localhost``, but if LDAP tasks
+# are delegated to different hosts, it might be required there.
+secret_ldap_sudo: False
+
+                                                                   # ]]]
+# .. envvar:: secret_ldap_services_dn [[[
+#
+# Base for LDAP service accounts. For example GitLab uses "cn=gitlab,"+ secret_ldap_services_dn.
+secret_ldap_services_dn: '{{ "ou=Services," + secret_ldap_basedn }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
