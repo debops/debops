@@ -1,0 +1,22 @@
+---
+
+- name: Check opendkim and restart
+  command: opendkim -n
+  notify: [ 'Restart opendkim' ]
+
+- name: Check opendkim and reload
+  command: opendkim -n
+  notify: [ 'Reload opendkim' ]
+  when: ansible_local|d() and ansible_local.opendkim|d() and
+        ansible_local.opendkim.installed is defined and
+        ansible_local.opendkim.installed | bool
+
+- name: Restart opendkim
+  service:
+    name: 'opendkim'
+    state: 'restarted'
+
+- name: Reload opendkim
+  service:
+    name: 'opendkim'
+    state: 'reloaded'

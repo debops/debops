@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+# See opendkim.conf(5), 'KeyTable' parameter for more details
+
+{% for element in opendkim__combined_keys %}
+{%   if element.state|d('present') != 'absent' %}
+{%     set key_selector =   (element.selector | d(element.name | d(element))) %}
+{%     set key_domain =     (element.domain   | d(opendkim__domain)) %}
+{%     set key_id =         (key_domain + '_' + key_selector) %}
+{%     set key_path =       (opendkim__dkimkeys_path + '/' + key_id + '.pem') %}
+{{ '{:<50} {}:{}:{}'.format(key_id, key_domain, key_selector, key_path) }}
+{%   endif %}
+{% endfor %}
