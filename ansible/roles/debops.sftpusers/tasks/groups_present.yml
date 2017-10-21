@@ -1,0 +1,27 @@
+---
+
+- name: Create user groups without GIDs
+  group:
+    name: '{{ item.group | default(item.name + sftpusers_name_suffix) }}'
+    system: '{{ item.systemgroup | default("no") }}'
+    state: 'present'
+  with_flattened:
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
+  when: (((item.name is defined and item.name) and (item.gid is undefined or (item.gid is defined and not item.gid))) and
+        (item.state is undefined or (item.state is defined and item.state != 'absent')))
+
+- name: Create user groups with GIDs
+  group:
+    name: '{{ item.group | default(item.name + sftpusers_name_suffix) }}'
+    system: '{{ item.systemgroup | default("no") }}'
+    gid: '{{ item.gid }}'
+    state: 'present'
+  with_flattened:
+    - '{{ sftpusers_list }}'
+    - '{{ sftpusers_group_list }}'
+    - '{{ sftpusers_host_list }}'
+  when: ((item.name is defined and item.name) and (item.gid is defined and item.gid) and
+        (item.state is undefined or (item.state is defined and item.state != 'absent')))
+
