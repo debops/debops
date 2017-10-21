@@ -1,0 +1,10 @@
+---
+
+- name: Test radvd and restart
+  command: radvd --configtest
+  notify: [ 'Restart radvd' ]
+
+- name: Restart radvd
+  service:
+    name: 'radvd'
+    state: 'restarted'

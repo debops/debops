@@ -1,0 +1,14 @@
+---
+
+- name: Configure Router Advertisement Daemon service
+  hosts: [ 'debops_service_radvd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.radvd
+      tags: [ 'role::radvd' ]
