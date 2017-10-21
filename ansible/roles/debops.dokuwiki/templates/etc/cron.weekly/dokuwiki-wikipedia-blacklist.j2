@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Install current Wikipedia anti-spam blacklist
+
+blacklist="https://meta.wikimedia.org/wiki/Spam_blacklist?action=raw"
+
+if $(type curl > /dev/null 2>&1) ; then
+    curl --silent ${blacklist} | grep -v '<pre>' > {{ dokuwiki__git_checkout + "/conf/wordblock.local.conf" }}
+{% if dokuwiki__farm_animals|d() and dokuwiki__farm_animals %}
+
+{% for animal in dokuwiki__farm_animals %}
+    if [ -d {{ dokuwiki__farm_path + "/" + animal }} ] ; then
+        test -h {{ dokuwiki__farm_path + "/" + animal + "/conf/wordblock.local.conf" }} || \
+            ln -s {{ dokuwiki__git_checkout + "/conf/wordblock.local.conf" }} \
+                  {{ dokuwiki__farm_path + "/" + animal + "/conf/wordblock.local.conf" }}
+    fi
+
+{% endfor %}
+{% endif %}
+fi
