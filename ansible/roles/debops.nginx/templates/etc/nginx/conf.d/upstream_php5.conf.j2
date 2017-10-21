@@ -1,0 +1,17 @@
+{% extends "upstream_default.conf.j2" %}
+{#
+#
+#   ---- nginx upstream template for PHP5 websites ----
+#
+# List of parameters supported by this template:
+#
+#   - item.php5: ''
+#       Partial name of the UNIX socket created by php5-fpm process to use in
+#       the upstream configuration.
+#
+#}
+{% block nginx_tpl_block_custom_upstreams                                         %}
+{%     if item.php5 is defined and item.php5                                      %}
+	 server unix:{{ nginx_run_path }}/php{{ ansible_local.php.version if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.version|d()) else '5' }}-fpm-{{ item.php5 }}.sock{% if item.enabled is defined and item.enabled == False %} down{% endif %};
+{%     endif                                                                      %}
+{% endblock                                                                       %}

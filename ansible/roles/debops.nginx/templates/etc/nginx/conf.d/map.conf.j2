@@ -1,0 +1,56 @@
+{#
+#    ==== nginx map template for debops.nginx role ====
+#
+# More information about maps: https://nginx.org/en/docs/http/ngx_http_map_module.html
+# List of parameters supported by this template:
+#
+#   - item.name: ''
+#       Name of the map configuration file. Required.
+#
+#   - item.map: ''
+#       Lookup string and variable name to set, for example:
+#         '$http_host $name'
+#         '$http_user_agent $mobile'
+#
+#   - item.default: ''
+#       Default value to set if no mapping can be selected
+#       (without the semicolon).
+#
+#   - item.include: []
+#       List of files to include in this map { } definition (use absolute paths
+#       to files).
+#
+#   - item.hostnames: True
+#       If this key is defined and True, nginx will treat list of source values
+#       as hostnames.
+#
+#   - item.mapping: |
+#       Text block with value mapping specified in the nginx configuration
+#       format (semicolons need to be included at the end of each line).
+#
+#   - item.delete: True
+#       If this parameter is defined and True, map configuration file will
+#       be removed from the host.
+#
+#}
+# {{ ansible_managed }}
+
+{% if item.name is defined and item.name                                          %}
+map {{ item.map }} {
+{%     if item.hostnames is defined and item.hostnames                            %}
+        hostnames;
+{%     endif                                                                      %}
+{%     if item.default is defined and item.default                                %}
+        default {{ item.default }};
+{%     endif                                                                      %}
+{%     if item.mapping is defined and item.mapping                                %}
+        {{ item.mapping | indent(8) | regex_replace("(?m)^\s*$", "") }}
+{%     endif                                                                      %}
+{%     if item.include is defined and item.include                                %}
+{%         for file in item.include                                               %}
+        include {{ file }};
+{%         endfor                                                                 %}
+{%     endif                                                                      %}
+}
+{% endif                                                                          %}
+

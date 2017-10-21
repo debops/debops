@@ -1,0 +1,102 @@
+{#
+#    ==== Default nginx upstream template for debops.nginx role ====
+#
+# List of parameters supported by this template:
+#
+#   - item.name: ''
+#       Name of the upstream backend. Required.
+#
+#   - item.type: ''
+#       Name of the template used by nginx to generate upstream configuration.
+#
+#   - item.server: '' or []
+#       Address and additional parameters of a server. You can specify either
+#       a string (to configure one server instance) or a list (to configure
+#       multiple servers. If 'item.port' is not defined, each list element can
+#       be in the form 'address:port' to specify different ports.
+#
+#   - item.cluster: []
+#       Alternative configuration of servers. You can specify list of inventory
+#       hosts (for example using 'groups.group_name' syntax in a variable);
+#       template will check if a host can be found in Ansible facts and will
+#       use the FQDN hostname in the server configuration. If 'item.port' is
+#       specified, it will be added to all listed hosts.
+#
+#   - item.cluster_ip_all: []
+#       Alternative configuration of servers. You can specify list of inventory
+#       hosts (for example using 'groups.group_name' syntax in a variable);
+#       template will check if a host can be found in Ansible facts and will
+#       use all of the available IP addresses in the server configuration. If
+#       'item.port' is specified, it will be added to all listed hosts.
+#
+#   - item.port: ''
+#       Port number to add to lists of servers if nginx should connect to port
+#       other than 80.
+#
+#   - item.enabled: True/False
+#       If this parameter is defined and False, upstream will be configured
+#       with all servers in a "down" state.
+#
+#   - item.delete: True
+#       If this parameter is defined and True, upstream configuration file will
+#       be removed from the host.
+#
+#   - item.hash: True
+#       If this parameter is defined and True, 'ip_hash' option will be added
+#       to the upstream configuration.
+#
+#}
+# {{ ansible_managed }}
+
+{% block nginx_tpl_block_upstream                                                 %}
+{% if item.name is defined and item.name                                          %}
+upstream {{ item.name }} {
+{%     if item.hash is defined and item.hash                                      %}
+        ip_hash;
+{%     endif                                                                      %}
+{%     if item.server is defined and item.server                                  %}
+{%         if item.server is not string                                           %}
+{%             for line in item.server                                            %}
+        server {{ line }}{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%             endfor                                                             %}
+{%         else                                                                   %}
+        server {{ item.server }}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%         endif                                                                  %}
+{%     endif                                                                      %}
+{%     if item.cluster is defined and item.cluster                                %}
+{%         for host in item.cluster                                               %}
+{%             if host == inventory_hostname                                      %}
+        server localhost{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%             else                                                               %}
+{%                 if host in play_hosts and hostvars[host].ansible_fqdn is defined %}
+        server {{ hostvars[host].ansible_fqdn }}{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%                 else                                                           %}
+        # Unknown domain name of {{ host }}
+{%                 endif                                                          %}
+{%             endif                                                              %}
+{%         endfor                                                                 %}
+{%     endif                                                                      %}
+{%     if item.cluster_ip_all is defined and item.cluster_ip_all                  %}
+{%         for host in item.cluster_ip_all                                        %}
+{%             if host == inventory_hostname                                      %}
+        server 127.0.0.1{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%             else                                                               %}
+{%                 if host in play_hosts and hostvars[host].ansible_all_ipv4_addresses is defined %}
+{%                     for address in hostvars[host].ansible_all_ipv4_addresses | unique %}
+        server {{ address }}{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%                     endfor                                                     %}
+{%                 else                                                           %}
+        # Unknown IP address of {{ host }}                                        %}
+{%                 endif                                                          %}
+{%             endif                                                              %}
+{%         endfor                                                                 %}
+{%     endif                                                                      %}
+{%     if item.options|d()                                                        %}
+{{ item.options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
+{%     endif                                                                      %}
+{%     block nginx_tpl_block_custom_upstreams                                     %}
+{%     endblock                                                                   %}
+}
+{% endif                                                                          %}
+{% endblock                                                                       %}
+

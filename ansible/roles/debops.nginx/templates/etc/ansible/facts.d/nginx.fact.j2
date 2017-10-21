@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Check nginx version
+nginx_version="$(/usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##')"
+
+{% set nginx_tpl_default_server = '' %}
+{% if (ansible_local is defined and ansible_local.nginx is defined and
+       ansible_local.nginx.default_server is defined) %}
+{%   set nginx_tpl_default_server = ansible_local.nginx.default_server %}
+{% elif nginx_register_default_server|d() %}
+{%   set nginx_tpl_default_server = nginx_register_default_server %}
+{% endif %}
+{% set nginx_tpl_default_server_ssl = '' %}
+{% if (ansible_local is defined and ansible_local.nginx is defined and
+       ansible_local.nginx.default_server_ssl is defined) %}
+{%   set nginx_tpl_default_server_ssl = ansible_local.nginx.default_server_ssl %}
+{% elif nginx_register_default_server_ssl|d() %}
+{%   set nginx_tpl_default_server_ssl = nginx_register_default_server_ssl %}
+{% endif %}
+cat << EOF
+{
+"acme": "{{ nginx_acme | bool | lower }}",
+"acme_domain": "{{ nginx_acme_domain }}",
+"acme_root": "{{ nginx_acme_root }}",
+"acme_server": "{{ nginx_acme_server | bool | lower }}",
+{% if nginx_tpl_default_server %}
+"default_server": "{{ nginx_tpl_default_server }}",
+{% endif %}
+{% if nginx_tpl_default_server_ssl %}
+"default_server_ssl": "{{ nginx_tpl_default_server_ssl }}",
+{% endif %}
+"enabled": {{ (nginx__deploy_state in [ 'present' ]) | lower }},
+"manage_ipv6only": "{{ nginx_manage_ipv6only | bool | lower }}",
+"user": "{{ nginx_user }}",
+"www": "{{ nginx_www }}",
+"flavor": "{{ nginx_flavor }}",
+"version": "$nginx_version",
+"status_localhost": {{ nginx_status_localhost | to_nice_json }},
+"status": {{ nginx_status | to_nice_json }}
+}
+EOF

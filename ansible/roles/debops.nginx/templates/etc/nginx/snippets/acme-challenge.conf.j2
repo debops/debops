@@ -1,0 +1,37 @@
+# {{ ansible_managed }}
+
+# Automatic Certificate Management Environment (ACME) support.
+# https://tools.ietf.org/html/draft-ietf-acme-acme-01
+# https://en.wikipedia.org/wiki/Automated_Certificate_Management_Environment
+
+
+# Return the ACME challenge present in the server public root.
+# If not found, switch to global web server root.
+location ^~ /.well-known/acme-challenge/ {
+        default_type "text/plain";
+        try_files $uri @well-known-acme-challenge;
+}
+
+# Return the ACME challenge present in the global server public root.
+# If not present, redirect request to a specified domain.
+location @well-known-acme-challenge {
+        root {{ nginx_acme_root }};
+        default_type "text/plain";
+        try_files $uri @redirect-acme-challenge;
+}
+
+{% if nginx_acme_domain %}
+# Redirect the ACME challenge to a different host. If a redirect loop is
+# detected, return 404.
+location @redirect-acme-challenge {
+        if ($arg_redirect) {
+                return 404;
+        }
+        return 307 $scheme://{{ nginx_acme_domain }}$request_uri?redirect=yes;
+}
+
+{% endif %}
+# Return 404 if ACME challenge well known path is accessed directly.
+location = /.well-known/acme-challenge/ {
+    return 404;
+}

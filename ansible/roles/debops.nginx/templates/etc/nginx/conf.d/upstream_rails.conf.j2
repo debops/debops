@@ -1,0 +1,55 @@
+{% extends "upstream_default.conf.j2" %}
+{% block nginx_tpl_block_upstream                                                 %}
+{% if nginx_flavor != 'passenger'                                                 %}
+{% if item.name is defined and item.name                                          %}
+upstream {{ item.name }} {
+{%     if item.hash is defined and item.hash                                      %}
+        ip_hash;
+{%     endif                                                                      %}
+{%     if item.server is defined and item.server                                  %}
+{%         if item.server is not string                                           %}
+{%             for line in item.server                                            %}
+        server {{ line }}{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%             endfor                                                             %}
+{%         else                                                                   %}
+        server {{ item.server }}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%         endif                                                                  %}
+{%     endif                                                                      %}
+{%     if item.cluster is defined and item.cluster                                %}
+{%         for host in item.cluster                                               %}
+{%             if host == inventory_hostname                                      %}
+        server localhost{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%             else                                                               %}
+{%                 if host in play_hosts and hostvars[host].ansible_fqdn is defined %}
+        server {{ hostvars[host].ansible_fqdn }}{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%                 else                                                           %}
+        # Unknown domain name of {{ host }}
+{%                 endif                                                          %}
+{%             endif                                                              %}
+{%         endfor                                                                 %}
+{%     endif                                                                      %}
+{%     if item.cluster_ip_all is defined and item.cluster_ip_all                  %}
+{%         for host in item.cluster_ip_all                                        %}
+{%             if host == inventory_hostname                                      %}
+        server 127.0.0.1{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%             else                                                               %}
+{%                 if host in play_hosts and hostvars[host].ansible_all_ipv4_addresses is defined %}
+{%                     for address in hostvars[host].ansible_all_ipv4_addresses | unique %}
+        server {{ address }}{% if item.port is defined and item.port %}:{{ item.port }}{% endif %}{% if item.enabled is defined and not item.enabled %} down{% endif %};
+{%                     endfor                                                     %}
+{%                 else                                                           %}
+        # Unknown IP address of {{ host }}                                        %}
+{%                 endif                                                          %}
+{%             endif                                                              %}
+{%         endfor                                                                 %}
+{%     endif                                                                      %}
+{%     block nginx_tpl_block_custom_upstreams                                     %}
+{%     endblock                                                                   %}
+}
+{% endif                                                                          %}
+{% elif nginx_flavor == 'passenger'                                               %}
+# Upstream configuration disabled.
+# Rails applications are served using Phusion Passenger
+{% endif                                                                          %}
+{% endblock                                                                       %}
+

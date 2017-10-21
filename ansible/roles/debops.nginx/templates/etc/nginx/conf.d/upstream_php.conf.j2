@@ -1,0 +1,22 @@
+{% extends "upstream_default.conf.j2" %}
+{#
+#
+#   ---- nginx upstream template for PHP websites ----
+#
+# List of parameters supported by this template:
+#
+#   - item.php_pool / item.php_pools
+#       Name of PHP-FPM pool which should be used as the upstream server. The
+#       role will automatically generate the path to the UNIX socket in the
+#       expected location.
+#
+#}
+{% set nginx__tpl_php_version = (ansible_local.php.version if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.version|d()) else ('5' if (ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'wily' ]) else '7.0')) %}
+{% block nginx_tpl_block_custom_upstreams %}
+{%   set nginx__tpl_php_pools = item.php_pools | d(item.php_pool | d([]) ) %}
+{%   if nginx__tpl_php_pools %}
+{%     for pool in ([ nginx__tpl_php_pools ] if nginx__tpl_php_pools is string else nginx__tpl_php_pools) %}
+        server unix:{{ nginx_run_path }}/php{{ nginx__tpl_php_version }}-fpm-{{ pool }}.sock{% if ((item.enabled|d() and not item.enabled|bool) or (item.down|d() and item.down|bool)) %} down{% endif %};
+{%     endfor %}
+{%   endif %}
+{% endblock %}

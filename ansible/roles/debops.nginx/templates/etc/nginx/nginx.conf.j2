@@ -1,0 +1,102 @@
+# {{ ansible_managed }}
+
+{% if nginx_user|d() %}
+user {{ nginx_user }};
+
+{% endif %}
+pid {{ nginx_run_path }}/nginx.pid;
+
+include /etc/nginx/modules-enabled/*.conf;
+
+# Default error_log
+error_log {{ nginx_http_error_log | default(nginx_log_path + '/error.log') }};
+
+# Nicenness, from 20 (nice) to -20 (not nice)
+worker_priority {{ nginx_worker_priority | default('0') }};
+
+# Number of workers to run, usually equals number of CPU cores
+worker_processes {{ nginx_worker_processes | default(ansible_processor_vcpus) }};
+
+# Maximum number of opened files per process, must be higher than worker_connections
+worker_rlimit_nofile {{ nginx_worker_rlimit_nofile | default('4096') }};
+
+{% if nginx_flavor == 'passenger' %}
+# Phusion Passenger requires correct $PATH to work
+env PATH;
+
+{% endif %}
+events {
+        worker_connections {{ nginx_worker_connections | default('1024') }};
+}
+
+http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        server_tokens {{ nginx_http_server_tokens | default('off') }};
+
+        server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
+        server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
+
+        # Custom file paths
+        client_body_temp_path {{ nginx_client_body_temp_path | d("/var/lib/nginx/body") }};
+        fastcgi_temp_path     {{ nginx_fastcgi_temp_path | d("/var/lib/nginx/fastcgi") }};
+        proxy_temp_path       {{ nginx_proxy_temp_path | d("/var/lib/nginx/proxy") }};
+        scgi_temp_path        {{ nginx_scgi_temp_path | d("/var/lib/nginx/scgi") }};
+        uwsgi_temp_path       {{ nginx_uwsgi_temp_path | d("/var/lib/nginx/uwsgi") }};
+
+        # Logging
+        access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log') }};
+        error_log  {{ nginx_http_error_log  | default(nginx_log_path + '/error.log')  }};
+
+        add_header X-Clacks-Overhead "GNU Terry Pratchett";
+
+{% if nginx_http_options|d() and nginx_http_options %}
+{{ nginx_http_options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
+
+{% endif %}
+{% if nginx_http_client_max_body_size|d() and nginx_http_client_max_body_size %}
+        client_max_body_size {{ nginx_http_client_max_body_size }};
+
+{% endif %}
+{% if ((nginx_http_allow is defined and nginx_http_allow) or
+       (nginx_http_auth_basic is defined and nginx_http_auth_basic) or
+       (nginx_http_satisfy is defined and nginx_http_satisfy)) %}
+        satisfy {{ nginx_http_satisfy | default(nginx_default_satisfy) }};
+
+{% endif %}
+{% if nginx_http_allow is defined and nginx_http_allow %}
+{% for address in ([ nginx_http_allow ] if nginx_http_allow is string else nginx_http_allow) %}
+        allow {{ address }};
+{% endfor %}
+        deny all;
+
+{% endif %}
+{% if nginx_http_auth_basic is defined and nginx_http_auth_basic %}
+        auth_basic "{% if nginx_http_auth_basic_realm is defined and nginx_http_auth_basic_realm %}{{ nginx_http_auth_basic_realm }}{% else %}{{ nginx_default_auth_basic_realm }}{% endif %}";
+        auth_basic_user_file {{ nginx_http_auth_basic_filename | default(nginx_private_path + "/" + nginx_http_auth_basic_name) }};
+
+{% endif %}
+{% if nginx_flavor == 'passenger' %}
+        # Configuration options for Phusion Passenger
+{# These values are set at playbook runtime #}
+        passenger_root {{ nginx_passenger_root }};
+        passenger_ruby {{ nginx_passenger_ruby }};
+
+        passenger_max_pool_size {{ nginx_passenger_max_pool_size }};
+
+{% if nginx_passenger_options %}
+{{ nginx_passenger_options | indent(8,true) | regex_replace("(?m)^\s*$", "") }}
+
+{% endif %}
+{% endif %}
+        # Virtual Hosts Configs
+        include {{ nginx_etc_path }}/conf.d/*.conf;
+        include {{ nginx_etc_path }}/sites-enabled/*.conf;
+}
+{% if nginx_extra_options %}
+
+{{ nginx_extra_options }}
+{% endif %}
+
+# vim:ft=nginx

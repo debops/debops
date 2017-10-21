@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+{% set nginx_tpl_domain = item.welcome_domain | d(item.name if (item.name is string) else item.name[0] | d(ansible_domain)) %}
+{% if nginx_tpl_domain %}
+{%   set nginx_tpl_welcome_title = '<a href="' + item.welcome_url_scheme|d("https") + '://' + nginx_tpl_domain + '/">' + nginx_tpl_domain + '</a>' %}
+{% else %}
+{%   set nginx_tpl_welcome_title = '<a href="http://companyname.website/">CompanyName.website</a>' %}
+{% endif %}
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="referrer" content="no-referrer">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ nginx_tpl_domain|d("CompanyName.website") }}</title>
+{% if item.welcome_css|d(True) | bool %}
+    <style type="text/css" media="screen">
+{% include "normalize.css" %}
+    </style>
+    <style type="text/css" media="screen">
+html {
+  font-size: 17px;
+  font-family: "Droid Sans Condensed", sans-serif;
+}
+
+@media (max-width: 900px) {
+  html { font-size: 15px; }
+}
+
+@media (max-width: 400px) {
+  html { font-size: 13px; }
+}
+
+#content {
+  margin: 0 auto;
+  width: 600px;
+  padding: 2rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  #content {
+    width: 70%;
+    padding: 1.5rem;
+  }
+}
+
+h1 {
+  padding-bottom: 0.05em;
+  border-bottom: 2px solid #0092DF;
+}
+
+a {
+  text-decoration: none;
+  color: #0092DF;
+}
+    </style>
+{% endif %}
+  </head>
+
+  <body>
+    <div id="content">
+
+      <h2>{{ nginx_tpl_welcome_title }}</h2>
+
+{% if nginx_tpl_domain %}
+      <p id="http-status"><strong>{{ item.welcome_status_choices|d([ '200 OK', "418 I'm a teapot" ]) | random }}</strong></p>
+{% elif not nginx_tpl_domain %}
+      <p>If you're reading this, the web server was installed correctly.</p>
+{% endif %}
+
+    </div>
+  </body>
+</html>
