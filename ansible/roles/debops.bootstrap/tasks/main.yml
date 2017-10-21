@@ -1,0 +1,116 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Package install of essential software [[[
+- name: Make sure essential software is installed
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  tags: [ 'role::bootstrap:packages' ]
+  with_flattened:
+    - '{{ bootstrap__mandatory_packages }}'
+    - '{{ bootstrap__base_packages }}'
+    - '{{ bootstrap__packages }}'
+# ]]]
+
+# Ansible facts [[[
+- name: Install custom Ansible local facts
+  copy:
+    src: 'etc/ansible/facts.d/'
+    dest: '/etc/ansible/facts.d/'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  tags: [ 'role::bootstrap:hostname' ]
+
+- name: Gather host facts
+  action: setup
+# ]]]
+
+- name: Gather information about existing users
+  getent:
+    database: 'passwd'
+    split: ':'
+  tags: [ 'role::bootstrap:admin' ]
+
+- name: Manage System Administrator accounts
+  include: admin_accounts.yml
+  when: bootstrap__admin|bool
+  tags: [ 'role::bootstrap:admin' ]
+
+# Access to sudo commands [[[
+- name: Configure system group with passwordless access in sudo
+  ## `lineinfile` is used instead of `template` to allow other roles to take
+  ## over `sudo` management and prevent one role reverting the work of the
+  ## other role.
+  lineinfile:
+    dest: '/etc/sudoers.d/{{ bootstrap__sudo_group }}'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    state: 'present'
+    create: True
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+    validate: 'visudo -cf "%s"'
+  tags: [ 'role::bootstrap:admin' ]
+  with_items:
+    - regexp: '^Defaults: %{{ bootstrap__sudo_group }} !?requiretty'
+      line:    'Defaults: %{{ bootstrap__sudo_group }} !requiretty'
+    - regexp: '^Defaults: %{{ bootstrap__sudo_group }} env_check\s'
+      line:    'Defaults: %{{ bootstrap__sudo_group }} env_check += "SSH_CLIENT"'
+    - regexp: '^%{{ bootstrap__sudo_group }}\s'
+      line:    '%{{ bootstrap__sudo_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'
+  when: bootstrap__sudo|bool
+
+- name: Ensure /etc/sudoers includes /etc/sudoers.d
+  lineinfile:
+    dest: '/etc/sudoers'
+    regexp: '^#includedir\s+/etc/sudoers.d$'
+    line: '#includedir /etc/sudoers.d'
+    state: 'present'
+    validate: 'visudo -cf "%s"'
+  tags: [ 'role::bootstrap:admin' ]
+
+# Hostname and domain [[[
+- name: Enforce new hostname
+  hostname:
+    name: '{{ bootstrap__hostname }}'
+  tags: [ 'role::bootstrap:hostname' ]
+  when: (bootstrap__hostname_domain_config_enabled|bool and
+         bootstrap__hostname != ansible_hostname)
+
+- name: Save hostname in /etc/hostname
+  copy:
+    content: '{{ bootstrap__hostname }}'
+    dest: '/etc/hostname'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::bootstrap:hostname' ]
+  when: (bootstrap__hostname_domain_config_enabled|bool and
+         bootstrap__hostname != ansible_hostname)
+
+- name: Save hostname and domain in /etc/hosts
+  lineinfile:
+    state: 'present'
+    dest: '/etc/hosts'
+    insertbefore: '{{ item.insertbefore | default(omit) }}'
+    insertafter: '{{ item.insertafter | default(omit) }}'
+    regexp: '{{ "^" + (item.ip_address | replace(".","\.")) }}'
+    ## https://github.com/ansible/ansible-modules-core/issues/1892
+    line: "{{ item.ip_address + '\t' + (bootstrap__hostname | d(ansible_hostname)) +
+              (( '.' + bootstrap__domain + '\t' + (bootstrap__hostname | d(ansible_hostname)) )
+              if bootstrap__domain|d()
+              else '') }}"
+  tags: [ 'role::bootstrap:hostname' ]
+  when: (bootstrap__hostname_domain_config_enabled|bool and ((item.type == 'inet6' and bootstrap__hostname_v6_loopback|d()) or item.type == 'inet4'))
+  with_items:
+    - ip_address: '{{ bootstrap__ipv4 | default("127.0.1.1") }}'
+      insertafter: '{{ "^127.0.0.1" | replace(".", "\.") }}'
+      type: 'inet4'
+    - ip_address: '{{ bootstrap__ipv6 | default("0::1") }}'
+      insertbefore: '^::1'
+      type: 'inet6'
+
+# ]]]

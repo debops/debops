@@ -1,0 +1,21 @@
+---
+
+- name: Bootstrap Python support on a host
+  hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
+  gather_facts: False
+
+  roles:
+
+    - role: debops.bootstrap/raw
+
+
+- name: Bootstrap host for Ansible management
+  hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.bootstrap

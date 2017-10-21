@@ -1,0 +1,49 @@
+---
+
+- name: Gather information about existing home directories
+  stat:
+    path: '{{ item }}'
+  with_items: '{{ lookup("template", "lookup/stat_home_path.j2") | from_yaml }}'
+  register: bootstrap__register_home
+
+- name: Create required system groups
+  group:
+    name: '{{ item }}'
+    state: 'present'
+    system: True
+  with_items: '{{ bootstrap__admin_groups }}'
+
+- name: Create admin accounts
+  user:
+    name: '{{ item.name }}'
+    state: 'present'
+    system: '{{ (item.system | d(bootstrap__admin_system)) | bool }}'
+    groups: '{{ (item.groups | d(bootstrap__admin_groups)) | join(",") }}'
+    append: True
+    comment: '{{ item.comment | d(getent_passwd[item.name][3] if getent_passwd[item.name]|d() else bootstrap__admin_comment) }}'
+    home: '{{ item.home | d(getent_passwd[item.name][4] if getent_passwd[item.name]|d() else
+              (((item.system | d(bootstrap__admin_system)) | ternary(bootstrap__admin_home_path_system, bootstrap__admin_home_path)) +
+                  "/" + item.name)) }}'
+    shell: '{{ item.shell | d(getent_passwd[item.name][5] if getent_passwd[item.name]|d() else bootstrap__admin_shell) }}'
+  with_items: '{{ bootstrap__admin_default_users + bootstrap__admin_users }}'
+  when: item.name|d()
+
+- name: Set admin home directory group and permissions
+  file:
+    path: '{{ item.0.home | d(getent_passwd[item.0.name][4] if getent_passwd[item.0.name]|d() else
+              (((item.0.system | d(bootstrap__admin_system)) | ternary(bootstrap__admin_home_path_system, bootstrap__admin_home_path)) +
+                  "/" + item.0.name)) }}'
+    group: '{{ item.0.home_group | d(item.1.stat.gr_name if item.1.stat.exists|bool else bootstrap__admin_home_group) }}'
+    mode: '{{ item.0.home_mode | d(item.1.stat.mode if item.1.stat.exists|bool else bootstrap__admin_home_mode) }}'
+  with_together:
+    - '{{ bootstrap__admin_default_users + bootstrap__admin_users }}'
+    - '{{ bootstrap__register_home.results }}'
+  when: item.0.name|d()
+
+- name: Install ssh public key on admin accounts
+  authorized_key:
+    user: '{{ item.name }}'
+    key: "{{ (item.sshkeys|d([]) + bootstrap__admin_sshkeys) | join('\n') | string }}"
+    state: 'present'
+  with_items: '{{ [{"name": "root"}] + bootstrap__admin_default_users + bootstrap__admin_users }}'
+  when: item.name|d() and (item.sshkeys|d() or bootstrap__admin_sshkeys)
