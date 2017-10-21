@@ -1,0 +1,333 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#   :local:
+
+# ---------------
+#   Host groups
+# ---------------
+
+# .. envvar:: rsnapshot_clients
+#
+# Required. Inventory group of hosts that have :program:`rsnapshot` installed
+# and keep the backup files.
+rsnapshot_clients: '{{ groups.debops_service_rsnapshot|d([]) +
+                       groups.debops_service_rsnapshot_clients|d([]) +
+                       groups.debops_rsnapshot|d([]) }}'
+
+
+# .. envvar:: rsnapshot_servers
+#
+# Required. Inventory group of hosts that should be backed up by rsnapshot. They have
+# :command:`rsync` installed and clients connect to them.
+rsnapshot_servers: '{{ groups.debops_service_rsnapshot_rsync|d([]) +
+                       groups.debops_service_rsnapshot_servers|d([]) +
+                       groups.debops_rsnapshot_rsync|d([]) }}'
+
+
+# .. envvar:: rsnapshot_external_servers
+#
+# List of dicts which define external servers to backup on a particular
+# :program:`rsnapshot` client host. Most of the keys have the same names as the main
+# ``debops.rsnapshot`` variables but without the ``rsnapshot_`` prefix.
+# The ``name`` key is required. See :ref:`rsnapshot_external_servers` for more
+# information.
+rsnapshot_external_servers: []
+# Examples::
+#
+#   - name: 'host.example.org'
+#     sleep: '10'
+
+
+# -------------------------------
+#   Backup client configuration
+# -------------------------------
+
+# .. envvar:: rsnapshot_snapshot_root
+#
+# Directory where backups are stored.
+rsnapshot_snapshot_root: '/var/cache/rsnapshot'
+
+
+# .. envvar:: rsnapshot_cmd_rsync
+#
+# Main script executed by :program:`rsnapshot` script to perform backups.
+rsnapshot_cmd_rsync: '/usr/local/lib/rsync-no-vanished'
+
+
+# .. envvar:: rsnapshot_link_dest
+#
+# Enable ``--link-dest`` option in :command:`rsync`` commands.
+rsnapshot_link_dest: '1'
+
+
+# .. envvar:: rsnapshot_sync_first
+#
+# Use separate steps for file synchronization and directory rotation.
+rsnapshot_sync_first: '1'
+
+
+# .. envvar:: rsnapshot_config_dir
+#
+# Directory where ``rsnapshot`` configuration files are stored.
+rsnapshot_config_dir: '/etc/rsnapshot'
+
+
+# .. envvar:: rsnapshot_hosts_dir
+#
+# Directory with configuration directories for each backed up remote host.
+rsnapshot_hosts_dir: '{{ rsnapshot_config_dir + "/hosts" }}'
+
+
+# .. envvar:: rsnapshot_scheduler_type
+#
+# Method by which ``rsnapshot-scheduler`` issues new backup jobs:
+#
+# - ``batch``: use ``batch`` from the ``at`` package to run backups depending
+#   on system load. If not present, it falls back to ``sleep``.
+#
+# - ``sleep``: use ``sleep`` command with a random delay in minutes to spread
+#   the load of the backup jobs.
+#
+rsnapshot_scheduler_type: 'batch'
+
+
+# .. envvar:: rsnapshot_scheduler_batch_queue
+#
+# Queue used by the ``rsnapshot`` backup jobs. A queue should be defined by a
+# single, capital letter to ensure that the jobs are managed by ``batch`` command
+# according to the current load average.
+rsnapshot_scheduler_batch_queue: 'R'
+
+
+# .. envvar:: rsnapshot_scheduler_batch_command
+#
+# Command used to schedule backup jobs.
+rsnapshot_scheduler_batch_command: 'at -q {{ rsnapshot_scheduler_batch_queue }} now'
+
+
+# .. envvar:: rsnapshot_scheduler_sleep_max_delay
+#
+# Maximum delay in minutes for the ``sleep`` scheduler type.
+rsnapshot_scheduler_sleep_max_delay: '20'
+
+
+# .. envvar:: rsnapshot_scheduler_run_max_delay
+#
+# Maximum delay in minutes for the scheduler to check if another backup job has
+# finished before running.
+rsnapshot_scheduler_run_max_delay: '5'
+
+
+# -------------------------------
+#   Backup server configuration
+# -------------------------------
+
+# Server configuration should be defined in the respective host file in the
+# inventory, either in ``host_vars/`` for a single host, or in ``group_vars/``
+# for entire groups of hosts.
+
+
+# .. envvar:: rsnapshot_retain
+#
+# List of snapshots managed by ``rsnapshot`` for a given host. Each element is
+# a YAML dictionary with following keys:
+#
+# - ``name``: name of the snapshot
+#
+# - ``number``: number of snapshots to preserve
+#
+rsnapshot_retain: '{{ rsnapshot_retain_hourly }}'
+
+
+# .. envvar:: rsnapshot_retain_hourly
+#
+# Keep a set of hourly snapshots which are then rotated daily, weekly and
+# monthly.
+rsnapshot_retain_hourly:
+
+  - name: 'hourly'
+    number: 6
+
+  - name: 'daily'
+    number: 7
+
+  - name: 'weekly'
+    number: 4
+
+  - name: 'monthly'
+    number: 6
+
+
+# .. envvar:: rsnapshot_retain_daily
+#
+# Keep a set of daily snapshots which are then rotated weekly and monthly.
+rsnapshot_retain_daily:
+
+  - name: 'daily'
+    number: 7
+
+  - name: 'weekly'
+    number: 4
+
+  - name: 'monthly'
+    number: 6
+
+
+# .. envvar:: rsnapshot_one_fs
+#
+# Allow or prevent :command:`rsync`` from crossing filesystem boundaries.
+rsnapshot_one_fs: '0'
+
+
+# .. envvar:: rsnapshot_ssh_port
+#
+# This variable is not used directly by the :command:`rsnapshot` command, but
+# can be used by Ansible and scripts to connect to the correct port if SSH has
+# been configured differently.
+rsnapshot_ssh_port: '22'
+
+
+# .. envvar:: rsnapshot_ssh_args
+#
+# Additional arguments for the :command:`ssh`` command.
+rsnapshot_ssh_args: '-p 22'
+
+
+# .. envvar:: rsnapshot_rrsync_script
+#
+# ``rrsync`` script will be installed in this path (by default,
+# :file:`/usr/local/lib`).
+rsnapshot_rrsync_script: '{{ (ansible_local.root.lib
+                              if (ansible_local|d() and ansible_local.root|d() and
+                                  ansible_local.root.lib|d())
+                              else "/usr/local/lib") + "/rrsync" }}'
+
+
+# .. envvar:: rsnapshot_ssh_command
+#
+# Command which will be added to the SSH key in :file:`/root/.ssh/authorized_keys`
+# of each rsnapshot server host. By default it allows for read-only access to
+# the entire filesystem.
+rsnapshot_ssh_command: 'ionice -c 3 nice {{ rsnapshot_rrsync_script }} -ro /'
+
+
+# .. envvar:: rsnapshot_backup_user
+#
+# Override server backup user (by default, ``root``).
+rsnapshot_backup_user: False
+
+
+# .. envvar:: rsnapshot_backup_host
+#
+# Override server backup host (by default, FQDN of the host).
+rsnapshot_backup_host: False
+
+
+# .. envvar:: rsnapshot_backup_path
+#
+# Override server backup path (by default, ``/``, root filesystem directory).
+rsnapshot_backup_path: False
+
+
+# .. envvar:: rsnapshot_uuid
+#
+# Add the host's internal UUID to the backup path, creating an unique backup
+# for each instance of the server host, if the hostnames are reused.
+rsnapshot_uuid: True
+
+
+# ---------------------------------
+#   Include/Exclude definitions
+# ---------------------------------
+
+# .. envvar:: rsnapshot_exclude
+#
+# Contents of an exclude file, defined as a text block.
+rsnapshot_exclude: |
+  {{ rsnapshot_exclude_default }}
+
+
+# .. envvar:: rsnapshot_exclude_default
+#
+# Default list of exclude entries, defined as a text block.
+rsnapshot_exclude_default: |
+  {{ rsnapshot_exclude_default_root }}
+  {{ rsnapshot_exclude_default_var }}
+
+
+# .. envvar:: rsnapshot_exclude_default_root
+#
+# List of directories in ``/`` to exclude from backups.
+rsnapshot_exclude_default_root: |
+  - /bin
+  - /boot
+  - /cdrom
+  - /dev
+  - /lib
+  - /lib32
+  - /lib64
+  - /media
+  - /mnt
+  - /proc
+  - /run
+  - /sbin
+  - /selinux
+  - /sys
+  - /tmp
+  + /usr/local
+  - /usr/*
+  - /initrd*
+  - /swapfile*
+  - /vmlinuz*
+  - /vz
+
+
+# .. envvar:: rsnapshot_exclude_default_var
+#
+# List of directories in ``/var`` to exclude from backups.
+rsnapshot_exclude_default_var: |
+  - /var/agentx
+  - /var/cache
+  - /var/lib/apt
+  - /var/lib/amavis/tmp
+  - /var/lib/libvirt/images
+  - /var/lib/lxc
+  - /var/lib/lxcsnaps
+  - /var/lib/mysql
+  - /var/lib/postgresql
+  - /var/lib/python-support
+  + /var/lib/vz/dump
+  - /var/lib/vz/*
+  - /var/lock
+  - /var/run
+  - /var/spool/postfix
+  - /var/tmp
+
+
+# .. envvar:: rsnapshot_include
+#
+# Contents of an include file, defined as a text block.
+rsnapshot_include: |
+  {{ rsnapshot_include_default }}
+
+
+# .. envvar:: rsnapshot_include_default
+#
+# Default list of include entries, defined as a text block.
+rsnapshot_include_default: |
+  + /*
+
+# .. envvar:: rsnapshot_backup_script
+#
+# Path to the script to excute before performing a backup
+rsnapshot_backup_script: ''
+
+
+# .. envvar:: rsnapshot_backup_script_dest
+#
+# Name of the destination directory where to save the files generated
+# by the script.
+rsnapshot_backup_script_dest: 'rsnapshot_script_output'

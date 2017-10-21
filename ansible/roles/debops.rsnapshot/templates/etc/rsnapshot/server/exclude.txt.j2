@@ -1,0 +1,11 @@
+{% set host = hostvars[item.0] %}
+# {{ ansible_managed }}
+
+{% if host.rsnapshot_exclude is defined and host.rsnapshot_exclude %}
+{% set rsnapshot_tpl_exclude = host.rsnapshot_exclude %}
+{% elif host.rsnapshot_exclude is undefined %}
+{% set rsnapshot_tpl_exclude = rsnapshot_exclude %}
+{% endif %}
+{% if rsnapshot_tpl_exclude is defined and rsnapshot_tpl_exclude %}
+{{ rsnapshot_tpl_exclude }}
+{% endif %}

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+# Launch rsnapshot {{ item }} backups
+
+scheduler="{{ (ansible_local.root.lib if (ansible_local|d() and ansible_local.root|d() and ansible_local.root.lib|d()) else "/usr/local/lib") + "/rsnapshot-scheduler" }}"
+
+test -x ${scheduler} && ${scheduler} schedule {{ item }} all || true
+

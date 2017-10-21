@@ -1,0 +1,150 @@
+---
+
+- name: Install required packages on client
+  apt:
+    name: 'rsnapshot'
+    state: 'installed'
+    install_recommends: False
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Install custom backup scripts
+  template:
+    src: 'usr/local/lib/{{ item }}.j2'
+    dest: '{{ (ansible_local.root.lib
+               if (ansible_local|d() and ansible_local.root|d() and
+                   ansible_local.root.lib|d())
+               else "/usr/local/lib") + "/" + item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: [ 'rsync-no-vanished', 'rsnapshot-scheduler' ]
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Create rsnapshot configuration directory
+  file:
+    path: '{{ rsnapshot_config_dir }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Enforce rsnapshot root directory permissions
+  file:
+    path: '{{ rsnapshot_snapshot_root }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Create log directory on client
+  file:
+    path: '/var/log/rsnapshot'
+    state: 'directory'
+    owner: 'root'
+    group: 'adm'
+    mode: '0750'
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Check rsnapshot version
+  environment:
+    LC_MESSAGES: 'C'
+  shell: dpkg-query -W -f='${Version}\n' 'rsnapshot' | cut -d- -f1
+  register: rsnapshot_register_version
+  changed_when: False
+  failed_when: False
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Configure rsnapshot-scheduler
+  template:
+    src: 'etc/rsnapshot-scheduler.conf.j2'
+    dest: '/etc/rsnapshot-scheduler.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Create server configuration directories on client
+  file:
+    path: '{{ rsnapshot_hosts_dir }}/{{ hostvars[item].rsnapshot_backup_host
+                                        if (hostvars[item].rsnapshot_backup_host|d() and
+                                            hostvars[item].rsnapshot_backup_host|bool)
+                                        else hostvars[item].ansible_fqdn }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: '{{ rsnapshot_servers }}'
+  when: (inventory_hostname in rsnapshot_clients and
+         ((item is defined and item) and item != inventory_hostname and
+          item not in rsnapshot_clients and hostvars[item].ansible_fqdn is defined))
+
+- name: Configure servers on rsnapshot clients
+  template:
+    src: 'etc/rsnapshot/server/{{ item.1 }}.j2'
+    dest: '{{ rsnapshot_hosts_dir }}/{{ hostvars[item.0].rsnapshot_backup_host
+                                        if (hostvars[item.0].rsnapshot_backup_host|d() and
+                                            hostvars[item.0].rsnapshot_backup_host|bool)
+                                        else hostvars[item.0].ansible_fqdn }}/{{ item.1 }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_nested:
+    - '{{ rsnapshot_servers }}'
+    - [ 'include.txt', 'exclude.txt', 'rsnapshot.conf' ]
+  when: (inventory_hostname in rsnapshot_clients and
+         ((item.0 is defined and item.0) and item.0 != inventory_hostname and
+          item.0 not in rsnapshot_clients and hostvars[item.0].ansible_fqdn is defined))
+
+- name: Install required packages on servers
+  apt:
+    name: 'rsync'
+    state: 'installed'
+    install_recommends: False
+  when: (inventory_hostname in rsnapshot_servers and
+         inventory_hostname not in rsnapshot_clients)
+
+- name: Prepare rrsync script for secure rsync backups
+  shell: gzip -d -c /usr/share/doc/rsync/scripts/rrsync.gz > {{ rsnapshot_rrsync_script }} ;
+         chmod 0755 {{ rsnapshot_rrsync_script }}
+  args:
+    creates: '{{ rsnapshot_rrsync_script }}'
+  when: (inventory_hostname in rsnapshot_servers and
+         inventory_hostname not in rsnapshot_clients)
+
+- name: Install pre-backup scripts
+  copy:
+    src: '{{ rsnapshot_backup_script }}'
+    dest: '/usr/local/lib/rsnapshot_backup_script'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (inventory_hostname in rsnapshot_clients and
+         rsnapshot_backup_script is defined and rsnapshot_backup_script)
+
+- include: configure_ssh_keys.yml
+  when: inventory_hostname in rsnapshot_clients
+  tags: [ 'role::rsnapshot:sshkeys' ]
+
+- include: external_servers.yml
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Configure rsnapshot backup scripts in cron
+  template:
+    src: 'etc/cron/rsnapshot-wrapper.j2'
+    dest: '/etc/cron.{{ item }}/rsnapshot-wrapper'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: [ 'hourly', 'daily', 'weekly', 'monthly' ]
+  when: inventory_hostname in rsnapshot_clients
+
+- name: Configure logrotate for rsnapshot logs
+  template:
+    src: 'etc/logrotate.d/rsnapshot.j2'
+    dest: '/etc/logrotate.d/rsnapshot'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: inventory_hostname in rsnapshot_clients

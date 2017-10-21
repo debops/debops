@@ -1,0 +1,303 @@
+{% set host = hostvars[item.0] %}
+{% if host.rsnapshot_backup_user is defined and host.rsnapshot_backup_user %}
+{% set rsnapshot_tpl_user = host.rsnapshot_backup_user %}
+{% else %}
+{% set rsnapshot_tpl_user = 'root' %}
+{% endif %}
+{% if host.rsnapshot_backup_host is defined and host.rsnapshot_backup_host %}
+{% set rsnapshot_tpl_host = host.rsnapshot_backup_host %}
+{% else %}
+{% set rsnapshot_tpl_host = host.ansible_fqdn %}
+{% endif %}
+{% if host.rsnapshot_backup_path is defined and host.rsnapshot_backup_path %}
+{% set rsnapshot_tpl_path = host.rsnapshot_backup_path %}
+{% else %}
+{% set rsnapshot_tpl_path = '/' %}
+{% endif %}
+{% if host.rsnapshot_uuid is defined and host.rsnapshot_uuid %}
+{% set rsnapshot_tpl_uuid = ((host.ansible_local.uuid + "/") if (host.ansible_local|d() and host.ansible_local.uuid|d()) else "") %}
+{% elif rsnapshot_uuid is defined and rsnapshot_uuid %}
+{% set rsnapshot_tpl_uuid = ((host.ansible_local.uuid + "/") if (host.ansible_local|d() and host.ansible_local.uuid|d()) else "") %}
+{% else %}
+{% set rsnapshot_tpl_uuid = '' %}
+{% endif %}
+# {{ ansible_managed }}
+
+#################################################
+# rsnapshot.conf - rsnapshot configuration file #
+#################################################
+#                                               #
+# PLEASE BE AWARE OF THE FOLLOWING RULES:       #
+#                                               #
+# This file requires tabs between elements      #
+#                                               #
+# Directories require a trailing slash:         #
+#   right: /home/                               #
+#   wrong: /home                                #
+#                                               #
+#################################################
+
+#######################
+# CONFIG FILE VERSION #
+#######################
+
+config_version	1.2
+
+###########################
+# SNAPSHOT ROOT DIRECTORY #
+###########################
+
+# All snapshots will be stored under this root directory.
+#
+snapshot_root	{{ rsnapshot_snapshot_root | default("/var/cache/rsnapshot") + "/" + rsnapshot_tpl_host }}/{{ rsnapshot_tpl_uuid }}
+
+# If no_create_root is enabled, rsnapshot will not automatically create the
+# snapshot_root directory. This is particularly useful if you are backing
+# up to removable media, such as a FireWire or USB drive.
+#
+#no_create_root	1
+
+#################################
+# EXTERNAL PROGRAM DEPENDENCIES #
+#################################
+
+# LINUX USERS:   Be sure to uncomment "cmd_cp". This gives you extra features.
+# EVERYONE ELSE: Leave "cmd_cp" commented out for compatibility.
+#
+# See the README file or the man page for more details.
+#
+cmd_cp		/bin/cp
+
+# uncomment this to use the rm program instead of the built-in perl routine.
+#
+#cmd_rm		/bin/rm
+
+# rsync must be enabled for anything to work. This is the only command that
+# must be enabled.
+#
+{% if (host.cmd_rsync is defined and host.cmd_rsync) %}
+cmd_rsync	{{ host.cmd_rsync }}
+{% elif host.cmd_rsync is undefined %}
+cmd_rsync	{{ rsnapshot_cmd_rsync }}
+{% endif %}
+
+# Uncomment this to enable remote ssh backups over rsync.
+#
+cmd_ssh	/usr/bin/ssh
+
+# Comment this out to disable syslog support.
+#
+cmd_logger	/usr/bin/logger
+
+# Uncomment this to specify the path to "du" for disk usage checks.
+# If you have an older version of "du", you may also want to check the
+# "du_args" parameter below.
+#
+#cmd_du		/usr/bin/du
+
+# Uncomment this to specify the path to rsnapshot-diff.
+#
+#cmd_rsnapshot_diff	/usr/bin/rsnapshot-diff
+
+# Specify the path to a script (and any optional arguments) to run right
+# before rsnapshot syncs files
+#
+#cmd_preexec	/path/to/preexec/script
+
+# Specify the path to a script (and any optional arguments) to run right
+# after rsnapshot syncs files
+#
+#cmd_postexec	/path/to/postexec/script
+
+# Paths to lvcreate, lvremove, mount and umount commands, for use with
+# Linux LVMs.
+#
+#linux_lvm_cmd_lvcreate	/path/to/lvcreate
+#linux_lvm_cmd_lvremove	/path/to/lvremove
+#linux_lvm_cmd_mount	/bin/mount
+#linux_lvm_cmd_umount	/bin/umount
+
+#########################################
+#           BACKUP INTERVALS            #
+# Must be unique and in ascending order #
+# i.e. hourly, daily, weekly, etc.      #
+#########################################
+
+{% if (host.retain is undefined or not host.retain) %}
+{% for element in rsnapshot_retain %}
+retain	{{ element.name }}	{{ element.number }}
+{% endfor %}
+{% elif host.retain %}
+{% for element in host.retain %}
+retain	{{ element.name }}	{{ element.number }}
+{% endfor %}
+{% endif %}
+
+############################################
+#              GLOBAL OPTIONS              #
+# All are optional, with sensible defaults #
+############################################
+
+# Verbose level, 1 through 5.
+# 1     Quiet           Print fatal errors only
+# 2     Default         Print errors and warnings only
+# 3     Verbose         Show equivalent shell commands being executed
+# 4     Extra Verbose   Show extra verbose information
+# 5     Debug mode      Everything
+#
+#verbose		2
+
+# Same as "verbose" above, but controls the amount of data sent to the
+# logfile, if one is being used. The default is 3.
+#
+#loglevel	3
+
+# If you enable this, data will be written to the file you specify. The
+# amount of data written is controlled by the "loglevel" parameter.
+#
+logfile	/var/log/rsnapshot/{{ rsnapshot_tpl_host }}.log
+
+# If enabled, rsnapshot will write a lockfile to prevent two instances
+# from running simultaneously (and messing up the snapshot_root).
+# If you enable this, make sure the lockfile directory is not world
+# writable. Otherwise anyone can prevent the program from running.
+#
+lockfile	/var/run/rsnapshot-{{ rsnapshot_tpl_host }}.pid
+
+# By default, rsnapshot check lockfile, check if PID is running
+# and if not, consider lockfile as stale, then start
+# Enabling this stop rsnapshot if PID in lockfile is not running
+#
+#stop_on_stale_lockfile		0
+
+# Default rsync args. All rsync commands have at least these options set.
+#
+#rsync_short_args	-a
+#rsync_long_args	--delete --numeric-ids --relative --delete-excluded
+
+# ssh has no args passed by default, but you can specify some here.
+#
+{% if ansible_distribution == 'Debian' and ansible_distribution_release == 'jessie' %}
+# In Debian Jessie, rsnapshot has a bug related to 'ssh_args' option,
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=717451
+# Until a bugfix is released, 'ssh_args' option is disabled by default to allow
+# for backups to be processed
+#ssh_args	{{ host.rsnapshot_ssh_args | default(rsnapshot_ssh_args | default("-p 22")) }}
+{% else %}
+ssh_args	{{ host.rsnapshot_ssh_args | default(rsnapshot_ssh_args | default("-p 22")) }}
+{% endif %}
+
+# Default arguments for the "du" program (for disk space reporting).
+# The GNU version of "du" is preferred. See the man page for more details.
+# If your version of "du" doesn't support the -h flag, try -k flag instead.
+#
+#du_args	-csh
+
+# If this is enabled, rsync won't span filesystem partitions within a
+# backup point. This essentially passes the -x option to rsync.
+# The default is 0 (off).
+#
+one_fs		{{ host.rsnapshot_one_fs | default(rsnapshot_one_fs | default("0")) }}
+
+# The include and exclude parameters, if enabled, simply get passed directly
+# to rsync. If you have multiple include/exclude patterns, put each one on a
+# separate line. Please look up the --include and --exclude options in the
+# rsync man page for more details on how to specify file name patterns. 
+#
+#include	???
+#include	???
+#exclude	???
+#exclude	??? #
+
+# The include_file and exclude_file parameters, if enabled, simply get
+# passed directly to rsync. Please look up the --include-from and
+# --exclude-from options in the rsync man page for more details.
+#
+exclude_file	{{ rsnapshot_hosts_dir }}/{{ rsnapshot_tpl_host }}/exclude.txt
+include_file	{{ rsnapshot_hosts_dir }}/{{ rsnapshot_tpl_host }}/include.txt
+
+# If your version of rsync supports --link-dest, consider enable this.
+# This is the best way to support special files (FIFOs, etc) cross-platform.
+# The default is 0 (off).
+#
+link_dest	{{ host.rsnapshot_link_dest | default(rsnapshot_link_dest | default("0")) }}
+
+# When sync_first is enabled, it changes the default behaviour of rsnapshot.
+# Normally, when rsnapshot is called with its lowest interval
+# (i.e.: "rsnapshot hourly"), it will sync files AND rotate the lowest
+# intervals. With sync_first enabled, "rsnapshot sync" handles the file sync,
+# and all interval calls simply rotate files. See the man page for more
+# details. The default is 0 (off).
+#
+sync_first	{{ host.rsnapshot_sync_first | default(rsnapshot_sync_first | default("0")) }}
+
+# If enabled, rsnapshot will move the oldest directory for each interval
+# to [interval_name].delete, then it will remove the lockfile and delete
+# that directory just before it exits. The default is 0 (off).
+#
+#use_lazy_deletes	0
+
+# Number of rsync re-tries. If you experience any network problems or
+# network card issues that tend to cause ssh to crap-out with
+# "Corrupted MAC on input" errors, for example, set this to a non-zero
+# value to have the rsync operation re-tried
+#
+#rsync_numtries 0
+
+# LVM parameters. Used to backup with creating lvm snapshot before backup
+# and removing it after. This should ensure consistency of data in some special
+# cases
+#
+# LVM snapshot(s) size (lvcreate --size option).
+#
+#linux_lvm_snapshotsize	100M
+
+# Name to be used when creating the LVM logical volume snapshot(s).
+#
+#linux_lvm_snapshotname	rsnapshot
+
+# Path to the LVM Volume Groups.
+#
+#linux_lvm_vgpath	/dev
+
+# Mount point to use to temporarily mount the snapshot(s).
+#
+#linux_lvm_mountpath	/path/to/mount/lvm/snapshot/during/backup
+
+###############################
+### BACKUP POINTS / SCRIPTS ###
+###############################
+
+backup	{{ rsnapshot_tpl_user + "@" + rsnapshot_tpl_host + ":" + rsnapshot_tpl_path }}	./
+
+{% if (rsnapshot_backup_script is defined and rsnapshot_backup_script) %}
+backup_script	/usr/local/lib/rsnapshot_backup_script	{{ rsnapshot_backup_script_dest }}/
+{% endif %}
+
+# LOCALHOST
+#backup	/home/		localhost/
+#backup	/etc/		localhost/
+#backup	/usr/local/	localhost/
+#backup	/var/log/rsnapshot		localhost/
+#backup	/etc/passwd	localhost/
+#backup	/home/foo/My Documents/		localhost/
+#backup	/foo/bar/	localhost/	one_fs=1, rsync_short_args=-urltvpog
+#backup_script	/usr/local/bin/backup_pgsql.sh	localhost/postgres/
+# You must set linux_lvm_* parameters below before using lvm snapshots
+#backup	lvm://vg0/xen-home/	lvm-vg0/xen-home/
+
+# EXAMPLE.COM
+#backup_script	/bin/date "+ backup of example.com started at %c"	unused1
+#backup	root@example.com:/home/	example.com/	+rsync_long_args=--bwlimit=16,exclude=core
+#backup	root@example.com:/etc/	example.com/	exclude=mtab,exclude=core
+#backup_script	ssh root@example.com "mysqldump -A > /var/db/dump/mysql.sql"	unused2
+#backup	root@example.com:/var/db/dump/	example.com/
+#backup_script	/bin/date	"+ backup of example.com ended at %c"	unused9
+
+# CVS.SOURCEFORGE.NET
+#backup_script	/usr/local/bin/backup_rsnapshot_cvsroot.sh	rsnapshot.cvs.sourceforge.net/
+
+# RSYNC.SAMBA.ORG
+#backup	rsync://rsync.samba.org/rsyncftp/	rsync.samba.org/rsyncftp/
+
+# vim:ft=conf

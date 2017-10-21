@@ -1,0 +1,11 @@
+{% set host = item.0 %}
+# {{ ansible_managed }}
+
+{% if host.include is defined and host.include %}
+{% set rsnapshot_tpl_include = host.include %}
+{% elif host.include is undefined %}
+{% set rsnapshot_tpl_include = rsnapshot_include %}
+{% endif %}
+{% if rsnapshot_tpl_include is defined and rsnapshot_tpl_include %}
+{{ rsnapshot_tpl_include }}
+{% endif %}
