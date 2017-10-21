@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=fcgiwrap-{{ item.0.name }} Socket
+
+[Socket]
+SocketUser={{   item.0.socket_user  | d(fcgiwrap__socket_user) }}
+SocketGroup={{  item.0.socket_group | d(fcgiwrap__socket_group) }}
+SocketMode={{   item.0.socket_mode  | d(fcgiwrap__socket_mode) }}
+ListenStream={{ item.0.socket       | d("/run/fcgiwrap-" + item.0.name + ".socket") }}
+
+[Install]
+WantedBy=sockets.target
+

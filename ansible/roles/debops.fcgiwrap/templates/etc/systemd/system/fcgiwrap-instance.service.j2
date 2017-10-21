@@ -1,0 +1,22 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Simple CGI Server for {{ item.0.name }}
+After=nss-user-lookup.target
+Requires=fcgiwrap-{{ item.0.name }}.socket
+
+{% set fcgiwrap__tpl_options = { 'value': '' } %}
+{% for key, value in fcgiwrap__options_map.iteritems() %}
+{% if fcgiwrap__register_version.stdout|d() | version_compare(key, '>=') %}
+{% set _ = fcgiwrap__tpl_options.update({ 'value': value }) %}
+{% endif %}
+{% endfor %}
+[Service]
+User={{ item.0.user | d(fcgiwrap__user) }}
+Group={{ item.0.group | d(fcgiwrap__group) }}
+ExecStart=/usr/sbin/fcgiwrap {{ fcgiwrap__tpl_options['value'] }}
+
+[Install]
+WantedBy=multi-user.target
+Also=fcgiwrap-{{ item.0.name }}.socket
+

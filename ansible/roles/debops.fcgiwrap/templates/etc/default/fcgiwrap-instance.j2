@@ -1,0 +1,27 @@
+# {{ ansible_managed }}
+
+# Defaults for fcgiwrap (if not declared, hardcoded values from the
+# init script are used).
+
+{% set fcgiwrap__tpl_options = { 'value': '' } %}
+{% for key, value in fcgiwrap__options_map.iteritems() %}
+{% if fcgiwrap__register_version.stdout|d() | version_compare(key, '>=') %}
+{% set _ = fcgiwrap__tpl_options.update({ 'value': value }) %}
+{% endif %}
+{% endfor %}
+# Number of instances to launch
+DAEMON_OPTS="{{ item.options | d(fcgiwrap__tpl_options['value']) }}"
+
+# Socket location
+FCGI_SOCKET="{{ item.socket | d('/run/fcgiwrap-' + item.name + '.socket') }}"
+
+# User and group for the daemon processes
+FCGI_USER="{{ item.user | d(fcgiwrap__user) }}"
+FCGI_GROUP="{{ item.group | d(fcgiwrap__group) }}"
+
+# Owner of the socket, if available (defaults to $FCGI_USER/$FCGI_GROUP)
+# Use this of you want to run scritps as a different user that the
+# webserver.
+FCGI_SOCKET_OWNER="{{ item.socket_user | d(fcgiwrap__socket_user) }}"
+FCGI_SOCKET_GROUP="{{ item.socket_group | d(fcgiwrap__socket_group ) }}"
+

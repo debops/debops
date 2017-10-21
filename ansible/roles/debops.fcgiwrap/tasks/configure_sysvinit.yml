@@ -1,0 +1,42 @@
+---
+
+- name: Create init script configuration
+  template:
+    src: 'etc/default/fcgiwrap-instance.j2'
+    dest: '/etc/default/fcgiwrap-{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ fcgiwrap__instances }}'
+  register: fcgiwrap__register_init_config
+
+- name: Copy fcgiwrap init script to new instance
+  command: 'cp /etc/init.d/fcgiwrap /etc/init.d/fcgiwrap-{{ item.name }}'
+  args:
+    creates: '/etc/init.d/fcgiwrap-{{ item.name }}'
+  register: fcgiwrap__register_init_script
+  with_items: '{{ fcgiwrap__instances }}'
+
+- name: Modify fcgiwrap instance init script (insserv)
+  lineinfile:
+    dest: '/etc/init.d/fcgiwrap-{{ item.name }}'
+    regexp: '^# Provides:\s+fcgiwrap.*$'
+    line: '# Provides:          fcgiwrap-{{ item.name }}'
+    state: 'present'
+  with_items: '{{ fcgiwrap__instances }}'
+
+- name: Modify fcgiwrap instance init script (name)
+  lineinfile:
+    dest: '/etc/init.d/fcgiwrap-{{ item.name }}'
+    regexp: '^NAME="fcgiwrap.*"$'
+    line: 'NAME="fcgiwrap-{{ item.name }}"'
+    state: 'present'
+  with_items: '{{ fcgiwrap__instances }}'
+
+- name: Enable fcgiwrap instance init script
+  service:
+    name: 'fcgiwrap-{{ item.name }}'
+    state: 'started'
+    enabled: True
+  with_items: '{{ fcgiwrap__instances }}'
+
