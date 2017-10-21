@@ -1,0 +1,190 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+from sys import exit
+import os
+
+import redis
+
+output = {}
+sentinel_monitors = []
+sentinel_monitor_map = {}
+sentinel_known_sentinels = []
+redis_auth_group = '{{ redis__auth_group }}'
+redis_server_master_host = '{{ redis__server_master_host }}'
+redis_server_conf = '/etc/redis/redis.conf'
+redis_server_bin = '/usr/bin/redis-server'
+redis_server_pidfile = '/run/redis/redis-server.pid'
+redis_sentinel_conf = '/etc/redis/sentinel.conf'
+redis_sentinel_bin = '/usr/bin/redis-sentinel'
+redis_sentinel_notify_dir = '{{ redis__sentinel_notify_dir }}'
+redis_sentinel_trigger_dir = '{{ redis__sentinel_trigger_dir }}'
+
+
+def unwrap_quotes(input_line):
+    out = input_line.split(' ')[1].rstrip('\n')
+    if out.startswith('"') and out.endswith('"'):
+        out = out[1:-1]
+    return out
+
+
+if os.path.isfile(redis_server_bin) and os.access(redis_server_bin, os.X_OK):
+    output.update({"installed": True})
+    output.update({"enabled": False})
+
+    if os.path.isfile(redis_server_pidfile):
+        output.update({"enabled": True})
+
+        if redis_server_master_host:
+            output.update({"host": redis_server_master_host})
+
+        else:
+            output.update({"host": "localhost"})
+
+    else:
+
+        if redis_server_master_host:
+            output.update({"enabled": True})
+            output.update({"host": redis_server_master_host})
+
+        else:
+            output.update({"enabled": False})
+            output.update({"host": ""})
+
+else:
+    output.update({"installed": False})
+
+    if redis_server_master_host:
+        output.update({"enabled": True})
+        output.update({"host": redis_server_master_host})
+
+    else:
+        output.update({"enabled": False})
+        output.update({"host": ""})
+
+if os.path.isfile(redis_server_conf):
+
+    output.update({"auth_group": redis_auth_group})
+
+    try:
+        fh = open(redis_server_conf)
+
+        for line in fh:
+            if line.startswith('masterauth'):
+                output.update({"password": unwrap_quotes(line)})
+
+            elif line.startswith('port'):
+                output.update({"port": unwrap_quotes(line)})
+
+            elif line.startswith('unixsocket'):
+                output.update({"socket": unwrap_quotes(line)})
+
+        fh.close()
+
+    except Exception:
+        pass
+
+if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) and os.access(redis_sentinel_bin, os.X_OK):
+
+    sentinel_enabled = False
+
+    try:
+        fh = open(redis_sentinel_conf)
+
+        for line in fh:
+            if line.startswith('sentinel monitor'):
+                sentinel_monitors.append(line.split(' ')[2])
+                sentinel_monitor_map.update({line.split(' ')[2]: {}})
+
+            elif line.startswith('sentinel current-epoch'):
+                sentinel_enabled = True
+
+        if sentinel_enabled and sentinel_monitor_map.keys():
+            for monitor in sentinel_monitor_map.keys():
+                known_slaves = []
+                known_sentinels = []
+                fh.seek(0)
+                for line in fh:
+
+                    if line.startswith('sentinel monitor ' + monitor):
+                        sentinel_monitor_map[monitor].update(
+                            {"master_host": line.split(' ')[3],
+                             "master_port": line.split(' ')[4]})
+
+                    elif line.startswith('sentinel auth-pass ' + monitor):
+                        sentinel_monitor_map[monitor].update(
+                            {"password": line.split(' ')[3].rstrip('\n')})
+
+                    elif line.startswith('sentinel known-slave ' + monitor):
+                        known_slaves.append(
+                            {"host": line.split(' ')[3],
+                             "port": line.split(' ')[4].rstrip('\n')})
+
+                    elif line.startswith('sentinel known-sentinel ' + monitor):
+                        known_sentinels.append(
+                            {"host": line.split(' ')[3],
+                             "port": line.split(' ')[4]})
+
+                if known_slaves:
+                    sentinel_monitor_map[monitor].update(
+                        {"slaves": known_slaves})
+
+                if known_sentinels:
+                    sentinel_monitor_map[monitor].update(
+                        {"sentinels": known_sentinels})
+
+        fh.close()
+
+        if sentinel_enabled and sentinel_monitors:
+            output.update({"sentinel_enabled": True})
+            output.update({"sentinel_monitors": sentinel_monitors})
+            output.update({"sentinel_monitor_map": sentinel_monitor_map})
+            output.update({"sentinel_notify_dir": redis_sentinel_notify_dir})
+            output.update(
+                {"sentinel_trigger_dir": redis_sentinel_trigger_dir})
+
+            output.update({"enabled": True})
+            output.update({"monitor": sentinel_monitors[0]})
+            output.update(
+                {"host": sentinel_monitor_map[sentinel_monitors[0]]['master_host']})
+            output.update(
+                {"port": sentinel_monitor_map[sentinel_monitors[0]]['master_port']})
+
+            if sentinel_monitor_map[sentinel_monitors[0]]['password']:
+                output.update(
+                    {"password": sentinel_monitor_map[sentinel_monitors[0]]['password']})
+
+            if 'socket' in output:
+                output.pop('socket', None)
+
+    except Exception:
+        pass
+
+if 'port' not in output and 'socket' not in output:
+    output.pop('host', None)
+
+{# --- Too slow. Took around 0.6 seconds on ypid’s dev system.
+# import re
+# import apt
+# apt_cache = apt.Cache()
+# apt_redis_server_pkg = apt_cache['redis-server']
+# apt_redis_server_pkg_version = apt_redis_server_pkg.installed.version
+# redis_server_pkg_version = re.sub(r'-.*$', '', apt_redis_server_pkg_version)
+# output.update({"version": redis_server_pkg_version})
+#}
+if 'password' in output:
+    try:
+        r = redis.StrictRedis(
+            host=output.get('host'),
+            port=output.get('port'),
+            unix_socket_path=output.get('socket'),
+            password=output['password'],
+            )
+        output.update({"version": r.info()['redis_version']})
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=2))
