@@ -1,0 +1,61 @@
+#!/usr/bin/env perl
+
+# This file is managed by Ansible, all changes will be lost
+
+# Simple service script which listens on a port and passess message to send to
+# sendsms script. Use with xinetd for best results.
+
+# This is a very simple wrapper to send SMS messages, uses SMTP status codes
+# for responses. This should be probably rewritten to post SMS messages
+# directly to smsd queue, support better sanitization, security features and
+# error handling.
+
+# Change current directory to home of 'sms' user.
+chdir "{{ smstools_service_home }}";
+
+$myname="sms-service";
+$facility='mail';
+my $mypid=$$;	# global, even when we fork
+
+sub syslog {
+	my ($level,$msg)=@_;
+	my $pri=$facility.".".$level;
+	$ENV{'HOME'}="/tmp";
+	$ENV{'PATH'}="";
+	$ENV{'BASH_ENV'}="";
+	# the way we're calling system makes it easy to trust $msg
+	# as long as it's not too big, so we just untaint it
+	if ($msg =~ /(.*)/s) {
+		$msg=$1;
+	} else {
+		die "Problem with untainting log message\n";
+	}
+	$msg =~ s/\n/ /g;
+	$msg = substr($msg,0,255)
+		if length($msg) > 255;
+	system("/usr/bin/logger","-p",$pri,"-t",$myname."[".$mypid."]","--",$msg);
+}
+
+# New connection, waiting for input
+$input = <STDIN>;
+
+if ($input =~ /(QUIT|BYE)/i) {
+	print "221 Bye\n";
+} elsif ($input =~ /TEXT\s+([0-9]{9})\s+(.+)/i) {
+	system("/usr/bin/sudo -u smsd /usr/local/bin/sendsms {{ smstools_default_country_prefix }}$1 '$2' > /dev/null");
+	syslog('info',"from=<unknown>, prefix=<{{ smstools_default_country_prefix }}>, to=<$1>, size=".length($2).", msg=[$2]\n");
+	print "OK\n";
+} elsif ($input =~ /TEXT\s+([0-9]{11})\s+(.+)/i) {
+	system("/usr/bin/sudo -u smsd /usr/local/bin/sendsms +$1 '$2' > /dev/null");
+	syslog('info',"from=<unknown>, prefix=<+>, to=<$1>, size=".length($2).", msg=[$2]\n");
+	print "OK\n";
+} elsif ($input =~ /TEXT\s+(\+[0-9]{11})\s+(.+)/i) {
+	system("/usr/bin/sudo -u smsd /usr/local/bin/sendsms $1 '$2' > /dev/null");
+	syslog('info',"from=<unknown>, to=<$1>, size=".length($2).", msg=[$2]\n");
+	print "OK\n";
+} else {
+	print "500 Command not recognized\n";
+	exit;
+}
+
+# vim:ft=perl

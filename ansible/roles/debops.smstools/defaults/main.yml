@@ -1,0 +1,167 @@
+---
+
+# ---- TCP -> SMS gateway ----
+
+# List of IP addresses or CIDR network ranges which are allowed to access TCP
+# service
+smstools_service_allow: []
+
+
+# ---- mail -> SMS gateway ----
+
+# Settings for subdomains and domains which are used to send messages to SMS
+# gateway
+
+# Subdomain for SMS transport
+smstools_mail_transport_subdomain: 'sms'
+
+# Subdomain for mail aliases which are resolved to mobile numbers
+smstools_mail_alias_subdomain: 'gsm'
+
+# Main domain used by this role
+smstools_mail_domain: '{{ ansible_domain }}'
+
+# Domains that combine above subdomains with main host domain
+smstools_mail_transport_domain: '{{ smstools_mail_transport_subdomain }}.{{ smstools_mail_domain }}'
+smstools_mail_alias_domain: '{{ smstools_mail_alias_subdomain }}.{{ smstools_mail_domain }}'
+
+# Default country prefix (with +) to add if number has only 9 digits
+smstools_default_country_prefix: ''
+
+# List of default mail senders that are allowed to send mail messages to mobile
+# recipients
+# Options:
+#    - name: 'mail@example.com'            # required
+#      state: 'permit/deny'                # optional
+smstools_default_senders:
+  - name: 'root@{{ smstools_mail_domain }}'
+
+# Additional list of mail senders
+smstools_senders: []
+
+# Hash table which specifies mail alias to mobile number mapping. Aliases will
+# be generated in a domain specified with smstools_mail_alias_* variables
+smstools_mail_recipients: {}
+  #'recipient1': [ '+00123123123' ]
+  #'recipient2': [ '+00123123123', '+00321321321' ]
+
+# Hash table which specifies aliases for groups of recipients from
+# smstools_mail_recipients table. Aliases will be created in a domain specified
+# with smstools_mail_alias_* variables
+smstools_mail_aliases: {}
+  #'alias': [ 'recipient1', 'recipient2' ]
+
+# List of regexps which will be used to find and remove strings in SMS messages
+# before they are sent
+smstools_mail_msgdel_list: []
+  #- 'linux'
+  #- '^Ansible'
+
+# Log sent SMS messages for accounting purposes, use monthly log rotation, logs
+# should be kept for 2 years
+smstools_sms_log: '/var/log/sms.log'
+smstools_sms_log_rotation: 'monthly'
+smstools_sms_log_rotation_interval: '{{ (12 * 2) }}'
+
+
+# ---- SMS gateway testing ----
+
+# List of mobile numbers to send a test message to on host reboot
+# Example: [ '+00123123123' ]
+smstools_test_recipients: []
+
+# Test message to send on host reboot
+smstools_test_message: 'This is a test of the SMS gateway on {{ ansible_fqdn }} sent at $(date)'
+
+
+# ---- smstools options ----
+
+# Time between queue checks, in seconds
+smstools_sleep: 1
+
+# Generate modem stats once a day
+smstools_stats_interval: '{{ (60 * 60 * 24)|round|int }}'
+
+# Hash with options configured in /etc/smsd.conf
+smstools_global_options:
+  delaytime: '{{ smstools_sleep }}'
+  delaytime_mainprocess: '{{ smstools_sleep }}'
+  receive_before_send: no
+  autosplit: 3
+  loglevel: 5
+
+# List of modems known to smsd, by default it's configured to use one modem on
+# serial interface
+smstools_devices:
+  - name: 'GSM1'
+    device: '/dev/ttyS0'
+    options:
+      baudrate: 115200
+      incoming: yes
+
+# Configuration for other Ansible roles
+# -------------------------------------
+
+# Configuration for the debops.etc_services_ Ansible role.
+smstools__etc_services__dependent_list:
+
+  - name: '{{ smstools_service_name }}'
+    port: '{{ smstools_service_port }}'
+    comment: 'SMS service'
+
+
+# Configuration for the debops.tcpwrappers_ Ansible role.
+smstools__tcpwrappers__dependent_allow:
+
+  - daemon: '{{ smstools_service_name }}'
+    client: '{{ smstools_service_allow }}'
+    weight: '50'
+    filename: 'smstools_dependency_allow'
+    comment: 'Allow connections to SMS service'
+
+
+# Configuration for the debops.ferm_ Ansible role.
+smstools__ferm__dependent_rules:
+
+  - name: 'smstools_accept'
+    type: 'accept'
+    dport: [ '{{ smstools_service_name }}' ]
+    saddr: '{{ smstools_service_allow }}'
+
+
+# The Postfix 'main.cf' configuration for the debops.postfix_ Ansible role.
+smstools__postfix__dependent_maincf:
+
+  - name: 'recipient_canonical_maps'
+    value: [ 'texthash:/usr/local/lib/smstools/postfix_recipient_canonical_map' ]
+
+  - name: 'transport_maps'
+    value: [ 'texthash:/usr/local/lib/smstools/postfix_transport' ]
+
+  - name: 'relay_domains'
+    value: [ '{{ smstools_mail_transport_domain }}' ]
+
+  - name: 'relay_recipient_maps'
+    value: [ 'regexp:/usr/local/lib/smstools/postfix_relay_recipient_map' ]
+
+  - name: 'virtual_alias_domains'
+    value: [ '{{ smstools_mail_alias_domain }}' ]
+
+  - name: 'virtual_alias_maps'
+    value: [ 'texthash:/usr/local/lib/smstools/postfix_virtual_alias_map' ]
+
+  - name: 'sms_destination_recipient_limit'
+    value: 1
+
+# The Postfix 'master.cf' configuration for the debops.postfix_ Ansible role.
+smstools__postfix__dependent_mastercf:
+
+  - name: 'sms'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    maxproc: 1
+    args: |
+      flags=hqu user=smsd argv=/usr/local/lib/smstools/sms-transport
+      ${sender} ${mailbox}
+    command: 'pipe'

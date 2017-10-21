@@ -1,0 +1,37 @@
+# This file is managed by Ansible, all changes will be lost
+
+# /etc/smsd.conf
+#
+# Description: Main configuration file for smsd
+
+devices = {% for modem in smstools_devices %}{{ modem.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+# Global options
+{% for key, value in smstools_global_options.iteritems() %}
+{{ key }} = {{ value }}
+{% endfor %}
+
+outgoing = /var/spool/sms/outgoing
+checked = /var/spool/sms/checked
+incoming = /var/spool/sms/incoming
+logfile = /var/log/smstools/smsd.log
+infofile = /var/run/smstools/smsd.working
+pidfile = /var/run/smstools/smsd.pid
+outgoing = /var/spool/sms/outgoing
+checked = /var/spool/sms/checked
+failed = /var/spool/sms/failed
+incoming = /var/spool/sms/incoming
+sent = /var/spool/sms/sent
+
+stats = /var/log/smstools/smsd_stats
+stats_interval = {{ smstools_stats_interval }}
+stats_no_zeroes = yes
+
+{% for modem in smstools_devices %}
+[{{ modem.name }}]
+device = {{ modem.device }}
+{% for key, value in modem.options.iteritems() %}
+{{ key }} = {{ value }}
+{% endfor %}
+{% endfor %}
+

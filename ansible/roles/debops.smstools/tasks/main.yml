@@ -1,0 +1,108 @@
+---
+
+- name: Install SMS Tools packages
+  apt: name={{ item }} state=latest install_recommends=no
+  with_items: [ 'smstools', 'xinetd', 'libconfig-tiny-perl' ]
+
+- name: Check current smsd home directory
+  shell: getent passwd smsd | grep "/home/smsd" || true
+  register: smstools_register_home
+  changed_when: False
+
+- name: Stop smsd for home directory change
+  service: name=smstools state=stopped
+  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+
+- name: Fix smsd home directory
+  user: name=smsd home=/var/spool/sms
+  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+
+- name: Start smsd with new home directory
+  service: name=smstools state=started
+  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+
+- name: Configure smsd
+  template: src=etc/smsd.conf.j2 dest=/etc/smsd.conf
+            owner=root group=root mode=0644
+  notify: [ 'Restart smstools' ]
+
+- name: Make sure /srv/users home directory exists
+  file: dest=/srv/users state=directory owner=root group=root mode=0751
+
+- name: Create SMS service system group
+  group: name={{ smstools_service_group }} system=yes state=present
+
+- name: Create SMS service system user
+  user: name={{ smstools_service_user }} group={{ smstools_service_group }}
+        system=yes home={{ smstools_service_home }} state=present shell=/bin/false
+
+- name: Create directory for SMS service scripts
+  file: dest=/usr/local/lib/smstools state=directory
+        owner=root group=staff mode=0755
+
+- name: Install smsd scripts
+  template: src={{ item }}.j2 dest=/{{ item }} owner=smsd group=sms mode=0750
+  with_items: [ 'usr/local/bin/sendsms',
+                'usr/local/lib/smstools/sms-service',
+                'usr/local/lib/smstools/sms-transport',
+                'usr/local/lib/smstools/test-sms-on-reboot' ]
+
+- name: Install root scripts
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0750
+  with_items: [ 'usr/local/lib/smstools/fix-device-permissions' ]
+
+- name: Install Postfix configuration files
+  template: src=usr/local/lib/smstools/{{ item }}.j2 dest=/usr/local/lib/smstools/{{ item }}
+            owner=root group=root mode=0644
+  with_items: [ 'postfix_recipient_canonical_map', 'postfix_transport',
+                'postfix_relay_recipient_map', 'postfix_virtual_alias_map' ]
+  notify: [ 'Reload postfix' ]
+
+- name: Configure access to sendsms via sudo
+  template: src=etc/sudoers.d/smstools.j2 dest=/etc/sudoers.d/smstools
+            owner=root group=root mode=0440
+
+- name: Configure xinetd SMS service
+  template: src=etc/xinetd.d/sms.j2 dest=/etc/xinetd.d/sms
+            owner=root group=root mode=0644
+  notify: [ 'Reload xinetd' ]
+
+- name: Configure mail to SMS transport
+  template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  with_items: [ 'etc/sms-senders', 'etc/sms-msgdel', 'etc/sms-transport.conf' ]
+
+- name: Fix device permissions on boot in OpenVZ containers
+  lineinfile: dest=/etc/rc.local state=present insertbefore='^exit 0'
+              regexp='^/usr/local/lib/smstools/fix-device-permissions'
+              line='/usr/local/lib/smstools/fix-device-permissions'
+  register: smstools_register_fixpermissions
+  when: (ansible_virtualization_type is defined and ansible_virtualization_type == 'openvz') and
+        (ansible_virtualization_role is defined and ansible_virtualization_role == 'guest')
+
+- name: Fix permissions manually if installed
+  command: /usr/local/lib/smstools/fix-device-permissions
+  when: smstools_register_fixpermissions is defined and smstools_register_fixpermissions.changed
+
+- name: Configure SMS gateway test on reboot
+  cron: name="SMS gateway test on reboot" user={{ smstools_service_user }}
+        job="/usr/local/lib/smstools/test-sms-on-reboot" special_time=reboot
+        state=present
+  when: (smstools_test_recipients is defined and smstools_test_recipients)
+
+- name: Check if rsyslog is installed
+  stat: path=/etc/rsyslog.d
+  register: smstools_register_rsyslog
+
+- name: Configure syslog
+  template: src=etc/rsyslog.d/smstools.conf.j2 dest=/etc/rsyslog.d/smstools.conf
+            owner=root group=root mode=0644
+  notify: [ 'Restart rsyslogd' ]
+  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
+        smstools_register_rsyslog.stat.exists
+
+- name: Configure logrotate
+  template: src=etc/logrotate.d/sms.j2 dest=/etc/logrotate.d/sms
+            owner=root group=root mode=0644
+  when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
+        smstools_register_rsyslog.stat.exists
+

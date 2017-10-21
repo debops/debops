@@ -1,0 +1,22 @@
+# This file is managed by Ansible, all changes will be lost
+
+# List of e-mail accounts or domains allowed to send SMS messages
+{% if smstools_default_senders is defined and smstools_default_senders %}
+{% for sender in smstools_default_senders %}
+{% if sender.state is undefined or (sender.state is defined and sender.state == 'permit') %}
+{{ "%-40s permit" | format(sender.name + ":") }}
+{% else %}
+{{ "%-40s deny" | format(sender.name + ":") }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if smstools_senders is defined and smstools_senders %}
+{% for sender in smstools_senders %}
+{% if sender.state is undefined or (sender.state is defined and sender.state == 'permit') %}
+{{ "%-40s permit" | format(sender.name + ":") }}
+{% else %}
+{{ "%-40s deny" | format(sender.name + ":") }}
+{% endif %}
+{% endfor %}
+{% endif %}
+

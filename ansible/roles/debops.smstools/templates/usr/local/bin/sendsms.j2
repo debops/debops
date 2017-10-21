@@ -1,0 +1,121 @@
+#!/bin/bash
+
+# This file is managed by Ansible, all changes will be lost
+
+# This script sends a text messge at the command line by creating
+# a sms file in the outgoing queue.
+
+# $1 is the destination phone number.
+# $2 is the message text.
+# If you leave $2 or both empty, the script will ask you.
+# If you give more than 2 arguments, last is taken as a text and
+# all other are taken as destination numbers.
+# If a destination is asked, you can type multiple numbers
+# delimited with spaces.
+
+# Keys for example: "password" and "keke":
+#KEYS="5f4dcc3b5aa765d61d8327deb882cf99 4a5ea11b030ec1cfbc8b9947fdf2c872 "
+
+KEYS=""
+
+# When creating keys, remember to use -n for echo:
+# echo -n "key" | md5sum
+
+smsd_user="smsd"
+
+# Will need echo which accepts -n argument:
+ECHO=echo
+case `uname` in
+  SunOS)
+    ECHO=/usr/ucb/echo
+    ;;
+esac
+
+if ! [ -z "$KEYS" ]; then
+  printf "Key: "
+  read KEY
+  if [ -z "$KEY" ]; then
+    echo "Key required, stopping."
+    exit 1
+  fi
+  KEY=`$ECHO -n "$KEY" | md5sum | awk '{print $1;}'`
+  if ! echo "$KEYS" | grep "$KEY" >/dev/null; then
+    echo "Incorrect key, stopping."
+    exit 1
+  fi
+fi
+
+DEST=$1
+TEXT=$2
+
+if [ -z "$DEST" ]; then
+  printf "Destination(s): "
+  read DEST
+  if [ -z "$DEST" ]; then
+    echo "No destination, stopping."
+    exit 1
+  fi
+fi
+
+if [ -z "$TEXT" ]; then
+  printf "Text: "
+  read TEXT
+  if [ -z "$TEXT" ]; then
+    echo "No text, stopping."
+    exit 1
+  fi
+fi
+
+if [ $# -gt 2 ]; then
+  n=$#
+  while [ $n -gt 1 ]; do
+    destinations="$destinations $1"
+    shift
+    n=`expr $n - 1`
+  done
+  TEXT=$1
+else
+  destinations=$DEST
+fi
+
+echo "-- "
+echo "Text: $TEXT"
+
+ALPHABET=""
+if which iconv > /dev/null 2>&1; then
+  if ! $ECHO -n "$TEXT" | iconv -t ISO-8859-15 >/dev/null 2>&1; then
+    ALPHABET="Alphabet: UCS"
+  fi
+fi
+
+owner=""
+if [ -f /etc/passwd ]; then
+  if grep $smsd_user: /etc/passwd >/dev/null; then
+    owner=$smsd_user
+  fi
+fi
+
+for destination in $destinations
+do
+  echo "To: $destination"
+
+  TMPFILE=`mktemp /tmp/smsd_XXXXXXXXXXXX`
+
+  $ECHO "To: $destination" >> $TMPFILE
+  [ -n "$ALPHABET" ] && $ECHO "$ALPHABET" >> $TMPFILE
+  $ECHO "" >> $TMPFILE
+  if [ -z "$ALPHABET" ]; then
+    $ECHO -n "$TEXT" >> $TMPFILE
+  else
+    $ECHO -n "$TEXT" | iconv -t UNICODEBIG >> $TMPFILE
+  fi
+
+  if [ "x$owner" != x ]; then
+    chown $owner $TMPFILE
+  fi
+
+  FILE=`mktemp /var/spool/sms/outgoing/send_XXXXXXXXXXXX`
+  mv $TMPFILE $FILE
+done
+
+# vim:ft=sh

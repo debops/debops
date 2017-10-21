@@ -1,0 +1,310 @@
+#!/usr/bin/perl -Tw
+
+# This file is managed by Ansible, all changes will be lost
+
+# sms transport for postfix
+# uses smstools for delivery
+#
+#-------------------------------------------------------------------
+# Jeremy Laidman, AnswerZ
+# Version 1.0 - March 2003
+# Maciej Delmanowski <drybjed@gmail.com>, DebOps project
+# Version 2.0 - July 2014
+#
+# Installation into postfix:
+#
+# 1) Copy this script into /usr/local/lib/smstools/sms-transport
+#
+# 2) Create the user "sms" with their own group "sms", eg:
+#	useradd -r sms -c "SMS Delivery User for Postfix"
+#
+# 3) Add these lines
+#	/etc/postfix/transport:
+#		sms.example.com    sms:
+#
+#	/etc/postfix/master.cf
+#		sms     unix    -       n       n       -       1       pipe
+#		   flags=hqu user=sms argv=/usr/local/lib/smstools/sms-transport ${sender} ${mailbox}
+#
+# 4) Add "sms.example.com" to relay_domains parameter in main.cf
+#
+# 5) Run "postfix reload".
+#
+# 6) Send mail to number@sms.example.com
+#
+# 7) Create alias entries mapping usernames to numbers
+#	/etc/postfix/aliases
+#		freddy:	0412555555@sms.example.com
+#
+# 8) Run "newaliases".
+#
+# 9) Send mail to freddy.
+#
+#-------------------------------------------------------------------
+# Configuration Options Here (will be in config file one day)
+
+# if non-empty, will reject messages not from matching addresses
+# a leading dot means any subdomain
+# if empty, allows from anyone
+# if non-mepty there's an implicit '' => 'deny'
+
+use Config::Tiny;
+
+$config_file = "/etc/sms-transport.conf";
+
+my $config = Config::Tiny->read($config_file);
+
+$senders_file = $config->{_}->{senders};
+$msgdel_file = $config->{_}->{msgdel};
+$sendsms_path = $config->{_}->{sendsms};
+$maxsmschars = $config->{_}->{maxchars};
+$debug = $config->{_}->{debug};
+
+my %sender_addresses;
+my @msgdel;
+
+#-------------------------------------------------------------------
+
+# We receive the sender address as @ARGV[0], the number as @ARGV[1]
+# and the message body on STDIN.  We should only receive one message
+# per user.
+#
+# All headers are stripped and only the body is sent.
+#
+# Any recipients in the wrong format are bounced with EX_NOUSER=67.
+# Errors in calling sendsms are assumed to be temporary and are answered
+# with EX_TEMPFAIL=75.  Messages with senders (from-space) that don't
+# end in anything in the local domains list are bounced with EX_NOPERM=77.
+#
+#-------------------------------------------------------------------
+#
+# Constants for returning status back to postfix.
+# (see sysexits.h for the full list)
+$EX_NOUSER	= 67;
+$EX_TEMPFAIL	= 75;
+$EX_NOPERM	= 77;
+$EX_NOINPUT	= 66;
+#-------------------------------------------------------------------
+
+my $sender;
+my $recipient;
+my $message;
+
+#-------------------------------------------------------------------
+
+$myname="sms-transport";
+$facility='mail';
+my $mypid=$$;	# global, even when we fork
+
+sub syslog {
+	my ($level,$msg)=@_;
+	my $pri=$facility.".".$level;
+	$ENV{'HOME'}="/tmp";
+	$ENV{'PATH'}="";
+	$ENV{'BASH_ENV'}="";
+	# the way we're calling system makes it easy to trust $msg
+	# as long as it's not too big, so we just untaint it
+	if ($msg =~ /(.*)/s) {
+		$msg=$1;
+	} else {
+		die "Problem with untainting log message\n";
+	}
+	$msg =~ s/\n/ /g;
+	$msg = substr($msg,0,255)
+		if length($msg) > 255;
+	system("/usr/bin/logger","-p",$pri,"-t",$myname."[".$mypid."]","--",$msg);
+}
+
+sub bailout {
+	my ($rc,$msg)=@_;
+	print STDERR "$msg","\n";
+	syslog('error',$msg);
+	exit $rc;
+}
+
+sub check_perms {
+	my $sender=lc(shift);
+	my $test;
+	return 1 unless scalar(%sender_addresses);
+
+	# strip enclosing brackets except for <>
+	if ($sender =~ /<[^>]+>/) {
+		$sender=$1;
+	}
+
+	foreach $test (keys %sender_addresses) {
+		$test=lc($test);
+		if ($test =~ /\@/) {
+			# an email address
+			return 1
+				if $test eq $sender;
+		} else {
+			# a domain
+			$sender =~ s/^.*@//;
+			if ($test =~ /^\./) {
+				# allow subdomains
+				return 1
+					if $test eq $sender;
+				return 1
+					if $test eq substr($sender,-length($test));
+			} else {
+				# exact match only
+				return 1
+					if $test eq $sender;
+			}
+		}
+	}
+	return 0;	# failed
+}
+
+sub process_email {
+	my $in_headers=1;
+	my $msg="";
+	my $subject="";
+	my $sender;
+	my $linenum=0;
+
+	while(<STDIN>) {
+		chomp;
+		if ($in_headers) {
+			# headers
+			if (length($_) == 0) {
+				$in_headers=0;
+				next;
+			}
+			if ($_ =~ /^Subject:\s*/) {
+				$subject=$_;
+			}
+		} else {
+			# body
+			$msg .= "\r\n" if $msg =~ /\S/;
+			$msg .= $_;
+		}
+		last if $linenum++ > 500;
+	}
+
+	# no body?  return subject
+	$msg = $subject if (!length($msg));
+
+	return $msg;
+}
+
+sub send_message {
+	my $recipient_local=shift;
+	my $message_local=shift;
+
+	if ($recipient_local =~ /^([0-9]{9}|[0-9]{11}|\+[0-9]{11})$/) {
+		$recipient_num=$1;	# now is untainted
+	}
+	if ($message_local =~ /^(.+)$/) {
+		$message=$1;            # now is untained
+	}
+
+	if (length($message) > $maxsmschars) {
+		syslog('info',"Truncated message from ".length($message)." to ".$maxsmschars."-3 chars\n");
+		$message=substr($message,0,$maxsmschars-3)."...";
+	}
+
+	(-x $sendsms_path)
+		|| bailout($EX_TEMPFAIL,"Unable to exec $sendsms_path: $!");
+	$ENV{'HOME'}="/tmp";
+	$ENV{'PATH'}="/bin:/usr/bin";
+	exec($sendsms_path,"$recipient_num","$message")
+		|| bailout($EX_TEMPFAIL,"Unable to exec $sendsms_path: $!");
+	# will never get here
+}
+
+sub clean_message {
+	my $msg=shift;
+	$msg =~ s/(\r\n)+$//;	# remove trailing crlf
+	# delete message bits that we don't want
+	my $regex;
+	my $changed=0;
+	foreach $regex (@msgdel) {
+		syslog('debug',"Testing if msg [$msg] matches /$regex/")
+			if $debug;
+		if ($msg =~ s/$regex//) {
+			$changed++;
+		}
+	}
+	if ($changed) {
+		syslog('debug',"Message deletions - new message: [$msg]\n")
+			if $debug;
+	}
+	return $msg;
+}
+
+# -------------------------------------------------------------------
+
+$0 .= "";
+
+$sender_given=$ARGV[0];
+$recipient_given=$ARGV[1];
+if (defined($sender_given) and $sender_given =~ /([-A-Za-z0-9_+]+\@[-A-Za-z0-9.]+)/) {
+	$sender=$1;	# now is untainted
+} else {
+	bailout($EX_NOUSER,"Sender address not given")
+		if !defined($sender_given);
+	bailout($EX_NOUSER,"Invalid sender address: $sender_given");
+}
+if (defined($recipient_given) and $recipient_given =~ /^([0-9]{9})$/) {
+	$recipient="{{ smstools_default_country_prefix }}$1";	# now is untainted
+} elsif (defined($recipient_given) and $recipient_given =~ /^([0-9]{11})$/) {
+	$recipient="+$1";	# now is untainted
+} elsif (defined($recipient_given) and $recipient_given =~ /^(\+[0-9]{11})$/) {
+	$recipient="$1";	# now is untainted
+} else {
+	bailout($EX_NOUSER,"Mobile number not given")
+		if !defined($recipient_given);
+	bailout($EX_NOUSER,"Not a mobile number: <$recipient_given>");
+	exit $EX_NOUSER;
+}
+
+open(FILE,"<$senders_file") or die "Unable to get list of senders from $senders_file: $!\n";
+while(<FILE>) {
+	chomp;
+	next if /^\s*#/;
+	next if /^\s*$/;
+	# lines are colon-delimited, like aliases
+	my ($addr,$perm);
+	($addr,$perm)=split(/\s*:\s*/);
+	next unless defined($addr) and length($addr);
+	next unless defined($perm) and length($perm);
+	$perm=lc($perm);
+	if ($perm =~ /(permit|deny)/) {
+		$sender_addresses{$addr}=$1;
+	}
+}
+close(FILE);
+
+if (open(FILE,"<$msgdel_file")) {
+	while(<FILE>) {
+		chomp;
+		next if /^\s*#/;
+		next if /^\s*$/;
+		# each line is a regex
+		push @msgdel,$_;
+	}
+	close(FILE);
+	syslog('debug',"Message deletions read in: ".join(',',@msgdel)."\n")
+			if $debug;
+}
+
+$message=process_email;
+$message=clean_message($message);
+length($message) ||
+	bailout($EX_NOINPUT,"No message body - nothing to send");
+
+syslog('info',"from=<$sender>, to=<$recipient>, size=".length($message).", msg=[$message]\n");
+
+if (!check_perms($sender)) {
+	bailout($EX_NOPERM,"Permission denied for <$sender>");
+}
+
+send_message($recipient,$message);
+syslog('info',"sendsms sent message OK\n");
+
+# ALl OK if it got this far.
+
+# vim:ft=perl
+

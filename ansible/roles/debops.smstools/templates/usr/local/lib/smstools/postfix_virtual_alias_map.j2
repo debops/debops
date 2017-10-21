@@ -1,0 +1,24 @@
+# This file is managed by Ansible, all changes will be lost
+
+# Mapping of aliases in {{ smstools_mail_alias_domain }} domain to mobile
+# numbers in {{ smstools_mail_transport_domain }} domain, for Postfix
+# virtual_alias_maps.
+
+{% if smstools_mail_recipients is defined and smstools_mail_recipients %}
+{% for alias, recipients in smstools_mail_recipients.iteritems() %}
+{% if recipients is defined and recipients %}
+{{ "%-40s" | format(alias + '@' + smstools_mail_alias_domain) }} {% for number in recipients %}{{ number + '@' + smstools_mail_transport_domain }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+{% endif %}
+{% endfor %}
+
+{% endif %}
+{% if smstools_mail_aliases is defined and smstools_mail_aliases %}
+{% for alias, recipients in smstools_mail_aliases.iteritems() %}
+{% if recipients is defined and recipients %}
+{{ "%-40s" | format(alias + '@' + smstools_mail_alias_domain) }} {% for alias in recipients %}{{ alias + '@' + smstools_mail_alias_domain }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+{% endif %}
+{% endfor %}
+
+{% endif %}
