@@ -1,0 +1,202 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.dhparam default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Installation [[[
+# ----------------
+
+# .. envvar:: dhparam__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. DH parameters will be present as configured.
+#
+# ``absent``
+#   DH parameters will be absent.
+#
+#   .. warning:: The roles is currently not able to dismantle from ``present``
+#      state. This needs to be implemented. This state can only be achieved
+#      currently when ``present`` has never been set before on a host.
+#
+dhparam__deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__base_packages [[[
+#
+# List of APT packages which will be installed to support Diffie-Hellman
+# parameters.
+dhparam__base_packages:
+  - [ '{{ "gnutls-bin" if (dhparam__library == "gnutls")  else [] }}' ]
+  - [ '{{ "openssl"    if (dhparam__library == "openssl") else [] }}' ]
+  - [ '{{ "cron"       if (dhparam__generate_cron | bool) else [] }}' ]
+
+                                                                   # ]]]
+# .. envvar:: dhparam__packages [[[
+#
+# List of additional APT packages to install.
+dhparam__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Cryptographic parameters [[[
+# ----------------------------
+
+# .. envvar:: dhparam__source_library [[[
+#
+# Cryptographic library which will be used on the Ansible Controller to
+# generate preseeded DH parameters. Supported libraries: :command:`openssl`,
+# :command:`gnutls`.
+dhparam__source_library: 'openssl'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__library [[[
+#
+# Cryptographic library which will be used on the remote hosts, by default the
+# same as the one used on Ansible Controller. Supported libraries: :command:`openssl`,
+# :command:`gnutls`.
+dhparam__library: '{{ dhparam__source_library }}'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__default_length [[[
+#
+# Default symlinks will point to a specific Diffie-Hellman parameter file named
+# ``dh<length>.pem``. This variable specifies which ``<length>`` value will be
+# used, which by default is the first value from the list of DH parameter sizes
+# to generate.
+dhparam__default_length: '{{ dhparam__bits[0] }}'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__bits [[[
+#
+# List of Diffie-Hellman parameter sizes to generate. First element of the list
+# will be used as default.
+dhparam__bits: [ '3072', '2048' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Diffie-Hellman parameter sets [[[
+# ---------------------------------
+
+# .. envvar:: dhparam__sets [[[
+#
+# Number of sets of Diffie-Hellman parameters to manage, should be >= 1.
+dhparam__sets: '1'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__default_set [[[
+#
+# Name of the default set of Diffie-Hellman parameters.
+dhparam__default_set: '{{ dhparam__set_prefix + "0" }}'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__set_prefix [[[
+#
+# Short string prepended to the name of each "set" of Diffie-Hellman parameter
+# directories.
+dhparam__set_prefix: 'set'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__source_path [[[
+#
+# Path on the Ansible Controller in the ``secret/`` directory where the initial
+# set of Diffie-Hellman parameters is stored. See debops.secret_ role for
+# more details.
+dhparam__source_path: '{{ secret + "/dhparam/params" }}'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__path [[[
+#
+# Directory on the managed hosts where Diffie-Hellman parameter sets are kept
+# and maintained.
+dhparam__path: '/etc/pki/dhparam'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__prefix [[[
+#
+# String prepended to the DH parameter file name.
+dhparam__prefix: 'dh'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__suffix [[[
+#
+# String appended to the DH parameter file name.
+dhparam__suffix: '.pem'
+                                                                   # ]]]
+                                                                   # ]]]
+# DH parameter generation script [[[
+# ----------------------------------
+
+# .. envvar:: dhparam__generate_params [[[
+#
+# Absolute path of the ``dhparam-generate-params`` script on remote hosts.
+dhparam__generate_params: '{{ (ansible_local.root.lib
+                               if (ansible_local|d() and ansible_local.root|d() and
+                                   ansible_local.root.lib|d())
+                               else "/usr/local/lib") + "/dhparam-generate-params" }}'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__generate_log [[[
+#
+# Enable or disable log messages from DH generation script.
+dhparam__generate_log: True
+
+                                                                   # ]]]
+# .. envvar:: dhparam__hook_path [[[
+#
+# Directory on remote hosts where hook scripts are stored. These hooks will be
+# run at the end of the Diffie-Hellman generator script using ``run-parts``.
+dhparam__hook_path: '{{ dhparam__path + "/hooks.d" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Initial Diffie-Hellman re-generation [[[
+# ----------------------------------------
+
+# .. envvar:: dhparam__generate_init [[[
+#
+# Schedule a background job on the first configuration of ``debops.dhparam`` on
+# a particular host to re-generate the DH parameters? It will only be done if
+# the debops.atd_ role is enabled on the host. If disabled, hosts will use the
+# default DH parameters seeded from the Ansible Controller.
+dhparam__generate_init: True
+
+                                                                   # ]]]
+# .. envvar:: dhparam__generate_init_units [[[
+#
+# Time units used to specify the future time of initial DH re-generation. You
+# can use ``minutes``, ``hours``, ``days`` or ``weeks``.
+dhparam__generate_init_units: 'minutes'
+
+                                                                   # ]]]
+# .. envvar:: dhparam__generate_init_count [[[
+#
+# Unit count of the initial DH re-generation. By default Diffie-Hellman
+# parameters will be re-generated about 20 minutes after the initial Ansible run,
+# depending on system CPU load.
+dhparam__generate_init_count: '20'
+                                                                   # ]]]
+                                                                   # ]]]
+# Periodic Diffie-Hellman re-generation [[[
+# -----------------------------------------
+
+# .. envvar:: dhparam__generate_cron [[[
+#
+# Enable periodic Diffie-Hellman parameter re-generation.
+dhparam__generate_cron: True
+
+                                                                   # ]]]
+# .. envvar:: dhparam__generate_cron_period [[[
+#
+# Time interval between periodical DH parameter re-generation. You can use
+# units recognized by :program:`cron` Ansible module ``special_time`` parameter:
+# ``daily``, ``weekly``, ``monthly``, ``annually``, ``yearly``, ``reboot``.
+dhparam__generate_cron_period: 'monthly'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
