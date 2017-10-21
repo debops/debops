@@ -1,0 +1,96 @@
+# This file is managed by Ansible, all changes will be lost
+
+# By default, the Debian version of automysqlbackup will use:
+# mysqldump --defaults-file=/etc/mysql/debian.cnf
+# but you might want to overwrite with a specific user & pass.
+# To do this, simply edit bellow.
+
+# Username to access the MySQL server e.g. dbuser
+#USERNAME=`grep user /etc/mysql/debian.cnf | tail -n 1 | cut -d"=" -f2 | awk '{print $1}'`
+
+# Username to access the MySQL server e.g. password
+#PASSWORD=`grep password /etc/mysql/debian.cnf | tail -n 1 | cut -d"=" -f2 | awk '{print $1}'`
+
+# Host name (or IP address) of MySQL server e.g localhost
+DBHOST=localhost
+
+# List of DBNAMES for Daily/Weekly Backup e.g. "DB1 DB2 DB3"
+# Note that it's absolutely normal that the db named "mysql" is not in this
+# list, as it's added later by the script. See the MDBNAMES directives below
+# in this file (advanced options).
+# This is ONLY a convenient default, if you don't like it, don't complain
+# and write your own.
+# The following is a quick hack that will find the names of the databases by
+# reading the mysql folder content. Feel free to replace by something else.
+# DBNAMES=`find /var/lib/mysql -mindepth 1 -maxdepth 1 -type d | cut -d'/' -f5 | grep -v ^mysql\$ | tr \\\r\\\n ,\ `
+# This one does a list of dbs using a MySQL statement.
+DBNAMES=`mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep -v ^mysql$ | grep -v ^performance_schema$ | grep -v ^information_schema$ | tr \\\r\\\n ,\ `
+
+# Backup directory location e.g /backups
+# Folders inside this one will be created (daily, weekly, etc.), and the
+# subfolders will be database names. Note that backups will be owned by
+# root, with Unix rights 0600.
+BACKUPDIR="{{ mariadb_server__backup_directory|d('/var/lib/automysqlbackup') }}"
+
+# Mail setup
+# What would you like to be mailed to you?
+# - log   : send only log file
+# - files : send log file and sql files as attachments (see docs)
+# - stdout : will simply output the log to the screen if run manually.
+# - quiet : Only send logs if an error occurs to the MAILADDR.
+MAILCONTENT="quiet"
+
+# Set the maximum allowed email size in k. (4000 = approx 5MB email [see
+# docs])
+MAXATTSIZE="4000"
+
+# Email Address to send mail to? (user@domain.com)
+MAILADDR="{{ mariadb_server__backup_mailaddr }}"
+
+# ============================================================
+# === ADVANCED OPTIONS ( Read the doc's below for details )===
+#=============================================================
+
+# List of DBBNAMES for Monthly Backups.
+MDBNAMES="mysql $DBNAMES"
+
+# List of DBNAMES to EXLUCDE if DBNAMES are set to all (must be in " quotes)
+DBEXCLUDE=""
+
+# Include CREATE DATABASE in backup?
+CREATE_DATABASE={{ 'yes' if mariadb_server__backup_create_database|bool else 'no' }}
+
+# Separate backup directory and file for each DB? (yes or no)
+SEPDIR=yes
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY={{ mariadb_server__backup_doweekly }}
+
+# Choose Compression type. (gzip or bzip2)
+COMP=gzip
+
+# Compress communications between backup server and MySQL server?
+COMMCOMP=no
+
+# Additionally keep a copy of the most recent backup in a seperate
+# directory.
+LATEST={{ mariadb_server__backup_latest }}
+
+#  The maximum size of the buffer for client/server communication. e.g. 16MB
+#  (maximum is 1GB)
+MAX_ALLOWED_PACKET={{ mariadb_server__backup_max_allowed_packet }}
+
+#  For connections to localhost. Sometimes the Unix socket file must be
+#  specified.
+SOCKET=
+
+# Command to run before backups (uncomment to use)
+#PREBACKUP="/etc/mysql-backup-pre"
+
+# Command run after backups (uncomment to use)
+#POSTBACKUP="/etc/mysql-backup-post"
+
+# Backup of stored procedures and routines (comment to remove)
+ROUTINES=yes
+
+

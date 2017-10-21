@@ -1,0 +1,62 @@
+# {{ ansible_managed }}
+
+{% macro print_config(config) %}
+{%   if config is mapping %}
+{%     if 'section' in config.keys() %}
+{%       if config.state|d('present') == 'present' %}
+{%         if config.comment|d() %}
+{{ config.comment | comment(postfix='') -}}
+{%         endif %}
+[{{ config.section }}]
+
+{%         if config.options|d() %}
+{%           if config.options is mapping %}
+{{ print_config(config.options) -}}
+{%           else %}
+{%             for element in config.options %}
+{{ print_config(element) -}}
+{%             endfor %}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     elif 'name' in config.keys() %}
+{%       if config.state|d('present') == 'present' %}
+{%         if config.comment|d() %}
+{{ config.comment | comment(postfix='') -}}
+{%         endif %}
+{%         if config.options|d() %}
+{%           if config.options is mapping %}
+{{ print_config(config.options) -}}
+{%           else %}
+{%             for element in config.options %}
+{{ print_config(element) -}}
+{%             endfor %}
+{%           endif %}
+{%         elif config.value|d() %}
+{{ '%-30s = "%s"' | format(config.name, config.value) }}
+{%         else %}
+{{ config.name }}
+{%         endif %}
+{%       endif %}
+{%     else %}
+{%       if config %}
+{%         for option in config.keys() | sort %}
+{%           if config[option] is not none %}
+{{ '%-30s = "%s"' | format(option, config[option]) }}
+{%           else %}
+{{ option }}
+{%           endif %}
+{%         endfor %}
+
+{%       endif %}
+{%     endif %}
+{%   else %}
+{%     for element in config %}
+{{ print_config(element) -}}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% for item in mariadb_server__client_options %}
+{{ print_config(item) -}}
+{% endfor %}
+

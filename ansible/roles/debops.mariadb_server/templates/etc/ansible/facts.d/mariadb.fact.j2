@@ -1,0 +1,20 @@
+{% set mariadb__tpl_client      = ansible_local.mariadb.client      if (ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.client|d())      else "localhost" %}
+{% set mariadb__tpl_delegate_to = ansible_local.mariadb.delegate_to if (ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()) else mariadb_server__delegate_to %}
+{% set mariadb__tpl_flavor      = ansible_local.mariadb.flavor      if (ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb_flavor|d()) else mariadb_server__flavor %}
+{% set mariadb__tpl_host        = ansible_local.mariadb.host        if (ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.host|d())        else "localhost" %}
+{% set mariadb__tpl_port        = ansible_local.mariadb.port        if (ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d())        else mariadb_server__port %}
+{% set mariadb__tpl_server      = ansible_local.mariadb.server      if (ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.server|d())      else "localhost" %}
+{% if (mariadb_server__register_version.stdout or (mariadb_server__register_install_status|d() and mariadb_server__register_install_status.changed|bool)) %}
+{% set mariadb__tpl_client      = "localhost" %}
+{% set mariadb__tpl_delegate_to = mariadb_server__delegate_to %}
+{% set mariadb__tpl_host        = "localhost" %}
+{% set mariadb__tpl_server      = "localhost" %}
+{% endif %}
+{
+"client": "{{ mariadb__tpl_client }}",
+"delegate_to": "{{ mariadb__tpl_delegate_to }}",
+"flavor": "{{ mariadb__tpl_flavor }}",
+"host": "{{ mariadb__tpl_host }}",
+"port": "{{ mariadb__tpl_port }}",
+"server": "{{ mariadb__tpl_server }}"
+}
