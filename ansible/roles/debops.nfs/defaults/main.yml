@@ -1,0 +1,92 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.nfs default variables [[[
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: nfs__base_packages [[[
+#
+# List of APT packages that are required for NFS support.
+nfs__base_packages: [ 'nfs-common' ]
+
+                                                                   # ]]]
+# .. envvar:: nfs__packages [[[
+#
+# List of additional APT packages to install with NFS support.
+nfs__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# NFS mount configuration [[[
+# ---------------------------
+
+# .. envvar:: nfs__kerberos [[[
+#
+# Enable Kerberos support. Currently doesn't do much.
+nfs__kerberos: False
+
+                                                                   # ]]]
+# .. envvar:: nfs__default_mount_type [[[
+#
+# The default filesystem type used for NFS mount points, if a custom type is
+# not specified in the NFS share configuration.
+nfs__default_mount_type: 'nfs4'
+
+                                                                   # ]]]
+# .. envvar:: nfs__base_mount_options [[[
+#
+# List of :command:`mount` options that are added to all mount points
+# configured by this role. These should ensure correct operation for a network
+# mount point.
+nfs__base_mount_options: [ 'proto=tcp', 'port=2049', '_netdev' ]
+
+                                                                   # ]]]
+# .. envvar:: nfs__security_mount_options [[[
+#
+# List of :command:`mount` options related to Kerberos security, added to all
+# mount points configured by this role.
+nfs__security_mount_options: '{{ [ "sec=krb5p" ] if nfs__kerberos|bool else [ "sec=sys" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: nfs__default_mount_options [[[
+#
+# List of default :command:`mount` options added to all mount point configured
+# by this role if no options are specified in the configuration of a given NFS
+# share.
+nfs__default_mount_options: [ 'noatime', 'nosuid', 'nodev', 'hard', 'intr' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# NFS shares [[[
+# --------------
+
+# The lists of NFS shares configured on the hosts. Each list element is
+# a dictionary which describes an NFS share. See :ref:`nfs__ref_shares` for
+# more details.
+
+# .. envvar:: nfs__shares [[[
+#
+# List of NFS shares configured on all hosts in the Ansible inventory.
+nfs__shares: []
+
+                                                                   # ]]]
+# .. envvar:: nfs__group_shares [[[
+#
+# List of NFS shares configured on hosts in specific Ansible inventory group.
+nfs__group_shares: []
+
+                                                                   # ]]]
+# .. envvar:: nfs__host_shares [[[
+#
+# List of NFS shares configured on specific hosts in the Ansible inventory.
+nfs__host_shares: []
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

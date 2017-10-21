@@ -1,0 +1,13 @@
+{% set nfs__tpl_mount_options = [] %}
+{% if item.options|d() %}
+{%   set _ = nfs__tpl_mount_options.extend((item.options.split(',') if item.options is string else item.options)) %}
+{% elif item.opts|d() %}
+{%   set _ = nfs__tpl_mount_options.extend((item.opts.split(',') if item.opts is string else item.opts)) %}
+{% else %}
+{%   set _ = nfs__tpl_mount_options.extend((nfs__default_mount_options.split(',') if nfs__default_mount_options is string else nfs__default_mount_options)) %}
+{% endif %}
+{% if (item.default_options | d(True)) | bool %}
+{{ (nfs__security_mount_options + nfs__tpl_mount_options + nfs__base_mount_options) | unique | join(',') | to_yaml }}
+{% else %}
+{{ '_netdev' | to_yaml }}
+{% endif %}

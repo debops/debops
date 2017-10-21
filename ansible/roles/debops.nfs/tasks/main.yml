@@ -1,0 +1,57 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ nfs__base_packages }}'
+    - '{{ nfs__packages }}'
+
+- name: Configure NFS client
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/default/nfs-common'
+  register: nfs__register_config
+
+- name: Restart nfs-common service
+  service:
+    name: 'nfs-common'
+    state: 'restarted'
+  when: nfs__register_config|changed and
+        ansible_distribution == 'Debian' and
+        ansible_distribution_release in [ 'wheezy', 'jessie' ]
+
+- name: Manage NFS mount points
+  mount:
+    name:   '{{ item.path }}'
+    src:    '{{ item.src }}'
+    fstype: '{{ item.fstype | d(nfs__default_mount_type) }}'
+    opts:   '{{ lookup("template", "lookup/mount_options.j2") | from_yaml }}'
+    state:  '{{ item.state  | d("mounted") }}'
+    passno: '{{ item.passno | d(omit) }}'
+    dump:   '{{ item.dump   | d(omit) }}'
+    fstab:  '{{ item.fstab  | d(omit) }}'
+  with_flattened:
+    - '{{ nfs__shares }}'
+    - '{{ nfs__group_shares }}'
+    - '{{ nfs__host_shares }}'
+  when: item.path|d() and item.src|d()
+
+- name: Ensure that the NFS mount points exist
+  file:
+    path:  '{{ item.path }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode:  '{{ item.mode  | d("0755") }}'
+    state: 'directory'
+  with_flattened:
+    - '{{ nfs__shares }}'
+    - '{{ nfs__group_shares }}'
+    - '{{ nfs__host_shares }}'
+  when: item.path|d() and item.src|d() and item.state|d('mounted') == 'present'
