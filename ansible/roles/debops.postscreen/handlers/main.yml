@@ -1,0 +1,10 @@
+---
+
+- name: Check postfix and reload
+  command: /usr/sbin/postfix -c /etc/postfix check
+  notify: [ 'Reload postfix' ]
+
+- name: Reload postfix
+  service:
+    name: 'postfix'
+    state: 'reloaded'

@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+# PCRE table which is used to define the responses sent to the clients when
+# their messages are blocked by a DNS Block List.
+#
+# Documentation: http://www.postfix.org/POSTSCREEN_README.html#dnsbl
+# Documentation: http://www.postfix.org/postconf.5.html#postscreen_dnsbl_reply_map
+
+{% for element in postscreen__dnsbl_reply_pcre_map %}
+{%   if element.state|d('present') != 'absent' %}
+{%     if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='\n', postfix='') -}}
+{%     endif %}
+{{ "{:<50} {}".format(element.pcre | d(element.name | d(element)), element.reply | d(element.value | d(postscreen__dnsbl_default_reply))) }}
+{%   endif %}
+{% endfor %}

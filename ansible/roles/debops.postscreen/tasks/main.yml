@@ -1,0 +1,34 @@
+---
+
+- name: Generate Postscreen configuration files
+  template:
+    src: 'etc/postfix/{{ item }}.j2'
+    dest: '/etc/postfix/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'postscreen_access.cidr'
+    - 'postscreen_dnsbl_reply_map.pcre'
+  notify: [ 'Check postfix and reload' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Postscreen local facts
+  template:
+    src: 'etc/ansible/facts.d/postscreen.fact.j2'
+    dest: '/etc/ansible/facts.d/postscreen.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: postscreen__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: postscreen__register_facts|changed
