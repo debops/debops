@@ -1,0 +1,14 @@
+{% set tcpwrappers__tpl_ansible_controllers = [] %}
+{% if (ansible_local|d() and ansible_local.tcpwrappers|d() and
+       ansible_local.tcpwrappers.ansible_controllers|d()) %}
+{%   for element in ansible_local.tcpwrappers.ansible_controllers %}
+{%     set _ = tcpwrappers__tpl_ansible_controllers.append(element) %}
+{%   endfor %}
+{% endif %}
+{% for element in tcpwrappers__ansible_controllers or [] %}
+{%       set _ = tcpwrappers__tpl_ansible_controllers.append(element) %}
+{% endfor %}
+{
+"enabled": "{{ tcpwrappers__enabled | bool | lower }}",
+"ansible_controllers": {{ tcpwrappers__tpl_ansible_controllers | unique | sort | to_nice_json }}
+}

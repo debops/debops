@@ -1,0 +1,115 @@
+---
+
+- name: Make sure /etc/hosts.allow.d directory exists
+  file:
+    path: '/etc/hosts.allow.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create /etc/hosts.allow.d/00_ansible
+  template:
+    src: 'etc/hosts.allow.d/00_ansible.j2'
+    dest: '/etc/hosts.allow.d/00_ansible'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Divert original /etc/hosts.allow
+  command: dpkg-divert --quiet --local --divert {{ tcpwrappers__divert_hosts_allow }} --rename /etc/hosts.allow
+  args:
+    creates: '{{ tcpwrappers__divert_hosts_allow }}'
+  when: tcpwrappers__enabled | bool
+
+- name: Allow access from Ansible Controller to sshd
+  template:
+    src: 'etc/hosts.allow.d/ansible_controller.j2'
+    dest: '/etc/hosts.allow.d/10_ansible_controller'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Remove hosts.allow entries if requested
+  file:
+    path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ tcpwrappers__allow }}'
+    - '{{ tcpwrappers__group_allow }}'
+    - '{{ tcpwrappers__host_allow }}'
+    - '{{ tcpwrappers__dependent_allow }}'
+    - '{{ tcpwrappers__localhost_allow }}'
+    - '{{ tcpwrappers_allow | d([]) }}'
+    - '{{ tcpwrappers_group_allow | d([]) }}'
+    - '{{ tcpwrappers_host_allow | d([]) }}'
+    - '{{ tcpwrappers_dependent_allow | d([]) }}'
+  when: ((item.daemon|d() or item.daemons|d()) and
+         item.state|d() and item.state == 'absent')
+
+- name: Generate hosts.allow entries
+  template:
+    src: 'etc/hosts.allow.d/allow.j2'
+    dest: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ tcpwrappers__allow }}'
+    - '{{ tcpwrappers__group_allow }}'
+    - '{{ tcpwrappers__host_allow }}'
+    - '{{ tcpwrappers__dependent_allow }}'
+    - '{{ tcpwrappers__localhost_allow }}'
+    - '{{ tcpwrappers_allow | d([]) }}'
+    - '{{ tcpwrappers_group_allow | d([]) }}'
+    - '{{ tcpwrappers_host_allow | d([]) }}'
+    - '{{ tcpwrappers_dependent_allow | d([]) }}'
+  when: ((item.daemon|d() or item.daemons|d()) and
+         (item.state is undefined or item.state != 'absent'))
+
+- name: Assemble hosts.allow.d
+  assemble:
+    src: '/etc/hosts.allow.d'
+    dest: '/etc/hosts.allow'
+    backup: False
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: tcpwrappers__enabled | bool
+
+- name: Remove diversion of /etc/hosts.allow
+  shell: rm -f /etc/hosts.allow ; dpkg-divert --quiet --local --rename --remove /etc/hosts.allow
+  args:
+    removes: '{{ tcpwrappers__divert_hosts_allow }}'
+    warn: False
+  when: not tcpwrappers__enabled | bool
+
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save tcpwrappers local facts
+  template:
+    src: 'etc/ansible/facts.d/tcpwrappers.fact.j2'
+    dest: '/etc/ansible/facts.d/tcpwrappers.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Configure access in /etc/hosts.deny
+  lineinfile:
+    dest: '/etc/hosts.deny'
+    regexp: '^ALL: ALL'
+    line: 'ALL: ALL'
+    create: True
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    state: '{{ "present"
+               if (tcpwrappers__enabled  | bool and
+                   tcpwrappers__deny_all | bool)
+               else "absent" }}'

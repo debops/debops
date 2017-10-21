@@ -1,0 +1,76 @@
+{% if item.comment|d() %}
+# {{ item.comment }}
+{% endif %}
+{% if item.custom|d() %}
+{{ item.custom }}
+{% else %}
+{%   set tcpwrappers__tpl_daemon = [] %}
+{%   set tcpwrappers__tpl_client = [] %}
+{%   set tcpwrappers__tpl_option = [] %}
+{%   if item.daemon|d() %}
+{%     if item.daemon is string %}
+{%       set _ = tcpwrappers__tpl_daemon.append(item.daemon) %}
+{%     else %}
+{%       for element in item.daemon %}
+{%         set _ = tcpwrappers__tpl_daemon.append(element) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.daemons|d() %}
+{%     if item.daemons is string %}
+{%       set _ = tcpwrappers__tpl_daemon.append(item.daemons) %}
+{%     else %}
+{%       for element in item.daemons %}
+{%         set _ = tcpwrappers__tpl_daemon.append(element) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.client|d() %}
+{%     if item.client is string %}
+{%       set _ = tcpwrappers__tpl_client.append(item.client | ipwrap) %}
+{%     else %}
+{%       for element in item.client %}
+{%         set _ = tcpwrappers__tpl_client.append(element | ipwrap) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.clients|d() %}
+{%     if item.clients is string %}
+{%       set _ = tcpwrappers__tpl_client.append(item.clients | ipwrap) %}
+{%     else %}
+{%       for element in item.clients %}
+{%         set _ = tcpwrappers__tpl_client.append(element | ipwrap) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.option|d() %}
+{%     if item.option is string %}
+{%       set _ = tcpwrappers__tpl_option.append(item.option | replace(':','\:')) %}
+{%     else %}
+{%       for element in item.option %}
+{%         set _ = tcpwrappers__tpl_option.append(element | replace(':','\:')) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if item.options|d() %}
+{%     if item.options is string %}
+{%       set _ = tcpwrappers__tpl_option.append(item.options | replace(':','\:')) %}
+{%     else %}
+{%       for element in item.options %}
+{%         set _ = tcpwrappers__tpl_option.append(element | replace(':','\:')) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if tcpwrappers__tpl_client %}
+{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ tcpwrappers__tpl_client | unique | join(', ') }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
+{%   elif item.accept_any is undefined or item.accept_any | bool %}
+{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ item.default | d('ALL') }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
+{%   elif not item.accept_any | bool %}
+# Access to '{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }}' from any host is not allowed
+{%   elif item.default|d() %}
+{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }} : {{ item.default }}{% if tcpwrappers__tpl_option %} : {{ tcpwrappers__tpl_option | join(' : ') }}{% endif %}
+{%   else %}
+# Access to '{{ tcpwrappers__tpl_daemon | sort | unique | join(', ') }}' from any host is not allowed
+{%   endif %}
+{% endif %}
+

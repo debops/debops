@@ -1,0 +1,11 @@
+---
+
+- name: Assemble hosts.allow.d
+  assemble:
+    src: '/etc/hosts.allow.d'
+    dest: '/etc/hosts.allow'
+    backup: False
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: tcpwrappers__enabled | bool
