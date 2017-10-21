@@ -1,0 +1,13 @@
+{% set rabbitmq_server__tpl_parameters_vhosts = [] %}
+{% for parameter in lookup("flattened", rabbitmq_server__combined_parameters) %}
+{%   if parameter.vhost|d() and parameter.state|d('present') != 'absent' %}
+{%     set _ = rabbitmq_server__tpl_parameters_vhosts.append({ 'name': parameter.vhost }) %}
+{%   endif %}
+{%   if parameter.node|d() %}
+{%     set _ = rabbitmq_server__tpl_parameters_vhosts.append({ 'node': parameter.node }) %}
+{%   endif %}
+{%   if parameter.tracing|d() %}
+{%     set _ = rabbitmq_server__tpl_parameters_vhosts.append({ 'tracing': parameter.tracing }) %}
+{%   endif %}
+{% endfor %}
+{{ rabbitmq_server__tpl_parameters_vhosts }}

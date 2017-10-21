@@ -1,0 +1,232 @@
+%% -*- mode: erlang -*-
+
+%% {{ ansible_managed }}
+
+%% ---------------------------------------------------------------------
+%% RabbitMQ Configuration File.
+%%
+%% See http://www.rabbitmq.com/configure.html for details.
+%% ---------------------------------------------------------------------
+
+{% set rabbitmq_server__tpl_config = {} %}
+{% for element in rabbitmq_server__combined_config %}
+{%   if element is mapping %}
+{%     if element.name|d() and element.state|d('present') != 'ignore' %}
+{%       set rabbitmq_server__tpl_application = (rabbitmq_server__tpl_config[element.name].copy() if rabbitmq_server__tpl_config[element.name] is defined else {}) %}
+{%       set _ = rabbitmq_server__tpl_application.update({
+  'name':   element.name,
+  'state':  element.state  | d('present'),
+  'weight': element.weight | d(rabbitmq_server__tpl_application.weight | d(0)) | int
+}) %}
+{%       if element.comment|d() %}
+{%         set _ = rabbitmq_server__tpl_application.update({ 'comment': element.comment }) %}
+{%       endif %}
+{%       if element.options|d() %}
+{%         set rabbitmq_server__tpl_options = (rabbitmq_server__tpl_application['options'].copy() if rabbitmq_server__tpl_application['options'] is defined else {}) %}
+{%         for option in element.options %}
+{%           if option.name|d() and option.state|d('present') != 'ignore' %}
+{%             set option_params = (rabbitmq_server__tpl_options[option.name].copy() if rabbitmq_server__tpl_options[option.name] is defined else {}) %}
+{%             set _ = option_params.update({
+  'name':   option.name   | d(rabbitmq_server__tpl_options.name),
+  'value':  option.value  | d(rabbitmq_server__tpl_options.value),
+  'state':  option.state  | d(rabbitmq_server__tpl_options.state  | d('present')),
+  'weight': option.weight | d(rabbitmq_server__tpl_options.weight | d(0)) | int
+}) %}
+{%             if option.comment is defined %}
+{%               set _ = option_params.update({ 'comment': option.comment }) %}
+{%             endif %}
+{%             if option.option is defined %}
+{%               set _ = option_params.update({ 'option': option.option }) %}
+{%             endif %}
+{%             if option.type is defined %}
+{%               set _ = option_params.update({ 'type': option.type }) %}
+{%             else %}
+{%               if option.value is defined %}
+{%                 if option.value | bool and option.value is not iterable %}
+{%                   set _ = option_params.update({ 'type': 'boolean' }) %}
+{%                 elif not option.value | bool and option.value is not iterable %}
+{%                   if option.value is not none %}
+{%                     if option.value | int or option.value | string == '0' %}
+{%                       set _ = option_params.update({ 'type': 'number' }) %}
+{%                     else %}
+{%                       set _ = option_params.update({ 'type': 'boolean' }) %}
+{%                     endif %}
+{%                   endif %}
+{%                 elif option.value is string %}
+{%                   if (option.value.split('\n') | list | count > 1) %}
+{%                     set _ = option_params.update({ 'type': 'raw' }) %}
+{%                   elif option_params.type is undefined %}
+{%                     set _ = option_params.update({ 'type': 'string' }) %}
+{%                   elif option_params.type is defined and option_params.type in [ 'bit-string', 'bit-list' ] %}
+{%                     set _ = option_params.update({ 'type': 'bit-string' }) %}
+{%                   endif %}
+{%                 elif option.value is number %}
+{%                   set _ = option_params.update({ 'type': 'number' }) %}
+{%                 elif option.value is mapping %}
+{%                   set _ = option_params.update({ 'type': 'mapping' }) %}
+{%                 elif option.value is not string and option.value is not mapping %}
+{%                   if option_params.type is undefined %}
+{%                     set _ = option_params.update({ 'type': 'list' }) %}
+{%                   elif option_params.type is defined and option_params.type in [ 'bit-string', 'bit-list' ] %}
+{%                     set _ = option_params.update({ 'type': 'bit-list' }) %}
+{%                   endif %}
+{%                 endif %}
+{%               endif %}
+{%             endif %}
+{%             if option_params|d() %}
+{%               set _ = rabbitmq_server__tpl_options.update({ option.name: option_params }) %}
+{%             endif %}
+{%           elif option is mapping and (not option.name|d() and not option.state|d()) %}
+{%             for option_key, option_value in option.iteritems() %}
+{%               set option_params = (rabbitmq_server__tpl_options[option_key].copy() if rabbitmq_server__tpl_options[option_key] is defined else {}) %}
+{%               set _ = option_params.update({
+  'name':   option_key,
+  'value':  option_value,
+  'state':  rabbitmq_server__tpl_options.state  | d('present'),
+  'weight': rabbitmq_server__tpl_options.weight | d(0) | int
+}) %}
+{%               if option_value | bool and option_value is not iterable %}
+{%                 set _ = option_params.update({ 'type': 'boolean' }) %}
+{%               elif not option_value | bool and option_value is not iterable %}
+{%                 if option_value is not none %}
+{%                   if option_value | int or option_value | string == '0' %}
+{%                     set _ = option_params.update({ 'type': 'number' }) %}
+{%                   else %}
+{%                     set _ = option_params.update({ 'type': 'boolean' }) %}
+{%                   endif %}
+{%                 endif %}
+{%               elif option_value is string %}
+{%                 if (option_value.split('\n') | list | count > 1) %}
+{%                   set _ = option_params.update({ 'type': 'raw' }) %}
+{%                 elif option_params.type is undefined %}
+{%                   set _ = option_params.update({ 'type': 'string' }) %}
+{%                 elif option_params.type is defined and option_params.type in [ 'bit-string', 'bit-list' ] %}
+{%                   set _ = option_params.update({ 'type': 'bit-string' }) %}
+{%                 endif %}
+{%               elif option_value is number %}
+{%                 set _ = option_params.update({ 'type': 'number' }) %}
+{%               elif option_value is mapping %}
+{%                 set _ = option_params.update({ 'type': 'mapping' }) %}
+{%               elif option_value is not string and option_value is not mapping %}
+{%                 if option_params.type is defined and option_params.type in [ 'bit-string', 'bit-list' ] %}
+{%                   set _ = option_params.update({ 'type': 'bit-list' }) %}
+{%                 else %}
+{%                   set _ = option_params.update({ 'type': 'list' }) %}
+{%                 endif %}
+{%               endif %}
+{%               if option_params|d() %}
+{%                 set _ = rabbitmq_server__tpl_options.update({ option_key: option_params }) %}
+{%               endif %}
+{%             endfor %}
+{%           endif %}
+{%         endfor %}
+{%         if rabbitmq_server__tpl_options|d() %}
+{%           set _ = rabbitmq_server__tpl_application.update({ 'options': rabbitmq_server__tpl_options }) %}
+{%         endif %}
+{%       endif %}
+{%       set _ = rabbitmq_server__tpl_config.update({ element.name: rabbitmq_server__tpl_application }) %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{# ------------------------------------------------------------------ #}
+{% macro print_values(elements) %}
+{%   if elements.type in [ 'bit-list', 'bit-string' ] %}
+{%     if elements.value is string %}
+{{ '<<"{}">>'.format(elements.value) -}}
+{%     elif elements.value is not string and elements.value is not mapping %}
+{{ '[<<"{}">>]'.format(elements.value | join('">>, <<"')) -}}
+{%     endif %}
+{%   elif elements.type == 'string' %}
+{{ '"{}"'.format(elements.value) -}}
+{%   elif elements.type in [ 'number', 'raw' ] %}
+{{ '{}'.format(elements.value) -}}
+{%   elif elements.type == 'list' %}
+{{ '{}'.format(elements.value | to_json) -}}
+{%   elif elements.type == 'atom' %}
+{%     if elements.value is string %}
+{%       if elements.value | search('^[A-Z].+') %}
+{{ "'{}'".format(elements.value) -}}
+{%       elif elements.value | search('[^a-zA-Z0-9@_].+') %}
+{{ "'{}'".format(elements.value) -}}
+{%       else %}
+{{ '{}'.format(elements.value) -}}
+{%       endif %}
+{%     elif elements.value is not string and elements.value is not mapping %}
+{%       set rabbitmq_server__tpl_atom_list = [] %}
+{%       for thing in elements.value %}
+{%         if thing | search('^[A-Z].+') %}
+{%           set _ = rabbitmq_server__tpl_atom_list.append("'{}'".format(thing)) %}
+{%         elif thing | search('[^a-zA-Z0-9@_].+') %}
+{%          set _ = rabbitmq_server__tpl_atom_list.append("'{}'".format(thing)) %}
+{%         else %}
+{%           set _ = rabbitmq_server__tpl_atom_list.append('{}'.format(thing)) %}
+{%         endif %}
+{%       endfor %}
+{%       if rabbitmq_server__tpl_atom_list %}
+{{ '[' + (rabbitmq_server__tpl_atom_list | join(', ')) + ']' -}}
+{%       endif %}
+{%     endif %}
+{%   elif elements.type == 'boolean' %}
+{{ '{}'.format(elements.value | bool | lower) -}}
+{%   endif %}
+{% endmacro %}
+{# ------------------------------------------------------------------ #}
+{% macro print_options(elements) %}
+{%   set rabbitmq_server__tpl_print_options = [] %}
+{%   for key, value in elements.iteritems() %}
+{%     if value.state|d('present') not in [ 'absent' ] %}
+{%       set _ = rabbitmq_server__tpl_print_options.append(value) %}
+{%     endif %}
+{%   endfor %}
+{%   for option in rabbitmq_server__tpl_print_options | sort(attribute='weight') %}
+{%     if option.comment|d() %}
+{{ option.comment | regex_replace('\n$','') | comment(decoration='    %% ', prefix='', postfix='') -}}
+{%     endif %}
+{%     if option.type != 'raw' %}
+{{ '    {{{:<30} {}}}{}'.format((option.option | d(option.name)) + ',', print_values(option), (',\n' if not loop.last|bool else '')) }}
+{%     else %}
+{%       if option.value is string %}
+{%         if option.value.split('\n') | list | count == 1 %}
+{{ '    {{{:<30} {}{}'.format((option.option | d(option.name)) + ',', option.value.split('\n')[0], ('},\n' if not loop.last|bool else '}')) }}
+{%         else %}
+{{ '    {{{:<30} {}'.format((option.option | d(option.name)) + ',', option.value.split('\n')[0]) }}
+{%           set outer_loop = loop %}
+{%           for line in option.value.split('\n')[1:] %}
+{%             if line %}
+{{ '    {:<31} {}'.format('', line) }}
+{%             endif %}
+{%             if loop.last|bool %}
+{{ '    }}{}'.format((',\n' if not outer_loop.last|bool else '')) }}
+{%             endif %}
+{%           endfor %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+{# ------------------------------------------------------------------ #}
+{% macro print_erlang(erlang_config) %}
+{%   set rabbitmq_server__tpl_sorted_config = [] %}
+{%   for application, params in erlang_config.iteritems() %}
+{%     set _ = rabbitmq_server__tpl_sorted_config.append(params) %}
+{%   endfor %}
+{%   for params in rabbitmq_server__tpl_sorted_config | sort(attribute='weight') %}
+{%     if params is mapping and params.state|d('present') != 'absent' %}
+{%       if params.comment|d() %}
+{{ params.comment | regex_replace('\n$','') | comment(decoration='  %% ', prefix='  %% -------------------------------------------------------------------', postfix='  %% -------------------------------------------------------------------\n') -}}
+{%       endif %}
+{{ '  {{{}, ['.format(params.name) }}
+{%       if params.options|d() %}
+{{ print_options(params.options) -}}
+{%       endif %}
+{%       if loop.last|bool %}
+  ]}
+{%       else %}
+  ]},
+
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+[{{ ('\n' + print_erlang(rabbitmq_server__tpl_config)) if rabbitmq_server__tpl_config else '' -}}
+].

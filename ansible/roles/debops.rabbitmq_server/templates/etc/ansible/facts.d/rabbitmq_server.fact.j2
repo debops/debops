@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import load, loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+output = loads('''{{ ({
+    "installed": true
+}) | to_nice_json }}''')
+
+# Strings in the 'rabbitmqctl` output which will be filtered out
+disable_ciphers = ('rc4', '3des', '{rsa,aes_', ',sha}')
+
+erlang_output = []
+raw_erlang_stdout = ''
+
+try:
+    FNULL = open('/dev/null', 'w')
+    raw_erlang_stdout = subprocess.check_output([ "/usr/sbin/rabbitmqctl -q eval 'ssl:cipher_suites().'" ], shell=True, stderr=FNULL)
+
+except subprocess.CalledProcessError:
+    pass
+
+if raw_erlang_stdout:
+    for line in raw_erlang_stdout.split('\n'):
+        if line and not any(s in line for s in disable_ciphers) and not line.endswith('...done.'):
+            line_clean = line.replace('[{','').replace(' {','').replace('},','').replace('}]','').split(',')
+            if len(line_clean) == 3:
+               erlang_output.append("{{ '{{' }}{:<16} {:<13} {}{{ '}}' }},".format(line_clean[0] + ',', line_clean[1] + ',', line_clean[2]))
+            elif len(line_clean) == 4:
+                erlang_output.append("{{ '{{' }}{:<16} {:<13} {:<8} {}{{ '}}' }},".format(line_clean[0] + ',', line_clean[1] + ',', line_clean[2] + ',', line_clean[3]))
+
+    raw_erlang_output = "{}".format("\n".join(erlang_output).rstrip(','))
+    if raw_erlang_output:
+        output.update({ 'raw_erlang_ssl_ciphers': raw_erlang_output })
+
+print(dumps(output, sort_keys=True, indent=2))

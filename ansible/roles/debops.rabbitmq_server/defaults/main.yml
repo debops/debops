@@ -1,0 +1,693 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.rabbitmq_server default variables [[[
+# ============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: rabbitmq_server__base_packages [[[
+#
+# List of base APT packages to install for RabbitMQ service.
+rabbitmq_server__base_packages: [ 'rabbitmq-server' ]
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__packages [[[
+#
+# List of additional APT packages to install with RabbitMQ service.
+rabbitmq_server__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# System configuration [[[
+# ------------------------
+
+# .. envvar:: rabbitmq_server__user [[[
+#
+# Name of the UNIX system account used by RabbitMQ service.
+rabbitmq_server__user: 'rabbitmq'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group [[[
+#
+# Name of the UNIX system group used by RabbitMQ service.
+rabbitmq_server__group: 'rabbitmq'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__append_groups [[[
+#
+# List of additional UNIX groups to add the RabbitMQ user into. The
+# ``ssl-cert`` UNIX group is used for the X.509 private key access.
+rabbitmq_server__append_groups: '{{ ["ssl-cert"] if rabbitmq_server__pki|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__home [[[
+#
+# Absolute path of the RabbitMQ home directory.
+rabbitmq_server__home: '/var/lib/rabbitmq'
+                                                                   # ]]]
+                                                                   # ]]]
+# Resource utilization [[[
+# ------------------------
+
+# .. envvar:: rabbitmq_server__relative_disk_free_limit [[[
+#
+# Floating point which tells RabbitMQ how much of the free disk space relative
+# to system RAM it should expect before allowing for operation. The default
+# value tells RabbitMQ to expect twice the amount of available RAM to be free
+# on the disk.
+#
+# See https://www.rabbitmq.com/production-checklist.html for more details.
+rabbitmq_server__relative_disk_free_limit: 2.0
+                                                                   # ]]]
+                                                                   # ]]]
+# Erlang cookie [[[
+# -----------------
+
+# .. envvar:: rabbitmq_server__erlang_cookie_path [[[
+#
+# Absolute path of the Erlang cookie file used by RabbitMQ.
+rabbitmq_server__erlang_cookie_path: '{{ rabbitmq_server__home + "/.erlang.cookie" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__erlang_cookie_password [[[
+#
+# The contents of the Erlang cookie file used by RabbitMQ. It needs to be the
+# same on all nodes in the RabbitMQ cluster.
+rabbitmq_server__erlang_cookie_password: '{{ lookup("password", secret
+                                             + "/rabbitmq_server/cluster/erlang_cookie "
+                                             + "length=64") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Advanced Message Queuing Protocol (AMQP) configuration [[[
+# ----------------------------------------------------------
+
+# .. envvar:: rabbitmq_server__amqp_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# RabbitMQ service over plaintext ``amqp://`` connection.
+#
+# If the TLS support is enabled, only the hosts and subnets specified in this
+# list will be allowed to connect.
+#
+# If the TLS support is disabled, and nothing is specified, anybody will be
+# able to connect over plaintext. You can specify the entries to limit the
+# connections to selected IPs and subnets.
+rabbitmq_server__amqp_allow: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__amqps_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# RabbitMQ service over TLS ``amqps://`` connection.
+#
+# If this list is empty, anybody can connect over encrypted connection.
+rabbitmq_server__amqps_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ main configuration [[[
+# -------------------------------
+
+# These variables define the contents of the
+# :file:`/etc/rabbitmq/rabbitmq.config` configuration file.
+# See :ref:`rabbitmq_server__ref_config` for more details.
+
+# .. envvar:: rabbitmq_server__default_config [[[
+#
+# The default configuration defined by the ``debops.rabbitmq_server`` Ansible
+# role.
+rabbitmq_server__default_config:
+
+  - name: 'ssl'
+    state: '{{ "present" if rabbitmq_server__pki|bool else "ignore" }}'
+    options:
+
+      - name: 'versions'
+        value: [ 'tlsv1.2', 'tlsv1.1' ]
+        type: 'atom'
+
+      - name: 'ciphers'
+        value: |
+          [
+            {{ rabbitmq_server__ssl_ciphers | indent(2) }}
+          ]
+        type: 'raw'
+        state: '{{ "present"
+                   if rabbitmq_server__ssl_ciphers
+                   else "ignore" }}'
+
+      - client_renegotiation: False
+
+      - secure_renegotiate: True
+
+      - reuse_sessions: True
+
+      - honor_cipher_order: True
+
+      - honor_ecc_order: True
+
+  - name: 'rabbit'
+    state: '{{ "present" if rabbitmq_server__pki|bool else "ignore" }}'
+    options:
+
+      - name: 'tcp_listeners'
+        comment: |
+          Listen for TCP connections only on the 'localhost' interface
+          when the TLS support is enabled
+        value: |
+          [{"127.0.0.1", 5672},
+           {"::1",       5672}]
+        type: 'raw'
+        state: '{{ "ignore" if rabbitmq_server__amqp_allow else "present" }}'
+
+      - ssl_listeners: [ 5671 ]
+
+      - name: 'ssl_options'
+        value: |
+          [{cacertfile,           "{{ rabbitmq_server__cacertfile }}"},
+           {certfile,             "{{ rabbitmq_server__certfile }}"},
+           {keyfile,              "{{ rabbitmq_server__keyfile }}"},
+           {% if rabbitmq_server__ssl_dhparam %}
+          {dhfile,               "{{ rabbitmq_server__ssl_dhparam }}"},
+           {% endif -%}
+           {versions,             ['tlsv1.2', 'tlsv1.1']},
+           {depth,                2},
+           {% if rabbitmq_server__ssl_ciphers %}
+          {ciphers,              [
+                                    {{ rabbitmq_server__ssl_ciphers | indent(26) }}
+                                  ]},
+           {% endif -%}
+           {honor_cipher_order,   true},
+           {honor_ecc_order,      true},
+           {client_renegotiation, false},
+           {secure_renegotiate,   true},
+           {reuse_sessions,       true},
+           {verify,               verify_peer},
+           {fail_if_no_peer_cert, false}]
+        type: 'raw'
+
+  - name: 'rabbit'
+    options:
+
+      - name: 'disk_free_limit'
+        value: '{mem_relative, {{ rabbitmq_server__relative_disk_free_limit }}{{ "}" }}'
+        type: 'raw'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__config [[[
+#
+# List of RabbitMQ configuration options defined for all hosts in the Ansible
+# inventory.
+rabbitmq_server__config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_config [[[
+#
+# List of RabbitMQ configuration options defined for hosts in a specific
+# Ansible inventory group.
+rabbitmq_server__group_config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_config [[[
+#
+# List of RabbitMQ configuration options defined for specific hosts in the
+# Ansible inventory.
+rabbitmq_server__host_config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__dependent_role [[[
+#
+# A string that identifies another Ansible role that uses the
+# ``debops.rabbitmq_server`` role as a dependency. This value is needed to
+# correctly store the dependent configuration options.
+# See :ref:`rabbitmq_server__ref_dependency` for more details.
+rabbitmq_server__dependent_role: ''
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__dependent_state [[[
+#
+# Specify the state of the dependent configuration options, either ``present``
+# (options should be included in the configuration file) or ``absent`` (options
+# should be removed from the configuration file).
+# See :ref:`rabbitmq_server__ref_dependency` for more details.
+rabbitmq_server__dependent_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__dependent_config [[[
+#
+# List of RabbitMQ configuration options defined by another Ansible role
+# and specified using role dependent variables.
+rabbitmq_server__dependent_config: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__dependent_config_filter [[[
+#
+# Actual variable used in the combined RabbitMQ configuration that unwraps
+# the dependent configuration specified by other Ansible roles and converts it
+# into format understood by the ``debops.rabbitmq_server`` configuration
+# template. See :ref:`rabbitmq_server__ref_dependency` for more details.
+rabbitmq_server__dependent_config_filter: '{{ lookup("template",
+                                              "lookup/rabbitmq_server__dependent_config_filter.j2")
+                                              | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_config [[[
+#
+# List that combines RabbitMQ configuration variables and passes them to the
+# template file.
+rabbitmq_server__combined_config: '{{ rabbitmq_server__default_config
+                                      + rabbitmq_server__dependent_config_filter
+                                      + rabbitmq_server__config
+                                      + rabbitmq_server__group_config
+                                      + rabbitmq_server__host_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ plugin configuration [[[
+# ---------------------------------
+
+# These variables specify what RabbitMQ plugins should be enabled on a givem
+# host. See :ref:`rabbitmq_server__ref_plugins` for more details.
+
+# .. envvar:: rabbitmq_server__default_plugins [[[
+#
+# List of default RabbitMQ plugins enabled by this Ansible role.
+rabbitmq_server__default_plugins:
+
+  # Required on all hosts by RabbitMQ Management Console
+  - name: 'rabbitmq_management_agent'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__plugins [[[
+#
+# List of RabbitMQ plugins to enable on all hosts in the Ansible inventory.
+rabbitmq_server__plugins: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_plugins [[[
+#
+# List of RabbitMQ plugins to enable on hosts in a specific Ansible inventory
+# group.
+rabbitmq_server__group_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_plugins [[[
+#
+# List of RabbitMQ plugins to enable on specific hosts in the Ansible
+# inventory.
+rabbitmq_server__host_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_plugins [[[
+#
+# Combined list of RabbitMQ plugins passed to the Ansible module.
+rabbitmq_server__combined_plugins: '{{ rabbitmq_server__default_plugins
+                                       + rabbitmq_server__plugins
+                                       + rabbitmq_server__group_plugins
+                                       + rabbitmq_server__host_plugins }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ virtual host configuration [[[
+# ---------------------------------------
+
+# These variables can be used to configure RabbitMQ virtual hosts.
+# See :ref:`rabbitmq_server__ref_vhosts` for more details.
+
+# .. envvar:: rabbitmq_server__vhosts [[[
+#
+# List of RabbitMQ virtual hosts managed on all hosts in the Ansible inventory.
+rabbitmq_server__vhosts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_vhosts [[[
+#
+# List of RabbitMQ virtual hosts managed on hosts in specific Ansible inventory
+# group.
+rabbitmq_server__group_vhosts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_vhosts [[[
+#
+# List of RabbitMQ virtual hosts managed on specific hosts in the Ansible
+# inventory.
+rabbitmq_server__host_vhosts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__parameters_vhosts [[[
+#
+# List of RabbitMQ virtual hosts that are mentioned in parameter configuration.
+# Each virtual host will be created if not already present.
+rabbitmq_server__parameters_vhosts: '{{ lookup("template",
+                                        "lookup/rabbitmq_server__parameters_vhosts.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__policies_vhosts [[[
+#
+# List of RabbitMQ virtual hosts that are mentioned in policy configuration.
+# Each virtual host will be created if not already present.
+rabbitmq_server__policies_vhosts: '{{ lookup("template",
+                                      "lookup/rabbitmq_server__policies_vhosts.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__accounts_vhosts [[[
+#
+# List of RabbitMQ virtual hosts that are mentioned in user account
+# configuration. Each virtual host will be created if not already present.
+rabbitmq_server__accounts_vhosts: '{{ lookup("template",
+                                      "lookup/rabbitmq_server__accounts_vhosts.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_vhosts [[[
+#
+# Combined list of RabbitMQ virtual hosts passed to the Ansible task.
+rabbitmq_server__combined_vhosts: '{{ rabbitmq_server__vhosts
+                                      + rabbitmq_server__group_vhosts
+                                      + rabbitmq_server__host_vhosts
+                                      + rabbitmq_server__parameters_vhosts
+                                      + rabbitmq_server__policies_vhosts
+                                      + rabbitmq_server__accounts_vhosts }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ parameter configuration [[[
+# ------------------------------------
+
+# These variables can be used to manage RabbitMQ parameters.
+# See :ref:`rabbitmq_server__ref_parameters` for more details.
+
+# .. envvar:: rabbitmq_server__parameters [[[
+#
+# List of RabbitMQ parameters which should be configured on all hosts in the
+# Ansible inventory.
+rabbitmq_server__parameters: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_parameters [[[
+#
+# List of RabbitMQ parameters which should be configured on hosts in specific
+# Ansible inventory group.
+rabbitmq_server__group_parameters: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_parameters [[[
+#
+# List of RabbitMQ parameters which should be configured on specific hosts in
+# the Ansible inventory.
+rabbitmq_server__host_parameters: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_parameters [[[
+#
+# Combined list of all RabbitMQ parameters passed to the Ansible task.
+rabbitmq_server__combined_parameters: '{{ rabbitmq_server__parameters
+                                          + rabbitmq_server__group_parameters
+                                          + rabbitmq_server__host_parameters }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ policy configuration [[[
+# ---------------------------------
+
+# These variables can be used to manage RabbitMQ policies.
+# See :ref:`rabbitmq_server__ref_policies` for more details.
+
+# .. envvar:: rabbitmq_server__policies [[[
+#
+# List of RabbitMQ policies which should be configured on all hosts in the
+# Ansible inventory.
+rabbitmq_server__policies: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_policies [[[
+#
+# List of RabbitMQ policies which should be configured on hosts in specific
+# Ansible inventory group.
+rabbitmq_server__group_policies: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_policies [[[
+#
+# List of RabbitMQ policies which should be configured on specific hosts in the
+# Ansible inventory.
+rabbitmq_server__host_policies: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_policies [[[
+#
+# Combined list of all RabbitMQ policies passed to the Ansible task.
+rabbitmq_server__combined_policies: '{{ rabbitmq_server__policies
+                                        + rabbitmq_server__group_policies
+                                        + rabbitmq_server__host_policies }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ user account configuration [[[
+# ---------------------------------------
+
+# These variables can be used to manage RabbitMQ user accounts.
+# See :ref:`rabbitmq_server__ref_accounts` for more details.
+
+# .. envvar:: rabbitmq_server__admin_accounts [[[
+#
+# List of automatically managed administrator accounts, based of the admin
+# users managed by the debops.core_ Ansible role.
+rabbitmq_server__admin_accounts: '{{ lookup("template",
+                                     "lookup/rabbitmq_server__admin_accounts.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__default_accounts [[[
+#
+# List of default RabbitMQ user accounts defined by the role.
+rabbitmq_server__default_accounts:
+
+  # Remove the default user account
+  - name: 'guest'
+    state: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__accounts [[[
+#
+# List of RabbitMQ user accounts which should be managed on all hosts in the
+# Ansible inventory.
+rabbitmq_server__accounts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_accounts [[[
+#
+# List of RabbitMQ user accounts which should be managed on hosts in a specific
+# Ansible inventory group.
+rabbitmq_server__group_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_accounts [[[
+#
+# List of RabbitMQ user accounts which should be managed on specific hosts in
+# the Ansible inventory.
+rabbitmq_server__host_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_accounts [[[
+#
+# Combined list of RabbitMQ user accounts, passed to the Ansible task.
+rabbitmq_server__combined_accounts: '{{ rabbitmq_server__admin_accounts
+                                        + rabbitmq_server__default_accounts
+                                        + rabbitmq_server__accounts
+                                        + rabbitmq_server__group_accounts
+                                        + rabbitmq_server__host_accounts }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__admin_default_vhost [[[
+#
+# The default RabbitMQ virtual host which will be configured for the RabbitMQ
+# administrator accounts.
+rabbitmq_server__admin_default_vhost: '/'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__account_password_length [[[
+#
+# The default length of the autogenerated user account passwords.
+rabbitmq_server__account_password_length: '32'
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ cluster configuration [[[
+# ----------------------------------
+
+# .. envvar:: rabbitmq_server__cluster_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to communicate with
+# the RabbitMQ service to form a cluster (TCP ports 4369, 25672).
+# If nothing is specified, no direct cluster communication is allowed.
+rabbitmq_server__cluster_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Public Key Infrastructure configuration [[[
+# -------------------------------------------
+
+# These variables configure the PKI environment for RabbitMQ service using the
+# debops.pki_ Ansible role. See its documentation for more details.
+
+# .. envvar:: rabbitmq_server__pki [[[
+#
+# Enable or disable PKI support.
+rabbitmq_server__pki: '{{ True
+                          if (ansible_local|d() and ansible_local.pki|d() and
+                              ansible_local.pki.enabled|d() and
+                              ansible_local.pki.enabled|bool) else False }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_path [[[
+#
+# Absolute path to the directory with PKI realms.
+rabbitmq_server__pki_path: '{{ ansible_local.pki.path
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.path|d())
+                               else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_realm [[[
+#
+# Name of the PKI realm to use by the RabbitMQ service.
+rabbitmq_server__pki_realm: '{{ ansible_local.pki.realm
+                                if (ansible_local|d() and ansible_local.pki|d() and
+                                    ansible_local.pki.realm|d())
+                                else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_ca [[[
+#
+# Name of the Certificate Authority certificate file to use.
+rabbitmq_server__pki_ca: '{{ ansible_local.pki.ca
+                             if (ansible_local|d() and ansible_local.pki|d() and
+                                 ansible_local.pki.ca|d())
+                             else "CA.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_crt [[[
+#
+# Name of the X.509 certificate file to use.
+rabbitmq_server__pki_crt: '{{ ansible_local.pki.crt
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.crt|d())
+                              else "default.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__pki_key [[[
+#
+# Name of the X.509 private key file to use.
+rabbitmq_server__pki_key: '{{ ansible_local.pki.key
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.key|d())
+                              else "default.key" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__cacertfile [[[
+#
+# Absolute path of the Certificate Authority certificate to use.
+rabbitmq_server__cacertfile: '{{ rabbitmq_server__pki_path
+                                 + "/" + rabbitmq_server__pki_realm
+                                 + "/" + rabbitmq_server__pki_ca }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__certfile [[[
+#
+# Absolute path of the X.509 certificate to use.
+rabbitmq_server__certfile: '{{ rabbitmq_server__pki_path
+                               + "/" + rabbitmq_server__pki_realm
+                               + "/" + rabbitmq_server__pki_crt }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__keyfile [[[
+#
+# Absolute path of the X.509 private key to use.
+rabbitmq_server__keyfile: '{{ rabbitmq_server__pki_path
+                              + "/" + rabbitmq_server__pki_realm
+                              + "/" + rabbitmq_server__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ssl_versions [[[
+#
+# List of TLS/SSL protocol versions supported by the RabbitMQ service.
+rabbitmq_server__ssl_versions: [ 'tlsv1.2', 'tlsv1.1' ]
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ssl_ciphers [[[
+#
+# A Erlang raw string which contains a list of TLS/SSL ciphers to allow by the
+# server. Contents of this variable are gathered by the Ansible local facts.
+rabbitmq_server__ssl_ciphers: '{{ ansible_local.rabbitmq_server.raw_erlang_ssl_ciphers
+                                  if (ansible_local|d() and ansible_local.rabbitmq_server|d() and
+                                      ansible_local.rabbitmq_server.raw_erlang_ssl_ciphers|d())
+                                  else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ssl_dhparam [[[
+#
+# Path to the file with Diffie-Hellman parameters to use by the RabbitMQ
+# service. See debops.dhparam_ Ansible role for more details.
+rabbitmq_server__ssl_dhparam: '{{ (ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]
+                                   if (ansible_local|d() and ansible_local.dhparam|d() and
+                                       ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]|d())
+                                   else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ssl_dhparam_set [[[
+#
+# Name of the ``dhparam`` set to use.
+rabbitmq_server__ssl_dhparam_set: 'default'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: rabbitmq_server__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+rabbitmq_server__apt_preferences__dependent_list:
+
+  - packages: [ 'erlang', 'erlang-*' ]
+    backports: [ 'jessie' ]
+    reason: |
+      Erlang 19.x allows for deactivation of the
+      TLS Client-Initiated Renegotiation (anti-DoS),
+      better support for Elliptic Curve Cryptography
+    by_role: 'debops.rabbitmq_server'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+rabbitmq_server__etc_services__dependent_list:
+
+  - name: 'einc'
+    port: '25672'
+    comment: 'Erlang Inter-Node Communication (RabbitMQ)'
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ Ansible role.
+rabbitmq_server__ferm__dependent_rules:
+
+  - name: 'rabbitmq-amqp'
+    type: 'accept'
+    saddr: '{{ rabbitmq_server__amqp_allow }}'
+    dport: [ 'amqp' ]
+    accept_any: '{{ False if rabbitmq_server__pki|bool else True }}'
+
+  - name: 'rabbitmq-amqps'
+    type: 'accept'
+    saddr: '{{ rabbitmq_server__amqps_allow }}'
+    dport: [ 'amqps' ]
+    accept_any: True
+    rule_state: '{{ "present" if rabbitmq_server__pki|bool else "absent" }}'
+
+  - name: 'rabbitmq-cluster'
+    type: 'accept'
+    saddr: '{{ rabbitmq_server__cluster_allow }}'
+    dport: [ 'epmd', 'einc' ]
+    accept_any: False
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,14 @@
+{% set rabbitmq_server__tpl_admin_accounts = [] %}
+{% if ansible_local|d() and ansible_local.core|d() and ansible_local.core.admin_users|d() %}
+{%   for admin in ansible_local.core.admin_users %}
+{%     set _ = rabbitmq_server__tpl_admin_accounts.append({
+  'name': admin,
+  'vhost': rabbitmq_server__admin_default_vhost,
+  'tags': 'administrator',
+  'configure_priv': '.*',
+  'read_priv': '.*',
+  'write_priv': '.*'
+}) %}
+{%   endfor %}
+{% endif %}
+{{ rabbitmq_server__tpl_admin_accounts }}
