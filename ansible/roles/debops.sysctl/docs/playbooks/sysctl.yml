@@ -1,0 +1,14 @@
+---
+
+- name: Manage kernel parameters using sysctl
+  hosts: [ 'debops_all_hosts', 'debops_service_sysctl' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.sysctl
+      tags: [ 'role::sysctl' ]

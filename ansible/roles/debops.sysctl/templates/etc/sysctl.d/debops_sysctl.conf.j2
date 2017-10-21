@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+{% for key, value in sysctl__combined_parameters | dictsort %}
+{%   if value.state|d('present') != 'absent' %}
+{%     if value.comment|d() %}
+{{ value.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{%     endif -%}
+{{ key }} = {{ value if value is string else value.value }}
+{%   endif %}
+{% endfor %}

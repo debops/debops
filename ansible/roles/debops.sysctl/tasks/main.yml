@@ -1,0 +1,34 @@
+---
+
+# The 'sysctl' Ansible module was used previously, however using a template and
+# 'sysctl --system' command is faster and doesn't create accidental idempotency
+# loops when kernel parameters are modified in other configuration files.
+#
+# Check the role commit history for details.
+
+- name: Pre hooks
+  include: '{{ lookup("task_src", "sysctl/pre_main.yml") }}'
+
+- name: Generate kernel parameters config file
+  template:
+    src: 'etc/sysctl.d/debops_sysctl.conf.j2'
+    dest: '{{ sysctl__config_file }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: sysctl__register_config
+
+- name: Check sysctl command capabilities
+  shell: sysctl --help | grep -E '^\s+\-\-system\s+' || true
+  register: sysctl__register_system
+  when: sysctl__register_config|changed
+  check_mode: False
+
+- name: Apply kernel parameters if they were modified
+  command: '{{ "sysctl --system"
+               if (sysctl__register_system.stdout != "")
+               else ("sysctl -e -p " + sysctl__config_file) }}'
+  when: sysctl__register_config|changed
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "sysctl/post_main.yml") }}'

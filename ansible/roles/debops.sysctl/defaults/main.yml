@@ -1,0 +1,288 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.sysctl default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Shared memory configuration [[[
+# -------------------------------
+
+# .. envvar:: sysctl__shared_memory_configure [[[
+#
+# Should the shared memory be configured by the ``debops.sysctl`` role?
+sysctl__shared_memory_configure: True
+
+                                                                   # ]]]
+# .. envvar:: sysctl__shared_memory_base [[[
+#
+# Base amount of memory used for shared memory calculations.
+sysctl__shared_memory_base: '{{ ((ansible_memtotal_mb | int * 1024 * 1024) - 8192) }}'
+
+                                                                   # ]]]
+# .. envvar:: sysctl__shared_memory_shmall_limiter [[[
+#
+# How much of the total memory is reserved for shared memory.
+sysctl__shared_memory_shmall_limiter: '{{ 0.8
+                                          if (ansible_memtotal_mb|int >= 4096)
+                                          else 0.5 }}'
+
+                                                                   # ]]]
+# .. envvar:: sysctl__shared_memory_shmall [[[
+#
+# Number of memory pages that can be used for shared memory.
+sysctl__shared_memory_shmall: '{{ ((sysctl__shared_memory_base|int *
+                                    sysctl__shared_memory_shmall_limiter|float) / 4096)
+                                  | round | int }}'
+
+                                                                   # ]]]
+# .. envvar:: sysctl__shared_memory_max_limiter [[[
+#
+# Maximum size of shared memory segment as % of available memory
+sysctl__shared_memory_max_limiter: '{{ 0.5
+                                       if (ansible_memtotal_mb|int >= 4096)
+                                       else 0.2 }}'
+
+                                                                   # ]]]
+# .. envvar:: sysctl__shared_memory_shmmax [[[
+#
+# Maximum amount of shared memory a process can reserve for itself
+sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base|int *
+                                   sysctl__shared_memory_max_limiter|float)
+                                   | round | int }}'
+
+                                                                   # ]]]
+# .. envvar:: sysctl__shared_memory_map [[[
+#
+# Sysctl configuration file path where all kernel parameters will be configured
+# by ``debops.sysctl``.
+sysctl__shared_memory_map:
+  'kernel.shmmax':
+    value: '{{ sysctl__shared_memory_shmmax }}'
+    state: '{{ sysctl__shared_memory_configure|bool | ternary("present", "absent") }}'
+  'kernel.shmall':
+    value: '{{ sysctl__shared_memory_shmall }}'
+    state: '{{ sysctl__shared_memory_configure|bool | ternary("present", "absent") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Paging and swap control [[[
+# ---------------------------
+
+# .. envvar:: sysctl__paging_configure [[[
+#
+# Should the paging related parameters be configured by the ``debops.sysctl``
+# role?
+sysctl__paging_configure: '{{ True
+                              if not (ansible_virtualization_role == "guest"
+                                      and (ansible_virtualization_type == "openvz"
+                                      or ansible_virtualization_type == "lxc"))
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: sysctl__swappiness [[[
+#
+# How aggressively the kernel swaps out anonymous memory relative to pagecache
+# and other caches. Increasing the value increases the amount of swapping.
+# Can be set to values between 0 and 100 inclusive.
+sysctl__swappiness: 60
+
+                                                                   # ]]]
+# .. envvar:: sysctl__vfs_cache_pressure [[[
+#
+# Tendency of the kernel to reclaim the memory which is used for caching of VFS
+# caches, versus pagecache and swap. Increasing this value increases the rate
+# at which VFS caches are reclaimed.
+sysctl__vfs_cache_pressure: 100
+
+                                                                   # ]]]
+# .. envvar:: sysctl__paging_map [[[
+#
+# Sysctl configuration file path where all kernel parameters will be configured
+# by ``debops.sysctl``.
+sysctl__paging_map:
+  'vm.swappiness':
+    value: '{{ sysctl__swappiness }}'
+    comment: 'How aggressively the kernel swaps out anonymous memory relative to pagecache and other caches.'
+    state: '{{ sysctl__paging_configure|bool | ternary("present", "absent") }}'
+  'vm.vfs_cache_pressure':
+    value: '{{ sysctl__vfs_cache_pressure }}'
+    comment: 'Tendency of the kernel to reclaim the memory which is used for caching of VFS caches, versus pagecache and swap.'
+    state: '{{ sysctl__paging_configure|bool | ternary("present", "absent") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Hardening [[[
+# -------------
+
+# .. envvar:: sysctl__hardening_enabled [[[
+#
+# Should the :envvar:`sysctl__hardening_map` be applied?
+sysctl__hardening_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: sysctl__system_ip_forwarding_enabled [[[
+#
+# Is the system expected to forward IP traffic?
+sysctl__system_ip_forwarding_enabled: '{{ ansible_local.ferm.forward | bool
+                                          if (ansible_local|d() and ansible_local.ferm|d() and
+                                              "forward" in ansible_local.ferm)
+                                          else False }}'
+
+                                                                   # ]]]
+# .. envvar:: sysctl__hardening_ipv6_disabled [[[
+#
+# Whether IPv6 should be disabled.
+sysctl__hardening_ipv6_disabled: False
+
+                                                                   # ]]]
+# .. envvar:: sysctl__hardening_experimental_enabled [[[
+#
+# Should experimental settings in the :envvar:`sysctl__hardening_map` be applied?
+sysctl__hardening_experimental_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: sysctl__hardening_map [[[
+#
+# Sysctl configuration file path where all kernel parameters will be configured
+# by ``debops.sysctl``.
+#
+# Sources:
+#
+# * https://wiki.archlinux.org/index.php/sysctl
+# * hardening.os-hardening_
+# * https://wiki.ubuntu.com/ImprovedNetworking/KernelSecuritySettings
+#
+sysctl__hardening_map:
+  'net.ipv4.ip_forward':
+    value: 0
+    comment: |
+      Disable IPv4 traffic forwarding.
+    state: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary("absent", "present") }}'
+  'net.ipv6.conf.all.forwarding':
+    value: 0
+    comment: 'Disable IPv6 traffic forwarding.'
+    state: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary("absent", "present") }}'
+
+  'net.ipv6.conf.all.accept_ra':
+    value: 0
+    comment: 'Ignore IPv6 RAs.'
+    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+  'net.ipv6.conf.default.accept_ra':
+    value: 0
+    comment: 'Ignore IPv6 RAs.'
+    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv4.conf.all.rp_filter':
+    value: 1
+    comment: 'Enable RFC-recommended source validation feature.'
+    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+  'net.ipv4.conf.default.rp_filter':
+    value: 1
+    comment: 'Enable RFC-recommended source validation feature.'
+    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv4.icmp_echo_ignore_broadcasts':
+    value: 1
+    comment: |
+      Reduce the surface on SMURF attacks.
+      Make sure to ignore ECHO broadcasts, which are only required in broad network analysis.
+    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv4.icmp_ignore_bogus_error_responses':
+    value: 1
+    comment: 'There is no reason to accept bogus error responses from ICMP, so ignore them instead.'
+    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv4.icmp_ratelimit':
+    value: 100
+    comment: 'Limit the amount of traffic the system uses for ICMP.'
+    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv4.icmp_ratemask':
+    value: 88089
+    comment: |
+      Adjust the ICMP ratelimit to include ping, dst unreachable,
+      source quench, ime exceed, param problem, timestamp reply, information reply
+    state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv6.conf.all.disable_ipv6':
+    value: 1
+    comment: 'Disable IPv6.'
+    state: '{{ sysctl__hardening_ipv6_disabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv4.tcp_timestamps':
+    value: 0
+    comment: 'Protect against wrapping sequence numbers at gigabit speeds.'
+    state: '{{ (sysctl__hardening_enabled|bool and
+                not (ansible_virtualization_role == "guest" and ansible_virtualization_type == "openvz"))
+               | ternary("present", "absent") }}'
+
+  'net.ipv4.conf.all.arp_ignore':
+    value: 1
+    comment: 'Define restriction level for announcing the local source IP.'
+    state: '{{ sysctl__hardening_experimental_enabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv4.conf.all.arp_announce':
+    value: 2
+    comment: |
+      Define mode for sending replies in response to received ARP requests that
+      resolve local target IP addresses
+    state: '{{ sysctl__hardening_experimental_enabled|bool | ternary("present", "absent") }}'
+
+  'net.ipv4.tcp_rfc1337':
+    value: 1
+    comment: 'RFC 1337 fix F1.'
+    state: '{{ (sysctl__hardening_enabled|bool and
+                not (ansible_virtualization_role == "guest" and ansible_virtualization_type == "openvz"))
+               | ternary("present", "absent") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom kernel parameters [[[
+# ----------------------------
+
+# .. envvar:: sysctl__parameters [[[
+#
+# This variable is intended to be used in Ansible’s global inventory.
+sysctl__parameters: {}
+
+                                                                   # ]]]
+# .. envvar:: sysctl__group_parameters [[[
+#
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+sysctl__group_parameters: {}
+
+                                                                   # ]]]
+# .. envvar:: sysctl__host_parameters [[[
+#
+# This variable is intended to be used in the inventory of hosts.
+sysctl__host_parameters: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# Role internals [[[
+# ------------------
+
+# .. envvar:: sysctl__combined_parameters [[[
+#
+# Sysctl configuration file path where all kernel parameters will be configured
+# by ``debops.sysctl``.
+sysctl__combined_parameters: '{{ sysctl__shared_memory_map
+                                 | combine(sysctl__paging_map)
+                                 | combine(sysctl__hardening_map)
+                                 | combine(sysctl__parameters)
+                                 | combine(sysctl__group_parameters)
+                                 | combine(sysctl__host_parameters) }}'
+
+                                                                   # ]]]
+# .. envvar:: sysctl__config_file [[[
+#
+# Sysctl configuration file path where all kernel parameters will be configured
+# by ``debops.sysctl``.
+sysctl__config_file: '/etc/sysctl.d/10-debops_sysctl.conf'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
