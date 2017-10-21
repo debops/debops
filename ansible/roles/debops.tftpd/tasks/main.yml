@@ -1,0 +1,22 @@
+---
+
+- name: Install required packages
+  apt:
+    name: 'tftpd-hpa'
+    state: 'present'
+    install_recommends: False
+  register: tftpd_register_install
+
+- name: Set tftpd-hpa parameters
+  template:
+    src: 'etc/default/tftpd-hpa.j2'
+    dest: '/etc/default/tftpd-hpa'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: tftpd_register_template
+
+- name: Reconfigure TFTP server
+  command: dpkg-reconfigure --frontend=noninteractive tftpd-hpa
+  when: tftpd_register_template is defined and tftpd_register_template.changed
+
