@@ -1,0 +1,27 @@
+---
+
+- name: Manage nullmailer SMTP server
+  hosts: [ 'debops_all_hosts', 'debops_service_nullmailer' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.nullmailer/env
+      tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nullmailer__ferm__dependent_rules }}'
+
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers' ]
+      tcpwrappers__dependent_allow:
+        - '{{ nullmailer__tcpwrappers__dependent_allow }}'
+
+    - role: debops.nullmailer
+      tags: [ 'role::nullmailer' ]

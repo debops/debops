@@ -1,0 +1,17 @@
+---
+
+- name: Check if MTA is installed
+  environment:
+    LC_MESSAGES: 'C'
+  shell: dpkg --get-selections | grep -w -E '({{ nullmailer__skip_mta_packages | join("|") }})' | awk '{print $1}'
+  register: nullmailer__register_mta
+  changed_when: False
+  failed_when: False
+  check_mode: False
+
+- name: Set nullmailer deployment state
+  set_fact:
+    nullmailer__deploy_state: '{{ "present"
+                                  if (nullmailer__enabled|bool and
+                                      (not nullmailer__skip_mta|bool or nullmailer__register_mta.stdout == ""))
+                                  else "absent" }}'
