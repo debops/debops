@@ -1,0 +1,660 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.elasticsearch default variables [[[
+# ==========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages, version [[[
+# -------------------------
+
+# The ``debops.elasticsearch`` role uses the ``debops.elatic_co`` Ansible role
+# to configure the Elastic APT repositories and install the packages. The role
+# also installs the Ansible facts that provide the :command:`elasticsearch`
+# version.
+
+# .. envvar:: elasticsearch__base_packages [[[
+#
+# List of base APT packages to install.
+elasticsearch__base_packages: [ 'elasticsearch' ]
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__packages [[[
+#
+# List of additional APT packages to install with Elasticsearch.
+elasticsearch__packages: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__version [[[
+#
+# Store the detected Elasticsearch version in a convenient variable for
+# conditional configuration.
+elasticsearch__version: '{{ ansible_local.elastic_co.packages.elasticsearch
+                            if (ansible_local|d() and ansible_local.elastic_co|d() and
+                                ansible_local.elastic_co.packages|d() and
+                                ansible_local.elastic_co.packages.elasticsearch|d())
+                            else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX user and group [[[
+# -----------------------
+
+# .. envvar:: elasticsearch__user [[[
+#
+# Name of the UNIX user account used by Elasticsearch.
+elasticsearch__user: 'elasticsearch'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__group [[[
+#
+# Name of the UNIX primary group used by Elasticsearch.
+elasticsearch__group: 'elasticsearch'
+                                                                   # ]]]
+                                                                   # ]]]
+# Ansible inventory layout [[[
+# ----------------------------
+
+# .. envvar:: elasticsearch__inventory_group_all [[[
+#
+# Name of the Ansible inventory group which contains Elasticsearch host in
+# a "homogenous" configuration (each node having the same functions as every
+# other node).
+elasticsearch__inventory_group_all: 'debops_service_elasticsearch'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__inventory_group_master [[[
+#
+# Name of the Ansible inventory group which contains Elasticsearch master
+# nodes.
+elasticsearch__inventory_group_master: 'debops_service_elasticsearch_master'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__inventory_group_data [[[
+#
+# Name of the Ansible inventory group which contains Elasticsearch data nodes.
+elasticsearch__inventory_group_data: 'debops_service_elasticsearch_data'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__inventory_group_ingest [[[
+#
+# Name of the Ansible inventory group which contains Elasticsearch ingest
+# nodes.
+elasticsearch__inventory_group_ingest: 'debops_service_elasticsearch_ingest'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__inventory_group_lb [[[
+#
+# Name of the Ansible inventory group which contains Elasticsearch load
+# balancer nodes.
+elasticsearch__inventory_group_lb: 'debops_service_elasticsearch_lb'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__inventory_master_hosts [[[
+#
+# List of Ansible inventory hosts which should be treated as Elasticsearch
+# master nodes. See :ref:`elasticsearch__ref_clustering` for more details.
+elasticsearch__inventory_master_hosts: '{{ (groups[elasticsearch__inventory_group_master]
+                                            | d(groups[elasticsearch__inventory_group_all]))
+                                           if elasticsearch__allow_tcp else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: elasticsearch__allow_http [[[
+#
+# List of IP addresses or CIDR subnets that can connect to the Elasticsearch
+# HTTP service. This does not need to be set to allow the nodes to communicate.
+# If this list is empty, nobody can connect to the HTTP server directly.
+elasticsearch__allow_http: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__allow_tcp [[[
+#
+# List of IP addresses or CIDR subnets that can connect to the Elasticsearch
+# TCP transport port. This variable needs to be set to allow nodes to
+# communicate. If this list is empty, nobody can connect to the transport port
+# and the Elasticsearch service is configured in a standalone mode.
+elasticsearch__allow_tcp: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Elasticsearch network options [[[
+# ---------------------------------
+
+# .. envvar:: elasticsearch__network_host [[[
+#
+# List of network interface names or IP addresses on which Elasticsearch should
+# listen for connections. By default, if debops.ferm_ firewall is enabled,
+# Elastisearch will listen on ``localhost`` and private IP addresses only. See
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html
+# for more details.
+elasticsearch__network_host: '{{ [ "_local_", "_site_" ]
+                                 if (ansible_local|d() and ansible_local.ferm|d() and
+                                     ansible_local.ferm.enabled|d() and
+                                     ansible_local.ferm.enabled|bool)
+                                 else [ "_local_" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__http_port [[[
+#
+# The port on which Elasticsearch will listen for HTTP connections.
+elasticsearch__http_port: '9200'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__transport_tcp_port [[[
+#
+# The port on which Elasticsearch will listen for TCP transport connections.
+elasticsearch__transport_tcp_port: '9300'
+                                                                   # ]]]
+                                                                   # ]]]
+# Elasticsearch cluster options [[[
+# ---------------------------------
+
+# .. envvar:: elasticsearch__domain [[[
+#
+# The DNS domain of the host.
+elasticsearch__domain: '{{ ansible_local.core.domain
+                           if (ansible_local|d() and ansible_local.core|d() and
+                               ansible_local.core.domain|d())
+                           else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__cluster_name [[[
+#
+# Name of the Elasticsearch cluster, should be the same on all of the cluster
+# nodes. By default it's based on the host domain name.
+elasticsearch__cluster_name: '{{ elasticsearch__domain | replace(".","-") }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__node_name [[[
+#
+# Descriptive name of the Elasticsearch node, by default based on the hostname.
+elasticsearch__node_name: '{{ ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__discovery_hosts [[[
+#
+# List of Elasticsearch nodes which should be contacted for unicast cluster
+# discovery. See :ref:`elasticsearch__ref_clustering` for more details.
+elasticsearch__discovery_hosts: '{{ elasticsearch__inventory_master_hosts }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__discovery_minimum_master_nodes [[[
+#
+# Minimum number of master-eligible nodes that are required to achieve quorum.
+elasticsearch__discovery_minimum_master_nodes: '{{ "1" if (elasticsearch__inventory_master_hosts | count <= 2)
+                                                       else ((elasticsearch__inventory_master_hosts | count / 2) | round(0, "floor") | int + 1) }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__gateway_recover_after_nodes [[[
+#
+# Number of Elasticsearch nodes required to enable cluster initial recovery
+# after full restart.
+elasticsearch__gateway_recover_after_nodes: '{{ elasticsearch__discovery_minimum_master_nodes }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Node functions [[[
+# ------------------
+
+# These variables define the functionality of a given Elasticsearch node. See
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html
+# for more details.
+
+# .. envvar:: elasticsearch__node_master [[[
+#
+# When enabled, this node is a master-eligible node and can be elected as
+# a master.
+#
+# Warning: this variable is not taken into account for master node
+# calculations. See :ref:`elasticsearch__ref_clustering` for more details.
+elasticsearch__node_master: '{{ True
+                                if (elasticsearch__inventory_group_master in group_names)
+                                else (False
+                                      if (elasticsearch__inventory_group_data in group_names)
+                                      else (False
+                                            if (elasticsearch__inventory_group_ingest in group_names)
+                                            else (False
+                                                  if (elasticsearch__inventory_group_lb in group_names)
+                                                  else True))) }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__node_data [[[
+#
+# When enabled, this node can hold the cluster data and perform various
+# operations like searching and aggregation.
+elasticsearch__node_data: '{{ True
+                              if (elasticsearch__inventory_group_data in group_names)
+                              else (False
+                                    if (elasticsearch__inventory_group_master in group_names)
+                                    else (False
+                                          if (elasticsearch__inventory_group_ingest in group_names)
+                                          else (False
+                                                if (elasticsearch__inventory_group_lb in group_names)
+                                                else True))) }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__node_ingest [[[
+#
+# When enabled, this node can perform operations on documents before indexing
+# them using an ingest pipeline.
+elasticsearch__node_ingest: '{{ True
+                                if (elasticsearch__inventory_group_ingest in group_names)
+                                else (False
+                                      if (elasticsearch__inventory_group_master in group_names)
+                                      else (False
+                                            if (elasticsearch__inventory_group_data in group_names)
+                                            else (False
+                                                  if (elasticsearch__inventory_group_lb in group_names)
+                                                  else True))) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Memory options [[[
+# ------------------
+
+# The variables below configure JVM memory allocation options. See
+# https://www.elastic.co/guide/en/elasticsearch/guide/current/heap-sizing.html
+# for more details.
+
+# .. envvar:: elasticsearch__memory_lock [[[
+#
+# Enable or disable memory lock depending on availability of required POSIX
+# capabilities. If this variable is enabled, :command:`systemd` memlock limit
+# is configured.
+elasticsearch__memory_lock: '{{ True
+                                if (not ansible_system_capabilities_enforced|bool or
+                                    (ansible_system_capabilities_enforced|bool and
+                                     "cap_ipc_lock" in ansible_system_capabilities))
+                                else False }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__systemd_limit_memlock [[[
+#
+# Specify maximum size of the process memory in bytes that the process is
+# allowed to lock in RAM and not have it stored in swap. Specify ``infinity``
+# to disable the maximum limit. This setting is applied through the
+# :command:`systemd` service unit.
+elasticsearch__systemd_limit_memlock: 'infinity'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__jvm_memory_heap_size_multiplier [[[
+#
+# This variable defines a float value which will be used to select the JVM heap
+# size depending on the size of the available system RAM.
+elasticsearch__jvm_memory_heap_size_multiplier: '{{ "0.2"
+                                                    if (ansible_memtotal_mb|int / 2 <= 2048)
+                                                    else "0.45" }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__jvm_memory_min_heap_size [[[
+#
+# Specify the minimum JVM heap size, depending on the available system RAM.
+elasticsearch__jvm_memory_min_heap_size: '{{ (((ansible_memtotal_mb|int
+                                               * elasticsearch__jvm_memory_heap_size_multiplier|float)
+                                               | round | int) | string + "m")
+                                             if (ansible_memtotal_mb|int / 2 <= 32768)
+                                             else "32600m" }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__jvm_memory_max_heap_size [[[
+#
+# Specify the maximum JVM heap size, depending on the available system RAM.
+# This usually should be the same as the minimum heap size, for performance
+# reasons.
+elasticsearch__jvm_memory_max_heap_size: '{{ elasticsearch__jvm_memory_min_heap_size }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Elasticsearch configuration file [[[
+# ------------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/elasticsearch/elasticsearch.yml` configuration file.
+# See :ref:`elasticsearch__ref_configuration` for the details and configuration
+# syntax.
+
+# .. envvar:: elasticsearch__default_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+elasticsearch__default_configuration:
+
+  - name: 'cluster.name'
+    value: '{{ elasticsearch__cluster_name }}'
+    comment: 'Use a descriptive name for your cluster'
+
+  - name: 'node.meta.host_type'
+    comment: 'Type of the node'
+    options:
+      'master': '{{ elasticsearch__node_master }}'
+      'data':   '{{ elasticsearch__node_data }}'
+      'ingest': '{{ elasticsearch__node_ingest }}'
+
+  - name: 'node.name'
+    value: '{{ elasticsearch__node_name }}'
+    comment: 'Use a descriptive name for the node'
+
+  - name: 'node.attr.rack'
+    value: 'r1'
+    comment: 'Add custom attributes to the node'
+    state: 'comment'
+
+  - name: 'network.host'
+    value: '{{ elasticsearch__network_host }}'
+    comment: 'Set the bind address to a specific IP (IPv4 or IPv6)'
+
+  - name: 'http.port'
+    value: '{{ elasticsearch__http_port }}'
+    comment: 'Set a custom port for HTTP'
+
+  - name: 'transport.tcp.port'
+    value: '{{ elasticsearch__transport_tcp_port }}'
+    comment: 'Set a custom port for TCP transport'
+
+  - name: 'discovery.zen.ping.unicast.hosts'
+    value: '{{ elasticsearch__discovery_hosts }}'
+    state: '{{ "present" if elasticsearch__discovery_hosts else "absent" }}'
+    comment: |
+      Pass an initial list of hosts to perform discovery when new node is started:
+      The default list of hosts is ["127.0.0.1", "[::1]"]
+
+  - name: 'discovery.zen.minimum_master_nodes'
+    value: '{{ elasticsearch__discovery_minimum_master_nodes }}'
+    comment: |
+      Prevent the "split brain" by configuring the majority of nodes
+      (total number of master-eligible nodes / 2 + 1)
+
+  - name: 'gateway.recover_after_nodes'
+    comment: 'Block initial recovery after a full cluster restart until N nodes are started'
+    value: '{{ elasticsearch__gateway_recover_after_nodes }}'
+
+  - name: 'action.destructive_requires_name'
+    value: True
+    comment: 'Require explicit names when deleting indices'
+
+  - name: 'bootstrap.memory_lock'
+    value: '{{ True if elasticsearch__memory_lock|bool else False }}'
+    comment: |
+      Lock the memory on startup
+
+      Make sure that the heap size is set to about half the memory available
+      on the system and that the owner of the process is allowed to use this
+      limit.
+
+      Elasticsearch performs poorly when the system is swapping the memory.
+
+  - name: 'path.data'
+    value: '/path/to/data'
+    state: 'comment'
+    comment: |
+      Path to directory where to store the data
+      (separate multiple locations by comma)
+
+  - name: 'path.logs'
+    value: '/path/to/logs'
+    state: 'comment'
+    comment: 'Path to log files'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__configuration [[[
+#
+# List of configuration options defined on all hosts in the Ansible inventory.
+elasticsearch__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__master_configuration [[[
+#
+# List of configuration options defined on Elasticsearch master nodes
+# (needs to be placed in appropriate Ansible inventory group).
+elasticsearch__master_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__data_configuration [[[
+#
+# List of configuration options defined on Elasticsearch data nodes
+# (needs to be placed in appropriate Ansible inventory group).
+elasticsearch__data_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__ingest_configuration [[[
+#
+# List of configuration options defined on Elasticsearch ingest nodes
+# (needs to be placed in appropriate Ansible inventory group).
+elasticsearch__ingest_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__lb_configuration [[[
+#
+# List of configuration options defined on Elasticsearch load balancer nodes
+# (needs to be placed in appropriate Ansible inventory group).
+elasticsearch__lb_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__group_configuration [[[
+#
+# List of configuration options defined on hosts in specific Ansible inventory
+# group.
+elasticsearch__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__host_configuration [[[
+#
+# List of configuration options defined on specific hosts in the Ansible
+# inventory.
+elasticsearch__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__plugin_configuration [[[
+#
+# List of configuration options defined separately for any Elasticsearch
+# plugins. See :ref:`elasticsearch__ref_plugins` for more details.
+elasticsearch__plugin_configuration: '{{ lookup("template",
+                                         "lookup/elasticsearch__plugin_configuration.j2")
+                                         | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__dependent_role [[[
+#
+# A string that identifies another Ansible role that uses the
+# ``debops.elasticsearch`` role as a dependency. This value is needed to
+# correctly store the dependent configuration options.
+# See :ref:`elasticsearch__ref_dependency` for more details.
+elasticsearch__dependent_role: ''
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__dependent_state [[[
+#
+# Specify the state of the dependent configuration options, either ``present``
+# (options should be included in the configuration file) or ``absent`` (options
+# should be removed from the configuration file).
+# See :ref:`elasticsearch__ref_dependency` for more details.
+elasticsearch__dependent_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__dependent_configuration [[[
+#
+# List of Elasticsearch configuration options defined by another Ansible role
+# and specified using role dependent variables.
+elasticsearch__dependent_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__dependent_configuration_filter [[[
+#
+# Actual variable used in the combined Elasticsearch configuration that unwraps
+# the dependent configuration specified by other Ansible roles and converts it
+# into format understood by the ``debops.elasticsearch`` configuration
+# template. See :ref:`elasticsearch__ref_dependency` for more details.
+elasticsearch__dependent_configuration_filter: '{{ lookup("template",
+                                                   "lookup/elasticsearch__dependent_configuration_filter.j2")
+                                                   | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__combined_configuration [[[
+#
+# Actual list of Elasticsearch configuration options passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+elasticsearch__combined_configuration: '{{ lookup("flattened", (elasticsearch__default_configuration
+                                           + elasticsearch__plugin_configuration
+                                           + elasticsearch__dependent_configuration_filter
+                                           + elasticsearch__configuration
+                                           + elasticsearch__master_configuration
+                                           + elasticsearch__data_configuration
+                                           + elasticsearch__ingest_configuration
+                                           + elasticsearch__lb_configuration
+                                           + elasticsearch__group_configuration
+                                           + elasticsearch__host_configuration)) }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__configuration_sections [[[
+#
+# List of sections defined in the :file:`/etc/elasticsearch/elasticsearch.yml`
+# configuration file and corresponding variable groups.
+# See :ref:`elasticsearch__ref_configuration_sections` for more details.
+elasticsearch__configuration_sections:
+
+  - name: 'Cluster'
+    part: 'cluster'
+
+  - name: 'Node'
+    part: 'node'
+
+  - name: 'Paths'
+    part: 'path'
+
+  - name: 'Memory'
+    part: 'bootstrap'
+
+  - name: 'Network'
+    parts: [ 'network', 'http', 'transport' ]
+
+  - name: 'Discovery'
+    part: 'discovery'
+
+  - name: 'Gateway'
+    part: 'gateway'
+
+  - name: 'X-Pack'
+    part: 'xpack'
+
+  - name: 'Search Guard'
+    part: 'searchguard'
+
+  - name: 'ReadonlyREST'
+    part: 'readonlyrest'
+                                                                   # ]]]
+                                                                   # ]]]
+# Plugin configuration [[[
+# ------------------------
+
+# These variables define lists of Elasticsearch plugins to install/remove, as
+# well as additional configuration options for them.
+# See :ref:`elasticsearch__ref_plugins` for more details.
+
+# .. envvar:: elasticsearch__plugins [[[
+#
+# List of Elasticsearch plugins to manage on all hosts in the Ansible
+# inventory.
+elasticsearch__plugins: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__master_plugins [[[
+#
+# List of Elasticsearch plugins to manage on master nodes (variable needs to be
+# defined in appropriate Ansible inventory group).
+elasticsearch__master_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__data_plugins [[[
+#
+# List of Elasticsearch plugins to manage on data nodes (variable needs to be
+# defined in appropriate Ansible inventory group).
+elasticsearch__data_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__ingest_plugins [[[
+#
+# List of Elasticsearch plugins to manage on ingest nodes (variable needs to be
+# defined in appropriate Ansible inventory group).
+elasticsearch__ingest_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__lb_plugins [[[
+#
+# List of Elasticsearch plugins to manage on load balancer nodes (variable
+# needs to be defined in appropriate Ansible inventory group).
+elasticsearch__lb_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__group_plugins [[[
+#
+# List of Elasticsearch plugins to manage on hosts in specific Ansible
+# inventory group.
+elasticsearch__group_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__host_plugins [[[
+#
+# List of Elasticsearch plugins to manage on specific hosts in the Ansible
+# inventory.
+elasticsearch__host_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__combined_plugins [[[
+#
+# Actual list of Elasticsearch plugins that combines other plugin variables and
+# is used in the Ansible tasks and the configuration template.
+elasticsearch__combined_plugins: '{{ lookup("flattened", (elasticsearch__plugins
+                                     + elasticsearch__master_plugins
+                                     + elasticsearch__data_plugins
+                                     + elasticsearch__ingest_plugins
+                                     + elasticsearch__lb_plugins
+                                     + elasticsearch__group_plugins
+                                     + elasticsearch__host_plugins)) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: elasticsearch__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ Ansible role.
+elasticsearch__etc_services__dependent_list:
+
+  - name: 'elasticsearch-http'
+    port: '{{ elasticsearch__http_port }}'
+
+  - name: 'elasticsearch-tcp'
+    port: '{{ elasticsearch__transport_tcp_port }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__elastic_co__dependent_packages [[[
+#
+# Configuration for the ``debops.elastic_co`` Ansible role.
+elasticsearch__elastic_co__dependent_packages:
+  - '{{ elasticsearch__base_packages }}'
+  - '{{ elasticsearch__packages }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ Ansible role.
+elasticsearch__ferm__dependent_rules:
+
+  - name: 'elasticsearch_http'
+    type: 'accept'
+    dport: '{{ elasticsearch__http_port }}'
+    saddr: '{{ elasticsearch__allow_http }}'
+    accept_any: False
+
+  - name: 'elasticsearch_tcp'
+    type: 'accept'
+    dport: '{{ elasticsearch__transport_tcp_port }}'
+    saddr: '{{ elasticsearch__allow_tcp }}'
+    accept_any: False
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

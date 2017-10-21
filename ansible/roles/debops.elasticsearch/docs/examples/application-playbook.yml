@@ -1,0 +1,29 @@
+---
+
+- name: Manage application
+  hosts: [ 'debops_service_elasticsearch_application' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.elasticsearch/env
+      tags: [ 'role::elasticsearch', 'role::secret', 'role::elasticsearch:config' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::elasticsearch', 'role::elasticsearch:config' ]
+      secret__directories:
+        - '{{ elasticsearch__secret__directories }}'
+
+    - role: debops.elasticsearch
+      tags: [ 'role::elasticsearch' ]
+      elasticsearch__dependent_role: 'application'
+      elasticsearch__dependent_state: '{{ application__deploy_state }}'
+      elasticsearch__dependent_configuration:
+        - '{{ application__elasticsearch__dependent_configuration }}'
+
+    - role: application
+      tags: [ 'role::application' ]
