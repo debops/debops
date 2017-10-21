@@ -1,0 +1,50 @@
+---
+
+- name: Manage local mount points
+  mount:
+    name:   '{{ item.name }}'
+    src:    '{{ item.src }}'
+    fstype: '{{ item.fstype }}'
+    opts:   '{{ item.opts   | default(console_default_mount_options) }}'
+    state:  '{{ item.state  | default("mounted") }}'
+    passno: '{{ item.passno | default(omit) }}'
+    dump:   '{{ item.dump   | default(omit) }}'
+    fstab:  '{{ item.fstab  | default(omit) }}'
+  with_flattened:
+    - '{{ console_mounts }}'
+    - '{{ console_group_mounts }}'
+    - '{{ console_host_mounts }}'
+  when: ((item.name is defined and item.name) and
+         (item.src is defined and item.src) and
+         (item.fstype is defined and item.fstype))
+
+- name: Manage NFS mount points
+  mount:
+    name:   '{{ item.name }}'
+    src:    '{{ item.src }}'
+    fstype: '{{ item.fstype | default(console_default_mount_nfs_type) }}'
+    opts:   '{{ item.opts   | default(console_default_mount_nfs_options) }}'
+    state:  '{{ item.state  | default("mounted") }}'
+    passno: '{{ item.passno | default(omit) }}'
+    dump:   '{{ item.dump   | default(omit) }}'
+    fstab:  '{{ item.fstab  | default(omit) }}'
+  with_flattened:
+    - '{{ console_mounts_nfs }}'
+    - '{{ console_group_mounts_nfs }}'
+    - '{{ console_host_mounts_nfs }}'
+  when: ((item.name is defined and item.name) and
+         (item.src is defined and item.src))
+
+- name: Ensure mount directories exist when manually mounted
+  file:
+    path: '{{ item.name }}'
+    state: 'directory'
+  when: (item.state is string and item.state == 'present')
+  with_flattened:
+    - '{{ console_mounts }}'
+    - '{{ console_group_mounts }}'
+    - '{{ console_host_mounts }}'
+    - '{{ console_mounts_nfs }}'
+    - '{{ console_group_mounts_nfs }}'
+    - '{{ console_host_mounts_nfs }}'
+

@@ -1,0 +1,195 @@
+---
+
+# Custom string added to /etc/issue
+console_issue: '{{ ansible_domain.split(".")[0] | capitalize }}'
+
+# If ``True``, show the logged in users. Note that this count does only update
+# when the screen is manually refreshed.
+console__issue_show_logged_in_users: True
+
+# Enable or disable serial console (allows you to use 'lxc-console',
+# 'virsh console' and other similar commands)
+console_serial: False
+
+# Serial console port
+console_serial_port: 'ttyS0'
+
+# Serial console baud rate
+console_serial_baud: '115200'
+
+# Serial console TERM string used to define terminal capabilities
+console_serial_term: 'xterm'
+
+# String used to enable serial console in sysvinit /etc/inittab
+console_serial_inittab: 'S0:2345:respawn:/sbin/getty -L {{ console_serial_port }} {{ console_serial_baud }} {{ console_serial_term }}'
+
+# Contents of /etc/motd
+console_motd: |
+    -------------------------------------------------
+            This system is managed by Ansible
+    -------------------------------------------------
+
+# List of required console packages
+console_base_packages: [ 'locales' ]
+
+# List of packages to install depending on a condition
+console_conditional_packages:
+
+  # Install NFS support when remote filesystems are configured
+  - [ '{{ "nfs-common"
+          if (console_mounts_nfs|d() or
+              console_group_mounts_nfs|d() or
+              console_host_mounts_nfs|d())
+          else [] }}' ]
+
+  # Install 'sysnews' when news support is enabled
+  - [ '{{ "sysnews"
+          if (console_sysnews|d() and console_sysnews|bool)
+          else [] }}' ]
+
+# List of preferred text editors. The first one found will be configured as the
+# default for the ``editor`` command.
+console_preferred_editors:
+  - '/usr/bin/vim.basic'
+  - '/usr/bin/emacs24'
+  - '/usr/bin/vim.tiny'
+  - '/bin/nano'
+  - '/bin/ed'
+
+# Enable or disable FSCKFIX option in /etc/default/rcS
+# This option controls the behaviour of fsck during boot time, if it's enabled,
+# fsck will automatically repair filesystems without stopping the boot
+# process. Choices: yes, no.
+console_fsckfix: 'yes'
+
+# List of OS distribution releases which use the FSCKFIX option in a configuration file.
+console_fsckfix_releases: [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
+
+# List of locales to enable on the host
+console_locales: [ 'en_US.UTF-8' ]
+
+# Specify default system-wide locale
+console_locales_default: ''
+
+
+# ---- /proc & hidepid= options ----
+
+# Mounting /proc with hidepid= allows you to hide process information of other
+# users on unprivileged accounts. This functionality is only enabled on recent
+# Linux kernels, and only on hardware hosts or KVM virtual machines. For LXC
+# containers, have a look at the 'debops.lxc' role. For OpenVZ containers,
+# AFAIK there's no way to enable it.
+
+# Enable or disable hidepid= option in /proc. Disabling only stops Ansible
+# from adding hidepid= automatically, you need to remove the /proc entry from
+# /etc/fstab manually (and optionally remount command from /etc/rc.local)
+# because if Ansible tries to do this using the 'mount' module, it will try to
+# remove the /proc mount point as well. :-(
+console_proc_hidepid: True
+
+# What level of hidepid= to use (choices: 0, 1, 2)
+console_proc_hidepid_level: '2'
+
+# System group to set for /proc so that selected users can access it without
+# restrictions; this is meant for monitoring services, etc.
+console_proc_hidepid_group: 'procadmins'
+
+
+# ---- /etc/hosts ----
+
+# Add or remove entries in /etc/hosts
+console_hosts: {}
+console_group_hosts: {}
+console_host_hosts: {}
+
+# Examples:
+# console_hosts:
+#   '192.0.2.1': 'hostname.example.com'
+#   '2001:db8::1': [ 'host.example.org', 'host' ]
+#
+#   # These entries will be removed
+#   '192.0.2.3': ''
+#   '192.0.2.4': []
+
+
+# ---- Copy custom files ----
+
+# Copy arbitrary files from Ansible Controller to remote hosts. Ansible does
+# not check if source file exists. Most of the 'copy' module parameters can be
+# used as dict keys.
+console_custom_files: []
+
+# Examples:
+# console_custom_files:
+#
+#   # Copy single files
+#   - src: '/etc/fstab'
+#     dest: '/tmp/fstab'
+#
+#   # Copy directories
+#   - src: '/usr/local/'
+#     dest: '/tmp/local'
+#     owner: 'root'
+#     group: 'root'
+
+
+# ---- Filesystem mount points ----
+
+# You can use console_*_mounts lists to mout local or remote filesystems on
+# hosts. The syntax is the same as the 'mount' Ansible module. 'item.name' and
+# 'item.src' are required, additionally, 'item.fstype' is required for local
+# mount points.
+# For NFS mounts, you need to install 'nfs-common' package, for example by
+# adding it to 'console_packages' list.
+
+# Default mount options for local mount points
+console_default_mount_options: 'defaults'
+
+# Default mount options for NFS mount points
+console_default_mount_nfs_options: 'nosuid,hard,intr,proto=tcp,port=2049,_netdev'
+console_default_mount_nfs_type: 'nfs'
+
+# Examples:
+# console_mounts:
+#   - name: '/other/data'
+#     src: '/var/lib/data'
+#     opts: 'bind'
+#
+# console_nfs_mounts:
+#   - name: '/media/nfs'
+#     src: 'data.example.org:/srv/nfs'
+
+# Local mount points
+console_mounts: []
+console_group_mounts: []
+console_host_mounts: []
+
+# NFS mount points
+console_mounts_nfs: []
+console_group_mounts_nfs: []
+console_host_mounts_nfs: []
+
+
+# ---- sysnews support ----
+
+# Install ``sysnews`` package to present system-related news to users on log
+# in.
+console_sysnews: False
+
+# Add ``sysnews`` support in :file:`/etc/profile.d/` so it's executed conditionally
+# on user login.
+console_sysnews_global: True
+
+# Accounts with UID bigger than this variable's value will be shown the news on
+# interactive login.
+console_sysnews_min_uid: '500'
+
+# Dict variable with news entries. Each key is name of the news file, and
+# a value should be a YAML text block with the message stored in the file.
+# Example:
+#
+#   console_sysnews_entries:
+#     'WELCOME': |
+#       Welcome on the {{ ansible_fqdn }} server!
+#
+console_sysnews_entries: {}
