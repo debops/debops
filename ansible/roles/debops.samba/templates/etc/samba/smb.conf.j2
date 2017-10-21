@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+{% macro print_hash(hash) %}
+{% for key, value in hash|dictsort %}
+	{{ "%-30s" | format(key) | replace("_"," ") }} = {{ value }}
+{% endfor %}
+{% endmacro %}
+{% macro print_section(hash, section='global') %}
+[{{ section }}]
+{{ print_hash(hash) }}
+{% endmacro %}
+
+[global]
+	# Default options
+{{ print_hash(hash=samba__global) }}
+{% if samba__global_custom is defined and samba__global_custom %}
+	# Custom options
+{{ print_hash(hash=samba__global_custom) }}
+{% endif %}
+{% if samba__homes is defined and samba__homes %}
+{{ print_section(hash=samba__homes, section='homes') }}
+{% endif %}
+{% if samba__shares is defined and samba__shares %}
+{% for share in samba__shares.keys() %}
+[{{ share }}]
+{{ print_hash(hash=samba__shares[share]) }}
+{% endfor %}
+{% endif %}
+
+

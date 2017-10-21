@@ -1,0 +1,68 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Install Samba packages
+  apt:
+    pkg: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_flattened:
+    - '{{ samba__base_packages }}'
+
+- name: Create root Samba directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0751'
+  with_flattened:
+    - '{{ samba__path }}'
+    - '{{ samba__homes_path }}'
+    - '{{ samba__shares_path }}'
+  when: ('samba' in samba__base_packages)
+
+- name: Setup samba-homedir.sh script
+  template:
+    src: 'usr/local/sbin/samba-homedir.sh.j2'
+    dest: '/usr/local/sbin/samba-homedir.sh'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: ('samba' in samba__base_packages)
+
+- name: Configure Samba
+  template:
+    src: 'etc/samba/smb.conf.j2'
+    dest: '/etc/samba/smb.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Check samba config' ]
+
+# Kernel modules [[[
+
+- name: Load kernel module specified by samba__kernel_modules
+  modprobe:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened: '{{ samba__kernel_modules }}'
+  when: (('samba' in samba__base_packages) and
+        (samba__kernel_modules_load|bool))
+
+- name: Ensure kernel modules are loaded on system boot
+  template:
+    src: 'etc/modules-load.d/ansible-samba.conf.j2'
+    dest: '/etc/modules-load.d/ansible-samba.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (('samba' in samba__base_packages) and
+        (samba__kernel_modules_load|bool))
+
+- name: Remove legacy entries from /etc/modules
+  lineinfile:
+    dest: '/etc/modules'
+    regexp: '^nf_conntrack_netbios_ns'
+    state: 'absent'
+                                                                   # ]]]
