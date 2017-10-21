@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+
+{% if item.after | d('') or item.before | d('') %}
+[INCLUDES]
+
+{% if item.before | d('') %}
+before = {{ item.before }}
+
+{% endif %}
+{% if item.after | d('') %}
+after = {{ item.after }}
+
+{% endif %}
+{% endif %}
+[Definition]
+
+{% if item.definitions | d({}) %}
+{% for key, value in item.definitions.iteritems() %}
+{{ key }} = {{ value }}
+{% endfor %}
+
+{% endif %}
+failregex = {{ item.failregex | indent(12) }}
+
+ignoreregex = {{ item.ignoreregex | d('') | indent(14) }}

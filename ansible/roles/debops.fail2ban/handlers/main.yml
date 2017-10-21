@@ -1,0 +1,19 @@
+---
+
+- name: Assemble /etc/fail2ban/jail.local
+  assemble:
+    src: '/etc/fail2ban/jail.local.d'
+    dest: '/etc/fail2ban/jail.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload fail2ban jails' ]
+
+- name: Restart fail2ban
+  service:
+    name: 'fail2ban'
+    state: 'restarted'
+
+- name: Reload fail2ban jails
+  shell: type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true
+

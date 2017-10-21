@@ -1,0 +1,13 @@
+# This file is managed remotely, all changes will be lost
+
+# Custom configuration for iptables - xt_recent support
+
+[Definition]
+
+# Changes in the start line:
+# - <bantime> is configurable instead of static 3600 seconds
+# - <chain> is configurable instead of static INPUT
+actionstart = iptables -I <chain> -m recent --update --seconds <bantime> --name fail2ban-<name> -j DROP
+
+actionstop = echo / > /proc/net/xt_recent/fail2ban-<name>
+             iptables -D <chain> -m recent --update --seconds <bantime> --name fail2ban-<name> -j DROP
