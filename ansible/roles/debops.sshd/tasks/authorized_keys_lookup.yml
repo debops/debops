@@ -1,0 +1,57 @@
+---
+
+- name: Create OpenSSH lookup system group
+  group:
+    name: '{{ sshd__authorized_keys_lookup_group }}'
+    state: 'present'
+    system: True
+
+- name: Create OpenSSH lookup system user
+  user:
+    name: '{{ sshd__authorized_keys_lookup_user }}'
+    group: '{{ sshd__authorized_keys_lookup_group }}'
+    home: '{{ sshd__authorized_keys_lookup_home }}'
+    comment: 'OpenSSH Authorized Keys lookup'
+    shell: '/bin/false'
+    state: 'present'
+    createhome: False
+    append: False
+    system: True
+
+- name: Create OpenSSH LDAP bind password file
+  environment:
+    ANSIBLE_SSHD_LDAP_BINDPW: '{{ sshd__ldap_bind_pw }}'
+  shell: echo -n ${ANSIBLE_SSHD_LDAP_BINDPW} > {{ sshd__ldap_bind_pw_file }} ;
+         chmod 0640 {{ sshd__ldap_bind_pw_file }} ;
+         chown root.{{ sshd__authorized_keys_lookup_group }} {{ sshd__ldap_bind_pw_file }}
+  args:
+    creates: '{{ sshd__ldap_bind_pw_file }}'
+  when: sshd__authorized_keys_lookup_type|d() and
+        "ldap" in sshd__authorized_keys_lookup_type
+  no_log: True
+
+- name: Create /etc/ssh/authorized_keys_lookup.d directory
+  file:
+    path: '/etc/ssh/authorized_keys_lookup.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Generate authorized keys lookup scripts
+  template:
+    src: '{{ lookup("template_src", "etc/ssh/authorized_keys_lookup.d/" + item + ".j2") }}'
+    dest: '/etc/ssh/authorized_keys_lookup.d/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: '{{ sshd__authorized_keys_lookup_type }}'
+  when: sshd__authorized_keys_lookup_type|d()
+
+- name: Generate authorized keys lookup hook
+  template:
+    src: 'etc/ssh/authorized_keys_lookup.j2'
+    dest: '/etc/ssh/authorized_keys_lookup'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'

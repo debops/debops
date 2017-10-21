@@ -1,0 +1,10 @@
+---
+
+- name: Test sshd configuration and restart
+  command: sshd -t
+  notify: [ 'Restart sshd' ]
+
+- name: Restart sshd
+  service:
+    name: 'ssh'
+    state: 'restarted'
