@@ -1,0 +1,110 @@
+#!/bin/sh
+
+# This file is managed remotely, all changes will be lost
+
+# Send information about repository changes to administrator
+# Sourced from: https://gist.github.com/vincentbernat/7404733
+
+
+[ -n "${REPREPRO_OUT_DIR}" ] || {
+	echo "needs to be run by reprepro!" >&2
+	exit 1
+}
+cd "${REPREPRO_OUT_DIR}" || exit 1
+
+dsc() {
+	dsc="$(readlink --canonicalize "$1")"
+	tmp="$(mktemp -d)"
+        trap "rm -rf -- $tmp" EXIT
+	(cd -- "$tmp" && dpkg-source --no-copy -x "$dsc" > /dev/null)
+	cat <<EOF > "$tmp/mail"
+
+✂--------------------- Changelog --------------------------
+
+EOF
+	changelog="$(echo "$tmp"/*/debian/changelog)"
+	dpkg-parsechangelog -l"$changelog" \
+		${OLDVERSION:+--since "$OLDVERSION"} \
+		${VERSION:+--to "$VERSION"} \
+		>> "$tmp/mail"
+	cat <<EOF >> "$tmp/mail"
+
+✂--------------------- DSC file ---------------------------
+
+EOF
+	cat "$dsc" >> "$tmp/mail"
+
+	mail -r {{ reprepro_user + "@" + reprepro_fqdn }} \
+	     -s "[PACKAGES] $CODENAME/$COMPONENT: $ACTION $NAME" \
+	     {{ reprepro_admin_email | join(" ") }} < "$tmp/mail"
+}
+
+ACTION="$1"
+CODENAME="$2"
+PACKAGETYPE="$3"
+COMPONENT="$4"
+ARCHITECTURE="$5"
+NAME="$6"
+[ x"$PACKAGETYPE" = x"dsc" ] || {
+	echo "Should be a DSC package, not $PACKAGETYPE" >&2
+	exit 1
+}
+[ x"$ARCHITECTURE" = x"source" ] || {
+	echo "Should be a source package, not $ARCHITECTURE" >&2
+	exit 1
+}
+shift 6
+
+case "$ACTION" in
+	add|info)
+		VERSION="$1" ; shift
+		[ x"$1" = x"--" ] || exit 2
+		shift
+
+		while [ "$#" -gt 0 ] ; do
+			case "$1" in
+				*.dsc)
+					dsc "$1"
+					;;
+				--)
+					exit 2
+					;;
+			esac
+			shift
+		done
+		;;
+	remove)
+		OLDVERSION="$1" ; shift
+		[ x"$1" = x"--" ] || exit 2
+		shift
+		while [ "$#" -gt 0 ] ; do
+			case "$1" in
+				*.dsc)
+					dsc "$1"
+					;;
+				--)
+					exit 2
+					;;
+			esac
+			shift
+		done
+		;;
+	replace)
+		VERSION="$1" ; shift
+		OLDVERSION="$1" ; shift
+		[ x"$1" = x"--" ] || exit 2
+		shift
+		while [ "$#" -gt 0 -a x"$1" != x"--" ]; do
+			case "$1" in
+				*.dsc)
+					dsc "$1"
+					;;
+			esac
+			shift
+		done
+		[ x"$1" = x"--" ] || exit 2
+		# Ignore replaced dsc
+		;;
+esac
+
+exit 0

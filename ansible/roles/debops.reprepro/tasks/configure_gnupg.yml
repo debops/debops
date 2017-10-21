@@ -1,0 +1,54 @@
+---
+
+- name: Check if GnuPG directory exists
+  stat:
+    path: '{{ reprepro_home + "/.gnupg" }}'
+  register: reprepro_register_gpg
+
+- name: Check if GnuPG snapshot exists on Ansible Controller
+  stat:
+    path: '{{ reprepro_gpg_snapshot_path + "/" + reprepro_gpg_snapshot_name }}'
+  register: reprepro_register_gpg_snapshot
+  delegate_to: 'localhost'
+  become: False
+
+- name: Restore GnuPG snapshots
+  unarchive:
+    src: '{{ reprepro_gpg_snapshot_path + "/" + reprepro_gpg_snapshot_name }}'
+    dest: '{{ reprepro_home }}'
+  when: reprepro_register_gpg is defined and not reprepro_register_gpg.stat.exists and
+        reprepro_register_gpg_snapshot.stat.exists
+
+- name: Ensure that ~/.gnupg directory exists
+  file:
+    path: '{{ reprepro_home + "/.gnupg" }}'
+    state: 'directory'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0700'
+
+- name: Configure reprepro GnuPG instance
+  template:
+    src: 'var/lib/reprepro/gnupg/gpg.conf.j2'
+    dest: '{{ reprepro_home + "/.gnupg/gpg.conf" }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+
+- name: Create repository key template
+  template:
+    src: 'var/lib/reprepro/gnupg-key-template.j2'
+    dest: '{{ reprepro_home + "/.gnupg-key-template" }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+
+- name: Generate automatic signing key
+  command: gpg --batch --gen-key .gnupg-key-template chdir=~
+           creates=~/.gnupg/secring.gpg
+  become_user: '{{ reprepro_user }}'
+
+- name: Export automatic signing key
+  shell: 'gpg --armor --export "{{ reprepro_gpg_email }}" > {{ reprepro_repository_path + "/" + reprepro_distribution | lower + "/" + reprepro_domains[0] + ".asc" }} creates={{ reprepro_repository_path + "/" + reprepro_distribution | lower + "/" + reprepro_domains[0] + ".asc" }}'
+  become_user: '{{ reprepro_user }}'
+

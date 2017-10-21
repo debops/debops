@@ -1,0 +1,17 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% for key, value in item.iteritems() %}
+{% if key not in [ 'Distribution', 'Components', 'UDebComponents' ] and value %}
+{{ key }}: {{ value }}
+{% endif %}
+{% endfor %}
+{% if item.Components is defined and item.Components %}
+Components: {{ item.Components }}
+{% endif %}
+{% if item.UDebComponents is defined and item.UDebComponents %}
+UDebComponents: {{ item.UDebComponents }}
+{% endif %}
+{% if item.Architectures is undefined %}
+Architectures: {{ reprepro_architectures | join(" ") }}
+{% endif %}
+

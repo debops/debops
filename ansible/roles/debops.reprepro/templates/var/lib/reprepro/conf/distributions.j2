@@ -1,0 +1,40 @@
+# This file is managed by Ansible, all changes will be lost
+
+{% for key, value in item.iteritems() %}
+{% if key not in [ 'Distribution', 'Scripts', 'Components', 'UDebComponents', 'Update' ] and value %}
+{{ key }}: {{ value }}
+{% endif %}
+{% endfor %}
+{% if item.Components is defined and item.Components %}
+Components: {{ item.Components }}
+{% elif item.Components is undefined %}
+Components: {{ reprepro_repository_components[reprepro_distribution | lower] | join(" ") }}
+{% endif %}
+{% if item.UDebComponents is defined and item.UDebComponents %}
+UDebComponents: {{ item.UDebComponents }}
+{% elif item.UDebComponents is undefined %}
+UDebComponents: {{ reprepro_repository_components[reprepro_distribution | lower] | join(" ") }}
+{% endif %}
+{% if item.SignWith is undefined and reprepro_signwith %}
+SignWith: {{ reprepro_signwith }}
+{% endif %}
+{% if item.Architectures is undefined %}
+Architectures: {{ reprepro_architectures | join(" ") }}
+{% endif %}
+{% if item.DebIndices is undefined %}
+DebIndices: Packages Release . .gz .bz2
+{% endif %}
+{% if item.DscIndices is undefined %}
+DscIndices: Sources Release .gz .bz2
+{% endif %}
+{% if item.Tracking is undefined %}
+Tracking: keep all keepsources
+{% endif %}
+{% if (item.Update is defined and item.Update) and reprepro_updates %}
+Update: {{ item.Update }}
+{% endif %}
+Log: packages.{{ item.Distribution + "-" + item.Codename }}.log
+{% if item.Scripts is defined and item.Scripts %}
+{{ item.Scripts | indent(1,true) }}
+{% endif %}
+

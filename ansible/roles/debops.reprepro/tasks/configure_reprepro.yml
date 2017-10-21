@@ -1,0 +1,117 @@
+---
+
+- name: Install packages for Debian repository management
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_items: [ 'reprepro', 'dpkg-dev' ]
+
+- name: Create system group for reprepro
+  group:
+    name: '{{ reprepro_group }}'
+    system: True
+    state: 'present'
+
+- name: Create system user for reprepro
+  user:
+    name: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    system: True
+    shell: '/bin/bash'
+    home: '{{ reprepro_home }}'
+    state: 'present'
+
+- name: Create reprepro spool directory
+  file:
+    path: '{{ reprepro_spool }}'
+    state: 'directory'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0755'
+
+- name: Create directory for reprepro uploads
+  file:
+    path: '{{ reprepro_upload }}'
+    state: 'directory'
+    owner: '{{ reprepro_user }}'
+    group: 'www-data'
+    mode: '0730'
+
+- name: Create reprepro internal directories
+  file:
+    path: '{{ reprepro_home + "/" + item }}'
+    state: 'directory'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0755'
+  with_items: [ 'conf/distributions', 'conf/updates',
+                'conf/pulls', 'conf/uploaders', 'tmp' ]
+
+- name: Create reprepro repository
+  file:
+    path: '{{ reprepro_repository_path + "/" + reprepro_distribution | lower }}'
+    state: 'directory'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0755'
+
+- name: Manage reprepro configuration files
+  template:
+    src: 'var/lib/reprepro/conf/{{ item }}.j2'
+    dest: '{{ reprepro_home + "/conf/" + item }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: [ 'incoming', 'options' ]
+
+- name: Configure distributions configuration files
+  template:
+    src: 'var/lib/reprepro/conf/distributions.j2'
+    dest: '{{ reprepro_home + "/conf/distributions/" + item.Distribution | lower + "_" + item.Codename + ".conf" }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: '{{ reprepro_distributions }}'
+  register: reprepro_register_conf_distributions
+  when: ((item.Distribution == reprepro_distribution | lower) and
+         (item.Codename in reprepro_codenames))
+
+- name: Configure updates configuration files
+  template:
+    src: 'var/lib/reprepro/conf/updates.j2'
+    dest: '{{ reprepro_home + "/conf/updates/" + item.Name + ".conf" }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: '{{ reprepro_updates }}'
+  when: (item.Distribution == reprepro_distribution | lower)
+
+- name: Configure pulls configuration files
+  template:
+    src: 'var/lib/reprepro/conf/pulls.j2'
+    dest: '{{ reprepro_home + "/conf/pulls/" + item.Name + ".conf" }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: '{{ reprepro_pulls }}'
+  when: (item.Distribution == reprepro_distribution | lower)
+
+- name: Configure uploaders configuration files
+  template:
+    src: 'var/lib/reprepro/conf/uploaders.j2'
+    dest: '{{ reprepro_home + "/conf/uploaders/" + item.Filename }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0644'
+  with_items: '{{ reprepro_uploaders }}'
+
+- name: Manage reprepro scripts
+  template:
+    src: 'var/lib/reprepro/conf/{{ item }}.j2'
+    dest: '{{ reprepro_home + "/conf/" + item }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0755'
+  with_items: [ 'email-changes.sh' ]
+

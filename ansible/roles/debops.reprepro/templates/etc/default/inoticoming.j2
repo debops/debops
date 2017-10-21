@@ -1,0 +1,26 @@
+# This file is managed remotely, all changes will be lost
+
+# /etc/default/inoticoming
+#
+# for an explanation of options and actions, see inoticoming(1)
+
+# user to run inoticoming as
+USER={{ reprepro_user }}
+GROUP={{ reprepro_group }}
+
+# log to some file instead of syslog
+# required if you want to use --stdout-to-log or --stderr-to-log in actions
+LOGFILE="/var/log/incoming.log"
+
+# first search the directory for files already existing
+# 0 for false, 1 for true
+INITIALSEARCH=0
+
+# directory to monitor
+DIR={{ reprepro_upload }}
+
+# actions
+BASEDIR={{ reprepro_home }}
+RULENAME=incoming
+ACTIONS="--suffix .changes --stderr-to-log reprepro -s -b $BASEDIR --waitforlock 1000 processincoming $RULENAME {} ;"
+

@@ -1,0 +1,33 @@
+---
+
+- name: Install inoticoming package
+  apt:
+    name: 'inoticoming'
+    state: 'latest'
+    install_recommends: False
+
+- name: Configure inoticoming service
+  template:
+    src: 'etc/default/inoticoming.j2'
+    dest: '/etc/default/inoticoming'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart inoticoming' ]
+
+- name: Install inoticoming service script
+  command: install -T -o root -g root -m 755 /usr/share/doc/inoticoming/examples/inoticoming.init
+           /etc/init.d/inoticoming creates=/etc/init.d/inoticoming
+  register: reprepro_register_inotincoming_init
+  notify: [ 'Restart inoticoming' ]
+
+- name: Reload systemd configuration
+  command: systemctl daemon-reload
+  when: (ansible_service_mgr == 'systemd' and
+         reprepro_register_inotincoming_init|changed)
+
+- name: Enable inoticoming service
+  service:
+    name: 'inoticoming'
+    enabled: True
+
