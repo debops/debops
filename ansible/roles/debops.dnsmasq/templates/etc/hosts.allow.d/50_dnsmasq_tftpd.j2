@@ -1,0 +1,31 @@
+{% if ((item.interface is defined and item.interface) and
+       ((hostvars[inventory_hostname]["ansible_" + item.interface] is defined and
+         hostvars[inventory_hostname]["ansible_" + item.interface]) and
+       ((hostvars[inventory_hostname]["ansible_" + item.interface].ipv4 is defined and
+         hostvars[inventory_hostname]["ansible_" + item.interface].ipv4) or
+        (hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 is defined and
+         hostvars[inventory_hostname]["ansible_" + item.interface].ipv6)))) %}
+{% set dnsmasq__tpl_ipv4 = '' %}
+{% set dnsmasq__tpl_ipv6 = [] %}
+{% if hostvars[inventory_hostname]["ansible_" + item.interface].ipv4 is defined and hostvars[inventory_hostname]["ansible_" + item.interface].ipv4 %}
+{% set dnsmasq__tpl_ipv4 = hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.address + '/' + hostvars[inventory_hostname]["ansible_" + item.interface].ipv4.netmask %}
+{% endif %}
+{% if hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 is defined and hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 %}
+{% for element in hostvars[inventory_hostname]["ansible_" + item.interface].ipv6 %}
+{% if not element.address | ipv6('link-local') %}
+{% set _ = dnsmasq__tpl_ipv6.append(element.address + '/' + element.prefix) %}
+{% endif %}
+{% endfor %}
+{% endif %}
+# Access to TFTP service on {{ item.interface }} interface
+{% if dnsmasq__tpl_ipv4 is defined and dnsmasq__tpl_ipv4 %}
+in.tftpd: {{ dnsmasq__tpl_ipv4 | ipaddr('subnet') }}
+{% endif %}
+{% if dnsmasq__tpl_ipv6 is defined and dnsmasq__tpl_ipv6 %}
+{% for element in dnsmasq__tpl_ipv6 %}
+in.tftpd: {{ element | ipaddr('subnet') | ipwrap }}
+{% endfor %}
+{% endif %}
+{% else %}
+# dnsmasq TFTP service is disabled
+{% endif %}
