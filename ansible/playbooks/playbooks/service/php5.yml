@@ -1,0 +1,15 @@
+---
+
+- name: Manage PHP5 environment
+  hosts: [ 'debops_service_php5', 'debops_php5' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.php5
+      tags: [ 'role::php5' ]
+

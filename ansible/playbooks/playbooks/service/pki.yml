@@ -1,0 +1,23 @@
+---
+
+- name: Manage Public Key Infrastructure
+  hosts: [ 'debops_all_hosts', 'debops_service_pki' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.pki/env
+      tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]
+      secret_directories:
+        - '{{ pki_env_secret_directories }}'
+
+    - role: debops.pki
+      tags: [ 'role::pki' ]
+

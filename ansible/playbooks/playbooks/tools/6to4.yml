@@ -1,0 +1,66 @@
+---
+
+# DebOps playbook: tools/6to4
+# (C) 2014 Maciej Delmanowski <drybjed@gmail.com>
+# Homepage: https://debops.org/
+#
+# This playbook sets up and enables IPv6 6to4 tunnel interface to connect your
+# IPv4 host to IPv6 network. More information about 6to4 transition mechanism:
+# https://en.wikipedia.org/wiki/6to4
+#
+# This playbook requires 'ipaddr()' Ansible filter plugin, available in
+# https://github.com/debops/debops-playbooks/ repository.
+
+
+- name: Configure and enable IPv6 6to4 tunnel
+  hosts: debops_6to4
+  become: True
+
+  vars:
+
+    # Default 6to4 interface name
+    debops_6to4_var_iface: '{{ debops_6to4_iface | default("6to4") }}'
+
+    # IPv4 interface which will be used to calculate 6to4 addres
+    debops_6to4_var_ipv4_interface: '{{ debops_6to4_ipv4_interface | default(ansible_default_ipv4.interface) }}'
+
+    # IPv6 address converted from IPv4 public address
+    debops_6to4_var_ipv6_address: '{{ hostvars[inventory_hostname]["ansible_" + debops_6to4_var_ipv4_interface].ipv4.address | ipv4("6to4") }}'
+
+
+  pre_tasks:
+
+    - name: Make sure that host has a public IPv4 address
+      assert:
+        that: [ '{{ debops_6to4_var_ipv6_address != "False" }}' ]
+
+
+  roles:
+
+    - role: debops.ifupdown
+      tags: ifupdown
+      ifupdown_dependent_interfaces:
+
+        - iface: '{{ debops_6to4_var_iface }}'
+          type: '6to4'
+          tunnel_6to4_ipv4_interface: '{{ debops_6to4_var_ipv4_interface }}'
+          filename: 'debops_6to4_tunnel_{{ debops_6to4_var_ipv4_interface }}'
+          weight: '30'
+
+    - role: debops.ferm
+      tags: ferm
+      ferm_input_dependent_list:
+
+        - type: 'custom'
+          dport: []
+          by_role: 'DebOps playbook: net/ipv6/6to4'
+          filename: 'debops_6to4_tunnel_{{ debops_6to4_var_ipv4_interface }}'
+          weight: '30'
+          rules: |
+            {% if debops_6to4_var_ipv6_address is defined and debops_6to4_var_ipv6_address %}
+            # Allow IPv6-in-IPv4 traffic
+            @if @eq($DOMAIN, ip) protocol ipv6 interface {{ debops_6to4_var_ipv4_interface }} ACCEPT;
+            {% else %}
+            # IPv6-in-IPv4 traffic not allowed
+            {% endif %}
+

@@ -1,0 +1,15 @@
+---
+
+- name: Manage TFTP service
+  hosts: [ 'debops_service_tftpd', 'debops_tftpd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.tftpd
+      tags: [ 'role::tftpd' ]
+

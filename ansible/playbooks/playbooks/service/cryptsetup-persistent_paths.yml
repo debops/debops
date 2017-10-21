@@ -1,0 +1,18 @@
+---
+
+- name: Setup and manage encrypted filesystems and ensure persistence
+  hosts: [ 'debops_service_cryptsetup_persistent_paths' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.cryptsetup
+      tags: [ 'role::cryptsetup' ]
+
+    - role: debops.persistent_paths
+      tags: [ 'role::persistent_paths' ]
+      persistent_paths__dependent_paths: '{{ cryptsetup__persistent_paths__dependent_paths }}'

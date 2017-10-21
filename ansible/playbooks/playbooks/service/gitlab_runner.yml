@@ -1,0 +1,15 @@
+---
+
+- name: Manage GitLab Runner service
+  hosts: [ 'debops_service_gitlab_runner' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.gitlab_runner
+      tags: [ 'role::gitlab_runner' ]
+

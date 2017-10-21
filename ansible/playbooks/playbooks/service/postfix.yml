@@ -1,0 +1,34 @@
+---
+
+- name: Manage Postfix SMTP service
+  hosts: [ 'debops_service_postfix' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_aliases/env
+      tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ etc_aliases__secret__directories }}'
+        - '{{ postfix__secret__directories }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ postfix__ferm__dependent_rules }}'
+
+    - role: debops.etc_aliases
+      tags: [ 'role::etc_aliases' ]
+
+    - role: debops.postfix
+      tags: [ 'role::postfix' ]

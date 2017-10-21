@@ -1,0 +1,37 @@
+---
+
+- name: Manage RabbitMQ service
+  hosts: [ 'debops_service_rabbitmq_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.rabbitmq_server/env
+      tags: [ 'role::rabbitmq_server', 'role::secret', 'role::rabbitmq_server:config' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::rabbitmq_server', 'role::rabbitmq_server:config' ]
+      secret__directories:
+        - '{{ rabbitmq_server__secret__directories }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ rabbitmq_server__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ rabbitmq_server__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ rabbitmq_server__ferm__dependent_rules }}'
+
+    - role: debops.rabbitmq_server
+      tags: [ 'role::rabbitmq_server' ]

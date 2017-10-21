@@ -1,0 +1,15 @@
+---
+
+- name: Manage libvirt hosts
+  hosts: [ 'debops_service_libvirt', 'debops_libvirt' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.libvirt
+      tags: [ 'role::libvirt' ]
+

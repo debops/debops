@@ -1,0 +1,30 @@
+---
+
+- name: Manage OpenSSH Server
+  hosts: [ 'debops_all_hosts', 'debops_service_sshd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ sshd__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ sshd__ferm__dependent_rules }}'
+
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers' ]
+      tcpwrappers_dependent_allow:
+        - '{{ sshd__tcpwrappers__dependent_allow }}'
+
+    - role: debops.sshd
+      tags: [ 'role::sshd' ]
+

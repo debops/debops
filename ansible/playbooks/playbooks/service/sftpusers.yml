@@ -1,0 +1,17 @@
+---
+
+- name: Manage users with SFTPonly accounts
+  hosts: [ 'debops_service_sftpusers', 'debops_sftpusers' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.sftpusers
+      tags: [ 'role::sftpusers' ]
+
+    - role: debops.authorized_keys
+      tags: [ 'role::authorized_keys' ]

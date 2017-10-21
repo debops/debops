@@ -1,0 +1,50 @@
+---
+
+# This playbook can be used to bootstrap freshly installed minimal Debian
+# system for Ansible management. The expected state the host:
+#   - host is already configured in Ansible inventory/hosts file;
+#   - local user has prepared SSH keypair in RSA format;
+#   - host has OpenSSH server installed;
+#
+# Modifications that will be made on the host:
+#   - playbook will install Python support with some essential software;
+#   - a system 'admins' group will be created for users who have administrator
+#     privileges (full sudo permissions);
+#   - a system administrator account will be created and added to the 'admins'
+#     group; If you are connecting directly as root, this account will be named
+#     after your local user account, otherwise it will be named after the user
+#     you are connecting as (option `-u` or ansible_ssh_user from some config- or
+#     inventory-file).
+#   - no passwords are set or modified on any account;
+#   - if set, playbook will configure hostname and domain on the host using
+#     'inventory_hostname' and 'bootstrap_domain' variables;
+#
+# Usage:
+# To connect directly as root, run:
+#
+#     debops bootstrap -u root -k --limit host
+#
+# To connect as normal user and switch to sudo, run:
+#
+#     debops bootstrap --become --limit host
+
+
+- name: Bootstrap Python support on a host
+  hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
+  gather_facts: False
+
+  roles:
+
+    - role: debops.bootstrap/raw
+
+
+- name: Bootstrap host for Ansible management
+  hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.bootstrap

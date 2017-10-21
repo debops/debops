@@ -1,0 +1,53 @@
+---
+
+- name: Manage LibreNMS service
+  hosts: [ 'debops_service_librenms', 'debops_librenms' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::logrotate' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+        - '{{ librenms__logrotate__dependent_config }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.php
+      tags: [ 'role::php' ]
+      php__dependent_packages:
+        - '{{ librenms__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ librenms__php__dependent_pools }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers:
+        - '{{ librenms__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ librenms__nginx__dependent_upstreams }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb__dependent_users:
+        - '{{ librenms__mariadb__dependent_users }}'
+
+    - role: debops.librenms
+      tags: [ 'role::librenms' ]

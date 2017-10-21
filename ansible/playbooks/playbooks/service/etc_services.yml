@@ -1,0 +1,15 @@
+---
+
+- name: Manage /etc/services database
+  hosts: [ 'debops_all_hosts', 'debops_service_etc_services' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+

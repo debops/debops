@@ -1,0 +1,184 @@
+---
+
+# dist-upgrade - upgrade a Debian/Ubuntu system to next release
+# Copyrignt (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2017 DebOps https://debops.org/
+# Part of the DebOps project - https://debops.org/
+
+
+# ===========================================================================
+# Warning: Before using this playbook, consult the list of issues on GitHub:
+# https://github.com/debops/debops-playbooks/labels/dist-upgrade
+# This list will be updated with issues as they are discovered and reported.
+# ===========================================================================
+
+
+- name: Upgrade all the things!
+  hosts: all:!localhost
+  become: True
+
+  vars:
+
+    # Map of current and next distribution releases
+    dist_upgrade_version_map:
+      'wheezy': 'jessie'
+      'jessie': 'stretch'
+      'trusty': 'utopic'
+
+    # Current release
+    dist_upgrade_current_release: '{{ ansible_distribution_release }}'
+
+    # Next release
+    dist_upgrade_new_release: '{{ dist_upgrade_version_map[dist_upgrade_current_release] }}'
+
+    # If this file exists, failed upgrade will be tried again
+    dist_upgrade_lockfile: '/tmp/dist-upgrade-in-progress'
+
+    # List of mail recipients
+    dist_upgrade_mail_to: [ '{{ "root@" + ansible_domain }}' ]
+
+    # Mail subject
+    dist_upgrade_mail_subject: '{{ ansible_fqdn }} has been upgraded from {{ ansible_distribution }} {{ dist_upgrade_current_release | capitalize }} to {{ ansible_distribution }} {{ dist_upgrade_new_release | capitalize }}'
+
+    # Mail contents
+    dist_upgrade_mail_body: |
+      Ansible performed an unattended 'apt-get dist-upgrade' on host
+
+          {{ ansible_fqdn }}
+
+      Upgrade has been orchestrated by {{ ansible_env.SUDO_USER }}.
+      You should reboot {{ ansible_fqdn }} as soon
+      as possible to complete the upgrade process and boot
+      with new kernel.
+
+      Log from the upgrade is included below:
+
+      ============================
+          apt-get dist-upgrade
+      ============================
+
+      {% for line in dist_upgrade_register_upgrade.stdout_lines %}
+      {% if not line | match('^\(Reading\s+database.*%') and
+            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {{ line }}
+      {% endif %}
+      {% endfor %}
+
+      ==========================
+          apt-get autoremove
+      ==========================
+
+      {% for line in dist_upgrade_register_autoremove.stdout_lines %}
+      {% if not line | match('^\(Reading\s+database.*%') and
+            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {{ line }}
+      {% endif %}
+      {% endfor %}
+
+      =========================
+          apt-get autoclean
+      =========================
+
+      {% for line in dist_upgrade_register_autoclean.stdout_lines %}
+      {% if not line | match('^\(Reading\s+database.*%') and
+            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {{ line }}
+      {% endif %}
+      {% endfor %}
+
+
+  tasks:
+
+    - name: Check if lockfile exists
+      stat:
+        path: '{{ dist_upgrade_lockfile }}'
+      register: dist_upgrade_register_lockfile
+
+    - name: Change current release in APT sources
+      replace:
+        dest: '/etc/apt/sources.list'
+        regexp: '{{ dist_upgrade_current_release }}'
+        replace: '{{ dist_upgrade_new_release }}'
+      register: dist_upgrade_register_replace
+      when: dist_upgrade_current_release in dist_upgrade_version_map.keys() and
+            dist_upgrade_new_release is defined and dist_upgrade_new_release
+
+    - name: Remove all APT preferences for backported packages
+      shell: >
+              grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --
+      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace|changed
+
+    - name: Create a lockfile
+      file:
+        path: '{{ dist_upgrade_lockfile }}'
+        state: 'touch'
+      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace|changed
+
+    - name: Perform apt-get dist-upgrade (this might take a while)
+      apt:
+        update_cache: True
+        upgrade: 'dist'
+      register: dist_upgrade_register_upgrade
+      when: ((dist_upgrade_register_replace is defined and
+              dist_upgrade_register_replace|changed) or
+             (dist_upgrade_register_lockfile is defined and
+              dist_upgrade_register_lockfile.stat.exists))
+
+
+    - name: Check what init system is active
+      stat:
+        path: '/sbin/init'
+      register: dist_upgrade_register_init
+
+    - name: Install dbus package (required by systemd)
+      apt:
+        name: 'dbus'
+        state: 'latest'
+        install_recommends: False
+      when: dist_upgrade_register_init.stat.lnk_source is defined and
+            dist_upgrade_register_init.stat.lnk_source == '/lib/systemd/systemd'
+
+    - name: Automatically remove packages that are no longer needed
+      command: apt-get --yes autoremove
+      register: dist_upgrade_register_autoremove
+      when: dist_upgrade_register_upgrade is defined and
+            dist_upgrade_register_upgrade|changed
+
+    - name: Clean APT package cache
+      command: apt-get autoclean
+      register: dist_upgrade_register_autoclean
+      when: dist_upgrade_register_upgrade is defined and
+            dist_upgrade_register_upgrade|changed
+
+    - name: Check if /etc/services.d exists
+      stat:
+        path: '/etc/services.d'
+      register: dist_upgrade_register_etc_services
+      when: dist_upgrade_register_upgrade is defined and
+            dist_upgrade_register_upgrade|changed
+
+    - name: Assemble /etc/services
+      assemble:
+        src: '/etc/services.d'
+        dest: '/etc/services'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+        backup: False
+      when: dist_upgrade_register_etc_services is defined and
+            dist_upgrade_register_etc_services.stat.exists
+
+    - name: Send mail with information about the upgrade
+      mail:
+        from: '{{ "root@" + ansible_fqdn }}'
+        to: '{{ dist_upgrade_mail_to | join(",") }}'
+        subject: '{{ dist_upgrade_mail_subject }}'
+        charset: 'utf8'
+        body: '{{ dist_upgrade_mail_body }}'
+      when: dist_upgrade_register_upgrade is defined and
+            dist_upgrade_register_upgrade|changed
+
+    - name: Remove the lockfile
+      file:
+        path: '{{ dist_upgrade_lockfile }}'
+        state: 'absent'

@@ -1,0 +1,20 @@
+---
+
+- name: Manage Samba service
+  hosts: [ 'debops_service_samba', 'debops_samba' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ samba__ferm__dependent_rules }}'
+
+    - role: debops.samba
+      tags: [ 'role::samba' ]
+

@@ -1,0 +1,48 @@
+---
+
+- name: Manage NetBox IPAM/DCIM application
+  hosts: [ 'debops_service_netbox' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ postgresql__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.postgresql
+      tags: [ 'role::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ netbox__postgresql__dependent_roles }}'
+      postgresql__dependent_groups:
+        - '{{ netbox__postgresql__dependent_groups }}'
+      postgresql__dependent_databases:
+        - '{{ netbox__postgresql__dependent_databases }}'
+      postgresql__dependent_pgpass:
+        - '{{ netbox__postgresql__dependent_pgpass }}'
+
+    - role: debops.gunicorn
+      tags: [ 'role::gunicorn' ]
+      gunicorn__dependent_applications:
+        - '{{ netbox__gunicorn__dependent_applications }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_upstreams:
+        - '{{ netbox__nginx__dependent_upstreams }}'
+      nginx__dependent_servers:
+        - '{{ netbox__nginx__dependent_servers }}'
+
+    - role: debops.netbox
+      tags: [ 'role::netbox' ]

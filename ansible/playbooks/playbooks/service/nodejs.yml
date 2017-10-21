@@ -1,0 +1,15 @@
+---
+
+- name: Manage NodeJS environment
+  hosts: [ 'debops_service_nodejs', 'debops_nodejs' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.nodejs
+      tags: [ 'role::nodejs' ]
+

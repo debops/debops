@@ -1,0 +1,17 @@
+---
+
+- name: Manage users with git-shell accounts
+  hosts: [ 'debops_service_gitusers', 'debops_gitusers' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.gitusers
+      tags: [ 'role::gitusers' ]
+
+    - role: debops.authorized_keys
+      tags: [ 'role::authorized_keys' ]

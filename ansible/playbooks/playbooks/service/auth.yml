@@ -1,0 +1,15 @@
+---
+
+- name: Manage authentication and authorization
+  hosts: [ 'debops_all_hosts', 'debops_service_auth' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.auth
+      tags: [ 'role::auth' ]
+

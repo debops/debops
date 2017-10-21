@@ -1,0 +1,46 @@
+---
+
+# This is main entry point for DebOps playbooks. By default 'debops' script
+# accesses this playbook; with command line arguments you can access
+# sub-playbooks separately for a lighter ansible-playbook run, if needed.
+
+
+  # This playbook contains roles that are run on all hosts in the inventory
+  # - common services like SMTP server, administrative tasks, authentication
+  # and authorization control, system services used by other applications like
+  # firewall, etc.
+- include: common.yml
+
+  # This playbook manages internal system plumbing expected on the host by
+  # services, like user accounts, NFS mounts from remote hosts, and so on.
+  # Everything that is not common, but enabled on a per group/host basis.
+- include: sys.yml
+
+  # This playbook manages different programming language environments available
+  # on each host, enabled using Ansible groups.
+- include: env.yml
+
+  # This playbook manages network infrastructure, like creation and management
+  # of separate subnets, DNS, DHCP services, routing configuration, etc.
+- include: net.yml
+
+  # This playbook manages system services enabled using Ansible groups, like
+  # databases, webservers, application servers, and so on.
+- include: srv.yml
+
+  # This playbook contains plays which install and manage more complex
+  # applications which can use multiple services at a time, or are user-facing
+  # applications like webservices.
+- include: app.yml
+
+  # This playbook manages virtualized environments installed on hosts, like
+  # OpenVZ Hardware Nodes, support for LXC containers in a host, or support for
+  # KVM virtual machines. This is meant for the host-side of the virtualization
+  # support, guest-side is managed by the rest of the playbook without the use
+  # of the plays contained here.
+- include: virt.yml
+
+  # This playbook manages hardware-related roles - device management, disk
+  # partitioning, hardware monitoring, kernel management, any roles that would
+  # require a reboot.
+- include: hw.yml

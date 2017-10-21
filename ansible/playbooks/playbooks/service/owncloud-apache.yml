@@ -1,0 +1,71 @@
+---
+
+- name: Install and manage ownCloud instances with Apache as webserver
+  hosts: [ 'debops_service_owncloud_apache' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apache/env
+      tags: [ 'role::apache', 'role::apache:env' ]
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::php:env','role::apt_preferences', 'role::logrotate' ]
+
+    - role: debops.owncloud/env
+      tags: [ 'role::owncloud', 'role::owncloud:env' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ owncloud__apt_preferences__dependent_list }}'
+        - '{{ php__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ apache__ferm__dependent_rules }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb__dependent_users: '{{ owncloud__mariadb__dependent_users }}'
+      when: (owncloud__database == 'mariadb')
+
+    - role: debops.postgresql
+      postgresql__dependent_roles: '{{ owncloud__postgresql__dependent_roles }}'
+      postgresql__dependent_groups: '{{ owncloud__postgresql__dependent_groups }}'
+      postgresql__dependent_databases: '{{ owncloud__postgresql__dependent_databases }}'
+      when: (owncloud__database == 'postgresql')
+      tags: [ 'role::postgresql' ]
+
+    - role: debops.unattended_upgrades
+      tags: [ 'role::unattended_upgrades' ]
+      unattended_upgrades__dependent_origins: '{{ owncloud__unattended_upgrades__dependent_origins }}'
+
+    - role: debops.php
+      tags: [ 'role::php' ]
+      php__dependent_packages:
+        - '{{ owncloud__php__dependent_packages }}'
+      php__dependent_configuration:
+        - '{{ owncloud__php__dependent_configuration }}'
+      php__dependent_pools:
+        - '{{ owncloud__php__dependent_pools }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+        - '{{ owncloud__logrotate__dependent_config }}'
+
+    - role: debops.apache
+      tags: [ 'role::apache' ]
+      apache__dependent_snippets: '{{ owncloud__apache__dependent_snippets }}'
+      apache__dependent_vhosts:
+        - '{{ owncloud__apache__dependent_vhosts }}'
+
+    - role: debops.owncloud
+      tags: [ 'role::owncloud' ]

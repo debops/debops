@@ -1,0 +1,17 @@
+---
+
+- name: Manage rsnapshot service
+  hosts: [ 'debops_service_rsnapshot', 'debops_service_rsnapshot_rsync',
+           'debops_service_rsnapshot_clients', 'debops_service_rsnapshot_servers',
+           'debops_rsnapshot', 'debops_rsnapshot_rsync' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.rsnapshot
+      tags: [ 'role::rsnapshot' ]
+

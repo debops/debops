@@ -1,0 +1,15 @@
+---
+
+- name: Prepare core environment
+  hosts: [ 'debops_all_hosts', 'debops_service_core' ]
+  become: False
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.core
+      tags: [ 'role::core' ]
+      become: True

@@ -1,0 +1,35 @@
+---
+
+- name: Manage rsyslog service
+  hosts: [ 'debops_all_hosts', 'debops_service_rsyslog' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ rsyslog__etc_services__dependent_list }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ rsyslog__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ rsyslog__ferm__dependent_rules }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ rsyslog__logrotate__dependent_config }}'
+
+    - role: debops.rsyslog
+      tags: [ 'role::rsyslog' ]
+

@@ -1,0 +1,143 @@
+---
+
+- name: Security assertions
+  hosts: [ 'all' ]
+  tags: [ 'play::security-assertions' ]
+  gather_facts: False
+  become: False
+
+  tasks:
+
+    - name: Check for Ansible version without known vulnerabilities
+      assert:
+        that:
+          - 'ansible_version.full | version_compare("2.1.5.0", ">=")'
+          - '((ansible_version.minor == 2) and (ansible_version.full | version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
+        msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! To skip, add "--skip-tags play::security-assertions" parameter. Check the debops-playbook changelog for details. Exiting.'
+      run_once: True
+      delegate_to: 'localhost'
+
+- include: service/core.yml
+
+- name: Common configuration for all hosts
+  hosts: [ 'debops_all_hosts', '!debops_no_common' ]
+  gather_facts: True
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.debops_fact
+      tags: [ 'role::debops_fact' ]
+
+    - role: debops.environment
+      tags: [ 'role::environment' ]
+
+    - role: debops.nullmailer/env
+      tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
+
+    - role: debops.pki/env
+      tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]
+      secret_directories:
+        - '{{ pki_env_secret_directories }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'apt_preferences', 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ sshd__apt_preferences__dependent_list }}'
+        - '{{ apt__apt_preferences__dependent_list }}'
+        - '{{ apt_install__apt_preferences__dependent_list }}'
+        - '{{ rsyslog__apt_preferences__dependent_list }}'
+
+    - role: debops.apt_proxy
+      tags: [ 'role::apt_proxy' ]
+
+    - role: debops.atd
+      tags: [ 'role::atd' ]
+
+    - role: debops.dhparam
+      tags: [ 'role::dhparam' ]
+
+    - role: debops.pki
+      tags: [ 'role::pki' ]
+
+    - role: debops.apt
+      tags: [ 'role::apt' ]
+
+    - role: debops.apt_listchanges
+      tags: [ 'role::apt_listchanges' ]
+
+    - role: debops.apt_install
+      tags: [ 'role::apt_install' ]
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ rsyslog__etc_services__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ rsyslog__logrotate__dependent_config }}'
+
+    - role: debops.auth
+      tags: [ 'role::auth' ]
+
+    - role: debops.nsswitch
+      tags: [ 'role::nsswitch' ]
+
+    - role: debops.resources
+      tags: [ 'role::resources' ]
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ ntp__ferm__dependent_rules }}'
+        - '{{ nullmailer__ferm__dependent_rules }}'
+        - '{{ rsyslog__ferm__dependent_rules }}'
+        - '{{ sshd__ferm__dependent_rules }}'
+
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers' ]
+      tcpwrappers_dependent_allow:
+        - '{{ nullmailer__tcpwrappers__dependent_allow }}'
+        - '{{ sshd__tcpwrappers__dependent_allow }}'
+
+    - role: debops.ntp
+      tags: [ 'role::ntp' ]
+
+    - role: debops.root_account
+      tags: [ 'role::root_account' ]
+
+    - role: debops.console
+      tags: [ 'role::console' ]
+
+    - role: debops.sysctl
+      tags: [ 'role::sysctl' ]
+
+    - role: debops.nullmailer
+      tags: [ 'role::nullmailer' ]
+
+    - role: debops.rsyslog
+      tags: [ 'role::rsyslog' ]
+
+    - role: debops.unattended_upgrades
+      tags: [ 'role::unattended_upgrades' ]
+
+    - role: debops.users
+      tags: [ 'role::users' ]
+
+    - role: debops.authorized_keys
+      tags: [ 'role::authorized_keys' ]
+
+    - role: debops.sshd
+      tags: [ 'role::sshd' ]
+
+    - role: debops.cron
+      tags: [ 'role::cron' ]

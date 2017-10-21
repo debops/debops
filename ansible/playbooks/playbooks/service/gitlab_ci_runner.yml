@@ -1,0 +1,15 @@
+---
+
+- name: Manage GitLab CI Runner service
+  hosts: [ 'debops_service_gitlab_ci_runner', 'debops_gitlab_ci_runner' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.gitlab_ci_runner
+      tags: [ 'role::gitlab_ci_runner' ]
+

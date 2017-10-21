@@ -1,0 +1,22 @@
+---
+
+- name: Manage network configuration using ifupdown
+  hosts: [ 'debops_service_ifupdown' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ifupdown/env
+      tags: [ 'role::ifupdown', 'role::ferm' ]
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ ifupdown__env_ferm__dependent_rules }}'
+
+    - role: debops.ifupdown
+      tags: [ 'role::ifupdown' ]

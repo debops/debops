@@ -1,0 +1,21 @@
+---
+
+- name: Install DebOps recursively
+  hosts: [ 'debops_service_debops', 'debops_service_recursively',
+           'debops_recursively' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ debops__apt_preferences__dependent_list }}'
+
+    - role: debops.debops
+      tags: [ 'role::debops' ]
+

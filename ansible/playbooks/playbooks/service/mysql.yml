@@ -1,0 +1,19 @@
+---
+
+- name: Manage MySQL server
+  hosts: 'debops_mysql'
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.mysql
+      tags: mysql
+
+    - role: debops.phpmyadmin
+      when: mysql_phpmyadmin is defined and mysql_phpmyadmin
+      tags: [ 'mysql', 'phpmyadmin' ]
+

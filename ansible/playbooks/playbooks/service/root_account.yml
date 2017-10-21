@@ -1,0 +1,14 @@
+---
+
+- name: Manage root system account
+  hosts: [ 'debops_all_hosts', 'debops_service_root_account' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.root_account
+      tags: [ 'role::root_account' ]

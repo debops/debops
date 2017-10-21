@@ -1,0 +1,15 @@
+---
+
+- name: Manage docker-gen service
+  hosts: [ 'debops_service_docker_gen', 'debops_docker_gen' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.docker_gen
+      tags: [ 'role::docker_gen' ]
+

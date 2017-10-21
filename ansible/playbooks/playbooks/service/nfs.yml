@@ -1,0 +1,14 @@
+---
+
+- name: Manage NFS shares
+  hosts: [ 'debops_service_nfs' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.nfs
+      tags: [ 'role::nfs' ]

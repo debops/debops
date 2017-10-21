@@ -1,0 +1,26 @@
+---
+
+- name: Manage the Comprehensive R Archive Network packages
+  hosts: [ 'debops_service_cran' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ cran__apt_preferences__dependent_list }}'
+        - '{{ java__apt_preferences__dependent_list
+              if cran__java_integration|bool else [] }}'
+
+    - role: debops.java
+      tags: [ 'role::java' ]
+      java__install_jdk: True
+      when: cran__java_integration|bool
+
+    - role: debops.cran
+      tags: [ 'role::cran' ]

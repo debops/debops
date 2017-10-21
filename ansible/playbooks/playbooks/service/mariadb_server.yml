@@ -1,0 +1,25 @@
+---
+
+- name: Manage MariaDB server
+  hosts: [ 'debops_service_mariadb_server', 'debops_mariadb_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ mariadb_server__ferm__dependent_rules }}'
+
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers' ]
+      tcpwrappers__dependent__allow:
+        - '{{ mariadb_server__tcpwrappers__dependent_allow }}'
+
+    - role: debops.mariadb_server
+      tags: [ 'role::mariadb_server' ]
+

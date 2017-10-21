@@ -1,0 +1,15 @@
+---
+
+- name: Manage Monit service
+  hosts: [ 'debops_service_monit', 'debops_monit' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.monit
+      tags: [ 'role::monit' ]
+

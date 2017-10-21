@@ -1,0 +1,30 @@
+---
+
+- name: Manage SNMP service
+  hosts: [ 'debops_service_snmpd', 'debops_snmpd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferencesA' ]
+      apt_preferences__dependent_list:
+        - '{{ snmpd_apt_preferences_dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ snmpd_ferm_dependent_rules }}'
+
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers' ]
+      tcpwrappers_dependent_allow:
+        - '{{ snmpd_tcpwrappers_dependent_allow }}'
+
+    - role: debops.snmpd
+      tags: [ 'role::snmpd' ]
+
