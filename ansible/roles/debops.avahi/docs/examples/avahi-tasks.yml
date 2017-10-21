@@ -1,0 +1,17 @@
+---
+
+- name: Ensure that Avahi directories exist
+  file:
+    path: '/etc/avahi/services'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Generate Avahi service configuration
+  template:
+    src: 'etc/avahi/services/application.xml.j2'
+    dest: '/etc/avahi/services/application.xml'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'

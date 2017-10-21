@@ -1,0 +1,419 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.avahi default variables [[[
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: avahi__base_packages [[[
+#
+# List of APT packages to install for Avahi support.
+avahi__base_packages: [ 'avahi-daemon', 'avahi-utils',
+                        'python-avahi', 'libnss-mdns' ]
+
+                                                                   # ]]]
+# .. envvar:: avahi__packages [[[
+#
+# List of additional APT packages to install with Avahi.
+avahi__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Avahi daemon configuration [[[
+# ------------------------------
+
+# .. envvar:: avahi__domain [[[
+#
+# The DNS domain used by Avahi. You shouldn't change that unless you know what
+# you are doing. This is not a "real" DNS domain, and if the same one is
+# detected by Avahi as defined in a real DNS, things will break.
+avahi__domain: 'local'
+
+                                                                   # ]]]
+# .. envvar:: avahi__use_ipv4 [[[
+#
+# Enable or disable Avahi on IPv4 network.
+avahi__use_ipv4: True
+
+                                                                   # ]]]
+# .. envvar:: avahi__use_ipv6 [[[
+#
+# Enable or disable Avahi on IPv6 network. IPv6 support will be automatically
+# disabled if there are no IPv6 addresses present.
+avahi__use_ipv6: '{{ True
+                     if (ansible_all_ipv6_addresses
+                         | difference(ansible_all_ipv6_addresses | ipv6("link-local")))
+                     else False }}'
+
+                                                                   # ]]]
+# .. envvar:: avahi__allow_interfaces [[[
+#
+# List of network interfaces which Avahi should listen to. If empty, Avahi
+# listens on all interfaces except ``loopback`` and point-to-point.
+avahi__allow_interfaces: []
+
+                                                                   # ]]]
+# .. envvar:: avahi__deny_interfaces [[[
+#
+# List of network interfaces which Avahi should ignore. All other interfaces
+# will be used, unless :envvar:`avahi__allow_interfaces` is also specified.
+avahi__deny_interfaces: []
+
+                                                                   # ]]]
+# .. envvar:: avahi__check_response_ttl [[[
+#
+# if enabled, Avahi will check if the packet's TTL field is set to 255. This
+# might not work with newer implementations of mDNS.
+avahi__check_response_ttl: False
+
+                                                                   # ]]]
+# .. envvar:: avahi__use_iff_running [[[
+#
+# When enabled, Avahi will use the ``IFF_RUNNING`` flag of the network
+# interface to check connection state.
+avahi__use_iff_running: False
+
+                                                                   # ]]]
+# .. envvar:: avahi__enable_dbus [[[
+#
+# Enable or disable D-BUS support.
+avahi__enable_dbus: True
+
+                                                                   # ]]]
+# .. envvar:: avahi__disallow_other_stacks [[[
+#
+# When enabled, Avahi will block other processes from use of the UDP port 5353
+# (``mdns``) and will use it exclusively.
+avahi__disallow_other_stacks: True
+
+                                                                   # ]]]
+# .. envvar:: avahi__add_service_cookie [[[
+#
+# When enabled, Avahi will include a "cookie" (random number generated at the
+# start of the daemon) TXT entry with each local service. This can be used to
+# recognize the same services on different network interfaces.
+avahi__add_service_cookie: True
+
+                                                                   # ]]]
+# .. envvar:: avahi__publish_hinfo [[[
+#
+# When enabled, Avahi will publish a HINFO record on all network interfaces
+# with information about the operating system and CPU.
+avahi__publish_hinfo: False
+
+                                                                   # ]]]
+# .. envvar:: avahi__publish_workstation [[[
+#
+# When enabled, Avahi will register a ``_workstation._tcp`` service.
+avahi__publish_workstation: False
+
+                                                                   # ]]]
+# .. envvar:: avahi__publish_device_info [[[
+#
+# When enabled, Avahi will register a special ``_device-info._tcp`` service
+# which helps configure the host's apperance on compatible devices.
+avahi__publish_device_info: '{{ True
+                                if not avahi__publish_workstation|bool
+                                else False }}'
+
+                                                                   # ]]]
+# .. envvar:: avahi__publish_ssh [[[
+#
+# When enabled, Avahi will register a SSH and SFTP service.
+avahi__publish_ssh: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Contents of main configuration file [[[
+# ---------------------------------------
+
+# These variables control what parameters are set in the
+# :file:`/etc/avahi/avahi-daemon.conf` configuration file. See
+# :ref:`avahi__ref_daemon_conf` for more details.
+
+# .. envvar:: avahi__daemon_conf_default_server [[[
+#
+# The default configuration of the ``[server]`` section.
+avahi__daemon_conf_default_server:
+  'use-ipv4':                '{{ avahi__use_ipv4 }}'
+  'use-ipv6':                '{{ avahi__use_ipv6 }}'
+  'allow-interfaces':        '{{ avahi__allow_interfaces }}'
+  'deny-interfaces':         '{{ avahi__deny_interfaces }}'
+  'check-response-ttl':      '{{ avahi__check_response_ttl }}'
+  'use-iff-running':         '{{ avahi__use_iff_running }}'
+  'enable-dbus':             '{{ avahi__enable_dbus }}'
+  'disallow-other-stacks':   '{{ avahi__disallow_other_stacks }}'
+  'ratelimit-interval-usec': 1000000
+  'ratelimit-burst':         1000
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_server [[[
+#
+# Custom configuration of the ``[server]`` section, combined with the default.
+avahi__daemon_conf_server: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_default_wide_area [[[
+#
+# The default configuration of the ``[wide-area]`` section.
+avahi__daemon_conf_default_wide_area:
+  'enable-wide-area': True
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_wide_area [[[
+#
+# Custom configuration of the ``[wide-area]`` section, combined with the
+# default.
+avahi__daemon_conf_wide_area: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_default_publish [[[
+#
+# The default configuration of the ``[publish]`` section.
+avahi__daemon_conf_default_publish:
+  'add-service-cookie':  '{{ avahi__add_service_cookie }}'
+  'publish-hinfo':       '{{ avahi__publish_hinfo }}'
+  'publish-workstation': '{{ avahi__publish_workstation }}'
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_publish [[[
+#
+# Custom configuration of the ``[publish]`` section, combined with the default.
+avahi__daemon_conf_publish: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_default_reflector [[[
+#
+# The default configuration of the ``[reflector]`` section.
+avahi__daemon_conf_default_reflector:
+  'enable-reflector': False
+  'reflect-ipv':      False
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_reflector [[[
+#
+# Custom configuration of the ``[reflector]`` section, combined with the
+# default.
+avahi__daemon_conf_reflector: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_default_rlimits [[[
+#
+# The default configuration of the ``[rlimits]`` section.
+avahi__daemon_conf_default_rlimits:
+  'rlimit-as':     ''
+  'rlimit-core':   0
+  'rlimit-data':   4194304
+  'rlimit-fsize':  0
+  'rlimit-nofile': 768
+  'rlimit-stack':  4194304
+  'rlimit-nproc':  32
+
+                                                                   # ]]]
+# .. envvar:: avahi__daemon_conf_rlimits [[[
+#
+# Custom configuration of the ``[rlimits]`` section, combined with the default.
+avahi__daemon_conf_rlimits: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: avahi__allow [[[
+#
+# List of IP addresses or CIDR subnets which can access the Avahi service over
+# the firewall. If nothing is specified, any host is allowed.
+avahi__allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# CNAME mDNS support [[[
+# ----------------------
+
+# A separate service script is used to support CNAME mDNS records.
+# See :ref:`avahi__ref_alias_support` for more details.
+
+# .. envvar:: avahi__alias_enabled [[[
+#
+# Enable CNAME mDNS support via custom Python script.
+avahi__alias_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: avahi__alias_git_repo [[[
+#
+# URL of the :command:`git` repository with :command:`avahi-alias` script.
+avahi__alias_git_repo: 'https://github.com/george-hawkins/avahi-aliases-notes'
+
+                                                                   # ]]]
+# .. envvar:: avahi__alias_git_version [[[
+#
+# Specify the :command:`git` branch to use during `avahi-alias` cloning.
+avahi__alias_git_version: 'master'
+
+                                                                   # ]]]
+# .. envvar:: avahi__alias_git_src [[[
+#
+# Absolute path to the directory where source files are cloned.
+avahi__alias_git_src: '{{ (ansible_local.root.src
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.src|d())
+                           else "/usr/local/src") + "/avahi" }}'
+
+                                                                   # ]]]
+# .. envvar:: avahi__alias_git_dest [[[
+#
+# Absolute path to the directory where the :command:`avahi-alias` repository
+# will be cloned.
+avahi__alias_git_dest: '{{ avahi__alias_git_src + "/" + avahi__alias_git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: avahi__alias_install_path [[[
+#
+# Absolute path to the directory where the :command:`avahi-alias` script will
+# be installed.
+avahi__alias_install_path: '{{ ansible_local.root.sbin
+                               if (ansible_local|d() and ansible_local.root|d() and
+                                   ansible_local.root.sbin|d())
+                               else "/usr/local/sbin" }}'
+
+                                                                   # ]]]
+# .. envvar:: avahi__alias_config_file [[[
+#
+# Absolute path to the file which contains a list of CNAME aliases to register.
+avahi__alias_config_file: '/etc/avahi/aliases'
+                                                                   # ]]]
+                                                                   # ]]]
+# Static host entries [[[
+# -----------------------
+
+# Avahi can register static IP address entries in mDNS network to point to
+# other hosts that don't support mDNS themselves. This is done by setting YAML
+# dictionaries, with dictionary key as the IP address and dictionary string
+# value as the hostname, either with or without the Avahi ``.local`` domain (it
+# will be added automatically). For example:
+#
+# .. code-block:: yaml
+#
+#    avahi__hosts:
+#      '192.0.2.1': 'router.local'
+#      '192.0.2.5': 'storage'
+#
+# You still need to configure the relevant service entries separately.
+# See :ref:`avahi__ref_services` for more details.
+
+# .. envvar:: avahi__hosts [[[
+#
+# YAML dictionary with static IP address entries which should be set on all
+# hosts in Ansible inventory.
+avahi__hosts: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__group_hosts [[[
+#
+# YAML dictionary with static IP address entries which should be set on hosts
+# in specific Ansible inventory group.
+avahi__group_hosts: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__host_hosts [[[
+#
+# YAML dictionary with static IP address entries which should be set on
+# specific hosts in Ansible inventory.
+avahi__host_hosts: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# Avahi services [[[
+# ------------------
+
+# The variables below define what services are published by Avahi.
+# See :ref:`avahi__ref_services` for more details.
+
+# .. envvar:: avahi__default_services [[[
+#
+# Variable which contains default services published by Avahi.
+avahi__default_services:
+
+  'device-info':
+    comment: 'Set server icon for this host on compatible devices'
+    type: '_device-info._tcp'
+    txt: 'model=RackMac'
+    state: '{{ "present"
+               if avahi__publish_device_info|bool
+               else "absent" }}'
+
+  'sftp-ssh':
+    name: 'SFTP on %h'
+    type: '_sftp-ssh._tcp'
+    port: '22'
+    state: '{{ "present"
+               if avahi__publish_ssh|bool
+               else "absent" }}'
+
+  'ssh':
+    name: 'SSH on %h'
+    type: '_ssh._tcp'
+    port: '22'
+    state: '{{ "present"
+               if avahi__publish_ssh|bool
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: avahi__dependent_services [[[
+#
+# Variable which contains services published by Avahi configured by other
+# Ansible roles using role dependent variables.
+avahi__dependent_services: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__services [[[
+#
+# Variable which contains services published by Avahi configured on all hosts
+# in the Ansible inventory.
+avahi__services: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__group_services [[[
+#
+# Variable which contains services published by Avahi configured on hosts in
+# specific Ansible inventory group.
+avahi__group_services: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__host_services [[[
+#
+# Variable which contains services published by Avahi configured on specific
+# hosts in the Ansible inventory.
+avahi__host_services: {}
+
+                                                                   # ]]]
+# .. envvar:: avahi__combined_services [[[
+#
+# Variable which contains services published by Avahi, combined from all other
+# variables. This variable is used to generate configuration from templates.
+avahi__combined_services: '{{ lookup("template",
+                              "lookup/avahi__combined_services.j2",
+                              convert_data=False) | from_yaml }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: avahi__ferm__dependent_rules [[[
+#
+# Configuration for the debops.ferm_ Ansible role.
+avahi__ferm__dependent_rules:
+
+  - name: 'avahi'
+    type: 'accept'
+    dport: 'mdns'
+    saddr: '{{ avahi__allow }}'
+    protocol: 'udp'
+    accept_any: True
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

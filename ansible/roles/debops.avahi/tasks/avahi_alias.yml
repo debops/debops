@@ -1,0 +1,63 @@
+---
+
+- name: Check if avahi-alias script is installed
+  stat:
+    path: '{{ avahi__alias_install_path + "/avahi-alias" }}'
+  register: avahi__register_alias_script
+
+- name: Clone avahi-alias git repository
+  git:
+    repo: '{{ avahi__alias_git_repo }}'
+    dest: '{{ avahi__alias_git_dest }}'
+    version: '{{ avahi__alias_git_version }}'
+    update: True
+  register: avahi__register_alias_git
+
+- name: Install avahi-alias script
+  copy:
+    src: '{{ avahi__alias_git_dest }}/avahi-alias'
+    dest: '{{ avahi__alias_install_path }}/avahi-alias'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    remote_src: True
+  when: avahi__register_alias_git|changed
+
+- name: Install avahi-alias.service
+  template:
+    src: 'etc/systemd/system/avahi-alias.service.j2'
+    dest: '/etc/systemd/system/avahi-alias.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: avahi__register_alias_service
+
+- name: Make sure that the CNAME alias file exists
+  file:
+    path: '{{ avahi__alias_config_file }}'
+    state: 'touch'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: avahi__register_alias_git|changed
+
+- name: Manage list of CNAME entries
+  lineinfile:
+    dest: '{{ avahi__alias_config_file }}'
+    regexp: '{{ "^" + (item.value.cname if item.value.cname.endswith("." + avahi__domain) else (item.value.cname + "." + avahi__domain)) + "$" }}'
+    line: '{{ (item.value.cname if item.value.cname.endswith("." + avahi__domain) else (item.value.cname + "." + avahi__domain)) }}'
+    state: '{{ "present" if item.value.cname_state|d(item.value.state | d("present")) != "absent" else "absent" }}'
+  with_dict: '{{ avahi__combined_services }}'
+  register: avahi__register_aliases
+  when: item.value.cname|d()
+
+- name: Manage avahi-alias.service
+  systemd:
+    name: 'avahi-alias.service'
+    enabled: '{{ True if avahi__register_alias_git|changed else omit }}'
+    daemon_reload: '{{ True if (avahi__register_alias_git|changed or
+                                avahi__register_alias_service|changed) else omit }}'
+    state: '{{ "restarted" if (avahi__register_alias_git|changed or
+                               avahi__register_alias_service|changed or
+                               avahi__register_aliases|changed) else omit }}'
+  when: ansible_service_mgr == 'systemd'
