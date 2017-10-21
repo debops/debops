@@ -1,0 +1,17 @@
+---
+
+- name: Divert original /etc/ntp.conf
+  command: dpkg-divert --quiet --local --divert /etc/ntp.conf.dpkg-divert
+           --rename /etc/ntp.conf
+  args:
+    creates: '/etc/ntp.conf.dpkg-divert'
+  when: ntp__daemon == 'ntpd'
+
+- name: Configure NTPd
+  template:
+    src: 'etc/ntpd/ntp.conf.j2'
+    dest: '/etc/ntp.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart ntp' ]

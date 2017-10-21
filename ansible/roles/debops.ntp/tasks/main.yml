@@ -1,0 +1,45 @@
+---
+
+- name: Ensure that configuration is supported
+  assert:
+    that: not ntp__daemon or ntp__daemon in [ 'ntpd', 'ntpdate', 'openntpd', 'systemd-timesyncd' ]
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: '{{ "present" if (ansible_local|d() and ansible_local.ntp|d()) else "latest" }}'
+    install_recommends: False
+  with_items: [ 'tzdata' ]
+
+- name: Ensure that alternative daemons/programs are not installed
+  apt:
+    name: '{{ item }}'
+    state: 'absent'
+    purge: True
+  with_flattened:
+    - [ '{{ "ntpdate" if (ntp__daemon != "ntpdate" and not ntp__ignore_ntpdate|bool) else [] }}' ]
+    - [ '{{ "ntp" if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}' ]
+    - [ '{{ "openntpd" if (ntp__daemon != "openntpd") else [] }}' ]
+
+  # Installs either ntpdate, NTPd or OpenNTPd on all hosts except inside containers
+- include: install.yml
+  when: ntp__daemon_enabled|bool
+
+- include: timezone.yml
+  when: ntp__timezone|d()
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save ntp local facts
+  template:
+    src: 'etc/ansible/facts.d/ntp.fact.j2'
+    dest: '/etc/ansible/facts.d/ntp.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'

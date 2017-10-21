@@ -1,0 +1,27 @@
+# {{ ansible_managed }}
+
+{% if ntp__listen is defined and ntp__listen %}
+# Addresses to listen on
+{%   if ntp__listen is string %}
+listen on {{ ntp__listen }}
+
+{%   else %}
+{%     for address in ntp__listen %}
+listen on {{ address }}
+{%     endfor %}
+
+{%   endif %}
+{% else %}
+# ntpd is not listening on any interface
+
+{% endif %}
+{% if ntp__servers is defined and ntp__servers %}
+# NTP servers to synchronize with
+{% if ntp__servers is string %}
+servers {{ ntp__servers }}
+{% else %}
+{% for address in ntp__servers %}
+servers {{ address }}
+{% endfor %}
+{% endif %}
+{% endif %}

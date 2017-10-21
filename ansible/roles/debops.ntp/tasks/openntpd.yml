@@ -1,0 +1,17 @@
+---
+
+- name: Divert original /etc/openntpd/ntpd.conf
+  command: dpkg-divert --quiet --local --divert /etc/openntpd/ntpd.conf.dpkg-divert
+           --rename /etc/openntpd/ntpd.conf
+  args:
+    creates: '/etc/openntpd/ntpd.conf.dpkg-divert'
+
+- name: Configure OpenNTPd
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'etc/default/openntpd', 'etc/openntpd/ntpd.conf' ]
+  notify: [ 'Restart openntpd' ]

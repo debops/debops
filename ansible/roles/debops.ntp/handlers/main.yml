@@ -1,0 +1,17 @@
+---
+
+- name: Restart openntpd
+  service:
+    name: 'openntpd'
+    state: 'restarted'
+
+- name: Restart ntp
+  service:
+    name: 'ntp'
+    state: 'restarted'
+  when: ntp__daemon == 'ntpd'
+
+- name: Restart systemd-timesyncd
+  service:
+    name: 'systemd-timesyncd'
+    state: 'restarted'

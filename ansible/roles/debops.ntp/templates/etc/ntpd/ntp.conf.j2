@@ -1,0 +1,75 @@
+# {{ ansible_managed }}
+
+driftfile /var/lib/ntp/ntp.drift
+
+# Enable this if you want statistics to be logged.
+#statsdir /var/log/ntpstats/
+
+statistics loopstats peerstats clockstats
+filegen loopstats file loopstats type day enable
+filegen peerstats file peerstats type day enable
+filegen clockstats file clockstats type day enable
+
+{% if ntp__listen is defined and ntp__listen and ntp__listen != '*' %}
+# Addresses to listen on, default is to block everything
+interface ignore ipv4
+interface ignore ipv6
+{%   if ntp__listen is string %}
+interface listen {{ ntp__listen }}
+
+{%   else %}
+{%     for address in ntp__listen %}
+interface listen {{ address }}
+{%     endfor %}
+
+{%   endif %}
+{% else %}
+# ntpd will listen on all interfaces
+
+{% endif %}
+{% if ntp__servers is defined and ntp__servers %}
+# NTP servers to synchronize with
+{% if ntp__servers is string %}
+server {{ ntp__servers }}
+{% else %}
+{% for address in ntp__servers %}
+server {{ address }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if ntp__fudge is defined and ntp__fudge %}
+# Fudge local clock if time servers is not available
+fudge 127.127.1.0 stratum 10
+{% endif %}
+
+# NTPd ACLs
+# Allow full access from localhost
+restrict 127.0.0.1
+restrict -6 ::1
+
+{% if ntp__allow is defined and ntp__allow %}
+# Default is to restrict all access to everybody
+restrict default ignore
+restrict -6 default ignore
+
+{%   if ntp__allow is string %}
+{%     if ntp__allow|ipv4 %}
+restrict {{ ntp__allow|ipaddr('network') }} mask {{ ntp__allow|ipaddr('netmask') }} notrap nomodify nopeer
+{%     else %}
+restrict -6 {{ ntp__allow|ipaddr('network') }} mask {{ ntp__allow|ipaddr('netmask') }} notrap nomodify nopeer
+{%     endif %}
+{%   else %}
+{%     for address in ntp__allow %}
+{%       if address|ipv4 %}
+restrict {{ address|ipaddr('network') }} mask {{ address|ipaddr('netmask') }} notrap nomodify nopeer
+{%       else %}
+restrict -6 {{ address|ipaddr('network') }} mask {{ address|ipaddr('netmask') }} notrap nomodify nopeer
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% else %}
+# No allow rules specified, so default is to allow everyone to query
+restrict default limited kod nomodify notrap nopeer noquery
+restrict -6 default limited kod nomodify notrap nopeer noquery
+{% endif %}

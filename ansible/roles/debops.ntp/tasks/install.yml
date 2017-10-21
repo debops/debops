@@ -1,0 +1,35 @@
+---
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - [ '{{ "ntpdate" if (ntp__daemon == "ntpdate") else [] }}' ]
+    - [ '{{ "ntp" if (ntp__daemon == "ntpd") else [] }}' ]
+    - [ '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}' ]
+
+- name: Manage systemd-timesyncd state
+  service:
+    name: 'systemd-timesyncd'
+    state: '{{ "started" if (ntp__daemon in [ "systemd-timesyncd" ]) else "stopped" }}'
+    enabled: '{{ True if (ntp__daemon in [ "systemd-timesyncd" ]) else False }}'
+  when: ansible_service_mgr == "systemd"
+
+# NTPdate does not need to be configured separately as the script `/usr/sbin/ntpdate-debian`
+# will pick up the configuration from `/etc/ntp.conf` when it exists.
+
+  # Install NTPd on all hosts except inside containers
+- include: ntpd.yml
+  when: ntp__daemon in [ 'ntpd', 'ntpdate' ]
+
+  # Install OpenNTPd on all hosts except inside containers
+- include: openntpd.yml
+  when: ntp__daemon == 'openntpd'
+
+  # Configure systemd-timesyncd
+- name: Include systemd-timesyncd configuration
+  include: systemd-timesyncd.yml
+  when: (ansible_service_mgr == "systemd" and
+         ntp__daemon == 'systemd-timesyncd')
