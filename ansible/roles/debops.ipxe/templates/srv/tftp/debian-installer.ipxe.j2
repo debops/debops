@@ -1,0 +1,142 @@
+#!ipxe
+
+# {{ ansible_managed }}
+
+chain --autofree variables.ipxe ||
+
+goto ${menu}
+
+:debian-installer
+isset ${debian-installer-cursor} || set debian-installer-cursor stable
+set os debian
+set domain ${netX/domain}
+
+iseq ${manufacturer} Xen && set netcfg netcfg/get_ipaddress=${netX/ip} netcfg/get_netmask=${netX/netmask} netcfg/get_gateway=${netX/gateway} netcfg/get_nameservers=${dns} netcfg/confirm_static=true netcfg/choose_interface=auto netcfg/disable_autoconfig=true ||
+
+menu Install Debian GNU/Linux / ${arch_a}
+item --gap Select suite:
+item --key e stable ${space} Debian Stable (Jessie) [e]
+item testing ${space} Debian Testing (Stretch)
+item unstable ${space} Debian Unstable (sid)
+item
+item --gap Select release:
+item wheezy ${space} Debian GNU/Linux 7.8 (wheezy)
+item jessie ${space} Debian GNU/Linux 8.0 (jessie)
+choose --default ${debian-installer-cursor} version || goto debian_exit
+set debian-installer-cursor ${version}
+
+set mirrorcfg mirror/suite=${version} mirror/country=manual mirror/http/hostname=${debian_installer_mirror} mirror/http/directory=/${os}
+
+set boot_params -- quiet
+
+:deb_boot_type_init
+set type text
+
+:deb_boot_type
+set dir ${os}/dists/${version}/main/installer-${arch_a}/current/images/netboot/
+
+menu Install Debian GNU/Linux / ${arch_a} / ${version}
+item --gap Select installer mode:
+item text ${space} Text install
+item graphical ${space} Graphical install
+item
+item rescue ${space} Rescue mode
+item
+item expert ${space} Expert install
+item --key b preseed ${space} Preseed install [b]
+item
+item --gap Preseed parameters:
+item config_hostname ${space} Hostname: ${hostname}
+item config_domain ${space} Domain: ${domain}
+item config_preseed ${space} Preseed: ${debian_installer_preseed}
+item config_keymap ${space} Keymap: ${debian_installer_keymap}
+item
+item --gap Installer parameters:
+item config_mirror ${space} Mirror: ${debian_installer_mirror}
+item config_boot_params ${space} Boot: ${boot_params}
+choose --default ${type} type || goto debian-installer
+
+echo ${cls}
+goto deb_${type}
+
+:deb_config_mirror
+echo -n Set Debian mirror [${debian_installer_mirror}]: && read change_debian_installer_mirror
+isset ${change_debian_installer_mirror} && set debian_installer_mirror ${change_debian_installer_mirror} || goto deb_boot_type
+clear change_debian_installer_mirror
+set mirrorcfg mirror/suite=${version} mirror/country=manual mirror/http/hostname=${debian_installer_mirror} mirror/http/directory=/${os}
+goto deb_boot_type
+
+:deb_config_boot_params
+echo -n Edit boot options: && read boot_params
+goto deb_boot_type
+
+:deb_config_keymap
+echo -n Set keymap [${debian_installer_keymap}]: && read change_debian_installer_keymap
+isset ${change_debian_installer_keymap} && set debian_installer_keymap ${change_debian_installer_keymap} || goto deb_boot_type
+clear change_debian_installer_keymap
+goto deb_boot_type
+
+:deb_config_hostname
+echo -n Set hostname: [${hostname}]: && read change_hostname
+isset ${change_hostname} && set hostname ${change_hostname} || goto deb_boot_type
+clear change_hostname
+goto deb_boot_type
+
+:deb_config_domain
+echo -n Set domain [${domain}]: && read change_domain
+isset ${change_domain} && set domain ${change_domain} || goto deb_boot_type
+clear change_domain
+goto deb_boot_type
+
+:deb_config_preseed
+echo -n Set preseed URL for ${os} ${version} [${debian_installer_preseed}]: && read change_debian_installer_preseed
+isset ${change_debian_installer_preseed} && set debian_installer_preseed ${change_debian_installer_preseed} || goto deb_boot_type
+clear change_debian_installer_preseed
+goto deb_boot_type
+
+:deb_rescue
+set install_params rescue/enable=true
+goto deb_text
+
+:deb_expert
+set install_params priority=low
+goto deb_text
+
+:deb_preseed
+echo -n Set preseed URL for ${os} ${version} [${debian_installer_preseed}]: && read preseedurl || goto deb_boot_type
+isset ${hostname} || goto deb_preseed_get_hostname
+:deb_preseed_has_hostname
+isset ${preseedurl} && set install_params auto=true priority=critical preseed/url=${preseedurl} keymap=${debian_installer_keymap} netcfg/hostname=${hostname} domain=${domain} ||
+set install_params auto=true priority=critical preseed/url=${debian_installer_preseed} keymap=${debian_installer_keymap} netcfg/hostname=${hostname} domain=${domain} ||
+goto deb_text
+
+:deb_preseed_get_hostname
+echo -n Set hostname [${hostname}]: && read hostname || goto deb_preseed_no_hostname
+isset ${hostname} || goto deb_preseed_no_hostname
+goto deb_preseed_has_hostname
+
+:deb_preseed_no_hostname
+echo Error: Preseeding requires a valid hostname. Press <Enter> to continue.
+prompt
+goto deb_boot_type
+
+:deb_text
+set dir ${dir}debian-installer/${arch_a}
+goto deb_boot
+
+:deb_graphical
+set dir ${dir}gtk/debian-installer/${arch_a}
+set install_params vga=788
+goto deb_boot
+
+:deb_boot
+imgfree
+echo Boot parameters: ${install_params} ${boot_params}
+kernel http://${debian_installer_mirror}/${dir}/linux initrd=initrd.gz ${netcfg} ${mirrorcfg} ${install_params} ${boot_params}
+initrd http://${debian_installer_mirror}/${dir}/initrd.gz
+boot
+
+:debian_exit
+set menu main_menu
+chain menu.ipxe
+

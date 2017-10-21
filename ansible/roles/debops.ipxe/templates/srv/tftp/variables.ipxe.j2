@@ -1,0 +1,33 @@
+#!ipxe
+
+# {{ ansible_managed }}
+
+
+# iPXE main menu variables
+
+# BIOS boot timeout in the main menu
+set ipxe_main_menu_timeout {{ (ipxe_main_menu_timeout|int * 1000) }}
+
+
+# Debian Installer variables
+
+# Debian mirror used to download installer kernel and initrd
+set debian_installer_mirror {{ ipxe_debian_installer_mirror }}
+
+# Default preseed subdomain to use
+set debian_installer_preseed {{ ipxe_debian_installer_preseed }}
+
+# Default keymap to set for the preseeding
+set debian_installer_keymap {{ ipxe_debian_installer_keymap }}
+
+
+# iPXE boot variables
+
+{% if ipxe_boot_url is defined and ipxe_boot_url %}
+# An URL to a boot script
+set ipxe_boot_url {{ ipxe_boot_url }}
+
+{% endif %}
+# Subdirectory with boot configuration files
+set ipxe_boot_path {{ ipxe_boot_path }}
+

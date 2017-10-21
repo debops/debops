@@ -1,0 +1,62 @@
+---
+
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'ipxe/pre_main.yml') }}"
+
+- name: Install iPXE package
+  apt:
+    name: 'ipxe'
+    state: 'present'
+    install_recommends: False
+  when: ipxe_tftp is defined and ipxe_tftp
+
+- name: Make sure that TFTP root directory exists
+  file:
+    path: '{{ ipxe_tftp_root }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: ipxe_tftp is defined and ipxe_tftp
+
+- name: Copy the iPXE boot binary to TFTP root directory
+  command: cp /usr/lib/ipxe/undionly.kpxe {{ ipxe_tftp_root + "/undionly.kpxe" }}
+  args:
+    creates: '{{ ipxe_tftp_root + "/undionly.kpxe" }}'
+  when: ipxe_tftp is defined and ipxe_tftp
+
+- name: Check if iPXE package contains EFI binary
+  stat:
+    path: '/usr/lib/ipxe/ipxe.efi'
+  register: ipxe_register_efi
+
+- name: Copy the iPXE efi boot binary to TFTP root directory
+  command: cp /usr/lib/ipxe/ipxe.efi {{ ipxe_tftp_root + "/ipxe.efi" }}
+  args:
+    creates: '{{ ipxe_tftp_root + "/ipxe.efi" }}'
+  when: ipxe_tftp is defined and ipxe_register_efi.stat.exists
+
+- name: Create iPXE configuration directory
+  file:
+    path: '{{ ipxe_config_root }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create iPXE configuration
+  template:
+    src: '{{ lookup("template_src", "srv/tftp/" + item | basename) }}'
+    dest: '{{ ipxe_config_root + "/" + item | basename | replace(".j2", "") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_fileglob: [ '../templates/srv/tftp/*.j2' ]
+
+- name: Configure Debian netboot installer
+  include: debian_pxeboot.yml
+  when: ipxe_tftp|d() and ipxe_debian_pxeboot|d()
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'ipxe/post_main.yml') }}"
+
