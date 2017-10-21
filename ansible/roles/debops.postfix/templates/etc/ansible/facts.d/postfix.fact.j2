@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import load, loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+output = {'installed': True}
+
+try:
+    with open(os.devnull, 'w') as devnull:
+        postconf_stdout = subprocess.check_output(
+            ["LC_MESSAGES=C dpkg-query -W -f='${Version}\n' 'postfix'"],
+            shell=True, stderr=devnull)
+
+except subprocess.CalledProcessError:
+    pass
+
+# The 'postfix-doc' package modifies the Postfix 'main.cf' file, so let's
+# account for that
+postfix_doc_status = ''
+postfix_doc_cmd = ["/usr/bin/dpkg-query",
+                   "--show",
+                   "--showformat='${db:Status-Status}'",
+                   "'postfix-doc'"]
+
+try:
+    with open(os.devnull, 'w') as devnull:
+        postfix_doc_status = subprocess.check_output(
+            ' '.join(postfix_doc_cmd), shell=True, stderr=devnull)
+
+except subprocess.CalledProcessError:
+    pass
+
+if postconf_stdout:
+    output['version'] = postconf_stdout.split('-')[0]
+
+if postfix_doc_status == 'installed':
+    output['doc_installed'] = True
+else:
+    output['doc_installed'] = False
+
+print(dumps(output, sort_keys=True, indent=2))

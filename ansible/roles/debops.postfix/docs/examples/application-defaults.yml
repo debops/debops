@@ -1,0 +1,29 @@
+---
+
+# This is a set of default variables in an example 'application' role that uses
+# dependent variables to pass configuration to 'debops.postfix' role.
+
+
+# Additional APT packages to install for Postfix
+application__postfix__dependent_packages:
+  - 'postfix-pgsql'
+
+
+# Postfix main.cf configuration
+application__postfix__dependent_maincf:
+
+  - name: 'application_destination_recipient_limit'
+    value: 1
+
+
+# Postfix master.cf configuration
+application__postfix__dependent_mastercf:
+
+  - name: 'application'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    command: 'pipe'
+    args: |
+      flags=FR user=application argv=/usr/local/lib/application/bin/in-pipe
+      ${nexthop} ${user}

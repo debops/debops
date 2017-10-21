@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+
+# Manage Postfix hash tables idempotently.
+#
+# Documentation: http://www.postfix.org/DATABASE_README.html#safe_db
+
+
+# All '*.in' files in current directory are hash tables that need to be
+# processed by 'postmap'.
+HASH_TABLES = $(patsubst %.in,%.db,$(wildcard *.in))
+
+all: $(HASH_TABLES)
+
+%.db: %.in
+	@postmap "$<" && mv -- "$<.db" "$@"
+
+clean:
+	@rm -f *.db

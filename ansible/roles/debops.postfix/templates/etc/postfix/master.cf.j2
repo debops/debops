@@ -1,0 +1,125 @@
+# {{ ansible_managed }}
+#
+# Postfix master process configuration file.  For details on the format
+# of the file, see the master(5) manual page (command: "man 5 master" or
+# on-line: http://www.postfix.org/master.5.html).
+#
+# Do not forget to execute "postfix reload" after editing this file.
+#
+{% set postfix__tpl_default_chroot = ((postfix__version | version_compare("3.0.0", "<")) | ternary('yes', 'no')) %}
+# ==========================================================================
+# service type  private unpriv  chroot  wakeup  maxproc command + args
+{{ "# {:<8}{:<6}{:<8}{:<8}{:<8}{:<8}{}".format('', '', '(yes)', '(yes)', '(' + postfix__tpl_default_chroot + ')', '(never)', '(100)') }}
+# ==========================================================================
+{% macro set_value(option) %}
+{%   set output = '-' %}
+{%   if option | bool and option is not iterable %}
+{%     if option | int and option | string != 'True' %}
+{%       set output = option %}
+{%     else %}
+{%       set output = 'y' %}
+{%     endif %}
+{%   elif not option | bool and option is not iterable %}
+{%     if option is not none %}
+{%       if option | int or option | string == '0' %}
+{%         set output = option %}
+{%       else %}
+{%         set output = 'n' %}
+{%       endif %}
+{%     endif %}
+{%   elif option is string %}
+{%     set output = option %}
+{%   endif %}
+{{ output | to_json }}
+{% endmacro %}
+{% set param_empty = {
+  'command': [ 'service', 'name' ]
+} %}
+{% set param_defaults = {
+  'private': '-',
+  'unpriv':  '-',
+  'chroot':  '-',
+  'wakeup':  '-',
+  'maxproc': '-'
+} %}
+{% set postfix__tpl_mastercf = (postfix__combined_mastercf | parse_kv_items(empty=param_empty, defaults=param_defaults)) %}
+{% for element in postfix__tpl_mastercf %}
+{%   if element.name|d() and element.state|d('present') not in [ 'init', 'absent' ] %}
+{%     set option_commented = ('#' if element.state|d('present') == 'comment' else '') %}
+{%     set element_name =     (element.service | d(element.name)) %}
+{%     set element_type =     element.type %}
+{%     set element_private =  set_value(element.private) | from_json %}
+{%     set element_unpriv =   set_value(element.unpriv) | from_json %}
+{%     set element_chroot =   set_value(element.chroot) | from_json %}
+{%     if element_chroot == postfix__tpl_default_chroot[0] %}
+{%       if postfix__version | version_compare("3.0.0", "<") %}
+{%         set element_chroot = '-' %}
+{%       endif %}
+{%     endif %}
+{%     set element_wakeup =   set_value(element.wakeup) | from_json %}
+{%     set element_maxproc =  set_value(element.maxproc) | from_json %}
+{%     set element_command =  element.command %}
+{%     set element_args =     (element.args|d('') | regex_replace('\n$','')) %}
+{%     set name_indent =      (option_commented | ternary('8', '9')) %}
+{%     set type_indent =      ((element_name | length > 8) | ternary('4', '5')) %}
+{%     set private_indent =   ((element_name | length > 8 and option_commented) | ternary('6', '7')) %}
+{%     set option_format =    ('{}{:<' + name_indent + '} {:<' + type_indent + '} {:<' + private_indent + '} {:<7} {:<7} {:<7} {:<7} {}') %}
+{%     if element.comment|d() %}
+{%       set comment_header = ('#' if (element.state|d('present') == 'hidden' or (element.comment.split('\n') | list | count >= 3)) else '') %}
+{%       set comment_footer = ('#\n' if (element.comment.split('\n') | list | count < 5) else '') %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix=comment_header, postfix=comment_footer) -}}
+{%     elif element.separator is defined and element.separator|bool %}
+
+{%     endif %}
+{%     if element.state|d('present') != 'hidden' %}
+{{ option_format.format(option_commented, element_name, element_type, element_private, element_unpriv, element_chroot, element_wakeup, element_maxproc, element_command) }}
+{%       if element.options|d() %}
+{%         set parsed_options = [] %}
+{%         for option in element.options %}
+{%           set option_dict = {'name': (option.option | d(option.name)), 'state': option.state|d('present') } %}
+{%           if option.value is defined %}
+{%             if option.value | bool and option.value is not iterable %}
+{%               if option.value | int and option.value | string != 'True' %}
+{%                 set _ = option_dict.update({ 'value': option.value|string }) %}
+{%               else %}
+{%                 set _ = option_dict.update({ 'value': 'yes' }) %}
+{%               endif %}
+{%             elif not option.value | bool and option.value is not iterable %}
+{%               if option.value is not none %}
+{%                 if option.value | int or option.value | string == '0' %}
+{%                   set _ = option_dict.update({ 'value': option.value|string }) %}
+{%                 else %}
+{%                   set _ = option_dict.update({ 'value': 'no' }) %}
+{%                 endif %}
+{%               endif %}
+{%             elif option.value is not string and option.value is not mapping and option.value is iterable %}
+{%               set option_values = [] %}
+{%               for option_item in option.value %}
+{%                 if option_item.state|d('present') != 'absent' %}
+{%                   set _ = option_values.append(option_item.name) %}
+{%                 endif %}
+{%               endfor %}
+{%               set _ = option_dict.update({ 'value': option_values }) %}
+{%             else %}
+{%               set _ = option_dict.update({ 'value': option.value|string }) %}
+{%             endif %}
+{%           else %}
+{%             set _ = option_dict.update({'value': [] }) %}
+{%           endif %}
+{%           set _ = parsed_options.append(option_dict) %}
+{%         endfor %}
+{%         if parsed_options | count > 0 %}
+{%           for thing in parsed_options %}
+{%             set thing_commented = ('#' if thing.state|d('present') == 'comment' else '') %}
+{{ '{}  -o {}={}'.format(option_commented if option_commented else thing_commented, thing.name, ([ thing.value ] if thing.value is string else thing.value) | join(',')) }}
+{%           endfor %}
+{%         endif %}
+{%       endif %}
+{%       if element_args|d() %}
+{%         for line in element_args.split('\n') %}
+{{ '{}{}'.format(option_commented, '  ' + line) }}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
