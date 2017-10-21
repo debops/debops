@@ -1,0 +1,69 @@
+# {{ ansible_managed }}
+{% macro print_user_clusters(postgresql__tpl_user_clusters_list) %}
+{% if postgresql__tpl_user_clusters_list|d() and postgresql__tpl_user_clusters_list %}
+{%   for entry in postgresql__tpl_user_clusters_list %}
+{%     set entry_tpl_user = [] %}
+{%     if entry.name|d() %}
+{%       if entry.name is string %}
+{%           set entry_tpl_user = [ entry.name ] %}
+{%       else %}
+{%         for element in entry.name %}
+{%           if element %}
+{%             set _ = entry_tpl_user.append(element) %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     elif entry.user|d() %}
+{%       if entry.user is string %}
+{%           set entry_tpl_user = [ entry.user ] %}
+{%       else %}
+{%         for element in entry.user %}
+{%           if element %}
+{%             set _ = entry_tpl_user.append(element) %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     set entry_tpl_group = [] %}
+{%     if entry.group|d() %}
+{%       if entry.group is string %}
+{%           set entry_tpl_group = [ entry.group ] %}
+{%       else %}
+{%         for element in entry.group %}
+{%           if element %}
+{%             set _ = entry_tpl_group.append(element) %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     set entry_tpl_cluster = "main" %}
+{%     if entry.cluster|d() %}
+{%       set entry_tpl_cluster = entry.cluster %}
+{%     elif entry.host|d() and entry.port|d() %}
+{%       set entry_tpl_host = entry.host %}
+{%       set entry_tpl_port = entry.port %}
+{%       set entry_tpl_cluster = entry.host + ":" + entry_tpl_port %}
+{%     endif %}
+{%     set entry_tpl_database = entry.database | d("*") %}
+{%     if entry_tpl_user %}
+{%       for user_name in entry_tpl_user %}
+{%         if entry_tpl_group %}
+{%           for group_name in entry_tpl_group %}
+{{ "%-14s %-14s %-10s %-20s %s" | format(user_name, group_name, entry.version | d(postgresql__version), entry_tpl_cluster, entry_tpl_database) }}
+{%           endfor %}
+{%         else %}
+{{ "%-14s %-14s %-10s %-20s %s" | format(user_name, user_name, entry.version | d(postgresql__version), entry_tpl_cluster, entry_tpl_database) }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+
+{%   endfor %}
+{% endif %}
+{% endmacro %}
+
+# USER         GROUP          VERSION    CLUSTER              DATABASE
+
+{% if postgresql__user_clusters|d() and postgresql__user_clusters %}
+{{ print_user_clusters(postgresql__user_clusters) }}{% endif %}
+{% if postgresql__default_user_clusters|d() and postgresql__default_user_clusters %}
+{{ print_user_clusters(postgresql__default_user_clusters) }}{% endif %}
