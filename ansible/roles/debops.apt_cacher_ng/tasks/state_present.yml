@@ -1,0 +1,123 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Divert Apt-Cacher NG configuration
+  command: dpkg-divert --quiet --local --divert "/{{ item.path }}.dpkg-divert"
+           --rename "/{{ item.path }}"
+  args:
+    creates: '/{{ item.path }}.dpkg-divert'
+  when: (item.divert|d(True))
+  with_items: '{{ apt_cacher_ng__configuration_files }}'
+
+- name: Configure apt-cacher-ng
+  template:
+    src: '{{ item.src|d(item.path) }}.j2'
+    dest: '/{{ item.path }}'
+    owner: '{{ item.owner|d("root") }}'
+    group: '{{ item.group|d("root") }}'
+    mode: '{{ item.mode|d("0640") }}'
+  with_items: '{{ apt_cacher_ng__configuration_files }}'
+  notify: [ 'Restart apt-cacher-ng' ]
+
+- name: Ensure the cache dir does exist
+  file:
+    state: 'directory'
+    path:  '{{ apt_cacher_ng__cache_dir }}'
+    owner: '{{ apt_cacher_ng__cache_dir_owner }}'
+    group: '{{ apt_cacher_ng__cache_dir_group }}'
+    mode:  '{{ apt_cacher_ng__dir_perms }}'
+
+# Permissions of the cache directory [[[
+- name: Check if cache dir permissions need to be recursively changed
+  file:
+    state: 'file'
+    path:  '{{ apt_cacher_ng__cache_dir }}/_expending_damaged'
+    owner: '{{ apt_cacher_ng__cache_dir_owner }}'
+    group: '{{ apt_cacher_ng__cache_dir_group }}'
+    mode:  '{{ apt_cacher_ng__file_perms }}'
+  when: (apt_cacher_ng__cache_dir_enforce_permissions == 'lazy')
+  failed_when: False
+  register: apt_cacher_ng__register_cache_perms
+
+- name: Check if cache dir permissions should be changed
+  set_fact:
+    apt_cacher_ng__cache_dir_permissions_change: '{{
+      apt_cacher_ng__cache_dir_enforce_permissions != "disabled" and (
+        (apt_cacher_ng__register_cache_perms|d() and apt_cacher_ng__register_cache_perms|changed) or
+        apt_cacher_ng__cache_dir_enforce_permissions == "strict"
+      ) }}'
+
+- name: Change permissions of files and directories in the cache directory
+  shell: |
+    chown --recursive {{ apt_cacher_ng__cache_dir_owner }}:{{ apt_cacher_ng__cache_dir_group }} .
+    find . -type d -exec chmod {{ apt_cacher_ng__dir_perms }} {} \;
+    find . -type f -exec chmod {{ apt_cacher_ng__file_perms }} {} \;
+  args:
+    chdir: '{{ apt_cacher_ng__cache_dir }}'
+    warn: False
+  when: apt_cacher_ng__cache_dir_permissions_change
+
+# - name: Get list of files in cache dir for permissions change
+#   find:
+#     file_type: 'file'
+#     paths: [ '{{ apt_cacher_ng__cache_dir }}' ]
+#     hidden: True
+#     recurse: True
+#   register: apt_cacher_ng__register_cache_dir_file_list
+#   when: apt_cacher_ng__cache_dir_permissions_change
+
+# - name: Get list of directories in cache dir for permissions change
+#   find:
+#     file_type: 'directory'
+#     paths: [ '{{ apt_cacher_ng__cache_dir }}' ]
+#     hidden: True
+#     recurse: True
+#   register: apt_cacher_ng__register_cache_dir_directory_list
+#   when: apt_cacher_ng__cache_dir_permissions_change
+#
+# ------ Slow as hell. Aborted after about 4 minutes. Shell command only took seconds. ------
+# - name: Change permissions of files in the cache directory
+#   file:
+#     path: '{{ item.path }}'
+#     owner: '{{ apt_cacher_ng__cache_dir_owner }}'
+#     group: '{{ apt_cacher_ng__cache_dir_group }}'
+#     mode:  '{{ apt_cacher_ng__file_perms }}'
+#   ## UID and GID are reported as number.
+#   when: (item.mode|regex_replace("^0([0-7]{4})$", "\1") != apt_cacher_ng__file_perms)
+#   with_items: '{{ apt_cacher_ng__register_cache_dir_file_list.files|d([]) }}'
+#
+# - name: Change permissions of directory in the cache directory
+#   file:
+#     path: '{{ item.path }}'
+#     owner: '{{ apt_cacher_ng__cache_dir_owner }}'
+#     group: '{{ apt_cacher_ng__cache_dir_group }}'
+#     mode:  '{{ apt_cacher_ng__dir_perms }}'
+#   with_items: '{{ apt_cacher_ng__register_cache_dir_directory_list.files|d([]) }}'
+
+# ]]]
+
+- name: Remove obsolet debconf file from apt-cacher-ng package
+  file:
+    path: '/etc/apt-cacher-ng/zz_debconf.conf'
+    state: 'absent'
+  notify: [ 'Restart apt-cacher-ng' ]
+
+- name: Remove obsolet file from debops.apt
+  file:
+    path: '/etc/services.d/acng.j2'
+    state: 'absent'
+  notify: [ 'Assemble services.d' ]
+
+- name: Enable apt-cacher-ng
+  service:
+    name: 'apt-cacher-ng'
+    state: 'started'
+    enabled: True
+  when: (apt_cacher_ng__enabled|d())
+
+- name: Disable apt-cacher-ng
+  service:
+    name: 'apt-cacher-ng'
+    state: 'stopped'
+    enabled: False
+  when: not (apt_cacher_ng__enabled|d())

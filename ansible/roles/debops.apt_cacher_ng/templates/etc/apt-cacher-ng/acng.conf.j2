@@ -1,0 +1,533 @@
+# {{ ansible_managed }}
+#
+# IMPORTANT NOTE:
+#
+# THIS FILE IS MAYBE JUST ONE OF MANY CONFIGURATION FILES IN THIS DIRECTORY.
+# SETTINGS MADE IN OTHER FILES CAN OVERRIDE VALUES THAT YOU CHANGE HERE. GO
+# LOOK FOR OTHER CONFIGURATION FILES! CHECK THE MANUAL AND INSTALLATION NOTES
+# (like README.Debian) FOR MORE DETAILS!
+#
+
+# This is a configuration file for apt-cacher-ng, a smart caching proxy for
+# software package downloads. It's supposed to be in a directory specified by
+# the -c option of apt-cacher-ng, see apt-cacher-ng(8) for details.
+# RULES:
+# Letter case in variable names does not matter, names and values should be
+# separated with colons. For boolean variables, zero number is considered false,
+# non-zero considered true. If a default value is not explicitly mentioned in
+# the description, the commented value assignments mostly represent the default
+# values of the particular variables.
+
+# Storage directory for downloaded data and related maintenance activity.
+#
+CacheDir: {{ apt_cacher_ng__cache_dir }}
+
+# Log file directory, can be set empty to disable logging
+#
+LogDir: {{ apt_cacher_ng__log_dir }}
+
+# A place to look for additional configuration and resource files if they are not
+# found in the configuration directory
+#
+SupportDir: {{ apt_cacher_ng__support_dir }}
+
+# TCP server port for incoming http (or HTTP proxy) connections.
+# Can be set to 9999 to emulate apt-proxy.
+#
+Port:{{ apt_cacher_ng__port }}
+
+# Addresses or hostnames to listen on. Multiple addresses must be separated by
+# spaces. Each entry must be an exact local address which is associated with a
+# local interface. DNS resolution is performed using getaddrinfo(3) for all
+# available protocols (IPv4, IPv6, ...). Using a protocol specific format will
+# create binding(s) only on protocol specific socket(s), e.g. 0.0.0.0 will
+# listen only to IPv4.
+#
+# Default: listens on all interfaces and protocols
+#
+# BindAddress: localhost 192.168.7.254 publicNameOnMainInterface
+{{ ("BindAddress: " + apt_cacher_ng__bind_address|join(" ")) if apt_cacher_ng__bind_address else "" }}
+
+# The specification of another HTTP proxy which shall be used for downloads.
+# It can include user name and password but see the manual for limitations.
+#
+# Default: uses direct connection
+#
+# Proxy: http://www-proxy.example.net:3128
+# Proxy: https://username:proxypassword@proxy.example.net:3129
+{{ ("Proxy: " + apt_cacher_ng__proxy) if apt_cacher_ng__proxy else "" }}
+
+# Repository remapping. See manual for details.
+# In this example, some backends files might be generated during package
+# installation using information collected on the system.
+# Examples:
+Remap-debrep: file:deb_mirror*.gz /debian ; file:backends_debian # Debian Archives
+Remap-uburep: file:ubuntu_mirrors /ubuntu ; file:backends_ubuntu # Ubuntu Archives
+Remap-cygwin: file:cygwin_mirrors /cygwin # ; file:backends_cygwin # incomplete, please create this file or specify preferred mirrors here
+Remap-sfnet:  file:sfnet_mirrors # ; file:backends_sfnet # incomplete, please create this file or specify preferred mirrors here
+Remap-alxrep: file:archlx_mirrors /archlinux # ; file:backend_archlx # Arch Linux
+Remap-fedora: file:fedora_mirrors # Fedora Linux
+Remap-epel:   file:epel_mirrors # Fedora EPEL
+Remap-slrep:  file:sl_mirrors # Scientific Linux
+Remap-gentoo: file:gentoo_mirrors.gz /gentoo ; file:backends_gentoo # Gentoo Archives
+# Remap-debvol: file:debvol_mirror*.gz /debian-volatile ; file:backends_debvol # Debian Volatile Archives
+
+# This is usually not needed for security.debian.org because it's always the
+# same DNS hostname. However, it might be enabled in order to use hooks
+# or ForceManaged mode or special flags in this context. Not set by default.
+# Remap-secdeb: security.debian.org
+
+# Virtual page accessible in a web browser to see statistics and status
+# information, i.e. under http://localhost:3142/acng-report.html
+# NOTE: This option must be configured to run maintenance jobs (even when used
+# via acngtool in cron scripts). The AdminAuth option can be used to restrict
+# access to sensitive areas on that page.
+#
+# Default: not set, should be set by the system administrator
+#
+{# DebOps note: The file name might be referenced by reverse proxy
+# configuration. Needs to be checked before changing.
+# https://github.com/debops/ansible-apt/issues/53#issuecomment-195782050 #}
+ReportPage: acng-report.html
+
+# Socket file for accessing through local UNIX socket instead of TCP/IP. Can be
+# used with inetd bridge or cron client.
+# Default: not set, UNIX socket bridge is disabled.
+#
+# SocketPath:/var/run/apt-cacher-ng/socket
+
+# If set to 1, makes log files be written to disk on every new line. Default
+# is 0, buffers are flushed after the client disconnects. Technically,
+# it's a convenience alias for the Debug option, see below for details.
+#
+# UnbufferLogs: 0
+
+# Enables extended client information in log entries. When set to 0, only
+# activity type, time and transfer sizes are logged.
+#
+# VerboseLog: 1
+VerboseLog: {{ "1" if apt_cacher_ng__verbose_log|bool else "0" }}
+
+# Don't detach from the starting console.
+#
+# ForeGround: 0
+
+# Store the pid of the daemon process in the specified text file.
+# Default: disabled
+#
+# PidFile: /var/run/apt-cacher-ng/pid
+
+# Forbid outgoing connections and work without an internet connection or
+# respond with 503 error where it's not possible.
+#
+# Offlinemode: 0
+Offlinemode: {{ "1" if apt_cacher_ng__offline_mode|bool else "0" }}
+
+# Forbid downloads from locations that are directly specified in the user
+# request, i.e. all downloads must be processed by the preconfigured remapping
+# backends (see above).
+#
+# ForceManaged: 0
+ForceManaged: {{ "1" if apt_cacher_ng__force_managed|bool else "0" }}
+
+# Days before considering an unreferenced file expired (to be deleted).
+# WARNING: if the value is set too low and particular index files are not
+# available for some days (mirror downtime) then there is a risk of removal of
+# still useful package files.
+#
+# ExTreshold: 4
+{{ ("ExTreshold: " + apt_cacher_ng__expiration_threshold|string) if (apt_cacher_ng__expiration_threshold != "default") else "" }}
+
+# Stop expiration when a critical problem appears, issue like a failed update
+# of an index file in the preparation step.
+#
+# WARNING: don't set this option to zero or empty without considering possible
+# consequences like a sudden and complete cache data loss.
+#
+# ExAbortOnProblems: 1
+{{ ("ExAbortOnProblems: " + apt_cacher_ng__expiration_abort_on_problems|string) if (apt_cacher_ng__expiration_abort_on_problems != "default") else "" }}
+
+# Number of failed nightly expiration runs which are considered acceptable and
+# do not trigger an error notification to the admin (e.g. via daily cron job)
+# before the (day) count is reached. Might be useful with whacky internet
+# connections.
+#
+# Default: a guessed value, 1 if ExTreshold is 5 or more, 0 otherwise.
+#
+# ExSuppressAdminNotification: 1
+
+# Modify file names to work around limitations of some file systems.
+# WARNING: experimental feature, subject to change
+#
+# StupidFs: 0
+
+# Experimental feature for apt-listbugs: pass-through SOAP requests and
+# responses to/from bugs.debian.org.
+# Default: guessed value, true unless ForceManaged is enabled
+#
+# ForwardBtsSoap: 1
+
+# There is a small in-memory cache for DNS resolution data, expired by
+# this timeout (in seconds). Internal caching is disabled if set to a value
+# less than zero.
+#
+# DnsCacheSeconds: 1800
+{{ ("DnsCacheSeconds: " + apt_cacher_ng__dns_cache_seconds|string) if (apt_cacher_ng__dns_cache_seconds != "default") else "" }}
+
+###############################################################################
+#
+# WARNING: don't modify thread and file matching parameters without a clear
+# idea of what is happening behind the scene!
+#
+# Max. count of connection threads kept ready (for faster response in the
+# future). Should be a sane value between 0 and average number of connections,
+# and depend on the amount of spare RAM.
+# MaxStandbyConThreads: 8
+#
+# Hard limit of active thread count for incoming connections, i.e. operation
+# is refused when this value is reached (below zero = unlimited).
+# MaxConThreads: -1
+#
+# Pigeonholing files (like static vs. volatile contents) is done by (extended)
+# regular expressions.
+#
+# The following patterns are available for the purposes detailed, where
+# the latter takes precedence over the former:
+# - «PFilePattern» for static data that doesn't change silently on the server.
+# - «VFilePattern» for volatile data that may change like every hour. Files
+#   that match both PFilePattern and VfilePattern will be treated as volatile.
+# - Static data with file names that match VFilePattern may be overriden being
+#   treated as volatile by making it match the special static data pattern,
+#   «SPfilePattern».
+# - «SVfilePattern» or the "special volatile data" pattern is for the
+#   convenience of specifying any exceptions to matches with SPfilePattern,
+#   for cases where data must still be treated as volatile.
+# - «WfilePattern» specifies a "whitelist pattern" for the regular expiration
+#   job, telling it to keep the files even if they are not referenced by
+#   others, like crypto signatures with which clients begin their downloads.
+#
+# There are two versions. The pattern variables mentioned above should not be
+# set without good reason, because they would override the built-in defaults
+# (that might impact updates to future versions of apt-cacher-ng). There are
+# also versions of those patterns ending with Ex, which may be modified by the
+# local administrator. They are evaluated in addition to the regular patterns
+# at runtime.
+#
+# To see examples of the expected syntax, run: apt-cacher-ng -p debug=1
+#
+# PfilePatternEx:
+# VfilePatternEx:
+# SPfilePatternEx:
+# SVfilePatternEx:
+# WfilePatternEx:
+#
+###############################################################################
+
+# A bitmask type value declaring the loging verbosity and behavior of the error
+# log writing. Non-zero value triggers at least faster log file flushing.
+#
+# Some higher bits only working with a special debug build of apt-cacher-ng,
+# see the manual for details. The setting has an alias named UnbufferLogs.
+#
+# WARNING: this can write significant amount of data into apt-cacher.err logfile.
+#
+# Default: 0
+#
+# Debug:3
+{{ ("Debug: " + apt_cacher_ng__debug|string) if (apt_cacher_ng__debug != "") else "" }}
+
+# Usually, general purpose proxies like Squid expose the IP address of the
+# client user to the remote server using the X-Forwarded-For HTTP header. This
+# behaviour can be optionally turned on with the Expose-Origin option.
+#
+# ExposeOrigin: 0
+
+# When logging the originating IP address, trust the information supplied by
+# the client in the X-Forwarded-For header.
+#
+# LogSubmittedOrigin: 0
+LogSubmittedOrigin: {{ "1" if apt_cacher_ng__log_submitted_origin|bool else "0" }}
+
+# The version string reported to the peer, to be displayed as HTTP client (and
+# version) in the logs of the mirror.
+#
+# WARNING: Expect side effects! Some archives use this header to guess
+# capabilities of the client (i.e. allow redirection and/or https links) and
+# change their behaviour accordingly but ACNG might not support the expected
+# features.
+#
+# Default:
+#
+# UserAgent: Yet Another HTTP Client/1.2.3p4
+{{ ("UserAgent: " + apt_cacher_ng__user_agent) if (apt_cacher_ng__user_agent != "default") else "" }}
+
+# In some cases the Import and Expiration tasks might create fresh volatile
+# data for internal use by reconstructing them using patch files. This
+# by-product might be recompressed with bzip2 and with some luck the resulting
+# file becomes identical to the *.bz2 file on the server which can be used by
+# APT when requesting a complete version of this file.
+# The downside of this feature is higher CPU load on the server during
+# the maintenance tasks, and the outcome might have not much value in a LAN
+# where all clients update their data often and regularly and therefore usually
+# don't need the full version of the index file.
+#
+# RecompBz2: 0
+RecompBz2: {{ "1" if apt_cacher_ng__recompress_bz2 else "0" }}
+
+# Network timeout for outgoing connections, in seconds.
+#
+# NetworkTimeout: 60
+{{ ("NetworkTimeout: " + apt_cacher_ng__network_timeout|string) if (apt_cacher_ng__network_timeout != "") else "" }}
+
+# Sometimes it makes sense to not store the data in cache and just return the
+# package data to client while it comes in. The following DontCache* parameters
+# can enable this behaviour for certain URL types. The tokens are extended
+# regular expressions which the URLs are evaluated against.
+#
+# DontCacheRequested is applied to the URL as it comes in from the client.
+# Example: exclude packages built with kernel-package for x86
+# DontCacheRequested: linux-.*_10\...\.Custo._i386
+# Example usecase: exclude popular private IP ranges from caching
+# DontCacheRequested: 192.168.0 ^10\..* 172.30
+#
+# DontCacheResolved is applied to URLs after mapping to the target server. If
+# multiple backend servers are specified then it's only matched against the
+# download link for the FIRST possible source (due to implementation limits).
+#
+# Example usecase: all Ubuntu stuff comes from a local mirror (specified as
+# backend), don't cache it again:
+# DontCacheResolved: ubuntumirror.local.net
+#
+# DontCache directive sets (overrides) both, DontCacheResolved and
+# DontCacheRequested.  Provided for convenience, see those directives for
+# details.
+#
+# Example:
+# DontCache: .*.local.university.int
+
+# Default permission set of freshly created files and directories, as octal
+# numbers (see chmod(1) for details).
+# Can by limited by the umask value (see umask(2) for details) if it's set in
+# the environment of the starting shell, e.g. in apt-cacher-ng init script or
+# in its configuration file.
+#
+# DirPerms: 00755
+{{ ("DirPerms: " + apt_cacher_ng__dir_perms) if (apt_cacher_ng__dir_perms != "") else "" }}
+# FilePerms: 00664
+{{ ("FilePerms: " + apt_cacher_ng__file_perms) if (apt_cacher_ng__file_perms != "") else "" }}
+
+# It's possible to use use apt-cacher-ng as a regular web server with a limited
+# feature set, i.e. directory browsing, downloads of any files, Content-Type
+# based on /etc/mime.types, but without sorting, CGI execution, index page
+# redirection and other funny things.
+# To get this behavior, mappings between virtual directories and real
+# directories on the server must be defined with the LocalDirs directive.
+# Virtual and real directories are separated by spaces, multiple pairs are
+# separated by semi-colons. Real directories must be absolute paths.
+# NOTE: Since the names of that key directories share the same namespace as
+# repository names (see Remap-...) it is administrator's job to avoid conflicts
+# between them or explicitly create them.
+#
+# LocalDirs: woo /data/debarchive/woody ; hamm /data/debarchive/hamm
+LocalDirs: acng-doc /usr/share/doc/apt-cacher-ng
+
+# Precache a set of files referenced by specified index files. This can be used
+# to create a partial mirror usable for offline work. There are certain limits
+# and restrictions on the path specification, see manual and the cache control
+# web site for details. A list of (maybe) relevant index files could be
+# retrieved via "apt-get --print-uris update" on a client machine.
+#
+# Example:
+# PrecacheFor: debrep/dists/unstable/*/source/Sources* debrep/dists/unstable/*/binary-amd64/Packages*
+
+# Arbitrary set of data to append to request headers sent over the wire. Should
+# be a well formated HTTP headers part including newlines (DOS style) which
+# can be entered as escape sequences (\r\n).
+#
+# RequestAppendix: X-Tracking-Choice: do-not-track\r\n
+
+# Specifies the IP protocol families to use for remote connections. Order does
+# matter, first specified are considered first. Possible combinations:
+# v6 v4
+# v4 v6
+# v6
+# v4
+# Default: use native order of the system's TCP/IP stack, influenced by the
+# BindAddress value.
+#
+# ConnectProto: v6 v4
+{% if apt_cacher_ng__connect_protocol|length >= 1 %}
+ConnectProto: {{ apt_cacher_ng__connect_protocol | join(" ") }}
+{% endif %}
+
+# Regular expiration algorithm finds package files which are no longer listed
+# in any index file and removes them of them after a safety period.
+# This option allows to keep more versions of a package in the cache after
+# the safety period is over.
+#
+# KeepExtraVersions: 0
+
+# Optionally uses TCP access control provided by libwrap, see hosts_access(5)
+# for details. Daemon name is apt-cacher-ng.
+#
+# Default: guessed on startup by looking for explicit mention of apt-cacher-ng
+# in /etc/hosts.allow or /etc/hosts.deny files.
+#
+# UseWrap: 0
+
+# If many machines from the same local network attempt to update index files
+# (apt-get update) at nearly the same time, the known state of these index file
+# is temporarily frozen and multiple requests receive the cached response
+# without contacting the remote server again. This parameter (in seconds)
+# specifies the length of this period before these (volatile) files are
+# considered outdated.
+# Setting this value too low transfers more data and increases remote server
+# load, setting this too high (more than a couple of minutes) increases the
+# risk of delivering inconsistent responses to the clients.
+#
+# FreshIndexMaxAge: 27
+
+# Usually the users are not allowed to specify custom TCP ports of remote
+# mirrors in the requests, only the default HTTP port can be used (as
+# workaround, proxy administrator can create Remap- rules with custom ports).
+# This restriction can be disabled by specifying a list of allowed ports or 0
+# for any port.
+#
+# AllowUserPorts: 80
+
+# Normally the HTTP redirection responses are forwarded to the original caller
+# (i.e. APT) which starts a new download attempt from the new URL. This
+# solution is ok for client configurations with proxy mode but doesn't work
+# well with configurations using URL prefixes in sources.list. To work around
+# this the server can restart its own download with a redirection URL,
+# configured with the following option. The downside is that this might be used
+# to circumvent download source policies by malicious users.
+# The RedirMax option specifies how many such redirects the server is allowed
+# to follow per request, 0 disables the internal redirection.
+# Default: guessed on startup, 0 if ForceManaged is used and 5 otherwise.
+#
+# RedirMax: 5
+
+# There some broken HTTP servers and proxy servers in the wild which don't
+# support the If-Range header correctly and return incorrect data when the
+# contents of a (volatile) file changed. Setting VfileUseRangeOps to zero
+# disables Range-based requests while retrieving volatile files, using
+# If-Modified-Since and requesting the complete file instead. Setting it to
+# a negative value removes even If-Modified-Since headers.
+#
+# VfileUseRangeOps: 1
+
+# Allow data pass-through mode for certain hosts when requested by the client
+# using a CONNECT request. This is particularly useful to allow access to SSL
+# sites (https proxying). The string is a regular expression which should cover
+# the server name with port and must be correctly formated and terminated.
+# Examples:
+# PassThroughPattern: private-ppa\.launchpad\.net:443$
+# PassThroughPattern: .* # this would allow CONNECT to everything
+#
+# Default:
+# PassThroughPattern: ^bugs.debian.org:443$
+
+# It's possible that an evil client requests a volatile file but does not
+# retrieve the response and keeps the connection effectively stuck over
+# many hours, blocking the particular file for other download attempts (which
+# leads to not reporting file changes on server side to other users). The work
+# around is the use of alternative file descriptors inside of apt-cacher-ng,
+# however this might cost some extra download traffic due to worse cache usage.
+# The ResponseFreezeDetectTime value specifies when a file descriptor in the
+# mentioned state is to be considered defect and will require special handling.
+# Default time is 500 seconds.
+#
+# ResponseFreezeDetectTime: 500
+
+# Keep outgoing connections alive and reuse them for later downloads from
+# the same server as long as possible.
+#
+# ReuseConnections: 1
+
+# Maximum number of requests sent in a batch to remote servers before the first
+# response is expected. Using higher values can greatly improve average
+# throughput depending on network latency and the implementation of remote
+# servers. Makes most sense when also enabled on the client side, see apt.conf
+# documentation for details.
+#
+# Default: 10 if ReuseConnections is set, 1 otherwise
+#
+# PipelineDepth: 10
+
+# Path to the system directory containing trusted CA certificates used for
+# outgoing connections, see OpenSSL documentation for details.
+#
+# CApath: /etc/ssl/certs
+#
+# Path to a single trusted trusted CA certificate used for outgoing
+# connections, see OpenSSL documentation for details.
+#
+# CAfile:
+
+# There are different ways to detect that an upstream proxy is broken and turn
+# off its use and connect directly. The first is through a custom command -
+# when it returns successfully, the proxy is used, otherwise not and the
+# command will be rerun only after a specified period.
+# Another way is to try to connect to the proxy first and detect a connection
+# timeout. The connection will then be made without HTTP proxy for the life
+# time of the particular download stream and it may also affect other other
+# parallel downloads.
+# NOTE: this operation modes are still experimental and are subject to change!
+# Unwanted side effects may occur with multiple simultaneous user connections
+# or with specific per-repository proxy settings.
+#
+# Shell command, default: not set. Executed with the default shell and
+# permissions of the apt-cacher-ng's process user. Examples:
+# /bin/ip route | grep -q 192.168.117
+# /usr/sbin/arp | grep -q 00:22:1f:51:8e:c1
+#
+# OptProxyCheckCommand: ...
+#
+# Check intervall, in seconds.
+#
+# OptProxyCheckInterval: 99
+#
+# Conection timeout in seconds, default: negative, means disabled.
+#
+# OptProxyTimeout: -1
+
+# It's possible to limit the processing speed of download agents to set an
+# overall download speed limit. Unit: KiB/s, Default: unlimited.
+#
+# MaxDlSpeed: 500
+{{ ("MaxDlSpeed: " + apt_cacher_ng__max_download_speed_kib|string) if (apt_cacher_ng__max_download_speed_kib != "") else "" }}
+
+# In special corner cases, download clients attempt to download random chunks
+# of a files headers, i.e. the first kilobytes. The "don't get client stuck"
+# policy converts this usually to a 200 response starting the body from the
+# beginning but that confuses some clients. When this option is set to a
+# certain value, this modifies the behaviour and allows to start a file
+# download where the distance between available data and the specified range
+# lies within that bounds. This can look like random lag for the user but
+# should be harmless apart from that.
+#
+# MaxInresponsiveDlSize: 64000
+
+# In mobile environments having an adhoc connection with a redirection to some
+# id verification side, this redirect might damage the cache since the data is
+# involuntarily stored as package data. There is a mechanism which attempts to
+# detect a such situation and mitigate the mentioned effects by not storing the
+# data and also dropping the DNS cache. The trigger is the occurrence of a
+# specific SUBSTRING in the content type field of the final download target
+# (i.e. the auth web site) and at least one followed redirection.
+#
+# BadRedirDetectMime: text/html
+
+# When a BUS signal is received (typically IO issues), a shell command can be
+# execute before the daemon is terminated.
+# Example:
+# BusAction: ls -l /proc/$PPID/ | mail -s SIGBUS! root
+
+# Only set this value for debugging purposes. It disables SSL security checks
+# like strict host verification. 0 means no, any other value can have
+# differrent meaning in the future.
+#
+# NoSSLChecks: 0
+
+{{ apt_cacher_ng__custom }}
