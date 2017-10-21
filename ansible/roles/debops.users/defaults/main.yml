@@ -1,0 +1,224 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.users default variables [[[
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+# Global defaults [[[
+# -------------------
+
+# .. envvar:: users__enabled [[[
+#
+# Should Ansible manage local user accounts? Set to False to disable.
+users__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: users__no_log [[[
+#
+# Enable or disable Ansible task logging. By default all task logging is
+# disabled because the variables used to define user accounts can contain
+# passwords. This variable should not be changed apart for debugging.
+users__no_log: True
+
+                                                                   # ]]]
+# .. envvar:: users__default_system [[[
+#
+# If enabled, user groups and accounts will be considered "system" accounts by
+# default (ie. local accounts vs. LDAP accounts) and will be created with UID
+# and GID < 1000.
+users__default_system: '{{ (True
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.enabled | bool)
+                            else False) }}'
+
+                                                                   # ]]]
+# .. envvar:: users__default_shell [[[
+#
+# Specify absolute path of the shell which should be configured on all user
+# accounts managed by this role, if not overriden by the user configuration. If
+# not specified, the shell won't be changed. The shell can be specified by the
+# user configuration files, see :ref:`users__ref_dotfiles_map` for more
+# details.
+users__default_shell: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Lists of managed UNIX groups [[[
+# --------------------------------
+
+# These lists can be used to manage UNIX groups through Ansible inventory. See
+# :ref:`users__ref_groups` for more details.
+
+# .. envvar:: users__groups [[[
+#
+# List of UNIX groups to manage on all hosts in Ansible inventory.
+users__groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__group_groups [[[
+#
+# List of UNIX groups to manage on hosts in specific Ansible inventory group.
+users__group_groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__host_groups [[[
+#
+# List of UNIX groups to manage on specific hosts in Ansible inventory.
+users__host_groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__dependent_groups [[[
+#
+# List of UNIX groups to manage on the current playbook host. This variable is
+# meant to be used from a role dependency in :file:`role/meta/main.yml` or in
+# a playbook.
+users__dependent_groups: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Lists of managed UNIX accounts [[[
+# ----------------------------------
+
+# These lists can be used to manage UNIX user accounts through Ansible
+# inventory. See :ref:`users__ref_accounts` for more details.
+
+# .. envvar:: users__accounts [[[
+#
+# List of user accounts to manage on all hosts in Ansible inventory.
+users__accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__group_accounts [[[
+#
+# List of UNIX user accounts to manage on hosts in specific Ansible inventory
+# group.
+users__group_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__host_accounts [[[
+#
+# List of UNIX user accounts to manage on specific hosts in Ansible inventory.
+users__host_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__root_accounts [[[
+#
+# This is only used for configuration files and SSH keys management on the
+# UNIX ``root`` account.
+users__root_accounts:
+  - name: 'root'
+
+                                                                   # ]]]
+# .. envvar:: users__default_accounts [[[
+#
+# List of default UNIX user accounts managed by Ansible.
+users__default_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__admin_accounts [[[
+#
+# List of UNIX administrator accounts managed by Ansible.
+users__admin_accounts: '{{ lookup("template", "lookup/users__admin_accounts.j2") | from_yaml }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: users__dependent_accounts [[[
+#
+# List of user accounts to manage on the current playbook host. This variable
+# is meant to be used from a role dependency in :file:`role/meta/main.yml` or
+# in a playbook.
+users__dependent_accounts: []
+
+                                                                   # ]]]
+# Management of user resources [[[
+# --------------------------------
+
+# Custom user resources like directories, files and symlinks can be configured
+# in separate lists. Check the :ref:`users__ref_resources` for more details.
+
+# The support for different parameters here is limited, you might want to check
+# out the debops.resources_ Ansible role for more extensive resource
+# management.
+
+# .. envvar:: users__resources [[[
+#
+# Manage user resources on all hosts in Ansible inventory.
+users__resources: []
+
+                                                                   # ]]]
+# .. envvar:: users__group_resources [[[
+#
+# Manage user resources on hosts in specific Ansible inventory group.
+users__group_resources: []
+
+                                                                   # ]]]
+# .. envvar:: users__host_resources [[[
+#
+# Manage user resources on specific hosts in Ansible inventory.
+users__host_resources: []
+                                                                   # ]]]
+                                                                   # ]]]
+# User configuration files (dotfiles) [[[
+# ---------------------------------------
+
+# These variables are used to manage the user configuration files (dotfiles).
+
+# .. envvar:: users__dotfiles_enabled [[[
+#
+# Default state of dotfiles on all accounts managed by Ansible
+# False - dotfiles are not configured by default
+# True - dotfiles will be configured by default
+users__dotfiles_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: users__dotfiles_dest [[[
+#
+# Path in the user's $HOME directory where dotfiles should be checked
+# out if not specified otherwise.
+users__dotfiles_dest: '~/.config/dotfiles'
+
+                                                                   # ]]]
+# .. envvar:: users__dotfiles_update [[[
+#
+# If enabled, user configuration files repository will be updated on each
+# Ansible run.
+users__dotfiles_update: True
+
+                                                                   # ]]]
+# .. envvar:: users__dotfiles_name [[[
+#
+# Default user configuration files dictionary to use, if none is specified.
+users__dotfiles_name: 'drybjed'
+
+                                                                   # ]]]
+# .. envvar:: users__dotfiles_default_map [[[
+#
+# A YAML dictionary with default definitions of the user configuration files.
+# See the :ref:`users__ref_dotfiles_map` for more details.
+users__dotfiles_default_map:
+  'drybjed':
+    repo: 'https://github.com/drybjed/dotfiles.git'
+    command: 'make install'
+    creates: '~/.zshrc'
+    shell: '/bin/zsh'
+
+                                                                   # ]]]
+# .. envvar:: users__dotfiles_map [[[
+#
+# A YAML dictionary with definitions of the user configuration files.
+# See the :ref:`users__ref_dotfiles_map` for more details.
+users__dotfiles_map: {}
+
+                                                                   # ]]]
+# .. envvar:: users__dotfiles_combined_map [[[
+#
+# The combined YAML dictionary which holds the information about user
+# configuration files.
+users__dotfiles_combined_map: '{{ users__dotfiles_default_map
+                                  | combine(users__dotfiles_map) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

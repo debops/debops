@@ -1,0 +1,21 @@
+---
+
+- name: Configure user mail forwarding
+  lineinfile:
+    dest: '~/.forward'
+    regexp: "{{ '^' + (item.forward if item.forward is string else item.forward[0]) }}"
+    line: '{{ item.forward if item.forward is string else item.forward | join(", ") }}'
+    state: '{{ item.forward_state | d("present") }}'
+    create: True
+  become_user: '{{ item.name }}'
+  become: True
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.createhome|d(True) and item.forward|d())
+  no_log: '{{ users__no_log | bool }}'

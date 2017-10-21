@@ -1,0 +1,22 @@
+---
+# Manage user configuration files
+users__dotfiles_map:
+
+  # A custom set of dotfiles
+  'custom':
+    repo: 'https://github.com/example/dotfiles.git'
+    command: 'make install'
+
+  # Another set of dotfiles activated by a file
+  'example':
+    repo: 'https://github.com/example2/dotfiles.git'
+    command: 'make install'
+    creates: '~/.bashrc.local'
+    shell: '/bin/bash'
+
+# Create an user account with specific set of dotfiles
+users__accounts:
+
+  - name: 'example_user'
+    dotfiles_enabled: True
+    dotfiles_name: 'example'

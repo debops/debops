@@ -1,0 +1,22 @@
+---
+# Manage UNIX user accounts
+users__accounts:
+
+  # A basic account
+  - name: 'user1'
+
+  # More elaborate account with SSH access and dotfiles
+  - name: 'user2'
+    groups: [ 'sshusers' ]
+    shell: '/bin/zsh'
+    dotfiles_enabled: True
+
+  # An user account with a random password, stored in 'secret/'
+  - name: 'user3'
+    update_password: 'on_create'
+    password: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn
+                  + "/users/user3/password encrypt=sha512_crypt length=30") }}'
+
+  # Remove an user account if it exists
+  - name: 'user_removed'
+    state: 'absent'
