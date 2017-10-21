@@ -1,0 +1,403 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _cryptsetup__ref_default_variables:
+#
+# debops.cryptsetup default variables [[[
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Required packages [[[
+# ---------------------
+
+# .. envvar:: cryptsetup__base_packages [[[
+#
+# List of base packages to install.
+cryptsetup__base_packages:
+  - 'cryptsetup'
+                                                                   # ]]]
+                                                                   # ]]]
+# List of encrypted filesystems [[[
+# ---------------------------------
+
+# .. envvar:: cryptsetup__devices [[[
+#
+# Global definition list of encrypted devices.
+#
+# Refer to the :ref:`documentation of all options <cryptsetup__devices>` for more details.
+cryptsetup__devices: []
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__group_devices [[[
+#
+# Host group definition list of encrypted devices.
+cryptsetup__group_devices: []
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__host_devices [[[
+#
+# Host definition list of encrypted devices.
+cryptsetup__host_devices: []
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__combined_devices [[[
+#
+# Combined list of encrypted devices in the order as they will be processed.
+cryptsetup__combined_devices: '{{
+  (cryptsetup__devices       | list) +
+  (cryptsetup__group_devices | list) +
+  (cryptsetup__host_devices  | list) }}'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__devices_execution_strategy [[[
+#
+# The execution strategy to use for processing the
+# :envvar:`cryptsetup__combined_devices` list.
+#
+# ``serial``
+#   Process one device at a time (from start to finish) before processing the
+#   next one in the list.
+#
+#   This is more verbose.
+#
+# ``parallel``
+#   Process all devices in parallel meaning that every task (like creating the
+#   keyfile or initializing LUKS) is done with all devices at a time before
+#   moving on to the next task. This means that all devices will be done at the
+#   same time.
+#
+#   This is more compact.
+#
+# You will only need to change this when you want to use the `Plaintext device
+# mapper target` of one item as the `Ciphertext block device` of another item.
+# Refer to :ref:`cryptsetup__ref_devices_chaining_multiple_ciphers` for
+# details.
+cryptsetup__devices_execution_strategy: 'parallel'
+                                                                   # ]]]
+                                                                   # ]]]
+# Keyfile settings [[[
+# --------------------
+
+# .. envvar:: cryptsetup__secret_path [[[
+#
+# Location where keyfiles are generated and stored on the Ansible controller.
+cryptsetup__secret_path: '{{ secret + "/cryptsetup/" + ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__secret_owner [[[
+#
+# System user who owns the secret directory and all files in it on the Ansible controller.
+# You might want to change that if you run this role as root on the Ansible
+# controller itself but the secrets directory is managed by another user.
+# The default is set to the special value ``omit`` to use the owner under which
+# the role is run.
+cryptsetup__secret_owner: '{{ omit }}'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__secret_group [[[
+#
+# System group of the secret directory and all files in it on the Ansible controller.
+# You might want to change that if you run this role as root on the Ansible
+# controller itself but the secrets directory is managed by another user.
+# The default is set to the special value ``omit`` to use the primary group
+# under which the role is run.
+cryptsetup__secret_group: '{{ omit }}'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__secret_mode [[[
+#
+# File mode used for the secret directory and all files in it on the Ansible controller.
+cryptsetup__secret_mode: 'u=rwX,g=,o='
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_remote_location [[[
+#
+# Directory where the keyfiles will be stored on the remote system.
+cryptsetup__keyfile_remote_location: '{{ (ansible_local.root.var
+                                        if (ansible_local|d() and ansible_local.root|d() and
+                                            ansible_local.root.var|d())
+                                        else "/var/local") + "/keyfiles" }}'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_owner [[[
+#
+# System user who owns the keyfiles on the remote system.
+cryptsetup__keyfile_owner: 'root'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_group [[[
+#
+# System group of the keyfiles on the remote system.
+cryptsetup__keyfile_group: 'root'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_mode [[[
+#
+# File mode used for the keyfiles on the remote system.
+cryptsetup__keyfile_mode: '0600'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_source_dev [[[
+#
+# The source device where the keyfile will be read from using :command:`dd`.
+cryptsetup__keyfile_source_dev: '/dev/random'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_gen_type [[[
+#
+# Type of keyfile to generate. Supported choices: ``binary``, ``text``.
+# Refer to :ref:`item.keyfile_gen_type <cryptsetup__devices_keyfile_gen_type>` for details.
+cryptsetup__keyfile_gen_type: 'binary'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_gen_command [[[
+#
+# The command which should be used to generate the keyfile when
+# :ref:`item.keyfile_gen_type <cryptsetup__devices_keyfile_gen_type>` is set to
+# ``text``.
+# Refer to :ref:`item.keyfile_gen_command <cryptsetup__devices_keyfile_gen_command>` for details.
+cryptsetup__keyfile_gen_command: 'pwgen --secure 123 1'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__keyfile_shred_command [[[
+#
+# Command plus options to use when shredding/deleting the keyfile on the remote
+# system. The file to delete will be passed as last argument.
+#
+# Depending on which filesystem and lower levels the keyfile is stored on, the
+# ``shred`` operation might be of limited use e. g. because of snapshots or
+# copy-on-write. Try it anyway.
+# Note that there is still at least one copy of the keyfile on the Ansible controller.
+cryptsetup__keyfile_shred_command: 'shred --remove --zero --iterations=42'
+                                                                   # ]]]
+                                                                   # ]]]
+# LUKS header backup [[[
+# ----------------------
+
+# .. envvar:: cryptsetup__header_backup_remote_location [[[
+#
+# Directory where the header backups from LUKS will be stored on the remote system.
+#
+# The LUKS header backup will be stored in this file:
+#
+# .. code-block:: jinja
+#    :linenos:
+#
+#    {{ cryptsetup__header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}
+#
+# on the Ansible controller.
+cryptsetup__header_backup_remote_location: '{{ (ansible_local.root.backup
+                                              if (ansible_local|d() and ansible_local.root|d() and
+                                                  ansible_local.root.backup|d())
+                                              else "/var/backups") + "/luks_header_backup" }}'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__header_backup [[[
+#
+# Should a header backup be created and stored on the remote system and the
+# Ansible controller?
+# Refer to :ref:`item.backup_header <cryptsetup__devices_backup_header>` for details.
+cryptsetup__header_backup: True
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__header_backup_shred_command [[[
+#
+# Command plus options to use when shredding/deleting the header backup on the
+# remote system. The file to delete will be passed as last argument.
+#
+# This is technically not needed as the LUKS header is still present and
+# left intact on the `ciphertext block device`, but ``absent`` is designed to
+# remove all files/traces previously created by the role.
+#
+# Also note the comment about the effectiveness on
+# :envvar:`cryptsetup__keyfile_shred_command`.
+cryptsetup__header_backup_shred_command: 'shred --remove --zero --iterations=2'
+                                                                   # ]]]
+                                                                   # ]]]
+# Ciphertext block device options [[[
+# -----------------------------------
+
+# .. envvar:: cryptsetup__use_uuid [[[
+#
+# Use the UUID of the ciphertext block device in :file:`/etc/crypttab` instead
+# of the file path given by
+# :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`.
+# Refer to :ref:`item.use_uuid <cryptsetup__devices_use_uuid>` for details.
+cryptsetup__use_uuid: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Swap options [[[
+# ----------------
+
+# .. envvar:: cryptsetup__swap_priority [[[
+#
+# Default swap device priority, from ``-1`` to ``32767``.
+# Higher numbers indicate higher priority.
+# Refer to :ref:`item.swap_priority <cryptsetup__devices_swap_priority>` for details.
+cryptsetup__swap_priority: -1
+                                                                   # ]]]
+                                                                   # ]]]
+# Filesystem options [[[
+# ----------------------
+
+# .. envvar:: cryptsetup__fstype [[[
+#
+# Default filesystem to create and configure in :file:`/etc/fstab`.
+# Refer to :ref:`item.fstype <cryptsetup__devices_fstype>` for details.
+cryptsetup__fstype: 'ext4'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__fstab_file [[[
+#
+# File path to the :manpage:`fstab(5)` file where file systems should be
+# configured.
+cryptsetup__fstab_file: '/etc/fstab'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__mount_options [[[
+#
+# List of default mount options.
+# Refer to :ref:`item.mount_options <cryptsetup__devices_mount_options>` for details.
+cryptsetup__mount_options:
+  - 'noatime'
+  - 'nodiratime'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__state [[[
+#
+# Default ``state`` for all devices.
+# Refer to :ref:`item.state <cryptsetup__devices_state>` for details.
+cryptsetup__state: 'mounted'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__mountpoint_parent_directory [[[
+#
+# Parent directory under which all encrypted filesystems will be mounted.
+cryptsetup__mountpoint_parent_directory: '/media'
+                                                                   # ]]]
+                                                                   # ]]]
+# Cryptography defaults [[[
+# -------------------------
+
+# .. envvar:: cryptsetup__crypttab_options [[[
+#
+# Default list of options to configure for each device in
+# :file:`/etc/crypttab`.
+# Refer to :ref:`item.crypttab_options <cryptsetup__devices_crypttab_options>` for details.
+cryptsetup__crypttab_options: []
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__crypttab_file [[[
+#
+# File path to the :manpage:`crypttab(5)` file where encrypted file systems
+# should be configured.
+cryptsetup__crypttab_file: '/etc/crypttab'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__hash [[[
+#
+# Specifies the passphrase hash.
+# For the ``luks`` :ref:`item.mode <cryptsetup__devices_mode>` it
+# specifies the hash used in the LUKS key setup scheme and
+# volume key digest for :command:`cryptsetup luksFormat`.
+# Corresponds with the ``--hash`` parameter.
+#
+# The current default of :command:`cryptsetup` (as shown by
+# :command:`cryptsetup --help`) is ``sha1``.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# Refs: https://security.stackexchange.com/a/40218
+#
+# This is the default for :ref:`item.hash <cryptsetup__devices_hash>`.
+cryptsetup__hash: 'sha512'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__cipher [[[
+#
+# Cipher specification string.
+# Corresponds with the ``--cipher`` parameter.
+#
+# The current default of :command:`cryptsetup` (as shown by
+# :command:`cryptsetup --help`) is ``aes-xts-plain64``.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# This is the default for :ref:`item.cipher <cryptsetup__devices_cipher>`.
+cryptsetup__cipher: 'aes-xts-plain64'
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__key_size [[[
+#
+# Key size in bits. The argument has to be a multiple of 8. The possible
+# key-sizes are limited by the :envvar:`cipher <cryptsetup__cipher>`
+# and :ref:`mode <cryptsetup__devices_mode>` used.
+# Corresponds with the ``--key-size`` parameter.
+#
+# The current default of :command:`cryptsetup` (as shown by
+# :command:`cryptsetup --help`) is ``256``.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# Note that in XTS mode, only half of the key size specified here will be used
+# for the block cypher (512 will result in AES-256).
+# Using AES-128 is still considered secure and is faster in most cases.
+# The reason to go with a different default value then the compiled-in default
+# of :command:`cryptsetup` was to have long-term secure storage even when
+# quantum-computing become available to your adversary.
+# Plus, with hardware acceleration available in most x86 CPUs nowadays, it
+# really does not make much of a difference anymore (at least for AES).
+#
+# Refs: https://crypto.stackexchange.com/a/7869
+#
+# This is the default for :ref:`item.key_size <cryptsetup__devices_key_size>`.
+cryptsetup__key_size: 512
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__use_dev_random [[[
+#
+# Should :file:`/dev/random` be used to generate the LUKS master key?
+# Corresponds with the ``--use-random`` and ``--use-urandom`` parameters.
+#
+# The current default of :command:`cryptsetup` (as shown by
+# :command:`cryptsetup --help`) is :file:`/dev/urandom`.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# Check :manpage:`random(4)` and https://bettercrypto.org/ for details.
+cryptsetup__use_dev_random: True
+
+                                                                   # ]]]
+# .. envvar:: cryptsetup__iter_time [[[
+#
+# The number of milliseconds to spend with PBKDF2 passphrase processing.
+# Corresponds with the ``--iter-time`` parameter.
+#
+# The current default of :command:`cryptsetup` (as shown by
+# :command:`cryptsetup --help`) is ``1000`` milliseconds.
+# Set to ``default`` to use the compiled-in default of :command:`cryptsetup`.
+#
+# This is the default for :ref:`item.iter_time <cryptsetup__devices_iter_time>`.
+cryptsetup__iter_time: 'default'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: cryptsetup__persistent_paths__dependent_paths [[[
+#
+# Configuration for the debops.persistent_paths_ Ansible role.
+cryptsetup__persistent_paths__dependent_paths:
+
+  '50_debops_cryptsetup':
+    by_role: 'debops.cryptsetup'
+    paths:
+      - '{{ cryptsetup__fstab_file }}'
+      - '{{ cryptsetup__crypttab_file }}'
+      - '{{ cryptsetup__keyfile_remote_location }}'
+      - '{{ cryptsetup__header_backup_remote_location }}'
+      - '{{ cryptsetup__mountpoint_parent_directory }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

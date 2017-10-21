@@ -1,0 +1,19 @@
+{#
+# Ansible `with_together` seems to flatten lists it gets so we return a list of dicts here.
+#}
+{% set cryptsetup__tpl_devices = [] %}
+{% for device in cryptsetup__process_devices|d([]) %}
+{%   set _ = cryptsetup__tpl_devices.append({
+       'crypttab_options': (
+         (["swap"] if (device.swap|d(False) | bool) else []) +
+         ([device.mode|d("luks")] | difference(["plain"])) +
+         (device.crypttab_options | d(cryptsetup__crypttab_options) | list) +
+         ((
+           ([] if (device.hash|d(cryptsetup__hash) == "default") else ["hash=" + device.hash|d(cryptsetup__hash)]) +
+           ([] if (device.cipher|d(cryptsetup__cipher) == "default") else ["cipher=" + device.cipher|d(cryptsetup__cipher)]) +
+           ([] if (device.key_size|d(cryptsetup__key_size) == "default") else ["size=" + (device.key_size|d(cryptsetup__key_size) | string)])
+         ) if device.mode|d("luks") == "plain" else [])
+       ),
+     }) %}
+{% endfor %}
+{{ cryptsetup__tpl_devices | to_nice_yaml }}
