@@ -1,0 +1,30 @@
+---
+
+# http://kodi.wiki/view/HOW-TO:Autostart_Kodi_for_Linux
+
+- name: Ensure specified packages are in there desired state
+  package:
+    name: '{{ item }}'
+    state: '{{ "present" if (kodi__deploy_state == "present") else "absent" }}'
+  with_flattened: '{{ kodi__base_packages }}'
+  tags: [ 'role::kodi:pkgs' ]
+
+# System user and group [[[
+- name: Create Kodi system group
+  group:
+    name: '{{ kodi__group }}'
+    state: '{{ "present" if (kodi__deploy_state == "present") else "absent" }}'
+    system: True
+
+- name: Create Kodi system user
+  user:
+    name: '{{ kodi__user }}'
+    group: '{{ kodi__group }}'
+    groups: '{{ kodi__groups | join(",") | default(omit) }}'
+    append: False
+    home: '{{ kodi__home_path }}'
+    comment: '{{ kodi__gecos }}'
+    shell: '{{ kodi__shell }}'
+    state: '{{ "present" if (kodi__deploy_state == "present") else "absent" }}'
+    system: True
+# ]]]
