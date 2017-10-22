@@ -1,0 +1,587 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.volkszaehler default variables [[[
+# =================================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# System packages [[[
+# -------------------
+
+# .. envvar:: volkszaehler__base_packages [[[
+#
+# List of base packages to install.
+volkszaehler__base_packages:
+  - 'git-core'
+
+  - '{{ [ "php-xml", "php-mbstring" ]
+        if (ansible_local|d() and ansible_local.php|d() and
+            ansible_local.php.version|d() and ansible_local.php.version|version_compare("7", ">="))
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__optional_packages [[[
+#
+# List of optional packages to install.
+volkszaehler__optional_packages:
+  # Server-side chart generation for volkszaehler.
+  - 'libphp-jpgraph'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__packages [[[
+#
+# List of additional packages to install as configured by the system
+# administrator.
+volkszaehler__packages: []
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that volkszaehler is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that volkszaehler is uninstalled and it's configuration is removed.
+#
+# ``purged``
+#   Same as ``absent`` but additionally also ensures that the database and
+#   other persistent data is removed.
+#
+volkszaehler__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# FQDN and DNS addresses [[[
+# --------------------------
+
+# .. envvar:: volkszaehler__fqdn [[[
+#
+# The Fully Qualified Domain Name of the volkszaehler instance. This address is
+# used to configure the webserver frontend.
+volkszaehler__fqdn: 'vz.{{ volkszaehler__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__domain [[[
+#
+# Domain that will be configured for the volkszaehler instance.
+volkszaehler__domain: '{{ ansible_local.core.domain
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.domain|d())
+                          else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database configuration [[[
+# --------------------------
+
+# .. envvar:: volkszaehler__database [[[
+#
+# Autodetected variable containing the database management system which should be used.
+# The supported and tested option is ``mariadb``.
+#
+# Refer to :ref:`volkszaehler__ref_getting_started` for details.
+#
+# .. Planned are ``mariadb``, ``postgresql``, ``sqlite``.
+#
+volkszaehler__database: '{{ ansible_local.volkszaehler.database
+                            if (ansible_local|d() and ansible_local.volkszaehler|d() and
+                                ansible_local.volkszaehler.database|d())
+                            else ("mariadb"
+                                  if (ansible_local|d() and ansible_local.mariadb is defined)
+                                  else ("postgresql"
+                                        if (ansible_local|d() and ansible_local.postgresql is defined)
+                                        else "no-database-detected")) }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__database_doctrine_map [[[
+#
+# Database name mapping from the names as used in DebOps to doctrine database
+# driver names.
+volkszaehler__database_doctrine_map:
+  'mariadb': 'pdo_mysql'
+  'postgresql': 'pdo_pgsql'
+  'sqlite': 'pdo_sqlite'
+
+  # Legacy:
+  'mysql': 'pdo_mysql'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__database_server [[[
+#
+# FQDN of the database server. It will be configured by
+# the debops.mariadb_ or debops.postgresql_ role.
+volkszaehler__database_server: '{{ ansible_local[volkszaehler__database].server }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__database_port [[[
+#
+# Port database is listening on.
+volkszaehler__database_port: '{{ ansible_local[volkszaehler__database].port }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__database_name [[[
+#
+# Name of the database to use for volkszaehler.
+volkszaehler__database_name: 'volkszaehler'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__database_user [[[
+#
+# Database user to use for volkszaehler.
+volkszaehler__database_user: 'volkszaehler'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__database_password_path [[[
+#
+# Path to database password file.
+volkszaehler__database_password_path: '{{ secret + "/" + volkszaehler__database + "/"
+                                          + ansible_local[volkszaehler__database].delegate_to
+                                          + (("/" + ansible_local[volkszaehler__database].port)
+                                             if (volkszaehler__database == "postgresql")
+                                             else "")
+                                          + "/credentials/" + volkszaehler__database_user + "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__database_password [[[
+#
+# Database password for volkszaehler.
+volkszaehler__database_password: '{{ lookup("password", volkszaehler__database_password_path + " length=48 chars=ascii_letters,digits,.:-_") }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__database_user_priv [[[
+#
+# Privileges of the :envvar:`volkszaehler__database_user`.
+volkszaehler__database_user_priv: |
+  {{
+    [
+      volkszaehler__database_name + ".*:USAGE",
+      volkszaehler__database_name + ".*:SELECT,UPDATE,INSERT",
+    ] + ([
+          volkszaehler__database_name + ".*:DELETE",
+      ] if (volkszaehler__allow_channel_deletion|bool)
+        else [
+          volkszaehler__database_name + ".entities_in_aggregator:CREATE,DELETE",
+          volkszaehler__database_name + ".properties:CREATE,DELETE",
+        ]
+    )
+  }}
+
+# ]]]
+# .. envvar:: volkszaehler__database_demo_insert [[[
+#
+# Insert demo data in to database?
+volkszaehler__database_demo_insert: False
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__allow_channel_deletion [[[
+#
+# Allow channel deletion? Note that you might not be able to change this after
+# the database user has been created. You can drop the database user manually
+# and let the role re-create the user to enforce new privileges.
+volkszaehler__allow_channel_deletion: False
+                                                                   # ]]]
+                                                                   # ]]]
+# PHP configuration [[[
+# ---------------------
+
+# .. envvar:: volkszaehler__base_php_packages [[[
+#
+# List of base PHP packages required by volkszaehler.
+volkszaehler__base_php_packages:
+  - 'doctrine-orm'
+  - 'doctrine-dbal'
+  - 'symfony-console'
+  - '{{ [ "symfony-http-foundation" ] if (not (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["trusty"])) else [] }}'
+  - '{{ [ "symfony-http-kernel" ] if (not (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["trusty"])) else [] }}'
+  - 'symfony-routing'
+
+  - '{{ [ "mysql" ] if (volkszaehler__database in [ "mariadb", "mysql" ]) else [] }}'
+  - '{{ [ "pgsql" ] if (volkszaehler__database in [ "postgresql" ]) else [] }}'
+  - '{{ ["libapache2-mod-php"] if (volkszaehler__webserver == "apache") else [] }}'
+
+  ## Included in normal PHP installations but require it here because it is
+  ## used internally by the role:
+  - 'json'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__optional_php_packages [[[
+#
+# List of optional PHP packages for volkszaehler.
+volkszaehler__optional_php_packages:
+  # Server-side chart generation for volkszaehler.
+  - 'libphp-jpgraph'
+
+  - 'apcu'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__max_file_size [[[
+#
+# Maximum upload size.
+volkszaehler__max_file_size: '1M'
+                                                                   # ]]]
+                                                                   # ]]]
+# Webserver configuration [[[
+# ---------------------------
+
+# .. envvar:: volkszaehler__webserver [[[
+#
+# Autodetected variable containing the webserver which should be used.
+#
+# Refer to :ref:`volkszaehler__ref_getting_started` for details.
+volkszaehler__webserver: '{{ ansible_local.volkszaehler.webserver
+                             if (ansible_local|d() and ansible_local.volkszaehler|d() and
+                                 ansible_local.volkszaehler.webserver|d())
+                             else ("apache"
+                                   if (ansible_local|d() and ansible_local.apache|d() and ansible_local.apache.enabled|d()|bool)
+                                   else ("nginx"
+                                         if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.enabled|d()|bool)
+                                         else "no-webserver-detected")) }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__webserver_http_methods [[[
+#
+# List of allowed HTTP methods.
+volkszaehler__webserver_http_methods: |
+  {{ [
+       'GET',
+       'HEAD',
+       'POST',
+       'PATCH',
+     ] + ([ 'DELETE' ]
+          if (volkszaehler__allow_channel_deletion|bool)
+          else [])
+  }}
+
+# ]]]
+# .. envvar:: volkszaehler__apache_modules [[[
+#
+# Dict of required Apache modules.
+volkszaehler__apache_modules:
+  'rewrite': {}
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: volkszaehler__home_path [[[
+#
+# The volkszaehler system account home directory.
+volkszaehler__home_path: '{{ (ansible_local.nginx.www
+                              if (ansible_local|d() and ansible_local.nginx|d()
+                                  and ansible_local.nginx.www|d())
+                              else "/srv/www") + "/" + volkszaehler__user }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__www_path [[[
+#
+# Base web root directory for volkszaehler.
+volkszaehler__www_path: '{{ volkszaehler__git_dest + "/htdocs" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# System user and group [[[
+# -------------------------
+
+# .. envvar:: volkszaehler__user [[[
+#
+# System UNIX account used by the volkszaehler middleware and for application
+# deployment.
+volkszaehler__user: 'volkszaehler'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__group [[[
+#
+# System UNIX group used by the volkszaehler middleware.
+volkszaehler__group: 'volkszaehler'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__gecos [[[
+#
+# Contents of the GECOS field set for the volkszaehler account.
+volkszaehler__gecos: 'volkszaehler.org'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__shell [[[
+#
+# The default shell set on the volkszaehler account.
+volkszaehler__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Volkszaehler sources and deployment [[[
+# ---------------------------------------
+
+# .. envvar:: volkszaehler__git_repo [[[
+#
+# The URI of the volkszaehler git source repository.
+volkszaehler__git_repo: 'https://github.com/volkszaehler/volkszaehler.org.git'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__git_version [[[
+#
+# The git branch or tag which will be installed.
+# Defaults to the commit hash of latest master as the role was written.
+# This is done because volkszaehler development is not cryptographically
+# signed and this role wants to comply with the
+# `DebOps Software Source Policy <https://docs.debops.org/en/latest/debops-policy/docs/software-source-policy.html#software-installed-from-git-repositories>`__.
+volkszaehler__git_version: 'fadb821555527d0fb4d729a3f62e238cde10f168'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__git_dest [[[
+#
+# Path where the volkszaehler sources will be checked out (installation path).
+volkszaehler__git_dest: '{{ volkszaehler__home_path + "/volkszaehler.org" }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__git_recursive [[[
+#
+# Should the git repository be cloned recursively?
+volkszaehler__git_recursive: False
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__git_update [[[
+#
+# Should new revisions be retrieved from the origin repository?
+volkszaehler__git_update: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Volkszaehler configuration [[[
+# ------------------------------
+
+# .. envvar:: volkszaehler__config_user [[[
+#
+# The system owner of the :file:`etc/volkszaehler.conf.php` file.
+volkszaehler__config_user: '{{ volkszaehler__user
+                               if (volkszaehler__webserver in ["apache"])
+                               else "root" }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__config_group [[[
+#
+# The system group of the :file:`etc/volkszaehler.conf.php` file.
+volkszaehler__config_group: '{{ (ansible_local.apache.user
+                                 if (ansible_local|d() and ansible_local.apache|d() and
+                                     ansible_local.apache.user|d())
+                                 else "www-data")
+                                if (volkszaehler__webserver in ["apache"])
+                                else volkszaehler__user }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__locale [[[
+#
+# The default locale to use, ordered by preference.
+# See `setlocale <https://secure.php.net/manual/en/function.setlocale.php>`_ for details.
+volkszaehler__locale:
+  - 'en_US'
+  - 'de_DE'
+  - 'C'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__upstream_config [[[
+#
+# Configuration as defined by upstream volkszaehler in
+# :file:`volkszaehler.conf.template.php`.
+volkszaehler__upstream_config:
+
+  push:
+    # Set to True to enable push updates.
+    enabled: False
+    server: 5582
+    broadcast: 8082
+    routes:
+      wamp:
+        - '/'
+        - '/ws'
+      websocket: []
+
+  security:
+    maxbodysize: False
+
+  locale:
+    - 'en_US'
+    - 'de_DE'
+    - 'C'
+
+  # Only used by jpGraph for server-side plotting!
+  colors:
+    - '#83CAFF'
+    - '#7E0021'
+    - '#579D1C'
+    - '#FFD320'
+    - '#FF420E'
+    - '#004586'
+    - '#0084D1'
+    - '#C5000B'
+    - '#FF950E'
+    - '#4B1F6F'
+    - '#AECF00'
+    - '#314004'
+
+  devmode: False
+  cache:
+    # Only used if devmode == False
+    ttl: 3600
+
+  debug: 0
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__role_config [[[
+#
+# This dict is managed by the role itself, controlled by other default variables.
+volkszaehler__role_config:
+
+  db:
+    driver: '{{ volkszaehler__database_doctrine_map[volkszaehler__database] }}'
+    host: '{{ volkszaehler__database_server }}'
+    user: '{{ volkszaehler__database_user }}'
+    password: '{{ volkszaehler__database_password }}'
+    dbname: '{{ volkszaehler__database_name }}'
+    charset: 'UTF8'
+
+  locale: '{{ volkszaehler__locale }}'
+
+  security:
+    maxbodysize: '{{ volkszaehler__max_file_size }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__config [[[
+#
+# This dict is intended to be used in Ansible’s global inventory as needed.
+volkszaehler__config: {}
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__group_config [[[
+#
+# This dict is intended to be used in a host inventory group of Ansible
+# (only one host group is supported) as needed.
+volkszaehler__group_config: {}
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__host_config [[[
+#
+# This dict is intended to be used in the inventory of hosts as needed.
+volkszaehler__host_config: {}
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__combined_config [[[
+#
+# The configuration written to :file:`etc/volkszaehler.conf.php`.
+volkszaehler__combined_config: '{{ volkszaehler__upstream_config
+                                   | combine(
+                                       volkszaehler__role_config,
+                                       volkszaehler__config,
+                                       volkszaehler__group_config,
+                                       volkszaehler__host_config) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: volkszaehler__mariadb__dependent_databases [[[
+#
+# Configuration of the volkszaehler database managed by the debops.mariadb_ role.
+volkszaehler__mariadb__dependent_databases:
+
+  - database: '{{ volkszaehler__database_name }}'
+    state: '{{ "present" if (volkszaehler__deploy_state != "purged") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__mariadb__dependent_users [[[
+#
+# Configuration of the volkszaehler database user managed by the debops.mariadb_ role.
+volkszaehler__mariadb__dependent_users:
+
+  - database: '{{ volkszaehler__database_name }}'
+    state: '{{ "present" if (volkszaehler__deploy_state == "present") else "absent" }}'
+    user: '{{ volkszaehler__database_user }}'
+    owner: '{{ volkszaehler__user }}'
+    group: '{{ volkszaehler__group }}'
+    home: '{{ volkszaehler__home_path }}'
+    system: True
+    password: '{{ volkszaehler__database_password }}'
+    priv_default: False
+    priv_aux: False
+    priv: '{{ volkszaehler__database_user_priv }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__php__dependent_packages [[[
+#
+# List of PHP packages to install using the debops.php_ role.
+volkszaehler__php__dependent_packages:
+  - '{{ volkszaehler__base_php_packages }}'
+  - '{{ volkszaehler__optional_php_packages }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__php__dependent_pools [[[
+#
+# Configuration of the volkszaehler PHP-FPM pool managed by the debops.php_ role.
+volkszaehler__php__dependent_pools:
+
+  - name: 'volkszaehler'
+    user: '{{ volkszaehler__user }}'
+    group: '{{ volkszaehler__group }}'
+    state: '{{ "present" if (volkszaehler__deploy_state == "present") else "absent" }}'
+
+    php_admin_values:
+      post_max_size:       '{{ volkszaehler__max_file_size }}'
+      upload_max_filesize: '{{ volkszaehler__max_file_size }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__nginx__dependent_upstreams [[[
+#
+# Configuration of the volkszaehler nginx upstream, used by the debops.nginx_
+# Ansible role.
+volkszaehler__nginx__dependent_upstreams:
+
+  - name: 'php_volkszaehler'
+    type: 'php'
+    php_pool: 'volkszaehler'
+    state: '{{ "present" if (volkszaehler__deploy_state == "present") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: volkszaehler__nginx__dependent_servers [[[
+#
+# Configuration of the volkszaehler nginx server, used by the debops.nginx_
+# Ansible role.
+volkszaehler__nginx__dependent_servers:
+
+  - name: '{{ volkszaehler__fqdn }}'
+    filename: 'debops.volkszaehler'
+    by_role: 'debops-contrib.volkszaehler'
+    state: '{{ "present" if (volkszaehler__deploy_state == "present") else "absent" }}'
+    type: 'php'
+    root: '{{ volkszaehler__www_path }}'
+    php_upstream: 'php_volkszaehler'
+    csp: "default-src 'self'; connect-src * ws: wss: http: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+    csp_enabled: True
+    php_limit_except: '{{ volkszaehler__webserver_http_methods }}'
+
+    options: |
+      client_max_body_size {{ volkszaehler__max_file_size }};
+      client_body_buffer_size 128k;
+
+    location:
+      '/': |
+        rewrite ^/middleware/(.*)  /middleware.php/$1  last;
+        rewrite ^/frontend/(.*)    /$1                 last;
+
+# ]]]
+# .. envvar:: volkszaehler__apache__dependent_vhosts [[[
+#
+# Apache virtual host managed by the debops.apache_ role.
+volkszaehler__apache__dependent_vhosts:
+
+  - type: 'default'
+    name: '{{ volkszaehler__fqdn }}'
+    filename: 'debops.volkszaehler'
+    by_role: 'debops-contrib.volkszaehler'
+    state: '{{ "present" if (volkszaehler__deploy_state == "present") else "absent" }}'
+    root: '{{ volkszaehler__www_path }}'
+    options: 'Indexes FollowSymLinks MultiViews'
+    allow_override: 'FileInfo Limit Options Indexes AuthConfig'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

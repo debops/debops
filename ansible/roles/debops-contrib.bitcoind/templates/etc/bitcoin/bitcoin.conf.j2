@@ -1,0 +1,39 @@
+##
+## bitcoin.conf configuration file. Lines beginning with # are comments.
+## https://en.bitcoin.it/wiki/Running_Bitcoin
+##
+
+datadir={{ bitcoind__data_directory | quote }}
+
+# Network-related settings
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+
+testnet={{ bitcoind__testnet|bool|ternary("1", "0") }}
+
+listenonion={{ bitcoind__listen_onion|bool|ternary("1", "0") }}
+torcontrol={{ bitcoind__tor_control }}
+torpassword={{ bitcoind__tor_password }}
+
+# Connect via a SOCKS5 proxy
+#proxy=127.0.0.1:9050
+
+{% if bitcoind__max_connections == omit %}
+#maxconnections=
+{% else %}
+maxconnections={{ bitcoind__max_connections|int }}
+{% endif %}
+
+# Miscellaneous options
+# ~~~~~~~~~~~~~~~~~~~~~
+
+maxuploadtarget={{ bitcoind__max_upload_target|int }}
+
+txindex={{ bitcoind__txindex|bool|ternary("1", "0") }}
+maxmempool={{ bitcoind__max_mem_pool|int }}
+{% if bitcoind__custom_options %}
+
+# Miscellaneous options (bitcoind__custom_options)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+{{ bitcoind__custom_options }}
+{% endif %}

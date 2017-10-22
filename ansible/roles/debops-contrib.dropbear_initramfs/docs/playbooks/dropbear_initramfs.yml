@@ -1,0 +1,19 @@
+---
+
+- name: Setup the dropbear ssh server in initramfs
+  hosts: [ 'debops_service_dropbear_initramfs' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ dropbear_initramfs__apt_preferences__dependent_list }}'
+
+    - role: debops-contrib.dropbear_initramfs
+      tags: [ 'role::dropbear_initramfs' ]

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+PREREQ=""
+prereqs() {
+    echo "$PREREQ"
+}
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+{% for name, interface in dropbear_initramfs__combined_interfaces.iteritems() %}
+{%   set interface_name = (interface.iface | d(name)) %}
+ip link    set   dev {{ interface_name|quote }} down
+ip address flush dev {{ interface_name|quote }}
+ip route   flush dev {{ interface_name|quote }}
+{% endfor %}
+
+exit 0

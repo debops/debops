@@ -1,0 +1,49 @@
+---
+
+- name: Manage Check_MK agent
+  hosts:  [ 'debops_service_checkmk_agent' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops-contrib.checkmk_agent/env
+      tags: [ 'role::checkmk_agent', 'role::checkmk_agent:env', 'role::mariadb' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ checkmk_agent__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ checkmk_agent__etc_services__dependent_list }}'
+      when: ('xinetd' in checkmk_agent__type)
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ checkmk_agent__ferm__dependent_rules }}'
+
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers' ]
+      tcpwrappers__dependent_allow:
+        - '{{ checkmk_agent__tcpwrappers__dependent_allow }}'
+
+    - role: debops.authorized_keys
+      tags: [ 'role::authorized_keys' ]
+      authorized_keys__dependent_list:
+        - '{{ checkmk_agent__authorized_keys__dependent_list }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb__dependent_users:
+        - '{{ checkmk_agent__mariadb__dependent_users }}'
+      when: ("mk_mysql" in checkmk_agent__combined_plugins)
+
+    - role: debops-contrib.checkmk_agent
+      tags: [ 'role::checkmk_agent' ]

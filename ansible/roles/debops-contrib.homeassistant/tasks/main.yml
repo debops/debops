@@ -1,0 +1,92 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Ensure specified packages are in there desired state
+  package:
+    name: '{{ item }}'
+  when: (homeassistant__deploy_state == "present")
+  with_flattened: '{{ homeassistant__combined_packages }}'
+  tags: [ 'role::homeassistant:pkgs' ]
+
+# System user and group [[[
+- name: Create Home Assistant system group
+  group:
+    name: '{{ homeassistant__group }}'
+    state: '{{ "present" if (homeassistant__deploy_state == "present") else "absent" }}'
+    system: True
+
+- name: Create Home Assistant system user
+  user:
+    name: '{{ homeassistant__user }}'
+    group: '{{ homeassistant__group }}'
+    groups: '{{ homeassistant__groups | join(",") | default(omit) }}'
+    append: False
+    home: '{{ homeassistant__home_path }}'
+    comment: '{{ homeassistant__gecos }}'
+    shell: '{{ homeassistant__shell }}'
+    state: '{{ "present" if (homeassistant__deploy_state == "present") else "absent" }}'
+    system: True
+# ]]]
+
+- name: Clone Home Assistant git repository
+  git:
+    repo: '{{ homeassistant__git_repo }}'
+    dest: '{{ homeassistant__git_dest }}'
+    version: '{{ homeassistant__git_version }}'
+    recursive: '{{ homeassistant__git_recursive|bool }}'
+    update: '{{ homeassistant__git_update|bool }}'
+  become: True
+  become_user: '{{ homeassistant__user }}'
+  register: homeassistant__register_git
+  when: (homeassistant__deploy_state == "present")
+
+- name: Install hass without virtualenv
+  pip:
+    name: '.'
+    chdir: '{{ homeassistant__git_dest }}'
+    executable: 'pip3'
+    extra_args: '--user --upgrade'
+  become: True
+  become_user: '{{ homeassistant__user }}'
+  when: homeassistant__virtualenv == False and homeassistant__register_git|changed
+  notify: [ 'Restart Home Assistant' ]
+
+- name: Install hass in virtualenv
+  pip:
+    name: '.'
+    chdir: '{{ homeassistant__git_dest }}'
+    extra_args: '--upgrade'
+    virtualenv: '{{ homeassistant__virtualenv_path }}'
+    virtualenv_python: 'python3'
+  become: True
+  become_user: '{{ homeassistant__user }}'
+  when: homeassistant__virtualenv == True and homeassistant__register_git|changed
+  notify: [ 'Restart Home Assistant' ]
+
+- name: Ensure Home Assistant config dir exists
+  file:
+    path: '{{ homeassistant__home_path }}/.homeassistant'
+    mode: '0750'
+    state: 'directory'
+  become: True
+  become_user: '{{ homeassistant__user }}'
+  when: (homeassistant__deploy_state == "present")
+
+- name: Configure systemd unit file
+  template:
+    src: 'etc/systemd/system/home-assistant.service.j2'
+    dest: '/etc/systemd/system/home-assistant.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: homeassistant__register_systemd_unit_file
+  when: (homeassistant__deploy_state == "present")
+
+- name: Set Home Assistant state using systemd
+  systemd:
+    name: 'home-assistant'
+    state: '{{ "started" if (homeassistant__deploy_state == "present") else "stopped" }}'
+    enabled: True
+    masked: False
+    daemon_reload: '{{ homeassistant__register_systemd_unit_file|changed }}'
+  when: (homeassistant__deploy_state == "present" and ansible_distribution_release not in ["trusty"])

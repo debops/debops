@@ -1,0 +1,130 @@
+---
+
+# System packages [[[
+- name: Ensure specified packages are in there desired state
+  package:
+    name: '{{ item }}'
+    state: '{{ "present" if (volkszaehler__deploy_state in ["present"]) else "absent" }}'
+  with_flattened:
+    - '{{ volkszaehler__base_packages }}'
+    - '{{ volkszaehler__optional_packages }}'
+    - '{{ volkszaehler__packages }}'
+  tags: [ 'role::volkszaehler:pkgs' ]
+# ]]]
+
+# System user and group [[[
+- name: Create volkszaehler system group
+  group:
+    name: '{{ volkszaehler__group }}'
+    state: '{{ "present" if (volkszaehler__deploy_state == "present") else "absent" }}'
+    system: True
+
+- name: Create volkszaehler system user
+  user:
+    name: '{{ volkszaehler__user }}'
+    group: '{{ volkszaehler__group }}'
+    home: '{{ volkszaehler__home_path }}'
+    comment: '{{ volkszaehler__gecos }}'
+    shell: '{{ volkszaehler__shell }}'
+    state: '{{ "present" if (volkszaehler__deploy_state == "present") else "absent" }}'
+    system: True
+# ]]]
+
+- name: Enable required Apache modules
+  apache2_module:
+    name: '{{ item.key }}'
+    state: '{{ item.value.state|d("present") }}'
+  when: (volkszaehler__webserver == "apache")
+  with_dict: '{{ volkszaehler__apache_modules }}'
+
+- name: Clone volkszaehler git repository
+  git:
+    repo: '{{ volkszaehler__git_repo }}'
+    dest: '{{ volkszaehler__git_dest }}'
+    version: '{{ volkszaehler__git_version }}'
+    recursive: '{{ volkszaehler__git_recursive|bool }}'
+    update: '{{ volkszaehler__git_update|bool }}'
+  become: True
+  become_user: '{{ volkszaehler__user }}'
+  register: volkszaehler__register_git
+  when: (volkszaehler__deploy_state == "present")
+
+- name: Install volkszaehler config file
+  template:
+    src: 'etc/volkszaehler.conf.php.j2'
+    dest: '{{ volkszaehler__git_dest }}/etc/volkszaehler.conf.php'
+    owner: '{{ volkszaehler__config_user }}'
+    group: '{{ volkszaehler__config_group }}'
+    mode: '0640'
+    validate: 'php -f %s'
+  when: (volkszaehler__deploy_state == "present")
+
+- name: Install PHP dependencies with composer
+  composer:
+    command: 'require'
+    working_dir: '{{ volkszaehler__git_dest }}'
+  environment:
+      PATH: '{{ ansible_env.PATH }}:/usr/local/bin'
+  become: True
+  become_user: '{{ volkszaehler__user }}'
+  when: volkszaehler__register_git|changed
+
+# Database initialization [[[
+- name: Write database initialization SQL dump
+  shell: php {{ (volkszaehler__git_dest + "/misc/tools/doctrine")|quote }} orm:schema-tool:create --dump-sql > {{ (volkszaehler__home_path + "/create_db.sql")|quote }}
+  become: True
+  become_user: '{{ volkszaehler__user }}'
+  register: volkszaehler__register_sql_init_dump
+  when: (not (ansible_local.volkszaehler[volkszaehler__database + "_initialized"]|bool
+              if (ansible_local|d() and ansible_local.volkszaehler|d() and
+                  ansible_local.volkszaehler[volkszaehler__database + "_initialized"]|d())
+              else False))
+
+- name: Import database initialization SQL dump
+  mysql_db:
+    name: '{{ volkszaehler__database_name }}'
+    target: '{{ (volkszaehler__home_path + "/create_db.sql")|quote }}'
+    state: 'import'
+  when: (volkszaehler__register_sql_init_dump|changed and volkszaehler__database in ['mariadb'])
+
+- name: Insert demo data into database
+  shell: cat {{ (volkszaehler__git_dest + "/misc/sql/demo.sql")|quote }} | mysql {{ volkszaehler__database_name }}
+  become: True
+  become_user: '{{ volkszaehler__user }}'
+  when: (not (ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"]|bool
+              if (ansible_local|d() and ansible_local.volkszaehler|d() and
+                  ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"]|d())
+              else False)) and (volkszaehler__database_demo_insert|bool)
+# ]]]
+
+- name: Generate proxy classes
+  command: php {{ (volkszaehler__git_dest + "/misc/tools/doctrine")|quote }} orm:generate-proxies
+  become: True
+  become_user: '{{ volkszaehler__user }}'
+  changed_when: False
+  when: (volkszaehler__deploy_state == "present")
+
+# Ansible local facts [[[
+- name: Make sure that Ansible local facts directory is present
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (volkszaehler__deploy_state == "present")
+
+- name: Save volkszaehler local facts
+  template:
+    src: 'etc/ansible/facts.d/volkszaehler.fact.j2'
+    dest: '/etc/ansible/facts.d/volkszaehler.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: volkszaehler__register_local_facts
+  when: (volkszaehler__deploy_state == "present")
+
+- name: Gather facts if they were modified
+  action: setup
+  when: volkszaehler__register_local_facts|changed
+# ]]]

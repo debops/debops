@@ -1,0 +1,24 @@
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+{% set dropbear_initramfs__tpl_merge_1 = (debops__tpl_macros.merge_dict(dropbear_initramfs__interfaces, dropbear_initramfs__group_interfaces, 'iface') | from_json) %}
+{% set dropbear_initramfs__tpl_merge_2 = (debops__tpl_macros.merge_dict(dropbear_initramfs__tpl_merge_1, dropbear_initramfs__host_interfaces, 'iface') | from_json) %}
+{% set dropbear_initramfs__tpl_filtered_interfaces = {} %}
+{% for name, params in dropbear_initramfs__tpl_merge_2.iteritems() %}
+{%   set interface_name = (params.iface | d(name)) %}
+{%   if params.type is undefined %}
+{%     if (interface_name.startswith('vlan') or '.' in interface_name) %}
+{%       set _ = params.update({"type":"vlan"}) %}
+{%     elif interface_name.startswith(('en','eth')) %}
+{%       set _ = params.update({"type":"ether"}) %}
+{%     endif %}
+{%   endif %}
+{%   if params.type|d("ether") == 'ether' %}
+{%     if params.inet is undefined %}
+{%       set _ = params.update({"inet":"dhcp"}) %}
+{%     endif %}
+{%     if params.inet6 is undefined %}
+{%       set _ = params.update({"inet6":"auto"}) %}
+{%     endif %}
+{%     set _ = dropbear_initramfs__tpl_filtered_interfaces.update({interface_name:params}) %}
+{%   endif %}
+{% endfor %}
+{{ dropbear_initramfs__tpl_filtered_interfaces | to_yaml }}

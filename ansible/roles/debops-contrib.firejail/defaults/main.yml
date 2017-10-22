@@ -1,0 +1,243 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.firejail default variables [[[
+# =============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: firejail__base_packages [[[
+#
+# List of base packages to install.
+firejail__base_packages:
+  - 'firejail'
+
+                                                                   # ]]]
+# .. envvar:: firejail__packages [[[
+#
+# List of optional global packages.
+# This variable is intended to be used in Ansible’s global inventory.
+firejail__packages: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__group_packages [[[
+#
+# List of optional group packages.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+firejail__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__host_packages [[[
+#
+# List of optional host packages.
+# This variable is intended to be used in the inventory of hosts.
+firejail__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that Firejail is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that Firejail is uninstalled and it's configuration is removed.
+#
+firejail__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# System paths [[[
+# ----------------
+
+# .. envvar:: firejail__config_path [[[
+#
+# Directory where the system wide Firejail configuration and profiles are
+# stored.
+firejail__config_path: '/etc/firejail'
+
+                                                                   # ]]]
+# .. envvar:: firejail__program_file_path [[[
+#
+# File path of the :command:`firejail` binary.
+# When set to ``auto``, the role tries to figure out the file path via the
+# :command:`which` command.
+# Note that :command:`which` is executed in the context of the root user who
+# might have a different ``PATH`` variable then normal users.
+#
+# To use :command:`firejail` from another location, set:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#    firejail__program_file_path: '/usr/local/bin/firejail'
+#
+# in your Ansible inventory.
+firejail__program_file_path: 'auto'
+
+                                                                   # ]]]
+# .. envvar:: firejail__system_local_bin_path [[[
+#
+# Directory in which to create the symlinks when enabling a profile system
+# wide.
+# This directory path must be included in the ``PATH`` variable before the
+# directory which contains the real program so that the symlink pointing to
+# :command:`firejail` is used when users try to execute the program.
+firejail__system_local_bin_path: '{{ ansible_local.root.bin
+                                     if (ansible_local|d() and ansible_local.root|d() and
+                                         ansible_local.root.root|d())
+                                     else "/usr/local/bin" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Program sandboxes [[[
+# ---------------------
+
+# Program sandboxes can be defined using dictionary variables on different
+# inventory levels which are combined together.
+#
+# For more details refer to :ref:`firejail__ref_program_sandboxes`
+# in the :ref:`firejail__ref_default_variable_details` section.
+
+# .. envvar:: firejail__program_sandboxes [[[
+#
+# This variable is intended to be used in Ansible’s global inventory.
+firejail__program_sandboxes: {}
+
+                                                                   # ]]]
+# .. envvar:: firejail__group_program_sandboxes [[[
+#
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+firejail__group_program_sandboxes: {}
+
+                                                                   # ]]]
+# .. envvar:: firejail__host_program_sandboxes [[[
+#
+# This variable is intended to be used in the inventory of hosts.
+firejail__host_program_sandboxes: {}
+
+                                                                   # ]]]
+# .. envvar:: firejail__role_program_sandboxes [[[
+#
+# Program sandbox definitions used/set internally by this role.
+firejail__role_program_sandboxes:
+  default:
+    # The "default" profile is not intended to correspond to a program called
+    # "default". Ensure that even if such a program exists, it will not be
+    # sandboxed system wide without the role maintainers approving it first.
+    system_wide_sandboxed: 'absent'
+  ssh:
+    # Might conflict with other programs using it. For example, Ansible and
+    # BorgBackup did not work with this enabled system wide.
+    system_wide_sandboxed: 'absent'
+  tar:
+    # Causes dpkg install tasks to fail.
+    system_wide_sandboxed: 'absent'
+  unrar:
+    # Did not extract when run in sandbox.
+    # `unp` seems unable to detect that `unrar` is installed when with the symlink.
+    system_wide_sandboxed: 'absent'
+  git:
+    # Needed everywhere. Did not work well with zsh and does not work for root because the profile uses --noroot.
+    system_wide_sandboxed: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: firejail__combined_program_sandboxes [[[
+#
+# Combined dictionary of program sandboxes as it is used by the role.
+# This defines the order in which dictionary keys might "mask" previous once.
+firejail__combined_program_sandboxes: '{{
+  firejail__role_program_sandboxes
+  | combine(firejail__program_sandboxes)
+  | combine(firejail__group_program_sandboxes)
+  | combine(firejail__host_program_sandboxes) }}'
+
+                                                                   # ]]]
+# .. envvar:: firejail__global_profiles_system_wide_sandboxed [[[
+#
+# Sandbox all programs for which Firejail ships profiles or which have
+# otherwise been configured below :envvar:`firejail__config_path` system wide
+# using the method described in
+# :ref:`item.system_wide_sandboxed <firejail__ref_system_wide_sandboxed>`.
+# This variable only applies when the program was not configured using
+# :ref:`firejail__ref_program_sandboxes`. For that case refer to
+# :envvar:`firejail__program_sandboxes_system_wide_sandboxed`.
+firejail__global_profiles_system_wide_sandboxed: 'if_installed'
+
+                                                                   # ]]]
+# .. envvar:: firejail__program_sandboxes_system_wide_sandboxed [[[
+#
+# Default value for :ref:`item.system_wide_sandboxed <firejail__ref_system_wide_sandboxed>`.
+firejail__program_sandboxes_system_wide_sandboxed: 'if_installed'
+                                                                   # ]]]
+                                                                   # ]]]
+# Workaround for desktop files [[[
+# --------------------------------
+
+# Some desktop files include a full path to the executable which would
+# result in the program being executed without Firejail sandboxing it.
+# For this, Firejail provides the :command:`firecfg --fix` command which fixes
+# those desktop files and saves them under :file:`~/.local/share/applications/`.
+#
+# This section provides variables which you should use to do this for the
+# users.
+#
+# Those variables have the same structure as the ``users__accounts`` onces from
+# the debops.users_ role. This allows you to include all users you
+# configured using the debops.users_ by putting this:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    firejail__fix_for_users: '{{ users__accounts|d([]) }}'
+#    firejail__group_fix_for_users: '{{ users__group_accounts|d([]) }}'
+#    firejail__host_fix_for_users: '{{ users__host_accounts|d([]) }}'
+#
+# into your global inventory.
+
+# .. envvar:: firejail__fix_for_users [[[
+#
+# Global list of users for which the desktop files workaround should be applied.
+# The list should contain a dictionary for each user with the username in the
+# ``name`` key of the dictionary.
+firejail__fix_for_users: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__group_fix_for_users [[[
+#
+# Host group list of users for which the desktop files workaround should be applied.
+firejail__group_fix_for_users: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__host_fix_for_users [[[
+#
+# Host list of users for which the desktop files workaround should be applied.
+firejail__host_fix_for_users: []
+
+                                                                   # ]]]
+# .. envvar:: firejail__combined_fix_for_users [[[
+#
+# Combined list of users as it is used by the role.
+firejail__combined_fix_for_users: '{{
+  (firejail__fix_for_users       | list ) +
+  (firejail__group_fix_for_users | list ) +
+  (firejail__host_fix_for_users  | list ) }}'
+
+                                                                   # ]]]
+# .. envvar:: firejail__ansible_log [[[
+#
+# Enable or disable Ansible task logging for
+# :envvar:`firejail__combined_fix_for_users` which might contains sensitive
+# information.  This variable should not be changed other than for debugging.
+firejail__ansible_log: False
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,46 @@
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+PREREQ=""
+prereqs() {
+    echo "$PREREQ"
+}
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+{% for name, interface in dropbear_initramfs__combined_interfaces | dictsort %}
+{%   set interface_name = (interface.iface | d(name)) %}
+{%   set addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_json) | unique %}
+{%   set ipv4_addresses = addresses | ipv4 %}
+{%   set ipv6_addresses = addresses | ipv6 %}
+{%   set gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_json) | unique %}
+{%   set ipv4_gateways = gateways | ipv4 %}
+{%   set ipv6_gateways = gateways | ipv6 %}
+
+ip link set dev {{ interface_name|quote }} up
+{%   if interface.inet6 in ['static'] %}
+{%     for address in ipv6_addresses %}
+ip addr add {{ address }} dev {{ interface_name|quote }}
+{%     endfor %}
+{%     if ipv6_gateways %}
+ip route add default via {{ ipv6_gateways | first }}
+{%     endif %}
+{%   endif %}
+{%   if interface.inet in ['static'] %}
+{%     for address in ipv4_addresses %}
+ip addr add {{ address }} dev {{ interface_name|quote }} label {{ interface_name|quote }}:{{ loop.index0 }}
+{%     endfor %}
+{%     if ipv4_gateways %}
+ip route add default via {{ ipv4_gateways | first }}
+{%     endif %}
+{%   endif %}
+ip addr show dev {{ interface_name|quote }}
+{% endfor %}
+
+exit 0

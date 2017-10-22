@@ -1,0 +1,116 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Assert etckeeper__vcs is valid
+  assert:
+    that:
+      - etckeeper__vcs in etckeeper__supported_vcs
+
+## Diverting the main configuration of etckeeper away leaves the VCS
+## uninitiated until it has been fully configured.
+- name: Divert original configuration under /etc
+  command: dpkg-divert --quiet --local --divert "{{ item }}.dpkg-divert" --rename "{{ item }}"
+  args:
+    creates: '{{ item }}.dpkg-divert'
+  when: (ansible_pkg_mgr == 'apt')
+  with_items: [ '/etc/etckeeper/etckeeper.conf' ]
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  when: (ansible_pkg_mgr == 'apt')
+  with_flattened:
+    - '{{ etckeeper__vcs_command_to_package_mapping[etckeeper__vcs]|d(etckeeper__vcs) }}'
+    - 'etckeeper'
+
+## The main configuration file provided installed by your distribution is
+## expected to be already configured in regards to the used package manager, so
+## this value will be preferred.
+- name: Read HIGHLEVEL_PACKAGE_MANAGER configured by the distribution
+  shell: . /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${HIGHLEVEL_PACKAGE_MANAGER}
+  changed_when: False
+  failed_when: False
+  register: etckeeper__register_highlevel_package_manager
+
+- name: Read LOWLEVEL_PACKAGE_MANAGER configured by the distribution
+  shell: . /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${LOWLEVEL_PACKAGE_MANAGER}
+  changed_when: False
+  failed_when: False
+  register: etckeeper__register_lowlevel_package_manager
+
+- name: Create etckeeper configuration
+  template:
+    src: 'etc/etckeeper/etckeeper.conf.j2'
+    dest: '/etc/etckeeper/etckeeper.conf'
+    mode: 0644
+    owner: 'root'
+    group: 'root'
+
+- name: Initial VCS
+  command: etckeeper init
+  args:
+    creates: '/etc/.etckeeper'
+  register: etckeeper__register_init
+
+- name: Add entries to /etc/.gitignore
+  lineinfile:
+    dest: '/etc/.gitignore'
+    line: '{{ item }}'
+    insertbefore: 'BOF'
+  with_flattened:
+    - '{{ (etckeeper__ignore_role_list       |d([]) | list) }}'
+    - '{{ (etckeeper__ignore_list            |d([]) | list) }}'
+    - '{{ (etckeeper__ignore_host_group_list |d([]) | list) }}'
+    - '{{ (etckeeper__ignore_host_list       |d([]) | list) }}'
+
+- name: Install /etc/.gitattributes configuration
+  template:
+    src: 'etc/gitattributes.j2'
+    dest: '/etc/.gitattributes'
+    mode: 0644
+    owner: 'root'
+    group: 'root'
+  when: (etckeeper__vcs == 'git')
+
+- name: Set repository permissions
+  file:
+    state: 'directory'
+    path: '/etc/.git'
+    mode: '{{ etckeeper__repository_permissions|d("0700") }}'
+    owner: 'root'
+    group: '{{ etckeeper__repository_group|d("root") }}'
+
+## Set VCS user, email used for auto committing changes [[[
+- name: Set user, email for the git repository
+  ini_file:
+    dest: '/etc/.git/config'
+    section: 'user'
+    option: '{{ item.key }}'
+    value: '{{ item.value }}'
+  with_dict:
+    name: '{{ etckeeper__vcs_user }}'
+    email: '{{ etckeeper__vcs_email }}'
+  when: (etckeeper__vcs == 'git' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
+  tags: [ 'role::etckeeper:vcs_config' ]
+
+- name: Set user, email for the bzr repository
+  command: etckeeper vcs whoami '{{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'
+  when: (etckeeper__vcs == 'bzr' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
+  tags: [ 'role::etckeeper:vcs_config' ]
+
+- name: Set user, email for the darcs repository
+  command: etckeeper vcs setpref author '{{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'
+  when: (etckeeper__vcs == 'darcs' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
+  tags: [ 'role::etckeeper:vcs_config' ]
+
+- name: Set user, email for the hg repository
+  command: "etckeeper vcs --config 'ui.username={{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'"
+  when: (etckeeper__vcs == 'hg' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
+  tags: [ 'role::etckeeper:vcs_config' ]
+## ]]]
+
+- name: Create root commit
+  command: etckeeper commit 'Initial commit created by Ansible.'
+  when: etckeeper__register_init|changed

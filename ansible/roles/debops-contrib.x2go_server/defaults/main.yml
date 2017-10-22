@@ -1,0 +1,95 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.x2go_server default variables [[[
+# ================================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: x2go_server__base_packages [[[
+#
+# List of base packages to install.
+# You can checkout the Ansible role ypid.packages_ which can install
+# additional packages to support your desktop environment better.
+x2go_server__base_packages:
+  - '{{ [ "x2go-keyring" ] if (ansible_distribution in [ "Debian" ]) else [] }}'
+  - 'x2goserver'
+  - 'x2goserver-xsession'
+
+                                                                   # ]]]
+# .. envvar:: x2go_server__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that X2Go is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that X2Go is uninstalled and it's configuration is removed.
+#
+x2go_server__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# Software sources [[[
+# --------------------
+#
+
+# .. envvar:: x2go_server__apt_repo_key_fingerprint_map [[[
+#
+# APT PGP key fingerprint used to sign the upstream X2Go repository and it’s
+# packages per distributions corresponding to ``ansible_distribution``.
+# Use ``{{ omit }}`` to omit the key fingerprint fetch all together. For
+# example, using PPAs does automatically fetch the correct PGP public key
+# somehow.
+# Refer to the `official X2Go Dokumentation <http://wiki.x2go.org/doku.php/wiki:repositories:debian>`__ for details.
+x2go_server__apt_repo_key_fingerprint_map:
+  'Ubuntu': '{{ omit }}'
+  'Linuxmint': '{{ omit }}'
+  'default': '972FD88FA0BAFB578D0476DFE1F958385BFE2B6E'
+
+                                                                   # ]]]
+# .. envvar:: x2go_server__upstream_release_channel [[[
+#
+# Release channel to use. Choices:
+#
+# ``main``
+#   Release builds, default.
+#
+# ``heuler``
+#   Nightly builds.
+#
+x2go_server__upstream_release_channel: 'main'
+
+                                                                   # ]]]
+# .. envvar:: x2go_server__upstream_mirror_url [[[
+#
+# URL of the X2Go upstream APT repository.
+x2go_server__upstream_mirror_url: 'http://packages.x2go.org/{{ ansible_distribution | lower }}/'
+
+                                                                   # ]]]
+# .. envvar:: x2go_server__upstream_repository_map [[[
+#
+# APT repository definition for using the X2Go upstream repository per
+# distribution corresponding to ``ansible_distribution``.
+x2go_server__upstream_repository_map:
+  'Ubuntu': 'ppa:x2go/{{ x2go_server__ppa_release_channel_map[x2go_server__upstream_release_channel] }}'
+  'Linuxmint': 'ppa:x2go/{{ x2go_server__ppa_release_channel_map[x2go_server__upstream_release_channel] }}'
+  'default': 'deb {{ x2go_server__upstream_mirror_url }} {{ ansible_distribution_release }} {{ x2go_server__upstream_release_channel }}'
+
+                                                                   # ]]]
+# .. envvar:: x2go_server__ppa_release_channel_map [[[
+#
+# Mapping from :envvar:`x2go_server__upstream_release_channel` to the names used
+# in PPAs.
+x2go_server__ppa_release_channel_map:
+  'main': 'stable'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
