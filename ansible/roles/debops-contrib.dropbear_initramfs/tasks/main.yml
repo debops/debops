@@ -1,0 +1,70 @@
+---
+
+- name: Ensure specified packages are in there desired state
+  package:
+    name: '{{ item }}'
+    state: '{{ "present" if (dropbear_initramfs__deploy_state == "present") else "absent" }}'
+  with_flattened:
+    - '{{ dropbear_initramfs__base_packages }}'
+    - '{{ dropbear_initramfs__packages }}'
+  tags: [ 'role::dropbear_initramfs:pkgs' ]
+
+- name: Configure network in initramfs using kernel command line
+  template:
+    src: 'etc/initramfs-tools/conf.d/role.conf.j2'
+    dest: '/etc/initramfs-tools/conf.d/50_debops.dropbear_initramfs.conf'
+    mode: '0644'
+  when: (dropbear_initramfs__deploy_state == "present")
+  notify: [ 'Update initramfs' ]
+
+- name: Configure to bring up additional interfaces/addresses in initramfs
+  template:
+    src: 'etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs.j2'
+    dest: '/etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs'
+    mode: '0755'
+  when: (dropbear_initramfs__deploy_state == "present")
+  notify: [ 'Update initramfs' ]
+
+- name: Configure to bring down additional interfaces/addresses in initramfs
+  template:
+    src: 'etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs.j2'
+    dest: '/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs'
+    mode: '0755'
+  when: (dropbear_initramfs__deploy_state == "present")
+  notify: [ 'Update initramfs' ]
+
+- name: Configure authorized ssh keys
+  authorized_key:
+    key: "{{ (item.sshkeys if item.sshkeys is string else (item.sshkeys | unique | join('\n') | string)) if item.sshkeys|d() else '' }}"
+    user: '{{ item.user | d("root") }}'
+    path: '{{ "/etc/initramfs-tools/root/.ssh/authorized_keys"
+              if ("dropbear" in dropbear_initramfs__base_packages)
+              else "/etc/dropbear-initramfs/authorized_keys" }}'
+    ## Ref: debops.authorized_keys ;-)
+    key_options: '{{ ((item.options if item.options is string else item.options|join(","))
+                       if item.options is defined
+                       else (
+                         (dropbear_initramfs__authorized_keys_options if dropbear_initramfs__authorized_keys_options is string else dropbear_initramfs__authorized_keys_options|join(","))
+                         if dropbear_initramfs__authorized_keys_options != omit else ""
+                       )
+                     ) + (
+                       (("," + item.key_options) if item.key_options is string else ("," + item.key_options|join(",")))
+                       if item.key_options|d()
+                       else ""
+                     ) }}'
+    state: '{{ (item.state | d("present")) if (dropbear_initramfs__deploy_state == "present") else "absent" }}'
+    exclusive: '{{ item.exclusive | d(omit) }}'
+    manage_dir: False
+  notify: [ 'Update initramfs' ]
+  with_flattened: '{{ dropbear_initramfs__combined_authorized_keys }}'
+
+- name: Remove files in deploy state absent
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  when: (dropbear_initramfs__deploy_state == 'absent')
+  notify: [ 'Update initramfs' ]
+  with_items:
+    - '/etc/initramfs-tools/conf.d/50_debops.dropbear_initramfs.conf'
+    - '/etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs'
+    - '/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs'

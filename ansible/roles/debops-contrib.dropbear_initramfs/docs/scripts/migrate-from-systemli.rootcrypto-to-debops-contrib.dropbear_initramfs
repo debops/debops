@@ -1,0 +1,11 @@
+#!/bin/bash
+## Upgrade inventory variables for migration from systemli.rootcrypto to debops-contrib.dropbear_initramfs.
+## The script is idempotent.
+
+git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '{}' -type f -print0 \
+ | xargs --null sed --in-place --regexp-extended '
+     s/rootcrypto_network_device/dropbear_initramfs__network_device/g;
+     s/rootcrypto_network_address/dropbear_initramfs__network_address/g;
+     s/rootcrypto_network_netmask/dropbear_initramfs__network_netmask/g;
+     s/rootcrypto_network_gateway/dropbear_initramfs__network_gateway/g;
+   '
