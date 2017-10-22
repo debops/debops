@@ -1,0 +1,467 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.foodsoft default variables [[[
+# =============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# System packages [[[
+# -------------------
+
+# .. envvar:: foodsoft__base_packages [[[
+#
+# List of base packages required by Foodsoft.
+foodsoft__base_packages:
+  - '{{ ["ruby2.0", "ruby2.0-dev"] if (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["trusty"]) else [] }}'
+
+  - 'libcurl3-dev'
+  - 'libxml2-dev'
+  - 'libxslt-dev'
+  - 'libffi-dev'
+  - 'libreadline-dev'
+
+  ## charlock_holmes
+  - 'g++'
+  ## https://stackoverflow.com/questions/15553792/error-installing-charlock-holmes-error-installing-gitlab/15556110#15556110
+  - 'libicu-dev'
+
+  ## RMagick
+  - 'pkg-config'
+  - 'libmagickwand-dev'
+  - 'ruby-magic'
+  - 'libmagic-dev'
+
+  ## sqlite3
+  - '{{ ["libsqlite3-dev"] if (foodsoft__database in ["sqlite"]) else [] }}'
+
+  ## mysql2
+  - '{{ ["libmysqlclient-dev", "libmariadbd-dev"] if (foodsoft__database in ["mariadb"]) else [] }}'
+
+  ## Install via gem
+  # - 'ruby-charlock-holmes'
+  # - 'ruby-rmagick'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that Foodsoft is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that Foodsoft is uninstalled and it's configuration is removed.
+#
+# ``purged``
+#   Same as ``absent`` but additionally also ensures that the database and
+#   other persistent data is removed.
+#
+foodsoft__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# FQDN and DNS addresses [[[
+# --------------------------
+
+# .. envvar:: foodsoft__fqdn [[[
+#
+# The Fully Qualified Domain Name of the Foodsoft instance. This address is
+# used to configure the webserver frontend.
+foodsoft__fqdn: 'foodsoft.{{ foodsoft__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__domain [[[
+#
+# Domain that will be configured for the Foodsoft instance.
+foodsoft__domain: '{{ ansible_local.core.domain
+                      if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.domain|d())
+                      else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database configuration [[[
+# --------------------------
+
+# .. envvar:: foodsoft__database [[[
+#
+# Autodetected variable containing the database management system which should be used.
+# The supported and tested option is ``mariadb``.
+#
+# Refer to :ref:`foodsoft__ref_getting_started` for details.
+#
+# .. Planned are ``mariadb``, ``postgresql``, ``sqlite``.
+#
+foodsoft__database: '{{ ansible_local.foodsoft.database
+                        if (ansible_local|d() and ansible_local.foodsoft|d() and
+                            ansible_local.foodsoft.database|d())
+                        else ("mariadb"
+                              if (ansible_local|d() and ansible_local.mariadb is defined)
+                              else ("postgresql"
+                                    if (ansible_local|d() and ansible_local.postgresql is defined)
+                                    else "no-database-detected")) }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__database_server [[[
+#
+# FQDN of the database server. It will be configured by
+# the debops.mariadb_ or debops.postgresql_ role.
+foodsoft__database_server: '{{ ansible_local[foodsoft__database].server }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__database_port [[[
+#
+# Port database is listening on.
+foodsoft__database_port: '{{ ansible_local[foodsoft__database].port }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__database_name [[[
+#
+# Name of the database to use for Foodsoft.
+foodsoft__database_name: 'foodsoft'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__database_user [[[
+#
+# Database user to use for Foodsoft.
+foodsoft__database_user: 'foodsoft'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__database_password_path [[[
+#
+# Path to database password file.
+foodsoft__database_password_path: '{{ secret + "/" + foodsoft__database + "/"
+                                      + ansible_local[foodsoft__database].delegate_to
+                                      + (("/" + ansible_local[foodsoft__database].port)
+                                         if (foodsoft__database == "postgresql")
+                                         else "")
+                                      + "/credentials/" + foodsoft__database_user + "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__database_password [[[
+#
+# Database password for Foodsoft.
+foodsoft__database_password: '{{ lookup("password", foodsoft__database_password_path + " length=48 chars=ascii_letters,digits,.:-_") }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__database_name_map [[[
+#
+# Database name mapping from the names as used in DebOps to Ruby database
+# adapter names.
+foodsoft__database_name_map:
+  'mariadb': 'mysql2'
+  'sqlite': 'sqlite3'
+
+  # Legacy:
+  'mysql': 'mysql2'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__database_config [[[
+#
+# Database configuration for Foodsoft. Written to :file:`config/database.yml`.
+foodsoft__database_config:
+  production:
+    adapter: '{{ foodsoft__database_name_map[foodsoft__database] }}'
+    # socket: '/tmp/mysql.sock'
+    host: '{{ foodsoft__database_server }}'
+    reconnect: False
+    pool: 5
+    username: '{{ foodsoft__database_user }}'
+    password: '{{ foodsoft__database_password }}'
+    database: '{{ foodsoft__database_name }}'
+    encoding: 'utf8'
+                                                                   # ]]]
+                                                                   # ]]]
+# Webserver configuration [[[
+# ---------------------------
+
+# .. envvar:: foodsoft__webserver [[[
+#
+# Autodetected variable containing the webserver which should be used.
+# Currently only Nginx is supported.
+foodsoft__webserver: '{{ ansible_local.foodsoft.webserver
+                         if (ansible_local|d() and ansible_local.foodsoft|d() and
+                             ansible_local.foodsoft.webserver|d())
+                         else ("nginx"
+                               if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.enabled|d()|bool)
+                               else ("apache"
+                                     if (ansible_local|d() and ansible_local.apache|d() and ansible_local.apache.enabled|d()|bool)
+                                     else "no-webserver-detected")) }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__webserver_user [[[
+#
+# Name of the webserver user account which will be granted read only access to
+# the Foodsoft application directory.
+foodsoft__webserver_user: '{{ ansible_local.nginx.user
+                             if (ansible_local|d() and ansible_local.nginx|d() and
+                                 ansible_local.nginx.user|d())
+                              else "www-data" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: foodsoft__home_path [[[
+#
+# The Foodsoft system account home directory.
+foodsoft__home_path: '{{ (ansible_local.nginx.www
+                          if (ansible_local|d() and ansible_local.nginx|d()
+                              and ansible_local.nginx.www|d())
+                          else "/srv/www") + "/" + foodsoft__user }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__www_path [[[
+#
+# Base web root directory for Foodsoft.
+foodsoft__www_path: '{{ foodsoft__git_dest + "/public" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# System user and group [[[
+# -------------------------
+
+# .. envvar:: foodsoft__user [[[
+#
+# System UNIX account used by the Foodsoft.
+foodsoft__user: 'foodsoft'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__group [[[
+#
+# System UNIX group used by the Foodsoft.
+foodsoft__group: 'foodsoft'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__gecos [[[
+#
+# Contents of the GECOS field set for the Foodsoft account.
+foodsoft__gecos: 'Foodsoft'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__shell [[[
+#
+# The default shell set on the foodsoft account.
+foodsoft__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Foodsoft sources and deployment [[[
+# -----------------------------------
+
+# .. envvar:: foodsoft__git_repo [[[
+#
+# The URI of the Foodsoft git source repository.
+# There is also https://github.com/foodcoop-adam/foodsoft.git which you can choose alternatively.
+foodsoft__git_repo: 'https://github.com/foodcoops/foodsoft.git'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__git_version [[[
+#
+# The git branch or tag which will be installed.
+# Defaults to the commit hash of latest release (4.5.1).
+# This is done because Foodsoft development is not cryptographically
+# signed and this role wants to comply with the
+# `DebOps Software Source Policy <https://docs.debops.org/en/latest/debops-policy/docs/software-source-policy.html#software-installed-from-git-repositories>`__.
+foodsoft__git_version: 'a7b6b0c803ca4a79ddab7cea92545b8cc188f952'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__git_dest [[[
+#
+# Path where the Foodsoft sources will be checked out (installation path).
+foodsoft__git_dest: '{{ foodsoft__home_path + "/foodcoops-foodsoft" }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__git_update [[[
+#
+# Should new revisions be retrieved from the origin repository?
+foodsoft__git_update: True
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__bundler_exclude_groups [[[
+#
+# Don’t install the Gems in the listed groups.
+foodsoft__bundler_exclude_groups:
+  - 'test'
+
+  ## Contains SQLite gem.
+  - 'development'
+                                                                   # ]]]
+                                                                   # ]]]
+# Foodsoft configuration [[[
+# --------------------------
+
+# .. envvar:: foodsoft__name [[[
+#
+# Name of this Foodsoft instance.
+foodsoft__name: 'Foodcoop'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__contact [[[
+#
+# Foodcoop contact information (used for FAX messages).
+foodsoft__contact:
+  street: 'Grüne Straße 23'
+  zip_code: '12323'
+  city: 'Berlin'
+  country: 'Deutschland'
+  email: '{{ foodsoft__email_sender }}'
+  phone: '030 323 232323'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__default_scope [[[
+#
+# If :envvar:`foodsoft__multi_coop_install` is true you have to use a coop name, which
+# you you wanna be selected by default.
+foodsoft__default_scope: 'f'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__homepage [[[
+#
+# Homepage URL.
+foodsoft__homepage: 'https://{{ foodsoft__fqdn }}/{{ foodsoft__default_scope }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__page_footer [[[
+#
+# Page footer (html allowed). Default is a Foodsoft footer. Set to the word
+# "blank" for no footer. If unchanged, the default footer of Foodsoft will be used.
+foodsoft__page_footer: '<a href="{{ foodsoft__homepage }}/">{{ foodsoft__name }}</a>, setup by <a href="https://debops.org/">DebOps</a>.'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__email_sender [[[
+#
+# Email address to be used as sender.
+foodsoft__email_sender: 'foodsoft@{{ foodsoft__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__error_recipients [[[
+#
+# Email address to be used as sender.
+foodsoft__error_recipients:
+  - 'admin@{{ foodsoft__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__multi_coop_install [[[
+#
+# If you wanna serve more than one Foodcoop with one installation.
+# Don't forget to setup databases for each Foodcoop. See also MULTI_COOP_INSTALL.
+foodsoft__multi_coop_install: False
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__upstream_config [[[
+#
+# Configuration as defined by upstream Foodcoop in
+# :file:`config/app_config.yml.SAMPLE`.
+foodsoft__upstream_config: '{{ lookup("file", "vars/sample_app_config.yml")|from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__role_config [[[
+#
+# This dict is managed by the role itself, controlled by other default variables.
+foodsoft__role_config:
+
+  multi_coop_install: '{{ foodsoft__multi_coop_install|bool }}'
+  default_scope: '{{ foodsoft__default_scope }}'
+  name: '{{ foodsoft__name }}'
+  contact: '{{ foodsoft__contact }}'
+  homepage: '{{ foodsoft__homepage }}'
+
+  # Default timezone, e. g. UTC, Amsterdam, Berlin, etc.
+  # FIXME: Foodsoft/Ruby seem to expect a different format than what debops.core returns.
+  # Potentially splitting at "/" and returning the second half of the string
+  # would do the job but that would need testing.
+  # Change manually if needed.
+  # time_zone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
+
+  # Page footer (html allowed). Default is a Foodsoft footer. Set to `blank` for no footer.
+  page_footer: '{{ foodsoft__page_footer }}'
+
+  email_sender: '{{ foodsoft__email_sender }}'
+
+  # Config for the exception_notification plugin.
+  notification:
+    error_recipients: '{{ foodsoft__error_recipients }}'
+    sender_address: '"Foodsoft Error" <{{ foodsoft__email_sender }}>'
+    email_prefix: "[Foodsoft]"
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__config [[[
+#
+# This dict is intended to be used in Ansible’s global inventory as needed.
+foodsoft__config: {}
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__group_config [[[
+#
+# This dict is intended to be used in a host inventory group of Ansible
+# (only one host group is supported) as needed.
+foodsoft__group_config: {}
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__host_config [[[
+#
+# This dict is intended to be used in the inventory of hosts as needed.
+foodsoft__host_config: {}
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__combined_config [[[
+#
+# The configuration written to :file:`config/app_config.yml`.
+foodsoft__combined_config: '{{ foodsoft__upstream_config.default
+                               | combine(foodsoft__role_config)
+                               | combine(foodsoft__config)
+                               | combine(foodsoft__group_config)
+                               | combine(foodsoft__host_config) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: foodsoft__mariadb__dependent_databases [[[
+#
+# Configuration of the foodsoft database managed by the debops.mariadb_ role.
+foodsoft__mariadb__dependent_databases:
+
+  - database: '{{ foodsoft__database_name }}'
+    state: '{{ "present" if (foodsoft__deploy_state != "purged") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__mariadb__dependent_users [[[
+#
+# Configuration of the foodsoft database user managed by the debops.mariadb_ role.
+foodsoft__mariadb__dependent_users:
+
+  - database: '{{ foodsoft__database_name }}'
+    state: '{{ "present" if (foodsoft__deploy_state == "present") else "absent" }}'
+    user: '{{ foodsoft__database_user }}'
+    password: '{{ foodsoft__database_password }}'
+
+                                                                   # ]]]
+# .. envvar:: foodsoft__nginx__dependent_servers [[[
+#
+# Configuration of the foodsoft nginx server, used by the debops.nginx_
+# Ansible role.
+foodsoft__nginx__dependent_servers:
+
+  - name: '{{ foodsoft__fqdn }}'
+    filename: 'debops.foodsoft'
+    by_role: 'debops-contrib.foodsoft'
+    enabled: True
+    type: 'rails'
+    root: '{{ foodsoft__www_path }}'
+
+    # Foodsoft manages this by itself by default.
+    # TOOD: Should probably be disabled in Foodsoft so that DebOps can manage it.
+    hsts_enabled: False
+    frame_options: False
+    content_type_options: False
+    xss_protection: '{{ omit }}'
+
+    # Phusion Passenger options
+    passenger_user: '{{ foodsoft__user }}'
+    passenger_group: '{{ foodsoft__group }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
