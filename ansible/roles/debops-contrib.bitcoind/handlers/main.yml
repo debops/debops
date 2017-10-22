@@ -1,0 +1,8 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Restart bitcoind
+  systemd:
+    name: 'bitcoind'
+    state: 'restarted'
+  when: (not bitcoind__register_systemd_unit_state|changed and ansible_distribution_release not in ["trusty"])
