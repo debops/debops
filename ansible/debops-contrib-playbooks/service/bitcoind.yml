@@ -1,0 +1,24 @@
+---
+
+- name: Setup and manage bitcoind
+  hosts: [ 'debops_service_bitcoind' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ bitcoind__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ bitcoind__ferm__dependent_rules }}'
+
+    - role: debops-contrib.bitcoind
+      tags: [ 'role::bitcoind' ]

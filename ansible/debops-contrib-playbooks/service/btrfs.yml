@@ -1,0 +1,14 @@
+---
+
+- name: Manage Btrfs
+  hosts: [ 'debops_service_btrfs' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops-contrib.btrfs
+      tags: [ 'role::btrfs' ]
