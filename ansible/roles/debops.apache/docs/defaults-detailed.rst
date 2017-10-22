@@ -327,7 +327,6 @@ Refer to the `Apache Redirect directive documentation`_ for details.
 ``redirect_https``
   Optional, string.
   Redirect incoming requests on the HTTPS port to the given URL.
-  Redirect incoming requests on the HTTP port to the given URL.
 
 ``redirect_https_code``
   Optional, string/integer. Defaults to ``307`` (Temporary Redirect).
