@@ -1,0 +1,21 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Required configuration for debops.sshd [[[
+
+# Require the following cryptography methods as X2Go seems to only support a
+# subset of which OpenSSH does support.
+sshd__ciphers_additional: '{{ [ "aes256-ctr" ] if (x2go_server__deploy_state|d("present") == "present") else [] }}'
+sshd__kex_algorithms_additional: '{{ [ "curve25519-sha256@libssh.org" ] if (x2go_server__deploy_state|d("present") == "present") else [] }}'
+sshd__macs_additional: '{{ [ "hmac-sha1" ] if (x2go_server__deploy_state|d("present") == "present") else [] }}'
+
+# ]]]
+
+# Optional configuration for debops.sshd [[[
+
+# Enabled for performance reasons. X11 forwarding over SSH is not directly used.
+# http://wiki.x2go.org/doku.php/doc:faq:start#why_am_i_told_to_enable_x11_forwarding_with_x2go_i_thought_that_x2go_uses_nx-libs_instead_of_x11_forwarding
+# https://www.nomachine.com/AR05D00391
+sshd__x11_forwarding: 'yes'
+
+# ]]]
