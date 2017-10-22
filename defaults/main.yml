@@ -244,17 +244,6 @@ homeassistant__daemon_path: '{{ (homeassistant__home_path + "/prod_venv/bin/hass
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
-# .. envvar:: homeassistant__nginx__dependent_maps [[[
-#
-# Configuration of nginx maps, managed by the debops.nginx_ Ansible role.
-homeassistant__nginx__dependent_maps:
-
-  - name: 'debops.homeassistant'
-    map: '$http_upgrade $homeassistant_connection_upgrade'
-    default: 'upgrade'
-    mapping: '""      close;'
-
-                                                                   # ]]]
 # .. envvar:: homeassistant__nginx__dependent_upstreams [[[
 #
 # Configuration of the Home Assistant nginx upstream, used by the debops.nginx_
@@ -286,7 +275,7 @@ homeassistant__nginx__dependent_servers:
       proxy_redirect http:// https://;
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection $homeassistant_connection_upgrade;
+      proxy_set_header Connection $connection_upgrade;
 
 # ]]]
 # ]]]

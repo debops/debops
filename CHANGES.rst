@@ -20,3 +20,9 @@ Added
 ~~~~~
 
 - Initial coding and design. [ypid_]
+
+Changed
+~~~~~~~
+
+- Use default :command:`nginx` map used to upgrade HTTP connections to
+  WebSockets configured by debops.nginx_. [ypid_]
