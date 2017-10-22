@@ -1,0 +1,23 @@
+## {{ ansible_managed }}
+
+# Site-specific additions and overrides for {{ item.key }}.
+# For more details, please see /etc/apparmor.d/local/README.
+#
+
+{% macro apparmor__write_local_profile_part(scope, apparmor__local) %}{# ((( #}
+{% if apparmor__local[item.key] is defined %}
+## {{ scope }}. {{ '{{{' }}
+{%   for rules_group in apparmor__local[item.key] if (not rules_group.delete|d()) %}
+# {{ rules_group.comment | default('Uncommented rule group') }}{{ (" managed by role " + rules_group.by_role) if (rules_group.by_role|d()) else "" }}:
+{%     for rule in rules_group.rules %}
+{{ rule }},
+{%     endfor %}
+{%-  endfor %}
+## {{ '}}}' }}
+{% endif %}
+{%- endmacro %}{# ))) #}
+
+{{ apparmor__write_local_profile_part("Additions or overrides of system profiles managed by other roles", apparmor__local_dependent_config) }}
+{{ apparmor__write_local_profile_part("Global additions or overrides of system profiles", apparmor__local_config_global) }}
+{{ apparmor__write_local_profile_part("Host group additions or overrides of system profiles", apparmor__local_group_config) }}
+{{ apparmor__write_local_profile_part("Host additions or overrides of system profiles", apparmor__local_host_config) }}

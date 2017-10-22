@@ -1,0 +1,19 @@
+---
+
+- name: Install and configure AppArmor
+  hosts: [ 'debops_service_apparmor' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.grub
+      grub_dependent_kernel_options: '{{ apparmor__kernel_options }}'
+      when: (not (apparmor__manage_grub|d() | bool))
+      tags: [ 'role::grub' ]
+
+    - role: debops-contrib.apparmor
+      tags: [ 'role::apparmor' ]
