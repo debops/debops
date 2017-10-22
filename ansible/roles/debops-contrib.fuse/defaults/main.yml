@@ -1,0 +1,94 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.fuse default variables [[[
+# =========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Required packages [[[
+# ---------------------
+
+# .. envvar:: fuse_base_packages [[[
+#
+# List of base packages to install.
+fuse_base_packages: [ 'fuse' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Fuse options [[[
+# ----------------
+
+# .. envvar:: fuse_mount_max [[[
+#
+# Set the maximum number of FUSE mounts allowed to non-root users.
+# Set to ``default`` to use the number chosen by your distribution which is
+# 1000 in Debian Jessie.
+fuse_mount_max: 'default'
+
+                                                                   # ]]]
+# .. envvar:: fuse_user_allow_other [[[
+#
+# Allow non-root users to specify the allow_other or allow_root mount options.
+fuse_user_allow_other: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Fuse hardening [[[
+# ------------------
+
+# .. envvar:: fuse_restrict_access [[[
+#
+# Should access to fuse and :file:`/dev/fuse` be restricted to root and the
+# members of the fuse group?
+# Debian used to have a group called fuse and users which should be allowed to use FUSE needed to be in that group.
+# As of Debian Jessie, no group is being created by default and every user has access to fuse.
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=733312
+# This was done to make it work by default with other packages which are based on FUSE.
+fuse_restrict_access: False
+
+                                                                   # ]]]
+# .. envvar:: fuse_group [[[
+#
+# Name of the system group ob :file:`/dev/fuse`.
+# Only users who are members of the :envvar:`fuse_group` and ``root`` are allowed
+# to use FUSE when :envvar:`fuse_restrict_access` is ``True``.
+fuse_group: 'fuse'
+
+                                                                   # ]]]
+# .. envvar:: fuse_permissions [[[
+#
+# Unix permissions of :file:`/dev/fuse`.
+# It defaults to ``0600`` so that only the file owner (``root``) and users in
+# the :envvar:`fuse_group` have access to FUSE.
+fuse_permissions: '0660'
+
+                                                                   # ]]]
+# .. envvar:: fuse_users [[[
+#
+# Which users should be allowed to use FUSE?
+# Only takes affect when :envvar:`fuse_restrict_access` is ``True``.
+# This variable is intended to be used in Ansible’s global inventory.
+fuse_users: []
+
+                                                                   # ]]]
+# .. envvar:: fuse_users_host_group [[[
+#
+# Which users should be allowed to use FUSE?
+# Only takes affect when :envvar:`fuse_restrict_access` is ``True``.
+# This variable is intended to be used in a host inventory group of Ansible
+# (only one host group is supported).
+fuse_users_host_group: []
+
+                                                                   # ]]]
+# .. envvar:: fuse_users_host [[[
+#
+# Which users should be allowed to use FUSE?
+# Only takes affect when :envvar:`fuse_restrict_access` is ``True``.
+# This variable is intended to be used in the inventory of hosts.
+fuse_users_host: []
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
