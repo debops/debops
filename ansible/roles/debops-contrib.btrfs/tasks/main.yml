@@ -1,0 +1,46 @@
+---
+
+- name: Combine BTRFS subvolumes
+  set_fact:
+    btrfs__subvolumes_combined: '{{
+                btrfs__subvolumes
+      | combine(btrfs__subvolumes_host_group)
+      | combine(btrfs__subvolumes_host) }}'
+
+- name: Ensure required packages are installed
+  apt:
+    name: '{{ item }}'
+    state: 'latest'
+    install_recommends: False
+  with_flattened: '{{ btrfs__base_packages }}'
+  tags: [ 'role::btrfs:pkts' ]
+
+- name: Create BTRFS subvolumes
+  btrfs_subvolume:
+    state: 'present'
+    path: '{{ item.key }}'
+    qgroups: '{{ item.value.qgroups|d(omit) }}'
+    commit: '{{ item.value.commit|d(omit) }}'
+    recursive: '{{ item.value.recursive|d(omit) }}'
+  when: (item.value.state|d("present") == "present")
+  with_dict: '{{ btrfs__subvolumes_combined }}'
+  tags: [ 'role::btrfs:subvolumes' ]
+
+- name: Remove BTRFS subvolumes
+  btrfs_subvolume:
+    state: 'absent'
+    path: '{{ item.key }}'
+  when: (item.value.state|d("present") != "present")
+  with_dict: '{{ btrfs__subvolumes_combined }}'
+  tags: [ 'role::btrfs:subvolumes' ]
+
+- name: Set directory permissions
+  file:
+    path:   '{{ item.key }}'
+    state:  'directory'
+    owner:  '{{ item.value.dir_owner  | d(omit) }}'
+    group:  '{{ item.value.dir_group  | d(omit) }}'
+    mode:   '{{ item.value.dir_mode   | d(omit) }}'
+  when: (item.value.state|d("present") == "present")
+  with_dict: '{{ btrfs__subvolumes_combined }}'
+  tags: [ 'role::btrfs:subvolumes' ]
