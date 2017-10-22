@@ -1,0 +1,282 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.homeassistant default variables [[[
+# ==================================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: homeassistant__base_packages [[[
+#
+# List of base packages to install.
+homeassistant__base_packages:
+  - 'python3-dev'
+  - 'python3-pip'
+
+  - '{{ ("python3-virtualenv"
+         if (ansible_distribution_release in [ "wheezy", "precise" ])
+         else "virtualenv")
+        if (homeassistant__virtualenv|bool and ansible_distribution_release not in ["trusty"])
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__packages [[[
+#
+# List of additional packages to install.
+homeassistant__packages: []
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__dependency_python_packages [[[
+#
+# List of Home Assistant core dependency packages.
+# This refers to Debian system packages and not Python packages.
+homeassistant__dependency_python_packages:
+  - 'python3-requests'
+  - 'python3-yaml'
+  - 'python3-tz'
+  - 'python3-jinja2'
+  - 'python3-voluptuous'
+
+  ## Not available in Debian jessie. Debian stretch ships with Python 3.5 which
+  # should eliminate the need for it.
+  # - 'python3-typing'
+
+  - '{{ ["python3-aiohttp"]
+        if (ansible_distribution_release not in ["trusty"])
+        else [] }}'
+  - '{{ ["python3-async-timeout"]
+        if (ansible_distribution == "Debian" and ansible_distribution_major_version|int >= 9)
+        else [] }}'
+  - 'python3-chardet'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__optional_python_packages [[[
+#
+# List of optional packages.
+# This refers to Debian system packages and not Python packages.
+homeassistant__optional_python_packages:
+  - '{{ ["python3-colorlog"]
+        if (ansible_distribution_release not in ["trusty"])
+        else [] }}'
+  - 'libffi-dev'
+  - 'libssl-dev'
+  - 'python3-crypto'
+  - 'python3-cryptography'
+  - 'python3-pyparsing'
+  - 'python3-appdirs'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__combined_packages [[[
+#
+# List of all system packages which will be installed by the role.
+homeassistant__combined_packages: '{{ (
+      homeassistant__base_packages +
+      homeassistant__packages +
+      (homeassistant__dependency_python_packages if (not homeassistant__virtualenv|bool) else []) +
+      (homeassistant__optional_python_packages if (not homeassistant__virtualenv|bool) else [])
+    ) | unique | sort }}'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that Home Assistant is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that Home Assistant is uninstalled. Not fully supported yet.
+#
+homeassistant__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# FQDN and DNS addresses [[[
+# --------------------------
+
+# .. envvar:: homeassistant__fqdn [[[
+#
+# The Fully Qualified Domain Name of the Home Assistant instance. This address is
+# used to configure the webserver frontend.
+homeassistant__fqdn: 'ha.{{ homeassistant__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__domain [[[
+#
+# Domain that will be configured for the Home Assistant instance.
+homeassistant__domain: '{{ ansible_local.core.domain
+                           if (ansible_local|d() and ansible_local.core|d() and
+                               ansible_local.core.domain|d())
+                           else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Reverse proxy configuration [[[
+# -------------------------------
+
+# .. envvar:: homeassistant__verify_client_certificate [[[
+#
+# Should a valid client certificate be required to access Home Assistant?
+homeassistant__verify_client_certificate: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: homeassistant__home_path [[[
+#
+# The Home Assistant system account home directory.
+homeassistant__home_path: '{{ (ansible_local.root.home
+                               if (ansible_local|d() and ansible_local.root|d() and
+                                   ansible_local.root.home|d())
+                               else "/var/local") + "/" + homeassistant__user }}'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__virtualenv_path [[[
+#
+# Path to the virtualenv where Home Assistant will be installed.
+homeassistant__virtualenv_path: '{{ homeassistant__home_path + "/prod_venv" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# System user and group [[[
+# -------------------------
+
+# .. envvar:: homeassistant__user [[[
+#
+# System UNIX account under which Home Assistant is run.
+homeassistant__user: 'homeassistant'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__group [[[
+#
+# System UNIX group used by Home Assistant.
+homeassistant__group: 'homeassistant'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__groups [[[
+#
+# List of additional system groups of the system UNIX account.
+# The ``dialout`` group grants accesses to devices typically used for home
+# automation which can be found under :file:`/dev/ttyACM*` for example.
+# If you don’t use such devices, you can remove the group from the list.
+homeassistant__groups: [ 'dialout' ]
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__gecos [[[
+#
+# Contents of the GECOS field set for the Home Assistant account.
+homeassistant__gecos: 'Home Assistant'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__shell [[[
+#
+# The default shell set on the Home Assistant account.
+homeassistant__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Home Assistant sources and deployment [[[
+# -----------------------------------------
+
+# .. envvar:: homeassistant__virtualenv [[[
+#
+# Should a Python virtualenv be created and used for Home Assistant deployment?
+# Disabled by default so that the Python dependencies packaged by Debian can be used.
+homeassistant__virtualenv: True
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__release_channel [[[
+#
+# Which release channel should be installed?
+#
+# Choices:
+#
+# * ``release``: Latest release.
+# * ``develop``: Latest development version.
+#
+homeassistant__release_channel: 'release'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__git_repo [[[
+#
+# The URI of the Home Assistant git source repository.
+homeassistant__git_repo: 'https://github.com/home-assistant/home-assistant.git'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__git_version [[[
+#
+# The git branch or tag which will be installed.
+# Refer to the `releasing documentation
+# <https://home-assistant.io/developers/releasing/>`__ for details.
+homeassistant__git_version: '{{ "master" if (homeassistant__release_channel in ["release"]) else "dev" }}'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__git_dest [[[
+#
+# Path where the Home Assistant sources will be checked out (installation path).
+homeassistant__git_dest: '{{ homeassistant__home_path + "/home-assistant" }}'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__git_recursive [[[
+#
+# Should the git repository be cloned recursively?
+homeassistant__git_recursive: True
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__git_update [[[
+#
+# Should new revisions be retrieved from the origin repository?
+homeassistant__git_update: True
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__daemon_path [[[
+#
+# File path where the Home Assistant console script is located.
+homeassistant__daemon_path: '{{ (homeassistant__home_path + "/prod_venv/bin/hass")
+                                if (homeassistant__virtualenv|bool)
+                                else (homeassistant__home_path + "/.local/bin/hass") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: homeassistant__nginx__dependent_upstreams [[[
+#
+# Configuration of the Home Assistant nginx upstream, used by the debops.nginx_
+# Ansible role.
+homeassistant__nginx__dependent_upstreams:
+
+  - name: 'homeassistant'
+    type: 'default'
+    state: '{{ "present" if (homeassistant__deploy_state == "present") else "absent" }}'
+    enabled: True
+    server: 'localhost:8123'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__nginx__dependent_servers [[[
+#
+# Configuration of the Home Assistant nginx server, used by the debops.nginx_
+# Ansible role.
+homeassistant__nginx__dependent_servers:
+
+  - name: '{{ homeassistant__fqdn }}'
+    filename: 'debops.homeassistant'
+    by_role: 'debops-contrib.homeassistant'
+    state: '{{ "present" if (homeassistant__deploy_state == "present") else "absent" }}'
+    type: 'proxy'
+    ssl_verify_client: '{{ homeassistant__verify_client_certificate|bool }}'
+    options: 'proxy_buffering off;'
+    proxy_pass: 'http://homeassistant'
+    proxy_options: |
+      proxy_redirect http:// https://;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+
+# ]]]
+# ]]]
+# ]]]
