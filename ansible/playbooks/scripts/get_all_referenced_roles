@@ -8,6 +8,6 @@ cd "$( dirname "${BASH_SOURCE[0]}" )" || exit
 ## Get all files, independently what the current subdirectory is.
 cd "$(git rev-parse --show-toplevel)" || exit
 (
-	git ls-files -z | xargs --null -I '{}' find '{}' -type f -name '*.yml' -print0 | xargs --null egrep --no-filename -e '^\s{4}-\s?role:\s?[^/]+$$' | sed --regexp-extended 's/.*?:\s+//'
-	test -r galaxy/requirements-manual.txt && grep --invert-match '^\s*#' galaxy/requirements-manual.txt
+    git ls-files -z | xargs --null -I '{}' find '{}' -type f -name '*.yml' -print0 | xargs --null egrep --no-filename -e '^\s{4}-\s?role:\s?[^/]+$$' | sed --regexp-extended 's/.*?:\s+//'
+    test -r galaxy/requirements-manual.txt && grep --invert-match '^\s*#' galaxy/requirements-manual.txt
 ) | sort -u

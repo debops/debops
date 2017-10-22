@@ -17,28 +17,28 @@ set -o nounset -o pipefail -o errexit
 mode="${1:-help}"
 
 case $mode in
-	help) echo "Hope this help is useful :)"; cat "$0";;
-	prepare-repo)
+    help) echo "Hope this help is useful :)"; cat "$0";;
+    prepare-repo)
 
-		cd "$(git rev-parse --show-toplevel)" || exit
+        cd "$(git rev-parse --show-toplevel)" || exit
 
-		role_full_name="$(basename "$PWD")"
-		target_dir="ansible/roles/${role_full_name}"
+        role_full_name="$(basename "$PWD")"
+        target_dir="ansible/roles/${role_full_name}"
 
-		mkdir -p "$target_dir"
-		git mv -k ./* ./.gitignore ./.travis.yml "$target_dir"
-		git commit -m 'Move role code to a subdirectory'
+        mkdir -p "$target_dir"
+        git mv -k ./* ./.gitignore ./.travis.yml "$target_dir"
+        git commit -m 'Move role code to a subdirectory'
 
-	;;
+    ;;
 
-	merge)
+    merge)
 
-		repo_path="${2:-}"
-		git_remote_name="$(basename "$repo_path")"
+        repo_path="${2:-}"
+        git_remote_name="$(basename "$repo_path")"
 
-		git remote add -f "$git_remote_name" "${repo_path}" || true
-		git fetch "$git_remote_name"
-		git merge --no-ff "$git_remote_name/master"
+        git remote add -f "$git_remote_name" "${repo_path}" || true
+        git fetch "$git_remote_name"
+        git merge --no-ff "$git_remote_name/master"
 
-	;;
+    ;;
 esac
