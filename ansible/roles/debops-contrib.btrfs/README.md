@@ -12,6 +12,8 @@ The `debops-contrib.btrfs` Ansible role allows you manage your Btrfs.
 Currently the role supports management of Btrfs subvolumes.
 More can be implemented as needed.
 
+Note: Install https://github.com/ypid/ansible-btrfs-subvolume manually for now.
+
 ### Installation
 
 This role requires at least Ansible `v2.1.3`. To install it, run:
