@@ -1,0 +1,14 @@
+---
+
+- name: Install and configure Filesystem in Userspace (FUSE)
+  hosts: [ 'debops_service_fuse' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops-contrib.fuse
+      tags: [ 'role::fuse' ]

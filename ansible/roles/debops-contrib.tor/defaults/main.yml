@@ -1,0 +1,48 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.tor default variables [[[
+# ==========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: tor__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that Tor is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that Tor is uninstalled and it's configuration is removed.
+#
+tor__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: tor__ferm__dependent_rules [[[
+#
+# Configuration for debops.ferm_ firewall. It should be added when
+# debops.ferm_ role is used to configure bitcoind firewall rules.
+tor__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 993, 465 ]
+    accept_any: True
+    weight: '40'
+    by_role: 'debops-contrib.tor'
+    name: 'tor'
+    rule_state: '{{ "present" if (tor__deploy_state != "purged") else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

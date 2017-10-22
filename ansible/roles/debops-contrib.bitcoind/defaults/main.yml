@@ -1,0 +1,279 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.bitcoind default variables [[[
+# =============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: bitcoind__base_packages [[[
+#
+# List of base packages to install.
+bitcoind__base_packages:
+  - 'bitcoind'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that bitcoind is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that bitcoind is uninstalled and it's configuration is removed.
+#   This mode is not fully tested and might not remove all "traces".
+#
+bitcoind__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT repository configuration [[[
+# --------------------------------
+
+# .. envvar:: bitcoind__upstream_repository [[[
+#
+# APT URLs of the upstream Bitcoin repositories based on the OS distribution.
+bitcoind__upstream_repository:
+  Ubuntu: 'ppa:bitcoin/bitcoin'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__upstream_key_fingerprint [[[
+#
+# The OpenPGP key fingerprint for the key by which the upstream APT
+# repository is signed.
+bitcoind__upstream_key_fingerprint: 'C70E F1F0 305A 1ADB 9986 DBD8 D46F 4542 8842 CE5E'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
+# -------------------------
+
+# .. envvar:: bitcoind__allow [[[
+#
+# Allow access to bitcoind from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+bitcoind__allow: []
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__group_allow [[[
+#
+# Allow access to bitcoind from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+bitcoind__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__host_allow [[[
+#
+# Allow access to bitcoind from specified IP addresses or CIDR networks.
+# If not specified, allows access from all networks.
+bitcoind__host_allow: []
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__interfaces [[[
+#
+# List of network interfaces from which to allow access to bitcoind.
+# If not specified, allows access from all interfaces.
+bitcoind__interfaces: []
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__port [[[
+#
+# Bitcoin P2P TCP port.
+bitcoind__port: '{{ 8333 if (not bitcoind__testnet|bool) else 18333 }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__rpc_port [[[
+#
+# Bitcoin JSON-RPC TCP port.
+bitcoind__rpc_port: '{{ 8332 if (not bitcoind__testnet|bool) else 18332 }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__max_connections [[[
+#
+# Maximum number of inbound+outbound connections.
+# ``{{ omit }}`` will not configure this option explicitly which will cause
+# bitcoind to fallback to it’s compiled in default.
+# Refer to :manpage:`bitcoind(1)` for details.
+bitcoind__max_connections: '{{ omit }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__listen_onion [[[
+#
+# Automatically create Tor hidden service.
+bitcoind__listen_onion: True
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__tor_control [[[
+#
+# Tor control port to use if onion listening enabled.
+bitcoind__tor_control: '[::1]:9051'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__tor_password [[[
+#
+# Tor control port password. Default is an empty password.
+bitcoind__tor_password: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# File and directory paths [[[
+# ----------------------------
+
+# .. envvar:: bitcoind__home_path [[[
+#
+# The bitcoind system account home directory.
+bitcoind__home_path: '{{ (ansible_local.root.home
+                          if (ansible_local|d() and ansible_local.root|d() and
+                              ansible_local.root.home|d())
+                          else "/var/local") + "/" + bitcoind__user }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__data_directory [[[
+#
+# The bitcoind data directory.
+bitcoind__data_directory: '{{ bitcoind__home_path + "/.bitcoin" }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__pid_file_path [[[
+#
+# The bitcoind PID file path.
+bitcoind__pid_file_path: '{{ bitcoind__data_directory + "/bitcoind.pid" }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__config_dir_path [[[
+#
+# The bitcoind config directory path.
+# Not using :file:`/etc/bitcoin` because Bitcoin tools do not expect this.
+bitcoind__config_dir_path: '{{ bitcoind__data_directory }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__config_file_path [[[
+#
+# The bitcoind config file path.
+bitcoind__config_file_path: '{{ bitcoind__config_dir_path + "/bitcoin.conf" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# System user and group [[[
+# -------------------------
+
+# .. envvar:: bitcoind__user [[[
+#
+# System UNIX account under which bitcoind is run.
+bitcoind__user: 'bitcoind'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__group [[[
+#
+# System UNIX group used by bitcoind.
+bitcoind__group: 'bitcoind'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__gecos [[[
+#
+# Contents of the GECOS field set for the bitcoind account.
+bitcoind__gecos: 'Bitcoin distributed currency'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__shell [[[
+#
+# The default shell set on the bitcoind account.
+bitcoind__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# bitcoind configuration [[[
+# --------------------------
+
+# .. envvar:: bitcoind__testnet [[[
+#
+# Run on the test network instead of the real Bitcoin network.
+bitcoind__testnet: False
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__txindex [[[
+#
+# Maintain a full transaction index, used by the ``getrawtransaction`` RPC call.
+bitcoind__txindex: False
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__max_mem_pool_limit [[[
+#
+# The float variable used to limit the maximum RAM available for the
+# transaction memory pool, by default ~50 % of system memory.
+bitcoind__max_mem_pool_limit: 0.5
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__max_mem_pool [[[
+#
+# Keep the transaction memory pool below the given number of megabytes.
+bitcoind__max_mem_pool: '{{ (ansible_memtotal_mb * bitcoind__max_mem_pool_limit) | round | int }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__max_upload_target [[[
+#
+# Tries to keep outbound traffic under the given target (in MiB per 24h),
+# ``0`` means no limit.
+bitcoind__max_upload_target: 0
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__print_to_console [[[
+#
+# Send trace/debug info to console instead of debug.log file.
+# Can be set to ``True`` so that logging can be handled by systemd.
+bitcoind__print_to_console: False
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__disable_wallet [[[
+#
+# Do not load the wallet and disable wallet RPC calls.
+bitcoind__disable_wallet: True
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__custom_options [[[
+#
+# Custom options to append to the :file:`bitcoin.conf` file.
+bitcoind__custom_options: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: bitcoind__etc_services__dependent_list [[[
+#
+# Configuration for the debops.etc_services_ role which registers port
+# numbers for bitcoind.
+bitcoind__etc_services__dependent_list:
+
+  - name: 'bitcoin'
+    port: '{{ bitcoind__port }}'
+    comment: 'bitcoin P2P'
+    state: '{{ "present" if (bitcoind__deploy_state != "purged") else "absent" }}'
+
+  - name: 'bitcoin-rpc'
+    port: '{{ bitcoind__rpc_port }}'
+    comment: 'bitcoin JSON-RPC'
+    state: '{{ "present" if (bitcoind__deploy_state != "purged") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: bitcoind__ferm__dependent_rules [[[
+#
+# Configuration for debops.ferm_ firewall. It should be added when
+# debops.ferm_ role is used to configure bitcoind firewall rules.
+bitcoind__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'bitcoin' ]
+    saddr: '{{ bitcoind__allow + bitcoind__group_allow + bitcoind__host_allow }}'
+    accept_any: True
+    interface: '{{ bitcoind__interfaces }}'
+    weight: '40'
+    by_role: 'debops-contrib.bitcoind'
+    name: 'bitcoin_p2p'
+    rule_state: '{{ "present" if (bitcoind__deploy_state != "purged") else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

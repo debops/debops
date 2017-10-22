@@ -1,0 +1,171 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.etckeeper default variables [[[
+# ==============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Package management options [[[
+# ------------------------------
+
+# .. envvar:: etckeeper__highlevel_package_manager [[[
+#
+# The high-level package manager that's being used.
+# (:command:`apt`, :command:`pacman-g2`, :command:`yum`, :command:`dnf`, :command:`zypper` etc).
+# This will only be used when your distribution was not able to predefine this.
+etckeeper__highlevel_package_manager: '{{ ansible_pkg_mgr }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__lowlevel_package_manager [[[
+#
+# The low-level package manager that's being used.
+# (:command:`dpkg`, :command:`rpm`, :command:`pacman`, :command:`pacman-g2`, etc)
+# This will only be used when your distribution was not able to predefine this.
+etckeeper__lowlevel_package_manager: |
+  {{ etckeeper__highlevel_to_lowlevel_package_manager_mapping[etckeeper__highlevel_package_manager]|d("") }}
+
+# ]]]
+# ]]]
+# Version control ignore list [[[
+# -------------------------------
+
+# .. envvar:: etckeeper__ignore_role_list [[[
+#
+# Role defaults list of files and directories which should not be kept under version control.
+etckeeper__ignore_role_list:
+  ## There is no benefit in tracking Tor keys and it is a potential security vulnerability.
+  - 'tor/keys/'
+
+  ## Same with SSH host keys.
+  - 'ssh/ssh_host_*_key'
+
+  - 'X11/xorg.conf.backup'
+
+  ## Files are generated and managed by libvirt and it is believed that there
+  ## is very little benefit in tracking these files.
+  - 'apparmor.d/libvirt/*.files'
+
+  - 'zfs/zpool.cache'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__ignore_list [[[
+#
+# Global list of files and directories which should not be kept under version control.
+etckeeper__ignore_list: []
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__ignore_host_group_list [[[
+#
+# Host group list of files and directories which should not be kept under version control.
+etckeeper__ignore_host_group_list: []
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__ignore_host_list [[[
+#
+# Host list of files and directories which should not be kept under version control.
+etckeeper__ignore_host_list: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Version control options [[[
+# ---------------------------
+
+# .. envvar:: etckeeper__vcs [[[
+#
+# Which VCS to use to version :file:`/etc/`.
+# Choices are:
+#
+# * :command:`git` (default)
+# * :command:`hg`
+# * :command:`bzr`
+# * :command:`darcs`
+#
+# Note that any other VCS than :command:`git` has not really been tested. You might
+# have to fix some bugs in this role when you want to use them.
+etckeeper__vcs: 'git'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__vcs_user [[[
+#
+# User for :program:`etckeeper` to use in commits if no interactive user was
+# detected.
+# Defaults to an empty string which results in no changes regarding the user
+# use by the VCS.
+etckeeper__vcs_user: ''
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__vcs_email [[[
+#
+# Email address for :program:`etckeeper` to use in commits if no interactive user was
+# detected.
+#
+# Example:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    etckeeper__vcs_email: '{{ etckeeper__vcs_user + "@" + ansible_fqdn }}'
+#
+# Defaults to an empty string which results in no changes regarding the email
+# address use by the VCS.
+etckeeper__vcs_email: ''
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__git_commit_options [[[
+#
+# Options passed to git commit when run by etckeeper.
+etckeeper__git_commit_options: ''
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__hg_commit_options [[[
+#
+# Options passed to hg commit when run by etckeeper.
+etckeeper__hg_commit_options: ''
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__bzr_commit_options [[[
+#
+# Options passed to bzr commit when run by etckeeper.
+etckeeper__bzr_commit_options: ''
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__darcs_commit_options [[[
+#
+# Options passed to darcs record when run by etckeeper.
+etckeeper__darcs_commit_options: '-a'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__avoid_daily_autocommits [[[
+#
+# Uncomment to avoid :program:`etckeeper` committing existing changes
+# to :file:`/etc` automatically once per day.
+etckeeper__avoid_daily_autocommits: False
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__avoid_special_file_warning [[[
+#
+# Uncomment the following to avoid special file warning
+# (the option is enabled automatically by cronjob regardless).
+etckeeper__avoid_special_file_warning: False
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__avoid_commit_before_install [[[
+#
+# Uncomment the following to avoid special file warning
+# (the option is enabled automatically by cronjob regardless).
+etckeeper__avoid_commit_before_install: False
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__push_remote [[[
+#
+# To push each commit to a remote, put the name of the remote here.
+# (eg, "origin" for git). Space-separated lists of multiple remotes
+# also work (eg, "origin gitlab github" for git).
+etckeeper__push_remote: ''
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

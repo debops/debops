@@ -1,0 +1,14 @@
+## {{ ansible_managed }}
+
+## Variables defined here may not be limited to variables dealing with the home directory.
+{% macro apparmor__write_tunable_profile_part(scope, apparmor__tunables) %}{# ((( #}
+{% if apparmor__tunables|d() and apparmor__tunables is string %}
+## {{ scope }}. {{ '{{{' }}
+{{ apparmor__tunables }}
+## {{ '}}}' }}
+{% endif %}
+{%- endmacro %}{# ))) #}
+
+{{ apparmor__write_tunable_profile_part("Global tunables", apparmor__global_tunables) }}
+{{ apparmor__write_tunable_profile_part("Host group tunables", apparmor__group_tunables) }}
+{{ apparmor__write_tunable_profile_part("Host tunables", apparmor__host_tunables) }}

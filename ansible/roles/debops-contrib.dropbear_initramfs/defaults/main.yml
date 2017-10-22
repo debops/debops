@@ -1,0 +1,222 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops-contrib.dropbear_initramfs default variables [[[
+# =======================================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: dropbear_initramfs__base_packages [[[
+#
+# List of base packages to install.
+#
+# Supported versions:
+#
+# * ``dropbear-initramfs``
+# * ``dropbear``
+#
+dropbear_initramfs__base_packages:
+  - '{{ "dropbear"
+        if (
+          (ansible_distribution == "Debian" and ansible_distribution_release in ["jessie"]) or
+          (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["precise", "trusty"])
+        )
+        else "dropbear-initramfs" }}'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__packages [[[
+#
+# List of additional packages to install.
+dropbear_initramfs__packages: []
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that dropbear is configured in the initramfs to allow
+#   ssh connections.
+#
+# ``absent``
+#   Ensure that dropbear and related configuration maintained by this role are
+#   absent.
+#
+dropbear_initramfs__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# Simple initramfs network [[[
+# ----------------------------
+
+# Refer to https://www.kernel.org/doc/Documentation/filesystems/nfs/nfsroot.txt
+# for support configuration options.
+#
+# Note that the ``IP`` kernel parameter as of Debian jessie only supports legacy
+# IPv4. But don’t worry, the role has you covered. Refer to
+# :envvar:`dropbear_initramfs__interfaces`.
+
+# .. envvar:: dropbear_initramfs__network_autoconf [[[
+#
+# Method to use for autoconfiguration. Use ``off`` or ``none`` for manual
+# network configuration (see below).
+dropbear_initramfs__network_autoconf: 'dhcp'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__network_device [[[
+#
+# Default network device.
+dropbear_initramfs__network_device: 'eth0'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__network_address [[[
+#
+# Manual network address to set.
+dropbear_initramfs__network_address: '{{ ansible_default_ipv4.address }}'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__network_netmask [[[
+#
+# Manual subnet mask to set.
+dropbear_initramfs__network_netmask: '{{ ansible_default_ipv4.netmask }}'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__network_gateway [[[
+#
+# Manual gateway to set.
+dropbear_initramfs__network_gateway: '{{ ansible_default_ipv4.gateway }}'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__network_manual [[[
+#
+# The ``IP`` kernel parameter used when
+# :envvar:`dropbear_initramfs__network_autoconf` is disabled.
+#
+# The `ipwrap` filter causes IPv6 address to work on some platforms.
+# Refer to: https://serverfault.com/questions/445296/is-there-a-linux-kernel-boot-parameter-to-configure-an-ipv6-address/701451#701451
+dropbear_initramfs__network_manual: '{{
+  (dropbear_initramfs__network_address|ipwrap) + "::" +
+  (dropbear_initramfs__network_gateway|ipwrap) + ":" +
+  dropbear_initramfs__network_netmask + "::" +
+  dropbear_initramfs__network_device + ":none" }}'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__network [[[
+#
+# The ``IP`` kernel parameter as it is configured by the role.
+dropbear_initramfs__network: '{{ dropbear_initramfs__network_manual
+                                 if (dropbear_initramfs__network_autoconf in ["off", "none"])
+                                 else dropbear_initramfs__network_autoconf }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Complex initramfs network [[[
+# -----------------------------
+
+# These variables are dictionaries with additional network configuration.
+# See :ref:`dropbear_initramfs__ref_interfaces` documentation for more details.
+
+# .. envvar:: dropbear_initramfs__interfaces [[[
+#
+# Dictionary which holds the configuration of additional network configuration
+# for all hosts in the Ansible inventory.
+dropbear_initramfs__interfaces: {}
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__group_interfaces [[[
+#
+# Dictionary which holds the configuration of additional network configuration
+# for hosts in a specific Ansible inventory group.
+dropbear_initramfs__group_interfaces: {}
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__host_interfaces [[[
+#
+# Dictionary which holds the configuration of additional network configuration
+# for specific hosts in the Ansible inventory.
+dropbear_initramfs__host_interfaces: {}
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__combined_interfaces [[[
+#
+# Dictionary which combines all of the other network interface
+# configuration variables and is used in the role tasks and templates to
+# generate the configuration.
+dropbear_initramfs__combined_interfaces: '{{ lookup("template", "lookup/dropbear_initramfs__combined_interfaces.j2", convert_data=False) | from_yaml }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Initramfs generation [[[
+# ------------------------
+
+# .. envvar:: dropbear_initramfs__update_options [[[
+#
+# Additional options for the :command:`update-initramfs` command.
+# The default is to regenerate the initramfs for all installed kernel versions.
+dropbear_initramfs__update_options: '-k all'
+                                                                   # ]]]
+                                                                   # ]]]
+# Authorized ssh keys [[[
+# -----------------------
+
+# See :ref:`dropbear_initramfs__ref_authorized_keys` for more details.
+
+# .. envvar:: dropbear_initramfs__authorized_keys [[[
+#
+# List of authorized ssh keys configured on all hosts in the Ansible inventory.
+dropbear_initramfs__authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__group_authorized_keys [[[
+#
+# List of authorized ssh keys configured on a group of hosts in the Ansible inventory.
+dropbear_initramfs__group_authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__host_authorized_keys [[[
+#
+# List of authorized ssh keys configured on specific hosts in the Ansible inventory.
+dropbear_initramfs__host_authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__combined_authorized_keys [[[
+#
+# Combines list of authorized ssh keys as used in the role tasks.
+dropbear_initramfs__combined_authorized_keys: '{{ dropbear_initramfs__authorized_keys +
+                                                  dropbear_initramfs__group_authorized_keys +
+                                                  dropbear_initramfs__host_authorized_keys }}'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__authorized_keys_options [[[
+#
+# List of default SSH options added to all public keys. If it's set to
+# ``{{ omit }}``, no options will be added automatically. The list of options can be
+# overridden by the ``item.options`` parameter.
+# Refer to :manpage:`dropbear(8)` for details.
+dropbear_initramfs__authorized_keys_options: '{{ omit }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: dropbear_initramfs__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ role.
+dropbear_initramfs__apt_preferences__dependent_list:
+
+  - package: 'dropbear-initramfs'
+    pin: 'release o=Debian,n=stretch'
+    priority: 800
+    reason: 'Stronger cryptography. dropbear 2014.65-1 only offers: hmac-sha1-96,hmac-sha1,hmac-md5'
+    by_role: 'debops-contrib.dropbear_initramfs'
+    state: '{{ "present"
+               if (("dropbear-initramfs" in dropbear_initramfs__base_packages) and
+                   (ansible_distribution == "Debian" and ansible_distribution_release in ["jessie"]))
+               else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

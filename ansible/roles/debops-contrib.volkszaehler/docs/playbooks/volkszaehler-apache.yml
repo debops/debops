@@ -1,0 +1,59 @@
+---
+
+- name: Setup and manage volkszaehler with Apache as webserver
+  hosts: [ 'debops_service_volkszaehler_apache' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops-contrib.volkszaehler/env
+      tags: [ 'role::volkszaehler', 'role::volkszaehler:env', 'role::mariadb' ]
+
+    - role: debops.apache/env
+      tags: [ 'role::apache', 'role::apache:env' ]
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::php:env','role::apt_preferences', 'role::logrotate' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ apache__ferm__dependent_rules }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb__dependent_databases: '{{ volkszaehler__mariadb__dependent_databases }}'
+      mariadb__dependent_users: '{{ volkszaehler__mariadb__dependent_users }}'
+      when: (volkszaehler__database == 'mariadb')
+
+    - role: debops.php
+      tags: [ 'role::php' ]
+      php__dependent_packages:
+        - '{{ volkszaehler__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ volkszaehler__php__dependent_pools }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: geerlingguy.composer
+      tags: [ 'role::composer' ]
+
+    - role: debops.apache
+      tags: [ 'role::apache' ]
+      apache__dependent_vhosts:
+        - '{{ volkszaehler__apache__dependent_vhosts }}'
+
+    - role: debops-contrib.volkszaehler
+      tags: [ 'role::volkszaehler' ]
