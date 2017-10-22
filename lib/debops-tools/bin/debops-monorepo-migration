@@ -1,0 +1,44 @@
+#!/bin/bash
+##
+## Copyright (C) 2017 Robin Schneider <ypid@riseup.net>
+## Copyright (C) 2017 DebOps https://debops.org/
+## @license GPLv3 <https://www.gnu.org/licenses/gpl-3.0.html>
+
+set -o nounset -o pipefail -o errexit
+
+## As the merge of repos into the DebOps monorepo might be repeated in future for missing repos.
+## Based on https://lists.debops.org/pipermail/debops-users/2017-October/000102.html
+## drybjed did it all manually :)
+# Usage examples:
+#
+# for repo in debops-contrib.*; do cd "$repo"; debops-monorepo-migration prepare-repo; cd ..; done
+# for repo in ~/.ansible/ypid-ansible-common/roles_ypid/debops-contrib.*; do cd "$repo"; echo debops-monorepo-migration merge "$repo"; cd ..; done
+
+mode="${1:-help}"
+
+case $mode in
+	help) echo "Hope this help is useful :)"; cat "$0";;
+	prepare-repo)
+
+		cd "$(git rev-parse --show-toplevel)" || exit
+
+		role_full_name="$(basename "$PWD")"
+		target_dir="ansible/roles/${role_full_name}"
+
+		mkdir -p "$target_dir"
+		git mv -k ./* ./.gitignore ./.travis.yml "$target_dir"
+		git commit -m 'Move role code to a subdirectory'
+
+	;;
+
+	merge)
+
+		repo_path="${2:-}"
+		git_remote_name="$(basename "$repo_path")"
+
+		git remote add -f "$git_remote_name" "${repo_path}" || true
+		git fetch "$git_remote_name"
+		git merge --no-ff "$git_remote_name/master"
+
+	;;
+esac
