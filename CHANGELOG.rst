@@ -37,6 +37,9 @@ Changed
   The script is backwards compatible and should work correctly with or without
   the ``debops-playbooks`` repository and roles installed.
 
+- The project repository is tested using :command:`pycodestyle` for compliance
+  with Python's `PEP8 Style Guide <https://pep8.org/>`_.
+
 Removed
 ~~~~~~~
 
