@@ -37,6 +37,12 @@ Changed
   The script is backwards compatible and should work correctly with or without
   the ``debops-playbooks`` repository and roles installed.
 
+Removed
+~~~~~~~
+
+- [DebOps playbooks] Remove the :file:`ipaddr.py` Ansible filter plugin, it is
+  now included in the Ansible core distribution.
+
 
 debops v0.6.0 - 2017-10-21
 --------------------------
