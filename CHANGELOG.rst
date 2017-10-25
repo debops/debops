@@ -37,6 +37,15 @@ Changed
   The script is backwards compatible and should work correctly with or without
   the ``debops-playbooks`` repository and roles installed.
 
+- The project repository is tested using :command:`pycodestyle` for compliance
+  with Python's `PEP8 Style Guide <https://pep8.org/>`_.
+
+Removed
+~~~~~~~
+
+- [DebOps playbooks] Remove the :file:`ipaddr.py` Ansible filter plugin, it is
+  now included in the Ansible core distribution.
+
 
 debops v0.6.0 - 2017-10-21
 --------------------------

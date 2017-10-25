@@ -27,7 +27,7 @@ def globmatch_filter(value, pattern):
     ''' Return string or list of items matching given glob pattern(s). '''
 
     if not isinstance(pattern, (list, tuple)):
-        pattern = [ pattern ]
+        pattern = [pattern]
 
     if isinstance(value, (list, tuple)):
         _ret = []
@@ -55,6 +55,5 @@ class FilterModule(object):
     ''' Return string or list of items matching given glob pattern(s). '''
     def filters(self):
         return {
-            'globmatch' : globmatch_filter
+            'globmatch': globmatch_filter
         }
-
