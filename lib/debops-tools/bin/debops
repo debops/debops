@@ -63,7 +63,7 @@ def write_config(filename, config):
 
 
 def gen_ansible_cfg(filename, config, project_root, playbooks_path,
-                    inventory_path):
+                    monorepo_path, inventory_path):
     # Generate Ansible configuration file
 
     def custom_paths(type):
@@ -71,6 +71,8 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
             # prepend value from .debops.cfg
             yield defaults[type]
         yield os.path.join(project_root, "ansible", type)
+        yield os.path.join(monorepo_path, "ansible", "plugins", type)
+        yield os.path.join(monorepo_path, "ansible", type)
         yield os.path.join(playbooks_path, type)
         yield os.path.join("/usr/share/ansible/", type)
 
@@ -86,6 +88,7 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
         defaults.get('roles_path'), # value from .debops.cfg or None
         os.path.join(project_root, "roles"),
         os.path.join(project_root, "ansible", "roles"),
+        os.path.join(monorepo_path, "ansible", "roles"),
         os.path.join(playbooks_path, "..", "roles"),
         os.path.join(playbooks_path, "roles"),
         "/etc/ansible/roles")))
@@ -109,7 +112,12 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
 def main(cmd_args):
     project_root = find_debops_project(required=True)
     config = read_config(project_root)
-    playbooks_path = find_playbookpath(config, project_root, required=True)
+    playbooks_path = find_playbookpath(config, project_root, required=False)
+    monorepo_path = find_monorepopath(config, project_root, required=True)
+
+    # Ensure that script works with least amount of changes
+    if playbooks_path is None:
+        playbooks_path = '/nonexistent'
 
     # Make sure required commands are present
     require_commands('ansible-playbook')
@@ -118,6 +126,8 @@ def main(cmd_args):
         tries = [
             (project_root, "playbooks", playbook),
             (project_root, "ansible", "playbooks", playbook),
+            (monorepo_path, "ansible", "playbooks", playbook),
+            (monorepo_path, "ansible", "playbooks", "playbooks", playbook),
             (playbooks_path, playbook),
             ]
 
@@ -126,7 +136,10 @@ def main(cmd_args):
                       config['paths']['playbooks_path'].split(PATHSEP)]
 
         for parts in tries:
-            play = os.path.join(*parts)
+            try:
+                play = os.path.join(*parts)
+            except Exception:
+                continue
             if os.path.isfile(play):
                 return play
 
@@ -152,7 +165,7 @@ def main(cmd_args):
     ansible_config_file = os.path.join(project_root, ANSIBLE_CONFIG_FILE)
     os.environ['ANSIBLE_CONFIG'] = os.path.abspath(ansible_config_file)
     gen_ansible_cfg(ansible_config_file, config, project_root, playbooks_path,
-                    inventory_path)
+                    monorepo_path, inventory_path)
 
     # Allow insecure SSH connections if requested
     if INSECURE:

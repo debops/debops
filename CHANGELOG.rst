@@ -29,6 +29,14 @@ Changed
   update the DebOps monorepo instead of separate ``debops-playbooks`` and
   DebOps roles git repositories. Existing installations shouldn't be affected.
 
+- [debops-tools] The :command:`debops` script will now include the DebOps
+  monorepo roles and playbooks in the generated :file:`ansible.cfg`
+  configuration. The monorepo roles and playbooks are preferred over the old
+  ``debops-playbooks`` ones.
+
+  The script is backwards compatible and should work correctly with or without
+  the ``debops-playbooks`` repository and roles installed.
+
 
 debops v0.6.0 - 2017-10-21
 --------------------------
