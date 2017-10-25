@@ -44,6 +44,7 @@ try:
 except ImportError:
     LookupBase = object
 
+
 class LookupModule(LookupBase):
 
     def __init__(self, basedir=None, **kwargs):
@@ -57,6 +58,8 @@ class LookupModule(LookupBase):
 
         for i, elem in enumerate(terms):
             if not isinstance(elem, (list, tuple)):
-                raise errors.AnsibleError("with_list expects a list (or a set) of lists or tuples, but elem %i is not")
+                raise errors.AnsibleError(
+                        "with_list expects a list (or a set) of lists"
+                        " or tuples, but elem %i is not")
 
         return terms
