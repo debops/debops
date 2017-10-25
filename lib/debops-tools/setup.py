@@ -6,53 +6,53 @@ import os
 SCRIPTS = [os.path.join('bin', n) for n in [
     'debops', 'debops-init', 'debops-task',
     'debops-defaults', 'debops-padlock', 'debops-update']]
-           # 'padlock.py'
 
 README = open('README.rst').read()
 
 setup(
-    name = "debops",
-    version = "0.5.0",
-    install_requires = ['netaddr', 'argparse', 'passlib'],
+    name="debops",
+    version="0.6.0",
+    install_requires=['netaddr', 'argparse', 'passlib', 'ansible'],
 
-    scripts = ['bin/debops',
-               'bin/debops-defaults',
-               'bin/debops-init',
-               'bin/debops-padlock',
-               'bin/debops-task',
-               'bin/debops-update'],
+    scripts=['bin/debops',
+             'bin/debops-defaults',
+             'bin/debops-init',
+             'bin/debops-padlock',
+             'bin/debops-task',
+             'bin/debops-update'],
 
-    packages = find_packages(exclude=['tests']),
-    package_data = {
+    packages=find_packages(exclude=['tests']),
+    package_data={
         'debops': ['padlock-script'],
         },
 
     # metadata for upload to PyPI
-    author = "DebOps Developers",
-    author_email = "debops-users@lists.debops.org",
-    description = "Your Debian-based data center in a box.",
-    long_description = README,
-    license = "GPL-3.0",
-    keywords = "ansible",
-    url          = "https://debops.org/",
-    download_url = "https://github.com/debops/debops/archive/v0.5.0.tar.gz",
-    classifiers = [
-    'Development Status :: 4 - Beta',
-    'Environment :: Console',
-    'Intended Audience :: System Administrators',
-    'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-    'Natural Language :: English',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
-    'Topic :: System :: Systems Administration',
+    author="DebOps Developers",
+    author_email="debops-users@lists.debops.org",
+    description="Your Debian-based data center in a box.",
+    long_description=README,
+    license="GPL-3.0",
+    keywords="ansible",
+    url="https://debops.org/",
+    download_url="https://github.com/debops/debops-tools"
+                 "/archive/v0.6.0.tar.gz",
+    classifiers=[
+                 'Development Status :: 4 - Beta',
+                 'Environment :: Console',
+                 'Intended Audience :: System Administrators',
+                 'License :: OSI Approved :: GNU General Public License v3 '
+                 'or later (GPLv3+)',
+                 'Natural Language :: English',
+                 'Operating System :: OS Independent',
+                 'Programming Language :: Python :: 2.7',
+                 'Topic :: System :: Systems Administration',
     ],
 
     # these are for easy_install (used by bdist_*)
-    zip_safe = True,
-#    entry_points = {
-#        "console_scripts": [
-#            "debops = debops.cmds.main:run",
-#        ],
-#    },
+    zip_safe=True
+    #    entry_points = {
+    #        "console_scripts": [
+    #            "debops = debops.cmds.main:run",
+    #        ],
+    #    },
 )

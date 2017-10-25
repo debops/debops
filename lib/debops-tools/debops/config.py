@@ -32,7 +32,8 @@ import ConfigParser
 __all__ = ['DEBOPS_CONFIG', 'read_config']
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2015 by Hartmut Goebel "
+"<h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 
@@ -41,6 +42,9 @@ DEBOPS_CONFIG = ".debops.cfg"
 DEFAULTS = """
 [paths]
 data-home: $XDG_DATA_HOME/debops
+
+# Default monorepo directory
+monorepo-path: %(data-home)s/debops
 
 # Default installation directory
 install-path: %(data-home)s/debops-playbooks
@@ -67,9 +71,9 @@ def _set_xdg_defaults():
     http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
     """
     for name, default in (
-        ('XDG_CONFIG_HOME', '~/.config'),
-        ('XDG_CONFIG_DIRS', '/etc/xdg'),
-        ('XDG_DATA_HOME', '~/.local/share')):
+            ('XDG_CONFIG_HOME', '~/.config'),
+            ('XDG_CONFIG_DIRS', '/etc/xdg'),
+            ('XDG_DATA_HOME', '~/.local/share')):
         if not os.environ.get(name):
             os.environ[name] = default
 
@@ -91,16 +95,20 @@ def _get_config_filenames():
         configdirs.reverse()
     return [os.path.join(d, 'debops.cfg') for d in configdirs]
 
+
 _configfiles = _get_config_filenames()
+
 
 def _expandpath(path):
     return os.path.expanduser(os.path.expandvars(path.strip()))
+
 
 def read_config(project_root):
     if project_root is None:
         configfiles = _configfiles
     else:
-        configfiles = _configfiles + [os.path.join(project_root, DEBOPS_CONFIG)]
+        configfiles = _configfiles + [os.path.join(project_root,
+                                                   DEBOPS_CONFIG)]
     cfgparser = ConfigParser.SafeConfigParser()
     cfgparser.readfp(cStringIO.StringIO(DEFAULTS))
     try:
@@ -110,7 +118,7 @@ def read_config(project_root):
     cfg = dict((sect, dict(cfgparser.items(sect)))
                for sect in cfgparser.sections())
     # expand vars and home-directory
-    for name in ('data-home', 'install-path'):
+    for name in ('data-home', 'monorepo-path', 'install-path'):
         cfg['paths'][name] = _expandpath(cfg['paths'][name])
     cfg['paths']['playbooks-paths'] = [
         _expandpath(p)
