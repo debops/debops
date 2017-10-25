@@ -221,7 +221,7 @@ class DebOpsAPI:
 
         try:
             version = g.describe('--abbrev=0', '--tags')
-        except:
+        except Exception:
             # Did not work on Travis test.
             # except git.exc.GitCommandError:
             version = '0.0.0'
@@ -240,7 +240,7 @@ class DebOpsAPI:
                 commits_since_last_release = len(
                     g.log('{}...HEAD'.format(version), '--oneline').split('\n')
                 )
-            except:
+            except Exception:
                 commits_since_last_release = None
 
             if commits_since_last_release is not None:
