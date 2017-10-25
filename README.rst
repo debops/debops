@@ -1,6 +1,14 @@
 DebOps
 ======
 
+|CII Best Practices| |Travis-CI|
+
+.. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/237/badge
+   :target: https://bestpractices.coreinfrastructure.org/projects/237
+
+.. |Travis-CI| image:: https://img.shields.io/travis/debops/debops.svg?style=flat
+   :target: https://travis-ci.org/debops/debops
+
 In the future, this repository will contain all of the DebOps roles, playbooks
 and other code. In the meantime if you are looking for it, check the
 `debops-tools <https://github.com/debops/debops-tools/>`_ and
