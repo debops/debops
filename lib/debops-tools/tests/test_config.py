@@ -237,6 +237,8 @@ class TestReadConfig2(TestCase):
         self.assertDictEqual(
             cfg['paths'],
             {'data-home': os.path.expanduser('~/.local/share/debops'),
+             'monorepo-path': os.path.expanduser(
+                 '~/.local/share/debops/debops'),
              'install-path': os.path.expanduser(
                  '~/.local/share/debops/debops-playbooks'),
              'playbooks-paths': [os.path.expanduser(
@@ -253,6 +255,7 @@ class TestReadConfig2(TestCase):
         self.assertDictEqual(
             cfg['paths'],
             {'data-home': '/opt/my/debops',
+             'monorepo-path': '/opt/my/debops/debops',
              'install-path': '/opt/my/debops/debops-playbooks',
              'playbooks-paths': ['/opt/my/debops/debops-playbooks/playbooks'],
              })
