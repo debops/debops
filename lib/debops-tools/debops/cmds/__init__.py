@@ -40,6 +40,7 @@ except ImportError:
     DEVNULL = os.open(os.devnull, os.O_RDWR)
 
 from .. import find_debops_project as _find_debops_project, \
+    find_monorepopath as _find_monorepopath, \
     find_playbookpath as _find_playbookpath, \
     find_inventorypath as _find_inventorypath
 
@@ -83,6 +84,12 @@ def find_debops_project(path=None, required=True):
         # Exit if we are outside of project directory
         error_msg("Not a DebOps project directory")
     return project_root
+
+def find_monorepopath(config, project_root, required=True):
+    monorepo_path = _find_monorepopath(config, project_root)
+    if required and not monorepo_path:
+        error_msg("DebOps monorepo not installed")
+    return monorepo_path
 
 def find_playbookpath(config, project_root, required=True):
     playbooks_path = _find_playbookpath(config, project_root)

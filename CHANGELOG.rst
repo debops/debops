@@ -1,7 +1,6 @@
 Changelog
 =========
 
-**debops**
 
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
@@ -22,6 +21,13 @@ Added
   ``volkszaehler``, ``x2go_server``. They are not yet included in the main
   playbook and still need to be renamed to fit with the rest of the
   ``debops.*`` roles.
+
+Changed
+~~~~~~~
+
+- [debops-tools] The :command:`debops-update` script will now install or
+  update the DebOps monorepo instead of separate ``debops-playbooks`` and
+  DebOps roles git repositories. Existing installations shouldn't be affected.
 
 
 debops v0.6.0 - 2017-10-21

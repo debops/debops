@@ -42,6 +42,9 @@ DEFAULTS = """
 [paths]
 data-home: $XDG_DATA_HOME/debops
 
+# Default monorepo directory
+monorepo-path: %(data-home)s/debops
+
 # Default installation directory
 install-path: %(data-home)s/debops-playbooks
 
@@ -110,7 +113,7 @@ def read_config(project_root):
     cfg = dict((sect, dict(cfgparser.items(sect)))
                for sect in cfgparser.sections())
     # expand vars and home-directory
-    for name in ('data-home', 'install-path'):
+    for name in ('data-home', 'monorepo-path', 'install-path'):
         cfg['paths'][name] = _expandpath(cfg['paths'][name])
     cfg['paths']['playbooks-paths'] = [
         _expandpath(p)

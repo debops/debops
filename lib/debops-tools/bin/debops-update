@@ -73,6 +73,9 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 # Default URI of DebOps (user https for server authentication)
 GIT_URI = "https://github.com/debops"
 
+# DebOps monorepo git repository
+MONOREPO_GIT_URI = GIT_URI + "/debops"
+
 # Default git sources for debops-playbooks
 PLAYBOOKS_GIT_URI = GIT_URI + "/debops-playbooks"
 
@@ -184,6 +187,15 @@ def main(project_dir=None, dry_run=False):
             if not dry_run:
                 os.makedirs(project_dir)
 
+        # Directory with DebOps monorepo
+        monorepo_path = os.path.join(project_dir, "debops")
+
+        # Check if monorepo is cloned
+        if os.path.isfile(os.path.join(monorepo_path, "LICENSE")):
+            monorepo_cloned = True
+        else:
+            monorepo_cloned = False
+
         # Make sure that playbooks and roles will be installed in project
         # directory if it's specified
         install_path = os.path.join(project_dir, "debops-playbooks")
@@ -199,13 +211,40 @@ def main(project_dir=None, dry_run=False):
         # If there's no project specified, look for playbooks in known locations
         project_root = find_debops_project(required=False)
         config = read_config(project_root)
+        monorepo_path = find_monorepopath(config, project_root, required=False)
         playbooks_path = find_playbookpath(config, project_root, required=False)
         if playbooks_path:
             install_path = os.path.dirname(playbooks_path)
         else:
             install_path = config['paths']['install-path']
 
+        # Ensure that monorepo path is set in case no project directory was
+        # specified
+        if monorepo_path is None:
+            monorepo_path = config['paths']['monorepo-path']
+
+        # Check if monorepo is cloned
+        if os.path.isfile(os.path.join(monorepo_path, "LICENSE")):
+            monorepo_cloned = True
+        else:
+            monorepo_cloned = False
+
     roles_path = os.path.join(install_path, 'roles')
+
+    # ---- Clone or update the monorepo ----
+
+    if not monorepo_cloned:
+        if dry_run:
+            raise SystemExit("The monorepo will be installed in " + monorepo_path)
+
+        print("DebOps monorepo has not been found, installing into", monorepo_path)
+        clone_git_repository(MONOREPO_GIT_URI, 'master', monorepo_path, dry_run)
+    else:
+        print("DebOps monorepo has been found in", monorepo_path)
+        update_git_repository(monorepo_path, dry_run)
+
+    # Skip the rest of the script with least amount of changes
+    return
 
     # ---- Create or update the playbooks and roles  ----
 

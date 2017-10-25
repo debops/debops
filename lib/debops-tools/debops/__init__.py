@@ -118,6 +118,20 @@ def find_debops_project(path=None):
     return os.path.dirname(debops_config) if debops_config else None
 
 
+def find_monorepopath(config, project_root):
+    """
+    Search for monorepo in various locations.
+    """
+    if project_root:
+        places = [os.path.join(project_root, "monorepo")]
+    else:
+        places = []
+    places.append(config['paths']['monorepo-path'])
+    for monorepo_path in places:
+        if os.path.exists(os.path.join(monorepo_path, "LICENSE")):
+            return monorepo_path
+
+
 def find_playbookpath(config, project_root):
     """
     Search for playbooks in various locations.
