@@ -36,13 +36,15 @@ try:
 except ImportError:
     # implement subset of shlex.quote
     def shquote(s):
-        if not s: return "''"
+        if not s:
+            return "''"
         return "'" + s.replace("'", "'\"'\"'") + "'"
 
 from .config import *
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel "
+"<h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 
@@ -50,17 +52,17 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 ANSIBLE_CONFIG_FILE = "ansible.cfg"
 
-#--- Roles
+# --- Roles
 
 # Default role prefix if no roles with prefixes are specified
 ROLE_PREFIX = "debops"
 
-#--- Playbooks
+# --- Playbooks
 
 # Default site.yml playbook to look for
 DEBOPS_SITE_PLAYBOOK = os.path.join("playbooks", "site.yml")
 
-#--- Inventories
+# --- Inventories
 
 INVENTORY = "inventory"
 
@@ -70,7 +72,7 @@ ANSIBLE_INVENTORY_PATHS = [
     os.path.join("ansible", INVENTORY),
     INVENTORY]
 
-#--- Encryption
+# --- Encryption
 
 # Name of the script used to unlock/lock the encrypted directory
 PADLOCK_CMD = "padlock"
@@ -154,6 +156,7 @@ def find_inventorypath(project_root):
         ansible_inventory = os.path.join(project_root, inventory_path)
         if os.path.isdir(ansible_inventory):
             return ansible_inventory
+
 
 # ---- Encryption support ----
 

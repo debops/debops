@@ -35,14 +35,18 @@ import shutil
 import debops
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel "
+"<h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
+
 
 def setenv(name, value):
     os.environ[name] = value
 
+
 def unsetenv(name):
     os.environ[name] = ''
+
 
 class TestConfigFilenames(TestCase):
 
@@ -74,7 +78,6 @@ class TestConfigFilenames(TestCase):
                               '/tmp/etc/debops.cfg',
                               '/tmp/mindy/debops.cfg',
                               os.path.expanduser('~/.config/debops.cfg')])
-                              
 
     def test_get_config_filenames_with_XDG_vars_set(self):
         setenv('XDG_CONFIG_HOME', '/myhome/mindy')
@@ -88,7 +91,7 @@ class TestConfigFilenames(TestCase):
 
 
 ANSIBLE_DEFAULTS = {'ansible_managed':
-                   'This file is managed remotely, all changes will be lost'}
+                    'This file is managed remotely, all changes will be lost'}
 
 
 class TestReadConfig(TestCase):
@@ -137,7 +140,7 @@ class TestReadConfig(TestCase):
                               'debops': {'home': '/var/home',
                                          'name1': 'value1',
                                          'name2': 'value2'}
-                          })
+                              })
 
     def test_read_config_files_precedence(self):
         dirs = [self._make_configfile(dir, sect, data) for
@@ -154,7 +157,7 @@ class TestReadConfig(TestCase):
                              {'ansible defaults': ANSIBLE_DEFAULTS,
                               'debops': {'home': '/var/home',
                                          'name1': 'value1'}
-                          })
+                              })
 
     def test_read_config_files_with_project_root(self):
         dirs = [self._make_configfile(dir, sect, data) for
@@ -173,14 +176,15 @@ class TestReadConfig(TestCase):
                               'debops': {'home': '/var/home',
                                          'name1': 'value1',
                                          'name2': 'value2'}
-                          })
+                              })
 
     def test_read_config_files_with_project_root_precedence(self):
         dirs = [self._make_configfile(dir, sect, *data) for
                 dir, sect, data in (
                     ['xdg_home', 'debops', ('home: /var/home',)],
                     ['xdg_dir1', 'debops', ('name1: value1',)],
-                    ['pro_root', 'debops', ('name1: value2', 'home: /my/home')],
+                    ['pro_root', 'debops', ('name1: value2',
+                                            'home: /my/home')],
                 )]
         setenv('XDG_CONFIG_HOME', dirs[0])
         setenv('XDG_CONFIG_DIRS', dirs[1])
@@ -191,7 +195,8 @@ class TestReadConfig(TestCase):
                              {'ansible defaults': ANSIBLE_DEFAULTS,
                               'debops': {'home': '/my/home',
                                          'name1': 'value2'}
-                          })
+                              })
+
 
 class TestReadConfig2(TestCase):
 
@@ -232,9 +237,11 @@ class TestReadConfig2(TestCase):
         self.assertDictEqual(
             cfg['paths'],
             {'data-home': os.path.expanduser('~/.local/share/debops'),
-             'install-path': os.path.expanduser('~/.local/share/debops/debops-playbooks'),
-             'playbooks-paths': [os.path.expanduser('~/.local/share/debops/debops-playbooks/playbooks')],
-         })
+             'install-path': os.path.expanduser(
+                 '~/.local/share/debops/debops-playbooks'),
+             'playbooks-paths': [os.path.expanduser(
+                 '~/.local/share/debops/debops-playbooks/playbooks')],
+             })
 
     def test_read_config_files_simple(self):
         dirs = [self._make_configfile(dir, sect, data) for
@@ -248,7 +255,8 @@ class TestReadConfig2(TestCase):
             {'data-home': '/opt/my/debops',
              'install-path': '/opt/my/debops/debops-playbooks',
              'playbooks-paths': ['/opt/my/debops/debops-playbooks/playbooks'],
-         })
+             })
+
 
 class TestReadConfigDefaultsForPlattforms(TestCase):
 
