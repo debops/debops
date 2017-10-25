@@ -18,14 +18,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-__license__ = 'AGPL-3.0'
-__author__ = 'Robin Schneider <ypid@riseup.net>'
-__version__ = '0.1.0'
-
-"""
-debops-api - Machine readable metadata about the DebOps Project.
-"""
-
 import os
 import sys
 import json
@@ -39,6 +31,14 @@ import yaml
 import git
 from docutils import core
 from docutils.writers.html4css1 import Writer, HTMLTranslator
+
+__license__ = 'AGPL-3.0'
+__author__ = 'Robin Schneider <ypid@riseup.net>'
+__version__ = '0.1.0'
+
+"""
+debops-api - Machine readable metadata about the DebOps Project.
+"""
 
 
 class NoHeaderHTMLTranslator(HTMLTranslator):
@@ -110,7 +110,8 @@ class DebOpsAPI:
 
         api_response = json.load(api_res_encoded_json)
         for repo in api_response:
-            _re = re.match(r'ansible-(?P<role_name>[a-z0-9_-]+)+$', repo['name'])
+            _re = re.match(r'ansible-(?P<role_name>[a-z0-9_-]+)+$',
+                           repo['name'])
             if not _re:
                 continue
 
@@ -145,8 +146,10 @@ class DebOpsAPI:
         """
 
         version_by_pattern_map = {
-            '0.1.0': re.compile(r'^(?P<role_owner>[^.]+)\.(?P<role_name>[a-z0-9_-]+)\.rst$'),
-            '0.2.0': re.compile(r'^ansible-(?P<role_name>[a-z0-9_-]+)$'),
+            '0.1.0': re.compile(
+                r'^(?P<role_owner>[^.]+)\.(?P<role_name>[a-z0-9_-]+)\.rst$'),
+            '0.2.0': re.compile(
+                r'^ansible-(?P<role_name>[a-z0-9_-]+)$'),
         }
 
         for role_format_version, pattern in version_by_pattern_map.items():
@@ -156,12 +159,13 @@ class DebOpsAPI:
                 if 'role_owner' in _re.groups():
                     role_owner = _re.group('role_owner')
                 role_name = _re.group('role_name')
-                logger.debug('Detected docs format version {} for owner: {}, name: {} from {}'.format(
-                    role_format_version,
-                    role_owner,
-                    role_name,
-                    role_dir_name,
-                ))
+                logger.debug('Detected docs format version {} '
+                             'for owner: {}, name: {} from {}'.format(
+                                    role_format_version,
+                                    role_owner,
+                                    role_name,
+                                    role_dir_name,
+                                ))
                 return {
                     'role_format_version': role_format_version,
                     'role_owner': role_owner,
@@ -241,26 +245,30 @@ class DebOpsAPI:
 
             if commits_since_last_release is not None:
                 metadata.update({
-                    'vcs_commits_since_last_release': commits_since_last_release,
+                    'vcs_commits_since_last_release': (
+                        commits_since_last_release),
                 })
 
         return metadata
 
     def _get_maintainers_from_line(self, line):
         # Modeled with the natural language processing from AIML in mind.
-        # TODO: Remove redundancy. Duplicated into ansigenome source code. Origin: debops-api
+        # TODO: Remove redundancy. Duplicated into ansigenome source code.
+        # Origin: debops-api
         _re = re.match(
             r'^[^.]*?maintainers?[\W_]+(:?is|are)[\W_]+`?(?P<nicks>.+?)\.?$',
             line,
             re.IGNORECASE
         )
         if _re:
-            return [x.rstrip('_') for x in re.split(r'[\s,]+', _re.group('nicks')) if x not in ['and', ',']]
+            return [x.rstrip('_') for x in re.split(r'[\s,]+',
+                    _re.group('nicks')) if x not in ['and', ',']]
         else:
             return None
 
     def _get_maintainers_from_changelog(self, changes_file):
-        # TODO: Remove redundancy. Duplicated into ansigenome source code. Origin: debops-api
+        # TODO: Remove redundancy. Duplicated into ansigenome source code.
+        # Origin: debops-api
         """
         Extract the maintainer from CHANGES.rst file and return the nickname of
         the maintainer.
@@ -374,17 +382,23 @@ class DebOpsAPI:
             role_name = metadata['role_name']
 
             additonal_metadata = {
-                'normalized_role_name': self._get_normalized_role_name(role_name),
-                'ci_badge_url': 'https://api.travis-ci.org/{}/ansible-{}.png'.format(
-                    role_owner,
-                    self._get_normalized_role_name(role_name),
+                'normalized_role_name': (
+                    self._get_normalized_role_name(role_name)),
+                'ci_badge_url': (
+                    'https://api.travis-ci.org/{}/ansible-{}.png'.format(
+                        role_owner,
+                        self._get_normalized_role_name(role_name),
+                    )
                 ),
                 'ci_url': 'https://travis-ci.org/{}/ansible-{}'.format(
                     role_owner,
                     self._get_normalized_role_name(role_name),
                 ),
-                'test_suite_url': 'https://github.com/debops/test-suite/tree/master/ansible-{}'.format(
-                    self._get_normalized_role_name(role_name),
+                'test_suite_url': (
+                    'https://github.com/debops/test-suite/'
+                    'tree/master/ansible-{}'.format(
+                        self._get_normalized_role_name(role_name),
+                    )
                 ),
                 'galaxy_url': 'https://galaxy.ansible.com/{}/{}'.format(
                     role_owner,
@@ -403,18 +417,24 @@ class DebOpsAPI:
                     StrictVersion(metadata['role_format_version']):
 
                 if self._docs_url_pattern:
-                    additonal_metadata['docs_url'] = self._docs_url_pattern.format(
-                        role_owner=role_owner,
-                        role_name=role_name,
-                        normalized_role_name=self._get_normalized_role_name(role_name),
-                    )
+                    additonal_metadata['docs_url'] = (
+                            self._docs_url_pattern.format(
+                                role_owner=role_owner,
+                                role_name=role_name,
+                                normalized_role_name=(
+                                    self._get_normalized_role_name(role_name)),
+                            )
+                        )
 
                 if self._changelog_url_pattern:
-                    additonal_metadata['changelog_url'] = self._changelog_url_pattern.format(
-                        role_owner=role_owner,
-                        role_name=role_name,
-                        normalized_role_name=self._get_normalized_role_name(role_name),
-                    )
+                    additonal_metadata['changelog_url'] = (
+                            self._changelog_url_pattern.format(
+                                role_owner=role_owner,
+                                role_name=role_name,
+                                normalized_role_name=(
+                                    self._get_normalized_role_name(role_name)),
+                            )
+                        )
 
             self._metadata[role_full_name].update(additonal_metadata)
 
@@ -430,12 +450,15 @@ class DebOpsAPI:
             # required to get the meta data from external servers (and to
             # encourage conversion to the new docs format).
             if role_dir_info:
-                if StrictVersion('0.2.0') <= StrictVersion(role_dir_info['role_format_version']):
+                if StrictVersion('0.2.0') <= StrictVersion(
+                        role_dir_info['role_format_version']):
                     role_name = role_dir_info['role_name']
-                    role_metadata = self._get_role_metadata(os.path.join(role_path, role_dir_name))
+                    role_metadata = self._get_role_metadata(
+                            os.path.join(role_path, role_dir_name))
                     role_vcs_url = role_metadata['ansigenome']['github_url']
                     role_owner = self._get_owner_from_vcs_url(role_vcs_url)
-                    role_full_name = self._get_role_full_name(role_owner, role_name)
+                    role_full_name = self._get_role_full_name(
+                            role_owner, role_name)
 
                     metadata = {
                         'vcs_url': role_vcs_url,
@@ -448,16 +471,19 @@ class DebOpsAPI:
                     }
 
                     metadata.update(
-                        self._get_vcs_info(os.path.join(role_path, role_dir_name))
+                        self._get_vcs_info(os.path.join(
+                            role_path, role_dir_name))
                     )
 
                     if 'meta' in role_metadata:
                         metadata.update(
-                            self._get_normalized_meta_main(role_metadata['meta'])
+                            self._get_normalized_meta_main(
+                                role_metadata['meta'])
                         )
                     if 'ansigenome' in role_metadata:
                         metadata.update(
-                            self._get_normalized_meta_ansigenome(role_metadata['ansigenome'])
+                            self._get_normalized_meta_ansigenome(
+                                role_metadata['ansigenome'])
                         )
                     if 'maintainer_nicks' in role_metadata:
                         nicks = role_metadata['maintainer_nicks']
@@ -471,19 +497,25 @@ class DebOpsAPI:
                         if not author_present:
                             if self._strict:
                                 raise Exception(
-                                    "Nick(s) {nicks} are maintainers but no other meta information for them could be found in the repository."
+                                    "Nick(s) {nicks} are maintainers but"
+                                    " no other meta information for them"
+                                    " could be found in the repository."
                                     " Affected role: {role_full_name}".format(
                                         role_full_name=role_full_name,
-                                        nicks=set(nicks).difference(author_present),
+                                        nicks=set(nicks).difference(
+                                            author_present),
                                     )
                                 )
 
                 else:
                     # Legacy stuff.
                     role_name = role_dir_info['role_name']
-                    role_owner = role_dir_info['role_owner'] if role_dir_info['role_owner'] else self._role_owner
+                    role_owner = (role_dir_info['role_owner']
+                                  if role_dir_info['role_owner']
+                                  else self._role_owner)
                     if not role_owner:
-                        raise Exception("Default role owner not given but required.")
+                        raise Exception("Default role owner"
+                                        " not given but required.")
 
                     role_vcs_url = self._get_repo_url(
                         role_owner,
@@ -548,19 +580,26 @@ class DebOpsAPI:
         with open(os.path.join(api_work_dir, 'version'), 'w') as outfile:
             outfile.write('{}\n'.format(__version__))
 
-        debops_api_base_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
+        debops_api_base_dir = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), '..')
         with open(os.path.join(api_work_dir, 'license'), 'w') as outfile:
-            with open(os.path.join(debops_api_base_dir, 'COPYRIGHT'), 'r') as copyright:
+            with open(os.path.join(debops_api_base_dir,
+                                   'COPYRIGHT'), 'r') as copyright:
                 outfile.write(copyright.read())
             outfile.write('\n\n\n')
-            with open(os.path.join(debops_api_base_dir, 'LICENSE'), 'r') as license:
+            with open(os.path.join(debops_api_base_dir,
+                                   'LICENSE'), 'r') as license:
                 outfile.write(license.read())
 
-        with open(os.path.join(debops_api_base_dir, 'README.rst'), 'r') as license:
-            readme_html_string = reSTify(license.read()).decode('utf-8', 'strict')
-            with open(os.path.join(api_work_root_dir, 'README.html'), 'w') as outfile:
+        with open(os.path.join(debops_api_base_dir,
+                               'README.rst'), 'r') as license:
+            readme_html_string = reSTify(
+                    license.read()).decode('utf-8', 'strict')
+            with open(os.path.join(api_work_root_dir,
+                                   'README.html'), 'w') as outfile:
                 outfile.write(readme_html_string)
-            with open(os.path.join(api_work_dir, 'README.html'), 'w') as outfile:
+            with open(os.path.join(api_work_dir,
+                                   'README.html'), 'w') as outfile:
                 outfile.write(readme_html_string)
 
         # API: /role/
@@ -575,7 +614,8 @@ class DebOpsAPI:
                 outfile.write('\n')
 
         # API: /roles/
-        with open(os.path.join(api_work_dir, 'roles', 'count'), 'w') as outfile:
+        with open(os.path.join(api_work_dir,
+                               'roles', 'count'), 'w') as outfile:
             outfile.write('{}\n'.format(len(self.get_metadata().keys())))
 
         metadata_per_owner = {}
@@ -585,14 +625,21 @@ class DebOpsAPI:
             metadata_per_owner[role_owner][role_full_name] = metadata
 
         for role_owner, metadata in metadata_per_owner.items():
-            with open(os.path.join(api_work_dir, 'roles', role_owner + '.list'), 'w') as outfile:
+            with open(os.path.join(api_work_dir, 'roles',
+                                   role_owner + '.list'),
+                      'w') as outfile:
                 role_list = self.get_metadata(metadata).keys()
                 outfile.write('\n'.join(sorted(role_list)) + '\n')
-            with open(os.path.join(api_work_dir, 'roles', role_owner + '.json'), 'w') as outfile:
+            with open(os.path.join(api_work_dir,
+                                   'roles', role_owner + '.json'),
+                      'w') as outfile:
                 json.dump(self.get_metadata(metadata), outfile, sort_keys=True)
                 outfile.write('\n')
-            with open(os.path.join(api_work_dir, 'roles', 'count:' + role_owner), 'w') as outfile:
-                outfile.write('{}\n'.format(len(self.get_metadata(metadata).keys())))
+            with open(os.path.join(api_work_dir,
+                                   'roles', 'count:' + role_owner),
+                      'w') as outfile:
+                outfile.write('{}\n'.format(
+                    len(self.get_metadata(metadata).keys())))
 
         try:
             shutil.rmtree(api_dir)
@@ -600,6 +647,7 @@ class DebOpsAPI:
             pass
 
         os.rename(api_work_dir, api_dir)
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -650,19 +698,22 @@ if __name__ == '__main__':
     )
     args_parser.add_argument(
         '-a', '--api-dir',
-        help="Write the static parts of api.debops.org to the given directory."
+        help="Write the static parts of api.debops.org"
+        " to the given directory."
         " Note that all files in this directory are going to be"
         " overwritten or deleted.",
     )
     args_parser.add_argument(
         '-D', '--docs-url-pattern',
         help="Documentation URL for each role.",
-        default='https://docs.debops.org/en/latest/ansible/roles/ansible-{role_name}/docs/index.html',
+        default='https://docs.debops.org/en/latest/'
+        'ansible/roles/ansible-{role_name}/docs/index.html',
     )
     args_parser.add_argument(
         '-C', '--changelog-url-pattern',
         help="Changelog URL for each role.",
-        default='https://docs.debops.org/en/latest/ansible/roles/ansible-{role_name}/docs/changelog.html',
+        default='https://docs.debops.org/en/latest/'
+        'ansible/roles/ansible-{role_name}/docs/changelog.html',
     )
     args_parser.add_argument(
         '-t', '--test-mode',
