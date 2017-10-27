@@ -1,0 +1,145 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.sysfs default variables [[[
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: includes/all.rst
+
+
+# Main configuration [[[
+# ----------------------
+
+# .. envvar:: sysfs__enabled [[[
+#
+# Enable or disable ``sysfs`` configuration. if the role is disabled, existing
+# ``sysfs`` configuration will not be modified.
+# Container environments usually don't allow modification of the ``/sys``
+# filesystem.
+sysfs__enabled: '{{ False
+                    if (ansible_virtualization_type in [ "lxc", "openvz" ] and
+                        ansible_virtualization_role == "guest")
+                    else True }}'
+
+                                                                   # ]]]
+# .. envvar:: sysfs__base_packages [[[
+#
+# The list of default APT packages to install for ``sysfs`` support.
+sysfs__base_packages: [ 'sysfsutils' ]
+
+                                                                   # ]]]
+# .. envvar:: sysfs__packages [[[
+#
+# The list of additional APT packages to install with ``sysfsutils``.
+sysfs__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Sysfs configuration [[[
+# -----------------------
+
+# These variables define the options you can set in the ``sysfs`` filesystem.
+# See :ref:`sysfs__ref_attributes` for more details.
+
+# .. envvar:: sysfs__default_attributes [[[
+#
+# The list of default ``sysfs`` attributes defined by the role.
+sysfs__default_attributes:
+
+  - name: 'ksm'
+    comment: |
+      Kernel Same-page Merging (KSM) configuration.
+      These parameters can be useful on hosts that are used as Virtual Machine
+      hypervisors, to allow for lower memory footprint of virtual machines,
+      however this feature has certain security risks.
+      https://www.linux-kvm.org/page/KSM
+      https://en.wikipedia.org/wiki/Kernel_same-page_merging
+    state: 'defined'
+    options:
+
+      - name: 'kernel/mm/ksm/run'
+        comment: 'Enable Kernel Same-page Merging'
+        value: 1
+
+      - name: 'kernel/mm/ksm/sleep_milisecs'
+        comment: 'How long to sleep between scans, in miliseconds'
+        value: 20
+
+      - name: 'kernel/mm/ksm/pages_to_scan'
+        comment: 'How many pages to scan in one run'
+        value: 100
+
+  - name: 'transparent_hugepages'
+    comment: |
+      Configuration of Transparent HugePages support.
+      Disable THP by default to increase performance in certain applications
+      like MongoDB, Redis, MariaDB, PostgreSQL. This is only effective when
+      real HugePages support is configured.
+      https://www.kernel.org/doc/Documentation/vm/transhuge.txt
+      https://stackoverflow.com/a/42592382/6996970
+    state: 'defined'
+    options:
+
+      - name: 'kernel/mm/transparent_hugepage/enabled'
+        value: 'never'
+
+      - name: 'kernel/mm/transparent_hugepage/defrag'
+        value: 'never'
+
+      - name: 'kernel/mm/transparent_hugepage/khugepaged/defrag'
+        value: 0
+
+                                                                   # ]]]
+# .. envvar:: sysfs__attributes [[[
+#
+# The list of ``sysfs`` attributes defined on all hosts in the Ansible
+# inventory.
+sysfs__attributes: []
+
+                                                                   # ]]]
+# .. envvar:: sysfs__group_attributes [[[
+#
+# The list of ``sysfs`` attributes defined on hosts in a specific Ansible
+# inventory group.
+sysfs__group_attributes: []
+
+                                                                   # ]]]
+# .. envvar:: sysfs__host_attributes [[[
+#
+# The list of ``sysfs`` attributes defined on specific hosts in the Ansible
+# inventory.
+sysfs__host_attributes: []
+
+                                                                   # ]]]
+# .. envvar:: sysfs__dependent_attributes [[[
+#
+# The list of ``sysfs`` attributes defined by other Ansible roles through role
+# dependent variables.
+sysfs__dependent_attributes: []
+
+                                                                   # ]]]
+# .. envvar:: sysfs__dependent_attributes_filter [[[
+#
+# The variable which is used to filter the data from dependent variables, join
+# it with the data from other roles and pass it to the combined attributes
+# variable.
+sysfs__dependent_attributes_filter: '{{ lookup("template",
+                                               "lookup/sysfs__dependent_attributes_filter.j2")
+                                               | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: sysfs__combined_attributes [[[
+#
+# The variable which combines all of the attribute configuration and is used in
+# the Ansible tasks. It also defines the other in which different attribute
+# variables are combined.
+sysfs__combined_attributes: '{{ sysfs__default_attributes
+                                + sysfs__dependent_attributes_filter
+                                + sysfs__attributes
+                                + sysfs__group_attributes
+                                + sysfs__host_attributes }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

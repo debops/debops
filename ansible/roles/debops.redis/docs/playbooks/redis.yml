@@ -10,6 +10,14 @@
 
   roles:
 
+    - role: debops.sysfs/env
+      tags: [ 'role::sysfs', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::sysfs' ]
+      secret__directories:
+        - '{{ sysfs__secret__directories | d([]) }}'
+
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
@@ -24,6 +32,11 @@
       tags: [ 'role::ferm' ]
       ferm__dependent_rules:
         - '{{ redis__ferm__dependent_rules }}'
+
+    - role: debops.sysfs
+      tags: [ 'role::sysfs' ]
+      sysfs__dependent_attributes:
+        - '{{ redis__sysfs__dependent_attributes }}'
 
     - role: debops.redis
       tags: [ 'role::redis' ]
