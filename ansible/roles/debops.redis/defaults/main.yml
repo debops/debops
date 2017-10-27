@@ -608,6 +608,17 @@ redis__ferm__dependent_rules:
     rule_state: '{{ "present"
                     if (redis__sentinel_enabled|bool and redis__sentinel_bind not in ["localhost"])
                     else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: redis__sysfs__dependent_attributes [[[
+#
+# Configuration for the debops.sysfs_ role.
+redis__sysfs__dependent_attributes:
+
+  - role: 'redis'
+    config:
+      - name: 'transparent_hugepages'
+        state: 'present'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

@@ -13,6 +13,14 @@
     - role: debops.gitlab/env
       tags: [ 'role::gitlab', 'role::postgresql' ]
 
+    - role: debops.sysfs/env
+      tags: [ 'role::sysfs', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::sysfs' ]
+      secret__directories:
+        - '{{ sysfs__secret__directories | d([]) }}'
+
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
@@ -45,6 +53,11 @@
     - role: debops.ruby
       tags: [ 'role::ruby' ]
       ruby__dev_support: True
+
+    - role: debops.sysfs
+      tags: [ 'role::sysfs' ]
+      sysfs__dependent_attributes:
+        - '{{ redis__sysfs__dependent_attributes }}'
 
     - role: debops.redis
       tags: [ 'role::redis' ]
