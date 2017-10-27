@@ -1,0 +1,35 @@
+# {{ ansible_managed }}
+
+{% macro print_config(element, global_state='') %}
+{%   set prepend_comment = '' %}
+{%   if global_state == 'comment' or element.state|d('present') == 'comment' %}
+{%     set prepend_comment = '#' %}
+{%   endif %}
+{%   if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%   endif %}
+{%   if element.owner is defined %}
+{{ "{}owner {} = {}".format(prepend_comment, element.name, element.owner) }}
+{%   endif %}
+{%   if element.mode is defined %}
+{{ "{}mode {} = {}".format(prepend_comment, element.name, element.mode) }}
+{%   endif %}
+{%   if element.value is defined %}
+{{ "{}{} = {}".format(prepend_comment, element.name, element.value) }}
+{%   endif %}
+{% endmacro %}
+{% if item.comment|d() and item.options is defined %}
+{{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if item.options|d() %}
+{%   for option in item.options %}
+{%     if option.state|d('present') not in [ 'init', 'absent' ] %}
+{%     if not loop.first|bool and option.comment|d() %}
+
+{%     endif %}
+{{ print_config(option, global_state=item.state) -}}
+{%     endif %}
+{%   endfor %}
+{% else %}
+{{ print_config(item, global_state=item.state) -}}
+{% endif %}

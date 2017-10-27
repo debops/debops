@@ -1,0 +1,31 @@
+{% set sysfs__tpl_dependent_attributes = {} %}
+{% if (sysfs__register_dependent_attributes|d() and sysfs__register_dependent_attributes.content|d()) %}
+{%   set _ = sysfs__tpl_dependent_attributes.update(sysfs__register_dependent_attributes.content | b64decode | trim | from_json) %}
+{% endif %}
+{% if sysfs__dependent_attributes %}
+{%   set sysfs__tpl_flattened_attributes = lookup('flattened', sysfs__dependent_attributes) %}
+{%   for element in ([ sysfs__tpl_flattened_attributes ] if sysfs__tpl_flattened_attributes is mapping else sysfs__tpl_flattened_attributes) %}
+{%     if element.role|d() and element.config|d() %}
+{%       if element.state|d('present') not in [ 'ignore', 'absent' ] %}
+{%         set flattened_config = lookup('flattened', element.config) %}
+{%         set _ = sysfs__tpl_dependent_attributes.update({
+  element.role: ([ flattened_config ] if flattened_config is mapping else flattened_config)
+}) %}
+{%       elif element.state|d('present') == 'absent' %}
+{%         set _ = sysfs__tpl_dependent_attributes.pop(element.role, None) %}
+{%       endif %}
+{%     elif element is mapping and 'role' not in element.keys() and 'config' not in element.keys() %}
+{%       for role, config in element.iteritems() %}
+{%         set flattened_config = lookup('flattened', config) %}
+{%         set _ = sysfs__tpl_dependent_attributes.update({
+  role: ([ flattened_config ] if flattened_config is mapping else flattened_config)
+}) %}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% set sysfs__tpl_output_attributes = [] %}
+{% for key, value in sysfs__tpl_dependent_attributes.iteritems() %}
+{%   set _ = sysfs__tpl_output_attributes.extend(value) %}
+{% endfor %}
+{{ sysfs__tpl_output_attributes | to_yaml }}

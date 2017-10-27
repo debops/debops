@@ -22,6 +22,11 @@ Added
   playbook and still need to be renamed to fit with the rest of the
   ``debops.*`` roles.
 
+- New DebOps roles:
+
+  - ``debops.sysfs``: configuration of the Linux kernel attributes through the
+    :file:`/sys` filesystem. The role is not enabled by default.
+
 Changed
 ~~~~~~~
 
