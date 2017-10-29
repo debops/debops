@@ -1,13 +1,33 @@
 DebOps
 ======
 
+|DebOps logo|
+
+> Your Debian-based data center in a box
+
 |CII Best Practices| |Travis-CI|
+
+.. |DebOps logo| image:: https://raw.githubusercontent.com/debops/debops/master/lib/images/debops-small.png
+   :target: https://debops.org/
 
 .. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/237/badge
    :target: https://bestpractices.coreinfrastructure.org/projects/237
 
 .. |Travis-CI| image:: https://img.shields.io/travis/debops/debops.svg?style=flat
    :target: https://travis-ci.org/debops/debops
+
+DebOps is a collection of `Ansible <https://github.com/ansible/ansible/>`__
+roles and playbooks designed to configure `Debian <https://www.debian.org/>`__
+or `Ubuntu <https://www.ubuntu.com>`__ hosts in a production environment. The
+project can configure most of the supported services on a single host, or
+create and manage a cluster of hosts with encrypted communication between the
+nodes.
+
+Installation
+------------
+
+DebOps requires a Python 2.7 environment and Ansiible 2.4+ to work correctly.
+See the :file:`INSTALL.rst` file for specific installation instructions.
 
 In the future, this repository will contain all of the DebOps roles, playbooks
 and other code. In the meantime if you are looking for it, check the
