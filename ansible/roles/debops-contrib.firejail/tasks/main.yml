@@ -19,7 +19,7 @@
 - name: Get program file path of firejail
   command: which -a firejail
   register: firejail__register_program_file_path
-  always_run: True
+  check_mode: False
   changed_when: False
   failed_when: firejail__register_program_file_path.rc not in [ 0, 1 ]
   when: (firejail__program_file_path == "auto")
@@ -55,7 +55,7 @@
 # Gather list of installed programs [[[
 - name: Check if programs which should be sandboxed are installed
   command: which -a {{ item | quote }}
-  always_run: True
+  check_mode: False
   changed_when: False
   failed_when: firejail__register_cmd_which_programs.rc not in [ 0, 1 ]
   register: firejail__register_cmd_which_programs

@@ -57,7 +57,7 @@
       (apparmor__enabled|d() | bool) and
       (ansible_cmdline.apparmor|d(0)|string == "1") and
       (ansible_cmdline.security|d("none") == "apparmor") }}'
-  always_run: True
+  check_mode: False
 
 - name: Flush the handlers in case the next tasks fails
   meta: flush_handlers
