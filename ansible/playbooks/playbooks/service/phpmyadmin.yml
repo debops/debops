@@ -1,0 +1,14 @@
+---
+
+- name: Manage phpMyAdmin service
+  hosts: [ 'debops_service_phpmyadmin' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.phpmyadmin
+      tags: [ 'role::phpmyadmin' ]
