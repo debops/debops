@@ -70,7 +70,15 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
         if type in defaults:
             # prepend value from .debops.cfg
             yield defaults[type]
+        yield os.path.join(project_root, "ansible", "playbooks", type)
+        yield os.path.join(project_root, "ansible", "plugins", type)
         yield os.path.join(project_root, "ansible", type)
+        yield os.path.join(project_root, "debops", "ansible", "playbooks", "playbooks", type)
+        yield os.path.join(project_root, "debops", "ansible", "playbooks", type)
+        yield os.path.join(project_root, "debops", "ansible", "plugins", type)
+        yield os.path.join(project_root, "debops", "ansible", type)
+        yield os.path.join(monorepo_path, "ansible", "playbooks", "playbooks", type)
+        yield os.path.join(monorepo_path, "ansible", "playbooks", type)
         yield os.path.join(monorepo_path, "ansible", "plugins", type)
         yield os.path.join(monorepo_path, "ansible", type)
         yield os.path.join(playbooks_path, type)
@@ -88,6 +96,7 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
         defaults.get('roles_path'), # value from .debops.cfg or None
         os.path.join(project_root, "roles"),
         os.path.join(project_root, "ansible", "roles"),
+        os.path.join(project_root, "debops", "ansible", "roles"),
         os.path.join(monorepo_path, "ansible", "roles"),
         os.path.join(playbooks_path, "..", "roles"),
         os.path.join(playbooks_path, "roles"),
@@ -126,6 +135,8 @@ def main(cmd_args):
         tries = [
             (project_root, "playbooks", playbook),
             (project_root, "ansible", "playbooks", playbook),
+            (project_root, "debops", "ansible", "playbooks", playbook),
+            (project_root, "debops", "ansible", "playbooks", "playbooks", playbook),
             (monorepo_path, "ansible", "playbooks", playbook),
             (monorepo_path, "ansible", "playbooks", "playbooks", playbook),
             (playbooks_path, playbook),
