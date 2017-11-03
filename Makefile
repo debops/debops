@@ -14,7 +14,11 @@ clean: clean-tests
 
 .PHONY: tests
 tests:          ## Test code in the repository
-tests: test-pep8 test-debops-tools
+tests: test-pep8 test-debops-tools test-playbook-syntax
+
+.PHONY: syntax
+syntax:         ## Check Ansible playbook syntax
+syntax: test-playbook-syntax
 
 .PHONY: test-pep8
 test-pep8:      ## Test PEP8 compliance
@@ -24,6 +28,13 @@ test-pep8:      ## Test PEP8 compliance
 .PHONY: clean-tests
 clean-tests:    ## Clean up test artifacts
 	@rm -vrf .coverage
+
+.PHONY: test-playbook-syntax
+test-playbook-syntax:
+	@printf "%s\n" "Testing Ansible playbook syntax..."
+	@ANSIBLE_ROLES_PATH="ansible/roles" ansible-playbook --syntax-check \
+		ansible/playbooks/playbooks/bootstrap.yml \
+		ansible/playbooks/playbooks/site.yml
 
 .PHONY: test-debops-tools
 test-debops-tools:
