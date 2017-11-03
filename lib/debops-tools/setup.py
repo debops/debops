@@ -11,7 +11,7 @@ README = open('README.rst').read()
 
 setup(
     name="debops",
-    version="0.6.0",
+    version="0.6.1",
     install_requires=['netaddr', 'argparse', 'passlib', 'ansible'],
 
     scripts=['bin/debops',
@@ -35,7 +35,7 @@ setup(
     keywords="ansible",
     url="https://debops.org/",
     download_url="https://github.com/debops/debops-tools"
-                 "/archive/v0.6.0.tar.gz",
+                 "/archive/v0.6.1.tar.gz",
     classifiers=[
                  'Development Status :: 4 - Beta',
                  'Environment :: Console',
