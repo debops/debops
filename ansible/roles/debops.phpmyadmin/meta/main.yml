@@ -4,11 +4,29 @@ dependencies:
 
   - role: debops.secret
 
-  - role: debops.php5
-    php5_packages: [ 'php5-mysql', 'php5-mcrypt', 'php5-gd' ]
-    php5_pools: [ '{{ phpmyadmin_php5_pool }}' ]
+  - role: debops.php/env
+    tags: [ 'role::php', 'role::apt_preferences', 'role::logrotate' ]
+
+  - role: debops.apt_preferences
+    apt_preferences__dependent_list:
+      - '{{ nginx__apt_preferences__dependent_list }}'
+      - '{{ php__apt_preferences__dependent_list }}'
+
+  - role: debops.logrotate
+    tags: [ 'role::logrotate' ]
+    logrotate__dependent_config:
+      - '{{ php__logrotate__dependent_config }}'
+
+  - role: debops.php
+    php__dependent_packages: [ 'mysql', 'mcrypt', 'gd' ]
+    php__dependent_pools: [ '{{ phpmyadmin_php5_pool }}' ]
     when: phpmyadmin_dependencies is defined and phpmyadmin_dependencies
     tags: [ 'mysql', 'phpmyadmin' ]
+
+  - role: debops.ferm
+    tags: [ 'role::ferm' ]
+    ferm__dependent_rules:
+      - '{{ nginx__ferm__dependent_rules }}'
 
   - role: debops.nginx
     nginx_servers: [ '{{ phpmyadmin_nginx_server }}' ]
