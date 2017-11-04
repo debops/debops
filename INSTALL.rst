@@ -1,22 +1,28 @@
 DebOps installation instructions
 ================================
 
-DebOps can be installed and used on multiple operating systems. In this
-document you can find generic install instructions and specific notes for
-selected operating systems.
+DebOps is designed to be used with multiple hosts, physical, virtual or
+containers. The remote hosts are managed from "Ansible Controller" host, where
+the administrator issues commands. This host can also be managed by DebOps if
+it's set up on a compatible platform, that is a Debian or Ubuntu OS.
 
 Requirements
 ------------
+
+These are the software requirements for an Ansible Controller host:
 
 - Bash 4.0+
 
 - Python 2.7+
 
-- Ansible 2.4+
+- Ansible 2.3+
 
 - Python ``netaddr`` and ``passlib`` library
 
 - EncFS and GPG for encrypted :file:`secret/` directory support (optional)
+
+On the remote host side, DebOps is developer to work against a Debian
+``netinst`` installation with OpenSSH server installed.
 
 
 Debian GNU/Linux notes
