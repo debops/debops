@@ -57,5 +57,5 @@ mailing list, it's relatively low volume.
 ~~~~~~~~~~~~~~~~~~~
 
 The project maintainers and users hang out on the ``#debops`` IRC channel in
-the FreeNode network. You can come over of a more real-time discussions or for
+the FreeNode network. You can come over for a more real-time discussion or for
 support questions.

@@ -71,7 +71,7 @@ During development you might notice that the upstream repository has new
 commits. In that case you might want to rebase your feature branch on the
 latest changes in the ``master`` branch. If you have any pending changes you
 don't want to commit yet, you can save them for later using :command:`git
-stash`. After a rebase, you might need to resolve any merge conflicts manually.
+stash`. After a rebase, you might need to resolve any conflicts manually.
 
 .. code-block:: console
 

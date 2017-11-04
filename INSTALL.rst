@@ -21,7 +21,7 @@ These are the software requirements for an Ansible Controller host:
 
 - EncFS and GPG for encrypted :file:`secret/` directory support (optional)
 
-On the remote host side, DebOps is developer to work against a Debian
+On the remote host side, DebOps is designed to work against a Debian
 ``netinst`` installation with OpenSSH server installed.
 
 
