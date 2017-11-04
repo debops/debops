@@ -158,14 +158,14 @@ sysctl__hardening_experimental_enabled: False
 #
 sysctl__hardening_map:
   'net.ipv4.ip_forward':
-    value: 0
+    value: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary(1, 0) }}'
     comment: |
-      Disable IPv4 traffic forwarding.
-    state: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary("absent", "present") }}'
+      Enable/Disable IPv4 traffic forwarding.
+    state: 'present'
   'net.ipv6.conf.all.forwarding':
-    value: 0
-    comment: 'Disable IPv6 traffic forwarding.'
-    state: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary("absent", "present") }}'
+    value: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary(1, 0) }}'
+    comment: 'Enable/Disable IPv6 traffic forwarding.'
+    state: 'present'
 
   'net.ipv6.conf.all.accept_ra':
     value: 0
