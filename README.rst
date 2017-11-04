@@ -3,7 +3,7 @@ DebOps
 
 |DebOps logo|
 
-> Your Debian-based data center in a box
+*Your Debian-based data center in a box*
 
 |CII Best Practices| |Travis-CI|
 
@@ -42,7 +42,7 @@ Installation
 ------------
 
 DebOps requires a Python 2.7 environment and Ansiible 2.3+ to work correctly.
-Read the `INSTALL.rst <https://github.com/debops/debops/blobl/master/INSTALL.rst>`__
+Read the `INSTALL.rst <https://github.com/debops/debops/blob/master/INSTALL.rst>`__
 file for specific installation instructions.
 
 
@@ -123,7 +123,7 @@ and are published to the original repository via GitHub pull requests. PRs are
 reviewed by the DebOps developer team and if accepted, are merged in the main
 repository.
 
-GPG-signed :command:`git` commits are preferred to ensure authenticity.
+GPG-signed ``git`` commits are preferred to ensure authenticity.
 
 Read the `CONTRIBUTING.rst <https://github.com/debops/debops/blob/master/CONTRIBUTING.rst>`__
 file for more details about how to contribute to DebOps.
