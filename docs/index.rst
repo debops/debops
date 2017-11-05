@@ -15,6 +15,7 @@ Contents:
    debops-tools/index
    debops-playbooks/index
    debops-policy/index
+   debops-api/index
 
 
 .. |DebOps logo| image:: _static/images/debops-small.png

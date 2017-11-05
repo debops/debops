@@ -9,8 +9,6 @@ DebOps API
    introduction
    getting-started
    api-reference-v0
-   copyright
-   changelog
 
 ..
  Local Variables:
