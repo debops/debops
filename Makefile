@@ -42,8 +42,8 @@ test-docs:
 test-playbook-syntax:
 	@printf "%s\n" "Testing Ansible playbook syntax..."
 	@ANSIBLE_ROLES_PATH="ansible/roles" ansible-playbook --syntax-check \
-		ansible/playbooks/playbooks/bootstrap.yml \
-		ansible/playbooks/playbooks/site.yml
+		ansible/playbooks/bootstrap.yml \
+		ansible/playbooks/site.yml
 
 .PHONY: test-debops-tools
 test-debops-tools:

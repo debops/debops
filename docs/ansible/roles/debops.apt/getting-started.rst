@@ -39,7 +39,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.apt`` role:
 
-.. literalinclude:: ../../../../ansible/playbooks/playbooks/service/apt.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/apt.yml
    :language: yaml
 
 
