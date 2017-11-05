@@ -3,7 +3,7 @@
 Organizational Structure
 ========================
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 :Date drafted: 2016-06-19
 :Date effective: 2016-09-01

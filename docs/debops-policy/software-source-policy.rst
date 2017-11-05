@@ -3,7 +3,7 @@
 DebOps Software Source Policy
 =============================
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 :Date drafted: 2016-07-23
 :Date effective: 2016-09-01

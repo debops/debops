@@ -10,6 +10,9 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :glob:
+
+   debops-policy/index
 
 
 .. |DebOps logo| image:: _static/images/debops-small.png

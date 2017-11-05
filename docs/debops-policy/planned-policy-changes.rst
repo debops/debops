@@ -1,7 +1,7 @@
 Planned Policy Changes
 ======================
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 Terminology
 -----------

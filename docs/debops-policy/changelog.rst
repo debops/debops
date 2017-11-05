@@ -1,7 +1,7 @@
 Changelog
 =========
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 **debops-policy**
 

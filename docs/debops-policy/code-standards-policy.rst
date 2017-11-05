@@ -3,7 +3,7 @@
 DebOps Code Standards Policy
 ============================
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 :Date drafted: 2016-11-05
 :Date effective: 2017-01-01

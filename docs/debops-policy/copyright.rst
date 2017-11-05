@@ -1,0 +1,5 @@
+Copyright
+=========
+
+.. literalinclude:: COPYRIGHT
+

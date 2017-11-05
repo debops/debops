@@ -3,7 +3,7 @@
 DebOps Security Policy
 ======================
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 .. Based on: https://www.openssl.org/docs/faq.html#BUILD19
    Based on: http://rubyonrails.org/security/

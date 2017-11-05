@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 This document describes the computer systems, networks, services and other
 elements of the data center environment deployed and managed by the DebOps
