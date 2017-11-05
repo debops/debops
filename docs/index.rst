@@ -10,6 +10,13 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :glob:
+
+   debops-tools/index
+   debops-playbooks/index
+   debops-policy/index
+   ansible/roles/*/index
+   debops-api/index
 
 
 .. |DebOps logo| image:: _static/images/debops-small.png
