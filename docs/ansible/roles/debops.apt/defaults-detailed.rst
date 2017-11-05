@@ -3,7 +3,7 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 Some of ``debops.apt`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
@@ -17,7 +17,7 @@ simple strings or lists, here you can find documentation and examples for them.
 apt__keys
 ---------
 
-This list, along with :envvar:`apt__group_keys` and :envvar:`apt__host_keys`
+This list, along with ``apt__group_keys`` and ``apt__host_keys``
 and can be used to manage APT repository keys through Ansible inventory.  Each
 entry is a YAML dictionary with parameters that correspond to the ``apt_key``
 module parameters:
@@ -106,8 +106,8 @@ Add an APT GPG key only on Ubuntu hosts that have been already configured once
 apt__repositories
 -----------------
 
-This list, along with :envvar:`apt__group_repositories` and
-:envvar:`apt__host_repositories` can be used to manage APT repositories through
+This list, along with ``apt__group_repositories`` and
+``apt__host_repositories`` can be used to manage APT repositories through
 Ansible inventory. Each entry is a YAML dictionary with parameters that
 correspond to the ``apt_repository`` module parameters:
 
@@ -202,24 +202,24 @@ Apart from the usual inventory lists for all hosts, group of hosts and specific
 hosts, there are additional lists that are included in the finished config
 file:
 
-:envvar:`apt__original_sources`
+``apt__original_sources``
   This list defines the APT sources that are present in the original, diverted
   :file:`/etc/apt/sources.list` file. The security sources are automatically
-  filtered out based on the contents of the :envvar:`apt__security_sources` list.
+  filtered out based on the contents of the ``apt__security_sources`` list.
 
-:envvar:`apt__default_sources`
+``apt__default_sources``
   The role provides a set of default package sources for each known OS
   distribution. These sources are usually URLs to mirror redirectors, which
   will try to point to the closest available mirror. They are provided as
   a backup in case the host does not have any recognized package sources
   available.
 
-:envvar:`apt__security_sources`
+``apt__security_sources``
   This is a list of APT sources that provide security updates. This list has
   a more specific entries than the normal lists since security repositories
   tend to have different naming scheme than the regular mirrored repositories.
 
-:envvar:`apt__combined_sources`
+``apt__combined_sources``
   This list combines all of the above list and is used in the configuration
   template. It defines the order in which the APT sources are specified in the
   configuration file.
@@ -269,7 +269,7 @@ parameters:
 ``type`` or ``types``
   Optional. What type of the packages are used for this source. It can be
   either a string of 1 type, or a list of types. Known source types: ``deb``,
-  ``deb-src``. If not set, role will use the :envvar:`apt__source_types` value.
+  ``deb-src``. If not set, role will use the ``apt__source_types`` value.
 
 ``option`` or ``options``
   Optional. String or list of strings of APT options. Settings are expected in
@@ -280,14 +280,14 @@ parameters:
   a release name like ``jessie``, ``xenal``, or a "release class" like
   ``stable``, ``oldstable``, ``testing``, or a directory path in case of simple
   repositories (which needs to end with a slash). It can also be a list of
-  releases. If not specified, role will use the :envvar:`apt__distribution_suffixes`
+  releases. If not specified, role will use the ``apt__distribution_suffixes``
   value to generate a list of default suites for a given OS release.
 
 ``component`` or ``components``
   Optional. Name of a repository component or section to enable, for example
   ``main``, ``contrib``, ``non-free``, ``universe``, ``restricted``,
   ``multiverse``. It can also be a list of components. If not specified, role
-  will use the :envvar:`apt__distribution_components` value.
+  will use the ``apt__distribution_components`` value.
 
 ``comment`` or ``comments``
   Optional. A string or a YAML text block with comments about the given APT

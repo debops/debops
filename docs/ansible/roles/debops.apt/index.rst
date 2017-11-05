@@ -8,10 +8,8 @@ Ansible role: debops.apt
 
    introduction
    getting-started
-   defaults
    defaults-detailed
    copyright
-   changelog
    upgrade
 
 ..

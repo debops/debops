@@ -16,7 +16,7 @@ original repositories pointed to the closest mirror.
 The ``non-free`` repositories will be enabled automatically on hardware-based
 hosts in case any non-free firmware is required. Otherwise, only the ``main``
 and ``universe`` (on Ubuntu) repositories are enabled; you can control this
-using the :envvar:`apt__nonfree` variable.
+using the ``apt__nonfree`` variable.
 
 
 Example inventory
@@ -39,7 +39,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.apt`` role:
 
-.. literalinclude:: playbooks/apt.yml
+.. literalinclude:: ../../../../ansible/playbooks/playbooks/service/apt.yml
    :language: yaml
 
 
