@@ -14,7 +14,7 @@ clean: clean-tests
 
 .PHONY: tests
 tests:          ## Test code in the repository
-tests: test-pep8 test-debops-tools test-playbook-syntax
+tests: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax
 
 .PHONY: syntax
 syntax:         ## Check Ansible playbook syntax
@@ -27,7 +27,12 @@ test-pep8:      ## Test PEP8 compliance
 
 .PHONY: clean-tests
 clean-tests:    ## Clean up test artifacts
-	@rm -vrf .coverage
+	@rm -vrf .coverage docs/_build/*
+
+.PHONY: test-docs
+test-docs:
+	@printf "%s\n" "Testing documentation generation..."
+	cd docs && make html
 
 .PHONY: test-playbook-syntax
 test-playbook-syntax:
