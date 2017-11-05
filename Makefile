@@ -31,8 +31,8 @@ clean-tests:    ## Clean up test artifacts
 
 .PHONY: test-docs
 test-docs:
-	@printf "%s\n" "Testing documentation generation..."
-	cd docs && make html
+	@printf "%s\n" "Testing HTML documentation generation..."
+	@cd docs && sphinx-build -n -W -b html -d _build/doctrees . _build/html
 
 .PHONY: test-playbook-syntax
 test-playbook-syntax:
