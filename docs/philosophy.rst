@@ -1,0 +1,133 @@
+DebOps philosophy
+=================
+
+In this section, you can read about DebOps from personal perspective of its
+authors. We hope that this will help explain how the project came to be, what
+its goals are, and where it is heading.
+
+
+Maciej Delmanowski
+------------------
+
+I'm using Linux operating system since 2001. Since 2002 I'm using primarly
+`Debian GNU/Linux <https://www.debian.org/>`__ distribution, or its
+derivatives, both on private and work computers, workstations and servers
+alike. I really like Debian, both from the software side, as well as the
+`philosophy behind the project <https://wiki.debian.org/WhyDebian>`_.
+
+At the moment I'm not a Debian Developer, however I would still like to
+contribute to the project, at least in a small, but meaningful way. Most of my
+professional focus for the last few years has been on Debian system
+administration, therefore this is what I'd like to offer to the Debian
+community - my experience as a sysadmin, the knowledge how to manage a Debian
+host, or a cluster of hosts together.
+
+In the past that was primarly done through `books <https://debian-handbook.info/>`_,
+blog posts, HOWTOs, manual pages. But this method is brittle, and requires
+a person that can process the information, adapt it to their needs as well as
+changes to the current operating system and software stack, and perform the
+necessary operations. Recently, multiple configuration management tools have
+been created, that offer another avenue of sharing the knowledge about system
+administration in a different, programmable and automated way.
+
+The `Ansible <https://github.com/ansible/ansible>`__ project is one such tool.
+It has very easy to use, but powerful configuration language, very friendly
+towards system administrators. In the past, while evaluating different
+configuration management systems to use at my workplace, I noticed that there
+were no easy to use, extensible, general purpose projects that managed
+Debian-based environments using Ansible. Since I needed such a project to
+manage different, heterogenous Debian servers, I started writing one. Over
+time, it has evolved into DebOps.
+
+The name "DebOps" is a portmanteau of "Debian" and "Operations", and it hints
+at the purpose of the project itself - to help `IT Operations <https://en.wikipedia.org/wiki/Information_technology_operations>`__
+teams manage Debian or Debian-based environments. I don't think that I can be
+cited as an author of this name. Instead, I'd like to quote an article written
+by Enrico Zini, a Debian Developer, who in 2014 wrote about "Debops"
+methodology:
+
+    What I like the most about being a Developer is building tools to (hopefully)
+    make someone's life better. I like it when my software gets used, and people
+    thank me for it, because there was a need they had that wasn't met before, and
+    thanks to my software now it is being met. I am maintaining software for
+    meteorological research that is soon going to be 10 years old, and is still
+    evolving and getting Real Work done.
+
+    I like to develop software as if it is going to become a part of human cultural
+    heritage, developing beyond my capacity, eventually surviving me, allowing
+    society to declare that the need, small as it was, is now met, and move on to
+    worry about some other problem. I feel that if I'm not thinking of my software
+    in that way, then I am not being serious. Then I am not developing something
+    fit for other people to use and rely on.
+
+    This involves Development as much as it involves Operations: tracking security
+    updates for all the components that make up a system. Testing. Quality
+    assurance. Scalability. Stability. Hardening. Monitoring. Maintenance
+    requirements. Deployment and upgrade workflows. Security. I came to learn that
+    the requirements put forward by sysadmins are to be taken seriously, because
+    they are the ones whose phone will ring in the middle of the night when your
+    software breaks.
+
+    I am also involved in more than one software project. I am responsible for
+    about a dozen web applications deployed out there in the wild, and possibly
+    another dozen of non-web projects, from terabyte-sized specialised archival
+    tools to little utilities that are essential links in someone's complex
+    toolchain.
+
+    I build my software targeting Debian Stable + Backports. At FOSDEM I noticed
+    that some people consider it uncool. I was perplexed.
+
+    It provides me with a vast and reasonably recent set of parts to use to build
+    my systems. It provides me with a single bug tracking system for all of them,
+    and tools to track known issues in the systems I deployed. It provides me with
+    a stable platform, with a well documented upgrade path to the next version. It
+    gives me a release rhythm that allows me to enjoy the sweet hum of spinning
+    fans thinking about my next mischief, instead of spending my waking time
+    chasing configuration file changes and API changes deep down in my dependency
+    chain.
+
+    It allows me to rely on Debian for security updates, so I don't have to
+    track upstream activity for each one of the building blocks of the systems I
+    deploy. It allows me not to worry about a lot of obscure domain specific
+    integration issues. Coinstallability of libraries with different ABI versions.
+    Flawless support for different versions of Python, or Lua, or for different
+    versions of C++ compilers.
+
+    It has often happened to me to hear someone rant about a frustrating situation,
+    wonder how come it had never happened to me, and realise that someone in
+    Debian, who happens to be more expert than I can possibly be, had thought hard
+    about how to deal with that issue, years before. I know I cannot be an expert
+    of the entire stack from bare iron all the way up, and I have learnt to stand
+    on the shoulders of giants.
+
+    'Devops' makes sense for me in that it hints at this cooperation between
+    developers and operators, having constructive communication, knowing that each
+    side has their own needs, trying their best to meet them all. It hints at a
+    perfect world where developers and operators finally come to understand and
+    trust each other's judgement. I don't know that perfect world, but I, a
+    developer, do like to try to understand and trust the judgement of sysadmins. I
+    sympathise with my sysadmin friends who feel that devops is turning into a
+    trend of developers thinking they can do without sysadmins. Reinventing package
+    managers. Bundling dependencies. Building "apps" instead of components.
+
+    I wish that people who deploy a system built on such premises, have it become
+    so successful that they end up being paid to maintain them for their whole
+    career. That is certainly what I wish and strive for, for me and my own
+    projects. In my experience, a sustainable and maintainable system won't come
+    out of the startup mindset of building something quick&dirty, then sell it and
+    move on to something else.
+
+    In my experience, the basis for having sustainable and maintainable systems
+    have been well known and tested in Debian, and several other distributions, for
+    over two decades. At FOSDEM, we thought that we need a name for such a mindset.
+
+    Between beers, that name came to be "debops". (It's not just Debian, though:
+    many other distributions get it right, too)
+
+    -- Enrico Zini, `"Debops" <https://www.enricozini.org/blog/2014/debian/debops/>`_
+
+His words deeply resonated with me. I would like to think that my work on
+DebOps will be useful to other Debian sysadmins and users out there, for many
+years to come. I hope that with time DebOps will grow beyond just a software
+project and will become something much more, either within Debian itself, or
+right beside it.
