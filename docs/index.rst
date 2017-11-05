@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
    :glob:
 
+   debops-playbooks/index
    debops-policy/index
 
 

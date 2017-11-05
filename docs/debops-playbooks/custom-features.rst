@@ -1,7 +1,7 @@
 Custom DebOps features
 ======================
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 To make integration of DebOps roles with your own infrastructure easier, DebOps
 playbooks include a set of Ansible plugins and introduce several new concepts

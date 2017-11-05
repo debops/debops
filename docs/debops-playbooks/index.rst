@@ -11,8 +11,6 @@ DebOps playbooks
    custom-features
    custom-environment
    guides/index
-   copyright
-   changelog
 
 ..
  Local Variables:

@@ -1,7 +1,7 @@
 Playbook environment variables
 ==============================
 
-.. include:: includes/all.rst
+.. include:: ../includes/global.rst
 
 In certain situations, for example on a network where direct Internet access is
 not allowed and users are required to use a HTTP proxy, you might need to
