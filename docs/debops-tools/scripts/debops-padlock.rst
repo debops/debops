@@ -1,7 +1,7 @@
 The :command:`debops-padlock` command
 =====================================
 
-.. include:: ../includes/all_from_subdir.rst
+.. include:: ../../includes/global.rst
 
 An optional script that allows you to encrypt your secrets directory using
 EncFS and GPG.

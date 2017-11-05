@@ -16,8 +16,6 @@ DebOps scripts
    scripts/debops-padlock
    scripts/debops-task
    contributing
-   copyright
-   changelog
 
 ..
  Local Variables:
