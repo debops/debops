@@ -136,47 +136,47 @@ right beside it.
 Robin `ypid` Schneider
 ----------------------
 
-I made the switch to GNU/Linux as my main OS in August 2009 and self-thought
+I made the switch to GNU/Linux as my main OS in August 2009 and self-taught
 myself most of it‘s internals when I was in the last years of secondary school.
 Since 2012 I'm primarily using `Debian GNU/Linux <https://www.debian.org/>`__
 be it on private and work computers and servers alike.
 I really like Debian and would like to become a Debian Developer some day.
 
-Starting in 2012, I worked 5 years as a IT Consultant until 2017 mainly
-deploying and advocating Free and open-source software. During that time, I
-setup and deployed a monitoring appliance based on Debian, Icinga and Check_MK
-as well as file syncing appliance based Debian and ownCloud. The file syncing
+Starting in 2012, I worked 5 years as a IT Consultant until 2017, mainly
+deploying and advocating Free and Open Source software. During that time, I
+set up and deployed a monitoring appliance based on Debian, Icinga and Check_MK
+as well as file syncing appliance based on Debian and ownCloud. The file syncing
 appliance was build from the ground up with DebOps and deployment was also done
-with Ansible and DebOps. The monitoring appliance as setup by me before I knew
+with Ansible and DebOps. The monitoring appliance was set up by me before I knew
 fancy tools like Ansible/DebOps. Currently, I am working as a full-time
-sysadmin mainly doing scripting, monitoring, security and automation. Sadly, neither
+sysadmin, mainly doing scripting, monitoring, security and automation. Sadly, neither
 Debian, nor Ansible/DebOps play a big role currently. Feel free to get in touch if
 you think otherwise and are fully committed to Free Software.
 
 I came to DebOps shortly after I settled on Ansible as the configuration
-management system of choice for my private infrastructure because DebOps is the
-most comprehensive approach to CM for Debian GNU/Debian I could find. Since
+management system of choice for my private infrastructure, because DebOps is the
+most comprehensive approach to CM for Debian GNU/Linux I could find. Since
 2015-02 I am using it for most of my machines and various projects at work and
-am quite happy with it. I did not lose much time as a user of DebOps and
+I'm quite happy with it. I did not lose much time as a user of DebOps and
 started contributing to it and helping DebOps evolve. In 2016-07, I officially
-became the second DebOps Developer when Maciej and me setup the debops-keyring.
+became the second DebOps Developer when Maciej and me set up the debops-keyring.
 
-One of my big interests is IT security so together with Maciej I put much
-effort into DebOps to create something worthwhile that can be relied upon to a
+One of my big interests is IT security, so together with Maciej I put a lot of
+effort into DebOps to create something worthwhile, that can be relied upon to a
 reasonable extend, be Free Software and auditable. I am actively working on making the
 project as secure and privacy-friendly by default as possible and I will not
 stand backdoors or any kind of weakening which third parties might like to
 include in projects like DebOps. I am not using every component/role that
-DebOps provides currently, but the once I do are carefully reviewed and
+DebOps provides currently, but the ones I do are carefully reviewed and
 tested by me. Refer to https://github.com/ypid/ypid-ansible-common/ for my
 ongoing, digitally signed status of this review. I understand that being a
-developers of a project meant to setup and configure thousands of servers and
+developer of a project designed to set up and configure thousands of servers and
 workstations (not the main goal of DebOps but it works quite nice for me)
 results in a lot of responsibility. I am doing what I can to keep up with that.
 For example, I switched to Qubes OS in 2016-12. All my development work is done
 from there from now on. OpenPGP signatures come from stripped down, offline
 VMs. The reason I am doing all of this as a responsable sysadmin and developer
-is to keep our dear users safe in those difficult and advanced times.
+is to keep our dear users safe during those difficult and advanced times.
 
 DebOps is already one of a kind when it comes to configuration management for
 Debian. The reason I joined the project is it’s commitment to excellence which
