@@ -17,6 +17,7 @@ Contents:
    debops-policy/index
    ansible/roles/*/index
    debops-api/index
+   philosophy
 
 
 .. |DebOps logo| image:: _static/images/debops-small.png
