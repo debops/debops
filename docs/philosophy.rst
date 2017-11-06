@@ -9,8 +9,8 @@ its goals are, and where it is heading.
 Maciej Delmanowski
 ------------------
 
-I'm using Linux operating system since 2001. Since 2002 I'm using primarly
-`Debian GNU/Linux <https://www.debian.org/>`__ distribution, or its
+I'm using GNU/Linux as operating system since 2001. Since 2002 I'm using primarily
+the `Debian GNU/Linux <https://www.debian.org/>`__ distribution, or its
 derivatives, both on private and work computers, workstations and servers
 alike. I really like Debian, both from the software side, as well as the
 `philosophy behind the project <https://wiki.debian.org/WhyDebian>`_.
@@ -22,7 +22,7 @@ administration, therefore this is what I'd like to offer to the Debian
 community - my experience as a sysadmin, the knowledge how to manage a Debian
 host, or a cluster of hosts together.
 
-In the past that was primarly done through `books <https://debian-handbook.info/>`_,
+In the past that was primarily done through `books <https://debian-handbook.info/>`_,
 blog posts, HOWTOs, manual pages. But this method is brittle, and requires
 a person that can process the information, adapt it to their needs as well as
 changes to the current operating system and software stack, and perform the
@@ -31,12 +31,12 @@ been created, that offer another avenue of sharing the knowledge about system
 administration in a different, programmable and automated way.
 
 The `Ansible <https://github.com/ansible/ansible>`__ project is one such tool.
-It has very easy to use, but powerful configuration language, very friendly
+It is very easy to use, but powerful configuration language, very friendly
 towards system administrators. In the past, while evaluating different
 configuration management systems to use at my workplace, I noticed that there
 were no easy to use, extensible, general purpose projects that managed
 Debian-based environments using Ansible. Since I needed such a project to
-manage different, heterogenous Debian servers, I started writing one. Over
+manage different, heterogeneous Debian servers, I started writing one. Over
 time, it has evolved into DebOps.
 
 The name "DebOps" is a portmanteau of "Debian" and "Operations", and it hints
@@ -131,3 +131,55 @@ DebOps will be useful to other Debian sysadmins and users out there, for many
 years to come. I hope that with time DebOps will grow beyond just a software
 project and will become something much more, either within Debian itself, or
 right beside it.
+
+
+Robin `ypid` Schneider
+----------------------
+
+I made the switch to GNU/Linux as my main OS in August 2009 and self-thought
+myself most of it‘s internals when I was in the last years of secondary school.
+Since 2012 I'm primarily using `Debian GNU/Linux <https://www.debian.org/>`__
+be it on private and work computers and servers alike.
+I really like Debian and would like to become a Debian Developer some day.
+
+Starting in 2012, I worked 5 years as a IT Consultant until 2017 mainly
+deploying and advocating Free and open-source software. During that time, I
+setup and deployed a monitoring appliance based on Debian, Icinga and Check_MK
+as well as file syncing appliance based Debian and ownCloud. The file syncing
+appliance was build from the ground up with DebOps and deployment was also done
+with Ansible and DebOps. The monitoring appliance as setup by me before I knew
+fancy tools like Ansible/DebOps. Currently, I am working as a full-time
+sysadmin mainly doing scripting, monitoring, security and automation. Sadly, neither
+Debian, nor Ansible/DebOps play a big role currently. Feel free to get in touch if
+you think otherwise and are fully committed to Free Software.
+
+I came to DebOps shortly after I settled on Ansible as the configuration
+management system of choice for my private infrastructure because DebOps is the
+most comprehensive approach to CM for Debian GNU/Debian I could find. Since
+2015-02 I am using it for most of my machines and various projects at work and
+am quite happy with it. I did not lose much time as a user of DebOps and
+started contributing to it and helping DebOps evolve. In 2016-07, I officially
+became the second DebOps Developer when Maciej and me setup the debops-keyring.
+
+One of my big interests is IT security so together with Maciej I put much
+effort into DebOps to create something worthwhile that can be relied upon to a
+reasonable extend, be Free Software and auditable. I am actively working on making the
+project as secure and privacy-friendly by default as possible and I will not
+stand backdoors or any kind of weakening which third parties might like to
+include in projects like DebOps. I am not using every component/role that
+DebOps provides currently, but the once I do are carefully reviewed and
+tested by me. Refer to https://github.com/ypid/ypid-ansible-common/ for my
+ongoing, digitally signed status of this review. I understand that being a
+developers of a project meant to setup and configure thousands of servers and
+workstations (not the main goal of DebOps but it works quite nice for me)
+results in a lot of responsibility. I am doing what I can to keep up with that.
+For example, I switched to Qubes OS in 2016-12. All my development work is done
+from there from now on. OpenPGP signatures come from stripped down, offline
+VMs. The reason I am doing all of this as a responsable sysadmin and developer
+is to keep our dear users safe in those difficult and advanced times.
+
+DebOps is already one of a kind when it comes to configuration management for
+Debian. The reason I joined the project is it’s commitment to excellence which
+I now like to give back to the project and all its users.
+
+"We do these things not because they are easy but because they are hard."
