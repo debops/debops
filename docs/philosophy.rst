@@ -9,8 +9,8 @@ its goals are, and where it is heading.
 Maciej Delmanowski
 ------------------
 
-I'm using Linux operating system since 2001. Since 2002 I'm using primarly
-`Debian GNU/Linux <https://www.debian.org/>`__ distribution, or its
+I'm using GNU/Linux as operating system since 2001. Since 2002 I'm using primarily
+the `Debian GNU/Linux <https://www.debian.org/>`__ distribution, or its
 derivatives, both on private and work computers, workstations and servers
 alike. I really like Debian, both from the software side, as well as the
 `philosophy behind the project <https://wiki.debian.org/WhyDebian>`_.
@@ -22,7 +22,7 @@ administration, therefore this is what I'd like to offer to the Debian
 community - my experience as a sysadmin, the knowledge how to manage a Debian
 host, or a cluster of hosts together.
 
-In the past that was primarly done through `books <https://debian-handbook.info/>`_,
+In the past that was primarily done through `books <https://debian-handbook.info/>`_,
 blog posts, HOWTOs, manual pages. But this method is brittle, and requires
 a person that can process the information, adapt it to their needs as well as
 changes to the current operating system and software stack, and perform the
@@ -31,12 +31,12 @@ been created, that offer another avenue of sharing the knowledge about system
 administration in a different, programmable and automated way.
 
 The `Ansible <https://github.com/ansible/ansible>`__ project is one such tool.
-It has very easy to use, but powerful configuration language, very friendly
+It is very easy to use, but powerful configuration language, very friendly
 towards system administrators. In the past, while evaluating different
 configuration management systems to use at my workplace, I noticed that there
 were no easy to use, extensible, general purpose projects that managed
 Debian-based environments using Ansible. Since I needed such a project to
-manage different, heterogenous Debian servers, I started writing one. Over
+manage different, heterogeneous Debian servers, I started writing one. Over
 time, it has evolved into DebOps.
 
 The name "DebOps" is a portmanteau of "Debian" and "Operations", and it hints
