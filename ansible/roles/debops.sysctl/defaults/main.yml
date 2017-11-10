@@ -16,7 +16,11 @@
 # .. envvar:: sysctl__shared_memory_configure [[[
 #
 # Should the shared memory be configured by the ``debops.sysctl`` role?
-sysctl__shared_memory_configure: True
+sysctl__shared_memory_configure: '{{ True
+                                     if not (ansible_virtualization_role == "guest"
+                                        and (ansible_virtualization_type == "openvz"
+                                        or ansible_virtualization_type == "lxc"))
+                                     else False }}'
 
                                                                    # ]]]
 # .. envvar:: sysctl__shared_memory_base [[[
