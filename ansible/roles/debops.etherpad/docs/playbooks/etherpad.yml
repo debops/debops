@@ -20,13 +20,14 @@
       logrotate__dependent_config:
         - '{{ etherpad__logrotate__dependent_config }}'
 
-    - role: debops.nodejs
-      tags: [ 'role::nodejs' ]
-
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ nodejs__apt_preferences__dependent_list }}'
+
+    - role: debops.nodejs
+      tags: [ 'role::nodejs' ]
 
     - role: debops.ferm
       tags: [ 'role::ferm' ]

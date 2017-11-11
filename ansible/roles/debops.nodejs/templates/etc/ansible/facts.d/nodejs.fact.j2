@@ -1,8 +1,27 @@
-{% set nodejs__tpl_upstream = (ansible_local.nodejs.upstream if (ansible_local|d() and ansible_local.nodejs|d() and ansible_local.nodejs.upstream|d()) else nodejs__upstream) %}
-{% if nodejs__upstream | bool %}
-{%   set nodejs__tpl_upstream = True %}
-{% endif %}
-{
-"configured": true,
-"upstream": {{ nodejs__tpl_upstream | bool | lower }}
-}
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+output = loads('''{{
+    {
+        "installed": True,
+        "upstream": (ansible_local.nodejs.upstream
+                     if (ansible_local|d() and
+                         ansible_local.nodejs|d() and
+                         ansible_local.nodejs.upstream|d())
+                     else nodejs__upstream),
+        "yarn_upstream": (ansible_local.nodejs.yarn_upstream
+                         if (ansible_local|d() and
+                             ansible_local.nodejs|d() and
+                             ansible_local.nodejs.yarn_upstream|d())
+                         else nodejs__yarn_upstream)
+    } | to_json }}''')
+
+print(dumps(output, sort_keys=True, indent=2))
