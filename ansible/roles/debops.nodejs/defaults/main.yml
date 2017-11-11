@@ -128,13 +128,40 @@ nodejs__npm_git_update: False
 nodejs__npm_git_install_command: 'bin/npm-cli.js install -g'
                                                                    # ]]]
                                                                    # ]]]
+# Yarn upstream configuration [[[
+# -------------------------------
+
+# .. envvar:: nodejs__yarn_upstream [[[
+#
+# Enable or disable support for Yarn upstream APT repository.
+nodejs__yarn_upstream: '{{ True
+                           if (ansible_local|d() and ansible_local.nodejs|d() and
+                               ansible_local.nodejs.yarn_upstream is defined and
+                               ansible_local.nodejs.yarn_upstream|bool)
+                           else False }}'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__yarn_upstream_key_id [[[
+#
+# GPG fingerprint of Yarn APT repository signing key.
+nodejs__yarn_upstream_key_id: '72ECF46A56B4AD39C907BBB71646B01B86E50310'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__yarn_upstream_repository [[[
+#
+# URL of the NodeSource APT repository in ``sources.list`` format.
+nodejs__yarn_upstream_repository: 'deb https://dl.yarnpkg.com/debian/ stable main'
+                                                                   # ]]]
+                                                                   # ]]]
 # APT packages [[[
 # ----------------
 
 # .. envvar:: nodejs__base_packages [[[
 #
 # List of base APT packages to install.
-nodejs__base_packages: [ 'nodejs' ]
+nodejs__base_packages:
+  - 'nodejs'
+  - '{{ "yarn" if nodejs__yarn_upstream|bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__distribution_packages [[[

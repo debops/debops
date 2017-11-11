@@ -49,6 +49,9 @@ Changed
   The role will now install NPM using the GitHub source, unless upstream NodeJS is
   enabled, which includes its own NPM version.
 
+  The ``debops.nodejs`` role can now install `Yarn <https://yarnpkg.com/>`_
+  package manager using its upstream APT repository (not enabled by default).
+
 Removed
 ~~~~~~~
 

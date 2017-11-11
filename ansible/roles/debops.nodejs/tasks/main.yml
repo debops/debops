@@ -17,6 +17,23 @@
     update_cache: True
   when: nodejs__upstream|bool
 
+- name: Add upstream Yarn APT repository GPG key
+  apt_key:
+    id: '{{ nodejs__yarn_upstream_key_id }}'
+    state: 'present'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+  when: nodejs__yarn_upstream|bool
+
+- name: Add upstream Yarn APT repository
+  apt_repository:
+    repo: '{{ nodejs__yarn_upstream_repository }}'
+    state: 'present'
+    update_cache: True
+  when: nodejs__yarn_upstream|bool
+
 - name: Ensure that the distribution 'npm' package is uninstalled
   package:
     name: 'npm'

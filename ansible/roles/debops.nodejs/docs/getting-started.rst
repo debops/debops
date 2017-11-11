@@ -21,6 +21,14 @@ On Debian Jessie, role will install the ``nodejs`` package from the
 and Stable Debian releases.
 
 
+Support for Yarn package manager
+--------------------------------
+
+The ``debops.nodejs`` role can install Yarn package manager from its upstream
+APT repository. By default this is disabled; to enable Yarn installation, you
+need to set the ``nodejs__yarn_upstream`` variable to ``True``.
+
+
 Example inventory
 -----------------
 
