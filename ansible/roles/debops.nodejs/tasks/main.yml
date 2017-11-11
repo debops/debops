@@ -40,6 +40,16 @@
     - '{{ nodejs__host_packages }}'
     - '{{ nodejs__dependent_packages }}'
 
+# need this to resolve error(s) on debops.etherpad: Manage Etherpad plugins
+# /usr/bin/env: ‘node’: No such file or directory
+- name: Create symlink for node
+  file:
+    src: '/usr/bin/nodejs'
+    dest: '/usr/bin/node'
+    owner: 'root'
+    group: 'root'
+    state: link
+
 - name: Install NPM packages
   npm:
     name:           '{{ item.name           | d(item) }}'
