@@ -13,6 +13,14 @@ You can read more details about the NPM removal from Debian here:
 http://www.grulic.org.ar/~mdione/glob/posts/installing-npm-on-debian-testing/
 
 
+NodeJS from ``jessie-backports`` repository
+-------------------------------------------
+
+On Debian Jessie, role will install the ``nodejs`` package from the
+``jessie-backports`` repository to ensure feature parity between the Oldstable
+and Stable Debian releases.
+
+
 Example inventory
 -----------------
 

@@ -218,4 +218,20 @@ nodejs__npm_dependent_packages: []
 nodejs__npm_production_mode: True
                                                                    # ]]]
                                                                    # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: nodejs__apt_preferences__dependent_list [[[
+#
+# Configuration for the debops.apt_preferences_ Ansible role.
+nodejs__apt_preferences__dependent_list:
+
+  - packages: [ 'nodejs', 'nodejs-*', 'node-*', 'libssl1.0.0' ]
+    backports: [ 'jessie' ]
+    reason: 'Unsupported NodeJS version, parity with next Debian release'
+    by_role: 'debops_nodejs'
+    filename: 'debops_nodejs.pref'
+    state: '{{ "absent" if nodejs__upstream|bool else "present" }}'
+                                                                   # ]]]
+                                                                   # ]]]
                                                                    # ]]]
