@@ -51,13 +51,15 @@ See also: https://github.com/debops/ansible-etherpad/pull/16/files#r41485963
   "dbSettings" : {
   {% if etherpad__database in ['dirty', 'sqlite'] -%}
       "filename" : "{{ etherpad_database_config[etherpad__database].filename }}"
-  {% elif etherpad__database in ['mysql', 'postgresql'] -%}
+  {% elif etherpad__database in ['mysql', 'postgres'] -%}
       "user"    : "{{ etherpad_database_config[etherpad__database].username }}",
       "host"    : "{{ etherpad_database_config[etherpad__database].hostname }}",
       {% if etherpad_database_connection == 'port' %}
         "port"    : "{{ etherpad_database_config[etherpad__database].port }}",
       {% else %}
+        {% if etherpad__database in ['mysql'] -%}
          "port"    : "{{ etherpad_database_config[etherpad__database].socket }}",
+        {% endif %}
       {% endif %}
       "password": "{{ etherpad_database_config[etherpad__database].password | default('') }}",
       "database": "{{ etherpad_database_config[etherpad__database].database }}"
