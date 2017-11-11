@@ -110,4 +110,9 @@
     dest: '/etc/ansible/facts.d/nodejs.fact'
     owner: 'root'
     group: 'root'
-    mode: '0644'
+    mode: '0755'
+  register: nodejs__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: nodejs__register_facts|changed
