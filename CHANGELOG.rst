@@ -45,6 +45,10 @@ Changed
 - The project repository is tested using :command:`pycodestyle` for compliance
   with Python's `PEP8 Style Guide <https://pep8.org/>`_.
 
+- [debops.nodejs] The ``npm`` package has been removed from Debian Stable.
+  The role will now install NPM using the GitHub source, unless upstream NodeJS is
+  enabled, which includes its own NPM version.
+
 Removed
 ~~~~~~~
 

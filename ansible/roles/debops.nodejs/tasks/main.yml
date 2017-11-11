@@ -17,6 +17,12 @@
     update_cache: True
   when: nodejs__upstream|bool
 
+- name: Ensure that the distribution 'npm' package is uninstalled
+  package:
+    name: 'npm'
+    state: 'absent'
+  when: nodejs__npm_git_enabled|bool
+
 - name: Install APT packages
   package:
     name: '{{ item }}'
@@ -40,6 +46,21 @@
     - '{{ nodejs__host_packages }}'
     - '{{ nodejs__dependent_packages }}'
 
+- name: Clone NPM repository
+  git:
+    repo: '{{ nodejs__npm_git_repo }}'
+    dest: '{{ nodejs__npm_git_dest }}'
+    version: '{{ nodejs__npm_git_version }}'
+    update: '{{ nodejs__npm_git_update|bool }}'
+  register: nodejs__register_npm_git
+  when: nodejs__npm_git_enabled|bool
+
+- name: Install NPM from source
+  command: '{{ nodejs__npm_git_install_command }}'
+  args:
+    chdir: '{{ nodejs__npm_git_dest }}'
+  when: nodejs__npm_git_enabled|bool and nodejs__register_npm_git|changed
+
 - name: Install NPM packages
   npm:
     name:           '{{ item.name           | d(item) }}'
@@ -56,6 +77,7 @@
     - '{{ nodejs__npm_group_packages }}'
     - '{{ nodejs__npm_host_packages }}'
     - '{{ nodejs__npm_dependent_packages }}'
+  when: nodejs__upstream|bool or nodejs__npm_git_enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
   file:
