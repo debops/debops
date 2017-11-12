@@ -12,9 +12,9 @@ help:
 clean:          ## Clean up project directory
 clean: clean-tests
 
-.PHONY: tests
-tests:          ## Test code in the repository
-tests: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml
+.PHONY: test-all
+test-all:          ## Perform all DebOps tests
+test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml
 
 .PHONY: syntax
 syntax:         ## Check Ansible playbook syntax
