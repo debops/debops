@@ -14,7 +14,7 @@ clean: clean-tests
 
 .PHONY: tests
 tests:          ## Test code in the repository
-tests: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax
+tests: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml
 
 .PHONY: syntax
 syntax:         ## Check Ansible playbook syntax
@@ -44,6 +44,11 @@ test-playbook-syntax:
 	@ANSIBLE_ROLES_PATH="ansible/roles" ansible-playbook --syntax-check \
 		ansible/playbooks/bootstrap.yml \
 		ansible/playbooks/site.yml
+
+.PHONY: test-yaml
+test-yaml:     ## Test YAML syntax using yamllint
+	@printf "%s\n" "Testing YAML syntax using yamllint..."
+	@yamllint . || true
 
 .PHONY: test-debops-tools
 test-debops-tools:
