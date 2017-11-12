@@ -12,9 +12,9 @@ help:
 clean:          ## Clean up project directory
 clean: clean-tests
 
-.PHONY: tests
-tests:          ## Test code in the repository
-tests: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax
+.PHONY: test-all
+test-all:          ## Perform all DebOps tests
+test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml
 
 .PHONY: syntax
 syntax:         ## Check Ansible playbook syntax
@@ -28,6 +28,7 @@ check: fail-if-git-dirty
 test-pep8:      ## Test PEP8 compliance
 	@printf "%s\n" "Testing PEP8 compliance using pycodestyle..."
 	@pycodestyle --show-source --statistics .
+	@./lib/tests/check-pep8 || true
 
 .PHONY: clean-tests
 clean-tests:    ## Clean up test artifacts
@@ -44,6 +45,11 @@ test-playbook-syntax:
 	@ANSIBLE_ROLES_PATH="ansible/roles" ansible-playbook --syntax-check \
 		ansible/playbooks/bootstrap.yml \
 		ansible/playbooks/site.yml
+
+.PHONY: test-yaml
+test-yaml:     ## Test YAML syntax using yamllint
+	@printf "%s\n" "Testing YAML syntax using yamllint..."
+	@yamllint . || true
 
 .PHONY: test-debops-tools
 test-debops-tools:
