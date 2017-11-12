@@ -28,6 +28,7 @@ check: fail-if-git-dirty
 test-pep8:      ## Test PEP8 compliance
 	@printf "%s\n" "Testing PEP8 compliance using pycodestyle..."
 	@pycodestyle --show-source --statistics .
+	@./lib/tests/check-pep8 || true
 
 .PHONY: clean-tests
 clean-tests:    ## Clean up test artifacts
