@@ -27,6 +27,10 @@ Added
   - ``debops.sysfs``: configuration of the Linux kernel attributes through the
     :file:`/sys` filesystem. The role is not enabled by default.
 
+- You can now use Vagrant to create an Ansible Controller based on Debian
+  Stretch and use it to manage itself or other hosts over the network.
+  See the :file:`Vagrantfile` in the DebOps monorepo for more details.
+
 Changed
 ~~~~~~~
 
