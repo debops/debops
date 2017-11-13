@@ -63,18 +63,26 @@ if [ -n "${REAL_HOSTNAME}" ] ; then
 fi
 SCRIPT
 
-$bootstrap_ansible_controller = <<SCRIPT
+$bootstrap_ansible_debops = <<SCRIPT
 set -o nounset -o pipefail -o errexit
-
-if ! [ -h .local/share/debops/debops ] ; then
-    mkdir -p src .local/share/debops
-    ln -s /vagrant .local/share/debops/debops
-fi
 
 if ! type ansible > /dev/null 2>&1 ; then
     sudo apt-get update
-    sudo DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -yq install python-pip python-wheel python-setuptools vim ranger tree encfs sshfs
+    sudo DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -yq install python-pip python-wheel python-setuptools vim ranger tree encfs sshfs git
     sudo pip install pycodestyle unittest2 nose2 cov-core sphinx_rtd_theme yamllint ansible debops
+fi
+SCRIPT
+
+$setup_controller = <<SCRIPT
+set -o nounset -o pipefail -o errexit
+
+if ! [ -e .local/share/debops/debops ] ; then
+    mkdir -p src .local/share/debops
+    if [ -d "/vagrant" ] ; then
+        ln -s /vagrant .local/share/debops/debops
+    else
+        debops-update
+    fi
 fi
 
 if ! [ -d src/controller ] ; then
@@ -94,11 +102,21 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: $set_environment_variables
   config.vm.provision "shell", inline: $set_apt_cache
   config.vm.provision "shell", inline: $set_hostname
-  config.vm.provision "shell", inline: $bootstrap_ansible_controller, privileged: false
+  config.vm.provision "shell", inline: $bootstrap_ansible_debops, privileged: false
+  config.vm.provision "shell", inline: $setup_controller, privileged: false
 
   if Vagrant.has_plugin? 'vagrant-cachier'
     config.cache.enable :apt
     config.cache.scope = :box
   end
+
+  if Vagrant::Util::Platform.windows? then
+    # MS Windows doesn't support symlinks, so disable directory sync under it.
+    # DebOps will be installed normally, via 'debops-update'
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+  end
+
+  config.vm.post_up_message = "Thanks for trying DebOps! After logging in, run:
+      cd src/controller ; debops"
 
 end
