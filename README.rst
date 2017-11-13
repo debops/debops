@@ -53,7 +53,7 @@ DebOps:
 The configuration relies heavily on your Vagrant environment. Having a real
 domain is benefical. The box can be used to manage other Debian hosts as well.
 
-See the `Vagrantfile <https://github.com/debops/debops/blob/master/Vagrantfile`__
+See the `Vagrantfile <https://github.com/debops/debops/blob/master/Vagrantfile>`__
 for more details and configuration variables.
 
 
