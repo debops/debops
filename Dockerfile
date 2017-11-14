@@ -30,11 +30,14 @@ ENV DOCKER_ENVIRONMENT true
 RUN apt-get -q update \
     && DEBIAN_FRONTEND=noninteractive apt-get \
        --no-install-recommends -yq install \
+       levee \
+       python-apt \
        python-pip \
        python-wheel \
        python-setuptools \
        procps \
        sudo \
+       tree \
     && pip install \
        ansible \
        debops \
