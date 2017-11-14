@@ -1,5 +1,12 @@
 ---
 
+- name: Ensure that APT cache is valid
+  apt:
+    update_cache: True
+    cache_valid_time: '{{ "86400" if ansible_local|d() else omit }}'
+  when: ansible_pkg_mgr == 'apt'
+  tags: [ 'meta::provision' ]
+
 - name: Install required core packages
   package:
     name: '{{ item }}'

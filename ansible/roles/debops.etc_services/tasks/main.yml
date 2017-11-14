@@ -1,5 +1,13 @@
 ---
 
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ etc_services__base_packages }}'
+    - '{{ etc_services__packages }}'
+
 - name: Make sure /etc/services.d directory exists
   file:
     path:  '/etc/services.d'
