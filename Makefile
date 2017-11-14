@@ -8,30 +8,46 @@ help:
 	@printf "%s\n" "Useful targets:"
 	@egrep '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  make %-20s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: check
+check:          ## Perform project sanity checks
+check: fail-if-git-dirty
+
 .PHONY: clean
 clean:          ## Clean up project directory
 clean: clean-tests
 
-.PHONY: test-all
-test-all:          ## Perform all DebOps tests
-test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml
+
+.PHONY: docs
+docs:           ## Build Sphinx documentation
+docs: test-docs
+
+.PHONY: pep8
+pep8:           ## Test Python PEP8 compliance
+pep8: test-pep8
 
 .PHONY: syntax
 syntax:         ## Check Ansible playbook syntax
 syntax: test-playbook-syntax
 
-.PHONY: check
-check:          ## Perform project sanity checks
-check: fail-if-git-dirty
+.PHONY: test
+test:           ## Perform all DebOps tests
+test: test-all
+
+.PHONY: yaml
+yaml:           ## Test YAML syntax using yamllint
+yaml: test-yaml
+
+.PHONY: test-all
+test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml
 
 .PHONY: test-pep8
-test-pep8:      ## Test PEP8 compliance
+test-pep8:
 	@printf "%s\n" "Testing PEP8 compliance using pycodestyle..."
 	@pycodestyle --show-source --statistics .
 	@./lib/tests/check-pep8 || true
 
 .PHONY: clean-tests
-clean-tests:    ## Clean up test artifacts
+clean-tests:
 	@rm -vrf .coverage docs/_build/*
 
 .PHONY: test-docs
@@ -47,7 +63,7 @@ test-playbook-syntax:
 		ansible/playbooks/site.yml
 
 .PHONY: test-yaml
-test-yaml:     ## Test YAML syntax using yamllint
+test-yaml:
 	@printf "%s\n" "Testing YAML syntax using yamllint..."
 	@yamllint . || true
 
