@@ -16,6 +16,9 @@ check: fail-if-git-dirty
 clean:          ## Clean up project directory
 clean: clean-tests
 
+.PHONY: docker
+docker:         ## Check Docker image build
+docker: test-docker-build
 
 .PHONY: docs
 docs:           ## Build Sphinx documentation
@@ -38,13 +41,17 @@ yaml:           ## Test YAML syntax using yamllint
 yaml: test-yaml
 
 .PHONY: test-all
-test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml
+test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml test-docker-build
 
 .PHONY: test-pep8
 test-pep8:
 	@printf "%s\n" "Testing PEP8 compliance using pycodestyle..."
 	@pycodestyle --show-source --statistics .
 	@./lib/tests/check-pep8 || true
+
+.PHONY: test-docker-build
+test-docker-build:
+	@./lib/tests/check-docker-build
 
 .PHONY: clean-tests
 clean-tests:
