@@ -17,8 +17,8 @@ Example inventory
 
 .. code-block:: YAML
 
-   ## If you don’t what to track hashed passwords.
-   etckeeper__gitignore_group:
+   ## If you don’t want to track hashed passwords.
+   etckeeper__ignore_host_group_list:
      - 'shadow'
      - 'shadow-'
 
