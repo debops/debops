@@ -57,6 +57,24 @@ See the `Vagrantfile <https://github.com/debops/debops/blob/master/Vagrantfile>`
 for more details and configuration variables.
 
 
+Quick start with Docker
+-----------------------
+
+Start a Docker container which acts as an Ansible Controller host with DebOps
+support, based on Debian Stretch:
+
+.. code-block:: console
+
+   docker run -it debops/debops
+
+You can use configuration in the ``src/controller`` subdirectory to try out
+DebOps against the container, or create your own DebOps project directory using
+``debops-init`` command.
+
+See the `Dockerfile <https://github.com/debops/debops/blob/master/Dockerfile>`__
+for more details about using DebOps in a Docker container.
+
+
 Installation
 ------------
 
