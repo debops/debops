@@ -111,6 +111,14 @@
   tags: [ 'role::etckeeper:vcs_config' ]
 ## ]]]
 
+- name: Unstage ignored files from Git index
+  shell: etckeeper vcs ls-files -i --exclude-standard -z | xargs -0 etckeeper vcs reset --mixed --
+  register: git_reset
+  when:
+    - etckeeper__vcs == "git"
+    - etckeeper__register_init|changed
+  changed_when: git_reset.stdout
+
 - name: Create root commit
   command: etckeeper commit 'Initial commit created by Ansible.'
   when: etckeeper__register_init|changed
