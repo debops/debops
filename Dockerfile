@@ -22,6 +22,9 @@
 
 FROM debian:stretch-slim
 
+LABEL maintainer="Maciej Delmanowski <drybjed@gmail.com>" \
+      project="DebOps" homepage="https://debops.org/"
+
 ENV DOCKER_ENVIRONMENT true
 
 RUN apt-get -q update \
