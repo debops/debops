@@ -31,6 +31,9 @@ Added
   Stretch and use it to manage itself or other hosts over the network.
   See the :file:`Vagrantfile` in the DebOps monorepo for more details.
 
+- You can now build an Ansible Controller with DebOps support as a Docker
+  container. See the :file:`Dockerfile` in the DebOps monorepo for details.
+
 Changed
 ~~~~~~~
 
