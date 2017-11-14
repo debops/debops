@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# The entrypoint script for Docker containers.
+# See the 'Dockerfile' configuration file in the root of the repository for
+# more details.
+
+
+set -o nounset -o pipefail -o errexit
+
+if ! [ -d "src" ] ; then
+
+    debops-init src/controller
+    mkdir -p src/controller/ansible/inventory/host_vars/localhost
+
+    sed -i '/ansible_connection=local$/ c\localhost ansible_connection=local' \
+       src/controller/ansible/inventory/hosts
+
+    echo -e "---\n\n# Use smaller DH parameters to speed up test runs\ndhparam__bits: [ '1024' ]" \
+       > src/controller/ansible/inventory/host_vars/localhost/dhparam.yml
+
+fi
+
+exec "$@"
