@@ -508,12 +508,6 @@ etherpad__postgresql__dependent_roles:
     flags: [ 'NOSUPERUSER', 'NOCREATEDB', 'LOGIN' ]
 
                                                                    # ]]]
-# .. envvar:: etherpad__postgresql__dependent_groups [[[
-#
-# Group configuration for the debops.postgresql_ Ansible role.
-etherpad__postgresql__dependent_groups:
-
-                                                                   # ]]]
 # .. envvar:: etherpad__postgresql__dependent_databases [[[
 #
 # Database configuration for the debops.postgresql_ Ansible role.
@@ -532,6 +526,10 @@ etherpad__postgresql__dependent_databases:
 # ``~/.pgpass`` configuration for the debops.postgresql_ Ansible role.
 etherpad__postgresql__dependent_pgpass:
 
+  - owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    home: '{{ etherpad_home }}'
+    system: True
                                                                    # ]]]
 # .. envvar:: etherpad__nginx__dependent_upstreams [[[
 #
