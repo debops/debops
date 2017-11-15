@@ -153,6 +153,18 @@ etherpad_database_server: '{{ ansible_local.mariadb.server
                                     else "") }}'
 
                                                                    # ]]]
+# .. envvar:: etherpad_database_port [[[
+#
+# TCP port to use for Etherpad database.
+etherpad_database_port: '{{ ansible_local.mariadb.port
+                            if (ansible_local|d() and ansible_local.mariadb|d() and
+                                ansible_local.mariadb.port|d())
+                            else (ansible_local.postgresql.port
+                                  if (ansible_local|d() and ansible_local.postgresql|d() and
+                                      ansible_local.postgresql.port|d())
+                                  else "") }}'
+
+                                                                   # ]]]
 # .. envvar:: etherpad_database_user [[[
 #
 # Database user to use for Etherpad.
@@ -219,14 +231,14 @@ etherpad_database_config:
     database: '{{ etherpad_database_name }}'
     password: '{{ etherpad_database_password }}'
     socket:   '/var/run/mysqld/mysqld.sock'
-    port:     '3306'
+    port:     '{{ etherpad_database_port }}'
   postgres:
     hostname: '{{ etherpad_database_server }}'
     username: '{{ etherpad_database_user }}'
     database: '{{ etherpad_database_name }}'
     password: '{{ etherpad_database_password }}'
     socket:   '/var/run/postgresql'
-    port:     '5432'
+    port:     '{{ etherpad_database_port }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_bind [[[
@@ -505,7 +517,7 @@ etherpad__postgresql__dependent_groups:
 etherpad__postgresql__dependent_databases:
 
   - name: '{{ etherpad_database_name }}'
-    port: '5432'
+    port: '{{ etherpad_database_port }}'
     owner: '{{ etherpad_database_user }}'
     encoding: '{{ etherpad_database_encoding | d(omit) }}'
     lc_collate: '{{ etherpad_database_collate | d(omit) }}'
