@@ -97,6 +97,12 @@ reprepro_gpg_name: '{{ reprepro_domain.split(".")[0] | capitalize + " Automatic 
 reprepro_gpg_email: '{{ reprepro_distribution | lower + "-packages@" + reprepro_domain }}'
 reprepro_gpg_expire_days: '{{ (365 * 5) }}'
 
+# The debian-installer version in jessie (and before) does not support GPG keys signatures
+# using SHA512 or SHA384 digests. This variable configures GnuPG to not use these algorithms
+# This is ONLY relevant if you want to install using your repository. The GnuPG and APT in
+# an installed system support SHA512 and SHA384.
+reprepro_installer_jessie_compatibility: False
+
 # Name of the snapshot file which contains reprepro GnuPG key
 reprepro_gpg_snapshot_name: 'gnupg.tar'
 

@@ -1,3 +1,8 @@
+{% if reprepro_installer_jessie_compatibility %}
+{% set digest_preference = 'SHA256 SHA224' %}
+{% else %}
+{% set digest_preference = 'SHA512 SHA384 SHA256 SHA224' %}
+{% endif %}
 # This file is managed remotely, all changes will be lost
 
 # GPG Configuration Options
@@ -17,11 +22,11 @@ armor
 fixed-list-mode
 
 # OpenPGP Options
-personal-digest-preferences SHA512 SHA384 SHA256 SHA224
+personal-digest-preferences {{ digest_preference }}
 
 # GPG Esoteric Options
-default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 BZIP2 ZLIB ZIP Uncompressed
-cert-digest-algo SHA512
+default-preference-list {{ digest_preference }} AES256 AES192 AES CAST5 BZIP2 ZLIB ZIP Uncompressed
+cert-digest-algo {{ 'SHA256' if  reprepro_installer_jessie_compatibility else 'SHA512' }}
 no-comments
 no-emit-version
 
