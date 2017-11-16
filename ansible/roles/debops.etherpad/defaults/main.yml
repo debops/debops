@@ -123,7 +123,10 @@ etherpad_title: 'Etherpad'
 #
 # E-mail address of the instance administrator, will be shown on each new pad
 # (see ``etherpad_welcome_text`` below).
-etherpad_mail_admin: 'root@{{ ansible_domain }}'
+etherpad_mail_admin: '{{ ansible_local.core.admin_public_email[0]
+                         if (ansible_local|d() and ansible_local.core|d() and
+                             ansible_local.core.admin_public_email|d())
+                         else ("root@" + ansible_domain) }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_welcome_text [[[
@@ -151,6 +154,18 @@ etherpad_database_server: '{{ ansible_local.mariadb.server
                                     if (ansible_local|d() and ansible_local.postgresql|d() and
                                         ansible_local.postgresql.server|d())
                                     else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: etherpad_database_port [[[
+#
+# TCP port to use for Etherpad database.
+etherpad_database_port: '{{ ansible_local.mariadb.port
+                            if (ansible_local|d() and ansible_local.mariadb|d() and
+                                ansible_local.mariadb.port|d())
+                            else (ansible_local.postgresql.port
+                                  if (ansible_local|d() and ansible_local.postgresql|d() and
+                                      ansible_local.postgresql.port|d())
+                                  else "") }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_user [[[
@@ -219,14 +234,14 @@ etherpad_database_config:
     database: '{{ etherpad_database_name }}'
     password: '{{ etherpad_database_password }}'
     socket:   '/var/run/mysqld/mysqld.sock'
-    port:     '3306'
+    port:     '{{ etherpad_database_port }}'
   postgres:
     hostname: '{{ etherpad_database_server }}'
     username: '{{ etherpad_database_user }}'
     database: '{{ etherpad_database_name }}'
     password: '{{ etherpad_database_password }}'
     socket:   '/var/run/postgresql'
-    port:     '5432'
+    port:     '{{ etherpad_database_port }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_bind [[[
@@ -493,19 +508,13 @@ etherpad__postgresql__dependent_roles:
     flags: [ 'NOSUPERUSER', 'NOCREATEDB', 'LOGIN' ]
 
                                                                    # ]]]
-# .. envvar:: etherpad__postgresql__dependent_groups [[[
-#
-# Group configuration for the debops.postgresql_ Ansible role.
-etherpad__postgresql__dependent_groups:
-
-                                                                   # ]]]
 # .. envvar:: etherpad__postgresql__dependent_databases [[[
 #
 # Database configuration for the debops.postgresql_ Ansible role.
 etherpad__postgresql__dependent_databases:
 
   - name: '{{ etherpad_database_name }}'
-    port: '5432'
+    port: '{{ etherpad_database_port }}'
     owner: '{{ etherpad_database_user }}'
     encoding: '{{ etherpad_database_encoding | d(omit) }}'
     lc_collate: '{{ etherpad_database_collate | d(omit) }}'
@@ -517,6 +526,10 @@ etherpad__postgresql__dependent_databases:
 # ``~/.pgpass`` configuration for the debops.postgresql_ Ansible role.
 etherpad__postgresql__dependent_pgpass:
 
+  - owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    home: '{{ etherpad_home }}'
+    system: True
                                                                    # ]]]
 # .. envvar:: etherpad__nginx__dependent_upstreams [[[
 #
