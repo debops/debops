@@ -478,16 +478,10 @@ rsyslog__conf_network_modules:
       - comment: 'Enable UDP support'
         options: |-
           module(load="imudp")
-        state: '{{ "present"
-                  if (rsyslog__send_over_tls_only)
-                  else "absent" }}'
 
       - comment: 'Enable TCP support'
         options: |-
           module(load="imptcp")
-        state: '{{ "present"
-                  if (rsyslog__send_over_tls_only)
-                  else "absent" }}'
 
       - comment: 'Enable GnuTLS TCP support'
         options: |-
@@ -530,7 +524,7 @@ rsyslog__conf_network_input:
             ruleset="remote"
           )
         state: '{{ "present"
-                  if (not rsyslog__send_over_tls_only)
+                  if (not rsyslog__send_over_tls_only|bool)
                   else "absent" }}'
 
       - comment: 'Log messages from remote hosts over TCP'
@@ -541,7 +535,7 @@ rsyslog__conf_network_input:
             ruleset="remote"
           )
         state: '{{ "present"
-                  if (not rsyslog__send_over_tls_only)
+                  if (not rsyslog__send_over_tls_only|bool)
                   else "absent" }}'
 
       - comment: 'Log messages from remote hosts over TLS'
@@ -953,7 +947,7 @@ rsyslog__ferm__dependent_rules:
     role: 'rsyslog'
     accept_any: False
     rule_state: '{{ "present"
-                    if ("network" in rsyslog__capabilities and not rsyslog__send_over_tls_only)
+                    if ("network" in rsyslog__capabilities and not rsyslog__send_over_tls_only|bool)
                     else "absent" }}'
 
   - type: 'accept'
