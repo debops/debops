@@ -6,6 +6,18 @@
     that:
       - etckeeper__vcs in etckeeper__supported_vcs
 
+## Saving uncommitted changes in /etc/ if etckeeper is already configured [[[
+- name: Check whether /etc/ contains commitable changes
+  command: 'etckeeper unclean'
+  register: etckeeper__register_unclean_before
+  failed_when: False
+  changed_when: False
+
+- name: Saving uncommmitted changes in /etc
+  command: "etckeeper commit 'Ansible role {{ role_path | basename }}: saving uncommitted changes in /etc'"
+  when: etckeeper__register_unclean_before.rc == 0
+## ]]]
+
 ## Diverting the main configuration of etckeeper away leaves the VCS
 ## uninitiated until it has been fully configured.
 - name: Divert original configuration under /etc
