@@ -34,6 +34,9 @@ Added
 - You can now build an Ansible Controller with DebOps support as a Docker
   container. See the :file:`Dockerfile` in the DebOps monorepo for details.
 
+- You can now install DebOps on `Arch Linux <https://www.archlinux.org/>`__
+  using an included ``PKGBUILD`` file.
+
 Changed
 ~~~~~~~
 
