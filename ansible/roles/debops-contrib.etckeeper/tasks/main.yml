@@ -64,6 +64,7 @@
     - '{{ (etckeeper__ignore_list            |d([]) | list) }}'
     - '{{ (etckeeper__ignore_host_group_list |d([]) | list) }}'
     - '{{ (etckeeper__ignore_host_list       |d([]) | list) }}'
+  register: etckeeper__register_gitignore
 
 - name: Install /etc/.gitattributes configuration
   template:
@@ -111,13 +112,13 @@
   tags: [ 'role::etckeeper:vcs_config' ]
 ## ]]]
 
-- name: Unstage ignored files from Git index
-  shell: etckeeper vcs ls-files -i --exclude-standard -z | xargs -0 etckeeper vcs reset --mixed --
-  register: etckeeper__register_git_reset
+- name: Unstage and remove ignored files from Git index
+  shell: etckeeper vcs ls-files -i --exclude-standard -z | xargs -0 --no-run-if-empty etckeeper vcs rm --cached --
+  register: etckeeper__register_git_rm_cached_ignored_files
   when:
     - etckeeper__vcs == "git"
-    - etckeeper__register_init|changed
-  changed_when: etckeeper__register_git_reset.stdout
+    - etckeeper__register_gitignore|changed
+  changed_when: etckeeper__register_git_rm_cached_ignored_files.stdout
 
 - name: Create root commit
   command: etckeeper commit 'Initial commit created by Ansible.'
