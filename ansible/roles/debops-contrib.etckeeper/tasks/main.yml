@@ -145,3 +145,17 @@
 - name: Create root commit
   command: etckeeper commit 'Initial commit created by Ansible.'
   when: etckeeper__register_init|changed
+
+## Saving uncommitted changes in /etc/ after /etc/.gitignore modification [[[
+- name: Check whether /etc/ contains uncommitted changes
+  command: 'etckeeper unclean'
+  register: etckeeper__register_unclean_after
+  failed_when: etckeeper__register_unclean_after.rc > 1
+  changed_when: False
+
+- name: Saving uncommitted changes in /etc after /etc/.gitignore modification
+  command: "etckeeper commit 'Ansible role {{ role_path | basename }}: saving uncommitted changes in /etc/ after /etc/.gitignore modification'"
+  when:
+    - etckeeper__register_unclean_after.rc == 0
+    - etckeeper__vcs == "git"
+## ]]]
