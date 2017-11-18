@@ -55,16 +55,26 @@
   register: etckeeper__register_init
 
 - name: Add entries to /etc/.gitignore
-  lineinfile:
-    dest: '/etc/.gitignore'
-    line: '{{ item }}'
+  blockinfile:
+    path: '/etc/.gitignore'
+    block: |
+      {%
+        for item in
+          etckeeper__ignore_role_list | d() | list
+          + etckeeper__ignore_list | d() | list
+          + etckeeper__ignore_host_group_list | d() | list
+          + etckeeper__ignore_host_list | d() | list
+      %}
+      {{ item }}
+      {% endfor %}
     insertbefore: 'BOF'
-  with_flattened:
-    - '{{ (etckeeper__ignore_role_list       |d([]) | list) }}'
-    - '{{ (etckeeper__ignore_list            |d([]) | list) }}'
-    - '{{ (etckeeper__ignore_host_group_list |d([]) | list) }}'
-    - '{{ (etckeeper__ignore_host_list       |d([]) | list) }}'
+    marker: '# {mark} section managed by Ansible'
+    create: Yes
+    mode: 0600
+    owner: root
+    group: root
   register: etckeeper__register_gitignore
+  when: (etckeeper__vcs == 'git')
 
 - name: Install /etc/.gitattributes configuration
   template:
