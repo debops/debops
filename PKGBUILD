@@ -1,0 +1,47 @@
+# Build and install DebOps on the Arch Linux host
+#
+# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017 DebOps project https://debops.org/
+
+# To install DebOps on Arch Linux, after cloning the repository, run:
+#
+#     makepkg -si
+#
+# This will install all of the required dependencies, then build and install
+# the DebOps Python package.
+#
+# After installation, run 'debops-update' to download or update the
+# role/playbook code from GitHub. The DebOps monorepo will be downloaded in
+# '~/.local/share/debops/debops/' directory on your user account.
+
+
+# Maintainer: Maciej Delmanowski <drybjed@gmail.com>
+pkgname=debops-git
+_pkgname=debops
+pkgver=0.6.1
+pkgrel=1
+pkgdesc="Your Debian-based data center in a box"
+arch=('any')
+url="https://github.com/debops/debops/"
+license=('GPL3')
+depends=('python2' 'ansible' 'python2-netaddr' 'python2-ldap' 'python2-passlib' 'util-linux' 'encfs' 'gnupg')
+makedepends=('python2-setuptools' 'git')
+provides=('debops')
+conflicts=('debops')
+source=("$_pkgname::git+https://github.com/debops/debops")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+    cd "$_pkgname/lib/$_pkgname-tools"
+    python2 setup.py build
+}
+
+package() {
+    cd "$_pkgname/lib/$_pkgname-tools"
+    python2 setup.py install --root="$pkgdir" --optimize=1
+}
