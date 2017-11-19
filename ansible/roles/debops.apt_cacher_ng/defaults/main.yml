@@ -587,6 +587,7 @@ apt_cacher_ng__nginx__servers:
     filename: 'debops.apt_cacher_ng_https'
     enabled: True
     allow: '{{ apt_cacher_ng__allow + apt_cacher_ng__group_allow + apt_cacher_ng__host_allow }}'
+    state: '{{ "present" if (ansible_local|d() and ansible_local.pki|d()) else "absent" }}'
     listen: False
     type: 'proxy'
     proxy_pass: 'http://apt-cacher-ng'
