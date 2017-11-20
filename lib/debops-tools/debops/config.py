@@ -51,7 +51,7 @@ install-path: %(data-home)s/debops-playbooks
 
 # Locations where DebOps playbooks might be found
 # This MUST be a multi-line string to make ConfigParser work
-playbooks-paths: %(install-path)s/playbooks
+playbooks-paths: %(monorepo-path)s/ansible/playbooks
 
 [ansible defaults]
 ansible_managed = This file is managed remotely, all changes will be lost
