@@ -116,10 +116,10 @@
       with_nested:
         - '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
         - [ '{{ hashicorp__tar_suffix }}', '{{ hashicorp__hash_suffix }}', '{{ hashicorp__sig_suffix }}' ]
-      when: (ansible_local is undefined or (ansible_local|d() and (ansible_local.hashicorp is undefined or
+      when: (ansible_local.hashicorp is not defined or
              (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
-              (ansible_local.hashicorp.applications[item.0] is undefined or
-               (ansible_local.hashicorp.applications[item.0] != hashicorp__combined_version_map[item.0]))))))
+              (ansible_local.hashicorp.applications[item.0] is not defined or
+               (ansible_local.hashicorp.applications[item.0] != hashicorp__combined_version_map[item.0]))))
       tags: [ 'role::hashicorp:download', 'role::hashicorp:verify' ]
 
     - name: Download Consul Web UI
@@ -133,11 +133,11 @@
         - [ '{{ hashicorp__consul_webui_suffix }}' ]
       when: (hashicorp__consul_webui|bool and
              ('consul' in (hashicorp__applications + hashicorp__dependent_applications) | unique) and
-              (ansible_local is undefined or (ansible_local|d() and ansible_local.hashicorp is undefined or
+              (ansible_local.hashicorp is not defined or
                (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
-                (ansible_local.hashicorp.applications['consul'] is undefined or
+                (ansible_local.hashicorp.applications['consul'] is not defined or
                  (ansible_local.hashicorp.applications['consul'] != hashicorp__combined_version_map['consul'])) or
-                not ansible_local.hashicorp.consul_webui | bool))))
+                not ansible_local.hashicorp.consul_webui | bool)))
       tags: [ 'role::hashicorp:download', 'role::hashicorp:verify' ]
 
 
@@ -211,9 +211,9 @@
     - '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
     - '{{ hashicorp__register_unpack.results }}'
   when: (item.1|changed or (ansible_local|d() and
-         (ansible_local.hashicorp is undefined or
+         (ansible_local.hashicorp is not defined or
           (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
-           (ansible_local.hashicorp.applications[item.0] is undefined or
+           (ansible_local.hashicorp.applications[item.0] is not defined or
             (ansible_local.hashicorp.applications[item.0] != hashicorp__combined_version_map[item.0]))))))
   tags: [ 'role::hashicorp:install' ]
 
