@@ -1,6 +1,9 @@
 # {{ ansible_managed }}
 
 concurrent = {{ gitlab_runner__concurrent }}
+{% if gitlab_runner__metrics_server|d() %}
+metrics_server = "{{ gitlab_runner__metrics_server }}"
+{% endif %}
 
 {% set gitlab_runner__tpl_instances = [] %}
 {% set gitlab_runner__tpl_instance_tokens = [] %}
