@@ -169,5 +169,5 @@ file for more details about how to contribute to DebOps.
 Licensing
 ---------
 
-The DebOps project is licensed under the `GNU Gneral Public License 3.0 <https://www.gnu.org/licenses/gpl-3.0>`__.
+The DebOps project is licensed under the `GNU General Public License 3.0 <https://www.gnu.org/licenses/gpl-3.0>`__.
 You can find full text of the license in the `LICENSE <https://github.com/debops/debops/blob/master/LICENSE>`__ file.
