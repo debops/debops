@@ -47,7 +47,7 @@ data-home: $XDG_DATA_HOME/debops
 monorepo-path: %(data-home)s/debops
 
 # Default installation directory
-install-path: %(data-home)s/debops-playbooks
+install-path: %(data-home)s/debops
 
 # Locations where DebOps playbooks might be found
 # This MUST be a multi-line string to make ConfigParser work
