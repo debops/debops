@@ -2,7 +2,17 @@
 
 - name: Check samba config
   command: testparm -s
-  notify: Reload samba
+  notify: [ 'Reload nmbd', 'Reload smbd' ]
+
+- name: Reload nmbd
+  service:
+    name: 'nmbd'
+    state: 'reloaded'
+
+- name: Reload smbd
+  service:
+    name: 'smbd'
+    state: 'reloaded'
 
 - name: Reload samba
   service:
