@@ -73,9 +73,11 @@ http {
 {% if nginx_flavor == 'passenger' %}
         # Configuration options for Phusion Passenger
 {# These values are set at playbook runtime #}
+{% if ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] %}
         passenger_root {{ nginx_passenger_root }};
         passenger_ruby {{ nginx_passenger_ruby }};
 
+{% endif %}
         passenger_max_pool_size {{ nginx_passenger_max_pool_size }};
 
 {% if nginx_passenger_options %}

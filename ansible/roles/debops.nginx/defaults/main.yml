@@ -103,7 +103,13 @@ nginx_flavor_package_map:
 
   # nginx with support for Phusion Passenger compiled in. Requires external APT
   # repository. See https://phusionpassenger.com/ for more details.
-  'passenger': [ 'nginx-extras', 'passenger', 'ruby' ]
+  'passenger':
+    - 'nginx-extras'
+    - 'ruby'
+    - '{{ "passenger"
+          if (ansible_distribution_release in
+              [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+          else "libnginx-mod-http-passenger" }}'
 
   # Upstream version from https://nginx.org/ packaged for Debian
   'nginx.org': [ 'nginx' ]
