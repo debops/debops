@@ -43,6 +43,7 @@
     dest: '{{ dokuwiki__git_dest }}'
     bare: True
     update: True
+  become: True
   become_user: '{{ dokuwiki__user }}'
   register: dokuwiki__register_source
 
@@ -71,6 +72,7 @@
     executable: '/bin/sh'
     chdir: '{{ dokuwiki__git_dest }}'
     warn: False
+  become: True
   become_user: '{{ dokuwiki__user }}'
   register: dokuwiki__register_target_branch
   changed_when: dokuwiki__register_target_branch.stdout != dokuwiki__register_source.before
@@ -78,10 +80,11 @@
 - name: Checkout DokuWiki
   environment:
     GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
-  shell: git checkout -f {{ dokuwiki__git_version }}
+  command: git checkout -f {{ dokuwiki__git_version }}
   args:
     chdir: '{{ dokuwiki__git_dest }}'
     warn: False
+  become: True
   become_user: '{{ dokuwiki__user }}'
   register: dokuwiki__register_checkout
   when: (dokuwiki__register_source.before is undefined or
@@ -108,6 +111,7 @@
     dest: '{{ dokuwiki__git_checkout + "/lib/plugins/" + item.dest }}'
     version: '{{ item.version | d(omit) }}'
     update: True
+  become: True
   become_user: '{{ dokuwiki__user }}'
   with_flattened:
     - '{{ dokuwiki__default_plugins }}'
@@ -132,6 +136,7 @@
     dest: '{{ dokuwiki__git_checkout + "/lib/tpl/" + item.dest }}'
     version: '{{ item.version | d(omit) }}'
     update: True
+  become: True
   become_user: '{{ dokuwiki__user }}'
   with_flattened:
     - '{{ dokuwiki__default_templates }}'
