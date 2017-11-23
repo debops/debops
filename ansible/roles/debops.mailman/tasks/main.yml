@@ -88,6 +88,7 @@
          {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + mailman__site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
   args:
     creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
+    executable: '/bin/sh'
   become_user: 'list'
   register: mailman__register_site_list
   no_log: True
@@ -107,6 +108,7 @@
            {{ item.name }}
   args:
     removes: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
+    executable: '/bin/sh'
   with_items: '{{ mailman__lists }}'
   become_user: 'list'
   when: item.name|d() and item.state|d() and item.state == 'absent'
@@ -129,6 +131,7 @@
          {% endif %}
   args:
     creates: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
+    executable: '/bin/sh'
   with_items: '{{ mailman__lists }}'
   become_user: 'list'
   when: (item.name|d() and item.name and
