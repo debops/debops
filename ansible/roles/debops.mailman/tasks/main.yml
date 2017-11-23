@@ -89,6 +89,7 @@
   args:
     creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
     executable: '/bin/sh'
+  become: True
   become_user: 'list'
   register: mailman__register_site_list
   no_log: True
@@ -110,6 +111,7 @@
     removes: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
     executable: '/bin/sh'
   with_items: '{{ mailman__lists }}'
+  become: True
   become_user: 'list'
   when: item.name|d() and item.state|d() and item.state == 'absent'
 
@@ -133,6 +135,7 @@
     creates: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
     executable: '/bin/sh'
   with_items: '{{ mailman__lists }}'
+  become: True
   become_user: 'list'
   when: (item.name|d() and item.name and
          (item.state is undefined or item.state != 'absent'))
