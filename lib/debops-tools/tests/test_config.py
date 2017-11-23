@@ -240,9 +240,9 @@ class TestReadConfig2(TestCase):
              'monorepo-path': os.path.expanduser(
                  '~/.local/share/debops/debops'),
              'install-path': os.path.expanduser(
-                 '~/.local/share/debops/debops-playbooks'),
+                 '~/.local/share/debops/debops'),
              'playbooks-paths': [os.path.expanduser(
-                 '~/.local/share/debops/debops-playbooks/playbooks')],
+                 '~/.local/share/debops/debops/ansible/playbooks')],
              })
 
     def test_read_config_files_simple(self):
@@ -256,8 +256,8 @@ class TestReadConfig2(TestCase):
             cfg['paths'],
             {'data-home': '/opt/my/debops',
              'monorepo-path': '/opt/my/debops/debops',
-             'install-path': '/opt/my/debops/debops-playbooks',
-             'playbooks-paths': ['/opt/my/debops/debops-playbooks/playbooks'],
+             'install-path': '/opt/my/debops/debops',
+             'playbooks-paths': ['/opt/my/debops/debops/ansible/playbooks'],
              })
 
 
