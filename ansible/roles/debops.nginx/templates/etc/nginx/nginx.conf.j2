@@ -38,13 +38,6 @@ http {
         server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
         server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
 
-        # Custom file paths
-        client_body_temp_path {{ nginx_client_body_temp_path | d("/var/lib/nginx/body") }};
-        fastcgi_temp_path     {{ nginx_fastcgi_temp_path | d("/var/lib/nginx/fastcgi") }};
-        proxy_temp_path       {{ nginx_proxy_temp_path | d("/var/lib/nginx/proxy") }};
-        scgi_temp_path        {{ nginx_scgi_temp_path | d("/var/lib/nginx/scgi") }};
-        uwsgi_temp_path       {{ nginx_uwsgi_temp_path | d("/var/lib/nginx/uwsgi") }};
-
         # Logging
         access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log') }};
         error_log  {{ nginx_http_error_log  | default(nginx_log_path + '/error.log')  }};
