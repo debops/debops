@@ -17,6 +17,11 @@ The current repository maintainer_ is drybjed_.
 
 .. _debops-tools master: https://github.com/debops/debops-tools/compare/v0.5.0...master
 
+Changed
+~~~~~~~
+
+- Change DEFAULTS playbooks-path to monorepo-path to fix `debops-defaults` script [cultcom_]
+
 
 `debops-tools v0.5.0`_ - 2017-09-07
 -----------------------------------
