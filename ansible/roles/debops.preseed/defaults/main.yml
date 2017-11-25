@@ -46,7 +46,10 @@ preseed__domains:
 # .. envvar:: preseed__www
 #
 # Path to main directory where Preseed files are served from.
-preseed__www: '{{ ansible_local.nginx.www + "/preseed/configs" }}'
+preseed__www: '{{ (ansible_local.nginx.www
+                   if (ansible_local|d() and ansible_local.nginx|d() and
+                       ansible_local.nginx.www|d())
+                   else "/srv/www") + "/preseed/configs" }}'
 
 
 # .. envvar:: preseed__www_webserver
@@ -84,7 +87,10 @@ preseed__group: 'preseed'
 # .. envvar:: preseed__home
 #
 # Home directory of the Pressed user account.
-preseed__home: '{{ ansible_local.root.home + "/" + preseed__user }}'
+preseed__home: '{{ (ansible_local.root.home
+                    if (ansible_local|d() and ansible_local.root|d() and
+                        ansible_local.root.home|d())
+                    else "/var/local") + "/" + preseed__user }}'
 
 
 # .. Default Preseed list [[[1
@@ -180,7 +186,10 @@ preseed__admin_home: '{{ "/home/" + preseed__admin_name }}'
 # .. envvar:: preseed__admin_system_home
 #
 # Home directory of the administrator account, when it's a system account.
-preseed__admin_system_home: '{{ ansible_local.root.home + "/" + preseed__admin_name }}'
+preseed__admin_system_home: '{{ (ansible_local.root.home
+                                 if (ansible_local|d() and ansible_local.root|d() and
+                                     ansible_local.root.home|d())
+                                 else "/var/local") + "/" + preseed__admin_name }}'
 
 
 # .. envvar:: preseed__admin_home_group
@@ -453,6 +462,10 @@ preseed__nginx__server_https:
   filename: '{{ preseed__domains[0] + "_https" }}'
   name: '{{ preseed__domains }}'
   root: '{{ preseed__www_webserver }}'
+  state: '{{ "present"
+             if (ansible_local|d() and ansible_local.pki|d() and
+                 (ansible_local.pki.enabled|d())|bool)
+             else "absent" }}'
 
   access_policy: '{{ preseed__nginx_access_policy }}'
   auth_basic_realm: '{{ preseed__nginx_auth_realm }}'
