@@ -462,6 +462,10 @@ preseed__nginx__server_https:
   filename: '{{ preseed__domains[0] + "_https" }}'
   name: '{{ preseed__domains }}'
   root: '{{ preseed__www_webserver }}'
+  state: '{{ "present"
+             if (ansible_local|d() and ansible_local.pki|d() and
+                 (ansible_local.pki.enabled|d())|bool)
+             else "absent" }}'
 
   access_policy: '{{ preseed__nginx_access_policy }}'
   auth_basic_realm: '{{ preseed__nginx_auth_realm }}'
