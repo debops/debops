@@ -111,6 +111,8 @@
       tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
 
     - name: Verify OpenPGP signature
+      environment:
+        LC_MESSAGES: 'C'
       shell: |
           gpg --verify {{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] + "/" +
                           owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip.asc" }} \
