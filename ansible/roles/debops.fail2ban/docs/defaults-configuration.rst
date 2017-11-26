@@ -67,9 +67,10 @@ List of local ``fail2ban`` filters that should be present or absent when configu
   Optional. Custom definitions used by the filter.
 
 ``failregex``
-  Required. Regular expression(s) used by the filter to detect break-in attempts.
-  You can have the filter try to match multiple regular expressions. Each regular
-  expression should be on its own line.
+  Required. A string of regular expression(s) used by the filter to detect 
+  break-in attempts. You can have the filter try to match multiple regular 
+  expressions by using the ``|`` character (the YAML literal style operator). Each 
+  regular expression should be on its own line. Refer to the `examples`_ section.
 
 ``filename``
   Optional. Alternative name of the filter configuration file. If not specfied, it
@@ -83,6 +84,10 @@ List of local ``fail2ban`` filters that should be present or absent when configu
 ``state``
   Optional. If ``present``, the filter will be created when configuring ``fail2ban``.
   If ``absent``, the filter will be removed when configuring ``fail2ban``.
+
+Refer to the ``fail2ban`` `filter wiki`_ for more information.
+
+.. _filter wiki: https://www.fail2ban.org/wiki/index.php/MANUAL_0_8#Filters
 
 .. _fail2ban_jails:
 
@@ -122,8 +127,12 @@ options.
 
 .. _fail2ban wiki: http://www.fail2ban.org/wiki/index.php/MANUAL_0_8#Jails
 
+.. _examples:
+
 Examples:
 ~~~~~~~~~
+
+**Jails**
 
 Enable ``ssh`` jail and configure it to send mail messages about banned hosts::
 
@@ -142,4 +151,23 @@ postmaster::
         filename: '50_dovecot'
         enabled: 'true'
         destemail: 'postmaster@{{ ansible_domain }}'
+
+**Filters**
+
+Add custom local filter ``web-auth`` with multiple ``failregex`` rules::
+
+    fail2ban_filters:
+      - name: web-auth
+        failregex: |
+          Authentication failure for .* from <HOST>
+          Failed [-/\w]+ for .* from <HOST>
+          ROOT LOGIN REFUSED .* FROM <HOST>
+        state: present
+
+Add custom local filter ``root-auth`` with a single ``failregex`` rule::
+
+    fail2ban_filters:
+      - name: root-auth
+        failregex: 'Authentication failure for .* from <HOST>'
+        state: present
 
