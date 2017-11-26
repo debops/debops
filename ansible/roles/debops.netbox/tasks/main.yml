@@ -37,6 +37,7 @@
   pip:
     name: 'wsgiref'
     virtualenv: '{{ netbox__virtualenv }}'
+  become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_virtualenv
   changed_when: (netbox__register_virtualenv|success and
@@ -49,6 +50,7 @@
     version: '{{ netbox__git_version }}'
     bare: True
     update: True
+  become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_source
 
@@ -79,7 +81,9 @@
   command: git rev-parse {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
+    executable: '/bin/sh'
     warn: False
+  become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_target_branch
   changed_when: netbox__register_target_branch.stdout != netbox__register_source.before
@@ -90,7 +94,9 @@
   command: git checkout -f {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
+    executable: '/bin/sh'
     warn: False
+  become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_checkout
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
@@ -108,6 +114,8 @@
   shell: pip install --upgrade --force-reinstall pip setuptools
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: '/bin/sh'
+  become: True
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout|changed
 
@@ -115,6 +123,7 @@
   pip:
     virtualenv: '{{ netbox__virtualenv }}'
     requirements: '{{ netbox__git_checkout + "/requirements.txt" }}'
+  become: True
   become_user: '{{ netbox__user }}'
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
   when: netbox__register_checkout|changed
@@ -124,6 +133,7 @@
     name:       '{{ item.name | d(item) }}'
     version:    '{{ item.version | d(omit) }}'
     virtualenv: '{{ netbox__virtualenv }}'
+  become: True
   become_user: '{{ netbox__user }}'
   with_flattened: '{{ netbox__virtualenv_pip_packages }}'
   when: netbox__register_checkout|changed
@@ -145,6 +155,8 @@
   shell: ./manage.py migrate
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: '/bin/sh'
+  become: True
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout|changed
   register: netbox__register_migration
@@ -161,6 +173,8 @@
          | ./manage.py shell
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: '/bin/sh'
+  become: True
   become_user: '{{ netbox__user }}'
   when: (not netbox__register_installed.stat.exists|bool and
          not netbox__register_migration.stdout|search('No migrations to apply.'))
@@ -173,6 +187,8 @@
   shell: ./manage.py collectstatic --no-input
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: '/bin/sh'
+  become: True
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout|changed
 
@@ -183,6 +199,8 @@
   shell: ./manage.py loaddata initial_data
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: '/bin/sh'
+  become: True
   become_user: '{{ netbox__user }}'
   when: (netbox__load_initial_data|bool and not netbox__register_installed.stat.exists|bool and
          not netbox__register_migration.stdout|search('No migrations to apply.'))
