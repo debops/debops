@@ -110,6 +110,8 @@
   ## ownCloud/NextCloud provide a native hook/support.
 - name: Ensure that the ownCloud upgrade has completed
   command: '{{ owncloud__dpkg_hook_script }}'
+  args:
+    executable: '/bin/sh'
   when: (owncloud__variant in ["owncloud"] and
          owncloud__register_apt_install|changed and
          (ansible_local|d() and ansible_local.owncloud|d() and
