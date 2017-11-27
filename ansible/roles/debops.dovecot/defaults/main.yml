@@ -141,6 +141,15 @@ dovecot_sql_password_query: "SELECT userid AS username, domain, password FROM us
 # <http://wiki2.dovecot.org/MailLocation>`_
 dovecot_sql_user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
 
+# .. envvar:: dovecot_sql_iterate_query
+#
+# SQL query string to get a list of users. This function should return all values
+# ``user`` or both ``username`` and ``domain``.
+#
+# For more information about the iterate query , check `AuthDatabase/SQL
+# <https://wiki2.dovecot.org/AuthDatabase/SQL#User_iteration>` _
+dovecot_sql_iterate_query: "SELECT userid AS username, domain FROM users"
+
 # .. envvar:: dovecot_passwdfile_scheme
 #
 # Scheme method use by dovecot with password authentication
