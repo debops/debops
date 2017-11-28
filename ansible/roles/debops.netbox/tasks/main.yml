@@ -78,7 +78,7 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  command: git rev-parse {{ netbox__git_version }}
+  shell: git rev-parse {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
     executable: '/bin/sh'
@@ -91,7 +91,7 @@
 - name: Checkout NetBox
   environment:
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  command: git checkout -f {{ netbox__git_version }}
+  shell: git checkout -f {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
     executable: '/bin/sh'
