@@ -68,16 +68,16 @@
 - name: Set PHP base paths
   set_fact:
     php__etc_base: '{{ ("/etc/php/" + php__version)
-                       if (php__version | version_compare("7.0", ">="))
+                       if (php__version | version_compare("7.0", ">=") or php__sury|bool)
                        else "/etc/php5" }}'
     php__lib_base: '{{ ("/usr/lib/php/" + php__version)
-                       if (php__version | version_compare("7.0", ">="))
+                       if (php__version | version_compare("7.0", ">=") or php__sury|bool)
                        else "/usr/lib/php5" }}'
     php__run_base: '{{ "/run/php"
-                       if (php__version | version_compare("7.0", ">="))
+                       if (php__version | version_compare("7.0", ">=") or php__sury|bool)
                        else "/run" }}'
     php__logrotate_lib_base: '{{ "/usr/lib/php"
-                                 if (php__version | version_compare("7.0", ">="))
+                                 if (php__version | version_compare("7.0", ">=") or php__sury|bool)
                                  else "/usr/lib/php5" }}'
   tags: [ 'role::php:pools', 'role::php:config' ]
 
