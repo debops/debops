@@ -1,5 +1,8 @@
 ---
 
+- name: Pre hooks
+  include: '{{ lookup("task_src", "slapd/pre_main.yml") }}'
+
 - name: Configure domain for OpenLDAP in debconf
   debconf:
     name: 'slapd'
@@ -82,4 +85,7 @@
     state: 'present'
     job: '/usr/local/sbin/slapd-snapshot {{ slapd_snapshot_period }} 30'
   when: slapd_snapshot|bool
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "slapd/post_main.yml") }}'
 
