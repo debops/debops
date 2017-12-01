@@ -62,6 +62,11 @@ Changed
   The ``debops.nodejs`` role can now install `Yarn <https://yarnpkg.com/>`_
   package manager using its upstream APT repository (not enabled by default).
 
+- [debops.gunicorn] Update the role to work correctly on Debian Stretch and
+  newer releases. The support for multiple :command:`gunicorn` instances using
+  custom Debian scripts has been removed in Debian Stretch, therefore the role
+  replaces it with its own setup based on :command:`systemd` instances.
+
 Removed
 ~~~~~~~
 

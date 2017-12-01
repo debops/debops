@@ -25,6 +25,36 @@ gunicorn__base_packages: [ 'gunicorn', 'python-setproctitle' ]
 gunicorn__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# Default configuration [[[
+# -------------------------
+
+# .. envvar:: gunicorn__workers [[[
+#
+# The default number of worker threads used by Green Unicorn applications if
+# not specified otherwise.
+gunicorn__workers: '{{ ansible_processor_vcpus|int + 1 }}'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__user [[[
+#
+# The default UNIX account used by the Green Unicorn process if it's not
+# specified in the configuration.
+gunicorn__user: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__group [[[
+#
+# The default UNIX group used by the Green Unicorn process if it's not
+# specified in the configuration.
+gunicorn__group: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__systemd_timeout [[[
+#
+# Define the default timeout in :command:`systemd` for Green Unicorn services.
+gunicorn__systemd_timeout: '90'
+                                                                   # ]]]
+                                                                   # ]]]
 # Managed applications [[[
 # ------------------------
 

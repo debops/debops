@@ -1,0 +1,154 @@
+---
+
+- name: Ensure that configuration directory exists
+  file:
+    path:  '/etc/gunicorn'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode:  '0755'
+
+- name: Ensure that required groups exist
+  group:
+    name: '{{ item.group }}'
+    system: '{{ (item.system|d(True)) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  when: item.name|d() and item.state|d('present') != 'absent' and
+        item.group|d()
+
+- name: Ensure that required users exist
+  user:
+    name: '{{ item.user }}'
+    group: '{{ item.group | d(omit) }}'
+    home: '{{ item.home }}'
+    system: '{{ (item.system|d(True)) | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  when: item.name|d() and item.state|d('present') != 'absent' and
+        item.user|d() and item.home|d()
+
+- name: Create log directories
+  file:
+    path: '/var/log/gunicorn/{{ item.name }}'
+    state: 'directory'
+    owner: '{{ item.user | d(gunicorn__user) }}'
+    group: '{{ item.group | d(gunicorn__group) }}'
+    mode: '0775'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  when: item.name|d() and item.state|d('present') != 'absent'
+
+- name: Check if systemd instances for Green Unicorn are configured
+  stat:
+    path: '/etc/systemd/system/gunicorn@.service'
+  register: gunicorn__register_systemd_templated
+
+- name: Stop and disable Green Unicorn instances if requested
+  systemd:
+    name: 'gunicorn@{{ item.name }}.service'
+    state: 'stopped'
+    enabled: False
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  register: gunicorn__register_systemd_remove
+  when: ansible_service_mgr == 'systemd' and
+        gunicorn__register_systemd_templated.stat|d() and
+        gunicorn__register_systemd_templated.stat.exists|bool and
+        item.name|d() and item.state|d('present') == 'absent'
+
+- name: Generate systemd configuration files
+  template:
+    src: 'etc/systemd/system/{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'gunicorn.service', 'gunicorn@.service' ]
+  register: gunicorn__register_systemd_config
+  when: ansible_service_mgr == 'systemd'
+
+- name: Remove per-instance systemd configuration
+  file:
+    path: '/etc/systemd/system/gunicorn@{{ item.name }}.service.d'
+    state: 'absent'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  register: gunicorn__register_systemd_remove
+  when: ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') == 'absent'
+
+- name: Create per-instance systemd directory
+  file:
+    path: '/etc/systemd/system/gunicorn@{{ item.name }}.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  when: ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') != 'absent'
+
+- name: Generate per-instance systemd configuration
+  template:
+    src: 'etc/systemd/system/gunicorn@application.service.d/instance.conf.j2'
+    dest: '/etc/systemd/system/gunicorn@{{ item.name }}.service.d/instance.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  notify: [ 'Start Green Unicorn instances' ]
+  register: gunicorn__register_systemd_per_instance
+  when: ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') != 'absent'
+
+- name: Reload systemd configuration
+  command: systemctl daemon-reload
+  when: (ansible_service_mgr == 'systemd' and
+         (gunicorn__register_systemd_config|changed or
+          gunicorn__register_systemd_remove|changed or
+          gunicorn__register_systemd_per_instance|changed))
+
+- name: Remove Unicorn instance configuration
+  file:
+    path: '/etc/gunicorn/{{ item.name }}.conf.py'
+    state: 'absent'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Generate Unicorn instance configuration
+  template:
+    src: 'etc/gunicorn/application.conf.py.j2'
+    dest: '/etc/gunicorn/{{ item.name }}.conf.py'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Start Green Unicorn instances' ]
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  when: item.name|d() and item.state|d('present') != 'absent'
+
+- name: Enable Unicorn instances in systemd
+  systemd:
+    name: 'gunicorn@{{ item.name }}.service'
+    enabled: True
+  notify: [ 'Start Green Unicorn instances' ]
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  when: ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') != 'absent'
