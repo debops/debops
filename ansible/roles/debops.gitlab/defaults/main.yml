@@ -19,9 +19,10 @@
 # is currently installed and can perform automatic upgrade if the installed
 # version is older than the specified. Downgrades are not supported.
 gitlab_version: '{{ "9.4"
-                    if (ansible_local|d() and ansible_local.core|d() and
-                        ansible_local.core.distribution_release|d() and
-                        ansible_local.core.distribution_release == "stretch")
+                    if ((ansible_local|d() and ansible_local.core|d() and
+                         ansible_local.core.distribution_release|d() and
+                         ansible_local.core.distribution_release == "stretch") or
+                        ansible_distribution_release == "stretch")
                     else "8.17" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -94,7 +95,7 @@ gitlab_domain: [ 'code.{{ ansible_domain }}' ]
 gitlab__distribution_release: '{{ ansible_local.core.distribution_release
                                   if (ansible_local|d() and ansible_local.core|d() and
                                       ansible_local.core.distribution_release|d())
-                                  else "jessie" }}'
+                                  else ansible_distribution_release }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__base_packages [[[
