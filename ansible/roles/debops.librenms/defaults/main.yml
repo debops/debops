@@ -14,9 +14,13 @@
 # .. envvar:: librenms__base_packages [[[
 #
 # List of base packages required by LibreNMS.
-librenms__base_packages: [ 'snmp', 'snmp-mibs-downloader', 'imagemagick',
-                           'fping', 'whois', 'mtr-tiny', 'nmap', 'rrdtool',
-                           'python-mysqldb' ]
+librenms__base_packages:
+  - [ 'snmp', 'imagemagick', 'fping', 'whois', 'mtr-tiny',
+      'rrdtool', 'nmap', 'python-mysqldb' ]
+  - '{{ "snmp-mibs-downloader"
+        if (ansible_local|d() and ansible_local.apt|d() and
+            (ansible_local.apt.nonfree|d())|bool)
+        else [] }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__monitoring_packages [[[
