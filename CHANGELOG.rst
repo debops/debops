@@ -37,6 +37,12 @@ Added
 - You can now install DebOps on `Arch Linux <https://www.archlinux.org/>`__
   using an included ``PKGBUILD`` file.
 
+- Add new playbook, ``agent.yml``. This playbook is executed at the end of the
+  main playbook, and contains applications or services which act as "agents" of
+  other services. They may contact their parent applications to report about
+  the state of the host they are executed on, therefore the agents are
+  installed and configured at the end of the main playbook.
+
 Changed
 ~~~~~~~
 
@@ -66,6 +72,10 @@ Changed
   newer releases. The support for multiple :command:`gunicorn` instances using
   custom Debian scripts has been removed in Debian Stretch, therefore the role
   replaces it with its own setup based on :command:`systemd` instances.
+
+- [debops.gitlab_runner] The GitLab Runner playbook is moved to the
+  ``agent.yml`` playbook; it will be executed at the end of the main playbook
+  and should that way include correct information about installed services.
 
 Removed
 ~~~~~~~
