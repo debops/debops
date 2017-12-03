@@ -1,0 +1,41 @@
+# {{ ansible_managed }}
+
+{% set gunicorn__tpl_run_path = (item.run_path if (item.run_path is defined and item.run_path != omit) else '/run') %}
+# Custom per-instance confguration for Green Unicorn service
+
+[Service]
+User={{ item.user if (item.user is defined and item.user != omit) else gunicorn__user }}
+Group={{ item.group if (item.group is defined and item.group != omit) else gunicorn__group }}
+WorkingDirectory={{ item.working_directory | d(item.working_dir | d(item.workdir)) }}
+RuntimeDirectory={{ 'gunicorn-' + item.name }}
+RuntimeDirectoryMode={{ item.bind_mode | d('0755') }}
+Environment="PYTHONPATH={{ item.working_directory | d(item.working_dir | d(item.workdir)) }}"
+PIDFile={{ item.pidfile if (item.pidfile is defined and item.pidfile != omit) else (gunicorn__tpl_run_path + '/gunicorn-' + item.name + '/%i.pid') }}
+TimeoutStopSec={{ item.systemd_timeout | d(gunicorn__systemd_timeout) }}
+{% if item.environment|d() %}
+{%   for element in ([ item.environment ] if item.environment is mapping else item.environment) %}
+{%     if element.name|d() %}
+{%       if element.state|d('present') != 'absent' %}
+{{ 'Environment="{}={}"'.format(element.name | upper, element.value|d('')) }}
+{%       endif %}
+{%     else %}
+{%       for key, value in element.iteritems() %}
+{{ 'Environment="{}={}"'.format(key | upper, value) }}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if item.app_module|d() %}
+
+ExecStart=
+ExecStart={{ (item.python + ' ') if item.python|d() else '' }}/usr/bin/gunicorn --config=/etc/gunicorn/%i.conf.py ${GUNICORN_OPTS} {{ item.app_module }}
+{% elif item.args|d() %}
+
+ExecStart=
+ExecStart={{ (item.python + ' ') if item.python|d() else '' }}/usr/bin/gunicorn --config=/etc/gunicorn/%i.conf.py {{ ([ item.args ] if item.args is string else item.args) | join(' ') }}
+{% elif item.exec|d() %}
+
+# Configure custom Green Unicorn launcher
+ExecStart=
+ExecStart={{ item.exec }}
+{% endif %}

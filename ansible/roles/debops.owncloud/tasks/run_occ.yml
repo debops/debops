@@ -30,6 +30,8 @@
   # but `occ` is preferred in the case of Ansible.
 - name: Run given occ commands
   command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }} {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
+  args:
+    executable: '/bin/sh'
   environment: '{{ owncloud__occ_item.env|d({}) }}'
   ## TODO: Upstream needs to fix this. See above.
   changed_when: False

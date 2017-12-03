@@ -8,36 +8,15 @@
     - '{{ gunicorn__base_packages }}'
     - '{{ gunicorn__packages }}'
 
-- name: Make sure /etc/gunicorn.d/ directory exists
-  file:
-    path: '/etc/gunicorn.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
+- name: Configure Green Unicorn on older OS releases
+  include_tasks: 'older_releases.yml'
+  when: ansible_distribution_release in
+        [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
 
-- name: Remove gunicorn configuration
-  file:
-    path: '/etc/gunicorn.d/{{ item.name }}'
-    state: 'absent'
-  with_flattened:
-    - '{{ gunicorn__applications }}'
-    - '{{ gunicorn__dependent_applications }}'
-  notify: [ 'Restart gunicorn' ]
-  when: item.name|d() and item.state|d('present') == 'absent'
-
-- name: Generate gunicorn configuration
-  template:
-    src: 'etc/gunicorn.d/application.j2'
-    dest: '/etc/gunicorn.d/{{ item.name }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_flattened:
-    - '{{ gunicorn__applications }}'
-    - '{{ gunicorn__dependent_applications }}'
-  notify: [ 'Restart gunicorn' ]
-  when: item.name|d() and item.state|d('present') != 'absent'
+- name: Configure Green Unicorn on newer OS releases
+  include_tasks: 'newer_releases.yml'
+  when: ansible_distribution_release not in
+        [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
 
 - name: Make sure that Ansible local facts directory exists
   file:

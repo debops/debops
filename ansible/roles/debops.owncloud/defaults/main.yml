@@ -32,7 +32,7 @@ owncloud__base_packages:
   - '{{ [ "owncloud" ]
         if (owncloud__variant == "owncloud")
         else [] }}'
-  - '{{ [ "unzip" ]
+  - '{{ [ "curl", "unzip" ]
         if (owncloud__variant == "nextcloud")
         else [] }}'
 
@@ -376,7 +376,9 @@ owncloud__post_upgrade_hook_host_list: []
 # * ``owncloud`` (legacy variant, not recommended for new deployments)
 # * ``nextcloud`` (Main supported variant in the future. Currently supported on Debian stretch, refer to `issue 45 <https://github.com/debops/ansible-owncloud/issues/45>`_ for details)
 #
-owncloud__variant: 'owncloud'
+owncloud__variant: '{{ "nextcloud"
+                       if (ansible_distribution_release in [ "stretch" ])
+                       else "owncloud" }}'
 
 
 # .. envvar:: owncloud__variant_download_url_map

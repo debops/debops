@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Green Unicorn - Python application server for %i
+Documentation=man:gunicorn
+PartOf=gunicorn.service
+Before=gunicorn.service
+ReloadPropagatedFrom=gunicorn.service
+After=network-online.target mysql.service postgresql.service
+Wants=network-online.target
+
+[Service]
+PermissionsStartOnly=true
+EnvironmentFile=-/etc/default/gunicorn-%i
+PIDFile=/run/gunicorn-%i/%i.pid
+ExecStart=/usr/bin/gunicorn --config=/etc/gunicorn/%i.conf.py ${GUNICORN_OPTS}
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+Restart=always
+SyslogIdentifier=gunicorn@%i
+OOMScoreAdjust=-900
+TimeoutStopSec={{ gunicorn__systemd_timeout }}
+
+[Install]
+WantedBy=multi-user.target

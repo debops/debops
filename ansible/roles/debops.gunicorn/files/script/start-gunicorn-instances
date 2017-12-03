@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Start all enabled and inactive Green Unicorn systemd instances
+# This script is executed by the role handler at the end of the playbook run
+
+
+set -o nounset -o pipefail -o errexit
+
+for instance in $(systemctl list-units -t service --full --all 'gunicorn@*.service' | cut -d' ' -f1 | grep -E '^gunicorn\@.*\.service') ; do
+    if [ "$(systemctl is-enabled "${instance}")" == "enabled" ] && [ "$(systemctl is-active "${instance}")" != "active" ] ; then
+        systemctl start "${instance}"
+    fi
+done

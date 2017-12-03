@@ -19,9 +19,10 @@
 # is currently installed and can perform automatic upgrade if the installed
 # version is older than the specified. Downgrades are not supported.
 gitlab_version: '{{ "9.4"
-                    if (ansible_local|d() and ansible_local.core|d() and
-                        ansible_local.core.distribution_release|d() and
-                        ansible_local.core.distribution_release == "stretch")
+                    if ((ansible_local|d() and ansible_local.core|d() and
+                         ansible_local.core.distribution_release|d() and
+                         ansible_local.core.distribution_release == "stretch") or
+                        ansible_distribution_release == "stretch")
                     else "8.17" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -94,7 +95,7 @@ gitlab_domain: [ 'code.{{ ansible_domain }}' ]
 gitlab__distribution_release: '{{ ansible_local.core.distribution_release
                                   if (ansible_local|d() and ansible_local.core|d() and
                                       ansible_local.core.distribution_release|d())
-                                  else "jessie" }}'
+                                  else ansible_distribution_release }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__base_packages [[[
@@ -355,61 +356,91 @@ gitlab_redis_database: '0'
 # .. envvar:: gitlab_home [[[
 #
 # Home directory
-gitlab_home: '{{ ansible_local.root.home + "/" + gitlab_user }}'
+gitlab_home: '{{ (ansible_local.root.home
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.home|d())
+                  else "/var/local") + "/" + gitlab_user }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_app_root_path [[[
 #
 # Application installation directory
-gitlab_app_root_path: '{{ ansible_local.root.app + "/" + gitlab_user }}'
+gitlab_app_root_path: '{{ (ansible_local.root.app
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.app|d())
+                           else "/var/local") + "/" + gitlab_user }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_repositories_path [[[
 #
 # GitLab repositories
-gitlab_repositories_path: '{{ ansible_local.root.data + "/gitlab/repositories" }}'
+gitlab_repositories_path: '{{ (ansible_local.root.data
+                               if (ansible_local|d() and ansible_local.root|d() and
+                                   ansible_local.root.data|d())
+                               else "/srv") + "/gitlab/repositories" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_satellites_path [[[
 #
 # GitLab satellites
-gitlab_satellites_path: '{{ ansible_local.root.data + "/gitlab/satellites" }}'
+gitlab_satellites_path: '{{ (ansible_local.root.data
+                             if (ansible_local|d() and ansible_local.root|d() and
+                                 ansible_local.root.data|d())
+                             else "/srv") + "/gitlab/satellites" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_backup_path [[[
 #
 # Backup path
-gitlab_backup_path: '{{ ansible_local.root.backup + "/gitlab" }}'
+gitlab_backup_path: '{{ (ansible_local.root.backup
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.backup|d())
+                         else "/var/backups") + "/gitlab" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_src_path [[[
 #
 # GitLab sources root path
-gitlab_src_path: '{{ ansible_local.root.src + "/gitlab" }}'
+gitlab_src_path: '{{ (ansible_local.root.src
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.src|d())
+                      else "/usr/local/src") + "/gitlab" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_lfs_path [[[
 #
 # Gitlab path for lfs objects
-gitlab_lfs_path: '{{ ansible_local.root.data + "/gitlab/shared/lfs-objects" }}'
+gitlab_lfs_path: '{{ (ansible_local.root.data
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.data|d())
+                      else "/srv") + "/gitlab/shared/lfs-objects" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_shared_path [[[
 #
 # Gitlab path for shared files
-gitlab_shared_path: '{{ ansible_local.root.data + "/gitlab/shared" }}'
+gitlab_shared_path: '{{ (ansible_local.root.data
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.data|d())
+                         else "/srv") + "/gitlab/shared" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_artifacts_path [[[
 #
 # Gitlab path for artifacts files
-gitlab_artifacts_path: '{{ ansible_local.root.data + "/gitlab/shared/artifacts" }}'
+gitlab_artifacts_path: '{{ (ansible_local.root.data
+                            if (ansible_local|d() and ansible_local.root|d() and
+                                ansible_local.root.data|d())
+                            else "/srv") + "/gitlab/shared/artifacts" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_pages_path [[[
 #
 # Path where GitLab Pages are stored in the filesystem.
-gitlab_pages_path: '{{ ansible_local.root.data + "/gitlab/shared/pages" }}'
+gitlab_pages_path: '{{ (ansible_local.root.data
+                        if (ansible_local|d() and ansible_local.root|d() and
+                            ansible_local.root.data|d())
+                        else "/srv") + "/gitlab/shared/pages" }}'
                                                                    # ]]]
                                                                    # ]]]
 # System user, group, additional groups [[[

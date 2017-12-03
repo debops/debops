@@ -72,6 +72,8 @@
 
 - name: Get ownCloud setup status
   command: '{{ owncloud__occ_bin_file_path | quote }} check'
+  args:
+    executable: '/bin/sh'
   register: owncloud__register_occ_check
   changed_when: False
 
@@ -95,6 +97,8 @@
            '--admin-user={{ owncloud__admin_username }}'
            '--admin-pass={{ owncloud__admin_password }}'
            {% endif %}
+  args:
+    executable: '/bin/sh'
   register: owncloud__register_occ_install
   when: owncloud__do_autosetup|bool and owncloud__release not in [ '8.0' ]
   ## Did not work with 8.1.6-2.1 because of https://github.com/owncloud/core/issues/17583
@@ -190,6 +194,8 @@
 
 - name: Check ownCloud core integrity
   command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
+  args:
+    executable: '/bin/sh'
   register: owncloud__register_occ_integrity_check_core
   failed_when: (owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
   changed_when: False

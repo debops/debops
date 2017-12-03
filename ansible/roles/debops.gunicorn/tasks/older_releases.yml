@@ -1,0 +1,32 @@
+---
+
+- name: Make sure /etc/gunicorn.d/ directory exists
+  file:
+    path: '/etc/gunicorn.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Remove gunicorn configuration
+  file:
+    path: '/etc/gunicorn.d/{{ item.name }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  notify: [ 'Restart gunicorn' ]
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Generate gunicorn configuration
+  template:
+    src: 'etc/gunicorn.d/application.j2'
+    dest: '/etc/gunicorn.d/{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  notify: [ 'Restart gunicorn' ]
+  when: item.name|d() and item.state|d('present') != 'absent'

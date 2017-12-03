@@ -299,7 +299,7 @@ netbox__config_email_timeout: '10'
 # The e-mail address for the NetBox application, it will be used in the
 # ``From:`` header of the NetBox e-mail messages.
 netbox__config_email_from: '{{ netbox__user }}@{{ netbox__fqdn
-                                                  if netbox__fdqn is string
+                                                  if netbox__fqdn is string
                                                   else netbox__fqdn[0] }}'
 
                                                                    # ]]]
@@ -467,7 +467,10 @@ netbox__app_name: '{{ netbox__user }}'
 # Name of the subdirectory in the :file:`/run/` directory where the NetBox
 # application will bind its UNIX socket. The default is selected so that
 # configuration of the ``gunicorn`` service is idempotent.
-netbox__app_runtime_dir: 'gunicorn'
+netbox__app_runtime_dir: '{{ "gunicorn"
+                             if (ansible_distribution_release in
+                                 [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+                             else "gunicorn-netbox" }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__app_bind [[[
@@ -514,6 +517,8 @@ netbox__gunicorn__dependent_applications:
     python: '{{ netbox__virtualenv + "/bin/python" }}'
     user: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
+    home: '{{ netbox__home }}'
+    system: True
     args: '{{ netbox__app_params }}'
 
                                                                    # ]]]
