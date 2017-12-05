@@ -6,6 +6,18 @@
     that:
       - etckeeper__vcs in etckeeper__supported_vcs
 
+## Saving uncommitted changes in /etc/ if etckeeper is already configured [[[
+- name: Check whether /etc/ contains commitable changes
+  command: 'etckeeper unclean'
+  register: etckeeper__register_unclean_before
+  failed_when: False
+  changed_when: False
+
+- name: Saving uncommmitted changes in /etc
+  command: "etckeeper commit 'Ansible role {{ role_path | basename }}: saving uncommitted changes in /etc'"
+  when: etckeeper__register_unclean_before.rc == 0
+## ]]]
+
 ## Diverting the main configuration of etckeeper away leaves the VCS
 ## uninitiated until it has been fully configured.
 - name: Divert original configuration under /etc
@@ -55,15 +67,26 @@
   register: etckeeper__register_init
 
 - name: Add entries to /etc/.gitignore
-  lineinfile:
-    dest: '/etc/.gitignore'
-    line: '{{ item }}'
+  blockinfile:
+    path: '/etc/.gitignore'
+    block: |
+      {%
+        for item in
+          etckeeper__ignore_role_list | d() | list
+          + etckeeper__ignore_list | d() | list
+          + etckeeper__ignore_host_group_list | d() | list
+          + etckeeper__ignore_host_list | d() | list
+      %}
+      {{ item }}
+      {% endfor %}
     insertbefore: 'BOF'
-  with_flattened:
-    - '{{ (etckeeper__ignore_role_list       |d([]) | list) }}'
-    - '{{ (etckeeper__ignore_list            |d([]) | list) }}'
-    - '{{ (etckeeper__ignore_host_group_list |d([]) | list) }}'
-    - '{{ (etckeeper__ignore_host_list       |d([]) | list) }}'
+    marker: '# {mark} section managed by Ansible'
+    create: Yes
+    mode: 0600
+    owner: root
+    group: root
+  register: etckeeper__register_gitignore
+  when: (etckeeper__vcs == 'git')
 
 - name: Install /etc/.gitattributes configuration
   template:
@@ -81,6 +104,7 @@
     mode: '{{ etckeeper__repository_permissions|d("0700") }}'
     owner: 'root'
     group: '{{ etckeeper__repository_group|d("root") }}'
+  when: (etckeeper__vcs == 'git')
 
 ## Set VCS user, email used for auto committing changes [[[
 - name: Set user, email for the git repository
@@ -111,6 +135,28 @@
   tags: [ 'role::etckeeper:vcs_config' ]
 ## ]]]
 
+- name: Unstage and remove ignored files from Git index
+  shell: etckeeper vcs ls-files -i --exclude-standard -z | xargs -0 --no-run-if-empty etckeeper vcs rm --cached --
+  register: etckeeper__register_git_rm_cached_ignored_files
+  when:
+    - etckeeper__vcs == "git"
+    - etckeeper__register_gitignore|changed
+  changed_when: etckeeper__register_git_rm_cached_ignored_files.stdout
+
 - name: Create root commit
   command: etckeeper commit 'Initial commit created by Ansible.'
   when: etckeeper__register_init|changed
+
+## Saving uncommitted changes in /etc/ after /etc/.gitignore modification [[[
+- name: Check whether /etc/ contains uncommitted changes
+  command: 'etckeeper unclean'
+  register: etckeeper__register_unclean_after
+  failed_when: etckeeper__register_unclean_after.rc > 1
+  changed_when: False
+
+- name: Saving uncommitted changes in /etc after /etc/.gitignore modification
+  command: "etckeeper commit 'Ansible role {{ role_path | basename }}: saving uncommitted changes in /etc/ after /etc/.gitignore modification'"
+  when:
+    - etckeeper__register_unclean_after.rc == 0
+    - etckeeper__vcs == "git"
+## ]]]
