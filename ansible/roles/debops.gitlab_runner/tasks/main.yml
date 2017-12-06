@@ -188,6 +188,29 @@
   when: gitlab_runner__ssh_known_hosts and item is defined and item.rc > 0
   failed_when: False
 
+- name: Configure Vagrant libvirt access
+  user:
+    name: '{{ gitlab_runner__user }}'
+    append: True
+    groups: '{{ ([ (ansible_local.libvirtd.unix_sock_group
+                    if (ansible_local|d() and ansible_local.libvirtd|d() and
+                        ansible_local.libvirtd.unix_sock_group|d())
+                    else "libvirt") ]
+                 + ([ "kvm" ]
+                    if (ansible_local|d() and ansible_local.libvirtd|d() and
+                        (ansible_local.libvirtd.hw_virt|d())|bool)
+                    else [])) | join(",") }}'
+  when: gitlab_runner__vagrant_libvirt|bool
+
+- name: Configure Vagrant libvirt sudo access
+  template:
+    src: 'etc/sudoers.d/gitlab-runner-vagrant-libvirt.j2'
+    dest: '/etc/sudoers.d/gitlab-runner-vagrant-libvirt'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+  when: gitlab_runner__vagrant_libvirt|bool
+
 - name: Configure Vagrant LXC sudo access
   template:
     src: 'etc/sudoers.d/gitlab-runner-vagrant-lxc.j2'

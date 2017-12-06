@@ -36,6 +36,9 @@ gitlab_runner__apt_repo: 'deb https://packages.gitlab.com/runner/gitlab-ci-multi
 # List of APT packages which will be installed by the role.
 gitlab_runner__base_packages:
   - 'gitlab-ci-multi-runner'
+  - '{{ [ "vagrant-libvirt", "libguestfs-tools" ]
+        if gitlab_runner__vagrant_libvirt|bool
+        else [] }}'
   - '{{ "vagrant-lxc" if gitlab_runner__vagrant_lxc|bool else [] }}'
 
                                                                    # ]]]
@@ -319,6 +322,22 @@ gitlab_runner__host_custom_files: []
 # These variables control what features are configured on the GitLab Runner
 # host to use by the shell executor.
 
+# .. envvar:: gitlab_runner__vagrant_libvirt [[[
+#
+# Enable or disable support for Vagrant libvirt plugin (configuration of this
+# support also implies installation of :command:`vagrant` on the GitLab Runner
+# host).
+#
+# Enabling Vagrant libvirt will add the ``gitlab-runner`` UNIX account to the
+# ``libvirt`` and ``kvm`` UNIX groups, required for libvirt access by Vagrant.
+gitlab_runner__vagrant_libvirt: '{{ True
+                                    if (ansible_local|d() and ansible_local.libvirtd|d() and
+                                        (ansible_local.libvirtd.installed|d())|bool and
+                                        (ansible_distribution_release not in
+                                         [ "wheezy", "jessie", "precise", "trusty" ]))
+                                    else False }}'
+
+                                                                   # ]]]
 # .. envvar:: gitlab_runner__vagrant_lxc [[[
 #
 # Enable or disable support for Vagrant LXC plugin (configuration of this
