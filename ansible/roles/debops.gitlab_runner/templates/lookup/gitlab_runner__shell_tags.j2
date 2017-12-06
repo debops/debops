@@ -33,5 +33,20 @@
 {% if (ansible_local|d() and ansible_local.libvirtd|d() and (ansible_local.libvirtd.hw_virt|d())|bool) %}
 {%   set _ = output.append('hw-virt') %}
 {% endif %}
+{% if (ansible_memtotal_mb|int > 2048) %}
+{%   set _ = output.append('mem-2GB') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 3072) %}
+{%   set _ = output.append('mem-3GB') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 4096) %}
+{%   set _ = output.append('mem-4GB') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 6144) %}
+{%   set _ = output.append('mem-6GB') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 8192) %}
+{%   set _ = output.append('mem-8GB') %}
+{% endif %}
 {% set _ = output.append('amd64' if (ansible_architecture == 'x86_64') else ansible_architecture) %}
 {{ output | unique }}
