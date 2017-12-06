@@ -27,6 +27,9 @@ Added
   - ``debops.sysfs``: configuration of the Linux kernel attributes through the
     :file:`/sys` filesystem. The role is not enabled by default.
 
+  - ``debops.locales``: configure localization and internationalization on
+    a given host or set of hosts.
+
 - You can now use Vagrant to create an Ansible Controller based on Debian
   Stretch and use it to manage itself or other hosts over the network.
   See the :file:`Vagrantfile` in the DebOps monorepo for more details.
@@ -42,6 +45,9 @@ Added
   other services. They may contact their parent applications to report about
   the state of the host they are executed on, therefore the agents are
   installed and configured at the end of the main playbook.
+
+- [debops.libvirtd] The role can now detect if nested KVM is enabled in
+  a particular virtual machine and install KVM support.
 
 Changed
 ~~~~~~~
@@ -82,6 +88,11 @@ Removed
 
 - [DebOps playbooks] Remove the :file:`ipaddr.py` Ansible filter plugin, it is
   now included in the Ansible core distribution.
+
+- [debops.console] Remove the ``locales`` configuration from the
+  'debops.console' role, this functionality has been moved to the new
+  'debops.locales' role. You will need to update the Ansible inventory
+  variables to reflect the changes.
 
 
 debops v0.6.0 - 2017-10-21

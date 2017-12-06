@@ -66,30 +66,6 @@
     line: 'FSCKFIX={{ console_fsckfix }}'
   when: ansible_distribution_release in console_fsckfix_releases
 
-- name: Ensure that specified locales exist
-  locale_gen:
-    name: '{{ item }}'
-    state: 'present'
-  with_items: '{{ console_locales }}'
-  when: (console_locales is defined and console_locales)
-  tags: [ 'role::console:locale' ]
-
-- name: Set default system locale
-  debconf:
-    name: 'locales'
-    question: 'locales/default_environment_locale'
-    vtype: 'string'
-    value: '{{ console_locales_default }}'
-  register: console_register_default_locale
-  when: (console_locales|d() and console_locales_default|d())
-  tags: [ 'role::console:locale' ]
-
-- name: Update /etc/default/locale
-  command: update-locale LANG={{ console_locales_default }}
-  when: console_register_default_locale|d() and
-        console_register_default_locale.changed
-  tags: [ 'role::console:locale' ]
-
 - name: Get list of available text editors
   command: update-alternatives --list editor
   register: console_register_installed_editors

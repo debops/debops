@@ -21,6 +21,16 @@ try:
 except Exception:
     pass
 
+# Check if host supports hardware virtualization
+libvirtd_hw_virt = False
+try:
+    libvirtd_hw_virt_stdout = subprocess.check_output( [ 'egrep', 'vmx|svm|0xc0f', '/proc/cpuinfo' ] )
+    libvirtd_hw_virt = True
+
+except Exception:
+    pass
+output['hw_virt'] = libvirtd_hw_virt
+
 unix_groups = getgrall()
 
 for group in unix_groups:
