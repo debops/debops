@@ -89,6 +89,11 @@ Removed
 - [DebOps playbooks] Remove the :file:`ipaddr.py` Ansible filter plugin, it is
   now included in the Ansible core distribution.
 
+- [debops.console] Remove the ``locales`` configuration from the
+  'debops.console' role, this functionality has been moved to the new
+  'debops.locales' role. You will need to update the Ansible inventory
+  variables to reflect the changes.
+
 
 debops v0.6.0 - 2017-10-21
 --------------------------
