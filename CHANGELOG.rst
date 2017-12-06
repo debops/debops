@@ -43,6 +43,9 @@ Added
   the state of the host they are executed on, therefore the agents are
   installed and configured at the end of the main playbook.
 
+- [debops.libvirtd] The role can now detect if nested KVM is enabled in
+  a particular virtual machine and install KVM support.
+
 Changed
 ~~~~~~~
 

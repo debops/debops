@@ -1,5 +1,14 @@
 ---
 
+  # When nested KVM is enabled on a host, Ansible does not recognize the
+  # hardware virtualization support in the guest correctly. This is an
+  # additional runtime check to account for that.
+- name: Check if host supports hardware virtualization
+  shell: egrep --color=auto 'vmx|svm|0xc0f' /proc/cpuinfo || true
+  register: libvirtd_qemu__register_hw_virt
+  check_mode: False
+  changed_when: False
+
 - name: Install libvirt if not already installed
   package:
     name: '{{ item }}'
@@ -8,9 +17,7 @@
     - [ '{{ libvirtd_qemu__base_packages_map[ansible_distribution_release]
             if (ansible_distribution_release in libvirtd_qemu__base_packages_map.keys())
             else libvirtd_qemu__base_packages }}' ]
-    - [ '{{ [] if (ansible_virtualization_type in [ "kvm" ] and
-                   ansible_virtualization_role in [ "guest" ])
-                   else libvirtd_qemu__kvm_packages }}' ]
+    - '{{ libvirtd_qemu__kvm_packages if libvirtd_qemu__kvm_support|bool else [] }}'
     - '{{ libvirtd_qemu__packages }}'
   when: (ansible_local is undefined or
          (ansible_local|d() and ansible_local.libvirtd is undefined or
