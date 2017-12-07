@@ -24,6 +24,15 @@ snmpd_user: '{{ "snmp"
                 else "Debian-snmp" }}'
 
 
+# .. envvar:: snmpd_group
+#
+# The group used by the :command:`snmpd` daemon.
+snmpd_group: '{{ "snmp"
+                 if (ansible_distribution == "Ubuntu" or
+                     ansible_distribution_release in [ "wheezy", "jessie" ])
+                 else "Debian-snmp" }}'
+
+
 # .. envvar:: snmpd_logging_options
 #
 # String with ``snmpd`` log-related options, can be used to change log
