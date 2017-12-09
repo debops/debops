@@ -204,7 +204,7 @@
   lineinfile:
     dest: '{{ "~" + item.owner }}/.pgpass'
     regexp: '^{{ (item.server | d(postgresql__server if postgresql__server else "localhost")) | replace(".","\.") }}:{{ item.port | d(postgresql__port) }}:{{ item.database | d("*") }}:{{ item.role | d("*") }}:'
-    line: '{{ item.server | d(postgresql__server if postgresql__server else "localhost") }}:{{ item.port | d(postgresql__port) }}:{{ item.database | d("*") }}:{{ item.role | d(item.owner) }}:{{ item.password | d(lookup("password", secret + "/postgresql/" + (item.server | d(postgresql__server if postgresql__server else ansible_fqdn)) + "/" + (item.port | d(postgresql__port)) + "/credentials/" + item.name | d(item.role | d(item.owner)) + "/password length=" + postgresql__password_length)) }}'
+    line: '{{ item.server | d(postgresql__server if postgresql__server else "localhost") }}:{{ item.port | d(postgresql__port) }}:{{ item.database | d("*") }}:{{ item.role | d(item.owner) }}:{{ item.password | d(lookup("password", secret + "/postgresql/" + (item.server | d(postgresql__server if postgresql__server else ansible_fqdn)) + "/" + (item.port | d(postgresql__port)) + "/credentials/" + item.name | d(item.role | d(item.owner)) + "/password length=" + postgresql__password_length)) | regex_replace("\\", "\\\\" ) | regex_replace(":", "\:" ) }}'
     state: 'present'
     create: True
     owner: '{{ item.owner }}'
