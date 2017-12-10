@@ -266,9 +266,9 @@ elasticsearch__node_ingest: '{{ True
 # capabilities. If this variable is enabled, :command:`systemd` memlock limit
 # is configured.
 elasticsearch__memory_lock: '{{ True
-                                if (not ansible_system_capabilities_enforced|bool or
-                                    (ansible_system_capabilities_enforced|bool and
-                                     "cap_ipc_lock" in ansible_system_capabilities))
+                                if (not (ansible_system_capabilities_enforced|d())|bool or
+                                    ((ansible_system_capabilities_enforced|d())|bool and
+                                     "cap_ipc_lock" in (ansible_system_capabilities|d([]))))
                                 else False }}'
 
                                                                    # ]]]
