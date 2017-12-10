@@ -26,7 +26,10 @@ phpipam_nginx_access_policy: ''
 # System user and group for phpIPAM application
 phpipam_user: 'phpipam'
 phpipam_group: 'phpipam'
-phpipam_home: '{{ ansible_local.root.home + "/" + phpipam_user }}'
+phpipam_home: '{{ (ansible_local.root.home
+                   if (ansible_local|d() and ansible_local.root|d() and
+                       ansible_local.root.home|d())
+                   else "/var/local") + "/" + phpipam_user }}'
 
 # phpIPAM MySQL database configuration
 phpipam_database_user: 'phpipam'
@@ -38,7 +41,10 @@ phpipam_database_password: "{{ lookup('password', secret + '/credentials/' + ans
 # ---- Base application directories ----
 
 # Base path for git bare repository with phpIPAM source
-phpipam_src: '{{ ansible_local.root.src + "/" + phpipam_user }}'
+phpipam_src: '{{ (ansible_local.root.src
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.src|d())
+                  else "/usr/local/src") + "/" + phpipam_user }}'
 
 # Base web root directory for phpIPAM website
 phpipam_www: '{{ (ansible_local.nginx.www if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.www is defined) else "/srv/www") + "/" + phpipam_user }}'
