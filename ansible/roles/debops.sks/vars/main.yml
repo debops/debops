@@ -32,6 +32,10 @@ sks_nginx_ssl_frontend:
   by_role: 'debops.sks'
   enabled: True
   default: False
+  state: '{{ "present"
+             if (ansible_local|d() and ansible_local.pki|d() and
+                 (ansible_local.pki.enabled|d())|bool)
+             else "absent" }}'
   name: '{{ sks_domain }}'
   listen: False
   listen_ssl: [ '443' ]
