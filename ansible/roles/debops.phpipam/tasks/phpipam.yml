@@ -61,6 +61,8 @@
 - name: Get commit hash of target checkout
   shell: GIT_WORK_TREE={{ phpipam_git_checkout }} git rev-parse {{ phpipam_git_version }}
          chdir={{ phpipam_git_dest }}
+  args:
+    executable: '/bin/sh'
   become: True
   become_user: '{{ phpipam_user }}'
   register: phpipam_register_target_branch
@@ -69,6 +71,8 @@
 - name: Checkout phpIPAM
   shell: GIT_WORK_TREE={{ phpipam_git_checkout }} git checkout -f {{ phpipam_git_version }}
          chdir={{ phpipam_git_dest }}
+  args:
+    executable: '/bin/sh'
   become: True
   become_user: '{{ phpipam_user }}'
   register: phpipam_register_checkout
