@@ -16,7 +16,7 @@ sks_nginx_frontend:
   name: '{{ ["default_sks"] + sks_domain }}'
   root: '{{ "/srv/www/sites/" + sks_domain[0] + "/public" }}'
   ssl: False
-  listen: [ '80', '11371' ]
+  listen: [ '[::]:80', '[::]:11371' ]
   location:
     '/': |
       try_files $uri $uri/ =404;
@@ -38,7 +38,6 @@ sks_nginx_ssl_frontend:
              else "absent" }}'
   name: '{{ sks_domain }}'
   listen: False
-  listen_ssl: [ '443' ]
   location:
     '/': |
       try_files $uri $uri/ =404;
