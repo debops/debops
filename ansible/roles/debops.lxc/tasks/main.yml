@@ -30,5 +30,26 @@
   when: (lxc_containers is defined and lxc_containers) and
         ansible_kernel | version_compare('3.10','>')
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save LXC local facts
+  template:
+    src: 'etc/ansible/facts.d/lxc.fact.j2'
+    dest: '/etc/ansible/facts.d/lxc.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: lxc__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: lxc__register_facts|changed
+
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'lxc/post_main.yml') }}"

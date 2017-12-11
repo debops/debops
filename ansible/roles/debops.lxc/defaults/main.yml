@@ -150,7 +150,10 @@ lxc_template_admin_home: '{{ "/home/" + lxc_template_admin_name }}'
 # .. envvar:: lxc_template_admin_system_home [[[
 #
 # Home directory for administrator account (system).
-lxc_template_admin_system_home: '{{ ansible_local.root.home + "/" + lxc_template_admin_name }}'
+lxc_template_admin_system_home: '{{ (ansible_local.root.home
+                                     if (ansible_local|d() and ansible_local.root|d() and
+                                         ansible_local.root.home|d())
+                                     else "/var/local") + "/" + lxc_template_admin_name }}'
 
                                                                    # ]]]
 # .. envvar:: lxc_template_admin_home_group [[[

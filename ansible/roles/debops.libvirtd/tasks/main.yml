@@ -81,6 +81,15 @@
   with_items: '{{ libvirtd__admins }}'
   when: libvirtd__admins|d()
 
+- name: Install ferm post hook
+  template:
+    src: 'etc/ferm/hooks/post.d/reload-libvirtd.j2'
+    dest: '/etc/ferm/hooks/post.d/reload-libvirtd'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: libvirtd__ferm_post_hook|bool
+
 - name: Configure Kernel Same-page Merging
   template:
     src: 'etc/sysfs.d/ksm.conf.j2'

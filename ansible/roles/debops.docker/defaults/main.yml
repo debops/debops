@@ -39,9 +39,7 @@ docker__distribution_release: '{{ ansible_local.core.distribution_release
 # Note that switching from upstream to default on one host, may not always
 # work. You may need to manually remove the upstream version and configuration.
 docker__upstream: '{{ True
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.distribution_release|d() and
-                          ansible_local.core.distribution_release == "stretch")
+                      if (docker__distribution_release == "stretch")
                       else False }}'
 
                                                                    # ]]]
@@ -216,7 +214,7 @@ docker__fixed_cidr: ''
 docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
                             if (ansible_local|d() and ansible_local.resolver|d() and
                                 ansible_local.resolver.nameserver|d())
-                            else [] }}'
+                            else ansible_dns.nameservers }}'
 
                                                                    # ]]]
 # .. envvar:: docker__dns_search [[[
@@ -226,7 +224,7 @@ docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
 docker__dns_search: '{{ ansible_local.resolver.search
                         if (ansible_local|d() and ansible_local.resolver|d() and
                             ansible_local.resolver.search|d())
-                        else [] }}'
+                        else ansible_dns.search }}'
                                                                    # ]]]
                                                                    # ]]]
 # Remote Docker connection (TCP) [[[

@@ -54,13 +54,19 @@ gitusers_default_groups_list: [ 'sshusers' ]
 gitusers_default_groups_append: 'yes'
 
 # Directory where git-shell user home will be created
-gitusers_default_home_prefix: '{{ ansible_local.root.data + "/gitusers" }}'
+gitusers_default_home_prefix: '{{ (ansible_local.root.data
+                                   if (ansible_local|d() and ansible_local.root|d() and
+                                       ansible_local.root.data|d())
+                                   else "/srv") + "/gitusers" }}'
 
 # Unix permissions enforced on users home directories
 gitusers_default_home_mode: '0750'
 
 # Main location of gitusers scripts
-gitusers_git_scripts: '{{ ansible_local.root.home + "/gitusers" }}'
+gitusers_git_scripts: '{{ (ansible_local.root.home
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.home|d())
+                           else "/var/local") + "/gitusers" }}'
 
 # Path to directory where websites are stored
 gitusers_default_www_prefix: '{{ ansible_local.nginx.www if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.www is defined) else "/srv/www" }}'
