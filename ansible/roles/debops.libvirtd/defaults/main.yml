@@ -932,6 +932,18 @@ libvirtd__ksm_sleep_milisecs: 20
 libvirtd__ksm_pages_to_scan: 100
                                                                    # ]]]
                                                                    # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: libvirtd__ferm_post_hook [[[
+#
+# Enable or disable installation of the :program:`ferm` post hook.
+libvirtd__ferm_post_hook: '{{ True
+                              if (ansible_local|d() and ansible_local.ferm|d() and
+                                  (ansible_local.ferm.enabled|d())|bool)
+                              else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Role-dependent configuration [[[
 # --------------------------------
 
@@ -965,6 +977,7 @@ libvirtd__ferm__dependent_rules:
     filename: 'reload_libvirt'
     weight: 'zz'
     rules: '@hook post "type libvirtd > /dev/null && (systemctl reload libvirtd || true)";'
+    state: 'absent'
 
                                                                    # ]]]
 # .. envvar:: libvirtd__ferm__forward [[[
