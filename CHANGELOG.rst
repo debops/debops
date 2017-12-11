@@ -31,6 +31,9 @@ Added
     specify that particular packages should be held in their current state.
     The role is included in the ``common.yml`` playbook.
 
+  - :ref:`debops.kmod`: manage kernel module configuration and module loading
+    at boot time. This role replaces the ``debops-contrib.kernel_module`` role.
+
 Changed
 ~~~~~~~
 
