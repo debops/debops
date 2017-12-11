@@ -8,7 +8,7 @@
     name: '{{ item }}'
     state: 'present'
     install_recommends: False
-  with_items: tgt_packages
+  with_items: '{{ tgt_packages }}'
 
 - name: Configure tgt global options
   template:
@@ -23,7 +23,7 @@
   file:
     path: '/etc/tgt/conf.d/{{ item.filename | default(item.name) }}.conf'
     state: 'absent'
-  with_items: tgt_targets
+  with_items: '{{ tgt_targets }}'
   notify: [ 'Reload tgt' ]
   when: ((item.name is defined and item.name) and
          (item.delete is defined and item.delete))
@@ -35,7 +35,7 @@
     owner: 'root'
     group: 'root'
     mode: '600'
-  with_items: tgt_targets
+  with_items: '{{ tgt_targets }}'
   notify: [ 'Reload tgt' ]
   when: ((item.name is defined and item.name) and
          (item.delete is undefined or not item.delete))
