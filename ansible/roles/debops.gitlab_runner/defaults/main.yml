@@ -338,6 +338,16 @@ gitlab_runner__vagrant_libvirt: '{{ True
                                     else False }}'
 
                                                                    # ]]]
+# .. envvar:: gitlab_runner__vagrant_libvirt_patch [[[
+#
+# Patch ``vagrant-libvirt`` source code to fix an issue with removed SSH host
+# keys that prevent interaction with Vagrant VMs.
+# See the patch file in :file:`files/patches/` directory for more details.
+gitlab_runner__vagrant_libvirt_patch: '{{ True
+                                          if (gitlab_runner__vagrant_libvirt|bool)
+                                          else False }}'
+
+                                                                   # ]]]
 # .. envvar:: gitlab_runner__vagrant_lxc [[[
 #
 # Enable or disable support for Vagrant LXC plugin (configuration of this
