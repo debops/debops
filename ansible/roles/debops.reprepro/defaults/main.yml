@@ -610,6 +610,10 @@ reprepro_nginx_server_https:
   filename: '{{ reprepro_domains[0] + "_https" }}'
   name: '{{ reprepro_domains }}'
   root: '{{ reprepro_repository_path }}'
+  state: '{{ "present"
+             if (ansible_local|d() and ansible_local.pki|d() and
+                 (ansible_local.pki.enabled|d())|bool)
+             else "absent" }}'
 
   access_policy: '{{ reprepro_nginx_access_policy }}'
   auth_basic_realm: '{{ reprepro_nginx_auth_realm }}'
