@@ -104,7 +104,7 @@
               if bootstrap__domain|d()
               else '') }}"
   tags: [ 'role::bootstrap:hostname' ]
-  when: (bootstrap__hostname_domain_config_enabled|bool and ((item.type == 'inet6' and bootstrap__hostname_v6_loopback|d()) or item.type == 'inet4'))
+  when: (bootstrap__hostname_domain_config_enabled|bool and bootstrap__etc_hosts|bool and ((item.type == 'inet6' and bootstrap__hostname_v6_loopback|d()) or item.type == 'inet4'))
   with_items:
     - ip_address: '{{ bootstrap__ipv4 | default("127.0.1.1") }}'
       insertafter: '{{ "^127.0.0.1" | replace(".", "\.") }}'
