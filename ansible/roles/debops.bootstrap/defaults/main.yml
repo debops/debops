@@ -36,6 +36,14 @@ bootstrap__domain: '{{ inventory_hostname.split(".")[1:] | join(".") }}'
 bootstrap__hostname: '{{ inventory_hostname_short | d(inventory_hostname.split(".")[0]) }}'
 
                                                                    # ]]]
+# .. envvar:: bootstrap__etc_hosts [[[
+#
+# Add the hostname to /etc/hosts and make it point to 127.0.1.1
+# This is usually what you want except if you manage yourself the
+# hostname entry and want it to point to some other IP.
+bootstrap__etc_hosts: True
+
+                                                                   # ]]]
 # .. envvar:: bootstrap__hostname_v6_loopback [[[
 #
 # Set custom DNS hostname on a given host also for IPv6.
