@@ -45,10 +45,12 @@
 
 - name: Generate automatic signing key
   command: gpg --batch --gen-key .gnupg-key-template chdir=~
-           creates=~/.gnupg/secring.gpg
+           creates=~/.gnupg/private-keys-v1.d
+  become: True
   become_user: '{{ reprepro_user }}'
 
 - name: Export automatic signing key
   shell: 'gpg --armor --export "{{ reprepro_gpg_email }}" > {{ reprepro_repository_path + "/" + reprepro_distribution | lower + "/" + reprepro_domains[0] + ".asc" }} creates={{ reprepro_repository_path + "/" + reprepro_distribution | lower + "/" + reprepro_domains[0] + ".asc" }}'
+  become: True
   become_user: '{{ reprepro_user }}'
 
