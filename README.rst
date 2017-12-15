@@ -3,13 +3,16 @@
 
 *Your Debian-based data center in a box*
 
-|Travis CI| |CII Best Practices| |RSS commits|
+|Travis CI| |GitLab CI| |CII Best Practices| |RSS commits|
 
 .. |DebOps logo| image:: https://raw.githubusercontent.com/debops/debops/master/lib/images/debops-small.png
    :target: https://debops.org/
 
 .. |Travis CI| image:: https://img.shields.io/travis/debops/debops.svg?style=flat
    :target: https://travis-ci.org/debops/debops
+
+.. |GitLab CI| image:: https://gitlab.com/debops/debops/badges/master/pipeline.svg
+   :target: https://gitlab.com/debops/debops/pipelines
 
 .. |RSS commits| image:: https://img.shields.io/badge/RSS-commits-orange.svg
    :target: https://github.com/debops/debops/commits/master.atom
