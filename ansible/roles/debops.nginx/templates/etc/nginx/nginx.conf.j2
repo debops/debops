@@ -39,9 +39,15 @@ http {
         server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
         server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
 
+{% block nginx_tpl_block_log %}
+{%      set nginx_tpl_access_log_format = '' %}
+{%      if nginx_access_log_format is defined %}
+{%          set nginx_tpl_access_log_format = ' ' +  nginx_access_log_format %}
+{%      endif %}
         # Logging
-        access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log') }};
+        access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log' + nginx_tpl_access_log_format) }};
         error_log  {{ nginx_http_error_log  | default(nginx_log_path + '/error.log')  }};
+{% endblock %}
 
         add_header X-Clacks-Overhead "GNU Terry Pratchett";
 
