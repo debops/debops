@@ -31,6 +31,7 @@ ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and ansible_local|d() and
 #
 # Choices (string):
 #
+# - chrony
 # - ntpdate
 # - ntpd
 # - openntpd
@@ -134,6 +135,9 @@ ntp__openntpd_options: '-f /etc/openntpd/ntpd.conf -s'
 #     ntp__listen: '*'
 #
 # to listen on all interfaces.
+#
+# :program: `chrony` only supports one listen interface for each of the
+# IPv4 and IPv6 protocols. It must be specified as an IP address.
 ntp__listen: []
 
                                                                    # ]]]
