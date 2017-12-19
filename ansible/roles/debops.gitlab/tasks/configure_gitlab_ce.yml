@@ -1,27 +1,5 @@
 ---
 
-- name: Add Yarn repository APT key
-  apt_key:
-    id: '{{ gitlab__yarn_apt_key_id }}'
-    state: 'present'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-
-- name: Add Yarn repository
-  apt_repository:
-    repo: '{{ gitlab__yarn_apt_repo }}'
-    state: 'present'
-    update_cache: True
-  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
-
-- name: Install Yarn
-  apt:
-    name: 'yarn'
-    install_recommends: False
-  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
-
 # ---- git clone && git checkout ----
 
 - name: Create GitLab source directory
