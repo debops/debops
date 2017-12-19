@@ -26,8 +26,11 @@
 
 import os
 import sys
-import cStringIO
-import ConfigParser
+from io import StringIO
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 __all__ = ['DEBOPS_CONFIG', 'read_config']
 
@@ -109,11 +112,11 @@ def read_config(project_root):
     else:
         configfiles = _configfiles + [os.path.join(project_root,
                                                    DEBOPS_CONFIG)]
-    cfgparser = ConfigParser.SafeConfigParser()
-    cfgparser.readfp(cStringIO.StringIO(DEFAULTS))
+    cfgparser = configparser.SafeConfigParser()
+    cfgparser.readfp(StringIO(DEFAULTS))
     try:
         cfgparser.read(configfiles)
-    except ConfigParser.Error, e:
+    except (configparser.Error, e):
         raise SystemExit('Error in %s: %s' % (DEBOPS_CONFIG, str(e)))
     cfg = dict((sect, dict(cfgparser.items(sect)))
                for sect in cfgparser.sections())

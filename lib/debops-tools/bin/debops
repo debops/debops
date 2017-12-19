@@ -31,7 +31,10 @@ from __future__ import print_function
 
 import sys
 import os
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 import ansible
 
@@ -51,7 +54,7 @@ ConfigFileHeader = """\
 """
 
 def write_config(filename, config):
-    cfgparser = ConfigParser.ConfigParser()
+    cfgparser = configparser.ConfigParser()
     for section, pairs in config.items():
         cfgparser.add_section(section)
         for option, value in pairs.items():
