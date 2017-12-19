@@ -16,6 +16,10 @@ The current role maintainer_ is drybjed_.
 
 .. _debops.nginx master: https://github.com/debops/ansible-nginx/compare/v0.2.1...master
 
+Added
+
+- Add :envvar:`nginx__log_format` and :envvar:`nginx__dependent_log_format` variables
+  which can be used to add custom :command:`nginx` log format. [le9i0nx_]
 
 `debops.nginx v0.2.1`_ - 2017-10-18
 -----------------------------------

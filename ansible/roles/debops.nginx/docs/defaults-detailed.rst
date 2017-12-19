@@ -541,7 +541,7 @@ Logging and monitoring
 
 ``access_log_format``
   Optional. Name of the access log format.
-  Custom log formats can be defined using ``nginx_http_options`` variable.
+  Custom log formats can be defined using ``nginx__log_format`` variable.
 
 ``status``
   Optional, list of strings.
