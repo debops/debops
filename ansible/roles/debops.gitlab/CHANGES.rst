@@ -12,11 +12,15 @@ and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
 
 The current role maintainer_ is drybjed_.
 
-
 `debops.gitlab master`_ - unreleased
 ------------------------------------
 
 .. _debops.gitlab master: https://github.com/debops/ansible-gitlab/compare/v0.2.2...master
+
+Added
+~~~~~
+
+- Add support for GitLab 10.0, 10.1 and 10.2. [bfabio_]
 
 Removed
 ~~~~~~~
