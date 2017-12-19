@@ -77,7 +77,7 @@ The Elasticsearch main configuration file
 `does not support an include statement or conf.d directory <https://github.com/elastic/elasticsearch/issues/11362>`_.
 To mitigate that and allow multiple Elasticsearch configuration sources from
 other Ansible roles, the ``debops.elasticsearch`` role supports operation as
-a dependent role. This fuctionality can be used by other Ansible roles to
+a dependent role. This functionality can be used by other Ansible roles to
 better manage Elasticsearch plugins or extend the cluster configuration without
 the need to implement the entire role again and with preserved idempotency.
 

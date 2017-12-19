@@ -298,7 +298,7 @@ Changed
   without the extra comments that made the previous versions hard to maintain.
   [drybjed_]
 
-- Change the ``postgresql_owner`` and ``postgresql_group`` variabeles to
+- Change the ``postgresql_owner`` and ``postgresql_group`` variables to
   ``postgresql_server_user`` and ``postgresql_server_group``. [drybjed_]
 
 - Change the ``postgresql_default_allow`` variable name to
@@ -353,7 +353,7 @@ Changed
   been moved to an exposed ``postgresql_server_cluster_main`` dictionary
   included by default in ``postgresql_server_clusters`` list. [drybjed_]
 
-- Switch ``listen_addresses`` PostgreSQL paramter to use YAML list instead of
+- Switch ``listen_addresses`` PostgreSQL parameter to use YAML list instead of
   string, and expose default list of addresses for all clusters. [drybjed_]
 
 - Rename ``postgresql_default_wal_level`` and

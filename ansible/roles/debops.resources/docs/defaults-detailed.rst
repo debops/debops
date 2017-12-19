@@ -123,7 +123,7 @@ use all parameters of the ``get_url`` Ansible module; see its documentation for
 the parameter list and syntax.
 
 To download resources over HTTPS, the content must be served over a valid
-TLS/SSL certificate recognized by the remote host. If you use self-siged
+TLS/SSL certificate recognized by the remote host. If you use self-signed
 certificates, check the debops.pki_ role for how to add custom Root CA
 Certificates on your hosts.
 

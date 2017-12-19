@@ -17,7 +17,7 @@ Ansible ``assemble`` module to generate the ``/etc/hosts.allow`` file from
 fragments located in ``/etc/hosts.allow.d/`` directory. Any changes in the
 ``/etc/hosts.allow`` file directly will be lost.
 
-Due to SSH service being cruical for Ansible operation, the role takes care not
+Due to SSH service being crucial for Ansible operation, the role takes care not
 to block the Ansible Controller host from accessing it using data gathered
 automatically by ``debops.core`` role, or by a separate list of Ansible
 Controller hosts.

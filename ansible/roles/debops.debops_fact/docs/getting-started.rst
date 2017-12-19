@@ -11,7 +11,7 @@ Reading custom facts
 The ``debops.debops_fact`` role uses two INI files to store the custom facts,
 one "public" and readable by every user on the system, and one "private" and
 readable only by specific system group (``root`` by default). Contents of the
-files are merged into one variable tree. There are three typese of facts
+files are merged into one variable tree. There are three types of facts
 managed by the role, stored in different INI sections.
 
 The ``[default]`` section, available through Ansible local facts as

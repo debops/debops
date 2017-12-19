@@ -20,7 +20,7 @@ kibana__configuration
 The ``kibana__*_configuration`` variables define the Kibana configuration
 options that are set in the :file:`/etc/kibana/kibana.yml` configuration file.
 
-The main Kiana configuration file format is YAML.
+The main Kibana configuration file format is YAML.
 The `reference documentation <https://www.elastic.co/guide/en/kibana/current/settings.html>`_
 defines two YAML formats recognized by Kibana, hierarchical (YAML dictionary
 keys are indented), or flat (YAML dictionary keys are separated by dots). This
@@ -85,7 +85,7 @@ a ``name`` key. The dictionaries support specific parameters:
   the primary key, and value being their values. This parameter can be used to
   group several similar configuration options together in the generated
   configuration file, for readability. When this parameter is used, the "leaf"
-  part of the main configuration name is discared, and only used as a marker
+  part of the main configuration name is discarded, and only used as a marker
   for these parameters. An example configuration:
 
   .. code-block:: yaml

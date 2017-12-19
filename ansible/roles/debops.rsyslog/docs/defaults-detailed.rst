@@ -114,10 +114,10 @@ known parameters:
   the way before generating the configuration from a template. This parameter
   can be used to modify the ``rsyslogd`` configuration provided by the system
   packages. It should only be used with the ``filename`` parameter, otherwise
-  there might be unforseen consequences.
+  there might be unforeseen consequences.
 
 ``divert_to``
-  Optional. If the ``divert`` paremter is enabled, using this parameter you can
+  Optional. If the ``divert`` parameter is enabled, using this parameter you can
   specify the filename to divert the file to. The diversion will be confined to
   :file:`/etc/rsyslog.d/` directory. This can be used to change the order of the
   configuration files if needed.

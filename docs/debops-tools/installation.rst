@@ -59,7 +59,7 @@ Ansible Controller
 The DebOps playbooks and roles are designed to be used in an Ansible "push"
 model, with a central host called an "Ansible Controller" executing Ansible
 playbooks and connecting to the "remote hosts" to manage them over SSH. Ansible
-Controller host is not an integral part of the DebOps environment, wich means
+Controller host is not an integral part of the DebOps environment, which means
 that this host does not need to be available at all times for other hosts
 managed by DebOps. You can use DebOps playbook and roles on a laptop or another
 device that can then be disconnected from the network and securely stored

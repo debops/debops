@@ -285,7 +285,7 @@ keys:
   Required for the main options. Name of the option to add.
 
 ``section``
-  Required for the definiton of a configuration section. Create new section of
+  Required for the definition of a configuration section. Create new section of
   the configuration file, written in square brackets.
 
 ``state``

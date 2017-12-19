@@ -85,7 +85,7 @@ List of known states:
   Certificate Authority (internal, external, acme).
 
 ``changed-dhparam``
-  Diffie-Hellman parameters in the certificate chain have been added/upated.
+  Diffie-Hellman parameters in the certificate chain have been added/updated.
 
 ``file-change``
   A generic file change notification.

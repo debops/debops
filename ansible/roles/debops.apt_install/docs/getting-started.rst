@@ -22,7 +22,7 @@ release or available archive areas.
 
 The difference between debops.apt_ and ``debops.apt_install`` Ansible roles
 is that the former role is used to configure the APT package manager itself,
-and latter just installs packages using APT package manager, dependng on its
+and latter just installs packages using APT package manager, depending on its
 configuration.
 
 Similar Ansible roles

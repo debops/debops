@@ -12,7 +12,7 @@ them.
    applies there, please.
 
 .. note:: This section of the documentation might not be fully up-to-date. If
-   there is something missing you are encurraged to cross-check with
+   there is something missing you are encouraged to cross-check with
    debops.nginx_ docs and enhance the documentation.
 
 .. contents::

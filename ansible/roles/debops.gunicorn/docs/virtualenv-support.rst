@@ -39,7 +39,7 @@ should be present in the ``virtualenv`` environment:
 
 Next, in your role task list, include set of tasks that will create the
 ``virtualenv`` environment and install the required modules inside (the example
-below requies Ansible 2.1+ to work):
+below requires Ansible 2.1+ to work):
 
 .. code-block:: yaml
 

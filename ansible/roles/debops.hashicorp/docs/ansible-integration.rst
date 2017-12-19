@@ -108,7 +108,7 @@ The ``debops.hashicorp`` role maintains a set of Ansible local facts with
 information about the installed applications. Other roles can use these facts
 in an idempotent way to prepare their own configuration. These facts are:
 
-``ansble_local.hashicorp.installed``
+``ansible_local.hashicorp.installed``
   Boolean. If ``True``, the role has been correctly configured.
 
 ``ansible_local.hashicorp.applications``

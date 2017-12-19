@@ -2,7 +2,7 @@ Getting started
 ===============
 
 ``debops.stunnel`` does not create any tunnels by default, they need to be
-defined by the user. A antural place for them is usually a host group in
+defined by the user. A natural place for them is usually a host group in
 Ansible inventory.
 
 Example inventory

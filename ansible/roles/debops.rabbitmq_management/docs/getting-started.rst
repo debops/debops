@@ -24,7 +24,7 @@ RabbitMQ Management Console instance.
 Example inventory
 -----------------
 
-To configure RabbitMQ Managent Console on a host, it should be added to the
+To configure RabbitMQ Management Console on a host, it should be added to the
 ``[debops_service_rabbitmq_management]`` Ansible inventory group:
 
 .. code-block:: none

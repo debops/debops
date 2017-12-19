@@ -113,7 +113,7 @@ used to modify the internal service configuration.
   Optional. Specify an absolute path to the file with the PID of the main Green
   Unicorn process.
 
-  If not specified, the role will creata PID file in the path:
+  If not specified, the role will create a PID file in the path:
 
   .. code-block:: none
 

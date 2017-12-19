@@ -52,7 +52,7 @@ Changed
 
 - Role has been redesigned from scratch. It now supports local as well as
   remote logs, forwarding over UDP, TCP and TLS. Configuration is defined in
-  default variables which can be easily overriden if necessary. New
+  default variables which can be easily overridden if necessary. New
   documentation has been written as well. [drybjed_]
 
 

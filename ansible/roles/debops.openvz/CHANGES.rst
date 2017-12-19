@@ -9,7 +9,7 @@ v0.1.0
 - Add Changelog. [drybjed]
 
 - Move OpenVZ repository variables from ``vars/main.yml`` to
-  ``defaults/main.yml`` so that they can be overriden if necessary. [drybjed]
+  ``defaults/main.yml`` so that they can be overridden if necessary. [drybjed]
 
 - Expand admin account variables to allow for system admin accounts with more
   configuration options like default shell, multiple system groups, different

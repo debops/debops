@@ -60,7 +60,7 @@ you have configured DNS yourself.
 Run this from your terminal: ``debops -l debops_service_lxc``.
 
 If you are running Debian Wheezy you will have to reboot your LXC host due to
-a kernal update. Other operating systems like Ubuntu 14.x and Debian Jessie
+a kernel update. Other operating systems like Ubuntu 14.x and Debian Jessie
 do not require the reboot.
 
 LXC cheatsheet

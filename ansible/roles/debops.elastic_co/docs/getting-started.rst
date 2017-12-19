@@ -87,7 +87,7 @@ The Debian Archive contains the `heartbeat <https://packages.debian.org/search?k
 package which provides the ``heartbeat`` service which is a part of the
 `Linux High-Availability Stack <http://www.linux-ha.org/wiki/Main_Page>`_.
 
-This creates a conflict in the APT package manager database. The Elastcsearch
+This creates a conflict in the APT package manager database. The Elasticsearch
 BV. developers `are aware of the issue <https://github.com/elastic/beats/issues/3765>`_
 and are considering a number of options to resolve it. In the meantime,
 a proposed solution is to `use APT pinning to change APT preferences <https://github.com/elastic/beats/issues/3765#issuecomment-289924787>`_

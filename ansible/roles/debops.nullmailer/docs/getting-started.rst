@@ -27,7 +27,7 @@ The ``nullmailer`` service does not provide support for local mail - all mail
 is forwarded to the configured SMTP servers for further processing. If you need
 more advanced SMTP configuration, you should check out the debops.postfix_
 role which can configure the Postfix MTA. This also means that in a new
-environment, you should perpare at least 1 host as the central mail hub for
+environment, you should prepare at least 1 host as the central mail hub for
 your network, or use an already existing SMTP server for relaying mail
 messages.
 

@@ -223,7 +223,7 @@ Changed
 
 - Update documentation and Changelog. [drybjed_]
 
-- The ``debops.gitlab`` role now requies at least Ansible 2.1 due to the
+- The ``debops.gitlab`` role now requires at least Ansible 2.1 due to the
   requirements of the LDAP modules used by the role. [drybjed_]
 
 - Update the Redis support to automatically configure password authentication
@@ -304,7 +304,7 @@ Changed
 ~~~~~~~
 
 - Migration to debops.mariadb_ role. [scibi_]
-  If you have exisitng setup you have to move some files in secrets directory:
+  If you have existing setup you have to move some files in secrets directory:
 
   .. code-block:: none
 

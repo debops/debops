@@ -66,7 +66,7 @@ postgresql__user_clusters
 This list defines what entries will be set in
 :file:`/etc/postgresql-common/user_clusters` configuration file. It is used by
 ``pg_wrapper`` in Debian to direct PostgreSQL-related commands to correct
-clusters. DebOps uses the default entry to redirect PostgrSQL-related commands
+clusters. DebOps uses the default entry to redirect PostgreSQL-related commands
 like ``psql`` to either local or remote PostgreSQL server.
 
 Each entry is defined by a YAML dict. Supported parameters:
@@ -274,7 +274,7 @@ Known parameters:
 Examples
 ~~~~~~~~
 
-Add a custom extansion to a database:
+Add a custom extension to a database:
 
 .. code-block:: yaml
 

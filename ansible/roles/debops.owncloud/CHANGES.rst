@@ -57,7 +57,7 @@ Changed
   and has already been updated in the `debops-playbooks repository <https://github.com/debops/debops-playbooks>`_
   for feature parity with Ansible version in the future. [drybjed_]
 
-- Fix typo in variable name by renaming ``owncloud__theme_entitiy_name`` to
+- Fix typo in variable name by renaming ``owncloud__theme_entity_name`` to
   :envvar:`owncloud__theme_entity_name`. [jbicha]
 
 - Derive LDAP port from :envvar:`owncloud__ldap_port`. [ypid_]
@@ -153,7 +153,7 @@ Added
   :envvar:`owncloud__app_documents_enabled` to ``True``. [ypid_]
 
 - Enabled in memory caching using `APCu <https://pecl.php.net/package/APCu>`_
-  by default according to the `official ownCloud Dokumentation
+  by default according to the `official ownCloud documentation
   <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_. [ypid_]
 
 - Support fully automated ownCloud security updates (disabled by default). [ypid_]

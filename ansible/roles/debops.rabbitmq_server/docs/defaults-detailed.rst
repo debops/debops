@@ -84,7 +84,7 @@ the :file:`/usr/share/doc/rabbitmq-server/rabbitmq.config.example.gz` file.
 An `example rabbitmq.config file <https://github.com/rabbitmq/rabbitmq-server/blob/master/docs/rabbitmq.config.example>`_
 is also available online.
 
-RabbitMQ configuration options are included in the ``options`` paramter of an
+RabbitMQ configuration options are included in the ``options`` parameter of an
 Erlang application section (see :ref:`rabbitmq_server__ref_config` for more
 details). The ``options`` parameter is a YAML list, each entry is a YAML
 dictionary. The dictionary keys are used as option names, and dictionary values
@@ -110,7 +110,7 @@ will switch to a more verbose option interpretation, using known parameters:
 
 ``type``
   Optional. Specify the type of a given value to use. If the ``type`` parameter
-  is not specifed, the template will try to select one based on the YAML value
+  is not specified, the template will try to select one based on the YAML value
   type. Supported value types:
 
   - ``string``: a quoted string, selected automatically if a YAML string is

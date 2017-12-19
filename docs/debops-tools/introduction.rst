@@ -14,7 +14,7 @@ A set of `Ansible <https://ansible.com/>`_ roles is the main component of the
 project. These roles, available both through `Ansible Galaxy <https://galaxy.ansible.com/>`_
 and on `DebOps GitHub organization <https://github.com/debops/>`_ can be used
 to manage various components of an operating system and applications. The roles
-are designed to be used together as "role dependencies" to faciliate automated
+are designed to be used together as "role dependencies" to facilitate automated
 configuration of different components - for example a webserver role can tell
 the firewall role to open certain ports for specific networks, or an
 application role can tell a webserver role to configure a webservice on
@@ -59,7 +59,7 @@ directories" which can contain separate Ansible inventories, custom playbooks
 and roles.
 
 A :command:`debops` script included in the package is used as a wrapper for the
-:command:`ansible-playbook` command to faciliate easy execution of the provided
+:command:`ansible-playbook` command to facilitate easy execution of the provided
 roles and playbooks in different environments.
 
 The optional :command:`debops-padlock` script can be used to create an

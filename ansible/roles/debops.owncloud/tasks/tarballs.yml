@@ -57,7 +57,7 @@
         keyserver: '{{ owncloud__keyserver }}'
         state: 'present'
 
-    # Get lastest patch version for release [[[2
+    # Get latest patch version for release [[[2
 
     - name: Query for the full version string of the current release
       shell: curl -s -m 900 {{ (owncloud__variant_download_url_map[owncloud__variant] + "/") | quote }} | sed --silent 's/.*href="nextcloud-\({{ owncloud__release | regex_escape() }}[^"]\+\).zip.asc".*/\1/p' | sort --version-sort --reverse

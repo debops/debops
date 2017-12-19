@@ -98,7 +98,7 @@ NSS services defined as strings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each element of a YAML service list can be a string, which is a name of the NSS
-service which should be enabled for a given databse. This service will be
+service which should be enabled for a given database. This service will be
 enabled when a corresponding string is found in the
 :envvar:`nsswitch__combined_services` variable. For example, the configuration
 below will only enable file-based user and group lookups:
@@ -262,5 +262,5 @@ define a variable in Ansible inventory like this:
 With this configuration in place, system should ask the DNS database before
 looking in local :file:`/etc/hosts` file. If you plan to change a database
 service lookup order, make sure that you include all of the relevant services
-in your customized variable, since it will mask the default dataabse list as
+in your customized variable, since it will mask the default database list as
 a whole.

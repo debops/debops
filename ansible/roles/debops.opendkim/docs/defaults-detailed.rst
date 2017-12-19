@@ -53,7 +53,7 @@ the current host domain, or a YAML dictionary with specific parameters:
   :envvar:`opendkim__default_key_size` will be used.
 
 ``type``
-  Optional. The private key tyle (``rsa`` or ``dsa``) which should be generated
+  Optional. The private key style (``rsa`` or ``dsa``) which should be generated
   by the :command:`openssl` command. Currently only ``rsa`` makes sense.
 
 ``state``
@@ -98,7 +98,7 @@ opendkim__signing_table
 
 The ``opendkim__*_signing_table`` variables define a mapping between the
 contents of the ``From:`` header field in a mail message and the DomainKey used
-to sign the message. The format of the ``From:`` hader interpreted by OpenDKIM
+to sign the message. The format of the ``From:`` header interpreted by OpenDKIM
 depends on the type of the table used (see :manpage:`opendkim.conf(5)`). The
 role by default maps the entire domain, without specifying any users.
 

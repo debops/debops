@@ -71,7 +71,7 @@ variables that can be used:
   Dictionary which should be defined in ``inventory/host_vars/*/``
   for a particular host.
 
-The key specifies the name of a variable in the ``asible_local.core.*`` namespace, with
+The key specifies the name of a variable in the ``ansible_local.core.*`` namespace, with
 value being it's value. You can use normal YAML variables as values, even lists
 and dictionaries.
 
@@ -182,7 +182,7 @@ them.
 System administrator accounts
 -----------------------------
 
-Common featue in various services is creation of an administrator account. The
+Common feature in various services is creation of an administrator account. The
 ``debops.core`` role provides two Ansible local facts which can be used by
 other roles to make creation of these accounts easier.
 
@@ -272,12 +272,12 @@ incorrectly. For example, current Debian Testing release is not detected at
 all, and the ``ansible_distribution_release`` variable is set to ``NA`` which,
 if used in the roles, can break a lot of existing configuration.
 
-The ``debops.core`` role provides alrernative set of the
+The ``debops.core`` role provides alternative set of the
 ``ansible_distribution`` and ``ansible_distribution_release`` variables through
 Ansible local facts, accessible as ``ansible_local.core.distribution`` and
 ``ansible_local.core.distribution_release``. They use the original Ansible
 facts if they are not ``NA`` and refer to the ``ansible_lsb`` otherwise; they
-can also be overriden through Ansible inventory. By using these local facts in
+can also be overridden through Ansible inventory. By using these local facts in
 your roles, you can have a centralized place to control these facts if
 necessary.
 
