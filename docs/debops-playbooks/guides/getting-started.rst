@@ -26,8 +26,9 @@ configured. Everything else will be installed as needed.
    If you are using Debian Jessie or other distributions based on it as the
    base install, by default OpenSSH server configured by the installer will
    disallow password authentication on the ``root`` account. You can either
-   enable it manually in the :file:`/etc/ssh/sshd_config` file, or configure
-   a separate admin account and use that to bootstrap the host.
+   enable it manually in the :file:`/etc/ssh/sshd_config` file, use public key
+   authentication (see 'man authorized_keys' and 'man ssh-copy-id'), or
+   configure a separate admin account and use that to bootstrap the host.
 
 An important part of the environment is correctly configured DNS. Some of the
 DebOps roles expect a configured domain - it doesn't need to be a real, global
