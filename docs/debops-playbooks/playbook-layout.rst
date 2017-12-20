@@ -7,13 +7,13 @@ DebOps playbooks is split into several files to allow partial usage possible::
     |            ,---- <- core.yml
     |-- <- common.yml
     `-,
-      |-- <- systems.yml
-      |-- <- environments.yml
-      |-- <- networking.yml
-      |-- <- services.yml
-      |-- <- applications.yml
-      |-- <- virtualization.yml
-      `-- <- hardware.yml
+      |-- <- sys.yml
+      |-- <- env.yml
+      |-- <- net.yml
+      |-- <- srv.yml
+      |-- <- app.yml
+      |-- <- virt.yml
+      `-- <- hw.yml
 
 When you run ``debops`` script or :command:`ansible-playbook`, you can either run the
 main :file:`site.yml` playbook, or specify name of the playbook you want to use to
@@ -52,39 +52,39 @@ Playbooks which are common for all hosts:
 Playbooks which have only roles that are activated by specific Ansible host
 groups:
 
-:file:`systems.yml`
+:file:`sys.yml`
   This playbook includes roles that configure services and resources that might
   be required by other roles, such as user and group accounts, authentication
   services like LDAP, network filesystems like NFS. Anything that is expected
   to be used by other roles further down the playbook, but it's not common
   enough to be included in the :file:`common.yml` playbook, should be added here.
 
-:file:`environments.yml`
+:file:`env.yml`
   This is a playbook focused on programming language environments, like Ruby,
   PHP, Java, NodeJS. Since these might be used by multiple roles further down
   the playbook, they are grouped here to be run first so that other roles might
   be executed faster.
 
-:file:`networking.yml`
+:file:`net.yml`
   Playbook which focuses on roles that manage various network-related services,
   like DHCP, DNS, creating subnetworks or tunnels.
 
-:file:`services.yml`
+:file:`srv.yml`
   This playbook manages separate services like a webserver, various databases,
   file servers and others. These are usually standalone services which might be
   used by other roles down the line.
 
-:file:`applications.yml`
+:file:`app.yml`
   This playbook manages either end-user applications which might use multiple
   services (usually web applications like GitLab or phpIPAM) or end-point
   applications which can be used by other hosts in the cluster, like iPXE, or
   rsnapshot.
 
-:file:`virtualization.yml`
+:file:`virt.yml`
   This playbook focuses on virtualization and hypervisors, like OpenVZ,
   KVM/libvirt or LXC.
 
-:file:`hardware.yml`
+:file:`hw.yml`
   At the end are roles which directly manage resources and services related to
   hardware, for example RAID health monitoring and notification.
 
