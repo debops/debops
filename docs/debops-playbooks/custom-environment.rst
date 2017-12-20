@@ -23,7 +23,7 @@ variables which should be defined as YAML dictionaries:
 
 The configured environment variables will be active in all of the DebOps
 playbooks included in this repository. The more specific variables override the
-more general ones, just as normal Ansible variables.
+more general ones, just like normal Ansible variables.
 
 The environment variables defined using these YAML dictionaries have only
 effect during the :command:`ansible-playbook` run. Normal :command:`ansible` commands as well

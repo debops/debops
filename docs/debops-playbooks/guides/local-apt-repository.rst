@@ -19,9 +19,10 @@ A lot of other roles will compile from source  but that's time demanding and
 error prone. A backported version of Ruby 2.1.x will apt install in about 5
 seconds once you setup your local APT server once.
 
+.. note::
     Compile it once into a proper package and use it as many times as you want.
 
-It also future proofs your role because you wouldn't have to change anything
+It also makes your role future proof because you don't have to change anything
 once the next Debian version is officially released. From the role's point of view it's just
 installing an apt package using Ansible's :command:`apt` module. It does not care where
 the apt server is located.
@@ -69,8 +70,8 @@ dependency and that will kick off the entire build process for you.
 Expect it to take 5 to 15 minutes depending on how fast your server is. You only
 need to do this once.
 
-Where are the packages
-~~~~~~~~~~~~~~~~~~~~~~
+Where are the packages?
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Good question, they have been transferred to your Ansible controller in the
 :file:`secret/reprepro/includedeb/wheezy-backports/` directory.

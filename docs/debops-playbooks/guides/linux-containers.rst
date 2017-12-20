@@ -9,7 +9,7 @@ Using Linux containers
 Host requirements
 -----------------
 
-**Your host must be Debian based**
+**Your host must be Debian based.**
 
 It can be Ubuntu 14.x, Debian Wheezy/Jessie, etc.
 
@@ -19,9 +19,9 @@ virtual machine to act as the container host. You can do this with
 
 **SSH key pair**
 
-You will also need an SSH key pair on your host. You probably have one setup
-but if you don’t you can run ``ssh-keygen -t`` and follow the instructions.
-DebOps expects the RSA keys to be in ``~/.ssh``.
+You will also need an SSH key pair on your host. You probably have one setup,
+but if you don’t, you can run ``ssh-keygen -t`` and follow the instructions.
+DebOps expects the SSH keys to be in ``~/.ssh``.
 
 Configuring a host
 ------------------
@@ -60,8 +60,8 @@ you have configured DNS yourself.
 Run this from your terminal: ``debops -l debops_service_lxc``.
 
 If you are running Debian Wheezy you will have to reboot your LXC host due to
-a kernel update. Other operating systems like Ubuntu 14.x and Debian Jessie
-do not require the reboot.
+a kernel update. Later Debian releases and all supported Ubuntu releases do not
+require a reboot.
 
 LXC cheatsheet
 --------------

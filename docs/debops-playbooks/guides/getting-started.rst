@@ -409,7 +409,7 @@ After Ansible finishes the configuration, you will need to go to the
 process.
 
 At this time you might find that the web browser you are using does not
-recognize the CA certificates served by the host. This happens when server uses
+recognize the CA certificates served by the host. This happens when the server uses
 certificates signed by internal DebOps Certificate Authority instead of the
 "regular" ones. To fix that, consult the [debops.pki](https://docs.debops.org/en/latest/ansible/roles/ansible-pki/docs/) role documentation (when it's available).
 

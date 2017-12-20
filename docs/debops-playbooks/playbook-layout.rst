@@ -56,8 +56,8 @@ groups:
   This playbook includes roles that configure services and resources that might
   be required by other roles, such as user and group accounts, authentication
   services like LDAP, network filesystems like NFS. Anything that is expected
-  to be used by other roles further down the playbook, but it's not common
-  enough to be included in the :file:`common.yml` playbook, should be added here.
+  to be used by other roles further down the playbook, but is not common enough
+  to be included in the :file:`common.yml` playbook, should be added here.
 
 :file:`env.yml`
   This is a playbook focused on programming language environments, like Ruby,
