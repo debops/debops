@@ -26,7 +26,7 @@ DebOps expects the SSH keys to be in ``~/.ssh``.
 Configuring a host
 ------------------
 
-**Add it to your inventory**
+**Adding it to your inventory**
 
 The paths are relative to where you ``debops-init`` a new project.
 

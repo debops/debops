@@ -2,11 +2,11 @@ Creating a local apt server
 ===========================
 
 - `What are some benefits of doing it this way?`_
-- `Pick a server`_
-- `Configure a throw away build server`_
-- `Configure the local APT server`_
-- `Make your hosts aware`_
-- `Use your shiny new package`_
+- `Picking a host for the repository`_
+- `Configuring a throw away build server`_
+- `Configuring the local APT server`_
+- `Making your hosts aware`_
+- `Using your shiny new package`_
 
 Certain roles such as Ruby and Golang offer the ability to use a backported
 version of the package so it's more up to date. The backports are built off of
@@ -27,8 +27,8 @@ once the next Debian version is officially released. From the role's point of vi
 installing an apt package using Ansible's :command:`apt` module. It does not care where
 the apt server is located.
 
-Pick a server
--------------
+Picking a host for the repository
+---------------------------------
 
 The first step is to decide where you want this server. It doesn't need to be
 literally local to your workstation. It's local in the context of it not being
@@ -37,8 +37,8 @@ an official APT server to the world.
 Popular options could be your Ansible controller inside of a container or a
 micro-size instance on the cloud depending on your requirements for availability.
 
-Configure a throw away build server
------------------------------------
+Configuring a throw away build server
+-------------------------------------
 
 You could use your apt server but it's best to use a temporary host. I would
 just spin up a container.
@@ -78,8 +78,8 @@ Good question, they have been transferred to your Ansible controller in the
 
 At this point you can delete your build server.
 
-Configure the local APT server
-------------------------------
+Configuring the local APT server
+--------------------------------
 
 Next up, we need to tell our server that it is an APT server.
 
@@ -96,8 +96,8 @@ the server to check its fully qualified domain name.
 
 ``debops -l youraptserver -t apt``
 
-Make your hosts aware
----------------------
+Making your hosts aware
+-----------------------
 
 The last step is to make your hosts aware of the server.
 
@@ -114,8 +114,8 @@ you have your containers inside of a ``[containers]`` group.
 
 ``debops -l containers``
 
-Use your shiny new package
---------------------------
+Using your shiny new package
+----------------------------
 
 Well, this part is easy. Just use the Ruby role on any host that is aware of
 your local apt server and it will install Ruby 2.1.x in about 5 seconds.
