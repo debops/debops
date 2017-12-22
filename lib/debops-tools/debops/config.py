@@ -26,7 +26,7 @@
 
 import os
 import sys
-from io import BytesIO
+from io import StringIO
 try:
     import configparser
 except ImportError:
@@ -42,7 +42,7 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 DEBOPS_CONFIG = ".debops.cfg"
 
-DEFAULTS = """
+DEFAULTS = u"""
 [paths]
 data-home: $XDG_DATA_HOME/debops
 
@@ -113,7 +113,7 @@ def read_config(project_root):
         configfiles = _configfiles + [os.path.join(project_root,
                                                    DEBOPS_CONFIG)]
     cfgparser = configparser.SafeConfigParser()
-    cfgparser.readfp(BytesIO(DEFAULTS))
+    cfgparser.readfp(StringIO(DEFAULTS))
     try:
         cfgparser.read(configfiles)
     except (configparser.Error, e):
