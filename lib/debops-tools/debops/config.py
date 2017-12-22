@@ -26,7 +26,7 @@
 
 import os
 import sys
-from io import StringIO
+from io import BytesIO
 try:
     import configparser
 except ImportError:
@@ -113,7 +113,7 @@ def read_config(project_root):
         configfiles = _configfiles + [os.path.join(project_root,
                                                    DEBOPS_CONFIG)]
     cfgparser = configparser.SafeConfigParser()
-    cfgparser.readfp(StringIO(DEFAULTS))
+    cfgparser.readfp(BytesIO(DEFAULTS))
     try:
         cfgparser.read(configfiles)
     except (configparser.Error, e):
