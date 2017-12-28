@@ -69,6 +69,6 @@ class CallbackModule(CallbackBase):
 
         # Print the timings
         for name, elapsed in results:
-            print "{0:-<70}{1:->9}".format(
+            print("{0:-<70}{1:->9}".format(
                     '{0} '.format(name),
-                    ' {0:.02f}s'.format(elapsed))
+                    ' {0:.02f}s'.format(elapsed)))
