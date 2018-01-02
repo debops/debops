@@ -20,7 +20,7 @@ The current role maintainer_ is drybjed_.
 Added
 ~~~~~
 
-- Add support for GitLab 10.0, 10.1 and 10.2. [bfabio_]
+- Add support for GitLab 10.0, 10.1, 10.2 and 10.3. [bfabio_]
 
 Removed
 ~~~~~~~
