@@ -87,7 +87,6 @@
     chdir: '{{ gitlab__gitaly_dest }}'
   become: True
   become_user: '{{ gitlab_user }}'
-  register: gitlab_register_gitlab__gitaly_checkout
   when: (gitlab_version_map[gitlab_version].gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
 
 - name: Stop gitaly service for an upgrade
@@ -96,13 +95,11 @@
     state: 'stopped'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
-         ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed)
+         ansible_service_mgr == 'systemd')
 
 - name: Setup gitaly
   make:
     chdir: '{{ gitlab__gitaly_checkout }}'
-  when: gitlab_register_gitlab__gitaly_checkout|changed
 
 - name: Start gitaly service after an upgrade
   service:
@@ -110,8 +107,7 @@
     state: 'started'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
-         ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed)
+         ansible_service_mgr == 'systemd')
 
 - name: Configure Gitaly
   template:
