@@ -116,7 +116,7 @@ def read_config(project_root):
     cfgparser.readfp(StringIO(DEFAULTS))
     try:
         cfgparser.read(configfiles)
-    except (configparser.Error, e):
+    except configparser.Error as e:
         raise SystemExit('Error in %s: %s' % (DEBOPS_CONFIG, str(e)))
     cfg = dict((sect, dict(cfgparser.items(sect)))
                for sect in cfgparser.sections())
