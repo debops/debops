@@ -18,7 +18,23 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-# sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('_lib'))
+
+import yaml2rst  # noqa
+
+rst_ansible_roles = 'ansible/roles/'
+yml_ansible_roles = '../ansible/roles/'
+
+# Convert Ansible role defaults files written in YAML to documentation written
+# in reStructuredText
+for element in os.listdir(rst_ansible_roles):
+    if os.path.isdir(yml_ansible_roles + element + '/defaults'):
+        yaml2rst.convert_file(
+            yml_ansible_roles + element + '/defaults/main.yml',
+            rst_ansible_roles + element + '/defaults.rst',
+            strip_regex=r'\s*(:?\[{3}|\]{3})\d?$',
+            yaml_strip_regex=r'^\s{66,67}#\s\]{3}\d?$',
+        )
 
 # -- General configuration ------------------------------------------------
 
