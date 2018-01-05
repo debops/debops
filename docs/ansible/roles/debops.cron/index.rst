@@ -11,7 +11,6 @@ Ansible role: debops.cron
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

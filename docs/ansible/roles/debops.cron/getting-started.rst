@@ -25,5 +25,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.cron`` role:
 
-.. literalinclude:: playbooks/cron.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/cron.yml
    :language: yaml
