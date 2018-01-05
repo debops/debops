@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -86,5 +84,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.avahi`` role:
 
-.. literalinclude:: playbooks/avahi.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/avahi.yml
    :language: yaml

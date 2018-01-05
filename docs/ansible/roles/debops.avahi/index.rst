@@ -11,7 +11,6 @@ Ansible role: debops.avahi
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
