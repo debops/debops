@@ -7,7 +7,6 @@ Ansible role: debops.ansible_plugins
    introduction
    getting-started
    copyright
-   changelog
 
 ..
  Local Variables:
