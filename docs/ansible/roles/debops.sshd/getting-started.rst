@@ -4,8 +4,6 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
 Useful variables
 ----------------
 
@@ -35,7 +33,7 @@ Ansible inventory to customize OpenSSH server:
 
   LDAP key lookup depends on system-wide LDAP configuration in
   :file:`/etc/ldap/ldap.conf`, which can be performed (at the moment) using
-  debops.auth_ role.
+  :ref:`debops.auth` role.
 
 Example inventory
 -----------------
@@ -49,7 +47,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.sshd`` role:
 
-.. literalinclude:: playbooks/sshd.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/sshd.yml
    :language: yaml
 
 Ansible tags

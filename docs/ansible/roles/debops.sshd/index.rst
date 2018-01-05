@@ -10,7 +10,6 @@ Ansible role: debops.sshd
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
