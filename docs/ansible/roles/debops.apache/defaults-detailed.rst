@@ -1,7 +1,8 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
+.. include:: includes/role.rst
 
 Some of ``debops.apache`` default variables have more extensive configuration
 than simple strings or lists. Here you can find documentation and examples for
@@ -13,7 +14,7 @@ them.
 
 .. note:: This section of the documentation might not be fully up-to-date. If
    there is something missing you are encurraged to cross-check with
-   debops.nginx_ docs and enhance the documentation.
+   :ref:`debops.nginx` docs and enhance the documentation.
 
 .. contents::
    :local:
@@ -174,7 +175,7 @@ context:
 
 
 Ensure the :file:`/etc/apache2/conf-available/owncloud.conf` snippet shipped by
-ownCloud system packages is disabled so that debops.owncloud_ has full control
+ownCloud system packages is disabled so that ``debops.owncloud`` has full control
 over it and can enable ownCloud in specific vhost contexts.
 
 .. code-block:: yaml
@@ -266,7 +267,7 @@ Common webserver options
 
 ``document_root``
   Optional, string. Alias for ``item.root``.
-  ``item.root`` is also used by debops.nginx_ and might be preferred for that
+  ``item.root`` is also used by :ref:`debops.nginx` and might be preferred for that
   reason.
 
 ``alias``
@@ -353,7 +354,7 @@ HTTPS and TLS
 
 ``tls_crt``
   Optional, string. Absolute path to a custom X.509 certificate to use. If not
-  supplied, a certificate will managed by debops.pki_ will be used.
+  supplied, a certificate will managed by :ref:`debops.pki` will be used.
 
 ``tls_key``
   Optional, string. Absolute path to custom private key to use. If not
@@ -370,7 +371,7 @@ HTTPS and TLS
 
 ``pki_realm``
   Optional, string. Overwrites the default PKI realm used by Apache for this
-  vhost configuration. See the debops.pki_ role for more information, as well
+  vhost configuration. See the :ref:`debops.pki` role for more information, as well
   as the :file:`/etc/pki/realms` directory on remote hosts for a list of
   available realms.
 
@@ -561,5 +562,5 @@ Requests against ``example.org`` are permanently redirected to the canonical
 ``www.example.org`` site.
 HTTPS is the default and legacy HTTP connection attempts are permanently
 redirected to HTTPS. HSTS_ tells clients to only connect to the site using
-HTTPS from now on. Certificates managed by debops.pki_ are used according to
-the ``name`` of the virtual host which should match a PKI realm of debops.pki_.
+HTTPS from now on. Certificates managed by :ref:`debops.pki` are used according to
+the ``name`` of the virtual host which should match a PKI realm of :ref:`debops.pki`.

@@ -1,8 +1,6 @@
 Ansible integration and role design
 ===================================
 
-.. include:: includes/all.rst
-
 Design goals
 ------------
 
@@ -29,8 +27,9 @@ Design goals
 Alternative roles
 -----------------
 
-`Ansible Galaxy`_ has an impressive number of Ansible roles for Apache at your
-disposal. A few of them have been checked out before/while writing this role:
+`Ansible Galaxy <https://galaxy.ansible.com/>`__ has an impressive number of
+Ansible roles for Apache at your disposal. A few of them have been checked out
+before/while writing this role:
 
 * `geerlingguy.apache <https://github.com/geerlingguy/ansible-role-apache>`_
 * `jpnewman.apache <https://github.com/jpnewman/ansible-role-apache>`_

@@ -1,3 +1,5 @@
+:orphan:
+
 .. _Apache module index: https://httpd.apache.org/docs/2.4/mod/
 .. _Apache configuration sections documentation: https://httpd.apache.org/docs/2.4/sections.html
 .. _Apache virtual host documentation: https://httpd.apache.org/docs/2.4/vhosts/

@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 The ``debops.apache`` role allows you to setup and manage the `Apache HTTP Server`_
 with version 2.4 and above.

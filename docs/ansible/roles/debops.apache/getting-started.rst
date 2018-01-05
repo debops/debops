@@ -1,11 +1,10 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
+.. include:: includes/role.rst
 
 Example inventory
 -----------------
@@ -24,7 +23,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.apache`` role:
 
-.. literalinclude:: playbooks/apache.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/apache.yml
    :language: yaml
 
 Ansible tags

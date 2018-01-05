@@ -7,7 +7,8 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
+# .. include:: includes/role.rst
 
 
 # Packages and installation [[[
@@ -461,7 +462,7 @@ apache__combined_snippets: '{{ apache__dependent_snippets
 #
 # Should HTTPS be enabled by loading the required modules and creating HTTPS
 # virtual hosts?
-# Defaults to ``True`` if debops.pki_ is enabled on the remote host.
+# Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
 apache__https_enabled: '{{ ansible_local|d() and ansible_local.pki|d() and
                            (ansible_local.pki.enabled|d() | bool) and
                            apache__https_listen|length > 0 }}'
@@ -597,15 +598,15 @@ apache__tls_compression: 'off'
 # Name of the ``dhparam`` set to use.
 # Note that this setting is only honored if you are running Apache 2.4.8 and
 # newer and OpenSSL 1.0.2 or later. Before that the ``dhparam`` set configured
-# by debops.pki_ will be used.
-# Refer to debops.dhparam_ for more details.
+# by :ref:`debops.pki` will be used.
+# Refer to :ref:`debops.dhparam` for more details.
 apache__tls_dhparam_set_name: 'default'
 
                                                                    # ]]]
 # .. envvar:: apache__tls_dhparam_file [[[
 #
 # File path for the custom set of Diffie-Hellman parameters to use by the webserver.
-# Refer to debops.dhparam_ for more details.
+# Refer to :ref:`debops.dhparam` for more details.
 apache__tls_dhparam_file: '{{ ansible_local.dhparam[apache__tls_dhparam_set_name]
                               if (ansible_local|d() and ansible_local.dhparam|d() and
                                   ansible_local.dhparam[apache__tls_dhparam_set_name]|d())
@@ -978,7 +979,7 @@ apache__status_vhost:
 
 # .. envvar:: apache__ferm__dependent_rules [[[
 #
-# Configuration for debops.ferm_ Ansible role.
+# Configuration for :ref:`debops.ferm` Ansible role.
 apache__ferm__dependent_rules:
 
   - type: 'accept'

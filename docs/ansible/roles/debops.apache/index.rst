@@ -12,7 +12,6 @@ Ansible role: debops.apache
    defaults-detailed
    ansible-integration
    copyright
-   changelog
 
 ..
  Local Variables:
