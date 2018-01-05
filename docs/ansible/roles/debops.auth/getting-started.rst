@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -20,5 +18,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.auth`` role:
 
-.. literalinclude:: playbooks/auth.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/auth.yml
    :language: yaml
