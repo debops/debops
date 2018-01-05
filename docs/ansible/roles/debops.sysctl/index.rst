@@ -11,7 +11,6 @@ Ansible role: debops.sysctl
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

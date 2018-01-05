@@ -4,8 +4,7 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
+.. include:: ../../../includes/global.rst
 
 Example inventory
 -----------------
@@ -20,7 +19,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.sysctl`` role:
 
-.. literalinclude:: playbooks/sysctl.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/sysctl.yml
    :language: yaml
 
 Ansible tags

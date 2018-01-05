@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 The ``debops.sysctl`` Ansible role manages Linux kernel parameters.
 It comes with kernel hardening and shared memory optimization enabled by
