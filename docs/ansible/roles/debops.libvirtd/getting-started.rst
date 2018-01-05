@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -43,7 +41,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.libvirtd`` role:
 
-.. literalinclude:: playbooks/libvirtd.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/libvirtd.yml
    :language: yaml
 
 
