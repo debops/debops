@@ -373,7 +373,19 @@ SCRIPT
 $provision_controller = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+
 jane notify info "Configuring Ansible Controller host..."
+
+ansible_from_pypi=""
+if [ "${PROVISION_ANSIBLE_FROM}" == "pypi" ] ; then
+    ansible_from_pypi="ansible"
+fi
+
+jane notify install "Installing test requirements via PyPI..."
+sudo pip install debops testinfra ${ansible_from_pypi}
+jane notify cache "Cleaning up cache directories..."
+sudo rm -rf /root/.cache/* /tmp/*
 
 if ! [ -e .local/share/debops/debops ] ; then
     mkdir -p src .local/share/debops
@@ -416,6 +428,10 @@ Vagrant.configure("2") do |config|
 
             libvirt.random_hostname = true
             libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '512'
+
+            if ENV['GITLAB_CI'] != "true"
+                libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '1024'
+            end
 
             if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
                 override.ssh.insert_key = false

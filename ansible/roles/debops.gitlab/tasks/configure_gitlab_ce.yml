@@ -1,27 +1,5 @@
 ---
 
-- name: Add Yarn repository APT key
-  apt_key:
-    id: '{{ gitlab__yarn_apt_key_id }}'
-    state: 'present'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-
-- name: Add Yarn repository
-  apt_repository:
-    repo: '{{ gitlab__yarn_apt_repo }}'
-    state: 'present'
-    update_cache: True
-  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
-
-- name: Install Yarn
-  apt:
-    name: 'yarn'
-    install_recommends: False
-  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
-
 # ---- git clone && git checkout ----
 
 - name: Create GitLab source directory
@@ -290,8 +268,8 @@
   # The RubyGems.org website has frequent timeouts, so we will try and install
   # everything again as long as there are errors.
 - name: Update Ruby gems
-  shell: until bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }} >> /tmp/gitlab-bundle-install.log 2>&1 ; do
-         sleep 1 ; logger -t ansible-command-bundle "GitLab RubyGems installation failed, retrying..." ; done ; rm -f /tmp/gitlab-bundle-install.log
+  shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }} --retry 9999 >> /tmp/gitlab-bundle-install.log 2>&1 ;
+         rm -f /tmp/gitlab-bundle-install.log
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True

@@ -13,7 +13,7 @@
 - name: Convert list of nameservers to Ansible list
   set_fact:
     dhcpd_runtime_nameservers: "{{ dhcpd_register_nameservers.stdout_lines }}"
-  when: (dhcpd_register_nameservers is defined and dhcpd_register_nameservers.stdout)
+  when: (dhcpd_register_nameservers is defined and dhcpd_register_nameservers.stdout|d())
 
 - name: Configure DHCP server
   template:
