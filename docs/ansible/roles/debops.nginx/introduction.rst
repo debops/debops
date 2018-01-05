@@ -1,9 +1,8 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
-Nginx_ is a fast and light webserver with extensible configuration.
+`Nginx <https://nginx.org/>`_ is a fast and light webserver with extensible
+configuration.
 
 The ``debops.nginx`` role can be used to install and manage `nginx` configuration
 for multiple websites at the same time. The server is configured using

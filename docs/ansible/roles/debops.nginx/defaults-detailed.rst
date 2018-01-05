@@ -3,7 +3,7 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 Some of ``debops.nginx`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
@@ -193,7 +193,7 @@ HTTPS and TLS
 
 ``ssl_crt``
   Optional, string. Absolute path to a custom X.509 certificate to use. If not
-  supplied, a certificate managed by debops.pki_ will be used.
+  supplied, a certificate managed by :ref:`debops.pki` will be used.
   FIXME: Rename to tls_cert
 
 ``ssl_key``
@@ -238,7 +238,7 @@ HTTPS and TLS
 
 ``pki_realm``
   Optional, string. Overwrites the default PKI realm used by nginx for this
-  server configuration. See the debops.pki_ role for more information, as well
+  server configuration. See the :ref:`debops.pki` role for more information, as well
   as the :file:`/etc/pki/realms` directory on remote hosts for a list of
   available realms.
 
@@ -730,3 +730,8 @@ Type: rails
 Available when ``item.type`` is set to ``rails`` for a server.
 
 FIXME: Documentation missing.
+
+.. _Nginx server_name option documentation: https://nginx.org/en/docs/http/server_names.html
+.. _Nginx server block documentation: https://nginx.org/en/docs/http/ngx_http_core_module.html#server
+.. _Nginx try_files directive documentation: https://nginx.org/en/docs/http/ngx_http_core_module.html#try_files
+.. _Nginx limit_except directive documentation: https://nginx.org/en/docs/http/ngx_http_core_module.html#limit_except

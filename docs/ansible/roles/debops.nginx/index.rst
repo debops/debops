@@ -12,7 +12,6 @@ Ansible role: debops.nginx
    defaults-detailed
    acme-support
    copyright
-   changelog
 
 ..
  Local Variables:
