@@ -435,7 +435,7 @@ security.limit_extensions = {{ php__fpm_security_limit_extensions if php__fpm_se
 ;env[TMP] = /tmp
 ;env[TMPDIR] = /tmp
 ;env[TEMP] = /tmp #}
-{% for key, value in (php__fpm_environment | combine(php__fpm_group_environment | combine(php__fpm_host_environment | combine(item.environment|d({}))))).iteritems() %}
+{% for key, value in (php__fpm_environment | combine(php__fpm_group_environment | combine(php__fpm_host_environment | combine(item.environment|d({}))))).items() %}
 env[{{ key }}] = {{ value }}
 {% endfor %}
 
@@ -466,19 +466,19 @@ env[{{ key }}] = {{ value }}
 ;php_admin_flag[log_errors] = on
 ;php_admin_value[memory_limit] = 32M#}
 {% if item.php_flags|d() %}
-{% for key, value in item.php_flags.iteritems() %}
+{% for key, value in item.php_flags.items() %}
 php_flag[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
 {% if item.php_values|d() %}
-{% for key, value in item.php_values.iteritems() %}
+{% for key, value in item.php_values.items() %}
 php_value[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
 {% if item.php_admin_flags|d() %}
-{% for key, value in item.php_admin_flags.iteritems() %}
+{% for key, value in item.php_admin_flags.items() %}
 php_admin_flag[{{ key }}] = {{ value }}
 {% endfor %}
 
@@ -488,7 +488,7 @@ php_admin_value[open_basedir] = {{ item.open_basedir if item.open_basedir is str
 
 {% endif %}
 {% if item.php_admin_values|d() %}
-{% for key, value in item.php_admin_values.iteritems() %}
+{% for key, value in item.php_admin_values.items() %}
 php_admin_value[{{ key }}] = {{ value }}
 {% endfor %}
 

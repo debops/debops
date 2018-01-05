@@ -6,7 +6,7 @@ After=nss-user-lookup.target
 Requires=fcgiwrap-{{ item.0.name }}.socket
 
 {% set fcgiwrap__tpl_options = { 'value': '' } %}
-{% for key, value in fcgiwrap__options_map.iteritems() %}
+{% for key, value in fcgiwrap__options_map.items() %}
 {% if fcgiwrap__register_version.stdout|d() | version_compare(key, '>=') %}
 {% set _ = fcgiwrap__tpl_options.update({ 'value': value }) %}
 {% endif %}

@@ -28,7 +28,7 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 
 {% set sshd__tpl_ciphers = [] %}
 {% set sshd__tpl_ciphers_match = False %}
-{% for key, value in sshd__ciphers_map.iteritems() %}
+{% for key, value in sshd__ciphers_map.items() %}
 {%   if not sshd__tpl_ciphers_match and
         sshd__register_version.stdout|d() and
         sshd__register_version.stdout | version_compare(key, '>=') %}
@@ -48,7 +48,7 @@ Ciphers {{ sshd__tpl_ciphers | join(",") }}
 {% endif %}
 {% set sshd__tpl_kex_algorithms = [] %}
 {% set sshd__tpl_kex_algorithms_match = False %}
-{% for key, value in sshd__kex_algorithms_map.iteritems() %}
+{% for key, value in sshd__kex_algorithms_map.items() %}
 {%   if not sshd__tpl_kex_algorithms_match and
       sshd__register_version.stdout|d() and
       sshd__register_version.stdout | version_compare(key, '>=') %}
@@ -68,7 +68,7 @@ KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 {% endif %}
 {% set sshd__tpl_macs = [] %}
 {% set sshd__tpl_macs_match = False %}
-{% for key, value in sshd__macs_map.iteritems() %}
+{% for key, value in sshd__macs_map.items() %}
 {%   if not sshd__tpl_macs_match and
         sshd__register_version.stdout|d() and
         sshd__register_version.stdout | version_compare(key, '>=') %}

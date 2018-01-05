@@ -22,7 +22,7 @@ $config{{ chain | join('') }} = "{{ data }}";
 {%     endif %}
 {%   elif data is mapping %}
 {%     set output = [] %}
-{%     for key, value in data.iteritems() %}
+{%     for key, value in data.items() %}
 {%       if key == 'array' %}
 {%         set _ = output.append(print_config(value, key_list, array = True)) %}
 {%       else %}
@@ -45,7 +45,7 @@ $config{{ chain | join('') }} = "{{ data }}";
 {%     if list_of_mappings %}
 {%       for mapped_element in list_of_mappings %}
 {%         set map_loop = loop %}
-{%         for element_key, element_value in mapped_element.iteritems() %}
+{%         for element_key, element_value in mapped_element.items() %}
 {%           set subkey_list = key_list + [ map_loop.index0, element_key ] %}
 {{ print_config(element_value, subkey_list, array) }}{%         endfor %}
 {%       endfor %}
@@ -66,7 +66,7 @@ $config{{ chain | join('') + '[]' }} = "{{ value }}";
 
 ### {{ configuration_map["comment"] }}
 {%   endif %}
-{%   for config_key, config_value in configuration_map.iteritems() %}
+{%   for config_key, config_value in configuration_map.items() %}
 {%     if config_key not in [ 'comment' ] %}
 {%       set subkey_list = [ config_key ] %}
 {{ print_config(config_value, subkey_list) }}{% endif %}

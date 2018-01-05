@@ -2,7 +2,7 @@
 {% set dropbear_initramfs__tpl_merge_1 = (debops__tpl_macros.merge_dict(dropbear_initramfs__interfaces, dropbear_initramfs__group_interfaces, 'iface') | from_json) %}
 {% set dropbear_initramfs__tpl_merge_2 = (debops__tpl_macros.merge_dict(dropbear_initramfs__tpl_merge_1, dropbear_initramfs__host_interfaces, 'iface') | from_json) %}
 {% set dropbear_initramfs__tpl_filtered_interfaces = {} %}
-{% for name, params in dropbear_initramfs__tpl_merge_2.iteritems() %}
+{% for name, params in dropbear_initramfs__tpl_merge_2.items() %}
 {%   set interface_name = (params.iface | d(name)) %}
 {%   if params.type is undefined %}
 {%     if (interface_name.startswith('vlan') or '.' in interface_name) %}

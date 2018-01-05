@@ -9,7 +9,7 @@ import os
 
 nsswitch_conf = '/etc/nsswitch.conf'
 
-nss_databases = loads('''{{ nsswitch__combined_database_map.keys() | to_nice_json }}''')
+nss_databases = loads('''{{ nsswitch__combined_database_map | list | to_nice_json }}''')
 
 output = loads('''{{ ({
     "enabled": nsswitch__enabled | bool
@@ -32,7 +32,7 @@ try:
                         service_actions.update({ words[i]: words[i+1]})
                 service_list = []
                 for service in words[1:]:
-                    if service in service_actions.keys():
+                    if list(service in service_actions.keys():
                         service_list.append([ service, service_actions[service] ])
                     else:
                         if service not in service_actions.values():

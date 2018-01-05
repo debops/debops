@@ -6,7 +6,7 @@
 {% macro get_value(item) %}{# [[[ #}
 {% set filtered_item = item|to_yaml|from_yaml %}{# Copy dict #}
 {% if item is mapping %}
-{%   for k, v in item.iteritems() if v == omit %}
+{%   for k, v in item.items() if v == omit %}
 {%     set _ = filtered_item.pop(k, None) %}
 {%   endfor %}
 {% endif %}
@@ -20,7 +20,7 @@
     | combine(owncloud__group_config)
     | combine(owncloud__host_config) %}
 {% set owncloud__tpl_active_config_dict = {} %}
-{% for config_key, config_item in owncloud__tpl_unchecked_config_dict.iteritems() %}
+{% for config_key, config_item in owncloud__tpl_unchecked_config_dict.items() %}
 {%   if config_item is mapping and "state" in config_item and config_item.state and "value" in config_item %}
 {%     if config_item.state == "present" and config_item.value %}
 {%       set _ = owncloud__tpl_active_config_dict.update({config_key: (get_value(config_item.value) | from_yaml) }) %}

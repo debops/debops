@@ -15,7 +15,7 @@
 {%         set _ = sysfs__tpl_dependent_attributes.pop(element.role, None) %}
 {%       endif %}
 {%     elif element is mapping and 'role' not in element.keys() and 'config' not in element.keys() %}
-{%       for role, config in element.iteritems() %}
+{%       for role, config in element.items() %}
 {%         set flattened_config = lookup('flattened', config) %}
 {%         set _ = sysfs__tpl_dependent_attributes.update({
   role: ([ flattened_config ] if flattened_config is mapping else flattened_config)
@@ -25,7 +25,7 @@
 {%   endfor %}
 {% endif %}
 {% set sysfs__tpl_output_attributes = [] %}
-{% for key, value in sysfs__tpl_dependent_attributes.iteritems() %}
+{% for key, value in sysfs__tpl_dependent_attributes.items() %}
 {%   set _ = sysfs__tpl_output_attributes.extend(value) %}
 {% endfor %}
 {{ sysfs__tpl_output_attributes | to_yaml }}
