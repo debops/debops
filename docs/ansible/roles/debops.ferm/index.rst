@@ -13,7 +13,6 @@ Ansible role: debops.ferm
    rules
    guides
    copyright
-   changelog
 
 ..
  Local Variables:

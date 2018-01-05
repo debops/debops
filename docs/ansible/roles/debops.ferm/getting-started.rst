@@ -20,7 +20,7 @@ Example playbook
 
 Here's an example playbook which uses the ``debops.ferm`` role:
 
-.. literalinclude:: playbooks/ferm.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/ferm.yml
    :language: yaml
 
 Ansible tags
