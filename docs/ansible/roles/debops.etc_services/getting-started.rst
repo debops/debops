@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -63,7 +61,7 @@ Example playbook
 Here's a minimal example playbook that can be used to manage the
 :file:`/etc/services` file:
 
-.. literalinclude:: playbooks/etc_services.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/etc_services.yml
    :language: yaml
 
 This playbooks is shipped with this role under

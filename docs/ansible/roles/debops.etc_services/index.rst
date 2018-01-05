@@ -11,7 +11,6 @@ Ansible role: debops.etc_services
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
