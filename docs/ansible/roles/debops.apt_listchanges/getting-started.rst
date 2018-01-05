@@ -25,5 +25,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.apt_listchanges`` role:
 
-.. literalinclude:: playbooks/apt_listchanges.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/apt_listchanges.yml
    :language: yaml

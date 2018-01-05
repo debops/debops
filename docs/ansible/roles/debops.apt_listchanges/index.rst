@@ -10,7 +10,6 @@ Ansible role: debops.apt_listchanges
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
