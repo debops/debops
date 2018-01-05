@@ -11,7 +11,6 @@ Ansible role: debops.libvirtd_qemu
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

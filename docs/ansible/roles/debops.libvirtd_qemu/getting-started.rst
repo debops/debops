@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -12,7 +10,7 @@ This role is part of the DebOps libvirtd configuration
 
 The ``debops.libvirtd_qemu`` role manages the libvirtd QEMU-related
 configuration. It can be used as standalone, however the role is intentionally
-very limited and relies on the debops.libvirtd_ Ansible role to do most of the
+very limited and relies on the :ref:`debops.libvirtd` to do most of the
 work related to package installation and environment setup. You are strongly
 advised to use the roles and their playbooks together.
 
@@ -20,7 +18,7 @@ advised to use the roles and their playbooks together.
 Example inventory
 -----------------
 
-The role is used by the debops.libvirtd_ playbook and will be enabled
+The role is used by the :ref:`debops.libvirtd` playbook and will be enabled
 automatically on hosts that are included in the ``[debops_service_libvirtd]``
 Ansible inventory group.
 
@@ -39,7 +37,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.libvirtd_qemu`` role:
 
-.. literalinclude:: playbooks/libvirtd_qemu.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/libvirtd_qemu.yml
    :language: yaml
 
 
