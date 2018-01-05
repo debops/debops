@@ -10,7 +10,6 @@ Ansible role: debops.apt_proxy
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:

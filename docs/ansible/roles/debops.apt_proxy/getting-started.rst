@@ -1,14 +1,12 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 Default configuration
 ---------------------
 
 The role will enable APT proxy support automatically if ``http_proxy``,
 ``https_proxy`` or ``ftp_proxy`` environment variables are set on a given host.
-They can be configured using the debops.environment_ Ansible role.
+They can be configured using the :ref:`debops.environment` Ansible role.
 
 Unfortunately using the above environment variables directly through :command:`sudo`
 is problematic. To mitigate that, you can use the ``inventory__*_environment``
@@ -29,7 +27,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.apt_proxy`` role:
 
-.. literalinclude:: playbooks/apt_proxy.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/apt_proxy.yml
    :language: yaml
 
 
