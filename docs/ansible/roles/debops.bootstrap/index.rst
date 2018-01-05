@@ -11,7 +11,6 @@ Ansible role: debops.bootstrap
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

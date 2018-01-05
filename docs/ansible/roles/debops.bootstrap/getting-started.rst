@@ -41,7 +41,7 @@ Example playbook
 
 Here's an example playbook which uses the ``debops.bootstrap`` role:
 
-.. literalinclude:: playbooks/bootstrap.yml
+.. literalinclude:: ../../../../ansible/playbooks/bootstrap.yml
    :language: yaml
 
 How to bootstrap a host with DebOps
