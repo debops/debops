@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -20,7 +18,7 @@ like that if you want to take advantage of custom lookup template that uses
 conditional package installation depending on installed operating system, its
 release or available archive areas.
 
-The difference between debops.apt_ and ``debops.apt_install`` Ansible roles
+The difference between :ref:`debops.apt` and ``debops.apt_install`` Ansible roles
 is that the former role is used to configure the APT package manager itself,
 and latter just installs packages using APT package manager, dependng on its
 configuration.
@@ -69,5 +67,5 @@ Example playbook
 ``debops.apt_install`` is designed to be used from a playbook or a role as role
 dependency. Here's an example configuration:
 
-.. literalinclude:: playbooks/apt_install.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/apt_install.yml
    :language: yaml

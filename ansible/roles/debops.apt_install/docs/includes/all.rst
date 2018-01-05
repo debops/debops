@@ -1,1 +1,0 @@
-.. include:: includes/global.rst
