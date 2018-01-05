@@ -10,7 +10,6 @@ Ansible role: debops.dhparam
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:

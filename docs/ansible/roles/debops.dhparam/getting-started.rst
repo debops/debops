@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -12,13 +10,13 @@ Initial configuration
 On the first run of the ``debops.dhparam`` role, Ansible will generate a set of
 Diffie-Hellman parameters (one or more, depending on what key sizes are
 configured) and store them on the Ansible Controller, in ``secret/`` directory
-managed by the debops.secret_ role. This set of DH parameters will be used to
+managed by the :ref:`debops.secret` role. This set of DH parameters will be used to
 "preseed" the remote hosts during initial Ansible playbook run to make
 configuration of new hosts faster without the need to wait for new DH
 parameters to be generated, which might take some time.
 
 If ``atd`` service is installed and configured on the remote host (using
-the debops.atd_ role), and parameter initialization is enabled, the role on first
+the :ref:`debops.atd` role), and parameter initialization is enabled, the role on first
 run will create a batch job which will regenerate the DH parameters on the
 remote hosts to make them unique. This will be done in the background with
 lower process priority to minimize impact on the host performance. This way,
@@ -95,5 +93,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.dhparam`` role:
 
-.. literalinclude:: playbooks/dhparam.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/dhparam.yml
    :language: yaml
