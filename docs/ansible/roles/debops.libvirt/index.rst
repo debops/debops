@@ -11,7 +11,6 @@ Ansible role: debops.libvirt
    defaults
    defaults-configuration
    copyright
-   changelog
 
 ..
  Local Variables:
