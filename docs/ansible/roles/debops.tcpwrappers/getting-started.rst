@@ -35,5 +35,5 @@ Example playbook
 ``debops.tcpwrappers`` is designed to be used from a playbook or a role as role
 dependency. Here's an example configuration:
 
-.. literalinclude:: playbooks/tcpwrappers.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/tcpwrappers.yml
    :language: yaml

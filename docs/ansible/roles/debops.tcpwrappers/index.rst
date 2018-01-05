@@ -11,7 +11,6 @@ Ansible role: debops.tcpwrappers
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
