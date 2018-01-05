@@ -11,7 +11,6 @@ Ansible role: debops.environment
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
