@@ -1,9 +1,9 @@
 .. _pki__ref_acme_integration:
 
+.. include:: ../../../includes/global.rst
+
 ACME Integration
 ================
-
-.. include:: includes/all.rst
 
 `Automated Certificate Management Environment` (ACME_) is a protocol that
 allows automated certificate requests, retrieval of certificates and

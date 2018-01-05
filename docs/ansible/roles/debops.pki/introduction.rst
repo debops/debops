@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 The ``debops.pki`` role provides a standardized management of the X.509
 certificates on hosts controlled by Ansible. Other Ansible roles can utilize

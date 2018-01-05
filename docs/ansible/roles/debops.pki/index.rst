@@ -19,7 +19,6 @@ Ansible role: debops.pki
    custom-hooks
    ansible-integration
    copyright
-   changelog
 
 ..
  Local Variables:

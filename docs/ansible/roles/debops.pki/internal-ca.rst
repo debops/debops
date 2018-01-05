@@ -3,7 +3,7 @@
 Internal Certificate Authorities
 ================================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 One of the problems in the deployment of a Public Key Infrastructure is the need
 for the certificates to be signed by a third party, called a Certificate
@@ -30,7 +30,7 @@ with internal hosts, which still need to be protected.
 
 The ``debops.pki`` role solves this problem by creating it's own set of internal
 Certificate Authorities, located on the Ansible Controller in the :file:`secret/`
-directory (see debops.secret_ for more details). These Certificate
+directory (see :ref:`debops.secret` for more details). These Certificate
 Authorities can be used to bootstrap a new PKI environment, which can then be
 passed over to a stand-alone CA server located on the network. Alternatively,
 certificates signed by the internal CA can be used for internal communication

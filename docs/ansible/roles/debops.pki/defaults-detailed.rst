@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.pki`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
 
@@ -148,7 +146,7 @@ List of parameters related to the entire PKI realm:
 
 ``dhparam_file``
   Optional. Path to the Diffie-Hellman parameters to include in the certificate
-  chain. If not specified, DHE parameters managed by the debops.dhparam_
+  chain. If not specified, DHE parameters managed by the :ref:`debops.dhparam`
   role will be used automatically, if they're available.
 
 ``selfsigned_sign_days``

@@ -3,7 +3,7 @@
 PKI realms structure
 ====================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 The concept of PKI realms is designed to provide a standardized way for various
 applications to access X.509 certificates and private keys. The management of
@@ -103,7 +103,7 @@ This configuration explains where each certificate is used, but this is not
 sufficient to enable HTTPS for the webserver. Refer to the :program:`nginx`
 documentation for the rest of the required configuration options.
 
-If you use the debops.nginx_ Ansible role provided with the project, it has
+If you use the ``debops.nginx`` Ansible role provided with the project, it has
 extensive integration with the ``debops.pki`` role and can configure the
 webserver automatically. Usually all you need to do is to make sure the default
 realm matches the one you would like to use for each server configuration.
@@ -161,7 +161,7 @@ is provided by the internal ``debops.pki`` Certificate Authority:
        └── trusted.crt -> public/trusted.pem
 
 On the Ansible Controller, there's a corresponding directory structure located
-in the :file:`secret/` directory maintained by the debops.secret_ Ansible role:
+in the :file:`secret/` directory maintained by the :ref:`debops.secret` Ansible role:
 
 .. code-block:: none
 
