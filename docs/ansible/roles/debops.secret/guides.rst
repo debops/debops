@@ -1,8 +1,6 @@
 Detailed guides
 ===============
 
-.. include:: includes/all.rst
-
 How local secrets work
 ----------------------
 
@@ -108,7 +106,7 @@ Of course for this to work, ``debops.secret`` needs to be included in the
 playbook, either as a role, or a role dependency. You can change the values of
 ``secret__ldap_*`` variables in inventory as you need.
 
-If you use debops.slapd_ role to configure an LDAP server, it will
+If you use ``debops.slapd`` role to configure an LDAP server, it will
 automatically copy the admin account password to a location defined in
 ``secret__ldap_admin_password`` variable to be accessed by the ``debops.secret``
 role as needed.

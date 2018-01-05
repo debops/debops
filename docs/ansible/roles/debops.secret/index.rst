@@ -11,7 +11,6 @@ Ansible role: debops.secret
    defaults
    guides
    copyright
-   changelog
 
 ..
  Local Variables:

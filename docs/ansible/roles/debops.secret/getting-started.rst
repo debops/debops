@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 By default all you need to do to use the ``debops.secret`` role is to
 include it in your common playbook at the beginning:
 
