@@ -10,7 +10,6 @@ Ansible role: debops.atd
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
