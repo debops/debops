@@ -50,5 +50,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.cran`` role:
 
-.. literalinclude:: playbooks/cran.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/cran.yml
    :language: yaml

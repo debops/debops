@@ -11,7 +11,6 @@ Ansible role: debops.cran
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
