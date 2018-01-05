@@ -3,7 +3,7 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 .. contents::
    :local:
@@ -11,7 +11,7 @@ Getting started
 Client configuration
 --------------------
 
-The ``debops.apt_cacher_ng`` role will use the debops.nginx_ role to
+The ``debops.apt_cacher_ng`` role will use the :ref:`debops.nginx` role to
 configure a proxied access to the cache over a custom subdomain, by default
 ``software-cache.{{ ansible_domain }}``. This subdomain should be configured in the
 DNS and point to the server where the proxy is installed. You can open this
@@ -55,13 +55,13 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.apt_cacher_ng`` role:
 
-.. literalinclude:: playbooks/apt_cacher_ng.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/apt_cacher_ng.yml
    :language: yaml
 
 If you make extensive use of the flexibility of this role and are using
 AppArmor you might need to use the following playbook instead:
 
-.. literalinclude:: playbooks/apt_cacher_ng-apparmor.yml
+.. literalinclude:: examples/apt_cacher_ng-apparmor.yml
    :language: yaml
 
 The playbook is shipped with this role under

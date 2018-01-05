@@ -10,7 +10,6 @@ Ansible role: debops.apt_cacher_ng
    getting-started
    defaults
    copyright
-   changelog
    upgrade
 
 ..
