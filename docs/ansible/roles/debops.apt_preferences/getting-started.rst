@@ -24,6 +24,6 @@ Example playbook
 
 Here's an example playbook that can be used to manage APT preferences:
 
-.. literalinclude:: playbooks/apt_preferences.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/apt_preferences.yml
    :language: yaml
 

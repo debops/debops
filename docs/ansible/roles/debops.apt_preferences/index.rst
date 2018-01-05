@@ -11,7 +11,6 @@ Ansible role: debops.apt_preferences
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
