@@ -11,7 +11,6 @@ Ansible role: debops.authorized_keys
    defaults
    defaults-detailed
    copyright
-   changelog
    upgrade
 
 ..

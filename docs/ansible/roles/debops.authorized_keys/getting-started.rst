@@ -4,8 +4,6 @@ Getting started
 .. contents:: Sections
    :local:
 
-.. include:: includes/all.rst
-
 Security considerations
 -----------------------
 
@@ -47,7 +45,7 @@ Ansible role.
 
 .. note::
 
-   The debops.sshd_ role enables use of the SSH public keys managed by the
+   The :ref:`debops.sshd` role enables use of the SSH public keys managed by the
    ``debops.authorized_keys`` automatically.
 
 To enable the ``sshd`` service to use the configured public keys, you should
@@ -98,5 +96,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.authorized_keys`` role:
 
-.. literalinclude:: playbooks/authorized_keys.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/authorized_keys.yml
    :language: yaml
