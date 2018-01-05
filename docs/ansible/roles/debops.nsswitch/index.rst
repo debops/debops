@@ -11,7 +11,6 @@ Ansible role: debops.nsswitch
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

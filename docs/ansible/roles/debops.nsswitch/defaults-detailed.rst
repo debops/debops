@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.nsswitch`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
@@ -74,7 +72,7 @@ In an application role, define a variable that can be passed to the
 
 After that, you can use this variable in a playbook as a dependent variable:
 
-.. literalinclude:: playbooks/dependent-nsswitch.yml
+.. literalinclude:: examples/dependent-nsswitch.yml
    :language: yaml
 
 Make sure that the ``debops.nsswitch`` role is used after your application
