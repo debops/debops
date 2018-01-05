@@ -11,7 +11,6 @@ Ansible role: debops.core
    defaults
    guides
    copyright
-   changelog
 
 ..
  Local Variables:

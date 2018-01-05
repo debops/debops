@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -52,14 +50,14 @@ access to the environment variables of the unprivileged account Ansible is
 connecting through and can read the ``$SSH_CLIENT`` environment variable and
 get the IP address.
 
-Note: Hosts provisioned by the debops.bootstrap_ role have a workaround in
+Note: Hosts provisioned by the :ref:`debops.bootstrap` role have a workaround in
 place so that the playbook could be run in privileged mode but to avoid
 problems with `other provisioning methods <https://github.com/debops/ansible-core/issues/6#issuecomment-141923939>`_
 the role should be run in unprivileged mode as mentioned.
 
 This is a playbook that is used to run the role:
 
-.. literalinclude:: playbooks/core.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/core.yml
    :language: yaml
 
 If you use your own set of custom playbooks, you can either copy the above
