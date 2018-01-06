@@ -8,7 +8,6 @@ Ansible role: debops.etherpad
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:

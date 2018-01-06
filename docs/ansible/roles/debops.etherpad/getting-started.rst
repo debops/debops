@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -12,7 +10,7 @@ Default configuration
 
 The role will detect presence of a MariaDB database server and use it if
 available. If not, a SQLite databse will be automatically configured on the
-server. You can configure MariaDB database using the debops.mariadb_server_
+server. You can configure MariaDB database using the :ref:`debops.mariadb_server`
 Ansible role.
 
 
@@ -34,7 +32,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.etherpad`` role:
 
-.. literalinclude:: playbooks/etherpad.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/etherpad.yml
    :language: yaml
 
 

@@ -1,8 +1,6 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 `Etherpad <https://en.wikipedia.org/wiki/Etherpad>`_ is a collaborative text
 editor usable through a web browser. Documents can be edited by multiple people
 in real time, shared and exported in different formats.
