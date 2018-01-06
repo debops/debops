@@ -10,7 +10,6 @@ Ansible role: debops.unbound
    defaults-detailed
    defaults-server
    copyright
-   changelog
 
 ..
  Local Variables:

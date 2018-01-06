@@ -3,8 +3,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 some of ``debops.unbound`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.

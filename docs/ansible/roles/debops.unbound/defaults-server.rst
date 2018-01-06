@@ -3,8 +3,6 @@
 Default variable details: unbound__server
 =========================================
 
-.. include:: includes/all.rst
-
 
 The ``unbound__*_server`` variables are used to define the contents of the
 :file:`/etc/unbound/unbound.conf.d/ansible.conf` configuration file. The

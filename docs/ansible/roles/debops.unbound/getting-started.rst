@@ -75,7 +75,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.unbound`` role:
 
-.. literalinclude:: playbooks/unbound.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/unbound.yml
    :language: yaml
 
 
