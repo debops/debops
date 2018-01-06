@@ -1,8 +1,6 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 `Elasticsearch <https://en.wikipedia.org/wiki/Elasticsearch>`_ is a distributed
 search engine and storage system, also a part of the Elasticsearch, Logstash,
 Kibana (ELK) stack. The software is developed by `Elastic <https://eastic.co/>`_.

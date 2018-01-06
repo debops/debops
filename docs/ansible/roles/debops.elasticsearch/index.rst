@@ -13,7 +13,6 @@ Ansible role: debops.elasticsearch
    clustering
    dependency
    copyright
-   changelog
 
 ..
  Local Variables:

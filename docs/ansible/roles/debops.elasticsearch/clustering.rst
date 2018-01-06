@@ -3,8 +3,6 @@
 Elasticsearch clustering
 ========================
 
-.. include:: includes/all.rst
-
 The Elasticsearch service can be deployed either on a single host in
 a "standalone" mode, or in a cluster of multiple hosts. The cluster mode will be enabled automatically after a few important variables and inventory groups are configured.
 
@@ -102,7 +100,7 @@ majority within the cluster.
 Firewall configuration
 ----------------------
 
-The role supports a firewall managed by the debops.ferm_ Ansible role. When the
+The role supports a firewall managed by the :ref:`debops.ferm` Ansible role. When the
 firewall is enabled, Elasticsearch will be configured to listen to connections
 on private IP addresses defined on the host along with the ``localhost``; if
 the firewall is not detected or disabled, Elasticsearch will listen only on the

@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.elasticsearch`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
