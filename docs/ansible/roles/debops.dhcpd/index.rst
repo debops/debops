@@ -1,4 +1,6 @@
-Ansible Role: debops.dhcpd
+.. _debops.dhcpd:
+
+Ansible role: debops.dhcpd
 ==========================
 
 .. toctree::

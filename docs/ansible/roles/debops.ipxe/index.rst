@@ -7,12 +7,9 @@ Ansible role: debops.ipxe
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    copyright
-   credits
-   changelog
 
 ..
  Local Variables:
