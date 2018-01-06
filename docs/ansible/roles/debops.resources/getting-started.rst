@@ -34,7 +34,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.resources`` role:
 
-.. literalinclude:: playbooks/resources.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/resources.yml
    :language: yaml
 
 

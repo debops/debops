@@ -1,7 +1,7 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 Some of ``debops.resources`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
@@ -124,7 +124,7 @@ the parameter list and syntax.
 
 To download resources over HTTPS, the content must be served over a valid
 TLS/SSL certificate recognized by the remote host. If you use self-siged
-certificates, check the debops.pki_ role for how to add custom Root CA
+certificates, check the :ref:`debops.pki` for how to add custom Root CA
 Certificates on your hosts.
 
 Here are some important parameters used by the role:
