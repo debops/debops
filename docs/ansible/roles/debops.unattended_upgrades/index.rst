@@ -11,7 +11,6 @@ Ansible role: debops.unattended_upgrades
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

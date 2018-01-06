@@ -48,7 +48,7 @@ Example playbook
 Here's an example playbook that can be used to enable and manage the
 ``unattended-upgrades`` service on a set of hosts:
 
-.. literalinclude:: playbooks/unattended_upgrades.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/unattended_upgrades.yml
    :language: yaml
 
 Use as a role dependency
