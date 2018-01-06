@@ -4,8 +4,6 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
 
 Example inventory
 -----------------
@@ -24,7 +22,7 @@ Example playbook
 Here's an example playbook that can be used to host the DebOps API on a set of
 hosts:
 
-.. literalinclude:: playbooks/debops_api.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/debops_api.yml
    :language: yaml
 
 Ansible tags

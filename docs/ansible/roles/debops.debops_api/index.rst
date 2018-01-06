@@ -10,7 +10,6 @@ Ansible role: debops.debops_api
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:

@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 ``debops.debops_api`` can be used to setup the `DebOps API`_.
 
