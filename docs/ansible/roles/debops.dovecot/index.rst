@@ -7,14 +7,11 @@ Ansible role: debops.dovecot
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-configuration
    guides
    copyright
-   credits
-   changelog
 
 ..
  Local Variables:

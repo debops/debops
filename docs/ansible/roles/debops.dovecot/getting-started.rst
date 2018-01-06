@@ -25,16 +25,10 @@ in your Ansible inventory::
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.dovecot`` role to install Dovecot::
+Here's an example playbook which uses ``debops.dovecot`` role to install Dovecot:
 
-    ---
-
-    - name: Setup Dovecot IMAP Server
-      hosts: debops_service_dovecot
-
-      roles:
-        - role: debops.dovecot
-          tags: dovecot
+.. literalinclude:: ../../../../ansible/playbooks/service/dovecot.yml
+   :language: yaml
 
 Ansible tags
 ------------
