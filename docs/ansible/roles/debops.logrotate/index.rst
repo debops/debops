@@ -11,7 +11,6 @@ Ansible role: debops.logrotate
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
