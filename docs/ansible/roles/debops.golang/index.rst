@@ -10,7 +10,6 @@ Ansible role: debops.golang
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:

@@ -1,10 +1,8 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 The ``debops.golang`` role can be used to setup a Go environment using
-Debian/Ubuntu packages. It uses debops.apt_preferences_ role to
+Debian/Ubuntu packages. It uses :ref:`debops.apt_preferences` role to
 automatically install backported Go packages on older OS releases.
 
 
