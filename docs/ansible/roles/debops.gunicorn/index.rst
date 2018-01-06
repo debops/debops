@@ -12,7 +12,6 @@ Ansible role: debops.gunicorn
    defaults-detailed
    virtualenv-support
    copyright
-   changelog
 
 ..
  Local Variables:

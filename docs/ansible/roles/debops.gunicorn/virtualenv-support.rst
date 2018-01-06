@@ -3,8 +3,6 @@
 Support for virtualenv environments
 ===================================
 
-.. include:: includes/all.rst
-
 The role can be used to run WSGI applications deployed in a `virtualenv <http://virtualenv.org/>`_
 environment. To do this, you need to install a ``gunicorn`` Python module
 inside the environment at the same version as the Debian package. Below you can
