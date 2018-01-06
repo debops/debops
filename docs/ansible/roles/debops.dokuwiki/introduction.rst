@@ -1,11 +1,9 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 `DokuWiki`_ is an easy to use, file-based wiki written in PHP5.
 ``debops.dokuwiki`` role installs this wiki on a specified host with nginx
-as a webserver (using debops.nginx_ Ansible role). You can optionally
+as a webserver (using :ref:`debops.nginx`). You can optionally
 configure multiple DokuWiki instances with shared base installation using
 `DokuWiki vhost farm`_ mode.
 

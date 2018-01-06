@@ -4,11 +4,10 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
 
 By default DokuWiki is installed on a separate system account ``"dokuwiki"``,
 in :file:`/srv/www/dokuwiki/` subdirectory and will be accessible on
-``https://wiki.<domain>/``. debops.nginx_ and debops.php_ roles are used
+``https://wiki.<domain>/``. :ref:`debops.nginx` and :ref:`debops.php` roles are used
 to configure the required environment.
 
 Example inventory
@@ -26,7 +25,7 @@ Example playbook
 Here's an example playbook which uses ``debops.dokuwiki`` role to install
 DokuWiki:
 
-.. literalinclude:: playbooks/dokuwiki.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/dokuwiki.yml
    :language: yaml
 
 

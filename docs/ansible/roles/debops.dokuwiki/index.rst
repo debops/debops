@@ -10,7 +10,6 @@ Ansible role: debops.dokuwiki
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
