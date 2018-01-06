@@ -1,8 +1,6 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 The ``debops.elastic_co`` Ansible role can be used to configure APT
 repositories maintained by the `Elasticsearch BV. <https://www.elastic.co/about>`_
 company on Debian and Ubuntu hosts. The APT repositories are used to distribute

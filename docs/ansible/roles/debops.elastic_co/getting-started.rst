@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -105,7 +103,7 @@ Due to the above facts the decision was made that the ``debops.elastic_co``
 role will configure the APT preferences of the hosts it's executed on to prefer
 the ``heartbeat`` package from the Elasticsearch BV. APT repositories, using
 APT preferences. The example Ansible playbook contains the necessary code which
-uses the debops.apt_preferences_ role to perform this task. In a case where you
+uses the :ref:`debops.apt_preferences` role to perform this task. In a case where you
 wish to not configure this override, you can disable it by setting the
 :envvar:`elastic_co__heartbeat_override` variable to ``False``. This will
 affect the list of package versions included in the Ansible local facts.
@@ -133,5 +131,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.elastic_co`` role:
 
-.. literalinclude:: playbooks/elastic_co.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/elastic_co.yml
    :language: yaml

@@ -10,7 +10,6 @@ Ansible role: debops.elastic_co
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
