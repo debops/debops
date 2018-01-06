@@ -22,7 +22,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.grub`` role:
 
-.. literalinclude:: playbooks/grub.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/grub.yml
    :language: yaml
 
 

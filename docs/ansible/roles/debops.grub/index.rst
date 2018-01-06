@@ -7,11 +7,9 @@ Ansible role: debops.grub
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
