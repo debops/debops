@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 tinc_ is a Virtual Private Network daemon, it can be used to create encrypted
 and tunneled connections to other hosts, forming a separate network, either

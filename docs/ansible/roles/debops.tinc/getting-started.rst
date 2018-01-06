@@ -1,10 +1,10 @@
 Getting started
 ===============
 
+.. include:: ../../../includes/global.rst
+
 .. contents::
    :local:
-
-.. include:: includes/all.rst
 
 The ``debops.tinc`` role by itself only defines the connections between hosts,
 posing as Ethernet tunnels. To make a proper network, you need a defined
@@ -92,13 +92,13 @@ generated from templates to other roles.
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.tinc`` role:
 
-.. literalinclude:: playbooks/tinc-plain.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/tinc-plain.yml
    :language: yaml
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses ``debops.tinc`` together with the debops.persistent_paths_ role:
+that uses ``debops.tinc`` together with the :ref:`debops.persistent_paths`:
 
-.. literalinclude:: playbooks/tinc-persistent_paths.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/tinc-persistent_paths.yml
    :language: yaml
 
 Static vs DHCP connection type
@@ -125,11 +125,11 @@ Example network configuration:
 
 In this mode, hosts will be configured to start their VPN interface with a
 dummy ``0.0.0.0`` IP address and connect it to a specified bridge.
-This bridge can be created by the debops.ifupdown_ role.
+This bridge can be created by the :ref:`debops.ifupdown`.
 
 In "static" mode, the VPN interface will act as another layer 2 connection on
 the bridge and DHCP requests from the VPN will be passed along to a suitable
-server. You can configure a DHCP/DNS server using debops.dnsmasq_ role.
+server. You can configure a DHCP/DNS server using :ref:`debops.dnsmasq`.
 
 Host configuration exchange
 ---------------------------
@@ -203,8 +203,8 @@ commands:
     systemctl start tinc@mesh0
     systemctl stop tinc@mesh0
 
-debops.persistent_paths_ support
---------------------------------
+:ref:`debops.persistent_paths` support
+--------------------------------------
 
 In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_ or
 another system where persistence is not the default, it should be absent in
@@ -236,3 +236,5 @@ attempt to update the configuration on a system that uses bind mounts for
 persistence. You can set ``core__unsafe_writes`` directly in your inventory
 without the need to run the ``debops.core`` role for this special case.
 Refer to `Templating or updating persistent files`_ for details.
+
+.. _Templating or updating persistent files: https://docs.debops.org/en/latest/ansible/roles/ansible-persistent_paths/docs/guides.html#templating-or-updating-persistent-files

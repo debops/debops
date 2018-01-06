@@ -5,7 +5,7 @@ Upgrade notes
 
 The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the
-:ref:`tinc__ref_changelog` for more details about what has changed.
+changelog for more details about what has changed.
 
 .. _tinc__ref_upgrade_nodes_v0.4:
 
