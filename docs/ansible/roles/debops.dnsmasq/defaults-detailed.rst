@@ -13,6 +13,7 @@ examples for them.
 
 dnsmasq__dhcp_hosts
 -------------------
+
 :envvar:`dnsmasq__dhcp_hosts` must be a list of hosts. Each host is a dictionary
 consisting of a ``name``, a ``mac`` address, an :command:`ip` address and optionally a
 ``lease_time``; by default it's 1 day (``1d``).:

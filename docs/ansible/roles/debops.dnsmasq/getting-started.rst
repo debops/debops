@@ -1,10 +1,10 @@
 Getting started
 ===============
 
+.. include:: ../../../includes/global.rst
+
 .. contents::
    :local:
-
-.. include:: includes/all.rst
 
 Example inventory
 -----------------
@@ -23,23 +23,23 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.dnsmasq`` role:
 
-.. literalinclude:: playbooks/dnsmasq-plain.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/dnsmasq-plain.yml
    :language: yaml
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses ``debops.dnsmasq`` together with the debops.persistent_paths_ role:
+that uses ``debops.dnsmasq`` together with the :ref:`debops.persistent_paths`:
 
-.. literalinclude:: playbooks/dnsmasq-persistent_paths.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/dnsmasq-persistent_paths.yml
    :language: yaml
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses ``debops.dnsmasq`` together with the debops-contrib.apparmor_ role:
+that uses ``debops.dnsmasq`` together with the ``debops-contrib.apparmor`` role:
 
-.. literalinclude:: playbooks/dnsmasq-apparmor.yml
+.. literalinclude:: examples/dnsmasq-apparmor.yml
    :language: yaml
 
-debops.persistent_paths_ support
---------------------------------
+:ref:`debops.persistent_paths` support
+--------------------------------------
 
 In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_ or
 another system where persistence is not the default, it should be absent in
@@ -60,3 +60,5 @@ attempt to update the configuration on a system that uses bind mounts for
 persistence. You can set ``core__unsafe_writes`` directly in your inventory
 without the need to run the ``debops.core`` role for this special case.
 Refer to `Templating or updating persistent files`_ for details.
+
+.. _Templating or updating persistent files: https://docs.debops.org/en/latest/ansible/roles/ansible-persistent_paths/docs/guides.html#templating-or-updating-persistent-files

@@ -10,7 +10,6 @@ Ansible role: debops.dnsmasq
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
