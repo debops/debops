@@ -97,5 +97,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.debops_fact`` role:
 
-.. literalinclude:: playbooks/debops_fact.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/debops_fact.yml
    :language: yaml
