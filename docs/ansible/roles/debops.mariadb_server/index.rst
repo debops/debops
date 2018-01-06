@@ -11,7 +11,6 @@ Ansible role: debops.mariadb_server
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # MariaDB Server APT packages [[[
@@ -221,7 +219,7 @@ mariadb_server__mysqld_network_options:
                                                                    # ]]]
 # .. envvar:: mariadb_server__mysqld_pki_options [[[
 #
-# Configuration of SSL support in :program:`mysqld`, managed by debops.pki_ role.
+# Configuration of SSL support in :program:`mysqld`, managed by :ref:`debops.pki` role.
 mariadb_server__mysqld_pki_options:
   name: 'pki-options'
   comment: 'Support for SSL connections'
@@ -275,7 +273,7 @@ mariadb_server__mysqld_options:
 # .. envvar:: mariadb_server__client_options [[[
 #
 # Configuration set in :file:`/etc/mysql/conf.d/client.cnf` at the installation
-# time. Afterwards you should use the debops.mariadb_ role to manage it.
+# time. Afterwards you should use the :ref:`debops.mariadb` role to manage it.
 mariadb_server__client_options:
   - section: 'client'
     options:
@@ -318,7 +316,7 @@ mariadb_server__append_groups: [ 'ssl-cert' ]
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki [[[
 #
-# Enable or disable support for SSL in MariaDB (using debops.pki_).
+# Enable or disable support for SSL in MariaDB (using :ref:`debops.pki`).
 mariadb_server__pki: '{{ (True
                       if (ansible_local|d() and ansible_local.pki|d() and
                           ansible_local.pki.enabled|d() and
@@ -417,6 +415,7 @@ mariadb_server__backup_directory: '/var/lib/automysqlbackup'
 mariadb_server__backup_max_allowed_packet: ''
                                                                    # ]]]
                                                                    # ]]]
+                                                                   # ]]]
 # MariaDB root account [[[
 # ------------------------
 
@@ -440,7 +439,7 @@ mariadb_server__root_password: '{{ lookup("password", secret +
 
 # .. envvar:: mariadb_server__ferm__dependent_rules [[[
 #
-# Configuration for debops.ferm_ Ansible role.
+# Configuration for :ref:`debops.ferm` Ansible role.
 mariadb_server__ferm__dependent_rules:
 
   - type: 'accept'
@@ -453,7 +452,7 @@ mariadb_server__ferm__dependent_rules:
                                                                    # ]]]
 # .. envvar:: mariadb_server__tcpwrappers__dependent_allow [[[
 #
-# Configuration for debops.tcpwrappers_ Ansible role.
+# Configuration for :ref:`debops.tcpwrappers` Ansible role.
 mariadb_server__tcpwrappers__dependent_allow:
 
   - daemon: 'mysqld'

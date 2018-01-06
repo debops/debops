@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -27,7 +25,7 @@ Example playbook
 Here's an example Ansible playbook that uses the ``debops.mariadb_server``
 role:
 
-.. literalinclude:: playbooks/mariadb_server.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/mariadb_server.yml
    :language: yaml
 
 Remote access to the database
@@ -60,5 +58,5 @@ Database and user management
 ----------------------------
 
 ``debops.mariadb_server`` is not meant to be used to manage databases and user
-accounts. You should use debops.mariadb_ role instead, which was designed
+accounts. You should use :ref:`debops.mariadb` role instead, which was designed
 specifically for this purpose.
