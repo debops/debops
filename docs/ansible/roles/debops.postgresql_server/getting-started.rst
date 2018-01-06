@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -30,7 +28,7 @@ adding in inventory:
 Check :ref:`postgresql_server__ref_preferred_version` to learn more about
 selecting custom PostgreSQL versions.
 
-After installation you can use debops.postgresql_ role to configure
+After installation you can use :ref:`debops.postgresql` role to configure
 PostgreSQL roles and databases.
 
 Remote access to the database
@@ -70,7 +68,7 @@ cluster:
          method: 'md5'
 
 The ``debops.postgresql_server`` role is designed to use the PKI infrastructure
-managed by debops.pki_ role. See its documentation for more details.
+managed by :ref:`debops.pki` role. See its documentation for more details.
 
 Example inventory
 -----------------
@@ -86,7 +84,7 @@ Example playbook
 
 Here's an example playbook which uses the ``debops.postgresql_server`` role:
 
-.. literalinclude:: playbooks/postgresql_server.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/postgresql_server.yml
    :language: yaml
 
 Ansible tags

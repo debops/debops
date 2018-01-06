@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.postgresql_server`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
@@ -58,7 +56,7 @@ The preferred way to make an upgrade is to configure a new database server with
 desired PostgreSQL version and move the database to it.
 
 You might also need to set similar set of variables for the
-debops.postgresql_ role to keep both of the roles in sync. Refer to its
+:ref:`debops.postgresql` role to keep both of the roles in sync. Refer to its
 documentation for details.
 
 .. _postgresql_server__ref_hba:

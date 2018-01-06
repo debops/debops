@@ -1,11 +1,11 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 `PostgreSQL`_ is a popular relational open source database. This role can be
 used to install and manage a set of PostgreSQL clusters on Debian-based
-systems. You can use debops.postgresql_ role to configure roles and
+systems. You can use :ref:`debops.postgresql` role to configure roles and
 databases on local or remote PostgreSQL servers.
 
 .. _PostgreSQL: http://www.postgresql.org/
