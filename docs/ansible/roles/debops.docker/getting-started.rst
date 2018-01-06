@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -19,7 +17,7 @@ by setting the ``docker__upstream: True`` variable in Ansible’s inventory.
 Upstream Docker is installed on Debian Stretch by default, since the this
 release does not provide included Docker packages.
 
-If debops.pki_ was configured on the host, Docker will automatically listen
+If :ref:`debops.pki` was configured on the host, Docker will automatically listen
 on its TCP port for incoming TLS connections, which is by default blocked by
 the :program:`ferm` firewall. If you don't use a firewall or have it disabled, you might
 want to set :envvar:`docker__tcp` to ``False`` to disable this behavior.
@@ -41,15 +39,15 @@ Docker, in a Python virtualenv. It will be automatically available system-wide
 via a symlink in :file:`/usr/local/bin/` directory.
 
 To let the docker daemon trust a private registry with self-signed certificates,
-add the root CA used to sign the registry's certificate through the debops.pki_
+add the root CA used to sign the registry's certificate through the :ref:`debops.pki`
 role.
 
 This role does not support switching from Docker CE to Docker EE on an already installed
 machine. It does support switching from distribution repository to upstream.
 However, it is recommended to start with a clean machine if possible.
 
-``debops.docker`` relies on configuration managed by debops.core_,
-debops.ferm_, and debops.pki_ Ansible roles.
+``debops.docker`` relies on configuration managed by :ref:`debops.core`,
+:ref:`debops.ferm`, and :ref:`debops.pki` Ansible roles.
 
 .. _Docker variants: https://docs.docker.com/engine/installation/#docker-variants
 
@@ -82,7 +80,7 @@ Example playbook
 
 Here's an example playbook that can be used to manage Docker:
 
-.. literalinclude:: playbooks/docker.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/docker.yml
    :language: yaml
 
 Ansible tags

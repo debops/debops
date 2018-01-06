@@ -3,9 +3,6 @@
 Docker virtualenv support
 =========================
 
-.. include:: includes/all.rst
-
-
 .. contents::
    :local:
    :depth: 1

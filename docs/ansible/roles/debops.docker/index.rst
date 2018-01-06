@@ -12,7 +12,6 @@ Ansible role: debops.docker
    defaults-detailed
    docker-virtualenv
    copyright
-   changelog
    upgrade
 
 ..
