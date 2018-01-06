@@ -11,7 +11,6 @@ Ansible role: debops.fcgiwrap
    defaults
    defaults-configuration
    copyright
-   changelog
 
 ..
  Local Variables:
