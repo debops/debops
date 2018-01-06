@@ -49,7 +49,7 @@ Example playbook
 
 Here's an example playbook that installs DebOps support on a host:
 
-.. literalinclude:: playbooks/debops.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/debops.yml
    :language: yaml
 
 The playbooks is shipped with this role under
