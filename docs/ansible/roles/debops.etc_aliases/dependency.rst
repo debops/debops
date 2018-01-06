@@ -3,8 +3,6 @@
 Usage as a role dependency
 ==========================
 
-.. include:: includes/all.rst
-
 The ``debops.etc_aliases`` role can be used as a dependency by other Ansible
 roles to manage contents of the :file:`/etc/aliases` file idempotently.
 Configuration options from multiple roles can be merged together and included
@@ -73,7 +71,7 @@ Dependent configuration storage and retrieval
 ---------------------------------------------
 
 The dependent configuration from other roles is stored in the :file:`secret/`
-directory on the Ansible Controller (see debops.secret_ for more details) in
+directory on the Ansible Controller (see :ref:`debops.secret` for more details) in
 a JSON file, with each role configuration in a separate dictionary. The
 ``debops.etc_aliases`` role reads this file when Ansible local facts
 indicate that the :file:`/etc/aliases` file is configured, otherwise a new

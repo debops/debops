@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -11,7 +9,7 @@ Default configuration
 ---------------------
 
 The role forwards the ``root`` mail to a set of e-mail administrator accounts
-defined by the debops.core_ Ansible role (see that role's documentation for
+defined by the :ref:`debops.core` Ansible role (see that role's documentation for
 more details). If they are not defined, the mail will be forwarded to
 ``root@<domain>`` for convenience.
 
@@ -70,7 +68,7 @@ Example playbook
 Here's a minimal example playbook that can be used to manage the
 :file:`/etc/aliases` file:
 
-.. literalinclude:: playbooks/etc_aliases.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/etc_aliases.yml
    :language: yaml
 
 The playbook is shipped with this role under

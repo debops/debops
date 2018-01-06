@@ -12,7 +12,6 @@ Ansible role: debops.etc_aliases
    defaults-detailed
    dependency
    copyright
-   changelog
 
 ..
  Local Variables:
