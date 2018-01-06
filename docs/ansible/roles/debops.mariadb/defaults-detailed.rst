@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.mariadb`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
@@ -115,7 +113,7 @@ User account parameters
   Optional. If specified, the role will set it as the password for the MariaDB
   account. If not present, a random password will be generated automatically
   and stored in the ``secret/`` directory on the Ansible Controller. Refer to the
-  debops.secret_ role for more details.
+  :ref:`debops.secret` role for more details.
 
 ``state``
   Optional. If ``present``, the account will be created on the database server. If
