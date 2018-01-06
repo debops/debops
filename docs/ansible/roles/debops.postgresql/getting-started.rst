@@ -1,15 +1,13 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
 ``debops.postgresql`` role is only the "client" part. To have working
-a PostgreSQL installation, you also need to setup debops.postgresql_server_
+a PostgreSQL installation, you also need to setup ``debops.postgresql_server``
 role somewhere. It can be either on the same host, or on a separate host.  See
-the debops.postgresql_server_ documentation to learn how to install the
+the ``debops.postgresql_server`` documentation to learn how to install the
 database server itself.
 
 The PostgreSQL version installed by the role will be a default version offered
@@ -54,7 +52,7 @@ server installed. This host will be accessed by Ansible using task delegation,
 so it needs to be accessible and managed by Ansible. Currently only 1 server at
 a time is supported by the role.
 
-If you use debops.pki_ to manage SSL certificates and you configured
+If you use :ref:`debops.pki` to manage SSL certificates and you configured
 PostgreSQL server with them, remote connections to the database should be
 automatically encrypted. Default server configuration requires remote
 connections to be done over SSL, otherwise connecion is dropped.
@@ -111,7 +109,7 @@ Example playbook
 
 Here's an example Ansible playbook that uses the ``debops.postgresql`` role:
 
-.. literalinclude:: playbooks/postgresql.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/postgresql.yml
    :language: yaml
 
 Local Ansible facts, custom tasks

@@ -1,14 +1,14 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 `PostgreSQL`_ is a popular relational open source database. The
 ``debops.postgresql`` role can be used to create and manage PostgreSQL roles
 and databases on local or remote PostgreSQL servers.
 
 To manage the PostgreSQL server itself, you will need to use
-debops.postgresql_server_ role.
+``debops.postgresql_server`` role.
 
 .. _PostgreSQL: http://www.postgresql.org/
 

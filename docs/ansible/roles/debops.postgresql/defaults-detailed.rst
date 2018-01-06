@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.postgresql`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
@@ -55,7 +53,7 @@ The preferred way to make an upgrade is to configure a new database server with
 desired PostgreSQL version and move the database to it.
 
 You might also need to set similar set of variables for the
-debops.postgresql_server_ role to keep both of the roles in sync. Refer to
+``debops.postgresql_server`` role to keep both of the roles in sync. Refer to
 its documentation for details.
 
 .. _postgresql__ref_user_clusters:
@@ -121,7 +119,7 @@ each role is defined as a YAML dictionary.
 ``password``
   Optional. Specify password for a given PostgreSQL role. If not set, a random
   password will be generated and stored in :file:`secret/` directory. See
-  debops.secret_ role for more details.
+  :ref:`debops.secret` role for more details.
 
 ``encrypted``
   Optional, bool. Specify if a given password is already encrypted or not.
@@ -333,7 +331,7 @@ Each entry is defined by a YAML dictionary. Recognized parameters:
 ``password``
   Optional. Specify cleartext password which should be used with a given entry.
   If not specified, password will be pulled from :file:`secret/` directory managed
-  by debops.secret_ Ansible role.
+  by :ref:`debops.secret` Ansible role.
 
 Examples
 ~~~~~~~~

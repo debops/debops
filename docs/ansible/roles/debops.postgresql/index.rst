@@ -11,7 +11,6 @@ Ansible role: debops.postgresql
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
