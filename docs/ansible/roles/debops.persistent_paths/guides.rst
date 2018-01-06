@@ -3,7 +3,7 @@
 Usage guides
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 Role authors who want to support platforms like `Qubes OS`_ and other
 environments where persistence is not the default can do so by using this role
@@ -53,9 +53,9 @@ User can then select the role playbook they want to run using Ansible groups as 
 
 Examples of roles which use/support ``debops.persistent_paths``:
 
-* debops.cryptsetup_
-* debops.dnsmasq_
-* debops.tinc_
+* ``debops.cryptsetup``
+* ``debops.dnsmasq``
+* ``debops.tinc``
 
 
 .. _persistent_paths__ref_guide_updating_persistent_files:

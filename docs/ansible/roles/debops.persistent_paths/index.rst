@@ -12,7 +12,6 @@ Ansible role: debops.persistent_paths
    defaults-detailed
    guides
    copyright
-   changelog
 
 ..
  Local Variables:

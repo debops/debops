@@ -1,7 +1,8 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
+.. include:: includes/role.rst
 
 This role provides a generic mechanism to declare which files/directories
 are required to be persistent. How this information is used can then be defined in
@@ -20,7 +21,7 @@ to easily make additional paths persistent by bind mounting them from
 
 ``debops.persistent_paths`` allows other Ansible roles to interact with
 bind-dirs_ by using this role as a dependency role.
-An example which does this is debops.cryptsetup_.
+An example which does this is ``debops.cryptsetup``.
 
 The role can also be used by the system administrator to manage bind-dirs_
 using the Ansible inventory.

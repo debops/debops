@@ -1,7 +1,7 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
+.. include:: includes/role.rst
 
 .. contents::
    :local:
@@ -31,12 +31,8 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.persistent_paths`` role:
 
-.. literalinclude:: playbooks/persistent_paths.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/persistent_paths.yml
    :language: yaml
-
-The playbook is shipped with this role under
-:file:`./docs/playbooks/persistent_paths.yml` from which you can symlink it to your
-playbook directory.
 
 
 Qubes OS
