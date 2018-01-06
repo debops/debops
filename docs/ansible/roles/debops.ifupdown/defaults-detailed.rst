@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.ifupdown`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
@@ -356,8 +354,8 @@ Firewall parameters
 
 ``forward``
   Optional, boolean. If absent and an interface is a bridge, or present and
-  ``True``, the role will generate configuration for the debops.ferm_ Ansible
-  role to enable packet forwarding for a given interface.
+  ``True``, the role will generate configuration for the :ref:`debops.ferm` to
+  enable packet forwarding for a given interface.
 
 ``forward_interface_ferm_rule_enabled``
   Optional, boolean. Should a Firewall rule be configured which matches new

@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -54,7 +52,7 @@ Automatic upgrades from older version
 -------------------------------------
 
 The ``debops.ifupdown`` role tracks its own version used on a host using the
-debops.debops_fact_ Ansible role as an intermediary. If the currently applied
+:ref:`debops.debops_fact` as an intermediary. If the currently applied
 version is older than ``0.3.0`` or the version cannot be found, role will
 remove the :file:`/etc/network/interfaces.config.d/` directory to make sure
 that the network configuration state is consistent. You might want to review
@@ -87,5 +85,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.ifupdown`` role:
 
-.. literalinclude:: playbooks/ifupdown.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/ifupdown.yml
    :language: yaml

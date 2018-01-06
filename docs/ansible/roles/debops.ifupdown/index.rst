@@ -12,7 +12,6 @@ Ansible role: debops.ifupdown
    defaults-detailed
    ifupdown-systemd
    copyright
-   changelog
    upgrade
 
 ..

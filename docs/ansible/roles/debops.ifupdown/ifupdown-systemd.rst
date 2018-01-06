@@ -1,8 +1,6 @@
 Enchancements to ifupdown in systemd
 ====================================
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 

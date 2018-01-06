@@ -3,17 +3,15 @@
 Upgrade notes
 =============
 
-.. include:: includes/all.rst
-
 The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the
-:ref:`ifupdown__ref_changelog` for more details about what has changed.
+changelog for more details about what has changed.
 
 
 From v0.2.x to v0.3.x
 ---------------------
 
-Make sure to read the :ref:`ifupdown__ref_changelog` for for detailed list of changes.
+Make sure to read the changelog for for detailed list of changes.
 
 All variables are renamed
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -71,7 +69,7 @@ network configuration solutions at this time.
 Playbook changes
 ~~~~~~~~~~~~~~~~
 
-The role uses an internal ``debops.ifupdown/env`` role and debops.ferm_ role to
+The role uses an internal ``debops.ifupdown/env`` role and :ref:`debops.ferm` to
 configure the required firewall rules. Make sure to update your custom
 playbooks; see the :ref:`ifupdown__ref_example_playbook` for details.
 

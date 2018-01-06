@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 ``ifupdown`` is a set of high-level scripts in Debian/Ubuntu Linux
 distributions which can be used to configure network interfaces, bridges, VLAN
