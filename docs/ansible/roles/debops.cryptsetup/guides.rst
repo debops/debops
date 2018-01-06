@@ -1,7 +1,7 @@
 Guides and examples
 ===================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 .. contents::
    :local:

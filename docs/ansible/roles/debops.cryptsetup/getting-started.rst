@@ -3,7 +3,7 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 .. contents::
    :local:
@@ -49,13 +49,13 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.cryptsetup`` role:
 
-.. literalinclude:: playbooks/cryptsetup-plain.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/cryptsetup-plain.yml
    :language: yaml
 
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses ``debops.cryptsetup`` together with the debops.persistent_paths_ role:
 
-.. literalinclude:: playbooks/cryptsetup-persistent_paths.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/cryptsetup-persistent_paths.yml
    :language: yaml
 
 Ansible tags
@@ -75,8 +75,8 @@ Available role tags:
 ``role::cryptsetup:backup``
   LUKS header backup related tasks.
 
-debops.persistent_paths_ support
---------------------------------
+:ref:`debops.persistent_paths` support
+--------------------------------------
 
 In case the host in question happens to be a TemplateBasedVM on `Qubes OS`_ or
 another system where persistence is not the default, it should be absent in

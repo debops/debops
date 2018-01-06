@@ -3,7 +3,8 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
+.. include:: includes/role.rst
 
 .. contents::
    :local:
@@ -200,7 +201,7 @@ Each item of those lists is a dictionary with the following documented keys:
   When set to ``True``, the option
   :ref:`item.manage_filesystem <cryptsetup__devices_manage_filesystem>`
   is ignored.
-  Refer to debops.sysctl_ for paging and swapping related kernel settings.
+  Refer to :ref:`debops.sysctl` for paging and swapping related kernel settings.
   Defaults to ``False``.
 
   Refer to the :ref:`example for an encrypted swap partition using a random key

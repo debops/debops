@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 ``debops.cryptsetup`` allows you to configure encrypted filesystems on top of
 any given block device using `dm-crypt`_/`cryptsetup`_ and `LUKS`_.  A random

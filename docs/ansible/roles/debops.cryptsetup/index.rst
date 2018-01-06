@@ -12,7 +12,6 @@ Ansible role: debops.cryptsetup
    defaults
    defaults-detailed
    copyright
-   changelog
    upgrade
 
 ..
