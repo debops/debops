@@ -128,7 +128,7 @@ These parameters are related to ``stunnel`` itself.
 
 If you want to, you can assign a user-friendly name to a client port number
 (server port number is probably already present, for example ``3306``
-= ``mysql``). To do that, you can use `debops.etc_services`_ Ansible role,
+= ``mysql``). To do that, you can use :ref:`debops.etc_services` Ansible role,
 which manages ``/etc/services`` database.
 
 In the future the services database might be converted from the local files to
@@ -158,7 +158,7 @@ ferm (iptables/ip6tables) parameters
 
 By default, ``debops.stunnel`` role does not configure the firewall to enable
 access to the server port from the outside. To do that, you can add the
-parameters below to the tunnel definition. `debops.ferm`_ role will be used to
+parameters below to the tunnel definition. :ref:`debops.ferm` role will be used to
 configure the ``iptables``/``ip6tables`` firewall using ``ferm``.
 
 Firewall configuration will be performed on all hosts by default. To only
@@ -194,7 +194,7 @@ TCP wrappers parameters
 ``stunnel`` uses TCP wrappers on Debian to secure connections from remote
 hosts. By default, ``debops.stunnel`` role does not configure TCP wrapper
 entries in ``/etc/hosts.allow``, but you can do that by adding the parameters
-below. `debops.tcpwrappers`_ role will be used to configure
+below. :ref:`debops.tcpwrappers` role will be used to configure
 ``/etc/hosts.allow`` entries.
 
 TCP wrappers configuration will be performed on all hosts by default. To only

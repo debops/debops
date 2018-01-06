@@ -7,15 +7,12 @@ Ansible role: debops.stunnel
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-configuration
    guides
    troubleshooting
    copyright
-   credits
-   changelog
 
 ..
  Local Variables:
