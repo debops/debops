@@ -11,7 +11,6 @@ Ansible role: debops.users
    defaults
    defaults-detailed
    copyright
-   changelog
    upgrade
 
 ..

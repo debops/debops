@@ -1,7 +1,7 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 Some of ``debops.users`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
