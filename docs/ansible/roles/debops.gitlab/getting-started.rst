@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents:: Sections
    :local:
 
@@ -46,7 +44,7 @@ Installation of a new GitLab environment with existing database is currently
 not tested and may result in a broken installation or data corruption.
 
 You can install the PostgreSQL database using its DebOps role.
-See the debops.postgresql_server_ role documentation for more details.
+See the :ref:`debops.postgresql_server` role documentation for more details.
 
 Support for other services
 --------------------------
@@ -90,5 +88,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.gitlab`` role:
 
-.. literalinclude:: playbooks/gitlab.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/gitlab.yml
    :language: yaml

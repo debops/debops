@@ -1,8 +1,6 @@
 How to use remote SQL database
 ==============================
 
-.. include:: includes/all.rst
-
 PostgreSQL
 ----------
 
@@ -15,7 +13,7 @@ the Ansible inventory variables:
    postgresql_server__listen_addresses: [ '*' ]
    postgresql_server__allow: [ '192.0.2.0/24' ]
 
-On the GitLab host, you need to enable the debops.postgresql_ role by adding
+On the GitLab host, you need to enable the :ref:`debops.postgresql` role by adding
 the host to its respective Ansible inventory group:
 
 .. code-block:: none

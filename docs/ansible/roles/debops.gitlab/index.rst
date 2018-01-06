@@ -11,7 +11,6 @@ Ansible role: debops.gitlab
    defaults
    remote_db
    copyright
-   changelog
 
 ..
  Local Variables:

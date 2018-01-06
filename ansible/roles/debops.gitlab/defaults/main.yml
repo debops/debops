@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # GitLab version configuration [[[
@@ -36,7 +34,7 @@ gitlab_version: '{{ "10.3"
 # - ``postgresql``: use PostgreSQL database
 #
 # The role expects the selected database server to be configured. See the
-# documentation of the debops.postgresql_server_ role for information about
+# documentation of the :ref:`debops.postgresql_server` role for information about
 # its features.
 gitlab__database: '{{ ansible_local.gitlab.database
                       if (ansible_local|d() and ansible_local.gitlab|d() and
@@ -165,7 +163,7 @@ gitlab_nginx_auth_realm: 'GitLab access is restricted'
                                                                    # ]]]
 # .. envvar:: gitlab_nginx_access_policy [[[
 #
-# Name of webserver access policy to enable. Refer to debops.nginx_ for
+# Name of webserver access policy to enable. Refer to :ref:`debops.nginx` for
 # details.
 gitlab_nginx_access_policy: ''
 
@@ -243,7 +241,7 @@ gitlab_default_theme: '2'
 
 # .. envvar:: gitlab_database_server [[[
 #
-# FQDN of the database server. It will be configured by the debops.postgresql_
+# FQDN of the database server. It will be configured by the :ref:`debops.postgresql`
 # role.
 gitlab_database_server: '{{ ansible_local[gitlab__database].server }}'
 
@@ -269,7 +267,7 @@ gitlab_database_name: 'gitlabhq_production'
 # .. envvar:: gitlab_database_password_path [[[
 #
 # Path to database password file located on the Ansible Controller. See the
-# debops.secret_ role for more details.
+# :ref:`debops.secret` role for more details.
 gitlab_database_password_path: '{{ secret + "/" + gitlab__database + "/" +
                                    ansible_local[gitlab__database].delegate_to }}{%
                                      if gitlab__database=="postgresql" %}/{{ ansible_local[gitlab__database].port }}{% endif
@@ -463,7 +461,7 @@ gitlab_group: 'git'
 #
 # List of additional system groups to add to the GitLab user account.
 # The ``sshusers`` UNIX group is used in DebOps to limit SSH access. See the
-# debops.auth_ role for more details.
+# :ref:`debops.auth` role for more details.
 gitlab_user_append_groups: [ 'sshusers' ]
 
                                                                    # ]]]
@@ -885,7 +883,7 @@ gitlab_ldap_binddn: '{{ "cn=gitlab," + secret_ldap_services_dn }}'
 # .. envvar:: gitlab_ldap_password_file [[[
 #
 # Path to the LDAP bind account password file on the Ansible Controller.
-# See the debops.secret_ role for more details.
+# See the :ref:`debops.secret` role for more details.
 gitlab_ldap_password_file: '{{ secret + "/credentials/" + gitlab_ldap_host
                                + "/slapd/" + gitlab_ldap_basedn + "/"
                                + gitlab_ldap_binddn + ".password" }}'
@@ -935,7 +933,7 @@ gitlab__piwik_site_id: '0'
 
 # .. envvar:: gitlab__etc_services__dependent_list [[[
 #
-# List of custom :file:`/etc/services` to configure for the debops.etc_services_
+# List of custom :file:`/etc/services` to configure for the :ref:`debops.etc_services`
 # Ansible role.
 gitlab__etc_services__dependent_list:
 
@@ -950,7 +948,7 @@ gitlab__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: gitlab__apt_preferences__dependent_list [[[
 #
-# Configuration for the debops.apt_preferences_ role.
+# Configuration for the :ref:`debops.apt_preferences` role.
 gitlab__apt_preferences__dependent_list:
 
   - package: 'git git-*'
@@ -961,7 +959,7 @@ gitlab__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: gitlab__postgresql__dependent_roles [[[
 #
-# Configuration of PostgreSQL roles for debops.postgresql_ Ansible role.
+# Configuration of PostgreSQL roles for :ref:`debops.postgresql` Ansible role.
 gitlab__postgresql__dependent_roles:
 
   # Owner of the ``gitlabhq_production`` database
@@ -975,7 +973,7 @@ gitlab__postgresql__dependent_roles:
                                                                    # ]]]
 # .. envvar:: gitlab__postgresql__dependent_databases [[[
 #
-# Configuration of PostgreSQL databases for the debops.postgresql_ Ansible
+# Configuration of PostgreSQL databases for the :ref:`debops.postgresql` Ansible
 # role.
 gitlab__postgresql__dependent_databases:
 
@@ -985,7 +983,7 @@ gitlab__postgresql__dependent_databases:
                                                                    # ]]]
 # .. envvar:: gitlab__postgresql__dependent_groups [[[
 #
-# Configuration of PostgreSQL groups for the debops.postgresql_ Ansible role.
+# Configuration of PostgreSQL groups for the :ref:`debops.postgresql` Ansible role.
 gitlab__postgresql__dependent_groups:
 
   - roles:  [ '{{ gitlab_database_user }}' ]
@@ -995,7 +993,7 @@ gitlab__postgresql__dependent_groups:
                                                                    # ]]]
 # .. envvar:: gitlab__postgresql__dependent_extensions [[[
 #
-# Configuration of PostgreSQL extensions for the debops.postgresql_ Ansible
+# Configuration of PostgreSQL extensions for the :ref:`debops.postgresql` Ansible
 # role.
 gitlab__postgresql__dependent_extensions:
 
@@ -1005,7 +1003,7 @@ gitlab__postgresql__dependent_extensions:
                                                                    # ]]]
 # .. envvar:: gitlab__postgresql__dependent_pgpass [[[
 #
-# The ``~/.pgpass`` configuration for debops.postgresql_ Ansible role.
+# The ``~/.pgpass`` configuration for :ref:`debops.postgresql` Ansible role.
 gitlab__postgresql__dependent_pgpass:
 
   - owner: '{{ gitlab_user }}'
@@ -1016,7 +1014,7 @@ gitlab__postgresql__dependent_pgpass:
                                                                    # ]]]
 # .. envvar:: gitlab__nginx__dependent_upstreams [[[
 #
-# List of :command:`nginx` upstreams for the debops.nginx_ Ansible role.
+# List of :command:`nginx` upstreams for the :ref:`debops.nginx` Ansible role.
 gitlab__nginx__dependent_upstreams:
 
   # Upstream configuration for the ``gitlab-workhorse`` used in GitLab 8.2+
@@ -1026,7 +1024,7 @@ gitlab__nginx__dependent_upstreams:
                                                                    # ]]]
 # .. envvar:: gitlab__nginx__dependent_servers [[[
 #
-# List of :command:`nginx` servers for the debops.nginx_ Ansible role.
+# List of :command:`nginx` servers for the :ref:`debops.nginx` Ansible role.
 gitlab__nginx__dependent_servers:
 
   - '{{ gitlab__nginx_server }}'
@@ -1035,7 +1033,7 @@ gitlab__nginx__dependent_servers:
                                                                    # ]]]
 # .. envvar:: gitlab__nginx_server [[[
 #
-# Configuration of the GitLab :command:`nginx` proxy for the debops.nginx_
+# Configuration of the GitLab :command:`nginx` proxy for the :ref:`debops.nginx`
 # Ansible role.
 gitlab__nginx_server:
   by_role: 'debops.gitlab'
@@ -1088,7 +1086,7 @@ gitlab__nginx_server:
 # .. envvar:: gitlab__nginx_pages_server [[[
 #
 # Configuration of the GitLab Pages :command:`nginx` proxy for the
-# debops.nginx_ role.
+# :ref:`debops.nginx` role.
 gitlab__nginx_pages_server:
   by_role: 'debops.gitlab'
   enabled: '{{ gitlab_enable_pages }}'
