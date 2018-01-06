@@ -10,7 +10,6 @@ Ansible role: debops.gitlab_runner
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
