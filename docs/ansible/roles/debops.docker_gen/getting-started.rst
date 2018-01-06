@@ -63,5 +63,5 @@ Example playbook
 
 Here's an example playbook that can be used to manage :command:`docker-gen`:
 
-.. literalinclude:: playbooks/docker_gen.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/docker_gen.yml
    :language: yaml

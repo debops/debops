@@ -10,7 +10,6 @@ Ansible role: debops.docker_gen
    getting-started
    defaults
    copyright
-   changelog
    upgrade
 
 ..
