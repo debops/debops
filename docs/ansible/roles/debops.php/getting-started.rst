@@ -4,8 +4,6 @@ Getting started
 .. contents:: Sections
    :local:
 
-.. include:: includes/all.rst
-
 Support for different PHP versions
 ----------------------------------
 
@@ -57,7 +55,7 @@ Custom environment role
 The ``debops.php`` provides a small, custom role ``debops.php/env`` which
 should be added to the playbook or role dependencies before the main role and
 other roles that use configuration from ``debops.php``, like
-debops.logrotate_. The ``debops.php/env`` role configures custom APT
+:ref:`debops.logrotate`. The ``debops.php/env`` role configures custom APT
 repositories if they are enabled and prepares the facts needed by other roles
 to function correctly. See the :ref:`provided playbook <php__ref_example_playbook>`
 to see an example usage.
@@ -125,7 +123,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.php`` role:
 
-.. literalinclude:: playbooks/php.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/php.yml
    :language: yaml
 
 

@@ -1,8 +1,6 @@
 Upgrade notes
 =============
 
-.. include:: includes/all.rst
-
 The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the Changelog for
 more details about what has changed.
@@ -12,7 +10,7 @@ From debops.php v0.2.0 to debops.php v0.2.1
 -------------------------------------------
 
 - You might want to update all of the playbooks that use ``debops.php`` role to
-  include debops.apt_preferences_ role dependency (see the example
+  include :ref:`debops.apt_preferences` role dependency (see the example
   playbook). This is not strictly necessary if you don't use the
   ``packages.sury.org`` repository, but it's recommended for consistency and
   portability.
@@ -30,7 +28,7 @@ From debops.php5 role to debops.php role
   symlinks with real files manually.
 
 - The ``debops.php`` role has new role dependencies on ``debops.php/env`` and
-  debops.logrotate_. Refer to the provided playbook for an example usage.
+  :ref:`debops.logrotate`. Refer to the provided playbook for an example usage.
 
 - The different :file:`/etc/php5/*/php.ini` configuration files managed by
   ``debops.php5`` role are not managed by ``debops.php`` role anymore and might

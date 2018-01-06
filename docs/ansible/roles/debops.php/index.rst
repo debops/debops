@@ -11,7 +11,6 @@ Ansible role: debops.php
    defaults
    defaults-detailed
    copyright
-   changelog
    upgrade
 
 ..
