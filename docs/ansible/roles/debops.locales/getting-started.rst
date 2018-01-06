@@ -18,5 +18,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.locales`` role:
 
-.. literalinclude:: playbooks/locales.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/locales.yml
    :language: yaml
