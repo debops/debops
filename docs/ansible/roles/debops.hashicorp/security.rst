@@ -3,7 +3,7 @@
 debops.hashicorp security considerations
 ========================================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 .. contents::
    :local:

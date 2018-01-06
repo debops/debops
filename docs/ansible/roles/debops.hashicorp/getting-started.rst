@@ -1,7 +1,7 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 .. contents::
    :local:
@@ -56,5 +56,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.hashicorp`` role:
 
-.. literalinclude:: playbooks/hashicorp.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/hashicorp.yml
    :language: yaml

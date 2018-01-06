@@ -12,7 +12,6 @@ Ansible role: debops.hashicorp
    security
    ansible-integration
    copyright
-   changelog
 
 ..
  Local Variables:

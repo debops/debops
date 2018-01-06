@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 The ``debops.hashicorp`` Ansible role can be used to securely install HashiCorp_
 applications, such as `Consul`_, `Terraform`_, `Vault`_ and others.
