@@ -7,13 +7,10 @@ Ansible role: debops.fail2ban
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-configuration
    copyright
-   credits
-   changelog
 
 ..
  Local Variables:
