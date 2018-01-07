@@ -11,7 +11,6 @@ Ansible role: debops.lvm
    defaults
    defaults-configuration
    copyright
-   changelog
 
 ..
  Local Variables:
