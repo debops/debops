@@ -4,14 +4,12 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
 
 Default configuration
 ---------------------
 
 The role will detect if an existing installation of RabbitMQ done by the
-``debops.rabbitmq_server`` role is present on a host. If it's found, the
+:ref:`debops.rabbitmq_server` role is present on a host. If it's found, the
 Management Console will be configured locally. Otherwise, no RabbitMQ
 configuration will take place, but role will still install the :command:`nginx`
 server on a host and configure a reverse proxy instance. In that case, you
@@ -39,5 +37,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.rabbitmq_management`` role:
 
-.. literalinclude:: playbooks/rabbitmq_management.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/rabbitmq_management.yml
    :language: yaml

@@ -10,7 +10,6 @@ Ansible role: debops.rabbitmq_management
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
