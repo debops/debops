@@ -1,8 +1,6 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 The `radvd <https://en.wikipedia.org/wiki/Radvd>`_, Router Advertisement
 Daemon, is used to publish IPv6 subnets, routes, DNS configuration to other
 hosts on the local network. It's required for the hosts to use SLAAC

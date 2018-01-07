@@ -4,8 +4,6 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
 
 Initial configuration
 ---------------------
@@ -23,7 +21,7 @@ configuration changes.
 
 To avoid the issues with initial configuration, you should ensure that hosts on
 which you install :command:`radvd` have proper network configuration. You can
-use the debops.ifupdown_ role to create a virtual network bridge or,
+use the :ref:`debops.ifupdown` role to create a virtual network bridge or,
 alternatively, create :command:`radvd` configuration for any existing
 interfaces. For example, to offer Router Advertisements on a private, internal
 network, you can add this configuration to your Ansible inventory:
@@ -63,5 +61,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses ``debops.radvd`` role:
 
-.. literalinclude:: playbooks/radvd.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/radvd.yml
    :language: yaml

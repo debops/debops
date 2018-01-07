@@ -11,7 +11,6 @@ Ansible role: debops.radvd
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
