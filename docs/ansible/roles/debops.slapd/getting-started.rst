@@ -19,7 +19,7 @@ Example playbook
 If you are using this role without Debops, here's an example Ansible playbook
 that uses the ``debops.slapd`` role:
 
-.. literalinclude:: playbooks/slapd.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/slapd.yml
    :language: yaml
 
 The inclusion of the ``debops.ferm`` and ``debops.tcpwrappers`` roles are

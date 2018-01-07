@@ -10,7 +10,6 @@ Ansible role: debops.slapd
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
