@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -25,7 +23,7 @@ No local mail by default
 
 The ``nullmailer`` service does not provide support for local mail - all mail
 is forwarded to the configured SMTP servers for further processing. If you need
-more advanced SMTP configuration, you should check out the debops.postfix_
+more advanced SMTP configuration, you should check out the :ref:`debops.postfix`
 role which can configure the Postfix MTA. This also means that in a new
 environment, you should perpare at least 1 host as the central mail hub for
 your network, or use an already existing SMTP server for relaying mail
@@ -71,5 +69,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.nullmailer`` role:
 
-.. literalinclude:: playbooks/nullmailer.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/nullmailer.yml
    :language: yaml

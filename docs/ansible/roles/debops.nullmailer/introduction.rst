@@ -1,8 +1,6 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 The `nullmailer <http://untroubled.org/nullmailer/>`_ package can be used to
 setup a forwarding SMTP relay. It does not provide support for local mail, but
 forwards all messages to one or more remote SMTP servers for processing.

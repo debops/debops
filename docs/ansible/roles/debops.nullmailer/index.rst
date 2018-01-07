@@ -11,7 +11,6 @@ Ansible role: debops.nullmailer
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

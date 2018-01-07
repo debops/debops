@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # Basic configuration and other MTAs [[[
@@ -274,7 +272,7 @@ nullmailer__purge_files: []
 # a ``sendmail`` process which can be used to send an e-mail message.
 
 # This service does not perform any user authentication, therefore
-# debops.ferm_ and debops.tcpwrappers_ roles are used to limit the access
+# :ref:`debops.ferm` and :ref:`debops.tcpwrappers` roles are used to limit the access
 # from the network to specific IP addresses or CIDR subnets. By default, the
 # ``nullmailer-smtpd`` service listens for new TCP connections only on the
 # loopback interface, and firewall/TCP Wrappers do not accept any connections
@@ -304,8 +302,8 @@ nullmailer__smtpd_port: '25'
 #
 # Specify list of IP addresses or CIDR subnets which are allowed to connect to
 # the ``nullmailer-smtpd`` service. These lists will be configured in the
-# :command:`iptables` firewall using debops.ferm_ role and in the TCP Wrappers
-# using debops.tcpwrappers_ role.
+# :command:`iptables` firewall using :ref:`debops.ferm` role and in the TCP Wrappers
+# using :ref:`debops.tcpwrappers` role.
 #
 # If this list is empty, nobody is allowed to connect remotely.
 nullmailer__smtpd_allow: []
@@ -316,7 +314,7 @@ nullmailer__smtpd_allow: []
 
 # .. envvar:: nullmailer__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ role.
+# Configuration for the :ref:`debops.ferm` role.
 nullmailer__ferm__dependent_rules:
 
   - type: 'accept'
@@ -332,7 +330,7 @@ nullmailer__ferm__dependent_rules:
                                                                    # ]]]
 # .. envvar:: nullmailer__tcpwrappers__dependent_allow [[[
 #
-# Configuration for the debops.tcpwrappers_ Ansible role.
+# Configuration for the :ref:`debops.tcpwrappers` Ansible role.
 nullmailer__tcpwrappers__dependent_allow:
 
   - daemon: 'sendmail'
