@@ -8,7 +8,6 @@ Ansible role: debops.postwhite
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:

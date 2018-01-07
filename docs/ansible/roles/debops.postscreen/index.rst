@@ -1,3 +1,5 @@
+.. _debops.postscreen:
+
 Ansible role: debops.postscreen
 ===============================
 

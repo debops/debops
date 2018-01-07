@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 Default configuration
 ---------------------
 
@@ -42,5 +40,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.postwhite`` role:
 
-.. literalinclude:: playbooks/postwhite.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/postwhite.yml
    :language: yaml
