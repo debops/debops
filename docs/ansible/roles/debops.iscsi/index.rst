@@ -11,7 +11,6 @@ Ansible role: debops.iscsi
    defaults
    defaults-configuration
    copyright
-   changelog
 
 ..
  Local Variables:
