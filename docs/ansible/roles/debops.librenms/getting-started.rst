@@ -64,7 +64,7 @@ Example playbook
 
 Here's an example playbook which uses the ``debops.librenms`` role:
 
-.. literalinclude:: playbooks/librenms.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/librenms.yml
    :language: yaml
 
 Ansible tags

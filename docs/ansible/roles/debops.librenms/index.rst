@@ -11,7 +11,6 @@ Ansible role: debops.librenms
    defaults
    defaults-configuration
    copyright
-   changelog
 
 ..
  Local Variables:
