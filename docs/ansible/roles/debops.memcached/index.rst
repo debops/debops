@@ -10,8 +10,6 @@ Ansible role: debops.memcached
    getting-started
    defaults
    copyright
-   credits
-   changelog
 
 ..
  Local Variables:
