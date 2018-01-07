@@ -10,7 +10,6 @@ Ansible role: debops.ntp
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:

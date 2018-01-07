@@ -15,5 +15,5 @@ Example playbook
 
 Here's an example playbook for using the role without the DebOps playbook:
 
-.. literalinclude:: playbooks/ntp.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/ntp.yml
    :language: yaml
