@@ -1,13 +1,11 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 Default configuration
 ---------------------
 
 The role will check if Postfix was installed on a host by looking for specific
-Ansible fact defined by the debops.postfix_ role. If Postfix is detected,
+Ansible fact defined by the :ref:`debops.postfix` role. If Postfix is detected,
 ``debops.saslauthd`` will automatically configure a ``smtpd`` authentication
 service which can be used by Postfix.
 
@@ -30,5 +28,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.saslauthd`` role:
 
-.. literalinclude:: playbooks/saslauthd.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/saslauthd.yml
    :language: yaml

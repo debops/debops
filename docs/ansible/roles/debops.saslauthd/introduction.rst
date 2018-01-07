@@ -1,8 +1,6 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 `Cyrus SASL library <https://www.cyrusimap.org/docs/cyrus-sasl/2.1.25/>`_ is
 part of the Cyrus IMAP project and can be used to authenticate access to
 different services that implement

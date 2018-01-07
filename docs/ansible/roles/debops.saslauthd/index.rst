@@ -9,7 +9,6 @@ Ansible role: debops.saslauthd
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
