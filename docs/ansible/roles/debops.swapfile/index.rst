@@ -11,7 +11,6 @@ Ansible role: debops.swapfile
    defaults
    defaults-detailed
    copyright
-   changelog
    upgrade
 
 ..

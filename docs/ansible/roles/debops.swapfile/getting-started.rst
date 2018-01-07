@@ -21,5 +21,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.swapfile`` role:
 
-.. literalinclude:: playbooks/swapfile.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/swapfile.yml
    :language: yaml
