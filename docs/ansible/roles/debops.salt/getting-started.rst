@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -25,5 +23,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.salt`` role:
 
-.. literalinclude:: playbooks/salt.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/salt.yml
    :language: yaml
