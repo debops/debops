@@ -12,7 +12,6 @@ Ansible role: debops.rsyslog
    defaults-detailed
    unprivileged-tls
    copyright
-   changelog
 
 ..
  Local Variables:

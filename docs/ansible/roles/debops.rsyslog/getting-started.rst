@@ -112,5 +112,5 @@ Example playbook
 
 Here's an example playbook which uses ``debops.rsyslog`` role:
 
-.. literalinclude:: playbooks/rsyslog.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/rsyslog.yml
    :language: yaml

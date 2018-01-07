@@ -3,8 +3,6 @@
 Unprivileged syslog and encrypted connections
 =============================================
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -22,7 +20,7 @@ hosts, leaving the configuration privileged on Debian hosts.
 The unprivileged operation places certain restrictions on the system
 configuration. In particular, the ``rsyslog`` process only uses its primary
 system group, dropping any additional groups the user is in. This means, that
-using TLS with the default configuration maintained by debops.pki_ role
+using TLS with the default configuration maintained by :ref:`debops.pki` role
 becomes problematic - unprivileged ``rsyslog`` process uses only its own
 primary group, so it cannot access private keys to allow encrypted connections.
 
@@ -54,7 +52,7 @@ This will enforce the privileged operation.
 Grant access to private keys by additional groups
 -------------------------------------------------
 
-The debops.pki_ role that maintains the DebOps X.509 infrastructure, allows
+The :ref:`debops.pki` role that maintains the DebOps X.509 infrastructure, allows
 you to specify additional system groups, which should have access to the
 private keys. This should be configured before the role creates ths private
 keys, because the permissions are not enforced afterwards - this means that you
@@ -111,7 +109,7 @@ TCP over TLS:
 Create custom PKI realm for syslog
 ----------------------------------
 
-The debops.pki_ role allows you to create multiple PKI realms with different
+The :ref:`debops.pki` role allows you to create multiple PKI realms with different
 purposes and configuration. If you don't want to modify and existing
 infrastructure in place, creating a separate internal realm just for syslog
 might be an easy alternative.
@@ -137,7 +135,7 @@ When the new PKI realm is created, the private directory and files inside
 should be owned by the ``syslog`` group. This should ensure that the
 ``rsyslog`` daemon in the unprivileged mode, running as ``syslog`` user, should
 have access to them. The certificates should be signed by existing
-debops.pki_ Certificate Authority, so they should be trusted by all hosts in
+:ref:`debops.pki` Certificate Authority, so they should be trusted by all hosts in
 the cluster.
 
 When the new PKI realm is ready, you can tell ``debops.rsyslog`` role to use it:

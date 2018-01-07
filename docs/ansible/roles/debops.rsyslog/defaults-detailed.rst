@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 some of ``debops.rsyslog`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
@@ -42,7 +40,7 @@ The different capabilities that can be enabled in the list:
 ``tls``
   Enable support for TLS connections to the ``rsyslog`` server, both as
   a forwarder and as a receiver. This option depends on availability of X.509
-  certificates managed by debops.pki_ role.
+  certificates managed by :ref:`debops.pki` role.
 
 ``xconsole``
   Enable log output to :file:`/dev/xconsole`. The ``rsyslogd`` daemon needs to run
