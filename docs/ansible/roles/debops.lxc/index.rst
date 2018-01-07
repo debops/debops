@@ -6,8 +6,8 @@ Ansible role: debops.lxc
 .. toctree::
    :maxdepth: 2
 
+   defaults
    copyright
-   changelog
 
 ..
  Local Variables:
