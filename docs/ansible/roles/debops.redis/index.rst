@@ -13,7 +13,6 @@ Ansible role: debops.redis
    configuration-layout
    ansible-integration
    copyright
-   changelog
    upgrade
 
 ..
