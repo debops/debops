@@ -12,7 +12,6 @@ Ansible role: debops.kibana
    defaults-detailed
    dependency
    copyright
-   changelog
 
 ..
  Local Variables:

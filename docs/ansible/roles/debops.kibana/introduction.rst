@@ -1,8 +1,6 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 `Kibana <https://en.wikipedia.org/wiki/Kibana>`_ is a web-based dashboard which
 can be used to display and analyze data stored in an Elasticsearch cluster. It
 is a part of the Elasticsearch, Logstash, Kibana (ELK) stack. The software is
