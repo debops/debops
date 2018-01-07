@@ -70,16 +70,8 @@ except the ``archive`` host, to the ``archive`` host::
 Example playbook
 ----------------
 
-::
-
-    ---
-
-    - name: Manage rsnapshot backups
-      hosts: debops_service_rsnapshot:debops_service_rsnapshot_rsync
-
-      roles:
-        - role: debops.rsnapshot
-          tags: [ 'role::rsnapshot' ]
+.. literalinclude:: ../../../../ansible/playbooks/service/rsnapshot.yml
+   :language: yaml
 
 When the inventory is set up, run Ansible on all of the hosts in both groups to
 have them correctly configured::

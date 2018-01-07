@@ -7,14 +7,11 @@ Ansible role: debops.rsnapshot
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    guides
    troubleshooting
    copyright
-   credits
-   changelog
 
 ..
  Local Variables:
