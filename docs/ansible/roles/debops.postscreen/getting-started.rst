@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 Default configuration
 ---------------------
 
@@ -11,7 +9,7 @@ IPv4/IPv6 addresses. The DNS Blocklists will be disabled on private networks.
 
 Most of the Postfix configuration is defined in the dependent variables, you
 can change the configuration through the inventory directly. Check the
-debops.postfix_ documentation to see how to do this.
+:ref:`debops.postfix` documentation to see how to do this.
 
 
 Example inventory
@@ -36,7 +34,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.postscreen`` role:
 
-.. literalinclude:: playbooks/postscreen.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/postscreen.yml
    :language: yaml
 
 Keep in mind that the default Postscreen playbook does not configure firewall

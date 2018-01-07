@@ -9,7 +9,6 @@ Ansible role: debops.postscreen
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
