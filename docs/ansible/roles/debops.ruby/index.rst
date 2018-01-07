@@ -11,7 +11,6 @@ Ansible role: debops.ruby
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

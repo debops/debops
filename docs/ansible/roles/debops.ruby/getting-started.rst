@@ -16,6 +16,6 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.ruby`` role:
 
-.. literalinclude:: playbooks/ruby.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/ruby.yml
    :language: yaml
 
