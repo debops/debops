@@ -1,7 +1,7 @@
 .. _debops.postscreen:
 
-Ansible role: debops.postscreen
-===============================
+debops.postscreen
+=================
 
 .. toctree::
    :maxdepth: 3

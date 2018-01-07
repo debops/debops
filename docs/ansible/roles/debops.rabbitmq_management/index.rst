@@ -1,7 +1,7 @@
 .. _debops.rabbitmq_management:
 
-Ansible role: debops.rabbitmq_management
-========================================
+debops.rabbitmq_management
+==========================
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.apt_cacher_ng:
 
-Ansible role: debops.apt_cacher_ng
-==================================
+debops.apt_cacher_ng
+====================
 
 .. toctree::
    :maxdepth: 2

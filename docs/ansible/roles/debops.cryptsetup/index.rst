@@ -1,7 +1,7 @@
 .. _debops.cryptsetup:
 
-Ansible role: debops.cryptsetup
-===============================
+debops.cryptsetup
+=================
 
 .. toctree::
    :maxdepth: 2

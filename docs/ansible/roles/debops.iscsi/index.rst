@@ -1,7 +1,7 @@
 .. _debops.iscsi:
 
-Ansible role: debops.iscsi
-==========================
+debops.iscsi
+============
 
 .. toctree::
    :maxdepth: 2

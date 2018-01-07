@@ -1,7 +1,7 @@
 .. _debops.owncloud:
 
-Ansible role: debops.owncloud
-=============================
+debops.owncloud
+===============
 
 .. toctree::
    :maxdepth: 2

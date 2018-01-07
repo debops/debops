@@ -1,7 +1,7 @@
 .. _debops.swapfile:
 
-Ansible role: debops.swapfile
-=============================
+debops.swapfile
+===============
 
 .. toctree::
    :maxdepth: 2

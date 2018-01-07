@@ -1,7 +1,7 @@
 .. _debops.snmpd:
 
-Ansible role: debops.snmpd
-==========================
+debops.snmpd
+============
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.apt_proxy:
 
-Ansible role: debops.apt_proxy
-==============================
+debops.apt_proxy
+================
 
 .. toctree::
    :maxdepth: 2

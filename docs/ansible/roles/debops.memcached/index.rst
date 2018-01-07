@@ -1,7 +1,7 @@
 .. _debops.memcached:
 
-Ansible role: debops.memcached
-==============================
+debops.memcached
+================
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.authorized_keys:
 
-Ansible role: debops.authorized_keys
-====================================
+debops.authorized_keys
+======================
 
 .. toctree::
    :maxdepth: 2

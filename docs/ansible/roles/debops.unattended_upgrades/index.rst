@@ -1,7 +1,7 @@
 .. _debops.unattended_upgrades:
 
-Ansible role: debops.unattended_upgrades
-========================================
+debops.unattended_upgrades
+==========================
 
 .. toctree::
    :maxdepth: 2

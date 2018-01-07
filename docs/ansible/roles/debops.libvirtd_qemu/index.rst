@@ -1,7 +1,7 @@
 .. _debops.libvirtd_qemu:
 
-Ansible role: debops.libvirtd_qemu
-==================================
+debops.libvirtd_qemu
+====================
 
 .. toctree::
    :maxdepth: 2

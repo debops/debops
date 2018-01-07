@@ -1,5 +1,7 @@
-Ansible role: debops.saslauthd
-==============================
+.. _debops.saslauthd:
+
+debops.saslauthd
+================
 
 .. toctree::
    :maxdepth: 3

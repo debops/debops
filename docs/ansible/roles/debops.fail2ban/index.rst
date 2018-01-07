@@ -1,7 +1,7 @@
 .. _debops.fail2ban:
 
-Ansible role: debops.fail2ban
-=============================
+debops.fail2ban
+===============
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.nfs_server:
 
-Ansible role: debops.nfs_server
-===============================
+debops.nfs_server
+=================
 
 .. toctree::
    :maxdepth: 2

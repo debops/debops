@@ -1,7 +1,7 @@
 .. _debops.pki:
 
-Ansible role: debops.pki
-========================
+debops.pki
+==========
 
 .. toctree::
    :maxdepth: 2

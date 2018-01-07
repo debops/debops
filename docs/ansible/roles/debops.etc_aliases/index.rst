@@ -1,7 +1,7 @@
 .. _debops.etc_aliases:
 
-Ansible role: debops.etc_aliases
-================================
+debops.etc_aliases
+==================
 
 .. toctree::
    :maxdepth: 2

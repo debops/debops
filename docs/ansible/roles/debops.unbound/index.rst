@@ -1,5 +1,7 @@
-Ansible role: debops.unbound
-============================
+.. _debops.unbound:
+
+debops.unbound
+==============
 
 .. toctree::
    :maxdepth: 3

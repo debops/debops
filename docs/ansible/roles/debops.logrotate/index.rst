@@ -1,7 +1,7 @@
 .. _debops.logrotate:
 
-Ansible role: debops.logrotate
-==============================
+debops.logrotate
+================
 
 .. toctree::
    :maxdepth: 2

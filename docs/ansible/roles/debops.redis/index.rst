@@ -1,7 +1,7 @@
 .. _debops.redis:
 
-Ansible role: debops.redis
-==========================
+debops.redis
+============
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.slapd:
 
-Ansible role: debops.slapd
-==========================
+debops.slapd
+============
 
 .. toctree::
    :maxdepth: 2

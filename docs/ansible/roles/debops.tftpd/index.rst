@@ -1,7 +1,7 @@
 .. _debops.tftpd:
 
-Ansible role: debops.tftpd
-==========================
+debops.tftpd
+============
 
 .. toctree::
    :maxdepth: 2

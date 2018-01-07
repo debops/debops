@@ -1,7 +1,7 @@
 .. _debops.librenms:
 
-Ansible role: debops.librenms
-=============================
+debops.librenms
+===============
 
 .. toctree::
    :maxdepth: 2

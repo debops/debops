@@ -1,7 +1,7 @@
 .. _debops.dhparam:
 
-Ansible role: debops.dhparam
-============================
+debops.dhparam
+==============
 
 .. toctree::
    :maxdepth: 2

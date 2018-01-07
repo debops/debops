@@ -1,7 +1,7 @@
 .. _debops.apt_preferences:
 
-Ansible role: debops.apt_preferences
-====================================
+debops.apt_preferences
+======================
 
 .. toctree::
    :maxdepth: 2

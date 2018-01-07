@@ -1,7 +1,7 @@
 .. _debops.elasticsearch:
 
-Ansible role: debops.elasticsearch
-==================================
+debops.elasticsearch
+====================
 
 .. toctree::
    :maxdepth: 2

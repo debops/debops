@@ -1,7 +1,7 @@
 .. _debops.mosquitto:
 
-Ansible role: debops.mosquitto
-==============================
+debops.mosquitto
+================
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.secret:
 
-Ansible role: debops.secret
-===========================
+debops.secret
+=============
 
 .. toctree::
    :maxdepth: 2

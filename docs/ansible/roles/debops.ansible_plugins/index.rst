@@ -1,5 +1,7 @@
-Ansible role: debops.ansible_plugins
-====================================
+.. _debops.ansible_plugins:
+
+debops.ansible_plugins
+======================
 
 .. toctree::
    :maxdepth: 3

@@ -1,7 +1,7 @@
 .. _debops.netbox:
 
-Ansible role: debops.netbox
-===========================
+debops.netbox
+=============
 
 .. toctree::
    :maxdepth: 2

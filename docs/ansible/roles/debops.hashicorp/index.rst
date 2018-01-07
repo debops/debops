@@ -1,7 +1,7 @@
 .. _debops.hashicorp:
 
-Ansible role: debops.hashicorp
-==============================
+debops.hashicorp
+================
 
 .. toctree::
    :maxdepth: 2

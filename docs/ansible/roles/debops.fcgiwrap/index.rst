@@ -1,7 +1,7 @@
 .. _debops.fcgiwrap:
 
-Ansible role: debops.fcgiwrap
-=============================
+debops.fcgiwrap
+===============
 
 .. toctree::
    :maxdepth: 2

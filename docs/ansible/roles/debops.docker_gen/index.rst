@@ -1,7 +1,7 @@
 .. _debops.docker_gen:
 
-Ansible role: debops.docker_gen
-===============================
+debops.docker_gen
+=================
 
 .. toctree::
    :maxdepth: 2

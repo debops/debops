@@ -1,7 +1,7 @@
 .. _debops.dovecot:
 
-Ansible role: debops.dovecot
-============================
+debops.dovecot
+==============
 
 .. toctree::
    :maxdepth: 2

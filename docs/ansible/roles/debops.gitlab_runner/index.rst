@@ -1,7 +1,7 @@
 .. _debops.gitlab_runner:
 
-Ansible role: debops.gitlab_runner
-==================================
+debops.gitlab_runner
+====================
 
 .. toctree::
    :maxdepth: 2

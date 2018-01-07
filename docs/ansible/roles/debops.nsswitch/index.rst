@@ -1,7 +1,7 @@
 .. _debops.nsswitch:
 
-Ansible role: debops.nsswitch
-=============================
+debops.nsswitch
+===============
 
 .. toctree::
    :maxdepth: 2

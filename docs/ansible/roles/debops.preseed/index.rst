@@ -1,7 +1,7 @@
 .. _debops.preseed:
 
-Ansible role: debops.preseed
-============================
+debops.preseed
+==============
 
 .. toctree::
    :maxdepth: 2

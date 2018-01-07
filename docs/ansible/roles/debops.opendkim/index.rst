@@ -1,5 +1,7 @@
-Ansible role: debops.opendkim
-=============================
+.. _debops.opendkim:
+
+debops.opendkim
+===============
 
 .. toctree::
    :maxdepth: 3

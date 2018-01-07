@@ -1,7 +1,7 @@
 .. _debops.golang:
 
-Ansible role: debops.golang
-===========================
+debops.golang
+=============
 
 .. toctree::
    :maxdepth: 2

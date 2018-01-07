@@ -1,7 +1,7 @@
 .. _debops.cran:
 
-Ansible role: debops.cran
-=========================
+debops.cran
+===========
 
 .. toctree::
    :maxdepth: 2

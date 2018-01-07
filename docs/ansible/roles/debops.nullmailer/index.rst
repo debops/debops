@@ -1,7 +1,7 @@
 .. _debops.nullmailer:
 
-Ansible role: debops.nullmailer
-===============================
+debops.nullmailer
+=================
 
 .. toctree::
    :maxdepth: 2

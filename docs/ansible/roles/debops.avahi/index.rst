@@ -1,7 +1,7 @@
 .. _debops.avahi:
 
-Ansible role: debops.avahi
-==========================
+debops.avahi
+============
 
 .. toctree::
    :maxdepth: 2

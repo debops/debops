@@ -1,7 +1,7 @@
 .. _debops.sshd:
 
-Ansible role: debops.sshd
-=========================
+debops.sshd
+===========
 
 .. toctree::
    :maxdepth: 2

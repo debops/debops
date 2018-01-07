@@ -1,7 +1,7 @@
 .. _debops.ipxe:
 
-Ansible role: debops.ipxe
-=========================
+debops.ipxe
+===========
 
 .. toctree::
    :maxdepth: 2

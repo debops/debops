@@ -1,7 +1,7 @@
 .. _debops.java:
 
-Ansible role: debops.java
-=========================
+debops.java
+===========
 
 .. toctree::
    :maxdepth: 2

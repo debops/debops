@@ -1,7 +1,7 @@
 .. _debops.apt_listchanges:
 
-Ansible role: debops.apt_listchanges
-====================================
+debops.apt_listchanges
+======================
 
 .. toctree::
    :maxdepth: 2

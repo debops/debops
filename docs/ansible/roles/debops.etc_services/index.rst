@@ -1,7 +1,7 @@
 .. _debops.etc_services:
 
-Ansible role: debops.etc_services
-=================================
+debops.etc_services
+===================
 
 .. toctree::
    :maxdepth: 2

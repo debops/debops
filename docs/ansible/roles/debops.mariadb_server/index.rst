@@ -1,7 +1,7 @@
 .. _debops.mariadb_server:
 
-Ansible role: debops.mariadb_server
-===================================
+debops.mariadb_server
+=====================
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.dokuwiki:
 
-Ansible role: debops.dokuwiki
-=============================
+debops.dokuwiki
+===============
 
 .. toctree::
    :maxdepth: 2

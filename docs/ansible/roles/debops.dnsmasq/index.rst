@@ -1,7 +1,7 @@
 .. _debops.dnsmasq:
 
-Ansible role: debops.dnsmasq
-============================
+debops.dnsmasq
+==============
 
 .. toctree::
    :maxdepth: 2

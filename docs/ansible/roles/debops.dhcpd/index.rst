@@ -1,7 +1,7 @@
 .. _debops.dhcpd:
 
-Ansible role: debops.dhcpd
-==========================
+debops.dhcpd
+============
 
 .. toctree::
    :maxdepth: 3

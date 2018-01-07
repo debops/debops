@@ -1,7 +1,7 @@
 .. _debops.rsyslog:
 
-Ansible role: debops.rsyslog
-============================
+debops.rsyslog
+==============
 
 .. toctree::
    :maxdepth: 2

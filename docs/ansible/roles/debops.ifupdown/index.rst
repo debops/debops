@@ -1,7 +1,7 @@
 .. _debops.ifupdown:
 
-Ansible role: debops.ifupdown
-=============================
+debops.ifupdown
+===============
 
 .. toctree::
    :maxdepth: 2

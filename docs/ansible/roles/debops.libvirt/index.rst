@@ -1,7 +1,7 @@
 .. _debops.libvirt:
 
-Ansible role: debops.libvirt
-============================
+debops.libvirt
+==============
 
 .. toctree::
    :maxdepth: 2

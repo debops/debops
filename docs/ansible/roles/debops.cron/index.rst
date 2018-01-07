@@ -1,7 +1,7 @@
 .. _debops.cron:
 
-Ansible role: debops.cron
-=========================
+debops.cron
+===========
 
 .. toctree::
    :maxdepth: 2

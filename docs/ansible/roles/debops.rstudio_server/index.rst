@@ -1,7 +1,7 @@
 .. _debops.rstudio_server:
 
-Ansible role: debops.rstudio_server
-===================================
+debops.rstudio_server
+=====================
 
 .. toctree::
    :maxdepth: 2

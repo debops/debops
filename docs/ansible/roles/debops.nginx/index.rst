@@ -1,7 +1,7 @@
 .. _debops.nginx:
 
-Ansible role: debops.nginx
-==========================
+debops.nginx
+============
 
 .. toctree::
    :maxdepth: 2

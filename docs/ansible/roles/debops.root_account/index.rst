@@ -1,7 +1,7 @@
 .. _debops.root_account:
 
-Ansible role: debops.root_account
-=================================
+debops.root_account
+===================
 
 .. toctree::
    :maxdepth: 2

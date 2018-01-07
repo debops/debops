@@ -1,7 +1,7 @@
 .. _debops.users:
 
-Ansible role: debops.users
-==========================
+debops.users
+============
 
 .. toctree::
    :maxdepth: 2

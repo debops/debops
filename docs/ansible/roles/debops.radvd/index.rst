@@ -1,7 +1,7 @@
 .. _debops.radvd:
 
-Ansible role: debops.radvd
-==========================
+debops.radvd
+============
 
 .. toctree::
    :maxdepth: 2

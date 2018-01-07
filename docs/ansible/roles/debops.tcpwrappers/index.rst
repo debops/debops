@@ -1,7 +1,7 @@
 .. _debops.tcpwrappers:
 
-Ansible role: debops.tcpwrappers
-================================
+debops.tcpwrappers
+==================
 
 .. toctree::
    :maxdepth: 2

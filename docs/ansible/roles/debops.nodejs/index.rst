@@ -1,7 +1,7 @@
 .. _debops.nodejs:
 
-Ansible role: debops.nodejs
-===========================
+debops.nodejs
+=============
 
 .. toctree::
    :maxdepth: 2

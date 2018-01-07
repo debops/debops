@@ -1,7 +1,7 @@
 .. _debops.locales:
 
-Ansible role: debops.locales
-============================
+debops.locales
+==============
 
 .. toctree::
    :maxdepth: 2

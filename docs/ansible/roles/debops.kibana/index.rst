@@ -1,7 +1,7 @@
 .. _debops.kibana:
 
-Ansible role: debops.kibana
-===========================
+debops.kibana
+=============
 
 .. toctree::
    :maxdepth: 2

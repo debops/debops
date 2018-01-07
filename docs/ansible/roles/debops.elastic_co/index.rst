@@ -1,7 +1,7 @@
 .. _debops.elastic_co:
 
-Ansible role: debops.elastic_co
-===============================
+debops.elastic_co
+=================
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.ferm:
 
-Ansible role: debops.ferm
-=========================
+debops.ferm
+===========
 
 .. toctree::
    :maxdepth: 2

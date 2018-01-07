@@ -1,7 +1,7 @@
 .. _debops.persistent_paths:
 
-Ansible role: debops.persistent_paths
-=====================================
+debops.persistent_paths
+=======================
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.php:
 
-Ansible role: debops.php
-========================
+debops.php
+==========
 
 .. toctree::
    :maxdepth: 2

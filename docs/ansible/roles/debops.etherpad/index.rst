@@ -1,5 +1,7 @@
-Ansible role: debops.etherpad
-=============================
+.. _debops.etherpad:
+
+debops.etherpad
+===============
 
 .. toctree::
    :maxdepth: 3

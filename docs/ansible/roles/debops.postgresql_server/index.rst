@@ -1,7 +1,7 @@
 .. _debops.postgresql_server:
 
-Ansible role: debops.postgresql_server
-======================================
+debops.postgresql_server
+========================
 
 .. toctree::
    :maxdepth: 2

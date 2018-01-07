@@ -1,7 +1,7 @@
 .. _debops.gunicorn:
 
-Ansible role: debops.gunicorn
-=============================
+debops.gunicorn
+===============
 
 .. toctree::
    :maxdepth: 2

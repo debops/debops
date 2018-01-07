@@ -1,7 +1,7 @@
 .. _debops.lvm:
 
-Ansible role: debops.lvm
-========================
+debops.lvm
+==========
 
 .. toctree::
    :maxdepth: 2

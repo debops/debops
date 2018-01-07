@@ -1,7 +1,7 @@
 .. _debops.mailman:
 
-Ansible role: debops.mailman
-============================
+debops.mailman
+==============
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 .. _debops.monit:
 
-Ansible role: debops.monit
-==========================
+debops.monit
+============
 
 .. toctree::
    :maxdepth: 2

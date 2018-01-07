@@ -1,7 +1,7 @@
 .. _debops.sysfs:
 
-Ansible role: debops.sysfs
-==========================
+debops.sysfs
+============
 
 .. toctree::
    :maxdepth: 2

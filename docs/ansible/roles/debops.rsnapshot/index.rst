@@ -1,7 +1,7 @@
 .. _debops.rsnapshot:
 
-Ansible role: debops.rsnapshot
-==============================
+debops.rsnapshot
+================
 
 .. toctree::
    :maxdepth: 2

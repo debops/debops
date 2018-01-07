@@ -1,5 +1,7 @@
-Ansible role: debops.postwhite
-==============================
+.. _debops.postwhite:
+
+debops.postwhite
+================
 
 .. toctree::
    :maxdepth: 3

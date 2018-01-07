@@ -1,7 +1,7 @@
 .. _debops.apt_install:
 
-Ansible role: debops.apt_install
-================================
+debops.apt_install
+==================
 
 .. toctree::
    :maxdepth: 2

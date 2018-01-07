@@ -1,5 +1,7 @@
-Ansible role: debops.postconf
-=============================
+.. _debops.postconf:
+
+debops.postconf
+===============
 
 .. toctree::
    :maxdepth: 3

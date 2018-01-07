@@ -1,7 +1,7 @@
 .. _debops.stunnel:
 
-Ansible role: debops.stunnel
-============================
+debops.stunnel
+==============
 
 .. toctree::
    :maxdepth: 2

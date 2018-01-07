@@ -1,7 +1,7 @@
 .. _debops.salt:
 
-Ansible role: debops.salt
-=========================
+debops.salt
+===========
 
 .. toctree::
    :maxdepth: 2
