@@ -11,7 +11,6 @@ Ansible role: debops.mailman
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

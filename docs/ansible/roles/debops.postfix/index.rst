@@ -1,3 +1,5 @@
+.. _debops.postfix:
+
 Ansible role: debops.postfix
 ============================
 
