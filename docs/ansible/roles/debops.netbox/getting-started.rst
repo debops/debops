@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -20,7 +18,7 @@ deny any other domain that might point to the host it's deployed on.
 
 After the database initialization, the role will create an initial superuser
 account with random password stored in the DebOps :file:`secret/` directory. The
-username will be the first admin user defined by the debops.core_ Ansible
+username will be the first admin user defined by the :ref:`debops.core` Ansible
 role.
 
 By default anonymous access to NetBox is disabled.
@@ -59,7 +57,7 @@ The NetBox application uses PostgreSQL database as its backend, therefore you
 need to setup a PostgreSQL server which the application can access. To
 configure one on the same host as NetBox, add that host to the
 ``[debops_service_postgresql_server]`` Ansible inventory group. See the
-debops.postgresql_server_ role documentation to see how to use the database
+:ref:`debops.postgresql_server` role documentation to see how to use the database
 server remotely.
 
 To deploy NetBox on a given host, you need to add that host to the
@@ -84,7 +82,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.netbox`` role:
 
-.. literalinclude:: playbooks/netbox.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/netbox.yml
    :language: yaml
 
 

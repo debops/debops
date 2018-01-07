@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # Domain name configuration [[[
@@ -176,7 +174,7 @@ netbox__virtualenv_pip_packages:
 # PostgreSQL database configuration [[[
 # -------------------------------------
 
-# The NetBox database configuration is managed by the debops.postgresql_
+# The NetBox database configuration is managed by the :ref:`debops.postgresql`
 # Ansible role. See its documentation for details about the default variable
 # values used in the NetBox role.
 
@@ -259,7 +257,7 @@ netbox__config_secret_key: '{{ lookup("password", secret + "/netbox/" +
 # They will receive e-mail messages about NetBox application errors.
 #
 # By default the role uses the list of private admin e-mails from the
-# debops.core_ Ansible role.
+# :ref:`debops.core` Ansible role.
 netbox__config_admins: '{{ lookup("template", "lookup/netbox__config_admins.j2") | from_yaml }}'
 
                                                                    # ]]]
@@ -509,7 +507,7 @@ netbox__app_params:
 
 # .. envvar:: netbox__gunicorn__dependent_applications [[[
 #
-# Configuration for the ``debops.gunicorn`` Ansible role.
+# Configuration for the :ref:`debops.gunicorn` Ansible role.
 netbox__gunicorn__dependent_applications:
   - name: 'netbox'
     mode: 'wsgi'
@@ -524,7 +522,7 @@ netbox__gunicorn__dependent_applications:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_roles [[[
 #
-# Role configuration for the debops.postgresql_ Ansible role.
+# Role configuration for the :ref:`debops.postgresql` Ansible role.
 netbox__postgresql__dependent_roles:
   - name: '{{ netbox__database_user }}'
   - name: '{{ netbox__database_name }}'
@@ -533,7 +531,7 @@ netbox__postgresql__dependent_roles:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_groups [[[
 #
-# Group configuration for the debops.postgresql_ Ansible role.
+# Group configuration for the :ref:`debops.postgresql` Ansible role.
 netbox__postgresql__dependent_groups:
   - roles: [ '{{ netbox__database_user }}' ]
     groups: [ '{{ netbox__database_name }}' ]
@@ -542,7 +540,7 @@ netbox__postgresql__dependent_groups:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_databases [[[
 #
-# Database configuration for the debops.postgresql_ Ansible role.
+# Database configuration for the :ref:`debops.postgresql` Ansible role.
 netbox__postgresql__dependent_databases:
   - name: '{{ netbox__database_name }}'
     owner: '{{ netbox__database_name }}'
@@ -550,7 +548,7 @@ netbox__postgresql__dependent_databases:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_pgpass [[[
 #
-# ``~/.pgpass`` configuration for the debops.postgresql_ Ansible role.
+# ``~/.pgpass`` configuration for the :ref:`debops.postgresql` Ansible role.
 netbox__postgresql__dependent_pgpass:
   - owner: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
@@ -560,7 +558,7 @@ netbox__postgresql__dependent_pgpass:
                                                                    # ]]]
 # .. envvar:: netbox__nginx__dependent_upstreams [[[
 #
-# Upstream configuration for the debops.nginx_ Ansible role.
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
 netbox__nginx__dependent_upstreams:
   - name: 'netbox'
     server: '{{ netbox__app_bind }}'
@@ -568,7 +566,7 @@ netbox__nginx__dependent_upstreams:
                                                                    # ]]]
 # .. envvar:: netbox__nginx__dependent_servers [[[
 #
-# Server configuration for the debops.nginx_ Ansible role.
+# Server configuration for the :ref:`debops.nginx` Ansible role.
 netbox__nginx__dependent_servers:
   - name: '{{ netbox__fqdn }}'
     by_role: 'debops.netbox'

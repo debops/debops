@@ -11,7 +11,6 @@ Ansible role: debops.netbox
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
