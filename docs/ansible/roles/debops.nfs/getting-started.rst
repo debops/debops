@@ -30,5 +30,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.nfs`` role:
 
-.. literalinclude:: playbooks/nfs.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/nfs.yml
    :language: yaml

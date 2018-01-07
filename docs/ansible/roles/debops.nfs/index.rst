@@ -11,7 +11,6 @@ Ansible role: debops.nfs
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
