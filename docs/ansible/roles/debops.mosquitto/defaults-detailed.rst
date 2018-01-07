@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.mosquitto`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
@@ -247,7 +245,7 @@ The following parameters can be included in the YAML dictionary entries:
   Optional. Password for a given user account. If not specified, a random
   password will be generated and stored in the :file:`secret/` directory in
   a subdirectory specified in the :envvar:`mosquitto__password_secret_path`
-  variable. See debops.secret_ Ansible role documentation for more details.
+  variable. See :ref:`debops.secret` Ansible role documentation for more details.
 
 ``acl``
   Optional. Either a string, or a YAML list of entries to configure for a given

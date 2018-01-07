@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -12,7 +10,7 @@ Default configuration
 
 With the default configuration, ``debops.mosquitto`` role will configure
 Mosquitto with a TLS listener accepting connections from any host (if the
-debops.pki_ environment is detected), and plaintext listener accepting
+:ref:`debops.pki` environment is detected), and plaintext listener accepting
 connections only from localhost. Anonymous access to the broker will be
 allowed.
 
@@ -95,13 +93,13 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.mosquitto`` role:
 
-.. literalinclude:: playbooks/mosquitto-plain.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/mosquitto-plain.yml
    :language: yaml
 
 There is a separate playbook for a Mosquitto instance with :command:`nginx`
 used as a reverse proxy for WebSocket connections:
 
-.. literalinclude:: playbooks/mosquitto-nginx.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/mosquitto-nginx.yml
    :language: yaml
 
 

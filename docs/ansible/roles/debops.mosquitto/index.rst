@@ -11,7 +11,6 @@ Ansible role: debops.mosquitto
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
