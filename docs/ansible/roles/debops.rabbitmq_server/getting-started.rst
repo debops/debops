@@ -4,8 +4,6 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
 
 Shared Erlang cookie
 --------------------
@@ -28,7 +26,7 @@ client-initiated protocol renegotiation, which mitigates potential DoS attacks.
 Encrypted client connections
 ----------------------------
 
-The role will check if the debops.pki_ and debops.dhparam_ Ansible roles
+The role will check if the :ref:`debops.pki` and :ref:`debops.dhparam` Ansible roles
 configured their environment on a host, and will automatically enable or
 disable support for encrypted AMQP connections. Plaintext connections will be
 available if encryption is disabled.
@@ -105,5 +103,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.rabbitmq_server`` role:
 
-.. literalinclude:: playbooks/rabbitmq_server.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/rabbitmq_server.yml
    :language: yaml

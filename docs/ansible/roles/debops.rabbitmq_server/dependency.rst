@@ -3,8 +3,6 @@
 Usage as a role dependency
 ==========================
 
-.. include:: includes/all.rst
-
 The ``debops.rabbitmq_server`` role can be used as a dependency by other
 Ansible roles to manage RabbitMQ main configuration file idempotently.
 Configuration options from multiple roles can be merged together and included
@@ -42,7 +40,7 @@ Dependent configuration storage and retrieval
 ---------------------------------------------
 
 The dependent configuration from other roles is stored in the :file:`secret/`
-directory on the Ansible Controller (see debops.secret_ for more details) in
+directory on the Ansible Controller (see :ref:`debops.secret` for more details) in
 a JSON file, with each role configuration in a separate dictionary. The
 ``debops.rabbitmq_server`` role reads this file when Ansible local facts
 indicate that the RabbitMQ service is installed, otherwise a new empty file is

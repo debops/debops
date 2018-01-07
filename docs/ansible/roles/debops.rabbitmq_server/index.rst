@@ -12,7 +12,6 @@ Ansible role: debops.rabbitmq_server
    defaults-detailed
    dependency
    copyright
-   changelog
 
 ..
  Local Variables:

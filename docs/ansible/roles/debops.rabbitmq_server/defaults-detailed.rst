@@ -9,8 +9,6 @@ examples for them.
    :local:
    :depth: 1
 
-.. include:: includes/all.rst
-
 
 .. _rabbitmq_server__ref_config:
 
@@ -231,7 +229,7 @@ module. Some more common parameters:
   Optional. Plaintext password of a given user account. If not specified, the
   role will generate a random password and store it in the
   :file:`secret/rabbitmq_server/accounts/` directory on the Ansible Controller.
-  See debops.secret_ Ansible role for more details.
+  See :ref:`debops.secret` Ansible role for more details.
 
 ``tags``
   Optional. A string or a YAML list of `tags <https://www.rabbitmq.com/management.html>`_
