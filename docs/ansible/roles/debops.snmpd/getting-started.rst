@@ -33,16 +33,10 @@ and add your own host groups to it::
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.snmpd`` role::
+Here's an example playbook which uses ``debops.snmpd`` role:
 
-    ---
-
-    - name: Configure SNMP service
-      hosts: debops_snmpd
-
-      roles:
-        - role: debops.snmpd
-          tags: snmpd
+.. literalinclude:: ../../../../ansible/playbooks/service/snmpd.yml
+   :language: yaml
 
 Firewall, TCP wrappers access
 -----------------------------
