@@ -11,7 +11,6 @@ Ansible role: debops.monit
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
