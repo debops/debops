@@ -3,8 +3,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 some of ``debops.opendkim`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
@@ -29,7 +27,7 @@ opendkim__keys
 The ``opendkim__*_keys`` variables define what DomainKeys are created and used
 by OpenDKIM. The private keys are generated on the Ansible Controller (the
 ``python-openssl`` package is required), stored in the
-:file:`secret/opendkim/domainkeys/` directory (see debops.secret_ role for
+:file:`secret/opendkim/domainkeys/` directory (see :ref:`debops.secret` role for
 details) and copied to the remote hosts.  The role can install the same private
 key on multiple hosts, which can be useful in environments with multiple SMTP
 servers handling the same domains.

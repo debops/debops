@@ -3,8 +3,6 @@
 Default variable details: opendkim__config
 ==========================================
 
-.. include:: includes/all.rst
-
 
 The ``opendkim__*_config`` variables are used to define the contents of the
 :file:`/etc/opendkim.conf` configuration file. The variables are YAML lists,

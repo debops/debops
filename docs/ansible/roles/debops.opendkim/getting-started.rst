@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
    :depth: 1
@@ -37,7 +35,7 @@ Postfix integration
 -------------------
 
 If the ``debops.opendkim`` role detects an installed Postfix instance by
-checking the Ansible local facts created by the debops.postfix_ Ansible role,
+checking the Ansible local facts created by the :ref:`debops.postfix` Ansible role,
 Postfix support will be enabled automatically.
 
 OpenDKIM will be reconfigured to create its listening socket in
@@ -46,7 +44,7 @@ SGID bit set, and its group is set to the Postfix main group, so that the
 socket created by OpenDKIM will be automatically accessible by Postfix.
 
 The ``debops.opendkim`` role will add Postfix :file:`main.cf` configuration
-options using the debops.postfix_ dependent role variables. OpenDKIM filter
+options using the :ref:`debops.postfix` dependent role variables. OpenDKIM filter
 will be added to the ``smtpd_milters`` as well as ``non_smtpd_milters``
 configuration options.
 
@@ -69,7 +67,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.opendkim`` role:
 
-.. literalinclude:: playbooks/opendkim.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/opendkim.yml
    :language: yaml
 
 

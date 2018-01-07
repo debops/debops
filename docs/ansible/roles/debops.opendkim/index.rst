@@ -10,7 +10,6 @@ Ansible role: debops.opendkim
    defaults-detailed
    defaults-config
    copyright
-   changelog
 
 ..
  Local Variables:
