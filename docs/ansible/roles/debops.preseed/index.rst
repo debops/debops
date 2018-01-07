@@ -11,7 +11,6 @@ Ansible role: debops.preseed
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:

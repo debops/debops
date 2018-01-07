@@ -4,8 +4,6 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
 Example inventory
 -----------------
 
@@ -22,38 +20,16 @@ Jessie, which system administrator account named after either
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.preseed`` role::
+Here's an example playbook which uses ``debops.preseed`` role:
 
-    ---
-
-    - name: Provide Debian Preseed configuration files over HTTP
-      hosts: [ 'debops_service_preseed' ]
-      become: True
-
-      roles:
-
-        - role: debops.apt_preferences
-          tags: [ 'role::apt_preferences' ]
-          apt_preferences__dependent_list:
-            - '{{ nginx_apt_preferences_dependent_list }}'
-
-        - role: debops.ferm
-          tags: [ 'role::ferm' ]
-          ferm__dependent_rules:
-            - '{{ nginx_ferm_dependent_rules }}'
-
-        - role: debops.nginx
-          tags: [ 'role::nginx' ]
-          nginx_servers: '{{ preseed__nginx__servers }}'
-
-        - role: debops.preseed
-          tags: [ 'role::preseed' ]
+.. literalinclude:: ../../../../ansible/playbooks/service/preseed.yml
+   :language: yaml
 
 
 How to use Debian Preseed configuration
 ---------------------------------------
 
-``debops.preseed`` will use debops.nginx_ role to set up a webserver for the
+``debops.preseed`` will use :ref:`debops.nginx` role to set up a webserver for the
 Preseed files. They will be served on a separate subdomain, by default
 ``seed``. The FQDN given the ``example.org`` domain will be for example::
 
