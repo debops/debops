@@ -1,17 +1,15 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 Default configuration
 ---------------------
 
 This role provides a hopefully reasonable Postfix configuration for a SMTP
 server on the public Internet. It does not configure Postfix directly; instead,
-the configuration variables are passed to the debops.postfix_ Ansible role
+the configuration variables are passed to the :ref:`debops.postfix` Ansible role
 which combines them with the other configuration specified by other Ansible
 roles and generates the final Postfix configuration files. You should check the
-debops.postfix_ documentation for explanation of how the configuration is
+:ref:`debops.postfix` documentation for explanation of how the configuration is
 structured and what are the supported parameters.
 
 
@@ -85,7 +83,7 @@ Example inventory
 
 To apply the Postfix configuration provided by the ``debops.postconf`` role on
 a host, it needs to be present in the ``[debops_service_postconf]`` Ansible
-inventory group. You also need to enable debops.postfix_ support, as well as
+inventory group. You also need to enable :ref:`debops.postfix` support, as well as
 any other additional roles that can be autodetected by ``debops.postconf``
 role.
 
@@ -110,5 +108,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.postconf`` role:
 
-.. literalinclude:: playbooks/postconf.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/postconf.yml
    :language: yaml

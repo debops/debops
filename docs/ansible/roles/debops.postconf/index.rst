@@ -8,7 +8,6 @@ Ansible role: debops.postconf
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
