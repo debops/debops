@@ -3,8 +3,6 @@
 External storage
 ================
 
-.. include:: includes/all.rst
-
 This section gives some hints how to setup external storage for ownCloud.
 The automation support for this in ``debops.owncloud`` currently limited. This
 might be added in a later version of the role.

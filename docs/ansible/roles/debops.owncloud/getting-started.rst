@@ -6,7 +6,8 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
+.. include:: includes/role.rst
 
 Database setup
 --------------
@@ -56,7 +57,7 @@ on the same host as ownCloud or choose a different host:
     hostname
 
 This role will use a Redis server automatically when it is managed by
-debops.redis_.
+:ref:`debops.redis`.
 
 In case you chose a different host, you will need to specify which of your
 Redis servers the ownCloud instance should use by setting the Redis
@@ -78,7 +79,7 @@ Supported webservers:
 This role started out using Nginx_ as Webserver. However, ownCloud_ and
 NextCloud_ don’t officially support Nginx_. As of ``debops.owncloud`` v0.4.0,
 support for the `Apache HTTP Server`_ has been added to the role using
-debops.apache_ as role dependency.
+:ref:`debops.apache` as role dependency.
 
 The current default Webserver is Nginx_. Because despite the fact that only
 Apache_ is officially supported, Nginx_ has been successfully used with this
@@ -200,14 +201,14 @@ Example playbook
 The following playbooks are used in DebOps. If you are using these role without
 DebOps you might need to adapt them to make them work in your setup.
 
-Ansible playbook that uses the ``debops.owncloud`` role together with debops.nginx_:
+Ansible playbook that uses the ``debops.owncloud`` role together with :ref:`debops.nginx`:
 
-.. literalinclude:: playbooks/owncloud-nginx.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/owncloud-nginx.yml
    :language: yaml
 
-Ansible playbook that uses the ``debops.owncloud`` role together with debops.apache_:
+Ansible playbook that uses the ``debops.owncloud`` role together with :ref:`debops.apache`:
 
-.. literalinclude:: playbooks/owncloud-apache.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/owncloud-apache.yml
    :language: yaml
 
 These playbooks are shipped with DebOps and are also contained in this role under

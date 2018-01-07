@@ -13,7 +13,6 @@ Ansible role: debops.owncloud
    external-users
    external-storage
    copyright
-   changelog
    upgrade
 
 ..

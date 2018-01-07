@@ -1,7 +1,7 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 Some of ``debops.owncloud`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
@@ -105,7 +105,7 @@ Each list item is a dict with the following keys:
 
 Additionally, all parameters of the `Ansible copy module`_ are supported.
 
-The reason why these lists exist (instead of using debops.resources_) is that
+The reason why these lists exist (instead of using :ref:`debops.resources`) is that
 ownCloud needs to be aware of any changes.
 
 Examples

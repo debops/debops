@@ -3,8 +3,6 @@
 External users
 ==============
 
-.. include:: includes/all.rst
-
 This section gives more details on how to setup external users for ownCloud.
 
 Users from debops.slapd
@@ -67,4 +65,4 @@ The role maintainers consider it to be easier to finish the LDAP configuration
 via the admin web interface.
 TODO: Add a backup option of all LDAP settings to the Ansible controller.
 
-Refer to debops.secret_ to learn how passwords are handled.
+Refer to :ref:`debops.secret` to learn how passwords are handled.

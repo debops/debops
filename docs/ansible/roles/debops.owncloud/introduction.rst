@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 This role installs a ownCloud_ instance on a specified host, either with
 SQLite, MySQL, MariaDB or PostgreSQL database as a backend and an nginx
