@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -49,7 +47,7 @@ You can also add an entry in the :file:`/etc/fstab` configuration file:
 
    hostname:/shared   /media/nfs/shared   nfs4   noatime,nosuid,hard,intr,proto=tcp,port=2049,_netdev   0   0
 
-Refer to the debops.nfs_ role for information about how to configure NFS shares
+Refer to the :ref:`debops.nfs` role for information about how to configure NFS shares
 on other hosts using Ansible.
 
 
@@ -71,7 +69,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.nfs_server`` role:
 
-.. literalinclude:: playbooks/nfs_server.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/nfs_server.yml
    :language: yaml
 
 
