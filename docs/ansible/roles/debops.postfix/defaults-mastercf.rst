@@ -3,8 +3,6 @@
 Default variable details: postfix__mastercf
 ===========================================
 
-.. include:: includes/all.rst
-
 
 The ``postfix__*_mastercf`` variables are used to define the contents of the
 :file:`/etc/postfix/master.cf` configuration file. The variables are YAML

@@ -12,7 +12,6 @@ Ansible role: debops.postfix
    defaults-mastercf
    dependency
    copyright
-   changelog
    upgrade
 
 ..

@@ -1,8 +1,6 @@
 Upgrade notes
 =============
 
-.. include:: includes/all.rst
-
 The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the Changelog for
 more details about what has changed.
@@ -26,7 +24,7 @@ From debops.postfix v0.1.3 to debops.postfix v0.2.0
   using inventory variables. The new ``debops.postfix`` role intentionally does
   not provide facilities to manage files; this is supposed to be done either in
   the other Ansible roles that use ``debops.postfix`` as a dependency, or
-  alternatively can be done by the debops.resources_ Ansible role.
+  alternatively can be done by the :ref:`debops.resources` Ansible role.
 
 - Most of the functionality of the old role has been removed. It will be
   brought back using separate roles in the future, however they are not yet

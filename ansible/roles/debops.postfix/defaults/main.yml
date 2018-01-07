@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # APT packages, version [[[
@@ -135,7 +133,7 @@ postfix__allow_smtps: []
 
 # .. envvar:: postfix__pki [[[
 #
-# Enable or disable support for TLS in Postfix, managed by the debops.pki_
+# Enable or disable support for TLS in Postfix, managed by the :ref:`debops.pki`
 # Ansible role.
 postfix__pki: '{{ (True
                    if (ansible_local|d() and ansible_local.pki|d() and
@@ -219,7 +217,7 @@ postfix__tls_key_file: '{{ (postfix__pki_path + "/" + postfix__pki_realm + "/" +
 # .. envvar:: postfix__dhparam [[[
 #
 # Enable or disable support for custom Diffie-Hellman parameters managed by the
-# debops.dhparam_ Ansible role.
+# :ref:`debops.dhparam` Ansible role.
 postfix__dhparam: '{{ ansible_local.dhparam.enabled
                       if (ansible_local|d() and ansible_local.dhparam|d() and
                           ansible_local.dhparam.enabled is defined)
@@ -229,7 +227,7 @@ postfix__dhparam: '{{ ansible_local.dhparam.enabled
 # .. envvar:: postfix__dhparam_set [[[
 #
 # Name of the Diffie-Hellman parameter set to use in Postfix configuration. See
-# debops.dhparam_ Ansible role for more details.
+# :ref:`debops.dhparam` Ansible role for more details.
 postfix__dhparam_set: 'default'
 
                                                                    # ]]]
@@ -1320,7 +1318,7 @@ postfix__combined_lookup_tables: '{{ ([ postfix__dependent_lookup_tables_filter 
 
 # .. envvar:: postfix__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ Ansible role.
+# Configuration for the :ref:`debops.ferm` Ansible role.
 postfix__ferm__dependent_rules:
 
   - name: 'postfix_smtp'

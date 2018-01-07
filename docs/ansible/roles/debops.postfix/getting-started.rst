@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 Default configuration
 ---------------------
 
@@ -44,7 +42,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.postfix`` role:
 
-.. literalinclude:: playbooks/postfix.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/postfix.yml
    :language: yaml
 
 

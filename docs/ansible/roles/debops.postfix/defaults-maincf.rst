@@ -3,8 +3,6 @@
 Default variable details: postfix__maincf
 =========================================
 
-.. include:: includes/all.rst
-
 
 The ``postfix__*_maincf`` variables are used to define the contents of the
 :file:`/etc/postfix/main.cf` configuration file. The variables are YAML lists,

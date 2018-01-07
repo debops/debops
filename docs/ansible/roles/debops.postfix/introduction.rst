@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: ../../../includes/global.rst
 
 The ``debops.postfix`` Ansible role can be used to install and manage
 `Postfix`_, a SMTP server. It allows configuration of Postfix using Ansible
