@@ -7,13 +7,10 @@ Ansible role: debops.tgt
    :maxdepth: 2
 
    introduction
-   installation
    getting-started
    defaults
    defaults-configuration
    copyright
-   credits
-   changelog
 
 ..
  Local Variables:

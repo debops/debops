@@ -20,14 +20,7 @@ variable. See :ref:`tgt_targets` for more details.
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.tgt`` role::
+Here's an example playbook which uses ``debops.tgt`` role:
 
-    ---
-
-    - name: Configure iSCSI Target service
-      hosts: debops_tgt
-
-      roles:
-        - role: debops.tgt
-          tags: tgt
-
+.. literalinclude:: ../../../../ansible/playbooks/service/tgt.yml
+   :language: yaml
