@@ -1,8 +1,6 @@
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
 Some of ``debops.sysfs`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
@@ -13,6 +11,9 @@ them.
 
 
 .. _sysfs__ref_attributes:
+
+sysfs__attributes
+-----------------
 
 The ``sysfs__*_attributes`` default variables hold the configuration of the
 :command:`sysfsutils` service, stored in the :file:`/etc/sysfs.d/` directory.

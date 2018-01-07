@@ -1,8 +1,6 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
-
 `sysfs <https://en.wikipedia.org/wiki/Sysfs>`_ is a Linux kernel virtual
 filesystem, usually mounted at :file:`/sys`. It provides a file-based interface
 to the kenel data structures related to hardware and host configuration. The

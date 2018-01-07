@@ -4,8 +4,6 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
 
 Default configuration
 ---------------------
@@ -35,5 +33,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.sysfs`` role:
 
-.. literalinclude:: playbooks/sysfs.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/sysfs.yml
    :language: yaml
