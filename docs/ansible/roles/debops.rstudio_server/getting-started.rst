@@ -60,5 +60,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.rstudio_server`` role:
 
-.. literalinclude:: playbooks/rstudio_server.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/rstudio_server.yml
    :language: yaml

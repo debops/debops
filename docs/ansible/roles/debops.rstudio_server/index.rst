@@ -11,7 +11,6 @@ Ansible role: debops.rstudio_server
    defaults
    defaults-detailed
    copyright
-   changelog
 
 ..
  Local Variables:
