@@ -26,5 +26,5 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.root_account`` role:
 
-.. literalinclude:: playbooks/root_account.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/root_account.yml
    :language: yaml
