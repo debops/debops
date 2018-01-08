@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # Docker packages and installation [[[
@@ -209,7 +207,7 @@ docker__fixed_cidr: ''
 # .. envvar:: docker__dns_nameserver [[[
 #
 # List of IP addresses of nameservers used by Docker. By default they
-# are gathered by the debops.core_ role from the :file:`/etc/resolv.conf` file of
+# are gathered by the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of
 # the remote host.
 docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
                             if (ansible_local|d() and ansible_local.resolver|d() and
@@ -220,7 +218,7 @@ docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
 # .. envvar:: docker__dns_search [[[
 #
 # List of DNS search domains to use by Docker. By default they are gathered by
-# the debops.core_ role from the :file:`/etc/resolv.conf` file of the remote host.
+# the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of the remote host.
 docker__dns_search: '{{ ansible_local.resolver.search
                         if (ansible_local|d() and ansible_local.resolver|d() and
                             ansible_local.resolver.search|d())
@@ -233,7 +231,7 @@ docker__dns_search: '{{ ansible_local.resolver.search
 # .. envvar:: docker__tcp [[[
 #
 # Enable or disable listening for TLS connections on the TCP docker port. By
-# default remote connections are enabled if the debops.pki_ role has been
+# default remote connections are enabled if the :ref:`debops.pki` role has been
 # configured on remote host (access is controlled by the firewall).
 docker__tcp: '{{ docker__pki | bool }}'
 
@@ -397,7 +395,7 @@ docker__options: []
 
 # .. envvar:: docker__pki [[[
 #
-# Enable or disable support for PKI certificates managed by debops.pki_.
+# Enable or disable support for PKI certificates managed by :ref:`debops.pki`.
 docker__pki: '{{ (True
                   if (ansible_local|d() and ansible_local.pki|d() and
                       ansible_local.pki.enabled|d() | bool)
@@ -476,7 +474,7 @@ docker__ferment_wrapper: '{{ (ansible_local.root.lib
 
 # .. envvar:: docker__etc_services__dependent_list [[[
 #
-# Configuration for debops.etc_services_ role which registers port numbers
+# Configuration for :ref:`debops.etc_services` role which registers port numbers
 # for Docker REST API.
 docker__etc_services__dependent_list:
 
@@ -491,7 +489,7 @@ docker__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: docker__ferm__dependent_rules [[[
 #
-# Configuration for debops.ferm_ role which enables support for :program:`ferment`
+# Configuration for :ref:`debops.ferm` role which enables support for :program:`ferment`
 # script and opens access to the Docker REST API in the firewall.
 docker__ferm__dependent_rules:
 

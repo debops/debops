@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # APT packages [[[
@@ -143,7 +141,7 @@ etherpad_welcome_text: |
 # .. envvar:: etherpad_database_server [[[
 #
 # FQDN of the MariaDB database host. It will be configured by
-# the debops.mariadb_ role.
+# the :ref:`debops.mariadb` role.
 etherpad_database_server: '{{ ansible_local.mariadb.server
                               if (ansible_local|d() and ansible_local.mariadb|d() and
                                   ansible_local.mariadb.server|d())
@@ -234,14 +232,14 @@ etherpad_port: '9001'
 #
 # List of Etherpad administrative accounts. Passwords are generated
 # automatically and are saved in the secret/ directory. Refer to the
-# debops.secret_ role for more details.
+# :ref:`debops.secret` role for more details.
 etherpad_admins: [ 'admin' ]
 
                                                                    # ]]]
 # .. envvar:: etherpad_users [[[
 #
 # List of Etherpad user accounts. Passwords are generated automatically and
-# are saved in the secret/ directory. Refer to the debops.secret_ role for
+# are saved in the secret/ directory. Refer to the :ref:`debops.secret` role for
 # more details.
 etherpad_users: []
 
@@ -420,7 +418,7 @@ etherpad_api_calls_debug: False
 
 # .. envvar:: etherpad__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services` Ansible role.
 etherpad__etc_services__dependent_list:
 
   - name: 'etherpad-lite'
@@ -430,7 +428,7 @@ etherpad__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: etherpad__logrotate__dependent_config [[[
 #
-# Configuration for the debops.logrotate_ Ansible role.
+# Configuration for the :ref:`debops.logrotate` Ansible role.
 etherpad__logrotate__dependent_config:
 
   - filename: 'etherpad-lite'
@@ -447,7 +445,7 @@ etherpad__logrotate__dependent_config:
                                                                    # ]]]
 # .. envvar:: etherpad__mariadb__dependent_users [[[
 #
-# User configuration for the debops.mariadb_ Ansible role.
+# User configuration for the :ref:`debops.mariadb` Ansible role.
 etherpad__mariadb__dependent_users:
 
   - name: '{{ etherpad_database_user }}'
@@ -459,7 +457,7 @@ etherpad__mariadb__dependent_users:
                                                                    # ]]]
 # .. envvar:: etherpad__mariadb__dependent_databases [[[
 #
-# Database configuration for the debops.mariadb_ Ansible role.
+# Database configuration for the :ref:`debops.mariadb` Ansible role.
 etherpad__mariadb__dependent_databases:
 
   - database: '{{ etherpad_database_name }}'
@@ -467,7 +465,7 @@ etherpad__mariadb__dependent_databases:
                                                                    # ]]]
 # .. envvar:: etherpad__nginx__dependent_upstreams [[[
 #
-# Upstream configuration for the debops.nginx_ Ansible role.
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
 etherpad__nginx__dependent_upstreams:
 
   - name: '{{ etherpad_system_name }}'
@@ -477,7 +475,7 @@ etherpad__nginx__dependent_upstreams:
                                                                    # ]]]
 # .. envvar:: etherpad__nginx__dependent_servers [[[
 #
-# Server configuration for the debops.nginx_ Ansible role.
+# Server configuration for the :ref:`debops.nginx` Ansible role.
 etherpad__nginx__dependent_servers:
   - by_role: 'debops.etherpad'
     enabled: True

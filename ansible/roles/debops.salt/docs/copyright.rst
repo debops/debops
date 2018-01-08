@@ -1,4 +1,0 @@
-Copyright
-=========
-
-.. literalinclude:: ../COPYRIGHT

@@ -15,7 +15,7 @@ Contents:
    debops-tools/index
    debops-playbooks/index
    debops-policy/index
-   ansible/roles/*/index
+   ansible/roles/index
    debops-api/index
    philosophy
 
