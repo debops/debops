@@ -40,6 +40,8 @@ question can be physical or virtual machines, or even LXC/Docker containers.
    introduction/community
    introduction/philosophy
    introduction/timeline
+   introduction/other-projects
+   introduction/references
 
 .. toctree::
    :caption: News
