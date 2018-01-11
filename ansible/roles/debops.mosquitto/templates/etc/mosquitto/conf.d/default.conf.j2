@@ -4,7 +4,7 @@
 {% if options.comment|d() %}
 {{ (options.comment if options.comment is string else options.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {% endif %}
-{% for config_key, config_value in options.iteritems() %}
+{% for config_key, config_value in options.items() %}
 {%   if config_value is string and config_value != '' %}
 {{ "%s %s" | format(config_key, config_value) }}
 {%   elif config_value is not string and config_value is not mapping %}

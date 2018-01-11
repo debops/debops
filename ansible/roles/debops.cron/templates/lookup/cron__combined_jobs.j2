@@ -26,7 +26,7 @@
 {% set cron__tpl_merge_group =     (merge_dict(cron__tpl_merge_all,       cron__group_jobs,     'file') | from_json) %}
 {% set cron__tpl_items =           (merge_dict(cron__tpl_merge_group,     cron__host_jobs,      'file') | from_json) %}
 {% set cron__tpl_filtered_items = [] %}
-{% for item_name, params in cron__tpl_items.iteritems() %}
+{% for item_name, params in cron__tpl_items.items() %}
 {%   set cron_file = (params["file"] | d(item_name)) %}
 {%   if params["cron_file"] is undefined %}
 {%     set _ = params.update({"cron_file":cron_file}) %}
@@ -71,7 +71,7 @@
 {%   if params["environment"]|d() %}
 {%     if params["environment"] is mapping %}
 {%       set cron__tpl_filtered_environment = [] %}
-{%       for env_key, env_value in params["environment"].iteritems() %}
+{%       for env_key, env_value in params["environment"].items() %}
 {%         set _ = cron__tpl_filtered_environment.append({env_key:env_value}) %}
 {%       endfor %}
 {%       set _ = params.update({"environment":cron__tpl_filtered_environment}) %}

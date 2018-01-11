@@ -41,7 +41,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
   token = "{{ gitlab_runner__tpl_token[0] }}"
 {%     set gitlab_runner__tpl_environment = [] %}
 {%     if gitlab_runner__environment is mapping %}
-{%       for key, value in gitlab_runner__environment.iteritems() %}
+{%       for key, value in gitlab_runner__environment.items() %}
 {%         set _ = gitlab_runner__tpl_environment.append(key + "=" + value) %}
 {%       endfor %}
 {%     elif gitlab_runner__environment is string %}
@@ -53,7 +53,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%     endif %}
 {%     if runner.environment|d() %}
 {%       if runner.environment is mapping %}
-{%         for key, value in runner.environment.iteritems() %}
+{%         for key, value in runner.environment.items() %}
 {%           set _ = gitlab_runner__tpl_environment.append(key + "=" + value) %}
 {%         endfor %}
 {%       elif runner.environment is string %}

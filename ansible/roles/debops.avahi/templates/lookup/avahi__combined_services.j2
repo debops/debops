@@ -4,7 +4,7 @@
 {% set avahi__tpl_merge_3 = (debops__tpl_macros.merge_dict(avahi__tpl_merge_2, avahi__group_services, 'filename')          | from_json) %}
 {% set avahi__tpl_merge_4 = (debops__tpl_macros.merge_dict(avahi__tpl_merge_3, avahi__host_services, 'filename')           | from_json) %}
 {% set avahi__tpl_filtered_services = {} %}
-{% for filename, params in avahi__tpl_merge_4.iteritems() %}
+{% for filename, params in avahi__tpl_merge_4.items() %}
 {%   set service_filename = (params.filename | d(filename)) %}
 {%   if params.services is undefined and params.type|d() %}
 {%     set avahi__tpl_service = {} %}
