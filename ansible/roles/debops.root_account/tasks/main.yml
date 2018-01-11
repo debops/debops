@@ -1,5 +1,14 @@
 ---
 
+- name: Ensure that required packages are installed
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ root_account__base_packages }}'
+    - '{{ root_account__packages }}'
+  when: root_account__enabled|bool
+
 - name: Check available SSH key types
   shell: ssh -Q key 2>/dev/null || echo "ssh-rsa"
   register: root_account__register_key_types
