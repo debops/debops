@@ -1,5 +1,14 @@
 ---
 
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ tcpwrappers__base_packages }}'
+    - '{{ tcpwrappers__packages }}'
+  when: tcpwrappers__enabled | bool
+
 - name: Make sure /etc/hosts.allow.d directory exists
   file:
     path: '/etc/hosts.allow.d'
