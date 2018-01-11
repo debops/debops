@@ -11,10 +11,10 @@ Host requirements
 
 **Your host must be Debian based.**
 
-Debian stable and oldstable are supported by debops, as well as the two latest
+Debian stable and oldstable are supported by DebOps, as well as the two latest
 LTS releases of Ubuntu. However the main focus will always be towards the
-latest stable/LTS release. So if you plan on setting up a new machine, always
-use the latest release.
+latest Debian Stable followed by the latest Ubuntu LTS release. So if you plan
+on setting up a new machine, always use the latest OS release.
 
 If you're using a Mac or a different Linux distro then you'll want to setup a
 virtual machine to act as the container host. You can do this with
