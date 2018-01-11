@@ -54,7 +54,7 @@ Grant access to private keys by additional groups
 
 The :ref:`debops.pki` role that maintains the DebOps X.509 infrastructure, allows
 you to specify additional system groups, which should have access to the
-private keys. This should be configured before the role creates ths private
+private keys. This should be configured before the role creates the private
 keys, because the permissions are not enforced afterwards - this means that you
 will need to recreate the private keys and certificates, or update the
 permissions manually. Additional permissions are granted using the filesystem

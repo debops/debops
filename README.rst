@@ -81,7 +81,7 @@ for more details about using DebOps in a Docker container.
 Installation
 ------------
 
-DebOps requires a Python 2.7 environment and Ansiible 2.3+ to work correctly.
+DebOps requires a Python 2.7 environment and Ansible 2.3+ to work correctly.
 Read the `INSTALL.rst <https://github.com/debops/debops/blob/master/INSTALL.rst>`__
 file for specific installation instructions.
 

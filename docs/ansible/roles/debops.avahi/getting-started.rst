@@ -53,7 +53,7 @@ can configure Avahi services as well as CNAME aliases if necessary.
 See :ref:`avahi__ref_services` for more details about supported parameters.
 
 If advanced control over CNAME aliases published by Avahi is not needed, you
-can make the process simplier by including the tasks that configure an Avahi
+can make the process simpler by including the tasks that configure an Avahi
 service directly in your own role, for example:
 
 .. literalinclude:: examples/avahi-tasks.yml

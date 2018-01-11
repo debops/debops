@@ -72,7 +72,7 @@ Each entry is a YAML dictionary with specific parameters:
 
 ``home_mode``
   Optional. If set, the home directory of a given user account will have the
-  specified premissions. If not set, the home directories of existing user
+  specified permissions. If not set, the home directories of existing user
   accounts won't be modified. New accounts will have their home directories
   permissions set based on the :envvar:`bootstrap__admin_home_mode` variable.
 

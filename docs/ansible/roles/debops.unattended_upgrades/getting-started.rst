@@ -8,7 +8,7 @@ Initial configuration
 ---------------------
 
 The ``unattended-upgrades`` package will be configured differently depending on
-weither or not a DNS domain is configured on the host:
+whether or not a DNS domain is configured on the host:
 
 - if the ``ansible_domain`` variable is not empty (domain is present), only
   packages released through the security repository of a given OS distribution

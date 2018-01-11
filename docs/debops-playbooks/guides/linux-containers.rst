@@ -9,9 +9,12 @@ Using Linux containers
 Host requirements
 -----------------
 
-**Your host must be Debian based**
+**Your host must be Debian based.**
 
-It can be Ubuntu 14.x, Debian Wheezy/Jessie, etc.
+Debian stable and oldstable are supported by DebOps, as well as the two latest
+LTS releases of Ubuntu. However the main focus will always be towards the
+latest Debian Stable followed by the latest Ubuntu LTS release. So if you plan
+on setting up a new machine, always use the latest OS release.
 
 If you're using a Mac or a different Linux distro then you'll want to setup a
 virtual machine to act as the container host. You can do this with
@@ -19,14 +22,14 @@ virtual machine to act as the container host. You can do this with
 
 **SSH key pair**
 
-You will also need an SSH key pair on your host. You probably have one setup
-but if you don’t you can run ``ssh-keygen -t`` and follow the instructions.
-DebOps expects the RSA keys to be in ``~/.ssh``.
+You will also need an SSH key pair on your host. You probably have one setup,
+but if you don’t, you can run ``ssh-keygen -t`` and follow the instructions.
+DebOps expects the SSH keys to be in ``~/.ssh``.
 
 Configuring a host
 ------------------
 
-**Add it to your inventory**
+**Adding it to your inventory**
 
 The paths are relative to where you ``debops-init`` a new project.
 
@@ -60,8 +63,8 @@ you have configured DNS yourself.
 Run this from your terminal: ``debops -l debops_service_lxc``.
 
 If you are running Debian Wheezy you will have to reboot your LXC host due to
-a kernal update. Other operating systems like Ubuntu 14.x and Debian Jessie
-do not require the reboot.
+a kernel update. Later Debian releases and all supported Ubuntu releases do not
+require a reboot.
 
 LXC cheatsheet
 --------------

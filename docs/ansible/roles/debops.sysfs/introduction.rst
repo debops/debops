@@ -3,7 +3,7 @@ Introduction
 
 `sysfs <https://en.wikipedia.org/wiki/Sysfs>`_ is a Linux kernel virtual
 filesystem, usually mounted at :file:`/sys`. It provides a file-based interface
-to the kenel data structures related to hardware and host configuration. The
+to the kernel data structures related to hardware and host configuration. The
 filesystem entries can be manipulated by the :command:`sysfsutils` package
 provided by Debian/Ubuntu.
 

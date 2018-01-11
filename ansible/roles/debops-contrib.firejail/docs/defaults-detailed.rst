@@ -127,7 +127,7 @@ systems:
          ## (supports Jinja templating as usual):
          # content: |
          #   # {{ ansible_managed }}
-         #   # smplyer security profile.
+         #   # smplayer security profile.
          #   noblacklist ${HOME}/.config/smplayer
          #   # And so on.
 

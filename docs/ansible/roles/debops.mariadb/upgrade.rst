@@ -25,7 +25,7 @@ role are impacted under the following conditions:
 
   **AND**
 
-- For thos hosts the :envvar:`mariadb__delegate_to` variable is not defined
+- For those hosts the :envvar:`mariadb__delegate_to` variable is not defined
   in the Ansible inventory which means the default value is used during role
   execution.
 

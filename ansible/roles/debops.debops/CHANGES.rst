@@ -35,7 +35,7 @@ Added
 Changed
 ~~~~~~~
 
-- Support newer Ansible local build methos using ``local_deb``. [drybjed_]
+- Support newer Ansible local build methods using ``local_deb``. [drybjed_]
 
 
 `debops.debops v0.2.2`_ - 2016-07-31

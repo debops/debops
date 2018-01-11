@@ -7,7 +7,7 @@ Gunicorn server is broadly compatible with various web frameworks, simply
 implemented, light on server resources, and fairly speedy.
 
 The ``debops.gunicorn`` Ansible role uses the `Debian package configuration structure <https://chris-lamb.co.uk/posts/sysadmin-friendly-deployment-gunicorn-debian>`_ on older Debian and Ubuntu releases
-to manage multiple ``gunicorn`` applications as a signle service. This can be
+to manage multiple ``gunicorn`` applications as a single service. This can be
 used to deploy applications that use either a system Python installation, or
 a ``virtualenv`` Python environment.
 

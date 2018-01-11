@@ -173,7 +173,7 @@ look below for the ``enabled`` parameter.
   Usually, ``dport_accept`` is the correct choice.
 
   The type of the firewall rule to use will affect the keys used, so choose the
-  rule carefully to avoid unitended effects.
+  rule carefully to avoid unintended effects.
 
 ``dport``
   List, optional. Specify port numbers or service names to configure in the

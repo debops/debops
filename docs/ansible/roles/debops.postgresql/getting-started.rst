@@ -55,7 +55,7 @@ a time is supported by the role.
 If you use :ref:`debops.pki` to manage SSL certificates and you configured
 PostgreSQL server with them, remote connections to the database should be
 automatically encrypted. Default server configuration requires remote
-connections to be done over SSL, otherwise connecion is dropped.
+connections to be done over SSL, otherwise connection is dropped.
 
 Example inventory
 -----------------

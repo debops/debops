@@ -18,7 +18,7 @@ Erlang 19.x from 'jessie-backports' on Debian Jessie
 ----------------------------------------------------
 
 On Debian Jessie hosts, the role will configure an APT preference for
-backported Erlang 19.x packages from Debian Stretch. They privde better
+backported Erlang 19.x packages from Debian Stretch. They provide better
 Elliptic Curve Cryptography (ECC) support and allow deactivation of TLS
 client-initiated protocol renegotiation, which mitigates potential DoS attacks.
 

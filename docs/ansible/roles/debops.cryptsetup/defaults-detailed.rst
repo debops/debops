@@ -584,7 +584,7 @@ mapped to the real clear text block device
 :file:`/dev/mapper/vault` on which a filesystem will be created
 and which will be mounted as usual.
 
-This is surely a more extrem example but it has been tested in a lab
+This is surely a more extreme example but it has been tested in a lab
 environment and the setup seems to work just fine. Also automatic
 mapping/mounting of all layers works seamlessly on system boot if configured to
 do so (which is the default).

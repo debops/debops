@@ -130,7 +130,7 @@ Changed
 - Update documentation. [drybjed_]
 
 - Reorder the fastcgi parameters in :program:`nginx` configuration to fix issue with
-  `fcgiwrap interpreting the first occurence <http://mailman.nginx.org/pipermail/nginx/2012-June/034224.html>`_
+  `fcgiwrap interpreting the first occurrence <http://mailman.nginx.org/pipermail/nginx/2012-June/034224.html>`_
   of the variable instead of the last. [drybjed_]
 
 Removed

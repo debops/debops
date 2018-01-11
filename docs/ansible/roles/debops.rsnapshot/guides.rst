@@ -18,7 +18,7 @@ To avoid this issue, ``debops.rsnapshot`` role uses combination of
 :program:`batch`, :program:`cron` and custom scheduler script written in Bash
 to perform backups of multiple remote hosts at the same time, each one
 configured in its own :file:`rsnapshot.conf` configuration file, with its own
-lists of snapshots to manage, its own include/execlude lists, and so on.
+lists of snapshots to manage, its own include/exclude lists, and so on.
 
 How rsnapshot backups are performed
 -----------------------------------
