@@ -36,7 +36,7 @@
 {% macro print_section (name, content, mask) %}
 {%   set seen_keys = [] %}
 {{ name }} {
-{%   for key, value in content.iteritems() %}
+{%   for key, value in content.items() %}
 {%     if value is mapping %}
 {{ print_section (key, value, {}) | indent (4,true) }}
 {%       set _ = seen_keys.append(key) %}
@@ -51,7 +51,7 @@
 {%     endif %}
 {%   endfor %}
 {%   if mask %}
-{%     for key, value in mask.iteritems() %}
+{%     for key, value in mask.items() %}
 {%       if key not in seen_keys %}
 {{ print_content ( key, value) | indent (4,true) }}
 {%       endif %}

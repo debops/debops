@@ -19,7 +19,7 @@ from ansible import errors
 
 try:
     import fnmatch
-except Exception, e:
+except Exception as e:
     raise errors.AnsibleFilterError('fnmatch python library not found')
 
 

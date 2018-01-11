@@ -24,7 +24,7 @@
 {% set tinc__tpl_merge_group = (merge_dict(tinc__tpl_merge_all,    tinc__group_networks, 'name') | from_json) %}
 {% set tinc__tpl_networks =    (merge_dict(tinc__tpl_merge_group,  tinc__host_networks,  'name') | from_json) %}
 {% set tinc__tpl_filtered_networks = {} %}
-{% for name, params in tinc__tpl_networks.iteritems() %}
+{% for name, params in tinc__tpl_networks.items() %}
 {%   set network_name = (params["name"] | d(name)) %}
 {%   if params["boot"] is undefined %}
 {%     set _ = params.update({"boot":True}) %}

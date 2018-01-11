@@ -5,7 +5,7 @@
 {% set ifupdown__tpl_merge_4 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_3, ifupdown__host_interfaces, 'iface')            | from_json) %}
 {% set ifupdown__tpl_merge_5 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_4, ifupdown__dependent_interfaces, 'iface')       | from_json) %}
 {% set ifupdown__tpl_filtered_interfaces = {} %}
-{% for name, params in ifupdown__tpl_merge_5.iteritems() %}
+{% for name, params in ifupdown__tpl_merge_5.items() %}
 {%   set interface_name = (params.iface | d(name)) %}
 {%   if params.type is undefined %}
 {%     if (interface_name.startswith('vlan') or '.' in interface_name) %}
@@ -127,7 +127,7 @@
 {%   set _ = ifupdown__tpl_filtered_interfaces.update({interface_name:params}) %}
 {% endfor %}
 {% set ifupdown__tpl_vlan_filtered_interfaces = {} %}
-{% for name, params in ifupdown__tpl_filtered_interfaces.iteritems() %}
+{% for name, params in ifupdown__tpl_filtered_interfaces.items() %}
 {%   set interface_name = (params.iface | d(name)) %}
 {%   if params.type == 'vlan' and params.weight_class is undefined %}
 {%     if params.vlan_raw_device|d() %}

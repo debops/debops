@@ -37,35 +37,36 @@ import glob
 import argparse
 import errno
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
-from debops import *
-from debops.cmds import *
+from debops import ROLE_PREFIX, read_config
+from debops.cmds import find_debops_project, require_commands
+from debops.cmds import find_playbookpath
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel "\
+                "<h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
+
 
 def cat(filename, outstream):
     try:
-        fh = codecs.open(filename, encoding=sys.getdefaultencoding())
-    except IOError, e:
+        fh = codecs.open(filename, encoding="utf-8")
+    except IOError as e:
         # This should only happen if the user listed a unknown role.
         outstream.write('%s: %s\n' % (e.strerror, e.filename))
         return
     try:
         # Read input file as Unicode object and pass it to outstream.
-        outstream.write(fh.read())
+        outstream.write(fh.read().encode("utf-8"))
     finally:
         fh.close()
+
 
 def aggregate_defaults(playbooks_path, role_list, outstream):
     # Aggregate role/defaults/main.yml files from all roles into one stream
     roles_path = os.path.normpath(os.path.join(playbooks_path, '..', 'roles'))
     if role_list:
         for role in role_list:
-            if not '.' in role:
+            if '.' not in role:
                 role = ROLE_PREFIX + '.' + role
             fn = os.path.join(roles_path, role, 'defaults', 'main.yml')
             cat(fn, outstream=outstream)
@@ -75,6 +76,7 @@ def aggregate_defaults(playbooks_path, role_list, outstream):
             cat(fn, outstream=outstream)
 
 # ---- DebOps environment setup ----
+
 
 def main(role_list):
     project_root = find_debops_project(required=False)
@@ -90,7 +92,7 @@ def main(role_list):
                                 stdin=subprocess.PIPE)
         try:
             aggregate_defaults(playbooks_path, role_list, view.stdin)
-        except IOError, e:
+        except IOError as e:
             if e.errno not in (errno.EPIPE, errno.EINVAL):
                 # "Invalid pipe" or "Invalid argument"
                 raise

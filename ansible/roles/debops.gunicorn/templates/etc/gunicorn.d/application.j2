@@ -1,12 +1,12 @@
 # {{ ansible_managed }}
 {% macro print_config(config) %}
-{%   for key, value in config.iteritems() %}
+{%   for key, value in config.items() %}
 {%     if key not in [ 'name', 'comment', 'state', 'home', 'system' ] %}
 {%       if value is string %}
 '{{ key }}': '{{ value }}',
 {%       elif value is mapping %}
 '{{ key }}': {
-{%         for v_key, v_value in value.iteritems() %}
+{%         for v_key, v_value in value.items() %}
     '{{ v_key }}': '{{ v_value }}',
 {%         endfor %}
 },

@@ -57,6 +57,8 @@ Here's a basic set of principles to be aware while writing roles:
 
 - When possible use 80 characters line width.
 
+- Write everything to be compatible with Pyhton v2 and v3.
+
 
 **Ansible role: defaults**
 
@@ -658,3 +660,70 @@ The debops.ferm_ role itself defines the facts via a Jinja2 template such as:
    "forward": "{{ ferm__tpl_forward | bool | lower }}",
    "ansible_controllers": {{ ferm__tpl_ansible_controllers_result | to_nice_json }}
    }
+
+
+Python compatibility
+--------------------
+
+The Python language is used on several levels in a direct and indirect fashion:
+
+- debops-tools on the controller (direct)
+- saved facts on the target hosts (direct)
+- jinja templates (indirect)
+- jinja within yaml (indirect)
+
+In all incarnations the sytax MUST be written to be compatible with both Python
+Version 2 and 3.
+Additionally code MUST comply to the PEP8 coding style guide.
+
+Some useful hints
+~~~~~~~~~~~~~~~~~
+
+- Always use unicode strings explicitly:
+
+**Example:**
+
+Instead of ...
+
+.. code-block:: python
+
+   foo = ''
+
+... use the unicode literal
+
+.. code-block:: python
+
+   foo = u''
+
+- Always use brackets for "print()"ing.
+
+- Always use "dict.items()" in favor of "dict.iteritems()" which is deprecated.
+
+- Be aware that "dict.keys()" behaves differently in Python 3. Especially with
+  Jinja-filters.
+
+**Example:**
+
+Instead of ...
+
+.. code-block:: python
+
+   foo = bar.keys()
+
+... or ...
+
+.. code-block:: yaml
+
+   foo: {{ bar.keys() | to_nice_json }}
+
+... use the list filter/method
+
+.. code-block:: python
+
+   foo = list(bar)
+
+... or ...
+
+.. code-block:: yaml
+
+   foo: {{ bar | list | to_nice_json }}

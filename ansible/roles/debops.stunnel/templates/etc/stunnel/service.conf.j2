@@ -13,7 +13,7 @@
 {%       set _ = stunnel_tpl_server.append('true') %}
 {%     endif %}
 {%   elif item.client_connect is mapping %}
-{%     for key, value in item.client_connect.iteritems() %}
+{%     for key, value in item.client_connect.items() %}
 {%       if key in stunnel_server_addresses %}
 {%         set _ = stunnel_tpl_server.append('true') %}
 {%       endif %}
@@ -63,7 +63,7 @@ accept		= {{ item.server_accept if item.server_accept|d() else (':::' + item.ser
 {% if item.server_connect is string %}
 connect		= {{ item.server_connect }}
 {% elif item.server_connect is mapping %}
-{% for key, value in item.server_connect.iteritems() %}
+{% for key, value in item.server_connect.items() %}
 connect		= {{ key + ':' + value }}
 {% endfor %}
 {% else %}
@@ -84,7 +84,7 @@ accept		= {{ item.client_accept if item.client_accept|d() else (':::' + item.cli
 {% if item.client_connect is string %}
 connect		= {{ item.client_connect }}
 {% elif item.client_connect is mapping %}
-{% for key, value in item.client_connect.iteritems() %}
+{% for key, value in item.client_connect.items() %}
 connect		= {{ key + ':' + value }}
 {% endfor %}
 {% else %}

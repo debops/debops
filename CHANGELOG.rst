@@ -87,6 +87,9 @@ Changed
   ``agent.yml`` playbook; it will be executed at the end of the main playbook
   and should that way include correct information about installed services.
 
+- Improved Python 3 support in the DebOps scripts and throughout the
+  playbooks/roles. DebOps should now be compatible with both Python versions.
+
 Removed
 ~~~~~~~
 

@@ -10,9 +10,9 @@ database	= {{ phpipam_scripts_database_name }}
 password	= {{ phpipam_scripts_database_password }}
 
 {% if phpipam_scripts_config_groups is defined and phpipam_scripts_config_groups %}
-{%   for group, config in phpipam_scripts_config_groups.iteritems() %}
+{%   for group, config in phpipam_scripts_config_groups.items() %}
 [{{ group }}]
-{%     for key, value in config.iteritems() %}
+{%     for key, value in config.items() %}
 {%       if value is defined and value %}
 {%         if value is string %}
 {{ "%-20s = %s" | format(key | replace("_","-"), value) }}

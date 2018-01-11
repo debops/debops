@@ -10,7 +10,7 @@ import os
 {% set ifupdown__tpl_dependent_interfaces = [] %}
 {% set ifupdown__tpl_dependent_interfaces_absent = [] %}
 {% if ifupdown__dependent_interfaces %}
-{%   for interface, params in ifupdown__dependent_interfaces.iteritems() %}
+{%   for interface, params in ifupdown__dependent_interfaces.items() %}
 {%     set interface_name = (params.iface | d(interface)) %}
 {%     if params.state|d('present') in [ 'present', 'ignore' ] %}
 {%       set _ = ifupdown__tpl_dependent_interfaces.append(interface_name) %}

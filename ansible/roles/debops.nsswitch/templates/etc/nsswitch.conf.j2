@@ -8,7 +8,7 @@
 
 {% set nsswitch__tpl_active_database_map = (ansible_local.nsswitch.conf if (ansible_local|d() and ansible_local.nsswitch|d() and ansible_local.nsswitch.conf|d()) else {}) %}
 {% set nsswitch__tpl_filtered_database_map = {} %}
-{% for database, service_list in nsswitch__combined_database_map.iteritems() %}
+{% for database, service_list in nsswitch__combined_database_map.items() %}
 {%   if service_list and service_list is not string and service_list is not mapping %}
 {%     set nsswitch__tpl_service_list = [] %}
 {%     for element in service_list %}

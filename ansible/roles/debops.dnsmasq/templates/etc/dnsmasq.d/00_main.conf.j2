@@ -140,7 +140,7 @@ host-record = {{ ansible_fqdn }},{{ ansible_hostname }},{{ element }}
 
 {% if dnsmasq__cname is defined and dnsmasq__cname %}
 # CNAME records.
-{%   for host, list in dnsmasq__cname.iteritems() %}
+{%   for host, list in dnsmasq__cname.items() %}
 {%     if list is string %}
 cname = {{ list + '.' + dnsmasq__domain }},{{ host + '.' + dnsmasq__domain }}
 {%     else %}

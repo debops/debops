@@ -29,7 +29,10 @@ from __future__ import print_function
 import os
 import subprocess
 import stat
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 try:
     # shlex.quote is new in Python 3.3
     from shlex import quote as shquote
