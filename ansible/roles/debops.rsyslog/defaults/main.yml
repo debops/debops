@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # General configuration [[[
@@ -108,7 +106,7 @@ rsyslog__file_group: 'adm'
 # .. envvar:: rsyslog__default_logfiles [[[
 #
 # List of default logfiles managed by ``debops.rsyslog`` role. This list is
-# used in the debops.logrotate_ configuration to create log rotation, as
+# used in the :ref:`debops.logrotate` configuration to create log rotation, as
 # well as to change the file owner/group when unprivileged operation is
 # enabled.
 rsyslog__default_logfiles:
@@ -133,7 +131,7 @@ rsyslog__default_logfiles:
 
 # .. envvar:: rsyslog__pki [[[
 #
-# Enable or disable support for X.509 certificates managed by debops.pki_
+# Enable or disable support for X.509 certificates managed by :ref:`debops.pki`
 # role, used for TLS connections.
 rsyslog__pki: '{{ True
                   if (ansible_local|d() and ansible_local.pki|d() and
@@ -911,7 +909,7 @@ rsyslog__rotation_count_remote: '12'
 
 # .. envvar:: rsyslog__etc_services__dependent_list [[[
 #
-# Configuration for debops.etc_services_ Ansible role.
+# Configuration for :ref:`debops.etc_services` Ansible role.
 rsyslog__etc_services__dependent_list:
 
   - name: 'syslog-tls'
@@ -925,7 +923,7 @@ rsyslog__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: rsyslog__apt_preferences__dependent_list [[[
 #
-# Configuration for debops.apt_preferences_ Ansible role, to install newer
+# Configuration for :ref:`debops.apt_preferences` Ansible role, to install newer
 # version of ``rsyslog`` package on older systems.
 rsyslog__apt_preferences__dependent_list:
 
@@ -937,7 +935,7 @@ rsyslog__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: rsyslog__ferm__dependent_rules [[[
 #
-# Configuration for debops.ferm_ Ansible role.
+# Configuration for :ref:`debops.ferm` Ansible role.
 rsyslog__ferm__dependent_rules:
 
   - type: 'accept'
@@ -963,7 +961,7 @@ rsyslog__ferm__dependent_rules:
                                                                    # ]]]
 # .. envvar:: rsyslog__logrotate__dependent_config [[[
 #
-# Configuration for debops.logrotate_ Ansible role.
+# Configuration for :ref:`debops.logrotate` Ansible role.
 rsyslog__logrotate__dependent_config:
 
   - filename: '000rsyslog-unprivileged'

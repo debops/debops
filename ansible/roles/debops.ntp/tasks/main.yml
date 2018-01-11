@@ -2,7 +2,7 @@
 
 - name: Ensure that configuration is supported
   assert:
-    that: not ntp__daemon or ntp__daemon in [ 'ntpd', 'ntpdate', 'openntpd', 'systemd-timesyncd' ]
+    that: not ntp__daemon or ntp__daemon in [ 'chrony', 'ntpd', 'ntpdate', 'openntpd', 'systemd-timesyncd' ]
 
 - name: Install required packages
   apt:
@@ -17,11 +17,12 @@
     state: 'absent'
     purge: True
   with_flattened:
+    - [ '{{ "chrony" if (ntp__daemon != "chrony") else [] }}' ]
     - [ '{{ "ntpdate" if (ntp__daemon != "ntpdate" and not ntp__ignore_ntpdate|bool) else [] }}' ]
     - [ '{{ "ntp" if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}' ]
     - [ '{{ "openntpd" if (ntp__daemon != "openntpd") else [] }}' ]
 
-  # Installs either ntpdate, NTPd or OpenNTPd on all hosts except inside containers
+  # Installs either ntpdate, NTPd, chrony or OpenNTPd on all hosts except inside containers
 - include: install.yml
   when: ntp__daemon_enabled|bool
 

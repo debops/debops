@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # Network configuration [[[
@@ -270,7 +268,7 @@ tinc__modprobe_modules: [ 'tun' ]
 
 # .. envvar:: tinc__secret__directories [[[
 #
-# Configuration for the debops.secret_ Ansible role.
+# Configuration for the :ref:`debops.secret`.
 tinc__secret__directories: '{{ lookup("template",
                                "lookup/tinc__secret_directories.j2",
                                convert_data=False) | from_yaml }}'
@@ -278,7 +276,7 @@ tinc__secret__directories: '{{ lookup("template",
                                                                    # ]]]
 # .. envvar:: tinc__apt_preferences__dependent_list [[[
 #
-# Configuration for the debops.apt_preferences_ role.
+# Configuration for the :ref:`debops.apt_preferences`.
 tinc__apt_preferences__dependent_list:
 
   - package: 'tinc'
@@ -289,7 +287,7 @@ tinc__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: tinc__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services`.
 tinc__etc_services__dependent_list: '{{ lookup("template",
                                         "lookup/tinc__etc_services__dependent_list.j2",
                                         convert_data=False) | from_yaml }}'
@@ -297,7 +295,7 @@ tinc__etc_services__dependent_list: '{{ lookup("template",
                                                                    # ]]]
 # .. envvar:: tinc__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ Ansible role.
+# Configuration for the :ref:`debops.ferm`.
 tinc__ferm__dependent_rules: '{{ lookup("template",
                                  "lookup/tinc__ferm__dependent_rules.j2",
                                  convert_data=False) | from_yaml }}'
@@ -305,7 +303,7 @@ tinc__ferm__dependent_rules: '{{ lookup("template",
                                                                    # ]]]
 # .. envvar:: tinc__persistent_paths__dependent_paths [[[
 #
-# Configuration for the debops.persistent_paths_ Ansible role.
+# Configuration for the :ref:`debops.persistent_paths`.
 #
 # Note that when the same network gets deleted and then added again to
 # :envvar:`tinc__combined_networks`, the role might need two runs to also
@@ -313,7 +311,7 @@ tinc__ferm__dependent_rules: '{{ lookup("template",
 #
 # Note that bind-dirs in Qubes OS currently does not restore symlinks (only their destination).
 # (:file:`/etc/systemd/system/multi-user.target.wants/tinc.service` is a symlink).
-# This works for ypid_ as he does not want auto start on Qubes OS AppVMs anyway.
+# This works for ``ypid`` as he does not want auto start on Qubes OS AppVMs anyway.
 # If you need it on Qubes OS, feel free to discuss and patch bind-dirs.
 tinc__persistent_paths__dependent_paths:
 

@@ -4,10 +4,11 @@
 # Default variables
 # =================
 
+# .. include:: ../../../includes/global.rst
+# .. include:: includes/role.rst
+
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 #
 # .. Role maintainer note:
 # .. The official ownCloud documentation is also written is RST.
@@ -621,7 +622,7 @@ owncloud__database: 'mariadb'
 # .. envvar:: owncloud__database_server
 #
 # FQDN of the database server. It will be configured by
-# the debops.mariadb_ or debops.postgresql_ role.
+# the :ref:`debops.mariadb` or :ref:`debops.postgresql` role.
 owncloud__database_server: '{{ ansible_local[owncloud__database].server }}'
 
 
@@ -716,7 +717,7 @@ owncloud__password_length: 20
 # .. envvar:: owncloud__admin_password
 #
 # Default admin password.
-# A random password will be generate by default as documented by the debops.secret_ role.
+# A random password will be generate by default as documented by the :ref:`debops.secret` role.
 owncloud__admin_password: '{{ lookup("password", owncloud__admin_password_path
                               + " length=" + (owncloud__password_length|string)) }}'
 
@@ -1672,7 +1673,11 @@ owncloud__nginx_client_body_temp_path: ''
 owncloud__nginx_access_log_assets: True
                                                                    # ]]]
                                                                    # ]]]
-# PHP [[[
+# .. PHP [[[
+#
+# ---
+# PHP
+# ---
 
 # .. envvar:: owncloud__php_temp_path [[[
 #
@@ -1688,19 +1693,20 @@ owncloud__nginx_access_log_assets: True
 owncloud__php_temp_path: ''
 
                                                                    # ]]]
-# .. envvar:: owncloud__php_output_buffering
+# .. envvar:: owncloud__php_output_buffering [[[
 #
 # Output buffering set in PHP, with amount set in megabytes.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php>`__ for details.
 owncloud__php_output_buffering: '0'
 
 
-# .. envvar:: owncloud__php_max_children
+                                                                   # ]]]
+# .. envvar:: owncloud__php_max_children [[[
 #
 # Max children processes to run in php fpm.
 # FIXME: Check if default of debops.php_ might be sufficient.
 owncloud__php_max_children: '50'
-
+                                                                   # ]]]
                                                                    # ]]]
 # .. Role-dependent configuration [[[1
 #
@@ -1710,9 +1716,9 @@ owncloud__php_max_children: '50'
 
 # .. envvar:: owncloud__apt_preferences__dependent_list
 #
-# Configuration for the debops.apt_preferences_ role.
+# Configuration for the :ref:`debops.apt_preferences` role.
 #
-# .. TODO: Consider moving logic to the debops.php role.
+# .. TODO: Consider moving logic to the :ref:`debops.php` role.
 #
 owncloud__apt_preferences__dependent_list:
 
@@ -1725,9 +1731,9 @@ owncloud__apt_preferences__dependent_list:
 
 # .. envvar:: owncloud__apt_preferences__dependent_list_optional
 #
-# Optional configuration for the debops.apt_preferences_ role.
+# Optional configuration for the :ref:`debops.apt_preferences` role.
 # Only required when APT preference presets from the
-# debops.apt_preferences_ role are used.
+# :ref:`debops.apt_preferences` role are used.
 owncloud__apt_preferences__dependent_list_optional:
 
   - package: 'owncloud owncloud*'
@@ -1743,7 +1749,7 @@ owncloud__apt_preferences__dependent_list_optional:
 
 # .. envvar:: owncloud__mariadb__dependent_databases [[[
 #
-# Configuration of the database managed by the debops.mariadb_ role.
+# Configuration of the database managed by the :ref:`debops.mariadb` role.
 owncloud__mariadb__dependent_databases:
 
   - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
@@ -1752,7 +1758,7 @@ owncloud__mariadb__dependent_databases:
                                                                    # ]]]
 # .. envvar:: owncloud__mariadb__dependent_users [[[
 #
-# Configuration of the database user managed by the debops.mariadb_ role.
+# Configuration of the database user managed by the :ref:`debops.mariadb` role.
 owncloud__mariadb__dependent_users:
 
   - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
@@ -1762,7 +1768,7 @@ owncloud__mariadb__dependent_users:
                                                                    # ]]]
 # .. envvar:: owncloud__postgresql__dependent_roles [[[
 #
-# Configuration of the database roles managed by the debops.postgresql_ role.
+# Configuration of the database roles managed by the :ref:`debops.postgresql` role.
 owncloud__postgresql__dependent_roles:
 
   - name: '{{ owncloud__database_name }}' # Separate role is needed when owncloud__database_name != owncloud__database_user
@@ -1771,7 +1777,7 @@ owncloud__postgresql__dependent_roles:
                                                                    # ]]]
 # .. envvar:: owncloud__postgresql__dependent_groups [[[
 #
-# Configuration of the database groups managed by the debops.postgresql_ role.
+# Configuration of the database groups managed by the :ref:`debops.postgresql` role.
 owncloud__postgresql__dependent_groups:
 
   - roles: [ '{{ owncloud__database_user }}' ]
@@ -1782,7 +1788,7 @@ owncloud__postgresql__dependent_groups:
                                                                    # ]]]
 # .. envvar:: owncloud__postgresql__dependent_databases [[[
 #
-# Configuration of the database managed by the debops.postgresql_ role.
+# Configuration of the database managed by the :ref:`debops.postgresql` role.
 owncloud__postgresql__dependent_databases:
 
   - name: '{{ owncloud__database_name }}'
@@ -1808,9 +1814,9 @@ owncloud__logrotate__dependent_config:
       delaycompress
 # ]]]
 
-# .. envvar:: owncloud__apache__dependent_snippets
+# .. envvar:: owncloud__apache__dependent_snippets [[[
 #
-# Apache configuration snippets managed by the debops.apache_ role.
+# Apache configuration snippets managed by the :ref:`debops.apache` role.
 # Disable the :file:`/etc/apache2/conf-enabled/owncloud.conf` which configures
 # ownCloud below ``/owncloud``.
 owncloud__apache__dependent_snippets:
@@ -1821,7 +1827,7 @@ owncloud__apache__dependent_snippets:
 
 # .. envvar:: owncloud__apache__dependent_vhosts
 #
-# Apache virtual host managed by the debops.apache_ role.
+# Apache virtual host managed by the :ref:`debops.apache` role.
 owncloud__apache__dependent_vhosts:
 
   - type: 'default'
@@ -1870,7 +1876,7 @@ owncloud__apache__dependent_vhosts:
 
 # .. envvar:: owncloud__nginx__dependent_servers
 #
-# :program:`nginx` server configuration managed by the debops.nginx_ role.
+# :program:`nginx` server configuration managed by the :ref:`debops.nginx` role.
 owncloud__nginx__dependent_servers:
 
   ## https://github.com/owncloud/documentation/blob/master/admin_manual/installation/nginx_owncloud_9x.rst
@@ -2018,7 +2024,7 @@ owncloud__nginx__dependent_servers:
 
 # .. envvar:: owncloud__nginx__dependent_upstreams
 #
-# PHP upstream server configuration managed by the debops.nginx_ role.
+# PHP upstream server configuration managed by the :ref:`debops.nginx` role.
 owncloud__nginx__dependent_upstreams:
 
   - name: 'php_owncloud'
@@ -2037,7 +2043,7 @@ owncloud__nginx__dependent_upstreams:
 
 # .. envvar:: owncloud__php__dependent_packages
 #
-# List of PHP packages to install using the debops.php_ role.
+# List of PHP packages to install using the :ref:`debops.php` role.
 owncloud__php__dependent_packages:
 
   - '{{ owncloud__base_php_packages }}'
@@ -2047,7 +2053,7 @@ owncloud__php__dependent_packages:
 
 # .. envvar:: owncloud__php__dependent_configuration
 #
-# :file:`php.ini` configuration managed by the debops.php_ role.
+# :file:`php.ini` configuration managed by the :ref:`debops.php` role.
 owncloud__php__dependent_configuration:
 
   - filename: '10-owncloud'
@@ -2072,7 +2078,7 @@ owncloud__php__dependent_configuration:
 
 # .. envvar:: owncloud__php__dependent_pools
 #
-# PHP pools managed by the debops.php_ role.
+# PHP pools managed by the :ref:`debops.php` role.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html#php-ini-configuration-notes>`__ for details.
 owncloud__php__dependent_pools:
   name: 'owncloud'
@@ -2128,7 +2134,7 @@ owncloud__php__dependent_pools:
 
 # .. envvar:: owncloud__unattended_upgrades__dependent_origins
 #
-# List of origin patterns managed by the debops.unattended_upgrades_ role.
+# List of origin patterns managed by the :ref:`debops.unattended_upgrades` role.
 owncloud__unattended_upgrades__dependent_origins:
 
   - origin: 'site=download.owncloud.org'

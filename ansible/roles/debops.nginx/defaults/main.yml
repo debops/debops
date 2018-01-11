@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # .. envvar:: nginx_allow [[[
@@ -215,7 +215,7 @@ nginx_http_auth_basic_name: 'nginx_http'
 #
 # List of HTTP Basic Auth accounts which need to login before accessing this
 # server. Passwords are generated automatically and stored in 'secret/'
-# directory (see debops.secret_ role). If this list empty, access is not
+# directory (see :ref:`debops.secret` role). If this list empty, access is not
 # restricted.
 nginx_http_auth_users: []
 
@@ -348,7 +348,7 @@ nginx_default_keepalive_timeout: 60
 # .. envvar:: nginx_pki [[[
 #
 # Enable or disable support for PKI/SSL/TLS in nginx.
-# Defaults to ``True`` if debops.pki_ is enabled on the remote host.
+# Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
 nginx_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
                (ansible_local.pki.enabled|d() | bool) }}'
 
@@ -895,6 +895,19 @@ nginx_default_try_files:
   - '/index.html'
   - '/index.htm'
 
+                                                                   # ]]]
+# .. envvar:: nginx__log_format [[[
+#
+# log_format nginx configuration in /etc/nginx/conf.d/
+nginx__log_format: []
+
+  #- name: 'main'
+  #  log_format: '$remote_addr - $remote_user [$time_local] "$request_method $scheme://$host$request_uri $server_protocol" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"'
+                                                                   # ]]]
+# .. envvar:: nginx__dependent_log_format [[[
+#
+# log_format nginx configuration in /etc/nginx/conf.d/
+nginx__dependent_log_format: []
                                                                    # ]]]
 # .. envvar:: nginx__custom_config [[[
 #

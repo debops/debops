@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # LXC packages and installation [[[
@@ -72,7 +70,7 @@ lxc_root_path: '/var/lib/lxc'
 # .. envvar:: lxc_interface_external [[[
 #
 # Configuration of the default network interface to use for "normal" containers
-# (in DebOps, it's configured by default through the debops.ifupdown_ role).
+# (in DebOps, it's configured by default through the :ref:`debops.ifupdown` role).
 # This is the external interface in a two-interface setup.
 lxc_interface_external: 'br0'
 
@@ -80,7 +78,7 @@ lxc_interface_external: 'br0'
 # .. envvar:: lxc_interface_internal [[[
 #
 # Configuration of default network interface to use for "normal" containers
-# (in DebOps, it's configured by default through the debops.ifupdown_ role).
+# (in DebOps, it's configured by default through the :ref:`debops.ifupdown` role).
 # This is the internal interface in two-interface setup.
 lxc_interface_internal: 'br1'
 
@@ -88,7 +86,7 @@ lxc_interface_internal: 'br1'
 # .. envvar:: lxc_interface_nat [[[
 #
 # Configuration of default network interface to use for "NATted" containers.
-# For setting up a NAT have a look at the debops.ifupdown_ role.
+# For setting up a NAT have a look at the :ref:`debops.ifupdown` role.
 lxc_interface_nat: 'br2'
 
                                                                    # ]]]
@@ -276,7 +274,7 @@ lxc_template_debootstrap_packages: '{{ lxc_template_debootstrap_base_packages +
 # .. envvar:: lxc_template_capabilities_drop [[[
 #
 # List of POSIX capabilities which should be automatically dropped in all
-# containers created by the 'debops' template, without the 'cap_' prefix.
+# containers created by the 'debops' template, without the ``cap_`` prefix.
 lxc_template_capabilities_drop: []
 
                                                                    # ]]]
@@ -350,10 +348,12 @@ lxc_default_template: 'debops'
 # List of optional parameters:
 #   - state: ''              defines what state should that container be in on
 #                            the next Ansible run. Recognized states:
+#
 #                              - started    (container should be running)
 #                              - stopped    (container should be stopped)
 #                              - absent     (container will be destroyed)
 #                              - present     (container will be created)
+#
 #                            Without this parameter container will be created
 #                            ``present``, but not started automatically.
 #   - config: True or ''     enables usage of custom configuration instead of
@@ -374,7 +374,7 @@ lxc_default_template: 'debops'
 #                            (for example, you can specify 'network: "nat"' and host
 #                            will be configured with config file from :file:`/etc/lxc/nat.conf`).
 #   - capabilities_drop: []  POSIX capabilities which should be dropped in this container,
-#                            without the "cap_" prefix. See capabilities(7) for list of
+#                            without the ``cap_`` prefix. See capabilities(7) for list of
 #                            available capabilities.
 #   - options: |             text block, will be added at the end of the configuration
 #                            file.
@@ -421,7 +421,7 @@ lxc_containers: []
 
 # .. envvar:: lxc__apt_preferences__dependent_list [[[
 #
-# Configuration for the debops.apt_preferences_ role.
+# Configuration for the :ref:`debops.apt_preferences` role.
 lxc__apt_preferences__dependent_list:
 
   - package: '{{ lxc_kernel_package }}'
@@ -439,13 +439,13 @@ lxc__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: lxc__ferm__forward [[[
 #
-# Configuration for the debops.ferm_ role.
+# Configuration for the :ref:`debops.ferm` role.
 lxc__ferm__forward: True
 
                                                                    # ]]]
 # .. envvar:: lxc__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ role.
+# Configuration for the :ref:`debops.ferm` role.
 lxc__ferm__dependent_rules:
 
   - type: 'custom'

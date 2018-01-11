@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # Global options [[[
@@ -31,6 +29,7 @@ ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and ansible_local|d() and
 #
 # Choices (string):
 #
+# - chrony
 # - ntpdate
 # - ntpd
 # - openntpd
@@ -129,11 +128,10 @@ ntp__openntpd_options: '-f /etc/openntpd/ntpd.conf -s'
 # .. envvar:: ntp__listen [[[
 #
 # List of interfaces :program:`ntpd` should listen on.
-# Specify::
+# Specify ``ntp__listen: '*'`` to listen on all interfaces.
 #
-#     ntp__listen: '*'
-#
-# to listen on all interfaces.
+# The :program:`chrony` service only supports one listen interface for each of
+# the IPv4 and IPv6 protocols. It must be specified as an IP address.
 ntp__listen: []
 
                                                                    # ]]]
@@ -192,7 +190,7 @@ ntp__ferm_recent_target: 'DROP'
 
 # .. envvar:: ntp__ferm__dependent_rules [[[
 #
-# Configuration of the Linux firewall using debops.ferm_.
+# Configuration of the Linux firewall using :ref:`debops.ferm`.
 ntp__ferm__dependent_rules:
 
   - type: 'accept'

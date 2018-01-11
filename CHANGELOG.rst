@@ -49,6 +49,10 @@ Added
 - [debops.libvirtd] The role can now detect if nested KVM is enabled in
   a particular virtual machine and install KVM support.
 
+- DebOps roles and playbooks can now be tested using local or remote
+  `GitLab CI <https://about.gitlab.com/>`_ instance, with Vagrant, KVM and LXC
+  technologies and some custom scripts.
+
 Changed
 ~~~~~~~
 

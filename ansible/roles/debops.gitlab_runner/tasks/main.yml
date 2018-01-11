@@ -181,6 +181,7 @@
   register: gitlab_runner__register_known_hosts
   changed_when: False
   failed_when: False
+  check_mode: False
 
 - name: Scan SSH fingerprints of specified hosts
   shell: 'ssh-keyscan -H -T 10 {{ item.item }} >> {{ gitlab_runner__home + "/.ssh/known_hosts" }}'
@@ -210,6 +211,20 @@
     group: 'root'
     mode: '0440'
   when: gitlab_runner__vagrant_libvirt|bool
+
+- name: Find 'vagrant-libvirt' source code
+  command: find /usr/share/rubygems-integration/all/gems -maxdepth 1 -type d -name 'vagrant-libvirt-*'
+  register: gitlab_runner__register_libvirt_source
+  when: gitlab_runner__vagrant_libvirt_patch|bool
+  changed_when: False
+  check_mode: False
+
+- name: Patch 'vagrant-libvirt' source code
+  patch:
+    src: 'patches/package_domain-keep-ssh-host-keys.patch'
+    basedir: '{{ item }}'
+  with_items: '{{ gitlab_runner__register_libvirt_source.stdout_lines }}'
+  when: gitlab_runner__vagrant_libvirt_patch|bool
 
 - name: Configure Vagrant LXC sudo access
   template:

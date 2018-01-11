@@ -47,11 +47,6 @@
   changed_when: False
   when: gitlab_register_gitaly_cloned.stat.exists
 
-- name: Check if gitaly is checked out
-  stat:
-    path: '{{ gitlab__gitaly_checkout }}'
-  register: gitlab_register_gitaly_directory
-
 - name: Create gitaly checkout directory
   file:
     path: '{{ gitlab__gitaly_checkout }}'
@@ -102,8 +97,6 @@
 - name: Setup gitaly
   make:
     chdir: '{{ gitlab__gitaly_checkout }}'
-  become: True
-  become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab__gitaly_checkout|changed
 
 - name: Start gitaly service after an upgrade

@@ -6,8 +6,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 
 
 # APT packages [[[
@@ -452,7 +450,7 @@ rabbitmq_server__combined_policies: '{{ rabbitmq_server__policies
 # .. envvar:: rabbitmq_server__admin_accounts [[[
 #
 # List of automatically managed administrator accounts, based of the admin
-# users managed by the debops.core_ Ansible role.
+# users managed by the :ref:`debops.core` Ansible role.
 rabbitmq_server__admin_accounts: '{{ lookup("template",
                                      "lookup/rabbitmq_server__admin_accounts.j2") }}'
 
@@ -526,7 +524,7 @@ rabbitmq_server__cluster_allow: []
 # -------------------------------------------
 
 # These variables configure the PKI environment for RabbitMQ service using the
-# debops.pki_ Ansible role. See its documentation for more details.
+# :ref:`debops.pki` Ansible role. See its documentation for more details.
 
 # .. envvar:: rabbitmq_server__pki [[[
 #
@@ -625,7 +623,7 @@ rabbitmq_server__ssl_ciphers: '{{ ansible_local.rabbitmq_server.raw_erlang_ssl_c
 # .. envvar:: rabbitmq_server__ssl_dhparam [[[
 #
 # Path to the file with Diffie-Hellman parameters to use by the RabbitMQ
-# service. See debops.dhparam_ Ansible role for more details.
+# service. See :ref:`debops.dhparam` Ansible role for more details.
 rabbitmq_server__ssl_dhparam: '{{ (ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]
                                    if (ansible_local|d() and ansible_local.dhparam|d() and
                                        ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]|d())
@@ -643,7 +641,7 @@ rabbitmq_server__ssl_dhparam_set: 'default'
 
 # .. envvar:: rabbitmq_server__apt_preferences__dependent_list [[[
 #
-# Configuration for the debops.apt_preferences_ Ansible role.
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
 rabbitmq_server__apt_preferences__dependent_list:
 
   - packages: [ 'erlang', 'erlang-*' ]
@@ -657,7 +655,7 @@ rabbitmq_server__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services` Ansible role.
 rabbitmq_server__etc_services__dependent_list:
 
   - name: 'einc'
@@ -667,7 +665,7 @@ rabbitmq_server__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ Ansible role.
+# Configuration for the :ref:`debops.ferm` Ansible role.
 rabbitmq_server__ferm__dependent_rules:
 
   - name: 'rabbitmq-amqp'
