@@ -91,7 +91,8 @@ your own tasks at the beginning or end of these roles, which gives you more
 control over the configuration.
 
 By combining above techniques, you can very easily extend DebOps roles without
-losing the ability to update them using :command:`git` without merge conflicts.
+losing the ability to update them, using :command:`git` without having merge
+conflicts.
 
 LDAP integration
 ----------------

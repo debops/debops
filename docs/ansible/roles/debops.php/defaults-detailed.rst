@@ -186,7 +186,7 @@ otherwise different:
 ``system``
   Optional, boolean. If defined and ``True``, the account and group will be
   created as a "system" account with UID/GID < 1000; this is the default. If
-  ``False``, the createt user and group will have "normal" UID/GID selected.
+  ``False``, the created user and group will have "normal" UID/GID selected.
 
 ``listen``
   Optional. Path to the PHP-FPM socket or IP:port on which a given pool should

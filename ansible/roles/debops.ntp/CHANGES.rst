@@ -81,7 +81,7 @@ Changed
   NTP server as usual, by specifying it using :envvar:`ntp__daemon` variable. The
   current installations won't be changed. [drybjed_]
 
-- Move the :command:`dpkg-reconfigre` task after the NTP installation and
+- Move the :command:`dpkg-reconfigure` task after the NTP installation and
   configuration tasks to avoid issues with idempotency on Ubuntu. [drybjed_]
 
 - Move the NTP daemon installation condition to a new :envvar:`ntp__daemon_enabled`

@@ -11,8 +11,8 @@ Initial configuration
 instance. In its place you will be able to create per-user ``fcgiwrap``
 instances, each with their own socket, running as an unprivileged user.
 
-Each instance will make sure that specified user account and group exist, you
-can specify additional configurtion to create accounts wich specific shell or
+Each instance will make sure that specified user account and group exists, you
+can specify additional configuration to create accounts with a specific shell or
 home directory. By default system accounts (UID/GID < 1000) are used.
 
 This role requires ``debops.core`` role to configure local fact which provides

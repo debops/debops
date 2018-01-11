@@ -117,7 +117,7 @@ List of optional filesystem parameters:
   filesystem. Use with caution.
 
 ``fs_resizefs``
-  Boolean. If present and ``True``, and if the block device and filessytem size
+  Boolean. If present and ``True``, and if the block device and filesystem size
   differ, grow the filesystem into the space. Note, XFS Will only grow if mounted.
   Use with caution especially if you shrink the volume.
 

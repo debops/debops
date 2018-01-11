@@ -3,7 +3,7 @@ Introduction
 
 `Elasticsearch <https://en.wikipedia.org/wiki/Elasticsearch>`_ is a distributed
 search engine and storage system, also a part of the Elasticsearch, Logstash,
-Kibana (ELK) stack. The software is developed by `Elastic <https://eastic.co/>`_.
+Kibana (ELK) stack. The software is developed by `Elastic <https://elastic.co/>`_.
 
 The ``debops.elasticsearch`` Ansible role can be used to deploy and manage
 Elasticsearch instances on one or more (3+) hosts. The role can be used as

@@ -56,11 +56,11 @@ List of local ``fail2ban`` filters that should be present or absent when configu
   Required. Name of the filter.
 
 ``after``
-  Optional. Specify an addtional filter configuration file that ``fail2ban`` will
+  Optional. Specify an additional filter configuration file that ``fail2ban`` will
   read after reading this filter configuration filer.
 
 ``before``
-  Optional. Specify an addtional filter configuration file that ``fail2ban`` will
+  Optional. Specify an additional filter configuration file that ``fail2ban`` will
   read before reading this filter configuration file.
 
 ``definitions``
@@ -73,7 +73,7 @@ List of local ``fail2ban`` filters that should be present or absent when configu
   regular expression should be on its own line. Refer to the `examples`_ section.
 
 ``filename``
-  Optional. Alternative name of the filter configuration file. If not specfied, it
+  Optional. Alternative name of the filter configuration file. If not specified, it
   will use the ``name`` of the filter.
 
 ``ignoreregex``

@@ -4,7 +4,7 @@ Introduction
 `Kibana <https://en.wikipedia.org/wiki/Kibana>`_ is a web-based dashboard which
 can be used to display and analyze data stored in an Elasticsearch cluster. It
 is a part of the Elasticsearch, Logstash, Kibana (ELK) stack. The software is
-developed by `Elastic <https://eastic.co/>`_.
+developed by `Elastic <https://elastic.co/>`_.
 
 The ``debops.kibana`` Ansible role can be used to deploy Kibana behind an
 ``nginx`` reverse proxy which connects to a local or remote Elasticsearch

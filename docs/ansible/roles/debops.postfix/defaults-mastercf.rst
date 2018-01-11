@@ -24,7 +24,7 @@ The :file:`master.cf` configuration entries are defined using specific
 parameters:
 
 ``name``
-  The name of the Postfix servce to manage. This parameter is used as an
+  The name of the Postfix service to manage. This parameter is used as an
   identifier during the variable parsing. If ``command`` parameter is not
   specified, the service will use its name (or ``service`` parameter, if
   present) as the command to execute.

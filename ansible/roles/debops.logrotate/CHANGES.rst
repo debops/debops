@@ -19,7 +19,7 @@ The current role maintainer_ is drybjed_
 Changed
 ~~~~~~~
 
-- Mostly automated update to the lastest DebOps Standards Version. [ypid_]
+- Mostly automated update to the latest DebOps Standards Version. [ypid_]
 
 Fixed
 ~~~~~

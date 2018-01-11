@@ -19,7 +19,7 @@ The ``avahi__daemon_conf_*`` variables are used to specify what parameters
 should be present in the :file:`/etc/avahi/avahi-daemon.conf` configuration
 file. Each pair of variables manages one section of the INI file. The "default"
 variable is combined with the custom variable therefore it's possible to change
-the vaule of a parameter without the need to copy the entire variable over to
+the value of a parameter without the need to copy the entire variable over to
 the Ansible inventory.
 
 Each variable is a YAML dictionary with keys representing the available
@@ -39,7 +39,7 @@ avahi__services
 
 The ``avahi__*_services`` variables define the services published by Avahi on
 its ``.local`` domain. The variables are either YAML dictionaries or YAML lists
-of dictionaries that are combined togeter in the
+of dictionaries that are combined together in the
 :envvar:`avahi__combined_services` in the order they appear in the
 :file:`defaults/main.yml` file.
 
@@ -84,7 +84,7 @@ specific parameters:
 ``type``
   A string similar to a `SRV record <https://en.wikipedia.org/wiki/SRV_record>`_
   that defines the service type and protocol (it's similar in a way that only
-  the service name and procotol are relevant, other parts of the SRV record
+  the service name and protocol are relevant, other parts of the SRV record
   shouldn't be used). Example service types are ``_ssh._tcp``, ``_http._tcp``.
   The list of possible service names can be found in the `Service Name and Transport Protocol Port Number Registry <https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml>`_ maintained by `IANA <https://www.iana.org/>`_.
 

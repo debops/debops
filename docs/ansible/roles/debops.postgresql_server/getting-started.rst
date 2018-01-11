@@ -48,7 +48,7 @@ connect to the clusters. Example configuration of variables in inventory:
    postgresql_server__allow: [ '192.0.2.0/24', '2001:db8::/32' ]
 
 Default set of Host-Based Authentication rules permit connections from remote
-hosts that are in the same subnet as the server, only over SSL, and requie the
+hosts that are in the same subnet as the server, only over SSL, and require the
 correct password to be provided to accept connections. If you want to allow
 connections from other subnets than the server, you will need to add your own
 HBA entries to the PostgreSQL cluster configuration. Example for the default

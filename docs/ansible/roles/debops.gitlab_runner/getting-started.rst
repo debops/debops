@@ -55,7 +55,7 @@ The Runner instances can be configured with variables specified as the keys of
 the dictionary that holds the specific Runner configuration. If any required
 keys are not specified, the value of the global variable will be used instead.
 
-Some of the variables will be added togeher (Docker volumes, for example), so
+Some of the variables will be added together (Docker volumes, for example), so
 that you can define a list of global values included in all of the Runner
 instances.
 

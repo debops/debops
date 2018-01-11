@@ -268,7 +268,7 @@ Create a NFS-based storage pool on remote ``libvirt`` host::
     libvirt__pools:
       - name: 'nfs-pool'
         type: 'nfs'
-        host: 'nfs.exmmple.org'
+        host: 'nfs.example.org'
         src:  '/srv/nfs'
         path: '/media/nfs/libvirt'
         uri:  'vm-host'

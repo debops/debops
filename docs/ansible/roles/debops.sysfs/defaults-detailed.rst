@@ -85,7 +85,7 @@ parameters:
 ``options``
   Optional. YAML list of ``sysfs`` attributes with the same format as the one
   defined above. This parameter can be used to define multiple attributes in
-  the same file. Supported paramters: ``name``, ``state``, ``value``,
+  the same file. Supported parameters: ``name``, ``state``, ``value``,
   ``owner``, ``mode``, ``comment``.
 
 Examples

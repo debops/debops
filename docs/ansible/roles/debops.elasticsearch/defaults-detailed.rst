@@ -84,7 +84,7 @@ a ``name`` key. The dictionaries support specific parameters:
   the primary key, and value being their values. This parameter can be used to
   group several similar configuration options together in the generated
   configuration file, for readability. When this parameter is used, the "leaf"
-  part of the main configuration name is discared, and only used as a marker
+  part of the main configuration name is discarded, and only used as a marker
   for these parameters. An example configuration:
 
   .. code-block:: yaml

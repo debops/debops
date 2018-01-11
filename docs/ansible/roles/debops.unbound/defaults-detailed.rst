@@ -31,12 +31,12 @@ published by Unbound service. Each DNS zone delegation is configured in its own
 Each list entry is a YAML dictionary with specific parameters:
 
 ``name``
-  Required. Name of the DNS zone, used in the filename. This paramete is used
+  Required. Name of the DNS zone, used in the filename. This parameter is used
   as an identifier during the variable parsing.
 
 ``zone``
   Optional. If specified, this string will be used as the DNS zone name. With
-  this parameter specified, ``name`` can be used as a general identififer of
+  this parameter specified, ``name`` can be used as a general identifier of
   a particular delegation.
 
 ``type``

@@ -74,7 +74,7 @@ Here's a basic set of principles to be aware while writing roles:
   dedicated :ref:`dependent variables <debops_policy__ref_code_standards_dependent_variables>`.
 
 - Use `inventory level scoped variables <debops_policy__ref_code_standards_inventory_level_scoped_variables>`
-  to offer mergable configuration keys in multiple inventory scopes.
+  to offer mergeable configuration keys in multiple inventory scopes.
 
 
 **Ansible role: tasks**

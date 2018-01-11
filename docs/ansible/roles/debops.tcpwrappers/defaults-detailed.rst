@@ -76,7 +76,7 @@ Allow connection from anywhere to ``sshd``:
    tcpwrappers__allow:
      - daemon: 'sshd'
 
-Restrict access to ``vsftpd`` daemon to a set of parituclar subnets (IPv6
+Restrict access to ``vsftpd`` daemon to a set of particular subnets (IPv6
 addresses are wrapped in square brackets automatically):
 
 .. code-block:: yaml

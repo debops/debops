@@ -139,7 +139,7 @@ Added
 - Add ``users_default_system`` bool variable which, when enabled, will set all
   user groups and accounts created by ``debops.users`` role as "system"
   accounts with UID/GID < 1000. These accounts are considered "local" accounts
-  and should not interfere with LDAP accounts. This can still be overriden by
+  and should not interfere with LDAP accounts. This can still be overridden by
   explicitly setting ``item.system`` parameter in user account definition.
   [drybjed_]
 
@@ -194,7 +194,7 @@ Removed
 ~~~~~~~
 
 - Remove support for ``root`` account management; this functionality has been
-  moved to debops.console_ role. Mmanagement of the dotfiles on ``root``
+  moved to debops.console_ role. Management of the dotfiles on ``root``
   account is still done from this role. [drybjed_]
 
 

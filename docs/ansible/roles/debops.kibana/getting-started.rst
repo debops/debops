@@ -57,7 +57,7 @@ The Kibana main configuration file
 `does not support an include statement or conf.d directory <https://github.com/elastic/elasticsearch/issues/11362>`_.
 To mitigate that and allow multiple Kibana configuration sources from other
 Ansible roles, the ``debops.kibana`` role supports operation as a dependent
-role. This fuctionality can be used by other Ansible roles to better manage
+role. This functionality can be used by other Ansible roles to better manage
 Kibana plugins or extend the configuration without the need to implement the
 entire role again and with preserved idempotency.
 
@@ -67,7 +67,7 @@ See the :ref:`kibana__ref_dependency` for more details.
 Example inventory
 -----------------
 
-To deploy Kiana, you can add the host to the
+To deploy Kibana, you can add the host to the
 ``[debops_service_kibana]`` Ansible inventory group. By default Kibana expects
 an Elasticsearch instance on the same host to leverage the cluster load
 balancing. To install an ES node in a load balancer configuration, include the

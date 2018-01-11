@@ -23,7 +23,7 @@ variables are merged together in the order defined by the
 :envvar:`saslauthd__combined_instances` variable, therefore it's possible to
 modify existing instances defined by the role through Ansible inventory.
 
-Each variable is defined as a list of YAML doctionaries with specific
+Each variable is defined as a list of YAML dictionaries with specific
 parameters:
 
 ``name``
@@ -85,7 +85,7 @@ for a given instance:
 
 ``config_dir_owner``
   Optional. The owner of the directory with the configuration file. If not
-  specfied, ``root`` is used by default.
+  specified, ``root`` is used by default.
 
 ``config_dir_group``
   Optional. The primary group of the directory with the configuration file. If
@@ -126,7 +126,7 @@ instance:
 
 ``socket_mode``
   Optional. The permissions of the directory with the :command:`saslauthd` UNIX
-  socket. If not specified, ``0710`` will be used by defailt.
+  socket. If not specified, ``0710`` will be used by default.
 
 Examples
 ~~~~~~~~

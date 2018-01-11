@@ -26,8 +26,9 @@ configured. Everything else will be installed as needed.
    If you are using Debian Jessie or other distributions based on it as the
    base install, by default OpenSSH server configured by the installer will
    disallow password authentication on the ``root`` account. You can either
-   enable it manually in the :file:`/etc/ssh/sshd_config` file, or configure
-   a separate admin account and use that to bootstrap the host.
+   enable it manually in the :file:`/etc/ssh/sshd_config` file, use public key
+   authentication (see 'man authorized_keys' and 'man ssh-copy-id'), or
+   configure a separate admin account and use that to bootstrap the host.
 
 An important part of the environment is correctly configured DNS. Some of the
 DebOps roles expect a configured domain - it doesn't need to be a real, global
@@ -409,7 +410,7 @@ After Ansible finishes the configuration, you will need to go to the
 process.
 
 At this time you might find that the web browser you are using does not
-recognize the CA certificates served by the host. This happens when server uses
+recognize the CA certificates served by the host. This happens when the server uses
 certificates signed by internal DebOps Certificate Authority instead of the
 "regular" ones. To fix that, consult the [debops.pki](https://docs.debops.org/en/latest/ansible/roles/ansible-pki/docs/) role documentation (when it's available).
 

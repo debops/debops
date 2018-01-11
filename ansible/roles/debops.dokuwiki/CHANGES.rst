@@ -49,7 +49,7 @@ Changed
 - List of tasks in the role is reorganized and cleaned up. [drybjed_]
 
 - Default list of DokuWiki plugins and templates are moved to separate
-  variables, so that ``dokuwiki_plugins`` and ``dokuwki_templates`` can be used
+  variables, so that ``dokuwiki_plugins`` and ``dokuwiki_templates`` can be used
   in inventory. [drybjed_]
 
 - The ``dokuwiki_main_domain`` variable is now a string instead of a list.

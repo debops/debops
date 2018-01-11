@@ -9,7 +9,7 @@ Default configuration
 ---------------------
 
 The role will detect presence of a MariaDB database server and use it if
-available. If not, a SQLite databse will be automatically configured on the
+available. If not, a SQLite database will be automatically configured on the
 server. You can configure MariaDB database using the :ref:`debops.mariadb_server`
 Ansible role.
 

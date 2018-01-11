@@ -47,11 +47,11 @@ Here are the available options of the inner dict:
       owncloud__config:
         memcache.local: '\\OC\\Memcache\\APCu'
 
-  This is not confirmed by the `official ownCloud Dokumentation
+  This is not confirmed by the `official ownCloud documentation
   <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`_
   but is a result of how the configuration file is generated using JSON as intermediate data format.
 
-Refer to the `official ownCloud Dokumentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details about the available configuration options.
+Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details about the available configuration options.
 
 Change/Disable skeleton files for new users (example)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

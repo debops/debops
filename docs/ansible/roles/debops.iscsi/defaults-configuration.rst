@@ -49,7 +49,7 @@ List of optional LVM parameters:
 ``lvm_vg``
   Name of a LVM Volume Group which should be created using all iSCSI LUNs
   presented by a given iSCSI Target. Should only have alphanumeric characters
-  and underscores. Do not use hypens (``-``) in the name.
+  and underscores. Do not use hyphens (``-``) in the name.
 
 ``lvm_state``
   Specifies if a given Volume Group should exist (``present``) or not
@@ -112,7 +112,7 @@ List of required parameters:
 
 ``lv``
   Name of a Logical Volume, should only have alphanumeric characters and
-  underscores. Do not use hypens (``-``) in the name.
+  underscores. Do not use hyphens (``-``) in the name.
 
 ``vg``
   Name of a Volume Group which should be used to create a given Logical Volume.
@@ -147,7 +147,7 @@ List of optional filesystem parameters:
   Additional options passed to ``mkfs``.
 
 ``fs_force``
-  Bool. If present and ``True``, allows Ansible to reformat already exising
+  Bool. If present and ``True``, allows Ansible to reformat an already existing
   filesystem. Use with caution.
 
 List of optional mount parameters:

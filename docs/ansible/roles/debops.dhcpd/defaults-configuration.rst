@@ -411,11 +411,11 @@ if it's defined, 'hba' will be omitted by configuration template.
 
   Default value: ``10``
 
-Optional field are mostly desribed in ``dhcpd.conf`` man page:
+Optional field are mostly described in ``dhcpd.conf`` man page:
 
 ``port``
   Specifies port on which primary and secondary nodes will listen for failover
-  connection. Diffirent ports for primary and secondary is currently
+  connection. Different ports for primary and secondary is currently
   unsupported.
 
   Default value: ``647``

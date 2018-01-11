@@ -15,7 +15,7 @@ Each list entry is a YAML dictionary, which can be written in a simple or
 complex form. Entries that control Unbound parameters of the same name will be
 combined together in order of appearance. Since most of the Unbound
 configuration options use dashes in their names, you might want to quote the
-YAML dictionary keys to avoid issuses with Jinja templating.
+YAML dictionary keys to avoid issues with Jinja templating.
 
 .. contents::
    :local:
@@ -127,7 +127,7 @@ using specific parameters:
 Examples
 ~~~~~~~~
 
-Define the previous example using comples form:
+Define the previous example using complex form:
 
 .. code-block:: yaml
 

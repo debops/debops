@@ -119,7 +119,7 @@ Added
 
 - Add kernel parameter configuration and shared memory configuration.
 
-  Amount of shared memory limits starting with Linux kernel 3.16 is ridiculusly
+  Amount of shared memory limits starting with Linux kernel 3.16 is ridiculously
   high by default. This configuration limits the shared memory size to
   reasonable amounts depending on available system RAM. More information:
   https://git.kernel.org/cgit/linux/kernel/git/mhocko/mm.git/commit/include/uapi/linux/shm.h?id=060028bac94bf60a65415d1d55a359c3a17d5c31

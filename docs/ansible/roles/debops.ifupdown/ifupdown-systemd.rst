@@ -1,5 +1,5 @@
-Enchancements to ifupdown in systemd
-====================================
+Enhancements to ifupdown in systemd
+===================================
 
 .. contents::
    :local:
