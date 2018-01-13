@@ -15,6 +15,9 @@
 import sys
 import os
 
+import sphinx.environment
+from docutils.utils import get_source_line
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -35,6 +38,15 @@ for element in os.listdir(rst_ansible_roles):
             strip_regex=r'\s*(:?\[{3}|\]{3})\d?$',
             yaml_strip_regex=r'^\s{66,67}#\s\]{3}\d?$',
         )
+
+
+# Ignore warnings about non-local images
+def _warn_node(self, msg, node, **kwargs):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node))
+
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
 
 # -- General configuration ------------------------------------------------
 
