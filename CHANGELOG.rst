@@ -1,9 +1,14 @@
 Changelog
 =========
 
-
 This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
 and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
+
+This file contains only general overview of the changes in the DebOps project.
+The detailed changelog can be seen using :command:`git log` command.
+
+You can read information about required changes between releases in the
+:ref:`upgrade_notes` documentation.
 
 
 `debops master`_ - unreleased
@@ -24,18 +29,19 @@ Added
 
 - New DebOps roles:
 
-  - ``debops.sysfs``: configuration of the Linux kernel attributes through the
-    :file:`/sys` filesystem. The role is not enabled by default.
+  - :ref:`debops.sysfs`: configuration of the Linux kernel attributes through
+    the :file:`/sys` filesystem. The role is not enabled by default.
 
-  - ``debops.locales``: configure localization and internationalization on
+  - :ref:`debops.locales`: configure localization and internationalization on
     a given host or set of hosts.
 
-- You can now use Vagrant to create an Ansible Controller based on Debian
-  Stretch and use it to manage itself or other hosts over the network.
-  See the :file:`Vagrantfile` in the DebOps monorepo for more details.
+- You can now :ref:`use Vagrant <quick_start__vagrant>` to create an Ansible
+  Controller based on Debian Stretch and use it to manage itself or other hosts
+  over the network.
 
 - You can now build an Ansible Controller with DebOps support as a Docker
-  container. See the :file:`Dockerfile` in the DebOps monorepo for details.
+  container. :ref:`Official Docker image <quick_start__docker>` is also
+  available, automatically rebuilt on every commit.
 
 - You can now install DebOps on `Arch Linux <https://www.archlinux.org/>`__
   using an included ``PKGBUILD`` file.
@@ -48,6 +54,10 @@ Added
 
 - [debops.libvirtd] The role can now detect if nested KVM is enabled in
   a particular virtual machine and install KVM support.
+
+  [debops.nodejs] The :ref:`debops.nodejs` role can now install `Yarn
+  <https://yarnpkg.com/>`_ package manager using its upstream APT repository
+  (not enabled by default).
 
 - DebOps roles and playbooks can now be tested using local or remote
   `GitLab CI <https://about.gitlab.com/>`_ instance, with Vagrant, KVM and LXC
@@ -74,9 +84,6 @@ Changed
 - [debops.nodejs] The ``npm`` package has been removed from Debian Stable.
   The role will now install NPM using the GitHub source, unless upstream NodeJS is
   enabled, which includes its own NPM version.
-
-  The ``debops.nodejs`` role can now install `Yarn <https://yarnpkg.com/>`_
-  package manager using its upstream APT repository (not enabled by default).
 
 - [debops.gunicorn] Update the role to work correctly on Debian Stretch and
   newer releases. The support for multiple :command:`gunicorn` instances using
