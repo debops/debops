@@ -74,7 +74,6 @@ infrastructue environments.
    :hidden:
 
    introduction/quick-start
-   introduction/project-goals
    introduction/faq
    introduction/community
    introduction/philosophy
