@@ -99,7 +99,8 @@
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
   when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
-         (item.state is undefined or item.state != 'absent'))
+         (item.state is undefined or item.state != 'absent') and
+         (item.create_db is undefined or item.create_db))
 
 - name: Enable specified database extensions
   postgresql_ext:
@@ -118,11 +119,11 @@
   postgresql_privs:
     roles: '{{ item.owner }}'
     port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
-    type: 'schema'
+    type: '{{ item.type | d("schema") }}'
     database: '{{ item.name | d(item.database) }}'
-    objs: 'public'
-    privs: 'ALL'
-    grant_option: 'yes'
+    objs: '{{ item.objs | d("public") }}'
+    privs: '{{ item.public_privs | d(["ALL"]) | join(",") }}'
+    grant_option: '{{ item.grant_option | d("yes") }}'
     state: 'present'
   with_flattened:
     - '{{ postgresql__databases }}'

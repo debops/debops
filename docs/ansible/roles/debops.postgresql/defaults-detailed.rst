@@ -233,6 +233,21 @@ parameters:
 ``encoding``
   Optional. Default encoding used by a given database.
 
+``create_db``
+  Optional. Set this to False when granting a role specific privileges on an existing database.
+
+``type``
+  Optional. Type of database object to set privileges on. Default: schema.
+
+``objs``
+  Optional. Comma separated list of database objects to set privileges on. Default: public.
+
+``privs``
+  Optional. Comma separated list of privileges to grant. Default: ALL.
+
+``grant_option``
+  Optional. Whether role (``owner``) may grant/revoke the specified privileges to others. Default: yes.
+
 Examples
 ~~~~~~~~
 
@@ -243,6 +258,21 @@ Create database owned by a specified role:
    postgresql__databases:
      - name: 'gamma'
        owner: 'gamma'
+
+Create database owned by a specified role and grant select privilege on all tables in schema public to another role:
+
+.. code-block:: yaml
+
+   postgresql__databases:
+     - name: 'gamma'
+       owner: 'gamma'
+     - name: 'gamma'
+       owner: 'alpha'
+       create_db: False
+       type: 'table'
+       objs: 'ALL_IN_SCHEMA'
+       public_privs: [ 'SELECT' ]
+       grant_option: 'no'
 
 .. _postgresql__ref_extensions:
 
