@@ -1,6 +1,6 @@
 .. _quick_start:
 
-Quick Start
+Quick start
 ===========
 
 You can try out DebOps without installing it on your computer, by using

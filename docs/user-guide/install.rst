@@ -1,4 +1,1 @@
-Installation
-============
-
-Description of the installation methods.
+.. include:: ../../INSTALL.rst
