@@ -1,4 +1,4 @@
-Reporting bugs
+Debugging tips
 ==============
 
-How to report bugs in DebOps.
+How to find and fix bugs in DebOps.

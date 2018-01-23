@@ -21,12 +21,12 @@ DebOps
 
 .. include:: includes/global.rst
 
-The DebOps project is `a set of Open Source tools`__ that let users bootstrap
-and manage an IT infrastructure based on Debian_ or Ubuntu_ operating systems.
-Ansible_ is used as the main configuration management platform. DebOps provides
-a :ref:`collection of Ansible roles <role_index>` that manage various services,
-as well as a `set of Ansible playbooks`__ that tie them together in a highly
-integrated environment.
+The DebOps project is `a set of Free and Open Source tools`__ that let users
+bootstrap and manage an IT infrastructure based on Debian_ or Ubuntu_ operating
+systems. Ansible_ is used as the main configuration management platform.
+DebOps provides a :ref:`collection of Ansible roles <role_index>` that manage
+various services, as well as a `set of Ansible playbooks`__ that tie them
+together in a highly integrated environment.
 
 .. __: https://github.com/debops/debops
 .. __: https://github.com/debops/debops/tree/master/ansible/playbooks
@@ -73,6 +73,7 @@ infrastructue environments.
    :maxdepth: 1
    :hidden:
 
+   overview
    introduction/quick-start
    introduction/faq
    introduction/community
@@ -98,18 +99,21 @@ infrastructue environments.
    user-guide/install
    user-guide/debops-for-ansible
    user-guide/project-directories
-   user-guide/ansible-inventory
    user-guide/site-playbook
    user-guide/debops-cli
    user-guide/debops-config
    user-guide/bugs
 
 .. toctree::
-   :caption: Ansible Roles
+   :caption: Admin Guide
+   :maxdepth: 2
    :hidden:
 
-   ansible/role-index
-   ansible/roles/index
+   admin-guide/bootstrap.rst
+   admin-guide/common-config.rst
+   admin-guide/dev-network.rst
+   admin-guide/basic-virtualization.rst
+   admin-guide/basic-mailserver.rst
 
 .. toctree::
    :caption: Developer Guide
@@ -133,6 +137,13 @@ infrastructue environments.
    tester-guide/vagrant
    tester-guide/jane
    tester-guide/testinfra
+
+.. toctree::
+   :caption: Ansible Roles
+   :hidden:
+
+   ansible/role-index
+   ansible/roles/index
 
 .. toctree::
    :caption: DebOps API

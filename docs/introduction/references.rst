@@ -41,6 +41,17 @@ usually easily applicable to Debian hosts.
 .. __: https://archlinux.org/
 
 
+`The Twelve-Factor App`__
+-------------------------
+
+.. __: https://12factor.net/
+
+This page provides a look at a modern application deployment and configuration
+stack. Its meant more for developers than administrators, however it might be
+an useful window to see what might be expected from the IT infrastructure you
+are managing.
+
+
 `Computing Infrastructure Setup Protocols`__
 --------------------------------------------
 
@@ -72,3 +83,16 @@ available.
 
 .. __: http://planetlarg.net/
 .. __: https://web.archive.org/
+
+
+`Research Computing at Imperial College London`__
+-------------------------------------------------
+
+.. __: http://www.imperial.ac.uk/mathematics/for-staff/research-computing-support/
+
+This is a homepage of the Department of Mathematics at ICL. They have their own
+HPC infrastructure `with extensive documentation`__, aimed mostly at their
+users, however it might be useful to see how the IT infrastructure looks from
+the user side.
+
+.. __: http://sysnews.ma.ic.ac.uk/
