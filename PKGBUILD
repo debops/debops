@@ -37,11 +37,11 @@ pkgver() {
 }
 
 build() {
-    cd "$_pkgname/lib/$_pkgname-tools"
+    cd "$_pkgname"
     python2 setup.py build
 }
 
 package() {
-    cd "$_pkgname/lib/$_pkgname-tools"
+    cd "$_pkgname"
     python2 setup.py install --root="$pkgdir" --optimize=1
 }
