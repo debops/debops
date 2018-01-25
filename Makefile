@@ -77,7 +77,7 @@ test-yaml:
 .PHONY: test-debops-tools
 test-debops-tools:
 	@printf "%s\n" "Testing debops-tools using nose2..."
-	@nose2 --start-dir=lib/debops-tools --with-coverage
+	@nose2 --with-coverage
 
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:
