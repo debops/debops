@@ -24,11 +24,19 @@
 # be downloaded from the FSF web page at:
 # https://www.gnu.org/copyleft/gpl.html
 
+from __future__ import print_function
 from unittest import TestCase
+from imp import reload
 import os
 import sys
-import ConfigParser
-import cStringIO
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+try:
+    from cStringIO import cStringIO
+except ImportError:
+    from io import StringIO as cStringIO
 import tempfile
 import shutil
 
@@ -111,9 +119,9 @@ class TestReadConfig(TestCase):
         os.makedirs(dir)
         fn = os.path.join(dir, 'debops.cfg')
         with open(fn, 'w') as fh:
-            print >> fh, "[%s]" % sect
+            print("[{}]".format(sect), file=fh)
             for d in data:
-                print >> fh, d
+                print(d, file=fh)
         return dir
 
     def _read_config(self, project_dir):
@@ -215,9 +223,9 @@ class TestReadConfig2(TestCase):
         os.makedirs(dir)
         fn = os.path.join(dir, 'debops.cfg')
         with open(fn, 'w') as fh:
-            print >> fh, "[%s]" % sect
+            print("[{}]".format(sect), file=fh)
             for d in data:
-                print >> fh, d
+                print(d, file=fh)
         return dir
 
     def _read_config(self, project_dir):
@@ -272,8 +280,8 @@ class TestReadConfigDefaultsForPlattforms(TestCase):
     def test_defaults_linux(self):
         sys.platform = 'linux2'
         reload(debops.config)
-        cfgparser = ConfigParser.SafeConfigParser()
-        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        cfgparser = configparser.SafeConfigParser()
+        cfgparser.readfp(cStringIO(debops.config.DEFAULTS))
         self.assertEqual(cfgparser.get('paths', 'data-home'),
                          '$XDG_DATA_HOME/debops')
 
@@ -281,8 +289,8 @@ class TestReadConfigDefaultsForPlattforms(TestCase):
         sys.platform = 'win32'
         unsetenv('APPDATA')
         reload(debops.config)
-        cfgparser = ConfigParser.SafeConfigParser()
-        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        cfgparser = configparser.SafeConfigParser()
+        cfgparser.readfp(cStringIO(debops.config.DEFAULTS))
         self.assertEqual(cfgparser.get('paths', 'data-home'),
                          '~\\Application Data/debops')
 
@@ -290,15 +298,15 @@ class TestReadConfigDefaultsForPlattforms(TestCase):
         sys.platform = 'win32'
         setenv('APPDATA', 'H:\\my\\own\\data')
         reload(debops.config)
-        cfgparser = ConfigParser.SafeConfigParser()
-        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        cfgparser = configparser.SafeConfigParser()
+        cfgparser.readfp(cStringIO(debops.config.DEFAULTS))
         self.assertEqual(cfgparser.get('paths', 'data-home'),
                          'H:\\my\\own\\data/debops')
 
     def test_defaults_os_x(self):
         sys.platform = 'darwin'
         reload(debops.config)
-        cfgparser = ConfigParser.SafeConfigParser()
-        cfgparser.readfp(cStringIO.StringIO(debops.config.DEFAULTS))
+        cfgparser = configparser.SafeConfigParser()
+        cfgparser.readfp(cStringIO(debops.config.DEFAULTS))
         self.assertEqual(cfgparser.get('paths', 'data-home'),
                          '~/Library/Application Support/debops')

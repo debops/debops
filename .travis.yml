@@ -2,10 +2,15 @@
 
 sudo: 'required'
 language: 'python'
-python: '2.7'
+
+matrix:
+  include:
+    - python: '2.7'
+    - python: '3.5'
+    - python: '3.6'
 
 virtualenv:
-  system_site_packages: true
+  system_site_packages: false
 
 services:
   - 'docker'
@@ -15,13 +20,12 @@ cache:
     - '$HOME/.cache/pip'
 
 before_install:
-  - 'sudo apt-get -qq update'
-  - 'sudo apt-get -yq install build-essential python-dev libffi-dev libssl-dev'
-  - 'sudo pip install --upgrade six setuptools'
-  - 'sudo pip install pycodestyle unittest2 nose2 cov-core ansible sphinx sphinx-autobuild sphinx_rtd_theme yamllint'
+  - 'pip install --upgrade six setuptools wheel'
+  - 'pip install pycodestyle unittest2 nose2 cov-core ansible sphinx sphinx-autobuild sphinx_rtd_theme yamllint'
 
 install:
   - 'pip list'
+  - 'ansible --version'
 
 script:
   - 'make test-all'

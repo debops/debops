@@ -48,74 +48,76 @@ By default, the ``debops.pki`` role creates two Certificate Authorities:
   CSRs from remote hosts;
 
 The directory structure of the Certificate Authorities stored in the
-:file:`secret/` directory on the Ansible Controller::
+:file:`secret/` directory on the Ansible Controller:
 
-    secret/pki/
-    ├── authorities/
-    │   ├── domain/
-    │   │   ├── certs/
-    │   │   │   └── BDD39DBA82436F2685A67FABD01519B8.pem
-    │   │   ├── config/
-    │   │   │   ├── authority.conf
-    │   │   │   ├── openssl-request.conf
-    │   │   │   └── openssl-sign.conf
-    │   │   ├── database/
-    │   │   │   ├── index
-    │   │   │   ├── index.attr
-    │   │   │   ├── index.attr.old
-    │   │   │   ├── index.old
-    │   │   │   ├── serial
-    │   │   │   └── serial.old
-    │   │   ├── issuer -> ../root/
-    │   │   ├── private/
-    │   │   │   └── key.pem
-    │   │   ├── requests/
-    │   │   ├── signed/
-    │   │   └── subject/
-    │   │       ├── cert.pem
-    │   │       └── request.pem
-    │   └── root/
-    │       ├── certs/
-    │       │   ├── F6F915290E08AB1A804E4092A9FEA4C9.pem
-    │       │   └── F6F915290E08AB1A804E4092A9FEA4CA.pem
-    │       ├── config/
-    │       │   ├── authority.conf
-    │       │   ├── openssl-request.conf
-    │       │   ├── openssl-selfsign.conf
-    │       │   └── openssl-sign.conf
-    │       ├── database/
-    │       │   ├── index
-    │       │   ├── index.attr
-    │       │   ├── index.attr.old
-    │       │   ├── index.old
-    │       │   ├── serial
-    │       │   └── serial.old
-    │       ├── private/
-    │       │   └── key.pem
-    │       ├── requests/
-    │       ├── signed/
-    │       └── subject/
-    │           ├── cert.pem
-    │           └── request.pem
-    ├── ca-certificates/
-    │   └── by-group/
-    │       └── all
-    │           └── root-ca.example.com.crt -> ../../../authorities/root/subject/cert.pem
-    ├── realms/
-    │   └── by-host/
-    │       └── hostname.example.com/
-    │           └── domain/
-    │               ├── external/
-    │               ├── internal/
-    │               │   ├── cert.pem
-    │               │   ├── intermediate.pem -> ../../../../../authorities/domain/subject/cert.pem
-    │               │   └── root.pem -> ../../../../../authorities/domain/issuer/subject/cert.pem
-    │               └── private/
-    └── requests/
-        └── domain/
-            └── hostname.example.com/
-                └── domain/
-                    └── request.pem
+.. code-block:: none
+
+   secret/pki/
+   ├── authorities/
+   │   ├── domain/
+   │   │   ├── certs/
+   │   │   │   └── BDD39DBA82436F2685A67FABD01519B8.pem
+   │   │   ├── config/
+   │   │   │   ├── authority.conf
+   │   │   │   ├── openssl-request.conf
+   │   │   │   └── openssl-sign.conf
+   │   │   ├── database/
+   │   │   │   ├── index
+   │   │   │   ├── index.attr
+   │   │   │   ├── index.attr.old
+   │   │   │   ├── index.old
+   │   │   │   ├── serial
+   │   │   │   └── serial.old
+   │   │   ├── issuer -> ../root/
+   │   │   ├── private/
+   │   │   │   └── key.pem
+   │   │   ├── requests/
+   │   │   ├── signed/
+   │   │   └── subject/
+   │   │       ├── cert.pem
+   │   │       └── request.pem
+   │   └── root/
+   │       ├── certs/
+   │       │   ├── F6F915290E08AB1A804E4092A9FEA4C9.pem
+   │       │   └── F6F915290E08AB1A804E4092A9FEA4CA.pem
+   │       ├── config/
+   │       │   ├── authority.conf
+   │       │   ├── openssl-request.conf
+   │       │   ├── openssl-selfsign.conf
+   │       │   └── openssl-sign.conf
+   │       ├── database/
+   │       │   ├── index
+   │       │   ├── index.attr
+   │       │   ├── index.attr.old
+   │       │   ├── index.old
+   │       │   ├── serial
+   │       │   └── serial.old
+   │       ├── private/
+   │       │   └── key.pem
+   │       ├── requests/
+   │       ├── signed/
+   │       └── subject/
+   │           ├── cert.pem
+   │           └── request.pem
+   ├── ca-certificates/
+   │   └── by-group/
+   │       └── all
+   │           └── root-ca.example.com.crt -> ../../../authorities/root/subject/cert.pem
+   ├── realms/
+   │   └── by-host/
+   │       └── hostname.example.com/
+   │           └── domain/
+   │               ├── external/
+   │               ├── internal/
+   │               │   ├── cert.pem
+   │               │   ├── intermediate.pem -> ../../../../../authorities/domain/subject/cert.pem
+   │               │   └── root.pem -> ../../../../../authorities/domain/issuer/subject/cert.pem
+   │               └── private/
+   └── requests/
+       └── domain/
+           └── hostname.example.com/
+               └── domain/
+                   └── request.pem
 
 The incoming certificate requests are placed in subdirectories of the
 :file:`secret/pki/requests/` directory. Each subdirectory is related to
