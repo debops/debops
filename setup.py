@@ -24,9 +24,7 @@ setup(
 
     scripts=SCRIPTS,
     packages=find_packages(exclude=['tests']),
-    package_data={
-        'debops': ['padlock-script'],
-        },
+    include_package_data=True,
 
     # metadata for upload to PyPI
     author="DebOps Developers",
