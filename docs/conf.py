@@ -58,6 +58,7 @@ sphinx.environment.BuildEnvironment.warn_node = _warn_node
 # ones.
 extensions = [
     'sphinx.ext.ifconfig',
+    'sphinx.ext.graphviz'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

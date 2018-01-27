@@ -14,7 +14,7 @@ check: fail-if-git-dirty
 
 .PHONY: clean
 clean:          ## Clean up project directory
-clean: clean-tests
+clean: clean-tests clean-sdist clean-wheel
 
 .PHONY: docker
 docker:         ## Check Docker image build
@@ -39,6 +39,38 @@ test: test-all
 .PHONY: yaml
 yaml:           ## Test YAML syntax using yamllint
 yaml: test-yaml
+
+.PHONY: sdist
+sdist:          ## Create Python sdist package
+sdist: clean-sdist
+	@python setup.py sdist
+
+.PHONY: sdist-sign
+sdist-sign:     ## Create signed Python sdist package
+sdist-sign: sdist
+	@gpg --detach-sign --armor dist/debops-*.tar.gz
+
+.PHONY: clean-sdist
+clean-sdist:
+	@rm -vrf debops.egg-info dist/debops-*.tar.gz*
+
+.PHONY: wheel
+wheel:          ## Create Python wheel package
+wheel: clean-wheel
+	@python setup.py bdist_wheel
+
+.PHONY: wheel-sign
+wheel-sign:     ## Create signed Python wheel package
+wheel-sign: wheel
+	@gpg --detach-sign --armor dist/debops-*.whl
+
+.PHONY: clean-wheel
+clean-wheel:
+	@rm -vrf build debops.egg-info dist/debops-*.whl*
+
+.PHONY: twine-upload
+twine-upload:    ## Upload Python packages to PyPI
+	@twine upload dist/*
 
 .PHONY: test-all
 test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml test-docker-build

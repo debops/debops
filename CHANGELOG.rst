@@ -65,6 +65,11 @@ Added
   `GitLab CI <https://about.gitlab.com/>`_ instance, with Vagrant, KVM and LXC
   technologies and some custom scripts.
 
+- DebOps roles and playbooks will be included in the Python packages released
+  on PyPI. This will allow for easier installation of DebOps via :command:`pip`
+  (no need to download the roles and playbooks separately) as well as simple
+  stable releases. The DebOps monorepo can still be installed separately.
+
 Changed
 ~~~~~~~
 
