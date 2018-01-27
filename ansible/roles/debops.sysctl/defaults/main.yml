@@ -198,7 +198,9 @@ sysctl__hardening_map:
 
   'net.ipv4.icmp_ignore_bogus_error_responses':
     value: 1
-    comment: 'There is no reason to accept bogus error responses from ICMP, so ignore them instead.'
+    comment: |
+      Do not log bogus ICMP error responses.
+      Nobody would want to accept bogus error responses, so we can safely ignore them.
     state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
 
   'net.ipv4.icmp_ratelimit':
