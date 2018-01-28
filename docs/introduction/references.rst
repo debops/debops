@@ -72,6 +72,16 @@ departments today, however the methodology used during the deployment might
 still be useful and relevant.
 
 
+`Ops School Curriculum`__
+-------------------------
+
+.. __: http://www.opsschool.org/
+
+This site provides a general information and introduction to IT Operations and
+explains what Operations Enginners do. The documentation is presented as
+a curriculum with lessons on different topics.
+
+
 `Larg's Internet Cluster`__
 ---------------------------
 
