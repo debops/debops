@@ -32,3 +32,10 @@ install:
 script:
   - 'make test-all'
   - 'make check'
+
+  # Test Python packages
+  - 'make sdist wheel'
+  - 'pip install --upgrade dist/debops*.tar.gz'
+  - 'pip list'
+  - 'pip install --upgrade dist/debops*.whl'
+  - 'pip list'
