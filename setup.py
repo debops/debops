@@ -13,7 +13,6 @@ SCRIPTS = [os.path.join('bin', n) for n in [
     'debops', 'debops-init', 'debops-task',
     'debops-defaults', 'debops-padlock', 'debops-update']]
 
-README = open('README.md').read()
 
 RELEASE = os.popen('git describe').read().strip().lstrip('v')
 
