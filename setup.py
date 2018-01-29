@@ -2,6 +2,7 @@
 
 from setuptools import setup, find_packages
 import os
+import subprocess
 
 try:
     import pypandoc
@@ -13,15 +14,28 @@ SCRIPTS = [os.path.join('bin', n) for n in [
     'debops', 'debops-init', 'debops-task',
     'debops-defaults', 'debops-padlock', 'debops-update']]
 
-
-RELEASE = os.popen('git describe').read().strip().lstrip('v')
+# Retrieve the project version from 'git describe' command and store it in the
+# VERSION file, needed for correct installation of the Python package
+try:
+    with open(os.devnull, 'w') as devnull:
+        RELEASE = subprocess.check_output(
+                ['git describe'], shell=True, stderr=devnull
+                ).strip('\n').lstrip('v')
+    with open('VERSION', 'w') as version_file:
+        version_file.write('{}\n'.format(RELEASE))
+except subprocess.CalledProcessError:
+    try:
+        RELEASE = open('VERSION').read().strip()
+    except Exception:
+        RELEASE = '0.0.0'
 
 try:
     # Symlink the 'ansible/' directory inside of the 'debops/' Python package
     # directory. The files will be included in the package using the
     # MANIFEST.in file. This requires 'python-setuptools' APT package from
     # 'jessie-backports' repository.
-    os.symlink('../ansible', 'debops/ansible')
+    if os.path.exists('.git') and os.path.isdir('.git'):
+        os.symlink('../ansible', 'debops/ansible')
     setup(
         name="debops",
         version=RELEASE,
@@ -74,4 +88,5 @@ try:
     )
 finally:
     # Unlink the symlinked 'ansible/' directory
-    os.unlink('debops/ansible')
+    if os.path.islink('debops/ansible'):
+        os.unlink('debops/ansible')
