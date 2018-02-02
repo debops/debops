@@ -20,7 +20,7 @@ try:
     with open(os.devnull, 'w') as devnull:
         RELEASE = subprocess.check_output(
                 ['git describe'], shell=True, stderr=devnull
-                ).strip('\n').lstrip('v')
+                ).strip(b'\n').lstrip(b'v')
     with open('VERSION', 'w') as version_file:
         version_file.write('{}\n'.format(RELEASE))
 except subprocess.CalledProcessError:
@@ -38,7 +38,7 @@ try:
         os.symlink('../ansible', 'debops/ansible')
     setup(
         name="debops",
-        version=RELEASE,
+        version=RELEASE.decode('utf-8'),
         install_requires=['netaddr', 'argparse', 'passlib', 'ansible'],
 
         scripts=SCRIPTS,
@@ -56,7 +56,7 @@ try:
         python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, '
                         '!=3.3.*, !=3.4.*, <4',
         download_url="https://github.com/debops/debops"
-                    "/archive/v" + RELEASE + ".tar.gz",
+                    "/archive/v" + RELEASE.decode('utf-8') + ".tar.gz",
         classifiers=[
                     'Development Status :: 4 - Beta',
                     'Environment :: Console',
