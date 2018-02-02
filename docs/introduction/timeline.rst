@@ -180,7 +180,7 @@ December 2014
 ~~~~~~~~~~~~~
 
 - Hartmut Goebel `rewrites the Bash DebOps scripts in Python`__. They will be
-  later `published on PyPI`__ which will be come main installation method.
+  later `published on PyPI`__ which will become main installation method.
 
 .. __: https://github.com/debops/debops/commit/88e3a8e
 .. __: https://pypi.python.org/pypi/debops
