@@ -1,0 +1,7 @@
+{# This template has no other functionality than simply printing out the
+# composer.json content as it was read from the composer.json.dist. It is
+# meant to be used to adjust the PHP package list in the future according
+# to plugins requirements or packages installed via apt.
+#}
+{% set _composer_json = (roundcube__register_composer_json.stdout | from_json) %}
+{{ _composer_json | to_nice_json }}
