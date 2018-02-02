@@ -21,9 +21,9 @@ application role can tell a webserver role to configure a webservice on
 specific address.
 
 Most of the provided roles can be used separately in a customized Ansible
-playbook of the user wants to use different components for certain services.
+playbook if the user wants to use different components for certain services.
 The roles can be installed using the :command:`ansible-galaxy` application
-without the need to configure the whole DebOps environment. However this use os
+without the need to configure the whole DebOps environment. However this use is
 meant for advanced users only, and use of the provided playbooks is encouraged.
 
 
