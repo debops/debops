@@ -45,6 +45,10 @@ sdist:          ## Create Python sdist package
 sdist: clean-sdist
 	@python setup.py sdist
 
+.PHONY: sdist-quiet
+sdist-quiet: clean-sdist
+	@python setup.py --quiet sdist
+
 .PHONY: sdist-sign
 sdist-sign:     ## Create signed Python sdist package
 sdist-sign: sdist
@@ -58,6 +62,10 @@ clean-sdist:
 wheel:          ## Create Python wheel package
 wheel: clean-wheel
 	@python setup.py bdist_wheel
+
+.PHONY: wheel-quiet
+wheel-quiet: clean-wheel
+	@python setup.py --quiet bdist_wheel
 
 .PHONY: wheel-sign
 wheel-sign:     ## Create signed Python wheel package
