@@ -37,27 +37,6 @@
           console_register_inittab.stat.exists))
   notify: [ 'Reload sysvinit' ]
 
-- name: Divert original /etc/issue
-  command: dpkg-divert --quiet --local --divert /etc/issue.dpkg-divert --rename /etc/issue
-  args:
-    creates: '/etc/issue.dpkg-divert'
-
-- name: Configure /etc/issue
-  template:
-    src: '{{ lookup("template_src", "etc/issue.j2") }}'
-    dest: '/etc/issue'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
-- name: Configure /etc/motd
-  template:
-    src: '{{ lookup("template_src", "etc/motd.j2") }}'
-    dest: '/etc/motd'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
 - name: Configure fsck behaviour on boot
   lineinfile:
     dest: '/etc/default/rcS'

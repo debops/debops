@@ -118,6 +118,11 @@ Removed
   'debops.locales' role. You will need to update the Ansible inventory
   variables to reflect the changes.
 
+- [debops.console] Remove management of the :file:`/etc/issue` and
+  :file:`/etc/motd` files from the ``debops.console`` role. That functionality
+  is now available in the :ref:`debops.machine` role. You will need to update
+  the Ansible inventory variables to reflect the changes.
+
 
 debops v0.6.0 - 2017-10-21
 --------------------------

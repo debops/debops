@@ -47,6 +47,20 @@ Inventory variable changes
   :envvar:`group of hosts <locales__group_list>`, :envvar:`specific hosts <locales__host_list>`
   and :envvar:`dependent roles <locales__dependent_list>`.
 
+- The :file:`/etc/issue` and :file:`/etc/motd` configuration has been removed
+  from the ``debops.console`` role and is now done by the :ref:`debops.machine`
+  role. List of default variables that were affected:
+
+  +-------------------+---------------------------------+---------------+
+  | Old variable name | New variable name               | Changed value |
+  +===================+=================================+===============+
+  | ``console_issue`` | :envvar:`machine__organization` | No            |
+  +-------------------+---------------------------------+---------------+
+  | ``console_motd``  | :envvar:`machine__motd`         | No            |
+  +-------------------+---------------------------------+---------------+
+
+The support for dynamic MOTD has been implemented by the :ref:`debops.machine`
+role, you might want to use that instead of the static MOTD file.
 
 v0.6.0
 ------
