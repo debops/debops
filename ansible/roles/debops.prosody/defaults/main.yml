@@ -1,0 +1,162 @@
+---
+
+
+prosody__deploy_state: "present"
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: apache__base_packages [[[
+#
+# List of base packages to install.
+prosody__base_packages:
+  - prosody
+  - lua-zlib
+  - prosody-modules # for ldap auth
+#  - lua-event # for use_libevent = true
+                                                                   # ]]]
+                                                                   # ]]]
+
+
+# PKI [[[
+# ~~~~~~~
+
+# .. envvar:: prosody_pki [[[
+#
+# Enable or disable support for PKI/SSL/TLS in prosody.
+# Defaults to ``True`` if debops.pki_ is enabled on the remote host.
+prosody_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
+               (ansible_local.pki.enabled|d() | bool) }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__pki_realm_path [[[
+#
+# Directory path where PKI realm live.
+prosdoy__pki_realm_path: '{{ ansible_local.pki.path
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.path|d())
+                            else "/etc/pki/realms" }}'
+                                                                   # ]]]
+# .. envvar:: prosody__pki_realm [[[
+#
+# Default PKI realm to use.
+prosody__pki_realm: '{{ ansible_local.pki.realm
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.realm|d())
+                       else "domain" }}'
+                                                                   # ]]]
+# .. envvar:: prosody__pki_crt_filename [[[
+#
+# Default CRT file name to use.
+prosody__pki_crt_filename: '{{ ansible_local.pki.crt
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.crt|d())
+                              else "default.crt" }}'
+                                                                   # ]]]
+# .. envvar:: prosody__pki_key_filename [[[
+#
+# Default private key file name to use.
+prosody__pki_key_filename: '{{ ansible_local.pki.key
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.key|d())
+                              else "default.key" }}'
+                                                                   # ]]]
+# .. envvar:: prosody_pki_hook_name [[[
+#
+# Name of the hook script which will be stored in hook directory.
+prosody_pki_hook_name: 'prosody'
+
+                                                                   # ]]]
+# .. envvar:: prosody_pki_hook_path [[[
+#
+# Directory with PKI hooks.
+prosody_pki_hook_path: '{{ ansible_local.pki.hooks
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.hooks|d())
+                         else "/etc/pki/hooks" }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody_pki_hook_action [[[
+#
+# Specify how changes in PKI should affect prosody, either 'reload' or 'restart'.
+prosody_pki_hook_action: 'reload'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: prosody__admins [[[
+#
+# list of admins jabber accounts of this prosody instance
+prosody__admins: []
+                                                                   # ]]]
+# .. envvar:: prosody__config_global: [[[
+#
+# main prosody configuration
+# @see prosody.im
+prosody__config_global:
+  admins: '{{ prosody__admins }}'
+  modules_enabled:
+    - "roster"
+    - "saslauth"
+    - "tls"
+    - "dialback"
+    - "disco"
+    - "private"
+    - "vcard"
+    - "privacy" #@TODO check version < 0.10
+    - "compression" #@TODO check lua-zlib
+    - "version"
+    - "uptime"
+    - "time"
+    - "ping"
+    - "pep"
+    - "admin_adhoc"
+    - "posix"
+    - "groups"
+    - "carbon"
+    - "mam"
+    - "blocking"
+    - "smacks"
+    #- "s2s_auth_dane"
+  allow_registration: False
+  daemonize: True
+  pidfile: "/var/run/prosody/prosody.pid"
+  #ssl:
+  #  key: '..'
+  #  certificate: '..'
+  c2s_require_encryption: True
+  s2s_secure_auth: True
+  s2s_insecure_domains:
+    - "gmail.com"
+  authentication: ..
+  log:
+    info: "/var/log/prosody/prosody.log"
+    error: "/var/log/prosody/prosody.err"
+    #{ levels = { "error" }; to = "syslog";  }
+                                                                   # ]]]
+# .. envvar:: prosody__config_virtual_hosts: [[
+prosody__config_virtual_hosts:
+    - name: '{{ ansible_domain }}'
+      enabled: false
+      pki_realm: 'domain'
+                                                                   # ]]]
+# .. envvar:: prosody__config_components: [[[
+#
+#  @see https://prosody.im/doc/modules/mod_muc
+prosody__config_components:
+    - domain: 'conference.{{ ansible_domain }}'
+      params: '"muc"'
+                                                                   # ]]]
+# .. envvar:: prosody__ferm__dependent_rules: [[[
+#
+# Configuration for :command:`iptables` firewall manged by :program:`ferm`.
+prosody__ferm__dependent_rules:
+  - type: 'accept'
+    dport: [ '5222', '5269', '5280', '5281' ]
+    accept_any: True
+    weight: '40'
+    by_role: 'prosody'
+    name: 'http'
+    multiport: True
+    delete: '{{ prosody__deploy_state != "present" }}'
+                                                                   # ]]]
