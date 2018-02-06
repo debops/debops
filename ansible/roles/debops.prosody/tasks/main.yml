@@ -7,8 +7,9 @@
     state: 'present'
   with_flattened:
     - '{{ prosody__base_packages }}'
+    - '{{ prosody__packages }}'
 
-- name: copy config
+- name: Generate Prosody configuration
   template:
     src: 'etc/prosody/prosody.cfg.lua.j2'
     dest: '/etc/prosody/prosody.cfg.lua'
@@ -34,7 +35,7 @@
 - name: Manage PKI prosody hook
   template:
     src: 'etc/pki/hooks/prosody.j2'
-    dest: '{{ prosody__pki_hook_path + "/" + prosody_pki_hook_name }}'
+    dest: '{{ prosody__pki_hook_path + "/" + prosody__pki_hook_name }}'
     owner: 'root'
     group: 'root'
     mode: '0755'

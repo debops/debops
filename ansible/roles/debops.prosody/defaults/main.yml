@@ -18,6 +18,11 @@ prosody__base_packages:
   - prosody-modules # for ldap auth
   - '{{ "lua-event" if prosody__use_libevent|bool else [] }}'
                                                                    # ]]]
+# .. envvar:: prosody__packages [[[
+#
+# List of additional APT packages to install with Prosody.
+prosody__packages: []
+
                                                                    # ]]]
 # PKI [[[
 # ~~~~~~~
@@ -98,11 +103,11 @@ prosody__admins: []
 # @see https://prosody.im/doc/libevent
 prosody__use_libevent: false
                                                                    # ]]]
-# .. envvar:: prosody__config_modules_default: [[[
+# .. envvar:: prosody__modules_default: [[[
 #
 # Modules that are loaded by default
 # @see https://prosody.im/doc/configure
-prosody__config_modules_default:
+prosody__modules_default:
     - "roster"
     - "saslauth"
     - "tls"
@@ -120,41 +125,59 @@ prosody__config_modules_default:
     - "admin_adhoc"
     - "posix"
     - "groups"
-    - "carbon"
+    - "carbons"
     - "mam"
     - "blocking"
     - "smacks"
     #- "s2s_auth_dane"
                                                                    # ]]]
-# .. envvar:: prosody__config_modules: [[[
+# .. envvar:: prosody__modules: [[[
 #
 # Modules that should be enabled
 # @see prosody.im
-prosody__config_modules: '{{ prosody__config_modules_default }}'
+prosody__modules: '{{ prosody__modules_default }}'
                                                                    # ]]]
-# .. envvar:: prosody__config_global: [[[# [[[
+# .. envvar:: prosody__authentication: [[[
+#
+# Providers:
+#  - internal_plain
+#  - internal_hashed
+#  - cyrus
+#  - anonymous
+#  - ldap (TODO)
+#
+# https://prosody.im/doc/authentication
+prosody__authentication: 'internal_plain'
+                                                                   # ]]]
+# .. envvar:: prosody__insecure_domains: [[[
+#
+# List of insecure domains. As example `gmail.com`
+# https://prosody.im/doc/s2s
+prosody__insecure_domains: []
+                                                                   # ]]]
+# .. envvar:: prosody__allow_registration: [[[
+#
+# Allow new registrations
+prosody__allow_registration: False
+                                                                   # ]]]
+# .. envvar:: prosody__config_global: [[[
 #
 # main prosody configuration
 # @see prosody.im
 prosody__config_global:
   admins: '{{ prosody__admins }}'
-  modules_enabled: '{{ prosody__config_modules }}'
-  allow_registration: False
+  modules_enabled: '{{ prosody__modules }}'
+  allow_registration: '{{ prosody__allow_registration }}'
   daemonize: True
   pidfile: "/var/run/prosody/prosody.pid"
   use_libevent: '{{ prosody__use_libevent }}'
-  #ssl:
-  #  key: '..'
-  #  certificate: '..'
   c2s_require_encryption: True
   s2s_secure_auth: True
-  s2s_insecure_domains:
-    - "gmail.com"
-  authentication: ..
+  s2s_insecure_domains: '{{ prosody__insecure_domains }}'
+  authentication: '{{ prosody__authentication }}'
   log:
     info: "/var/log/prosody/prosody.log"
     error: "/var/log/prosody/prosody.err"
-    #{ levels = { "error" }; to = "syslog";  }
                                                                    # ]]]
 # .. envvar:: prosody__config_virtual_hosts: [[[
 prosody__config_virtual_hosts:
