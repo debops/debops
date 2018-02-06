@@ -1,12 +1,5 @@
 ---
 
-# Custom string added to /etc/issue
-console_issue: '{{ ansible_domain.split(".")[0] | capitalize }}'
-
-# If ``True``, show the logged in users. Note that this count does only update
-# when the screen is manually refreshed.
-console__issue_show_logged_in_users: True
-
 # Enable or disable serial console (allows you to use 'lxc-console',
 # 'virsh console' and other similar commands)
 console_serial: False
@@ -22,12 +15,6 @@ console_serial_term: 'xterm'
 
 # String used to enable serial console in sysvinit /etc/inittab
 console_serial_inittab: 'S0:2345:respawn:/sbin/getty -L {{ console_serial_port }} {{ console_serial_baud }} {{ console_serial_term }}'
-
-# Contents of /etc/motd
-console_motd: |
-    -------------------------------------------------
-            This system is managed by Ansible
-    -------------------------------------------------
 
 # List of required console packages
 console_base_packages: [ 'locales' ]

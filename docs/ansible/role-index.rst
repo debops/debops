@@ -239,6 +239,7 @@ System configuration
 - :ref:`debops.ferm`
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
+- :ref:`debops.machine`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
 - :ref:`debops.resources`
