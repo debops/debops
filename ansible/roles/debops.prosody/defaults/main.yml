@@ -1,4 +1,5 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 
 prosody__deploy_state: "present"
@@ -14,7 +15,7 @@ prosody__base_packages:
   - prosody
   - lua-zlib
   - prosody-modules # for ldap auth
-#  - lua-event # for use_libevent = true
+  - '{{ "lua-event" if prosody__use_libevent|bool else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 
@@ -89,6 +90,12 @@ prosody_pki_hook_action: 'reload'
 # list of admins jabber accounts of this prosody instance
 prosody__admins: []
                                                                    # ]]]
+# .. envvar:: prosody__use_libevent: [[[
+#
+# set this to true to enable the libevent backend
+# @see https://prosody.im/doc/libevent
+prosody__use_libevent: false
+                                                                   # ]]]
 # .. envvar:: prosody__config_global: [[[
 #
 # main prosody configuration
@@ -121,6 +128,7 @@ prosody__config_global:
   allow_registration: False
   daemonize: True
   pidfile: "/var/run/prosody/prosody.pid"
+  use_libevent: '{{ prosody__use_libevent }}'
   #ssl:
   #  key: '..'
   #  certificate: '..'
