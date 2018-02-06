@@ -148,7 +148,6 @@ prosody__modules_default:
 # .. envvar:: prosody__modules: [[[
 #
 # Modules that should be enabled
-# @see prosody.im
 prosody__modules: '{{ prosody__modules_default }}'
                                                                    # ]]]
 # .. envvar:: prosody__authentication: [[[
@@ -174,11 +173,24 @@ prosody__insecure_domains: []
 # Allow new registrations
 prosody__allow_registration: False
                                                                    # ]]]
-# .. envvar:: prosody__config_global: [[[
+# .. envvar:: prosody__config_ldap: [[[
 #
-# main prosody configuration
-# @see prosody.im
-prosody__config_global:
+# LDAP config, this is used when `prosody__authentication` is ldap2.
+# https://modules.prosody.im/mod_auth_ldap2.html
+prosody__config_ldap:
+  hostname: 'ldap.{{ ansible_domain }}'
+  user:
+    basedn: 'ou=users,..@TODO'
+    usernamefield: 'uid'
+  bind_dn: 'uid=....,dc=...@TODO'
+  bind_password: 'lookup..@TODO'
+  use_tsl: True
+                                                                   # ]]]
+# .. envvar:: prosody__default_config_global: [[[
+#
+# Main prosody configuration, default values
+# @see https://prosody.im/doc/configure
+prosody__default_config_global:
   admins: '{{ prosody__admins }}'
   modules_enabled: '{{ prosody__modules }}'
   allow_registration: '{{ prosody__allow_registration }}'
@@ -192,6 +204,34 @@ prosody__config_global:
   log:
     info: "/var/log/prosody/prosody.log"
     error: "/var/log/prosody/prosody.err"
+                                                                   # ]]]
+# .. envvar:: prosody__config_gloabl: [[[
+#
+# Mapping for global configs which will be managed on all hosts in the Ansible
+# inventory.
+prosody__config_global: {}
+                                                                   # ]]]
+# .. envvar:: prosody__group_config_gloabl: [[[
+#
+# Mapping for global configs which will be managed on specific groups in the Ansible
+# inventory.
+prosody__group_config_global: {}
+                                                                   # ]]]
+# .. envvar:: prosody__host_config_gloabl: [[[
+#
+# Mapping for global configs which will be managed on specific hosts in the Ansible
+# inventory.
+prosody__host_config_global: {}
+                                                                   # ]]]
+# .. envvar:: prosody__combined_config_gloabl: [[[
+#
+# Mapping which combines all of the global config variables and is used
+# in the configuration template.
+prosody__combined_config_global: '{{ prosody__default_config_global | combine(
+                                  prosody__config_ldap if prosody__authentication == "ldap2" else {}
+                                , prosody__config_global
+                                , prosody__group_config_global
+                                , prosody__host_config_global ) }}'
                                                                    # ]]]
 # .. envvar:: prosody__config_virtual_hosts: [[[
 prosody__config_virtual_hosts:
