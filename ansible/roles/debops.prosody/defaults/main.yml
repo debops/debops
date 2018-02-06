@@ -1,11 +1,12 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. envvar:: prosody__deploy_state [[[
-#
-# Set to `absent` to disable and uninstall this role
-prosody__deploy_state: "present"
-                                                                   # ]]]
+# debops.prosody default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+
 # Packages and installation [[[
 # -----------------------------
 
@@ -22,10 +23,10 @@ prosody__base_packages:
 #
 # List of additional APT packages to install with Prosody.
 prosody__packages: []
-
+                                                                   # ]]]
                                                                    # ]]]
 # PKI [[[
-# ~~~~~~~
+# -------
 
 # .. envvar:: prosody__pki [[[
 #
@@ -90,11 +91,24 @@ prosody__pki_hook_action: 'reload'
                                                                    # ]]]
                                                                    # ]]]
 # Prosody Configuration: [[[
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# --------------------------
 
+# .. envvar:: prosody__deploy_state [[[
+#
+# Set to `absent` to disable and uninstall this role
+prosody__deploy_state: "present"
+                                                                   # ]]]
+# .. envvar:: prosody__domain [[[
+#
+# The hosts's DNS domain name used in the Prosody configuration.
+prosody__domain: '{{ ansible_local.core.domain
+                     if (ansible_local|d() and ansible_local.core|d() and
+                         ansible_local.core.domain|d())
+                     else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                                                                   # ]]]
 # .. envvar:: prosody__admins [[[
 #
-# list of admin jabber accounts of this prosody instance
+# List of admin jabber accounts of this prosody instance
 prosody__admins: []
                                                                    # ]]]
 # .. envvar:: prosody__use_libevent: [[[
@@ -144,7 +158,7 @@ prosody__modules: '{{ prosody__modules_default }}'
 #  - internal_hashed
 #  - cyrus
 #  - anonymous
-#  - ldap (TODO)
+#  - ldap2 (TODO)
 #
 # https://prosody.im/doc/authentication
 prosody__authentication: 'internal_plain'
@@ -204,5 +218,6 @@ prosody__ferm__dependent_rules:
     name: 'perosody'
     multiport: True
     rule_state: '{{ "present" if prosody__deploy_state|bool else "absent" }}'
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
