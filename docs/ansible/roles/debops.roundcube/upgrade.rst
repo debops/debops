@@ -1,1 +1,1 @@
-.. include:: ../UPGRADE.rst
+.. include:: ../../../../ansible/roles/debops.roundcube/UPGRADE.rst
