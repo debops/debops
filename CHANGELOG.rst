@@ -37,6 +37,9 @@ Added
   - :ref:`debops.locales`: configure localization and internationalization on
     a given host or set of hosts.
 
+  - :ref:`debops.machine`: manage the :file:`/etc/machine-info` file,
+    the :file:`/etc/issue` file and a dynamic MOTD.
+
 - You can now :ref:`use Vagrant <quick_start__vagrant>` to create an Ansible
   Controller based on Debian Stretch and use it to manage itself or other hosts
   over the network.
@@ -114,6 +117,11 @@ Removed
   'debops.console' role, this functionality has been moved to the new
   'debops.locales' role. You will need to update the Ansible inventory
   variables to reflect the changes.
+
+- [debops.console] Remove management of the :file:`/etc/issue` and
+  :file:`/etc/motd` files from the ``debops.console`` role. That functionality
+  is now available in the :ref:`debops.machine` role. You will need to update
+  the Ansible inventory variables to reflect the changes.
 
 
 debops v0.6.0 - 2017-10-21
