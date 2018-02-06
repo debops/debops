@@ -9,7 +9,7 @@ prosody__deploy_state: "present"
 # Packages and installation [[[
 # -----------------------------
 
-# .. envvar:: apache__base_packages [[[
+# .. envvar:: prosody__base_packages [[[
 #
 # List of base packages to install.
 prosody__base_packages:
@@ -25,7 +25,7 @@ prosody__base_packages:
 # .. envvar:: prosody__pki [[[
 #
 # Enable or disable support for PKI/SSL/TLS in prosody.
-# Defaults to ``True`` if debops.pki_ is enabled on the remote host.
+# Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
 prosody__pki: '{{ ansible_local|d() and ansible_local.pki|d() and
                (ansible_local.pki.enabled|d() | bool) }}'
 
@@ -89,19 +89,19 @@ prosody__pki_hook_action: 'reload'
 
 # .. envvar:: prosody__admins [[[
 #
-# list of admins jabber accounts of this prosody instance
+# list of admin jabber accounts of this prosody instance
 prosody__admins: []
                                                                    # ]]]
 # .. envvar:: prosody__use_libevent: [[[
 #
-# set this to true to enable the libevent backend
+# Set this to true to enable the libevent backend
 # @see https://prosody.im/doc/libevent
 prosody__use_libevent: false
                                                                    # ]]]
 # .. envvar:: prosody__config_modules_default: [[[
 #
 # Modules that are loaded by default
-# @see prosody.im
+# @see https://prosody.im/doc/configure
 prosody__config_modules_default:
     - "roster"
     - "saslauth"
@@ -111,7 +111,7 @@ prosody__config_modules_default:
     - "private"
     - "vcard"
     - "privacy" #@TODO check version < 0.10
-    - "compression" #@TODO check lua-zlib
+    - "compression"
     - "version"
     - "uptime"
     - "time"
@@ -128,7 +128,7 @@ prosody__config_modules_default:
                                                                    # ]]]
 # .. envvar:: prosody__config_modules: [[[
 #
-# modules that should be enabled
+# Modules that should be enabled
 # @see prosody.im
 prosody__config_modules: '{{ prosody__config_modules_default }}'
                                                                    # ]]]
@@ -178,8 +178,8 @@ prosody__ferm__dependent_rules:
     accept_any: True
     weight: '40'
     by_role: 'prosody'
-    name: 'http'
+    name: 'perosody'
     multiport: True
-    delete: '{{ prosody__deploy_state != "present" }}'
+    rule_state: '{{ "present" if prosody__deploy_state|bool else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
