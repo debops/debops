@@ -136,7 +136,9 @@ nullmailer__relayhost: 'smtp.{{ nullmailer__domain }}'
 # .. envvar:: nullmailer__relayhost_options [[[
 #
 # Additional options set for the default relayhost in the
-# :file:`/etc/nullmailer/remotes` configuration file.
+# :file:`/etc/nullmailer/remotes` configuration file. You can specify either
+# a YAML dictionary with parameters used by other :command:`nullmailer`
+# remotes, or a YAML list with "raw" :command:`nullmailer` options.
 # See :ref:`nullmailer__ref_remotes` for more details.
 nullmailer__relayhost_options: []
 
@@ -146,8 +148,11 @@ nullmailer__relayhost_options: []
 # The default list of SMTP servers where ``nullmailer`` forwards all mail
 # messages. See :ref:`nullmailer__ref_remotes` for more details.
 nullmailer__default_remotes:
-  - host: '{{ nullmailer__relayhost }}'
-    options: '{{ nullmailer__relayhost_options }}'
+
+  - '{{ (nullmailer__relayhost_options | combine({"host": nullmailer__relayhost}))
+        if (nullmailer__relayhost_options is mapping)
+        else ({"host": nullmailer__relayhost,
+               "options": nullmailer__relayhost_options}) }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__remotes [[[
