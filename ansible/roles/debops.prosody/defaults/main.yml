@@ -1,10 +1,11 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-
+# .. envvar:: prosody__deploy_state [[[
+#
+# Set to `absent` to disable and uninstall this role
 prosody__deploy_state: "present"
-
-
+                                                                   # ]]]
 # Packages and installation [[[
 # -----------------------------
 
@@ -18,16 +19,14 @@ prosody__base_packages:
   - '{{ "lua-event" if prosody__use_libevent|bool else [] }}'
                                                                    # ]]]
                                                                    # ]]]
-
-
 # PKI [[[
 # ~~~~~~~
 
-# .. envvar:: prosody_pki [[[
+# .. envvar:: prosody__pki [[[
 #
 # Enable or disable support for PKI/SSL/TLS in prosody.
 # Defaults to ``True`` if debops.pki_ is enabled on the remote host.
-prosody_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
+prosody__pki: '{{ ansible_local|d() and ansible_local.pki|d() and
                (ansible_local.pki.enabled|d() | bool) }}'
 
                                                                    # ]]]
@@ -63,28 +62,31 @@ prosody__pki_key_filename: '{{ ansible_local.pki.key
                                   ansible_local.pki.key|d())
                               else "default.key" }}'
                                                                    # ]]]
-# .. envvar:: prosody_pki_hook_name [[[
+# .. envvar:: prosody__pki_hook_name [[[
 #
 # Name of the hook script which will be stored in hook directory.
-prosody_pki_hook_name: 'prosody'
+prosody__pki_hook_name: 'prosody'
 
                                                                    # ]]]
-# .. envvar:: prosody_pki_hook_path [[[
+# .. envvar:: prosody__pki_hook_path [[[
 #
 # Directory with PKI hooks.
-prosody_pki_hook_path: '{{ ansible_local.pki.hooks
+prosody__pki_hook_path: '{{ ansible_local.pki.hooks
                          if (ansible_local|d() and ansible_local.pki|d() and
                              ansible_local.pki.hooks|d())
                          else "/etc/pki/hooks" }}'
 
                                                                    # ]]]
-# .. envvar:: prosody_pki_hook_action [[[
+# .. envvar:: prosody__pki_hook_action [[[
 #
 # Specify how changes in PKI should affect prosody, either 'reload' or 'restart'.
-prosody_pki_hook_action: 'reload'
+prosody__pki_hook_action: 'reload'
 
                                                                    # ]]]
                                                                    # ]]]
+# Prosody Configuration: [[[
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # .. envvar:: prosody__admins [[[
 #
 # list of admins jabber accounts of this prosody instance
@@ -96,13 +98,11 @@ prosody__admins: []
 # @see https://prosody.im/doc/libevent
 prosody__use_libevent: false
                                                                    # ]]]
-# .. envvar:: prosody__config_global: [[[
+# .. envvar:: prosody__config_modules_default: [[[
 #
-# main prosody configuration
+# Modules that are loaded by default
 # @see prosody.im
-prosody__config_global:
-  admins: '{{ prosody__admins }}'
-  modules_enabled:
+prosody__config_modules_default:
     - "roster"
     - "saslauth"
     - "tls"
@@ -125,6 +125,20 @@ prosody__config_global:
     - "blocking"
     - "smacks"
     #- "s2s_auth_dane"
+                                                                   # ]]]
+# .. envvar:: prosody__config_modules: [[[
+#
+# modules that should be enabled
+# @see prosody.im
+prosody__config_modules: '{{ prosody__config_modules_default }}'
+                                                                   # ]]]
+# .. envvar:: prosody__config_global: [[[# [[[
+#
+# main prosody configuration
+# @see prosody.im
+prosody__config_global:
+  admins: '{{ prosody__admins }}'
+  modules_enabled: '{{ prosody__config_modules }}'
   allow_registration: False
   daemonize: True
   pidfile: "/var/run/prosody/prosody.pid"
@@ -142,7 +156,7 @@ prosody__config_global:
     error: "/var/log/prosody/prosody.err"
     #{ levels = { "error" }; to = "syslog";  }
                                                                    # ]]]
-# .. envvar:: prosody__config_virtual_hosts: [[
+# .. envvar:: prosody__config_virtual_hosts: [[[
 prosody__config_virtual_hosts:
     - name: '{{ ansible_domain }}'
       enabled: false
@@ -167,4 +181,5 @@ prosody__ferm__dependent_rules:
     name: 'http'
     multiport: True
     delete: '{{ prosody__deploy_state != "present" }}'
+                                                                   # ]]]
                                                                    # ]]]
