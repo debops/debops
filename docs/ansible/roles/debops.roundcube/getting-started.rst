@@ -6,9 +6,6 @@ Getting started
 .. contents::
    :local:
 
-.. include:: includes/all.rst
-
-
 .. _roundcube__ref_default_setup:
 
 Default setup
@@ -25,8 +22,10 @@ SQLite is used as database backend for storing the user settings.
 Example inventory
 -----------------
 
-Roundcube can be installed on a given host by adding it to the
-``[debops_service_roundcube]`` Ansible inventory group::
+To install and configure Roundcube on a host, it needs to be present in the
+``[debops_service_roundcube]`` Ansible inventory group:
+
+.. code-block:: none
 
     [debops_service_roundcube]
     hostname
@@ -40,10 +39,11 @@ Example playbook
 The following playbook can be used with DebOps. If you are using these role
 without DebOps you might need to adapt them to make them work in your setup.
 
-.. literalinclude:: playbooks/roundcube.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/roundcube.yml
+
    :language: yaml
 
-This playbook is also shipped with the role under :file:`docs/playbooks/`.
+This playbook is also shipped with DebOps at :file:`ansible/playbooks/service/roundcube.yml`.
 
 
 .. _roundcube__ref_ansible_tags:

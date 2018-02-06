@@ -1,7 +1,7 @@
-.. _debops-contrib.roundcube:
+.. _debops.roundcube:
 
-Ansible role: debops-contrib.roundcube
-======================================
+debops.roundcube
+================
 
 .. toctree::
    :maxdepth: 2
@@ -11,7 +11,6 @@ Ansible role: debops-contrib.roundcube
    defaults
    guides
    copyright
-   changelog
    upgrade
 
 ..
