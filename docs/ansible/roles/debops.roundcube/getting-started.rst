@@ -3,6 +3,8 @@
 Getting started
 ===============
 
+.. include:: ../../../includes/global.rst
+
 .. contents::
    :local:
 
