@@ -8,6 +8,14 @@ Getting started
 Default configuration
 ---------------------
 
+The configuration is split into 3 basic parameters,
+this is because of limitation of YAML and easier representation.
+
+- prosody__*_config_global
+- prosody__*_config_components
+- prosody__*_config_virtual_hosts
+
+By default there are two components active :ref:`prosody__http_upload` :ref:`prosody__muv`
 
 @TODO
 
