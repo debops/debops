@@ -24,6 +24,11 @@ Changed
 
 - Enable SSH jail via default configuration of :envvar:`fail2ban_jails`. [ganto_]
 
+Added
+~~~~~
+
+- Added dbpurgeage setting [gardouille]
+
 
 `debops.fail2ban v0.1.1`_ - 2016-12-01
 --------------------------------------
