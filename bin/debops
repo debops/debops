@@ -38,6 +38,7 @@ except ImportError:
     import ConfigParser as configparser
 import ansible
 from debops import ANSIBLE_CONFIG_FILE, ENCFS_PREFIX, SECRET_NAME
+from debops import DEBOPS_PY_PACKAGE
 from debops import read_config
 from debops import padlock_lock, padlock_unlock
 from debops.cmds import INSECURE
@@ -88,11 +89,13 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
                            "debops", "ansible", "playbooks", type)
         yield os.path.join(project_root, "debops", "ansible", "plugins", type)
         yield os.path.join(project_root, "debops", "ansible", type)
-        yield os.path.join(monorepo_path,
-                           "ansible", "playbooks", "playbooks", type)
-        yield os.path.join(monorepo_path, "ansible", "playbooks", type)
-        yield os.path.join(monorepo_path, "ansible", "plugins", type)
-        yield os.path.join(monorepo_path, "ansible", type)
+        if monorepo_path:
+            yield os.path.join(monorepo_path,
+                            "ansible", "playbooks", "playbooks", type)
+            yield os.path.join(monorepo_path, "ansible", "playbooks", type)
+            yield os.path.join(monorepo_path, "ansible", "plugins", type)
+            yield os.path.join(monorepo_path, "ansible", type)
+        yield os.path.join(DEBOPS_PY_PACKAGE, type)
         yield os.path.join(playbooks_path, type)
         yield os.path.join("/usr/share/ansible/", type)
 
@@ -105,15 +108,25 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
 
     defaults = cfg.setdefault('defaults', {})
     defaults['inventory'] = inventory_path
-    defaults['roles_path'] = PATHSEP.join(filter(None, (
-        defaults.get('roles_path'),  # value from .debops.cfg or None
-        os.path.join(project_root, "roles"),
-        os.path.join(project_root, "ansible", "roles"),
-        os.path.join(project_root, "debops", "ansible", "roles"),
-        os.path.join(monorepo_path, "ansible", "roles"),
-        os.path.join(playbooks_path, "..", "roles"),
-        os.path.join(playbooks_path, "roles"),
-        "/etc/ansible/roles")))
+    if monorepo_path:
+        defaults['roles_path'] = PATHSEP.join(filter(None, (
+            defaults.get('roles_path'),  # value from .debops.cfg or None
+            os.path.join(project_root, "roles"),
+            os.path.join(project_root, "ansible", "roles"),
+            os.path.join(project_root, "debops", "ansible", "roles"),
+            os.path.join(monorepo_path, "ansible", "roles"),
+            os.path.join(playbooks_path, "..", "roles"),
+            os.path.join(playbooks_path, "roles"),
+            "/etc/ansible/roles")))
+    else:
+        defaults['roles_path'] = PATHSEP.join(filter(None, (
+            defaults.get('roles_path'),  # value from .debops.cfg or None
+            os.path.join(project_root, "roles"),
+            os.path.join(project_root, "ansible", "roles"),
+            os.path.join(project_root, "debops", "ansible", "roles"),
+            os.path.join(playbooks_path, "..", "roles"),
+            os.path.join(playbooks_path, "roles"),
+            "/etc/ansible/roles")))
     for plugin_type in ('action', 'callback', 'connection',
                         'filter', 'lookup', 'vars'):
         plugin_type = plugin_type+"_plugins"
@@ -135,6 +148,7 @@ def find_playbook(config,
                   playbook,
                   project_root,
                   monorepo_path,
+                  package_path,
                   playbooks_path):
     tries = [
         (project_root, "playbooks", playbook),
@@ -144,6 +158,7 @@ def find_playbook(config,
          playbook),
         (monorepo_path, "ansible", "playbooks", playbook),
         (monorepo_path, "ansible", "playbooks", "playbooks", playbook),
+        (package_path, "playbooks", playbook),
         (playbooks_path, playbook),
         ]
 
@@ -164,7 +179,7 @@ def main(cmd_args):
     project_root = find_debops_project(required=True)
     config = read_config(project_root)
     playbooks_path = find_playbookpath(config, project_root, required=False)
-    monorepo_path = find_monorepopath(config, project_root, required=True)
+    monorepo_path = find_monorepopath(config, project_root, required=False)
 
     # Ensure that script works with least amount of changes
     if playbooks_path is None:
@@ -186,6 +201,7 @@ def main(cmd_args):
                                  maybe_play + ".yml",
                                  project_root,
                                  monorepo_path,
+                                 DEBOPS_PY_PATH,
                                  playbooks_path)
         if play:
             cmd_args.pop(0)
