@@ -50,8 +50,8 @@ def get_source_file_to_url_map(start_dir='.', skip_patterns=[]):
         # already get factor 10 in performance for git invocation.
         if dir_path not in repo_dir_to_url_map:
             for remote_line in check_output(['git', '-C', dir_path,
-                                             'remote', '-v']).split('\n'):
-                remote_item = re.split(r'\s', remote_line)
+                                             'remote', '-v']).split(b'\n'):
+                remote_item = re.split(r'\s', remote_line.decode('utf-8'))
                 if remote_item[0] == 'origin' and remote_item[2] == '(fetch)':
                     base_url = remote_item[1]
 
