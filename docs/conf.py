@@ -24,6 +24,7 @@ from docutils.utils import get_source_line
 sys.path.insert(0, os.path.abspath('_lib'))
 
 import yaml2rst  # noqa
+import edit_url  # noqa
 
 rst_ansible_roles = 'ansible/roles/'
 yml_ansible_roles = '../ansible/roles/'
@@ -47,6 +48,21 @@ def _warn_node(self, msg, node, **kwargs):
 
 
 sphinx.environment.BuildEnvironment.warn_node = _warn_node
+
+git_commit_id = os.popen('git rev-parse --short HEAD').read().strip()
+
+html_context = {
+    'display_github': True,  # # Add 'Edit on Github' link
+    'github_user': 'debops',
+    'github_repo': 'debops',
+    'github_version': 'master',
+    'conf_py_path': '/docs/',
+    'commit': git_commit_id,
+    'source_file_to_url_map': edit_url.get_source_file_to_url_map(
+        start_dir=os.path.dirname(__file__),
+        skip_patterns=[]
+    )
+}
 
 # -- General configuration ------------------------------------------------
 
