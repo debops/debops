@@ -150,9 +150,15 @@ expected, system-wide installation should work fine.
 DebOps monorepo
 ---------------
 
-When the DebOps scripts are installed, you can use the :command:`debops-update`
-command to download or update the DebOps monorepo. The :command:`git`
-repository will be cloned to the directory:
+If you installed DebOps using a Python package equal or newer than ``0.7.0``,
+the installation should include a set of DebOps playbooks and roles located in
+the ``debops`` Python pacakge directory. The scripts should automatically find
+them and use them as necessary.
+
+If you installed an older DebOps release, or you want to use the latest changes
+in DebOps development branch, you can use the :command:`debops-update` command
+to download or update the DebOps monorepo. The :command:`git` repository will
+be cloned to the directory:
 
 .. code-block:: console
 
