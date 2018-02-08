@@ -242,6 +242,7 @@
 {%         endif                                                                    %}
 
 {%     endif                                                                        %}
+{%     if item.maintenance|d(True)|bool                                             %}
         if (-f $document_root/{{ item.maintenance_file | d('maintenance.html') }}) {
                 return 503;
         }
@@ -250,6 +251,7 @@
                 rewrite ^(.*)$ /{{ item.maintenance_file | d('maintenance.html') }} break;
         }
 
+{%     endif                                                                        %}
 {%     if item.error_pages|d()                                                      %}
 {%         for code, location in item.error_pages.items()                       %}
         error_page {{ code }} {{ location }};
