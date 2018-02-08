@@ -1,5 +1,19 @@
 ---
 
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ proc_hidepid__base_packages }}'
+    - '{{ proc_hidepid__packages }}'
+  register: proc_hidepid__register_install
+  when: proc_hidepid__enabled|bool
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: proc_hidepid__register_install|changed
+
 - name: Ensure that UNIX system group with /proc access exists
   group:
     name: '{{ proc_hidepid__group }}'
@@ -15,7 +29,7 @@
     fstype: 'proc'
     opts: 'defaults,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }}'
     state: 'mounted'
-  when: proc_hidepid__enabled|bool
+  when: proc_hidepid__enabled|bool and proc_hidepid__remount|bool
 
   # This is a workaround for Ubuntu bug: https://bugs.launchpad.net/ubuntu/+source/mountall/+bug/1039887
 - name: Remount /proc from rc.local when needed
@@ -25,7 +39,7 @@
     line: 'mount -o remount,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }} /proc'
     insertbefore: 'exit 0'
     state: 'present'
-  when: (proc_hidepid__enabled|bool and
+  when: (proc_hidepid__enabled|bool and proc_hidepid__remount|bool and
          (ansible_distribution in [ 'Ubuntu' ] and
           ansible_distribution_release in [ 'trusty' ]))
 
