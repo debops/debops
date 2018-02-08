@@ -125,6 +125,10 @@ Removed
   is now available in the :ref:`debops.machine` role. You will need to update
   the Ansible inventory variables to reflect the changes.
 
+- [debops.console] Management of the ``/proc`` ``hidepid=`` option has been
+  moved to a new role, :ref:`debops.proc_hidepid`. You will need to update the
+  Ansible inventory variables to reflect the changes.
+
 
 debops v0.6.0 - 2017-10-21
 --------------------------
