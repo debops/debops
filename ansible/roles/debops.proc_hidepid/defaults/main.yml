@@ -4,15 +4,45 @@
 # debops.proc_hidepid default variables
 # =====================================
 
+# .. contents:: Sections
+#    :local:
+
+
+# General configuration, APT packages [[[
+# ---------------------------------------
 
 # .. envvar:: proc_hidepid__enabled [[[
 #
 # Enable or disable support for managing the ``/proc`` ``hidepid=`` option
 # using Ansible.
-proc_hidepid__enabled: '{{ True
-                           if ((ansible_system_capabilities_enforced|bool and
+proc_hidepid__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__base_packages [[[
+#
+# List of APT packages required for hidepid support.
+proc_hidepid__base_packages: [ 'libcap2-bin' ]
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__packages [[[
+#
+# List of additional APT packages to install with hidepid support.
+proc_hidepid__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# The ``/proc`` filesystem options [[[
+# ------------------------------------
+
+# .. envvar:: proc_hidepid__remount [[[
+#
+# When enabled, the role will try and remount the ``/proc`` filesystem to
+# enable the ``hidepid=`` options. This might not be possible in certain
+# environments like LXC/Docker containers, in which case the role will only
+# passively set up the required facts and other configuration.
+proc_hidepid__remount: '{{ True
+                           if (((ansible_system_capabilities_enforced|d())|bool and
                                 "cap_sys_admin" in ansible_system_capabilities) or
-                               not ansible_system_capabilities_enforced|bool)
+                               not (ansible_system_capabilities_enforced|d(True))|bool)
                            else False }}'
 
                                                                    # ]]]
