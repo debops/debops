@@ -6,17 +6,18 @@
 
 set -o nounset -o pipefail -o errexit
 
-hidepid="false"
-hidepid_type=""
+hidepid_configured="true"
+hidepid_enabled="false"
+hidepid_level=""
 hidepid_gid=""
 hidepid_group=""
 
 if grep -qs -E '^proc\s+.*hidepid=' /proc/mounts ; then
 
-    hidepid="true"
+    hidepid_enabled="true"
 
     # Find the hidepid value
-    hidepid_type="$(grep -E '^proc\s+.*hidepid=' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /hidepid=/) {print $i}}}' | cut -d= -f2)"
+    hidepid_level="$(grep -E '^proc\s+.*hidepid=' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /hidepid=/) {print $i}}}' | cut -d= -f2)"
 
     # Find the hidepid gid
     hidepid_gid="$(grep -E '^proc\s+.*hidepid=' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /gid=/) {print $i}}}' | cut -d= -f2)"
@@ -28,7 +29,6 @@ if grep -qs -E '^proc\s+.*hidepid=' /proc/mounts ; then
 
 fi
 
-output="{\"hidepid\": \"${hidepid}\", \"hidepid_type\": \"${hidepid_type}\", \"hidepid_gid\": \"${hidepid_gid}\", \"hidepid_group\": \"${hidepid_group}\"}"
+output="{\"configured\": \"${hidepid_configured}\", \"enabled\": \"${hidepid_enabled}\", \"level\": \"${hidepid_level}\", \"gid\": \"${hidepid_gid}\", \"group\": \"${hidepid_group}\"}"
 
-echo ${output}
-
+printf "${output}\n"

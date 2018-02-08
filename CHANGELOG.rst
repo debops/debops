@@ -40,6 +40,8 @@ Added
   - :ref:`debops.machine`: manage the :file:`/etc/machine-info` file,
     the :file:`/etc/issue` file and a dynamic MOTD.
 
+  - :ref:`debops.proc_hidepid`: configure the ``/proc`` ``hidepid=`` options.
+
 - You can now :ref:`use Vagrant <quick_start__vagrant>` to create an Ansible
   Controller based on Debian Stretch and use it to manage itself or other hosts
   over the network.
@@ -122,6 +124,10 @@ Removed
   :file:`/etc/motd` files from the ``debops.console`` role. That functionality
   is now available in the :ref:`debops.machine` role. You will need to update
   the Ansible inventory variables to reflect the changes.
+
+- [debops.console] Management of the ``/proc`` ``hidepid=`` option has been
+  moved to a new role, :ref:`debops.proc_hidepid`. You will need to update the
+  Ansible inventory variables to reflect the changes.
 
 
 debops v0.6.0 - 2017-10-21
