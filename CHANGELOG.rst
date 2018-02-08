@@ -40,6 +40,8 @@ Added
   - :ref:`debops.machine`: manage the :file:`/etc/machine-info` file,
     the :file:`/etc/issue` file and a dynamic MOTD.
 
+  - :ref:`debops.proc_hidepid`: configure the ``/proc`` ``hidepid=`` options.
+
 - You can now :ref:`use Vagrant <quick_start__vagrant>` to create an Ansible
   Controller based on Debian Stretch and use it to manage itself or other hosts
   over the network.
