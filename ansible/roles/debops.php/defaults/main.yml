@@ -83,7 +83,7 @@ php__server_api_packages: [ 'cli', 'fpm' ]
 # .. envvar:: php__base_packages [[[
 #
 # Install set of standard PHP packages.
-php__base_packages: [ '{{ "php" + php__version }}', 'curl', 'gd', 'mcrypt' ]
+php__base_packages: [ '{{ "php" + php__version }}', 'curl', 'gd', '{{ "mcrypt" if php__version | version_compare("7.2","<") else None }}' ]
 
                                                                    # ]]]
 # .. envvar:: php__packages [[[
