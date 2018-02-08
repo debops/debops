@@ -58,28 +58,6 @@
     path: '{{ (console_preferred_editors | intersect(console_register_installed_editors.stdout_lines)) | first }}'
   tags: [ 'role::console:editor' ]
 
-  # Enable hidepid= only on specific hosts
-- include: proc_hidepid.yml
-  when: (ansible_local|d() and ((ansible_local.root|d() and 'ignore-cap12s' in ansible_local.root.flags) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
-
-- name: Make sure that Ansible fact directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Install proc hidepid fact script
-  template:
-    src: 'etc/ansible/facts.d/proc.fact.j2'
-    dest: '/etc/ansible/facts.d/proc.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
 - name: Remove obsolet sysctl configuration file
   file:
     path: '/etc/sysctl.d/10-debops.console.conf'

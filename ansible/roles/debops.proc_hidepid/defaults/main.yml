@@ -1,0 +1,47 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.proc_hidepid default variables
+# =====================================
+
+
+# .. envvar:: proc_hidepid__enabled [[[
+#
+# Enable or disable support for managing the ``/proc`` ``hidepid=`` option
+# using Ansible.
+proc_hidepid__enabled: '{{ True
+                           if ((ansible_system_capabilities_enforced|bool and
+                                "cap_sys_admin" in ansible_system_capabilities) or
+                               not ansible_system_capabilities_enforced|bool)
+                           else False }}'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__level [[[
+#
+# Specify what level of protection for the ``/proc`` files to configure:
+#
+# - ``0``: no protection, files are world-readable
+#
+# - ``1``: the ``/proc`` contents are protected using UNIX permissions, file
+#          owners can access their own files
+#
+# - ``2``: the ``/proc`` contents are invisible to non-owners, only ``root``
+#          and users in the specific UNIX system group can see everything
+#
+proc_hidepid__level: '2'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__group [[[
+#
+# Name of the UNIX system group which will have unrestricted access to the
+# ``/proc`` filesystem.
+proc_hidepid__group: 'procadmins'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__gid [[[
+#
+# The GID used by the UNIX system group. If not specified, it will be selected
+# automatically. It might be best not to change existing GID once set.
+proc_hidepid__gid: ''
+                                                                   # ]]]
+                                                                   # ]]]

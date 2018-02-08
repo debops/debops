@@ -53,29 +53,6 @@ console_fsckfix: 'yes'
 console_fsckfix_releases: [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
 
 
-# ---- /proc & hidepid= options ----
-
-# Mounting /proc with hidepid= allows you to hide process information of other
-# users on unprivileged accounts. This functionality is only enabled on recent
-# Linux kernels, and only on hardware hosts or KVM virtual machines. For LXC
-# containers, have a look at the 'debops.lxc' role. For OpenVZ containers,
-# AFAIK there's no way to enable it.
-
-# Enable or disable hidepid= option in /proc. Disabling only stops Ansible
-# from adding hidepid= automatically, you need to remove the /proc entry from
-# /etc/fstab manually (and optionally remount command from /etc/rc.local)
-# because if Ansible tries to do this using the 'mount' module, it will try to
-# remove the /proc mount point as well. :-(
-console_proc_hidepid: True
-
-# What level of hidepid= to use (choices: 0, 1, 2)
-console_proc_hidepid_level: '2'
-
-# System group to set for /proc so that selected users can access it without
-# restrictions; this is meant for monitoring services, etc.
-console_proc_hidepid_group: 'procadmins'
-
-
 # ---- /etc/hosts ----
 
 # Add or remove entries in /etc/hosts

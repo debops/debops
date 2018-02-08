@@ -59,8 +59,28 @@ Inventory variable changes
   | ``console_motd``  | :envvar:`machine__motd`         | No            |
   +-------------------+---------------------------------+---------------+
 
-The support for dynamic MOTD has been implemented by the :ref:`debops.machine`
-role, you might want to use that instead of the static MOTD file.
+  The support for dynamic MOTD has been implemented by the :ref:`debops.machine`
+  role, you might want to use that instead of the static MOTD file.
+
+- Configuration of the ``/proc`` ``hidepid=`` option has been removed from the
+  ``debops.console`` and is now available in the new :ref:`debops.proc_hidepid`
+  Ansible role. List of default variables that were affected:
+
+  +--------------------------------+---------------------------------+---------------+
+  | Old variable name              | New variable name               | Changed value |
+  +================================+=================================+===============+
+  | ``console_proc_hidepid``       | :envvar:`proc_hidepid__enabled` | No            |
+  +--------------------------------+---------------------------------+---------------+
+  | ``console_proc_hidepid_level`` | :envvar:`proc_hidepid__level`   | No            |
+  +--------------------------------+---------------------------------+---------------+
+  | ``console_proc_hidepid_group`` | :envvar:`proc_hidepid__group`   | No            |
+  +--------------------------------+---------------------------------+---------------+
+
+  The logic to enable/disable the ``hidepid=`` configuration has been moved to
+  the :envvar:`proc_hidepid__enabled` variable to be more accessible. The role
+  creates its own set of Ansible local facts with new variable names, you might
+  need to update configuration of the roles that relied on them.
+
 
 v0.6.0
 ------
