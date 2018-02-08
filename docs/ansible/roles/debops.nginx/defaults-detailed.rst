@@ -596,6 +596,11 @@ Error pages
          location_options: |
            internal;
 
+``maintenance``
+  Optional, boolean. Defaults to ``True``.
+  Specifies if the maintenance HTML page configuration should be added to the
+  server or not.
+
 ``maintenance_file``
   Optional. Path of the maintenance HTML page (by default
   :file:`maintenance.html`) located in the website's document root directory.
