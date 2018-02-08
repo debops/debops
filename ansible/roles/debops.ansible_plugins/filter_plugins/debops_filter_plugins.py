@@ -210,7 +210,7 @@ def parse_kv_config(*args, **kwargs):
             elif not all(x in ['name', 'option', 'state', 'comment',
                                'section', 'weight', 'value', 'copy_id_from']
                          for x in element):
-                for key, value in element.iteritems():
+                for key, value in element.items():
                     current_param = (parsed_config[key].copy()
                                      if key in parsed_config else {})
                     current_param.update({
@@ -235,7 +235,7 @@ def parse_kv_config(*args, **kwargs):
     # Expand the dictionary of configuration options into a list,
     # and return sorted by weight
     output = []
-    for key, params in parsed_config.iteritems():
+    for key, params in parsed_config.items():
         if isinstance(params.get('value'), dict):
             unsorted_values = []
             current_value = params.get('value').copy()
@@ -383,7 +383,7 @@ def parse_kv_items(*args, **kwargs):
     # Expand the dictionary of configuration options into a list,
     # and return sorted by weight
     output = []
-    for key, params in parsed_config.iteritems():
+    for key, params in parsed_config.items():
         if isinstance(params.get('value'), dict):
             unsorted_values = []
             current_value = params.get('value').copy()

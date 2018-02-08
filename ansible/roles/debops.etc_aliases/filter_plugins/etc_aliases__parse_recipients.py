@@ -147,7 +147,7 @@ def etc_aliases__parse_recipients(*args, **kwargs):
                                'add_dest', 'add_to', 'cc', 'bcc',
                                'del_dest', 'del_to']
                          for x in element):
-                for key, value in element.iteritems():
+                for key, value in element.items():
                     current_alias = parsed_aliases.get(key, {}).copy()
                     current_alias.update({
                         'name': key,
