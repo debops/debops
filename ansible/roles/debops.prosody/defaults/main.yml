@@ -90,7 +90,7 @@ prosody__pki_hook_action: 'reload'
 
                                                                    # ]]]
                                                                    # ]]]
-# Prosody Configuration: [[[
+# Prosody Configuration [[[
 # --------------------------
 
 # .. envvar:: prosody__deploy_state [[[
@@ -111,13 +111,13 @@ prosody__domain: '{{ ansible_local.core.domain
 # List of admin jabber accounts of this prosody instance
 prosody__admins: []
                                                                    # ]]]
-# .. envvar:: prosody__use_libevent: [[[
+# .. envvar:: prosody__use_libevent [[[
 #
 # Set this to true to enable the libevent backend
 # @see https://prosody.im/doc/libevent
 prosody__use_libevent: false
                                                                    # ]]]
-# .. envvar:: prosody__modules_default: [[[
+# .. envvar:: prosody__modules_default [[[
 #
 # Modules that are loaded by default
 # @see https://prosody.im/doc/configure
@@ -145,12 +145,12 @@ prosody__modules_default:
     - "smacks"
     #- "s2s_auth_dane"
                                                                    # ]]]
-# .. envvar:: prosody__modules: [[[
+# .. envvar:: prosody__modules [[[
 #
 # Modules that should be enabled
 prosody__modules: '{{ prosody__modules_default }}'
                                                                    # ]]]
-# .. envvar:: prosody__authentication: [[[
+# .. envvar:: prosody__authentication [[[
 #
 # Providers:
 #  - internal_plain
@@ -162,18 +162,18 @@ prosody__modules: '{{ prosody__modules_default }}'
 # https://prosody.im/doc/authentication
 prosody__authentication: 'internal_plain'
                                                                    # ]]]
-# .. envvar:: prosody__insecure_domains: [[[
+# .. envvar:: prosody__insecure_domains [[[
 #
 # List of insecure domains. As example `gmail.com`
 # https://prosody.im/doc/s2s
 prosody__insecure_domains: []
                                                                    # ]]]
-# .. envvar:: prosody__allow_registration: [[[
+# .. envvar:: prosody__allow_registration [[[
 #
 # Allow new registrations
 prosody__allow_registration: False
                                                                    # ]]]
-# .. envvar:: prosody__config_ldap: [[[
+# .. envvar:: prosody__config_ldap [[[
 #
 # LDAP config, this is used when `prosody__authentication` is ldap2.
 # https://modules.prosody.im/mod_auth_ldap2.html
@@ -186,7 +186,7 @@ prosody__config_ldap:
   bind_password: 'lookup..@TODO'
   use_tsl: True
                                                                    # ]]]
-# .. envvar:: prosody__default_config_global: [[[
+# .. envvar:: prosody__default_config_global [[[
 #
 # Main prosody configuration, default values
 # @see https://prosody.im/doc/configure
@@ -205,25 +205,25 @@ prosody__default_config_global:
     info: "/var/log/prosody/prosody.log"
     error: "/var/log/prosody/prosody.err"
                                                                    # ]]]
-# .. envvar:: prosody__config_gloabl: [[[
+# .. envvar:: prosody__config_gloabl [[[
 #
 # Mapping for global configs which will be managed on all hosts in the Ansible
 # inventory.
 prosody__config_global: {}
                                                                    # ]]]
-# .. envvar:: prosody__group_config_gloabl: [[[
+# .. envvar:: prosody__group_config_gloabl [[[
 #
 # Mapping for global configs which will be managed on specific groups in the Ansible
 # inventory.
 prosody__group_config_global: {}
                                                                    # ]]]
-# .. envvar:: prosody__host_config_gloabl: [[[
+# .. envvar:: prosody__host_config_gloabl [[[
 #
 # Mapping for global configs which will be managed on specific hosts in the Ansible
 # inventory.
 prosody__host_config_global: {}
                                                                    # ]]]
-# .. envvar:: prosody__combined_config_gloabl: [[[
+# .. envvar:: prosody__combined_config_gloabl [[[
 #
 # Mapping which combines all of the global config variables and is used
 # in the configuration template.
@@ -233,7 +233,7 @@ prosody__combined_config_global: '{{ prosody__default_config_global | combine(
                                 , prosody__group_config_global
                                 , prosody__host_config_global ) }}'
                                                                    # ]]]
-# .. envvar:: prosody__config_virtual_hosts: [[[
+# .. envvar:: prosody__config_virtual_hosts [[[
 #
 # List of virtual hosts
 prosody__config_virtual_hosts:
@@ -241,21 +241,21 @@ prosody__config_virtual_hosts:
   enabled: false
   pki_realm: 'domain'
                                                                    # ]]]
-# .. envvar:: prosody__http_upload: [[[
+# .. envvar:: prosody__http_upload [[[
 #
 #  http_upload enables upload via http(s) for clients to share files
 #  https://modules.prosody.im/mod_http_upload.html
 #  XEP-0363
 prosody__http_upload: True
                                                                    # ]]]
-# .. envvar:: prosody__muc: [[[
+# .. envvar:: prosody__muc [[[
 #
 #  muc (multi user channel) enables group channel function.
 #  https://prosody.im/doc/modules/mod_muc
 #  XEP-0045
 prosody__muc: True
                                                                    # ]]]
-# .. envvar:: prosody__config_http_upload: [[[
+# .. envvar:: prosody__config_http_upload [[[
 #
 #  http_upload config is for client upload via http(s) to share files
 #  https://modules.prosody.im/mod_http_upload.html
@@ -264,7 +264,7 @@ prosody__config_http_upload:
 - domain: 'upload.{{ prosody__domain }}'
   params: '"http_upload"'
                                                                    # ]]]
-# .. envvar:: prosody__config_muc: [[[
+# .. envvar:: prosody__config_muc [[[
 #
 #  muc (multi user channel) config for group channel function.
 #  https://prosody.im/doc/modules/mod_muc
@@ -273,31 +273,31 @@ prosody__config_muc:
 - domain: 'conference.{{ prosody__domain }}'
   params: '"muc"'
                                                                    # ]]]
-# .. envvar:: prosody__default_config_components: [[[
+# .. envvar:: prosody__default_config_components [[[
 #
 # List of default components
 prosody__default_config_components: '{{ (prosody__config_http_upload if prosody__http_upload|bool else [])
                                       + (prosody__config_muc if prosody__muc|bool else []) }}'
                                                                    # ]]]
-# .. envvar:: prosody__config_components: [[[
+# .. envvar:: prosody__config_components [[[
 #
 # List of components which will be managed on all hosts in the Ansible
 # inventory.
 prosody__config_components: []
                                                                    # ]]]
-# .. envvar:: prosody__group_config_components: [[[
+# .. envvar:: prosody__group_config_components [[[
 #
 # List of components which will be managed on specific groups in the Ansible
 # inventory.
 prosody__group_config_components: []
                                                                    # ]]]
-# .. envvar:: prosody__host_config_components: [[[
+# .. envvar:: prosody__host_config_components [[[
 #
 # List of components which will be managed on specific hosts in the Ansible
 # inventory.
 prosody__host_config_components: []
                                                                    # ]]]
-# .. envvar:: prosody__combined_config_components: [[[
+# .. envvar:: prosody__combined_config_components [[[
 #
 # List which combines all of the global config variables and is used
 # in the configuration template.
@@ -306,7 +306,7 @@ prosody__combined_config_components: '{{ prosody__default_config_components
                                        + prosody__group_config_components
                                        + prosody__host_config_components  }}'
                                                                    # ]]]
-# .. envvar:: prosody__ferm__dependent_rules: [[[
+# .. envvar:: prosody__ferm__dependent_rules [[[
 #
 # Configuration for :command:`iptables` firewall manged by :program:`ferm`.
 prosody__ferm__dependent_rules:

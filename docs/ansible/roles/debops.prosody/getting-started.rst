@@ -15,7 +15,16 @@ this is because of limitation of YAML and easier representation.
 - prosody__*_config_components
 - prosody__*_config_virtual_hosts
 
-By default there are two components active :ref:`prosody__http_upload` :ref:`prosody__muv`
+By default there are two components active :envvar::`prosody__http_upload` :envvar:`prosody__muc`
+Set this varables to false to disable the specific component.
+
+Domains
+~~~~~~~
+
+The default virtual host uses :envvar:`prosody__domain` as domain.
+
+For the components are two subdomains setted: conference.`prosody__domain and upload.`prosody__domain`
+
 
 @TODO
 
