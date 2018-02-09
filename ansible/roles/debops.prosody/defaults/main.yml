@@ -207,6 +207,23 @@ prosody__default_config_global:
     info: "/var/log/prosody/prosody.log"
     error: "/var/log/prosody/prosody.err"
                                                                    # ]]]
+# .. envvar:: prosody__config_http_server [[[
+#
+# HTTP server specific settings.
+# More infos at https://prosody.im/doc/http
+prosody__config_http_server:
+  http_port:
+    - 5280
+  http_interface:
+    - '*'
+  https_port:
+    - 5281
+  https_interface:
+    - '*'
+  https_ssl:
+    certificate: '{{ prosdoy__pki_realm_path + "/" + prosody__pki_realm + "/" + prosody__pki_crt_filename }}'
+    key: '{{ prosdoy__pki_realm_path + "/" + prosody__pki_realm + "/" + prosody__pki_key_filename }}'
+                                                                   # ]]]
 # .. envvar:: prosody__config_gloabl [[[
 #
 # Mapping for global configs which will be managed on all hosts in the Ansible
@@ -230,7 +247,8 @@ prosody__host_config_global: {}
 # Mapping which combines all of the global config variables and is used
 # in the configuration template.
 prosody__combined_config_global: '{{ prosody__default_config_global | combine(
-                                  prosody__config_ldap if prosody__authentication == "ldap2" else {}
+                                  prosody__config_http_server
+                                , prosody__config_ldap if prosody__authentication == "ldap2" else {}
                                 , prosody__config_global
                                 , prosody__group_config_global
                                 , prosody__host_config_global ) }}'
