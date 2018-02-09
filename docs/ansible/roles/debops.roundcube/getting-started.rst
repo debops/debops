@@ -41,10 +41,10 @@ Example playbook
 The following playbook can be used with DebOps. If you are using these role
 without DebOps you might need to adapt them to make them work in your setup.
 
-.. literalinclude:: ../../../../ansible/playbooks/service/roundcube.yml
+.. literalinclude:: ../../../../ansible/playbooks/app/roundcube.yml
    :language: yaml
 
-This playbook is also shipped with DebOps at :file:`ansible/playbooks/service/roundcube.yml`.
+This playbook is also shipped with DebOps at :file:`ansible/playbooks/app/roundcube.yml`.
 
 
 .. _roundcube__ref_ansible_tags:
