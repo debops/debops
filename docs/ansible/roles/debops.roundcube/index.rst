@@ -14,7 +14,6 @@ written in PHP.
    getting-started
    defaults
    guides
-   upgrade
 
 Copyright
 ---------
