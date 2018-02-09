@@ -14,9 +14,9 @@
 #
 # List of base packages to install.
 prosody__base_packages:
-  - prosody
-  - lua-zlib
-  - prosody-modules # for ldap auth
+  - 'prosody'
+  - 'lua-zlib'
+  - 'prosody-modules' # for ldap auth
   - '{{ "lua-event" if prosody__use_libevent|bool else [] }}'
                                                                    # ]]]
 # .. envvar:: prosody__packages [[[
@@ -178,13 +178,14 @@ prosody__allow_registration: False
 # LDAP config, this is used when `prosody__authentication` is ldap2.
 # https://modules.prosody.im/mod_auth_ldap2.html
 prosody__config_ldap:
-  hostname: 'ldap.{{ ansible_domain }}'
-  user:
-    basedn: 'ou=users,..@TODO'
-    usernamefield: 'uid'
-  bind_dn: 'uid=....,dc=...@TODO'
-  bind_password: 'lookup..@TODO'
-  use_tsl: True
+  ldap:
+    hostname: 'ldap.{{ ansible_domain }}'
+    user:
+      basedn: 'ou=users,..@TODO'
+      usernamefield: 'uid'
+    bind_dn: 'uid=....,dc=...@TODO'
+    bind_password: 'lookup..@TODO'
+    use_tls: True
                                                                    # ]]]
 # .. envvar:: prosody__default_config_global [[[
 #
@@ -198,6 +199,7 @@ prosody__default_config_global:
   pidfile: "/var/run/prosody/prosody.pid"
   use_libevent: '{{ prosody__use_libevent }}'
   c2s_require_encryption: True
+  s2s_require_encryption: True
   s2s_secure_auth: True
   s2s_insecure_domains: '{{ prosody__insecure_domains }}'
   authentication: '{{ prosody__authentication }}'
