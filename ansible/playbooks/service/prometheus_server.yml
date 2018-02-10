@@ -1,0 +1,24 @@
+---
+
+
+- hosts: debops_prometheus_server
+  roles:
+    - role: debops.apt
+      tags: [ 'role::apt', 'role::prometheus' ]
+      apt__repositories:
+        - repo: 'deb https://packagecloud.io/grafana/stable/debian/ jessie main'
+          filename: grafana
+      apt__keys:
+        - url: https://packagecloud.io/gpg.key
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'role::prometheus' ]
+      apt_preferences__dependent_list:
+        - '{{ prometheus_server__apt_preferences__dependent_list }}'
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'role::nginx' ]
+      ferm__dependent_rules:
+        - '{{ prometheus_server__ferm__dependent_rules }}'
+
+    - role: debops.prometeus_server
+      tags: [ 'role::prometheus' ]
+
