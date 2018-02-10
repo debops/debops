@@ -1,0 +1,28 @@
+---
+
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_items:
+    - prometheus
+    - grafana
+
+- name: copy config
+  vars:
+    - scrape_configs: '{{ prometheus_server__scrape_configs }}'
+  template:
+    src: 'etc/prometheus/prometheus.yml.j2'
+    dest: '/etc/prometheus/prometheus.yml'
+  notify: [ 'Restart prometheus' ]
+
+- name: Enable Services
+  service:
+    name: '{{ item }}'
+    enabled: 'yes'
+    state: 'started'
+  with_items:
+    - prometheus
+    - grafana-server
+

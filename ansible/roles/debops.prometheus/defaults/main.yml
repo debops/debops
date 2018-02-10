@@ -1,0 +1,53 @@
+---
+
+prometheus__exporters:
+  - 'node-exporter'
+#  - 'mysql'
+#  - 'postfix'
+
+prometheus_servers: [ '::1' ]
+
+prometheus__deploy_state: "present"
+
+prometheus_mysql_dependencies:
+  - user: 'prometheus'
+    owner: 'prometheus'
+    group: 'prometheus'
+    home: '/var/lib/prometheus'
+    system: True
+    priv_aux: False
+    priv_default: False
+    priv: '*.*:PROCESS,REPLICATION CLIENT,SELECT'
+
+prometheus__ferm__dependent_rules_node_exporter:
+  - type: 'accept'
+    dport: [ '9100' ]
+    saddr: '{{ prometheus_servers }}'
+    accept_any: True
+    weight: '40'
+    by_role: 'prometheus'
+    name: 'prometheus_node_exporter'
+    multiport: True
+    delete: '{{ prometheus__deploy_state != "present" }}'
+
+prometheus__ferm__dependent_rules_mysql_exporter:
+  - type: 'accept'
+    dport: [ '9104' ]
+    saddr: '{{ prometheus_servers }}'
+    accept_any: True
+    weight: '40'
+    by_role: 'prometheus'
+    name: 'prometheus_mysql_exporter'
+    multiport: True
+    delete: '{{ prometheus__deploy_state != "present" }}'
+
+prometheus__ferm__dependent_rules_postfix_exporter:
+  - type: 'accept'
+    dport: [ '9154' ]
+    saddr: '{{ prometheus_servers }}'
+    accept_any: True
+    weight: '40'
+    by_role: 'prometheus'
+    name: 'prometheus_postfix_exporter'
+    multiport: True
+    delete: '{{ prometheus__deploy_state != "present" }}'

@@ -1,0 +1,35 @@
+---
+
+
+prometheus__deploy_state: "present"
+
+prometheus_server__scrape_configs_default:
+  - job_name: 'prometheus'
+    static_configs:
+    - targets: ['localhost:9090']
+
+prometheus_server__scrape_configs_host:
+  - job_name: 'node'
+    static_configs:
+      - targets:
+        - localhost:9100
+
+#prometheus_server__screpe_configs_group: "{{ groups['debops_prometheus'] }}"
+
+prometheus_server__scrape_configs: '{{ prometheus_server__scrape_configs_default | union( prometheus_server__scrape_configs_host )  }}'
+
+
+
+prometheus_server__apt_preferences__dependent_list:
+  - 'prometheus'
+  - 'grafana'
+
+prometheus_server__ferm__dependent_rules:
+  - type: 'accept'
+    dport: [ '3000' ]
+    accept_any: True
+    weight: '40'
+    by_role: 'prometheus_server'
+    name: 'http'
+    multiport: True
+    delete: '{{ prometheus__deploy_state != "present" }}'
