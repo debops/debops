@@ -3,11 +3,9 @@
 Upgrade notes
 =============
 
-.. include:: includes/all.rst
-
 The upgrade notes only describe necessary changes that you might need to make
 to your setup in order to use a new role release. Refer to the
-:ref:`roundcube__ref_changelog` for more details about what has changed.
+changelog for more details about what has changed.
 
 
 From v0.1.3 to v0.2.0
@@ -49,18 +47,18 @@ defined in the example playbook.
 
       $ debops-update
 
-2. Make sure you have the lastest version of the debops-contrib.roundcube_
+2. Make sure you have the lastest version of the :ref:`debops.roundcube`
    role. In your DebOps project directory run:
 
    .. code:: shell
 
       $ ansible-galaxy install --force --no-deps --roles-path=ansible/roles debops-contrib.roundcube
 
-2. Review the :ref:`roundcube__ref_changelog` and make sure your Ansible
-   inventory is adjusted to the variable changes (if necessary).
+2. Review the changelog and make sure your Ansible inventory is adjusted to the
+   variable changes (if necessary).
 
 3. Remove the nginx virtual host and PHP definitions created by the
-   debops.nginx_ role from the Roundcube server:
+   :ref:`debops.nginx` role from the Roundcube server:
 
    .. code:: shell
 
