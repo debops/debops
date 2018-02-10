@@ -1,13 +1,13 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# debops-contrib.roundcube default variables [[[
-# ==============================================
+# debops.roundcube default variables [[[
+# ======================================
 
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # Packages and installation [[[
@@ -363,8 +363,8 @@ roundcube__max_file_size: '30'
 roundcube__nginx__dependent_servers:
 
   - name: '{{ roundcube__domain }}'
-    filename: 'debops-contrib.roundcube'
-    by_role: 'debops-contrib.roundcube'
+    filename: 'debops.roundcube'
+    by_role: 'debops.roundcube'
     type: 'php'
     default: False
     root: '{{ roundcube__git_checkout }}'
@@ -424,7 +424,7 @@ roundcube__nginx_access_policy: ''
 roundcube__nginx__dependent_upstreams:
 
   - name: 'php_roundcube'
-    by_role: 'debops-contrib.roundcube'
+    by_role: 'debops.roundcube'
     enabled: True
     type: 'php'
     php_pool: 'roundcube'
@@ -444,7 +444,7 @@ roundcube__php__dependent_packages:
 # PHP pools managed by the debops.php_ role.
 roundcube__php__dependent_pools:
   name: 'roundcube'
-  by_role: 'debops-contrib.roundcube'
+  by_role: 'debops.roundcube'
   user: '{{ roundcube__user }}'
   group: '{{ roundcube__group }}'
 
