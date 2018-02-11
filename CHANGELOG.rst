@@ -44,6 +44,8 @@ Added
 
   - :ref:`debops.prosody`: configure an xmpp server on a given host
 
+  - :ref:`debops.sysnews`: manage System News bulletin for UNIX accounts
+
 - You can now :ref:`use Vagrant <quick_start__vagrant>` to create an Ansible
   Controller based on Debian Stretch and use it to manage itself or other hosts
   over the network.
