@@ -16,7 +16,13 @@ You can read information about required changes between releases in the
 `debops master`_ - unreleased
 -----------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v0.6.0...master
+.. _debops master: https://github.com/debops/debops/compare/v0.7.0...master
+
+
+`debops v0.7.0`_ - 2018-02-11
+-----------------------------
+
+.. _debops v0.7.0: https://github.com/debops/debops/compare/v0.6.0...v0.7.0
 
 Added
 ~~~~~
@@ -24,10 +30,10 @@ Added
 - New Ansible roles have been imported from the ``debops-contrib``
   organization: ``apparmor``, ``bitcoind``, ``btrfs``, ``dropbear_initramfs``,
   ``etckeeper``, ``firejail``, ``foodsoft``, ``fuse``, ``homeassistant``,
-  ``kernel_module``, ``kodi``, ``roundcube``, ``neurodebian``,
-  ``snapshot_snapper``, ``tor``, ``volkszaehler``, ``x2go_server``. They are
-  not yet included in the main playbook and still need to be renamed to fit
-  with the rest of the ``debops.*`` roles.
+  ``kernel_module``, ``kodi``, ``neurodebian``, ``snapshot_snapper``, ``tor``,
+  ``volkszaehler``, ``x2go_server``. They are not yet included in the main
+  playbook and still need to be renamed to fit with the rest of the
+  ``debops.*`` roles.
 
 - New DebOps roles:
 
@@ -41,6 +47,8 @@ Added
     the :file:`/etc/issue` file and a dynamic MOTD.
 
   - :ref:`debops.proc_hidepid`: configure the ``/proc`` ``hidepid=`` options.
+
+  - :ref:`debops.roundcube`: manage RoundCube Webmail application
 
   - :ref:`debops.prosody`: configure an xmpp server on a given host
 
