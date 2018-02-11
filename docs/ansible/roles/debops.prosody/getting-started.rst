@@ -39,9 +39,12 @@ By default the ports are:
 Example inventory
 -----------------
 
-``debops.prosody`` is included by default in the :file:`common.yml` DebOps playbook;
-To enable it, add a host to the group `[debops_service_prosody]`.
+To enable Prosody server support on a host, it needs to be included in the Ansible inventory in a specific group:
 
+.. code-block:: none
+
+   [debops_service_prosody]
+   hostname
 
 Example playbook
 ----------------
