@@ -250,6 +250,7 @@ System configuration
 - :ref:`debops.swapfile`
 - :ref:`debops.sysctl`
 - :ref:`debops.sysfs`
+- :ref:`debops.sysnews`
 - :ref:`debops.users`
 - ``debops.console``
 - ``debops.gitusers``

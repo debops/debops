@@ -44,6 +44,8 @@ Added
 
   - :ref:`debops.prosody`: configure an xmpp server on a given host
 
+  - :ref:`debops.sysnews`: manage System News bulletin for UNIX accounts
+
 - You can now :ref:`use Vagrant <quick_start__vagrant>` to create an Ansible
   Controller based on Debian Stretch and use it to manage itself or other hosts
   over the network.
@@ -130,6 +132,11 @@ Removed
 - [debops.console] Management of the ``/proc`` ``hidepid=`` option has been
   moved to a new role, :ref:`debops.proc_hidepid`. You will need to update the
   Ansible inventory variables to reflect the changes.
+
+- [debops.console] Management of the System News using the ``sysnews`` Debian
+  package has been removed from the role; it's now available as a separate
+  :ref:`debops.sysnews` Ansible role. You will need to update the Ansible
+  inventory variables related to System News due to this changes.
 
 
 debops v0.6.0 - 2017-10-21

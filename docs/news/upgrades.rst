@@ -81,6 +81,11 @@ Inventory variable changes
   creates its own set of Ansible local facts with new variable names, you might
   need to update configuration of the roles that relied on them.
 
+- Configuration of the ``sysnews`` package has been removed from the
+  ``debops.console`` role, it's now available in the :ref:`debops.sysnews`
+  Ansible role. There were extensive changes in the variable names and
+  parameters, read the documentation of the new role for details.
+
 
 v0.6.0
 ------
