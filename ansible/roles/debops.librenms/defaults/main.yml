@@ -21,6 +21,7 @@ librenms__base_packages:
         if (ansible_local|d() and ansible_local.apt|d() and
             (ansible_local.apt.nonfree|d())|bool)
         else [] }}'
+  - '{{ "composer" if not librenms__composer_phar|bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__monitoring_packages [[[
@@ -166,6 +167,33 @@ librenms__install_version: 'master'
 #
 # Enable or disable daily upgrades pulled from LibreNMS ``git`` repository.
 librenms__update: True
+                                                                   # ]]]
+                                                                   # ]]]
+# PHP Composer support [[[
+# ------------------------
+
+# .. envvar:: librenms__composer_phar [[[
+#
+# If this is set to ``True`` the ``composer.phar`` script will be downloaded
+# from the :envvar:`librenms__composer_phar_url` and used to install the
+# missing PHP packages. If this is set to ``False`` the system-wide
+# :command:`composer` is used.
+# WARNING: Setting this variable to ``True`` has some security implications as
+# the download is not cryptographically verified. This is only meant to be a
+# work-around for old distribution releases not supporting the downstream
+# packaged :command:`composer`.
+librenms__composer_phar: '{{ True
+                             if ansible_distribution_release in [ "jessie", "trusty" ]
+                             else False }}'
+
+                                                                   # ]]]
+# .. envvar:: librenms__composer_phar_url [[[
+#
+# URL to the file:`composer.phar` script which will be used to install PHP
+# packages not available in the APT repository on distribution releases which
+# don't package PHP composer. If this is set to ``False``, :command:`composer`
+# will be installed via APT package manager.
+librenms__composer_phar_url: 'https://getcomposer.org/composer.phar'
                                                                    # ]]]
                                                                    # ]]]
 # Database configuration [[[
