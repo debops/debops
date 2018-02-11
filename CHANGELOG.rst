@@ -42,6 +42,8 @@ Added
 
   - :ref:`debops.proc_hidepid`: configure the ``/proc`` ``hidepid=`` options.
 
+  - :ref:`debops.prosody`: configure an xmpp server on a given host
+
 - You can now :ref:`use Vagrant <quick_start__vagrant>` to create an Ansible
   Controller based on Debian Stretch and use it to manage itself or other hosts
   over the network.

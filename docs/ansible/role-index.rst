@@ -30,6 +30,7 @@ etc.
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
 - :ref:`debops.rstudio_server`
+- :ref:`debops.prosody`
 - ``debops.phpipam``
 - ``debops.phpmyadmin``
 - ``debops-contrib.foodsoft``
