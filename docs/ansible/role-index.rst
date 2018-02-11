@@ -29,8 +29,8 @@ etc.
 - :ref:`debops.mailman`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
-- :ref:`debops.rstudio_server`
 - :ref:`debops.prosody`
+- :ref:`debops.rstudio_server`
 - ``debops.phpipam``
 - ``debops.phpmyadmin``
 - ``debops-contrib.foodsoft``
