@@ -133,6 +133,11 @@ Removed
   moved to a new role, :ref:`debops.proc_hidepid`. You will need to update the
   Ansible inventory variables to reflect the changes.
 
+- [debops.console] Management of the System News using the ``sysnews`` Debian
+  package has been removed from the role; it's now available as a separate
+  :ref:`debops.sysnews` Ansible role. You will need to update the Ansible
+  inventory variables related to System News due to this changes.
+
 
 debops v0.6.0 - 2017-10-21
 --------------------------
