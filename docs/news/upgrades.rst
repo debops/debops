@@ -11,6 +11,12 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Nothing new yet.
+
+
+v0.7.0
+------
+
 This is mostly a maintenance release, dedicated to reorganization of the DebOps
 :command:`git` repository and expanding documentation.
 
