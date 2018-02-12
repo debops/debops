@@ -1,0 +1,50 @@
+-- {{ ansible_managed }}
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+
+{% macro lua_print(object, prefix='',depth=0) %}
+{%   if object is mapping                      %}
+{%     set prefix = prefix + '  '             %}
+{%     if depth!=0  %}{{ "{\n"  }}{% endif %}
+{%     for _item_name, _value in object |dictsort   %}
+{{      _item_name+' = '+lua_print(_value, prefix,depth+1)|indent(2,true) }}
+{%     endfor                                 %}
+{%     if depth!=0  %}{{ '}'  }}{% endif %}
+{%   elif 'bool' == object|type_debug %}
+{%     if object  %}{{ 'true;'|indent(2,true)  }}
+{%     else       %}{{ 'false;'|indent(2,true)  }}{% endif %}
+{%   elif object is string                    %}
+{{     '"' + object + '";'                     }}
+{%   elif object is iterable                  %}
+{%     if depth!=0  %}{{ "{\n"  }}{% endif %}
+{%     for _item in object                    %}
+{{       lua_print(_item, prefix,depth+1)|indent(2,true) }}
+{%     endfor                                 %}
+{%     if depth!=0  %}{{ '}'  }}{% endif %}
+{%   elif object is number                    %}
+{{     '%d' | format(object)|indent(2,true) }}
+{%   else                                     %}
+error unknown type
+{%   endif                                    %}
+{%  endmacro %}
+
+
+{{ lua_print(prosody__combined_config_global,'',false) }}
+
+
+{%   for item in prosody__config_virtual_hosts %}
+{% set prosody__tpl_pki_realm = item.pki_realm %}{#| d((debops__tpl_macros.get_realm_yaml_list(item.name, prosody__pki_realm) | from_yaml)[0]) %#}
+{% set prosody__tpl_pki_realm_path = prosdoy__pki_realm_path + "/" + prosody__tpl_pki_realm %}
+VirtualHost "{{ item.name }}"
+  enabled = {{ item.enabled }}
+
+  ssl = {
+    certificate = "{{ item.tls_crt | d(prosody__tpl_pki_realm_path + "/" + (item.pki_crt|d(prosody__pki_crt_filename))) }}";
+    key =  "{{ item.tls_key | d(prosody__tpl_pki_realm_path + "/" + (item.pki_key|d(prosody__pki_key_filename))) }}";
+  }
+  {{ item.raw|d("") }}
+{%   endfor %}
+
+
+{% for _component in prosody__combined_config_components %}
+Component "{{ _component.domain }}" {{ _component.params }}
+{% endfor %}

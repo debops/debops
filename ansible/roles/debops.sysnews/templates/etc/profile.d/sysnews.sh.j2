@@ -1,0 +1,27 @@
+# {{ ansible_managed }}
+
+# Print System News notification after login
+
+SYSNEWS_MIN_UID="{{ sysnews__notification_min_uid }}"
+SYSNEWS_MAX_UID="{{ sysnews__notification_max_uid }}"
+SYSNEWS_COMMAND="{{ sysnews__notification_command }}"
+
+# Check if sysnews is installed
+type /usr/bin/news > /dev/null 2>&1 || return 0
+
+# Make sure that shell is bash or zsh
+[ -n "$BASH_VERSION" -o -n "$ZSH_VERSION" ] || return 0
+
+# Make sure that it's interactive session
+[[ $- == *i* ]] || return 0
+
+# Show news only to selected users
+if [ "${EUID}" -ge "${SYSNEWS_MIN_UID}" ] ; then
+    if [ -n "${SYSNEWS_MAX_UID}" ] ; then
+        if [ "${EUID}" -le "${SYSNEWS_MAX_UID}" ] ; then
+            tty -s && eval "${SYSNEWS_COMMAND}"
+        fi
+    else
+        tty -s && eval "${SYSNEWS_COMMAND}"
+    fi
+fi

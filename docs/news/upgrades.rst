@@ -11,6 +11,12 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Nothing new yet.
+
+
+v0.7.0
+------
+
 This is mostly a maintenance release, dedicated to reorganization of the DebOps
 :command:`git` repository and expanding documentation.
 
@@ -80,6 +86,11 @@ Inventory variable changes
   the :envvar:`proc_hidepid__enabled` variable to be more accessible. The role
   creates its own set of Ansible local facts with new variable names, you might
   need to update configuration of the roles that relied on them.
+
+- Configuration of the ``sysnews`` package has been removed from the
+  ``debops.console`` role, it's now available in the :ref:`debops.sysnews`
+  Ansible role. There were extensive changes in the variable names and
+  parameters, read the documentation of the new role for details.
 
 
 v0.6.0

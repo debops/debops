@@ -29,6 +29,7 @@ etc.
 - :ref:`debops.mailman`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
+- :ref:`debops.prosody`
 - :ref:`debops.rstudio_server`
 - ``debops.phpipam``
 - ``debops.phpmyadmin``
@@ -249,6 +250,7 @@ System configuration
 - :ref:`debops.swapfile`
 - :ref:`debops.sysctl`
 - :ref:`debops.sysfs`
+- :ref:`debops.sysnews`
 - :ref:`debops.users`
 - ``debops.console``
 - ``debops.gitusers``
