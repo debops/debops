@@ -5,11 +5,11 @@
   package:
     name: '{{ item }}'
     state: 'present'
-  with_items:
-    - prometheus
-    - grafana
+  with_flattened:
+    - '{{ prometheus_server__base_packages }}'
+    - '{{ prometheus_server__packages }}'
 
-- name: copy config
+- name: Generatet Prometheus configuration
   vars:
     - scrape_configs: '{{ prometheus_server__scrape_configs }}'
   template:

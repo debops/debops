@@ -1,7 +1,7 @@
 ---
 
 
-- hosts: [ 'debops_prometheus', 'debops_service_prometheus' ]
+- hosts: [ 'debops_service_prometheus' ]
   environment: '{{ inventory__environment | d({})
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
@@ -11,9 +11,6 @@
     - role: debops.ferm
       tags: [ 'role::ferm', 'role::prometheus' ]
       ferm__dependent_rules:
-        - "{{ prometheus__ferm__dependent_rules_node_exporter if 'node-exporter' in prometheus__exporters else []  }}"
-        - "{{ prometheus__ferm__dependent_rules_mysql_exporter if 'mysql' in prometheus__exporters else []  }}"
-        - "{{ prometheus__ferm__dependent_rules_postfix_exporter if 'postfix' in prometheus__exporters else []  }}"
     - role: debops.mariadb
       tags: [ 'role::mariadb', 'role::prometheus' ]
       mariadb__dependent_users: '{{ prometheus_mysql_dependencies }}'

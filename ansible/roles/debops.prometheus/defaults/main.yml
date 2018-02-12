@@ -51,3 +51,8 @@ prometheus__ferm__dependent_rules_postfix_exporter:
     name: 'prometheus_postfix_exporter'
     multiport: True
     delete: '{{ prometheus__deploy_state != "present" }}'
+
+prometheus__ferm__dependet_rules:
+  - "{{ prometheus__ferm__dependent_rules_node_exporter if 'node-exporter' in prometheus__exporters else []  }}"
+  - "{{ prometheus__ferm__dependent_rules_mysql_exporter if 'mysql' in prometheus__exporters else []  }}"
+  - "{{ prometheus__ferm__dependent_rules_postfix_exporter if 'postfix' in prometheus__exporters else []  }}"
