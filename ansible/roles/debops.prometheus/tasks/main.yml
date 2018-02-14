@@ -44,7 +44,7 @@
   service:
     name: '{{ item }}'
     enabled: 'yes'
-    state: 'started'
+    state: 'started' # @TODO enabled
   with_flattened:
     - "{{ ['prometheus-node-exporter'] if 'node-exporter' in prometheus__exporters else [] }}"
     - "{{ ['prometheus-mysqld-exporter'] if 'mysql' in prometheus__exporters else []  }}"

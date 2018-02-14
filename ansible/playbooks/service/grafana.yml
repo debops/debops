@@ -1,0 +1,18 @@
+---
+
+
+- hosts: [ 'debops_service_grafana' ]
+  roles:
+    - role: debops.apt
+      tags: [ 'role::apt', 'role::grafana' ]
+      apt__repositories: '{{ grafana__apt__repositories }}'
+      apt__keys: '{{ grafana__apt__keys }}'
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'role::grafana' ]
+      ferm__dependent_rules:
+        - '{{ grafana__ferm__dependent_rules }}'
+    - role: debops.nginx
+      tags: [ 'role::ferm' ]
+    - role: debops.grafana
+      tags: [ 'role::grafana' ]
+

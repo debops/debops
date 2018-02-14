@@ -1,0 +1,28 @@
+---
+
+
+grafana__deploy_state: "present"
+
+grafana__apt__repositories:
+  - repo: 'deb https://packagecloud.io/grafana/stable/debian/ {{ ansible_distribution_release }} main'
+    filename: 'grafana'
+
+grafana__apt__keys:
+  - url: 'https://packagecloud.io/gpg.key'
+
+grafana__base_packages:
+  - grafana
+
+grafana__packages: []
+
+grafana__public: False
+
+grafana__ferm__dependent_rules:
+  - type: 'accept'
+    dport: [ '3000' ]
+    accept_any: True
+    weight: '40'
+    by_role: 'grafana'
+    name: 'http'
+    multiport: True
+    rule_state: '{{ "present" if (grafana__deploy_state|bool and grafana__public) else "absent" }}'
