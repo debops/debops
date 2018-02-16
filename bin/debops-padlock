@@ -34,12 +34,17 @@ import shutil
 import argparse
 import itertools
 import stat
-import sys
 import time
 from pkg_resources import resource_filename
 
-from debops import *
-from debops.cmds import *
+from debops import INVENTORY, ENCFS_PREFIX, SECRET_NAME, PADLOCK_CMD
+from debops import ENCFS_CONFIGFILE, ENCFS_KEYFILE, ENCFS_KEYFILE_LENGTH
+from debops import subprocess
+from debops import padlock_lock, padlock_unlock, shquote
+
+from debops.cmds import error_msg, require_commands
+from debops.cmds import find_debops_project
+from debops.cmds import find_inventorypath
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
 __copyright__ = "Copyright 2014-2015 by Hartmut Goebel " \
@@ -124,8 +129,9 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     # does not yet exist.
     encfs = subprocess.Popen([
         'encfs', encfs_encrypted, encfs_decrypted,
-        '--extpass', 'gpg --no-mdc-warning --output - '
-        + shquote(encfs_keyfile)], stdin=subprocess.PIPE)
+        '--extpass',
+        'gpg --no-mdc-warning --output - '+shquote(encfs_keyfile)],
+        stdin=subprocess.PIPE)
     encfs.communicate('p\n'+pwd)
 
     # Create padlock-script
@@ -134,8 +140,8 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     # :todo: use resource_stream
     shutil.copy(resource_filename('debops', SCRIPT_FILENAME), padlock_script)
     os.chmod(padlock_script,
-             os.stat(padlock_script).st_mode
-             | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+             os.stat(padlock_script).st_mode | stat.S_IXUSR |
+             stat.S_IXGRP | stat.S_IXOTH)
 
     # Lock the EncFS directory after creation
     time.sleep(0.5)  # :fixme: why sleeping here?

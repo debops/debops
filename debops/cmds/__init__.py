@@ -35,7 +35,6 @@ import subprocess
 try:
     from subprocess import DEVNULL  # py3k
 except ImportError:
-    import os
     # open DEVNULL like `subprocess` module does
     DEVNULL = os.open(os.devnull, os.O_RDWR)
 
