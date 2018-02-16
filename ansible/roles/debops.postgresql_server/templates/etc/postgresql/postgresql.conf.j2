@@ -42,19 +42,29 @@ bonjour_name = '{{ item.bonjour_name | d("") }}'
 authentication_timeout = {{ item.authentication_timeout | d('1min') }}
 
 ssl = {{ item.ssl | d(postgresql_server__pki | bool | lower) }}
-ssl_ciphers = '{{ item.ssl_ciphers | d(postgresql_server__ssl_ciphers) }}'
-{% if ((item.version | d(postgresql_server__version)) | version_compare('9.3','>')) %}
-ssl_prefer_server_ciphers = {{ item.ssl_prefer_server_ciphers | d('on') }}
 
-ssl_ecdh_curve = {{ item.ssl_ecdh_curve | d('prime256v1') }}
+{% if (item.version | d(postgresql_server__version)) | version_compare('8.2','>') %}
+{# https://www.postgresql.org/docs/current/static/release-8-3.html #}
+ssl_ciphers = '{{ item.ssl_ciphers | d(postgresql_server__ssl_ciphers) }}'
+
 {% if (item.version | d(postgresql_server__version)) | version_compare('9.5','<') %}
+{# https://www.postgresql.org/docs/current/static/release-9-5.html #}
 ssl_renegotiation_limit = {{ item.ssl_renegotiation_limit | d('512MB') }}
 {% endif %}
+{% endif %}
 
+{% if ((item.version | d(postgresql_server__version)) | version_compare('9.1','>')) %}
+{# ref: https://www.postgresql.org/docs/current/static/release-9-2.html #}
 ssl_cert_file = '{{ item.ssl_cert_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_crt | d(postgresql_server__pki_crt))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
 ssl_key_file = '{{ item.ssl_key_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_key | d(postgresql_server__pki_key))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
 ssl_ca_file = '{{ item.ssl_ca_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_ca | d(postgresql_server__pki_ca))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
 #ssl_crl_file = ''
+{% endif %}
+
+{% if ((item.version | d(postgresql_server__version)) | version_compare('9.3','>')) %}
+{# https://www.postgresql.org/docs/current/static/release-9-4.html #}
+ssl_prefer_server_ciphers = {{ item.ssl_prefer_server_ciphers | d('on') }}
+ssl_ecdh_curve = {{ item.ssl_ecdh_curve | d('prime256v1') }}
 {% endif %}
 
 password_encryption = {{ item.password_encryption | d('on') }}
