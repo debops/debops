@@ -1,0 +1,62 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.prometheus_alertmanager default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: prometheus_alertmanager__base_packages [[[
+#
+# List of base packages to install.
+prometheus_alertmanager__base_packages:
+  - prometheus-alertmanager
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__packages [[[
+#
+# List of additional APT packages to install with prometheus.
+prometheus_alertmanager__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Prometheus Server Configuration [[[
+# --------------------------
+
+# .. envvar:: prometheus_alertmanager__deploy_state [[[
+#
+# Set to `absent` to disable and uninstall this role
+prometheus_alertmanager__deploy_state: "present"
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__default_configs [[[
+#
+prometheus_alertmanager__default_configs: [] #TODO
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__configs [[[
+#
+# Config which will be managed on all hosts in the Ansible
+# inventory
+prometheus_alertmanager__configs: []
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__configs [[[
+#
+# Config which will be managed on specific groups in the Ansible
+# inventory.
+prometheus_alertmanager__group_configs: []
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__host_configs [[[
+#
+# Config which will be managed on specific hosts in the Ansible
+# inventory.
+prometheus_alertmanager__host_configs: []
+
+# .. envvar:: prometheus_alertmanager__combined_configs [[[
+#
+# List which combines all of the config variables and is used
+# in the configuration template.
+prometheus_alertmanager__combined_configs: '{{ prometheus_alertmanager__default_scrape_configs
+                                       + prometheus_alertmanager__configs
+                                       + prometheus_alertmanager__group_configs
+                                       + prometheus_alertmanager__host_configs  }}'
