@@ -2,17 +2,17 @@
 
 
 - hosts: [ 'debops_service_grafana' ]
+  environment: '{{ inventory__environment | d({})
+                 | combine(inventory__group_environment | d({}))
+                 | combine(inventory__host_environment  | d({})) }}'
   roles:
     - role: debops.apt
       tags: [ 'role::apt', 'role::grafana' ]
       apt__repositories: '{{ grafana__apt__repositories }}'
       apt__keys: '{{ grafana__apt__keys }}'
-    - role: debops.ferm
-      tags: [ 'role::ferm', 'role::grafana' ]
-      ferm__dependent_rules:
-        - '{{ grafana__ferm__dependent_rules }}'
     - role: debops.nginx
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers: '{{ grafana__nginx__dependent_servers }}'
     - role: debops.grafana
       tags: [ 'role::grafana' ]
 

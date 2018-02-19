@@ -15,14 +15,10 @@ grafana__base_packages:
 
 grafana__packages: []
 
-grafana__public: False
+grafana__public: True
 
-grafana__ferm__dependent_rules:
-  - type: 'accept'
-    dport: [ '3000' ]
-    accept_any: True
-    weight: '40'
-    by_role: 'grafana'
-    name: 'http'
-    multiport: True
-    rule_state: '{{ "present" if (grafana__deploy_state|bool and grafana__public) else "absent" }}'
+grafana__nginx__dependent_servers:
+  - enabled: '{{ grafana__public }}'
+    name: [ 'monitor.{{ ansible_domain }}' ]
+    type: 'proxy'
+    proxy_pass: 'http://localhost:3000/'
