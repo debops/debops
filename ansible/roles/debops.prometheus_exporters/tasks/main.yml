@@ -1,0 +1,51 @@
+---
+
+- name: 'Install prometheus exporter packages'
+  apt:
+    pkg: '{{ item }}'
+    state: 'present'
+    install_recommends: 'no'
+  with_flattened:
+    - "{{ 'prometheus-node-exporter'   if 'node-exporter' in prometheus_exporters__exporters else [] }}"
+    - "{{ 'prometheus-mysqld-exporter' if 'mysql' in prometheus_exporters__exporters else []  }}"
+    - "{{ 'golang'                     if 'postfix' in prometheus_exporters__exporters else [] }}"
+
+
+## postfix specific part
+
+- name: 'checkout postfix-exporter'
+  git:
+    repo: 'https://github.com/kumina/postfix_exporter.git'
+    dest: '/srv/prometheus/postfix-exporter'
+  when: ('postfix' in prometheus_exporters__exporters)
+  register: prometheus_exporters__exporter_git_postfix_exporter
+
+- name: 'build postfix-exporter'
+  command: '{{ item }}'
+  environment:
+    GOPATH: '/srv/golang'
+  args:
+    chdir: '/srv/prometheus/postfix-exporter'
+  with_items:
+    - 'go get -d .'
+    - 'go build'
+  when: ('postfix' in prometheus_exporters__exporters) and prometheus_exporters__git_postfix_exporter.changed
+
+- name: 'copy service file for postfix-exporter'
+  template:
+    src: 'etc/systemd/system/prometheus-postfix-exporter.service.j2'
+    dest: '/etc/systemd/system/prometheus-postfix-exporter.service'
+  when: ('postfix' in prometheus_exporters__exporters)
+
+# end postfix
+
+
+- name: 'Start Services'
+  service:
+    name: '{{ item }}'
+    enabled: 'yes'
+    state: 'started' # @TODO enabled
+  with_flattened:
+    - "{{ ['prometheus-node-exporter'] if 'node-exporter' in prometheus_exporters__exporters else [] }}"
+    - "{{ ['prometheus-mysqld-exporter'] if 'mysql' in prometheus_exporters__exporters else []  }}"
+    - "{{ ['prometheus-postfix-exporter'] if 'postfix' in prometheus_exporters__exporters else []  }}"

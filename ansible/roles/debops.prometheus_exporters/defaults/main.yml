@@ -1,0 +1,20 @@
+---
+
+prometheus_exporters__exporters:
+  - 'node-exporter'
+#  - 'mysql'
+#  - 'postfix'
+
+prometheus_servers: [ '::1' ]
+
+prometheus_exporters__deploy_state: "present"
+
+prometheus_mysql_dependencies:
+  - user: 'prometheus'
+    owner: 'prometheus'
+    group: 'prometheus'
+    home: '/var/lib/prometheus'
+    system: True
+    priv_aux: False
+    priv_default: False
+    priv: '*.*:PROCESS,REPLICATION CLIENT,SELECT'
