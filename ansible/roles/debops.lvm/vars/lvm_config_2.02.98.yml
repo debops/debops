@@ -43,9 +43,9 @@ lvm__config_base:
     # the device will be accepted or rejected (ignored).  Devices that
     # don't match any patterns are accepted.
 
-    # Be careful if there there are symbolic links or multiple filesystem 
+    # Be careful if there there are symbolic links or multiple filesystem
     # entries for the same device as each name is checked separately against
-    # the list of patterns.  The effect is that if the first pattern in the 
+    # the list of patterns.  The effect is that if the first pattern in the
     # list to match a name is an 'a' pattern for any of the names, the device
     # is accepted; otherwise if the first pattern in the list to match a name
     # is an 'r' pattern for any of the names it is rejected; otherwise it is
@@ -99,11 +99,11 @@ lvm__config_base:
 
     # Advanced settings.
 
-    # List of pairs of additional acceptable block device types found 
+    # List of pairs of additional acceptable block device types found
     # in /proc/devices with maximum (non-zero) number of partitions.
     # types: [ "fd", 16 ]
 
-    # If sysfs is mounted (2.6 kernels) restrict device scanning to 
+    # If sysfs is mounted (2.6 kernels) restrict device scanning to
     # the block devices it believes are valid.
     # 1 enables; 0 disables.
     sysfs_scan: 1
@@ -239,7 +239,7 @@ lvm__config_base:
     # Set to 1 to suppress all non-essential messages from stdout.
     # This has the same effect as -qq.
     # When this is set, the following commands still produce output:
-    # dumpconfig, lvdisplay, lvmdiskscan, lvs, pvck, pvdisplay, 
+    # dumpconfig, lvdisplay, lvmdiskscan, lvs, pvck, pvdisplay,
     # pvs, version, vgcfgrestore -l, vgdisplay, vgs.
     # Non-essential messages are shifted from log level 4 to log level 5
     # for syslog and lvm2_log_fn purposes.
@@ -351,13 +351,13 @@ lvm__config_base:
     si_unit_consistency: 1
 
     # Whether or not to communicate with the kernel device-mapper.
-    # Set to 0 if you want to use the tools to manipulate LVM metadata 
+    # Set to 0 if you want to use the tools to manipulate LVM metadata
     # without activating any logical volumes.
     # If the device-mapper kernel driver is not present in your kernel
     # setting this to 0 should suppress the error messages.
     activation: 1
 
-    # If we can't communicate with device-mapper, should we try running 
+    # If we can't communicate with device-mapper, should we try running
     # the LVM1 tools?
     # This option only applies to 2.4 kernels and is provided to help you
     # switch between device-mapper kernels and LVM1 kernels.
@@ -380,7 +380,7 @@ lvm__config_base:
     # if LVM2 commands get run concurrently).
     # Type 2 uses the external shared library locking_library.
     # Type 3 uses built-in clustered locking.
-    # Type 4 uses read-only locking which forbids any operations that might 
+    # Type 4 uses read-only locking which forbids any operations that might
     # change metadata.
     locking_type: 1
 
@@ -466,7 +466,7 @@ lvm__config_base:
     # setting.
     mirror_segtype_default: "mirror"
 
-    # The default format for displaying LV names in lvdisplay was changed 
+    # The default format for displaying LV names in lvdisplay was changed
     # in version 2.02.89 to show the LV name and path separately.
     # Previously this was always shown as /dev/vgname/lvname even when that
     # was never a valid path in the /dev filesystem.
@@ -529,7 +529,7 @@ lvm__config_base:
 
     # Set to 1 for LVM2 to verify operations performed by udev. This turns on
     # additional checks (and if necessary, repairs) on entries in the device
-    # directory after udev has completed processing its events. 
+    # directory after udev has completed processing its events.
     # Useful for diagnosing problems with LVM2/udev interactions.
     verify_udev_operations: 0
 
@@ -540,9 +540,9 @@ lvm__config_base:
 
     # How to fill in missing stripes if activating an incomplete volume.
     # Using "error" will make inaccessible parts of the device return
-    # I/O errors on access.  You can instead use a device path, in which 
+    # I/O errors on access.  You can instead use a device path, in which
     # case, that device will be used to in place of missing stripes.
-    # But note that using anything other than "error" with mirrored 
+    # But note that using anything other than "error" with mirrored
     # or snapshotted volumes is likely to result in data corruption.
     missing_stripe_filler: "error"
 
@@ -578,7 +578,7 @@ lvm__config_base:
     #
     # auto_activation_volume_list: [ "vg1", "vg2/lvol1", "@tag1", "@*" ]
 
-    # If read_only_volume_list is defined, each LV that is to be activated 
+    # If read_only_volume_list is defined, each LV that is to be activated
     # is checked against the list, and if it matches, it as activated
     # in read-only mode.  (This overrides '--permission rw' stored in the
     # metadata.)
@@ -733,7 +733,7 @@ lvm__config_base:
   #
   # metadata:
     # Default number of copies of metadata to hold on each PV.  0, 1 or 2.
-    # You might want to override it from the command line with 0 
+    # You might want to override it from the command line with 0
     # when running pvcreate on new PVs which are to be added to large VGs.
 
     # pvmetadatacopies: 1
@@ -760,7 +760,7 @@ lvm__config_base:
     # List of directories holding live copies of text format metadata.
     # These directories must not be on logical volumes!
     # It's possible to use LVM2 with a couple of directories here,
-    # preferably on different (non-LV) filesystems, and with no other 
+    # preferably on different (non-LV) filesystems, and with no other
     # on-disk metadata (pvmetadatacopies = 0). Or this can be in
     # addition to on-disk metadata areas.
     # The feature was originally added to simplify testing and is not
@@ -806,4 +806,3 @@ lvm__config_base:
     # Full path of the dmeventd binary.
     #
     # executable: "/sbin/dmeventd"
-

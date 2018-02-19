@@ -145,7 +145,7 @@
     group: '{{ item.group | d("root") }}'
     mode:  '{{ item.mode  | d("0644") }}'
   with_flattened:
-     - '{{ postfix__combined_lookup_tables | parse_kv_items }}'
+    - '{{ postfix__combined_lookup_tables | parse_kv_items }}'
   notify: [ 'Process Postfix Makefile', 'Check postfix and reload' ]
   when: item.name|d() and item.state|d('present') != 'absent'
   no_log: '{{ item.no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'

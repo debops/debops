@@ -120,31 +120,29 @@
   notify: [ 'Restart ferm' ]
   when: (dovecot_firewall is defined and dovecot_firewall)
 
-- name: Create private directory to store passwdfile 
-  file: 
-    path: "{{dovecot_passwdfile_path}}" 
-    state: directory 
+- name: Create private directory to store passwdfile
+  file:
+    path: "{{dovecot_passwdfile_path}}"
+    state: directory
     owner: 'root'
     group: 'dovecot'
     mode: '0650'
   when: "'passwdfile' in dovecot_user_accounts"
 
-- name: Create group used in passwdfile 
-  user: 
+- name: Create group used in passwdfile
+  user:
     name: "{{ dovecot_passwdfile_gid }}"
     system: yes
   when: "'passwdfile' in dovecot_user_accounts"
 
-- name: Create user used in passwdfile 
-  user: 
+- name: Create user used in passwdfile
+  user:
     name: "{{ dovecot_passwdfile_uid }}"
     group: "{{ dovecot_passwdfile_gid }}"
     home: "{{ dovecot_passwdfile_home }}"
     shell: "/usr/sbin/nologin"
     system: yes
   when: "'passwdfile' in dovecot_user_accounts"
-
-
 
 - name: Post hooks
   include: "{{ lookup('task_src', 'dovecot/post_main.yml') }}"

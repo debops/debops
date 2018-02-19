@@ -9,7 +9,7 @@ gunicorn__applications:
     group: 'worker-group'
     args: [ '--bind=0.0.0.0:8000',
             '--workers={{ ansible_processor_vcpus|int + 1 }}',
-            '--timeout=10' 'system-app.wsgi' ]
+            '--timeout=10', 'system-app.wsgi' ]
 
   # Deploy a virtualenv WSGI application (requires gunicorn of the same version
   # to be installed inside the virtualenv)
@@ -22,7 +22,7 @@ gunicorn__applications:
     group: 'custom-group'
     args: [ '--bind=unix:/run/gunicorn/virtualenv-app.sock',
             '--workers={{ ansible_processor_vcpus|int + 1 }}',
-            '--timeout=10' 'virtualenv-app.wsgi' ]
+            '--timeout=10', 'virtualenv-app.wsgi' ]
 
   # Remove an old application configuration
   - name: 'old-app'
