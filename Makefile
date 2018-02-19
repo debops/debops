@@ -121,7 +121,7 @@ test-playbook-syntax:
 .PHONY: test-yaml
 test-yaml:
 	@printf "%s\n" "Testing YAML syntax using yamllint..."
-	@yamllint . || true
+	@yamllint .
 
 .PHONY: test-debops-tools
 test-debops-tools:
