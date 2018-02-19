@@ -1,7 +1,7 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# debops.prometheus default variables [[[
+# debops.prometheus_server default variables [[[
 # ====================================
 
 # .. contents:: Sections
@@ -10,14 +10,13 @@
 # Packages and installation [[[
 # -----------------------------
 
-# .. envvar:: prometheus__base_packages [[[
+# .. envvar:: prometheus_server__base_packages [[[
 #
 # List of base packages to install.
 prometheus_server__base_packages:
   - prometheus
-  - grafana
                                                                    # ]]]
-# .. envvar:: prometheus__packages [[[
+# .. envvar:: prometheus_server__packages [[[
 #
 # List of additional APT packages to install with prometheus.
 prometheus_server__packages: []
@@ -29,23 +28,23 @@ prometheus_server__apt_preferences__dependent_list:
   - packages:
     - prometheus
     backports: [ 'stretch' ]
-    reson: 'Stable verson has some ram leaking problems'
+    reson: 'Stable version has some ram leaking problems'
     by_role: 'debops.prometheus_server'
                                                                    # ]]]
                                                                    # ]]]
-# Prometheus Configuration [[[
+# Prometheus Server Configuration [[[
 # --------------------------
 
-# .. envvar:: prometheus__deploy_state [[[
+# .. envvar:: prometheus_server__deploy_state [[[
 #
 # Set to `absent` to disable and uninstall this role
 prometheus_server__deploy_state: "present"
                                                                    # ]]]
-# .. envvar:: prometheus__deploy_state [[[
+# .. envvar:: prometheus_server__default_scrape_configs [[[
 #
 # Default prometheus config
-#
-prometheus_server__scrape_configs_default:
+# TODO better varable description
+prometheus_server__default_scrape_configs:
   - job_name: 'prometheus'
     static_configs:
     - targets: ['localhost:9090']
@@ -53,21 +52,32 @@ prometheus_server__scrape_configs_default:
     static_configs:
       - targets:
         - 'localhost:9100'
-
-prometheus_server__scrape_configs_host: []
-
-#prometheus_server__screpe_configs_group: "{{ groups['debops_prometheus'] }}"
-
-prometheus_server__scrape_configs: '{{ prometheus_server__scrape_configs_default | union( prometheus_server__scrape_configs_host )  }}'
-
-
-
-prometheus_server__ferm__dependent_rules:
-  - type: 'accept'
-    dport: [ '3000' ]
-    accept_any: True
-    weight: '40'
-    by_role: 'prometheus_server'
-    name: 'http'
-    multiport: True
-    delete: '{{ prometheus_server__deploy_state != "present" }}'
+                                                                   # ]]]
+# .. envvar:: prometheus_server__scrape_configs [[[
+#
+# Config which will be managed on all hosts in the Ansible
+# inventory
+prometheus_server__scrape_configs: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__group_scrape_configs [[[
+#
+# Config which will be managed on specific groups in the Ansible
+# inventory.
+prometheus_server__group_scrape_configs: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__host_scrape_configs [[[
+#
+# Config which will be managed on specific hosts in the Ansible
+# inventory.
+prometheus_server__host_scrape_configs: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__combined_scrape_configs [[[
+#
+# List which combines all of the config variables and is used
+# in the configuration template.
+prometheus_server__combined_scrape_configs: '{{ prometheus_server__default_scrape_configs
+                                       + prometheus_server__scrape_configs
+                                       + prometheus_server__group_scrape_configs
+                                       + prometheus_server__host_scrape_configs  }}'
+                                                                   # ]]]
+                                                                   # ]]]

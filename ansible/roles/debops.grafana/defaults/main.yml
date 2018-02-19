@@ -1,24 +1,51 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# debops.grafana default variables [[[
+# ====================================
 
-grafana__deploy_state: "present"
+# .. contents:: Sections
+#    :local:
 
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: grafana__base_packages [[[
+#
+# List of base packages to install.
+grafana__base_packages:
+  - grafana
+                                                                   # ]]]
+# .. envvar:: grafana__packages [[[
+#
+# List of additional APT packages to install with prometheus.
+grafana__packages: []
+                                                                   # ]]]
+# .. envvar:: grafana__packages [[[
+#
+# List of additional repositories that get configured
 grafana__apt__repositories:
   - repo: 'deb https://packagecloud.io/grafana/stable/debian/ {{ ansible_distribution_release }} main'
     filename: 'grafana'
-
+                                                                   # ]]]
+# .. envvar:: grafana__apt_keys [[[
+#
+# List of additional keys that get installed
 grafana__apt__keys:
   - url: 'https://packagecloud.io/gpg.key'
+                                                                   # ]]]
+                                                                   # ]]]
 
-grafana__base_packages:
-  - grafana
-
-grafana__packages: []
+# http://docs.grafana.org/installation/configuration/
+grafana__deploy_state: "present"
 
 grafana__public: True
 
+grafana__domain: 'monitor.{{ ansible_domain }}'
+
+
 grafana__nginx__dependent_servers:
   - enabled: '{{ grafana__public }}'
-    name: [ 'monitor.{{ ansible_domain }}' ]
+    name: [ '{{ grafana__domain }}' ]
     type: 'proxy'
     proxy_pass: 'http://localhost:3000/'

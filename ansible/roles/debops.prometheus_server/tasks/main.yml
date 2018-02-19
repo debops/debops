@@ -11,7 +11,7 @@
 
 - name: Generatet Prometheus configuration
   vars:
-    - scrape_configs: '{{ prometheus_server__scrape_configs }}'
+    - scrape_configs: '{{ prometheus_server__combined_scrape_configs }}'
   template:
     src: 'etc/prometheus/prometheus.yml.j2'
     dest: '/etc/prometheus/prometheus.yml'
@@ -24,5 +24,3 @@
     state: 'started'
   with_items:
     - prometheus
-    - grafana-server
-
