@@ -35,17 +35,18 @@ grafana__apt__keys:
   - url: 'https://packagecloud.io/gpg.key'
                                                                    # ]]]
                                                                    # ]]]
-
+# Grafana Configuration [[[
+# ---------------------
 # http://docs.grafana.org/installation/configuration/
 grafana__deploy_state: "present"
-
+                                                                   # ]]]
+# Ngninx Proxy Configuration [[[
+# --------------------------
 grafana__public: True
-
 grafana__domain: 'monitor.{{ ansible_domain }}'
-
-
 grafana__nginx__dependent_servers:
   - enabled: '{{ grafana__public }}'
     name: [ '{{ grafana__domain }}' ]
     type: 'proxy'
     proxy_pass: 'http://localhost:3000/'
+                                                                   # ]]]
