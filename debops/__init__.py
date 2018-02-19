@@ -55,6 +55,10 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 ANSIBLE_CONFIG_FILE = "ansible.cfg"
 
+# Path to the Ansible playbooks and roles distributed inside of the Python
+# package
+DEBOPS_PY_PACKAGE = os.path.join(os.path.dirname(__file__), 'ansible')
+
 # --- Roles
 
 # Default role prefix if no roles with prefixes are specified

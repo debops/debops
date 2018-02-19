@@ -663,6 +663,13 @@ stages:
 
 # --- m --- [[[2
 
+'machine role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/machine.yml'
+    JANE_DIFF_PATTERN: '.*/debops.machine/.*'
+    JANE_LOG_PATTERN: '\[debops\.machine\]'
+
 'mailman role':
   <<: *test_role_3rd_deps
   variables:
@@ -940,6 +947,21 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.preseed/.*'
     JANE_LOG_PATTERN: '\[debops\.preseed\]'
 
+'proc_hidepid role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/proc_hidepid.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_proc_hidepid'
+    JANE_DIFF_PATTERN: '.*/debops.proc_hidepid/.*'
+    JANE_LOG_PATTERN: '\[debops\.proc_hidepid\]'
+
+'prosody/pki role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/prosody.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_pki,debops_service_prosody'
+    JANE_DIFF_PATTERN: '.*/debops.prosody/.*'
+    JANE_LOG_PATTERN: '\[debops\.prosody\]'
 
 # --- r --- [[[2
 
@@ -1000,6 +1022,25 @@ stages:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/root_account.yml'
     JANE_DIFF_PATTERN: '.*/debops.root_account/.*'
     JANE_LOG_PATTERN: '\[debops\.root_account\]'
+
+'roundcube role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/roundcube.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_roundcube'
+    JANE_DIFF_PATTERN: '.*/debops.roundcube/.*'
+    JANE_LOG_PATTERN: '\[debops\.roundcube\]'
+
+'roundcube/mariadb role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/roundcube.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_roundcube'
+    JANE_INVENTORY_HOSTVARS: 'roundcube__database=mysql-default'
+    JANE_DIFF_PATTERN: '.*/debops.roundcube/.*'
+    JANE_LOG_PATTERN: '\[debops\.roundcube\]'
+    VAGRANT_MASTER_MEMORY: '4096'
+  tags: [ 'mem-6GB' ]
 
 'rsnapshot role':
   <<: *test_role_no_deps
@@ -1063,7 +1104,6 @@ stages:
 'secret role':
   <<: *test_role_no_deps
   variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_proxy.yml'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/secret.yml'
     JANE_DIFF_PATTERN: '.*/debops.secret/.*'
     JANE_LOG_PATTERN: '\[debops\.secret\]'
@@ -1151,6 +1191,14 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.sysfs/.*'
     JANE_LOG_PATTERN: '\[debops\.sysfs\]'
   tags: [ 'shell', 'vagrant-vm' ]
+
+'sysnews role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysnews.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_sysnews'
+    JANE_DIFF_PATTERN: '.*/debops.sysnews/.*'
+    JANE_LOG_PATTERN: '\[debops\.sysnews\]'
 
 
 # --- t --- [[[2

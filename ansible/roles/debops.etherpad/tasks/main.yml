@@ -200,7 +200,7 @@
 
 - name: Make API calls
   uri:
-    url: 'http://localhost:{{ etherpad_port }}/api/{{ etherpad_api_version }}/{{ item.method }}?apikey={{ etherpad_api_key.stdout }}{% if item.args|d() %}{% for key, value in item.args.iteritems() %}{{ "&" + key + "=" + value }}{% endfor %}{% endif %}'
+    url: 'http://localhost:{{ etherpad_port }}/api/{{ etherpad_api_version }}/{{ item.method }}?apikey={{ etherpad_api_key.stdout }}{% if item.args|d() %}{% for key, value in item.args.items() %}{{ "&" + key + "=" + value }}{% endfor %}{% endif %}'
   register: etherpad_api_calls_exec
   ## error while evaluating conditional???
   # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()

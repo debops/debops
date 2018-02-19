@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Install shellcheck in Travis CI environment
+# https://github.com/koalaman/shellcheck/wiki/TravisCI
+
+set -o nounset -o pipefail -o errexit
+
+install_shellcheck () {
+    printf "Installing shellcheck from Debian Sid.\n"
+    curl -sSL "https://ftp-master.debian.org/keys/archive-key-7.0.asc" | sudo -E apt-key add -
+    printf "deb http://ftp.us.debian.org/debian unstable main contrib non-free\n" | sudo tee /etc/apt/sources.list.d/sid.list
+
+    sudo apt-get -qq update
+    sudo apt-get -yq install -t sid shellcheck
+
+    # Disable Debian Sid to not interfere with other packages
+    sudo rm -f /etc/apt/sources.list.d/sid.list
+    sudo apt-get -qq update
+}
+
+install_shellcheck

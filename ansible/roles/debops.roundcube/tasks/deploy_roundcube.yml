@@ -31,7 +31,7 @@
   register: roundcube__register_cloned
 
 - name: Save current checkout hash for update
-  shell: git rev-parse HEAD
+  command: git rev-parse HEAD
   args:
     chdir: '{{ roundcube__git_dest }}'
   become_user: '{{ roundcube__user }}'
@@ -40,7 +40,7 @@
   when: roundcube__register_cloned.stat.exists
 
 - name: Change current HEAD to master in bare repository for update
-  shell: git symbolic-ref HEAD refs/heads/master
+  command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ roundcube__git_dest }}'
   become_user: '{{ roundcube__user }}'
@@ -87,7 +87,7 @@
     dest: '{{ roundcube__git_checkout + "/.git" }}'
     owner: '{{ roundcube__user }}'
     group: '{{ roundcube__group }}'
-    mode: '0644'    
+    mode: '0644'
 
 - name: Get currently checked out git tag
   command: git describe --tags

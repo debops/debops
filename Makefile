@@ -28,6 +28,10 @@ docs: test-docs
 pep8:           ## Test Python PEP8 compliance
 pep8: test-pep8
 
+.PHONY: shell
+shell:           ## Test shell script syntax
+shell: test-shell
+
 .PHONY: syntax
 syntax:         ## Check Ansible playbook syntax
 syntax: test-playbook-syntax
@@ -81,13 +85,18 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml test-docker-build
+test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml test-shell test-docker-build
 
 .PHONY: test-pep8
 test-pep8:
 	@printf "%s\n" "Testing PEP8 compliance using pycodestyle..."
 	@pycodestyle --show-source --statistics .
 	@./lib/tests/check-pep8 || true
+
+.PHONY: test-shell
+test-shell:
+	@printf "%s\n" "Testing shell syntax using shellcheck..."
+	@./lib/tests/check-shell || true
 
 .PHONY: test-docker-build
 test-docker-build:
@@ -112,7 +121,7 @@ test-playbook-syntax:
 .PHONY: test-yaml
 test-yaml:
 	@printf "%s\n" "Testing YAML syntax using yamllint..."
-	@yamllint . || true
+	@yamllint .
 
 .PHONY: test-debops-tools
 test-debops-tools:

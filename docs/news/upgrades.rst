@@ -11,6 +11,12 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Nothing new yet.
+
+
+v0.7.0
+------
+
 This is mostly a maintenance release, dedicated to reorganization of the DebOps
 :command:`git` repository and expanding documentation.
 
@@ -46,6 +52,45 @@ Inventory variable changes
   There are also new localization variables for :envvar:`all hosts <locales__list>`,
   :envvar:`group of hosts <locales__group_list>`, :envvar:`specific hosts <locales__host_list>`
   and :envvar:`dependent roles <locales__dependent_list>`.
+
+- The :file:`/etc/issue` and :file:`/etc/motd` configuration has been removed
+  from the ``debops.console`` role and is now done by the :ref:`debops.machine`
+  role. List of default variables that were affected:
+
+  +-------------------+---------------------------------+---------------+
+  | Old variable name | New variable name               | Changed value |
+  +===================+=================================+===============+
+  | ``console_issue`` | :envvar:`machine__organization` | No            |
+  +-------------------+---------------------------------+---------------+
+  | ``console_motd``  | :envvar:`machine__motd`         | No            |
+  +-------------------+---------------------------------+---------------+
+
+  The support for dynamic MOTD has been implemented by the :ref:`debops.machine`
+  role, you might want to use that instead of the static MOTD file.
+
+- Configuration of the ``/proc`` ``hidepid=`` option has been removed from the
+  ``debops.console`` and is now available in the new :ref:`debops.proc_hidepid`
+  Ansible role. List of default variables that were affected:
+
+  +--------------------------------+---------------------------------+---------------+
+  | Old variable name              | New variable name               | Changed value |
+  +================================+=================================+===============+
+  | ``console_proc_hidepid``       | :envvar:`proc_hidepid__enabled` | No            |
+  +--------------------------------+---------------------------------+---------------+
+  | ``console_proc_hidepid_level`` | :envvar:`proc_hidepid__level`   | No            |
+  +--------------------------------+---------------------------------+---------------+
+  | ``console_proc_hidepid_group`` | :envvar:`proc_hidepid__group`   | No            |
+  +--------------------------------+---------------------------------+---------------+
+
+  The logic to enable/disable the ``hidepid=`` configuration has been moved to
+  the :envvar:`proc_hidepid__enabled` variable to be more accessible. The role
+  creates its own set of Ansible local facts with new variable names, you might
+  need to update configuration of the roles that relied on them.
+
+- Configuration of the ``sysnews`` package has been removed from the
+  ``debops.console`` role, it's now available in the :ref:`debops.sysnews`
+  Ansible role. There were extensive changes in the variable names and
+  parameters, read the documentation of the new role for details.
 
 
 v0.6.0

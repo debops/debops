@@ -1,12 +1,5 @@
 ---
 
-# Custom string added to /etc/issue
-console_issue: '{{ ansible_domain.split(".")[0] | capitalize }}'
-
-# If ``True``, show the logged in users. Note that this count does only update
-# when the screen is manually refreshed.
-console__issue_show_logged_in_users: True
-
 # Enable or disable serial console (allows you to use 'lxc-console',
 # 'virsh console' and other similar commands)
 console_serial: False
@@ -23,12 +16,6 @@ console_serial_term: 'xterm'
 # String used to enable serial console in sysvinit /etc/inittab
 console_serial_inittab: 'S0:2345:respawn:/sbin/getty -L {{ console_serial_port }} {{ console_serial_baud }} {{ console_serial_term }}'
 
-# Contents of /etc/motd
-console_motd: |
-    -------------------------------------------------
-            This system is managed by Ansible
-    -------------------------------------------------
-
 # List of required console packages
 console_base_packages: [ 'locales' ]
 
@@ -40,11 +27,6 @@ console_conditional_packages:
           if (console_mounts_nfs|d() or
               console_group_mounts_nfs|d() or
               console_host_mounts_nfs|d())
-          else [] }}' ]
-
-  # Install 'sysnews' when news support is enabled
-  - [ '{{ "sysnews"
-          if (console_sysnews|d() and console_sysnews|bool)
           else [] }}' ]
 
 # List of preferred text editors. The first one found will be configured as the
@@ -64,29 +46,6 @@ console_fsckfix: 'yes'
 
 # List of OS distribution releases which use the FSCKFIX option in a configuration file.
 console_fsckfix_releases: [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
-
-
-# ---- /proc & hidepid= options ----
-
-# Mounting /proc with hidepid= allows you to hide process information of other
-# users on unprivileged accounts. This functionality is only enabled on recent
-# Linux kernels, and only on hardware hosts or KVM virtual machines. For LXC
-# containers, have a look at the 'debops.lxc' role. For OpenVZ containers,
-# AFAIK there's no way to enable it.
-
-# Enable or disable hidepid= option in /proc. Disabling only stops Ansible
-# from adding hidepid= automatically, you need to remove the /proc entry from
-# /etc/fstab manually (and optionally remount command from /etc/rc.local)
-# because if Ansible tries to do this using the 'mount' module, it will try to
-# remove the /proc mount point as well. :-(
-console_proc_hidepid: True
-
-# What level of hidepid= to use (choices: 0, 1, 2)
-console_proc_hidepid_level: '2'
-
-# System group to set for /proc so that selected users can access it without
-# restrictions; this is meant for monitoring services, etc.
-console_proc_hidepid_group: 'procadmins'
 
 
 # ---- /etc/hosts ----
@@ -162,28 +121,3 @@ console_host_mounts: []
 console_mounts_nfs: []
 console_group_mounts_nfs: []
 console_host_mounts_nfs: []
-
-
-# ---- sysnews support ----
-
-# Install ``sysnews`` package to present system-related news to users on log
-# in.
-console_sysnews: False
-
-# Add ``sysnews`` support in :file:`/etc/profile.d/` so it's executed conditionally
-# on user login.
-console_sysnews_global: True
-
-# Accounts with UID bigger than this variable's value will be shown the news on
-# interactive login.
-console_sysnews_min_uid: '500'
-
-# Dict variable with news entries. Each key is name of the news file, and
-# a value should be a YAML text block with the message stored in the file.
-# Example:
-#
-#   console_sysnews_entries:
-#     'WELCOME': |
-#       Welcome on the {{ ansible_fqdn }} server!
-#
-console_sysnews_entries: {}

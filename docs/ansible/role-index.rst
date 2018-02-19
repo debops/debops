@@ -29,6 +29,7 @@ etc.
 - :ref:`debops.mailman`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
+- :ref:`debops.prosody`
 - :ref:`debops.rstudio_server`
 - ``debops.phpipam``
 - ``debops.phpmyadmin``
@@ -124,6 +125,7 @@ other hosts.
 - :ref:`debops.nfs`
 - :ref:`debops.nfs_server`
 - :ref:`debops.persistent_paths`
+- :ref:`debops.proc_hidepid`
 - :ref:`debops.tftpd`
 - :ref:`debops.tgt`
 - ``debops.samba``
@@ -181,6 +183,7 @@ Monitoring
 
 - :ref:`debops.librenms`
 - :ref:`debops.monit`
+- :ref:`debops.proc_hidepid`
 - :ref:`debops.snmpd`
 - ``debops.smstools``
 
@@ -222,6 +225,7 @@ Security
 - :ref:`debops.authorized_keys`
 - :ref:`debops.fail2ban`
 - :ref:`debops.ferm`
+- :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`
 - :ref:`debops.tcpwrappers`
 - ``debops-contrib.apparmor``
@@ -238,6 +242,7 @@ System configuration
 - :ref:`debops.ferm`
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
+- :ref:`debops.machine`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
 - :ref:`debops.resources`
@@ -245,6 +250,7 @@ System configuration
 - :ref:`debops.swapfile`
 - :ref:`debops.sysctl`
 - :ref:`debops.sysfs`
+- :ref:`debops.sysnews`
 - :ref:`debops.users`
 - ``debops.console``
 - ``debops.gitusers``
