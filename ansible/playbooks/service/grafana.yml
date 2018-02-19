@@ -1,18 +1,53 @@
 ---
 
+- name: Manage Grafana
+  hosts: [ 'debops_service_grafana' ]
 
-- hosts: [ 'debops_service_grafana' ]
   environment: '{{ inventory__environment | d({})
-                 | combine(inventory__group_environment | d({}))
-                 | combine(inventory__host_environment  | d({})) }}'
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
   roles:
     - role: debops.apt
       tags: [ 'role::apt', 'role::grafana' ]
       apt__repositories: '{{ grafana__apt__repositories }}'
       apt__keys: '{{ grafana__apt__keys }}'
+    - role: debops.etc_services
+      tags: [ 'depend::etc_services', 'depend::etc_services:grafana', 'depend-of::grafana', 'type::dependency' ]
+      etc_services_dependent_list:
+        - name: 'grafana'
+          port: '{{ grafana__port }}'
+          comment: 'Grafana'
+
     - role: debops.nginx
       tags: [ 'role::nginx' ]
       nginx__dependent_servers: '{{ grafana__nginx__dependent_servers }}'
+      when: '{{ grafana__dependencies }}'
+
+    - role: debops.mariadb
+      mariadb_databases:
+        - database: '{{ grafana__database_name }}'
+      mariadb_users:
+        - database: '{{ grafana__database_name }}'
+          user: '{{ grafana__database_user }}'
+          password: '{{ grafana__database_password }}'
+      when: "{{ grafana__dependencies and (grafana__database == 'mariadb') }}"
+      tags: [ 'depend::mariadb', 'depend::mariadb:grafana', 'depend-of::grafana', 'type::dependency' ]
+
+    - role: debops.postgresql
+      postgresql_roles:
+        - name: '{{ grafana__database_name }}' # Separate role is needed when owncloud_database_name != owncloud_database_user
+        - name: '{{ grafana__database_user }}' # Password is not passed directly - it will be read for the file
+      postgresql_groups:
+        - roles: [ '{{ grafana__database_user }}' ]
+          groups: [ '{{ grafana__database_name }}' ]
+          database: '{{ grafana__database_name }}'
+          enabled: '{{ grafana__database_name != grafana__database_user }}'
+      postgresql_databases:
+        - name: '{{ grafana__database_name }}'
+          owner: '{{ grafana__database_user }}'
+      tags: [ 'depend::postgresql', 'depend::postgresql:grafana', 'depend-of::grafana', 'type::dependency' ]
+      when: "{{ grafana__dependencies and (grafana__database == 'postgresql') }}"
+
     - role: debops.grafana
       tags: [ 'role::grafana' ]
-
