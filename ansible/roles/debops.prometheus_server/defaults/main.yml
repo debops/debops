@@ -1,31 +1,60 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# debops.prometheus default variables [[[
+# ====================================
 
-prometheus_server__deploy_state: "present"
+# .. contents:: Sections
+#    :local:
 
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: prometheus__base_packages [[[
+#
+# List of base packages to install.
 prometheus_server__base_packages:
   - prometheus
   - grafana
-
+                                                                   # ]]]
+# .. envvar:: prometheus__packages [[[
+#
+# List of additional APT packages to install with prometheus.
 prometheus_server__packages: []
-
+                                                                   # ]]]
+# .. envvar:: prometheus_server__apt_preferences__dependent_list [[[
+#
+# List of apt_preference settings to use backports on stretch
 prometheus_server__apt_preferences__dependent_list:
   - packages:
     - prometheus
     backports: [ 'stretch' ]
     reson: 'Stable verson has some ram leaking problems'
     by_role: 'debops.prometheus_server'
+                                                                   # ]]]
+                                                                   # ]]]
+# Prometheus Configuration [[[
+# --------------------------
 
+# .. envvar:: prometheus__deploy_state [[[
+#
+# Set to `absent` to disable and uninstall this role
+prometheus_server__deploy_state: "present"
+                                                                   # ]]]
+# .. envvar:: prometheus__deploy_state [[[
+#
+# Default prometheus config
+#
 prometheus_server__scrape_configs_default:
   - job_name: 'prometheus'
     static_configs:
     - targets: ['localhost:9090']
-
-prometheus_server__scrape_configs_host:
   - job_name: 'node'
     static_configs:
       - targets:
-        - localhost:9100
+        - 'localhost:9100'
+
+prometheus_server__scrape_configs_host: []
 
 #prometheus_server__screpe_configs_group: "{{ groups['debops_prometheus'] }}"
 
