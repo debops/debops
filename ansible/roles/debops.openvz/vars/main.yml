@@ -10,7 +10,7 @@ openvz_mail_kernel_subject: 'OpenVZ kernel update on {{ ansible_fqdn }}'
 openvz_mail_kernel_body: |
   Ansible has updated Linux kernel with OpenVZ support on host {{ ansible_fqdn }}
   You should check status of the host and reboot it when convenient.
-  
+
   Current kernel: {{ ansible_kernel }}
   Output of apt-get install {{ openvz_kernel }}:
   ---------------------------------------------------------------
@@ -18,7 +18,7 @@ openvz_mail_kernel_body: |
   {{ line }}
   {% endfor %}
   ---------------------------------------------------------------
-  
+
   GRUB will reboot to kernel from menu item: {{ openvz_grub_default }}
   Output of update-grub:
   ---------------------------------------------------------------
@@ -26,7 +26,7 @@ openvz_mail_kernel_body: |
   {{ line }}
   {% endfor %}
   ---------------------------------------------------------------
-  
+
   Output of vzlist --all:
   ---------------------------------------------------------------
   {% for line in openvz_vzlist_status.stdout_lines %}
@@ -42,4 +42,3 @@ openvz_template_salt_apt_key_url: 'http://debian.saltstack.com/debian-salt-team-
 
 # SaltStack Debian APT repository
 openvz_template_salt_upstream_repository: 'deb http://debian.saltstack.com/debian {{ ansible_distribution_release.split("/")[0] }}-saltstack main'
-
