@@ -42,14 +42,16 @@ from debops import *
 from debops.cmds import *
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel " \
+                "<h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
+
 
 def gen_pwd():
     from string import ascii_letters, digits, punctuation
     import random
-    ALLCHARS  = digits + ascii_letters + punctuation
-    ALLCHARS  = digits + ascii_letters + '-_!@#$%^&*()_+{}|:<>?='
+    ALLCHARS = digits + ascii_letters + punctuation
+    ALLCHARS = digits + ascii_letters + '-_!@#$%^&*()_+{}|:<>?='
     pwd = ''.join(random.choice(ALLCHARS) for i in range(ENCFS_KEYFILE_LENGTH))
     return pwd
 
@@ -61,10 +63,11 @@ SCRIPT_FILENAME = 'padlock-script'
 
 # ---- DebOps environment setup ----
 
+
 def main(subcommand_func, **kwargs):
     project_root = find_debops_project(required=True)
     # :todo: Source DebOps configuration file
-    #[ -r ${debops_config} ] && source ${debops_config}
+    # [ -r ${debops_config} ] && source ${debops_config}
 
     # ---- Main script ----
 
@@ -121,8 +124,8 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     # does not yet exist.
     encfs = subprocess.Popen([
         'encfs', encfs_encrypted, encfs_decrypted,
-        '--extpass', 'gpg --no-mdc-warning --output - '+shquote(encfs_keyfile)],
-                             stdin=subprocess.PIPE)
+        '--extpass', 'gpg --no-mdc-warning --output - '
+        + shquote(encfs_keyfile)], stdin=subprocess.PIPE)
     encfs.communicate('p\n'+pwd)
 
     # Create padlock-script
@@ -131,10 +134,11 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     # :todo: use resource_stream
     shutil.copy(resource_filename('debops', SCRIPT_FILENAME), padlock_script)
     os.chmod(padlock_script,
-             os.stat(padlock_script).st_mode|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
+             os.stat(padlock_script).st_mode
+             | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
     # Lock the EncFS directory after creation
-    time.sleep(0.5) # :fixme: why sleeping here?
+    time.sleep(0.5)  # :fixme: why sleeping here?
     padlock_lock(encfs_encrypted)
 
     # Protect the EncFS configuration file by also encrypting it with
@@ -148,17 +152,21 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
 def lock(encfs_decrypted, encfs_encrypted, verbose):
     # Unmount the directory if it is mounted
     if padlock_lock(encfs_encrypted):
-        if verbose: print("Locked!")
+        if verbose:
+            print("Locked!")
     else:
-        if verbose: print("Is already locked.")
+        if verbose:
+            print("Is already locked.")
 
 
 def unlock(encfs_decrypted, encfs_encrypted, verbose):
     # Mount the directory it if it is unmounted
     if padlock_unlock(encfs_encrypted):
-        if verbose: print("Unlocked!")
+        if verbose:
+            print("Unlocked!")
     else:
-        if verbose: print("Is already unlocked.")
+        if verbose:
+            print("Is already unlocked.")
 
 
 parser = argparse.ArgumentParser()
