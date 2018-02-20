@@ -119,7 +119,7 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     gpg = subprocess.Popen(['gpg', '--encrypt', '--armor',
                             '--output', encfs_keyfile] + recipients,
                            stdin=subprocess.PIPE)
-    gpg.communicate(pwd)
+    gpg.communicate(pwd.encode('utf-8'))
 
     # Mount the encfs to the config file will be written. Tell encfs
     # it to ask gpg for the password.
@@ -132,7 +132,7 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
         '--extpass',
         'gpg --no-mdc-warning --output - '+shquote(encfs_keyfile)],
         stdin=subprocess.PIPE)
-    encfs.communicate('p\n'+pwd)
+    encfs.communicate(('p\n'+pwd).encode('utf-8'))
 
     # Create padlock-script
     padlock_script = os.path.join(encfs_encrypted, PADLOCK_CMD)
