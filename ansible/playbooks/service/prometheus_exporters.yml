@@ -5,9 +5,23 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
   roles:
-    - role: debops.prometheus_exporters
-      tags: [ 'role::prometheus_exporters' ]
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list: '{{ prometheus_exporters__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'role::prometheus' ]
+      ferm__dependent_rules: '{{ prometheus_exporters__ferm__dependent_rules }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers: '{{ prometheus_exporters__nginx__dependent_servers }}'
+      when: prometheus_exporters__nginx
+
     - role: debops.mariadb
       tags: [ 'role::mariadb', 'role::prometheus_exporters' ]
-      mariadb__dependent_users: '{{ prometheus_exporters__mysql_dependencies }}'
-      when: ('mysql' in prometheus_exporters__exporters)
+      mariadb__dependent_users: '{{ prometheus_exporter__mysql__dependencies }}'
+      when: ('mysqld' in prometheus_exporters__exporters)
+
+    - role: debops.prometheus_exporters
+      tags: [ 'role::prometheus_exporters' ]
