@@ -40,14 +40,14 @@ prometheus_server__apt_preferences__dependent_list:
 # Set to `absent` to disable and uninstall this role
 prometheus_server__deploy_state: "present"
                                                                    # ]]]
-# .. envvar:: prometheus_server__default_scrape_configs [[[
+# .. envvar:: prometheus_server__default_jobs [[[
 #
 # Default prometheus config
 #
 # Creates for each entry a file that will get loaded
 # by a jobs with the same name as the file
 # TODO better varable description
-prometheus_server__default_scrape_configs:
+prometheus_server__default_jobs:
   default:
     status: 'present'
     content:
@@ -60,32 +60,32 @@ prometheus_server__default_scrape_configs:
           env: 'prod'
         targets: [ 'localhost:9100' ]
                                                                    # ]]]
-# .. envvar:: prometheus_server__scrape_configs [[[
+# .. envvar:: prometheus_server__jobs [[[
 #
 # Config which will be managed on all hosts in the Ansible
 # inventory
-prometheus_server__scrape_configs: {}
+prometheus_server__jobs: {}
                                                                    # ]]]
-# .. envvar:: prometheus_server__group_scrape_configs [[[
+# .. envvar:: prometheus_server__group_jobs [[[
 #
 # Config which will be managed on specific groups in the Ansible
 # inventory.
-prometheus_server__group_scrape_configs: {}
+prometheus_server__group_jobs: {}
                                                                    # ]]]
-# .. envvar:: prometheus_server__host_scrape_configs [[[
+# .. envvar:: prometheus_server__host_jobs [[[
 #
 # Config which will be managed on specific hosts in the Ansible
 # inventory.
-prometheus_server__host_scrape_configs: {}
+prometheus_server__host_jobs: {}
                                                                    # ]]]
-# .. envvar:: prometheus_server__combined_scrape_configs [[[
+# .. envvar:: prometheus_server__combined_jobs [[[
 #
 # List which combines all of the config variables and is used
 # in the configuration template.
-prometheus_server__combined_scrape_configs: '{{ prometheus_server__default_scrape_configs
-                                       | combine( prometheus_server__scrape_configs
-                                       , prometheus_server__group_scrape_configs
-                                       , prometheus_server__host_scrape_configs
+prometheus_server__combined_jobs: '{{ prometheus_server__default_jobs
+                                       | combine( prometheus_server__jobs
+                                       , prometheus_server__group_jobs
+                                       , prometheus_server__host_jobs
                                        , prometheus_server__dependent_jobs|d({}) ) }}'
                                                                    # ]]]
                                                                    # ]]]

@@ -19,7 +19,7 @@ rule_files:
 # Here it's Prometheus itself.
 scrape_configs:
 {% for file in job_files %}
-  - job_name: '{{ file | regex_replace("([^/]).*.json","\\1") }}'
+  - job_name: '{{ file | regex_replace("^.*/([^/]*)\.json$","\\1") }}'
     file_sd_configs:
       - files:
         - '{{ file }}'

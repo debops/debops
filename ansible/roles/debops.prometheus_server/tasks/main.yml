@@ -24,14 +24,14 @@
     owner: 'prometheus'
     mode: '0640'
   when: item.value.status is not defined or item.value.status == 'present'
-  with_dict: '{{ prometheus_server__combined_scrape_configs }}'
+  with_dict: '{{ prometheus_server__combined_jobs }}'
 
 - name: Remove disabled job files
   file:
     path: '/etc/promtehus/jobs/{{ item.key }}.json'
     state: 'absent'
   when: item.value.state|d('present') != 'present'
-  with_dict: '{{ prometheus_server__combined_scrape_configs }}'
+  with_dict: '{{ prometheus_server__combined_jobs }}'
 
 - name: Fetch all present job files
   find:
