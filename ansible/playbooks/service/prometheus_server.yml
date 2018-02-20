@@ -6,5 +6,21 @@
       tags: [ 'role::apt_preferences', 'role::prometheus' ]
       apt_preferences__dependent_list:
         - '{{ prometheus_server__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ prometheus_server__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'role::prometheus' ]
+      ferm__dependent_rules:
+        - '{{ prometheus_server__ferm__dependent_rules }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers: '{{ prometheus_server__nginx__dependent_servers }}'
+      when: prometheus_server__nginx
+
     - role: debops.prometheus_server
       tags: [ 'role::prometheus' ]

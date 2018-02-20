@@ -9,9 +9,38 @@
     - '{{ prometheus_server__base_packages }}'
     - '{{ prometheus_server__packages }}'
 
+- name: Create jobs dir
+  file:
+    path: '/etc/prometheus/jobs'
+    state: 'directory'
+    owner: 'prometheus'
+    mode: '0750'
+
+# generate files for each job
+- name: Generate job files
+  copy:
+    content: '{{ item.value.content | to_json }}'
+    dest: '/etc/prometheus/jobs/{{ item.key }}.json'
+    owner: 'prometheus'
+    mode: '0640'
+  when: item.value.status is not defined or item.value.status == 'present'
+  with_dict: '{{ prometheus_server__combined_scrape_configs }}'
+
+- name: Remove disabled job files
+  file:
+    path: '/etc/promtehus/jobs/{{ item.key }}.json'
+    state: 'absent'
+  when: item.value.state|d('present') != 'present'
+  with_dict: '{{ prometheus_server__combined_scrape_configs }}'
+
+- name: Fetch all present job files
+  find:
+    path: '/etc/prometheus/jobs'
+  register: prometheus_server__find_result
+
 - name: Generatet Prometheus configuration
   vars:
-    - scrape_configs: '{{ prometheus_server__combined_scrape_configs }}'
+    job_files: '{{ prometheus_server__find_result.files | map(attribute="path")|list }}'
   template:
     src: 'etc/prometheus/prometheus.yml.j2'
     dest: '/etc/prometheus/prometheus.yml'
