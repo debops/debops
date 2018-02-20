@@ -14,7 +14,7 @@ Example inventory
 -----------------
 
 To install and configure Cyrus SASL daemon on a host, the host needs to be
-present in the ``[debops_service_postscreen]`` Ansible inventory group.
+present in the ``[debops_service_saslauthd]`` Ansible inventory group.
 
 .. code-block:: none
 
