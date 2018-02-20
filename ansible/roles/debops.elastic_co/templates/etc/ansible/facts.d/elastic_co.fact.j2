@@ -27,14 +27,17 @@ package_list = [
 
 # A workaround for conflicting package name in Debian/Ubuntu
 # https://github.com/elastic/beats/issues/3765
-heartbeat_override = loads('''{{ elastic_co__heartbeat_override | bool | lower | to_nice_json }}''')
+heartbeat_override = loads('''{{ elastic_co__heartbeat_override
+                                 | bool | lower | to_nice_json }}''')
 
 if heartbeat_override:
     package_list.append('heartbeat')
 
+
 def dpkg_query(packages):
 
-    command = [ 'dpkg-query', '--show', '--showformat="${Package}": "${Version}",\n' ] + packages
+    command = ['dpkg-query', '--show',
+               '--showformat="${Package}": "${Version}",\n'] + packages
 
     FNULL = open('/dev/null', 'w')
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=FNULL)
@@ -46,6 +49,7 @@ def dpkg_query(packages):
 
     proc_output = loads(str(stdout_wrap))
     return proc_output
+
 
 package_version = dpkg_query(package_list)
 output.update({"packages": package_version})

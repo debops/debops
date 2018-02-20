@@ -15,7 +15,8 @@ output = loads('''{{ ({
 }) | to_nice_json }}''')
 
 try:
-    libvirtd_version_stdout = subprocess.check_output( [ 'libvirtd', '--version' ] ).split()[2]
+    libvirtd_version_stdout = subprocess.check_output(
+            ['libvirtd', '--version']).split()[2]
     output['version'] = libvirtd_version_stdout
 
 except Exception:
@@ -24,7 +25,8 @@ except Exception:
 # Check if host supports hardware virtualization
 libvirtd_hw_virt = False
 try:
-    libvirtd_hw_virt_stdout = subprocess.check_output( [ 'egrep', 'vmx|svm|0xc0f', '/proc/cpuinfo' ] )
+    libvirtd_hw_virt_stdout = subprocess.check_output(
+            ['egrep', 'vmx|svm|0xc0f', '/proc/cpuinfo'])
     libvirtd_hw_virt = True
 
 except Exception:
