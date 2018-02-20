@@ -26,7 +26,7 @@ prometheus_server__packages: []
 # List of apt_preference settings to use backports on stretch
 prometheus_server__apt_preferences__dependent_list:
   - packages:
-    - prometheus
+      - prometheus
     backports: [ 'stretch' ]
     reason: 'Stable version has some ram leaking problems'
     by_role: 'debops.prometheus_server'
@@ -43,15 +43,19 @@ prometheus_server__deploy_state: "present"
 # .. envvar:: prometheus_server__default_scrape_configs [[[
 #
 # Default prometheus config
+#
+# Creates for each entry a file that will get loaded by
 # TODO better varable description
 prometheus_server__default_scrape_configs:
-  - job_name: 'prometheus'
-    static_configs:
-    - targets: ['localhost:9090']
-  - job_name: 'node'
-    static_configs:
-      - targets:
-        - 'localhost:9100'
+  default:
+    - labels:
+        job: 'prometheus'
+        env: 'prod'
+      targets: ['localhost:9090']
+    - labels:
+        job: 'node'
+        env: 'prod'
+      targets: [ 'localhost:9100' ]
                                                                    # ]]]
 # .. envvar:: prometheus_server__scrape_configs [[[
 #

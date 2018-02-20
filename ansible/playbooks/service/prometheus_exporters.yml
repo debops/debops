@@ -1,6 +1,5 @@
 ---
 
-
 - hosts: [ 'debops_service_prometheus_exporters' ]
   environment: '{{ inventory__environment | d({})
                    | combine(inventory__group_environment | d({}))
@@ -12,4 +11,3 @@
       tags: [ 'role::mariadb', 'role::prometheus_exporters' ]
       mariadb__dependent_users: '{{ prometheus_exporters__mysql_dependencies }}'
       when: ('mysql' in prometheus_exporters__exporters)
-
