@@ -28,7 +28,8 @@ while read in ; do
             printf "%s" "."
         fi
     fi
-done < <(find . -type f -not -iwholename "./.git/*")
+done < <(find . -type f -not -iwholename "./.git/*" \
+    -not -wholename "./ansible/roles/debops.mailman/templates/etc/mailman/mm_cfg.py.j2")
 
 printf " %s\n" "found ${#file_list[@]} Python scripts"
 
