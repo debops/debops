@@ -7,12 +7,15 @@ from json import loads, dumps
 from sys import exit
 import os
 
+# Workaround for Jinja template in a Python script
+"""
 {% set root_account__tpl_facts = {
   "configured": True,
   "ssh_key": (root_account__generate_ssh_key | bool),
   "ssh_key_type": root_account__ssh_key_type,
   "ssh_key_file": (root_account__ssh_key_file + '.pub')
 } %}
+"""
 
 output = loads('''{{ root_account__tpl_facts | to_nice_json }}''')
 
