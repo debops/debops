@@ -19,9 +19,9 @@
 """
 Check if the proxy specified as Acquire::HTTP::Proxy or Acquire::HTTPS::Proxy
 are currently reachable before promoting them to be used by the currently
-running apt process. Without this script, apt will fail when the proxy can not be reached.
-With this script, apt silently falls back to "DIRECT" (no proxy) if the proxy
-is (temporally) not reachable.
+running apt process. Without this script, apt will fail when the proxy can not
+be reached.  With this script, apt silently falls back to "DIRECT" (no proxy)
+if the proxy is (temporally) not reachable.
 
 To use this script, set:
 
@@ -30,24 +30,25 @@ To use this script, set:
 in your APT configuration.
 """
 
-from __future__ import print_function, unicode_literals, absolute_import, division
-
-__license__ = 'AGPL-3.0'
-__author__ = 'Robin Schneider <ypid@riseup.net>'
-__version__ = '0.1.0'
-
-from future.standard_library import install_aliases
-
-install_aliases()
+from __future__ import (print_function, unicode_literals,
+                        absolute_import, division)
 
 import argparse
 import logging
+
+from future.standard_library import install_aliases
 
 from urllib.parse import urlparse
 from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
 
 import apt_pkg
+
+install_aliases()
+
+__license__ = 'AGPL-3.0'
+__author__ = 'Robin Schneider <ypid@riseup.net>'
+__version__ = '0.1.0'
 
 LOG = logging.getLogger(__name__)
 
@@ -68,10 +69,12 @@ def get_first_up_proxy(target_uri_raw):
         for proxy_uri_raw in proxy_uris.split(' '):
 
             if proxy_uri_raw.upper() in ['DIRECT']:
-                LOG.debug("Skipping special proxy keyword: {}".format(proxy_uri_raw))
+                LOG.debug("Skipping special proxy keyword: {}".format(
+                    proxy_uri_raw))
                 continue
             else:
-                LOG.debug("Checking possible proxy URI: {}".format(proxy_uri_raw))
+                LOG.debug("Checking possible proxy URI: {}".format(
+                    proxy_uri_raw))
 
             proxy_uri = urlparse(proxy_uri_raw)
 
@@ -85,13 +88,13 @@ def get_first_up_proxy(target_uri_raw):
                     LOG.debug("Proxy not suitable: {}".format(err))
                     continue
 
-                LOG.info("Adding proxy to list of possible proxies: {}".format(proxy_uri_raw))
+                LOG.info("Adding proxy to list of possible proxies: {}".format(
+                    proxy_uri_raw))
                 possible_proxies.append(proxy_uri_raw)
                 break
             else:
-                raise NotImplementedError("URI scheme {} is not yet implemented.".format(
-
-                ))
+                raise NotImplementedError(
+                    "URI scheme {} is not yet implemented.".format())
 
     possible_proxies.append('DIRECT')
 
@@ -136,7 +139,8 @@ def main():
 
     logging.basicConfig(
         format='%(levelname)s{}, %(asctime)s: %(message)s'.format(
-            ' (%(filename)s:%(lineno)s)' if args.loglevel <= logging.DEBUG else '',
+            ' (%(filename)s:%(lineno)s)'
+            if args.loglevel <= logging.DEBUG else '',
         ),
         level=args.loglevel,
     )
