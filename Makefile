@@ -91,7 +91,7 @@ test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax
 test-pep8:
 	@printf "%s\n" "Testing PEP8 compliance using pycodestyle..."
 	@pycodestyle --show-source --statistics .
-	@./lib/tests/check-pep8 || true
+	@./lib/tests/check-pep8
 
 .PHONY: test-shell
 test-shell:

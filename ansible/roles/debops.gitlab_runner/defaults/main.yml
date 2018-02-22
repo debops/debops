@@ -28,14 +28,14 @@ gitlab_runner__apt_key: '1A4C919DB987D435939638B914219A96E15E78F4'
 # .. envvar:: gitlab_runner__apt_repo [[[
 #
 # APT ``sources.list`` configuration of the upstream GitLab Runner repository.
-gitlab_runner__apt_repo: 'deb https://packages.gitlab.com/runner/gitlab-ci-multi-runner/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main'
+gitlab_runner__apt_repo: 'deb https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__base_packages [[[
 #
 # List of APT packages which will be installed by the role.
 gitlab_runner__base_packages:
-  - 'gitlab-ci-multi-runner'
+  - 'gitlab-runner'
   - '{{ [ "vagrant-libvirt", "libguestfs-tools", "busybox", "patch" ]
         if gitlab_runner__vagrant_libvirt|bool
         else [] }}'
