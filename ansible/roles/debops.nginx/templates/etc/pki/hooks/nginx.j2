@@ -16,28 +16,28 @@ certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${nginx_sites}/* || true)
 # Get list of current realm states
 states=( $(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ") )
 
-if [ -n "${certificate}" -a "${{ '{#' }}states[@]}" -gt 0 ] ; then
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
 
     for state in "${states[@]}" ; do
 
-        if [ "${state}" = "changed-certificate" -o "${state}" = "changed-dhparam" ] ; then
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
 
             # Check if current init is systemd
-            if $(pidof systemd > /dev/null 2>&1) ; then
+            if pidof systemd > /dev/null 2>&1 ; then
 
                 nginx_state="$(systemctl is-active nginx.service)"
-                if [ ${nginx_state} = "active" ] ; then
-                    if $(/usr/sbin/nginx -c ${nginx_config} -t > /dev/null 2>&1) ; then
-                        systemctl ${nginx_action} nginx.service
+                if [ "${nginx_state}" = "active" ] ; then
+                    if /usr/sbin/nginx -c "${nginx_config}" -t > /dev/null 2>&1 ; then
+                        systemctl "${nginx_action}" nginx.service
                     fi
                 fi
 
             else
 
-                nginx_pidfile="$(grep -E '^pid\s+' ${nginx_config} | awk '{print $2}' | cut -d\; -f1)"
-                if $(kill -0 $(<${nginx_pidfile}) > /dev/null 2>&1) ; then
-                    if $(/usr/sbin/nginx -c ${nginx_config} -t > /dev/null 2>&1) ; then
-                        /usr/sbin/service nginx ${nginx_action} > /dev/null
+                nginx_pidfile="$(grep -E '^pid\s+' "${nginx_config}" | awk '{print $2}' | cut -d\; -f1)"
+                if kill -0 "$(<"${nginx_pidfile}")" > /dev/null 2>&1 ; then
+                    if /usr/sbin/nginx -c "${nginx_config}" -t > /dev/null 2>&1 ; then
+                        /usr/sbin/service nginx "${nginx_action}" > /dev/null
                     fi
                 fi
 
