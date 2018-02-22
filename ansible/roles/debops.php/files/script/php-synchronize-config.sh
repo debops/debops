@@ -14,7 +14,7 @@ if [ -n "${php_etc_base}" ] ; then
 
     if [ -d "${php_etc_base}/conf.d" ] ; then
 
-        cd "${php_etc_base}/conf.d"
+        cd "${php_etc_base}/conf.d" || exit 1
         for config_file in ${php_etc_base}/ansible/* ; do
             if [[ ! -L "$(basename "${config_file}")" ]] || [[ ! -r "$(basename "${config_file}")" ]] ; then
                 ln -sfv "../ansible/$(basename "${config_file}")" "$(basename "${config_file}")"
@@ -33,7 +33,7 @@ if [ -n "${php_etc_base}" ] ; then
 
         for sapi in ${php_etc_base}/{cli,cgi,fpm,embed,apache2} ; do
             if [[ -n "${sapi}" ]] && [[ -d "${sapi}/conf.d" ]] ; then
-                cd "${sapi}/conf.d"
+                cd "${sapi}/conf.d" || exit 1
                 for config_file in ${php_etc_base}/ansible/* ; do
                     if [[ ! -L "$(basename "${config_file}")" ]] || [[ ! -r "$(basename "${config_file}")" ]] ; then
                         ln -sfv "../../ansible/$(basename "${config_file}")" "$(basename "${config_file}")"
