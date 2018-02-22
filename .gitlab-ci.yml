@@ -963,6 +963,30 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.prosody/.*'
     JANE_LOG_PATTERN: '\[debops\.prosody\]'
 
+'prometheus_server':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_server.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_prometheus_server'
+    JANE_DIFF_PATTERN: '.*/debops.prometheus_server/.*'
+    JANE_LOG_PATTERN: '\[debops\.prometheus_server\]'
+
+'prometheus_exporters':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_exporters.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_prometheus_exporters'
+    JANE_DIFF_PATTERN: '.*/debops.prometheus_exporters/.*'
+    JANE_LOG_PATTERN: '\[debops\.prometheus_exporters\]'
+
+'prometheus_alertmanager':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_alertmanager.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_prometheus_alertmanager'
+    JANE_DIFF_PATTERN: '.*/debops.prometheus_alertmanager/.*'
+    JANE_LOG_PATTERN: '\[debops\.prometheus_alertmanager\]'
+
 # --- r --- [[[2
 
 'rabbitmq_management role':
