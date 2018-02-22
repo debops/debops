@@ -4,23 +4,23 @@
 
 # init: return the current init system name as: ansible_local.init
 
+# shellcheck disable=SC1091
 source /lib/lsb/init-functions
 
 if [ -d /run/systemd/system ] ; then
 
     # This host uses systemd
-    output="\"systemd\""
+    output="systemd"
 
-elif $(init_is_upstart) ; then
+elif init_is_upstart ; then
 
     # This host uses upstart
-    output="\"upstart\""
+    output="upstart"
 
 else
 
     # This host uses sysvinit
-    output="\"sysvinit\""
+    output="sysvinit"
 fi
 
-echo ${output}
-
+printf "\"%s\"\n" "${output}"
