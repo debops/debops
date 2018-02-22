@@ -1,6 +1,22 @@
 ---
 
 - hosts: [ 'debops_service_prometheus_alertmanager' ]
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
   roles:
+    - role: debops.etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list: '{{ prometheus_alertmanager__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'role::prometheus' ]
+      ferm__dependent_rules: '{{ prometheus_alertmanager__ferm__dependent_rules }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers: '{{ prometheus_alertmanager__nginx__dependent_servers }}'
+      when: prometheus_alertmanager__nginx
+
     - role: debops.prometheus_alertmanager
       tags: [ 'role::prometheus_alertmanager' ]

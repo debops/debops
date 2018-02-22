@@ -9,6 +9,11 @@
     - '{{ prometheus_alertmanager__base_packages }}'
     - '{{ prometheus_alertmanager__packages }}'
 
+- name: Copy Configuration
+  template:
+    dest: "/etc/prometheus/alertmanager.yml"
+    src: "etc/prometheus/alertmanager.yml.j2"
+
 - name: Enable Services
   service:
     name: '{{ item }}'
