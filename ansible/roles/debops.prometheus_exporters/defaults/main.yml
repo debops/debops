@@ -25,8 +25,8 @@ prometheus_exporters__base_packages:
 prometheus_exporters__packages: []
                                                                    # ]]]
                                                                    # ]]]
-# Prometheus Server Configuration [[[
-# -------------------------------
+# prometheus exporter Configuration [[[
+# ---------------------------------
 
 # .. envvar:: prometheus_exporters__deploy_state [[[
 #
@@ -57,11 +57,11 @@ prometheus_exporter__mysql__dependencies:
 # Ngninx Proxy [[[
 # ------------
 #
-# This is soposed to secure the access to the prometheus server
+# This is soposed to secure the access to the prometheus exporter
 
 # .. envvar:: prometheus_exporters__public [[[
 #
-# Enables an nginx proxy for the prometheus server
+# Enables an nginx proxy for the prometheus exporter
 prometheus_exporters__nginx: False
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__domain [[[
@@ -95,12 +95,12 @@ prometheus_exporters__nginx__dependent_servers:
 
 # .. envvar:: prometheus_exporters__accept_any [[[
 #
-# Make the prometheus server aviable under the port 9090
+# Make the prometheus exporter aviable under the port 9090
 prometheus_exporters__accept_any: False
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__allow [[[
 #
-# List of IP addresses or CIDR subnets which can access the Prometheus server
+# List of IP addresses or CIDR subnets which can access the prometheus exporter
 # By default access is from the net is forbidden
 prometheus_exporters__allow: []
                                                                    # ]]]
@@ -136,7 +136,7 @@ prometheus_exporters__tcpwrappers__dependent_allow:
           + [ "prometheus-postfix-exporter" ] if "postfix" in prometheus_exporters__exporters else [] }}'
     client: '{{ prometheus_exporters__allow }}'
     accept_any: '{{ prometheus_exporters__accept_any }}'
-    filename: 'prometheus-server'
+    filename: 'prometheus-exporters'
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__etc_services__dependent_list [[[
 #

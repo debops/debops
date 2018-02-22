@@ -160,6 +160,9 @@ Logging
 - :ref:`debops.kibana`
 - :ref:`debops.logrotate`
 - :ref:`debops.rsyslog`
+- :ref:`debops.prometheus_server`
+- :ref:`debops.prometheus_exporters`
+- :ref:`debops.prometheus_alertmanager`
 
 
 Mail services
