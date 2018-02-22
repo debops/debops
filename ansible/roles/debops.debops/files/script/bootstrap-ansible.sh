@@ -53,12 +53,12 @@ build_ansible_deb () {
     fi
 
     # Check if .deb package with new method is present
-    if [ -n "$(find deb-build/unstable/ -name ansible_*_all.deb 2>/dev/null)" ]; then
+    if [ -n "$(find deb-build/unstable/ -name "ansible_*_all.deb" 2>/dev/null)" ]; then
 
         sudo dpkg -i deb-build/unstable/ansible_*_all.deb
 
     # Otherwise, look for package generated with old method
-    elif [ -n "$(find .. -name ansible_*_all.deb 2>/dev/null)" ]; then
+    elif [ -n "$(find .. -name "ansible_*_all.deb" 2>/dev/null)" ]; then
 
         sudo dpkg -i ../ansible_*_all.deb
 
@@ -68,11 +68,15 @@ build_ansible_deb () {
 
 bootstrap_ansible_deb () {
 
-    local ansible_branch="${1:-devel}"
-    local build_dir="${2:-$(mktemp -d)}"
-    local ansible_git_repo="${3:-https://github.com/ansible/ansible}"
+    local ansible_branch
+    local build_dir
+    local ansible_git_repo
+    local ansible_source_dir
 
-    local ansible_source_dir="ansible"
+    ansible_branch="${1:-devel}"
+    build_dir="${2:-$(mktemp -d)}"
+    ansible_git_repo="${3:-https://github.com/ansible/ansible}"
+    ansible_source_dir="ansible"
 
     if [ ! -d "${build_dir}" ] ; then
         mkdir -p "${build_dir}"
@@ -84,11 +88,15 @@ bootstrap_ansible_deb () {
 
         cd "${ansible_source_dir}"
 
-        local old_git_checkout="$(git rev-parse HEAD)"
+        local old_git_checkout
+        local current_branch_name
+        local current_branch_name
+        local current_branch_name
 
-        local current_branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
-        local current_branch_name="(unnamed branch)"     # detached HEAD
-        local current_branch_name=${current_branch_name##refs/heads/}
+        old_git_checkout="$(git rev-parse HEAD)"
+        current_branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
+        current_branch_name="(unnamed branch)"     # detached HEAD
+        current_branch_name=${current_branch_name##refs/heads/}
 
         if [ "${current_branch_name}" != "${ansible_branch}" ] ; then
             git checkout "${ansible_branch}"
@@ -97,7 +105,9 @@ bootstrap_ansible_deb () {
         git pull --quiet
         git submodule update
 
-        local current_git_checkout="$(git rev-parse HEAD)"
+        local current_git_checkout
+
+        current_git_checkout="$(git rev-parse HEAD)"
 
         if [ "${old_git_checkout}" != "${current_git_checkout}" ] ; then
             build_ansible_deb
