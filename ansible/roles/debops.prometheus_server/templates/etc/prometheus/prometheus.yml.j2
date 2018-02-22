@@ -18,9 +18,4 @@ rule_files:
 # A scrape configuration containing exactly one endpoint to scrape:
 # Here it's Prometheus itself.
 scrape_configs:
-{% for file in job_files %}
-  - job_name: '{{ file | regex_replace("^.*/([^/]*)\.json$","\\1") }}'
-    file_sd_configs:
-      - files:
-        - '{{ file }}'
-{% endfor %}
+{{ jobs|to_yaml }}

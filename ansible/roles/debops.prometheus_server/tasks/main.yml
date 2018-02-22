@@ -19,8 +19,8 @@
 # generate files for each job
 - name: Generate job files
   copy:
-    content: '{{ item.value.content | to_json }}'
-    dest: '/etc/prometheus/jobs/{{ item.key }}.json'
+    content: '{{ item.value | to_yaml }}'
+    dest: '/etc/prometheus/jobs/{{ item.key }}.yml'
     owner: 'prometheus'
     mode: '0640'
   when: item.value.status is not defined or item.value.status == 'present'
@@ -28,7 +28,7 @@
 
 - name: Remove disabled job files
   file:
-    path: '/etc/promtehus/jobs/{{ item.key }}.json'
+    path: '/etc/promtehus/jobs/{{ item.key }}.yml'
     state: 'absent'
   when: item.value.state|d('present') != 'present'
   with_dict: '{{ prometheus_server__combined_jobs }}'
@@ -38,9 +38,14 @@
     path: '/etc/prometheus/jobs'
   register: prometheus_server__find_result
 
+- name: Fetch data from present jobs
+  shell: 'cat {{ item }}'
+  with_items: '{{ prometheus_server__find_result.files | map(attribute="path")|list }}'
+  register: prometheus_server__jobs
+
 - name: Generatet Prometheus configuration
   vars:
-    job_files: '{{ prometheus_server__find_result.files | map(attribute="path")|list }}'
+    jobs: '{{ prometheus_server__jobs.results | map(attribute="stdout")|map("from_yaml")|map(attribute="content")|list }}'
   template:
     src: 'etc/prometheus/prometheus.yml.j2'
     dest: '/etc/prometheus/prometheus.yml'
