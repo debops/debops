@@ -6,45 +6,44 @@ set -e
 
 # If no project name is given, display help
 if [ $# -eq 0 ] ; then
-	cat <<-EOF
-	Usage: $(basename ${0}) <repository>
+    cat <<-EOF
+Usage: $(basename "${0}") <repository>
 
-	Delete <repository>
-	EOF
-	exit 1
+Delete <repository>
+EOF
+    exit 1
 fi
 
 # Sanitize repository name
 repository=${1//[^a-zA-Z0-9\.\/\_-]/}
 project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
 
-if [ -d ${project} ] ; then
-	cd "${HOME}/${project}"
+if [ -d "${project}" ] ; then
+    cd "${HOME}/${project}"
 
-	set +e
-	worktree=$(git config --get deploy.worktree)
-	public=$(git config --get deploy.public)
-	snapshot=$(git config --get deploy.snapshot)
-	set -e
+    set +e
+    worktree=$(git config --get deploy.worktree)
+    public=$(git config --get deploy.public)
+    snapshot=$(git config --get deploy.snapshot)
+    set -e
 
-	cd "${HOME}"
+    cd "${HOME}"
 
-	if [ -z "${snapshot}" ] && [ -n "${public}" ] && [ -d ${public} ] ; then
-		echo "Removing public directory ${public}"
-		rm -rf ${public}
-	fi
-	if [ -n "${worktree}" ] && [ -d ${worktree} ] ; then
-		if [ -n "${snapshot}" ] ; then
-			echo "Removing snapshot link in ${worktree}"
-			test -f ${public}/.git && rm -f ${worktree}/.git
-		else
-			echo "Removing work directory ${worktree}"
-			rm -rf ${worktree}
-		fi
-	fi
-	echo "Removing repository ${HOME}/${project}"
-	rm -rf ${HOME}/${project}
+    if [ -z "${snapshot}" ] && [ -n "${public}" ] && [ -d "${public}" ] ; then
+        echo "Removing public directory ${public}"
+        rm -rf "${public}"
+    fi
+    if [ -n "${worktree}" ] && [ -d "${worktree}" ] ; then
+        if [ -n "${snapshot}" ] ; then
+            echo "Removing snapshot link in ${worktree}"
+            test -f "${public}/.git" && rm -f "${worktree}/.git"
+        else
+            echo "Removing work directory ${worktree}"
+            rm -rf "${worktree}"
+        fi
+    fi
+    echo "Removing repository ${HOME}/${project}"
+    rm -rf "${HOME:?}/${project:?}"
 else
-	echo "Error: Repository ${repository} not found" && exit 1
+    echo "Error: Repository ${repository} not found" && exit 1
 fi
-
