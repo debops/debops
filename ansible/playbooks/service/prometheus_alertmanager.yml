@@ -12,6 +12,12 @@
       tags: [ 'role::etc_services' ]
       etc_services__dependent_list: '{{ prometheus_alertmanager__etc_services__dependent_list }}'
 
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+      when: prometheus_exporters__nginx
+
     - role: debops.ferm
       tags: [ 'role::ferm', 'role::prometheus' ]
       ferm__dependent_rules:
