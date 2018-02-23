@@ -14,6 +14,13 @@
     dest: "/etc/prometheus/alertmanager.yml"
     src: "etc/prometheus/alertmanager.yml.j2"
 
+- name: 'Set right permissons workaround for debian bug #891202'
+  file:
+    path: '/var/lib/prometheus'
+    owner: 'prometheus'
+    group: 'prometheus'
+    state: 'directory'
+
 - name: Enable Services
   service:
     name: '{{ item }}'
