@@ -22,6 +22,11 @@ prometheus_server__jobs
 Common role options
 ~~~~~~~~~~~~~~~~~~~
 
+``name``
+  Required, string. This have to be unique and is for internal debops processeing.
+  This name represents a filename in `/etc/prometheus/jobs/*.yml` for be able to
+  enable/disable jobs by other roles.
+
 ``state``
   Optional, string. Defaults to ``present``.
   Whether the prometheus_server server should be ``present`` or ``absent``.

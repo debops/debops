@@ -45,13 +45,13 @@ prometheus_server__deploy_state: "present"
 # Default prometheus config
 # :ref:`prometheus_server__ref_default_variable_details`
 prometheus_server__default_jobs:
-  prometheus:
+  - name: 'prometheus'
     state: 'present'
     content:
       job_name: 'prometheus'
       static_configs:
         - targets: ['localhost:9090']
-  node:
+  - name: 'node-localhost'
     state: 'present'
     content:
       job_name: 'node'
@@ -62,29 +62,29 @@ prometheus_server__default_jobs:
 #
 # Config which will be managed on all hosts in the Ansible
 # inventory
-prometheus_server__jobs: {}
+prometheus_server__jobs: []
                                                                    # ]]]
 # .. envvar:: prometheus_server__group_jobs [[[
 #
 # Config which will be managed on specific groups in the Ansible
 # inventory.
-prometheus_server__group_jobs: {}
+prometheus_server__group_jobs: []
                                                                    # ]]]
 # .. envvar:: prometheus_server__host_jobs [[[
 #
 # Config which will be managed on specific hosts in the Ansible
 # inventory.
-prometheus_server__host_jobs: {}
+prometheus_server__host_jobs: []
                                                                    # ]]]
 # .. envvar:: prometheus_server__combined_jobs [[[
 #
 # List which combines all of the config variables and is used
 # in the configuration template.
 prometheus_server__combined_jobs: '{{ prometheus_server__default_jobs
-                                       | combine( prometheus_server__jobs
-                                       , prometheus_server__group_jobs
-                                       , prometheus_server__host_jobs
-                                       , prometheus_server__dependent_jobs|d({}) ) }}'
+                                       + prometheus_server__jobs
+                                       + prometheus_server__group_jobs
+                                       + prometheus_server__host_jobs
+                                       + (prometheus_server__dependent_jobs | d([]) ) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Ngninx Proxy [[[
