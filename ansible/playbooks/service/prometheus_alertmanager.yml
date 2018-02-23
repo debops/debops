@@ -14,7 +14,9 @@
 
     - role: debops.ferm
       tags: [ 'role::ferm', 'role::prometheus' ]
-      ferm__dependent_rules: '{{ prometheus_alertmanager__ferm__dependent_rules }}'
+      ferm__dependent_rules:
+        - '{{ prometheus_alertmanager__ferm__dependent_rules }}'
+        - '{{ nginx__ferm__dependent_rules if prometheus_server__nginx else [] }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx' ]
