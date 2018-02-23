@@ -18,6 +18,8 @@ By default prometheus server only listen on `localhost:9090` this can be changed
 Enables an nginx proxy under the domain ::envvar:prometheus_server__domain .
 For secure communication base_auth is active by default.
 
+You must also add your host to the group `[debops_service_nginx]` that it work properly.
+
 :envvar:`prometheus_server__accept_any`
 
 Enables direct tcp connection to the prometheus_server on port 9090.
