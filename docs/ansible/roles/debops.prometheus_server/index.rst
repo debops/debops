@@ -9,6 +9,7 @@ debops.prometheus_server
    introduction
    getting-started
    defaults
+   defaults-detailed
    copyright
 
 ..
