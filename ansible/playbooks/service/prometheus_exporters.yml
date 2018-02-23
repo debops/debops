@@ -1,6 +1,9 @@
 ---
 
-- hosts: [ 'debops_service_prometheus_exporters' ]
+- name: 'Manage Prometheus exporters'
+  hosts: [ 'debops_service_prometheus_exporters' ]
+  become: True
+
   environment: '{{ inventory__environment | d({})
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'

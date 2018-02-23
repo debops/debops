@@ -1,6 +1,9 @@
 ---
 
-- hosts: [ 'debops_service_prometheus_alertmanager' ]
+- name: 'Manage Prometheus alertmanager'
+  hosts: [ 'debops_service_prometheus_alertmanager' ]
+  become: True
+
   environment: '{{ inventory__environment | d({})
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'

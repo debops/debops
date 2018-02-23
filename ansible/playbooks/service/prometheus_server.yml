@@ -1,6 +1,9 @@
 ---
 
-- hosts: [ 'debops_service_prometheus_server' ]
+- name: 'Manage Prometheus server'
+  hosts: [ 'debops_service_prometheus_server' ]
+  become: True
+
   roles:
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences', 'role::prometheus' ]
