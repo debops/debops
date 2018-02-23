@@ -14,7 +14,7 @@
 - name: 'checkout postfix-exporter'
   git:
     repo: 'https://github.com/kumina/postfix_exporter.git'
-    dest: '/srv/prometheus/postfix-exporter'
+    dest: '/srv/postfix-exporter'
   when: ('postfix' in prometheus_exporters__exporters)
   register: prometheus_exporters__git_postfix_exporter
 
@@ -23,7 +23,7 @@
   environment:
     GOPATH: '/srv/golang'
   args:
-    chdir: '/srv/prometheus/postfix-exporter'
+    chdir: '/srv/postfix-exporter'
   with_items:
     - 'go get -d .'
     - 'go build'
