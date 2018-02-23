@@ -964,7 +964,7 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.prosody\]'
 
 'prometheus_server':
-  <<: *test_role_no_deps
+  <<: *test_role_1st_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_server.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_prometheus_server'
@@ -976,7 +976,7 @@ stages:
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_exporters.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_prometheus_exporters'
-    JANE_INVENTORY_HOSTVARS: 'prometheus_server__exporters=True prometheus_exporters__any: True'
+    JANE_INVENTORY_HOSTVARS: 'prometheus_server__exporters=true prometheus_exporters__accept_any=true'
     JANE_DIFF_PATTERN: '.*/debops.prometheus_exporters/.*'
     JANE_LOG_PATTERN: '\[debops\.prometheus_exporters\]'
 
@@ -985,7 +985,7 @@ stages:
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_alertmanager.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_prometheus_alertmanager'
-    JANE_INVENTORY_HOSTVARS: 'prometheus_alertmanager__nginx=True prometheus_alertmanager__any: True'
+    JANE_INVENTORY_HOSTVARS: 'prometheus_alertmanager__nginx=true prometheus_alertmanager__accept_any=true'
     JANE_DIFF_PATTERN: '.*/debops.prometheus_alertmanager/.*'
     JANE_LOG_PATTERN: '\[debops\.prometheus_alertmanager\]'
 
@@ -993,7 +993,7 @@ stages:
   <<: *test_role_2nd_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_server.yml'
-    JANE_INVENTORY_HOSTVARS: 'prometheus_server__nginx=True prometheus_server__any: True'
+    JANE_INVENTORY_HOSTVARS: 'prometheus_server__nginx=true prometheus_server__accept_any=true'
     JANE_INVENTORY_GROUPS: 'debops_service_prometheus_server'
     JANE_DIFF_PATTERN: '.*/debops.prometheus_server/.*'
     JANE_LOG_PATTERN: '\[debops\.prometheus_server\]'
