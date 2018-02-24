@@ -32,7 +32,7 @@
     - '{{ users__group_resources }}'
     - '{{ users__host_resources }}'
   when: (item.name|d() and item.state|d('present') in [ 'present', 'file' ] and item.parent|d(True) and
-         (item.dest|d() or item,path|d()) and (item.src|d() or item.content|d()))
+         (item.dest|d() or item.path|d()) and (item.src|d() or item.content|d()))
   no_log: '{{ users__no_log | bool }}'
 
 - name: Manage resource contents
@@ -49,7 +49,7 @@
     - '{{ users__group_resources }}'
     - '{{ users__host_resources }}'
   when: (item.name|d() and item.state|d('present') in [ 'present', 'file' ] and
-         (item.dest|d() or item,path|d()) and (item.src|d() or item.content|d()))
+         (item.dest|d() or item.path|d()) and (item.src|d() or item.content|d()))
   no_log: '{{ users__no_log | bool }}'
 
 - name: Remove resources if requested
