@@ -12,26 +12,26 @@ publish_path="$(git config --global --get gitusers.publish.path)"
 
 # If no project name is given, display help
 if [ $# -eq 0 ] ; then
-	cat <<-EOF
-	Usage: $(basename ${0}) <repository> <domain>
+    cat <<-EOF
+Usage: $(basename "${0}") <repository> <domain>
 
-	Publish repository on a given <domain>
-	EOF
-	exit 1
+Publish repository on a given <domain>
+EOF
+    exit 1
 fi
 
 if [ -n "${1}" ] ; then
-	# Sanitize repository name
-	repository=${1//[^a-zA-Z0-9\.\/\_-]/}
-	project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+    # Sanitize repository name
+    repository=${1//[^a-zA-Z0-9\.\/\_-]/}
+    project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
 else
-	echo "Error: No repository specified" && exit 1
+    echo "Error: No repository specified" && exit 1
 fi
 
-if [ -d ${HOME}/${project} ] ; then
-	cd "${HOME}/${project}"
+if [ -d "${HOME}/${project}" ] ; then
+    cd "${HOME}/${project}"
 else
-	echo "Error: Repository ${repository} not found" && exit 1
+    echo "Error: Repository ${repository} not found" && exit 1
 fi
 
 set +e
@@ -43,55 +43,54 @@ currentuserdir=$(git config --bool deploy.userdir)
 set -e
 
 if [ -n "${2}" ] ; then
-	if [ -z "${2//[^a-zA-Z0-9]/}" -o -n "${2//[^\/]/}" ]; then
-		echo "Error: illegal domain: '${2}'" && exit 1
-	fi
+    if [ -z "${2//[^a-zA-Z0-9]/}" ] || [ -n "${2//[^\/]/}" ]; then
+        echo "Error: illegal domain: '${2}'" && exit 1
+    fi
 
-	# Sanitize domain name
-	domain=${2//[^a-zA-Z0-9\.\-]/}
+    # Sanitize domain name
+    domain="${2//[^a-zA-Z0-9\.\-]/}"
 
-	if [[ ${domain} != *.* ]] ; then
-		domain="${domain}.${parentdomain}"
-	fi
+    if [[ ${domain} != *.* ]] ; then
+        domain="${domain}.${parentdomain}"
+    fi
 else
-	if [ -n "${currentpublic}" ] ; then
-		cat <<-EOF
-		Work directory:		${currentworktree}
-		Public directory:	${currentpublic}
-		Current branch:		${currentbranch}
-		EOF
-		if [ -n "${currentuserdir}" ] ; then
-			cat <<-EOF
-			Userdir URL:		http://${userdomain}/~${USER}/
-			EOF
-		else
-			cat <<-EOF
-			Domain URL:		http://${currentdomain}/
-			EOF
-		fi
-		exit 1
-	else
-		if [[ ${repository} == */* ]] ; then
-			repository=$(echo "${repository}" | sed -e 's!^\([^/]*\)/\(.*\)$!\2/\1!' -e 's/\//./g')
-		fi
-		domain="${repository}.${parentdomain}"
-	fi
+    if [ -n "${currentpublic}" ] ; then
+        cat <<-EOF
+Work directory:     ${currentworktree}
+Public directory:   ${currentpublic}
+Current branch:     ${currentbranch}
+EOF
+        if [ -n "${currentuserdir}" ] ; then
+            cat <<-EOF
+Userdir URL:        http://${userdomain}/~${USER}/
+EOF
+        else
+            cat <<-EOF
+Domain URL:     http://${currentdomain}/
+EOF
+        fi
+        exit 1
+    else
+        if [[ ${repository} == */* ]] ; then
+            repository=$(echo "${repository}" | sed -e 's!^\([^/]*\)/\(.*\)$!\2/\1!' -e 's/\//./g')
+        fi
+        domain="${repository}.${parentdomain}"
+    fi
 fi
 
 public="${publish_path}/${domain}/public"
 
 if [ -n "${domain}" ] ; then
-	git config deploy.public ${public}
-	git config deploy.domain ${domain}
-	set +e
-	git config --unset-all deploy.userdir
-	set -e
+    git config deploy.public "${public}"
+    git config deploy.domain "${domain}"
+    set +e
+    git config --unset-all deploy.userdir
+    set -e
 
-	cat <<-EOF
-		Work directory:		${currentworktree}
-		Public directory:	${public}
-		Active branch:		${currentbranch}
-		Domain URL:		http://${domain}/
-	EOF
+    cat <<-EOF
+Work directory:     ${currentworktree}
+Public directory:   ${public}
+Active branch:      ${currentbranch}
+Domain URL:     http://${domain}/
+EOF
 fi
-

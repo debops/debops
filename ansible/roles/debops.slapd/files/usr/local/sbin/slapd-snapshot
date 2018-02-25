@@ -41,9 +41,10 @@ test -n "${CNCONFIG}" || CNCONFIG="${BACKUP_PATH}/config.ldif"
 test -n "${DATABASE}" || DATABASE="${BACKUP_PATH}/database.ldif"
 
 if [ -n "${sleeptime}" ] ; then
-    sleep $[ ( $RANDOM % ${sleeptime} ) + 1 ]m
+    sleep $(( ( RANDOM % sleeptime ) + 1 ))m
 fi
 
+# shellcheck disable=SC2174
 mkdir -m 700 -p ${BACKUP_PATH}
 
 nice ${SLAPCAT} -n 0 > ${CNCONFIG}
@@ -54,4 +55,3 @@ nice gzip -f -c ${DATABASE} > ${DATABASE}.gz && rm -f ${DATABASE}
 
 chown root:root ${BACKUP_PATH}/*
 chmod 600 ${BACKUP_PATH}/*
-

@@ -82,6 +82,7 @@ version () {
 
 key_exists () {
     # Check if an associative array has a specified key present
+    # shellcheck disable=SC2086
     eval '[ ${'$1'[$2]+test_of_existence} ]'
 }
 
@@ -172,7 +173,8 @@ initialize_environment () {
 
     config["acme_expiration_days"]="30"
 
-    config["acme_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['acme_expiration_days']} ))"
+    # shellcheck disable=SC2154
+    config["acme_expiration_seconds"]="$(( 60 * 60 * 24 * config['acme_expiration_days'] ))"
 
     config["acme_root_ca_path"]="/usr/share/ca-certificates"
     config["acme_root_ca_file"]="mozilla/DST_Root_CA_X3.crt"
@@ -188,13 +190,16 @@ initialize_environment () {
     config["realm_key_size"]="2048"
 
     config["internal_expiration_days"]="14"
-    config["internal_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['internal_expiration_days']} ))"
+    # shellcheck disable=SC2154
+    config["internal_expiration_seconds"]="$(( 60 * 60 * 24 * config['internal_expiration_days'] ))"
 
     config["selfsigned_sign_days"]="365"
-    config["selfsigned_sign_seconds"]="$(( 60 * 60 * 24 * ${config['selfsigned_sign_days']} ))"
+    # shellcheck disable=SC2154
+    config["selfsigned_sign_seconds"]="$(( 60 * 60 * 24 * config['selfsigned_sign_days'] ))"
 
     config["selfsigned_expiration_days"]="14"
-    config["selfsigned_expiration_seconds"]="$(( 60 * 60 * 24 * ${config['selfsigned_expiration_days']} ))"
+    # shellcheck disable=SC2154
+    config["selfsigned_expiration_seconds"]="$(( 60 * 60 * 24 * config['selfsigned_expiration_days'] ))"
 
     config["subject"]=""
     config["domains"]=""
@@ -422,7 +427,7 @@ run_pki_hooks () {
         current_state="${current_state:1}"
         export PKI_SCRIPT_STATE="${current_state}"
 
-        cd "${config['pki_hooks']}"
+        cd "${config['pki_hooks']}" || exit 1
         ( run-parts . )
         cd - > /dev/null 2>&1
 
@@ -478,7 +483,7 @@ run_external_script () {
 
         test -x external/script || chmod ug+x external/script
 
-        cd external
+        cd external || exit 1
         ( ./script )
         cd - > /dev/null 2>&1
     fi
@@ -780,7 +785,7 @@ selfsign_openssl_request () {
                     -req -signkey private/key.pem -days "${config['selfsigned_sign_days']}"
             test -r "${sign_out}.tmp" && mv "${sign_out}.tmp" "${sign_out}"
             if [ -r "${sign_out}" ] && [ ! -r "${root_out}" ] ; then
-                cd "$(dirname "${root_out}")"
+                cd "$(dirname "${root_out}")" || exit 1
                 ln -s "${sign_out}" "${root_out}"
                 cd - > /dev/null
             fi
@@ -804,7 +809,7 @@ selfsign_gnutls_request () {
                      --template selfsigned/gnutls.conf
             test -r "${sign_out}.tmp" && mv "${sign_out}.tmp" "${sign_out}"
             if [ -r "${sign_out}" ] && [ ! -r "${root_out}" ] ; then
-                cd "$(dirname "${root_out}")"
+                cd "$(dirname "${root_out}")" || exit 1
                 ln -s "$(basename ${sign_out})" "$(basename "${root_out}")"
                 cd - > /dev/null
             fi
@@ -1061,7 +1066,9 @@ request_acme_tiny_certificate () {
 
             if [ -r acme/cert.pem.tmp ] && [ -s acme/cert.pem.tmp ] ; then
 
-                test -r acme/cert.pem && mv acme/cert.pem acme/cert.pem.old || true
+                if [ -r acme/cert.pem ] ; then
+                    mv acme/cert.pem acme/cert.pem.old
+                fi
                 mv acme/cert.pem.tmp acme/cert.pem
 
                 local acme_intermediate_uri
@@ -1401,7 +1408,9 @@ process_public_files () {
                 if [ -r public/cert.pem ] ; then
                     if ! check_file_signature public/cert.pem ; then
                         if [ -r public/intermediate.pem ] ; then
-                            test -r public/cert_intermediate.pem.tmp && rm -f public/cert_intermediate.pem.tmp || true
+                            if [ -r public/cert_intermediate.pem.tmp ] ; then
+                                rm -f public/cert_intermediate.pem.tmp
+                            fi
                             cat public/cert.pem public/intermediate.pem > public/cert_intermediate.pem.tmp
                         fi
                     fi
@@ -1436,7 +1445,9 @@ process_public_files () {
             if [ -r private/key.pem ] && [ -r public/cert.pem ] && [ -r public/intermediate.pem ] && [ -r public/cert_intermediate.pem ] ; then
 
                 if ! check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem ; then
-                    test -r public/cert_intermediate.pem.tmp && rm -f public/cert_intermediate.pem.tmp || true
+                    if [ -r public/cert_intermediate.pem.tmp ] ; then
+                        rm -f public/cert_intermediate.pem.tmp
+                    fi
                     cat public/cert.pem public/intermediate.pem > public/cert_intermediate.pem.tmp
                 fi
 
@@ -1533,7 +1544,9 @@ process_private_files () {
 
                 if check_openssl_key_crt_match private/realm_key.pem "${authority}/cert.pem" ; then
 
-                    test -r private/key.pem.tmp && rm -f private/key.pem.tmp || true
+                    if [ -r private/key.pem.tmp ] ; then
+                        rm -f private/key.pem.tmp
+                    fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
@@ -1556,7 +1569,9 @@ process_private_files () {
 
                     if ! check_openssl_key_crt_match private/key.pem public/cert.pem.tmp ; then
 
-                        test -r private/key.pem.tmp && rm -f private/key.pem.tmp || true
+                        if [ -r private/key.pem.tmp ] ; then
+                            rm -f private/key.pem.tmp
+                        fi
                         install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
                         if type setfacl > /dev/null 2>&1 ; then
                             local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
@@ -1576,7 +1591,9 @@ process_private_files () {
 
                 if [ -r public/cert_intermediate.pem.tmp ] ; then
 
-                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    if [ -r private/key_chain.pem.tmp ] ; then
+                        rm -f private/key_chain.pem.tmp
+                    fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
@@ -1596,7 +1613,9 @@ process_private_files () {
 
                 elif [ -r public/cert.pem.tmp ] ; then
 
-                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    if [ -r private/key_chain.pem.tmp ] ; then
+                        rm -f private/key_chain.pem.tmp
+                    fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
@@ -1620,7 +1639,9 @@ process_private_files () {
             if [ -r private/key.pem ] && [ -r public/cert_intermediate.pem ] ; then
 
                 if ! check_openssl_key_crt_match private/key.pem public/cert_intermediate.pem ; then
-                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    if [ -r private/key_chain.pem.tmp ] ; then
+                        rm -f private/key_chain.pem.tmp
+                    fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
@@ -1638,7 +1659,9 @@ process_private_files () {
             elif [ -r private/key.pem ] && [ -r public/cert.pem ] ; then
 
                 if ! check_openssl_key_crt_match private/key.pem public/cert.pem ; then
-                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    if [ -r private/key_chain.pem.tmp ] ; then
+                        rm -f private/key_chain.pem.tmp
+                    fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
@@ -1652,7 +1675,9 @@ process_private_files () {
                     fi
                     cat private/key.pem public/cert.pem >> private/key_chain.pem.tmp
                 elif ! check_file_signature public/cert.pem ; then
-                    test -r private/key_chain.pem.tmp && rm -f private/key_chain.pem.tmp || true
+                    if [ -r private/key_chain.pem.tmp ] ; then
+                        rm -f private/key_chain.pem.tmp
+                    fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
                         local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
@@ -1795,14 +1820,14 @@ activate_new_files () {
 update_realm_symlinks () {
 
     if [ -r public/intermediate.pem ] ; then
-        cd public
+        cd public || exit 1
         update_symlink chain.pem cert_intermediate_dhparam.pem cert_intermediate.pem cert_dhparam.pem cert.pem
         update_symlink trusted.pem intermediate_root.pem root.pem
         cd - > /dev/null
     fi
 
     if [ -r public/alt_intermediate_root.pem ] ; then
-        cd public
+        cd public || exit 1
         update_symlink alt_trusted.pem alt_intermediate_root.pem alt_root.pem
         cd - > /dev/null
     fi
@@ -1897,6 +1922,7 @@ sub_new-realm () {
                         args["acme_subdomains"]=${OPTARG#*=}
                         ;;
                     acme-alt-names)
+                        # shellcheck disable=SC2154
                         args["acme_alt_names"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
                         ;;
                     acme-alt-names=*)
@@ -2371,12 +2397,14 @@ sub_schedule () {
                         args["name"]=${OPTARG#*=}
                         ;;
                     realm-dir)
+                        # shellcheck disable=SC2154
                         args["realm_dir"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
                         ;;
                     realm-dir=*)
                         args["realm_dir"]=${OPTARG#*=}
                         ;;
                     type)
+                        # shellcheck disable=SC2154
                         args["type"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
                         ;;
                     type=*)

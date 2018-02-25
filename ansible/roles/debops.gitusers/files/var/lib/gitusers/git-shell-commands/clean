@@ -9,22 +9,22 @@ gitusers_data="$(git config --global --get gitusers.data)"
 
 # If no project name is given, display help
 if [ $# -eq 0 ] ; then
-	cat <<-EOF
-	Usage: $(basename ${0}) <repository>
+    cat <<-EOF
+Usage: $(basename "${0}") <repository>
 
-	Delete everything in the public directory of <repository>
-	EOF
-	exit 1
+Delete everything in the public directory of <repository>
+EOF
+    exit 1
 fi
 
 # Sanitize repository name
 repository="${1//[^a-zA-Z0-9\.\/\_-]/}"
 project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
 
-if [ -d ${project} ] ; then
-	cd "${HOME}/${project}"
+if [ -d "${project}" ] ; then
+    cd "${HOME}/${project}"
 else
-	echo "Error: Repository ${repository} not found" && exit 1
+    echo "Error: Repository ${repository} not found" && exit 1
 fi
 
 set +e
@@ -33,20 +33,19 @@ snapshot="$(git config --get deploy.snapshot)"
 set -e
 
 if [ -z "${snapshot}" ] && [ -n "${public}" ] ; then
-	if [ "${public##$gitusers_data}" != "${public}" ] ; then
+    if [ "${public##$gitusers_data}" != "${public}" ] ; then
 
-		if [ -d ${public} ] ; then
-			rm -rf ${public}
-			echo "Public directory '${public}' cleaned"
-		else
-			echo "Error: Public directory '${public}' does not exist" && exit 1
-		fi
-	else
-		echo "Error: Public directory '${public}' is outside of allowed path" && exit 1
-	fi
+        if [ -d "${public}" ] ; then
+            rm -rf "${public}"
+            echo "Public directory '${public}' cleaned"
+        else
+            echo "Error: Public directory '${public}' does not exist" && exit 1
+        fi
+    else
+        echo "Error: Public directory '${public}' is outside of allowed path" && exit 1
+    fi
 elif [ -n "${snapshot}" ] ; then
-	echo "Error: ${repository} is a snapshot repository, aborting" && exit 1
+    echo "Error: ${repository} is a snapshot repository, aborting" && exit 1
 else
-	echo "Public directory is not configured"
+    echo "Public directory is not configured"
 fi
-

@@ -5,7 +5,8 @@
 set -e
 
 system_functions="$(git config --global --get gitusers.system.functions)"
-test -x ${system_functions} && source ${system_functions}
+# shellcheck disable=SC1090
+test -x "${system_functions}" && source "${system_functions}"
 
 # Directory with available hooks
 system_git_hooks="$(git config --global --get gitusers.init.hooks)"
@@ -21,13 +22,13 @@ checkout_path="$(git config --global --get gitusers.init.path)"
 
 # If no project name is given, display help
 if [ $# -eq 0 ] ; then
-	cat <<-EOF
-	Usage: $(basename ${0}) <repository> [type]
+    cat <<-EOF
+Usage: $(basename "${0}") <repository> [type]
 
-	Create new repository with optional [type] as default
-	Available types: ${allowed_hooks[@]}
-	EOF
-	exit 1
+Create new repository with optional [type] as default
+Available types: ${allowed_hooks[@]}
+EOF
+    exit 1
 fi
 
 
@@ -39,17 +40,17 @@ project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i'
 
 # Sanitize repository type
 if [ -n "${2}" ] ; then
-	repository_type="${2//[^a-zA-Z0-9]/}"
+    repository_type="${2//[^a-zA-Z0-9]/}"
 else
-	repository_type="${default_repository_type}"
+    repository_type="${default_repository_type[*]}"
 fi
 
-if [ -n "${repository_type}" ] && ! in_array allowed_hooks ${repository_type} ; then
-	echo "Error: Unknown repository type" && exit 1
+if [ -n "${repository_type}" ] && ! in_array allowed_hooks "${repository_type}" ; then
+    echo "Error: Unknown repository type" && exit 1
 fi
 
 # List of hooks installed by default
-default_hooks=( $(git config --global --get gitusers.hookmap.${repository_type}) )
+default_hooks=( $(git config --global --get "gitusers.hookmap.${repository_type}") )
 
 # Define a worktree outside of the home directory
 worktree="${checkout_path}/${repository}.checkout"
@@ -60,35 +61,34 @@ worktree="${checkout_path}/${repository}.checkout"
 mkdir -p "${HOME}/${project}"
 cd "${HOME}/${project}"
 
-if ! [ -r config ] ; then
-	git init --bare
-	git config deploy.bare false
-	git config deploy.worktree ${worktree}
-	git config deploy.type ${repository_type}
+if ! [ -r "config" ] ; then
+    git init --bare
+    git config deploy.bare "false"
+    git config deploy.worktree "${worktree}"
+    git config deploy.type "${repository_type}"
 fi
 
 
 # ---- Reset default hooks ----
 
-if [ -n "${default_hooks}" ] ; then
-	for hook in ${default_hooks[@]} ; do
-		hook_dir=$(dirname ${hook})
-		test -d hooks/${hook_dir} && rm -rf hooks/${hook_dir}
-	done
+if [ -n "${default_hooks[*]}" ] ; then
+    for hook in "${default_hooks[@]}" ; do
+        hook_dir="$(dirname "${hook}")"
+        test -d "hooks/${hook_dir}" && rm -rf "hooks/${hook_dir}"
+    done
 fi
 
 
 # ---- Configure default hooks ----
 
-if [ -n "${default_hooks}" ] ; then
-	for hook in ${default_hooks[@]} ; do
-		hook_dir=$(dirname ${hook})
-		hook_type=$(echo ${hook_dir} | sed -e 's/\.d$//')
-		echo "Installing ${hook_type} hook: $(basename ${hook})"
-		test -d hooks/${hook_dir} || mkdir -p hooks/${hook_dir}
-		test -x ${system_git_hooks}/${hook} && ln -sf ${system_git_hooks}/${hook} hooks/${hook_dir}/$(basename ${hook})
-		test -L hooks/hook-chain || ln -sf ${system_git_hooks}/hook-chain hooks/hook-chain
-		test -L hooks/${hook_type} || ln -sf hook-chain hooks/${hook_type}
-	done
+if [ -n "${default_hooks[*]}" ] ; then
+    for hook in "${default_hooks[@]}" ; do
+        hook_dir=$(dirname "${hook}")
+        hook_type="${hook_dir//\.d$/}"
+        echo "Installing ${hook_type} hook: $(basename "${hook}")"
+        test -d "hooks/${hook_dir}" || mkdir -p "hooks/${hook_dir}"
+        test -x "${system_git_hooks}/${hook}" && ln -sf "${system_git_hooks}/${hook}" "hooks/${hook_dir}/$(basename "${hook}")"
+        test -L "hooks/hook-chain" || ln -sf "${system_git_hooks}/hook-chain" "hooks/hook-chain"
+        test -L "hooks/${hook_type}" || ln -sf "hook-chain" "hooks/${hook_type}"
+    done
 fi
-

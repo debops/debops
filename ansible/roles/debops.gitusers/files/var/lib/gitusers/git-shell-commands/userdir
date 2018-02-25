@@ -4,58 +4,52 @@
 
 set -e
 
-userdir_allow="$(git config --global --get gitusers.permission.userdir)"
-
 domain="$(git config --global --get gitusers.userdir.domain)"
 
 userdir_path="$(git config --global --get gitusers.userdir.path)"
 
 # If no project name is given, display help
 if [ $# -eq 0 ] ; then
-	cat <<-EOF
-	Usage: $(basename ${0}) <repository>
+    cat <<-EOF
+Usage: $(basename "${0}") <repository>
 
-	Publish <repository> as http://${domain}/~${USER}/
-	EOF
-	exit 1
+Publish <repository> as http://${domain}/~${USER}/
+EOF
+    exit 1
 fi
 
 if [ -n "${1}" ] ; then
-	# Sanitize repository name
-	repository="${1//[^a-zA-Z0-9\.\/\_-]/}"
-	project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
+    # Sanitize repository name
+    repository="${1//[^a-zA-Z0-9\.\/\_-]/}"
+    project=$(echo "${repository}" | sed -e 's/^\///i' -e 's/\.\././g' -e 's/^\.//i' -e 's/\.git$\|$/.git/i')
 else
-	echo "Error: No repository specified" && exit 1
+    echo "Error: No repository specified" && exit 1
 fi
 
-if [ -d ${HOME}/${project} ] ; then
-	cd "${HOME}/${project}"
+if [ -d "${HOME}/${project}" ] ; then
+    cd "${HOME}/${project}"
 else
-	echo "Error: Repository ${repository} not found" && exit 1
+    echo "Error: Repository ${repository} not found" && exit 1
 fi
 
 set +e
 currentworktree=$(git config deploy.worktree)
-currentpublic=$(git config deploy.public)
 currentbranch=$(git config deploy.branch)
-currentdomain=$(git config deploy.domain)
-currentuserdir=$(git config --bool deploy.userdir)
 set -e
 
 public="${userdir_path}/public"
 
-[ -d ${public} ] || mkdir -p ${public}
+[ -d "${public}" ] || mkdir -p "${public}"
 
-git config deploy.public ${public}
+git config deploy.public "${public}"
 git config --bool deploy.userdir true
 set +e
 git config --unset-all deploy.domain
 set -e
 
 cat <<-EOF
-Work directory:		${currentworktree}
-Public directory:	${public}
-Active branch:		${currentbranch}
-Userdir URL:		http://${domain}/~${USER}/
+Work directory:     ${currentworktree}
+Public directory:   ${public}
+Active branch:      ${currentbranch}
+Userdir URL:        http://${domain}/~${USER}/
 EOF
-
