@@ -2,18 +2,12 @@
 
 # Update submodules
 
-oldrev="${1}"
-newrev="${2}"
-flag="${3}"
-
-worktree="$(git config --get deploy.worktree)"
-branch="$(git config --get deploy.branch)"
-
 set -e
 
-test -d ${worktree} || mkdir -p ${worktree}
+worktree="$(git config --get deploy.worktree)"
 
-cd ${worktree}
+test -d "${worktree}" || mkdir -p "${worktree}"
+
+cd "${worktree}" || exit 1
 
 git submodule sync && git submodule update --init --force --recursive
-

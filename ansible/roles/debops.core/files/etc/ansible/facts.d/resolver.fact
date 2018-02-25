@@ -12,7 +12,7 @@ output="{"
 IFS=,
 output="${output}\"nameserver\": ["
 first=1
-for address in ${nameserver[@]} ; do
+for address in "${nameserver[@]}" ; do
     [ -z "${first}" ] && output="${output}, "
     first=
     output="${output}\"${address}\""
@@ -21,7 +21,7 @@ output="${output}],"
 
 output="${output} \"search\": ["
 first=1
-for address in ${search[@]} ; do
+for address in "${search[@]}" ; do
     [ -z "${first}" ] && output="${output}, "
     first=
     output="${output}\"${address}\""
@@ -31,5 +31,4 @@ output="${output}]"
 output="${output}}"
 IFS=
 
-echo ${output}
-
+printf "%s\n" "${output}"
