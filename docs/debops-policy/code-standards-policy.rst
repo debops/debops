@@ -285,7 +285,7 @@ variable:
 
 .. code-block:: yaml
 
-   # List of :manpage:`apt_preferences(5)` pins to configure in
+   # List of :man:`apt_preferences(5)` pins to configure in
    # :file:`/etc/apt/preferences.d/`.  This variable is meant to be used from a
    # role dependency in :file:`role/meta/main.yml` or in a playbook.
    apt_preferences__dependent_list: []

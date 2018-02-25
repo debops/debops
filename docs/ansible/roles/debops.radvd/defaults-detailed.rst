@@ -40,7 +40,7 @@ dictionary with specific parameters:
   configuration file generation.
 
 ``options``
-  Optional. List with :manpage:`radvd.conf(5)` interface specific options. Each
+  Optional. List with :man:`radvd.conf(5)` interface specific options. Each
   list entry is a YAML dictionary. You can use a simple form, where
   a dictionary key is an option name, and the dictionary value is its value
   (use YAML booleans as ``on``/``off`` values):

@@ -5,7 +5,7 @@ Custom hook scripts
 
 The :program:`pki-realm` script supports usage of a custom hook scripts located in
 the :file:`/etc/pki/hooks/` directory. These scripts will be executed in alphabetical
-order (see :manpage:`run-parts(8)` for more details) within a special environment. You
+order (see :man:`run-parts(8)` for more details) within a special environment. You
 can use that to perform operations after certain actions like creation of a new
 PKI realm, or activation of a new certificate.
 

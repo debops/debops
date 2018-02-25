@@ -74,7 +74,8 @@ html_context = {
 # ones.
 extensions = [
     'sphinx.ext.ifconfig',
-    'sphinx.ext.graphviz'
+    'sphinx.ext.graphviz',
+    'autolink'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
