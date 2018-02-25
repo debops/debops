@@ -85,7 +85,7 @@ name prefix:
 
 ``mapping``
   The interface configuration is selected dynamically by a specified script.
-  See :manpage:`interfaces(5)` for more details.
+  See :man:`interfaces(5)` for more details.
 
 Each network interface can have multiple parameters. Some parameters are
 specific to a particular interface type.
@@ -212,13 +212,13 @@ IPv4 and IPv6 configuration parameters
 
 ``inet``
   Optional. IPv4 configuration method used by a given interface. There are many
-  configuration methods described in the :manpage:`interfaces(5)` manual page, most
+  configuration methods described in the :man:`interfaces(5)` manual page, most
   commonly used are: ``manual``, ``dhcp``, ``static``. If you set this
   parameter to ``False``, the IPv4 configuration will be disabled.
 
 ``inet6``
   Optional. IPv6 configuration method used by a given interface. There are many
-  configuration methods described in the :manpage:`interfaces(5)` manual page, most
+  configuration methods described in the :man:`interfaces(5)` manual page, most
   commonly used are: ``auto``, ``manual``, ``dhcp``, ``static``, ``v4tunnel``,
   ``6to4``. If you set this parameter to ``False``, the IPv6 configuration will
   be disabled.
@@ -269,7 +269,7 @@ Bridge parameters
 ``bridge_*``
   Optional. If an interface is a bridge, any parameters that have ``bridge_``
   prefix will be added to that interface configuration. See the
-  :manpage:`bridge-utils-interfaces(5)` manual for more details about possible bridge
+  :man:`bridge-utils-interfaces(5)` manual for more details about possible bridge
   configuration options.
 
 VLAN parameters
@@ -292,7 +292,7 @@ Mapping parameters
 
 ``script``
   Absolute path to a script which will be used to select a specific interface
-  configuration for a mapping dynamically. See :manpage:`interfaces(5)` manual for
+  configuration for a mapping dynamically. See :man:`interfaces(5)` manual for
   more details.
 
 Custom interface options

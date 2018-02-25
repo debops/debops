@@ -112,7 +112,7 @@ Ansible inventory. Each entry is a YAML dictionary with parameters that
 correspond to the ``apt_repository`` module parameters:
 
 ``repo``
-  Required. The APT repository to configure, in the :manpage:`sources.list(5)` format.
+  Required. The APT repository to configure, in the :man:`sources.list(5)` format.
 
 ``filename``
   Optional. Name of the source file in :file:`/etc/apt/sources.list.d/` directory.
@@ -262,7 +262,7 @@ what source types are used, which components are enabled, etc. Known
 parameters:
 
 ``uri`` or ``uris``
-  Required. The URI or other method known by APT (see :manpage:`sources.list(5)`) for
+  Required. The URI or other method known by APT (see :man:`sources.list(5)`) for
   a given APT source. It is possible to specify multiple entries as a list,
   they will be treated as one.
 
@@ -273,7 +273,7 @@ parameters:
 
 ``option`` or ``options``
   Optional. String or list of strings of APT options. Settings are expected in
-  the form ``setting=value``.  See :manpage:`sources.list(5)` for details.
+  the form ``setting=value``.  See :man:`sources.list(5)` for details.
 
 ``suite`` or ``suites``
   Optional. Name of the "suite" to use for this source. The suite is usually

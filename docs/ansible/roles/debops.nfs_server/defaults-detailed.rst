@@ -17,7 +17,7 @@ nfs_server__exports
 -------------------
 
 This set of YAML lists can be used to define NFS exports. See the
-:manpage:`exports(5)` for more information about possible configuration
+:man:`exports(5)` for more information about possible configuration
 options.
 
 Each list entry is a YAML dictionary with specific parameters:

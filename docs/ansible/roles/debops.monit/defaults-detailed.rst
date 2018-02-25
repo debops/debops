@@ -30,7 +30,7 @@ specific parameters:
 
 ``content``
   A string or YAML text block with the contents of the generated configuration
-  file. See the :manpage:`monit(1)` for the Monit configuration syntax that can
+  file. See the :man:`monit(1)` for the Monit configuration syntax that can
   be used here. This parameter can use Jinja template statements for
   conditional configuration.
 

@@ -28,7 +28,7 @@ YAML values (``True``, ``False``) to specify ``yes`` or ``no`` values, as well
 as strings and numbers. if a value is an empty string, the corresponding
 parameter will be commented out in the finished configuration file.
 
-See the :manpage:`avahi-daemon.conf(5)` manual page for information about
+See the :man:`avahi-daemon.conf(5)` manual page for information about
 recognized parameters and their meaning.
 
 
