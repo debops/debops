@@ -18,6 +18,13 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v0.7.0...master
 
+Changed
+~~~~~~~
+
+- [debops.lxc] The role will now generate the ``lxc-debops`` LXC template
+  script from different templates, based on an OS release. This change should
+  help fix the issues with LXC container creation on Debian Stretch.
+
 
 `debops v0.7.0`_ - 2018-02-11
 -----------------------------
