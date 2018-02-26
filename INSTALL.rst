@@ -211,15 +211,16 @@ commands available outside of the the Python virtual environment:
    ln -s debops-venv/bin/debops-update    /usr/local/bin/debops-update
    ln -s debops-venv/bin/debops-defaults  /usr/local/bin/debops-defaults
 
-If your Ansible/DebOps-Controller machine has SElinux enabled, delegating tasks to "localhost" is problematic.
-A workaround is described at
+If your Ansible/DebOps-Controller machine has SElinux enabled, delegating tasks
+to ``localhost`` is problematic. `A workaround for this issue`__ is to add
+a definition for ``localhost`` to your inventory, outside of the
+``[debops_all_hosts]`` inventory group:
 
-https://dmsimard.com/2016/01/08/selinux-python-virtualenv-chroot-and-ansible-dont-play-nice/
+.. __: https://dmsimard.com/2016/01/08/selinux-python-virtualenv-chroot-and-ansible-dont-play-nice/
 
-Basically it helps to add a definition for localhost to your inventory like in:
-
-.. code-block:: console
+.. code-block:: none
 
    localhost ansible_python_interpreter=/usr/bin/python
 
-This makes ansible use the SElinux-libraries from the python-environment *outside* of the virtualenv.
+This makes Ansible use the SElinux libraries from the python-environment
+*outside* of the virtualenv.
