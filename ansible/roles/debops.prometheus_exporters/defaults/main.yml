@@ -1,8 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# debops.prometheus_server default variables [[[
-# ==========================================
+# debops.prometheus_exporters default variables [[[
+# =============================================
 
 # .. contents:: Sections
 #    :local:
@@ -112,19 +112,19 @@ prometheus_exporters__ferm__dependent_rules:
     type: 'accept'
     dport: '9100'
     accept_any: '{{ prometheus_exporters__accept_any }}'
-    by_role: 'prometheus_server'
+    by_role: 'prometheus_exporters'
     rule_state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_exporter_mysqld'
     type: 'accept'
     dport: '9104'
     accept_any: '{{ prometheus_exporters__accept_any }}'
-    by_role: 'prometheus_server'
+    by_role: 'prometheus_exporters'
     rule_state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_exporter_postfix'
     type: 'accept'
     dport: '9154'
     accept_any: '{{ prometheus_exporters__accept_any }}'
-    by_role: 'prometheus_server'
+    by_role: 'prometheus_exporters'
     rule_state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__tcpwrappers__dependent_allow [[[
