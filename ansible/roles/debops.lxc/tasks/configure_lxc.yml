@@ -41,12 +41,14 @@
     mode: '0644'
   with_fileglob: [ '../templates/usr/share/lxc/config/*.j2' ]
 
-- name: Prepare LXC host templates
+- name: Prepare lxc-debops container template
   template:
-    src: '{{ lookup("template_src", "usr/share/lxc/templates/" + item | basename) }}'
-    dest: '/usr/share/lxc/templates/{{ item | basename | replace(".j2","") }}'
+    src: '{{ lookup("template_src", item) }}'
+    dest: '/usr/share/lxc/templates/lxc-debops'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_fileglob: [ '../templates/usr/share/lxc/templates/*.j2' ]
+  with_first_found:
+    - 'usr/share/lxc/templates/lxc-debops_{{ ansible_distribution_release }}.j2'
+    - 'usr/share/lxc/templates/lxc-debops.j2'
                                                                    # ]]]
