@@ -59,7 +59,7 @@ prometheus_exporter__mysql__dependencies:
 #
 # This is soposed to secure the access to the prometheus exporter
 
-# .. envvar:: prometheus_exporters__public [[[
+# .. envvar:: prometheus_exporters__nginx [[[
 #
 # Enables an nginx proxy for the prometheus exporter
 prometheus_exporters__nginx: False
@@ -101,7 +101,7 @@ prometheus_exporters__accept_any: False
 # .. envvar:: prometheus_exporters__allow [[[
 #
 # List of IP addresses or CIDR subnets which can access the prometheus exporter
-# By default access is from the net is forbidden
+# By default access from the net is forbidden
 prometheus_exporters__allow: []
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__ferm__dependent_rules [[[
@@ -119,13 +119,13 @@ prometheus_exporters__ferm__dependent_rules:
     dport: '9104'
     accept_any: '{{ prometheus_exporters__accept_any }}'
     by_role: 'prometheus_exporters'
-    rule_state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
+    rule_state: '{{ prometheus_exporters__deploy_state if "mysqld" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_exporter_postfix'
     type: 'accept'
     dport: '9154'
     accept_any: '{{ prometheus_exporters__accept_any }}'
     by_role: 'prometheus_exporters'
-    rule_state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
+    rule_state: '{{ prometheus_exporters__deploy_state if "postfix" in prometheus_exporters__exporters else "absent" }}'
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__tcpwrappers__dependent_allow [[[
 #
@@ -146,12 +146,15 @@ prometheus_exporters__etc_services__dependent_list:
   - name: 'prometheus_node_exporter'
     port: 9100
     comment: 'Prometheus node exporter for metric providing'
+    state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_mysqld_exporter'
     port: 9104
     comment: 'Prometheus mysql exporter for metric providing'
+    state: '{{ prometheus_exporters__deploy_state if "mysqld" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_postfix_exporter'
     port: 9154
     comment: 'Prometheus postfix exporter for metric providing'
+    state: '{{ prometheus_exporters__deploy_state if "postfix" in prometheus_exporters__exporters else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

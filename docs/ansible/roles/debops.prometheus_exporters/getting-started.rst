@@ -8,15 +8,20 @@ Getting started
 Default configuration
 ---------------------
 
+By default all exporter only listen on localhost (blocked by firewall).
+This can be changed with the following variables:
+
+- :envvar:`prometheus_exporters__nginx` activate a nginx proxy
+- :envvar:`prometheus_exporters__allow` allow direct tcp connection
+
 
 Ports
 ~~~~~
 
 By default the ports are:
-- `5222` (c2s)
-- `5269` (s2s)
-- `5280` http
-- `5281` https
+- `9100` node
+- `9104` mysql
+- `9154` postfix
 
 
 
