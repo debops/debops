@@ -31,7 +31,7 @@ from __future__ import print_function
 
 import os
 import sys
-import codecs
+import io
 import subprocess
 import glob
 import argparse
@@ -49,14 +49,14 @@ __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 def cat(filename, outstream):
     try:
-        fh = codecs.open(filename, encoding="utf-8")
+        fh = io.open(filename, encoding="utf-8")
     except IOError as e:
         # This should only happen if the user listed a unknown role.
         outstream.write('%s: %s\n' % (e.strerror, e.filename))
         return
     try:
         # Read input file as Unicode object and pass it to outstream.
-        outstream.write(fh.read().encode("utf-8"))
+        outstream.write(fh.read())
     finally:
         fh.close()
 
