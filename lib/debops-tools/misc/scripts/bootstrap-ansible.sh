@@ -52,12 +52,12 @@ build_ansible_deb () {
     fi
 
     # Check if .deb package with new method is present
-    if [ -n "$(find deb-build/unstable/ -name ansible_*_all.deb 2>/dev/null)" ]; then
+    if [ -n "$(find deb-build/unstable/ -name "ansible_*_all.deb" 2>/dev/null)" ]; then
 
         sudo dpkg -i deb-build/unstable/ansible_*_all.deb
 
     # Otherwise, look for package generated with old method
-    elif [ -n "$(find .. -name ansible_*_all.deb 2>/dev/null)" ]; then
+    elif [ -n "$(find .. -name "ansible_*_all.deb" 2>/dev/null)" ]; then
 
         sudo dpkg -i ../ansible_*_all.deb
 
@@ -83,11 +83,13 @@ bootstrap_ansible_deb () {
 
         cd "${ansible_source_dir}"
 
-        local old_git_checkout="$(git rev-parse HEAD)"
+        local old_git_checkout
+        old_git_checkout="$(git rev-parse HEAD)"
 
-        local current_branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
-        local current_branch_name="(unnamed branch)"     # detached HEAD
-        local current_branch_name=${current_branch_name##refs/heads/}
+        local current_branch_name
+        current_branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
+        current_branch_name="(unnamed branch)"     # detached HEAD
+        current_branch_name=${current_branch_name##refs/heads/}
 
         if [ "${current_branch_name}" != "${ansible_branch}" ] ; then
             git checkout "${ansible_branch}"
@@ -96,7 +98,8 @@ bootstrap_ansible_deb () {
         git pull --quiet
         git submodule update
 
-        local current_git_checkout="$(git rev-parse HEAD)"
+        local current_git_checkout
+        current_git_checkout="$(git rev-parse HEAD)"
 
         if [ "${old_git_checkout}" != "${current_git_checkout}" ] ; then
             build_ansible_deb
