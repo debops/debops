@@ -15,24 +15,21 @@ certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${prosody_config} || true)
 # Get list of current realm states
 states=( $(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ") )
 
-if [ -n "${certificate}" -a "${{ '{#' }}states[@]}" -gt 0 ] ; then
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
 
     for state in "${states[@]}" ; do
 
-        if [ "${state}" = "changed-certificate" -o "${state}" = "changed-dhparam" ] ; then
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
 
             # Check if current init is systemd
-            if $(pidof systemd > /dev/null 2>&1) ; then
+            if pidof systemd > /dev/null 2>&1 ; then
 
                 prosody_state="$(systemctl is-active prosody.service)"
-                if [ ${prosody_state} = "active" ] ; then
-                    if $(/usr/sbin/prosody -c ${prosody_config} -t > /dev/null 2>&1) ; then
-                        systemctl ${prosody_action} prosody.service
+                if [ "${prosody_state}" = "active" ] ; then
+                    if /usr/sbin/prosody -c "${prosody_config}" -t > /dev/null 2>&1 ; then
+                        systemctl "${prosody_action}" prosody.service
                     fi
                 fi
-
-            else
-              #TODO
             fi
 
             break

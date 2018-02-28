@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This file is managed by Ansible, all changes will be lost
+# {{ ansible_managed }}
 
 # This is a script that should be run on reboot. It will send a test SMS
 # message to specified recipients to confirm that SMS gateway is working
@@ -8,16 +8,11 @@
 
 PATH="/bin:/usr/bin:/usr/local/bin"
 
-{% if smstools_test_recipients is defined and smstools_test_recipients %}
 test_message="{{ smstools_test_message }}"
-test_recipients=( {{ smstools_test_recipients | join(" ") }} )
+read -r -a test_recipients <<< "{{ smstools_test_recipients | join(' ') }}"
 
-for recipient in ${test_recipients[@]}; do
-	/usr/bin/sudo -u smsd /usr/local/bin/sendsms ${recipient} "${test_message}" > /dev/null
-done
-
-{% else %}
-# smstools_test_recipients list not provided, no tests are done
-exit 0
-
-{% endif %}
+if [[ "${test_recipients[*]}" ]] ; then
+    for recipient in "${test_recipients[@]}" ; do
+        /usr/bin/sudo -u smsd /usr/local/bin/sendsms "${recipient}" "${test_message}" > /dev/null
+    done
+fi
