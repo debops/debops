@@ -72,8 +72,8 @@
 - name: Fix shell 'stdin is not a tty' issue
   lineinfile:
     dest: '~/.profile'
-    regexp: 'mesg n$'
-    line: 'tty -s && mesg n'
+    regexp: 'mesg n'
+    line: 'tty -s && mesg n || true'
     state: 'present'
     create: 'no'
   delegate_to: '{{ item.0 }}'
