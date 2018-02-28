@@ -8,7 +8,7 @@
 display_usage () {
 
     cat <<EOF
-Usage: $(basename ${0}) <run|schedule> <level> <all|host>
+Usage: $(basename "${0}") <run|schedule> <level> <all|host>
 
 run           start the backup of a given host on a given level
 schedule      create a backup job with given parameters
@@ -24,7 +24,7 @@ EOF
 
 script="${0}"
 
-scheduler_config="/etc/$(basename ${script}).conf"
+scheduler_config="/etc/$(basename "${script}").conf"
 
 scheduler_config_dir="/etc/rsnapshot"
 scheduler_hosts_dir="${scheduler_config_dir}/hosts"
@@ -34,7 +34,8 @@ scheduler_batch_command="at -q R now"
 scheduler_sleep_max_delay="20"
 scheduler_run_max_delay="5"
 
-[ -r ${scheduler_config} ] && . ${scheduler_config}
+# shellcheck disable=SC1090
+[ -r "${scheduler_config}" ] && . "${scheduler_config}"
 
 pid="$$"
 
@@ -44,13 +45,13 @@ arg_host="${3}"
 
 log_message () {
     if tty -s > /dev/null 2>&1 ; then
-        echo "$(basename ${script}): ${@}"
+        echo "$(basename "${script}"): ${*}"
     elif type logger > /dev/null 2>&1 ; then
-        logger -t "$(basename ${script})[${pid}]" "${@}"
+        logger -t "$(basename "${script}")[${pid}]" "${*}"
     fi
 }
 
-if [ -r ${scheduler_config_dir}/stop -o -r ${scheduler_config_dir}/disable -o -r ${scheduler_config_dir}/disabled ] ; then
+if [ -r "${scheduler_config_dir}/stop" ] || [ -r "${scheduler_config_dir}/disable" ] || [ -r "${scheduler_config_dir}/disabled" ] ; then
     log_message "Exit: rsnapshot backups are disabled globally"
     exit 0
 fi
@@ -75,9 +76,10 @@ clean_up () {
     local backup_level="${1}"
     local host="${2}"
 
-    local scheduler_pidfile="${scheduler_lock_dir}/$(basename ${script})-${backup_level}-${host}.pid"
+    local scheduler_pidfile
+    scheduler_pidfile="${scheduler_lock_dir}/$(basename "${script}")-${backup_level}-${host}.pid"
 
-    test -f ${scheduler_pidfile} && rm -f ${scheduler_pidfile}
+    test -f "${scheduler_pidfile}" && rm -f "${scheduler_pidfile}"
 }
 
 wait_for_pid () {
@@ -85,26 +87,28 @@ wait_for_pid () {
     local backup_level="${1}"
     local host="${2}"
 
-    local scheduler_pidfile="${scheduler_lock_dir}/$(basename ${script})-${backup_level}-${host}.pid"
+    local scheduler_pidfile
+    scheduler_pidfile="${scheduler_lock_dir}/$(basename "${script}")-${backup_level}-${host}.pid"
 
-    if [ -f ${scheduler_pidfile} ] ; then
-        while $(kill -0 $(<${scheduler_pidfile}) > /dev/null 2>&1) ; do
-            log_message "Scheduled ${backup_level} backup of host ${host} is waiting for PID $(<${scheduler_pidfile}) to finish"
-            sleep $[ ( $RANDOM % ${scheduler_run_max_delay} ) + 1]m
+    if [ -f "${scheduler_pidfile}" ] ; then
+        while kill -0 "$(<"${scheduler_pidfile}")" > /dev/null 2>&1 ; do
+            log_message "Scheduled ${backup_level} backup of host ${host} is waiting for PID $(<"${scheduler_pidfile}") to finish"
+            sleep $(( ( RANDOM % scheduler_run_max_delay ) + 1))m
         done
-        test -f ${scheduler_pidfile} && rm -f ${scheduler_pidfile}
+        test -f "${scheduler_pidfile}" && rm -f "${scheduler_pidfile}"
     fi
 
 }
 
+# shellcheck disable=SC2120
 delay_backup () {
 
     local delay="${1}"
 
     if [ -n "${delay}" ] ; then
-        sleep ${delay}
+        sleep "${delay}"
     else
-        sleep $[ ( $RANDOM % ${scheduler_sleep_max_delay} ) + 1 ]m
+        sleep $(( ( RANDOM % scheduler_sleep_max_delay ) + 1 ))m
     fi
 }
 
@@ -113,72 +117,75 @@ run_backup () {
     local backup_level="${1}"
     local host="${2}"
 
-    local scheduler_pidfile="${scheduler_lock_dir}/$(basename ${script})-${backup_level}-${host}.pid"
+    local scheduler_pidfile
+    scheduler_pidfile="${scheduler_lock_dir}/$(basename "${script}")-${backup_level}-${host}.pid"
 
     if [ "${host}" == "all" ] ; then
         log_message "Error: cannot backup host ${host}"
         exit 1
     fi
 
-    if [ -r ${scheduler_hosts_dir}/${host}/rsnapshot.conf ] ; then
+    if [ -r "${scheduler_hosts_dir}/${host}/rsnapshot.conf" ] ; then
         local config="${scheduler_hosts_dir}/${host}/rsnapshot.conf"
     else
         log_message "Error: configuration for ${host} not found"
         exit 1
     fi
 
-    if [ -r ${scheduler_hosts_dir}/${host}/stop -o -r ${scheduler_hosts_dir}/${host}/disable -o -r ${scheduler_hosts_dir}/${host}/disabled ] ; then
+    if [ -r "${scheduler_hosts_dir}/${host}/stop" ] || [ -r "${scheduler_hosts_dir}/${host}/disable" ] || [ -r "${scheduler_hosts_dir}/${host}/disabled" ] ; then
         log_message "Exit: backup of ${host} is disabled"
         exit 0
     fi
 
-    if [ -r ${config} ] ; then
+    if [ -r "${config}" ] ; then
 
-        sync_first=( $(grep -E "^sync_first\s+1" ${config}) )
-        retain_first=( $(grep -E "^retain\s+" ${config} | awk '{print $2}' | head -n 1) )
-        retain_name=( $(grep -E "^retain\s+${backup_level}\s+" ${config} | awk '{print $2}' | head -n 1) )
-        lockfile=( $(grep -E "^lockfile\s+" ${config} | awk '{print $2}' | head -n 1) )
+        sync_first=( $(grep -E "^sync_first\s+1" "${config}") )
+        retain_first=( $(grep -E "^retain\s+" "${config}" | awk '{print $2}' | head -n 1) )
+        retain_name=( $(grep -E "^retain\s+${backup_level}\s+" "${config}" | awk '{print $2}' | head -n 1) )
+        lockfile=( $(grep -E "^lockfile\s+" "${config}" | awk '{print $2}' | head -n 1) )
 
-        if [ "${retain_name}" == "${backup_level}" ] ; then
+        if [ "${retain_name[*]}" == "${backup_level[*]}" ] ; then
 
-            if [ -f ${scheduler_pidfile} ] ; then
-                if $(kill -0 $(<${scheduler_pidfile}) > /dev/null 2>&1) ; then
-                    log_message "Exit: Backup of ${host} at ${backup_level} level already in progress, managed by PID $(cat ${scheduler_pidfile})"
+            if [ -f "${scheduler_pidfile}" ] ; then
+                if kill -0 "$(<"${scheduler_pidfile}")" > /dev/null 2>&1 ; then
+                    log_message "Exit: Backup of ${host} at ${backup_level} level already in progress, managed by PID $(cat "${scheduler_pidfile}")"
                     exit 0
                 else
-                    rm -f ${scheduler_pidfile}
+                    rm -f "${scheduler_pidfile}"
                 fi
             fi
 
-            test -d $(dirname ${scheduler_pidfile}) || mkdir -p -m 755 $(dirname ${scheduler_pidfile})
-            echo ${pid} > ${scheduler_pidfile}
+            # shellcheck disable=SC2174
+            test -d "$(dirname "${scheduler_pidfile}")" || mkdir -p -m 755 "$(dirname "${scheduler_pidfile}")"
+            echo ${pid} > "${scheduler_pidfile}"
             sleep 1
 
-            if [ "x$(cat ${scheduler_pidfile})" != "x"${pid} ] ; then
-                log_message "Exit: Backup of ${host} at ${backup_level} level started by PID $(cat ${scheduler_pidfile}), exiting"
+            if [ "x$(cat "${scheduler_pidfile}")" != "x"${pid} ] ; then
+                log_message "Exit: Backup of ${host} at ${backup_level} level started by PID $(cat "${scheduler_pidfile}"), exiting"
                 exit 0
             fi
 
+            # shellcheck disable=SC2064
             trap "clean_up ${backup_level} ${host}" EXIT
 
-            if [ -n "${lockfile}" ] && [ -r ${lockfile} ] ; then
-                if $(kill -0 $(<${lockfile}) > /dev/null 2>&1) ; then
-                    while [ -r ${lockfile} ] ; do
-                        sleep $[ ( $RANDOM % ${scheduler_run_max_delay} ) + 1]m
+            if [ -n "${lockfile[*]}" ] && [ -r "${lockfile[*]}" ] ; then
+                if kill -0 "$(<"${lockfile[*]}")" > /dev/null 2>&1 ; then
+                    while [ -r "${lockfile[*]}" ] ; do
+                        sleep $(( ( RANDOM % scheduler_run_max_delay ) + 1))m
                     done
                 fi
             fi
 
-            if [ -n "${sync_first}" ] && [ "${retain_name}" == "${retain_first}" ] ; then
+            if [ -n "${sync_first[*]}" ] && [ "${retain_name[*]}" == "${retain_first[*]}" ] ; then
                 log_message "Starting sync for ${backup_level} backup of ${host}"
-                rsnapshot -c ${config} sync
+                rsnapshot -c "${config}" sync
             fi
-            if [ -n "${sync_first}" ] && [ "${retain_name}" == "${retain_first}" ] ; then
+            if [ -n "${sync_first[*]}" ] && [ "${retain_name[*]}" == "${retain_first[*]}" ] ; then
                 log_message "Rotating ${backup_level} snapshot of ${host}"
             else
                 log_message "Starting ${backup_level} backup of ${host}"
             fi
-            rsnapshot -c ${config} ${backup_level}
+            rsnapshot -c "${config}" "${backup_level}"
         else
             log_message "Error: Specified backup level '${backup_level}' is not configured in ${config}"
             exit 1
@@ -197,37 +204,39 @@ prepare_backup () {
     local backup_level="${1}"
     local host="${2}"
 
-    local scheduler_pidfile="${scheduler_lock_dir}/$(basename ${script})-${backup_level}-${host}.pid"
+    local scheduler_pidfile
+    scheduler_pidfile="${scheduler_lock_dir}/$(basename "${script}")-${backup_level}-${host}.pid"
 
-    if [ -r ${scheduler_hosts_dir}/${host}/rsnapshot.conf ] ; then
+    if [ -r "${scheduler_hosts_dir}/${host}/rsnapshot.conf" ] ; then
         local config="${scheduler_hosts_dir}/${host}/rsnapshot.conf"
     else
         log_message "Error: configuration for ${host} not found"
         return
     fi
 
-    if [ -r ${scheduler_hosts_dir}/${host}/stop -o -r ${scheduler_hosts_dir}/${host}/disable -o -r ${scheduler_hosts_dir}/${host}/disabled ] ; then
+    if [ -r "${scheduler_hosts_dir}/${host}/stop" ] || [ -r "${scheduler_hosts_dir}/${host}/disable" ] || [ -r "${scheduler_hosts_dir}/${host}/disabled" ] ; then
         log_message "Exit: backup of ${host} is disabled"
         return
     fi
 
-    if [ -r ${config} ] ; then
+    if [ -r "${config}" ] ; then
 
-        local retain_name=( $(grep -E "^retain\s+${backup_level}\s+" ${config} | awk '{print $2}' | head -n 1) )
+        local retain_name=( $(grep -E "^retain\s+${backup_level}\s+" "${config}" | awk '{print $2}' | head -n 1) )
 
-        if [ "${retain_name}" == "${backup_level}" ] ; then
+        if [ "${retain_name[*]}" == "${backup_level}" ] ; then
 
-            if [ -f ${scheduler_pidfile} ] ; then
-                log_message "Backup of ${host} at ${backup_level} level already in progress, managed by PID $(cat ${scheduler_pidfile})"
+            if [ -f "${scheduler_pidfile}" ] ; then
+                log_message "Backup of ${host} at ${backup_level} level already in progress, managed by PID $(cat "${scheduler_pidfile}")"
                 return
             fi
 
-            test -d $(dirname ${scheduler_pidfile}) || mkdir -p -m 755 $(dirname ${scheduler_pidfile})
-            echo ${pid} > ${scheduler_pidfile}
+            # shellcheck disable=SC2174
+            test -d "$(dirname "${scheduler_pidfile}")" || mkdir -p -m 755 "$(dirname "${scheduler_pidfile}")"
+            echo ${pid} > "${scheduler_pidfile}"
             sleep 1
 
-            if [ "x$(cat ${scheduler_pidfile})" != "x"${pid} ] ; then
-                log_message "Backup of ${host} at ${backup_level} level started by PID $(cat ${scheduler_pidfile})"
+            if [ "x$(cat "${scheduler_pidfile}")" != "x"${pid} ] ; then
+                log_message "Backup of ${host} at ${backup_level} level started by PID $(cat "${scheduler_pidfile}")"
                 return
             fi
 
@@ -238,13 +247,13 @@ prepare_backup () {
                     echo "${script} batchrun ${backup_level} ${host}" | ${scheduler_batch_command} > /dev/null 2>&1
                 else
                     log_message "Scheduling ${backup_level} backup of ${host}"
-                    (${script} delayrun ${backup_level} ${host}) &
+                    (${script} delayrun "${backup_level}" "${host}") &
                 fi
 
             elif [ "${scheduler_type}" == "sleep" ] ; then
 
                 log_message "Scheduling ${backup_level} backup of ${host}"
-                (${script} delayrun ${backup_level} ${host}) &
+                (${script} delayrun "${backup_level}" "${host}") &
 
             fi
 
@@ -260,22 +269,24 @@ schedule_backup () {
 
     if [ "${host}" != "all" ] ; then
 
-        prepare_backup ${backup_level} ${host}
+        prepare_backup "${backup_level}" "${host}"
 
     elif [ "${host}" == "all" ] ; then
-        local random_hosts=( $(ls -1 --indicator-style=none ${scheduler_hosts_dir} | sort -R | xargs) )
-        for name in ${random_hosts[@]} ; do
-            prepare_backup ${backup_level} $(basename ${name})
+        local random_hosts=( $(find "${scheduler_hosts_dir}" -maxdepth 1 -mindepth 1 -type d -printf "%f\n" | sort -R | xargs) )
+        for name in "${random_hosts[@]}" ; do
+            prepare_backup "${backup_level}" "$(basename "${name}")"
         done
     fi
 
 }
 
 case ${arg_mode} in
-    run)         run_backup ${arg_backup_level} ${arg_host} ;;
-    batchrun)    wait_for_pid ${arg_backup_level} ${arg_host} ; run_backup ${arg_backup_level} ${arg_host} ;;
-    delayrun)    delay_backup ; run_backup ${arg_backup_level} ${arg_host} ;;
-    schedule)    schedule_backup ${arg_backup_level} ${arg_host} ;;
+    run)         run_backup "${arg_backup_level}" "${arg_host}" ;;
+    batchrun)    wait_for_pid "${arg_backup_level}" "${arg_host}" ; run_backup "${arg_backup_level}" "${arg_host}" ;;
+    delayrun)
+                 # shellcheck disable=SC2119
+                 delay_backup ; run_backup "${arg_backup_level}" "${arg_host}" ;;
+    schedule)    schedule_backup "${arg_backup_level}" "${arg_host}" ;;
     *)           display_usage && exit 0 ;;
 esac
 
