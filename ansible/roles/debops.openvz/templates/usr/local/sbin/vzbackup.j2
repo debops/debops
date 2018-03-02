@@ -16,22 +16,23 @@ FOLDER=${2:-/var/lib/vz/dump}
 BACKUPPATH=$FOLDER/ct-$CTID-backup-$( date +%F_%H_%M )
 
 # Create BACKUP-PATH
-mkdir -p $BACKUPPATH
+mkdir -p "$BACKUPPATH"
 
 # Known snapshot ID
 ID=$(uuidgen)
-VE_PRIVATE=$(vzlist -H -o private $CTID)
+VE_PRIVATE="$(vzlist -H -o private "$CTID")"
 
 # Take a snapshot without suspending a CT and saving its config
-vzctl snapshot $CTID --id $ID --skip-suspend --skip-config
+vzctl snapshot "$CTID" --id "$ID" --skip-suspend --skip-config
 
 # Perform a backup
-cp $VE_PRIVATE/root.hdd/* $BACKUPPATH/
+# shellcheck disable=SC2086
+cp $VE_PRIVATE/root.hdd/* "$BACKUPPATH/"
 
 # Delete (merge) the snapshot
-vzctl snapshot-delete $CTID --id $ID
+vzctl snapshot-delete "$CTID" --id "$ID"
 
 # Remove old backups
-rm -rf $( find $FOLDER -type d -name "ct-$CTID-backup-*" -exec ls -d1rt "{}" + | head -n-4  )
+rm -rf "$( find "$FOLDER" -type d -name "ct-$CTID-backup-*" -exec ls -d1rt "{}" + | head -n-4 )"
 
 echo "BACKUP FINISHED."

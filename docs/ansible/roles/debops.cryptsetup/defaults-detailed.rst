@@ -78,7 +78,7 @@ Each item of those lists is a dictionary with the following documented keys:
   * ``veracrypt``
 
   Defaults to ``luks``. There is no global variable to change this default.
-  Refer to :manpage:`cryptsetup(8)` for more details.
+  Refer to :man:`cryptsetup(8)` for more details.
 
 .. _cryptsetup__devices_offset:
 
@@ -92,7 +92,7 @@ Each item of those lists is a dictionary with the following documented keys:
 
 ``crypttab_options``
   Optional, list of strings. Each string represents an option to configure for
-  the device in :file:`/etc/crypttab`. See :manpage:`crypttab(5)` for details.
+  the device in :file:`/etc/crypttab`. See :man:`crypttab(5)` for details.
   Default to :envvar:`cryptsetup__crypttab_options`.
 
   Note that :command:`cryptsetup` options need to be specified using there corresponding
@@ -172,7 +172,7 @@ Each item of those lists is a dictionary with the following documented keys:
   this role always uses internally), it does not terminate input when reading a
   newline. When reading from STDIN or from a terminal, it does however
   terminate on the first newline and uses the passphrase with the trailing
-  newline stripped.  Refer to :manpage:`cryptsetup(8)` under :regexp:`Notes on
+  newline stripped.  Refer to :man:`cryptsetup(8)` under :regexp:`Notes on
   passphrase processing for (plain mode|LUKS)`.
 
   Defaults to :envvar:`cryptsetup__keyfile_gen_command`.
@@ -213,7 +213,7 @@ Each item of those lists is a dictionary with the following documented keys:
 ``swap_priority``
   Optional, integer. Default swap device priority, from ``-1`` to ``32767``.
   Higher numbers indicate higher priority.
-  Refer to :manpage:`swapon(8)` for details.
+  Refer to :man:`swapon(8)` for details.
   Defaults to :envvar:`cryptsetup__swap_priority`.
 
 .. _cryptsetup__devices_swap_options:
@@ -260,7 +260,7 @@ Each item of those lists is a dictionary with the following documented keys:
 
 ``mount_options``
   Optional, list of strings. Mount options associated with the filesystem.
-  For more details see :manpage:`mount(8)`.
+  For more details see :man:`mount(8)`.
   Defaults to :envvar:`cryptsetup__mount_options`.
 
 .. _cryptsetup__devices_state:

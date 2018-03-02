@@ -11,14 +11,16 @@
 output="{"
 
 # Get current capabilities
-type capsh > /dev/null 2>&1 && line=$(capsh --print | grep -E '^Current:\s+=') || true
+if type capsh > /dev/null 2>&1 ; then
+    line=$(capsh --print | grep -E '^Current:\s+=')
+fi
 line=${line##* }
 
 # '=ep' shows up on systems that don't have capabilities enabled
 # and indicates root, unrestricted privileges
 if [ "${line}" = "=ep" ]; then
     output="${output}\"enabled\": \"false\","
-elif ! $(type capsh > /dev/null 2>&1) ; then
+elif ! type capsh > /dev/null 2>&1 ; then
     output="${output}\"enabled\": \"false\","
 else
     output="${output}\"enabled\": \"true\","
@@ -37,5 +39,4 @@ output="${output}]"
 output="${output}}"
 IFS=
 
-echo ${output}
-
+printf "%s\n" "${output}"

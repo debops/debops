@@ -11,57 +11,57 @@ command="${1:-run}"
 
 delay_job="${2}"
 
-pidfile_scheduler="/run/$(basename ${0})-scheduler.pid"
+pidfile_scheduler="/run/$(basename "${0}")-scheduler.pid"
 
-pidfile_run="/run/$(basename ${0}).pid"
+pidfile_run="/run/$(basename "${0}").pid"
 
 dhparam_log="{{ 'true' if dhparam__generate_log|bool else '' }}"
 
 clean_up () {
-  test -f ${pidfile_run} && rm -f ${pidfile_run}
-  test -f ${pidfile_scheduler} && rm -f ${pidfile_scheduler}
+  test -f "${pidfile_run}" && rm -f "${pidfile_run}"
+  test -f "${pidfile_scheduler}" && rm -f "${pidfile_scheduler}"
 }
 
 log_message () {
   if [ -n "${dhparam_log}" ] ; then
     if type logger > /dev/null 2>&1 ; then
-      logger -t $(basename ${0}) ${@}
+      logger -t "$(basename "${0}")" "${@}"
     fi
   fi
 }
 
 if [ "${command}" == "run" ] ; then
 
-  if [ -f ${pidfile_run} ] ; then
-    log_message DH parameter generation already in progress managed by PID $(cat ${pidfile_run}), exiting
+  if [ -f "${pidfile_run}" ] ; then
+    log_message "DH parameter generation already in progress managed by PID $(cat "${pidfile_run}"), exiting"
     exit 0
   fi
 
-  echo $$ > ${pidfile_run}
+  echo $$ > "${pidfile_run}"
   sleep 1
 
-  if [ "x$(cat ${pidfile_run})" != "x"$$ ] ; then
-    log_message DH parameter generation started by PID $(cat ${pidfile_run}), aborting
+  if [ "x$(cat "${pidfile_run}")" != "x"$$ ] ; then
+    log_message "DH parameter generation started by PID $(cat "${pidfile_run}"), aborting"
     exit 0
   fi
 
 elif [ "${command}" == "schedule" ] ; then
 
-  if [ -f ${pidfile_run} ] ; then
-    log_message DH parameter generation found at PID $(cat ${pidfile_run}), aborting scheduler
+  if [ -f "${pidfile_run}" ] ; then
+    log_message "DH parameter generation found at PID $(cat "${pidfile_run}"), aborting scheduler"
     exit 0
   fi
 
-  if [ -f ${pidfile_scheduler} ] ; then
-    log_message DH generation scheduler already running as PID $(cat ${pidfile_scheduler}), exiting
+  if [ -f "${pidfile_scheduler}" ] ; then
+    log_message "DH generation scheduler already running as PID $(cat "${pidfile_scheduler}"), exiting"
     exit 0
   fi
 
-  echo $$ > ${pidfile_scheduler}
+  echo $$ > "${pidfile_scheduler}"
   sleep 1
 
-  if [ "x$(cat ${pidfile_scheduler})" != "x"$$ ] ; then
-    log_message DH generation scheduler started as PID $(cat ${pidfile_scheduler}), aborting
+  if [ "x$(cat "${pidfile_scheduler}")" != "x"$$ ] ; then
+    log_message "DH generation scheduler started as PID $(cat "${pidfile_scheduler}"), aborting"
     exit 0
   fi
 
@@ -71,7 +71,7 @@ dhparam_library="{{ dhparam__library }}"
 dhparam_path="{{ dhparam__path + '/params' }}"
 
 dhparam_prefix="{{ dhparam__prefix }}"
-dhparam_bits=( {{ dhparam__bits | join(" ") }} )
+read -r -a dhparam_bits <<< "{{ dhparam__bits | join(' ') }}"
 dhparam_suffix="{{ dhparam__suffix }}"
 
 dhparam_hooks="{{ dhparam__hook_path }}"
@@ -83,31 +83,32 @@ generate_params () {
   trap clean_up EXIT
 
   if [ -n "${delay_job}" ] ; then
-    delay=$(( ${RANDOM} % 20 ))
-    sleep $(( (${delay} + 1) * 60 ))
+    delay=$(( RANDOM % 20 ))
+    sleep $(( (delay + 1) * 60 ))
   fi
 
-  cd ${dhparam_path}
-  for set in $(find . -maxdepth 1 -type d -not -name .) ; do
+  cd "${dhparam_path}" || exit 1
+  while IFS= read -r -d '' set ; do
 
-    cd ${set}
-    for length in ${dhparam_bits[@]} ; do
+    cd "${set}" || exit 1
+    for length in "${dhparam_bits[@]}" ; do
 
-      log_message Generating new Diffie-Hellman parameters in $(basename ${set}) with ${length} bits
+      log_message "Generating new Diffie-Hellman parameters in $(basename "${set}") with ${length} bits"
 
       dhparam_file="${dhparam_prefix}${length}${dhparam_suffix}"
       if [ "${dhparam_library}" == "gnutls" ] ; then
-        certtool --generate-dh-params --outfile ${dhparam_file}.tmp --bits ${length} > /dev/null 2>&1 && mv ${dhparam_file}.tmp ${dhparam_file}
+        certtool --generate-dh-params --outfile "${dhparam_file}.tmp" --bits "${length}" > /dev/null 2>&1 && mv "${dhparam_file}.tmp" "${dhparam_file}"
       elif [ "${dhparam_library}" == "openssl" ] ; then
-        openssl dhparam -out ${dhparam_file}.tmp ${length} > /dev/null 2>&1 && mv ${dhparam_file}.tmp ${dhparam_file}
+        openssl dhparam -out "${dhparam_file}.tmp" "${length}" > /dev/null 2>&1 && mv "${dhparam_file}.tmp" "${dhparam_file}"
       fi
 
     done
+    # shellcheck disable=SC2164
     cd - > /dev/null 2>&1
 
-  done
+  done < <(find . -maxdepth 1 -type d -not -name . -print0)
 
-  run-parts ${dhparam_hooks}
+  run-parts "${dhparam_hooks}"
 
 }
 
@@ -115,11 +116,11 @@ generate_params () {
 schedule_job () {
 
   if type batch > /dev/null 2>&1 ; then
-    log_message Scheduling new DH parameter generation using batch
+    log_message "Scheduling new DH parameter generation using batch"
     echo "nice ${0} run" | batch > /dev/null 2>&1
   else
-    log_message Scheduling new DH parameter generation
-    (nice ${0} run delay) &
+    log_message "Scheduling new DH parameter generation"
+    (nice "${0}" run delay) &
   fi
 
 }
@@ -127,6 +128,6 @@ schedule_job () {
 case "${command}" in
   run)        generate_params ;;
   schedule)   schedule_job ;;
-  *)          echo "Usage: $(basename ${0}) {run|schedule}" ;;
+  *)          echo "Usage: $(basename "${0}") {run|schedule}" ;;
 esac
 

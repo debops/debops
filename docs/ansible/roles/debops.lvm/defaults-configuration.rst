@@ -140,10 +140,10 @@ List of optional mount parameters:
   Alternative path to :file:`/etc/fstab`.
 
 ``mount_dump``
-  Filesystem :manpage:`dump(8)` backup frequency. See :manpage:`fstab(5)` for more details.
+  Filesystem :man:`dump(8)` backup frequency. See :man:`fstab(5)` for more details.
 
 ``mount_passno``
-  Filesystem :command:`fsck` pass order. See :manpage:`fstab(5)` for more details.
+  Filesystem :command:`fsck` pass order. See :man:`fstab(5)` for more details.
 
 Examples
 ~~~~~~~~

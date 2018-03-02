@@ -97,7 +97,7 @@ opendkim__signing_table
 The ``opendkim__*_signing_table`` variables define a mapping between the
 contents of the ``From:`` header field in a mail message and the DomainKey used
 to sign the message. The format of the ``From:`` header interpreted by OpenDKIM
-depends on the type of the table used (see :manpage:`opendkim.conf(5)`). The
+depends on the type of the table used (see :man:`opendkim.conf(5)`). The
 role by default maps the entire domain, without specifying any users.
 
 Each list entry is a YAML dictionary with specific parameters:
@@ -110,7 +110,7 @@ Each list entry is a YAML dictionary with specific parameters:
   Required. Specify the contents of the ``From:`` header used to lookup the
   DomainKey. By default you should use only domain names here, otherwise you
   need to reconfigure the ``SigningTable`` configuration option. See
-  :manpage:`opendkim.conf(5)` for details.
+  :man:`opendkim.conf(5)` for details.
 
 ``domain``
   Optional. The DNS domain used to lookup the DomainKey for a given signing

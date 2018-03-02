@@ -20,7 +20,7 @@ should be defined on a host. Each element of this list will be checked against
 the configuration stored in the :envvar:`nsswitch__combined_database_map` and
 services that are present will be enabled in the finished configuration file.
 
-To see a list of possible services, consult the :manpage:`nsswitch.conf(5)`
+To see a list of possible services, consult the :man:`nsswitch.conf(5)`
 manual page. You can also check what NSS libraries are installed on the system
 by running the command:
 
@@ -115,7 +115,7 @@ NSS services defined as YAML lists
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Another element type in a YAML service list is a YAML list. This format can be
-used to include custom actions described in the :manpage:`nsswitch.conf(5)` for
+used to include custom actions described in the :man:`nsswitch.conf(5)` for
 a given NSS service. The role checks the first element of the list for the NSS
 service name, if it should be enabled, the whole list will be included in the
 generated configuration file. Remember to write the actions with square

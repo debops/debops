@@ -41,7 +41,7 @@ Each list entry is a YAML dictionary with specific parameters:
 
 ``type``
   Optional. The zone type to use, either ``forward`` (default if not specified)
-  or ``stub``. See the :manpage:`unbound.conf(5)` for details about stub and
+  or ``stub``. See the :man:`unbound.conf(5)` for details about stub and
   forward zones.
 
 ``nameserver``, ``nameservers``
@@ -81,7 +81,7 @@ Each list entry is a YAML dictionary with specific parameters:
   Optional. List of configuration options for a particular zone. The format is
   the same as :ref:`unbound__ref_server` configuration options. For a list of
   supported options, see the stub zone and forward zone sections of the
-  :manpage:`unbound.conf(5)` manual page.
+  :man:`unbound.conf(5)` manual page.
 
 Examples
 ~~~~~~~~

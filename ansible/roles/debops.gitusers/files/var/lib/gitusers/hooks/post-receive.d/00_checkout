@@ -11,40 +11,43 @@ branch="$(git config deploy.branch)"
 
 set -e
 
-export GIT_DIR="$(pwd)"
-export GIT_WORK_TREE="${worktree}"
+GIT_DIR="$(pwd)"
+GIT_WORK_TREE="${worktree}"
+export GIT_DIR
+export GIT_WORK_TREE
 
-if [ -n "${bare}" -a "${bare}" = "false" ] ; then
+if [ -n "${bare}" ] && [ "${bare}" = "false" ] ; then
 
-  test -d ${worktree} || mkdir -p ${worktree}
+  test -d "${worktree}" || mkdir -p "${worktree}"
 
-  if [ -r ${worktree}/.git ] ; then
-    cd ${worktree}
-    if ! $(git diff --quiet) ; then
+  if [ -r "${worktree}/.git" ] ; then
+    cd "${worktree}" || exit 1
+    if ! git diff --quiet ; then
       echo "Error: Found tracked changes in work directory, aborting" && exit 1
     fi
-    if $(git ls-files --others --exclude-standard | grep >/dev/null .) ; then
+    if git ls-files --others --exclude-standard | grep >/dev/null . ; then
       echo "Error: Found untracked files in work directory, aborting" && exit 1
     fi
     cd - > /dev/null
   fi
 
-  while read oldrev newrev ref ; do
+  # shellcheck disable=SC2034
+  while read -r oldrev newrev ref ; do
 
     if [ -z "${branch}" ] ; then
       branch="${ref##refs/heads/}"
-      git symbolic-ref HEAD ${ref}
-      git config deploy.branch ${branch}
-      git config deploy.ref ${ref}
+      git symbolic-ref HEAD "${ref}"
+      git config deploy.branch "${branch}"
+      git config deploy.ref "${ref}"
     fi
     if [[ ${ref} =~ .*/${branch}$ ]] ; then
-      echo "gitdir: ${GIT_DIR}" > ${worktree}/.git
+      echo "gitdir: ${GIT_DIR}" > "${worktree}/.git"
       git config deploy.bare false
       git config core.bare false
-      git config core.worktree ${worktree}
+      git config core.worktree "${worktree}"
       git config receive.denyCurrentBranch ignore
       if [ "${real_bare}" = "${bare}" ] ; then
-        git checkout -f ${branch}
+        git checkout -f "${branch}"
       else
         git checkout -f
       fi
@@ -52,4 +55,3 @@ if [ -n "${bare}" -a "${bare}" = "false" ] ; then
 
   done
 fi
-

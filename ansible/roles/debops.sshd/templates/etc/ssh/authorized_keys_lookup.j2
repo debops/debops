@@ -7,8 +7,9 @@
 username="${1}"
 
 if [ -d /etc/ssh/authorized_keys_lookup.d ] ; then
-    keys="$(/bin/run-parts --arg=${username} /etc/ssh/authorized_keys_lookup.d)"
+    keys="$(/bin/run-parts --arg="${username}" /etc/ssh/authorized_keys_lookup.d)"
 
-    [ -n "${keys}" ] && echo "${keys}" || true
+    if [ -n "${keys}" ] ; then
+        echo "${keys}"
+    fi
 fi
-

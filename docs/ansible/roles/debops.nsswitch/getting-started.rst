@@ -25,7 +25,7 @@ various NSS services (LDAP, SSS, Winbind) should be detected and enabled
 accordingly, however the order of the services comes from the role itself and
 might change from the one created by the Debian packages.
 
-According to the :manpage:`nsswitch.conf(5)`, processes that use the NSS
+According to the :man:`nsswitch.conf(5)`, processes that use the NSS
 configuration file read the :file:`/etc/nsswitch.conf` only once, therefore
 a restart of these processes (for example :command:`nscd` or :command:`sssd`)
 might be needed. At the moment the role does not do this automatically.

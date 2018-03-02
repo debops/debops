@@ -24,11 +24,11 @@ if grep -qs -E '^proc\s+.*hidepid=' /proc/mounts ; then
 
     # Find the hidepid group
     if [ -n "${hidepid_gid}" ]; then
-        hidepid_group="$(getent group ${hidepid_gid} | cut -d: -f1)"
+        hidepid_group="$(getent group "${hidepid_gid}" | cut -d: -f1)"
     fi
 
 fi
 
 output="{\"configured\": \"${hidepid_configured}\", \"enabled\": \"${hidepid_enabled}\", \"level\": \"${hidepid_level}\", \"gid\": \"${hidepid_gid}\", \"group\": \"${hidepid_group}\"}"
 
-printf "${output}\n"
+printf "%s\n" "${output}"

@@ -5,18 +5,20 @@
 # Install current Wikipedia anti-spam blacklist
 
 blacklist="https://meta.wikimedia.org/wiki/Spam_blacklist?action=raw"
+wordblock_file="{{ dokuwiki__git_checkout + '/conf/wordblock.local.conf' }}"
 
-if $(type curl > /dev/null 2>&1) ; then
-    curl --silent ${blacklist} | grep -v '<pre>' > {{ dokuwiki__git_checkout + "/conf/wordblock.local.conf" }}
-{% if dokuwiki__farm_animals|d() and dokuwiki__farm_animals %}
+dokuwiki_farm="{{ dokuwiki__farm | bool | lower }}"
+dokuwiki_farm_path="{{ dokuwiki__farm_path }}"
+read -r -a dokuwiki_farm_animals <<< "{{ dokuwiki__farm_animals | join(' ') }}"
 
-{% for animal in dokuwiki__farm_animals %}
-    if [ -d {{ dokuwiki__farm_path + "/" + animal }} ] ; then
-        test -h {{ dokuwiki__farm_path + "/" + animal + "/conf/wordblock.local.conf" }} || \
-            ln -s {{ dokuwiki__git_checkout + "/conf/wordblock.local.conf" }} \
-                  {{ dokuwiki__farm_path + "/" + animal + "/conf/wordblock.local.conf" }}
+if type curl > /dev/null 2>&1 ; then
+    curl --silent "${blacklist}" | grep -v '<pre>' > "${wordblock_file}"
+
+    if [ "${dokuwiki_farm}" = "true" ] ; then
+        for animal in "${dokuwiki_farm_animals[@]}" ; do
+            if ! [ -h "${dokuwiki_farm_path}/${animal}/conf/wordblock.local.conf" ] ; then
+                ln -s "${wordblock_file}" "${dokuwiki_farm_path}/${animal}/conf/wordblock.local.conf"
+            fi
+        done
     fi
-
-{% endfor %}
-{% endif %}
 fi

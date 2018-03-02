@@ -10,7 +10,7 @@ function cleanup()
     local retention_days="$2"   # number of days after which old files are to be removed
 
     # purge files older than ${retention_days} days from attic and media_attic (old revisions)
-    find "${data_path}"/{media_,}attic/ -type f -mtime +${retention_days} -delete
+    find "${data_path}"/{media_,}attic/ -type f -mtime +"${retention_days}" -delete
 
     # remove stale lock files (files which are 1-2 days old)
     find "${data_path}"/locks/ -name '*.lock' -type f -mtime +1 -delete
@@ -22,14 +22,20 @@ function cleanup()
     # remove files older than ${retention_days} days from the cache
     if [ -e "${data_path}/cache/?/" ]
     then
-        find "${data_path}"/cache/?/ -type f -mtime +${retention_days} -delete
+        find "${data_path}"/cache/?/ -type f -mtime +"${retention_days}" -delete
     fi
 }
 
+cleanup_path="{{ dokuwiki__git_checkout + '/data' }}"
+
+dokuwiki_farm="{{ dokuwiki__farm | bool | lower }}"
+dokuwiki_farm_path="{{ dokuwiki__farm_path }}"
+read -r -a dokuwiki_farm_animals <<< "{{ dokuwiki__farm_animals | join(' ') }}"
+
 # Cleanup DokuWiki installations (path to datadir, number of days)
-cleanup {{ dokuwiki__git_checkout + "/data" }} 180
-{% if dokuwiki__farm|bool %}
-{% for animal in dokuwiki__farm_animals %}
-cleanup {{ dokuwiki__farm_path + "/" + animal + "/data" }} 180
-{% endfor %}
-{% endif %}
+cleanup "${cleanup_path}" 180
+if [ "${dokuwiki_farm}" = "true" ] ; then
+    for animal in "${dokuwiki_farm_animals[@]}" ; do
+        cleanup "${dokuwiki_farm_path}/${animal}/data" 180
+    done
+fi
