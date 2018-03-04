@@ -86,6 +86,31 @@ prometheus_server__combined_jobs: '{{ prometheus_server__default_jobs
                                        + prometheus_server__host_jobs
                                        + (prometheus_server__dependent_jobs | d([]) ) }}'
                                                                    # ]]]
+# .. envvar:: prometheus_server__config [[[
+#
+# List of default config variables
+prometheus_server__default_config:
+  global:
+    scrape_interval:     15s # By default, scrape targets every 15 seconds.
+    evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+    # scrape_timeout is set to the global default (10s).
+
+    # Attach these labels to any time series or alerts when communicating with
+    # external systems (federation, remote storage, Alertmanager).
+    external_labels:
+      monitor: 'example'
+
+  # Load and evaluate rules in this file every 'evaluation_interval' seconds.
+  rule_files: []
+    # - "first.rules"
+    # - "second.rules"
+                                                                   # ]]]
+# .. envvar:: prometheus_server__combined_config [[[
+#
+# List which combines all of the config variables and is used
+# in the configuration template.
+prometheus_server__combined_config: '{{ prometheus_server__default_config }}'
+                                                                   # ]]]
                                                                    # ]]]
 # Ngninx Proxy [[[
 # ------------

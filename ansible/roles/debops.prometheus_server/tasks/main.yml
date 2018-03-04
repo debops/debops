@@ -46,7 +46,9 @@
 
 - name: Generatet Prometheus configuration
   vars:
-    jobs: '{{ prometheus_server__jobs.results | map(attribute="stdout")|map("from_yaml")|list }}'
+    config: '{{ prometheus_server__combined_config | combine( {
+      "scrape_configs": prometheus_server__jobs.results | map(attribute="stdout")|map("from_yaml")|list
+    } ) }}'
   template:
     src: 'etc/prometheus/prometheus.yml.j2'
     dest: '/etc/prometheus/prometheus.yml'
