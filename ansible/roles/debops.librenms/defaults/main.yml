@@ -520,8 +520,10 @@ librenms__logrotate__dependent_config:
 # .. envvar:: librenms__php__dependent_packages [[[
 #
 # List of PHP packages to install by ``debops.php`` role.
-librenms__php__dependent_packages: [ 'mysql', 'gmp', 'gd', 'snmp',
-                                     'curl', 'mcrypt', 'json' ]
+librenms__php__dependent_packages:
+  - [ 'mysql', 'gmp', 'gd', 'snmp', 'curl', 'mcrypt', 'json' ]
+  - '{{ [ "xml", "mbstring", "zip" ]
+        if (php__version | version_compare("7.0",">=")) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__php__dependent_pools [[[
