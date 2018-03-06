@@ -31,6 +31,13 @@ Changed
   :command:`shellcheck` scripts, respectively. Tests can also be invoked
   separately via the :command:`make` command.
 
+Fixed
+~~~~~
+
+- The :command:`debops` command will now generate the :file:`ansible.cfg`
+  configuration file with correct path to the Ansible roles provided with the
+  DebOps Python package.
+
 
 `debops v0.7.0`_ - 2018-02-11
 -----------------------------
