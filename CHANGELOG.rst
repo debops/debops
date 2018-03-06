@@ -25,6 +25,12 @@ Changed
   script from different templates, based on an OS release. This change should
   help fix the issues with LXC container creation on Debian Stretch.
 
+- The test suite used on Travis-CI now checks the syntax of the YAML files, as
+  well as Python and shell scripts included in the repository. The syntax is
+  checked using the :command:`yamllint`, :command:`pycodestyle` and
+  :command:`shellcheck` scripts, respectively. Tests can also be invoked
+  separately via the :command:`make` command.
+
 
 `debops v0.7.0`_ - 2018-02-11
 -----------------------------
