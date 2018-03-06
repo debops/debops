@@ -96,7 +96,7 @@ test-pep8:
 .PHONY: test-shell
 test-shell:
 	@printf "%s\n" "Testing shell syntax using shellcheck..."
-	@./lib/tests/check-shell || true
+	@./lib/tests/check-shell
 
 .PHONY: test-docker-build
 test-docker-build:
