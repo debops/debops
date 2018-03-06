@@ -866,6 +866,7 @@ dynamic_inventory_list () {
         # Reasons for specific variables:
         # 'ansible_connection'    - run Ansible locally, not remotely
         # 'dhparam__bits'         - bigger DH parameters generate very slowly
+        # 'nginx_http_server_names_hash_bucket_size' - hostnames based on UUIDs are long
         # 'secret'                - move 'secret/' directory outside the git checkout
         # 'tcpwrappers__deny_all' - otherwise Vagrant cannot access host via SSH to turn it off
         #                           (needs better implementation in the 'debops.tcpwrappers' role)
@@ -876,6 +877,7 @@ dynamic_inventory_list () {
     "vars": {
       "ansible_connection": "local",
       "dhparam__bits": [ "1024" ],
+      "nginx_http_server_names_hash_bucket_size": "128",
       "secret": "/tmp/secret",
       "tcpwrappers__deny_all": false
     }
