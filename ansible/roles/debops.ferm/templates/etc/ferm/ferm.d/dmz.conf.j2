@@ -42,7 +42,6 @@ Optional:
 {# Rule arguments #}
 {# ============== #}
 {% set ferm__tpl_public_ip = [] %}
-{% set ferm__tpl_private_ip = [] %}
 {% set ferm__tpl_protocols = [ 'tcp' ] %}
 {% set ferm__tpl_ports = [] %}
 {% if item.public_ip is defined and item.public_ip %}
@@ -50,13 +49,6 @@ Optional:
 {% set _ = ferm__tpl_public_ip.append(item.public_ip) %}
 {% else %}
 {% set ferm__tpl_public_ip = item.public_ip %}
-{% endif %}
-{% endif %}
-{% if item.private_ip is defined and item.private_ip %}
-{% if item.private_ip is string %}
-{% set _ = ferm__tpl_private_ip.append(item.private_ip) %}
-{% else %}
-{% set ferm__tpl_private_ip = item.private_ip %}
 {% endif %}
 {% endif %}
 {% if item.protocol is defined and item.protocol %}
@@ -85,23 +77,28 @@ Optional:
 {% set ferm__tpl_ports = item.ports %}
 {% endif %}
 {% endif %}
+{% if item.dport is defined and item.dport %}
+{% set ferm__tpl_dport = [item.dport] %}
+{% else %}
+{% set ferm__tpl_dport = ferm__tpl_ports %}
+{% endif %}
 {# Main template #}
 {# ============= #}
 {% if item.comment|d() %}
 # {{ item.comment }}
 
 {% endif %}
-{% if ferm__tpl_public_ip and ferm__tpl_private_ip %}
+{% if ferm__tpl_public_ip and item.private_ip %}
 {%   if ferm__tpl_domain_args %}{{ ferm__tpl_domain_args | join(" ") }} {% endif %}table filter chain FORWARD {
 	@def $PUBLIC_IP  = ( @ipfilter( ({{ ferm__tpl_public_ip  | unique | join(" ") }}) ) );
-	@def $PRIVATE_IP = ( @ipfilter( ({{ ferm__tpl_private_ip | unique | join(" ") }}) ) );
+	@def $PRIVATE_IP = ( @ipfilter( ({{ item.private_ip }}) ) );
 	@if @ne($PUBLIC_IP,"") @if @ne($PRIVATE_IP,"") {
-{% if ferm__tpl_ports %}
+{% if ferm__tpl_dport %}
                 protocol ({{ ferm__tpl_protocols | join(" ") }}) {
-{% if ferm__tpl_ports | length > 1 %}
-                        mod multiport destination-ports ({{ ferm__tpl_ports | join(" ") }}) {
+{% if ferm__tpl_dport | length > 1 %}
+                        mod multiport destination-ports ({{ ferm__tpl_dport | join(" ") }}) {
 {% else %}
-                        dport ({{ ferm__tpl_ports | join(" ") }}) {
+                        dport ({{ ferm__tpl_dport | join(" ") }}) {
 {% endif %}
                                 destination $PRIVATE_IP ACCEPT;
                         }
@@ -114,7 +111,7 @@ Optional:
 
 {%   if ferm__tpl_domain_args %}{{ ferm__tpl_domain_args | join(" ") }} {% endif %}table nat {
 	@def $PUBLIC_IP  = ( @ipfilter( ({{ ferm__tpl_public_ip  | unique | join(" ") }}) ) );
-	@def $PRIVATE_IP = ( @ipfilter( ({{ ferm__tpl_private_ip | unique | join(" ") }}) ) );
+	@def $PRIVATE_IP = ( @ipfilter( ({{ item.private_ip }}) ) );
 	@if @ne($PUBLIC_IP,"") @if @ne($PRIVATE_IP,"") {
 		chain PREROUTING {
 {% if ferm__tpl_ports %}
@@ -125,7 +122,7 @@ Optional:
                                 dport ({{ ferm__tpl_ports | join(" ") }}) {
 {% endif %}
 {% if item.dport | d() %}
-                                        destination $PUBLIC_IP DNAT to @cat($PRIVATE_IP, ":{{ item.dport }}");
+                                        destination $PUBLIC_IP DNAT to {{ item.private_ip }}:{{ item.dport }};
 {% else %}
                                         destination $PUBLIC_IP DNAT to $PRIVATE_IP;
 {% endif %}
