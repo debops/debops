@@ -13,6 +13,8 @@ Optional:
   item.protocol(s)         list of protocols to forward, by default (tcp)
   item.port(s)             list of ports to forward, if not specified, all traffic is forwarded
   item.dport               destination port to forward to
+  item.snat_ip             IP address of the firewall host on the internal network. If unset
+                           the source address is not translated.
 
 #}
 {# Domain, table, chain #}
@@ -132,9 +134,11 @@ Optional:
 			destination $PUBLIC_IP DNAT to $PRIVATE_IP;
 {% endif %}
 		}
+{% if item.snat_ip is defined and item.snat_ip %}
 		chain POSTROUTING {
-			source $PRIVATE_IP SNAT to $PUBLIC_IP;
+            destination $PRIVATE_IP SNAT to {{ item.snat_ip }};
 		}
+{% endif %}
 	}
 }
 

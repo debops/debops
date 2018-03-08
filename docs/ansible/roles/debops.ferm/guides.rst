@@ -123,11 +123,13 @@ address of a network packet is rewritten to the internal host address.
 .. topic:: Note
 
     The :ref:`ferm__ref_type_dmz` rule template won't modify the source address of a
-    forwarded packet. This means that the original source address can still be
-    identified at the internal receiver, however the route leading back to the
-    source address must traverse the gateway again in order to successfully
-    establish the connection (SNAT).
+    forwarded packet by default. This means that the original source address can
+    still be identified at the internal receiver, however the route leading back to
+    the source address must traverse the gateway again in order to successfully
+    initiate connection tracking.
 
+    The optional ``snat_ip`` parameter can be used to configure source address
+    translation (SNAT).
 
 .. _ferm__ref_guide_gateway_services:
 
