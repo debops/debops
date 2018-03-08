@@ -23,6 +23,10 @@ Added
 
 - New DebOps roles:
 
+  - :ref:`debops.apt_mark`: set install state of APT packages (manual/auto) or
+    specify that particular packages should be held in their current state.
+    The role is included in the ``common.yml`` playbook.
+
   - :ref:`debops.backup2l`: manage local backups on a host which can then be
     synchronized to a remote storage, using the :command:`backup2l` script.
 
