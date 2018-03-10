@@ -25,5 +25,9 @@ specific parameters:
 ``version``
   Optional. Specific version of the module to install.
 
+``state``
+  Optional. If not specified or ``present``, the Python module will be
+  installed. If ``ignore``, the specified Python module will be ignored.
+
 The Python modules will be installed or updated as needed when the NetBox
 checked out code is updated.

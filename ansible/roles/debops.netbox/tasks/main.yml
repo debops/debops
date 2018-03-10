@@ -24,14 +24,19 @@
     state: 'present'
     system: True
 
-- name: Create source and library directories
+- name: Create additional directories used by Netbox
   file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
     mode: '0755'
-  with_items: [ '{{ netbox__src }}', '{{ netbox__lib }}' ]
+  with_items:
+    - '{{ netbox__src }}'
+    - '{{ netbox__lib }}'
+    - '{{ netbox__data }}'
+    - '{{ netbox__config_media_root }}'
+    - '{{ netbox__config_reports_root }}'
 
 - name: Create Python virtualenv for NetBox
   pip:
@@ -119,10 +124,20 @@
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout|changed
 
+- name: Clean up stale Python bytecode
+  shell: find . -name '*.pyc' -delete
+  args:
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: '/bin/sh'
+  become: True
+  become_user: '{{ netbox__user }}'
+  when: netbox__register_checkout|changed
+
 - name: Install NetBox requirements in virtualenv
   pip:
     virtualenv: '{{ netbox__virtualenv }}'
     requirements: '{{ netbox__git_checkout + "/requirements.txt" }}'
+    extra_args: '--upgrade'
   become: True
   become_user: '{{ netbox__user }}'
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
@@ -136,7 +151,8 @@
   become: True
   become_user: '{{ netbox__user }}'
   with_flattened: '{{ netbox__virtualenv_pip_packages }}'
-  when: netbox__register_checkout|changed
+  when: netbox__register_checkout|changed and
+        item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Generate NetBox configuration
   template:
@@ -228,3 +244,24 @@
     enabled: True
   when: (netbox__app_internal_appserver|bool and ansible_service_mgr == 'systemd' and
          netbox__register_systemd|changed and not netbox__register_installed.stat.exists|bool)
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save NetBox local facts
+  template:
+    src: 'etc/ansible/facts.d/netbox.fact.j2'
+    dest: '/etc/ansible/facts.d/netbox.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: netbox__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: netbox__register_facts|changed
