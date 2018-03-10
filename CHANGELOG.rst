@@ -18,6 +18,14 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v0.7.0...master
 
+Added
+~~~~~
+
+- New DebOps roles:
+
+  - :ref:`debops.backup2l`: manage local backups on a host which can then be
+    synchronized to a remote storage, using the :command:`backup2l` script.
+
 Changed
 ~~~~~~~
 
