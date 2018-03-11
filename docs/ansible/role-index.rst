@@ -213,6 +213,7 @@ packages.
 - :ref:`debops.apt_cacher_ng`
 - :ref:`debops.apt_listchanges`
 - :ref:`debops.apt_install`
+- :ref:`debops.apt_mark`
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
 - :ref:`debops.unattended_upgrades`
