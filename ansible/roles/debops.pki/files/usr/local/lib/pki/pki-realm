@@ -1077,7 +1077,7 @@ request_acme_tiny_certificate () {
                 if [ ! -r acme/intermediate.pem ] ; then
 
                     if [ -n "${acme_intermediate_uri}" ] ; then
-                        curl -s -o acme/intermediate.pem.tmp "${acme_intermediate_uri}"
+                        curl -s -L -o acme/intermediate.pem.tmp "${acme_intermediate_uri}"
                         convert_der_to_pem acme/intermediate.pem.tmp
                         mv acme/intermediate.pem.tmp acme/intermediate.pem
                         if [ ! -r acme/intermediate_uri.txt ] ; then
@@ -1089,7 +1089,7 @@ request_acme_tiny_certificate () {
 
                     if [ -n "${acme_intermediate_uri}" ] && [ -r acme/intermediate_uri.txt ] ; then
                         if [ "${acme_intermediate_uri}" != "$(<acme/intermediate_uri.txt)" ] ; then
-                            curl -s -o acme/intermediate.pem.tmp "${acme_intermediate_uri}"
+                            curl -s -L -o acme/intermediate.pem.tmp "${acme_intermediate_uri}"
                             if ! diff -q -N acme/intermediate.pem acme/intermediate.pem.tmp > /dev/null ; then
                                 rm -f acme/intermediate.pem acme/intermediate_uri.txt
                                 convert_der_to_pem acme/intermediate.pem.tmp
