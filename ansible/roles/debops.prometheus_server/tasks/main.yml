@@ -9,12 +9,15 @@
     - '{{ prometheus_server__base_packages }}'
     - '{{ prometheus_server__packages }}'
 
-- name: Create jobs dir
+- name: Create jobs, rules.d dirs
   file:
-    path: '/etc/prometheus/jobs'
+    path: '/etc/prometheus/{{ item }}'
     state: 'directory'
     owner: 'prometheus'
     mode: '0750'
+  with_items:
+    - 'jobs'
+    - 'rules.d'
 
 # generate files for each job
 - name: Generate job files
@@ -43,11 +46,38 @@
   with_items: '{{ prometheus_server__find_result.files | map(attribute="path")|list }}'
   register: prometheus_server__jobs
   changed_when: False
+# end job files
+
+
+# generate files for each rule
+- name: Generate rule files
+  copy:
+    content: '{{ item.content | to_yaml }}'
+    dest: '/etc/prometheus/rules.d/{{ item.name }}.rules.yml'
+    owner: 'prometheus'
+    mode: '0640'
+  when: item.state is not defined or item.state == 'present'
+  with_items: '{{ prometheus_server__combined_rules }}'
+
+- name: Remove disabled rules files
+  file:
+    path: '/etc/promtehus/rules.d/{{ item.name }}.rules.yml'
+    state: 'absent'
+  when: item.state|d('present') != 'present'
+  with_items: prometheus_server__combined_rules
+
+- name: Fetch all present rule files
+  find:
+    path: '/etc/prometheus/rules.d'
+  register: prometheus_server__find_result_rules
+# end rule files
+
 
 - name: Generatet Prometheus configuration
   vars:
     config: '{{ prometheus_server__combined_config | combine( {
-      "scrape_configs": prometheus_server__jobs.results | map(attribute="stdout")|map("from_yaml")|list
+      "scrape_configs": prometheus_server__jobs.results | map(attribute="stdout")|map("from_yaml")|list,
+      "rule_files": prometheus_server__find_result_rules.files | map(attribute="path")|list
     } ) }}'
   template:
     src: 'etc/prometheus/prometheus.yml.j2'

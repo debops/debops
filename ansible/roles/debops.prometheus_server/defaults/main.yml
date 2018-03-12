@@ -51,12 +51,16 @@ prometheus_server__default_jobs:
       job_name: 'prometheus'
       static_configs:
         - targets: ['localhost:9090']
+          labels:
+            env: 'prod'
   - name: 'node-localhost'
     state: 'present'
     content:
       job_name: 'node'
       static_configs:
         - targets: [ 'localhost:9100' ]
+          labels:
+            env: 'prod'
                                                                    # ]]]
 # .. envvar:: prometheus_server__jobs [[[
 #
@@ -86,6 +90,54 @@ prometheus_server__combined_jobs: '{{ prometheus_server__default_jobs
                                        + prometheus_server__host_jobs
                                        + (prometheus_server__dependent_jobs | d([]) ) }}'
                                                                    # ]]]
+# .. envvar:: prometheus_server__default_rules [[[
+#
+# Default prometheus rules
+# :ref:`prometheus_server__ref_default_variable_details`
+prometheus_server__default_rules:
+  - name: 'default'
+    state: 'present'
+    content:
+      groups:
+        - name: 'default.rules'
+          rules:
+            - alert: InstanceDown
+              expr: up == 0
+              for: 5m
+              labels:
+                severity: page
+              annotations:
+                summary: !unsafe 'Instance {{ $labels.instance }} down'
+                description: !unsafe "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."
+                                                                   # ]]]
+# .. envvar:: prometheus_server__rules [[[
+#
+# Config which will be managed on all hosts in the Ansible
+# inventory
+prometheus_server__rules: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__group_rules [[[
+#
+# Config which will be managed on specific groups in the Ansible
+# inventory.
+prometheus_server__group_rules: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__host_rules [[[
+#
+# Config which will be managed on specific hosts in the Ansible
+# inventory.
+prometheus_server__host_rules: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__combined_rules [[[
+#
+# List which combines all of the config variables and is used
+# in the configuration template.
+prometheus_server__combined_rules: '{{ prometheus_server__default_rules
+                                       + prometheus_server__rules
+                                       + prometheus_server__group_rules
+                                       + prometheus_server__host_rules
+                                       + (prometheus_server__dependent_rules | d([]) ) }}'
+                                                                   # ]]]
 # .. envvar:: prometheus_server__config [[[
 #
 # List of default config variables
@@ -99,11 +151,12 @@ prometheus_server__default_config:
     # external systems (federation, remote storage, Alertmanager).
     external_labels:
       monitor: 'example'
-
-  # Load and evaluate rules in this file every 'evaluation_interval' seconds.
-  rule_files: []
-    # - "first.rules"
-    # - "second.rules"
+  rule_files: [] #field automaticly from `/etc/prometheus/rules.d/`
+  alerting:
+    alertmanagers:
+      - static_configs:
+          - targets:
+              - 'localhost:9093'
                                                                    # ]]]
 # .. envvar:: prometheus_server__combined_config [[[
 #
