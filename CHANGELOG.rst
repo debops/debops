@@ -40,6 +40,9 @@ Changed
   :command:`shellcheck` scripts, respectively. Tests can also be invoked
   separately via the :command:`make` command.
 
+- [debops.etherpad] The role can now autodetect and use a PostgreSQL database
+  as a backend database for Etherpad.
+
 Fixed
 ~~~~~
 

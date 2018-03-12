@@ -140,36 +140,48 @@ etherpad_welcome_text: |
 
 # .. envvar:: etherpad_database_server [[[
 #
-# FQDN of the MariaDB database host. It will be configured by
-# the :ref:`debops.mariadb` role.
+# FQDN of the database host. It will be configured by
+# the :ref:`debops.mariadb` or :ref:`debops.postgresql` role.
 etherpad_database_server: '{{ ansible_local.mariadb.server
                               if (ansible_local|d() and ansible_local.mariadb|d() and
                                   ansible_local.mariadb.server|d())
-                              else "" }}'
+                              else (ansible_local.postgresql.server
+                                    if (ansible_local|d() and ansible_local.postgresql|d() and
+                                        ansible_local.postgresql.server|d())
+                                    else "") }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_user [[[
 #
-# MariaDB database user to use for Etherpad.
+# Database user to use for Etherpad.
 etherpad_database_user: '{{ etherpad_system_name }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_name [[[
 #
-# Name of the MariaDB database to use for Etherpad.
+# Name of the database to use for Etherpad.
 etherpad_database_name: '{{ etherpad_system_name }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_password [[[
 #
-# MariaDB database password for the Etherpad database user.
-etherpad_database_password: "{{ lookup('password', secret + '/mariadb/'
+# Database password for the Etherpad database user.
+etherpad_database_password: "{{ lookup('password', secret + '/'
+                                + ('mariadb'
+                                   if etherpad__database == 'mysql'
+                                   else ('postgresql'
+                                         if etherpad__database == 'postgres'
+                                         else etherpad__database)) + '/'
                                 + (ansible_local.mariadb.delegate_to + '/'
                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()
-                                   else '')
+                                   else (ansible_local.postgresql.delegate_to + '/'
+                                         if ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.delegate_to|d()
+                                         else ''))
                                 + (ansible_local.mariadb.port + '/'
                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d()
-                                   else '')
+                                   else (ansible_local.postgresql.port + '/'
+                                         if ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.port|d()
+                                         else ''))
                                 + '/credentials/' + etherpad_database_user + '/password length=48') }}"
 
                                                                    # ]]]
@@ -180,7 +192,9 @@ etherpad_database_password: "{{ lookup('password', secret + '/mariadb/'
 # databases will be available in the future.
 etherpad__database: '{{ "mysql"
                         if (ansible_local|d() and ansible_local.mariadb is defined)
-                        else "sqlite" }}'
+                        else ("postgres"
+                              if (ansible_local|d() and ansible_local.postgresql is defined)
+                              else "sqlite") }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_connection [[[
@@ -204,8 +218,8 @@ etherpad_database_config:
     password: '{{ etherpad_database_password }}'
     socket:   '/var/run/mysqld/mysqld.sock'
     port:     '3306'
-  postgresql:
-    hostname: 'localhost'
+  postgres:
+    hostname: '{{ etherpad_database_server }}'
     username: '{{ etherpad_database_user }}'
     database: '{{ etherpad_database_name }}'
     password: '{{ etherpad_database_password }}'
@@ -308,6 +322,10 @@ etherpad_abiword: True
 #
 # Default Etherpad plugin list (alphabetically sorted).
 etherpad__default_plugins:
+  - name: 'pg'
+    state: '{{ "present"
+               if (etherpad__database == "postgres")
+               else "absent" }}'
   - name: 'sqlite3'
     state: '{{ "present"
                if (etherpad__database == "sqlite")
@@ -461,6 +479,41 @@ etherpad__mariadb__dependent_users:
 etherpad__mariadb__dependent_databases:
 
   - database: '{{ etherpad_database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__postgresql__dependent_roles [[[
+#
+# User configuration for the :ref:`debops.postgresql` Ansible role.
+etherpad__postgresql__dependent_roles:
+
+  - name: '{{ etherpad_database_user }}'
+    password: '{{ etherpad_database_password }}'
+    flags: [ 'NOSUPERUSER', 'NOCREATEDB', 'LOGIN' ]
+
+                                                                   # ]]]
+# .. envvar:: etherpad__postgresql__dependent_groups [[[
+#
+# Group configuration for the :ref:`debops.postgresql` Ansible role.
+etherpad__postgresql__dependent_groups:
+
+                                                                   # ]]]
+# .. envvar:: etherpad__postgresql__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.postgresql` Ansible role.
+etherpad__postgresql__dependent_databases:
+
+  - name: '{{ etherpad_database_name }}'
+    port: '5432'
+    owner: '{{ etherpad_database_user }}'
+    encoding: '{{ etherpad_database_encoding | d(omit) }}'
+    lc_collate: '{{ etherpad_database_collate | d(omit) }}'
+    lc_ctype: '{{ etherpad_database_ctype | d(omit) }}'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__postgresql__dependent_pgpass [[[
+#
+# ``~/.pgpass`` configuration for the :ref:`debops.postgresql` Ansible role.
+etherpad__postgresql__dependent_pgpass:
 
                                                                    # ]]]
 # .. envvar:: etherpad__nginx__dependent_upstreams [[[
