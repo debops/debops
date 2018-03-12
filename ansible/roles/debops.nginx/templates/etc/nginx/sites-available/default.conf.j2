@@ -98,9 +98,9 @@
  #   ---- root directory ----
  #}
 {% if item.owner|d()                                                       %}
-{%     set nginx_tpl_root = item.root | default(nginx_www + '/' + item.owner + '/sites/' + (item.name if item.name is string else item.name[0] | d('default')) + '/' + ( item.public_dir_name if item.public_dir_name is defined else nginx_public_dir_name | d("public")) ) %}
+{%     set nginx_tpl_root = item.root | default(nginx_www + '/' + item.owner + '/sites/' + (item.name if item.name is string else item.name[0] | d('default')) + '/' + ( item.public_dir_name | d(nginx_public_dir_name)) ) %}
 {% else                                                                    %}
-{%     set nginx_tpl_root = item.root | default(nginx_www + '/sites/' + (item.name if item.name is string else item.name[0] | d('default')) + '/' + ( item.public_dir_name if item.public_dir_name is defined else nginx_public_dir_name | d("public")) ) %}
+{%     set nginx_tpl_root = item.root | default(nginx_www + '/sites/' + (item.name if item.name is string else item.name[0] | d('default')) + '/' + ( item.public_dir_name | d(nginx_public_dir_name)) ) %}
 {% endif                                                                   %}
 {% if item.root_suffix|d()                                          %}
 {%     set nginx_tpl_root = nginx_tpl_root + '/' + item.root_suffix %}
