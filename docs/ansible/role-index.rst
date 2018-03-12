@@ -88,7 +88,6 @@ are not accessed directly by end users.
 Backup
 ------
 
-- :ref:`debops.backup2l`
 - :ref:`debops.rsnapshot`
 - ``debops.boxbackup``
 
