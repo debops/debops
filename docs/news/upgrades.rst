@@ -11,7 +11,19 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
-Nothing new yet.
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.netbox` role has been updated, some variable names were
+  changed:
+
+  +------------------------------------+------------------------------------------+---------------+
+  | Old variable name                  | New variable name                        | Changed value |
+  +------------------------------------+------------------------------------------+---------------+
+  | ``netbox__config_netbox_username`` | :envvar:`netbox__config_napalm_username` | No            |
+  +------------------------------------+------------------------------------------+---------------+
+  | ``netbox__config_netbox_password`` | :envvar:`netbox__config_napalm_password` | No            |
+  +------------------------------------+------------------------------------------+---------------+
 
 
 v0.7.0
