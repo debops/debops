@@ -2,7 +2,7 @@
 
 - name: Create global webroot directories if allowed
   file:
-    path: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/ {{ item.public_dir_name | d(nginx_public_dir_name) }}'
+    path: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/{{ item.public_dir_name | d(nginx_public_dir_name) }}'
     state: 'directory'
     owner: '{{ nginx_webroot_owner }}'
     group: '{{ nginx_webroot_group }}'
