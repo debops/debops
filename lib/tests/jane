@@ -40,6 +40,7 @@ readonly SCRIPTDIR="$( readlink -m "$( dirname "${0}" )" )"
 readonly SCRIPTPID="$$"
 readonly ARGS=( "${@:-}" )
 readonly PATH="${PATH}:${HOME}/.local/lib/${SCRIPTNAME}:/vagrant/lib/tests:/usr/local/lib/${SCRIPTNAME}:/usr/lib/${SCRIPTNAME}"
+readonly INVENTORY_PATH="./lib/tests/inventory:/vagrant/lib/tests/inventory"
 
 readonly GLOBAL_LOCK_FILE="/var/tmp/${SCRIPTNAME}/global.lock"
 readonly GLOBAL_LOCK_FD="200"
@@ -65,6 +66,7 @@ readonly JANE_FORCE_TESTS="${JANE_FORCE_TESTS:-}"
 readonly JANE_TEST_PLAY="${JANE_TEST_PLAY:-}"
 readonly JANE_ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG:-/vagrant/lib/tests/ansible.cfg}"
 readonly JANE_ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY:-/vagrant/lib/tests/jane}"
+readonly JANE_INVENTORY_DIRS="${JANE_INVENTORY_DIRS:-common}"
 readonly JANE_INVENTORY_GROUPS="${JANE_INVENTORY_GROUPS:-debops_all_hosts}"
 readonly JANE_INVENTORY_HOSTVARS="${JANE_INVENTORY_HOSTVARS:-}"
 
@@ -343,6 +345,10 @@ sub__ansible__playbook () {
     local ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG}"
     local ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY}"
     local jane_test_play="${JANE_TEST_PLAY}"
+    local inventory_path
+    IFS=':' read -r -a inventory_path <<< "${INVENTORY_PATH}"
+    local jane_inventory_dirs
+    read -r -a jane_inventory_dirs <<< "${JANE_INVENTORY_DIRS}"
     local jane_inventory_groups="${JANE_INVENTORY_GROUPS}"
     local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
     local -a test_playbooks
@@ -379,6 +385,10 @@ sub__ansible__playbook () {
     if [ -n "${parsed_hostvars}" ] ; then
         status_msg config "Custom Ansible inventory variables:"
         printf "%s\n" "${parsed_hostvars}"
+    fi
+
+    if [ -n "${jane_inventory_dirs[*]}" ] && [ "${jane_inventory_dirs[*]}" != "common" ] ; then
+        status_msg config "Custom inventory directories: ${jane_inventory_dirs[*]}"
     fi
 
     status_msg info "Performing Ansible syntax check..."
@@ -840,7 +850,11 @@ generate_dynamic_inventory_groups () {
 }
 
 dynamic_inventory_list () {
+    local inventory_path
+    IFS=':' read -r -a inventory_path <<< "${INVENTORY_PATH}"
+    local jane_inventory_dirs
     local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
+    read -r -a jane_inventory_dirs <<< "${JANE_INVENTORY_DIRS}"
 
     # Jan-Piet Mens is awesome
     # http://jpmens.net/2016/03/05/a-shell-command-to-create-json-jo/
@@ -856,6 +870,19 @@ dynamic_inventory_list () {
             fi
         else
             local parsed_hostvars="{}"
+        fi
+
+        if [ -n "${jane_inventory_dirs[*]}" ] ; then
+            local -a expanded_dirs
+            for directory in "${jane_inventory_dirs[@]}" ; do
+                for path_dir in "${inventory_path[@]}" ; do
+                    if [ -d "${path_dir}/${directory}" ] ; then
+                        expanded_dirs+=( "${inventory_path}/${directory}/*.json" )
+                    fi
+                done
+            done
+            # shellcheck disable=SC2068
+            parsed_hostvars="$(jq -s 'reduce .[] as $item ({}; . * $item)' ${expanded_dirs[@]} <(echo "${parsed_hostvars}"))"
         fi
 
         # jo needs to parse arguments as-is
