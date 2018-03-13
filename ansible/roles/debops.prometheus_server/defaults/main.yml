@@ -51,12 +51,16 @@ prometheus_server__default_jobs:
       job_name: 'prometheus'
       static_configs:
         - targets: ['localhost:9090']
+          labels:
+            env: 'prod'
   - name: 'node-localhost'
     state: 'present'
     content:
       job_name: 'node'
       static_configs:
         - targets: [ 'localhost:9100' ]
+          labels:
+            env: 'prod'
                                                                    # ]]]
 # .. envvar:: prometheus_server__jobs [[[
 #
@@ -86,6 +90,80 @@ prometheus_server__combined_jobs: '{{ prometheus_server__default_jobs
                                        + prometheus_server__host_jobs
                                        + (prometheus_server__dependent_jobs | d([]) ) }}'
                                                                    # ]]]
+# .. envvar:: prometheus_server__default_rules [[[
+#
+# Default prometheus rules
+# :ref:`prometheus_server__ref_default_variable_details`
+prometheus_server__default_rules:
+  - name: 'default'
+    state: 'present'
+    content:
+      groups:
+        - name: 'default.rules'
+          rules:
+            - alert: InstanceDown
+              expr: up == 0
+              for: 5m
+              labels:
+                severity: page
+              annotations:
+                summary: !unsafe 'Instance {{ $labels.instance }} down'
+                description: !unsafe "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes."
+                                                                   # ]]]
+# .. envvar:: prometheus_server__rules [[[
+#
+# Config which will be managed on all hosts in the Ansible
+# inventory
+prometheus_server__rules: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__group_rules [[[
+#
+# Config which will be managed on specific groups in the Ansible
+# inventory.
+prometheus_server__group_rules: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__host_rules [[[
+#
+# Config which will be managed on specific hosts in the Ansible
+# inventory.
+prometheus_server__host_rules: []
+                                                                   # ]]]
+# .. envvar:: prometheus_server__combined_rules [[[
+#
+# List which combines all of the config variables and is used
+# in the configuration template.
+prometheus_server__combined_rules: '{{ prometheus_server__default_rules
+                                       + prometheus_server__rules
+                                       + prometheus_server__group_rules
+                                       + prometheus_server__host_rules
+                                       + (prometheus_server__dependent_rules | d([]) ) }}'
+                                                                   # ]]]
+# .. envvar:: prometheus_server__config [[[
+#
+# List of default config variables
+prometheus_server__default_config:
+  global:
+    scrape_interval:     15s # By default, scrape targets every 15 seconds.
+    evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+    # scrape_timeout is set to the global default (10s).
+
+    # Attach these labels to any time series or alerts when communicating with
+    # external systems (federation, remote storage, Alertmanager).
+    external_labels:
+      monitor: 'example'
+  rule_files: [] #field automaticly from `/etc/prometheus/rules.d/`
+  alerting:
+    alertmanagers:
+      - static_configs:
+          - targets:
+              - 'localhost:9093'
+                                                                   # ]]]
+# .. envvar:: prometheus_server__combined_config [[[
+#
+# List which combines all of the config variables and is used
+# in the configuration template.
+prometheus_server__combined_config: '{{ prometheus_server__default_config }}'
+                                                                   # ]]]
                                                                    # ]]]
 # Ngninx Proxy [[[
 # ------------
@@ -113,6 +191,14 @@ prometheus_server__nginx__dependent_servers:
     auth_basic: True
     auth_basic_name: 'prometheus_server'
                                                                    # ]]]
+# .. envvar:: prometheus_server__nginx__dependent_htpasswd [[[
+#
+# Create base auth for this service
+prometheus_server__nginx__dependent_htpasswd:
+  - name: 'prometheus_server'
+    users:
+      - 'monitor'
+                                                                   # ]]]
                                                                    # ]]]
 # Role-dependent configuration [[[
 # ----------------------------
@@ -135,6 +221,7 @@ prometheus_server__ferm__dependent_rules:
   - name: 'prometheus_server'
     type: 'accept'
     dport: '9090'
+    saddr: '{{ prometheus_server__allow }}'
     accept_any: '{{ prometheus_server__accept_any }}'
     by_role: 'prometheus_server'
     rule_state: '{{ prometheus_server__deploy_state }}'

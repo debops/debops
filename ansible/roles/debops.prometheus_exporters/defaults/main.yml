@@ -14,9 +14,9 @@
 #
 # List of base packages to install.
 prometheus_exporters__base_packages:
-  "{{ 'prometheus-node-exporter'     if 'node' in prometheus_exporters__exporters else []
-    + 'prometheus-mysqld-exporter'   if 'mysqld' in prometheus_exporters__exporters else []
-    + [ 'golang', 'libsystemd-dev' ] if 'postfix' in prometheus_exporters__exporters else [] }}"
+  "{{ ([ 'prometheus-node-exporter'   ] if 'node' in prometheus_exporters__exporters else [])
+    + ([ 'prometheus-mysqld-exporter' ] if 'mysqld' in prometheus_exporters__exporters else [])
+    + ([ 'golang', 'libsystemd-dev', 'build-essential' ] if 'postfix' in prometheus_exporters__exporters else []) }}"
                                                                    # ]]]
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__packages [[[
@@ -89,6 +89,14 @@ prometheus_exporters__nginx__dependent_servers:
     auth_basic: True
     auth_basic_name: 'prometheus_exporters'
                                                                    # ]]]
+# .. envvar:: prometheus_exporters__nginx__dependent_htpasswd [[[
+#
+# Create base auth for this service
+prometheus_exporters__nginx__dependent_htpasswd:
+  - name: 'prometheus_exporters'
+    users:
+      - 'monitor'
+                                                                   # ]]]
                                                                    # ]]]
 # Role-dependent configuration [[[
 # ----------------------------
@@ -145,14 +153,20 @@ prometheus_exporters__tcpwrappers__dependent_allow:
 prometheus_exporters__etc_services__dependent_list:
   - name: 'prometheus_node_exporter'
     port: 9100
+    saddr: '{{ prometheus_exporters__allow }}'
+    accept_any: '{{ prometheus_exporters__accept_any }}'
     comment: 'Prometheus node exporter for metric providing'
     state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_mysqld_exporter'
     port: 9104
+    saddr: '{{ prometheus_exporters__allow }}'
+    accept_any: '{{ prometheus_exporters__accept_any }}'
     comment: 'Prometheus mysql exporter for metric providing'
     state: '{{ prometheus_exporters__deploy_state if "mysqld" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_postfix_exporter'
     port: 9154
+    saddr: '{{ prometheus_exporters__allow }}'
+    accept_any: '{{ prometheus_exporters__accept_any }}'
     comment: 'Prometheus postfix exporter for metric providing'
     state: '{{ prometheus_exporters__deploy_state if "postfix" in prometheus_exporters__exporters else "absent" }}'
                                                                    # ]]]
