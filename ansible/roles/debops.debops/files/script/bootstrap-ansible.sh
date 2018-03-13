@@ -39,7 +39,7 @@ install_ansible_requirements () {
         python-paramiko python-yaml python-jinja2 python-httplib2 \
         cdbs debhelper dpkg-dev fakeroot sshpass python-nose python-passlib \
         python-setuptools asciidoc xmlto build-essential python-sphinx \
-        python-crypto lsb-release
+        python-crypto lsb-release python-packaging
 
 }
 
