@@ -39,6 +39,26 @@
          (item.delete is undefined or not item.delete|bool) and
          (item.welcome|d() | bool))
 
+- name: Copy 'normalize.css' CSS file for welcome page
+  template:
+    src: 'srv/www/sites/welcome/public/normalize.css'
+    dest: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/public/normalize.css'
+    owner: '{{ item.owner | d(nginx_webroot_owner) }}'
+    group: '{{ item.owner | d(nginx_webroot_group) }}'
+    force: '{{ item.welcome_force|d() | bool }}'
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
+  when: (nginx_webroot_create|bool and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool) and
+         (item.welcome|d() | bool))
+
 - name: Remove nginx server configuration if requested
   file:
     path: '/etc/nginx/sites-available/{{ item.filename | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'

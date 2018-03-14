@@ -50,6 +50,13 @@ Fixed
   configuration file with correct path to the Ansible roles provided with the
   DebOps Python package.
 
+- [debops.nginx] Fix a long standing bug in the role with Ansible failing
+  during welcome page template generation with Jinja2 >= 2.9.4. It was related
+  to `non-backwards compatible change in Jinja`__ that modified how variables
+  are processed in a loop.
+
+.. __: https://github.com/pallets/jinja/issues/659
+
 
 `debops v0.7.0`_ - 2018-02-11
 -----------------------------
