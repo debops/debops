@@ -11,6 +11,21 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+X.509 certificate changes
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.pki` role now generates the default X.509 certificate for
+  the ``domain`` PKI realm with a wildcard entry for the host's FQDN (for
+  example, ``*.host.example.org``). This will be true by default on new hosts
+  introduced to the cluster; if you want your old hosts to have the new X.509
+  certificates, you need to recreate the ``domain`` PKI realm by removing the
+  :file:`/etc/pki/realms/domain/` directory on the remote hosts and re-running
+  the :ref:`debops.pki` role against them.
+
+  The change is done in the :envvar:`pki_default_realms` variable, if you
+  redefined it in the Ansible inventory, you might want to update your version
+  to include the new SubjectAltName entry.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

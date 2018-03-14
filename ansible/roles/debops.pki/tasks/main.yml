@@ -344,7 +344,7 @@
            --key-size "{{ item.key_size | d('') }}"
            --crl "{{ item.crl | d(True) }}"
            --ocsp "{{ item.ocsp | d(True) }}"
-           --name-constraints "{{ item.name_constraints | d(True) }}"
+           --name-constraints "{{ item.name_constraints | d(pki_ca_name_constraints) }}"
   args:
     chdir: '{{ secret + "/pki" }}'
     creates: '{{ secret + "/pki/authorities/" + item.name + "/subject/cert.pem" }}'

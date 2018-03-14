@@ -441,7 +441,10 @@ pki_default_realms:
 
   - name: 'domain'
     acme: False
-    default_subdomains: [ '{{ ansible_hostname }}', '_wildcard_' ]
+    default_subdomains:
+      - '{{ ansible_hostname }}'
+      - '*.{{ ansible_hostname }}'
+      - '_wildcard_'
 
                                                                    # ]]]
 # .. envvar:: pki_group_realms [[[
@@ -514,6 +517,13 @@ pki_ca_library: 'openssl'
 # Name of the default Certificate Authority to which host certificates are
 # directed if a PKI realm does not specify a default Authority.
 pki_default_authority: 'domain'
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_name_constraints [[[
+#
+# Specify if the ``nameConstraints`` CA certificate extension should be
+# included in the generated CA certificates by default.
+pki_ca_name_constraints: True
 
                                                                    # ]]]
 # .. envvar:: pki_ca_domain [[[
