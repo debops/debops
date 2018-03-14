@@ -59,7 +59,8 @@ try:
     setup(
         name="debops",
         version=unicode(RELEASE),
-        install_requires=['netaddr', 'argparse', 'passlib', 'ansible'],
+        install_requires=['netaddr', 'argparse', 'passlib', 'ansible',
+                          'python-ldap'],
 
         scripts=SCRIPTS,
         packages=find_packages(exclude=['tests']),
