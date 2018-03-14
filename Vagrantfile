@@ -249,6 +249,7 @@ EOF
     jane notify install "Installing Ansible requirements via APT..."
     DEBIAN_FRONTEND=noninteractive apt-get -y \
     --no-install-recommends install \
+        acl \
         apt-transport-https \
         encfs \
         git \
