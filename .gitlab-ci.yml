@@ -50,8 +50,7 @@ stages:
     - './lib/tests/jane gitlab script'
   after_script:
     - './lib/tests/jane gitlab after_script'
-  # This requires newer GitLab version
-  #retry: 1
+  retry: 1
 
 
 .tpl_test_role_no_deps: &test_role_no_deps
@@ -310,8 +309,8 @@ stages:
   <<: *test_role_2nd_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml ${DEBOPS_PLAYBOOKS}/service/dnsmasq.yml'
+    JANE_INVENTORY_DIRS: 'common dnsmasq'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown,debops_service_dnsmasq'
-    JANE_INVENTORY_HOSTVARS: '/vagrant/lib/tests/inventory/dnsmasq.json'
     JANE_DIFF_PATTERN: '.*/debops.dnsmasq/.*'
     JANE_LOG_PATTERN: '\[debops\.dnsmasq\]'
   tags: [ 'shell', 'vagrant-vm' ]
@@ -320,8 +319,8 @@ stages:
   <<: *test_role_2nd_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml ${DEBOPS_PLAYBOOKS}/service/dnsmasq-persistent_paths.yml'
+    JANE_INVENTORY_DIRS: 'common dnsmasq'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown,debops_service_dnsmasq_persistent_paths'
-    JANE_INVENTORY_HOSTVARS: '/vagrant/lib/tests/inventory/dnsmasq.json'
     JANE_DIFF_PATTERN: '.*/debops.dnsmasq/.*'
     JANE_LOG_PATTERN: '\[debops\.dnsmasq\]'
   tags: [ 'shell', 'vagrant-vm' ]
@@ -715,8 +714,8 @@ stages:
   <<: *test_role_2nd_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/mariadb.yml'
+    JANE_INVENTORY_DIRS: 'common mariadb_server/client'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_mariadb'
-    JANE_INVENTORY_HOSTVARS: '/vagrant/lib/tests/inventory/mariadb_server-client.json'
     JANE_DIFF_PATTERN: '.*/debops.mariadb/.*'
     JANE_LOG_PATTERN: '\[debops\.mariadb\]'
 
@@ -934,8 +933,8 @@ stages:
   <<: *test_role_2nd_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/postgresql.yml'
+    JANE_INVENTORY_DIRS: 'common postgresql_server/client'
     JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_postgresql'
-    JANE_INVENTORY_HOSTVARS: '/vagrant/lib/tests/inventory/postgresql_server-client.json'
     JANE_DIFF_PATTERN: '.*/debops.postgresql/.*'
     JANE_LOG_PATTERN: '\[debops\.postgresql\]'
 
@@ -1001,8 +1000,8 @@ stages:
   <<: *test_role_2nd_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml ${DEBOPS_PLAYBOOKS}/service/radvd.yml'
+    JANE_INVENTORY_DIRS: 'common radvd'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown,debops_service_radvd'
-    JANE_INVENTORY_HOSTVARS: '/vagrant/lib/tests/inventory/radvd.json'
     JANE_DIFF_PATTERN: '.*/debops.radvd/.*'
     JANE_LOG_PATTERN: '\[debops\.radvd\]'
   tags: [ 'shell', 'vagrant-vm' ]
@@ -1202,8 +1201,8 @@ stages:
   <<: *test_role_1st_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysfs.yml'
+    JANE_INVENTORY_DIRS: 'common sysfs'
     JANE_INVENTORY_GROUPS: 'debops_service_sysfs'
-    JANE_INVENTORY_HOSTVARS: '/vagrant/lib/tests/inventory/sysfs.json'
     JANE_DIFF_PATTERN: '.*/debops.sysfs/.*'
     JANE_LOG_PATTERN: '\[debops\.sysfs\]'
   tags: [ 'shell', 'vagrant-vm' ]
@@ -1246,8 +1245,8 @@ stages:
   <<: *test_role_3rd_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml ${DEBOPS_PLAYBOOKS}/service/tinc.yml'
+    JANE_INVENTORY_DIRS: 'common tinc/gateway'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown,debops_service_tinc'
-    JANE_INVENTORY_HOSTVARS: '/vagrant/lib/tests/inventory/tinc-gateway.json'
     JANE_DIFF_PATTERN: '.*/debops.tinc/.*'
     JANE_LOG_PATTERN: '\[debops\.tinc\]'
   tags: [ 'shell', 'vagrant-vm' ]

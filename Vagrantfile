@@ -127,6 +127,7 @@ export CI_JOB_NAME="#{ENV['CI_JOB_NAME']}"
 export CI_JOB_STAGE="#{ENV['CI_JOB_STAGE']}"
 export JANE_TEST_PLAY="#{ENV['JANE_TEST_PLAY']}"
 export JANE_FORCE_TESTS="#{ENV['JANE_FORCE_TESTS']}"
+export JANE_INVENTORY_DIRS="#{ENV['JANE_INVENTORY_DIRS']}"
 export JANE_INVENTORY_GROUPS="#{ENV['JANE_INVENTORY_GROUPS']}"
 export JANE_INVENTORY_HOSTVARS="#{ENV['JANE_INVENTORY_HOSTVARS']}"
 export JANE_KEEP_BOX="#{ENV['JANE_KEEP_BOX']}"
@@ -248,11 +249,13 @@ EOF
     jane notify install "Installing Ansible requirements via APT..."
     DEBIAN_FRONTEND=noninteractive apt-get -y \
     --no-install-recommends install \
+        acl \
         apt-transport-https \
         encfs \
         git \
         haveged \
         jo \
+        jq \
         make \
         python-apt \
         python-jinja2 \

@@ -37,18 +37,6 @@
       php__dependent_pools:
         - '{{ librenms__php__dependent_pools }}'
 
-    - role: debops.postgresql
-      tags: [ 'role::postgresql' ]
-      postgresql__dependent_roles:
-        - '{{ etherpad__postgresql__dependent_roles }}'
-      postgresql__dependent_groups:
-        - '{{ etherpad__postgresql__dependent_groups }}'
-      postgresql__dependent_databases:
-        - '{{ etherpad__postgresql__dependent_databases }}'
-      postgresql__dependent_pgpass:
-        - '{{ etherpad__postgresql__dependent_pgpass }}'
-      when: etherpad__database == 'postgres'
-
     - role: debops.nginx
       tags: [ 'role::nginx' ]
       nginx__dependent_servers:

@@ -38,7 +38,8 @@ install_ansible_requirements () {
     sudo apt-get --no-install-recommends -qq -y install git devscripts \
         python-paramiko python-yaml python-jinja2 python-httplib2 \
         cdbs debhelper dpkg-dev fakeroot sshpass python-nose python-passlib \
-        python-setuptools asciidoc xmlto build-essential python-sphinx
+        python-setuptools asciidoc xmlto build-essential python-sphinx \
+        python-crypto lsb-release python-packaging
 
 }
 
