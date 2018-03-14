@@ -43,6 +43,13 @@ Changed
 - [debops.etherpad] The role can now autodetect and use a PostgreSQL database
   as a backend database for Etherpad.
 
+- [debops.pki] The X.509 certificate included in the default ``domain`` PKI
+  realm will now have a SubjectAltName wildcard entry for the host's FQDN. This
+  should allow for easy usage of services related to a particular host in the
+  cluster over encrypted connections, for example host monitoring, service
+  discovery, etc. which can be now published in the DNS zone at
+  ``*.host.example.org`` resource records.
+
 Fixed
 ~~~~~
 
