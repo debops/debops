@@ -2,6 +2,7 @@
 
 from setuptools import setup, find_packages
 import os
+import re
 import subprocess
 
 try:
@@ -37,14 +38,23 @@ except subprocess.CalledProcessError:
     try:
         RELEASE = open('VERSION').read().strip()
     except Exception:
-        RELEASE = '0.0.0'
+        try:
+            with file('CHANGELOG.rst') as changelog:
+                for count, line in enumerate(changelog):
+                    if re.search('^`debops v', line):
+                        RELEASE = line.split()[1].rstrip(b'`_').lstrip(b'v')
+                        break
+            with open('VERSION', 'w') as version_file:
+                version_file.write('{}\n'.format(RELEASE))
+        except Exception:
+            RELEASE = '0.0.0'
 
 try:
     # Symlink the 'ansible/' directory inside of the 'debops/' Python package
     # directory. The files will be included in the package using the
     # MANIFEST.in file. This requires 'python-setuptools' APT package from
     # 'jessie-backports' repository.
-    if os.path.exists('.git') and os.path.isdir('.git'):
+    if not os.path.exists('debops/ansible'):
         os.symlink('../ansible', 'debops/ansible')
     setup(
         name="debops",
