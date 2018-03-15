@@ -47,8 +47,9 @@ Debian
 
   On older Debian releases, you should consider installing Ansible by creating
   a ``.deb`` package from the official :command:`git` repository sources. You
-  can find a :command:`bootstrap-ansible.sh` script which can do this for you
-  automatically in the :ref:`debops.debops` Ansible role.
+  can find a :command:`bootstrap-ansible` script which can do this for you
+  automatically in the :ref:`debops.ansible` Ansible role :file:`files/`
+  subdirectory.
 
 macOS
   The ``debops`` Python package which contains scripts and modules used by the

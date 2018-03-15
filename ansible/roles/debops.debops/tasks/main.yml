@@ -1,21 +1,5 @@
 ---
 
-- name: Make sure Ansible build directory exists
-  file:
-    path: '{{ debops__ansible_git_build_dir }}'
-    state: 'directory'
-    owner: '{{ debops__ansible_git_become_user }}'
-    group: 'root'
-    mode: '0755'
-  when: debops__ansible_git|bool
-
-- name: Bootstrap Ansible from source
-  script: 'script/bootstrap-ansible.sh "{{ debops__ansible_git_branch }}" "{{ debops__ansible_git_build_dir }}"'
-  become_user: '{{ debops__ansible_git_become_user }}'
-  register: debops__register_bootstrap
-  when: debops__ansible_git|bool
-  changed_when: debops__register_bootstrap.stdout != ""
-
 - name: Install required packages
   apt:
     name: '{{ item }}'
@@ -24,7 +8,6 @@
   with_flattened:
     - [ 'git', 'python-pip' ]
     - '{{ debops__base_packages }}'
-    - '{{ debops__ansible_packages }}'
     - '{{ debops__packages }}'
   when: item|d()
 

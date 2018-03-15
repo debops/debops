@@ -24,7 +24,8 @@ Added
 - New DebOps roles:
 
   - :ref:`debops.ansible`: install Ansible on a Debian/Ubuntu host using
-    Ansible.
+    Ansible. The :ref:`debops.debops` role now uses the the new role to install
+    Ansible instead of doing it directly.
 
   - :ref:`debops.apt_mark`: set install state of APT packages (manual/auto) or
     specify that particular packages should be held in their current state.
