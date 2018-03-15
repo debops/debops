@@ -66,6 +66,7 @@ Application services
 These roles manage applications that provide services to other applications and
 are not accessed directly by end users.
 
+- :ref:`debops.ansible`
 - :ref:`debops.apt_cacher_ng`
 - :ref:`debops.debops` - install DebOps on other hosts
 - :ref:`debops.debops_api`

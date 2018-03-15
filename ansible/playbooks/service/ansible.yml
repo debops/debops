@@ -1,8 +1,7 @@
 ---
 
-- name: Install DebOps recursively
-  hosts: [ 'debops_service_debops', 'debops_service_recursively',
-           'debops_recursively' ]
+- name: Install and configure Ansible
+  hosts: [ 'debops_service_ansible' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -18,6 +17,3 @@
 
     - role: debops.ansible
       tags: [ 'role::ansible' ]
-
-    - role: debops.debops
-      tags: [ 'role::debops' ]
