@@ -84,6 +84,17 @@ stages:
 
 # === Ansible roles === [[[1
 
+# --- ansible --- [[[2
+
+'ansible role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ansible.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_ansible'
+    JANE_DIFF_PATTERN: '.*/debops.ansible/.*'
+    JANE_LOG_PATTERN: '\[debops\.ansible\]'
+
+
 # --- apache --- [[[2
 
 'apache role':
