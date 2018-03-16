@@ -2,6 +2,19 @@
 
 # {{ ansible_managed }}
 
+readarray -t tinc__up_pre_hook << EOF
+{% if tinc__up_pre_hook is defined and tinc__up_pre_hook %}
+{{ tinc__up_pre_hook }}
+{% endif %}
+EOF
+
+if [[ "${tinc__up_pre_hook[*]}" ]] ; then
+    for index in "${!tinc__up_pre_hook[@]}" ; do
+        # shellcheck disable=SC2086
+        eval "${tinc__up_pre_hook}"
+    done
+fi
+
 custom_tinc_up="{{ item.value.tinc_up|d() }}"
 
 tinc_mode="{{ item.value.tinc_options.Mode|d() }}"
