@@ -20,9 +20,9 @@ Here are a few services that are available
 
 **System**
 
-+------------+-------+--------+---------------------+-------------------+
-| etckeeper_ | FUSE_ | BTRFS_ | `snapshot snapper`_ | `kernel modules`_ |
-+------------+-------+--------+---------------------+-------------------+
++------------+-------+--------+---------------------+
+| etckeeper_ | FUSE_ | BTRFS_ | `snapshot snapper`_ |
++------------+-------+--------+---------------------+
 
 **Security**
 
@@ -48,7 +48,6 @@ Here are a few services that are available
 .. _FUSE: https://github.com/debops-contrib/ansible-fuse
 .. _BTRFS: https://github.com/debops-contrib/ansible-btrfs
 .. _`snapshot snapper`: https://github.com/debops-contrib/ansible-snapshot_snapper
-.. _`kernel modules`: https://github.com/debops-contrib/ansible-kernel_module
 
 .. _AppArmor: https://github.com/debops-contrib/ansible-apparmor
 .. _Firejail: https://github.com/debops-contrib/ansible-firejail
