@@ -149,9 +149,9 @@ Host provisioning
 Kernel
 ------
 
+- :ref:`debops.kmod`
 - :ref:`debops.sysctl`
 - :ref:`debops.sysfs`
-- ``debops-contrib.kernel_module``
 
 
 Logging

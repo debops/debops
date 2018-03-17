@@ -24,12 +24,15 @@ Added
 - New DebOps roles:
 
   - :ref:`debops.ansible`: install Ansible on a Debian/Ubuntu host using
-    Ansible. The :ref:`debops.debops` role now uses the the new role to install
+    Ansible. The :ref:`debops.debops` role now uses the new role to install
     Ansible instead of doing it directly.
 
   - :ref:`debops.apt_mark`: set install state of APT packages (manual/auto) or
     specify that particular packages should be held in their current state.
     The role is included in the ``common.yml`` playbook.
+
+  - :ref:`debops.kmod`: manage kernel module configuration and module loading
+    at boot time. This role replaces the ``debops-contrib.kernel_module`` role.
 
 Changed
 ~~~~~~~
@@ -67,6 +70,12 @@ Fixed
   are processed in a loop.
 
 .. __: https://github.com/pallets/jinja/issues/659
+
+Removed
+~~~~~~~
+
+- The ``debops-contrib.kernel_module`` Ansible role has been removed; it was
+  replaced by the new :ref:`debops.kmod` Ansible role.
 
 
 `debops v0.7.0`_ - 2018-02-11

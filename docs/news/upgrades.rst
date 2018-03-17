@@ -33,6 +33,10 @@ Role changes
   install Ansible instead of doing it by itself. The relevant code has been
   removed, see the :ref:`debops.ansible` role documentation for new variables.
 
+- The ``debops-contrib.kernel_module`` role has been replaced by the
+  :ref:`debops.kmod` role. All of the variable names have been changed, as well
+  as their usage. See the documentation of the new role for more details.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
