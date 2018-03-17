@@ -32,7 +32,7 @@ parameters:
 
 ``state``
   Optional. Specify the state of the kernel module and its configuration.
-  Multiple entries with the same ``name`` parameter are merged toghether in
+  Multiple entries with the same ``name`` parameter are merged together in
   order of appearance; the ``state`` parameter can affect how the entries are
   merged.
 
@@ -169,7 +169,7 @@ kmod__load
 ----------
 
 The ``kmod__*_load`` list variables can be used to specify which kernel modules
-shoud be loaded at boot time. The configuration is stored in the
+should be loaded at boot time. The configuration is stored in the
 :file:`/etc/modules-load.d/` directory. Each list entry is a YAML dictionary
 with specific parameters:
 
@@ -185,7 +185,7 @@ with specific parameters:
 
 ``state``
   Optional. Specify the state of the kernel module and its configuration.
-  Multiple entries with the same ``name`` parameter are merged toghether in
+  Multiple entries with the same ``name`` parameter are merged together in
   order of appearance; the ``state`` parameter can affect how the entries are
   merged.
 
