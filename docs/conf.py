@@ -61,11 +61,17 @@ html_context = {
     'source_file_to_url_map': edit_url.get_source_file_to_url_map(
         start_dir=os.path.dirname(__file__),
         skip_patterns=[]
-    ),
-    'css_files': [
-        '_static/theme_overrides.css',
-    ]
+    )
 }
+
+
+# Add custom .css and .js files from '_static/' directory in a way compatible
+# with ReadTheDocs.org deployment
+# Source: https://github.com/rtfd/sphinx_rtd_theme/issues/117
+def setup(app):
+    # app.add_javascript("custom.js")
+    app.add_stylesheet("theme_overrides.css")
+
 
 # -- General configuration ------------------------------------------------
 
