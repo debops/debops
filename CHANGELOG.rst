@@ -71,6 +71,12 @@ Fixed
 
 .. __: https://github.com/pallets/jinja/issues/659
 
+Removed
+~~~~~~~
+
+- The ``debops-contrib.kernel_module`` Ansible role has been removed; it was
+  replaced by the new :ref:`debops.kmod` Ansible role.
+
 
 `debops v0.7.0`_ - 2018-02-11
 -----------------------------
