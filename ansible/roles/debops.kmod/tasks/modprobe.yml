@@ -24,7 +24,7 @@
   when: ((kmod__register_module_config_delete is changed or
           kmod__register_module_config_create is changed) and
          module.blacklist is not defined and
-         module.name in kmod__register_modules.stdout_lines and
+         module.name in ansible_local.kmod.modules and
          module.state|d('present') not in [ 'config' ])
 
 - name: Load kernel module if configuration changed
