@@ -34,7 +34,7 @@
 ## Generate keyfile and copy it to the remote system [[[
 
 - name: Generate binary keyfile on the Ansible controller
-  command: dd if={{ cryptsetup__keyfile_source_dev | quote }} of={{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }} bs={{ ((512/8) if (item.key_size|d(cryptsetup__key_size) == "default") else ((item.key_size|d(cryptsetup__key_size))/8)) | int }} count=1 iflag=fullblock
+  shell: head --byte {{ ((512/8) if (item.key_size|d(cryptsetup__key_size) == "default") else ((item.key_size|d(cryptsetup__key_size))/8)) | int }} {{ cryptsetup__keyfile_source_dev | quote }} > {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}
   args:
     creates: '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
   become: False
