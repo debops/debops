@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+# The '/proc/sched_debug' file contains information about all Linux processes,
+# which is accessible even from unprivileged namespaces (eg. unprivileged LXC
+# containers). To protect information leakage about other containers, limit the
+# access to this file to a specific UNIX system group.
+# More details:
+# - https://bugs.launchpad.net/ubuntu/+source/lxc/+bug/1549391
+# - https://www.nccgroup.trust/us/our-research/abusing-privileged-and-unprivileged-linux-containers/
+
+#Type Path              Mode UID  GID        Age Argument
+f     /proc/sched_debug 0440 root {{ proc_hidepid__secure_scheduler_group }} -   -

@@ -43,6 +43,28 @@
          (ansible_distribution in [ 'Ubuntu' ] and
           ansible_distribution_release in [ 'trusty' ]))
 
+- name: Check /proc/sched_debug file attributes
+  stat:
+    path: '/proc/sched_debug'
+  register: proc_hidepid__register_sched
+  when: proc_hidepid__enabled|bool
+
+- name: Generate tmpfiles configuration for securing /proc/sched_debug
+  template:
+    src: 'etc/tmpfiles.d/proc-sched_debug.conf.j2'
+    dest: '/etc/tmpfiles.d/proc-sched_debug.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: proc_hidepid__register_tmpfiles
+  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
+        proc_hidepid__secure_scheduler_enabled|bool
+
+- name: Secure /proc/sched_debug file access
+  command: systemd-tmpfiles --create
+  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
+        proc_hidepid__register_tmpfiles is changed
+
 - name: Create the systemd-logind configuration directory
   file:
     path: '/etc/systemd/system/systemd-logind.service.d'

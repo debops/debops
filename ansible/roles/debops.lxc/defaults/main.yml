@@ -296,6 +296,16 @@ lxc_hidepid_level: '2'
 lxc_hidepid_group: 'procadmins'
 
                                                                    # ]]]
+# .. envvar:: lxc_hidepid_gid [[[
+#
+# The GID of the system group that sees all process information in
+# :file:`/proc`.
+lxc_hidepid_gid: '{{ ansible_local.proc_hidepid.gid
+                     if (ansible_local|d() and ansible_local.proc_hidepid|d() and
+                         ansible_local.proc_hidepid.gid|d())
+                     else "70" }}'
+
+                                                                   # ]]]
 # .. envvar:: lxc_template_config_options [[[
 #
 # Additional LXC configuration added to the container configuration files

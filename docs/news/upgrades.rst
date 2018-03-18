@@ -37,6 +37,27 @@ Role changes
   :ref:`debops.kmod` role. All of the variable names have been changed, as well
   as their usage. See the documentation of the new role for more details.
 
+- The :ref:`debops.proc_hidepid` role was modified to use a static GID ``70``
+  for the ``procadmins`` group to allow synchronization between host and LXC
+  containers on that host. The role will apply changes in the
+  :file:`/etc/fstab` configuration file, but it will not change existing
+  :file:`/proc` mount options. You need to remount the filesystem manually,
+  with a command:
+
+  .. code-block:: console
+
+     ansible all -b -m command -a 'mount -o remount /proc'
+
+  The :file:`/proc` filesystem mounted inside of LXC containers cannot be
+  remounted this way, since it's most likely mounted by the host itself. You
+  will need to check the LXC container configuration in the
+  :file:`/var/lib/lxc/*/config` files and update the mount point options to use
+  the new static GID. Restart the LXC container afterwards to remount the
+  :file:`/proc` filesystem.
+
+  You will also need to restart all services that rely on the ``procadmins``
+  group, for example :command:`snmpd`, to activate the new GID.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -52,8 +73,8 @@ Inventory variable changes
   +------------------------------------+------------------------------------------+---------------+
 
 
-v0.7.0
-------
+v0.7.0 (2018-02-11)
+-------------------
 
 This is mostly a maintenance release, dedicated to reorganization of the DebOps
 :command:`git` repository and expanding documentation.
@@ -131,8 +152,8 @@ Inventory variable changes
   parameters, read the documentation of the new role for details.
 
 
-v0.6.0
-------
+v0.6.0 (2017-10-21)
+-------------------
 
 This is an initial release based off of the previous DebOps roles, playbooks
 and tools located in separate :command:`git` repositories. There should be no

@@ -57,6 +57,11 @@ Changed
   discovery, etc. which can be now published in the DNS zone at
   ``*.host.example.org`` resource records.
 
+- [debops.proc_hidepid], [debops.lxc] The roles now use a static GID ``70`` for
+  the ``procadmins`` group to synchronize the access permissions on a host and
+  inside the LXC containers. You will need to remount the filesystems, restart
+  services and LXC containers that rely on this functionality.
+
 Fixed
 ~~~~~
 
