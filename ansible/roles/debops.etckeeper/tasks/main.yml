@@ -1,22 +1,26 @@
 ---
 # vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Assert etckeeper__vcs is valid
-  assert:
-    that:
-      - etckeeper__vcs in etckeeper__supported_vcs
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
-## Saving uncommitted changes in /etc/ if etckeeper is already configured [[[
-- name: Check whether /etc/ contains commitable changes
-  command: 'etckeeper unclean'
-  register: etckeeper__register_unclean_before
-  failed_when: False
-  changed_when: False
+- name: Save etckeeper local facts
+  template:
+    src: 'etc/ansible/facts.d/etckeeper.fact.j2'
+    dest: '/etc/ansible/facts.d/etckeeper.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: etckeeper__register_facts
 
-- name: Saving uncommmitted changes in /etc
-  command: "etckeeper commit 'Ansible role {{ role_path | basename }}: saving uncommitted changes in /etc'"
-  when: etckeeper__register_unclean_before.rc == 0
-## ]]]
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: etckeeper__register_facts is changed
 
 ## Diverting the main configuration of etckeeper away leaves the VCS
 ## uninitiated until it has been fully configured.
@@ -37,21 +41,6 @@
     - '{{ etckeeper__vcs_command_to_package_mapping[etckeeper__vcs]|d(etckeeper__vcs) }}'
     - 'etckeeper'
 
-## The main configuration file provided installed by your distribution is
-## expected to be already configured in regards to the used package manager, so
-## this value will be preferred.
-- name: Read HIGHLEVEL_PACKAGE_MANAGER configured by the distribution
-  shell: . /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${HIGHLEVEL_PACKAGE_MANAGER}
-  changed_when: False
-  failed_when: False
-  register: etckeeper__register_highlevel_package_manager
-
-- name: Read LOWLEVEL_PACKAGE_MANAGER configured by the distribution
-  shell: . /etc/etckeeper/etckeeper.conf.dpkg-divert && echo ${LOWLEVEL_PACKAGE_MANAGER}
-  changed_when: False
-  failed_when: False
-  register: etckeeper__register_lowlevel_package_manager
-
 - name: Create etckeeper configuration
   template:
     src: 'etc/etckeeper/etckeeper.conf.j2'
@@ -59,12 +48,15 @@
     mode: 0644
     owner: 'root'
     group: 'root'
+  register: etckeeper__register_config
+  notify: [ 'Commit changes in etckeeper' ]
 
 - name: Initial VCS
   command: etckeeper init
   args:
     creates: '/etc/.etckeeper'
   register: etckeeper__register_init
+  notify: [ 'Commit changes in etckeeper' ]
 
 - name: Add entries to /etc/.gitignore
   blockinfile:
@@ -95,6 +87,7 @@
     mode: 0644
     owner: 'root'
     group: 'root'
+  register: etckeeper__register_gitattributes
   when: (etckeeper__vcs == 'git')
 
 - name: Set repository permissions
@@ -143,20 +136,11 @@
     - etckeeper__register_gitignore|changed
   changed_when: etckeeper__register_git_rm_cached_ignored_files.stdout
 
-- name: Create root commit
-  command: etckeeper commit 'Initial commit created by Ansible.'
-  when: etckeeper__register_init|changed
-
-## Saving uncommitted changes in /etc/ after /etc/.gitignore modification [[[
-- name: Check whether /etc/ contains uncommitted changes
-  command: 'etckeeper unclean'
-  register: etckeeper__register_unclean_after
-  failed_when: etckeeper__register_unclean_after.rc > 1
-  changed_when: False
-
-- name: Saving uncommitted changes in /etc after /etc/.gitignore modification
-  command: "etckeeper commit 'Ansible role {{ role_path | basename }}: saving uncommitted changes in /etc/ after /etc/.gitignore modification'"
-  when:
-    - etckeeper__register_unclean_after.rc == 0
-    - etckeeper__vcs == "git"
-## ]]]
+- name: Commit changes in configuration
+  command: etckeeper commit '{{ etckeeper__commit_message_update
+                                if etckeeper__installed|bool
+                                else etckeeper__commit_message_init }}'
+  when: etckeeper__register_init is changed or
+        etckeeper__register_config is changed or
+        etckeeper__register_gitignore is changed or
+        etckeeper__register_gitattributes is changed

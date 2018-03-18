@@ -10,6 +10,14 @@ Initial configuration
 By default :command:`git` is used as VCS. This can be changed by the inventory
 variables :envvar:`etckeeper__vcs`.
 
+The role is designed with :command:`etckeeper` being already installed on
+a host in mind. This can be done for example via Debian Preseeding or LXC
+template installing and pre-configuring :command:`etckeeper`; the role will
+keep the already existing configuration without any changes if the variables
+are not overwritten through the Ansible inventory. Any changes in the
+:file:`/etc/`` directory will be automatically committed by Ansible local facts
+before Ansible role execution.
+
 Example inventory
 -----------------
 

@@ -1,0 +1,6 @@
+---
+
+# This handler is used at the end of the playbook to commit any changes done
+# after the 'debops.etckeeper' role
+- name: Commit changes in etckeeper
+  shell: etckeeper unclean && etckeeper commit '{{ etckeeper__commit_message_update }}' || true
