@@ -34,6 +34,9 @@ Added
   - :ref:`debops.kmod`: manage kernel module configuration and module loading
     at boot time. This role replaces the ``debops-contrib.kernel_module`` role.
 
+  - The ``debops-contrib.etckeeper`` role has been integrated into DebOps as
+    :ref:`debops.etckeeper`.
+
 Changed
 ~~~~~~~
 

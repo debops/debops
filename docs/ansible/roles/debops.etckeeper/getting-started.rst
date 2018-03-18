@@ -1,8 +1,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -27,16 +25,11 @@ In Ansible's inventory.
 Example playbook
 ----------------
 
-Here's an example playbook that uses the ``debops-contrib.etckeeper`` role:
+Here's an example playbook that uses the ``debops.etckeeper`` role:
 
-.. literalinclude:: playbooks/etckeeper.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/etckeeper.yml
    :language: yaml
 
-This playbooks is shipped with this role under
-:file:`./docs/playbooks/etckeeper.yml` from which you can symlink it to your
-playbook directory.
-In case you use multiple `DebOps Contrib`_ roles, consider using the
-`DebOps Contrib playbooks`_.
 
 Ansible tags
 ------------

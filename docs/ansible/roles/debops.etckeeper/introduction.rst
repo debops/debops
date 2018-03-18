@@ -1,7 +1,7 @@
 Introduction
 ============
 
-``debops-contrib.etckeeper`` will install etckeeper_ which puts :file:`/etc`
+``debops.etckeeper`` will install etckeeper_ which puts :file:`/etc`
 under version control. To do this it hooks into the package management and
 from now on automatically commit changes to a local git repository under
 :file:`/etc/.git`.
@@ -16,7 +16,7 @@ This role requires at least Ansible ``v2.1.3``. To install it, run:
 
 .. code-block:: console
 
-    ansible-galaxy install debops-contrib.etckeeper
+    ansible-galaxy install debops.etckeeper
 
 ..
  Local Variables:

@@ -1,7 +1,7 @@
-.. _debops-contrib.etckeeper:
+.. _debops.etckeeper:
 
-Ansible role: debops-contrib.etckeeper
-======================================
+debops.etckeeper
+================
 
 .. toctree::
    :maxdepth: 2
@@ -10,7 +10,6 @@ Ansible role: debops-contrib.etckeeper
    getting-started
    defaults
    copyright
-   changelog
 
 ..
  Local Variables:
