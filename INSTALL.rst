@@ -153,7 +153,7 @@ DebOps monorepo
 
 If you installed DebOps using a Python package equal or newer than ``0.7.0``,
 the installation should include a set of DebOps playbooks and roles located in
-the ``debops`` Python pacakge directory. The scripts should automatically find
+the ``debops`` Python package directory. The scripts should automatically find
 them and use them as necessary.
 
 If you installed an older DebOps release, or you want to use the latest changes
