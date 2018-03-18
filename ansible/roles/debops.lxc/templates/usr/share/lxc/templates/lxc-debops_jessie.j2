@@ -174,10 +174,15 @@ EOF
 
     HIDEPID_SETUP="{{ lxc_hidepid | bool | lower }}"
     HIDEPID_GROUP="{{ lxc_hidepid_group }}"
+    HIDEPID_GID="{{ lxc_hidepid_gid }}"
 
     if [ "${HIDEPID_SETUP}" = "true" ] ; then
         # Create system group for /proc access
-        chroot "$rootfs" addgroup --system "${HIDEPID_GROUP}"
+        if [ -n "${HIDEPID_GID}" ] ; then
+            chroot "$rootfs" addgroup --system --gid "${HIDEPID_GID}" "${HIDEPID_GROUP}"
+        else
+            chroot "$rootfs" addgroup --system "${HIDEPID_GROUP}"
+        fi
     fi
 
     # Unlock service startup
