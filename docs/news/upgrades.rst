@@ -52,8 +52,8 @@ Inventory variable changes
   +------------------------------------+------------------------------------------+---------------+
 
 
-v0.7.0
-------
+v0.7.0 (2018-02-11)
+-------------------
 
 This is mostly a maintenance release, dedicated to reorganization of the DebOps
 :command:`git` repository and expanding documentation.
@@ -131,8 +131,8 @@ Inventory variable changes
   parameters, read the documentation of the new role for details.
 
 
-v0.6.0
-------
+v0.6.0 (2017-10-21)
+-------------------
 
 This is an initial release based off of the previous DebOps roles, playbooks
 and tools located in separate :command:`git` repositories. There should be no
