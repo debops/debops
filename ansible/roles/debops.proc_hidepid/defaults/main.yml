@@ -76,3 +76,24 @@ proc_hidepid__group: 'procadmins'
 proc_hidepid__gid: '70'
                                                                    # ]]]
                                                                    # ]]]
+# The ``/proc/sched_debug`` options [[[
+# -------------------------------------
+
+# .. envvar:: proc_hidepid__secure_scheduler_enabled [[[
+#
+# Enable or disable file attributes change of the :file:`/proc/sched_debug`
+# file to not be world-readable. Note: the ``root`` account in privileged LXC
+# containers can read the file and change its permissions at will.
+proc_hidepid__secure_scheduler_enabled: '{{ True
+                                            if (proc_hidepid__register_sched.stat.exists|bool and
+                                                proc_hidepid__register_sched.stat.uid == 0)
+                                            else False }}'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__secure_scheduler_group [[[
+#
+# Name of the UNIX system group which will be able to read the contents of the
+# :file:`/proc/sched_debug` file.
+proc_hidepid__secure_scheduler_group: '{{ proc_hidepid__group }}'
+                                                                   # ]]]
+                                                                   # ]]]
