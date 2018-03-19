@@ -35,7 +35,8 @@ Added
     at boot time. This role replaces the ``debops-contrib.kernel_module`` role.
 
   - The ``debops-contrib.etckeeper`` role has been integrated into DebOps as
-    :ref:`debops.etckeeper`.
+    :ref:`debops.etckeeper`. The new role is included in the ``common.yml``
+    playbook.
 
 Changed
 ~~~~~~~

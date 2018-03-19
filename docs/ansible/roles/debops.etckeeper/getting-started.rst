@@ -18,17 +18,20 @@ are not overwritten through the Ansible inventory. Any changes in the
 :file:`/etc/`` directory will be automatically committed by Ansible local facts
 before Ansible role execution.
 
+
 Example inventory
 -----------------
 
-.. code-block:: YAML
+The ``debops.etckeeper`` role is part of the default DebOps playbook an run on
+all hosts which are part of the ``[debops_all_hosts]`` group. To use this role
+with DebOps it's therefore enough to add your host to the mentioned host group
+(which most likely it is already):
 
-   ## If you don’t want to track hashed passwords.
-   etckeeper__ignore_host_group_list:
-     - 'shadow'
-     - 'shadow-'
+.. code-block:: none
 
-In Ansible's inventory.
+   [debops_all_hosts]
+   hostname
+
 
 Example playbook
 ----------------
