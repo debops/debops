@@ -7,8 +7,8 @@ Getting started
 Initial configuration
 ---------------------
 
-By default :command:`git` is used as VCS. This can be changed by the inventory
-variables :envvar:`etckeeper__vcs`.
+By default :command:`git` is used as VCS. This can be changed via the
+:envvar:`etckeeper__vcs` variable through Ansible inventory.
 
 The role is designed with :command:`etckeeper` being already installed on
 a host in mind. This can be done for example via Debian Preseeding or LXC
@@ -52,6 +52,3 @@ Available role tags:
 ``role::etckeeper``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``role::etckeeper:vcs_config``
-  Run tasks related to configuring VCS options.

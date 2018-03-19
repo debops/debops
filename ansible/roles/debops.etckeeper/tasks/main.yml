@@ -1,5 +1,4 @@
 ---
-# vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -25,45 +24,46 @@
 ## Diverting the main configuration of etckeeper away leaves the VCS
 ## uninitiated until it has been fully configured.
 - name: Divert original configuration under /etc
-  command: dpkg-divert --quiet --local --divert "{{ item }}.dpkg-divert" --rename "{{ item }}"
+  command: dpkg-divert --quiet --local
+           --divert "/etc/etckeeper/etckeeper.conf.dpkg-divert"
+           --rename "/etc/etckeeper/etckeeper.conf"
   args:
-    creates: '{{ item }}.dpkg-divert'
-  when: (ansible_pkg_mgr == 'apt')
-  with_items: [ '/etc/etckeeper/etckeeper.conf' ]
+    creates: '/etc/etckeeper/etckeeper.conf.dpkg-divert'
+  when: etckeeper__enabled|bool and ansible_pkg_mgr == 'apt'
 
 - name: Install required packages
-  apt:
+  package:
     name: '{{ item }}'
     state: 'present'
-    install_recommends: False
-  when: (ansible_pkg_mgr == 'apt')
   with_flattened:
-    - '{{ etckeeper__vcs_command_to_package_mapping[etckeeper__vcs]|d(etckeeper__vcs) }}'
-    - 'etckeeper'
+    - '{{ etckeeper__base_packages }}'
+    - '{{ etckeeper__packages }}'
+  when: etckeeper__enabled|bool
 
 - name: Create etckeeper configuration
   template:
     src: 'etc/etckeeper/etckeeper.conf.j2'
     dest: '/etc/etckeeper/etckeeper.conf'
-    mode: 0644
     owner: 'root'
     group: 'root'
+    mode: '0644'
   register: etckeeper__register_config
   notify: [ 'Commit changes in etckeeper' ]
+  when: etckeeper__enabled|bool
 
-- name: Initial VCS
+- name: Initialize VCS in /etc
   command: etckeeper init
   args:
     creates: '/etc/.etckeeper'
   register: etckeeper__register_init
   notify: [ 'Commit changes in etckeeper' ]
+  when: etckeeper__enabled|bool
 
 - name: Add entries to /etc/.gitignore
   blockinfile:
     path: '/etc/.gitignore'
     block: |
-      {%
-        for item in
+      {% for item in
           etckeeper__ignore_role_list | d() | list
           + etckeeper__ignore_list | d() | list
           + etckeeper__ignore_host_group_list | d() | list
@@ -73,33 +73,33 @@
       {% endfor %}
     insertbefore: 'BOF'
     marker: '# {mark} section managed by Ansible'
-    create: Yes
-    mode: 0600
-    owner: root
-    group: root
+    create: True
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
   register: etckeeper__register_gitignore
-  when: (etckeeper__vcs == 'git')
+  notify: [ 'Commit changes in etckeeper' ]
+  when: etckeeper__enabled|bool and etckeeper__vcs == 'git'
 
 - name: Install /etc/.gitattributes configuration
   template:
     src: 'etc/gitattributes.j2'
     dest: '/etc/.gitattributes'
-    mode: 0644
     owner: 'root'
     group: 'root'
+    mode: '0644'
   register: etckeeper__register_gitattributes
-  when: (etckeeper__vcs == 'git')
+  when: etckeeper__enabled|bool and etckeeper__vcs == 'git'
 
 - name: Set repository permissions
   file:
-    state: 'directory'
     path: '/etc/.git'
-    mode: '{{ etckeeper__repository_permissions|d("0700") }}'
+    state: 'directory'
     owner: 'root'
     group: '{{ etckeeper__repository_group|d("root") }}'
-  when: (etckeeper__vcs == 'git')
+    mode: '{{ etckeeper__repository_permissions|d("0700") }}'
+  when: etckeeper__enabled|bool and etckeeper__vcs == 'git'
 
-## Set VCS user, email used for auto committing changes [[[
 - name: Set user, email for the git repository
   ini_file:
     dest: '/etc/.git/config'
@@ -109,38 +109,29 @@
   with_dict:
     name: '{{ etckeeper__vcs_user }}'
     email: '{{ etckeeper__vcs_email }}'
-  when: (etckeeper__vcs == 'git' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
-  tags: [ 'role::etckeeper:vcs_config' ]
+  when: etckeeper__enabled|bool and etckeeper__vcs == 'git' and
+        etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
 
-- name: Set user, email for the bzr repository
-  command: etckeeper vcs whoami '{{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'
-  when: (etckeeper__vcs == 'bzr' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
-  tags: [ 'role::etckeeper:vcs_config' ]
-
-- name: Set user, email for the darcs repository
-  command: etckeeper vcs setpref author '{{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'
-  when: (etckeeper__vcs == 'darcs' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
-  tags: [ 'role::etckeeper:vcs_config' ]
-
-- name: Set user, email for the hg repository
-  command: "etckeeper vcs --config 'ui.username={{ etckeeper__vcs_user }} <{{ etckeeper__vcs_email }}>'"
-  when: (etckeeper__vcs == 'hg' and etckeeper__vcs_user|d() and etckeeper__vcs_email|d())
-  tags: [ 'role::etckeeper:vcs_config' ]
-## ]]]
+- name: Configure other VCS software
+  include_tasks: 'other_vcs.yml'
+  when: etckeeper__enabled|bool and etckeeper__vcs != 'git' and
+        etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
 
 - name: Unstage and remove ignored files from Git index
   shell: etckeeper vcs ls-files -i --exclude-standard -z | xargs -0 --no-run-if-empty etckeeper vcs rm --cached --
   register: etckeeper__register_git_rm_cached_ignored_files
   when:
+    - etckeeper__enabled|bool
     - etckeeper__vcs == "git"
-    - etckeeper__register_gitignore|changed
+    - etckeeper__register_gitignore is changed
   changed_when: etckeeper__register_git_rm_cached_ignored_files.stdout
 
 - name: Commit changes in configuration
   command: etckeeper commit '{{ etckeeper__commit_message_update
                                 if etckeeper__installed|bool
                                 else etckeeper__commit_message_init }}'
-  when: etckeeper__register_init is changed or
-        etckeeper__register_config is changed or
-        etckeeper__register_gitignore is changed or
-        etckeeper__register_gitattributes is changed
+  when: (etckeeper__enabled|bool and
+         (etckeeper__register_init is changed or
+          etckeeper__register_config is changed or
+          etckeeper__register_gitignore is changed or
+          etckeeper__register_gitattributes is changed))

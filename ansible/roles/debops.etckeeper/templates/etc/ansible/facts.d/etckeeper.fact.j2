@@ -22,14 +22,14 @@ config_file = '/etc/etckeeper/etckeeper.conf'
 output = loads('''{{ {"installed": False,
                       "commit": False,
                       "configured": True,
-                      "enabled": True
-                     } | to_json }}''')
+                      "enabled": etckeeper__enabled|bool
+                     } | to_nice_json }}''')
 
 commit_msg = loads('''{{ etckeeper__commit_message_fact | to_json }}''')
 
 output['installed'] = cmd_exists('etckeeper')
 
-if output['installed'] is True:
+if output['enabled'] is True and output['installed'] is True:
     try:
         with open(os.devnull, 'w') as devnull:
             etckeeper_unclean = subprocess.Popen(
