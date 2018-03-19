@@ -59,20 +59,24 @@
   notify: [ 'Commit changes in etckeeper' ]
   when: etckeeper__enabled|bool
 
-- name: Add entries to /etc/.gitignore
+- name: Manage entries in /etc/.gitignore
   blockinfile:
     path: '/etc/.gitignore'
     block: |
-      {% for item in
-          etckeeper__ignore_role_list | d() | list
-          + etckeeper__ignore_list | d() | list
-          + etckeeper__ignore_host_group_list | d() | list
-          + etckeeper__ignore_host_list | d() | list
-      %}
-      {{ item }}
+      {% for item in etckeeper__combined_gitignore | parse_kv_items %}
+      {%   if (item.name|d() and item.state|d('present') != 'absent') %}
+      {%     if item.comment|d() %}
+
+      {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+      {%     endif %}
+      {{ (item.ignore | d(item.name)) | regex_replace('\n$','') }}
+      {%     if item.comment|d() %}
+
+      {%     endif %}
+      {%   endif %}
       {% endfor %}
     insertbefore: 'BOF'
-    marker: '# {mark} section managed by Ansible'
+    marker: '{{ etckeeper__block_marker }}'
     create: True
     owner: 'root'
     group: 'root'

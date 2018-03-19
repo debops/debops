@@ -21,6 +21,7 @@ Ansible facts are gathered.
 
    getting-started
    defaults
+   defaults-detailed
 
 
 Copyright

@@ -72,6 +72,11 @@ Inventory variable changes
   | ``netbox__config_netbox_password`` | :envvar:`netbox__config_napalm_password` | No            |
   +------------------------------------+------------------------------------------+---------------+
 
+- The variables that specify files to ignore in the new :ref:`debops.etckeeper`
+  role have been renamed from their old versions in
+  ``debops-contrib.etckeeper`` role, and their value format changed as well.
+  See the documentation of the new role for details.
+
 
 v0.7.0 (2018-02-11)
 -------------------

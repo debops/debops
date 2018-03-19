@@ -104,41 +104,76 @@ etckeeper__commit_message_fact: 'Committed by Ansible local facts'
 # Version control ignore list [[[
 # -------------------------------
 
-# .. envvar:: etckeeper__ignore_role_list [[[
+# These list variables define what paths in :file:`/etc` directory should be
+# ignored by :program:`etckeeper`. They will be added in the
+# :file:`/etc/.gitignore` file. See :ref:`etckeeper__ref_gitignore` for more
+# details.
+
+# .. envvar:: etckeeper__block_marker [[[
 #
-# Role defaults list of files and directories which should not be kept under version control.
-etckeeper__ignore_role_list:
-  ## There is no benefit in tracking Tor keys and it is a potential security vulnerability.
-  - 'tor/keys/'
-
-  ## Same with SSH host keys.
-  - 'ssh/ssh_host_*_key'
-
-  - 'X11/xorg.conf.backup'
-
-  ## Files are generated and managed by libvirt and it is believed that there
-  ## is very little benefit in tracking these files.
-  - 'apparmor.d/libvirt/*.files'
-
-  - 'zfs/zpool.cache'
+# The string that marks the beginning and end of the section in the
+# :file:`.gitignore` file managed by the ``debops.etckeeper` role. It shouldn't
+# be changed once deployed, the ``{mark}`` string is required.
+etckeeper__block_marker: '# {mark} section managed by debops.etckeeper Ansible role'
 
                                                                    # ]]]
-# .. envvar:: etckeeper__ignore_list [[[
+# .. envvar:: etckeeper__default_gitignore [[[
 #
-# Global list of files and directories which should not be kept under version control.
-etckeeper__ignore_list: []
+# The default list of :file:`.gitignore` paths defined by the role.
+etckeeper__default_gitignore:
+
+  - name: 'tor-keys'
+    comment: |
+      There is no benefit in tracking Tor keys and it is a potential security
+      vulnerability.
+    ignore: 'tor/keys/'
+
+  - name: 'ssh-host-keys'
+    comment: 'No need to track the SSH host keys'
+    ignore: 'ssh/ssh_host_*_key'
+
+  - name: 'xorg-conf-backup'
+    ignore: 'X11/xorg.conf.backup'
+
+  - name: 'apparmor-libvirt'
+    comment: |
+      Files are generated and managed by libvirt and it is believed that there
+      is very little benefit in tracking these files.
+    ignore: 'apparmor.d/libvirt/*.files'
+
+  - name: 'zfs-zpool-cache'
+    ignore: 'zfs/zpool.cache'
 
                                                                    # ]]]
-# .. envvar:: etckeeper__ignore_host_group_list [[[
+# .. envvar:: etckeeper__gitignore [[[
 #
-# Host group list of files and directories which should not be kept under version control.
-etckeeper__ignore_host_group_list: []
+# List of :file:`.gitignore` paths which should be ignored on all hosts in the
+# Ansible inventory.
+etckeeper__gitignore: []
 
                                                                    # ]]]
-# .. envvar:: etckeeper__ignore_host_list [[[
+# .. envvar:: etckeeper__group_gitignore [[[
 #
-# Host list of files and directories which should not be kept under version control.
-etckeeper__ignore_host_list: []
+# List of :file:`.gitignore` paths which should be ignored on hosts in
+# a specific Ansible inventory group.
+etckeeper__group_gitignore: []
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__host_gitignore [[[
+#
+# List of :file:`.gitignore` paths which should be ignored on specific hosts in
+# the Ansible inventory.
+etckeeper__host_gitignore: []
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__combined_gitignore [[[
+#
+# List which combines all of the :file:`.gitignore` entries together and is
+# used in the role tasks and templates.
+etckeeper__combined_gitignore: '{{ etckeeper__default_gitignore
+                                   + etckeeper__gitignore
+                                   + etckeeper__group_gitignore
+                                   + etckeeper__host_gitignore }}'
                                                                    # ]]]
                                                                    # ]]]
 # Version control options [[[
