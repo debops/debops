@@ -86,9 +86,11 @@ MACs {{ ([ sshd__tpl_macs|first ] + sshd__macs_additional) | unique | join(",") 
 MACs {{ sshd__tpl_macs | join(",") }}
 
 {% endif %}
+{% if sshd__register_version.stdout | version_compare('7.5', '<') %}
 # Privilege Separation is turned on for security
 UsePrivilegeSeparation {{ sshd__privilege_separation }}
 
+{% endif %}
 {% if sshd__register_version.stdout | version_compare('7.4', '<') %}
 # Lifetime and size of ephemeral version 1 server key
 KeyRegenerationInterval 3600
