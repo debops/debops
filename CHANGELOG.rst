@@ -62,6 +62,10 @@ Changed
   inside the LXC containers. You will need to remount the filesystems, restart
   services and LXC containers that rely on this functionality.
 
+- [debops.postfix] The role will allow TLSv1 SMTP connections by default. This
+  is done for backwards compatibility with older, third-party MTAs that don't
+  support newer protocols.
+
 Fixed
 ~~~~~
 
