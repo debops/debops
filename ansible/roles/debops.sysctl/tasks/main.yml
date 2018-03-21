@@ -57,9 +57,12 @@
   check_mode: False
 
 - name: Apply kernel parameters if they were modified
-  command: '{{ "sysctl --system"
-               if (sysctl__register_system.stdout != "")
-               else ("sysctl -e -p " + sysctl__config_file) }}'
+  shell: |
+    {% if (sysctl__register_system.stdout != '') %}
+    sysctl --system
+    {% else %}
+    sysctl -e -p $(find /etc/sysctl.d -mindepth 1 -maxdepth 1 -name '*.conf' -print0 | sort -z | xargs -r0) /etc/sysctl.conf
+    {% endif %}
   when: sysctl__register_config_created is changed or
         sysctl__register_config_removed is changed
 
