@@ -1,8 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# debops.sysctl default variables [[[
-# ===================================
+# debops.sysctl default variables
+# ===============================
 
 # .. contents:: Sections
 #    :local:
@@ -69,25 +69,6 @@ sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base|int *
                                    | round | int }}'
                                                                    # ]]]
                                                                    # ]]]
-# Paging and swap control [[[
-# ---------------------------
-
-# .. envvar:: sysctl__swappiness [[[
-#
-# How aggressively the kernel swaps out anonymous memory relative to pagecache
-# and other caches. Increasing the value increases the amount of swapping.
-# Can be set to values between 0 and 100 inclusive.
-sysctl__swappiness: 60
-
-                                                                   # ]]]
-# .. envvar:: sysctl__vfs_cache_pressure [[[
-#
-# Tendency of the kernel to reclaim the memory which is used for caching of VFS
-# caches, versus pagecache and swap. Increasing this value increases the rate
-# at which VFS caches are reclaimed.
-sysctl__vfs_cache_pressure: 100
-                                                                   # ]]]
-                                                                   # ]]]
 # Hardening [[[
 # -------------
 
@@ -140,12 +121,18 @@ sysctl__default_parameters:
         value: '{{ sysctl__shared_memory_shmall }}'
 
       - name: 'vm.swappiness'
-        value: '{{ sysctl__swappiness }}'
-        comment: 'How aggressively the kernel swaps out anonymous memory relative to pagecache and other caches.'
+        comment: |
+          How aggressively the kernel swaps out anonymous memory relative to
+          pagecache and other caches. Increasing the value increases the amount
+          of swapping. Can be set to values between 0 and 100 inclusive.
+        value: 60
 
       - name: 'vm.vfs_cache_pressure'
-        value: '{{ sysctl__vfs_cache_pressure }}'
-        comment: 'Tendency of the kernel to reclaim the memory which is used for caching of VFS caches, versus pagecache and swap.'
+        comment: |
+          Tendency of the kernel to reclaim the memory which is used for caching of VFS
+          caches, versus pagecache and swap. Increasing this value increases the rate
+          at which VFS caches are reclaimed.
+        value: 100
 
   - name: 'network'
     weight: 20
@@ -153,13 +140,12 @@ sysctl__default_parameters:
 
       - name: 'net.ipv4.ip_forward'
         value: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary(1, 0) }}'
-        comment: |
-          Enable/Disable IPv4 traffic forwarding.
+        comment: 'Enable or disable IPv4 traffic forwarding'
         state: 'present'
 
       - name: 'net.ipv6.conf.all.forwarding'
         value: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary(1, 0) }}'
-        comment: 'Enable/Disable IPv6 traffic forwarding.'
+        comment: 'Enable or disable IPv6 traffic forwarding'
         state: 'present'
 
       - name: 'net.ipv6.conf.all.accept_ra'
@@ -186,14 +172,16 @@ sysctl__default_parameters:
         value: 1
         comment: |
           Reduce the surface on SMURF attacks.
-          Make sure to ignore ECHO broadcasts, which are only required in broad network analysis.
+          Make sure to ignore ECHO broadcasts, which are only required in broad
+          network analysis.
         state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.icmp_ignore_bogus_error_responses'
         value: 1
         comment: |
           Do not log bogus ICMP error responses.
-          Nobody would want to accept bogus error responses, so we can safely ignore them.
+          Nobody would want to accept bogus error responses, so we can safely
+          ignore them.
         state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.icmp_ratelimit'
@@ -205,7 +193,8 @@ sysctl__default_parameters:
         value: 88089
         comment: |
           Adjust the ICMP ratelimit to include ping, dst unreachable,
-          source quench, ime exceed, param problem, timestamp reply, information reply
+          source quench, ime exceed, param problem, timestamp reply,
+          information reply
         state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv6.conf.all.disable_ipv6'
@@ -228,15 +217,16 @@ sysctl__default_parameters:
       - name: 'net.ipv4.conf.all.arp_announce'
         value: 2
         comment: |
-          Define mode for sending replies in response to received ARP requests that
-          resolve local target IP addresses
+          Define mode for sending replies in response to received ARP requests
+          that resolve local target IP addresses
         state: '{{ sysctl__hardening_experimental_enabled|bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.tcp_rfc1337'
         value: 1
         comment: 'RFC 1337 fix F1.'
         state: '{{ (sysctl__hardening_enabled|bool and
-                    not (ansible_virtualization_role == "guest" and ansible_virtualization_type == "openvz"))
+                    not (ansible_virtualization_role == "guest" and
+                         ansible_virtualization_type == "openvz"))
                   | ternary("present", "absent") }}'
 
                                                                    # ]]]
@@ -259,14 +249,23 @@ sysctl__group_parameters: []
 sysctl__host_parameters: []
 
                                                                    # ]]]
+# .. envvar:: sysctl__dependent_parameters [[[
+#
+# Kernel parameters defined by other Ansible roles via role default variables.
+# These parameters are not tracked by the role, it's best to create
+# configuration files with "weight" number > 50 to ensure that the desired
+# parameters are correctly overridden by :program:`sysctl` command.
+sysctl__dependent_parameters: []
+
+                                                                   # ]]]
 # .. envvar:: sysctl__combined_parameters [[[
 #
 # Sysctl configuration file path where all kernel parameters will be configured
 # by ``debops.sysctl``.
 sysctl__combined_parameters: '{{ sysctl__default_parameters
+                                 + sysctl__dependent_parameters
                                  + sysctl__parameters
                                  + sysctl__group_parameters
                                  + sysctl__host_parameters }}'
-                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
