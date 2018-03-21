@@ -17,6 +17,8 @@
     state: '{{ "present" if (apache__deploy_state == "present") else "absent" }}'
   with_flattened:
     - '{{ apache__packages }}'
+    - '{{ apache__group_packages }}'
+    - '{{ apache__host_packages }}'
     - '{{ apache__dependent_packages }}'
 
 # Manage Apache modules [[[1
