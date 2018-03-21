@@ -10,6 +10,41 @@ them.
    :depth: 1
 
 
+.. _sysctl__ref_writable:
+
+sysctl__writable
+----------------
+
+Certain parts of the :man:`proc(5)` filesystem can be mounted with read-only
+permissions to limit privileges in certain contexts, like unprivileged
+containers. Usually the :file:`/proc/sys/` filesystem is bind-mounted as
+read-only and specific paths inside which are correctly namespaced by the
+kernel, for example :file:`/proc/sys/net/` directory, are bind-mounted with
+read-write permissions.
+
+When the :program:`sysctl` command tries to modify kernel parameters in
+read-only path, it returns with an error. Since the ``debops.sysctl`` calls the
+:program:`sysctl` command directly, in such case the playbook execution will
+stop and users will be forced to manually recover from the error.
+
+To avoid this, the role checks via Ansible local facts, what paths in
+:file:`/proc/sys/` directory are writable, and only creates configuration
+entries for the paths that can be modified in the current context. Any
+parameters that cannot modify kernel variables will be automatically commented
+out with additional comment marking that parameter as read-only.
+
+This mechanism is controlled by the :envvar:`sysctl__writable` default
+variable. It contains a list of paths in the :file:`/proc/sys/` directory which
+can be written to, for example:
+
+.. code-block:: yaml
+
+   sysctl__writable: [ 'net', 'fs.nfs', 'kernel' ]
+
+The path elements need to be separated by a dot (``.``) instead of a slash
+(``/``) to be correctly used by the role.
+
+
 .. _sysctl__ref_parameters:
 
 sysctl__parameters

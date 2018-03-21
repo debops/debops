@@ -10,19 +10,27 @@
 # .. include:: ../../../includes/global.rst
 
 
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: sysctl__writable [[[
+#
+# List of paths in :file:`/proc/sys/` directory that are considered writable in
+# the current namespace (host, VM, container). The path elements need to be
+# separated by a dot (``.``) instead of a slash (``/``).
+# See :ref:`sysctl__ref_writable` for more details.
+sysctl__writable: '{{ [ "net" ]
+                      if (ansible_virtualization_role == "guest" and
+                          ansible_virtualization_type in [ "lxc", "openvz" ])
+                      else (ansible_local.sysctl.writable
+                            if (ansible_local|d() and ansible_local.sysctl|d() and
+                                ansible_local.sysctl.writable|d())
+                            else []) }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Shared memory configuration [[[
 # -------------------------------
 
-# .. envvar:: sysctl__shared_memory_configure [[[
-#
-# Should the shared memory be configured by the ``debops.sysctl`` role?
-sysctl__shared_memory_configure: '{{ True
-                                     if not (ansible_virtualization_role == "guest"
-                                        and (ansible_virtualization_type == "openvz"
-                                        or ansible_virtualization_type == "lxc"))
-                                     else False }}'
-
-                                                                   # ]]]
 # .. envvar:: sysctl__shared_memory_base [[[
 #
 # Base amount of memory used for shared memory calculations.
@@ -64,17 +72,6 @@ sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base|int *
 # Paging and swap control [[[
 # ---------------------------
 
-# .. envvar:: sysctl__paging_configure [[[
-#
-# Should the paging related parameters be configured by the ``debops.sysctl``
-# role?
-sysctl__paging_configure: '{{ True
-                              if not (ansible_virtualization_role == "guest"
-                                      and (ansible_virtualization_type == "openvz"
-                                      or ansible_virtualization_type == "lxc"))
-                              else False }}'
-
-                                                                   # ]]]
 # .. envvar:: sysctl__swappiness [[[
 #
 # How aggressively the kernel swaps out anonymous memory relative to pagecache
@@ -138,21 +135,17 @@ sysctl__default_parameters:
 
       - name: 'kernel.shmmax'
         value: '{{ sysctl__shared_memory_shmmax }}'
-        state: '{{ sysctl__shared_memory_configure|bool | ternary("present", "comment") }}'
 
       - name: 'kernel.shmall'
         value: '{{ sysctl__shared_memory_shmall }}'
-        state: '{{ sysctl__shared_memory_configure|bool | ternary("present", "comment") }}'
 
       - name: 'vm.swappiness'
         value: '{{ sysctl__swappiness }}'
         comment: 'How aggressively the kernel swaps out anonymous memory relative to pagecache and other caches.'
-        state: '{{ sysctl__paging_configure|bool | ternary("present", "comment") }}'
 
       - name: 'vm.vfs_cache_pressure'
         value: '{{ sysctl__vfs_cache_pressure }}'
         comment: 'Tendency of the kernel to reclaim the memory which is used for caching of VFS caches, versus pagecache and swap.'
-        state: '{{ sysctl__paging_configure|bool | ternary("present", "comment") }}'
 
   - name: 'network'
     weight: 20

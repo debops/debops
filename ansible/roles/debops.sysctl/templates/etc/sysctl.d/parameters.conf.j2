@@ -32,7 +32,21 @@
 {%       set _ = tracker.update({'seen_comment': False}) %}
 {%     endif %}
 {%     set _ = param_tracker.append(True) %}
-{{ '{}{} = {}'.format(('#' if ((element.state|d('present') == 'comment' or (item.state|d('present') == 'comment'))) else ''), element.name, parse_value(element.value)) }}
+{%     set commented_entry = '' %}
+{%     if ((element.state|d('present') == 'comment') or (item.state|d('present') == 'comment')) %}
+{%       set commented_entry = '#' %}
+{%     endif %}
+{%     set is_writable = [] %}
+{%     for writable_path in sysctl__writable %}
+{%       if element.name.startswith(writable_path) %}
+{%         set _ = is_writable.append(True) %}
+{%       endif %}
+{%     endfor %}
+{%     if not is_writable %}
+{%       set commented_entry = '#' %}
+# Read-only parameter.
+{%     endif %}
+{{ '{}{} = {}'.format(commented_entry, element.name, parse_value(element.value)) }}
 {%     if element.comment|d() and not loop.last %}
 
 {%     endif %}
