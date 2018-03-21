@@ -95,6 +95,13 @@ Role changes
   You will also need to restart all services that rely on the ``procadmins``
   group, for example :command:`snmpd`, to activate the new GID.
 
+- The :ref:`debops.sysctl` configuration has been redesigned. The role now uses
+  YAML lists instead of YAML dictionaries as a base value of the
+  ``sysctl__*_parameters`` default variables. The kernel parameter
+  configuration format has also been changed to be easy to override via Ansible
+  inventory. Role can now configure multiple files in :file:`/etc/sysctl.d/`
+  directory. Refer to the role documentation for details.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

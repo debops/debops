@@ -30,26 +30,38 @@
   action: setup
   when: sysctl__register_facts is changed
 
-- name: Generate kernel parameters config file
+- name: Remove sysctl configuration files if requested
+  file:
+    path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
+    state: 'absent'
+  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  register: sysctl__register_config_removed
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Generate sysctl configuration files
   template:
-    src: 'etc/sysctl.d/debops_sysctl.conf.j2'
-    dest: '{{ sysctl__config_file }}'
+    src: 'etc/sysctl.d/parameters.conf.j2'
+    dest: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: sysctl__register_config
+  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  register: sysctl__register_config_created
+  when: item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Check sysctl command capabilities
   shell: sysctl --help | grep -E '^\s+\-\-system\s+' || true
   register: sysctl__register_system
-  when: sysctl__register_config|changed
+  when: sysctl__register_config_created is changed or
+        sysctl__register_config_removed is changed
   check_mode: False
 
 - name: Apply kernel parameters if they were modified
   command: '{{ "sysctl --system"
                if (sysctl__register_system.stdout != "")
                else ("sysctl -e -p " + sysctl__config_file) }}'
-  when: sysctl__register_config|changed
+  when: sysctl__register_config_created is changed or
+        sysctl__register_config_removed is changed
 
 - name: Post hooks
   include: '{{ lookup("task_src", "sysctl/post_main.yml") }}'
