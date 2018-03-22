@@ -40,9 +40,11 @@ proc_hidepid__packages: []
 # environments like LXC/Docker containers, in which case the role will only
 # passively set up the required facts and other configuration.
 proc_hidepid__remount: '{{ True
-                           if (((ansible_system_capabilities_enforced|d())|bool and
-                                "cap_sys_admin" in ansible_system_capabilities) or
-                               not (ansible_system_capabilities_enforced|d(True))|bool)
+                           if ((((ansible_system_capabilities_enforced|d())|bool and
+                                 "cap_sys_admin" in ansible_system_capabilities) or
+                                not (ansible_system_capabilities_enforced|d(True))|bool) and
+                               (ansible_local|d() and ansible_local.proc_hidepid|d() and
+                                (ansible_local.proc_hidepid.proc_owner|d("root")) == "root"))
                            else False }}'
 
                                                                    # ]]]
