@@ -71,6 +71,12 @@ Changed
   inside the LXC containers. You will need to remount the filesystems, restart
   services and LXC containers that rely on this functionality.
 
+- [debops.sysctl] The configuration of the kernel parameters has been
+  redesigned, instead of being based on YAML dictionaries, is now based on YAML
+  lists of dictionaries and can be easily changed via Ansible inventory. You
+  will need to update your inventory for the new changes to take effect, refer
+  to the :ref:`role documentation <sysctl__ref_parameters>` for details.
+
 .. __: https://github.com/diafygi/acme-tiny
 
 Fixed
