@@ -12,7 +12,7 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: proc_hidepid__register_install|changed
+  when: proc_hidepid__register_install is changed
 
 - name: Ensure that UNIX system group with /proc access exists
   group:
@@ -86,7 +86,7 @@
 
 - name: Reload systemd daemons
   command: systemctl daemon-reload
-  when: proc_hidepid__register_logind|changed
+  when: proc_hidepid__register_logind is changed
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -107,4 +107,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: proc_hidepid__register_facts|changed
+  when: proc_hidepid__register_facts is changed
