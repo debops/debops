@@ -1050,7 +1050,7 @@ request_acme_tiny_certificate () {
 
                 set +e
                 su --shell /bin/sh -c "umask 0022 ; ${config['acme_client_script']} --account-key acme/account_key.pem \
-                    --ca \"${config['acme_ca_api']}\" --csr acme/request.pem \
+                    --directory-url \"${config['acme_ca_api']}\" --csr acme/request.pem \
                     --acme-dir \"${config['acme_challenge_dir']}\" > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
                 set -e
 
@@ -1058,13 +1058,21 @@ request_acme_tiny_certificate () {
 
                 set +e
                 "${config['acme_client_script']}" --account-key acme/account_key.pem \
-                    --ca "${config['acme_ca_api']}" --csr acme/request.pem \
+                    --directory-url "${config['acme_ca_api']}" --csr acme/request.pem \
                     --acme-dir "${config['acme_challenge_dir']}" > acme/cert.pem.tmp 2>acme/error.log
                 set -e
 
             fi
 
             if [ -r acme/cert.pem.tmp ] && [ -s acme/cert.pem.tmp ] ; then
+
+                # Let's Encrypt provides certificates with attached
+                # intermediates but we don't want that, PKI realms handle the
+                # intermediates themselves. Extract the first certificate from
+                # the generated file and swap it in, so the rest of the script
+                # works.
+                openssl x509 -in acme/cert.pem.tmp -out acme/first-cert.pem.tmp
+                mv acme/first-cert.pem.tmp acme/cert.pem.tmp
 
                 if [ -r acme/cert.pem ] ; then
                     mv acme/cert.pem acme/cert.pem.old
