@@ -116,14 +116,14 @@ specific parameters:
 
            - 'net.ipv4.icmp_ratelimit': 100
 
-  Comples form is enabled when the ``name`` parameter is used. You can use the
+  Complex form is enabled when the ``name`` parameter is used. You can use the
   parameters:
 
   ``name``
     Required. Name of the kernel parameter to configure.
 
   ``value``
-    Required. The value of a given kernel parameter which should be sed. Values
+    Required. The value of a given kernel parameter which should be set. Values
     can be YAML booleans (converted to ``0`` or ``1`` in the configuration
     file), numbers and strings.
 
