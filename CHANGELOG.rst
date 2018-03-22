@@ -57,10 +57,17 @@ Changed
   discovery, etc. which can be now published in the DNS zone at
   ``*.host.example.org`` resource records.
 
+- [debops.pki] The role now supports Let's Encrypt ACMEv2 API via the
+  `acme-tiny`__ Python script. The existing PKI realms will need to be
+  re-created or updated for the new API to work, new PKI realms should work out
+  of the box. Check the :ref:`upgrade_notes` for more details.
+
 - [debops.proc_hidepid], [debops.lxc] The roles now use a static GID ``70`` for
   the ``procadmins`` group to synchronize the access permissions on a host and
   inside the LXC containers. You will need to remount the filesystems, restart
   services and LXC containers that rely on this functionality.
+
+.. __: https://github.com/diafygi/acme-tiny
 
 Fixed
 ~~~~~

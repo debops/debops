@@ -26,6 +26,43 @@ X.509 certificate changes
   redefined it in the Ansible inventory, you might want to update your version
   to include the new SubjectAltName entry.
 
+- The latest :program:`acme-tiny` Python script uses ACMEv2 API by default, and
+  the :ref:`debops.pki` role is now compatible with the upstream changes. The
+  ACME certificates should work out of the box in new PKI realms, after the
+  :program:`acme-tiny` installation is updated.
+
+  The existing PKI realms will stop correctly regenerating Let's Encrypt
+  certificates, because their configuration is not updated automatically by the
+  role. The presence of the :file:`acme/error.log` file will prevent the
+  :program:`acme-tiny` script from requesting the certificates to not trip the
+  Let's Encrypt rate limits.
+
+  Easiest way to fix this is to remove the entire PKI realm
+  (:file:`/etc/pki/realms/*/` directory) and re-run the :ref:`debops.pki` role
+  against the host. The role will create a new PKI realm based on the previous
+  configuration and ACME certificates should start working again.  Services
+  like :program:`nginx` that have hooks in the :file:`/etc/pki/hooks/`
+  directory should be restarted automatically, you might need to manually
+  restart other services as needed.
+
+  Alternatively, you can update the Let's Encrypt API URL in the realm's
+  :file:`config/realm.conf` file by replacing the line:
+
+  .. code-block:: bash
+
+     config['acme_ca_api']='https://acme-v01.api.letsencrypt.org'
+
+  with:
+
+  .. code-block:: bash
+
+     config['acme_ca_api']='https://acme-v02.api.letsencrypt.org/directory'
+
+  This should tell the :program:`pki-realm` script to send requests for new
+  certificates to the correct URL. You still need to run the :ref:`debops.pki`
+  role against the host to install the updated :program:`pki-realm` script and
+  update the :program:`acme-tiny` script.
+
 Role changes
 ~~~~~~~~~~~~
 
