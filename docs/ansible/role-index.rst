@@ -241,6 +241,7 @@ System configuration
 - :ref:`debops.cron`
 - :ref:`debops.environment`
 - :ref:`debops.etc_services`
+- :ref:`debops.etckeeper`
 - :ref:`debops.ferm`
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
@@ -257,7 +258,6 @@ System configuration
 - ``debops.console``
 - ``debops.gitusers``
 - ``debops.sftpusers``
-- ``debops-contrib.etckeeper``
 
 
 Web services
