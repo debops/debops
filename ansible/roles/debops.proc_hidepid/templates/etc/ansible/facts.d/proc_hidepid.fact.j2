@@ -1,34 +1,47 @@
-#!/bin/bash
+#!/usr/bin/env python
 
 # {{ ansible_managed }}
 
-# Gather information about /proc related to hidepid
+from __future__ import print_function
+from json import dumps
+from pwd import getpwuid
+from grp import getgrall
+from os import stat
 
-set -o nounset -o pipefail -o errexit
 
-hidepid_configured="true"
-hidepid_enabled="false"
-hidepid_level=""
-hidepid_gid=""
-hidepid_group=""
+def find_owner(filename):
+    return getpwuid(stat(filename).st_uid).pw_name
 
-if grep -qs -E '^proc\s+.*hidepid=' /proc/mounts ; then
 
-    hidepid_enabled="true"
+output = {'configured': True,
+          'enabled': False,
+          'gid': '',
+          'group': '',
+          'level': '',
+          'proc_owner': find_owner('/proc')}
 
-    # Find the hidepid value
-    hidepid_level="$(grep -E '^proc\s+.*hidepid=' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /hidepid=/) {print $i}}}' | cut -d= -f2)"
+with open('/proc/mounts', 'r') as mounts:
+    for line in mounts:
+        if line.startswith('proc '):
+            entry = line.strip().split()
 
-    # Find the hidepid gid
-    hidepid_gid="$(grep -E '^proc\s+.*hidepid=' /proc/mounts | awk '{print $4}' | awk -F',' '{for (i=1;i<=NF;i++) {if ($i ~ /gid=/) {print $i}}}' | cut -d= -f2)"
+            if entry[1] == '/proc':
+                entry_options = entry[3].split(',')
 
-    # Find the hidepid group
-    if [ -n "${hidepid_gid}" ]; then
-        hidepid_group="$(getent group "${hidepid_gid}" | cut -d: -f1)"
-    fi
+                # Check if any option of a given mount entry has 'hidepid='
+                if any("hidepid=" in s for s in entry_options):
+                    output['enabled'] = True
 
-fi
+                    for option in entry_options:
+                        if option.startswith('hidepid='):
+                            output['level'] = option.split('=')[1]
+                        elif option.startswith('gid='):
+                            output['gid'] = option.split('=')[1]
 
-output="{\"configured\": \"${hidepid_configured}\", \"enabled\": \"${hidepid_enabled}\", \"level\": \"${hidepid_level}\", \"gid\": \"${hidepid_gid}\", \"group\": \"${hidepid_group}\"}"
+if output['gid']:
+    groups = getgrall()
+    for group in groups:
+        if str(group.gr_gid) == output['gid']:
+            output['group'] = group.gr_name
 
-printf "%s\n" "${output}"
+print(dumps(output, sort_keys=True, indent=4))
