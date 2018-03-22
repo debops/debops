@@ -20,9 +20,9 @@ Here are a few services that are available
 
 **System**
 
-+------------+-------+--------+---------------------+
-| etckeeper_ | FUSE_ | BTRFS_ | `snapshot snapper`_ |
-+------------+-------+--------+---------------------+
++-------+--------+---------------------+
+| FUSE_ | BTRFS_ | `snapshot snapper`_ |
++-------+--------+---------------------+
 
 **Security**
 
@@ -44,7 +44,6 @@ Here are a few services that are available
 .. _`Check_MK server`: https://github.com/debops-contrib/ansible-checkmk_server
 .. _`Check_MK agent`: https://github.com/debops-contrib/ansible-checkmk_agent
 
-.. _etckeeper: https://github.com/debops-contrib/ansible-etckeeper
 .. _FUSE: https://github.com/debops-contrib/ansible-fuse
 .. _BTRFS: https://github.com/debops-contrib/ansible-btrfs
 .. _`snapshot snapper`: https://github.com/debops-contrib/ansible-snapshot_snapper
