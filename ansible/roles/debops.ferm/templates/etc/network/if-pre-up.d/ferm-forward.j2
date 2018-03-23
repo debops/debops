@@ -1,19 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
 # {{ ansible_managed }}
 
-{% if ferm__enabled | bool and ferm__forward | bool %}
-{%   set ferm__tpl_interfaces = (ferm__external_interfaces|d([]) | list) +
-                                (ferm__internal_interfaces|d([]) | list) %}
-{%   for interface in ferm__tpl_interfaces | unique %}
-{%     if interface and hostvars[inventory_hostname]["ansible_" + interface] | d() %}
-# Force Router Advertisement support on {{ interface }} interface
-if [ "$IFACE" = "{{ interface }}" ] ; then
-  sysctl -w net/ipv6/conf/{{ interface }}/accept_ra=2
-fi
+ferm_enabled="{{ ferm__enabled | bool | lower }}"
+ferm_forward="{{ ferm__forward | bool | lower }}"
+ferm_ipv6_enabled="{{ 'true' if ('ip6' in ferm__domains) else 'false' }}"
+readarray -t ferm_interfaces <<< "{{ (ferm__external_interfaces|d([])|list + ferm__internal_interfaces|d([])|list) | join(' ') }}"
 
-{%     endif %}
-{%   endfor %}
-{% else %}
-# ferm support is disabled
-{% endif %}
+if [ "${ferm_enabled}" = "true" ] && [ "${ferm_forward}" = "true" ] && [ "${ferm_ipv6_enabled}" = "true" ] ; then
+    for interface in "${ferm_interfaces[@]}" ; do
+        if [ "${IFACE}" = "${interface}" ] ; then
+            # Force Router Advertisement support on a given interface
+            sysctl -w "net.ipv6.conf.${IFACE}.accept_ra=2"
+        fi
+    done
+fi

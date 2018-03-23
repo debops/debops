@@ -77,6 +77,10 @@ Changed
   will need to update your inventory for the new changes to take effect, refer
   to the :ref:`role documentation <sysctl__ref_parameters>` for details.
 
+- [debops.ferm] The role should now correctly detect what Internet Protocols
+  are available on a host (IPv4, IPv6) and configure firewall only for the
+  protocols that are present.
+
 .. __: https://github.com/diafygi/acme-tiny
 
 Fixed
