@@ -58,7 +58,10 @@ ferm__packages: []
 # ``ip6``
 #   Enables IPv6 support (:command:`ip6tables`).
 #
-ferm__domains: [ 'ip', 'ip6' ]
+ferm__domains: '{{ lookup("flattened",
+                   ( ([ "ip"  ] if (ansible_all_ipv4_addresses|d()) else [])
+                   + ([ "ip6" ] if (ansible_all_ipv6_addresses|d()) else []) )
+                   , wantlist=True ) }}'
 
                                                                    # ]]]
 # .. envvar:: ferm__ansible_controllers [[[
@@ -504,6 +507,7 @@ ferm__default_rules:
     protocol: [ 'udp' ]
     sport: [ 'dhcpv6-server' ]
     dport: [ 'dhcpv6-client' ]
+    rule_state: '{{ "present" if ("ip6" in ferm__domains) else "absent" }}'
 
   - name: 'jump_to_legacy_input_rules'
     type: 'accept'
