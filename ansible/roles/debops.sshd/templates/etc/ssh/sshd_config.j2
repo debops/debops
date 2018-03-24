@@ -67,12 +67,13 @@ KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 
 {% endif %}
 {% set sshd__tpl_macs = [] %}
-{% set sshd__tpl_macs_match = False %}
-{% for key, value in sshd__macs_map.items() %}
+{# workaround for jinja not beeing able to overwrite a variable inside the loop #}
+{% set sshd__tpl_macs_match = [] %}
+{% for key, value in sshd__macs_map|dictsort|reverse %}
 {%   if not sshd__tpl_macs_match and
         sshd__register_version.stdout|d() and
         sshd__register_version.stdout | version_compare(key, '>=') %}
-{%     set sshd__tpl_macs_match = True %}
+{%     set _ = sshd__tpl_macs_match.append(True) %}
 {%     for element in value %}
 {%       set _ = sshd__tpl_macs.append(element) %}
 {%     endfor %}
