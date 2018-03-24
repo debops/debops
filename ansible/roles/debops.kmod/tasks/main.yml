@@ -38,6 +38,7 @@
   include_tasks: 'modprobe.yml'
   loop_control:
     loop_var: 'module'
+  register: kmod__register_modprobe_tasks
   with_items: '{{ kmod__combined_modules | parse_kv_items }}'
   when: kmod__enabled|bool
 
@@ -60,5 +61,4 @@
 
 - name: Update Ansible facts if the list of load kernel modules might have changed
   action: setup
-  when: (kmod__register_module_config_delete is changed or
-         kmod__register_module_config_create is changed)
+  when: kmod__register_modprobe_tasks is changed
