@@ -103,6 +103,13 @@ Removed
 - The ``debops-contrib.kernel_module`` Ansible role has been removed; it was
   replaced by the new :ref:`debops.kmod` Ansible role.
 
+- [debops.ferm] The ``ferm-forward`` hook script in the
+  :file:`/etc/network/if-pre-up.d/` directory has been removed (existing
+  instances will be cleaned up). Recent changes in the :ref:`debops.ferm` role
+  broke idempotency with the :ref:`debops.ifupdown` role, and it was determined
+  that the functionality provided by the hook is no longer needed, recent OS
+  releases should deal with it adequately.
+
 
 `debops v0.7.0`_ - 2018-02-11
 -----------------------------

@@ -173,22 +173,10 @@
   when: ferm__register_sysctl.changed | bool
   tags: [ 'role::ferm:rules' ]
 
-- name: Ensure that /etc/network/if-pre-up.d exists
+- name: Remove deprecated ifupdown hook
   file:
-    path: '/etc/network/if-pre-up.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Configure forwarding in ifupdown if enabled
-  template:
-    src: 'etc/network/if-pre-up.d/ferm-forward.j2'
-    dest: '/etc/network/if-pre-up.d/ferm-forward'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  tags: [ 'role::ferm:rules' ]
+    path: '/etc/network/if-pre-up.d/ferm-forward'
+    state: 'absent'
 
 - name: Disable ferm after changes when requested
   lineinfile:
