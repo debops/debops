@@ -25,7 +25,7 @@ from operator import itemgetter
 
 try:
     unicode = unicode
-except ImportError:
+except NameError:
     # py3
     unicode = str
 
