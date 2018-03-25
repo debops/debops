@@ -59,7 +59,7 @@
                 try_files $script_name =404;
 
 {%     if item.php_include|d(True) %}
-{%       if (nginx_version|d() and nginx_version | version_compare('1.6.1','<')) %}
+{%       if (nginx_version|d() and nginx_version is version_compare('1.6.1','<')) %}
                 include {{ item.php_include | d('fastcgi_params') }};
 {%       else %}
 {%         if nginx_flavor in [ 'passenger', 'nginx.org' ] %}

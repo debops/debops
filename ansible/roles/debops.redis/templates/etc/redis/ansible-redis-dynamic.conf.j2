@@ -13,7 +13,7 @@ readarray -t redis_dynamic_config_map << EOF
 {% macro print_config(configuration) %}
 {%   if configuration is mapping %}
 {%     for config_key in configuration.keys() %}
-{%       if (config_key not in redis__server_static_options and (config_key not in redis__server_version_config_map or (redis__tpl_version | version_compare(redis__server_version_config_map[config_key], '>=')))) %}
+{%       if (config_key not in redis__server_static_options and (config_key not in redis__server_version_config_map or (redis__tpl_version is version_compare(redis__server_version_config_map[config_key], '>=')))) %}
 {%         if configuration[config_key] is string and not configuration[config_key] | bool %}
 {%           if configuration[config_key]|d() %}
 {{ config_key }}={{ configuration[config_key] }}

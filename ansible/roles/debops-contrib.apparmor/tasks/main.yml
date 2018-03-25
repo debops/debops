@@ -134,14 +134,14 @@
 
 - name: Reload changed profiles
   command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
-  when: (item|changed and not apparmor__register_tunables|changed)
+  when: (item is changed and apparmor__register_tunables is not changed)
   with_items: '{{ apparmor__register_local_config.results }}'
 
 - name: Reload AppArmor all profiles
   service:
     name: 'apparmor'
     state: 'reloaded'
-  when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables|changed
+  when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables is changed
 
 - name: Unload AppArmor profiles
   command: service apparmor teardown

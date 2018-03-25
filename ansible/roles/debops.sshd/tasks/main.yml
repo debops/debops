@@ -86,13 +86,13 @@
     chdir: '/etc/ssh'
     creates: '/etc/ssh/ssh_host_ed25519_key'
   when: sshd__register_version.stdout|d() and
-        sshd__register_version.stdout | version_compare('6.5', '>=')
+        sshd__register_version.stdout is version_compare('6.5', '>=')
   tags: [ 'role::sshd:config' ]
 
 - name: Configure authorized_keys lookup
   include: authorized_keys_lookup.yml
   when: sshd__register_version.stdout|d() and
-        sshd__register_version.stdout | version_compare('6.2', '>=') and
+        sshd__register_version.stdout is version_compare('6.2', '>=') and
         sshd__authorized_keys_lookup|bool
   tags: [ 'role::sshd:config' ]
 
@@ -180,7 +180,7 @@
 - name: Reload Ansible local facts
   setup:
     filter: ansible_local
-  when: sshd__register_fact_script|changed
+  when: sshd__register_fact_script is changed
 
 - name: Post hooks
   include: '{{ lookup("task_src", "sshd/post_main.yml") }}'

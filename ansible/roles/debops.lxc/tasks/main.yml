@@ -18,7 +18,7 @@
 # Configure LXC support when correct version is installed
 - include: configure_lxc.yml
   when: (lxc_register_package_version is defined and
-         lxc_register_package_version.stdout | version_compare('1.0','>='))
+         lxc_register_package_version.stdout is version_compare('1.0','>='))
 
 # Install backported Linux kernel on Debian Wheezy
 - include: install_kernel_from_backports.yml
@@ -28,7 +28,7 @@
 # Manage LXC containers via Ansible when correct kernel is installed
 - include: manage_containers.yml
   when: (lxc_containers is defined and lxc_containers) and
-        ansible_kernel | version_compare('3.10','>')
+        ansible_kernel is version_compare('3.10','>')
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -49,7 +49,7 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: lxc__register_facts|changed
+  when: lxc__register_facts is changed
 
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'lxc/post_main.yml') }}"

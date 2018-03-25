@@ -35,7 +35,7 @@
   when: ((item.0.database|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != 'absent') and
          (item.0.source|d(False) and item.0.target|d(False)) and
-         (item.0.name == item.1.db and item.1.changed))
+         (item.0.name == item.1.db and item.1 is changed))
 
 - name: Import source file contents into database
   mysql_db:
@@ -48,7 +48,7 @@
   delegate_to: '{{ mariadb__delegate_to }}'
   when: ((item.0.database|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != 'absent') and
-         item.0.target|d(False) and (item.0.name == item.1.db and item.1.changed))
+         item.0.target|d(False) and (item.0.name == item.1.db and item.1 is changed))
 
 - name: Remove source files
   file:

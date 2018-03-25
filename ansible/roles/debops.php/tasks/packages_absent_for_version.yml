@@ -3,7 +3,7 @@
 
 - name: Ensure older PHP packages are absent on reset for given PHP version
   apt:
-    name: '{{ item|search("php.*-")|ternary(item, php__version_absent + "-" + item) }}'
+    name: '{{ item is search("php.*-")|ternary(item, php__version_absent + "-" + item) }}'
     state: 'absent'
   with_flattened:
     - '{{ php__server_api_packages }}'

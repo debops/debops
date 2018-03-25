@@ -63,7 +63,7 @@
 - name: Update APT repository cache
   apt:
     update_cache: True
-  when: owncloud__register_apt_key|changed or owncloud__register_apt_repository|changed
+  when: owncloud__register_apt_key is changed or owncloud__register_apt_repository is changed
 
   ## Use filename when available (2.1.0) https://github.com/ansible/ansible-modules-core/pull/2696
   ## To avoid multiple of those source files.
@@ -113,6 +113,6 @@
   args:
     executable: '/bin/sh'
   when: (owncloud__variant in ["owncloud"] and
-         owncloud__register_apt_install|changed and
+         owncloud__register_apt_install is changed and
          (ansible_local|d() and ansible_local.owncloud|d() and
          ansible_local.owncloud.auto_security_updates_enabled|d()|bool))

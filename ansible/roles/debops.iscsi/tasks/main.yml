@@ -32,7 +32,7 @@
   service:
     name:  'open-iscsi'
     state: 'restarted'
-  when: iscsi__enabled|d() and iscsi__register_initiatorname|d() and iscsi__register_initiatorname.changed
+  when: iscsi__enabled|d() and iscsi__register_initiatorname|d() and iscsi__register_initiatorname is changed
 
 - name: Generate iSCSI interface configuration
   shell: iscsiadm -m iface -I {{ item }} -o new ;

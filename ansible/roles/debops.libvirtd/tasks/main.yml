@@ -42,7 +42,7 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: libvirtd__register_facts|changed
+  when: libvirtd__register_facts is changed
 
 - name: Divert managed configuration files
   command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'

@@ -76,7 +76,7 @@
   command: '{{ nodejs__npm_git_install_command }}'
   args:
     chdir: '{{ nodejs__npm_git_dest }}'
-  when: nodejs__npm_git_enabled|bool and nodejs__register_npm_git|changed
+  when: nodejs__npm_git_enabled|bool and nodejs__register_npm_git is changed
 
 - name: Install NPM packages
   npm:
@@ -115,4 +115,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: nodejs__register_facts|changed
+  when: nodejs__register_facts is changed

@@ -133,7 +133,7 @@
 - name: Fail when ciphertext block device does not exist but the keyfile has changed
   fail:
     msg: 'Ciphertext block device {{ item.0.ciphertext_block_device }} does not exist but the keyfile has just been generated. You will need to make the block device available during a later Ansible run so that the encryption and filesystem layer can be setup. You will not see this error on later runs but that does not mean that the encryption and filesystem setup was successfully until you make the block device available. See documentation for details.'
-  when: (item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and not item.1.stat.exists and item.2|changed)
+  when: (item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and not item.1.stat.exists and item.2 is changed)
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
     - '{{ cryptsetup__register_ciphertext_device.results|d([]) }}'
@@ -337,7 +337,7 @@
 - name: Enable swap devices
   command: swapon --priority {{ (item.item.priority | d(cryptsetup__swap_priority) | string) | quote }}
            {{ ("/dev/mapper/" + item.item.name) | quote }}
-  when: (item|changed and (item.item.swap|d(False) | bool) and
+  when: (item is changed and (item.item.swap|d(False) | bool) and
          (item.item.state|d(cryptsetup__state) in ['mounted', 'ansible_controller_mounted']))
   with_items: '{{ cryptsetup__register_swap_fstab.results|d([]) }}'
 ## ]]]
@@ -363,7 +363,7 @@
                    and cryptsetup__register_cryptdisks_stop.rc == 1)
                )
   when: (item.0.state|d(cryptsetup__state) in [ 'unmounted', 'absent' ] or
-          (item.0.state|d(cryptsetup__state) in [ 'present' ] and item.1|changed)
+          (item.0.state|d(cryptsetup__state) in [ 'present' ] and item.1 is changed)
         )
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'

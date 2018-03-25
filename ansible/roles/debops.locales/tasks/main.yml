@@ -30,7 +30,7 @@
 
 - name: Update /etc/default/locale
   command: 'update-locale LANG={{ locales__system_lang }}'
-  when: ansible_pkg_mgr == 'apt' and locales__register_system_lang|changed
+  when: ansible_pkg_mgr == 'apt' and locales__register_system_lang is changed
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -51,4 +51,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: locales__register_facts|changed
+  when: locales__register_facts is changed
