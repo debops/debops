@@ -41,10 +41,9 @@ The :program:`filter-dhcp-options` hook
 This hook is a Bourne shell (:command:`/bin/sh`) script that is sourced by the
 :man:`dhclient-script(8)` command executed by the :program:`dhclient` program
 during interface configuration via DHCP. The hook allows to filter and ignore
-recevied DHCP options per the network interface, which can be useful on systems
-connected to multiple networks with each one providing DHCP services. List of
-DHCP options that can be filtered can be found in the :man:`dhcp-options(5)`
-manual page.
+received DHCP options per network interface, which can be useful on systems
+connected to multiple networks with each one providing DHCP services. A list of
+DHCP options can be found in the :man:`dhcp-options(5)` manual page.
 
 By default the hook does not filter any DHCP options. To configure it, add the
 ``dhcp_ignore`` parameter in the :ref:`ifupdown__ref_interfaces` interface
@@ -58,7 +57,7 @@ Consider configuration of a host connected to two networks, ``br0`` (internal
 network) and ``br1`` (external network via a VLAN). By default the Debian
 Installer sets up only the internal network connection which is used for host
 configuration and management. The external connection is configured later, via
-a VLAN which cannot be automatically configued by Debian Installer. Both
+a VLAN which cannot be automatically configured by the Debian Installer. Both
 networks are maintained using DHCP servers, each providing a default route
 through its network.
 
@@ -96,7 +95,7 @@ queries, which lets you access other internal hosts via their hostnames.
 Just after installation the host will have only the internal network connection
 set up, used for configuration. When Ansible applies the :ref:`debops.ifupdown`
 configuration on the host, the default route to the external network will
-replace the default route to to the internal network, however existing internal
+replace the default route to the internal network, however existing internal
 connections will work as usual. Any existing connections to the external
 network via internal router might be interrupted before the new route takes
 over.
