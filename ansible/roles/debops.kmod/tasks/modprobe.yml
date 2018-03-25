@@ -35,3 +35,8 @@
           kmod__register_module_config_create is changed) and
          module.blacklist is not defined and
          module.state|d('present') not in [ 'config', 'absent', 'blacklist' ])
+
+- name: Update Ansible facts if the list of loaded kernel modules might have changed
+  action: setup
+  when: (kmod__register_module_config_delete is changed or
+         kmod__register_module_config_create is changed)
