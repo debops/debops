@@ -295,6 +295,19 @@ Mapping parameters
   configuration for a mapping dynamically. See :man:`interfaces(5)` manual for
   more details.
 
+DHCP parameters
+~~~~~~~~~~~~~~~
+
+``dhcp_ignore``
+  Optional. String or list of variable names used by the
+  :man:`dhclient-script(8)` script to configure the interface. The specified
+  variables representing DHCP options will be unset by the configuration
+  script; this can be used to selectively ignore DHCP options on a given
+  network interface.
+
+  See :ref:`ifupdown__ref_custom_hooks_filter_dhcp_options` documentation for
+  more details.
+
 Custom interface options
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

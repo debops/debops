@@ -298,6 +298,21 @@ ifupdown__dependent_interfaces: {}
 ifupdown__combined_interfaces: '{{ lookup("template", "lookup/ifupdown__combined_interfaces.j2", convert_data=False) | from_yaml }}'
                                                                    # ]]]
                                                                    # ]]]
+# Custom ifupdown hooks [[[
+# -------------------------
+
+# .. envvar:: ifupdown__custom_hooks [[[
+#
+# List of custom hooks created by the ``debops.ifupdown`` role. See
+# :ref:`ifupdown__ref_custom_hooks` for more details.
+ifupdown__custom_hooks:
+
+  - name: 'filter-dhcp-options'
+    hook: 'etc/dhcp/dhclient-enter-hooks.d/filter-dhcp-options'
+    mode: '0644'
+    state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
 # Custom configuration files [[[
 # ------------------------------
 
