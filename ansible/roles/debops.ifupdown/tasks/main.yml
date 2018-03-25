@@ -121,6 +121,25 @@
          (item.src|d() or item.content|d()) and
          item.state|d('present') != 'absent')
 
+- name: Remove custom ifupdown hooks
+  file:
+    path: '{{ item.dest | d("/" + item.hook) }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ ifupdown__custom_hooks }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Install custom ifupdown hooks
+  template:
+    src:  '{{ item.src  | d(item.hook + ".j2") }}'
+    dest: '{{ item.dest | d("/" + item.hook) }}'
+    owner: 'root'
+    group: 'root'
+    mode: '{{ item.mode | d("0755") }}'
+  with_flattened:
+    - '{{ ifupdown__custom_hooks }}'
+  when: item.name|d() and item.state|d('present') != 'absent'
+
 - name: Install reconfiguration script if needed
   copy:
     src: 'script/ifupdown-reconfigure-interfaces'

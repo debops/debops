@@ -38,6 +38,10 @@ Added
     :ref:`debops.etckeeper`. The new role is included in the ``common.yml``
     playbook.
 
+- [debops.ifupdown] The role has new tasks that manage custom hooks in other
+  services. First hook is :ref:`ifupdown__ref_custom_hooks_filter_dhcp_options`
+  which can be used to selectively apply DHCP options per network interface.
+
 Changed
 ~~~~~~~
 
