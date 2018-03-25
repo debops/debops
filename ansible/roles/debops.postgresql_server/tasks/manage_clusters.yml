@@ -177,8 +177,8 @@
     - '{{ postgresql_server__register_config_ident.results }}'
     - '{{ postgresql_server__register_trusted.results }}'
   when: (ansible_service_mgr != 'systemd' and
-         ((item.changed|d() and item.changed) and
-          (item.item.start_conf is undefined or item.item.start_conf == 'auto')))
+         ((item is changed and
+          (item.item.start_conf is undefined or item.item.start_conf == 'auto'))))
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Reload PostgreSQL clusters when needed (systemd)
@@ -191,6 +191,6 @@
     - '{{ postgresql_server__register_config_ident.results }}'
     - '{{ postgresql_server__register_trusted.results }}'
   when: (ansible_service_mgr == 'systemd' and
-         ((item.changed|d() and item.changed) and
-          (item.item.start_conf is undefined or item.item.start_conf == 'auto')))
+         ((item is changed and
+          (item.item.start_conf is undefined or item.item.start_conf == 'auto'))))
   tags: [ 'role::postgresql_server:config' ]

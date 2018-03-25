@@ -47,7 +47,7 @@ owncloud__base_packages:
 
   ## Useful for debugging. Refer to `owncloud__base_php_packages` for the PHP packages
   - '{{ [ "smbclient" ] if (owncloud__smb_support|bool) else [] }}'
-  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("9.0", ">=")) else [] }}'
+  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release is version_compare("9.0", ">=")) else [] }}'
 
 
 # .. envvar:: owncloud__required_php_packages
@@ -107,10 +107,10 @@ owncloud__base_php_packages:
   ## PHP Warning: PHP Startup: Unable to load dynamic library '/usr/lib/php/20151012/redis.so'
   ## - /usr/lib/php/20151012/redis.so: undefined symbol: igbinary_serialize in Unknown on line 0
   - '{{ [ "igbinary" ]
-        if (not (ansible_distribution == "Ubuntu" and (ansible_distribution_version|version_compare("15.10", "<"))))
+        if (not (ansible_distribution == "Ubuntu" and (ansible_distribution_version is version_compare("15.10", "<"))))
         else [] }}'
 
-  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("8.9.9", "<=")) else [] }}'
+  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release is version_compare("8.9.9", "<=")) else [] }}'
 
   ## Included in normal PHP installations but require it here because it is
   ## used internally by the role:
@@ -1037,7 +1037,7 @@ owncloud__smb_support: False
 #      ## Create an additional admin account.
 #      - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
 #        ## Does not work with ownCloud 8.0 or below so don’t run it there.
-#        when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
+#        when: '{{ owncloud__release is version_compare("8.1", ">=") }}'
 #        env:
 #          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
 #                       ansible_fqdn + '/owncloud/admin/' + 'admin' +
@@ -1046,7 +1046,7 @@ owncloud__smb_support: False
 #      ## Create an regular user. Note that you probably want to use an existing
 #      ## user database like LDAP.
 #      - command: 'user:add --password-from-env --display-name="Normal user" user'
-#        when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
+#        when: '{{ owncloud__release is version_compare("8.1", ">=") }}'
 #        env:
 #          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
 #                       ansible_fqdn + '/owncloud/users/' + 'user' +
@@ -1064,7 +1064,7 @@ owncloud__role_occ_cmd_list:
   ## is setup by this role using packages.
   ## Since ownCloud 9 it is called `updatenotification`.
   - command: 'app:disable updater'
-    when: '{{ owncloud__release | version_compare("8.2", "<=") }}'
+    when: '{{ owncloud__release is version_compare("8.2", "<=") }}'
 
   - command: 'app:enable user_ldap'
     when: '{{ owncloud__ldap_enabled|bool }}'
@@ -1896,7 +1896,7 @@ owncloud__nginx__dependent_servers:
 
     robots_tag: [ 'none' ]
     permitted_cross_domain_policies: 'none'
-    frame_options: '{{ omit if (owncloud__variant in ["nextcloud"] and owncloud__release | version_compare("12.0", ">=")) else "SAMEORIGIN" }}'
+    frame_options: '{{ omit if (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">=")) else "SAMEORIGIN" }}'
 
     options: |
       add_header X-Download-Options noopen;
@@ -1973,7 +1973,7 @@ owncloud__nginx__dependent_servers:
 
           fastcgi_intercept_errors on;
 
-          {% if (ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0") | version_compare("1.7.11",'>=') %}
+          {% if (ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0") is version_compare("1.7.11",'>=') %}
           fastcgi_request_buffering off;
           {% endif %}
 
@@ -1993,7 +1993,7 @@ owncloud__nginx__dependent_servers:
           add_header Cache-Control "public, max-age=7200";
 
           add_header X-Content-Type-Options nosniff;
-          {% if not (owncloud__variant in ["nextcloud"] and owncloud__release | version_compare("12.0", ">=")) %}
+          {% if not (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">=")) %}
           add_header X-Frame-Options "SAMEORIGIN";
           {% endif %}
           add_header X-XSS-Protection "1; mode=block";
@@ -2059,7 +2059,7 @@ owncloud__php__dependent_configuration:
   - filename: '10-owncloud'
     by_role: 'debops.owncloud'
     state: '{{ "present"
-               if ((owncloud__apcu_enabled|bool) and (owncloud__release | match("8\.1")))
+               if ((owncloud__apcu_enabled|bool) and (owncloud__release is match("8\.1")))
                else "absent" }}'
     options: |
       ; Workaround for: https://github.com/owncloud/core/issues/17329

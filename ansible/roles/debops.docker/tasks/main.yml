@@ -61,7 +61,7 @@
     - '/etc/default/docker'
     - '/etc/docker/daemon.json'
     - '/etc/systemd/system/docker.service.d/http-proxy.conf'
-  when: (docker__register_other_version_removed|changed)
+  when: (docker__register_other_version_removed is changed)
 
 - name: Install required packages
   apt:
@@ -137,7 +137,7 @@
     mode: '0644'
   notify: [ 'Restart docker' ]
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr != 'systemd' or docker__register_version.stdout | version_compare('1.10', '<'))
+  when: (ansible_service_mgr != 'systemd' or docker__register_version.stdout is version_compare('1.10', '<'))
 
 - name: Configure Docker systemd options
   template:
@@ -148,7 +148,7 @@
     mode: '0644'
   notify: [ 'Restart docker' ]
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout | version_compare('1.10', '>='))
+  when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout is version_compare('1.10', '>='))
 
 - name: Install Debian systemd service unit
   template:
@@ -180,11 +180,11 @@
   notify: [ 'Restart docker']
   when: (ansible_service_mgr == 'systemd' and
          ((docker__register_systemd_service|d() and
-         docker__register_systemd_service|changed) or
+         docker__register_systemd_service is changed) or
          (docker__register_systemd_proxy_present|d() and
-         docker__register_systemd_proxy_present|changed) or
+         docker__register_systemd_proxy_present is changed) or
          (docker__register_systemd_proxy_absent|d() and
-         docker__register_systemd_proxy_absent|changed)))
+         docker__register_systemd_proxy_absent is changed)))
   tags: [ 'role::docker:config' ]
 
 - name: Add specified users to 'docker' group
@@ -215,4 +215,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: docker__register_facts|changed
+  when: docker__register_facts is changed

@@ -88,7 +88,7 @@ php__base_packages:
   - 'curl'
   - 'gd'
   - '{{ "mcrypt"
-        if (php__version | version_compare("7.2","<"))
+        if (php__version is version_compare("7.2","<"))
         else [] }}'
 
                                                                    # ]]]
@@ -708,7 +708,7 @@ php__logrotate__dependent_config:
       compress
       delaycompress
     postrotate: |
-      {% if php__long_version | version_compare("5.5","<") %}
+      {% if php__long_version is version_compare("5.5","<") %}
       invoke-rc.d php{{ php__version }}-fpm reopen-logs > /dev/null
       {% else %}
       {{ php__logrotate_lib_base }}/php{{ php__version }}-fpm-reopenlogs

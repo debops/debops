@@ -19,7 +19,7 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: (apt__enabled|bool and apt__register_facts|changed)
+  when: (apt__enabled|bool and apt__register_facts is changed)
 
 - name: Install required packages
   apt:
@@ -136,9 +136,9 @@
   apt:
     update_cache: True
     cache_valid_time: '{{ omit
-                         if (apt__register_sources_template|changed or
-                             apt__register_sources_diversion|changed or
-                             apt__register_repositories|changed)
+                         if (apt__register_sources_template is changed or
+                             apt__register_sources_diversion is changed or
+                             apt__register_repositories is changed)
                          else apt__cache_valid_time }}'
   when: apt__enabled|bool
 
@@ -154,4 +154,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: (apt__enabled|bool and apt__register_facts_status|changed)
+  when: (apt__enabled|bool and apt__register_facts_status is changed)

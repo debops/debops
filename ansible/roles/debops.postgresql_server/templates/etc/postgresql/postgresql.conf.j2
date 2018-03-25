@@ -25,7 +25,7 @@ port = {{ item.port }}
 max_connections = {{ item.max_connections | d(postgresql_server__max_connections) }}
 superuser_reserved_connections = {{ item.superuser_reserved_connections | d('3') }}
 
-{% if ((item.version | d(postgresql_server__version)) | version_compare('9.1','<=')) %}
+{% if ((item.version | d(postgresql_server__version)) is version_compare('9.1','<=')) %}
 unix_socket_directory = '{{ item.unix_socket_directories | d("/var/run/postgresql") }}'
 {% else %}
 unix_socket_directories = '{{ item.unix_socket_directories | d("/var/run/postgresql") }}'
@@ -43,17 +43,17 @@ authentication_timeout = {{ item.authentication_timeout | d('1min') }}
 
 ssl = {{ item.ssl | d(postgresql_server__pki | bool | lower) }}
 
-{% if (item.version | d(postgresql_server__version)) | version_compare('8.2','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('8.2','>') %}
 {# https://www.postgresql.org/docs/current/static/release-8-3.html #}
 ssl_ciphers = '{{ item.ssl_ciphers | d(postgresql_server__ssl_ciphers) }}'
 
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.5','<') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.5','<') %}
 {# https://www.postgresql.org/docs/current/static/release-9-5.html #}
 ssl_renegotiation_limit = {{ item.ssl_renegotiation_limit | d('512MB') }}
 {% endif %}
 {% endif %}
 
-{% if ((item.version | d(postgresql_server__version)) | version_compare('9.1','>')) %}
+{% if ((item.version | d(postgresql_server__version)) is version_compare('9.1','>')) %}
 {# ref: https://www.postgresql.org/docs/current/static/release-9-2.html #}
 ssl_cert_file = '{{ item.ssl_cert_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_crt | d(postgresql_server__pki_crt))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
 ssl_key_file = '{{ item.ssl_key_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_key | d(postgresql_server__pki_key))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
@@ -61,7 +61,7 @@ ssl_ca_file = '{{ item.ssl_ca_file | d(((item.pki_path | d(postgresql_server__pk
 #ssl_crl_file = ''
 {% endif %}
 
-{% if ((item.version | d(postgresql_server__version)) | version_compare('9.3','>')) %}
+{% if ((item.version | d(postgresql_server__version)) is version_compare('9.3','>')) %}
 {# https://www.postgresql.org/docs/current/static/release-9-4.html #}
 ssl_prefer_server_ciphers = {{ item.ssl_prefer_server_ciphers | d('on') }}
 ssl_ecdh_curve = {{ item.ssl_ecdh_curve | d('prime256v1') }}
@@ -111,19 +111,19 @@ max_prepared_transactions = {{ item.max_prepared_transactions | d('0') }}
 work_mem = {{ item.work_mem | d('1MB') }}
 maintenance_work_mem = {{ item.maintenance_work_mem | d('16MB') }}
 max_stack_depth = {{ item.max_stack_depth | d('2MB') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.4','>=') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.4','>=') %}
 huge_pages = {{ item.huge_pages | d('try') }}
 autovacuum_work_mem = {{ item.autovacuum_work_mem | d('-1') }}
 {% endif %}
 
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.3','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.3','>') %}
 {% if postgresql_server__register_shm|d() and postgresql_server__register_shm.stdout %}
 dynamic_shared_memory_type = {{ item.dynamic_shared_memory_type | d('posix') }}
 {% else %}
 dynamic_shared_memory_type = {{ item.dynamic_shared_memory_type | d('sysv') }}
 {% endif %}
 {% endif %}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 
 # - Disk -
 
@@ -155,7 +155,7 @@ bgwriter_lru_multiplier = {{ item.bgwriter_lru_multiplier | d('2.0') }}
 # - Asynchronous Behavior -
 
 effective_io_concurrency = {{ item.effective_io_concurrency | d('1') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.4','>=') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.4','>=') %}
 max_worker_processes = {{ item.max_worker_processes | d('8') }}
 {% endif %}
 
@@ -173,7 +173,7 @@ wal_sync_method = {{ item.wal_sync_method | d('fsync') }}
 full_page_writes = {{ item.full_page_writes | d('on') }}
 wal_buffers = {{ item.wal_buffers | d('-1') }}
 wal_writer_delay = {{ item.wal_writer_delay | d('200ms') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.3','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.3','>') %}
 wal_log_hints = {{ item.wal_log_hints | d('off') }}
 {% endif %}
 
@@ -183,11 +183,11 @@ commit_siblings = {{ item.commit_siblings | d('5') }}
 
 # - Checkpoints -
 
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.5','<') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.5','<') %}
 checkpoint_segments = {{ item.checkpoint_segments | d('3') }}
 {% endif %}
 checkpoint_timeout = {{ item.checkpoint_timeout | d('5min') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.5','>=') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.5','>=') %}
 min_wal_size = {{ item.min_wal_size | d('80MB') }}
 max_wal_size = {{ item.max_wal_size | d('1GB') }}
 {% endif %}
@@ -219,10 +219,10 @@ archive_timeout = {{ item.archive_timeout | d('0') }}
 # Set these on the master and on any standby that will send replication data
 max_wal_senders = {{ item.max_wal_senders | d('0') }}
 wal_keep_segments = {{ item.wal_keep_segments | d('0') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 wal_sender_timeout = {{ item.wal_sender_timeout | d('60s') }}
 {% endif %}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.3','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.3','>') %}
 max_replication_slots = {{ item.max_replication_slots | d('0') }}
 {% endif %}
 
@@ -241,7 +241,7 @@ max_standby_archive_delay = {{ item.max_standby_archive_delay | d('30s') }}
 max_standby_streaming_delay = {{ item.max_standby_streaming_delay | d('30s') }}
 wal_receiver_status_interval = {{ item.wal_receiver_status_interval | d('10s') }}
 hot_standby_feedback = {{ item.hot_standby_feedback | d('off') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 wal_receiver_timeout = {{ item.wal_receiver_timeout | d('60s') }}
 {% endif %}
 
@@ -256,7 +256,7 @@ enable_bitmapscan = {{ item.enable_bitmapscan | d('on') }}
 enable_hashagg = {{ item.enable_hashagg | d('on') }}
 enable_hashjoin = {{ item.enable_hashjoin | d('on') }}
 enable_indexscan = {{ item.enable_indexscan | d('on') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 enable_indexonlyscan = {{ item.enable_indexonlyscan | d('on') }}
 {% endif %}
 enable_material = {{ item.enable_material | d('on') }}
@@ -356,13 +356,13 @@ log_timezone = '{{ item.log_timezone | d(postgresql_server__timezone) }}'
 
 track_activities = {{ item.track_activities | d('on') }}
 track_counts = {{ item.track_counts | d('on') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 track_io_timing = {{ item.track_io_timing | d('off') }}
 {% endif %}
 track_functions = {{ item.track_functions | d('none') }}
 track_activity_query_size = {{ item.track_activity_query_size | d('1024') }}
 update_process_title = {{ item.update_process_title | d('on') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 stats_temp_directory = '{{ item.stats_temp_directory | d("/var/run/postgresql/" + (item.version | d(postgresql_server__version)) + "-" + item.name + ".pg_stat_tmp") }}'
 {% else %}
 stats_temp_directory = '{{ item.stats_temp_directory | d("pg_stat_tmp") }}'
@@ -390,7 +390,7 @@ autovacuum_analyze_threshold = {{ item.autovacuum_analyze_threshold | d('50') }}
 autovacuum_vacuum_scale_factor = {{ item.autovacuum_vacuum_scale_factor | d('0.2') }}
 autovacuum_analyze_scale_factor = {{ item.autovacuum_analyze_scale_factor | d('0.1') }}
 autovacuum_freeze_max_age = {{ item.autovacuum_freeze_max_age | d('200000000') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 autovacuum_multixact_freeze_max_age = {{ item.autovacuum_multixact_freeze_max_age | d('400000000') }}
 {% endif %}
 autovacuum_vacuum_cost_delay = {{ item.autovacuum_vacuum_cost_delay | d('20ms') }}
@@ -412,12 +412,12 @@ default_transaction_read_only = {{ item.default_transaction_read_only | d('off')
 default_transaction_deferrable = {{ item.default_transaction_deferrable | d('off') }}
 session_replication_role = '{{ item.session_replication_role | d("origin") }}'
 statement_timeout = {{ item.statement_timeout | d('0') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 lock_timeout = {{ item.lock_timeout | d('0') }}
 {% endif %}
 vacuum_freeze_min_age = {{ item.vacuum_freeze_min_age | d('50000000') }}
 vacuum_freeze_table_age = {{ item.vacuum_freeze_table_age | d('150000000') }}
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 vacuum_multixact_freeze_min_age = {{ item.vacuum_multixact_freeze_min_age | d('5000000') }}
 vacuum_multixact_freeze_table_age = {{ item.vacuum_multixact_freeze_table_age | d('150000000') }}
 {% endif %}
@@ -451,7 +451,7 @@ default_text_search_config = '{{ item.default_text_search_config | d("pg_catalog
 
 dynamic_library_path = '{{ item.dynamic_library_path | d("$libdir") }}'
 local_preload_libraries = '{{ item.local_preload_libraries | d("") }}'
-{% if (item.version | d(postgresql_server__version)) | version_compare('9.3','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('9.3','>') %}
 session_preload_libraries = '{{ item.session_preload_libraries | d("") }}'
 {% endif %}
 
@@ -477,7 +477,7 @@ default_with_oids = {{ item.default_with_oids | d('off') }}
 escape_string_warning = {{ item.escape_string_warning | d('on') }}
 lo_compat_privileges = {{ item.lo_compat_privileges | d('off') }}
 quote_all_identifiers = {{ item.quote_all_identifiers | d('off') }}
-{% if ((item.version | d(postgresql_server__version)) | version_compare('10','<')) %}
+{% if ((item.version | d(postgresql_server__version)) is version_compare('10','<')) %}
 sql_inheritance = {{ item.sql_inheritance | d('on') }}
 {% endif %}
 standard_conforming_strings = {{ item.standard_conforming_strings | d('on') }}

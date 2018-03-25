@@ -15,7 +15,7 @@
 - name: Check status of available LXC containers
   command: lxc-ls -f
   register: lxc_list_status
-  when: lxc_register_kernel_upgrade|changed
+  when: lxc_register_kernel_upgrade is changed
 
 - name: Send mail to administrator about new or updated kernel
   mail:
@@ -24,4 +24,4 @@
     to: '{{ lxc_kernel_mail_to | join(",") }}'
     charset: 'utf8'
     body: '{{ lxc_kernel_mail_body }}'
-  when: lxc_register_kernel_upgrade|changed
+  when: lxc_register_kernel_upgrade is changed

@@ -144,9 +144,9 @@
 {{ '{}'.format(elements.value | to_json) -}}
 {%   elif elements.type == 'atom' %}
 {%     if elements.value is string %}
-{%       if elements.value | search('^[A-Z].+') %}
+{%       if elements.value is search('^[A-Z].+') %}
 {{ "'{}'".format(elements.value) -}}
-{%       elif elements.value | search('[^a-zA-Z0-9@_].+') %}
+{%       elif elements.value is search('[^a-zA-Z0-9@_].+') %}
 {{ "'{}'".format(elements.value) -}}
 {%       else %}
 {{ '{}'.format(elements.value) -}}
@@ -154,9 +154,9 @@
 {%     elif elements.value is not string and elements.value is not mapping %}
 {%       set rabbitmq_server__tpl_atom_list = [] %}
 {%       for thing in elements.value %}
-{%         if thing | search('^[A-Z].+') %}
+{%         if thing is search('^[A-Z].+') %}
 {%           set _ = rabbitmq_server__tpl_atom_list.append("'{}'".format(thing)) %}
-{%         elif thing | search('[^a-zA-Z0-9@_].+') %}
+{%         elif thing is search('[^a-zA-Z0-9@_].+') %}
 {%          set _ = rabbitmq_server__tpl_atom_list.append("'{}'".format(thing)) %}
 {%         else %}
 {%           set _ = rabbitmq_server__tpl_atom_list.append('{}'.format(thing)) %}

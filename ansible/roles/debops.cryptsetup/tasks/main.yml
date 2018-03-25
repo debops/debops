@@ -6,7 +6,7 @@
 - name: Check for Ansible version without known vulnerabilities
   assert:
     that:
-      - 'ansible_version.full | version_compare("2.2.3.0", ">=")'
+      - 'ansible_version.full is version_compare("2.2.3.0", ">=")'
     msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.2.3 or a newer! To skip, add "--skip-tags play::security-assertions" parameter. Refer to the changelog of debops.cryptsetup for details. Exiting.'
   run_once: True
   delegate_to: 'localhost'

@@ -5,7 +5,7 @@
   become: True
   become_user: '{{ reprepro_user }}'
   when: reprepro_register_conf_distributions is defined and
-        reprepro_register_conf_distributions.changed
+        reprepro_register_conf_distributions is changed
 
 - name: Generate reprepro symlinks
   command: reprepro --delete createsymlinks chdir=~

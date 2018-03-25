@@ -81,7 +81,7 @@
   set_fact:
     owncloud__do_autosetup: '{{ (owncloud__autosetup and
                                  owncloud__admin_username != "" and
-                                 (not owncloud__register_occ_check|skipped) and
+                                 (owncloud__register_occ_check is not skipped) and
                                  "is not installed" in owncloud__register_occ_check.stdout) }}'
 
 - name: Automatically finish setup via the occ tool
@@ -201,6 +201,6 @@
   changed_when: False
   # As of ownCloud 9.0.4, the results from `occ` don’t match the web interface output?
   # Seems to work with ownCloud 9.0.8 and Nextcloud 11.
-  when: (owncloud__release | version_compare("9.0.8", ">="))
+  when: (owncloud__release is version_compare("9.0.8", ">="))
 
 # ]]]

@@ -172,7 +172,7 @@ lockfile	/var/run/rsnapshot-{{ rsnapshot_tpl_host }}.pid
 #
 {% if ansible_distribution == 'Debian' and ansible_distribution_release == 'jessie'
    and not (rsnapshot_register_version is defined
-   and rsnapshot_register_version.stdout | version_compare('1.4.0', '>=')) %}
+   and rsnapshot_register_version.stdout is version_compare('1.4.0', '>=')) %}
 # In Debian Jessie, rsnapshot has a bug related to 'ssh_args' option,
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=717451
 # Until a bugfix is released, 'ssh_args' option is disabled by default to allow

@@ -210,7 +210,7 @@
   with_together:
     - '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
     - '{{ hashicorp__register_unpack.results }}'
-  when: (item.1|changed or (ansible_local|d() and
+  when: (item.1 is changed or (ansible_local|d() and
          (ansible_local.hashicorp is not defined or
           (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
            (ansible_local.hashicorp.applications[item.0] is not defined or
@@ -224,7 +224,7 @@
   args:
     warn: False
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
-  when: (hashicorp__consul_webui|bool and item == 'consul' and hashicorp__register_unpack_webui|changed)
+  when: (hashicorp__consul_webui|bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
 
 
 # Ansible local facts [[[1
@@ -251,4 +251,4 @@
 - name: Reload facts if they were modified
   action: setup
   when: ((hashicorp__applications or hashicorp__dependent_applications) and
-         hashicorp__register_facts|changed)
+         hashicorp__register_facts is changed)

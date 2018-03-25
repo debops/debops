@@ -76,7 +76,7 @@
 - name: Create /run/motd.dynamic symlink
   command: systemd-tmpfiles --create
   when: machine__enabled|bool and ansible_service_mgr == 'systemd' and
-        machine__register_tmpfiles|changed
+        machine__register_tmpfiles is changed
 
 - name: Check current MOTD diversions
   environment:
@@ -130,7 +130,7 @@
     - '{{ machine__register_motd_scripts_removed.results }}'
     - '{{ machine__register_motd_scripts_created.results }}'
   when: (item.item.name|d() and not (item.item.divert|d())|bool and
-         item.item.filename is undefined and item.changed|bool)
+         item.item.filename is undefined and item is changed)
 
 - name: Revert packaged MOTD scripts
   shell: rm -f /etc/update-motd.d/{{ item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }} ; dpkg-divert --quiet --local --rename --remove /etc/update-motd.d/{{ item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}
@@ -163,4 +163,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: machine__register_facts|changed
+  when: machine__register_facts is changed

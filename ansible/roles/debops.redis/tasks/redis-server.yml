@@ -11,7 +11,7 @@
 
 - name: Apply dynamic redis-server configuration
   command: /etc/redis/ansible-redis-dynamic.conf config
-  when: redis__register_config_ansible_redis_dynamic|changed
+  when: redis__register_config_ansible_redis_dynamic is changed
 
 - name: Generate Ansible redis-server static configuration
   template:
@@ -27,7 +27,7 @@
     dest: '/etc/redis/redis.conf'
     regexp: '^include\s+/etc/redis/ansible-redis-static.conf'
     state: 'absent'
-  when: redis__register_config_ansible_redis_static|changed
+  when: redis__register_config_ansible_redis_static is changed
 
 - name: Include Ansible configuration in redis.conf
   lineinfile:
@@ -43,12 +43,12 @@
     name: 'redis-server'
     state: 'restarted'
   register: redis__register_server_restart
-  when: (redis__register_config_ansible_redis_static|changed or
-         redis__register_config_redis|changed)
+  when: (redis__register_config_ansible_redis_static is changed or
+         redis__register_config_redis is changed)
 
 - name: Rewrite dynamic redis-server configuration
   command: /etc/redis/ansible-redis-dynamic.conf rewrite
-  when: redis__register_server_restart|changed
+  when: redis__register_server_restart is changed
 
 - name: Set Redis instance as slave on first install
   redis:

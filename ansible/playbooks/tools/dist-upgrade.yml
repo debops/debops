@@ -106,13 +106,13 @@
     - name: Remove all APT preferences for backported packages
       shell: >
               grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --
-      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace|changed
+      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Create a lockfile
       file:
         path: '{{ dist_upgrade_lockfile }}'
         state: 'touch'
-      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace|changed
+      when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Perform apt-get dist-upgrade (this might take a while)
       apt:
@@ -120,7 +120,7 @@
         upgrade: 'dist'
       register: dist_upgrade_register_upgrade
       when: ((dist_upgrade_register_replace is defined and
-              dist_upgrade_register_replace|changed) or
+              dist_upgrade_register_replace is changed) or
              (dist_upgrade_register_lockfile is defined and
               dist_upgrade_register_lockfile.stat.exists))
 
@@ -142,20 +142,20 @@
       command: apt-get --yes autoremove
       register: dist_upgrade_register_autoremove
       when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade|changed
+            dist_upgrade_register_upgrade is changed
 
     - name: Clean APT package cache
       command: apt-get autoclean
       register: dist_upgrade_register_autoclean
       when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade|changed
+            dist_upgrade_register_upgrade is changed
 
     - name: Check if /etc/services.d exists
       stat:
         path: '/etc/services.d'
       register: dist_upgrade_register_etc_services
       when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade|changed
+            dist_upgrade_register_upgrade is changed
 
     - name: Assemble /etc/services
       assemble:
@@ -176,7 +176,7 @@
         charset: 'utf8'
         body: '{{ dist_upgrade_mail_body }}'
       when: dist_upgrade_register_upgrade is defined and
-            dist_upgrade_register_upgrade|changed
+            dist_upgrade_register_upgrade is changed
 
     - name: Remove the lockfile
       file:

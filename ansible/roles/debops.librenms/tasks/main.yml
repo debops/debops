@@ -138,7 +138,7 @@
   args:
     chdir: '{{ librenms__install_path }}'
   become_user: '{{ librenms__user }}'
-  when: (librenms__register_database_status|d() and librenms__register_database_status.changed)
+  when: (librenms__register_database_status|d() and librenms__register_database_status is changed)
   tags: [ 'role::librenms:database' ]
 
 - name: Get list of existing users from LibreNMS database

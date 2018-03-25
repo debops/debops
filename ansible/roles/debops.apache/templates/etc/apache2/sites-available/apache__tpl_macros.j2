@@ -13,9 +13,9 @@
 #}
 {% set version = '==' if (version == '=') else version %}
 {% set apache__tpl_compare_operator_includes_equal = True if (compare_operator in ['>=', '<=', '==']) else False %}
-{% if (version | version_compare(debops__tpl_macros.get_apache_min_version(), compare_operator))
-    or (version | version_compare(debops__tpl_macros.get_apache_min_version(), ">")) %}
-{%   if apache__tpl_compare_operator_includes_equal and (version | version_compare(debops__tpl_macros.get_apache_min_version(), "==")) %}
+{% if (version is version_compare(debops__tpl_macros.get_apache_min_version(), compare_operator))
+    or (version is version_compare(debops__tpl_macros.get_apache_min_version(), ">")) %}
+{%   if apache__tpl_compare_operator_includes_equal and (version is version_compare(debops__tpl_macros.get_apache_min_version(), "==")) %}
 {{     content -}}
 {%   else %}
 <IfVersion {{ compare_operator }} {{ version }}>
@@ -53,7 +53,7 @@ Examples:
 {{     get_min_version_wrapped(fallback_content, version, apache__tpl_xor_compare_operator_map[compare_operator]) -}}
 {%   endif %}
 {% else %}
-{%   if debops__tpl_macros.get_apache_version() | version_compare(version, compare_operator) %}
+{%   if debops__tpl_macros.get_apache_version() is version_compare(version, compare_operator) %}
 {{     content -}}
 {%   elif fallback_content != False %}
 {{     fallback_content -}}
@@ -216,7 +216,7 @@ SSLCompression       {{ item.tls_compression|d(apache__tls_compression) | quote 
 # https://raymii.org/s/tutorials/Strong_SSL_Security_On_Apache2.html
 # https://github.com/sovereign/sovereign/issues/373
 #}
-{% if debops__tpl_macros.get_apache_version()|version_compare("2.4.8", ">=") and debops__tpl_macros.get_openssl_version()|version_compare("1.0.2", ">=") %}
+{% if debops__tpl_macros.get_apache_version() is version_compare("2.4.8", ">=") and debops__tpl_macros.get_openssl_version() is version_compare("1.0.2", ">=") %}
 # SSLOpenSSLConfCmd DHParameters {{ item.tls_dhparam_file|d(apache__tls_dhparam_file) | quote }}
 {% endif %}
 {% endmacro %}{# ]]] #}
@@ -229,7 +229,7 @@ SSLEngine on
 {% set apache__tpl_pki_realm_path = apache__pki_realm_path + "/" + apache__tpl_pki_realm %}
 SSLCertificateFile      {{ item.tls_crt | d(apache__tpl_pki_realm_path + "/" + (item.pki_crt|d(apache__pki_crt_filename))) | quote }}
 SSLCertificateKeyFile   {{ item.tls_key | d(apache__tpl_pki_realm_path + "/" + (item.pki_key|d(apache__pki_key_filename))) | quote }}
-{% if item.ocsp_stapling_enabled|d(apache__ocsp_stapling_enabled)|bool and debops__tpl_macros.get_openssl_version()|version_compare("0.9.8h", ">=") %}
+{% if item.ocsp_stapling_enabled|d(apache__ocsp_stapling_enabled)|bool and debops__tpl_macros.get_openssl_version() is version_compare("0.9.8h", ">=") %}
 SSLUseStapling on
 {% endif %}
 

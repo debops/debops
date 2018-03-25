@@ -533,7 +533,7 @@ server {
 
 {%     endif                                                %}
 {%     for port in nginx_tpl_listen_ssl                     %}
-        listen {{ port }} ssl{% if nginx_version | version_compare('1.9.5','>=') %} http2{% elif nginx_version | version_compare('1.4','>=') %} spdy{% endif %}{% if nginx_tpl_default_server_ssl %} {{ nginx_tpl_default_server_ssl | join(" ") }}{% endif %}{% if (loop.first and nginx_tpl_ipv6only_ssl) %} {{ nginx_tpl_ipv6only_ssl | join(" ") }}{% endif %};
+        listen {{ port }} ssl{% if nginx_version is version_compare('1.9.5','>=') %} http2{% elif nginx_version is version_compare('1.4','>=') %} spdy{% endif %}{% if nginx_tpl_default_server_ssl %} {{ nginx_tpl_default_server_ssl | join(" ") }}{% endif %}{% if (loop.first and nginx_tpl_ipv6only_ssl) %} {{ nginx_tpl_ipv6only_ssl | join(" ") }}{% endif %};
 {%     endfor                                               %}
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
@@ -547,7 +547,7 @@ server {
 {%     if item.ssl_curve | default(nginx_default_ssl_curve) %}
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
 {%     endif                                                %}
-{%     if nginx_version | version_compare('1.4','>=') and (item.ocsp | d(nginx_ocsp)) | bool %}
+{%     if nginx_version is version_compare('1.4','>=') and (item.ocsp | d(nginx_ocsp)) | bool %}
         ssl_stapling              on;
 {%         if (item.ocsp_verify | d(nginx_ocsp_verify)) | bool  %}
         ssl_stapling_verify       on;
@@ -575,10 +575,10 @@ server {
         add_header                Content-Security-Policy-Report-Only "{{ item.csp_report|d(item.csp|d("default-src https: ;")) + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";
 {% endif %}
 {%     if item.content_type_options|d(True) != omit             %}
-        add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
+        add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
 {%     if item.frame_options|d() != omit                        %}
-        add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version | version_compare('1.7.5','>=') %} always{% endif %};
+        add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
 {%     if item.xss_protection | d(nginx__http_xss_protection) != omit %}
         add_header                X-XSS-Protection "{{ item.xss_protection | d(nginx__http_xss_protection) }}";
