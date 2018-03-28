@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+# Define default SSL configuration options
+
+ssl_protocols               {{ nginx_default_tls_protocols | join(" ") }};
+ssl_prefer_server_ciphers   on;
+ssl_ciphers                 {{ nginx_ssl_ciphers[nginx_default_ssl_ciphers] }};
+ssl_dhparam                 {{ nginx_ssl_dhparam }};
+ssl_ecdh_curve              {{ nginx_default_ssl_curve }};
