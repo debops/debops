@@ -11,6 +11,12 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Nothing new yet.
+
+
+v0.7.1 (2018-03-28)
+-------------------
+
 X.509 certificate changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
