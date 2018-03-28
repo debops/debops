@@ -96,7 +96,7 @@ kmod__dependent_modules: []
 # The variable that combines all lists of kernel module parameters and passes
 # them to the role tasks.
 kmod__combined_modules: '{{ kmod__default_modules
-                            + kmod__dependent_modules
+                            + lookup("flattened", kmod__dependent_modules, wantlist=True)
                             + kmod__modules
                             + kmod__group_modules
                             + kmod__host_modules }}'
@@ -140,7 +140,7 @@ kmod__dependent_load: []
 #
 # Variable which combines all of the kernel module load lists and passes them
 # to the role tasks.
-kmod__combined_load: '{{ kmod__dependent_load
+kmod__combined_load: '{{ lookup("flattened", kmod__dependent_load, wantlist=True)
                          + kmod__load
                          + kmod__group_load
                          + kmod__host_load }}'
