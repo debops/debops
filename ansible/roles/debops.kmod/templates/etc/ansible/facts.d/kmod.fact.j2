@@ -5,11 +5,15 @@
 from __future__ import print_function
 from json import loads, dumps
 
-import kmodpy
+try:
+    import kmodpy
+    kernel_modules = [x[0] for x in kmodpy.Kmod().list()]
+except ImportError:
+    kernel_modules = []
 
 output = loads('''{{ {"configured": True,
                       "enabled": kmod__enabled|bool} | to_nice_json }}''')
 
-output['modules'] = [x[0] for x in kmodpy.Kmod().list()]
+output['modules'] = kernel_modules
 
 print(dumps(output, sort_keys=True, indent=4))
