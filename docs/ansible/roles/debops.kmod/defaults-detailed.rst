@@ -169,9 +169,11 @@ kmod__load
 ----------
 
 The ``kmod__*_load`` list variables can be used to specify which kernel modules
-should be loaded at boot time. The configuration is stored in the
-:file:`/etc/modules-load.d/` directory. Each list entry is a YAML dictionary
-with specific parameters:
+should be loaded at boot time. If a single module is specified, the role will
+try to load it if it's currently not present in the kernel.
+
+The configuration is stored in the :file:`/etc/modules-load.d/` directory. Each
+list entry is a YAML dictionary with specific parameters:
 
 ``name``
   Required. Name of the kernel module to manage. This parameter is used as
@@ -197,6 +199,10 @@ with specific parameters:
   ``present``   **Default if not specified.** Configuration will be present.
   ------------- -------------------------------------------------------------
   ``absent``    The configuration of a given kernel module will be removed.
+  ------------- -------------------------------------------------------------
+  ``config``    Specified kernel module configuration is set in the
+                configuration file, but the role will not try to load the
+                missing module into the kernel.
   ------------- -------------------------------------------------------------
   ``ignore``    Configuration entries with this state will not be evaluated
                 by the role and won't be merged with other entries with the
