@@ -37,6 +37,7 @@
     state: 'absent'
   when: (apt__enabled|bool and apt__remove_default_configuration|bool)
 
+# Manage configuration files [[[
 - name: Generate APT configuration files
   template:
     src: '{{ item }}.j2'
@@ -47,6 +48,25 @@
   with_flattened:
     - 'etc/apt/apt.conf.d/25no-recommends.conf'
   when: apt__enabled|bool
+
+- name: Generate Additionnal APT configuration files
+  copy:
+    dest:     '/etc/apt/apt.conf.d/{{ item.dest     | d(item.path | d(item.name)) }}'
+    src:      '{{ item.src      | d(omit) }}'
+    content:  '{{ item.content  | d(omit) }}'
+    owner:    'root'
+    group:    'root'
+    mode:     '0644'
+  with_flattened:
+    - '{{ apt__conf }}'
+    - '{{ apt__group_conf }}'
+    - '{{ apt__host_conf }}'
+  when: (apt__enabled|bool  and
+         (item.src|d() or item.content|d()) and
+         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.state|d('present') != 'absent'))
+
+                                                                   # ]]]
 
 - name: Check current APT diversions
   environment:
