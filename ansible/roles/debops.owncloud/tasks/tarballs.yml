@@ -107,7 +107,7 @@
                  owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip" }}'
         dest: '{{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] }}'
         checksum: 'sha512:{{ (owncloud__register_checksum.stdout_lines[0]).split(" ") | first }}'
-      when: owncloud__register_download_assurance|changed
+      when: owncloud__register_download_assurance is changed
       tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
 
     - name: Verify OpenPGP signature

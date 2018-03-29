@@ -90,7 +90,7 @@
     - '{{ mosquitto__auth_host_users }}'
   when: (mosquitto__password|bool and item.state|d('present') == 'absent' and
          (item.name | d(item) in mosquitto__register_passwd.stdout_lines) and
-         mosquitto__version | version_compare('1.4.0', '>='))
+         mosquitto__version is version_compare('1.4.0', '>='))
   notify: [ 'Reload mosquitto' ]
   tags: [ 'role::mosquitto:passwd' ]
   no_log: '{{ secret__no_log | bool }}'
@@ -105,7 +105,7 @@
     - '{{ mosquitto__auth_host_users }}'
   when: (mosquitto__password|bool and item.state|d('present') != 'absent' and
          (item.name | d(item) not in mosquitto__register_passwd.stdout_lines) and
-         mosquitto__version | version_compare('1.4.0', '>='))
+         mosquitto__version is version_compare('1.4.0', '>='))
   notify: [ 'Reload mosquitto' ]
   tags: [ 'role::mosquitto:passwd' ]
   no_log: '{{ secret__no_log | bool }}'
@@ -231,5 +231,5 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: mosquitto__register_facts|changed
+  when: mosquitto__register_facts is changed
   tags: [ 'role::mosquitto:passwd' ]

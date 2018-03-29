@@ -88,7 +88,7 @@
     name: 'mysql'
     state: 'restarted'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status|changed))
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
 
 - name: Secure database server
   include: 'secure_installation.yml'
@@ -113,4 +113,4 @@
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: mariadb_server__register_local_facts|changed
+  when: mariadb_server__register_local_facts is changed

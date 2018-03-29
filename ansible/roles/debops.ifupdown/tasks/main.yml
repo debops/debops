@@ -19,7 +19,7 @@
   when: (ansible_local|d() and ansible_local.debops_fact|d() and
          ansible_local.debops_fact.enabled|bool and
          (ansible_local.debops_fact.version is undefined or
-          (ansible_local.debops_fact.version.ifupdown|d("0.0.0") | version_compare("0.3.0","<"))))
+          (ansible_local.debops_fact.version.ifupdown|d("0.0.0") is version_compare("0.3.0","<"))))
 
 - name: Create configuration directories
   file:
@@ -61,7 +61,7 @@
   with_items:
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
-  when: (item.item.key|d() and item|changed)
+  when: (item.item.key|d() and item is changed)
 
 - name: Mark modified interfaces for processing
   copy:
@@ -89,7 +89,7 @@
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
   notify: [ 'Apply ifupdown configuration' ]
-  when: (item.item.key|d() and item|changed)
+  when: (item.item.key|d() and item is changed)
 
 - name: Remove custom configuration files
   file:
@@ -120,6 +120,25 @@
   when: ((item.dest|d() or item.path|d()) and
          (item.src|d() or item.content|d()) and
          item.state|d('present') != 'absent')
+
+- name: Remove custom ifupdown hooks
+  file:
+    path: '{{ item.dest | d("/" + item.hook) }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ ifupdown__custom_hooks }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Install custom ifupdown hooks
+  template:
+    src:  '{{ item.src  | d(item.hook + ".j2") }}'
+    dest: '{{ item.dest | d("/" + item.hook) }}'
+    owner: 'root'
+    group: 'root'
+    mode: '{{ item.mode | d("0755") }}'
+  with_flattened:
+    - '{{ ifupdown__custom_hooks }}'
+  when: item.name|d() and item.state|d('present') != 'absent'
 
 - name: Install reconfiguration script if needed
   copy:

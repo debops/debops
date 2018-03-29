@@ -23,6 +23,12 @@
 from __future__ import (absolute_import, division, print_function)
 from operator import itemgetter
 
+try:
+    unicode = unicode
+except NameError:
+    # py3
+    unicode = str
+
 __metaclass__ = type
 
 
@@ -42,7 +48,8 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                                                  float, bool, dict))):
                 current_data.update({'value': new_value})
 
-            if (old_value is not None and old_state in ['comment']):
+            if (old_value is not None and old_state in ['comment'] and
+                    current_data['state'] != 'comment'):
                 current_data.update({'state': 'present'})
 
         elif isinstance(new_value, list):

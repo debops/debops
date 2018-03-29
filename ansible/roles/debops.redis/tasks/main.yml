@@ -119,7 +119,7 @@
     name: 'redis-sentinel'
     state: 'restarted'
     enabled: True
-  when: redis__sentinel_enabled|bool and redis__register_sentinel_init|changed
+  when: redis__sentinel_enabled|bool and redis__register_sentinel_init is changed
 
 - name: Make sure Ansible fact directory exists
   file:
@@ -140,4 +140,4 @@
 
 - name: Reload facts if they were modified
   action: setup
-  when: redis__register_facts|changed
+  when: redis__register_facts is changed

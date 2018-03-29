@@ -1,0 +1,54 @@
+# {{ ansible_managed }}
+
+{% macro parse_value(value) %}
+{%   if value | bool and value is not iterable %}
+{{ '1' -}}
+{%   elif not value | bool and value is not iterable %}
+{%     if value is not none %}
+{%       if value | int or value | string == '0' %}
+{{ value -}}
+{%       else %}
+{{ '0' -}}
+{%       endif %}
+{%     endif %}
+{%   elif value is string %}
+{{ value -}}
+{%   endif %}
+{% endmacro %}
+{% if item.comment|d() %}
+{{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
+{% endif %}
+{% set param_tracker = [] %}
+{% set tracker = {'seen_comment': False} %}
+{% for element in item.options %}
+{%   if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if element.comment|d() %}
+{%       if not loop.first and param_tracker and not tracker.seen_comment|bool %}
+
+{%       endif %}
+{%       set _ = tracker.update({'seen_comment': True}) %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     else %}
+{%       set _ = tracker.update({'seen_comment': False}) %}
+{%     endif %}
+{%     set _ = param_tracker.append(True) %}
+{%     set commented_entry = '' %}
+{%     if ((element.state|d('present') == 'comment') or (item.state|d('present') == 'comment')) %}
+{%       set commented_entry = '#' %}
+{%     endif %}
+{%     set is_writable = [] %}
+{%     for writable_path in sysctl__writable %}
+{%       if element.name.startswith(writable_path) %}
+{%         set _ = is_writable.append(True) %}
+{%       endif %}
+{%     endfor %}
+{%     if not is_writable %}
+{%       set commented_entry = '#' %}
+# Read-only parameter.
+{%     endif %}
+{{ '{}{} = {}'.format(commented_entry, element.name, parse_value(element.value)) }}
+{%     if element.comment|d() and not loop.last %}
+
+{%     endif %}
+{%   endif %}
+{% endfor %}

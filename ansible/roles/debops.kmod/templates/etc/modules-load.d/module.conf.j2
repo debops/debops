@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+{% if item.comment|d() %}
+{{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if item.modules|d() %}
+{%   for element in ([ item.modules ] if item.modules is string else item.modules) %}
+{{ element }}
+{%   endfor %}
+{% else %}
+{{ item.name }}
+{% endif %}

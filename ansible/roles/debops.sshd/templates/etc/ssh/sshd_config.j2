@@ -31,7 +31,7 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 {% for key, value in sshd__ciphers_map.items() %}
 {%   if not sshd__tpl_ciphers_match and
         sshd__register_version.stdout|d() and
-        sshd__register_version.stdout | version_compare(key, '>=') %}
+        sshd__register_version.stdout is version_compare(key, '>=') %}
 {%     set sshd__tpl_ciphers_match = True %}
 {%     for element in value %}
 {%       set _ = sshd__tpl_ciphers.append(element) %}
@@ -51,7 +51,7 @@ Ciphers {{ sshd__tpl_ciphers | join(",") }}
 {% for key, value in sshd__kex_algorithms_map.items() %}
 {%   if not sshd__tpl_kex_algorithms_match and
       sshd__register_version.stdout|d() and
-      sshd__register_version.stdout | version_compare(key, '>=') %}
+      sshd__register_version.stdout is version_compare(key, '>=') %}
 {%   set sshd__tpl_kex_algorithms_match = True %}
 {%     for element in value %}
 {%       set _ = sshd__tpl_kex_algorithms.append(element) %}
@@ -67,12 +67,13 @@ KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 
 {% endif %}
 {% set sshd__tpl_macs = [] %}
-{% set sshd__tpl_macs_match = False %}
-{% for key, value in sshd__macs_map.items() %}
+{# workaround for jinja not beeing able to overwrite a variable inside the loop #}
+{% set sshd__tpl_macs_match = [] %}
+{% for key, value in sshd__macs_map|dictsort|reverse %}
 {%   if not sshd__tpl_macs_match and
         sshd__register_version.stdout|d() and
-        sshd__register_version.stdout | version_compare(key, '>=') %}
-{%     set sshd__tpl_macs_match = True %}
+        sshd__register_version.stdout is version_compare(key, '>=') %}
+{%     set _ = sshd__tpl_macs_match.append(True) %}
 {%     for element in value %}
 {%       set _ = sshd__tpl_macs.append(element) %}
 {%     endfor %}
@@ -86,10 +87,12 @@ MACs {{ ([ sshd__tpl_macs|first ] + sshd__macs_additional) | unique | join(",") 
 MACs {{ sshd__tpl_macs | join(",") }}
 
 {% endif %}
+{% if sshd__register_version.stdout is version_compare('7.5', '<') %}
 # Privilege Separation is turned on for security
 UsePrivilegeSeparation {{ sshd__privilege_separation }}
 
-{% if sshd__register_version.stdout | version_compare('7.4', '<') %}
+{% endif %}
+{% if sshd__register_version.stdout is version_compare('7.4', '<') %}
 # Lifetime and size of ephemeral version 1 server key
 KeyRegenerationInterval 3600
 ServerKeyBits 1024
@@ -100,21 +103,23 @@ SyslogFacility AUTH
 LogLevel {{ sshd__log_level }}
 
 MaxAuthTries {{ sshd__max_auth_tries }}
+MaxSessions {{ sshd__max_sessions }}
 MaxStartups {{ sshd__max_startups }}
 LoginGraceTime {{ sshd__login_grace_time }}
+ClientAliveCountMax {{ sshd__client_alive_count_max }}
 
 # Authentication:
 PermitRootLogin {{ sshd__permit_root_login }}
 StrictModes yes
 
-{% if sshd__register_version.stdout | version_compare('7.4', '<') %}
+{% if sshd__register_version.stdout is version_compare('7.4', '<') %}
 RSAAuthentication yes
 {% endif %}
 PubkeyAuthentication yes
 
 {% if sshd__authorized_keys_lookup|bool and
       sshd__register_version.stdout|d() and
-      sshd__register_version.stdout | version_compare('6.2', '>=') %}
+      sshd__register_version.stdout is version_compare('6.2', '>=') %}
 AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup
 AuthorizedKeysCommandUser {{ sshd__authorized_keys_lookup_user }}
 
@@ -124,7 +129,7 @@ AuthorizedKeysFile {{ sshd__authorized_keys | join(" ") }}
 # Don't read the user's ~/.rhosts and ~/.shosts files
 IgnoreRhosts yes
 
-{% if sshd__register_version.stdout | version_compare('7.4', '<') %}
+{% if sshd__register_version.stdout is version_compare('7.4', '<') %}
 # For this to work you will also need host keys in /etc/ssh_known_hosts
 RhostsRSAAuthentication no
 
@@ -160,6 +165,7 @@ X11DisplayOffset 10
 PrintMotd no
 PrintLastLog yes
 TCPKeepAlive yes
+Compression {{ sshd__compression }}
 #UseLogin no
 
 Banner {{ sshd__banner }}

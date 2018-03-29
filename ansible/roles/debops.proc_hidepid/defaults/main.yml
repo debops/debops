@@ -40,9 +40,11 @@ proc_hidepid__packages: []
 # environments like LXC/Docker containers, in which case the role will only
 # passively set up the required facts and other configuration.
 proc_hidepid__remount: '{{ True
-                           if (((ansible_system_capabilities_enforced|d())|bool and
-                                "cap_sys_admin" in ansible_system_capabilities) or
-                               not (ansible_system_capabilities_enforced|d(True))|bool)
+                           if ((((ansible_system_capabilities_enforced|d())|bool and
+                                 "cap_sys_admin" in ansible_system_capabilities) or
+                                not (ansible_system_capabilities_enforced|d(True))|bool) and
+                               (ansible_local|d() and ansible_local.proc_hidepid|d() and
+                                (ansible_local.proc_hidepid.proc_owner|d("root")) == "root"))
                            else False }}'
 
                                                                    # ]]]
@@ -71,7 +73,29 @@ proc_hidepid__group: 'procadmins'
 # .. envvar:: proc_hidepid__gid [[[
 #
 # The GID used by the UNIX system group. If not specified, it will be selected
-# automatically. It might be best not to change existing GID once set.
-proc_hidepid__gid: ''
+# automatically. If you change the GID, you need to remount the :file:`/proc`
+# filesystem manually and restart any services that rely on this functionality.
+proc_hidepid__gid: '70'
+                                                                   # ]]]
+                                                                   # ]]]
+# The ``/proc/sched_debug`` options [[[
+# -------------------------------------
+
+# .. envvar:: proc_hidepid__secure_scheduler_enabled [[[
+#
+# Enable or disable file attributes change of the :file:`/proc/sched_debug`
+# file to not be world-readable. Note: the ``root`` account in privileged LXC
+# containers can read the file and change its permissions at will.
+proc_hidepid__secure_scheduler_enabled: '{{ True
+                                            if (proc_hidepid__register_sched.stat.exists|bool and
+                                                proc_hidepid__register_sched.stat.uid == 0)
+                                            else False }}'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__secure_scheduler_group [[[
+#
+# Name of the UNIX system group which will be able to read the contents of the
+# :file:`/proc/sched_debug` file.
+proc_hidepid__secure_scheduler_group: '{{ proc_hidepid__group }}'
                                                                    # ]]]
                                                                    # ]]]

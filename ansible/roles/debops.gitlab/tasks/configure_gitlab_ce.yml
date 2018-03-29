@@ -168,7 +168,7 @@
 - name: Install GitLab SysVinit script
   command: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
   register: gitlab__register_sysvinit_script
-  when: (gitlab_register_ce_checkout|changed and
+  when: (gitlab_register_ce_checkout is changed and
          (gitlab_use_systemd is defined and not gitlab_use_systemd))
 
 - name: Install GitLab systemd service files
@@ -181,9 +181,9 @@
     - 'gitlab-sidekiq.service'
     - 'gitlab-unicorn.service'
     - 'gitlab-workhorse.service'
-    - '{{ "gitlab-gitaly.service" if (gitlab_version | version_compare("9.0", operator="gt", strict=True)) else [] }}'
+    - '{{ "gitlab-gitaly.service" if (gitlab_version is version_compare("9.0", operator="gt", strict=True)) else [] }}'
   register: gitlab__register_systemd_services
-  when: (gitlab_register_ce_checkout|changed and
+  when: (gitlab_register_ce_checkout is changed and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Install GitLab Pages systemd service file
@@ -192,26 +192,26 @@
     dest: '/etc/systemd/system/gitlab-pages.service'
   register: gitlab__register_pages_systemd_services
   when: (gitlab_enable_pages and
-         gitlab_register_ce_checkout|changed and
+         gitlab_register_ce_checkout is changed and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Reload systemd daemons
   command: systemctl daemon-reload
   when: (ansible_service_mgr == "systemd" and
-         (gitlab__register_sysvinit_script|changed or
-          gitlab__register_systemd_services|changed or
-          gitlab__register_pages_systemd_services|changed))
+         (gitlab__register_sysvinit_script is changed or
+          gitlab__register_systemd_services is changed or
+          gitlab__register_pages_systemd_services is changed))
 
 - name: Enable GitLab SysVinit service
   service:
     name: 'gitlab'
     enabled: True
-  when: (gitlab_register_ce_checkout|changed and
+  when: (gitlab_register_ce_checkout is changed and
          ansible_service_mgr != 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab SysVinit service (systemd)
   command: systemctl enable gitlab
-  when: (gitlab_register_ce_checkout|changed and
+  when: (gitlab_register_ce_checkout is changed and
          ansible_service_mgr == 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab systemd services
@@ -224,8 +224,8 @@
     - 'gitlab-sidekiq.service'
     - 'gitlab-unicorn.service'
     - 'gitlab-workhorse.service'
-    - '{{ "gitlab-gitaly.service" if (gitlab_version | version_compare("9.0", operator="gt", strict=True)) else [] }}'
-  when: (gitlab_register_ce_checkout|changed and
+    - '{{ "gitlab-gitaly.service" if (gitlab_version is version_compare("9.0", operator="gt", strict=True)) else [] }}'
+  when: (gitlab_register_ce_checkout is changed and
          gitlab_use_systemd|bool)
 
 - name: Enable GitLab Pages systemd service
@@ -233,7 +233,7 @@
     name: 'gitlab-pages.service'
     enabled: True
   when: (gitlab_enable_pages and
-         gitlab_register_ce_checkout|changed and
+         gitlab_register_ce_checkout is changed and
          gitlab_use_systemd|bool)
 
 - name: Setup GitLab CE logrotate configuration
@@ -253,8 +253,8 @@
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_version | version_compare("8.17", operator="lt", strict=True)
-        and gitlab_register_ce_checkout|changed
+  when: gitlab_version is version_compare("8.17", operator="lt", strict=True)
+        and gitlab_register_ce_checkout is changed
 
 - name: Yarn install
   command: yarn install --production
@@ -262,8 +262,8 @@
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_version | version_compare("8.17", operator="ge", strict=True)
-        and gitlab_register_ce_checkout|changed
+  when: gitlab_version is version_compare("8.17", operator="ge", strict=True)
+        and gitlab_register_ce_checkout is changed
 
   # The RubyGems.org website has frequent timeouts, so we will try and install
   # everything again as long as there are errors.
@@ -274,7 +274,7 @@
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_ce_checkout|changed
+  when: gitlab_register_ce_checkout is changed
 
 - name: Set default administrator email address and password
   replace:
@@ -303,7 +303,7 @@
           (ansible_local.gitlab is undefined or (ansible_local.gitlab is defined and
            (ansible_local.gitlab.installed is undefined or (ansible_local.gitlab.installed is defined and
             not ansible_local.gitlab.installed)))))) and
-         gitlab_register_ce_checkout|changed and
+         gitlab_register_ce_checkout is changed and
          gitlab__database == 'postgresql')
 
 - name: Reset default administrator email address and password
@@ -330,7 +330,7 @@
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
-         gitlab_register_ce_checkout|changed)
+         gitlab_register_ce_checkout is changed)
 
 - name: Clean GitLab assets
   command: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
@@ -340,7 +340,7 @@
   become_user: '{{ gitlab_user }}'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
-         gitlab_register_bundle_migrate|changed)
+         gitlab_register_bundle_migrate is changed)
 
 - name: Precompile GitLab assets
   command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
@@ -349,8 +349,8 @@
   become: True
   become_user: '{{ gitlab_user }}'
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
-  when: gitlab_register_bundle_setup_postgresql|changed or
-        gitlab_register_bundle_migrate|changed
+  when: gitlab_register_bundle_setup_postgresql is changed or
+        gitlab_register_bundle_migrate is changed
 
 - name: Clear GitLab cache
   command: bundle exec rake cache:clear RAILS_ENV=production
@@ -360,7 +360,7 @@
   become_user: '{{ gitlab_user }}'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
-         gitlab_register_bundle_migrate|changed)
+         gitlab_register_bundle_migrate is changed)
 
 - name: Configure periodical GitLab backups
   cron:

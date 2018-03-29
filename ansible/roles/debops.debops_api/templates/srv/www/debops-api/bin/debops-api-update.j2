@@ -3,6 +3,19 @@
 set -e
 
 # {{ ansible_managed }}
+
+app_update="{{ debops_api__app_update | bool | lower }}"
+app_repo_dest="{{ debops_api__app_repo_dest }}"
+input_data_repo_dest="{{ debops_api__input_data_repo_dest }}"
+
+if [ "${app_update}" = "true" ] ; then
+    git -C "${app_repo_dest}" pull --ff-only
+fi
+
+git -C "${input_data_repo_dest}" pull --ff-only
+git -C "${input_data_repo_dest}" submodule update --init
+
+read -r debops_api_command << EOF
 {% macro flatten_app_parameters_list(nested_list) %}{# [[[ #}
 {% for item in nested_list %}
 {%   if item is string %}
@@ -12,14 +25,6 @@ set -e
 {%   endif %}
 {% endfor %}
 {% endmacro %}{# ]]] #}
-
-{% if debops_api__app_update %}
-git -C {{ debops_api__app_repo_dest | quote }} pull --ff-only
-{% endif %}
-
-git -C {{ debops_api__input_data_repo_dest | quote }} pull --ff-only
-git -C {{ debops_api__input_data_repo_dest | quote }} submodule update --init
-
 {% set debops_api__tpl_app_parameters_flattened = [ 'linebreak' ] %}
 {% set _ = flatten_app_parameters_list(
    (debops_api__app_parameters | list) +
@@ -28,3 +33,6 @@ git -C {{ debops_api__input_data_repo_dest | quote }} submodule update --init
 ) %}
 python{{ debops_api__python_version|string }} {{ (debops_api__app_repo_dest + "/bin/debops-api") | quote }} {{ debops_api__tpl_app_parameters_flattened
       | map("quote") | map("regex_replace", "^linebreak$", "\\\n    ") | join(" ") }}
+EOF
+
+eval "${debops_api_command}"

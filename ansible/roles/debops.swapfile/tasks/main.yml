@@ -35,12 +35,12 @@
   command: mkswap {{ item.item.path | d(item.item) }}
   register: swapfile__register_init
   with_items: '{{ swapfile__register_allocation.results|d([]) }}'
-  when: (item|changed and item.state|d("present") != 'absent')
+  when: (item is changed and item.state|d("present") != 'absent')
 
 - name: Enable swap files
   command: swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}
   with_items: '{{ swapfile__register_allocation.results|d([]) }}'
-  when: (item|changed and item.state|d("present") != 'absent' and
+  when: (item is changed and item.state|d("present") != 'absent' and
           (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
            (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
 

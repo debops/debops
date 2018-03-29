@@ -92,12 +92,12 @@
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
          ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed)
+         gitlab_register_gitlab__gitaly_checkout is changed)
 
 - name: Setup gitaly
   make:
     chdir: '{{ gitlab__gitaly_checkout }}'
-  when: gitlab_register_gitlab__gitaly_checkout|changed
+  when: gitlab_register_gitlab__gitaly_checkout is changed
 
 - name: Start gitaly service after an upgrade
   service:
@@ -106,7 +106,7 @@
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
          ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed)
+         gitlab_register_gitlab__gitaly_checkout is changed)
 
 - name: Configure Gitaly
   template:

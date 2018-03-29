@@ -156,7 +156,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: [ 'acme-challenge' ]
+  with_items: [ 'acme-challenge', 'ssl' ]
   when: (nginx__deploy_state in [ 'present' ])
   notify: [ 'Test nginx and reload' ]
 
@@ -227,7 +227,7 @@
 
 - name: Gather facts if they were modified
   action: setup
-  when: (nginx_register_local_facts.changed and nginx__deploy_state in [ 'present' ])
+  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
 
 - include: 'nginx_htpasswd.yml'
   when: (nginx__deploy_state in [ 'present' ])
@@ -274,7 +274,7 @@
 
 - name: Gather facts if they were modified
   action: setup
-  when: (nginx_register_local_facts.changed and nginx__deploy_state in [ 'present' ])
+  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
 
 - name: DebOps post_tasks hook
   include: '{{ lookup("task_src", "nginx/post_main.yml") }}'

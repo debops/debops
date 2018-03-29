@@ -10,9 +10,26 @@
   register: proc_hidepid__register_install
   when: proc_hidepid__enabled|bool
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save proc_hidepid local facts
+  template:
+    src: 'etc/ansible/facts.d/proc_hidepid.fact.j2'
+    dest: '/etc/ansible/facts.d/proc_hidepid.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: proc_hidepid__register_facts
+
 - name: Update Ansible facts if they were modified
   action: setup
-  when: proc_hidepid__register_install|changed
+  when: proc_hidepid__register_facts is changed
 
 - name: Ensure that UNIX system group with /proc access exists
   group:
@@ -29,6 +46,7 @@
     fstype: 'proc'
     opts: 'defaults,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }}'
     state: 'mounted'
+  register: proc_hidepid__register_mount
   when: proc_hidepid__enabled|bool and proc_hidepid__remount|bool
 
   # This is a workaround for Ubuntu bug: https://bugs.launchpad.net/ubuntu/+source/mountall/+bug/1039887
@@ -42,6 +60,28 @@
   when: (proc_hidepid__enabled|bool and proc_hidepid__remount|bool and
          (ansible_distribution in [ 'Ubuntu' ] and
           ansible_distribution_release in [ 'trusty' ]))
+
+- name: Check /proc/sched_debug file attributes
+  stat:
+    path: '/proc/sched_debug'
+  register: proc_hidepid__register_sched
+  when: proc_hidepid__enabled|bool
+
+- name: Generate tmpfiles configuration for securing /proc/sched_debug
+  template:
+    src: 'etc/tmpfiles.d/proc-sched_debug.conf.j2'
+    dest: '/etc/tmpfiles.d/proc-sched_debug.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: proc_hidepid__register_tmpfiles
+  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
+        proc_hidepid__secure_scheduler_enabled|bool
+
+- name: Secure /proc/sched_debug file access
+  command: systemd-tmpfiles --create
+  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
+        proc_hidepid__register_tmpfiles is changed
 
 - name: Create the systemd-logind configuration directory
   file:
@@ -64,25 +104,8 @@
 
 - name: Reload systemd daemons
   command: systemctl daemon-reload
-  when: proc_hidepid__register_logind|changed
-
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save proc_hidepid local facts
-  template:
-    src: 'etc/ansible/facts.d/proc_hidepid.fact.j2'
-    dest: '/etc/ansible/facts.d/proc_hidepid.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: proc_hidepid__register_facts
+  when: proc_hidepid__register_logind is changed
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: proc_hidepid__register_facts|changed
+  when: proc_hidepid__register_mount is changed

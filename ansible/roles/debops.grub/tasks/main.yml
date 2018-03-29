@@ -93,7 +93,7 @@
   no_log: True
   changed_when: False
   register: grub_register_pw_hashes
-  when: (item.0.name|d() and item.1|changed)
+  when: (item.0.name|d() and item.1 is changed)
   with_together:
     - '{{ grub_combined_users }}'
     - '{{ grub_register_pw_plain.results|d({}) }}'
@@ -106,7 +106,7 @@
   become: False
   delegate_to: 'localhost'
   no_log: True
-  when: (not item.1|skipped)
+  when: (item.1 is not skipped)
   with_together:
     - '{{ grub_combined_users }}'
     - '{{ grub_register_pw_hashes.results|d({}) }}'
@@ -142,7 +142,7 @@
 
 - name: Copy /etc/grub.d/10_linux.dpkg-divert to its original location
   command: cp /etc/grub.d/10_linux.dpkg-divert /etc/grub.d/10_linux
-  when: grub__register_linux_divert|changed
+  when: grub__register_linux_divert is changed
 
 - name: Apply patch to allow to configure the default menu entry parameters
   replace:

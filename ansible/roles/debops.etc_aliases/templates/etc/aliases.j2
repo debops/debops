@@ -17,7 +17,7 @@
 {%         if element.section == section.name and element.state|d('present') != 'absent' %}
 {%           set comment_prefix =   ('' if not section_loop else '\n') %}
 {%           set alias_name =       (('"' + (element.real_name | d(element.name)) + '"')
-                                     if (element.real_name | d(element.name)) | search('[^a-zA-Z0-9\-\_\.]')
+                                     if (element.real_name | d(element.name)) is search('[^a-zA-Z0-9\-\_\.]')
                                      else (element.real_name | d(element.name))) %}
 {%           if element.recipients|d() %}
 {%             set alias_recipients = ' ' + ([ element.recipients ] if element.recipients is string else element.recipients) | join(', ') %}

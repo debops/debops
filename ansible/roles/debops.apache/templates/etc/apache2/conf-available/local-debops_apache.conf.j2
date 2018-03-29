@@ -34,7 +34,7 @@ LogLevel {{ apache__log_level }}
 <IfModule ssl_module>
 {{ apache__tpl_macros.get_default_tls_directives(item.value|d({})) }}
 
-{% if debops__tpl_macros.get_openssl_version()|version_compare("0.9.8h", ">=") %}
+{% if debops__tpl_macros.get_openssl_version() is version_compare("0.9.8h", ">=") %}
 SSLStaplingCache {{ apache__ocsp_stapling_cache | quote }}
 SSLStaplingResponseMaxAge {{ apache__ocsp_stapling_response_max_age|string }}
 {%   if apache__ocsp_stapling_force_url %}

@@ -113,8 +113,8 @@ Configure GMail as remote SMTP server with options specified manually:
 
    nullmailer__remotes:
      - host: 'smtp.gmail.com'
-       options: [ '--starttls', '--port 587', '--auth-login',
-                  '--user username', '--pass password' ]
+       options: [ '--starttls', '--port=587', '--auth-login',
+                  '--user=username', '--pass=password' ]
 
 
 .. _nullmailer__ref_configuration_files:

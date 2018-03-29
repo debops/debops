@@ -65,7 +65,7 @@
     owner: '{{ etherpad_user }}'
     group: '{{ etherpad_group }}'
     mode: '0755'
-  when: (etherpad_register_source is defined and etherpad_register_source.changed == True) or
+  when: (etherpad_register_source is defined and etherpad_register_source is changed) or
         (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
   tags: [ 'role::etherpad:source' ]
 
@@ -76,7 +76,7 @@
     owner: '{{ etherpad_user }}'
     group: '{{ etherpad_group }}'
     mode: '0644'
-  when: (etherpad_register_source is defined and etherpad_register_source.changed == True) or
+  when: (etherpad_register_source is defined and etherpad_register_source is changed) or
         (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
   tags: [ 'role::etherpad:source' ]
 
@@ -89,7 +89,7 @@
   become_user: '{{ etherpad_user }}'
   register: etherpad_register_checkout
   notify: [ 'Restart etherpad-lite' ]
-  when: (etherpad_register_source is defined and etherpad_register_source.changed == True) or
+  when: (etherpad_register_source is defined and etherpad_register_source is changed) or
         (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
   tags: [ 'role::etherpad:source' ]
 
@@ -123,7 +123,7 @@
     chdir: '{{ etherpad_home + "/" + etherpad_repository }}'
     creates: '{{ etherpad_home }}/.node-gyp'
   become_user: '{{ etherpad_user }}'
-  when: etherpad_register_checkout|changed
+  when: etherpad_register_checkout is changed
 
 - name: Manage Etherpad plugins
   npm:
@@ -170,16 +170,16 @@
 - name: Reload systemd daemons
   command: systemctl daemon-reload
   when: (ansible_service_mgr == 'systemd' and
-         (etherpad__register_sysvinit|changed or
-          etherpad__register_systemd|changed))
+         (etherpad__register_sysvinit is changed or
+          etherpad__register_systemd is changed))
 
 - name: Ensure that etherpad-lite is started
   service:
     name: 'etherpad-lite'
     state: 'started'
     enabled: True
-  when: (etherpad__register_sysvinit|changed or
-         etherpad__register_systemd|changed)
+  when: (etherpad__register_sysvinit is changed or
+         etherpad__register_systemd is changed)
 
 - name: Wait for the API key file generation
   wait_for:
@@ -232,4 +232,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: etherpad__register_facts|changed
+  when: etherpad__register_facts is changed

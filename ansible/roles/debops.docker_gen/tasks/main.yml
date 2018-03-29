@@ -81,7 +81,7 @@
 - name: Reload systemd daemons
   command: systemctl daemon-reload
   when: ((ansible_local|d() and ansible_local.init|d() and ansible_local.init == 'systemd') and
-         (docker_gen__register_service|d() and docker_gen__register_service|changed))
+         (docker_gen__register_service|d() and docker_gen__register_service is changed))
 
 - name: Start docker-gen on install
   service:
@@ -89,4 +89,4 @@
     state: 'started'
     enabled: True
   when: docker_gen__register_install|d() and
-        docker_gen__register_install|changed
+        docker_gen__register_install is changed

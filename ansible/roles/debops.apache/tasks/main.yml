@@ -4,8 +4,8 @@
 - name: Check for supported Ansible version
   assert:
     that:
-      - 'ansible_version.full | version_compare("2.1.5.0", ">=")'
-      - '((ansible_version.minor == 2) and (ansible_version.full | version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
+      - 'ansible_version.full is version_compare("2.1.5.0", ">=")'
+      - '((ansible_version.minor == 2) and (ansible_version.full is version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
     msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! Exiting.'
   run_once: True
   delegate_to: 'localhost'
@@ -17,6 +17,8 @@
     state: '{{ "present" if (apache__deploy_state == "present") else "absent" }}'
   with_flattened:
     - '{{ apache__packages }}'
+    - '{{ apache__group_packages }}'
+    - '{{ apache__host_packages }}'
     - '{{ apache__dependent_packages }}'
 
 # Manage Apache modules [[[1

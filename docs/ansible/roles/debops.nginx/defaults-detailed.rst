@@ -92,6 +92,12 @@ Common webserver options
   See also ``owner`` parameter.
   The directive will be omitted if set to ``False``.
 
+``public_dir_name``
+  Optional, string.
+  Folder name witch will be concatenated to :file:`/srv/www/<``name[0]>/`
+  Defaults to :file:`public`.
+
+
 ``try_files``
   Optional, string. Defaults to ``nginx_default_try_files``.
   Checks for the existence of files in order, and returns the

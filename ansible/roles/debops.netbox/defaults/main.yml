@@ -112,6 +112,16 @@ netbox__lib: '{{ (ansible_local.root.lib
                   if (ansible_local|d() and ansible_local.root|d() and
                       ansible_local.root.lib|d())
                   else "/usr/local/lib") + "/" + netbox__user }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__data [[[
+#
+# Directory where custom Netbox data (images, scripts) outside of the database
+# is stored.
+netbox__data: '{{ (ansible_local.root.data
+                   if (ansible_local|d() and ansible_local.root|d() and
+                       ansible_local.root.data|d())
+                   else "/srv") + "/" + netbox__user }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application sources and deployment [[[
@@ -169,6 +179,10 @@ netbox__virtualenv_pip_packages:
                      ansible_local.gunicorn.version|d())
                  else omit }}'
   - 'setproctitle'
+  - name: 'napalm'
+    state: '{{ "present"
+               if (netbox__config_napalm_password != "")
+               else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]
 # PostgreSQL database configuration [[[
@@ -261,6 +275,25 @@ netbox__config_secret_key: '{{ lookup("password", secret + "/netbox/" +
 netbox__config_admins: '{{ lookup("template", "lookup/netbox__config_admins.j2") | from_yaml }}'
 
                                                                    # ]]]
+# .. envvar:: netbox__config_cors_origin_allow_all [[[
+#
+# API Cross-Origin Resource Sharing configuration. If ``True``, all origins are
+# allowed. See https://github.com/ottoyiu/django-cors-headers for more details.
+netbox__config_cors_origin_allow_all: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_cors_origin_whitelist [[[
+#
+# List of allowed OCRS origin hostnames.
+netbox__config_cors_origin_whitelist: []
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_cors_origin_regex_whitelist [[[
+#
+# List of allowed OCRS origin regex hostnames.
+netbox__config_cors_origin_regex_whitelist: []
+
+                                                                   # ]]]
 # .. envvar:: netbox__config_email_server [[[
 #
 # The address of the SMTP server used by NetBox. By default the application
@@ -301,6 +334,13 @@ netbox__config_email_from: '{{ netbox__user }}@{{ netbox__fqdn
                                                   else netbox__fqdn[0] }}'
 
                                                                    # ]]]
+# .. envvar:: netbox__config_logging [[[
+#
+# Optional, custom logging configuration specified as YAML dictionary.
+# See https://docs.djangoproject.com/en/1.11/topics/logging for more details.
+netbox__config_logging: {}
+
+                                                                   # ]]]
 # .. envvar:: netbox__config_login_required [[[
 #
 # If ``True``, access to NetBox is only allowed for logged-in users. If
@@ -322,22 +362,42 @@ netbox__config_base_path: ''
 netbox__config_maintenance_mode: False
 
                                                                    # ]]]
-# .. envvar:: netbox__config_netbox_username [[[
+# .. envvar:: netbox__config_napalm_username [[[
 #
-# Specify the username which should be used by NetBox to access live devices.
-netbox__config_netbox_username: ''
+# Specify the username which should be used by NetBox to access live devices
+# using the NAPALM library.
+netbox__config_napalm_username: ''
 
                                                                    # ]]]
-# .. envvar:: netbox__config_netbox_password [[[
+# .. envvar:: netbox__config_napalm_password [[[
 #
-# Specify the password which should be used by NetBox to access live devices.
-netbox__config_netbox_password: ''
+# Specify the password which should be used by NetBox to access live devices
+# using the NAPALM library.
+netbox__config_napalm_password: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_napalm_timeout [[[
+#
+# NAPALM request timeout, in seconds.
+netbox__config_napalm_timeout: '30'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_napalm_args [[[
+#
+# Optional NAPALM arguments, specified as a YAML dictionary.
+netbox__config_napalm_args: {}
 
                                                                    # ]]]
 # .. envvar:: netbox__config_paginate_count [[[
 #
 # Specify maximum number of list items per page.
 netbox__config_paginate_count: '64'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_max_page_size [[[
+#
+# Maximum number of objects returned in an API call.
+netbox__config_max_page_size: '1000'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_time_zone [[[
@@ -399,6 +459,12 @@ netbox__config_banner_top: ''
 netbox__config_banner_bottom: ''
 
                                                                    # ]]]
+# .. envvar:: netbox__config_banner_login [[[
+#
+# Specify a custom message displayed on the login page above the login from.
+netbox__config_banner_login: ''
+
+                                                                   # ]]]
 # .. envvar:: netbox__config_prefer_ipv4 [[[
 #
 # By default NetBox prefers to use IPv6 addresses as primary device addresses.
@@ -411,6 +477,18 @@ netbox__config_prefer_ipv4: False
 # If enabled, NetBox will enforce unique IP space in the "global" table (all
 # prefixes and IP addresses not included in a VRF).
 netbox__config_enforce_global_unique: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_media_root [[[
+#
+# Absolute path where Nebox stores upladed media files.
+netbox__config_media_root: '{{ netbox__data + "/media" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_reports_root [[[
+#
+# Absolute path where Netbox reports (Python modules) are stored.
+netbox__config_reports_root: '{{ netbox__data + "/reports" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Initial superuser account [[[

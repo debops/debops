@@ -66,6 +66,7 @@ Application services
 These roles manage applications that provide services to other applications and
 are not accessed directly by end users.
 
+- :ref:`debops.ansible`
 - :ref:`debops.apt_cacher_ng`
 - :ref:`debops.debops` - install DebOps on other hosts
 - :ref:`debops.debops_api`
@@ -148,9 +149,9 @@ Host provisioning
 Kernel
 ------
 
+- :ref:`debops.kmod`
 - :ref:`debops.sysctl`
 - :ref:`debops.sysfs`
-- ``debops-contrib.kernel_module``
 
 
 Logging
@@ -215,6 +216,7 @@ packages.
 - :ref:`debops.apt_cacher_ng`
 - :ref:`debops.apt_listchanges`
 - :ref:`debops.apt_install`
+- :ref:`debops.apt_mark`
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
 - :ref:`debops.unattended_upgrades`
@@ -242,6 +244,7 @@ System configuration
 - :ref:`debops.cron`
 - :ref:`debops.environment`
 - :ref:`debops.etc_services`
+- :ref:`debops.etckeeper`
 - :ref:`debops.ferm`
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
@@ -258,7 +261,6 @@ System configuration
 - ``debops.console``
 - ``debops.gitusers``
 - ``debops.sftpusers``
-- ``debops-contrib.etckeeper``
 
 
 Web services

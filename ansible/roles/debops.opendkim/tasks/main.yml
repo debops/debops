@@ -35,7 +35,7 @@
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: opendkim__register_facts|changed
+  when: opendkim__register_facts is changed
 
 - name: Generate OpenDKIM configuration
   template:
@@ -75,7 +75,7 @@
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
          [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] and
-         opendkim__register_pid_socket|changed)
+         opendkim__register_pid_socket is changed)
 
 - name: Ensure that DomainKey directory exists
   file:

@@ -7,19 +7,6 @@ Getting started
 Initial configuration
 ---------------------
 
-This role installs the :command:`ansible` APT package for Ansible support. However, the
-package from official distribution repositories might be outdated or might not
-even exist (yet). Because of that, if you need to, you can disable :command:`ansible`
-package installation using the :envvar:`debops__ansible_packages` variable.
-
-An alternative is to build stable Ansible ``.deb`` package on a spare build
-host and provide it via a local APT repository. That way, the role will
-automatically install the correct Ansible version and will be ready to go.
-
-Another alternative is to disable APT Ansible package and enable installation
-from PyPI alongside ``debops`` package. However, APT method is preferred, since
-it automatically installs all required APT packages.
-
 By default the ``debops.debops`` role will install the DebOps playbooks and roles
 from GitHub in the background, using either the ``batch`` command from the ``at``
 package, or if the former is not available, ``async`` Ansible task. Keep in mind

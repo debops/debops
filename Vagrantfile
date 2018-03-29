@@ -127,6 +127,7 @@ export CI_JOB_NAME="#{ENV['CI_JOB_NAME']}"
 export CI_JOB_STAGE="#{ENV['CI_JOB_STAGE']}"
 export JANE_TEST_PLAY="#{ENV['JANE_TEST_PLAY']}"
 export JANE_FORCE_TESTS="#{ENV['JANE_FORCE_TESTS']}"
+export JANE_INVENTORY_DIRS="#{ENV['JANE_INVENTORY_DIRS']}"
 export JANE_INVENTORY_GROUPS="#{ENV['JANE_INVENTORY_GROUPS']}"
 export JANE_INVENTORY_HOSTVARS="#{ENV['JANE_INVENTORY_HOSTVARS']}"
 export JANE_KEEP_BOX="#{ENV['JANE_KEEP_BOX']}"
@@ -242,17 +243,19 @@ EOF
 
     if [ -n "${ansible_from_devel}" ] ; then
         jane notify install "Installing Ansible from GitHub..."
-        /vagrant/ansible/roles/debops.debops/files/script/bootstrap-ansible.sh "${ansible_from_devel}"
+        /vagrant/ansible/roles/debops.ansible/files/script/bootstrap-ansible "${ansible_from_devel}"
     fi
 
     jane notify install "Installing Ansible requirements via APT..."
     DEBIAN_FRONTEND=noninteractive apt-get -y \
     --no-install-recommends install \
+        acl \
         apt-transport-https \
         encfs \
         git \
         haveged \
         jo \
+        jq \
         make \
         python-apt \
         python-jinja2 \

@@ -18,11 +18,11 @@
 
 - name: Reload systemd daemons
   command: systemctl daemon-reload
-  when: redis__register_sentinel_unit_install|changed
+  when: redis__register_sentinel_unit_install is changed
 
 - name: Start redis-sentinel service
   service:
     name: 'redis-sentinel'
     state: 'started'
     enabled: True
-  when: redis__register_sentinel_unit_install|changed
+  when: redis__register_sentinel_unit_install is changed

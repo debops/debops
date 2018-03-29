@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+
+output = loads("""{{ {'configured': True,
+                      'enabled': apt_mark__enabled|bool}
+                     | to_nice_json }}""")
+
+print(dumps(output, sort_keys=True, indent=4))

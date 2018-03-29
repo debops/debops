@@ -16,7 +16,48 @@ You can read information about required changes between releases in the
 `debops master`_ - unreleased
 -----------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v0.7.0...master
+.. _debops master: https://github.com/debops/debops/compare/v0.7.2...master
+
+
+`debops v0.7.2`_ - 2018-03-28
+-----------------------------
+
+.. _debops v0.7.2: https://github.com/debops/debops/compare/v0.7.2...v0.7.2
+
+Fixed
+~~~~~
+
+- Add missing ``python-ldap`` dependency as an APT package in the Dockerfile.
+
+
+`debops v0.7.1`_ - 2018-03-28
+-----------------------------
+
+.. _debops v0.7.1: https://github.com/debops/debops/compare/v0.7.0...v0.7.1
+
+Added
+~~~~~
+
+- New DebOps roles:
+
+  - :ref:`debops.ansible`: install Ansible on a Debian/Ubuntu host using
+    Ansible. The :ref:`debops.debops` role now uses the new role to install
+    Ansible instead of doing it directly.
+
+  - :ref:`debops.apt_mark`: set install state of APT packages (manual/auto) or
+    specify that particular packages should be held in their current state.
+    The role is included in the ``common.yml`` playbook.
+
+  - :ref:`debops.kmod`: manage kernel module configuration and module loading
+    at boot time. This role replaces the ``debops-contrib.kernel_module`` role.
+
+  - The ``debops-contrib.etckeeper`` role has been integrated into DebOps as
+    :ref:`debops.etckeeper`. The new role is included in the ``common.yml``
+    playbook.
+
+- [debops.ifupdown] The role has new tasks that manage custom hooks in other
+  services. First hook is :ref:`ifupdown__ref_custom_hooks_filter_dhcp_options`
+  which can be used to selectively apply DHCP options per network interface.
 
 Changed
 ~~~~~~~
@@ -24,6 +65,71 @@ Changed
 - [debops.lxc] The role will now generate the ``lxc-debops`` LXC template
   script from different templates, based on an OS release. This change should
   help fix the issues with LXC container creation on Debian Stretch.
+
+- The test suite used on Travis-CI now checks the syntax of the YAML files, as
+  well as Python and shell scripts included in the repository. The syntax is
+  checked using the :command:`yamllint`, :command:`pycodestyle` and
+  :command:`shellcheck` scripts, respectively. Tests can also be invoked
+  separately via the :command:`make` command.
+
+- [debops.etherpad] The role can now autodetect and use a PostgreSQL database
+  as a backend database for Etherpad.
+
+- [debops.pki] The X.509 certificate included in the default ``domain`` PKI
+  realm will now have a SubjectAltName wildcard entry for the host's FQDN. This
+  should allow for easy usage of services related to a particular host in the
+  cluster over encrypted connections, for example host monitoring, service
+  discovery, etc. which can be now published in the DNS zone at
+  ``*.host.example.org`` resource records.
+
+- [debops.pki] The role now supports Let's Encrypt ACMEv2 API via the
+  `acme-tiny`__ Python script. The existing PKI realms will need to be
+  re-created or updated for the new API to work, new PKI realms should work out
+  of the box. Check the :ref:`upgrade_notes` for more details.
+
+- [debops.proc_hidepid], [debops.lxc] The roles now use a static GID ``70`` for
+  the ``procadmins`` group to synchronize the access permissions on a host and
+  inside the LXC containers. You will need to remount the filesystems, restart
+  services and LXC containers that rely on this functionality.
+
+- [debops.sysctl] The configuration of the kernel parameters has been
+  redesigned, instead of being based on YAML dictionaries, is now based on YAML
+  lists of dictionaries and can be easily changed via Ansible inventory. You
+  will need to update your inventory for the new changes to take effect, refer
+  to the :ref:`role documentation <sysctl__ref_parameters>` for details.
+
+- [debops.ferm] The role should now correctly detect what Internet Protocols
+  are available on a host (IPv4, IPv6) and configure firewall only for the
+  protocols that are present.
+
+.. __: https://github.com/diafygi/acme-tiny
+
+Fixed
+~~~~~
+
+- The :command:`debops` command will now generate the :file:`ansible.cfg`
+  configuration file with correct path to the Ansible roles provided with the
+  DebOps Python package.
+
+- [debops.nginx] Fix a long standing bug in the role with Ansible failing
+  during welcome page template generation with Jinja2 >= 2.9.4. It was related
+  to `non-backwards compatible change in Jinja`__ that modified how variables
+  are processed in a loop.
+
+.. __: https://github.com/pallets/jinja/issues/659
+
+Removed
+~~~~~~~
+
+- The ``debops-contrib.kernel_module`` Ansible role has been removed; it was
+  replaced by the new :ref:`debops.kmod` Ansible role.
+
+- [debops.ferm] The ``ferm-forward`` hook script in the
+  :file:`/etc/network/if-pre-up.d/` directory has been removed (existing
+  instances will be cleaned up). Recent changes in the :ref:`debops.ferm` role
+  broke idempotency with the :ref:`debops.ifupdown` role, and it was determined
+  that the functionality provided by the hook is no longer needed, recent OS
+  releases should deal with it adequately.
 
 
 `debops v0.7.0`_ - 2018-02-11

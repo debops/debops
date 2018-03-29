@@ -8,7 +8,7 @@
 
 - name: Provide original interface configuration temporarily
   command: cp /etc/network/interfaces.dpkg-divert {{ ifupdown__reconfigure_init_file }}
-  when: ifupdown__register_divert|changed
+  when: ifupdown__register_divert is changed
 
 - name: Remove redundant configuration
   lineinfile:
@@ -19,7 +19,7 @@
     - '^source /etc/network/interfaces.d/*'
     - '^auto lo'
     - '^iface lo inet loopback'
-  when: ifupdown__register_divert|changed
+  when: ifupdown__register_divert is changed
 
 - name: Create /etc/network/interfaces
   template:
@@ -38,5 +38,5 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Apply ifupdown configuration' ]
-  when: (ifupdown__register_divert|changed or
-         ifupdown__register_main_config|changed)
+  when: (ifupdown__register_divert is changed or
+         ifupdown__register_main_config is changed)

@@ -339,6 +339,12 @@ type-specific YAML keys are supported:
   Optional. Destination port to forward to. Only needs to be specified if
   internal destination port is different from the original destination port.
 
+``snat_ip``
+  Optional. IP address for source address translation. If set the source IP is
+  rewritten to this address. This is typically the IP address of the firewall
+  host on the internal network. This is useful if traffic from the ``private_ip``
+  would otherwise not be routed back to the firewall host.
+
 
 .. _ferm__ref_type_hashlimit:
 

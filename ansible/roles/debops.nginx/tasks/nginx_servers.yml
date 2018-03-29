@@ -2,7 +2,7 @@
 
 - name: Create global webroot directories if allowed
   file:
-    path: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/public'
+    path: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/{{ item.public_dir_name | d(nginx_public_dir_name) }}'
     state: 'directory'
     owner: '{{ nginx_webroot_owner }}'
     group: '{{ nginx_webroot_group }}'
@@ -23,6 +23,26 @@
   template:
     src: '{{ item.welcome_template | d(nginx_welcome_template) }}'
     dest: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/public/index.html'
+    owner: '{{ item.owner | d(nginx_webroot_owner) }}'
+    group: '{{ item.owner | d(nginx_webroot_group) }}'
+    force: '{{ item.welcome_force|d() | bool }}'
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
+  when: (nginx_webroot_create|bool and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool) and
+         (item.welcome|d() | bool))
+
+- name: Copy 'normalize.css' CSS file for welcome page
+  template:
+    src: 'srv/www/sites/welcome/public/normalize.css'
+    dest: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/public/normalize.css'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.owner | d(nginx_webroot_group) }}'
     force: '{{ item.welcome_force|d() | bool }}'
@@ -158,7 +178,7 @@
 
 - name: Save fact if Ansible is running in check mode in variable
   set_fact:
-    nginx__fact_check_mode: '{{ nginx__register_check_mode|skipped }}'
+    nginx__fact_check_mode: '{{ nginx__register_check_mode is skipped }}'
 
 - name: Enable nginx server configuration
   file:

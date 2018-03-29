@@ -42,7 +42,7 @@
   command: cp {{ item }}.dpkg-divert {{ item }}
   args:
     creates: '{{ item }}'
-  when: snapshot_snapper__updatedb_diverted_register|changed
+  when: snapshot_snapper__updatedb_diverted_register is changed
   with_flattened: '{{ snapshot_snapper__divert_files }}'
 
 - name: Check if snapshots are already excluded from updatedb
@@ -84,7 +84,7 @@
     path: '/etc/snapper/configs/{{ item.0.item.name }}'
     state: 'absent'
   tags: [ 'role::snapshot_snapper:reinit' ]
-  when: (not item.0|skipped and not item.1|skipped and item.0.stat.exists|d(item.0.stat.isreg) and not item.1.stat.exists)
+  when: (item.0 is not skipped and item.1 is not skipped and item.0.stat.exists|d(item.0.stat.isreg) and not item.1.stat.exists)
   register: snapshot_snapper__register_snapper_configs_delete
   with_together:
     - '{{ snapshot_snapper__register_snapper_configs.results }}'

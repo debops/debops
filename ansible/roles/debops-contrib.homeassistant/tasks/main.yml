@@ -48,7 +48,7 @@
     extra_args: '--user --upgrade'
   become: True
   become_user: '{{ homeassistant__user }}'
-  when: homeassistant__virtualenv == False and homeassistant__register_git|changed
+  when: homeassistant__virtualenv == False and homeassistant__register_git is changed
   notify: [ 'Restart Home Assistant' ]
 
 - name: Install hass in virtualenv
@@ -60,7 +60,7 @@
     virtualenv_python: 'python3'
   become: True
   become_user: '{{ homeassistant__user }}'
-  when: homeassistant__virtualenv == True and homeassistant__register_git|changed
+  when: homeassistant__virtualenv == True and homeassistant__register_git is changed
   notify: [ 'Restart Home Assistant' ]
 
 - name: Ensure Home Assistant config dir exists
@@ -88,5 +88,5 @@
     state: '{{ "started" if (homeassistant__deploy_state == "present") else "stopped" }}'
     enabled: True
     masked: False
-    daemon_reload: '{{ homeassistant__register_systemd_unit_file|changed }}'
+    daemon_reload: '{{ homeassistant__register_systemd_unit_file is changed }}'
   when: (homeassistant__deploy_state == "present" and ansible_distribution_release not in ["trusty"])

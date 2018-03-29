@@ -10,11 +10,11 @@ allows automated certificate requests, retrieval of certificates and
 certificate renewal. It was designed to enable easy deployment of X.509
 certificates from `Let's Encrypt`_.
 
-The ``debops.pki`` Ansible role provides support for the ACME protocol which is
-used by default with the Let's Encrypt (there is a possibility to
-integrate other similar services in the future). Interaction with the ACME
-Certificate Authority is performed using the acme-tiny_ alternative client
-written in Python.
+The ``debops.pki`` Ansible role provides support for the ACMEv2 protocol which
+is used by default with the Let's Encrypt (there is a possibility to integrate
+other similar services in the future). Interaction with the ACME Certificate
+Authority is performed using the acme-tiny_ alternative client written in
+Python.
 
 Prerequisites
 -------------
@@ -172,14 +172,14 @@ certificate as `Subject Alternative Names`_.
       - name: 'example.com'
         acme: True
         acme_subdomains: [ 'www', 'blog', 'mail' ]
-        # acme_ca: 'le-staging'
+        # acme_ca: 'le-staging-v2'
 
-For testing it's strongly advised to uncomment ``acme_ca`` with ``le-staging``
-to use the staging environment of Let's Encrypt. It does not create a trusted
-certificate and allows you to avoid problems with the rate limits in the
-production environment. When you are sure that everything works correctly,
-comment the staging environment out again to get yourself a valid and trusted
-X.509 certificate.
+For testing it's strongly advised to uncomment ``acme_ca`` with
+``le-staging-v2`` to use the staging environment of Let's Encrypt. It does not
+create a trusted certificate and allows you to avoid problems with the rate
+limits in the production environment. When you are sure that everything works
+correctly, comment the staging environment out again to get yourself a valid
+and trusted X.509 certificate.
 
 Example: Certificate for subdomains excluding the apex domain
 -------------------------------------------------------------
@@ -220,10 +220,10 @@ control ACME support. The most important are:
 
 :envvar:`pki_acme_ca`
   Name of the ACME Certificate Authority API endpoint to use. Dictionary with
-  endpoints is defined in the :envvar:`pki_acme_ca_api_map` variable. By default,
-  ``le-live`` is used which points to the Let's Encrypt Live CA. For testing
-  you can switch the default CA to ``le-staging`` which points to Let's Encrypt
-  Staging CA.
+  endpoints is defined in the :envvar:`pki_acme_ca_api_map` variable. By
+  default, ``le-live-v2`` is used which points to the Let's Encrypt Live CA.
+  For testing you can switch the default CA to ``le-staging-v2`` which points
+  to Let's Encrypt Staging CA.
 
 :envvar:`pki_acme_default_subdomains`
   List of subdomains which will be added to the default ACME domain and all
