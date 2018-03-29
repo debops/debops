@@ -12,6 +12,69 @@ simple strings or lists, here you can find documentation and examples for them.
    :local:
    :depth: 1
 
+.. _apt__ref_conf:
+
+apt__conf
+---------
+
+This list, along with ``apt__group_conf`` and ``apt__host_conf`` and
+can be used to manage APT configuration files through Ansible inventory. Each
+entry is a YAML dictionary with by the `Ansible copy module`_. See its
+documentation for parameter advanced usage and syntax.
+
+Here are some more important parameters:
+
+``item.dest`` or ``item.name`` or ``item.path``
+  Required. Filename on the remote host. The role will automatically prefix it
+  with ``item.priority`` and put it in the right directory.
+
+``item.priority``
+  Optional. Priority that prefix the filename to order the instruction with the
+  different configuration files.
+
+``item.src``
+  Path to the source file on the Ansible Controller. Alternatively you can use
+  ``item.content`` to provide the file contents directly in the inventory.
+
+``item.content``
+  String or YAML text block with the file contents to put in the destination
+  file. Alternatively you can use ``item.src`` to provide the path to the
+  source file on Ansible Controller.
+
+``item.state``
+  Optional. If not specified, or if specified and ``present``, the file(s) will
+  be created. If specified and ``absent``, file will be removed.
+
+Examples
+~~~~~~~~
+
+Copy file from the Ansible Controller to all remote hosts:
+
+.. code-block:: yaml
+
+   apt__conf:
+     - name: personnal
+       src: 'path/to/apt.conf.d/02personnal.conf'
+       priority: '99'
+
+
+Create a configuration file that calls script before/after DPKG in order to
+set/unset extras options on some mount points :
+
+.. code-block:: yaml
+
+   apt__host_conf:
+     - name: filesystem
+       priority: '02'
+       content: |
+         # This file is managed remotely, all changes will be lost
+         {% if (ansible_virtualization_type != 'lxc') %}
+         Dpkg
+         {
+           Pre-Invoke { "/usr/local/bin/remountrw" };
+           Post-Invoke { "/usr/local/bin/remountdefault" };
+         };
+
 .. _apt__ref_keys:
 
 apt__keys
@@ -192,8 +255,8 @@ apt__sources
 ------------
 
 This list as well as other ``apt__*_sources`` lists are used to configure what
-APT package sources are configure in the :file:`/etc/apt/sources.list` file. This
-file defines the primary OS package sources and indirectly defines the OS
+APT package sources are configure in the :file:`/etc/apt/sources.list` file.
+This file defines the primary OS package sources and indirectly defines the OS
 release that's present on the host. The configuration template will track what
 sources are present and will comment out the duplicates if they show up in more
 than one list.
@@ -262,8 +325,8 @@ what source types are used, which components are enabled, etc. Known
 parameters:
 
 ``uri`` or ``uris``
-  Required. The URI or other method known by APT (see :man:`sources.list(5)`) for
-  a given APT source. It is possible to specify multiple entries as a list,
+  Required. The URI or other method known by APT (see :man:`sources.list(5)`)
+  for a given APT source. It is possible to specify multiple entries as a list,
   they will be treated as one.
 
 ``type`` or ``types``
