@@ -31,13 +31,13 @@
     - '{{ apt__packages }}'
   when: apt__enabled|bool
 
+# Manage configuration files [[[
 - name: Ensure that APT default configuration is absent
   file:
     path: '/etc/apt/apt.conf'
     state: 'absent'
   when: (apt__enabled|bool and apt__remove_default_configuration|bool)
 
-# Manage configuration files [[[
 - name: Generate APT configuration files
   template:
     src: '{{ item }}.j2'
@@ -65,6 +65,19 @@
          (item.src|d() or item.content|d()) and
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d('present') != 'absent'))
+
+- name: Delete APT configuration files on remote hosts
+  file:
+    path:  "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
+    state: 'absent'
+  with_flattened:
+    - '{{ apt__conf }}'
+    - '{{ apt__group_conf }}'
+    - '{{ apt__host_conf }}'
+  when: (apt__enabled|bool  and
+         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.state|d('present') == 'absent'))
+
 
                                                                    # ]]]
 
