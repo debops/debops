@@ -1,8 +1,10 @@
 #!/bin/bash
 ##
-## Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-## Copyright (C) 2017 DebOps https://debops.org/
+## Copyright (C) 2015-2018 Robin Schneider <ypid@riseup.net>
+## Copyright (C) 2017-2018 DebOps https://debops.org/
 ## @license GPLv3 <https://www.gnu.org/licenses/gpl-3.0.html>
+
+## TODO: This script is not up-to-date yet.
 
 set -o nounset -o pipefail -o errexit
 
@@ -155,9 +157,13 @@ git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extend
         s#[ ]# #g;
     '
 
-# https://github.com/debops/docs/issues/139
-test -e docs/defaults-configuration.rst && mv docs/defaults-configuration.rst docs/defaults-detailed.rst
-sed --in-place --regexp-extended 's#defaults-configuration#defaults-detailed#;' docs/index.rst
+## https://github.com/debops/docs/issues/139
+find . -name '*defaults-configuration.rst' | while read file; do
+    pushd "$(dirname "$file")"
+    test -e defaults-configuration.rst && mv defaults-configuration.rst defaults-detailed.rst
+    sed --in-place --regexp-extended 's#defaults-configuration#defaults-detailed#;' index.rst
+    popd
+done
 
 ## Update copyright.
 update_copyright_for () {
