@@ -28,18 +28,8 @@ For experimental UTF8 4-byte support, you can set the following in your inventor
 
 .. code-block:: yaml
 
-   owncloud__mariadb__dependent_databases:
-
-     - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
-       state: '{{ "present" if (owncloud__deploy_state != "purged") else "absent" }}'
-
-       ## https://docs.nextcloud.com/server/12/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb
-       ## Currently experimental and not enabled by default.
-       encoding: 'utf8mb4'
-       collation: 'utf8mb4_general_ci'
-
    mariadb_server__options:
-     ## https://docs.nextcloud.com/server/12/admin_manual/installation/system_requirements.html#database-requirements-for-mysql-mariadb
+     ## https://docs.nextcloud.com/server/13/admin_manual/installation/system_requirements.html#emoji-utf8-4-byte-support-with-mysql-mariadb
      'innodb_large_prefix': 'on'
      'innodb_file_format': 'barracuda'
      'innodb_file_per_table': 'true'
@@ -231,6 +221,9 @@ Available role tags:
 ``role::owncloud:pkg``
   Tasks related to system package management like installing, upgrading or
   removing packages.
+
+``role::owncloud:tarball``
+  Tasks related to installing by Tarball.
 
 ``role::owncloud:config``
   Run tasks related to ownCloud configuration and setup.

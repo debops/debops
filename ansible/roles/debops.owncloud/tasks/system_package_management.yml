@@ -42,14 +42,6 @@
     state: 'absent'
   with_flattened: '{{ owncloud__old_apt_repo_keys }}'
 
-- name: Ensure deprecated APT sources files are absent
-  file:
-    path: '/etc/apt/sources.list.d/{{ item }}'
-    state: 'absent'
-  with_items:
-    - 'download_opensuse_org_repositories_isv_ownCloud_community_8_1_Debian_8_0.list'
-    - 'download_owncloud_org_download_repositories_stable_Debian_8_0.list'
-
 - name: Configure ownCloud APT repository
   template:
     src: 'etc/apt/sources.list.d/debops_owncloud.list.j2'
@@ -110,8 +102,6 @@
   ## ownCloud/NextCloud provide a native hook/support.
 - name: Ensure that the ownCloud upgrade has completed
   command: '{{ owncloud__dpkg_hook_script }}'
-  args:
-    executable: '/bin/sh'
   when: (owncloud__variant in ["owncloud"] and
          owncloud__register_apt_install is changed and
          (ansible_local|d() and ansible_local.owncloud|d() and

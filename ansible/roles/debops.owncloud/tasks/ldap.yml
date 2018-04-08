@@ -3,8 +3,6 @@
 
 - name: Check default ldap config exists
   command: php --file "{{ owncloud__app_home }}/occ" ldap:show-config ""
-  args:
-    executable: '/bin/sh'
   changed_when: False
   when: (not ansible_check_mode)
   register: owncloud__register_ldap_default_config_exits
@@ -13,16 +11,12 @@
 
 - name: Create empty LDAP config
   command: php --file "{{ owncloud__app_home }}/occ" ldap:create-empty-config
-  args:
-    executable: '/bin/sh'
   become: True
   become_user: '{{ owncloud__app_user }}'
   when: ((not ansible_check_mode) and 'Invalid configID' in owncloud__register_ldap_default_config_exits.stdout|d(""))
 
 - name: Set LDAP password
   command: php --file "{{ owncloud__app_home }}/occ" ldap:set-config "" ldapAgentPassword "{{ owncloud__ldap_password }}"
-  args:
-    executable: '/bin/sh'
   changed_when: False
   become: True
   become_user: '{{ owncloud__app_user }}'
@@ -31,8 +25,6 @@
 
 - name: Set LDAP parameters
   command: php --file "{{ owncloud__app_home }}/occ" ldap:set-config "" "{{ item.key }}" "{{ item.value }}"
-  args:
-    executable: '/bin/sh'
   changed_when: False
   become: True
   become_user: '{{ owncloud__app_user }}'
