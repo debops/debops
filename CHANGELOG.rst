@@ -24,7 +24,14 @@ Added
 - New DebOps roles:
 
   - :ref:`debops.sudo`: install and manage :command:`sudo` configuration on
-    a host.
+    a host. The role is included in the ``common.yml`` playbook.
+
+Removed
+~~~~~~~
+
+- [debops.apt_install], [debops.auth]: don't install the ``sudo`` package by
+  default, this is now done via a separate :ref:`debops.sudo` role to easily
+  support switching to the ``sudo-ldap`` APT package.
 
 
 `debops v0.7.2`_ - 2018-03-28
