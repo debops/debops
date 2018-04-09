@@ -1,0 +1,40 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ sudo__base_packages }}'
+    - '{{ sudo__packages }}'
+  when: sudo__enabled|bool
+
+- name: Configure workaround for logind sessions via sudo
+  template:
+    src: 'etc/profile.d/sudo_logind_session.sh.j2'
+    dest: '/etc/profile.d/sudo_logind_session.sh'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: sudo__enabled|bool and sudo__logind_session|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save sudo local facts
+  template:
+    src: 'etc/ansible/facts.d/sudo.fact.j2'
+    dest: '/etc/ansible/facts.d/sudo.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: sudo__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: sudo__register_facts is changed
