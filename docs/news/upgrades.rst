@@ -17,7 +17,18 @@ Nothing new yet.
 v0.7.2 (2018-03-28)
 -------------------
 
-No changes.
+Inventory changes
+~~~~~~~~~~~~~~~~~
+
+- The ``console_preferred_editors`` list has been removed, configuration of the
+  preferred :command:`vim` editor is now done in the :ref:`debops.apt_install`
+  role which also installs it.
+
+- The ``console_custom_files`` variable has been removed along with the
+  functionality in ``debops.console`` role. Use the :ref:`debops.resources`
+  role variables to copy custom files instead. The role is also included in the
+  common playbook, although a bit earlier, which shouldn't impact normal use
+  cases.
 
 
 v0.7.1 (2018-03-28)

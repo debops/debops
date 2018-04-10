@@ -170,6 +170,9 @@ apt_install__shell_packages:
 #
 # List of text editors to install.
 apt_install__editor_packages:
+
+  # The role also sets ``vim.basic`` as the default editor via
+  # the :envvar:`apt_install__default_alternatives` variable.
   - 'vim'
 
                                                                    # ]]]
@@ -323,6 +326,17 @@ apt_install__all_packages:
 # which provide similar functionality, using ``update-alternatives`` package.
 # See :ref:`apt_install__ref_alternatives` for more details.
 
+# .. envvar:: apt_install__default_alternatives [[[
+#
+# List of default alternative symlinks set by the role.
+apt_install__default_alternatives:
+
+  # The role also installs the ``vim`` package via the
+  # :envvar:`apt_install__editor_packages` variable.
+  - name: 'editor'
+    path: '/usr/bin/vim.basic'
+
+                                                                   # ]]]
 # .. envvar:: apt_install__alternatives [[[
 #
 # List of alternative symlinks configured for all packages in the Ansible

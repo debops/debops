@@ -26,12 +26,22 @@ Added
   - :ref:`debops.sudo`: install and manage :command:`sudo` configuration on
     a host. The role is included in the ``common.yml`` playbook.
 
+Changed
+~~~~~~~
+
+- The :command:`editor` alternative symlink configuration has been moved from
+  the ``debops.console`` role to the :ref:`debops.apt_install` role which also
+  installs :command:`vim` by default.
+
 Removed
 ~~~~~~~
 
 - [debops.apt_install], [debops.auth]: don't install the ``sudo`` package by
   default, this is now done via a separate :ref:`debops.sudo` role to easily
   support switching to the ``sudo-ldap`` APT package.
+
+- [debops.console] Remove support for copying custom files from the role. This
+  functionality is covered better by the :ref:`debops.resources` role.
 
 
 `debops v0.7.2`_ - 2018-03-28
