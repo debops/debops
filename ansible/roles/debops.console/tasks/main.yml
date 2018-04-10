@@ -45,19 +45,6 @@
     line: 'FSCKFIX={{ console_fsckfix }}'
   when: ansible_distribution_release in console_fsckfix_releases
 
-- name: Get list of available text editors
-  command: update-alternatives --list editor
-  register: console_register_installed_editors
-  changed_when: False
-  check_mode: False
-  tags: [ 'role::console:editor' ]
-
-- name: Configure system-wide editor
-  alternatives:
-    name: 'editor'
-    path: '{{ (console_preferred_editors | intersect(console_register_installed_editors.stdout_lines)) | first }}'
-  tags: [ 'role::console:editor' ]
-
 - name: Remove obsolet sysctl configuration file
   file:
     path: '/etc/sysctl.d/10-debops.console.conf'

@@ -26,6 +26,13 @@ Added
   - :ref:`debops.sudo`: install and manage :command:`sudo` configuration on
     a host. The role is included in the ``common.yml`` playbook.
 
+Changed
+~~~~~~~
+
+- The :command:`editor` alternative symlink configuration has been moved from
+  the ``debops.console`` role to the :ref:`debops.apt_install` role which also
+  installs :command:`vim` by default.
+
 Removed
 ~~~~~~~
 
