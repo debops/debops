@@ -56,6 +56,11 @@ supported options:
   ``<IfModule>`` section which causes Apache to only enables this module
   configuration when the module is enabled.
 
+``ignore_configcheck``
+  Optional, boolean. Defaults to ``False``.
+  Ignore configuration checks about inconsistent module configuration.
+  Especially for mpm_* modules.
+
 Examples
 ~~~~~~~~
 
