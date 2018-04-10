@@ -79,6 +79,38 @@
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
   no_log: '{{ users__no_log | bool }}'
 
+- name: Allow specified UNIX accounts to linger when not logged in
+  command: loginctl enable-linger {{ item.name }}
+  args:
+    creates: '/var/lib/systemd/linger/{{ item.name }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (ansible_service_mgr == 'systemd' and
+         item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.linger is defined and item.linger|bool)
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Disllow specified UNIX accounts to linger when not logged in
+  command: loginctl disable-linger {{ item.name }}
+  args:
+    removes: '/var/lib/systemd/linger/{{ item.name }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (ansible_service_mgr == 'systemd' and
+         item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.linger is defined and not item.linger|bool)
+  no_log: '{{ users__no_log | bool }}'
+
 - name: Remove user groups if requested
   group:
     name: '{{ item.group | d(item.name) }}'
