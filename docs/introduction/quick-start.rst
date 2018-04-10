@@ -16,7 +16,7 @@ Normally DebOps would be installed on that host either manually or through
 a package manager, however you can set one up using either a Docker container
 or a Vagrant virtual machine and execute Ansible commands from there.
 
-The Ansible Controller can also be managed by DebOps as long, as it's based on
+The Ansible Controller can also be managed by DebOps as long as it's based on
 a compatible operating system, ie. Debian or Ubuntu. A suitable configuration
 to do so will be automatically generated for you in the
 :file:`~/src/controller/` directory located on the container/VM.
@@ -80,7 +80,7 @@ Run the DebOps playbook against the host
 
 When your desired container/VM is up and ready, you can find the prepared
 DebOps project configuration in the :file:`~/src/controller/` subdirectory of the
-unprivileged user account. To run DebOps playbook against the host, execute the
+unprivileged user account. To run the DebOps playbook against the host, execute the
 commands:
 
 .. code-block:: console
