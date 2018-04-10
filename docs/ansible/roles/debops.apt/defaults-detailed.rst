@@ -17,10 +17,11 @@ simple strings or lists, here you can find documentation and examples for them.
 apt__conf
 ---------
 
-This list, along with ``apt__group_conf`` and ``apt__host_conf`` and
-can be used to manage APT configuration files through Ansible inventory. Each
-entry is a YAML dictionary with by the `Ansible copy module`_. See its
-documentation for parameter advanced usage and syntax.
+This list, along with ``apt__group_conf`` and ``apt__host_conf`` can be used
+to manage APT configuration files through Ansible inventory. Each entry is a
+YAML dictionary with keys and values the same as the ones used by the
+`Ansible copy module`_. See its documentation for parameter advanced usage
+and syntax.
 
 Here are some more important parameters:
 
@@ -30,7 +31,8 @@ Here are some more important parameters:
 
 ``item.priority``
   Optional. Priority that prefix the filename to order the instruction with the
-  different configuration files.
+  different configuration files. If not specified, priority ``60`` is used by
+  default.
 
 ``item.src``
   Path to the source file on the Ansible Controller. Alternatively you can use
