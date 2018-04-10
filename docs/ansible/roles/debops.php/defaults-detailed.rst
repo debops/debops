@@ -29,8 +29,8 @@ The packages with names in the form:
 - ``php7.0-*``
 
 will be detected correctly. Any other package names will have the current PHP
-version prepended to their name, which might result in incorrect install
-request.
+version prepended to their name, which might result in incorrect installation
+requests.
 
 Examples
 ~~~~~~~~
@@ -66,7 +66,7 @@ extension, and symlinked to the respective PHP SAPI configuration directories.
 If you need, you can create the configuration files directly in the PHP SAPI
 directories as well.
 
-Role recognizes the parameters below:
+The role recognizes the parameters below:
 
 ``filename``
   Required. Name of the file to store the configuration data, for example
@@ -98,7 +98,7 @@ one of the YAML dictionaries on the ``sections`` list:
 
 ``state``
   Optional, either ``present`` or ``absent``. If not specified or ``present``,
-  a given configuration file or it's section will be created. If ``absent``,
+  a given configuration file or its section will be created. If ``absent``,
   a given configuration file or section will be removed.
 
 Examples

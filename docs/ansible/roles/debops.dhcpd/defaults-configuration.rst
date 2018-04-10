@@ -1,7 +1,7 @@
 Default variables: configuration
 ================================
 
-some of ``debops.dhcpd`` default variables have more extensive configuration
+Some of ``debops.dhcpd`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
@@ -221,7 +221,7 @@ List of subnets included in a specified group.
 
 ``subnet``
   IP address of the subnet. If it's IPv4, it should be the first IP address in
-  the subnet, if it's IPv6, it should be specified with the prefix.
+  the subnet, if it's IPv6, it should be specified as the IPv6-prefix.
 
 ``netmask``
   If the subnet is IPv4, specify it's netmask in "normal" IP address form, not
@@ -357,7 +357,7 @@ declaration. e.g::
             options: |
               failover peer "my-failover";
 
-Each failover declaration has a set of an mandatory fields, which is:
+Each failover declaration has a set of mandatory fields, which is:
 
 ``primary``
   Ansible inventory name of a primary DHCP host, if you need failover to work
@@ -367,7 +367,7 @@ Each failover declaration has a set of an mandatory fields, which is:
   Ansible inventory name of a secondary DHCP host, if you need failover to work
   on different IP, see secondary_fo_addr option below.
 
-Ansible inventory name is either IP ot hostname specified in inventory file.
+Ansible inventory name is either IP or hostname specified in inventory file.
 
 ``mclt``
   Max Client Lead Time. The maximum amount of time that one server can extend
@@ -411,23 +411,23 @@ if it's defined, 'hba' will be omitted by configuration template.
 
   Default value: ``10``
 
-Optional field are mostly described in ``dhcpd.conf`` man page:
+Optional fields are mostly described in ``dhcpd.conf`` man page:
 
 ``port``
   Specifies port on which primary and secondary nodes will listen for failover
-  connection. Different ports for primary and secondary is currently
+  connection. Different ports for primary and secondary are currently
   unsupported.
 
   Default value: ``647``
 
 ``primary_fo_addr``
-  IP/Hostname of a primary DHCP host. This option is used if you need
-  failover address be different from ansible inventory IP/hostname. If
+  IP/Hostname of a primary DHCP host. This option is used if you need the
+  failover address to be different from ansible inventory IP/hostname. If
   omitted, then ``primary`` is used.
 
 ``secondary_fo_addr``
-  IP/Hostname of a secondary DHCP host. This option is used if you need
-  failover address be different from ansible inventory IP/hostname. If
+  IP/Hostname of a secondary DHCP host. This option is used if you need the
+  failover address to be different from ansible inventory IP/hostname. If
   omitted, then ``secondary`` is used.
 
 ``auto_partner_down``

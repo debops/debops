@@ -13,8 +13,8 @@ depending on different Ansible facts - for example, firmware packages are
 installed on rack servers, which may contain network cards that require custom
 firmware loaded by the kernel for proper operation.
 
-Role is not meant to be used as a dependency of other roles, but you can use it
-like that if you want to take advantage of custom lookup template that uses
+The role is not meant to be used as a dependency of other roles, but you can use it
+like that if you want to take advantage of the custom lookup template that uses
 conditional package installation depending on installed operating system, its
 release or available archive areas.
 
@@ -30,7 +30,7 @@ There are more comprehensive Ansible roles that install packages:
 
 - `ypid.packages <https://github.com/ypid/ansible-packages>`_ - provides
   an advanced framework meant to allow installation of packages according to
-  different host classes, with a large selection of packages. Role is focused
+  different host classes, with a large selection of packages. The role is focused
   on workstations, live systems and server environments.
 
 Example inventory
@@ -53,7 +53,7 @@ installed on hosts, depending on the inventory level:
   :file:`ansible/inventory/group_vars/<group-name>/apt_install.yml` files and is
   meant to contain packages that should be installed on hosts in different
   Ansible groups. Only one level of this variable is supported, so you should
-  be careful about your inventory design. Or, you can use it as a maser list
+  be careful about your inventory design. Or, you can use it as a master list
   that contains different per-group variables.
 
 :envvar:`apt_install__host_packages`
