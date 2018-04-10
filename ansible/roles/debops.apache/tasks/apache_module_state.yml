@@ -8,6 +8,7 @@
                 if (item.value is mapping)
                 else item.value) | bool | ternary("present", "absent") }}'
     force: '{{ item.value.force|d(False) | bool }}'
+    ignore_configcheck: '{{ item.value.ignore_configcheck | d(False) | bool }}'
   notify: [ 'Test apache and reload' ]
   when: (item.key in apache__tpl_available_modules
          and item.value.enabled|d(True) != omit
