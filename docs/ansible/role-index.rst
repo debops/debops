@@ -229,6 +229,7 @@ Security
 - :ref:`debops.ferm`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`
+- :ref:`debops.sudo`
 - :ref:`debops.tcpwrappers`
 - ``debops-contrib.apparmor``
 - ``debops-contrib.firejail``
