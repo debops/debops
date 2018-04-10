@@ -26,7 +26,7 @@ installation:
   Required. Name of the APT package, or YAML list of package names to install.
 
 ``state``
-  Optional. Specify if the given package(s) should be included on the list of
+  Optional. Specify if the given package(s) should be included in the list of
   packages to install (not the status of installation). If not specified or
   ``present``, package(s) will be included, if ``absent``, packages won't be
   included.

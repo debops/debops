@@ -33,7 +33,7 @@ Jinja templates:
 ``parse_kv_config``
   Parse a YAML list of dictionaries and output a sorted and expanded list of
   YAML dictionaries that contain a common set of dictionary keys. The filter
-  supports dynamic order o the entries using weight model, and can be used to
+  supports dynamic order of the entries using weight model, and can be used to
   generate a configuration file which uses a key/value syntax with unique keys.
 
 ``parse_kv_items``

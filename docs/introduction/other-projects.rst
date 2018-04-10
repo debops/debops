@@ -3,7 +3,7 @@ Other projects
 
 There are third-party projects that might be interesting for DebOps users,
 either as source of inspiration or as an alternative configuration management
-frameworks.
+framework.
 
 Third-party projects based on DebOps
 ------------------------------------
