@@ -24,7 +24,6 @@ prometheus_exporters__base_packages:
 # List of additional APT packages to install with prometheus.
 prometheus_exporters__packages: []
                                                                    # ]]]
-                                                                   # ]]]
 # prometheus exporter Configuration [[[
 # ---------------------------------
 
@@ -62,30 +61,42 @@ prometheus_exporter__mysql__dependencies:
 # .. envvar:: prometheus_exporters__nginx [[[
 #
 # Enables an nginx proxy for the prometheus exporter
-prometheus_exporters__nginx: False
+prometheus_exporters__nginx: True
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__domain [[[
 #
 # Domain to use for vserver on nginx proxy
-prometheus_exporters__domain: 'metric.{{ ansible_fqdn }}'
+prometheus_exporters__domain: '{{ ansible_fqdn }}'
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__nginx__dependent_servers [[[
 #
 # Domain to use for vserver on nginx proxy
 prometheus_exporters__nginx__dependent_servers:
-  - enabled: '{{ prometheus_exporters__nginx }}'
+  - enabled: '{{ prometheus_exporters__nginx and "node" in prometheus_exporters__exporters }}'
     name: [ '{{ prometheus_exporters__domain }}' ]
+    filename: 'prometheus_exporter_node'
     type: 'proxy'
-    location:
-      '/exporter/node': |
-         rewrite /exporter/node/(.*) /$1 break;
-         proxy_pass http://localhost:9100;
-      '/exporter/mysqld': |
-         rewrite /exporter/mysqld/(.*) /$1 break;
-         proxy_pass http://localhost:9104;
-      '/exporter/postfix': |
-         rewrite /exporter/postfix/(.*) /$1 break;
-         proxy_pass http://localhost:9154;
+    listen: False
+    listen_ssl: [ '[::]:19100' ]
+    proxy_pass: 'http://localhost:9100'
+    auth_basic: True
+    auth_basic_name: 'prometheus_exporters'
+  - enabled: '{{ prometheus_exporters__nginx and "mysqld" in prometheus_exporters__exporters }}'
+    name: [ '{{ prometheus_exporters__domain }}' ]
+    filename: 'prometheus_exporter_mysqld'
+    type: 'proxy'
+    listen: False
+    listen_ssl: [ '[::]:19104' ]
+    proxy_pass: 'http://localhost:9104'
+    auth_basic: True
+    auth_basic_name: 'prometheus_exporters'
+  - enabled: '{{ prometheus_exporters__nginx and "postfix" in prometheus_exporters__exporters }}'
+    name: [ '{{ prometheus_exporters__domain }}' ]
+    filename: 'prometheus_exporter_postfix'
+    type: 'proxy'
+    listen: False
+    listen_ssl: [ '[::]:19154' ]
+    proxy_pass: 'http://localhost:9154'
     auth_basic: True
     auth_basic_name: 'prometheus_exporters'
                                                                    # ]]]
@@ -118,21 +129,21 @@ prometheus_exporters__allow: []
 prometheus_exporters__ferm__dependent_rules:
   - name: 'prometheus_exporter_node'
     type: 'accept'
-    dport: '9100'
+    dport: '{{ 19100 if prometheus_exporters__nginx else 9100 }}'
     saddr: '{{ prometheus_exporters__allow }}'
     accept_any: '{{ prometheus_exporters__accept_any }}'
     by_role: 'prometheus_exporters'
     rule_state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_exporter_mysqld'
     type: 'accept'
-    dport: '9104'
+    dport: '{{ 19104 if prometheus_exporters__nginx else 9104 }}'
     saddr: '{{ prometheus_exporters__allow }}'
     accept_any: '{{ prometheus_exporters__accept_any }}'
     by_role: 'prometheus_exporters'
     rule_state: '{{ prometheus_exporters__deploy_state if "mysqld" in prometheus_exporters__exporters else "absent" }}'
   - name: 'prometheus_exporter_postfix'
     type: 'accept'
-    dport: '9154'
+    dport: '{{ 19154 if prometheus_exporters__nginx else 9154 }}'
     saddr: '{{ prometheus_exporters__allow }}'
     accept_any: '{{ prometheus_exporters__accept_any }}'
     by_role: 'prometheus_exporters'
