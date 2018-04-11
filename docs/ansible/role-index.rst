@@ -196,6 +196,7 @@ Networking
 - :ref:`debops.dhcpd`
 - :ref:`debops.dnsmasq`
 - :ref:`debops.ifupdown`
+- :ref:`debops.netbase`
 - :ref:`debops.radvd`
 - :ref:`debops.stunnel`
 - :ref:`debops.tinc`
@@ -247,6 +248,7 @@ System configuration
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
 - :ref:`debops.machine`
+- :ref:`debops.netbase`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
 - :ref:`debops.resources`
