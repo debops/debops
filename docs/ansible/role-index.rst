@@ -231,6 +231,7 @@ Security
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`
 - :ref:`debops.sudo`
+- :ref:`debops.system_groups`
 - :ref:`debops.tcpwrappers`
 - ``debops-contrib.apparmor``
 - ``debops-contrib.firejail``
@@ -257,6 +258,7 @@ System configuration
 - :ref:`debops.sysctl`
 - :ref:`debops.sysfs`
 - :ref:`debops.sysnews`
+- :ref:`debops.system_groups`
 - :ref:`debops.users`
 - ``debops.console``
 - ``debops.gitusers``

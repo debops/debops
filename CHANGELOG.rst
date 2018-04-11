@@ -29,6 +29,9 @@ Added
   - :ref:`debops.sudo`: install and manage :command:`sudo` configuration on
     a host. The role is included in the ``common.yml`` playbook.
 
+  - :ref:`debops.system_groups`: configure UNIX system groups used on DebOps
+    hosts.
+
 - [debops.users] Selected UNIX accounts can now be configured to linger when
   not logged in via the ``item.linger`` parameter. This allows these accounts
   to maintain long-running services when not logged in via their own private
