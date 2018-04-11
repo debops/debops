@@ -51,6 +51,10 @@ Removed
 - [debops.console] Remove support for copying custom files from the role. This
   functionality is covered better by the :ref:`debops.resources` role.
 
+- [debops.console] Remove support for managing entries in the
+  :file:`/etc/hosts` database. This is now covered by the :ref:`debops.netbase`
+  Ansible role.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------
