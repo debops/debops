@@ -1,0 +1,49 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ netbase__base_packages }}'
+    - '{{ netbase__packages }}'
+  when: netbase__enabled|bool
+
+- name: Manage entries in /etc/hosts
+  lineinfile:
+    dest:    '/etc/hosts'
+    regexp:  '^{{ item.key | replace(".","\.") }}\s+'
+    line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
+    state:   '{{ "present" if item.value|d() else "absent" }}'
+  with_dict: '{{ netbase__hosts | combine(netbase__group_hosts, netbase__host_hosts) }}'
+  when: netbase__enabled|bool
+
+- name: Manage entries in /etc/networks
+  lineinfile:
+    dest:    '/etc/networks'
+    regexp:  '^{{ item.key | replace(".","\.") }}\s+'
+    line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
+    state:   '{{ "present" if item.value|d() else "absent" }}'
+  with_dict: '{{ netbase__networks | combine(netbase__group_networks, netbase__host_networks) }}'
+  when: netbase__enabled|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save netbase local facts
+  template:
+    src: 'etc/ansible/facts.d/netbase.fact.j2'
+    dest: '/etc/ansible/facts.d/netbase.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: netbase__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: netbase__register_facts is changed

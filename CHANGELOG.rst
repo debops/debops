@@ -23,6 +23,9 @@ Added
 
 - New DebOps roles:
 
+  - :ref:`debops.netbase`: manage local host and network database in
+    :file:`/etc/hosts` and :file:`/etc/networks` files.
+
   - :ref:`debops.sudo`: install and manage :command:`sudo` configuration on
     a host. The role is included in the ``common.yml`` playbook.
 
