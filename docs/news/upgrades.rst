@@ -17,8 +17,8 @@ Nothing new yet.
 v0.7.2 (2018-03-28)
 -------------------
 
-Inventory changes
-~~~~~~~~~~~~~~~~~
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - The ``console_preferred_editors`` list has been removed, configuration of the
   preferred :command:`vim` editor is now done in the :ref:`debops.apt_install`
@@ -29,6 +29,21 @@ Inventory changes
   role variables to copy custom files instead. The role is also included in the
   common playbook, although a bit earlier, which shouldn't impact normal use
   cases.
+
+- The management of the :file:`/etc/hosts` file has been removed from the
+  ``debops.console`` role and is now done via the :ref:`debops.netbase` role
+  which has to be enabled through the Ansible inventory. The variables have
+  been renamed:
+
+  +-------------------------+--------------------------------+---------------+
+  | Old variable name       | New variable name              | Changed value |
+  +=========================+================================+===============+
+  | ``console_hosts``       | :envvar:`netbase__hosts`       | No            |
+  +-------------------------+--------------------------------+---------------+
+  | ``console_group_hosts`` | :envvar:`netbase__group_hosts` | No            |
+  +-------------------------+--------------------------------+---------------+
+  | ``console_host_hosts``  | :envvar:`netbase__host_hosts`  | No            |
+  +-------------------------+--------------------------------+---------------+
 
 
 v0.7.1 (2018-03-28)

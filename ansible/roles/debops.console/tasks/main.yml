@@ -45,15 +45,6 @@
     line: 'FSCKFIX={{ console_fsckfix }}'
   when: ansible_distribution_release in console_fsckfix_releases
 
-- name: Manage entries in /etc/hosts
-  lineinfile:
-    dest: '/etc/hosts'
-    regexp: '^{{ item.key | replace(".","\.") }}\s+'
-    line: "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
-    state: '{{ "present" if item.value|d() else "absent" }}'
-  with_dict: '{{ console_hosts|combine(console_group_hosts,console_host_hosts) }}'
-  tags: [ 'role::console:hosts' ]
-
 - include: filesystem_mount.yml
   tags: [ 'role::console:mount' ]
   when: (
