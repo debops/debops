@@ -29,6 +29,7 @@ debops-padlock: encrypt secret directory with EncFS and GPG
 
 from __future__ import print_function
 
+import sys
 import os
 import shutil
 import argparse
@@ -77,7 +78,11 @@ def main(subcommand_func, **kwargs):
     # ---- Main script ----
 
     # Make sure required commands are present
-    require_commands('encfs', 'find', 'fusermount', 'gpg')
+    # OS X compatibility
+    if sys.platform == 'darwin':
+        require_commands('encfs', 'find', 'umount', 'gpg')
+    else:
+        require_commands('encfs', 'find', 'fusermount', 'gpg')
 
     inventory_path = find_inventorypath(project_root, required=False)
     # If inventory hasn't been found automatically, assume it's the default
