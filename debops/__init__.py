@@ -26,6 +26,7 @@
 
 from __future__ import print_function
 
+import sys
 import os
 import subprocess
 import stat
@@ -177,7 +178,11 @@ def padlock_lock(encrypted_path):
     decrypted_path = ''.join(encrypted_path.rsplit(ENCFS_PREFIX, 1))
     if not os.path.ismount(decrypted_path):
         return False
-    subprocess.call(['fusermount', '-u', decrypted_path])
+    # OS X compatibility
+    if sys.platform == 'darwin':
+        subprocess.call(['umount', decrypted_path])
+    else:
+        subprocess.call(['fusermount', '-u', decrypted_path])
     return True
 
 
