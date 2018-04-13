@@ -39,7 +39,7 @@
     repo: '{{ debops__project_git_repo }}'
     dest: '{{ debops__project_name if debops__project_name else debops__project_git_repo | basename }}'
     update: True
-  when: debops__project_git_repo
+  when: debops__project_git_repo != ''
 
 - name: Initialize new project
   become: '{{ debops__install_systemwide|bool }}'
@@ -47,4 +47,4 @@
   args:
     creates: '{{ debops__project_name }}/.debops.cfg'
   when: debops__project_name|d() and
-        not debops__project_git_repo
+        debops__project_git_repo == ''
