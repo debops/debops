@@ -30,7 +30,7 @@ Added
     a host. The role is included in the ``common.yml`` playbook.
 
   - :ref:`debops.system_groups`: configure UNIX system groups used on DebOps
-    hosts.
+    hosts. The role is included in the ``common.yml`` playbook.
 
 - [debops.users] Selected UNIX accounts can now be configured to linger when
   not logged in via the ``item.linger`` parameter. This allows these accounts
