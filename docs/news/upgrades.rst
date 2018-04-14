@@ -72,6 +72,10 @@ Inventory variable changes
   now uses the :ref:`debops.sudo` role to configure :command:`sudo` service on
   a host, use its variables instead to control the service in question.
 
+- The :envvar:`bootstrap__admin_groups` variable will now use list of UNIX
+  groups with ``root`` access defined by the :ref:`debops.system_groups` via
+  Ansible local facts.
+
 
 v0.7.2 (2018-03-28)
 -------------------

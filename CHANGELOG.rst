@@ -76,6 +76,10 @@ Removed
   the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook now includes
   the :ref:`debops.sudo` role which configures :command:`sudo` service.
 
+- [debops.bootstrap] The UNIX system group management has been removed from the
+  role, the ``bootstrap.yml`` playbook now uses the :ref:`debops.system_groups`
+  role to create the UNIX groups used by DebOps during bootstrapping.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------
