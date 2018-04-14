@@ -74,7 +74,6 @@ bootstrap__mandatory_packages:
 # Base packages installed during bootstrap.
 bootstrap__base_packages:
   - 'python-pip'
-  - 'sudo'
   - 'lsb-release'
   - 'dbus'
 
@@ -181,21 +180,6 @@ bootstrap__admin_shell: '/bin/bash'
 # which you don't like to be included, please modify the variable accordingly
 # to your requirements.
 bootstrap__admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true") }}' ]
-                                                                   # ]]]
-                                                                   # ]]]
-# Access to sudo commands [[[
-# ---------------------------
-
-# .. envvar:: bootstrap__sudo [[[
-#
-# Configure passwordless :command:`sudo` access for selected accounts.
-bootstrap__sudo: True
-
-                                                                   # ]]]
-# .. envvar:: bootstrap__sudo_group [[[
-#
-# A group which grants passwordless :command:`sudo` access.
-bootstrap__sudo_group: '{{ bootstrap__admin_groups[0] | default("") }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

@@ -67,6 +67,11 @@ Inventory variable changes
   configuration via :ref:`debops.apt_mark` role, the autoremoval will be
   enabled automatically.
 
+- The ``bootstrap__sudo`` and ``bootstrap__sudo_group`` variables have been
+  removed from the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook
+  now uses the :ref:`debops.sudo` role to configure :command:`sudo` service on
+  a host, use its variables instead to control the service in question.
+
 
 v0.7.2 (2018-03-28)
 -------------------

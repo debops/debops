@@ -72,6 +72,10 @@ Removed
   ``admins`` UNIX group. This is now done by the :ref:`debops.system_groups`
   Ansible role.
 
+- [debops.bootstrap] The :command:`sudo` configuration has been removed from
+  the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook now includes
+  the :ref:`debops.sudo` role which configures :command:`sudo` service.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------
