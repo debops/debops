@@ -9,6 +9,16 @@
     - '{{ sudo__packages }}'
   when: sudo__enabled|bool
 
+- name: Ensure that '/etc/sudoers' includes '/etc/sudoers.d'
+  lineinfile:
+    dest: '/etc/sudoers'
+    regexp: '^#includedir\s+/etc/sudoers.d$'
+    line: '#includedir /etc/sudoers.d'
+    insertafter: 'EOF'
+    state: 'present'
+    validate: 'visudo -cf "%s"'
+  when: sudo__enabled|bool
+
 - name: Configure workaround for logind sessions via sudo
   template:
     src: 'etc/profile.d/sudo_logind_session.sh.j2'
