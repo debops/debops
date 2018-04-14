@@ -68,6 +68,10 @@ Removed
   :file:`/etc/hosts` database. This is now covered by the :ref:`debops.netbase`
   Ansible role.
 
+- [debops.auth] Remove configuration of UNIX system groups and accounts in the
+  ``admins`` UNIX group. This is now done by the :ref:`debops.system_groups`
+  Ansible role.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------

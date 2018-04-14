@@ -11,6 +11,15 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+UNIX account and group configuration
+------------------------------------
+
+- Configuration of UNIX system groups and accounts included in the ``admins``
+  UNIX group has been removed from the :ref:`debops.auth` role. This
+  functionality is now done by the :ref:`debops.system_groups` role. The
+  variable names and their values changed, see the :ref:`debops.system_groups`
+  role documentation for details.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
