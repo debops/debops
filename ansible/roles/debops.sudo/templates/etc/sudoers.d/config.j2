@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+
+{% if item.comment|d() %}
+{{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='\n') -}}
+{% endif %}
+{% if item.options|d() %}
+{%   for element in item.options %}
+{%     if element is mapping %}
+{%       if element.name|d() and element.value|d() and element.state|d('present') != 'absent' %}
+{%         if not loop.first %}
+
+{%         endif %}
+{%         if element.comment|d() %}
+{%         if not loop.first %}
+
+{%         endif %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%         endif %}
+{{ element.value -}}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if item.raw|d() %}
+{{ item.raw -}}
+{% endif %}

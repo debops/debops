@@ -37,6 +37,10 @@ Added
   to maintain long-running services when not logged in via their own private
   :command:`systemd` instances.
 
+- [debops.sudo] You can now manage configuration files located in the
+  :file:`/etc/sudoers.d/` directory using :ref:`sudo__*_sudoers <sudo__ref_sudoers>`
+  inventory variables, with multiple level of conditional options.
+
 Changed
 ~~~~~~~
 
