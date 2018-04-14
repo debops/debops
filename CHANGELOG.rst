@@ -41,6 +41,12 @@ Changed
   the ``debops.console`` role to the :ref:`debops.apt_install` role which also
   installs :command:`vim` by default.
 
+- The configuration of automatic removal of APT packages installed via
+  ``Recommends:`` or ``Suggests:`` dependencies has been moved from the
+  :ref:`debops.apt` role to the :ref:`debops.apt_mark` role which more closely
+  reflects its intended purpose. Variable names and their default values
+  changed; see the :ref:`upgrade_notes` for more details.
+
 Removed
 ~~~~~~~
 

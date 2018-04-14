@@ -15,6 +15,38 @@
 #
 # Enable or disable support for marking APT package state.
 apt_mark__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__autoremove_recommends_important [[[
+#
+# If ``True`` (default), APT will consider packages installed via
+# ``Recommends:`` dependencies as important and not remove them automatically.
+#
+# Any entries in the ``apt_mark__*_packages`` lists will enable autoremoval of
+# APT packages installed via ``Recommends:`` dependencies, which you can then
+# control by marking them as installed manually or automatically.
+apt_mark__autoremove_recommends_important: '{{ False
+                                               if (apt_mark__default_packages|d()
+                                                   or apt_mark__packages|d()
+                                                   or apt_mark__group_packages|d()
+                                                   or apt_mark__host_packages|d())
+                                               else True }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__autoremove_suggests_important [[[
+#
+# If ``True`` (default), APT will consider packages installed via ``Suggests:``
+# dependencies as important and not remove them automatically.
+#
+# Any entries in the ``apt_mark__*_packages`` lists will enable autoremoval of
+# APT packages installed via ``Suggests:`` dependencies, which you can then
+# control by marking them as installed manually or automatically.
+apt_mark__autoremove_suggests_important: '{{ False
+                                             if (apt_mark__default_packages|d()
+                                                 or apt_mark__packages|d()
+                                                 or apt_mark__group_packages|d()
+                                                 or apt_mark__host_packages|d())
+                                             else True }}'
                                                                    # ]]]
                                                                    # ]]]
 # APT package state configuration [[[
