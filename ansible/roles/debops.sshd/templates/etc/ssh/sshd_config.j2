@@ -26,18 +26,8 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 {%   endif %}
 {% endfor %}
 
-{% set sshd__tpl_ciphers = [] %}
-{% set sshd__tpl_ciphers_match = False %}
-{% for key, value in sshd__ciphers_map.items() %}
-{%   if not sshd__tpl_ciphers_match and
-        sshd__register_version.stdout|d() and
-        sshd__register_version.stdout is version_compare(key, '>=') %}
-{%     set sshd__tpl_ciphers_match = True %}
-{%     for element in value %}
-{%       set _ = sshd__tpl_ciphers.append(element) %}
-{%     endfor %}
-{%   endif %}
-{% endfor %}
+{% set sshd__tpl_ciphers_max_version =  sshd__ciphers_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
+{% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
 {% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
 {% if sshd__tpl_ciphers and sshd__paranoid|bool %}
 Ciphers {{ ([ sshd__tpl_ciphers|first ] + sshd__ciphers_additional) | unique | join(",") }}
@@ -46,18 +36,8 @@ Ciphers {{ ([ sshd__tpl_ciphers|first ] + sshd__ciphers_additional) | unique | j
 Ciphers {{ sshd__tpl_ciphers | join(",") }}
 
 {% endif %}
-{% set sshd__tpl_kex_algorithms = [] %}
-{% set sshd__tpl_kex_algorithms_match = False %}
-{% for key, value in sshd__kex_algorithms_map.items() %}
-{%   if not sshd__tpl_kex_algorithms_match and
-      sshd__register_version.stdout|d() and
-      sshd__register_version.stdout is version_compare(key, '>=') %}
-{%   set sshd__tpl_kex_algorithms_match = True %}
-{%     for element in value %}
-{%       set _ = sshd__tpl_kex_algorithms.append(element) %}
-{%     endfor %}
-{%   endif %}
-{% endfor %}
+{% set sshd__tpl_kex_algorithms_max_version =  sshd__kex_algorithms_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
+{% set sshd__tpl_kex_algorithms = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
 {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
 {% if sshd__tpl_kex_algorithms and sshd__paranoid|bool %}
 KexAlgorithms {{ ([ sshd__tpl_kex_algorithms|first ] + sshd__kex_algorithms_additional) | unique | join(",") }}
@@ -66,19 +46,8 @@ KexAlgorithms {{ ([ sshd__tpl_kex_algorithms|first ] + sshd__kex_algorithms_addi
 KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 
 {% endif %}
-{% set sshd__tpl_macs = [] %}
-{# workaround for jinja not beeing able to overwrite a variable inside the loop #}
-{% set sshd__tpl_macs_match = [] %}
-{% for key, value in sshd__macs_map|dictsort|reverse %}
-{%   if not sshd__tpl_macs_match and
-        sshd__register_version.stdout|d() and
-        sshd__register_version.stdout is version_compare(key, '>=') %}
-{%     set _ = sshd__tpl_macs_match.append(True) %}
-{%     for element in value %}
-{%       set _ = sshd__tpl_macs.append(element) %}
-{%     endfor %}
-{%   endif %}
-{% endfor %}
+{% set sshd__tpl_macs_max_version =  sshd__macs_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
+{% set sshd__tpl_macs = sshd__macs_map[sshd__tpl_macs_max_version] %}
 {% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
 {% if sshd__tpl_macs and sshd__paranoid|bool %}
 MACs {{ ([ sshd__tpl_macs|first ] + sshd__macs_additional) | unique | join(",") }}
