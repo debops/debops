@@ -11,12 +11,6 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
-Nothing new yet.
-
-
-v0.7.2 (2018-03-28)
--------------------
-
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -63,6 +57,12 @@ Inventory variable changes
   will not be considered for autoremoval. If the user sets any package
   configuration via :ref:`debops.apt_mark` role, the autoremoval will be
   enabled automatically.
+
+
+v0.7.2 (2018-03-28)
+-------------------
+
+No changes.
 
 
 v0.7.1 (2018-03-28)
