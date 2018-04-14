@@ -45,6 +45,25 @@ Inventory variable changes
   | ``console_host_hosts``  | :envvar:`netbase__host_hosts`  | No            |
   +-------------------------+--------------------------------+---------------+
 
+- Configuration of the APT autoremove options has been moved from the
+  :ref:`debops.apt` role to the :ref:`debops.apt_mark` role, because the latter
+  role has more specific scope. The variable names as well as their default
+  values have been changed to correctly reflect the meaning of the
+  corresponding APT configuration options:
+
+  +--------------------------------+-----------------------------------------------------+------------------+
+  | Old variable name              | New variable name                                   | Changed value    |
+  +================================+=====================================================+==================+
+  | ``apt__autoremove_recommends`` | :envvar:`apt_mark__autoremove_recommends_important` | Yes, to ``True`` |
+  +--------------------------------+-----------------------------------------------------+------------------+
+  | ``apt__autoremove_suggests``   | :envvar:`apt_mark__autoremove_suggests_important`   | Yes, to ``True`` |
+  +--------------------------------+-----------------------------------------------------+------------------+
+
+  By default the APT packages installed via Recommends or Suggests dependencies
+  will not be considered for autoremoval. If the user sets any package
+  configuration via :ref:`debops.apt_mark` role, the autoremoval will be
+  enabled automatically.
+
 
 v0.7.1 (2018-03-28)
 -------------------
