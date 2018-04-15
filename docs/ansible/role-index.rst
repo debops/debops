@@ -217,6 +217,7 @@ packages.
 - :ref:`debops.apt_mark`
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
+- :ref:`debops.debops_legacy`
 - :ref:`debops.unattended_upgrades`
 - ``debops.reprepro``
 
@@ -242,6 +243,7 @@ System configuration
 
 - :ref:`debops.atd`
 - :ref:`debops.cron`
+- :ref:`debops.debops_legacy`
 - :ref:`debops.environment`
 - :ref:`debops.etc_services`
 - :ref:`debops.etckeeper`

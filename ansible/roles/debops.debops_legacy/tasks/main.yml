@@ -1,0 +1,41 @@
+---
+
+- name: Check current diversions
+  environment:
+    LC_ALL: 'C'
+  shell: dpkg-divert --list | grep -E '^local diversion' | awk '{print $NF}'
+  register: debops_legacy__register_diversions
+  check_mode: False
+  changed_when: False
+
+- name: Show what diversions will be removed in check mode
+  file:
+    path: '{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ debops_legacy__remove_combined_diversions | parse_kv_items }}'
+  when: (debops_legacy__enabled|bool and ansible_check_mode|bool and item.state|d('present') == 'absent' and
+         ((item.diversion | d(item.name + ".dpkg-divert")) in debops_legacy__register_diversions.stdout_lines))
+
+- name: Remove legacy diversions
+  shell: rm -f {{ item.name }} ; dpkg-divert --quiet --local --rename --remove {{ item.name }}
+  args:
+    executable: '/bin/sh'
+    removes: '{{ item.diversion | d(item.name + ".dpkg-divert") }}'
+    warn: False
+  with_items: '{{ debops_legacy__remove_combined_diversions | parse_kv_items }}'
+  when: (debops_legacy__enabled|bool and item.state|d('present') == 'absent' and
+         ((item.diversion | d(item.name + ".dpkg-divert")) in debops_legacy__register_diversions.stdout_lines))
+
+- name: Remove legacy packages
+  package:
+    name: '{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ debops_legacy__remove_combined_packages | parse_kv_items }}'
+  when: debops_legacy__enabled|bool and item.state|d('present') == 'absent'
+
+- name: Remove legacy files and directories
+  file:
+    path: '{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ debops_legacy__remove_combined_files | parse_kv_items }}'
+  when: debops_legacy__enabled|bool and item.state|d('present') == 'absent'

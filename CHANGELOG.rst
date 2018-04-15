@@ -32,6 +32,11 @@ Added
   - :ref:`debops.system_groups`: configure UNIX system groups used on DebOps
     hosts. The role is included in the ``common.yml`` playbook.
 
+  - :ref:`debops.debops_legacy`: clean up legacy files, directories, APT
+    packages or :command:`dpkg-divert` diversions created by DebOps but no
+    longer used. This role needs to be executed manually, it's not included in
+    the main playbook.
+
 - [debops.users] Selected UNIX accounts can now be configured to linger when
   not logged in via the ``item.linger`` parameter. This allows these accounts
   to maintain long-running services when not logged in via their own private
