@@ -10,33 +10,6 @@
     install_recommends: 'no'
   with_items: '{{ auth_packages }}'
 
-- name: Ensure common system groups exist
-  group:
-    name: '{{ item }}'
-    system: 'yes'
-    state: 'present'
-  with_items: '{{ (auth_system_groups + auth_admin_groups) | unique }}'
-  when: auth_system_groups
-
-- name: Include system administrator accounts in admin groups
-  user:
-    name: '{{ item }}'
-    state: 'present'
-    groups: '{{ ([ auth_admin_groups ] if auth_admin_groups is string else auth_admin_groups) | join(",") }}'
-    append: True
-  with_flattened: '{{ auth_admin_users }}'
-  when: auth_admin_users|d()
-
-- name: Configure admin access in sudo
-  template:
-    src: '{{ lookup("template_src", "etc/sudoers.d/admins.j2") }}'
-    dest: '/etc/sudoers.d/admins'
-    owner: 'root'
-    group: 'root'
-    mode: '0440'
-    validate: 'visudo -cf %s'
-  when: auth_wheel_group is defined and auth_wheel_group
-
 - name: Configure pam_cracklib
   template:
     src: 'usr/share/pam-configs/cracklib.j2'

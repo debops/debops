@@ -11,6 +11,15 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+UNIX account and group configuration
+------------------------------------
+
+- Configuration of UNIX system groups and accounts included in the ``admins``
+  UNIX group has been removed from the :ref:`debops.auth` role. This
+  functionality is now done by the :ref:`debops.system_groups` role. The
+  variable names and their values changed, see the :ref:`debops.system_groups`
+  role documentation for details.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -57,6 +66,19 @@ Inventory variable changes
   will not be considered for autoremoval. If the user sets any package
   configuration via :ref:`debops.apt_mark` role, the autoremoval will be
   enabled automatically.
+
+- The ``bootstrap__sudo`` and ``bootstrap__sudo_group`` variables have been
+  removed from the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook
+  now uses the :ref:`debops.sudo` role to configure :command:`sudo` service on
+  a host, use its variables instead to control the service in question.
+
+- The :envvar:`bootstrap__admin_groups` variable will now use list of UNIX
+  groups with ``root`` access defined by the :ref:`debops.system_groups` via
+  Ansible local facts.
+
+- The contents of the :envvar:`sshd__allow_groups` variable have been moved to
+  the new :envvar:`sshd__default_allow_groups` variable. The new variable also
+  uses the :ref:`debops.system_groups` Ansible local facts as a data source.
 
 
 v0.7.2 (2018-03-28)

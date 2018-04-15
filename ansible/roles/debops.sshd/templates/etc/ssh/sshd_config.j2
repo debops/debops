@@ -155,8 +155,9 @@ Subsystem sftp internal-sftp
 # and ChallengeResponseAuthentication to 'no'.
 UsePAM yes
 
-{% if sshd__allow_groups|d() or sshd__group_allow_groups|d() or sshd__host_allow_groups|d() %}
+{% if sshd__default_allow_groups|d() or sshd__allow_groups|d() or sshd__group_allow_groups|d() or sshd__host_allow_groups|d() %}
 AllowGroups {{ (
+      (sshd__default_allow_groups|d([]) | list) +
       (sshd__allow_groups|d([]) | list) +
       (sshd__group_allow_groups|d([]) | list) +
       (sshd__host_allow_groups|d([]) | list)) | unique | join(" ") }}
