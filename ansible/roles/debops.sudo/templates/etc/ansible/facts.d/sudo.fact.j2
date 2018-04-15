@@ -5,7 +5,17 @@
 from __future__ import print_function
 from json import dumps
 from sys import exit
+import os
 
-output = {'installed': True}
 
-print(dumps(output, sort_keys=True, indent=2))
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'configured': True,
+          'installed': cmd_exists('sudo')}
+
+print(dumps(output, sort_keys=True, indent=4))

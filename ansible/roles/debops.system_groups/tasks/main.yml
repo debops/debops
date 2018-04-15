@@ -1,0 +1,94 @@
+---
+
+- name: Ensure that requested UNIX system groups exist
+  group:
+    name: '{{ item.name }}'
+    gid: '{{ item.gid | d(omit) }}'
+    state: 'present'
+    system: '{{ item.system | d(True) }}'
+  with_items: '{{ system_groups__combined_list | parse_kv_items }}'
+  when: system_groups__enabled|bool and
+        item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ]
+
+- name: Get list of existing UNIX accounts
+  getent:
+    database: 'passwd'
+  when: system_groups__enabled|bool
+
+- name: Add specified UNIX accounts to system groups if present
+  user:
+    name: '{{ item.name }}'
+    append: '{{ item.append }}'
+    groups: '{{ item.groups }}'
+  with_items: '{{ lookup("template", "lookup/system_groups_members.j2") | from_yaml }}'
+  when: system_groups__enabled|bool
+
+- name: Remove sudo configuration if not specified
+  file:
+    path: '/etc/sudoers.d/{{ item.sudoers_filename | d("system_groups-" + item.name) }}'
+    state: 'absent'
+  with_items: '{{ system_groups__combined_list | parse_kv_items }}'
+  when: system_groups__enabled|bool and system_groups__sudo_enabled|bool and
+        item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ] and
+        not item.sudoers|d()
+
+- name: Configure sudo for UNIX system groups
+  template:
+    src: 'etc/sudoers.d/system_groups.j2'
+    dest: '/etc/sudoers.d/{{ item.sudoers_filename | d("system_groups-" + item.name) }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+    validate: '/usr/sbin/visudo -cf %s'
+  with_items: '{{ system_groups__combined_list | parse_kv_items }}'
+  when: system_groups__enabled|bool and system_groups__sudo_enabled|bool and
+        item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ] and
+        item.sudoers|d()
+
+- name: Remove tmpfiles configuration if not specified
+  file:
+    path: '/etc/tmpfiles.d/{{ item.tmpfiles_filename | d("system_groups-" + item.name + ".conf") }}'
+    state: 'absent'
+  with_items: '{{ system_groups__combined_list | parse_kv_items }}'
+  when: system_groups__enabled|bool and ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ] and
+        not item.tmpfiles|d()
+
+- name: Generate tmpfiles configuration for UNIX system groups
+  template:
+    src: 'etc/tmpfiles.d/system_groups.conf.j2'
+    dest: '/etc/tmpfiles.d/{{ item.tmpfiles_filename | d("system_groups-" + item.name + ".conf") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ system_groups__combined_list | parse_kv_items }}'
+  register: system_groups__register_tmpfiles
+  when: system_groups__enabled|bool and ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ] and
+        item.tmpfiles|d()
+
+- name: Ensure that missing tmpfiles are present
+  command: systemd-tmpfiles --create
+  when: system_groups__enabled|bool and ansible_service_mgr == 'systemd' and
+        system_groups__register_tmpfiles is changed
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save system groups local facts
+  template:
+    src: 'etc/ansible/facts.d/system_groups.fact.j2'
+    dest: '/etc/ansible/facts.d/system_groups.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: system_groups__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: system_groups__register_facts is changed

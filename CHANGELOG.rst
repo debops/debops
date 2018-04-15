@@ -29,10 +29,22 @@ Added
   - :ref:`debops.sudo`: install and manage :command:`sudo` configuration on
     a host. The role is included in the ``common.yml`` playbook.
 
+  - :ref:`debops.system_groups`: configure UNIX system groups used on DebOps
+    hosts. The role is included in the ``common.yml`` playbook.
+
+  - :ref:`debops.debops_legacy`: clean up legacy files, directories, APT
+    packages or :command:`dpkg-divert` diversions created by DebOps but no
+    longer used. This role needs to be executed manually, it's not included in
+    the main playbook.
+
 - [debops.users] Selected UNIX accounts can now be configured to linger when
   not logged in via the ``item.linger`` parameter. This allows these accounts
   to maintain long-running services when not logged in via their own private
   :command:`systemd` instances.
+
+- [debops.sudo] You can now manage configuration files located in the
+  :file:`/etc/sudoers.d/` directory using :ref:`sudo__*_sudoers <sudo__ref_sudoers>`
+  inventory variables, with multiple level of conditional options.
 
 Changed
 ~~~~~~~
@@ -47,6 +59,10 @@ Changed
   reflects its intended purpose. Variable names and their default values
   changed; see the :ref:`upgrade_notes` for more details.
 
+- [debops.sshd] The role will now check the :ref:`debops.system_groups` Ansible
+  local facts to define what UNIX groups are allowed to connect to the host via
+  the SSH service.
+
 Removed
 ~~~~~~~
 
@@ -60,6 +76,18 @@ Removed
 - [debops.console] Remove support for managing entries in the
   :file:`/etc/hosts` database. This is now covered by the :ref:`debops.netbase`
   Ansible role.
+
+- [debops.auth] Remove configuration of UNIX system groups and accounts in the
+  ``admins`` UNIX group. This is now done by the :ref:`debops.system_groups`
+  Ansible role.
+
+- [debops.bootstrap] The :command:`sudo` configuration has been removed from
+  the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook now includes
+  the :ref:`debops.sudo` role which configures :command:`sudo` service.
+
+- [debops.bootstrap] The UNIX system group management has been removed from the
+  role, the ``bootstrap.yml`` playbook now uses the :ref:`debops.system_groups`
+  role to create the UNIX groups used by DebOps during bootstrapping.
 
 
 `debops v0.7.2`_ - 2018-03-28

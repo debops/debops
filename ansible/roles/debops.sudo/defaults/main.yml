@@ -40,3 +40,39 @@ sudo__packages: []
 sudo__logind_session: True
                                                                    # ]]]
                                                                    # ]]]
+# Sudoers configuration [[[
+# -------------------------
+
+# These lists define what :command:`sudo` configuration will be present in the
+# :file:`/etc/sudoers.d/` directory. See :ref:`sudo__ref_sudoers` for more
+# details.
+
+# .. envvar:: sudo__sudoers [[[
+#
+# Configuration which should be present on all hosts in the Ansible inventory.
+sudo__sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__group_sudoers [[[
+#
+# Configuration which should be present on hosts in a specific Ansible
+# inventory group.
+sudo__group_sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__host_sudoers [[[
+#
+# Configuration which should be present on specific hosts in the Ansible
+# inventory.
+sudo__host_sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__combined_sudoers [[[
+#
+# The variable which combines all other ``sudoers`` configuration variables and
+# is used in the role tasks.
+sudo__combined_sudoers: '{{ sudo__sudoers
+                            + sudo__group_sudoers
+                            + sudo__host_sudoers }}'
+                                                                   # ]]]
+                                                                   # ]]]
