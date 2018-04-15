@@ -28,7 +28,7 @@
     path: '/etc/sudoers.d/{{ item.sudoers_filename | d("system_groups-" + item.name) }}'
     state: 'absent'
   with_items: '{{ system_groups__combined_list | parse_kv_items }}'
-  when: system_groups__enabled|bool and
+  when: system_groups__enabled|bool and system_groups__sudo_enabled|bool and
         item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ] and
         not item.sudoers|d()
 
@@ -41,7 +41,7 @@
     mode: '0440'
     validate: '/usr/sbin/visudo -cf %s'
   with_items: '{{ system_groups__combined_list | parse_kv_items }}'
-  when: system_groups__enabled|bool and
+  when: system_groups__enabled|bool and system_groups__sudo_enabled|bool and
         item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ] and
         item.sudoers|d()
 

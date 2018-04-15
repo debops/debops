@@ -17,6 +17,15 @@
 system_groups__enabled: True
 
                                                                    # ]]]
+# .. envvar:: system_groups__sudo_enabled [[[
+#
+# Enable or disable support for :file:`/etc/sudoers.d/` configuration.
+system_groups__sudo_enabled: '{{ True
+                                 if (ansible_local|d() and ansible_local.sudo|d() and
+                                     (ansible_local.sudo.installed|d()|bool))
+                                 else False }}'
+
+                                                                   # ]]]
 # .. envvar:: system_groups__admins_sudo_nopasswd [[[
 #
 # If enabled, the role will add the ``NOPASSWD:`` tag in the ``sudoers``
