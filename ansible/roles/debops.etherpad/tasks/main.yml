@@ -21,6 +21,7 @@
     name: '{{ etherpad_user }}'
     group: '{{ etherpad_group }}'
     home: '{{ etherpad_home }}'
+    shell: '{{ etherpad__shell }}'
     comment: 'Etherpad'
     system: yes
     state: 'present'
@@ -48,6 +49,7 @@
     version: '{{ etherpad_version }}'
     bare: yes
     update: yes
+  become: True
   become_user: '{{ etherpad_user }}'
   register: etherpad_register_source
   tags: [ 'role::etherpad:source' ]
@@ -86,6 +88,7 @@
     chdir: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
   environment:
     GIT_WORK_TREE: '{{ etherpad_home + "/" + etherpad_repository }}'
+  become: True
   become_user: '{{ etherpad_user }}'
   register: etherpad_register_checkout
   notify: [ 'Restart etherpad-lite' ]
@@ -122,6 +125,7 @@
   args:
     chdir: '{{ etherpad_home + "/" + etherpad_repository }}'
     creates: '{{ etherpad_home }}/.node-gyp'
+  become: True
   become_user: '{{ etherpad_user }}'
   when: etherpad_register_checkout is changed
 
@@ -134,6 +138,7 @@
   with_flattened:
     - '{{ etherpad__default_plugins }}'
     - '{{ etherpad_plugins }}'
+  become: True
   become_user: '{{ etherpad_user }}'
   notify: [ 'Restart etherpad-lite' ]
   tags: [ 'role::etherpad:plugins' ]
