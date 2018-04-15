@@ -54,6 +54,10 @@ Changed
   reflects its intended purpose. Variable names and their default values
   changed; see the :ref:`upgrade_notes` for more details.
 
+- [debops.sshd] The role will now check the :ref:`debops.system_groups` Ansible
+  local facts to define what UNIX groups are allowed to connect to the host via
+  the SSH service.
+
 Removed
 ~~~~~~~
 

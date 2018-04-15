@@ -76,6 +76,10 @@ Inventory variable changes
   groups with ``root`` access defined by the :ref:`debops.system_groups` via
   Ansible local facts.
 
+- The contents of the :envvar:`sshd__allow_groups` variable have been moved to
+  the new :envvar:`sshd__default_allow_groups` variable. The new variable also
+  uses the :ref:`debops.system_groups` Ansible local facts as a data source.
+
 
 v0.7.2 (2018-03-28)
 -------------------
