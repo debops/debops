@@ -12,7 +12,7 @@ Unreleased
 ----------
 
 UNIX account and group configuration
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Configuration of UNIX system groups and accounts included in the ``admins``
   UNIX group has been removed from the :ref:`debops.auth` role. This
