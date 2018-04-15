@@ -8,6 +8,14 @@
   when: owncloud__webserver == "apache"
   with_flattened: '{{ owncloud__apache_modules }}'
 
+- name: Ensure restrictive permissions are set for the data directory
+  file:
+    path: '{{ owncloud__data_path }}'
+    state: 'directory'
+    owner: '{{ owncloud__app_user }}'
+    group: '{{ owncloud__app_group }}'
+    mode: '0770'
+
 # ownCloud ./config/ [[[
 
 - name: Install ownCloud config file
