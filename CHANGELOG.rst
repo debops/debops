@@ -97,6 +97,10 @@ Removed
   role, the ``bootstrap.yml`` playbook now uses the :ref:`debops.system_groups`
   role to create the UNIX groups used by DebOps during bootstrapping.
 
+- [debops.bootstrap] Remove management of Python packages from the role. The
+  ``bootstrap.yml`` playbook uses the :ref:`debops.python` role to configure
+  Python support on the host.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------
