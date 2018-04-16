@@ -11,4 +11,5 @@
     LANG=C apt-get --no-install-recommends -yq install {{ python__core_packages | join(" ") }}
   register: python__register_raw
   when: python__enabled|bool
-  changed_when: '"0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded." not in python__register_raw.stdout_lines'
+  changed_when: not python__register_raw.stdout | regex_search('0 upgraded, 0 newly installed, 0 to remove and \d+ not upgraded\.') or
+                    python__register_raw.stdout | regex_search('.+ set to manually installed\.')
