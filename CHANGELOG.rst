@@ -37,6 +37,9 @@ Added
     longer used. This role needs to be executed manually, it's not included in
     the main playbook.
 
+  - :ref:`debops.python`: manage Python environment, with support for multiple
+    Python versions used at the same time.
+
 - [debops.users] Selected UNIX accounts can now be configured to linger when
   not logged in via the ``item.linger`` parameter. This allows these accounts
   to maintain long-running services when not logged in via their own private

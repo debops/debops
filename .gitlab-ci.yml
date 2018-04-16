@@ -1020,6 +1020,24 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.prosody/.*'
     JANE_LOG_PATTERN: '\[debops\.prosody\]'
 
+'python role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_python'
+    JANE_DIFF_PATTERN: '.*/debops.python/.*'
+    JANE_LOG_PATTERN: '\[debops\.python\]'
+
+'python/raw role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python_raw.yml'
+    JANE_INVENTORY_HOSTVARS: 'ansible_python_interpreter=/usr/bin/python3'
+    JANE_INVENTORY_GROUPS: 'debops_service_python'
+    JANE_DIFF_PATTERN: '.*/debops.python/.*'
+    JANE_LOG_PATTERN: '\[debops\.python\]'
+
+
 # --- r --- [[[2
 
 'rabbitmq_management role':
