@@ -80,6 +80,10 @@ Inventory variable changes
   the new :envvar:`sshd__default_allow_groups` variable. The new variable also
   uses the :ref:`debops.system_groups` Ansible local facts as a data source.
 
+- The ``bootstrap__raw`` and ``bootstrap__mandatory_packages`` variables have
+  been removed. See the :ref:`debops.python` role documentation for their
+  equivalents.
+
 
 v0.7.2 (2018-03-28)
 -------------------

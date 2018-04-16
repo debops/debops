@@ -37,6 +37,10 @@ Added
     longer used. This role needs to be executed manually, it's not included in
     the main playbook.
 
+  - :ref:`debops.python`: manage Python environment, with support for multiple
+    Python versions used at the same time. The role is included in the
+    ``common.yml`` playbook.
+
 - [debops.users] Selected UNIX accounts can now be configured to linger when
   not logged in via the ``item.linger`` parameter. This allows these accounts
   to maintain long-running services when not logged in via their own private
@@ -92,6 +96,10 @@ Removed
 - [debops.bootstrap] The UNIX system group management has been removed from the
   role, the ``bootstrap.yml`` playbook now uses the :ref:`debops.system_groups`
   role to create the UNIX groups used by DebOps during bootstrapping.
+
+- [debops.bootstrap] Remove management of Python packages from the role. The
+  ``bootstrap.yml`` playbook uses the :ref:`debops.python` role to configure
+  Python support on the host.
 
 
 `debops v0.7.2`_ - 2018-03-28
