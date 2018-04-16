@@ -38,7 +38,8 @@ Added
     the main playbook.
 
   - :ref:`debops.python`: manage Python environment, with support for multiple
-    Python versions used at the same time.
+    Python versions used at the same time. The role is included in the
+    ``common.yml`` playbook.
 
 - [debops.users] Selected UNIX accounts can now be configured to linger when
   not logged in via the ``item.linger`` parameter. This allows these accounts
