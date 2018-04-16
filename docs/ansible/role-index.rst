@@ -54,6 +54,7 @@ methods.
 - :ref:`debops.java`
 - :ref:`debops.nodejs`
 - :ref:`debops.php`
+- :ref:`debops.python`
 - :ref:`debops.ruby`
 - ``debops.hwraid``
 - ``debops.rails_deploy``

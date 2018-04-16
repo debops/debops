@@ -35,7 +35,7 @@
 
   roles:
 
-    - role: debops.bootstrap/raw
+    - role: debops.python/raw
 
 
 - name: Bootstrap host for Ansible management
@@ -46,6 +46,9 @@
                    | combine(inventory__host_environment  | d({})) }}'
 
   roles:
+
+    - role: debops.python
+      tags: [ 'role::python' ]
 
     - role: debops.sudo
       tags: [ 'role::sudo', 'role::system_groups' ]
