@@ -258,8 +258,8 @@ Bonding parameters
 ``slaves``
   Optional. String or YAML list of network interfaces to bond together.
 
-``bond-*``
-  Optional. If an interface is a bonding, any parameters that have ``bond-``
+``bond_*``
+  Optional. If an interface is a bonding, any parameters that have ``bond_``
   prefix will be added to that interface configuration. See the documentation
   included in the ``ifenslave`` package for possible configuration options.
 
@@ -585,13 +585,13 @@ with MTU and other parameters:
      'bond0':
        auto: True
        inet: 'manual'
-       bond-slaves: [ 'eth0', 'eth1' ]
-       bond-mode: '4'
-       bond-miimon: '100'
-       bond-downdelay: '200'
-       bond-updelay: '200'
-       bond-lacp-rate: '1'
-       bond-xmit-hash-policy: 'layer2+3'
+       bond_slaves: [ 'eth0', 'eth1' ]
+       bond_mode: '4'
+       bond_miimon: '100'
+       bond_downdelay: '200'
+       bond_updelay: '200'
+       bond_lacp-rate: '1'
+       bond_xmit-hash-policy: 'layer2+3'
        options: |
          up ifconfig lacptrunk0 0.0.0.0 up
          post-up ifconfig eth0 mtu 9000 && ifconfig eth1 mtu 9000 && ifconfig bond0 mtu 9000
