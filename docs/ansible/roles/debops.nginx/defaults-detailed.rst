@@ -97,6 +97,12 @@ Common webserver options
   Folder name witch will be concatenated to :file:`/srv/www/<``name[0]>/`
   Defaults to :file:`public`.
 
+``root_suffix``
+  Optional, string.
+  Used in scenario when the site root is in another subfoder.
+  Example. The files are stored in :file:`/srv/www/<``name[0]>/public/`, but in nginx the root needs to be :file:`/srv/www/<``name[0]>/public/current/pub`
+  Defaults to :file:``.
+
 
 ``try_files``
   Optional, string. Defaults to ``nginx_default_try_files``.
