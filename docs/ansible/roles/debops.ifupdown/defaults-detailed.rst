@@ -590,8 +590,8 @@ with MTU and other parameters:
        bond_miimon: '100'
        bond_downdelay: '200'
        bond_updelay: '200'
-       bond_lacp-rate: '1'
-       bond_xmit-hash-policy: 'layer2+3'
+       bond_lacp_rate: '1'
+       bond_xmit_hash_policy: 'layer2+3'
        options: |
          up ifconfig lacptrunk0 0.0.0.0 up
          post-up ifconfig eth0 mtu 9000 && ifconfig eth1 mtu 9000 && ifconfig bond0 mtu 9000
