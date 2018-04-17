@@ -102,7 +102,7 @@ Common webserver options
   Used in scenario when the site root is in another subfoder.
   Example. The files are stored in ``/srv/www/<name[0]>/public``,
   but in nginx the root needs to be ``/srv/www/<name[0]>/public/current/pub``
-  Defaults to :file:``.
+  Defaults to empty string.
 
 
 ``try_files``
