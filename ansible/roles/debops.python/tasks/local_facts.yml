@@ -1,0 +1,23 @@
+---
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save role local facts
+  vars:
+    fact_name: '{{ role_name | replace("debops.", "") + ".fact" }}'
+    fact_src: '{{ (fact_name + ".py2")
+                  if (ansible_python_version is version_compare("3.5", "<"))
+                  else fact_name }}'
+  template:
+    src: 'etc/ansible/facts.d/{{ fact_src }}.j2'
+    dest: '/etc/ansible/facts.d/{{ fact_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: local_facts__register_facts

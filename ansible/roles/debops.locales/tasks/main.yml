@@ -32,23 +32,9 @@
   command: 'update-locale LANG={{ locales__system_lang }}'
   when: ansible_pkg_mgr == 'apt' and locales__register_system_lang is changed
 
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save locale local facts
-  template:
-    src: 'etc/ansible/facts.d/locales.fact.j2'
-    dest: '/etc/ansible/facts.d/locales.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: locales__register_facts
+- name: Configure local facts
+  import_tasks: local_facts.yml
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: locales__register_facts is changed
+  when: local_facts__register_facts is changed

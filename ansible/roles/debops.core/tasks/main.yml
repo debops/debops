@@ -52,9 +52,14 @@
   with_items: [ 'root', 'tags', 'uuid' ]
 
 - name: Install core fact script
+  vars:
+    fact_name: 'core.fact'
+    fact_src: '{{ (fact_name + ".py2")
+                  if (ansible_python_version is version_compare("3.5", "<"))
+                  else fact_name }}'
   template:
-    src: 'etc/ansible/facts.d/core.fact.j2'
-    dest: '/etc/ansible/facts.d/core.fact'
+    src: 'etc/ansible/facts.d/{{ fact_src }}.j2'
+    dest: '/etc/ansible/facts.d/{{ fact_name }}'
     owner: 'root'
     group: 'root'
     mode: '0755'

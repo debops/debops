@@ -498,24 +498,12 @@
   include: ca_certificates.yml
   when: pki_enabled | bool
 
-# Ansible local facts [[[
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
+- name: Configure local facts
+  import_tasks: local_facts.yml
 
-- name: Save local facts
-  template:
-    src: 'etc/ansible/facts.d/pki.fact.j2'
-    dest: '/etc/ansible/facts.d/pki.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: pki_register_facts
-  notify: [ 'Gather PKI facts' ]
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: local_facts__register_facts is changed
 
 - name: Flush handlers for PKI if needed
   meta: flush_handlers
