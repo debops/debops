@@ -100,7 +100,8 @@ Common webserver options
 ``root_suffix``
   Optional, string.
   Used in scenario when the site root is in another subfoder.
-  Example. The files are stored in :file:`/srv/www/<``name[0]>/public/`, but in nginx the root needs to be :file:`/srv/www/<``name[0]>/public/current/pub`
+  Example. The files are stored in ``/srv/www/<``name[0]>/public/``,
+  but in nginx the root needs to be ``/srv/www/<``name[0]>/public/current/pub``
   Defaults to :file:``.
 
 
