@@ -1,0 +1,34 @@
+#!/usr/bin/python
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+
+# Workaround for Jinja template in a Python script
+"""
+{% set root_account__tpl_facts = {
+  "configured": True,
+  "ssh_key": (root_account__generate_ssh_key | bool),
+  "ssh_key_type": root_account__ssh_key_type,
+  "ssh_key_file": (root_account__ssh_key_file + '.pub')
+} %}
+"""
+
+output = loads('''{{ root_account__tpl_facts | to_nice_json }}''')
+
+if output['ssh_key']:
+
+    if os.path.isfile(output['ssh_key_file']):
+        try:
+            fh = open(output['ssh_key_file'])
+            for line in fh:
+                output.update({"ssh_public_key": line})
+            fh.close()
+
+        except Exception:
+            pass
+
+print(dumps(output, sort_keys=True, indent=2))

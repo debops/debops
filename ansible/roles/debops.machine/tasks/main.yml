@@ -144,23 +144,9 @@
            (item.divert|d())|bool and
            '/etc/update-motd.d/' + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) + '.disabled' in machine__register_motd_diversions.stdout_lines))
 
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save machine local facts
-  template:
-    src: 'etc/ansible/facts.d/machine.fact.j2'
-    dest: '/etc/ansible/facts.d/machine.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: machine__register_facts
+- name: Configure local facts
+  import_tasks: local_facts.yml
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: machine__register_facts is changed
+  when: local_facts__register_facts is changed

@@ -9,26 +9,12 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "sysctl/pre_main.yml") }}'
 
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save sysctl local facts
-  template:
-    src: 'etc/ansible/facts.d/sysctl.fact.j2'
-    dest: '/etc/ansible/facts.d/sysctl.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: sysctl__register_facts
+- name: Configure local facts
+  import_tasks: local_facts.yml
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: sysctl__register_facts is changed
+  when: local_facts__register_facts is changed
 
 - name: Remove sysctl configuration files if requested
   file:

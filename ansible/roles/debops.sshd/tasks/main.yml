@@ -4,7 +4,11 @@
   include: '{{ lookup("task_src", "sshd/pre_main.yml") }}'
 
 - name: Check if OpenSSH is installed (or half-installed)
-  script: scripts/dpkg-state openssh-server
+  vars:
+    script_src: '{{ "dpkg-state.py2"
+                    if (ansible_python_version is version_compare("3.5", "<"))
+                    else "dpkg-state" }}'
+  script: scripts/{{ script_src }} openssh-server
   register: sshd__register_prev_pkg_state
   changed_when: False
   failed_when: sshd__register_prev_pkg_state.rc != 0 or
@@ -169,8 +173,13 @@
     mode: '0755'
 
 - name: Copy Ansible local fact script
+  vars:
+    fact_name: '{{ role_name | replace("debops.", "") + ".fact" }}'
+    fact_src: '{{ (fact_name + ".py2")
+                  if (ansible_python_version is version_compare("3.5", "<"))
+                  else fact_name }}'
   copy:
-    src: 'scripts/sshd.fact'
+    src: 'scripts/{{ fact_src }}'
     dest: '/etc/ansible/facts.d/sshd.fact'
     owner: 'root'
     group: 'root'
