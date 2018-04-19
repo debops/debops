@@ -1,31 +1,558 @@
 .. _dpg-0001:
 
-DPG-0001 - Terminology used in DebOps Policies and Guidelines
-=============================================================
+DPG-0001 - DPG Purpose and Conventions
+======================================
 
 :DPG:          0001
-:Title:        Terminology used in DebOps Policies and Guidelines
-:Last changed: 2018-04-19
-:Created:      2018-04-19
-:Status:       Active
+:Title:        DPG Purpose and Conventions
 :Author:       Maciej Delmanowski
+:Status:       Active
+:Type:         Process
+:Created:      2018-04-19
+:Post-History: none
 
 
-Abstract
---------
+What is a DPG?
+--------------
 
-This DPG standardizes the meaning of certain key words used in the DebOps
-Policies and Guidelines.
+DPG stands for DebOps Policy and Guidelines. A DPG is a design
+document providing information to the DebOps community, or describing
+a new feature for DebOps or its processes or environment. The DPG
+should provide a concise technical specification of the feature and a
+rationale for the feature.
+
+We intend DPGs to be the primary mechanisms for proposing major new
+features, for collecting community input on an issue, and for
+documenting the design decisions that have gone into DebOps. The DPG
+author is responsible for building consensus within the community and
+documenting dissenting opinions.
+
+Because the DPGs are maintained as text files in a versioned
+repository, their revision history is the historical record of the
+feature proposal [1]_.
+
+DPGs are modeled after similar concept popularized by the
+`Python Enhancement Proposals`__ (PEPs).
+
+.. __: https://www.python.org/dev/peps/pep-0001/
 
 
-Terminology
------------
+DPG Types
+---------
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" used in DebOps
-Policies and Guidelines are to be interpreted as described in `BCP 14`__.
+There are three kinds of DPG:
 
-.. __: https://tools.ietf.org/html/bcp14
+1. A **Standards Track** DPG describes a new feature or implementation for
+   DebOps. It may also describe an interoperability standard that will be
+   supported outside the standard DebOps environment for current DebOps
+   versions before a subsequent DPG adds standard environment support in
+   a future version.
+
+2. An **Informational** DPG describes a DebOps design issue, or
+   provides general guidelines or information to the DebOps community,
+   but does not propose a new feature. Informational DPGs do not
+   necessarily represent a DebOps community consensus or
+   recommendation, so users and implementers are free to ignore
+   Informational DPGs or follow their advice.
+
+3. A **Process** DPG describes a process surrounding DebOps, or
+   proposes a change to (or an event in) a process.  Process DPGs are
+   like Standards Track DPGs but apply to areas other than the DebOps
+   source code itself. They may propose an implementation, but not to
+   DebOps's codebase; they often require community consensus; unlike
+   Informational DPGs, they are more than recommendations, and users
+   are typically not free to ignore them.  Examples include
+   procedures, guidelines, changes to the decision-making process, and
+   changes to the tools or environment used in DebOps development.
+   Any meta-DPG is also considered a Process DPG.
+
+
+DPG Workflow
+------------
+
+
+DebOps maintainers
+~~~~~~~~~~~~~~~~~~
+
+There are several references in the DPG to the "DebOps maintainers". Original
+creator and maintainer of DebOps is Maciej Delmanowski. There are a few other
+people currently active in DebOps development, you can see the list of
+contributors at: https://github.com/debops/debops/graphs/contributors.
+
+
+DPG Editors
+~~~~~~~~~~~
+
+The DPG editors are individuals responsible for managing the administrative
+and editorial aspects of the DPG workflow (e.g. assigning DPG numbers and
+changing their status).  See `DPG Editor Responsibilities & Workflow`_ for
+details. The current editors are:
+
+- Maciej Delmanowski
+
+DPG editorship is by invitation of the current editors. All of the DPG workflow
+can be conducted via the GitHub `DebOps monorepo`_ issues and pull requests.
+
+
+Start with an idea for DebOps
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The DPG process begins with a new idea for DebOps. It is highly
+recommended that a single DPG contain a single key proposal or new
+idea. Small enhancements or patches often don't need
+a DPG and can be injected into the DebOps development workflow with a
+patch submission to the `DebOps issue tracker`_. The more focused the
+DPG, the more successful it tends to be. The DPG editors reserve the
+right to reject DPG proposals if they appear too unfocused or too
+broad. If in doubt, split your DPG into several well-focused ones.
+
+Each DPG must have a champion -- someone who writes the DPG using the style and
+format described below, shepherds the discussions in the appropriate forums,
+and attempts to build community consensus around the idea. The DPG champion
+(a.k.a. Author) should first attempt to ascertain whether the idea is DPG-able.
+Posting to the <debops-users@lists.debops.org> mailing list is the best way to
+go about this.
+
+Vetting an idea publicly before going as far as writing a DPG is meant
+to save the potential author time. Many ideas have been brought
+forward for changing DebOps that have been rejected for various
+reasons [2]_. Asking the DebOps community first if an idea is original
+helps prevent too much time being spent on something that is
+guaranteed to be rejected based on prior discussions (searching
+the Internet does not always do the trick). It also helps to make sure
+the idea is applicable to the entire community and not just the author.
+Just because an idea sounds good to the author does not
+mean it will work for most people in most areas where DebOps is used.
+
+Once the champion has asked the DebOps community as to whether an idea has any
+chance of acceptance, a draft DPG should be presented to the DebOps mialing
+list. This gives the author a chance to flesh out the draft DPG to make
+properly formatted, of high quality, and to address initial concerns about the
+proposal.
+
+
+Submitting a DPG
+~~~~~~~~~~~~~~~~
+
+Following a discussion on the DebOps mailing list, the proposal should be
+submitted as a draft DPG via a `GitHub pull request`_. The draft must be
+written in DPG style as described below, else it will fail review immediately
+(although minor errors may be corrected by the editors).
+
+The standard DPG workflow is:
+
+- You, the DPG author, fork the `DebOps monorepo`_, and create a file named
+  :file:`docs/dpg/dpg-9999.rst` that contains your new DPG. Use "9999" as your
+  draft DPG number.
+- Push this to your GitHub fork and submit a pull request.
+- The DPG editors review your PR for structure, formatting, and other errors.
+- Once approved, they will assign your DPG a number, and label it as Standards
+  Track, Informational, or Process, and give it the status "Draft"
+
+Once the review process is complete, and the DPG editors approve it (note that
+this is *not* the same as accepting your DPG!), they will squash commit your
+pull request onto master.
+
+The DPG editors will not unreasonably deny a DPG. Reasons for denying DPG
+status include duplication of effort, being technically unsound, not providing
+proper motivation or addressing backwards compatibility, or not in keeping with
+the DebOps philosophy. The DebOps maintainers can be consulted during the
+approval phase, and are the final arbiters of the draft's DPG-ability.
+
+Developers with :command:`git push` privileges for the `DebOps monorepo`_ may
+claim DPG numbers directly by creating and committing a new DPG. When doing so,
+the developer must handle the tasks that would normally be taken care of by the
+DPG editors (see `DPG Editor Responsibilities & Workflow`_). This includes
+ensuring the initial version meets the expected standards for submitting a DPG.
+Alternately, even developers may choose to submit DPGs via pull request.  When
+doing so, let the DPG editors know you have :command:`git push` privileges and
+they can guide you through the process of updating the DPG repository directly.
+
+As updates are necessary, the DPG author can check in new versions if they
+(or a collaborating developer) have :command:`git push` privileges.
+
+After a DPG number has been assigned, a draft DPG may be discussed further on
+the DebOps mailing list (getting a DPG number assigned early can be useful for
+ease of reference, especially when multiple draft DPGs are being considered at
+the same time). Eventually, all Standards Track DPGs must be sent to the
+`debops-users list <mailto:debops-users@lists.debops.org>`__ for review as
+described in the next section.
+
+Standards Track DPGs consist of two parts, a design document and a
+reference implementation. It is generally recommended that at least a
+prototype implementation be co-developed with the DPG, as ideas that sound
+good in principle sometimes turn out to be impractical when subjected to the
+test of implementation.
+
+DPG authors are responsible for collecting community feedback on a DPG before
+submitting it for review. However, wherever possible, long open-ended
+discussions on public mailing lists should be avoided. Strategies to keep the
+discussions efficient include: having the DPG author accept private comments in
+the early design phases, setting up a wiki page, etc. DPG authors should use
+their discretion here.
+
+
+DPG Review & Resolution
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Once the authors have completed a DPG, they may request a review for style and
+consistency from the DPG editors. However, the content and final acceptance of
+the DPG must be requested of the DebOps maintainers, usually via an email to
+the debops-users mailing list. DPGs are reviewed by the DebOps maintainers and
+their chosen consultants, who may accept or reject a DPG or send it back to the
+author(s) for revision. For a DPG that is predetermined to be acceptable (e.g.,
+it is an obvious win as-is and/or its implementation has already been checked
+in) the DebOps maintainers may also initiate a DPG review, first notifying the
+DPG author(s) and giving them a chance to make revisions.
+
+The final authority for DPG approval are the DebOps maintainers. However,
+whenever a new DPG is put forward, any core developer that believes they are
+suitably experienced to make the final decision on that DPG may offer to serve
+as the DebOps maintainers delegate (or "DPG czar") for that DPG. If their
+self-nomination is accepted by the other core developers and the DebOps
+maintainers, then they will have the authority to approve (or reject) that DPG.
+This process happens most frequently with DPGs where the DebOps maintainers
+have granted in principle approval for *something* to be done, but there are
+details that need to be worked out before the DPG can be accepted.
+
+If the final decision on a DPG is to be made by a delegate rather than directly
+by the DebOps maintainers, this will be recorded by including the
+"DebOps-Delegate" header in the DPG.
+
+DPG review and resolution may also occur on a list other than debops-users. In
+this case, the "Discussions-To" heading in the DPG will identify the
+appropriate alternative list where discussion, review and pronouncement on the
+DPG will occur.
+
+For a DPG to be accepted it must meet certain minimum criteria. It must be
+a clear and complete description of the proposed enhancement. The enhancement
+must represent a net improvement. The proposed implementation, if applicable,
+must be solid and must not complicate the codebase unduly. Finally, a proposed
+enhancement must be "debopsy" in order to be accepted by the DebOps
+maintainers. (However, "debopsy" is an imprecise term; it may be defined as
+whatever is acceptable to the DebOps maintainers. This logic is intentionally
+circular.).
+
+Once a DPG has been accepted, the reference implementation must be
+completed. When the reference implementation is complete and incorporated
+into the main source code repository, the status will be changed to "Final".
+
+A DPG can also be assigned status "Deferred". The DPG author or an
+editor can assign the DPG this status when no progress is being made
+on the DPG. Once a DPG is deferred, a DPG editor can re-assign it
+to draft status.
+
+A DPG can also be "Rejected". Perhaps after all is said and done it
+was not a good idea. It is still important to have a record of this
+fact. The "Withdrawn" status is similar - it means that the DPG author
+themselves has decided that the DPG is actually a bad idea, or has
+accepted that a competing proposal is a better alternative.
+
+When a DPG is Accepted, Rejected or Withdrawn, the DPG should be updated
+accordingly. In addition to updating the status field, at the very least
+the Resolution header should be added with a link to the relevant post
+in the debops-users mailing list archives.
+
+DPGs can also be superseded by a different DPG, rendering the original
+obsolete. This is intended for Informational DPGs, where version 2 of
+an API can replace version 1.
+
+The possible paths of the status of DPGs are as follows:
+
+.. image:: dpg-0001-1.png
+
+Some Informational and Process DPGs may also have a status of "Active"
+if they are never meant to be completed. E.g. DPG 1 (this DPG).
+
+
+DPG Maintenance
+~~~~~~~~~~~~~~~
+
+In general, Standards track DPGs are no longer modified after they have reached
+the Final state. Once a DPG has been completed, the Language and standard
+environment references become the formal documentation of the expected
+behavior.
+
+Informational and Process DPGs may be updated over time to reflect changes
+to development practices and other details. The precise process followed in
+these cases will depend on the nature and purpose of the DPG being updated.
+
+
+What belongs in a successful DPG?
+---------------------------------
+
+Each DPG should have the following parts:
+
+1. Preamble -- RFC 822 style headers containing meta-data about the
+   DPG, including the DPG number, a short descriptive title (limited
+   to a maximum of 44 characters), the names, and optionally the
+   contact info for each author, etc.
+
+2. Abstract -- a short (~200 word) description of the technical issue
+   being addressed.
+
+3. Copyright/public domain -- Each DPG must either be explicitly labeled as
+   placed in the public domain or licensed under the
+   `GNU General Public License v3`_.
+
+4. Specification -- The technical specification should describe the
+   syntax and semantics of any new project feature.
+
+5. Motivation -- The motivation is critical for DPGs that want to change the
+   DebOps project. It should clearly explain why the existing project feature
+   is inadequate to address the problem that the DPG solves. DPG submissions
+   without sufficient motivation may be rejected outright.
+
+6. Rationale -- The rationale fleshes out the specification by describing what
+   motivated the design and why particular design decisions were made. It
+   should describe alternate designs that were considered and related work,
+   e.g. how the feature is supported in other projects.
+
+   The rationale should provide evidence of consensus within the
+   community and discuss important objections or concerns raised
+   during discussion.
+
+7. Backwards Compatibility -- All DPGs that introduce backwards
+   incompatibilities must include a section describing these incompatibilities
+   and their severity. The DPG must explain how the author proposes to deal
+   with these incompatibilities. DPG submissions without a sufficient backwards
+   compatibility treatise may be rejected outright.
+
+8. Reference Implementation -- The reference implementation must be completed
+   before any DPG is given status "Final", but it need not be completed before
+   the DPG is accepted. While there is merit to the approach of reaching
+   consensus on the specification and rationale before writing code, the
+   principle of "rough consensus and running code" is still useful when it
+   comes to resolving many discussions of API details.
+
+   The final implementation must include test code and documentation
+   appropriate for either the DebOps code reference or the
+   standard environment reference.
+
+
+DPG Formats and Templates
+-------------------------
+
+DPGs are UTF-8 encoded text files using the reStructuredText_ format.
+ReStructuredText_ allows for rich markup that is still quite easy to
+read, but also results in good-looking and functional HTML.
+
+A Sphinx-based documentation implemented in the DebOps monorepo automatically
+converts DPGs to HTML for viewing on the web. The conversion of
+reStructuredText DPGs is handled by the Docutils_ module.
+
+
+DPG Header Preamble
+-------------------
+
+Each DPG must begin with an RFC 822 style header preamble. The headers
+must appear in the following order. Headers marked with "*" are
+optional and are described below. All other headers are required.
+
+.. code-block:: rst
+
+    :DPG:             <dpg number>
+    :Title:           <dpg title>
+    :Author:          <list of authors' real names and optionally, email addrs>
+  * :DebOps-Delegate: <DPG czar's real name>
+  * :Discussions-To:  <email address>
+    :Status: <Draft | Active | Accepted | Deferred | Rejected |
+             Withdrawn | Final | Superseded>
+    :Type:   <Standards Track | Informational | Process>
+  * :Requires:        <dpg numbers>
+    :Created:         <date created on, in yyyy-mm-dd format>
+  * :DebOps-Version:  <version number>
+    :Post-History:    <dates of postings to debops-users>
+  * :Replaces:        <dpg number>
+  * :Superseded-By:   <dpg number>
+  * :Resolution:      <url>
+
+The Author header lists the names, and optionally the email addresses
+of all the authors/owners of the DPG. The format of the Author header
+value must be
+
+    Random J. User <address@dom.ain>
+
+if the email address is included, and just
+
+    Random J. User
+
+if the address is not given.
+
+If there are multiple authors, they can be specified separated by a comma, or
+each can be on a separate line following RFC 2822 continuation line
+conventions.
+
+The DebOps-Delegate field is used to record cases where the final decision to
+approve or reject a DPG rests with someone other than the DebOps maintainers.
+
+.. note:: The Resolution header is required for Standards Track DPGs
+   only. It contains a URL that should point to an email message or
+   other web resource where the pronouncement about the DPG is made.*
+
+For a DPG where final pronouncement will be made on a list other than
+debops-users, a Discussions-To header will indicate the mailing list
+or URL where the pronouncement will occur. A temporary Discussions-To header
+may also be used when a draft DPG is being discussed prior to submission for
+pronouncement. No Discussions-To header is necessary if the DPG is being
+discussed privately with the author, or on the debops-users mailing list.
+
+The Type header specifies the type of DPG: Standards Track,
+Informational, or Process.
+
+The Created header records the date that the DPG was assigned a
+number, while Post-History is used to record the dates of when new
+versions of the DPG are posted to debops-users. Both
+headers should be in yyyy-mm-dd format, e.g. 2001-08-14.
+
+Standards Track DPGs will typically have a DebOps-Version header which
+indicates the version of DebOps that the feature will be released with.
+Standards Track DPGs without a DebOps-Version header indicate interoperability
+standards that will initially be supported through external libraries and
+tools, and then supplemented by a later DPG to add support to the standard
+environment. Informational and Process DPGs do not need a DebOps-Version
+header.
+
+DPGs may have a Requires header, indicating the DPG numbers that this
+DPG depends on.
+
+DPGs may also have a Superseded-By header indicating that a DPG has
+been rendered obsolete by a later document; the value is the number of
+the DPG that replaces the current document. The newer DPG must have a
+Replaces header containing the number of the DPG that it rendered
+obsolete.
+
+
+Auxiliary Files
+---------------
+
+DPGs may include auxiliary files such as diagrams.  Such files must be named
+:file:`docs/dpg/dpg-XXXX-Y.ext`, where "XXXX" is the DPG number, "Y" is
+a serial number (starting at 1), and "ext" is replaced by the actual file
+extension (e.g. "png").
+
+
+Reporting DPG Bugs, or Submitting DPG Updates
+---------------------------------------------
+
+How you report a bug, or submit a DPG update depends on several
+factors, such as the maturity of the DPG, the preferences of the DPG
+author, and the nature of your comments. For the early draft stages
+of the DPG, it's probably best to send your comments and changes
+directly to the DPG author. For more mature, or finished DPGs you may
+want to submit corrections to the `DebOps issue tracker`_ so that your changes
+don't get lost. If the DPG author is a DebOps developer, assign the bug/patch
+to them, otherwise assign it to a DPG editor.
+
+When in doubt about where to send your changes, please check first
+with the DPG author and/or a DPG editor.
+
+DPG authors with :command:`git push` privileges for the DPG repository can
+update the DPGs themselves by using :command:`git push` to submit their
+changes.
+
+
+Transferring DPG Ownership
+--------------------------
+
+It occasionally becomes necessary to transfer ownership of DPGs to a
+new champion. In general, it is preferable to retain the original author as
+a co-author of the transferred DPG, but that's really up to the
+original author. A good reason to transfer ownership is because the
+original author no longer has the time or interest in updating it or
+following through with the DPG process, or has fallen off the face of
+the 'net (i.e. is unreachable or not responding to email). A bad
+reason to transfer ownership is because the author doesn't agree with the
+direction of the DPG. One aim of the DPG process is to try to build
+consensus around a DPG, but if that's not possible, an author can always
+submit a competing DPG.
+
+If you are interested in assuming ownership of a DPG, you can also do this via
+pull request. Fork the `DebOps monorepo`_, make your ownership modification,
+and submit a pull request. You should also send a message asking to take over,
+addressed to both the original author and the DPG editors. If the original
+author doesn't respond to email in a timely manner, the DPG editors will make
+a unilateral decision (it's not like such decisions can't be reversed :).
+
+
+DPG Editor Responsibilities & Workflow
+--------------------------------------
+
+A DPG editor must subscribe to the <debops-users@lists.debops.org> list and
+must watch the `DebOps monorepo`_. Most correspondence regarding DPG
+administration can be handled through GitHub issues and pull requests.
+
+For each new DPG that comes in an editor does the following:
+
+- Read the DPG to check if it is ready: sound and complete.  The ideas
+  must make technical sense, even if they don't seem likely to be
+  accepted.
+
+- The title should accurately describe the content.
+
+- Edit the DPG for language (spelling, grammar, sentence structure, etc.),
+  markup, code style.
+
+If the DPG isn't ready, an editor will send it back to the author for
+revision, with specific instructions.
+
+Once the DPG is ready for the repository, a DPG editor will:
+
+* Assign a DPG number (almost always just the next available number,
+  but sometimes it's a special/joke number, like 666 or 3141).
+  Remember that numbers below 100 are meta-DPGs.
+
+* Add the DPG to a local fork of the DPG repository.  For workflow
+  instructions, follow the DebOps Developers Guide (to be written).
+
+  The git repo for the peps is::
+
+   https://github.com/debops/debops
+
+* Run :command:`make docs` to ensure that the documentation is generated
+  without errors. If any errors occur, then the web site will not be updated to
+  reflect the DPG changes.
+
+* Commit and push the new (or updated) DPG
+
+* Monitor https://docs.debops.org/ to make sure the DPG gets added to the site
+  properly.  If it fails to appear, running :command:`make docs` will build all
+  of the current DPGs. If any of these are triggering errors, they must be
+  corrected before any DPG will update on the site.
+
+* Send email back to the DPG author with next steps (post to
+  debops-users mailing list).
+
+Updates to existing DPGs should be submitted as a `GitHub pull request`_.
+Questions may of course still be sent to <debops-users@lists.debops.org>.
+
+Many DPGs are written and maintained by developers with write access to the
+DebOps codebase. The DPG editors monitor the DebOps monorepo for DPG changes,
+and correct any structure, grammar, spelling, or markup mistakes they see.
+
+DPG editors don't pass judgment on DPGs. They merely do the administrative
+& editorial part (which is generally a low volume task).
+
+
+.. _DebOps monorepo: https://github.com/debops/debops
+
+.. _DebOps issue tracker: https://github.com/debops/debops/issues
+
+.. _GNU General Public License v3: https://www.gnu.org/licenses/gpl-3.0.en.html
+
+.. _reStructuredText: http://docutils.sourceforge.net/rst.html
+
+.. _Docutils: http://docutils.sourceforge.net/
+
+.. _`GitHub pull request`: https://github.com/debops/debops/pulls
+
+.. rubric:: Footnotes
+
+.. [1] This historical record is available by the normal :command:`git`
+   commands for retrieving older revisions, and can also be browsed via HTTP
+   here: https://github.com/debops/debops
+
+.. [2] Well, not yet, but maybe when the project will be a few years older...
 
 
 Copyright
