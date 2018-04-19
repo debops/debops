@@ -7,7 +7,7 @@ DebOps Policies and Guidelines
    :maxdepth: 1
    :glob:
 
-   */index
+   dpg-*
 
 ..
  Local Variables:
