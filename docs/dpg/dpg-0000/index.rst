@@ -1,0 +1,50 @@
+.. _dpg-0000:
+
+DPG-0000 - Index of DebOps Policies and Guidelines
+==================================================
+
+:DPG:          0000
+:Title:        Index of DebOps Policies and Guidelines
+:Last changed: 2018-04-19
+:Created:      2018-04-19
+:Status:       Active
+:Author:       Maciej Delmanowski
+
+
+Introduction
+------------
+
+This document provides an index of DebOps Policies and Guidelines and can be
+used as a quick reference for finding active or deprecated policies. It is also
+used to track numbers assigned to future policies.
+
+
+Active Policies
+---------------
+
+- :ref:`dpg-0001`
+- :ref:`dpg-0002`
+- :ref:`dpg-0003`
+
+
+Copyright
+---------
+
+.. code-block:: none
+
+   Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+   Copyright (C) 2018 DebOps https://debops.org/
+
+   This document is part of DebOps.
+
+   DebOps is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License version 3, as
+   published by the Free Software Foundation.
+
+   DebOps is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with DebOps. If not, see https://www.gnu.org/licenses/.

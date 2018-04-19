@@ -1,24 +1,24 @@
-.. _debops_policy__software_source_policy:
+.. _dpg-0003:
 
-DebOps Software Source Policy
-=============================
+DPG-0003 - Sources of software used by Ansible roles included in DebOps
+=======================================================================
 
-.. include:: ../includes/global.rst
+:DPG:          0003
+:Title:        Sources of software used by Ansible roles included in DebOps
+:Last changed: 2018-04-19
+:Created:      2016-07-23
+:Status:       Active
+:Author:       Maciej Delmanowski, Robin Schneider
 
-:Date drafted: 2016-07-23
-:Date effective: 2016-09-01
-:Last changed: 2016-07-25
-:Version: 0.1.0
-:Authors: - drybjed_
+.. include:: ../../includes/global.rst
 
-.. This version may not correspond directly to the debops-policy version.
 
-Terminology
------------
+Abstract
+--------
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14, [`RFC2119`_].
+This document defines the sources and methods of software installation allowed
+in the Ansible roles included in the DebOps project.
+
 
 Goals of the Policy
 -------------------
@@ -29,6 +29,7 @@ production", which means hosts that are used in production environment, on live
 Internet-facing networks. For that to be possible, the project needs to have
 a clear set of rules about how and from where to get the software required to
 manage these hosts.
+
 
 Host Operating System(s)
 ------------------------
@@ -57,12 +58,14 @@ Support for different Linux variants in different roles might be considered in
 the future, depending on compatibility or amount of the differences between
 these distributions and Debian and its derivatives.
 
+
 Software repositories and sources
 ---------------------------------
 
 Software used on hosts managed using the DebOps Project comes from various
 sources. This is a list of these sources, ordered from the most to least
 preferred and supported by the project maintainers:
+
 
 Debian Software Repository - Stable release
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -76,6 +79,7 @@ worldwide. The availability of binary packages ensures that no unnecessary
 dependencies are needed on production systems which increases reliability and
 security.
 
+
 Debian Software Repository - Stable Backports
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -88,6 +92,7 @@ packages from outside of Debian SHOULD be made accessible via Debian Backports
 after getting through usual Debian package management process (Unstable,
 Testing).
 
+
 Local APT repositories
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -96,6 +101,7 @@ distributed using a local APT repository are an acceptable alternative to the
 Debian Software Repository. This software source can be used to check if Debian
 Testing packages can be backported to Debian Stable before using it in
 production.
+
 
 Upstream APT repositories
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -112,6 +118,7 @@ in Ansible, and not using external scripts provided by the vendor. The OpenPGP
 key used to sign the packages MUST be imported by its key fingerprint. Those
 measures should ensure idempotency and reliability.
 
+
 Open Source software distributed as binary archives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -122,6 +129,7 @@ binary archives, for example through hashes of the files authenticated by known
 OpenPGP keys that belong to the software vendor. The Ansible roles which use
 this method of installation MUST validate downloaded archives against the
 provided hashes, authenticity of which is checked using the OpenPGP keys.
+
 
 Software installed from git repositories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,6 +153,7 @@ release. A certain (ideally audited) commit hash MUST be specified in case no
 code signing is used to provide at least some sort of authenticity in
 conjunction with the :ref:`debops_policy__code_signing_policy`.
 
+
 Software installed by other package managers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -156,3 +165,27 @@ dependency issues in the managed systems, therefore software from Debian
 Software Repository should have priority if possible. If not possible, it
 should be tried to install most of the dependencies of the program from Debian
 Software Repository.
+
+
+Copyright
+---------
+
+.. code-block:: none
+
+   Copyright (C) 2016-2018 Maciej Delmanowski <drybjed@gmail.com>
+   Copyright (C) 2016      Robin Schneider <ypid@riseup.net>
+   Copyright (C) 2016-2018 DebOps https://debops.org/
+
+   This document is part of DebOps.
+
+   DebOps is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License version 3, as
+   published by the Free Software Foundation.
+
+   DebOps is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with DebOps. If not, see https://www.gnu.org/licenses/.

@@ -71,6 +71,12 @@ Changed
   from ``v5.4.2`` to ``latest`` which seems to be an equivalent of a stable
   branch.
 
+- Some of the existing DebOps Policies and Guidelines have been reorganized and
+  the concept of standardized policies is introduced, inspired by the
+  `Python Enchancement Proposals`__.
+
+.. __: https://www.python.org/dev/peps/pep-0001/
+
 Removed
 ~~~~~~~
 

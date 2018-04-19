@@ -1,32 +1,25 @@
-.. _debops_policy__code_standards_policy:
+.. _dpg-0002:
 
-DebOps Code Standards Policy
-============================
+DPG-0002 - DebOps code standards
+================================
 
-.. include:: ../includes/global.rst
+:DPG:          0002
+:Title:        DebOps code standards
+:Last changed: 2018-04-19
+:Created:      2016-11-05
+:Status:       Active
+:Author:       Maciej Delmanowski, Robin Schneider, Reto Gantenbein
 
-:Date drafted: 2016-11-05
-:Date effective: 2017-01-01
-:Last changed: 2016-11-23
-:Version: 0.1.0
-:Authors: - drybjed_
-          - ypid_
-          - ganto_
-
-.. This version may not correspond directly to the debops-policy version.
+.. include:: ../../includes/global.rst
 
 
-.. _debops_policy__ref_code_standards_terminology:
+Abstract
+--------
 
-Terminology
------------
+This document defines code guidelines for Ansible roles included in DebOps.
+These guidelines are provided for Ansible role authors to ensure that the roles
+included in the project are interoperable and extensible.
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14, [`RFC2119`_].
-
-
-.. _debops_policy__ref_code_standards_goals:
 
 Goals of the Policy
 -------------------
@@ -43,8 +36,6 @@ This Policy describes how the Ansible roles and playbooks should be written,
 what ways can be used to combine two or more roles together and how the roles
 should be documented.
 
-
-.. _debops_policy__ref_code_standards_summary:
 
 Summary
 -------
@@ -164,7 +155,7 @@ the variable name. For example, the variable which defines the name of the
    nginx__user: 'www-data'
 
 For another example, the list of APT packages to install on a particular host
-using the debops.apt_install_ role MUST be defined as (or similar):
+using the :ref:`debops.apt_install` role MUST be defined as (or similar):
 
 .. code-block:: yaml
 
@@ -196,9 +187,9 @@ consume role name. E.g.
 Variable documentation
 ~~~~~~~~~~~~~~~~~~~~~~
 
-For each role the `DebOps Documentation`_ will include a page which
+For each role the DebOps documentation will include a page which
 documents the default variables. This page is generated from the role's
-:file:`defaults/main.yml` file with help of yaml2rst_. The entire comment of
+:file:`defaults/main.yml` file with help of ``yaml2rst``. The entire comment of
 the defaults file is thereby interpreted as reStructuredText_ and then rendered
 via Sphinx_.
 
@@ -277,7 +268,7 @@ used to indicate the role responsible for a given item.
 
 **Example:**
 
-The debops.apt_preferences_ role implements a feature to set APT package
+The :ref:`debops.apt_preferences` role implements a feature to set APT package
 pinning configurations. Each role requiring a specific version of a package
 to be available can ask the ``apt_preferences`` to do the corresponding
 configuration. For this, ``apt_preferences`` provides the following dependent
@@ -290,7 +281,7 @@ variable:
    # role dependency in :file:`role/meta/main.yml` or in a playbook.
    apt_preferences__dependent_list: []
 
-The consumer role, in this case debops.nginx_ would then define an own variable
+The consumer role, in this case :ref:`debops.nginx` would then define an own variable
 which defines the necessary pinning information:
 
 .. code-block:: yaml
@@ -317,7 +308,7 @@ can be specified where the dependent variable is passed to the provider:
 
        - role: debops.nginx
 
-By including the configuration for the debops.apt_preferences_ role in the
+By including the configuration for the :ref:`debops.apt_preferences` role in the
 ``nginx`` default variables the user is able to change it through the Ansible
 inventory without the need to modify any of the involved roles or the playbook.
 
@@ -348,7 +339,7 @@ so that the configuration values of all levels are respected.
 
 **Example:**
 
-The debops.users_ role allows to define user accounts which should be created
+The :ref:`debops.users` role allows to define user accounts which should be created
 on a machine. For accounts which should be created on every machine, the user
 can define the following variable in the global level of the inventory (e.g.
 :file:`inventory/groups_vars/all/users.yml`):
@@ -550,7 +541,7 @@ configured as needed by the dependent role.
 
 **Example:**
 
-This is an example playbook for debops.slapd_ defining soft dependencies:
+This is an example playbook for :ref:`debops.slapd` defining soft dependencies:
 
 .. code-block:: yaml
 
@@ -599,7 +590,7 @@ Generally role dependencies MUST be defined as
 :ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_role_dependencies>`
 via playbook unless the tight coupling to another role is unavoidable for
 implementing the required functionality. A reasonable exception is for example
-the debops.secret_ role which defines a common path for the
+the :ref:`debops.secret` role which defines a common path for the
 ``lookup("password")`` plugin.
 
 
@@ -636,7 +627,7 @@ a facts file :file:`/etc/ansible/facts.d/rolename.fact`.
 **Example:**
 
 If a role needs to make a decision based on the fact if the firewall managed by
-debops.ferm_ is enabled or not, it mustn't check the value of ``ferm__enabled``
+:ref:`debops.ferm` is enabled or not, it mustn't check the value of ``ferm__enabled``
 but query the local fact of the ferm role:
 
 .. code-block:: yaml
@@ -650,7 +641,7 @@ To successfully read the local fact of another role the latter obviously must
 have run before. Always consider the case that the fact may be undefined and
 fallback to a meaningful default value.
 
-The debops.ferm_ role itself defines the facts via a Jinja2 template such as:
+The :ref:`debops.ferm` role itself defines the facts via a Jinja2 template such as:
 
 .. code-block:: jinja
 
@@ -727,3 +718,28 @@ Instead of ...
 .. code-block:: yaml
 
    foo: {{ bar | list | to_nice_json }}
+
+
+Copyright
+---------
+
+.. code-block:: none
+
+   Copyright (C) 2016-2018 Maciej Delmanowski <drybjed@gmail.com>
+   Copyright (C) 2016      Robin Schneider <ypid@riseup.net>
+   Copyright (C) 2016      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+   Copyright (C) 2016-2018 DebOps https://debops.org/
+
+   This document is part of DebOps.
+
+   DebOps is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License version 3, as
+   published by the Free Software Foundation.
+
+   DebOps is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with DebOps. If not, see https://www.gnu.org/licenses/.

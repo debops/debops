@@ -120,6 +120,7 @@ infrastructue environments.
    :maxdepth: 2
    :hidden:
 
+   dpg/index
    developer-guide/development-model
    developer-guide/monorepo-layout
    developer-guide/code-standards
