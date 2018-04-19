@@ -24,12 +24,8 @@
     mode: '0755'
 
 - name: Save Python local facts
-  vars:
-    fact_src: '{{ "python.fact.py2"
-                  if (ansible_python_version is version_compare("3.5", "<"))
-                  else "python.fact" }}'
   template:
-    src: 'etc/ansible/facts.d/{{ fact_src }}.j2'
+    src: 'etc/ansible/facts.d/python.fact.j2'
     dest: '/etc/ansible/facts.d/python.fact'
     owner: 'root'
     group: 'root'
