@@ -72,8 +72,8 @@ Changed
   branch.
 
 - Some of the existing DebOps Policies and Guidelines have been reorganized and
-  the concept of standardized policies is introduced, inspired by the
-  `Python Enchancement Proposals`__.
+  the concept of DebOps Enhancement Proposals (DEPs) is introduced, inspired by
+  the `Python Enhancement Proposals`__.
 
 .. __: https://www.python.org/dev/peps/pep-0001/
 
