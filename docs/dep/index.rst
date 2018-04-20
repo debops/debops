@@ -1,13 +1,13 @@
-.. _dpg:
+.. _dep:
 
-DebOps Policies and Guidelines
-==============================
+DebOps Enhancement Proposals
+============================
 
 .. toctree::
    :maxdepth: 1
    :glob:
 
-   dpg-*
+   dep-*
 
 ..
  Local Variables:
