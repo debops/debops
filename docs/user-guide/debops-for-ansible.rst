@@ -8,8 +8,8 @@ Ansible users.
 Roles and playbooks are read-only
 ---------------------------------
 
-Current Ansible ecosystem relies on Ansible Galaxy for role distrbution. The
-usual use case for Galaxy roles is either as examples to write your own roles,
+Current Ansible ecosystem relies on Ansible Galaxy for role distribution. The
+usual use case for Galaxy roles is either as examples to write your roles,
 or to heavily modify them according to your own needs.
 
 DebOps roles and provided playbooks are designed to be used in a "read-only"
@@ -23,8 +23,8 @@ then be modified as needed through Ansible inventory.
 Many roles support usage as "role dependencies" - other roles, either those in
 DebOps or written by its users, can request certain configuration to be defined
 on their behalf. This design principle allows for the DebOps roles to be
-focused on specific services or applications, and encourages re-use of existing
-roles when writing custom ones by users. For example when you write a role that
+focused on specific services or applications and encourages re-use of existing
+roles when writing custom ones by users. For example, when you write a role that
 deploys a web application, you don't need to worry about required
 :ref:`firewall configuration <debops.ferm>`, :ref:`web server <debops.nginx>`
 or :ref:`system package upgrades <debops.unattended_upgrades>`; existing roles
@@ -51,6 +51,6 @@ inventory they want to use, be it a set of static YAML files, or a dynamic
 inventory based on scripts and a database. Users don't even need to
 specifically configure things, many roles use sensible defaults to configure
 the host according to its environment (DNS domain name, IP addresses, number of
-CPU cores, amout of RAM, network interfaces, etc.). The aim is to have roles
-that work fine with default configuration in a typical Debian installation,
+CPU cores, amount of RAM, network interfaces, etc.). The aim is to have roles
+that work fine with the default configuration in a typical Debian installation,
 with configuration tweaked to provide more security when necessary.
