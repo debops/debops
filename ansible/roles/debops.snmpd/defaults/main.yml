@@ -1,21 +1,23 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.snmpd default variables
+# ==============================
 
 # .. contents:: Sections
 #    :local:
-#
-# -------------------------------
-#   Basic configuration options
+
+
+# Basic configuration options [[[
 # -------------------------------
 
-# .. envvar:: snmpd_packages
+# .. envvar:: snmpd_packages [[[
 #
 # List of additional packages to install with ``snmpd``.
 snmpd_packages: []
 
-
-# .. envvar:: snmpd_user
+                                                                   # ]]]
+# .. envvar:: snmpd_user [[[
 #
 # The user account used by the :command:`snmpd` daemon.
 snmpd_user: '{{ "snmp"
@@ -23,8 +25,8 @@ snmpd_user: '{{ "snmp"
                     ansible_distribution_release in [ "wheezy", "jessie" ])
                 else "Debian-snmp" }}'
 
-
-# .. envvar:: snmpd_group
+                                                                   # ]]]
+# .. envvar:: snmpd_group [[[
 #
 # The group used by the :command:`snmpd` daemon.
 snmpd_group: '{{ "snmp"
@@ -32,22 +34,22 @@ snmpd_group: '{{ "snmp"
                      ansible_distribution_release in [ "wheezy", "jessie" ])
                  else "Debian-snmp" }}'
 
-
-# .. envvar:: snmpd_logging_options
+                                                                   # ]]]
+# .. envvar:: snmpd_logging_options [[[
 #
 # String with ``snmpd`` log-related options, can be used to change log
 # verbosity for debugging.
 snmpd_logging_options: '-LScd'
 
-
-# .. envvar:: snmpd_custom_options
+                                                                   # ]]]
+# .. envvar:: snmpd_custom_options [[[
 #
 # Custom ``snmpd`` options written in YAML text block format, inserted into
 # ``/etc/snmp/snmpd.conf`` configuration file.
 snmpd_custom_options: ''
 
-
-# .. envvar:: snmpd_download_mibs
+                                                                   # ]]]
+# .. envvar:: snmpd_download_mibs [[[
 #
 # Download MIB definitions by default?
 snmpd_download_mibs: '{{ True
@@ -55,58 +57,56 @@ snmpd_download_mibs: '{{ True
                              (ansible_local.apt.nonfree|d())|bool)
                          else False }}'
 
-
-# .. envvar:: snmpd_extension_scripts
+                                                                   # ]]]
+# .. envvar:: snmpd_extension_scripts [[[
 #
 # Path on the remote host where extension scripts are stored
 snmpd_extension_scripts: '{{ (ansible_local.root.lib
                               if (ansible_local|d() and ansible_local.root|d() and
                                   ansible_local.root.lib|d())
                               else "/usr/local/lib") + "/snmpd" }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# LLDP daemon [[[
 # ---------------
-#   LLDP daemon
-# ---------------
 
-# .. envvar:: snmpd_lldpd
+# .. envvar:: snmpd_lldpd [[[
 #
 # Enable or disable ``LLDP`` support using ``lldpd`` daemon.
 snmpd_lldpd: True
 
-
-# .. envvar:: snmpd_lldpd_options
+                                                                   # ]]]
+# .. envvar:: snmpd_lldpd_options [[[
 #
 # String with ``lldpd`` daemon options.
 snmpd_lldpd_options: '-x -c -s -e'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Network options, firewall, TCP wrappers [[[
 # -------------------------------------------
-#   Network options, firewall, TCP wrappers
-# -------------------------------------------
 
-# .. envvar:: snmpd_allow
+# .. envvar:: snmpd_allow [[[
 #
 # List of IP addresses or CIDR networks which can connect to SNMP service
 # (global). If not specified, remote connections are blocked.
 snmpd_allow: []
 
-
-# .. envvar:: snmpd_group_allow
+                                                                   # ]]]
+# .. envvar:: snmpd_group_allow [[[
 #
 # List of IP addresses or CIDR networks which can connect to SNMP service
 # (per Ansible group). If not specified, remote connections are blocked.
 snmpd_group_allow: []
 
-
-# .. envvar:: snmpd_host_allow
+                                                                   # ]]]
+# .. envvar:: snmpd_host_allow [[[
 #
 # List of IP addresses or CIDR networks which can connect to SNMP service
 # (per Ansible host). If not specified, remote connections are blocked.
 snmpd_host_allow: []
 
-
-# .. envvar:: snmpd_local_allow
+                                                                   # ]]]
+# .. envvar:: snmpd_local_allow [[[
 #
 # List of IP addresses or CIDR networks which can connect to SNMP service
 # (from localhost). If not specified, remote connections are blocked.
@@ -114,102 +114,100 @@ snmpd_local_allow: '{{ ansible_all_ipv4_addresses|d([]) +
                        (ansible_all_ipv6_addresses|d([]) |
                         difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local"))) }}'
 
-
-# .. envvar:: snmpd_agent_address
+                                                                   # ]]]
+# .. envvar:: snmpd_agent_address [[[
 #
 # List of addresses on which to listen for incoming connections. By default
 # ``snmpd`` listens on all interfaces and firewall / TCP wrappers are used to
 # limit what remote hosts can connect.
 snmpd_agent_address: [ 'udp:0.0.0.0:161', 'udp6:[::]:161' ]
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# sysLocation, sysContact, sysName SNMP variables [[[
 # ---------------------------------------------------
-#   sysLocation, sysContact, sysName SNMP variables
-# ---------------------------------------------------
 
-# .. envvar:: snmpd_organization
+# .. envvar:: snmpd_organization [[[
 #
 # Organization name used in ``sysLocation`` and ``sysContact`` SNMP variables.
 snmpd_organization: '{{ ansible_domain.split(".") | first | capitalize }}'
 
-
-# .. envvar:: snmpd_sys_location
+                                                                   # ]]]
+# .. envvar:: snmpd_sys_location [[[
 #
 # String set as ``sysLocation`` SNMP variable.
 snmpd_sys_location: '{{ snmpd_organization + " " + snmpd_sys_location_name }}'
 
-
-# .. envvar:: snmpd_sys_location_name
+                                                                   # ]]]
+# .. envvar:: snmpd_sys_location_name [[[
 #
 # Name of the "virtual" location, appended to the organization name derived
 # from DNS domain name.
 snmpd_sys_location_name: 'Data Center'
 
-
-# .. envvar:: snmpd_sys_contact
+                                                                   # ]]]
+# .. envvar:: snmpd_sys_contact [[[
 #
 # Contact information for a device set as ``sysContact`` SNMP variable.
 snmpd_sys_contact: '{{ snmpd_sys_contact_name + " <" + snmpd_sys_contact_email + ">" }}'
 
-
-# .. envvar:: snmpd_sys_contact_name
+                                                                   # ]]]
+# .. envvar:: snmpd_sys_contact_name [[[
 #
 # Name of the contact set as ``sysContact`` variable.
 snmpd_sys_contact_name: '{{ snmpd_organization + " System Administrator" }}'
 
-
-# .. envvar:: snmpd_sys_contact_email
+                                                                   # ]]]
+# .. envvar:: snmpd_sys_contact_email [[[
 #
 # E-mail address of the contact set as ``sysContact`` variable.
 snmpd_sys_contact_email: 'root@{{ ansible_domain }}'
 
-
-# .. envvar:: snmpd_sys_name
+                                                                   # ]]]
+# .. envvar:: snmpd_sys_name [[[
 #
 # Host FQDN set as the ``sysName`` SNMP variable.
 snmpd_sys_name: '{{ ansible_fqdn }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# CPU load average monitoring [[[
 # -------------------------------
-#   CPU load average monitoring
-# -------------------------------
 
-# .. envvar:: snmpd_load
+# .. envvar:: snmpd_load [[[
 #
 # Enable or disable load average monitoring
 snmpd_load: True
 
-
-# .. envvar:: snmpd_load_profile
+                                                                   # ]]]
+# .. envvar:: snmpd_load_profile [[[
 #
 # Name of the load average "profile" to use, see ``snmpd_load_percent_map`` and
 # ``snmpd_load_weight_map`` variables for list of profiles.
 snmpd_load_profile: 'default'
 
-
-# .. envvar:: snmpd_load_percent
+                                                                   # ]]]
+# .. envvar:: snmpd_load_percent [[[
 #
 # Name of the profile used to define amount of available CPU power taken into
 # account for load average profile calculation. See ``snmpd_load_percent_map``
 # variable for list of available profiles.
 snmpd_load_percent: '{{ snmpd_load_profile }}'
 
-
-# .. envvar:: snmpd_load_weight
+                                                                   # ]]]
+# .. envvar:: snmpd_load_weight [[[
 #
 # Name of the profile used to scale the load average profile calculation for
 # different time periods. See ``snmpd_load_percent_map`` variable for list of
 # available profiles.
 snmpd_load_weight: '{{ snmpd_load_profile }}'
 
-
-# .. envvar:: snmpd_load_base
+                                                                   # ]]]
+# .. envvar:: snmpd_load_base [[[
 #
 # Base value used to calculate load average profiles - number of vCPU cores.
 snmpd_load_base:  '{{ ansible_processor_vcpus }}'
 
-
-# .. envvar:: snmpd_load_percent_map
+                                                                   # ]]]
+# .. envvar:: snmpd_load_percent_map [[[
 #
 # Dict with CPU percentage profiles.
 #
@@ -224,8 +222,8 @@ snmpd_load_base:  '{{ ansible_processor_vcpus }}'
 snmpd_load_percent_map:
   'default': [ '90', '90', '100' ]
 
-
-# .. envvar:: snmpd_load_weight_map
+                                                                   # ]]]
+# .. envvar:: snmpd_load_weight_map [[[
 #
 # Dict with load average weight profiles.
 #
@@ -240,36 +238,35 @@ snmpd_load_percent_map:
 snmpd_load_weight_map:
   'default': [ '1.5', '1.7', '1.8' ]
 
-
-# .. envvar:: snmpd_load_1min
+                                                                   # ]]]
+# .. envvar:: snmpd_load_1min [[[
 #
 # 1 minute load average value which will trigger a SNMP trap.
 snmpd_load_1min:  '{{ (((snmpd_load_base | float) *
                       (snmpd_load_percent_map[snmpd_load_percent][0] | float) / 100) | float *
                        snmpd_load_weight_map[snmpd_load_weight][0] | float) }}'
 
-
-# .. envvar:: snmpd_load_5min
+                                                                   # ]]]
+# .. envvar:: snmpd_load_5min [[[
 #
 # 5 minute load average value which will trigger a SNMP trap.
 snmpd_load_5min:  '{{ (((snmpd_load_base | float) *
                       (snmpd_load_percent_map[snmpd_load_percent][1] | float) / 100) | float *
                        snmpd_load_weight_map[snmpd_load_weight][1] | float) }}'
 
-
-# .. envvar:: snmpd_load_15min
+                                                                   # ]]]
+# .. envvar:: snmpd_load_15min [[[
 #
 # 15 minute load average value which will trigger a SNMP trap.
 snmpd_load_15min: '{{ (((snmpd_load_base | float) *
                       (snmpd_load_percent_map[snmpd_load_percent][2] | float) / 100) | float *
                        snmpd_load_weight_map[snmpd_load_weight][2] | float) }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Process monitoring [[[
 # ----------------------
-#   Process monitoring
-# ----------------------
 
-# .. envvar:: snmpd_proc_hidepid
+# .. envvar:: snmpd_proc_hidepid [[[
 #
 # Should the ``debops.snmpd`` add the ``snmp`` user account to a group that has
 # access to the ``/proc`` filesystem?
@@ -278,8 +275,8 @@ snmpd_proc_hidepid: '{{ True
                             (ansible_local.proc_hidepid.enabled|d())|bool)
                         else False }}'
 
-
-# .. envvar:: snmpd_proc_hidepid_group
+                                                                   # ]]]
+# .. envvar:: snmpd_proc_hidepid_group [[[
 #
 # Name of the system group which ``snmp`` user will be added to to get
 # information about processes.
@@ -287,32 +284,31 @@ snmpd_proc_hidepid_group: '{{ (ansible_local.proc_hidepid.group
                                if (ansible_local|d() and ansible_local.proc_hidepid|d() and
                                    ansible_local.proc_hidepid.group|d())
                                else "") }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# SNMPv3 admin, agent and local accounts [[[
 # ------------------------------------------
-#   SNMPv3 admin, agent and local accounts
-# ------------------------------------------
 
-# .. envvar:: snmpd_account
+# .. envvar:: snmpd_account [[[
 #
 # Enable or disable automatic creation of "admin" (RW), "agent" (RO) and
 # "local" (RO) SNMPv3 accounts.
 snmpd_account: True
 
-
-# .. envvar:: snmpd_account_username_length
+                                                                   # ]]]
+# .. envvar:: snmpd_account_username_length [[[
 #
 # Length of the randomly generated usernames.
 snmpd_account_username_length: '16'
 
-
-# .. envvar:: snmpd_account_password_length
+                                                                   # ]]]
+# .. envvar:: snmpd_account_password_length [[[
 #
 # Length of the randomly generated passwords.
 snmpd_account_password_length: '48'
 
-
-# .. envvar:: snmpd_account_admin_username
+                                                                   # ]]]
+# .. envvar:: snmpd_account_admin_username [[[
 #
 # Randomly generated, global SNMPv3 username of administrator account,
 # read-write, deactivated after ``snmpd`` is configured.
@@ -320,8 +316,8 @@ snmpd_account_admin_username: '{{ lookup("password", secret +
                                   "/snmp/credentials/admin/username chars=ascii,digits length=" +
                                   snmpd_account_username_length) }}'
 
-
-# .. envvar:: snmpd_account_admin_password
+                                                                   # ]]]
+# .. envvar:: snmpd_account_admin_password [[[
 #
 # Randomly generated, global SNMPv3 password of administrator account,
 # read-write, deactivated after ``snmpd`` is configured.
@@ -329,28 +325,27 @@ snmpd_account_admin_password: '{{ lookup("password", secret +
                                   "/snmp/credentials/admin/password chars=ascii_letters,digits,hexdigits length=" +
                                   snmpd_account_password_length) }}'
 
-
-# .. envvar:: snmpd_account_agent_username
+                                                                   # ]]]
+# .. envvar:: snmpd_account_agent_username [[[
 #
 # Randomly generated, global SNMPv3 username of agent account, read-only.
 snmpd_account_agent_username: '{{ lookup("password", secret +
                                   "/snmp/credentials/agent/username chars=ascii,digits length=" +
                                   snmpd_account_username_length) }}'
 
-
-# .. envvar:: snmpd_account_agent_password
+                                                                   # ]]]
+# .. envvar:: snmpd_account_agent_password [[[
 #
 # Randomly generated, global SNMPv3 password of agent account, read-only.
 snmpd_account_agent_password: '{{ lookup("password", secret +
                                   "/snmp/credentials/agent/password chars=ascii_letters,digits,hexdigits length=" +
                                   snmpd_account_password_length) }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration of other Ansible roles [[[
 # ----------------------------------------
-#   Configuration of other Ansible roles
-# ----------------------------------------
 
-# .. envvar:: snmpd_apt_preferences_dependent_list
+# .. envvar:: snmpd_apt_preferences_dependent_list [[[
 #
 # Configuration for ``debops.apt_preferences`` role.
 snmpd_apt_preferences_dependent_list:
@@ -360,8 +355,8 @@ snmpd_apt_preferences_dependent_list:
     reason:  'Version parity with Debian Jessie'
     by_role: 'debops.snmpd'
 
-
-# .. envvar:: snmpd_ferm_dependent_rules
+                                                                   # ]]]
+# .. envvar:: snmpd_ferm_dependent_rules [[[
 #
 # Configuration for ``debops.ferm`` role.
 snmpd_ferm_dependent_rules:
@@ -372,8 +367,8 @@ snmpd_ferm_dependent_rules:
     saddr: '{{ snmpd_allow + snmpd_group_allow + snmpd_host_allow + snmpd_local_allow }}'
     role: 'snmpd'
 
-
-# .. envvar:: snmpd_tcpwrappers_dependent_allow
+                                                                   # ]]]
+# .. envvar:: snmpd_tcpwrappers_dependent_allow [[[
 #
 # Configuration for ``debops.tcpwrappers`` role.
 snmpd_tcpwrappers_dependent_allow:
@@ -383,3 +378,5 @@ snmpd_tcpwrappers_dependent_allow:
     weight: '50'
     filename: 'snmpd_dependency_allow'
     comment: 'Allow remote connections to SNMP daemon'
+                                                                   # ]]]
+                                                                   # ]]]

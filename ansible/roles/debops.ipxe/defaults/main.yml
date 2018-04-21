@@ -1,133 +1,134 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.ipxe default variables
+# =============================
 
 # .. contents:: Sections
 #    :local:
-#
-# -------------------
-#   General options
+
+
+# General options [[[
 # -------------------
 
-# .. envvar:: ipxe_config_root
+# .. envvar:: ipxe_config_root [[[
 #
 # Path where iPXE configuration files will be generated
 ipxe_config_root: '/srv/tftp'
 
-
-# .. envvar:: ipxe_tftp
+                                                                   # ]]]
+# .. envvar:: ipxe_tftp [[[
 #
 # Enable TFTP support, prepare the host to serve iPXE bootloader over TFTP
 ipxe_tftp: True
 
-
-# .. envvar:: ipxe_tftp_root
+                                                                   # ]]]
+# .. envvar:: ipxe_tftp_root [[[
 #
 # Path to TFTP root directory
 ipxe_tftp_root: '/srv/tftp'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# iPXE main menu [[[
 # ------------------
-#   iPXE main menu
-# ------------------
 
-# .. envvar:: ipxe_main_menu
+# .. envvar:: ipxe_main_menu [[[
 #
 # Variable with main menu entries to add to the iPXE menu, in YAML text block
 # format.
 ipxe_main_menu: '{{ ipxe_main_menu_default }}'
 
-
-# .. envvar:: ipxe_main_menu_default
+                                                                   # ]]]
+# .. envvar:: ipxe_main_menu_default [[[
 #
 # Default menu entries.
 ipxe_main_menu_default: |
   item --key d debian-installer ${space} Install Debian GNU/Linux on this host [d]
 
-
-# .. envvar:: ipxe_main_menu_timeout
+# ]]]
+# .. envvar:: ipxe_main_menu_timeout [[[
 #
 # Length of time in seconds after which host will automatically boot from the
 # local hard disk if no other action is performed by the user.
 ipxe_main_menu_timeout: '4'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Automatic boot scripts [[[
 # --------------------------
-#   Automatic boot scripts
-# --------------------------
 
-# .. envvar:: ipxe_boot_url
+# .. envvar:: ipxe_boot_url [[[
 #
 # An URL to a script which dynamically generates iPXE boot parameters.
 # See http://ipxe.org/scripting for more details.
 ipxe_boot_url: ''
 
-
-# .. envvar:: ipxe_boot_path
+                                                                   # ]]]
+# .. envvar:: ipxe_boot_path [[[
 #
 # Path to directory which contains custom iPXE boot scripts customized for
 # specific hosts. Based on custom iPXE configuration from
 # https://gist.github.com/robinsmidsrod/2234639
 ipxe_boot_path: 'boot/'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Debian GNU/Linux Installer [[[
 # ------------------------------
-#   Debian GNU/Linux Installer
-# ------------------------------
 
-# .. envvar:: ipxe_debian_installer_preseed
+# .. envvar:: ipxe_debian_installer_preseed [[[
 #
 # URL to the Debian Preseed to use by default. Default value works with
 # configuration managed by ``debops.preseed`` Ansible role, DNS needs to be
 # configured separately for it to work correctly.
 ipxe_debian_installer_preseed: 'debian.seed'
 
-
-# .. envvar:: ipxe_debian_installer_keymap
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_installer_keymap [[[
 #
 # Default keymap passed to the Debian Installer in the boot parameters, without
 # it D-I will ask the user for the keyboard layout interactively.
 ipxe_debian_installer_keymap: 'us'
 
-
-# .. envvar:: ipxe_debian_installer_mirror
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_installer_mirror [[[
 #
 # Address of the Debian mirror used to download the Installer files.
 ipxe_debian_installer_mirror: 'httpredir.debian.org'
 
-
-# .. envvar:: ipxe_debian_pxeboot
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_pxeboot [[[
 #
 # Enable configuration of local Debian netinst (amd64) using PXE + TFTP.
 ipxe_debian_pxeboot: True
 
-
-# .. envvar:: ipxe_debian_pxeboot_firmware
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_pxeboot_firmware [[[
 #
 # Add non-free firmware to Debian netinst ``initrd.gz``. See
 # https://wiki.debian.org/DebianInstaller/NetbootFirmware for more details.
 ipxe_debian_pxeboot_firmware: True
 
-
-# .. envvar:: ipxe_debian_pxeboot_release
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_pxeboot_release [[[
 #
 # Debian release to use for Debian netinst (``jessie``, ``stable``, etc.).
 ipxe_debian_pxeboot_release: 'stable'
 
-
-# .. envvar:: ipxe_debian_pxeboot_workdir
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_pxeboot_workdir [[[
 #
 # Directory where netinst and firmware tarballs are stored and worked on.
 ipxe_debian_pxeboot_workdir: '/usr/local/src/ipxe/debian-pxeboot'
 
-
-# .. envvar:: ipxe_debian_pxeboot_url
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_pxeboot_url [[[
 #
 # URL of the ``netboot.tar.gz`` tarball with Debian netinst.
 ipxe_debian_pxeboot_url: 'http://{{ ipxe_debian_installer_mirror }}/debian/dists/{{ ipxe_debian_pxeboot_release }}/main/installer-amd64/current/images/netboot/netboot.tar.gz'
 
-
-# .. envvar:: ipxe_debian_pxeboot_firmware_url
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_pxeboot_firmware_url [[[
 #
 # URL of the ``firmware.tar.gz`` tarball with non-free firmware.
 ipxe_debian_pxeboot_firmware_url: 'http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/{{ ipxe_debian_pxeboot_release }}/current/firmware.tar.gz'
+                                                                   # ]]]
+                                                                   # ]]]
