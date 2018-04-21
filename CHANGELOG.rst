@@ -63,6 +63,11 @@ Changed
   reflects its intended purpose. Variable names and their default values
   changed; see the :ref:`upgrade_notes` for more details.
 
+- [debops.owncloud] Support Nextcloud 13 and partially ownCloud 10. Nextcloud
+  11 and ownCloud 9.1 are EOL, you should update. The role can help you with
+  the update to ensure that everything works smoothly with the new versions.
+  Currently, the role can not do the update for you.
+
 - [debops.sshd] The role will now check the :ref:`debops.system_groups` Ansible
   local facts to define what UNIX groups are allowed to connect to the host via
   the SSH service.
