@@ -1,7 +1,18 @@
 # {{ ansible_managed }}
 
-Cmnd_Alias NGINX_RELOAD = /etc/init.d/nginx reload
+Cmnd_Alias NGINX_RELOAD = /etc/init.d/nginx reload, \
+			  /bin/systemctl reload nginx.service
+
+Cmnd_Alias NGINX_STOP = /etc/init.d/nginx stop, \
+			/bin/systemctl stop nginx.service
+
+Cmnd_Alias NGINX_START = /etc/init.d/nginx start, \
+			 /bin/systemctl start nginx.service
+
+Cmnd_Alias NGINX_RESTART = /etc/init.d/nginx restart, \
+			  /bin/systemctl restart nginx.service
 
 %{{ nginx_privileged_group }} ALL = (root) NOPASSWD: NGINX_RELOAD
-
-
+%{{ nginx_privileged_group }} ALL = (root) NOPASSWD: NGINX_STOP
+%{{ nginx_privileged_group }} ALL = (root) NOPASSWD: NGINX_START
+%{{ nginx_privileged_group }} ALL = (root) NOPASSWD: NGINX_RESTART

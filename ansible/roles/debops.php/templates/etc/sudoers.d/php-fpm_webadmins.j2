@@ -3,4 +3,16 @@
 Cmnd_Alias PHP_FPM_RELOAD = /etc/init.d/php{{ php__version }}-fpm reload, \
                             /bin/systemctl reload php{{ php__version }}-fpm.service
 
+Cmnd_Alias PHP_FPM_STOP = /etc/init.d/php{{ php__version }}-fpm stop, \
+                            /bin/systemctl stop php{{ php__version }}-fpm.service
+
+Cmnd_Alias PHP_FPM_START = /etc/init.d/php{{ php__version }}-fpm start, \
+                            /bin/systemctl start php{{ php__version }}-fpm.service
+
+Cmnd_Alias PHP_FPM_RESTART = /etc/init.d/php{{ php__version }}-fpm restart, \
+                            /bin/systemctl restart php{{ php__version }}-fpm.service
+
 %{{ php__fpm_privileged_group }} ALL = (root) NOPASSWD: PHP_FPM_RELOAD
+%{{ php__fpm_privileged_group }} ALL = (root) NOPASSWD: PHP_FPM_STOP
+%{{ php__fpm_privileged_group }} ALL = (root) NOPASSWD: PHP_FPM_START
+%{{ php__fpm_privileged_group }} ALL = (root) NOPASSWD: PHP_FPM_RESTART
