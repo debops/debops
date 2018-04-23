@@ -1,126 +1,238 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.reprepro default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+
 
 # ---- General repository layout ----
 
+# .. envvar:: reprepro_distribution [[[
+#
 # Linux distribution managed by this reprepro instance
 reprepro_distribution: '{{ ansible_distribution }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_distribution_release [[[
+#
 # Linux release managed by this reprepro instance
 reprepro_distribution_release: '{{ ansible_distribution_release }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_codenames [[[
+#
 # List of codenames enabled in this repository, filtered by distribution
 reprepro_codenames: '{{ reprepro_distributions | map(attribute="Codename") | list | sort | unique }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_architectures [[[
+#
 # List of architectures supported by this repository
 reprepro_architectures: [ 'amd64', 'i386', 'source' ]
 
+                                                                   # ]]]
+# .. envvar:: reprepro_components [[[
+#
 # List of components defined for local repositories
 reprepro_components: [ 'main' ]
 
+                                                                   # ]]]
+# .. envvar:: reprepro_fqdn [[[
+#
 # The base FQDN used by reprepro
 reprepro_fqdn: '{{ ansible_fqdn }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_domain [[[
+#
 # The base domain used by reprepro
 reprepro_domain: '{{ ansible_domain }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_origin [[[
+#
 # Origin: field added to the repository configuration files
 reprepro_origin: '{{ reprepro_domain.split(".")[0] | capitalize }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_admin_email [[[
+#
 # List of mail addresses to where reprepro should send mail about changes in
 # selected repositories
 reprepro_admin_email: [ 'root@{{ reprepro_domain }}' ]
 
-
+                                                                   # ]]]
 # ---- Webserver configuration ----
 
+# .. envvar:: reprepro_domains [[[
+#
 # List of domains for this APT repository
 reprepro_domains: [ '{{ "apt." + reprepro_domain }}' ]
 
+                                                                   # ]]]
+# .. envvar:: reprepro_allow [[[
+#
 # List of IP addresses or CIDR subnets which are allowed to connect to the
 # webserver with the repository. If empty, everyone can access the repository.
 reprepro_allow: []
 
+                                                                   # ]]]
+# .. envvar:: reprepro_allow_upload [[[
+#
 # List of IP addresses or CIDR subnets which are allowed to upload packages
 # using WebDAV to /upload location. If empty, you can upload from anywhere.
 reprepro_allow_upload: []
 
+                                                                   # ]]]
+# .. envvar:: reprepro_max_body_size [[[
+#
 # Maximum size of upload in MB
 reprepro_max_body_size: '20'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_nginx_auth_realm [[[
+#
 # Webserver authentication realm
 reprepro_nginx_auth_realm: 'APT access is restricted'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_nginx_access_policy [[[
+#
 # Name of webserver access policy to enable (see 'debops.nginx' role)
 reprepro_nginx_access_policy: ''
 
-
+                                                                   # ]]]
 # ---- Internal reprepro configuration ----
 
+# .. envvar:: reprepro_home [[[
+#
 # Path where reprepro home directory is stored
 reprepro_home: '/var/lib/reprepro'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_user [[[
+#
 # System user which manages reprepro repository
 reprepro_user: 'reprepro'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_group [[[
+#
 # System group which manages reprepro repository and upload account
 reprepro_group: 'reprepro'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_spool [[[
+#
 # Directory for reprepro spool files
 reprepro_spool: '{{ (ansible_local.root.spool
                       if (ansible_local|d() and ansible_local.root|d() and
                           ansible_local.root.spool|d())
                       else "/var/spool") + "/reprepro" }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_upload [[[
+#
 # Directory where uploaded packages are stored
 reprepro_upload: '{{ reprepro_spool + "/incoming" }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_enable_inoticoming [[[
+#
 # Wheter to configure Nginx with DAV and inoticoming for uploads
 reprepro_enable_inoticoming: True
 
+                                                                   # ]]]
+# .. envvar:: reprepro_repository_path [[[
+#
 # Directory where reprepro will create its repository structure.
 # It will be served publicly by a HTTP/HTTPS webserver.
 reprepro_repository_path: '/srv/www/sites/{{ reprepro_domains[0] }}/public'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_repository_components [[[
+#
 # List of default components used in specific distribution. These lists will be
 # used if components are not specified for a given repository.
 reprepro_repository_components:
   'debian': [ 'main', 'contrib', 'non-free' ]
   'ubuntu': [ 'main', 'restricted', 'universe', 'multiverse' ]
 
-
+                                                                   # ]]]
 # ---- GnuPG key configuration ----
 
+# .. envvar:: reprepro_gpg_key_type [[[
+#
 # Settings for GPG key used to sign reprepro repository
 reprepro_gpg_key_type: 'RSA'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_key_length [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 reprepro_gpg_key_length: '4096'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_name [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 reprepro_gpg_name: '{{ reprepro_domain.split(".")[0] | capitalize + " Automatic Signing Key" }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_email [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 reprepro_gpg_email: '{{ reprepro_distribution | lower + "-packages@" + reprepro_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_expire_days [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 reprepro_gpg_expire_days: '{{ (365 * 5) }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_installer_jessie_compatibility [[[
+#
 # The debian-installer version in jessie (and before) does not support GPG keys signatures
 # using SHA512 or SHA384 digests. This variable configures GnuPG to not use these algorithms
 # This is ONLY relevant if you want to install using your repository. The GnuPG and APT in
 # an installed system support SHA512 and SHA384.
 reprepro_installer_jessie_compatibility: False
 
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_snapshot_name [[[
+#
 # Name of the snapshot file which contains reprepro GnuPG key
 reprepro_gpg_snapshot_name: 'gnupg.tar'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_snapshot_path [[[
+#
 # Directory on Ansible Controller where reprepro GnuPG key will be archived
 reprepro_gpg_snapshot_path: '{{ secret + "/reprepro/" + reprepro_domain + "/snapshots/" +
                                 reprepro_fqdn + "/" + reprepro_distribution | lower }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_signwith [[[
+#
 # Sign the Release files with default GPG key
 reprepro_signwith: 'default'
 
-
+                                                                   # ]]]
 # ---- conf/distributions ----
 
+# .. envvar:: reprepro_distributions [[[
+#
 # List of enabled distributions filtered by repository (debian | ubuntu)
 reprepro_distributions: '{{ reprepro_distributions_local +
                             reprepro_distributions_local_backports }}'
 
-
+                                                                   # ]]]
+# .. envvar:: reprepro_distributions_local [[[
+#
 # Repositories for local packages
 # By default, debops.reprepro configures two repositories for staging and
 # production. You can only push packages to -staging repository, from which
@@ -259,6 +371,9 @@ reprepro_distributions_local:
       --type=dsc email-changes.sh
       {% endif %}
 
+# ]]]
+# .. envvar:: reprepro_distributions_local_backports [[[
+#
 # Repository for backports created locally for currently supported distributions
 reprepro_distributions_local_backports:
 
@@ -316,6 +431,9 @@ reprepro_distributions_local_backports:
       --type=dsc email-changes.sh
       {% endif %}
 
+# ]]]
+# .. envvar:: reprepro_distributions_mirror_debian [[[
+#
 # Mirror repositories for Debian GNU/Linux (not enabled by default)
 reprepro_distributions_mirror_debian:
 
@@ -359,6 +477,9 @@ reprepro_distributions_mirror_debian:
     Tracking: 'minimal'
     Update: 'debian-jessie-updates'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_distributions_mirror_ubuntu [[[
+#
 # Mirror repositories for Ubuntu Linux (not enabled by default)
 reprepro_distributions_mirror_ubuntu:
 
@@ -382,19 +503,28 @@ reprepro_distributions_mirror_ubuntu:
     Update: 'ubuntu-trusty-updates'
     Description: 'Ubuntu Trusty 14.04 LTS Updates'
 
-
+                                                                   # ]]]
 # ---- conf/incoming ----
 
+# .. envvar:: reprepro_incoming [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 reprepro_incoming:
 
   - Distribution: '{{ reprepro_distribution | lower }}'
     Name: 'incoming'
     Allow: '{{ reprepro_incoming_allow | join(" ") }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_incoming_allow [[[
+#
 # List of incoming Allow rules enabled by default
 reprepro_incoming_allow: '{{ reprepro_incoming_allow_local[reprepro_distribution | lower] +
                              reprepro_incoming_allow_distribution[reprepro_distribution | lower] }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_incoming_allow_local [[[
+#
 # Incoming configuration for local repositories
 reprepro_incoming_allow_local:
 
@@ -423,6 +553,9 @@ reprepro_incoming_allow_local:
     # <release>-<origin>-staging
     - '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_incoming_allow_distribution [[[
+#
 # Incoming configuration for backport repositories
 reprepro_incoming_allow_distribution:
 
@@ -451,14 +584,19 @@ reprepro_incoming_allow_distribution:
     # <release>-backports
     - '{{ reprepro_distribution_release + "-backports" }}'
 
-
+                                                                   # ]]]
 # ---- conf/uploaders ----
 
+# .. envvar:: reprepro_uploaders [[[
+#
 # Configuration of uploaders files for each repository (Name relative to the
 # 'conf/' directory)
 reprepro_uploaders: '{{ reprepro_uploaders_local +
                         reprepro_uploaders_distribution[reprepro_distribution | lower] }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_uploaders_local [[[
+#
 # Definition of uploaders for local repositories
 reprepro_uploaders_local:
 
@@ -466,6 +604,9 @@ reprepro_uploaders_local:
     Contents: |
       {{ reprepro_uploaders_default_rules }}
 
+# ]]]
+# .. envvar:: reprepro_uploaders_distribution [[[
+#
 # Definition of uploaders for backport repositories
 reprepro_uploaders_distribution:
 
@@ -493,16 +634,24 @@ reprepro_uploaders_distribution:
       Contents: |
         {{ reprepro_uploaders_default_rules }}
 
+# ]]]
+# .. envvar:: reprepro_uploaders_default_rules [[[
+#
 # By default use the same rules for all repositories
 reprepro_uploaders_default_rules: |
   allow * by any key
 
-
+# ]]]
 # ---- conf/pulls ----
 
+# .. envvar:: reprepro_pulls [[[
+#
 # List of pull configurations enabled per distribution
 reprepro_pulls: '{{ reprepro_pulls_local }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_pulls_local [[[
+#
 # Pull configuration for local -staging and -production repositories, packages
 # from -staging are pulled to -production
 reprepro_pulls_local:
@@ -526,13 +675,18 @@ reprepro_pulls_local:
     Name: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
     From: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
 
-
+                                                                   # ]]]
 # ---- conf/updates ----
 
+# .. envvar:: reprepro_updates [[[
+#
 # List of repository mirrors per distribution (not enabled by default)
 reprepro_updates: '{{ reprepro_updates_debian +
                       reprepro_updates_ubuntu }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_updates_debian [[[
+#
 # Mirrors for Debian GNU/Linux distribution
 reprepro_updates_debian:
 
@@ -564,6 +718,9 @@ reprepro_updates_debian:
     Suite: 'jessie-updates'
     VerifyRelease: '2B90D010'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_updates_ubuntu [[[
+#
 # Mirrors for Ubuntu Linux distribution
 reprepro_updates_ubuntu:
 
@@ -581,6 +738,9 @@ reprepro_updates_ubuntu:
     Suite: 'trusty-updates'
     VerifyRelease: '437D05B5'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_nginx_server_http [[[
+#
 # Configuration for HTTP server
 reprepro_nginx_server_http:
   by_role: 'debops.reprepro'
@@ -601,7 +761,9 @@ reprepro_nginx_server_http:
   location_allow:
     '/': '{{ reprepro_allow }}'
 
-
+                                                                   # ]]]
+# .. envvar:: reprepro_nginx_server_https [[[
+#
 # Configuration for HTTPS server
 reprepro_nginx_server_https:
   by_role: 'debops.reprepro'
@@ -641,6 +803,9 @@ reprepro_nginx_server_https:
       allow: '{{ reprepro_allow_upload }}'
       enabled: '{{ reprepro_enable_inoticoming }}'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_previous [[[
+#
 # Debian previous releases
 reprepro_debian_previous:
   'wheezy': 'squeeze'
@@ -649,6 +814,9 @@ reprepro_debian_previous:
   'buster': 'stretch'
   'bullseye': 'buster'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_next [[[
+#
 # Debian next releases
 reprepro_debian_next:
   'wheezy': 'jessie'
@@ -656,6 +824,9 @@ reprepro_debian_next:
   'stretch': 'buster'
   'buster': 'bullseye'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_releases [[[
+#
 # Debian releases by suite
 reprepro_debian_releases:
   'oldoldstable': 'wheezy'
@@ -663,6 +834,9 @@ reprepro_debian_releases:
   'stable': 'stretch'
   'testing': 'buster'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_suites [[[
+#
 # Debian suites by release
 reprepro_debian_suites:
   'wheezy': 'oldoldstable'
@@ -670,6 +844,9 @@ reprepro_debian_suites:
   'stretch': 'stable'
   'buster': 'testing'
 
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_architectures [[[
+#
 # List of Debian architectures by release
 reprepro_debian_architectures:
   'squeeze': [ 'source', 'amd64', 'armel', 'i386' ]
@@ -677,3 +854,5 @@ reprepro_debian_architectures:
   'jessie': [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386' ]
   'stretch': [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386' ]
   'buster': [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386' ]
+
+                                                                   # ]]]

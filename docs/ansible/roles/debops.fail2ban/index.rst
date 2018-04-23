@@ -9,7 +9,7 @@ debops.fail2ban
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    copyright
 
 ..

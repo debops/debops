@@ -1,0 +1,290 @@
+#!/bin/bash
+##
+## Copyright (C) 2015-2018 Robin Schneider <ypid@riseup.net>
+## Copyright (C) 2017-2018 DebOps https://debops.org/
+## @license GPLv3 <https://www.gnu.org/licenses/gpl-3.0.html>
+
+## TODO: This script is not up-to-date yet.
+
+set -o nounset -o pipefail -o errexit
+
+# sed notes:
+#
+# * does not support `:?` …
+
+# Convert repetitively used programs and commands to Sphinx inline syntax.
+# http://www.sphinx-doc.org/en/stable/markup/inline.html
+#
+# Note you should review the changes made by this script and try to build the
+# documentation as this script can not handle all cases. You might need to
+# revert some of the changes manually or preferable write patterns to revert
+# the changes for you :)
+
+# Don’t use:
+# * :option:`--tags`: https://github.com/debops/ansible-atd/pull/3#issuecomment-152024188
+#
+# Use:
+# * :file:`/etc/issue` Can also be a AppArmor wildcard pattern.
+#   Check: http://wiki.apparmor.net/index.php/QuickProfileLanguage#File_Globbing
+#   A regex dialect is undesired for readability reasons.
+# * :command:`rm`: The name of an OS-level command, such as `rm`. Used when
+#   referring to a program primely used in the shell (CLI interface) by sysadmins
+#   and/or users.
+# * :program:`rsnapshot`: The name of an executable program. This may differ
+#   from the file name for the executable for some platforms. In particular, the
+#   .exe (or other) extension should be omitted for Windows programs.
+#   Used when referring to programs (GUI, or programs not intended as shell
+#   command) or services (not intended for user/admin execution directly but
+#   via a init system/cron/something).
+# * :rfc:`number#anchor`
+# * :manpage:`ls(1)`
+# * :regexp:`^WARN.*$`
+# * :envvar:`example__variable`: See https://github.com/debops/docs/issues/153
+
+## Script is expected to be run from the root of a role.
+cd "$(git rev-parse --show-toplevel)" || exit
+
+role_full_name="$(basename "$PWD")"
+role_name="${role_full_name#*.}"
+role_owner="${role_full_name%.*}"
+is_ansible_role=true
+if [ "${role_owner}" == "${role_full_name}" ]
+then
+    echo "Using workaround to work with Ansible role names not following Ansible Galaxy convention."
+    echo "Guessing role owner."
+    # TODO: Improve auto detection if needed using "How can I use jq for YAML instead of JSON?" https://github.com/stedolan/jq/wiki/FAQ
+    role_name="${role_full_name#*-}"
+    role_owner='debops'
+    role_full_name="${role_owner}.${role_name}"
+fi
+echo "Running debops-optimize for: '$role_name', full role name: '${role_full_name:-}', role owner: '${role_owner:-}'"
+
+if command -v ag
+then
+    # Seems ypid gets this wrong sometimes.
+    ag --ignore LICENSE their || :
+fi
+
+# https://github.com/nusenu/ansible-relayor/commit/85e2a7d7d76387c5016c78f52db5621627281679
+# if command -v ansible-update-min-version
+# then
+#     if [ "${role_owner}" != 'debops' ]
+#     then
+#         ansible-update-min-version meta/main.yml --update-text-file docs/introduction.rst README.md
+#     fi
+# fi
+
+if command -v ansible-lint
+then
+    ansible-lint -x ANSIBLE0018 . || :
+fi
+
+if [ ! -e 'meta/main.yml' ]
+then
+    echo "This repository is not a Ansible role. Disabling Ansible role optimizations."
+    is_ansible_role=false
+fi
+
+## For testing:
+# git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+#     xargs --null sed --in-place --regexp-extended '
+#     '
+
+# echo '``apt-cache.{{ ansible_domain }}``. This subdomain should be configured in the' | \
+    # sed --regexp-extended '
+
+# exit 0
+
+# shellcheck disable=SC2016
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -and -not -name 'README.rst' -print0 | \
+    xargs --null sed --in-place --regexp-extended '
+        s/``(\/[^`]+[^`0-9])``/:file:`\1`/g;
+        s/``([^`]+\w+(\.(yml|yaml|rst|j2|ini|pem|crt|conf)))``/:file:`\1`/g;
+        s/``((whereami|fail2ban|libvirtd|pki-realm|pki-authority|acme-tiny|apt-(cacher-ng|proxy)|nginx|etckeeper|irqbalance|rsnapshot|mysqld|collectd|ntpd|xinetd|opsi-product-updater|automysqlbackup|cron|dhclient|ferm|ferment|jq)\b[^`{.]*?[^_]?)``/:program:`\1`/g;
+        s/``((hostname|sudo|cryptsetup|sysctl|which|fsck|mysql|mkfs|openssl|chattr|lsattr|gnutls|brctl|smbclient|update-ca-certificates|debootstrap|lxc|ansible(-vault|-playbook)?|debops-padlock|vgcreate|firejail|firecfg|firemon|xpra|yaml2rst|occ|check_mk|docker|setxkbmap|setxkbmap -query|xmllint|gpg2?|git|hg|bzr|darcs|apt|dpkg|rpm|pacman|pacman-g2|yum|dnf|zypper|rsync|ssh|ip|ip(6|\(6\))?tables|netstat|shellcheck)\b[^ /`.{]*?[^_]?)``/:command:`\1`/g;
+        s/``([[:lower:]_.-]+\([[:digit:]]\))``/:manpage:`\1`/g;
+        s/``([[:alnum:]_]+__[^*?`/\ ]?[[:alnum:]_]+)``/:envvar:`\1`/g;
+        s/:any:/:envvar:/g;
+        s/`RFC([[:digit:]]+[^`]*)`_/:rfc:`\1`/gi;
+        s/\bRFC([[:digit:]]+)_/:rfc:`\1`/gi
+        s/`([[:alnum:]_-]+\.[[:alnum:]_-]+)`_/\1_/g;
+        s/\<(SOTA)\>/\1_/g;
+        s/``(debops\.[[:alnum:]_-]+)``/\1_/g;
+        s/``(ypid\.[[:alnum:]_-]+)``/\1_/g;
+        s/([^[:alnum:]`@_]\b(drybjed|ypid|ganto|htgoebel|nickjj|scibi|do3cc|AnBuKu|thiagotalma|jacksingleton|ser|yuvadm|pedroluislopez|patrickheeney|le9i0nx|tallandtree|zpfvo))([^[:alnum:]\/@_.>:-])/\1_\3/g;
+        s/\*\*(drybjed|ypid|ganto|htgoebel|nickjj|scibi|do3cc|AnBuKu|thiagotalma|jacksingleton|ser|yuvadm|pedroluislopez|patrickheeney|le9i0nx|tallandtree|zpfvo)\*\*/\1_/g;
+        s/([^`])(debops tools)([^`/ ])/\1`DebOps Tools`_\3/gi;
+        s/The current role maintainer is/The current role maintainer_ is/gi;
+        s/is drybjed_?\.?$/is drybjed_./gi;
+        s/\<e\.g\./e. g./g;
+        s#Debops#DebOps#g;
+        s#debops project#DebOps project#gi;
+        s#(`Semantic Versioning <[^>]+>`_)\b#\1_#g;
+        s#`(human-readable changelog) <http://keepachangelog.com/>`_\b#`\1 <http://keepachangelog.com/en/1.0.0/>`__#;
+        s#`(human-readable changelog) <http://keepachangelog.com/>`__#`\1 <http://keepachangelog.com/en/1.0.0/>`__#;
+        s#http://keepachangelog.com/en/0.3.0/#http://keepachangelog.com/en/1.0.0/#;
+        s#Default variables: configuration#Default variable details#;
+        s#Configuration of other Ansible roles#Configuration for other Ansible roles#;
+        s#This variable is intended to be used in the inventory of the host#This variable is intended to be used in the inventory of hosts#;
+        s#Ensure specified packages are in there desired state#Ensure specified packages are in their desired state#;
+        s#This can be used after host is first$#This can be used after a host was first#;
+        s#configuration has not been changed\.$#configuration is already in the desired state.#;
+        s#This playbooks$#This playbook#;
+        s#This playbooks is shipped with this role under$#The playbooks is shipped with this role under#;
+        s#The playbooks is shipped with this role#The playbook is shipped with this role#;
+        s#:file:`(/(owncloud|server-status))`#``\1``#;
+    '
+
+# Not yet done by default, needs to be tested. Console is too generic.
+# s#^(\.\. code-block:: )console#\1shell#;
+#
+# reST error:
+# s/\.\. code::/.. code-block::/;
+
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(meta/.*\.yml)$' -print0 | \
+    xargs --null --no-run-if-empty sed --in-place --regexp-extended '
+        s#(GNU General Public License v3|GPLv3)#GPL-3.0#;
+        s#categories:#galaxy_tags:#;
+    '
+
+# Unfortunately, some people misuse the " " (U+00A0 NO-BREAK SPACE, &nbsp;)
+# Otherwise, we could add a `-regextype posix-extended -not -regex '(.*\.rst)$'`
+# But as it is now, also fixing docs files does more good then harm as it seems.
+# Learn when to use NO-BREAK SPACE properly!
+# Done that because `tree` uses NO-BREAK SPACE properly.
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -not -regex '(.*\.rst)$' -print0 | \
+    xargs --null --no-run-if-empty sed --in-place --regexp-extended '
+        s#[ ]# #g;
+    '
+
+## https://github.com/debops/docs/issues/139
+find . -name '*defaults-configuration.rst' | while read -r file; do
+    pushd "$(dirname "$file")"
+    test -e defaults-configuration.rst && mv defaults-configuration.rst defaults-detailed.rst
+    sed --in-place --regexp-extended 's#defaults-configuration#defaults-detailed#;' index.rst
+    popd
+done
+
+## Update copyright.
+update_copyright_for () {
+        local name="$1"
+        if [ -z "$name" ]; then
+                return 1
+        fi
+
+        ## Known BUGS: "Copyright (C) 2010,2012" -> "Copyright (C) 2010,2012-2017"
+        if [[ "$name" == "$(git config --get user.name)" ]] || [[ "$name" == 'DebOps' ]]; then
+                year="$(date +%Y)"
+                if ! grep -E -q "Copyright \\(C\\) ([[:digit:]]{4}-)?${year} ${name}" COPYRIGHT; then
+                        sed --in-place --regexp-extended "s/(Copyright \\(C\\) [[:digit:]]{4}-)[[:digit:]]{4}( ${name})/\\1${year}\\2/g;" COPYRIGHT
+                        sed --in-place --regexp-extended "s/(Copyright \\(C\\) [[:digit:]]{4})( ${name})/\\1-${year}\\2/g;" COPYRIGHT
+                fi
+        fi
+}
+if [ -f "COPYRIGHT" ]
+then
+    update_copyright_for "Maciej Delmanowski"
+    update_copyright_for "Robin Schneider"
+    update_copyright_for "DebOps"
+fi
+
+# HTTPS everywhere
+# LICENSE should be done in a global replace to decease commit review noise.
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -not -regex '(LICENSE|README.md)$' -print0 | \
+    xargs --null sed --in-place --regexp-extended '
+        s#http://(ansible\.com|debops\.org|docs\.debops\.org|www\.gnu\.org|stackoverflow\.com|nginx\.org)#https://\1#g;
+        s#Copyright \(C\) ([[:digit:],-]+) DebOps Project#Copyright (C) \1 DebOps#gi;
+        s#set -eu -o pipefail#set -o nounset -o pipefail -o errexit#gi;
+    '
+
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | \
+    xargs --null sed --in-place --regexp-extended '
+        s/\(This file is managed remotely, all changes will be lost\|This file is managed remotely, some changes might be overwritten\|This file is managed by Ansible, all changes will be lost\)/{{ ansible_managed }}/g;
+        s/:pkts/:pkgs/g;
+        s/nginx_apt_preferences_dependent_list/nginx__apt_preferences__dependent_list/g;
+        s/nginx_ferm_dependent_rules/nginx__ferm__dependent_rules/g;
+        s/ansible_ssh_user/ansible_user/g;
+        s/overriden/overridden/g;
+        s#https://github\.com/ypid/test-suite-ypid#https://github.com/ypid/test-suite#;
+    '
+
+if [ "$role_name" != 'mariadb' ]
+then
+    git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | \
+        xargs --null sed --in-place --regexp-extended '
+            s/(mariadb)__?(dependent_)?(users|databases)/\1__dependent_\3/g;
+        '
+fi
+
+if [ "$role_name" != 'postgresql' ]
+then
+    git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | \
+        xargs --null sed --in-place --regexp-extended '
+            s/(postgresql)__?(dependent_)?(roles|pgpass|groups|databases)/\1__dependent_\3/g;
+        '
+fi
+
+
+# Disabled due to false positives:
+# s/([[:lower:]_-]+\([[:digit:]]\))(\s)/:manpage:`\1`\2/g;  ## Would also match: d(1)
+# s/httpredir\.debian\.org/deb.debian.org/g;
+
+## Use NARROW NO-BREAK SPACE: https://en.wikipedia.org/wiki/Thin_space
+## If you can’t handle Unicode, that’s your problem. Deal with it!
+
+sed --in-place --regexp-extended "
+        s/^\* /- /;
+    " CHANGES.rst
+
+# Ensure normal files are not executable.
+# Example: https://github.com/debops/ansible-apt_install/commit/2df7d51c58a78bd4ca7724a5f8f95208b0043c1c
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -executable -regextype posix-extended -regex '((defaults|tasks|meta|templates|handlers).*|.*\.(rst|md|txt))' -exec chmod -x {} \;
+
+## Revert a change for the role itself because a self reference (currently points to GitHub) might be confusing.
+## Also in preparation for: https://github.com/debops/docs/issues/212
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+    xargs --null sed --in-place --regexp-extended "
+            s/\b${role_full_name}_\b/\`\`${role_full_name}\`\`/g;
+        "
+
+## Revert a change for deprecated roles (might be removed from the documentation at some point) or falsely detected roles.
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+    xargs --null sed --in-place --regexp-extended "
+            s/\b(debops\.(php5|sshkeys|cfg|subnetwork)|ypid\.(crypttab|gdm|snapshot_snapper|kernel_module|linuxmuster_net-client-epoptes_via_postsync|linuxmuster_net-server-epoptes_via_postsync))_\b/\`\`\1\`\`/g;
+        "
+
+## Revert other changes.
+# shellcheck disable=SC2016
+git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+    xargs --null sed --in-place --regexp-extended '
+            s/:envvar:`((role_name__[[:alnum:]_]+|bootstrap__admin_system_home|bootstrap__admin_name|bootstrap__admin_manage_existing|owncloud__enable_occ_shortcut|php__pool_default|php__version|inventory__host_environment|inventory__group_environment|inventory__environment|tinc__compression|tinc__connect_to_mesh0|owncloud__subdomain|apt__conditional_whitelist|apt__proxy_bypass_for_bugs_debian_org|apt__sources_sections|apt__update_cache_early|apt__sources_types|apt__http_proxy_url|apt__https_proxy_url|apt__proxy_url|apt_cacher_ng__nginx_upstream|apt_cacher_ng__nginx_upstream_servers|swapfile__swappiness|swapfile__cache_pressure|x2go_server__apt_repo_key_fingerprint_override_map|x2go_server__upstream_repository_override_map|owncloud__nginx__servers|owncloud__nginx__upstream_php|owncloud__theme_entitiy_name|php__fpm_|roundcube__dependencies|roundcube__extra_packages|roundcube__nginx_server|roundcube__nginx_upstream_php5|roundcube__php5_packages|roundcube__php5_pool|tinc__address_family_mesh0|tinc__mlock_mesh0|tinc__inventory_hosts_mesh0|tinc__reachable_peer_hosts_mesh0|tinc__client_hosts|tinc__compression_mesh0|persistent_paths__qubes_os_paths|persistent_paths__qubes_os_bind_dirs|checkmk_agent__hostname|checkmk_agent__group_plugin_map|mariadb_server__default_options|ferm__rules_forward|ferm__default_weight|libvirtd__group_map|libvirtd__access_group|libvirtd__connections|libvirtd__access_groups|libvirtd__uri|ntp__root_flags))`/``\1``/g;
+        '
+
+## Revert changes only for debops-playbooks
+if [ "$role_name" == 'playbooks' ]
+then
+    # shellcheck disable=SC2016
+    git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+        xargs --null sed --in-place --regexp-extended '
+                s/:envvar:`(([^`]+__[^`]+))`/``\1``/g;
+            '
+fi
+
+if [ "$is_ansible_role" == true ]
+then
+    if ! grep -qF 'https://galaxy.ansible.com/api/v1/notifications/' .travis.yml
+    then
+        cat << EOF >> .travis.yml
+notifications:
+  webhooks:
+    - 'https://galaxy.ansible.com/api/v1/notifications/'
+EOF
+    fi
+fi
+
+if command -v yaml4rst
+then
+    test -e defaults/main.yml && yaml4rst --config-kv "ansible_full_role_name=${role_full_name}" defaults/main.yml -i
+fi
+
+echo "Done. Be sure to review the changes."

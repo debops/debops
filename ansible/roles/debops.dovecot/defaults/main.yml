@@ -1,40 +1,40 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.dovecot default variables
+# ================================
 
 # .. contents:: Sections
 #    :local:
-#
-# ---------------------------------
-#   General Dovecot configuration
-# ---------------------------------
 
 
-# .. envvar:: dovecot_protocols
+# General Dovecot configuration [[[
+# ---------------------------------
+
+# .. envvar:: dovecot_protocols [[[
 #
 # List of protocols which should be installed and enabled. Supported are:
 # ``imap``, ``pop3``, ``managesieve``, ``lmtp``
 dovecot_protocols: [ 'imap' ]
 
-
-# .. envvar:: dovecot_auth
+                                                                   # ]]]
+# .. envvar:: dovecot_auth_mechanisms [[[
 #
 # List of authentication mechanisms enabled. So far supported are:
 # ``plain``, ``login``
 dovecot_auth_mechanisms: [ 'plain', 'login' ]
 
-
-# .. envvar:: dovecot_dependencies
+                                                                   # ]]]
+# .. envvar:: dovecot_dependencies [[[
 #
 # Should the Dovecot role manage it's own dependencies?
 dovecot_dependencies: True
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# User database/mailbox configuration [[[
 # ---------------------------------------
-#   User database/mailbox configuration
-# ---------------------------------------
 
-# .. envvar:: dovecot_user_accounts
+# .. envvar:: dovecot_user_accounts [[[
 #
 # User account lookup. So far supported are:
 #
@@ -45,22 +45,22 @@ dovecot_dependencies: True
 #
 dovecot_user_accounts: [ 'deny', 'system' ]
 
-
-# .. envvar:: dovecot_deny_users
+                                                                   # ]]]
+# .. envvar:: dovecot_deny_users [[[
 #
 # List of users for which mail acess is disabled.
 dovecot_deny_users: [ 'root' ]
 
-
-# .. envvar:: dovecot_mail_location
+                                                                   # ]]]
+# .. envvar:: dovecot_mail_location [[[
 #
 # Mailbox location. For maildir set something like ``maildir:~/Maildir``.
 # For more information about the supported format, check `Dovecot Mail
 # Location <http://wiki2.dovecot.org/MailLocation>`_
 dovecot_mail_location: 'mbox:~/mail:INBOX=/var/mail/%u'
 
-
-# .. envvar:: dovecot_mail_dotlock
+                                                                   # ]]]
+# .. envvar:: dovecot_mail_dotlock [[[
 #
 # Mailbox Locking. The only standard way to lock an mbox is using a method
 # called ``dotlock``. This means that a file named <mailbox-name>.lock is
@@ -68,8 +68,8 @@ dovecot_mail_location: 'mbox:~/mail:INBOX=/var/mail/%u'
 # Location <https://wiki.dovecot.org/MboxLocking>`_
 dovecot_mail_dotlock: True
 
-
-# .. envvar:: dovecot_sql_driver
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_driver [[[
 #
 # The SQL driver defines which SQL is used. This can be either ``mysql``
 # or ``pgsql``.
@@ -87,51 +87,50 @@ dovecot_mail_dotlock: True
 #     `gid` int(11) NOT NULL,
 #     `active` char(1) NOT NULL DEFAULT 'Y',
 #     `maildir` varchar(255) NOT NULL
-#   )
 #
 dovecot_sql_driver: 'mysql'
 
-
-# .. envvar:: dovecot_sql_host
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_host [[[
 #
 # The hostname of the SQL server.
 dovecot_sql_host: ''
 
-
-# .. envvar:: dovecot_sql_dbname
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_dbname [[[
 #
 # The SQL database name.
 dovecot_sql_dbname: ''
 
-
-# .. envvar:: dovecot_sql_user
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_user [[[
 #
 # The username to access the SQL server.
 dovecot_sql_user: ''
 
-
-# .. envvar:: dovecot_sql_password
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_password [[[
 #
 # The password to login into the SQL server.
 dovecot_sql_password: ''
 
-
-# .. envvar:: dovecot_sql_default_pass_scheme
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_default_pass_scheme [[[
 #
 # Default passwort scheme for passwords, stored in a SQL database.
 # For more information about the supported schemes, check `Authentication /
 # PasswordSchemes <http://wiki2.dovecot.org/Authentication/PasswordSchemes>`_
 dovecot_sql_default_pass_scheme: 'SSHA512'
 
-
-# .. envvar:: dovecot_sql_password_query
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_password_query [[[
 #
 # SQL query string to get the password. This function should return the values
 # ``username``, ``domain`` and ``password``.
 dovecot_sql_password_query: "SELECT userid AS username, domain, password FROM users WHERE userid = '%n' AND domain = '%d'"
 
-
-# .. envvar:: dovecot_sql_user_query
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_user_query [[[
 #
 # SQL query string to get the userdb. This function should return the values
 # ``home``, ``uid`` and ``gid``.
@@ -141,7 +140,8 @@ dovecot_sql_password_query: "SELECT userid AS username, domain, password FROM us
 # <http://wiki2.dovecot.org/MailLocation>`_
 dovecot_sql_user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
 
-# .. envvar:: dovecot_sql_iterate_query
+                                                                   # ]]]
+# .. envvar:: dovecot_sql_iterate_query [[[
 #
 # SQL query string to get a list of users. This function should return all values
 # ``user`` or both ``username`` and ``domain``.
@@ -150,32 +150,38 @@ dovecot_sql_user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AN
 # <https://wiki2.dovecot.org/AuthDatabase/SQL#User_iteration>` _
 dovecot_sql_iterate_query: "SELECT userid AS username, domain FROM users"
 
-# .. envvar:: dovecot_passwdfile_scheme
+                                                                   # ]]]
+# .. envvar:: dovecot_passwdfile_scheme [[[
 #
 # Scheme method use by dovecot with password authentication
 dovecot_passwdfile_scheme: 'sha512-crypt'
 
-# .. envvar:: dovecot_passwdfile_path
+                                                                   # ]]]
+# .. envvar:: dovecot_passwdfile_path [[[
 #
 # Path to the dovecot password file
 dovecot_passwdfile_path: '/etc/dovecot/private/'
 
-# .. envvar:: dovecot_passwdfile_name
+                                                                   # ]]]
+# .. envvar:: dovecot_passwdfile_name [[[
 #
 # Name to the dovecot password file
 dovecot_passwdfile_name: 'passwd'
 
-# .. envvar:: dovecot_passwordfile_uid
+                                                                   # ]]]
+# .. envvar:: dovecot_passwdfile_uid [[[
 #
 # uid use by Dovecot when it store mail in mailbox
 dovecot_passwdfile_uid: 'dovecot-vmail'
 
-# .. envvar:: dovecot_passwordfile_gid
+                                                                   # ]]]
+# .. envvar:: dovecot_passwdfile_gid [[[
 #
 # gid use by Dovecot when it store mail in mailbox
 dovecot_passwdfile_gid: 'dovecot-vmail'
 
-# .. envvar:: dovecot_passwordfile_home
+                                                                   # ]]]
+# .. envvar:: dovecot_passwdfile_home [[[
 #
 # Path to the mailbox
 dovecot_passwdfile_home: '{{ (ansible_local.root.home
@@ -183,53 +189,55 @@ dovecot_passwdfile_home: '{{ (ansible_local.root.home
                                   ansible_local.root.home|d())
                              else "/var/local") + "/" + dovecot_passwdfile_uid }}'
 
-# .. envvar:: dovecot_passwordfile_mailbox_path
+                                                                   # ]]]
+# .. envvar:: dovecot_passwdfile_mailbox_path [[[
 #
 # Path inside the mailbox home directory
 dovecot_passwdfile_mailbox_path: '%u'
-
+                                                                   # ]]]
+                                                                   # ]]]
+# PKI / TLS configuration [[[
 # ---------------------------
-#   PKI / TLS configuration
-# ---------------------------
 
-# .. envvar:: dovecot_pki
+# .. envvar:: dovecot_pki [[[
 #
 # Enable or disable support for TLS in Dovecot (using debops.pki)
 dovecot_pki: True
 
-
-# .. envvar:: dovecot_pki_path
+                                                                   # ]]]
+# .. envvar:: dovecot_pki_path [[[
 #
 # Base PKI directory
 dovecot_pki_path: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'
 
-
-# .. envvar:: dovecot_pki_realm
+                                                                   # ]]]
+# .. envvar:: dovecot_pki_realm [[[
 #
 # Default PKI realm used by Dovecot
 dovecot_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.realm }}{% else %}system{% endif %}'
 
-
-# .. envvar:: dovecot_pki_crt
+                                                                   # ]]]
+# .. envvar:: dovecot_pki_crt [[[
 #
 # Default certificate, relative to ``dovecot_pki_realm`` variable
 dovecot_pki_crt: 'default.crt'
 
-
-# .. envvar:: dovecot_pki_key
+                                                                   # ]]]
+# .. envvar:: dovecot_pki_key [[[
 #
 # Default private key, relative to ``dovecot_pki_realm`` variable
 dovecot_pki_key: 'default.key'
 
-
-# .. envvar:: dovecot_ssl_required
+                                                                   # ]]]
+# .. envvar:: dovecot_ssl_required [[[
 #
 # Requires SSL/TLS also for non-plaintext authentication. For more
 # information check ``ssl_required`` in `Dovecot SSL Configuration
 # <http://wiki2.dovecot.org/SSL/DovecotConfiguration>`_
 dovecot_ssl_required: True
 
-# .. envvar:: dovecot_ssl_protocols
+                                                                   # ]]]
+# .. envvar:: dovecot_ssl_protocols [[[
 #
 # SSL ciphers to use
 dovecot_ssl_protocols: '{{ "!SSLv2 !SSLv3"
@@ -237,77 +245,85 @@ dovecot_ssl_protocols: '{{ "!SSLv2 !SSLv3"
                                [ "wheezy", "jessie", "precise", "trusty" ])
                            else "!SSLv3" }}'
 
-# .. envvar:: dovecot_ssl_cipher_list
+                                                                   # ]]]
+# .. envvar:: dovecot_ssl_cipher_list [[[
 #
 # SSL ciphers to use
 dovecot_ssl_cipher_list: '{{ dovecot_ssl_cipher_list_default }}'
 
+                                                                   # ]]]
+# .. envvar:: dovecot_ssl_cipher_list_default [[[
+#
+# Default SSL ciphers
 dovecot_ssl_cipher_list_default: 'TLSv1+HIGH:!SSLv2:!EXPORT:!RC4:!aNULL:!eNULL:!3DES:@STRENGTH'
 
+                                                                   # ]]]
+# .. envvar:: dovecot_ssl_cipher_list_better_cypto [[[
+#
 # https://bettercrypto.org/
 dovecot_ssl_cipher_list_better_cypto: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Dovecot custom configuration [[[
 # --------------------------------
-#   Dovecot custom configuration
-# --------------------------------
 
-# .. envvar:: dovecot_imap_listeners
+# .. envvar:: dovecot_imap_listeners [[[
 #
 # List of IMAP ``inet_listeners`` which will be enabled. See
 # :ref:`dovecot_imap_listeners` for more details.
 dovecot_imap_listeners: [ 'imap', 'imaps' ]
 
-
-# .. envvar:: dovecot_imap_config_map
+                                                                   # ]]]
+# .. envvar:: dovecot_imap_config_map [[[
 #
 # Custom IMAP configuration properties. See :ref:`dovecot_imap_config_map`
 # for more details.
 dovecot_imap_config_map: {}
 
-
-# .. envvar:: dovecot_pop3_listeners
+                                                                   # ]]]
+# .. envvar:: dovecot_pop3_listeners [[[
 #
 # List of POP3 ``inet_listeners`` which will be enabled. See
 # :ref:`dovecot_pop3_listeners` for more details.
 dovecot_pop3_listeners: [ 'pop3', 'pop3s' ]
 
-
-# .. envvar:: dovecot_pop3_config_map
+                                                                   # ]]]
+# .. envvar:: dovecot_pop3_config_map [[[
 #
 # Custom POP3 configuration properties. See :ref:`dovecot_pop3_config_map`
 # for more details.
 dovecot_pop3_config_map: {}
 
-
-# .. envvar:: dovecot_managesieve_listeners
+                                                                   # ]]]
+# .. envvar:: dovecot_managesieve_listeners [[[
 #
 # List of ManageSieve ``inet_listeners`` which will be enabled. See
 # :ref:`dovecot_managesieve_listeners` for more details.
 dovecot_managesieve_listeners: [ 'sieve' ]
 
-
-# .. envvar:: dovecot_managesieve_config_map
+                                                                   # ]]]
+# .. envvar:: dovecot_managesieve_config_map [[[
 #
 # Custom ManageSieve configuration properties. See :ref:`dovecot_managesieve_config_map`
 # for more details.
 dovecot_managesieve_config_map: {}
 
-
-# .. envvar:: dovecot_lda_config_map
+                                                                   # ]]]
+# .. envvar:: dovecot_lda_config_map [[[
 #
 # Custom LDA configuration properties. See :ref:`dovecot_lda_config_map`
 # for more details.
 dovecot_lda_config_map: {}
 
-
-# .. envvar:: dovecot_lmtp_listeners
+                                                                   # ]]]
+# .. envvar:: dovecot_lmtp_listeners [[[
 #
 # List of LMTP ``inet_listeners`` or ``unix_listeners`` which will be enabled.
 # See :ref:`dovecot_lmtp_listeners` for more details.
 dovecot_lmtp_listeners: [ '/var/spool/postfix/private/dovecot-lmtp' ]
 
-
-# .. envvar:: dovecot_lmtp_config_map
+                                                                   # ]]]
+# .. envvar:: dovecot_lmtp_config_map [[[
 #
 # Custom LMTP configuration properties. See :ref:`dovecot_lmtp_config_map`
 # for more details.
@@ -319,30 +335,32 @@ dovecot_lmtp_config_map:
         group: 'postfix'
         mode: 0600
 
-
-# .. envvar:: dovecot_postfix_transport
+                                                                   # ]]]
+# .. envvar:: dovecot_postfix_transport [[[
 #
 # Postfix mail transport target if LMTP is enabled. For more details see
 # :ref:`dovecot_postfix_transport`.
 dovecot_postfix_transport: 'lmtp:unix:private/dovecot-lmtp'
 
-
-# .. envvar:: dovecot_custom_localconf
+                                                                   # ]]]
+# .. envvar:: dovecot_custom_localconf [[[
 #
 # Dovecot custom configuration added at the end of ``/etc/dovecot/local.conf``
 # in a text block format
 dovecot_custom_localconf: False
 
-# .. envvar:: dovecot_firewall
+                                                                   # ]]]
+# .. envvar:: dovecot_firewall [[[
 #
 # Choose to use firewall with debops.ferm to drive iptables or not.
 #
 dovecot_firewall: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
-# Configuration for other Ansible roles
-# -------------------------------------
-
-# .. envvar:: dovecot__postfix__dependent_maincf
+# .. envvar:: dovecot__postfix__dependent_maincf [[[
 #
 # The :file:`main.cf` configuration for ``debops.postfix`` Ansible role.
 dovecot__postfix__dependent_maincf:
@@ -351,8 +369,10 @@ dovecot__postfix__dependent_maincf:
     value: '{{ dovecot_postfix_transport }}'
     state: '{{ "present" if "lmtp" in dovecot_protocols else "ignore" }}'
 
-
-# .. envvar:: dovecot__postfix__dependent_mastercf
+                                                                   # ]]]
+# .. envvar:: dovecot__postfix__dependent_mastercf [[[
 #
 # The :file:`master.cf` configuration for ``debops.postfix`` Ansible role.
 dovecot__postfix__dependent_mastercf: []
+                                                                   # ]]]
+                                                                   # ]]]
