@@ -1,17 +1,17 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.samba default variables
+# ==============================
 
 # .. contents:: Sections
 #    :local:
-#
-# .. Packages and installation (((
-#
-# -----------------------------
-#   Packages and installation
+
+
+# Packages and installation [[[
 # -----------------------------
 
-# .. envvar:: samba__base_packages
+# .. envvar:: samba__base_packages [[[
 #
 # List of base packages to install.
 # In case you only want to prepare the host for being a Samba client, remove
@@ -22,42 +22,35 @@ samba__base_packages:
   - 'samba'
   - 'samba-common'
   - 'samba-common-bin'
-
-# .. )))
-
-# .. Firewall configuration (((
-#
-# --------------------------
-#   Firewall configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
 # --------------------------
 
-# .. envvar:: samba__allow
+# .. envvar:: samba__allow [[[
 #
 # Allow access to Samba through firewall for specified networks.
 # If this variable is undefined or ``False``, allow access from everywhere.
 samba__allow: []
 
-# .. envvar:: samba__kernel_modules_load
+                                                                   # ]]]
+# .. envvar:: samba__kernel_modules_load [[[
 #
 # Use the kernel module
 samba__kernel_modules_load: True
 
-# .. envvar:: samba__kernel_modules
+                                                                   # ]]]
+# .. envvar:: samba__kernel_modules [[[
 #
 # Kernel modules to load for optimal operation of Samba.
 samba__kernel_modules:
   - 'nf_conntrack_netbios_ns'
-
-
-# .. )))
-
-# .. Global Samba options (((
-#
-# ------------------------
-#   Global Samba options
+                                                                   # ]]]
+                                                                   # ]]]
+# Global Samba options [[[
 # ------------------------
 
-# .. envvar:: samba__workgroup
+# .. envvar:: samba__workgroup [[[
 #
 # This controls what workgroup your server will appear to be in when queried by
 # clients. Note that this parameter also controls the Domain name used with the::
@@ -67,15 +60,15 @@ samba__kernel_modules:
 # setting.
 samba__workgroup: 'WORKGROUP'
 
-
-# .. envvar:: samba__security
+                                                                   # ]]]
+# .. envvar:: samba__security [[[
 #
 # This option affects how clients respond to Samba and is one of the most
 # important settings in the :file:`/etc/samba/smb.conf` file.
 samba__security: 'user'
 
-
-# .. envvar:: samba__netbios_name
+                                                                   # ]]]
+# .. envvar:: samba__netbios_name [[[
 #
 # This sets the NetBIOS name by which a Samba server is known. By default it is
 # the same as the first component of the host's DNS name. If a machine is a
@@ -83,8 +76,8 @@ samba__security: 'user'
 # DNS name) will be the name that these services are advertised under.
 samba__netbios_name: '{{ ansible_hostname }}'
 
-
-# .. envvar:: samba__server_string
+                                                                   # ]]]
+# .. envvar:: samba__server_string [[[
 #
 # This controls what string will show up in the printer comment box in print
 # manager and next to the IPC connection in net view. It can be any string that
@@ -96,26 +89,26 @@ samba__netbios_name: '{{ ansible_hostname }}'
 # A ``%h`` will be replaced with the hostname.
 samba__server_string: '%h file server'
 
-
-# .. envvar:: samba__service_name
+                                                                   # ]]]
+# .. envvar:: samba__service_name [[[
 #
 # Name of the /etc/init.d/ service script
 samba__service_name: 'samba'
 
-
-# .. envvar:: samba__name_resolve_order
+                                                                   # ]]]
+# .. envvar:: samba__name_resolve_order [[[
 #
 # Resolve order of Samba.
 samba__name_resolve_order: 'lmhosts host wins bcast'
 
-
-# .. envvar:: samba__path
+                                                                   # ]]]
+# .. envvar:: samba__path [[[
 #
 # Base directory of home directories and shares.
 samba__path: '/srv/samba'
 
-
-# .. envvar:: samba__default_global
+                                                                   # ]]]
+# .. envvar:: samba__default_global [[[
 #
 # Default ``[global]`` configuration.
 samba__default_global:
@@ -166,41 +159,37 @@ samba__default_global:
   show_add_printer_wizard: 'no'
   disable_spoolss: 'yes'
 
-
-# .. envvar:: samba__global
+                                                                   # ]]]
+# .. envvar:: samba__global [[[
 #
 # Which hash variable is used to configure the ``[global]`` section in
 # :file:`/etc/samba/smb.conf`.
 samba__global: '{{ samba__default_global }}'
 
-
-# .. envvar:: samba__global_custom
+                                                                   # ]]]
+# .. envvar:: samba__global_custom [[[
 #
 # You can specify additional options in a separate hash.
 samba__global_custom: {}
-
-# .. )))
-
-# .. Home directories (((
-#
-# --------------------
-#   Home directories
+                                                                   # ]]]
+                                                                   # ]]]
+# Home directories [[[
 # --------------------
 
-# .. envvar:: samba__homes_path
+# .. envvar:: samba__homes_path [[[
 #
 # Location of home directories on the Samba server.
 samba__homes_path: '{{ samba__path }}/home'
 
-
-# .. envvar:: samba__homes
+                                                                   # ]]]
+# .. envvar:: samba__homes [[[
 #
 # Which hash variable is used to configure the ``[homes]`` section in
 # :file:`/etc/samba/smb.conf`.
 samba__homes: '{{ samba__default_homes }}'
 
-
-# .. envvar:: samba__default_homes
+                                                                   # ]]]
+# .. envvar:: samba__default_homes [[[
 #
 # Default ``[homes]`` section.
 samba__default_homes:
@@ -213,28 +202,25 @@ samba__default_homes:
   valid_users: '%S'
   guest_ok: 'no'
   root_preexec: '/usr/local/sbin/samba-homedir.sh %S'
-
-# .. )))
-
-# .. Network shares (((
-#
-# ------------------
-#   Network shares
+                                                                   # ]]]
+                                                                   # ]]]
+# Network shares [[[
 # ------------------
 
-# .. envvar:: samba__shares_path
+# .. envvar:: samba__shares_path [[[
 #
 # Base directory for shares.
 samba__shares_path: '{{ samba__path }}/shares'
 
-# .. envvar:: samba__shares
+                                                                   # ]]]
+# .. envvar:: samba__shares [[[
 #
 # Which hash of hashes is used to configure shares in
 # :file:`/etc/samba/smb.conf`.
 samba__shares: '{{ samba__default_shares }}'
 
-
-# .. envvar:: samba__default_shares
+                                                                   # ]]]
+# .. envvar:: samba__default_shares [[[
 #
 # Hash of hashes of default shares.
 samba__default_shares:
@@ -244,10 +230,9 @@ samba__default_shares:
     comment: 'Public Files'
     read_only: 'yes'
     guest_ok: 'yes'
-
-# .. )))
-
-# .. envvar:: samba__ferm__dependent_rules: (((
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: samba__ferm__dependent_rules [[[
 #
 # Configuration for :command:`iptables` firewall managed by :program:`ferm`.
 samba__ferm__dependent_rules:
@@ -270,5 +255,4 @@ samba__ferm__dependent_rules:
     delete: '{{ "samba" not in samba__base_packages }}'
     weight: '50'
 
-
-# .. )))
+                                                                   # ]]]

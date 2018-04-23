@@ -9,7 +9,7 @@ debops.dovecot
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    guides
    copyright
 

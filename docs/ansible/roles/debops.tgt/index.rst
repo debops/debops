@@ -9,7 +9,7 @@ debops.tgt
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    copyright
 
 ..
