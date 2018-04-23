@@ -77,6 +77,17 @@ friends, family members, and fellow activists.
 .. __: https://github.com/StreisandEffect/streisand
 
 
+`gluster.org Infrastructure`__
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Gluster team maintains a `set of Ansible playbooks and roles`__ that power
+the project's server infrastructure. The environment seems to be based on
+CentOS and FreeBSD hosts, and has very detailed documentation.
+
+.. __: https://gluster-infra-docs.readthedocs.io/
+.. __: https://github.com/gluster/gluster.org_ansible_configuration
+
+
 `ansible-lanparty`__
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -96,6 +107,16 @@ recording infrastructure used at the `FOSDEM`__ conference.
 
 .. __: https://github.com/FOSDEM/infrastructure
 .. __: https://fosdem.org/
+
+
+`Linux System Roles`__
+~~~~~~~~~~~~~~~~~~~~~~
+
+This is a small collection of Ansible roles focused on system administration,
+available on GitHub and through Ansible Galaxy. Project is focused on Fedora
+and Red Hat Enterprise Linux OS platforms.
+
+.. __: https://linux-system-roles.github.io/
 
 
 `LEAP Platform`__
