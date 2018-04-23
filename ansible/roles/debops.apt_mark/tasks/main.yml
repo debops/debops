@@ -10,7 +10,7 @@
   when: apt_mark__enabled|bool
 
 - name: Check state of the APT packages
-  script: 'script/apt-mark-status'
+  script: 'script/apt-mark-status{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}'
   register: apt_mark__register_state
   changed_when: False
   check_mode: False
