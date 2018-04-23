@@ -67,7 +67,7 @@ Changed
   local facts to define what UNIX groups are allowed to connect to the host via
   the SSH service.
 
-  [debops.nodejs] The NPM version installed by the role from GitHub is changed
+- [debops.nodejs] The NPM version installed by the role from GitHub is changed
   from ``v5.4.2`` to ``latest`` which seems to be an equivalent of a stable
   branch.
 

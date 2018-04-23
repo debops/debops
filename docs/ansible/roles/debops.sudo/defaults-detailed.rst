@@ -33,7 +33,7 @@ dictionaries, with specific parameters:
 
 ``state``
   Optional. If not defined or ``present`` (default), the configuration file
-  will be generated.  if ``absent``, the configuration file will be removed.
+  will be generated. If ``absent``, the configuration file will be removed.
 
   If ``init``, the configuration for a given entry will be prepared but not
   actually present on the host. It can be activated conditionally in a later
