@@ -372,7 +372,10 @@ owncloud__post_upgrade_hook_host_list: []
 # * ``owncloud`` (legacy variant, not recommended for new deployments, not well tested)
 # * ``nextcloud`` (Main supported variant in the future. Currently supported on Debian stretch, refer to `issue 45 <https://github.com/debops/ansible-owncloud/issues/45>`_ for details)
 #
-owncloud__variant: 'nextcloud'
+owncloud__variant: '{{ ansible_local.owncloud.variant
+                       if (ansible_local|d() and ansible_local.owncloud|d() and
+                           ansible_local.owncloud.variant|d())
+                       else "nextcloud" }}'
 
 
 # .. envvar:: owncloud__variant_download_url_map
