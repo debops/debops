@@ -84,6 +84,10 @@ Inventory variable changes
   been removed. See the :ref:`debops.python` role documentation for their
   equivalents.
 
+- The ``apt_install__python_packages`` variable has been removed from the
+  :ref:`debops.apt_install` role. Use the :ref:`debops.python` Ansible role to
+  install Python packages.
+
 
 v0.7.2 (2018-03-28)
 -------------------

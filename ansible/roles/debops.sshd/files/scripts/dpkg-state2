@@ -1,0 +1,45 @@
+#!/usr/bin/python2
+import sys
+import subprocess
+import signal
+
+
+# Get dpkg status.
+# Errors are printed to stderr, and should cause None to be returned.
+def dpkg_state(package):
+    # As of Debian 8, this is the only documented method.
+    # http://unix.stackexchange.com/questions/325594/script-a-test-for-installed-debian-package-error-handling/325595#325595
+
+    command = ['dpkg-query', '--show',
+               '--showformat=${Package} ${Status}\n']
+
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+    (stdoutdata, _) = proc.communicate()
+    for line in filter(bool, stdoutdata.split(b'\n')):
+        line = line.decode('ASCII')
+        line = line.rstrip()
+        # "package desired-action error-flags state"
+        (p, _, _, s) = line.split(' ')
+        if p == package:
+            state = s
+            break
+        else:
+            state = 'not-installed'
+
+    # dpkg-query returns 0 on success.
+    if proc.returncode != 0:
+        return None
+
+    return state
+
+
+if len(sys.argv) != 2:
+    print("Usage: dpkg-state <package>")
+    sys.exit(1)
+package = sys.argv[1]
+
+status = dpkg_state(package)
+if not status:
+    sys.exit(1)
+
+print(status)

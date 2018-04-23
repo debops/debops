@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys
 import subprocess
 import signal
@@ -15,7 +15,7 @@ def dpkg_state(package):
 
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
     (stdoutdata, _) = proc.communicate()
-    for line in filter(bool, stdoutdata.split('\n')):
+    for line in filter(bool, stdoutdata.split(b'\n')):
         line = line.decode('ASCII')
         line = line.rstrip()
         # "package desired-action error-flags state"
