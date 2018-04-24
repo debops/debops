@@ -77,6 +77,11 @@ Changed
 
 .. __: https://www.python.org/dev/peps/pep-0001/
 
+- [debops.ifupdown] The :ref:`debops.kmod` role is added as a dependency. The
+  :ref:`debops.ifupdown` role will generate :command:`modprobe` configuration
+  based on the type of configured network interfaces (bridges, VLANs, bonding)
+  and the kernel modules will be automatically loaded if missing.
+
 Removed
 ~~~~~~~
 
