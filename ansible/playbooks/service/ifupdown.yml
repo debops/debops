@@ -13,6 +13,11 @@
     - role: debops.ifupdown/env
       tags: [ 'role::ifupdown', 'role::ferm' ]
 
+    - role: debops.kmod
+      tags: [ 'role::kmod' ]
+      kmod__dependent_load:
+        - '{{ ifupdown__env_kmod__dependent_load }}'
+
     - role: debops.ferm
       tags: [ 'role::ferm' ]
       ferm__dependent_rules:

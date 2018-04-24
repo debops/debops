@@ -1,0 +1,44 @@
+{% set ifupdown__tpl_packages = [] %}
+{% if ifupdown__combined_interfaces|d() %}
+{%   for interface, params in ifupdown__combined_interfaces.items() %}
+{%     if (params.state|d('present') == 'present' and params.type|d()) %}
+{%       if params.type == 'bonding' %}
+{%         if ansible_distribution_release == 'wheezy' %}
+{%           set _ = ifupdown__tpl_packages.append('ifenslave-2.6') %}
+{%         else %}
+{%           set _ = ifupdown__tpl_packages.append('ifenslave') %}
+{%         endif %}
+{%       elif params.type == 'bridge' %}
+{%         set _ = ifupdown__tpl_packages.append('bridge-utils') %}
+{%       elif params.type == 'vlan' %}
+{%         set _ = ifupdown__tpl_packages.append('vlan') %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% set ifupdown__tpl_kmod__dependent_load = [] %}
+{% if 'ifenslave' in ifupdown__tpl_packages or 'ifenslave-2.6' in ifupdown__tpl_packages %}
+{%   set _ = ifupdown__tpl_kmod__dependent_load.append({
+  'name': 'bonding',
+  'comment': 'Load the bonding module for network interface bond configuration',
+  'filename': 'ifupdown-bonding.conf',
+  'state': 'present'
+}) %}
+{% endif %}
+{% if 'bridge-utils' in ifupdown__tpl_packages %}
+{%   set _ = ifupdown__tpl_kmod__dependent_load.append({
+  'name': 'bridge',
+  'comment': 'Load the bridge module for network interface bridge configuration',
+  'filename': 'ifupdown-bridge.conf',
+  'state': 'present'
+}) %}
+{% endif %}
+{% if 'vlan' in ifupdown__tpl_packages %}
+{%   set _ = ifupdown__tpl_kmod__dependent_load.append({
+  'name': '8021q',
+  'comment': 'Load the 8021q module for VLAN configuration',
+  'filename': 'ifupdown-vlan.conf',
+  'state': 'present'
+}) %}
+{% endif %}
+{{ ifupdown__tpl_kmod__dependent_load | to_yaml }}
