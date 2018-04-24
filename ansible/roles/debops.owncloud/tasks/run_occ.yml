@@ -30,18 +30,15 @@
   # but `occ` is preferred in the case of Ansible.
 - name: Run given occ commands
   command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }} {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
-  args:
-    executable: '/bin/sh'
   environment: '{{ owncloud__occ_item.env|d({}) }}'
-  ## TODO: Upstream needs to fix this. See above.
+  ## TODO: Upstream needs to fix proper support for `changed_when`.
   changed_when: False
   # changed_when: (owncloud__occ_item.command|d(omit) is match("config:app:set") and
   ## Has changed in ownCloud 9.0 and does not work anymore.
   # changed_when: ('No such app enabled:' not in owncloud__occ_run.stdout and
                   # ' already ' not in owncloud__occ_run.stdout)
-  failed_when: ((owncloud__occ_run.rc != 0 and 'already exists' not in owncloud__occ_run.stdout) or
+  failed_when: ((owncloud__occ_run.rc != 0 and 'already exists' not in owncloud__occ_run.stdout and 'already installed' not in owncloud__occ_run.stdout) or
                 ('An unhandled exception has been thrown:' in owncloud__occ_run.stdout))
-  ## ownCloud 8.0.11-1.1: An unhandled exception has been thrown
   no_log: True
   register: owncloud__occ_run
   become: True
