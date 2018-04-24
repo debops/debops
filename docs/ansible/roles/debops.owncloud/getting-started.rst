@@ -38,7 +38,7 @@ For experimental UTF8 4-byte support, you can set the following in your inventor
 In memory caching
 -----------------
 
-ownCloud recommends to setup Redis_ for caching. You can install a Redis server
+Nextcloud and ownCloud recommend to setup Redis_ for caching. You can install a Redis server
 on the same host as ownCloud or choose a different host:
 
 .. code-block:: none
