@@ -42,8 +42,8 @@ configured via DHCP (IPv4) and SLAAC (IPv6).
 
 If the host is not a container, the role will select the ``bridge`` layout,
 which defines 1 or 2 network interfaces with attached bridges that are
-configured with DHCP (IPv4) and SLAAC (IPv6). This configuration is benefical
-when a machine is used as an KVM, LXC or even a Docker host. With the bridges
+configured with DHCP (IPv4) and SLAAC (IPv6). This configuration is beneficial
+when a machine is used as a KVM, LXC or even a Docker host. With the bridges
 in place you can connect the VMs or containers to your external or internal
 network with ease.
 
@@ -57,7 +57,7 @@ version is older than ``0.3.0`` or the version cannot be found, role will
 remove the :file:`/etc/network/interfaces.config.d/` directory to make sure
 that the network configuration state is consistent. You might want to review
 and update your interface configuration in the Ansible inventory before
-applying new version of the role to ensure that it has accurate information
+applying a new version of the role to ensure that it has accurate information
 about interfaces present on the host.
 
 Example inventory
@@ -74,7 +74,7 @@ host to the ``[debops_service_ifupdown]`` Ansible inventory group:
 The role does not check if the host can manage network interfaces, therefore
 you should only enable this role on hosts that are allowed to do so. One
 of the limiting factors can be the presence of the ``cap_net_admin`` POSIX
-capability. Make sure that its present on the host so that it can manage its
+capability. Make sure that it is present on the host so that it can manage its
 own networking.
 
 .. _ifupdown__ref_example_playbook:

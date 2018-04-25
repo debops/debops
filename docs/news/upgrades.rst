@@ -11,7 +11,82 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
-Nothing new yet.
+UNIX account and group configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Configuration of UNIX system groups and accounts included in the ``admins``
+  UNIX group has been removed from the :ref:`debops.auth` role. This
+  functionality is now done by the :ref:`debops.system_groups` role. The
+  variable names and their values changed, see the :ref:`debops.system_groups`
+  role documentation for details.
+
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The ``console_preferred_editors`` list has been removed, configuration of the
+  preferred :command:`vim` editor is now done in the :ref:`debops.apt_install`
+  role which also installs it.
+
+- The ``console_custom_files`` variable has been removed along with the
+  functionality in ``debops.console`` role. Use the :ref:`debops.resources`
+  role variables to copy custom files instead. The role is also included in the
+  common playbook, although a bit earlier, which shouldn't impact normal use
+  cases.
+
+- The management of the :file:`/etc/hosts` file has been removed from the
+  ``debops.console`` role and is now done via the :ref:`debops.netbase` role
+  which has to be enabled through the Ansible inventory. The variables have
+  been renamed:
+
+  +-------------------------+--------------------------------+---------------+
+  | Old variable name       | New variable name              | Changed value |
+  +=========================+================================+===============+
+  | ``console_hosts``       | :envvar:`netbase__hosts`       | No            |
+  +-------------------------+--------------------------------+---------------+
+  | ``console_group_hosts`` | :envvar:`netbase__group_hosts` | No            |
+  +-------------------------+--------------------------------+---------------+
+  | ``console_host_hosts``  | :envvar:`netbase__host_hosts`  | No            |
+  +-------------------------+--------------------------------+---------------+
+
+- Configuration of the APT autoremove options has been moved from the
+  :ref:`debops.apt` role to the :ref:`debops.apt_mark` role, because the latter
+  role has more specific scope. The variable names as well as their default
+  values have been changed to correctly reflect the meaning of the
+  corresponding APT configuration options:
+
+  +--------------------------------+-----------------------------------------------------+------------------+
+  | Old variable name              | New variable name                                   | Changed value    |
+  +================================+=====================================================+==================+
+  | ``apt__autoremove_recommends`` | :envvar:`apt_mark__autoremove_recommends_important` | Yes, to ``True`` |
+  +--------------------------------+-----------------------------------------------------+------------------+
+  | ``apt__autoremove_suggests``   | :envvar:`apt_mark__autoremove_suggests_important`   | Yes, to ``True`` |
+  +--------------------------------+-----------------------------------------------------+------------------+
+
+  By default the APT packages installed via Recommends or Suggests dependencies
+  will not be considered for autoremoval. If the user sets any package
+  configuration via :ref:`debops.apt_mark` role, the autoremoval will be
+  enabled automatically.
+
+- The ``bootstrap__sudo`` and ``bootstrap__sudo_group`` variables have been
+  removed from the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook
+  now uses the :ref:`debops.sudo` role to configure :command:`sudo` service on
+  a host, use its variables instead to control the service in question.
+
+- The :envvar:`bootstrap__admin_groups` variable will now use list of UNIX
+  groups with ``root`` access defined by the :ref:`debops.system_groups` via
+  Ansible local facts.
+
+- The contents of the :envvar:`sshd__allow_groups` variable have been moved to
+  the new :envvar:`sshd__default_allow_groups` variable. The new variable also
+  uses the :ref:`debops.system_groups` Ansible local facts as a data source.
+
+- The ``bootstrap__raw`` and ``bootstrap__mandatory_packages`` variables have
+  been removed. See the :ref:`debops.python` role documentation for their
+  equivalents.
+
+- The ``apt_install__python_packages`` variable has been removed from the
+  :ref:`debops.apt_install` role. Use the :ref:`debops.python` Ansible role to
+  install Python packages.
 
 
 v0.7.2 (2018-03-28)

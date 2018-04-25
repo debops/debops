@@ -35,7 +35,7 @@
 
   roles:
 
-    - role: debops.bootstrap/raw
+    - role: debops.python/raw
 
 
 - name: Bootstrap host for Ansible management
@@ -47,4 +47,14 @@
 
   roles:
 
+    - role: debops.python
+      tags: [ 'role::python' ]
+
+    - role: debops.sudo
+      tags: [ 'role::sudo', 'role::system_groups' ]
+
+    - role: debops.system_groups
+      tags: [ 'role::system_groups' ]
+
     - role: debops.bootstrap
+      tags: [ 'role::bootstrap' ]

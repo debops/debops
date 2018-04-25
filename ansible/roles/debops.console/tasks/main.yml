@@ -45,47 +45,6 @@
     line: 'FSCKFIX={{ console_fsckfix }}'
   when: ansible_distribution_release in console_fsckfix_releases
 
-- name: Get list of available text editors
-  command: update-alternatives --list editor
-  register: console_register_installed_editors
-  changed_when: False
-  check_mode: False
-  tags: [ 'role::console:editor' ]
-
-- name: Configure system-wide editor
-  alternatives:
-    name: 'editor'
-    path: '{{ (console_preferred_editors | intersect(console_register_installed_editors.stdout_lines)) | first }}'
-  tags: [ 'role::console:editor' ]
-
-- name: Remove obsolet sysctl configuration file
-  file:
-    path: '/etc/sysctl.d/10-debops.console.conf'
-    state: 'absent'
-
-- name: Manage entries in /etc/hosts
-  lineinfile:
-    dest: '/etc/hosts'
-    regexp: '^{{ item.key | replace(".","\.") }}\s+'
-    line: "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
-    state: '{{ "present" if item.value|d() else "absent" }}'
-  with_dict: '{{ console_hosts|combine(console_group_hosts,console_host_hosts) }}'
-  tags: [ 'role::console:hosts' ]
-
-- name: Copy custom files to remote hosts
-  copy:
-    src: '{{ item.src }}'
-    dest: '{{ item.dest }}'
-    owner: '{{ item.owner | d(omit) }}'
-    group: '{{ item.group | d(omit) }}'
-    mode: '{{ item.mode | d(omit) }}'
-    directory_mode: '{{ item.directory_mode | d(omit) }}'
-    follow: '{{ item.follow | d(omit) }}'
-    force: '{{ item.force | d(omit) }}'
-  with_items: '{{ console_custom_files }}'
-  when: (item.src|d() and item.dest|d())
-  tags: [ 'role::console:custom_files' ]
-
 - include: filesystem_mount.yml
   tags: [ 'role::console:mount' ]
   when: (

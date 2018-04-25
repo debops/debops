@@ -1,48 +1,91 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# debops.boxbackup default variables
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# .. envvar:: boxbackup_server [[[
+#
 # FQDN address of the Box Backup server to use
 boxbackup_server: '{{ hostvars[groups.debops_boxbackup[0]]["ansible_fqdn"] }}'
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_allow [[[
+#
 # Set to list of IP addresses / network ranges to allow access only from these
 # networks. Empty list allows access from any host / network.
 boxbackup_allow: []
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_storage [[[
+#
 # Directory where boxbackup-server is storing backups
 boxbackup_storage: '/var/local/boxbackup'
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_listenAddresses [[[
+#
 # boxbackup-server is listening on this IP address (all interfaces by default)
 boxbackup_listenAddresses: '0.0.0.0'
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_verbose [[[
+#
 # Enable/Disable verbose logging
 boxbackup_verbose: 'no'
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_account [[[
+#
 # 32-bit hexadecimal number representing the boxbackup-client account on the server
 boxbackup_account: '{{ (ansible_fqdn | sha1)[:8] }}'
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_softlimit [[[
+#
 # Soft limit for storage space in megabytes, by default it's calculated as
 # total disk space of a given host. When used space is bigger than this,
 # boxbackup-server starts to remove old and deleted data
 boxbackup_softlimit:
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_hardlimit [[[
+#
 # Hard limit for storage space in megabytes. by default it's calculated as
 # soft limit * multiplier (see below). When used space reaches this limit,
 # server refuses to accept new data
 boxbackup_hardlimit:
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_softlimit_padding [[[
+#
 # Additional disk space added to soft limit, in megabytes. If this number is
 # negative, you will substract given amount of disk space from calculated soft
 # limit
 boxbackup_softlimit_padding: 1024
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_hardlimit_multiplier [[[
+#
 # Hard limit multiplier will by default set hard limit to equal
 # soft limit + 50%. If you set this number lower than 1.0, you will have
 # smaller hard limit than soft limit, which is not a good idea
 boxbackup_hardlimit_multiplier: 1.5
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_email [[[
+#
 # Email address which will receive alerts from boxbackup. By default it's
 # <backup@localhost>, which is usually aliased to root account
 boxbackup_email: 'backup'
 
+                                                                   # ]]]
+# .. envvar:: boxbackup_locations [[[
+#
 # List of directories to back up; directory is a hash key, optional
 # exclude/include directives should be written as a text block. Examples can be
 # found in the /etc/boxbackup/bbackupd.conf config file
@@ -63,6 +106,11 @@ boxbackup_locations:
   '/var': |
     ExcludeDir = /var/spool/postfix/dev
 
+# ]]]
+# .. envvar:: boxbackup_locations_custom [[[
+#
 # List of additional directories / mount points to back up, format is the same
 # as a list above
 boxbackup_locations_custom:
+
+                                                                   # ]]]

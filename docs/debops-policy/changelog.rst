@@ -45,7 +45,7 @@ Added
 
 - Added "Project Admin" role to :ref:`debops_policy__organizational_structure`. [ypid_]
 
-- Added first draft of the :ref:`debops_policy__software_source_policy`. [drybjed_]
+- Added first draft of the software source policy. [drybjed_]
 
 Changed
 ~~~~~~~
@@ -60,4 +60,4 @@ Changed
 
 - Reviewed and compared with other policies and adapted where useful. [AnBuKu_, ypid_]
 
-- Review and minor improvements for the :ref:`debops_policy__software_source_policy`. [ypid_]
+- Review and minor improvements for the software source policy. [ypid_]

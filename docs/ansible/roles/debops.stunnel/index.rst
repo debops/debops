@@ -9,7 +9,7 @@ debops.stunnel
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    guides
    troubleshooting
    copyright

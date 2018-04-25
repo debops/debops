@@ -79,7 +79,7 @@ def get_first_up_proxy(target_uri_raw):
 
             if proxy_uri.scheme in ['https', 'http']:
                 try:
-                    urlopen(proxy_uri_raw)
+                    urlopen(proxy_uri_raw, timeout=1)
                 except HTTPError as err:
                     LOG.debug("Proxy responded with: {}".format(err))
                     pass

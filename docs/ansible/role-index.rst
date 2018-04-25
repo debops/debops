@@ -54,6 +54,7 @@ methods.
 - :ref:`debops.java`
 - :ref:`debops.nodejs`
 - :ref:`debops.php`
+- :ref:`debops.python`
 - :ref:`debops.ruby`
 - ``debops.hwraid``
 - ``debops.rails_deploy``
@@ -199,6 +200,7 @@ Networking
 - :ref:`debops.dhcpd`
 - :ref:`debops.dnsmasq`
 - :ref:`debops.ifupdown`
+- :ref:`debops.netbase`
 - :ref:`debops.radvd`
 - :ref:`debops.stunnel`
 - :ref:`debops.tinc`
@@ -219,6 +221,7 @@ packages.
 - :ref:`debops.apt_mark`
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
+- :ref:`debops.debops_legacy`
 - :ref:`debops.unattended_upgrades`
 - ``debops.reprepro``
 
@@ -232,6 +235,8 @@ Security
 - :ref:`debops.ferm`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`
+- :ref:`debops.sudo`
+- :ref:`debops.system_groups`
 - :ref:`debops.tcpwrappers`
 - ``debops-contrib.apparmor``
 - ``debops-contrib.firejail``
@@ -242,6 +247,7 @@ System configuration
 
 - :ref:`debops.atd`
 - :ref:`debops.cron`
+- :ref:`debops.debops_legacy`
 - :ref:`debops.environment`
 - :ref:`debops.etc_services`
 - :ref:`debops.etckeeper`
@@ -249,6 +255,7 @@ System configuration
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
 - :ref:`debops.machine`
+- :ref:`debops.netbase`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
 - :ref:`debops.resources`
@@ -257,6 +264,7 @@ System configuration
 - :ref:`debops.sysctl`
 - :ref:`debops.sysfs`
 - :ref:`debops.sysnews`
+- :ref:`debops.system_groups`
 - :ref:`debops.users`
 - ``debops.console``
 - ``debops.gitusers``

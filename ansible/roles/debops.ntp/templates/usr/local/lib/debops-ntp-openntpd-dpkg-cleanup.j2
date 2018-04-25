@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Clean up 'debops.ntp' modifications on the 'openntpd' package removal
+
+set -o nounset -o pipefail -o errexit
+
+revert_files=(
+    "/etc/default/openntpd"
+    "/etc/network/if-up.d/openntpd"
+    "/etc/openntpd/ntpd.conf"
+)
+
+remove_files=(
+    "/usr/local/lib/debops-ntp-openntpd-dpkg-cleanup"
+    "/etc/dpkg/dpkg.cfg.d/debops-ntp-openntpd"
+)
+
+debops_ntp_divert_cleanup () {
+
+    printf "Reverting OpenNTPd configuration files ...\n"
+    for revert_file in "${revert_files[@]}" ; do
+        if [ -f "${revert_file}.dpkg-divert" ] ; then
+            rm -f "${revert_file}"
+            dpkg-divert --quiet --local --rename --remove "${revert_file}"
+        fi
+    done
+
+}
+
+debops_ntp_file_cleanup () {
+
+    printf "Removing OpenNTPd configuration maintained by Ansible ...\n"
+    for remove_file in "${remove_files[@]}" ; do
+        test ! -f "${remove_file}" || rm -f "${remove_file}"
+    done
+}
+
+
+dpkg_pid="$(ps -o ppid= ${PPID} | tr -d '[:space:]')"
+
+IFS=' ' read -r -a arguments <<< "$(tr '\0' ' ' < "/proc/${dpkg_pid}/cmdline")"
+
+if [ -n "${DPKG_HOOK_ACTION:-}" ] ; then
+    case ${DPKG_HOOK_ACTION} in
+        remove)
+            for x in "${arguments[@]}"; do
+                case ${x} in
+                    openntpd:*)
+                        debops_ntp_divert_cleanup
+                        debops_ntp_file_cleanup
+                    ;;
+                esac
+            done
+        ;;
+        purge)
+            for x in "${arguments[@]}"; do
+                case ${x} in
+                    openntpd:*)
+                        debops_ntp_divert_cleanup
+                        debops_ntp_file_cleanup
+                    ;;
+                esac
+            done
+        ;;
+    esac
+fi

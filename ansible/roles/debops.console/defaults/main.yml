@@ -1,24 +1,52 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# debops.console default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# .. envvar:: console_serial [[[
+#
 # Enable or disable serial console (allows you to use 'lxc-console',
 # 'virsh console' and other similar commands)
 console_serial: False
 
+                                                                   # ]]]
+# .. envvar:: console_serial_port [[[
+#
 # Serial console port
 console_serial_port: 'ttyS0'
 
+                                                                   # ]]]
+# .. envvar:: console_serial_baud [[[
+#
 # Serial console baud rate
 console_serial_baud: '115200'
 
+                                                                   # ]]]
+# .. envvar:: console_serial_term [[[
+#
 # Serial console TERM string used to define terminal capabilities
 console_serial_term: 'xterm'
 
+                                                                   # ]]]
+# .. envvar:: console_serial_inittab [[[
+#
 # String used to enable serial console in sysvinit /etc/inittab
 console_serial_inittab: 'S0:2345:respawn:/sbin/getty -L {{ console_serial_port }} {{ console_serial_baud }} {{ console_serial_term }}'
 
+                                                                   # ]]]
+# .. envvar:: console_base_packages [[[
+#
 # List of required console packages
 console_base_packages: [ 'locales' ]
 
+                                                                   # ]]]
+# .. envvar:: console_conditional_packages [[[
+#
 # List of packages to install depending on a condition
 console_conditional_packages:
 
@@ -29,63 +57,22 @@ console_conditional_packages:
               console_host_mounts_nfs|d())
           else [] }}' ]
 
-# List of preferred text editors. The first one found will be configured as the
-# default for the ``editor`` command.
-console_preferred_editors:
-  - '/usr/bin/vim.basic'
-  - '/usr/bin/emacs24'
-  - '/usr/bin/vim.tiny'
-  - '/bin/nano'
-  - '/bin/ed'
-
+                                                                   # ]]]
+# .. envvar:: console_fsckfix [[[
+#
 # Enable or disable FSCKFIX option in /etc/default/rcS
 # This option controls the behaviour of fsck during boot time, if it's enabled,
 # fsck will automatically repair filesystems without stopping the boot
 # process. Choices: yes, no.
 console_fsckfix: 'yes'
 
+                                                                   # ]]]
+# .. envvar:: console_fsckfix_releases [[[
+#
 # List of OS distribution releases which use the FSCKFIX option in a configuration file.
 console_fsckfix_releases: [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
 
-
-# ---- /etc/hosts ----
-
-# Add or remove entries in /etc/hosts
-console_hosts: {}
-console_group_hosts: {}
-console_host_hosts: {}
-
-# Examples:
-# console_hosts:
-#   '192.0.2.1': 'hostname.example.com'
-#   '2001:db8::1': [ 'host.example.org', 'host' ]
-#
-#   # These entries will be removed
-#   '192.0.2.3': ''
-#   '192.0.2.4': []
-
-
-# ---- Copy custom files ----
-
-# Copy arbitrary files from Ansible Controller to remote hosts. Ansible does
-# not check if source file exists. Most of the 'copy' module parameters can be
-# used as dict keys.
-console_custom_files: []
-
-# Examples:
-# console_custom_files:
-#
-#   # Copy single files
-#   - src: '/etc/fstab'
-#     dest: '/tmp/fstab'
-#
-#   # Copy directories
-#   - src: '/usr/local/'
-#     dest: '/tmp/local'
-#     owner: 'root'
-#     group: 'root'
-
-
+                                                                   # ]]]
 # ---- Filesystem mount points ----
 
 # You can use console_*_mounts lists to mout local or remote filesystems on
@@ -95,13 +82,24 @@ console_custom_files: []
 # For NFS mounts, you need to install 'nfs-common' package, for example by
 # adding it to 'console_packages' list.
 
+# .. envvar:: console_default_mount_options [[[
+#
 # Default mount options for local mount points
 console_default_mount_options: 'defaults'
 
+                                                                   # ]]]
+# .. envvar:: console_default_mount_nfs_options [[[
+#
 # Default mount options for NFS mount points
 console_default_mount_nfs_options: 'nosuid,hard,intr,proto=tcp,port=2049,_netdev'
+
+                                                                   # ]]]
+# .. envvar:: console_default_mount_nfs_type [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 console_default_mount_nfs_type: 'nfs'
 
+                                                                   # ]]]
 # Examples:
 # console_mounts:
 #   - name: '/other/data'
@@ -112,12 +110,39 @@ console_default_mount_nfs_type: 'nfs'
 #   - name: '/media/nfs'
 #     src: 'data.example.org:/srv/nfs'
 
+# .. envvar:: console_mounts [[[
+#
 # Local mount points
 console_mounts: []
+
+                                                                   # ]]]
+# .. envvar:: console_group_mounts [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 console_group_mounts: []
+
+                                                                   # ]]]
+# .. envvar:: console_host_mounts [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 console_host_mounts: []
 
+                                                                   # ]]]
+# .. envvar:: console_mounts_nfs [[[
+#
 # NFS mount points
 console_mounts_nfs: []
+
+                                                                   # ]]]
+# .. envvar:: console_group_mounts_nfs [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 console_group_mounts_nfs: []
+
+                                                                   # ]]]
+# .. envvar:: console_host_mounts_nfs [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 console_host_mounts_nfs: []
+
+                                                                   # ]]]

@@ -282,10 +282,22 @@ sshd__custom_options: ''
 # Group-based access control [[[
 # ------------------------------
 
+# .. envvar:: sshd__default_allow_groups [[[
+#
+# List of UNIX system groups which allow connections to SSH service defined by
+# default. The ``root`` UNIX group is used for backup connections, temporarily.
+sshd__default_allow_groups: '{{ [ "root" ] +
+                                (ansible_local.system_groups.access.sshd
+                                 if (ansible_local|d() and ansible_local.system_groups|d() and
+                                     ansible_local.system_groups.access|d() and
+                                     ansible_local.system_groups.access.sshd|d())
+                                 else []) }}'
+
+                                                                   # ]]]
 # .. envvar:: sshd__allow_groups [[[
 #
 # List of UNIX groups which allow connections to SSH service (global).
-sshd__allow_groups: [ 'root', 'admins', 'sshusers', 'sftponly' ]
+sshd__allow_groups: []
 
                                                                    # ]]]
 # .. envvar:: sshd__group_allow_groups [[[
@@ -599,7 +611,8 @@ sshd__match_list: [ '{{ sshd__match_group_sftponly }}' ]
 # .. envvar:: sshd__match_group_sftponly [[[
 #
 # Default ``Match`` conditional block which defines configuration for SFTPonly
-# accounts.
+# accounts. The ``stfponly`` UNIX system group is created by the
+# :ref:`debops.system_groups` Ansible role.
 sshd__match_group_sftponly:
   match: 'Group sftponly'
   options: |

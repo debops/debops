@@ -200,10 +200,10 @@ stages:
 # --- b --- [[[2
 
 'bootstrap role':
-  <<: *test_role_no_deps
+  <<: *test_role_2nd_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/bootstrap.yml'
-    JANE_INVENTORY_HOSTVARS: 'ansible_become=true bootstrap__raw=false'
+    JANE_INVENTORY_HOSTVARS: 'ansible_become=true'
     JANE_DIFF_PATTERN: '.*/debops.bootstrap/.*'
     JANE_LOG_PATTERN: '\[debops\.bootstrap\]'
 
@@ -300,6 +300,13 @@ stages:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/debops_fact.yml'
     JANE_DIFF_PATTERN: '.*/debops.debops_fact/.*'
     JANE_LOG_PATTERN: '\[debops\.debops_fact\]'
+
+'debops_legacy role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/debops_legacy.yml'
+    JANE_DIFF_PATTERN: '.*/debops.debops_legacy/.*'
+    JANE_LOG_PATTERN: '\[debops\.debops_legacy\]'
 
 'dhcpd role':
   <<: *test_role_no_deps
@@ -476,9 +483,9 @@ stages:
 'gitlab role':
   <<: *test_role_3rd_deps
   variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/auth.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_auth,debops_service_postgresql_server,debops_service_gitlab'
-    JANE_INVENTORY_HOSTVARS: 'redis__overcommit_memory_enable=false postgresql__delegate_to=localhost gitlab_support_filesystem_acl=false'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_gitlab'
+    JANE_INVENTORY_HOSTVARS: 'redis__overcommit_memory_enable=false postgresql__delegate_to=localhost'
     JANE_DIFF_PATTERN: '.*/debops.gitlab/.*'
     JANE_LOG_PATTERN: '\[debops\.gitlab\]'
     VAGRANT_MASTER_MEMORY: '4096'
@@ -781,6 +788,14 @@ stages:
 
 # --- n --- [[[2
 
+'netbase role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/netbase.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_netbase'
+    JANE_DIFF_PATTERN: '.*/debops.netbase/.*'
+    JANE_LOG_PATTERN: '\[debops\.netbase\]'
+
 'netbox role':
   <<: *test_role_3rd_deps
   variables:
@@ -1040,6 +1055,23 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.prometheus_server/.*'
     JANE_LOG_PATTERN: '\[debops\.prometheus_server\]'
 
+'python role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_python'
+    JANE_DIFF_PATTERN: '.*/debops.python/.*'
+    JANE_LOG_PATTERN: '\[debops\.python\]'
+
+'python/raw role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python_raw.yml'
+    #JANE_INVENTORY_HOSTVARS: 'ansible_python_interpreter=/usr/bin/python3'
+    JANE_INVENTORY_GROUPS: 'debops_service_python'
+    JANE_DIFF_PATTERN: '.*/debops.python/.*'
+    JANE_LOG_PATTERN: '\[debops\.python\]'
+
 # --- r --- [[[2
 
 'rabbitmq_management role':
@@ -1241,6 +1273,22 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_stunnel'
     JANE_DIFF_PATTERN: '.*/debops.stunnel/.*'
     JANE_LOG_PATTERN: '\[debops\.stunnel\]'
+
+'sudo role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sudo.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_sudo'
+    JANE_DIFF_PATTERN: '.*/debops.sudo/.*'
+    JANE_LOG_PATTERN: '\[debops\.sudo\]'
+
+'system_groups role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_groups.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_system_groups'
+    JANE_DIFF_PATTERN: '.*/debops.system_groups/.*'
+    JANE_LOG_PATTERN: '\[debops\.system_groups\]'
 
 'swapfile role':
   <<: *test_role_no_deps

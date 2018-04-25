@@ -1,30 +1,30 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.libvirt default variables
+# ================================
 
 # .. contents:: Sections
 #    :local:
-#
-# .. libvirt system configuration (((
-#
-# --------------------------------
-#   libvirt system configuration
+
+
+# libvirt system configuration [[[
 # --------------------------------
 
-# .. envvar:: libvirt__base_packages
+# .. envvar:: libvirt__base_packages [[[
 #
 # List of base packages to install with Libvirt.
 libvirt__base_packages: [ 'gawk', 'netcat-openbsd', 'python-libvirt', 'python-lxml', 'virt-top', 'virtinst', 'virt-goodies' ]
 
-
-# .. envvar:: libvirt__packages
+                                                                   # ]]]
+# .. envvar:: libvirt__packages [[[
 #
 # List of ``libvirt`` packages which will be installed on all distribution
 # releases, unless overridden.
 libvirt__packages: [ 'libvirt-clients' ]
 
-
-# .. envvar:: libvirt__packages_map
+                                                                   # ]]]
+# .. envvar:: libvirt__packages_map [[[
 #
 # Override list of base packages for specific distribution releases.
 libvirt__packages_map:
@@ -33,51 +33,43 @@ libvirt__packages_map:
   'trusty':  [ 'libvirt-bin' ]
   'xenial':  [ 'libvirt-bin' ]
 
-
-# .. envvar:: libvirt__group_map
+                                                                   # ]]]
+# .. envvar:: libvirt__group_map [[[
 #
 # Mapping of default UNIX access group on different distributions.
 libvirt__group_map:
   'Debian': 'libvirt'
   'Ubuntu': 'libvirtd'
-
-# .. )))
-
-# .. libvirt connection URI (((
-#
-# --------------------------
-#   libvirt connection URI
+                                                                   # ]]]
+                                                                   # ]]]
+# libvirt connection URI [[[
 # --------------------------
 
-# .. envvar:: libvirt__default_uri
+# .. envvar:: libvirt__default_uri [[[
 #
 # Default connection URI (connect to :program:`libvirtd` instance on ``localhost``).
 libvirt__default_uri: 'qemu:///system'
 
-
-# .. envvar:: libvirt__connections
+                                                                   # ]]]
+# .. envvar:: libvirt__connections [[[
 #
 # Dict with connections configured in ``~/.config/libvirt/libvirt.conf``. See
 # :ref:`libvirt__connections` for more details.
 libvirt__connections:
   'localhost': '{{ libvirt__default_uri }}'
 
-
-# .. envvar:: libvirt__uri
+                                                                   # ]]]
+# .. envvar:: libvirt__uri [[[
 #
 # Name of the connection from ``libvirt__connections`` dict used by default by
 # ``libvirt`` clients on the admin account.
 libvirt__uri: 'localhost'
-
-# .. )))
-
-# .. libvirt network configuration (((
-#
-# ---------------------------------
-#   libvirt network configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# libvirt network configuration [[[
 # ---------------------------------
 
-# .. envvar:: libvirt__networks
+# .. envvar:: libvirt__networks [[[
 #
 # List of network definitions in ``libvirt``, specified as YAML dicts. See
 # :ref:`libvirt__networks` for more details.
@@ -85,8 +77,8 @@ libvirt__networks:
   - '{{ libvirt__networks_default }}'
   - '{{ libvirt__networks_virt_nat }}'
 
-
-# .. envvar:: libvirt__networks_default
+                                                                   # ]]]
+# .. envvar:: libvirt__networks_default [[[
 #
 # Default DebOps network configuration for ``libvirt``. NAT that comes with
 # ``libvirt`` by default is inactive, bridges configured by ``debops.ifupdown``
@@ -116,8 +108,8 @@ libvirt__networks_default:
     bridge: 'br2'
     interface_present: 'br2'
 
-
-# .. envvar:: libvirt__networks_virt_nat:
+                                                                   # ]]]
+# .. envvar:: libvirt__networks_virt_nat [[[
 #
 # An internal network behind NAT. This is a replacement configuration for
 # ``default`` ``libvirt`` network, since you cannot redefine existing
@@ -134,24 +126,20 @@ libvirt__networks_virt_nat:
     state: 'active'
     forward: True
     dhcp: True
-
-# .. )))
-
-# .. libvirt storage pool configuration (((
-#
-# --------------------------------------
-#   libvirt storage pool configuration
+                                                                   # ]]]
+                                                                   # ]]]
+# libvirt storage pool configuration [[[
 # --------------------------------------
 
-# .. envvar:: libvirt__pools
+# .. envvar:: libvirt__pools [[[
 #
 # List of storage pool definitions in ``libvirt``, specified as YAML dicts. See
 # :ref:`libvirt__pools` for more details.
 libvirt__pools:
   - '{{ libvirt__pools_default }}'
 
-
-# .. envvar:: libvirt__pools_default
+                                                                   # ]]]
+# .. envvar:: libvirt__pools_default [[[
 #
 # List of default storage pools configured by ``debops.libvirt``.
 libvirt__pools_default:
@@ -159,5 +147,5 @@ libvirt__pools_default:
   - name: 'default'
     type: 'dir'
     path: '/var/lib/libvirt/images'
-
-# .. )))
+                                                                   # ]]]
+                                                                   # ]]]

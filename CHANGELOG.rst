@@ -18,6 +18,110 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v0.7.2...master
 
+Added
+~~~~~
+
+- New DebOps roles:
+
+  - :ref:`debops.netbase`: manage local host and network database in
+    :file:`/etc/hosts` and :file:`/etc/networks` files.
+
+  - :ref:`debops.sudo`: install and manage :command:`sudo` configuration on
+    a host. The role is included in the ``common.yml`` playbook.
+
+  - :ref:`debops.system_groups`: configure UNIX system groups used on DebOps
+    hosts. The role is included in the ``common.yml`` playbook.
+
+  - :ref:`debops.debops_legacy`: clean up legacy files, directories, APT
+    packages or :command:`dpkg-divert` diversions created by DebOps but no
+    longer used. This role needs to be executed manually, it's not included in
+    the main playbook.
+
+  - :ref:`debops.python`: manage Python environment, with support for multiple
+    Python versions used at the same time. The role is included in the
+    ``common.yml`` playbook.
+
+- [debops.users] Selected UNIX accounts can now be configured to linger when
+  not logged in via the ``item.linger`` parameter. This allows these accounts
+  to maintain long-running services when not logged in via their own private
+  :command:`systemd` instances.
+
+- [debops.sudo] You can now manage configuration files located in the
+  :file:`/etc/sudoers.d/` directory using :ref:`sudo__*_sudoers <sudo__ref_sudoers>`
+  inventory variables, with multiple level of conditional options.
+
+- [debops.ntp] The OpenNTPD service will now properly integrate the
+  :command:`ifupdown` hook script with :command:`systemd`. During boot, NTP
+  daemon will be started once network interfaces are configured and will not
+  restart multiple times on each network interface change.
+
+Changed
+~~~~~~~
+
+- The :command:`editor` alternative symlink configuration has been moved from
+  the ``debops.console`` role to the :ref:`debops.apt_install` role which also
+  installs :command:`vim` by default.
+
+- The configuration of automatic removal of APT packages installed via
+  ``Recommends:`` or ``Suggests:`` dependencies has been moved from the
+  :ref:`debops.apt` role to the :ref:`debops.apt_mark` role which more closely
+  reflects its intended purpose. Variable names and their default values
+  changed; see the :ref:`upgrade_notes` for more details.
+
+- [debops.owncloud] Support Nextcloud 13 and partially ownCloud 10. Nextcloud
+  11 and ownCloud 9.1 are EOL, you should update. The role can help you with
+  the update to ensure that everything works smoothly with the new versions.
+  Currently, the role can not do the update for you.
+
+- [debops.sshd] The role will now check the :ref:`debops.system_groups` Ansible
+  local facts to define what UNIX groups are allowed to connect to the host via
+  the SSH service.
+
+- [debops.nodejs] The NPM version installed by the role from GitHub is changed
+  from ``v5.4.2`` to ``latest`` which seems to be an equivalent of a stable
+  branch.
+
+- Some of the existing DebOps Policies and Guidelines have been reorganized and
+  the concept of DebOps Enhancement Proposals (DEPs) is introduced, inspired by
+  the `Python Enhancement Proposals`__.
+
+.. __: https://www.python.org/dev/peps/pep-0001/
+
+- [debops.ifupdown] The :ref:`debops.kmod` role is added as a dependency. The
+  :ref:`debops.ifupdown` role will generate :command:`modprobe` configuration
+  based on the type of configured network interfaces (bridges, VLANs, bonding)
+  and the kernel modules will be automatically loaded if missing.
+
+Removed
+~~~~~~~
+
+- [debops.apt_install], [debops.auth]: don't install the ``sudo`` package by
+  default, this is now done via a separate :ref:`debops.sudo` role to easily
+  support switching to the ``sudo-ldap`` APT package.
+
+- [debops.console] Remove support for copying custom files from the role. This
+  functionality is covered better by the :ref:`debops.resources` role.
+
+- [debops.console] Remove support for managing entries in the
+  :file:`/etc/hosts` database. This is now covered by the :ref:`debops.netbase`
+  Ansible role.
+
+- [debops.auth] Remove configuration of UNIX system groups and accounts in the
+  ``admins`` UNIX group. This is now done by the :ref:`debops.system_groups`
+  Ansible role.
+
+- [debops.bootstrap] The :command:`sudo` configuration has been removed from
+  the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook now includes
+  the :ref:`debops.sudo` role which configures :command:`sudo` service.
+
+- [debops.bootstrap] The UNIX system group management has been removed from the
+  role, the ``bootstrap.yml`` playbook now uses the :ref:`debops.system_groups`
+  role to create the UNIX groups used by DebOps during bootstrapping.
+
+- [debops.bootstrap] Remove management of Python packages from the role. The
+  ``bootstrap.yml`` playbook uses the :ref:`debops.python` role to configure
+  Python support on the host.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------

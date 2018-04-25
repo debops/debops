@@ -1,0 +1,113 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.netbase default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# General configuration, APT packages [[[
+# ---------------------------------------
+
+# .. envvar:: netbase__enabled [[[
+#
+# Enable or disable support for local host and network database management.
+netbase__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: netbase__base_packages [[[
+#
+# List of base APT packages to linstall for netbase support.
+netbase__base_packages: [ 'netbase' ]
+
+                                                                   # ]]]
+# .. envvar:: netbase__packages [[[
+#
+# List of additional APT packages to install for netbase support.
+netbase__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Host database in :file:`/etc/hosts` [[[
+# ---------------------------------------
+
+# These variables define what host entries should be present in the
+# :file:`/etc/hosts` database. Each dictionary key is an IP address and value
+# should be a string or a YAML list of FQDN addresses or hostnames. Example:
+#
+# .. code-block:: yaml
+#
+#    netbase__hosts:
+#      '192.0.2.1': [ 'router.example.org', 'router' ]
+#      '192.0.2.2': 'db.example.org'
+#
+# Entries with empty values will be removed from the database.
+# See the :man:`hosts(5)` manual page for more details.
+
+# .. envvar:: netbase__hosts [[[
+#
+# YAML dictionary of host entries which should be present on all hosts in the
+# Ansible inventory.
+#
+# Since the host database is supposed to be the same across all hosts, you
+# should most likely stick to using this variable and define it for the ``all``
+# inventory group.
+netbase__hosts: {}
+
+                                                                   # ]]]
+# .. envvar:: netbase__group_hosts [[[
+#
+# YAML dictionary of host entries which should be present on hosts in
+# a specific Ansible inventory group.
+netbase__group_hosts: {}
+
+                                                                   # ]]]
+# .. envvar:: netbase__host_hosts [[[
+#
+# YAML dictionary of host entries which should be present on specific hosts in
+# the Ansible inventory.
+netbase__host_hosts: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# Network database in :file:`/etc/networks` [[[
+# ---------------------------------------------
+
+# These variables define what network entries should be present in the
+# :file:`/etc/networks` database. Each dictionary key is a network name and
+# value should be a string or a YAML list of a class A, B or C network address
+# and optional aliases. Example:
+#
+# .. code-block:: yaml
+#
+#    netbase__networks:
+#      'net.example.org': '192.0.2.0'
+#
+# Entries with empty values will be removed from the database.
+# See the :man:`networks(5)` manual page for more details.
+
+# .. envvar:: netbase__networks [[[
+#
+# YAML dictionary of network entries which should be present on all hosts in
+# the Ansible inventory.
+#
+# Since the network database is supposed to be the same across all hosts, you
+# should most likely stick to using this variable and define it for the ``all``
+# inventory group.
+netbase__networks: {}
+
+                                                                   # ]]]
+# .. envvar:: netbase__group_networks [[[
+#
+# YAML dictionary of network entries which should be present on hosts in
+# a specific Ansible inventory group.
+netbase__group_networks: {}
+
+                                                                   # ]]]
+# .. envvar:: netbase__host_networks [[[
+#
+# YAML dictionary of network entries which should be present on specific hosts
+# in the Ansible inventory.
+netbase__host_networks: {}
+                                                                   # ]]]
+                                                                   # ]]]

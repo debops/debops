@@ -119,6 +119,12 @@ General account parameters
 ``non_unique``
   Optional, boolean. If ``True``, allows setting the UID to a non-unique value.
 
+``linger``
+  Optional, boolean. If ``True``, the UNIX account will be allowed to linger
+  when not logged in and manage private services via it's own
+  :command:`systemd` user instance. If ``False``, the linger option will be
+  disabled.
+
 Parameters related to account state
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
