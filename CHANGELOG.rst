@@ -50,6 +50,11 @@ Added
   :file:`/etc/sudoers.d/` directory using :ref:`sudo__*_sudoers <sudo__ref_sudoers>`
   inventory variables, with multiple level of conditional options.
 
+- [debops.ntp] The OpenNTPD service will now properly integrate the
+  :command:`ifupdown` hook script with :command:`systemd`. During boot, NTP
+  daemon will be started once network interfaces are configured and will not
+  restart multiple times on each network interface change.
+
 Changed
 ~~~~~~~
 
