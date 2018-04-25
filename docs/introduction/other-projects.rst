@@ -119,6 +119,16 @@ and Red Hat Enterprise Linux OS platforms.
 .. __: https://linux-system-roles.github.io/
 
 
+`Simple Ansible roles`__
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a set of interdependent Ansible roles maintained by Robert de Bock.
+Roles work on multiple platforms, and are designed to integrate well using
+"soft" dependencies on the playbook level, similarly to DebOps.
+
+.. __: https://robertdebock.nl/
+
+
 `LEAP Platform`__
 ~~~~~~~~~~~~~~~~~
 
