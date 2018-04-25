@@ -1,17 +1,30 @@
 ---
 
-- name: Divert original /etc/openntpd/ntpd.conf
-  command: dpkg-divert --quiet --local --divert /etc/openntpd/ntpd.conf.dpkg-divert
-           --rename /etc/openntpd/ntpd.conf
+- name: Divert OpenNTPd configuration files
+  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert
+           --rename {{ item }}
   args:
-    creates: '/etc/openntpd/ntpd.conf.dpkg-divert'
+    creates: '{{ item }}.dpkg-divert'
+  with_items:
+    - '/etc/default/openntpd'
+    - '/etc/openntpd/ntpd.conf'
 
 - name: Configure OpenNTPd
   template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
+    src: '{{ item.name }}.j2'
+    dest: '/{{ item.name }}'
     owner: 'root'
     group: 'root'
-    mode: '0644'
-  with_items: [ 'etc/default/openntpd', 'etc/openntpd/ntpd.conf' ]
+    mode: '{{ item.mode | d("0644") }}'
+  with_items:
+
+    - name: 'etc/default/openntpd'
+
+    - name: 'etc/openntpd/ntpd.conf'
+
+    - name: 'etc/dpkg/dpkg.cfg.d/debops-ntp-openntpd'
+
+    - name: 'usr/local/lib/debops-ntp-openntpd-dpkg-cleanup'
+      mode: '0755'
+
   notify: [ 'Restart openntpd' ]
