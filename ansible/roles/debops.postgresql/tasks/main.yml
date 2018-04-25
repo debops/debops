@@ -217,7 +217,7 @@
                (item.role     | d(item.owner)),
                (item.password | d(lookup("password",
                                   secret + "/postgresql/"
-                                  + (item.server | d(postgresql__server if postgresql__server else ansible_fqdn)) + "/"
+                                  + (item.server | d(postgresql__password_hostname)) + "/"
                                   + (item.port | d(postgresql__port)) + "/credentials/"
                                   + item.name | d(item.role | d(item.owner))
                                   + "/password length=" + postgresql__password_length)
