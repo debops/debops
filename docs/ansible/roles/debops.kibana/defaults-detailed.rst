@@ -189,6 +189,12 @@ Each element of the list is a YAML dictionary with specific parameters:
   will be installed. If ``absent`` the plugin and its configuration will be
   removed.
 
+``state``
+  Optional. The system user used for plugin management. Defaults to :envvar:`kibana__user`.
+  Certain plugins like X-Pack generate files on installation which Kibana needs
+  to have write persmssions to.
+
+
 ``configuration`` or ``config``
   Optional. Custom configuration for a given plugin, in the format recognized
   by the main configuration template.

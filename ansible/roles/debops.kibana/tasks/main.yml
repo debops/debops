@@ -46,6 +46,8 @@
   args:
     chdir: '/usr/share/kibana'
   register: kibana__register_plugins
+  become: True
+  become_user: '{{ kibana__user }}'
   changed_when: False
   check_mode: False
 
@@ -54,6 +56,8 @@
   args:
     chdir: '/usr/share/kibana'
   notify: [ 'Restart kibana' ]
+  become: True
+  become_user: '{{ item.user | d(kibana__user) }}'
   with_flattened:
     - '{{ kibana__combined_plugins }}'
   when: (item.name|d() and item.state|d('present') != 'absent' and
@@ -64,6 +68,8 @@
   args:
     chdir: '/usr/share/kibana'
   notify: [ 'Restart kibana' ]
+  become: True
+  become_user: '{{ item.user | d(kibana__user) }}'
   with_flattened:
     - '{{ kibana__combined_plugins }}'
   when: (item.name|d() and item.state|d('present') == 'absent' and
