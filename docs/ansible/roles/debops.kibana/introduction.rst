@@ -1,7 +1,7 @@
 Introduction
 ============
 
-`Kibana <https://en.wikipedia.org/wiki/Kibana>`_ is a web-based dashboard which
+`Kibana <https://en.wikipedia.org/wiki/Kibana>`_ is a web interface which
 can be used to display and analyze data stored in an Elasticsearch cluster. It
 is a part of the Elastic Stack. The software is
 developed by `Elastic <https://elastic.co/>`_.

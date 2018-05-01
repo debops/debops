@@ -1,7 +1,7 @@
 Default variable details
 ========================
 
-some of ``debops.rsyslog`` default variables have more extensive configuration
+Some of ``debops.rsyslog`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
