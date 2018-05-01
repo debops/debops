@@ -52,7 +52,7 @@
   check_mode: False
 
 - name: Install Kibana plugins
-  shell: bin/kibana-plugin install {{ item.url | d(item.name) }}
+  command: bin/kibana-plugin install {{ item.url | d(item.name) }}
   args:
     chdir: '/usr/share/kibana'
   notify: [ 'Restart kibana' ]
@@ -64,7 +64,7 @@
          (item.name if ':' not in item.name else item.name.split(':')[1]) not in kibana__register_plugins.stdout_lines)
 
 - name: Remove Kibana plugins
-  shell: bin/kibana-plugin remove {{ item.name }}
+  command: bin/kibana-plugin remove {{ item.name }}
   args:
     chdir: '/usr/share/kibana'
   notify: [ 'Restart kibana' ]
