@@ -8,7 +8,7 @@ Getting started
 General role usage
 ------------------
 
-The role will configure an APT repository provided by the Elasticsearch BV.
+The role will configure an APT repository provided by the Elastic
 company to allow secure installation of various software packages developed by
 said company. The GPG key used by the repository is downloaded from a OpenPGP
 keyserver to ensure authenticity and verification by a third party.
@@ -61,7 +61,7 @@ to check against ``version_compare()`` Ansible filter:
                              else "0.0.0" }}'
 
 You can also use the ``ansible_local.elastic_co.packages`` fact to check if
-a given Elasticsearch BV. application is installed:
+a given Elastic application is installed:
 
 .. code-block:: yaml
 
@@ -77,7 +77,7 @@ a given Elasticsearch BV. application is installed:
 Heartbeat package name conflict
 -------------------------------
 
-The Elasticsearch BV. APT repositories provide the ``heartbeat`` package, which
+The Elastic APT repositories provide the ``heartbeat`` package, which
 installs the `Heartbeat <https://www.elastic.co/products/beats/heartbeat>`__
 uptime monitoring application.
 
@@ -85,11 +85,11 @@ The Debian Archive contains the `heartbeat <https://packages.debian.org/search?k
 package which provides the ``heartbeat`` service which is a part of the
 `Linux High-Availability Stack <http://www.linux-ha.org/wiki/Main_Page>`_.
 
-This creates a conflict in the APT package manager database. The Elasticsearch
-BV. developers `are aware of the issue <https://github.com/elastic/beats/issues/3765>`_
+This creates a conflict in the APT package manager database. The Elastic
+developers `are aware of the issue <https://github.com/elastic/beats/issues/3765>`_
 and are considering a number of options to resolve it. In the meantime,
 a proposed solution is to `use APT pinning to change APT preferences <https://github.com/elastic/beats/issues/3765#issuecomment-289924787>`_
-so that the ``heartbeat`` package from the Elasticsearch BV. APT repository is
+so that the ``heartbeat`` package from the Elastic APT repository is
 installed instead of the Debian Archive version (which is a completely
 different application).
 
@@ -101,7 +101,7 @@ uses the ``corosync`` service as the messaging layer as well.
 
 Due to the above facts the decision was made that the ``debops.elastic_co``
 role will configure the APT preferences of the hosts it's executed on to prefer
-the ``heartbeat`` package from the Elasticsearch BV. APT repositories, using
+the ``heartbeat`` package from the Elastic APT repositories, using
 APT preferences. The example Ansible playbook contains the necessary code which
 uses the :ref:`debops.apt_preferences` role to perform this task. In a case where you
 wish to not configure this override, you can disable it by setting the
@@ -112,7 +112,7 @@ affect the list of package versions included in the Ansible local facts.
 Example inventory
 -----------------
 
-To enable configuration of the Elasticsearch BV. APT repositories, you need to
+To enable configuration of the Elastic APT repositories, you need to
 add a host to the ``[debops_service_elastic_co]`` Ansible inventory group:
 
 .. code-block:: none
@@ -121,7 +121,7 @@ add a host to the ``[debops_service_elastic_co]`` Ansible inventory group:
     hostname
 
 The role will be automatically used by other Ansible roles that manage
-Elasticsearch BV. software, therefore the above step is not strictly necessary.
+Elastic software, therefore the above step is not strictly necessary.
 Refer to the documentation of these roles for more details.
 
 

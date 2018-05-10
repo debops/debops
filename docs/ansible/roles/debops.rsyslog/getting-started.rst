@@ -47,8 +47,8 @@ filename extensions at certain parts of the configuration:
 Quick start: log forwarding
 ---------------------------
 
-To enable log forwarding, you will want to configure a few variables different
-parts of Ansible inventory. The quick and dirty setup described here assumes
+To enable log forwarding, you will want to configure a few variables differently
+in your Ansible inventory. The quick and dirty setup described here assumes
 that you want to forward logs over UDP without any encryption, so it should
 only be used for testing if remote logs work. For more advanced configuration
 check the :ref:`rsyslog__forward` documentation.

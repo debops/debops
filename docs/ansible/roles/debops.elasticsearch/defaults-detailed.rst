@@ -25,9 +25,9 @@ defines two YAML formats recognized by Elasticsearch, hierarchical (YAML
 dictionary keys are indented), or flat (YAML dictionary keys are separated by
 dots). This role focuses only on the latter, flat format since it's used
 everywhere in the Elasticsearch documentation and seems to be the preferred
-method for majority of the configuration options.
+method for the majority of the configuration options.
 
-For quick reference, Elasticsearch configuration file contains options in the
+For quick reference, the Elasticsearch configuration file contains options in the
 following format:
 
 .. code-block:: yaml
@@ -38,7 +38,7 @@ following format:
    bootstrap.memory_lock: true
    discovery.zen.minimum_master_nodes: 3
 
-The ``elasticsearch__*_configuration`` variables are a YAML lists of
+The ``elasticsearch__*_configuration`` variables are YAML lists of
 dictionaries. Each YAML dictionary defines an option, or redefines a previously
 defined option (the variables are flattened and then processed in order).
 
@@ -63,7 +63,7 @@ The extended YAML dictionary format is detected if a YAML dictionary contains
 a ``name`` key. The dictionaries support specific parameters:
 
 ``name``
-  String. The ame of the Elasticsearch option.
+  String. The name of the Elasticsearch option.
 
 ``value``
   The value of the Elasticsearch option. Can be a string, a number, a boolean
@@ -124,7 +124,7 @@ a ``name`` key. The dictionaries support specific parameters:
            node.data: true
            node.ingest: true
 
-You should make sure that the identation of the YAML parameters is consistent
+You should make sure that the indentation of the YAML parameters is consistent
 through the configuration file.
 
 

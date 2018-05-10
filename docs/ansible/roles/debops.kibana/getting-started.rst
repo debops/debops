@@ -38,7 +38,7 @@ the Elasticsearch cluster.
 You can install additional plugins that provide encrypted connections,
 authentication, authorization and access control:
 
-- `X-Pack <https://www.elastic.co/products/x-pack>`_, an Elasticsearch BV
+- `X-Pack <https://www.elastic.co/products/x-pack>`_, an Elastic
   commercial plugin with free trial period. Supports encryption,
   authentication, access control, integrates with Elasticsearch and Logstash.
   Since the plugin is developed by the same team, its releases are in parallel

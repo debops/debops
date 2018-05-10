@@ -323,7 +323,7 @@
 
 {%     elif item.auth_basic|d() | bool %}
         auth_basic "{{ item.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
-        auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name) }};
+        auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name|d()) }};
 
 {%     endif %}
 {%     if item.userdir|d()|bool %}
