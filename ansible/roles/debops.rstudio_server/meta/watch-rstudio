@@ -1,0 +1,11 @@
+# The tag v1.2.679 seems to be for something else than the Open Source version
+# of RStudio Server which is relevant to the role. The uscan command wants to
+# pick the higher version, so let's trick it into tracking v1.1.x series instead.
+
+# Role: debops.rstudio_server
+# Package: rstudio
+# Version: 1.1.383
+
+version=4
+opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/rstudio-$1\.tar\.gz/ \
+  https://github.com/rstudio/rstudio/tags .*/v?(1\.1.*\S+)\.tar\.gz

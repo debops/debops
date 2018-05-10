@@ -16,6 +16,10 @@ check: fail-if-git-dirty
 clean:          ## Clean up project directory
 clean: clean-tests clean-sdist clean-wheel
 
+.PHONY: versions
+versions:       ## Check versions of upstream software
+versions: check-versions
+
 .PHONY: docker
 docker:         ## Check Docker image build
 docker: test-docker-build
@@ -109,6 +113,10 @@ test-docker-build:
 .PHONY: clean-tests
 clean-tests:
 	@rm -vrf .coverage docs/_build/* docs/ansible/roles/*/defaults.rst
+
+.PHONY: check-versions
+check-versions:
+	@./lib/tests/check-watch
 
 .PHONY: test-docs
 test-docs:
