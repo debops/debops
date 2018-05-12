@@ -92,6 +92,16 @@ Changed
   based on the type of configured network interfaces (bridges, VLANs, bonding)
   and the kernel modules will be automatically loaded if missing.
 
+- [debops.nodejs] Recent versions of NPM `require NodeJS 6.0.0+`__ and don't
+  work with other releases. Because of that the newest NPM release is not
+  installable on hosts that use NodeJS packages from older OS releases.
+
+  .. __: https://github.com/npm/npm/issues/20425
+
+  The 'debops.nodejs' role will install NPM v5.10.0 version in this case to
+  allow NPM to work correctly - on Debian Jessie, Stretch and Ubuntu Xenial.
+  Otherwise, a NPM from the ``latest`` branch will be installed, as before.
+
 Removed
 ~~~~~~~
 

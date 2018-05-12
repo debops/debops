@@ -100,9 +100,30 @@ nodejs__npm_git_repo: 'https://github.com/npm/npm'
                                                                    # ]]]
 # .. envvar:: nodejs__npm_git_version [[[
 #
-# The default NPM version to checkout. This is the current stable release at
-# the install time.
-nodejs__npm_git_version: 'latest'
+# The branch or tag to check out from the NPM :command:`git` repository. By
+# default the fixed releases will be chedked out if found, otherwise latest NPM
+# release will be installed.
+nodejs__npm_git_version: '{{ nodejs__npm_git_version_map[ansible_distribution_release]
+                             | d(nodejs__npm_git_release) }}'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__npm_git_version_map [[[
+#
+# YAML dictionary which maps fixed NPM releases to specific OS releases.
+# NPM v6.0.0+ doesn't work with NodeJS 4.x anymore, therefore on OS releases
+# with older NodeJS it is fixed to the last working release.
+nodejs__npm_git_version_map:
+  'jessie':  'v5.10.0'
+  'stretch': 'v5.10.0'
+  'xenial':  'v5.10.0'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__npm_git_release [[[
+#
+# The default NPM rolling release branch which will install the latest version
+# released by upstream. This version might be upgraded automatically by Ansible
+# runs.
+nodejs__npm_git_release: 'latest'
 
                                                                    # ]]]
 # .. envvar:: nodejs__npm_git_dest [[[
