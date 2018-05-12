@@ -102,6 +102,13 @@ Changed
   allow NPM to work correctly - on Debian Jessie, Stretch and Ubuntu Xenial.
   Otherwise, a NPM from the ``latest`` branch will be installed, as before.
 
+- [debops.nodejs] Instead of NodeJS 6.x release, the role will now install
+  NodeJS 8.x release upstream APT packages by default. This is due to the
+  NodeJS 6.x release `switching to a Maintenance LTS mode`__. NodeJS 8.x will
+  be supported as a LTS release until April 2019.
+
+  .. __: https://github.com/nodejs/Release
+
 Removed
 ~~~~~~~
 
