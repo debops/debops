@@ -14,37 +14,33 @@
 # .. envvar:: nodejs__upstream [[[
 #
 # Enable or disable support for NodeSource APT repositories. By default the
-# OS-distributed package will be installed.
-nodejs__upstream: '{{ True
+# upstream package will be installed due to no security support in Debian
+# Stable release.
+nodejs__upstream: '{{ ansible_local.nodejs.upstream|bool
                       if (ansible_local|d() and ansible_local.nodejs|d() and
-                          ansible_local.nodejs.upstream is defined and
-                          ansible_local.nodejs.upstream|bool)
-                      else False }}'
+                          ansible_local.nodejs.upstream is defined)
+                      else True }}'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_version [[[
+# .. envvar:: nodejs__upstream_release [[[
 #
-# Specify the NodeSource APT repository to configure. Available versions:
-#
-# - ``node_0.10``
-#
-# - ``node_0.12``
-#
-# - ``node_4.x``
-#
-# - ``node_5.x``
+# Specify the NodeJS release to install from the NodeSource APT repository.
+# See https://github.com/nodejs/Release for the current release and maintenance
+# shedule. Available releases:
 #
 # - ``node_6.x``
 #
-# - ``node_7.x``
+# - ``node_8.x``
+#
+# - ``node_10.x``
 #
 # - ``iojs_1.x``
 #
 # - ``iojs_2.x``
 #
-# If you switch to the ``iojs`` version, you need to update the list of
+# If you switch to the ``iojs`` release, you need to update the list of
 # installed APT packages manually.
-nodejs__upstream_version: 'node_6.x'
+nodejs__upstream_release: 'node_8.x'
 
                                                                    # ]]]
 # .. envvar:: nodejs__upstream_key_id [[[
@@ -56,7 +52,7 @@ nodejs__upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
 # .. envvar:: nodejs__upstream_repository [[[
 #
 # URL of the NodeSource APT repository in ``sources.list`` format.
-nodejs__upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__upstream_version }} {{ ansible_distribution_release }} main'
+nodejs__upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__upstream_release }} {{ ansible_distribution_release }} main'
                                                                    # ]]]
                                                                    # ]]]
 # NPM installation via git [[[
@@ -100,9 +96,30 @@ nodejs__npm_git_repo: 'https://github.com/npm/npm'
                                                                    # ]]]
 # .. envvar:: nodejs__npm_git_version [[[
 #
-# The default NPM version to checkout. This is the current stable release at
-# the install time.
-nodejs__npm_git_version: 'latest'
+# The branch or tag to check out from the NPM :command:`git` repository. By
+# default the fixed releases will be chedked out if found, otherwise latest NPM
+# release will be installed.
+nodejs__npm_git_version: '{{ nodejs__npm_git_version_map[ansible_distribution_release]
+                             | d(nodejs__npm_git_release) }}'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__npm_git_version_map [[[
+#
+# YAML dictionary which maps fixed NPM releases to specific OS releases.
+# NPM v6.0.0+ doesn't work with NodeJS 4.x anymore, therefore on OS releases
+# with older NodeJS it is fixed to the last working release.
+nodejs__npm_git_version_map:
+  'jessie':  'v5.10.0'
+  'stretch': 'v5.10.0'
+  'xenial':  'v5.10.0'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__npm_git_release [[[
+#
+# The default NPM rolling release branch which will install the latest version
+# released by upstream. This version might be upgraded automatically by Ansible
+# runs.
+nodejs__npm_git_release: 'latest'
 
                                                                    # ]]]
 # .. envvar:: nodejs__npm_git_dest [[[
@@ -250,7 +267,7 @@ nodejs__npm_production_mode: True
 # Configuration for the :ref:`debops.apt_preferences` Ansible role.
 nodejs__apt_preferences__dependent_list:
 
-  - packages: [ 'nodejs', 'nodejs-*', 'node-*', 'libssl1.0.0' ]
+  - packages: [ 'nodejs', 'nodejs-*', 'node-*', 'libssl1.0.0', 'libssl-dev' ]
     backports: [ 'jessie' ]
     reason: 'Unsupported NodeJS version, parity with next Debian release'
     by_role: 'debops_nodejs'

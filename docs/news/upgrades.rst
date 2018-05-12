@@ -88,6 +88,9 @@ Inventory variable changes
   :ref:`debops.apt_install` role. Use the :ref:`debops.python` Ansible role to
   install Python packages.
 
+- The ``nodejs__upstream_version`` variable has been renamed to
+  :envvar:`nodejs__upstream_release` to better represent the contents, which is
+  not a specific NodeJS version, but a specific major release.
 
 v0.7.2 (2018-03-28)
 -------------------

@@ -92,6 +92,34 @@ Changed
   based on the type of configured network interfaces (bridges, VLANs, bonding)
   and the kernel modules will be automatically loaded if missing.
 
+- [debops.nodejs] Recent versions of NPM `require NodeJS 6.0.0+`__ and don't
+  work with other releases. Because of that the newest NPM release is not
+  installable on hosts that use NodeJS packages from older OS releases.
+
+  .. __: https://github.com/npm/npm/issues/20425
+
+  The 'debops.nodejs' role will install NPM v5.10.0 version in this case to
+  allow NPM to work correctly - on Debian Jessie, Stretch and Ubuntu Xenial.
+  Otherwise, a NPM from the ``latest`` branch will be installed, as before.
+
+- [debops.nodejs] Instead of NodeJS 6.x release, the role will now install
+  NodeJS 8.x release upstream APT packages by default. This is due to the
+  NodeJS 6.x release `switching to a Maintenance LTS mode`__. NodeJS 8.x will
+  be supported as a LTS release until April 2019.
+
+  .. __: https://github.com/nodejs/Release
+
+- [debops.nodejs] The role will install upstrean NodeSource APT packages by
+  default. This is due to `no security support in Debian Stable`__, therefore
+  an upstream packages should be considered more secure. The upstream NodeJS
+  packages include a compatible NPM release, therefore it won't be separately
+  installed from GitHub.
+
+  .. __: https://www.debian.org/releases/stretch/amd64/release-notes/ch-information.en.html#libv8
+
+  The existing installations shouldn't be affected, since the role will select
+  OS/upstream package versions based on existing Ansible local facts.
+
 Removed
 ~~~~~~~
 
