@@ -14,12 +14,12 @@
 # .. envvar:: nodejs__upstream [[[
 #
 # Enable or disable support for NodeSource APT repositories. By default the
-# OS-distributed package will be installed.
-nodejs__upstream: '{{ True
+# upstream package will be installed due to no security support in Debian
+# Stable release.
+nodejs__upstream: '{{ ansible_local.nodejs.upstream|bool
                       if (ansible_local|d() and ansible_local.nodejs|d() and
-                          ansible_local.nodejs.upstream is defined and
-                          ansible_local.nodejs.upstream|bool)
-                      else False }}'
+                          ansible_local.nodejs.upstream is defined)
+                      else True }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__upstream_release [[[

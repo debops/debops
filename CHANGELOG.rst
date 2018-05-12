@@ -109,6 +109,17 @@ Changed
 
   .. __: https://github.com/nodejs/Release
 
+- [debops.nodejs] The role will install upstrean NodeSource APT packages by
+  default. This is due to `no security support in Debian Stable`__, therefore
+  an upstream packages should be considered more secure. The upstream NodeJS
+  packages include a compatible NPM release, therefore it won't be separately
+  installed from GitHub.
+
+  .. __: https://www.debian.org/releases/stretch/amd64/release-notes/ch-information.en.html#libv8
+
+  The existing installations shouldn't be affected, since the role will select
+  OS/upstream package versions based on existing Ansible local facts.
+
 Removed
 ~~~~~~~
 
