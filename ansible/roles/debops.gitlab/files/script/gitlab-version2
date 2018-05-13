@@ -1,0 +1,33 @@
+#!/usr/bin/python2
+
+from __future__ import print_function
+from json import dumps
+import os
+import sys
+
+
+# Get path to the checked out source code
+gitlab_src = sys.argv[1]
+
+gitlab_files = [
+    "GITALY_SERVER_VERSION",
+    "GITLAB_PAGES_VERSION",
+    "GITLAB_SHELL_VERSION",
+    "GITLAB_WORKHORSE_VERSION",
+    "VERSION"
+]
+
+output = {}
+
+for element in gitlab_files:
+    file_path = os.path.join(gitlab_src, element)
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        try:
+            with open(file_path, 'r') as fh:
+                for line in fh:
+                    line = line.strip()
+                    output.update({element.lower(): 'v' + line})
+        except Exception:
+            pass
+
+print(dumps(output, sort_keys=True, indent=4))

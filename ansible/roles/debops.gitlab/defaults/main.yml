@@ -11,17 +11,32 @@
 # GitLab version configuration [[[
 # --------------------------------
 
+# These variables define what GitLab release branch will be used to install
+# GitLab. The :envvar:`gitlab_version` variable is used to enable/disable
+# specific features dependent on the GitLab version, but does not correspond to
+# the actual specific version number.
+#
+# Both of these variables should be kept in sync.
+
+# .. envvar:: gitlab__release [[[
+#
+# Specify the GitLab release to install or manage. The role checks what release
+# is currently installed and can perform automatic upgrade if the installed
+# release is older than the specified. Downgrades are not supported.
+gitlab__release: '{{ "10-3-stable"
+                     if ((ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.distribution_release|d() and
+                          ansible_local.core.distribution_release == "stretch") or
+                         ansible_distribution_release == "stretch")
+                     else "8-17-stable" }}'
+
+                                                                   # ]]]
 # .. envvar:: gitlab_version [[[
 #
 # Specify the GitLab version to install or manage. The role checks what version
 # is currently installed and can perform automatic upgrade if the installed
 # version is older than the specified. Downgrades are not supported.
-gitlab_version: '{{ "10.3"
-                    if ((ansible_local|d() and ansible_local.core|d() and
-                         ansible_local.core.distribution_release|d() and
-                         ansible_local.core.distribution_release == "stretch") or
-                        ansible_distribution_release == "stretch")
-                    else "8.17" }}'
+gitlab_version: '{{ gitlab__release | replace("-stable","") | replace("-",".") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application features [[[
@@ -523,146 +538,6 @@ gitlab_shell_ssh_port: '22'
 #
 # Enable or disable ACL configuration for the webserver
 gitlab_support_filesystem_acl: True
-                                                                   # ]]]
-                                                                   # ]]]
-# GitLab source code version [[[
-# ------------------------------
-
-# .. envvar:: gitlab_version_map [[[
-#
-# This YAML dictionary is used to map the selected GitLab version to the
-# respecive branches and/or tags in the :command:`git` repositories of various
-# GitLab components.
-gitlab_version_map:
-
-  '8.5':
-    shell: 'v2.6.10'
-    ce:    '8-5-stable'
-    gitlab_workhorse: '0.6.4'
-
-  '8.6':
-    shell: 'v2.6.12'
-    ce:    '8-6-stable'
-    gitlab_workhorse: 'v0.7.1'
-
-  '8.7':
-    shell: 'v2.7.2'
-    ce:    '8-7-stable'
-    gitlab_workhorse: 'v0.7.1'
-
-  '8.8':
-    shell: 'v2.7.2'
-    ce:    '8-8-stable'
-    gitlab_workhorse: 'v0.7.1'
-
-  '8.9':
-    shell: 'v3.0.0'
-    ce:    '8-9-stable'
-    gitlab_workhorse: 'v0.7.5'
-
-  '8.10':
-    shell: 'v3.3.2'
-    ce:    '8-10-stable'
-    gitlab_workhorse: 'v0.7.8'
-
-  '8.11':
-    shell: 'v3.4.0'
-    ce:    '8-11-stable'
-    gitlab_workhorse: 'v0.7.11'
-
-  '8.12':
-    shell: 'v3.6.3'
-    ce:    '8-12-stable'
-    gitlab_workhorse: 'v0.8.5'
-
-  '8.13':
-    shell: 'v3.6.6'
-    ce:    '8-13-stable'
-    gitlab_workhorse: 'v0.8.5'
-
-  '8.14':
-    shell: 'v4.0.3'
-    ce:    '8-14-stable'
-    gitlab_workhorse: 'v1.0.1'
-
-  '8.15':
-    shell: 'v4.1.1'
-    ce:    '8-15-stable'
-    gitlab_workhorse: 'v1.3.0'
-
-  '8.16':
-    shell: 'v4.1.1'
-    ce:    '8-16-stable'
-    gitlab_workhorse: 'v1.3.0'
-
-  '8.17':
-    shell: 'v4.1.1'
-    ce:    '8-17-stable'
-    gitlab_workhorse: 'v1.3.0'
-    pages: 'v0.3.2'
-
-  '9.0':
-    shell: 'v5.0.0'
-    ce:    '9-0-stable'
-    gitlab_workhorse: 'v1.4.2'
-    pages: 'v0.4.0'
-    gitaly: 'v0.3.0'
-
-  '9.1':
-    shell: 'v5.0.2'
-    ce:    '9-1-stable'
-    gitlab_workhorse: 'v1.4.3'
-    pages: 'v0.4.1'
-    gitaly: 'v0.6.0'
-
-  '9.2':
-    shell: 'v5.0.4'
-    ce:    '9-2-stable'
-    gitlab_workhorse: 'v2.0.0'
-    pages: 'v0.4.2'
-    gitaly: 'v0.10.0'
-
-  '9.3':
-    shell: 'v5.1.1'
-    ce:    '9-3-stable'
-    gitlab_workhorse: 'v2.1.1'
-    pages: 'v0.4.3'
-    gitaly: 'v0.11.2'
-
-  '9.4':
-    shell: 'v5.3.1'
-    ce:    '9-4-stable'
-    gitlab_workhorse: 'v2.3.0'
-    pages: 'v0.5.0'
-    gitaly: 'v0.21.2'
-
-  '10.0':
-    shell: 'v5.9.0'
-    ce:    '10-0-stable'
-    gitlab_workhorse: 'v3.1.0'
-    pages: 'v0.5.1'
-    gitaly: 'v0.40.0'
-
-  '10.1':
-    shell: 'v5.9.3'
-    ce:    '10-1-stable'
-    gitlab_workhorse: 'v3.2.0'
-    pages: 'v0.6.0'
-    gitaly: 'v0.43.1'
-
-  '10.2':
-    shell: 'v5.10.0'
-    ce:    '10-2-stable'
-    gitlab_workhorse: 'v3.3.1'
-    pages: 'v0.6.0'
-    gitaly: 'v0.52.1'
-
-  '10.3':
-    shell: 'v5.10.2'
-    ce:    '10-3-stable'
-    gitlab_workhorse: 'v3.3.1'
-    pages: 'v0.6.0'
-    gitaly: 'v0.59.2'
                                                                    # ]]]
                                                                    # ]]]
 # gitlab-shell source code [[[

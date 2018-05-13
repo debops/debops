@@ -120,6 +120,11 @@ Changed
   The existing installations shouldn't be affected, since the role will select
   OS/upstream package versions based on existing Ansible local facts.
 
+- [debops.gitlab] Redesign the GitLab version management to read the versions
+  of various components from the GitLab repository files instead of managing
+  them manually in a YAML dictionary. The new :envvar:`gitlab__release`
+  variable is used to specify desired GitLab version to install/manage.
+
 Removed
 ~~~~~~~
 
