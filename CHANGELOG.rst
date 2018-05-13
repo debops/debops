@@ -125,6 +125,10 @@ Changed
   them manually in a YAML dictionary. The new :envvar:`gitlab__release`
   variable is used to specify desired GitLab version to install/manage.
 
+- [debops.gitlab] The :command:`gitaly` service will be installed using the
+  ``git`` UNIX account instead of ``root``. Existing installations might
+  require additional manual cleanup; see the :ref:`upgrade_notes` for details.
+
 Removed
 ~~~~~~~
 
