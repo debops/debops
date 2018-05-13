@@ -120,6 +120,17 @@ Changed
   The existing installations shouldn't be affected, since the role will select
   OS/upstream package versions based on existing Ansible local facts.
 
+- [debops.gitlab] Redesign the GitLab version management to read the versions
+  of various components from the GitLab repository files instead of managing
+  them manually in a YAML dictionary. The new :envvar:`gitlab__release`
+  variable is used to specify desired GitLab version to install/manage.
+
+- [debops.gitlab] The :command:`gitaly` service will be installed using the
+  ``git`` UNIX account instead of ``root``. Existing installations might
+  require additional manual cleanup; see the :ref:`upgrade_notes` for details.
+
+- [debops.gitlab] The role now supports installation of GitLab 10.7.
+
 Removed
 ~~~~~~~
 

@@ -72,10 +72,10 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitaly_target_tag
-  changed_when: gitlab_register_gitaly_target_tag.stdout != gitlab_version_map[gitlab_version].gitaly
+  changed_when: gitlab_register_gitaly_target_tag.stdout != gitlab__fact_version.gitaly
 
 - name: Checkout gitaly
-  command: git checkout -f {{ gitlab_version_map[gitlab_version].gitaly }}
+  command: git checkout -f {{ gitlab__fact_version.gitaly }}
   environment:
     GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
   args:
@@ -83,7 +83,7 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab__gitaly_checkout
-  when: (gitlab_version_map[gitlab_version].gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
+  when: (gitlab__fact_version.gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
 
 - name: Stop gitaly service for an upgrade
   service:
@@ -97,6 +97,8 @@
 - name: Setup gitaly
   make:
     chdir: '{{ gitlab__gitaly_checkout }}'
+  become: True
+  become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab__gitaly_checkout is changed
 
 - name: Start gitaly service after an upgrade

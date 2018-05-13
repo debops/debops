@@ -20,6 +20,24 @@ UNIX account and group configuration
   variable names and their values changed, see the :ref:`debops.system_groups`
   role documentation for details.
 
+GitLab :command:`gitaly` installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.gitlab` role will now build and install the
+  :command:`gitaly` service using unprivileged ``git`` UNIX account instead of
+  ``root``. To perform the update correctly, you might need to remove directories
+
+  .. code-block:: console
+
+     /usr/local/src/gitlab/gitlab.com/gitaly.git/
+     /var/local/git/gitaly/
+
+  Some files in these directories are owned by ``root`` and that can prevent
+  the correct build of the Go binaries. You might also want to stop the
+  ``gitlab-gitaly.service`` service and start it afterwards.
+
+  The above steps shouldn't impact new GitLab installations.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
