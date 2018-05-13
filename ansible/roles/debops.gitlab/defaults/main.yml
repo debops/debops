@@ -23,12 +23,14 @@
 # Specify the GitLab release to install or manage. The role checks what release
 # is currently installed and can perform automatic upgrade if the installed
 # release is older than the specified. Downgrades are not supported.
-gitlab__release: '{{ "10-3-stable"
+gitlab__release: '{{ "8-17-stable"
                      if ((ansible_local|d() and ansible_local.core|d() and
                           ansible_local.core.distribution_release|d() and
-                          ansible_local.core.distribution_release == "stretch") or
-                         ansible_distribution_release == "stretch")
-                     else "8-17-stable" }}'
+                          ansible_local.core.distribution_release in
+                          [ "wheezy", "jessie", "trusty" ]) or
+                         ansible_distribution_release in
+                         [ "wheezy", "jessie", "trusty" ])
+                     else "10-3-stable" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_version [[[
