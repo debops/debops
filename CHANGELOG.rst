@@ -129,6 +129,8 @@ Changed
   ``git`` UNIX account instead of ``root``. Existing installations might
   require additional manual cleanup; see the :ref:`upgrade_notes` for details.
 
+- [debops.gitlab] The role now supports installation of GitLab 10.7.
+
 Removed
 ~~~~~~~
 
