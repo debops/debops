@@ -8,56 +8,6 @@
 #    :local:
 
 
-# LXC packages and installation [[[
-# ---------------------------------
-
-# .. envvar:: lxc_kernel_package [[[
-#
-# Name of Linux kernel package to install from Debian Backports on Debian
-# Wheezy.
-lxc_kernel_package: 'linux-image-{{ (ansible_kernel | split("-") | last) | d("amd64") }}'
-
-                                                                   # ]]]
-# .. envvar:: lxc_kernel_mail_to [[[
-#
-# List of recipients to which a mail will be send in case a reboot is required
-# after a kernel upgrade.
-lxc_kernel_mail_to: [ 'root@{{ ansible_domain }}' ]
-
-                                                                   # ]]]
-# .. envvar:: lxc_kernel_mail_subject [[[
-#
-# Subject of the Email to be send in case a reboot is required to boot into a
-# updated kernel version.
-lxc_kernel_mail_subject: 'Reboot required by LXC on {{ ansible_fqdn }}'
-
-                                                                   # ]]]
-# .. envvar:: lxc_kernel_mail_body [[[
-#
-# Body of the Email to be send in case a reboot is required to boot into a
-# updated kernel version.
-lxc_kernel_mail_body: |
-  Ansible has updated the Linux kernel to support LXC on host {{ ansible_fqdn }}.
-  You should check the status of the host and reboot it when convenient.
-
-  Current kernel: {{ ansible_kernel }}
-
-  Output of install command:
-  ---------------------------------------------------------------
-  {% for line in lxc_register_kernel_upgrade.stdout_lines %}
-  {{ line }}
-  {% endfor %}
-  ---------------------------------------------------------------
-
-  Output of lxc-ls -f:
-  ---------------------------------------------------------------
-  {% for line in lxc_list_status.stdout_lines %}
-  {{ line }}
-  {% endfor %}
-  ---------------------------------------------------------------
-
-# ]]]
-# ]]]
 # Configure LXC environment [[[
 # -----------------------------
 
@@ -432,19 +382,7 @@ lxc_containers: []
 # .. envvar:: lxc__apt_preferences__dependent_list [[[
 #
 # Configuration for the :ref:`debops.apt_preferences` role.
-lxc__apt_preferences__dependent_list:
-
-  - package: '{{ lxc_kernel_package }}'
-    backports: [ 'wheezy' ]
-    reason: 'Bug in LXC + iptables recent module - https://bugzilla.netfilter.org/show_bug.cgi?id=759'
-    by_role: 'debops.lxc'
-    state: 'absent'
-
-  - package: 'initramfs-tools'
-    backports: [ 'wheezy' ]
-    reason: 'Requred by newer Linux kernel installed by debops.lxc'
-    by_role: 'debops.lxc'
-    state: 'absent'
+lxc__apt_preferences__dependent_list: []
 
                                                                    # ]]]
 # .. envvar:: lxc__ferm__forward [[[

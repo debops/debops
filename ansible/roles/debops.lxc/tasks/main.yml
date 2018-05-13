@@ -20,11 +20,6 @@
   when: (lxc_register_package_version is defined and
          lxc_register_package_version.stdout is version_compare('1.0','>='))
 
-# Install backported Linux kernel on Debian Wheezy
-- include: install_kernel_from_backports.yml
-  when: (ansible_distribution == 'Debian' and
-         ansible_distribution_release == 'wheezy')
-
 # Manage LXC containers via Ansible when correct kernel is installed
 - include: manage_containers.yml
   when: (lxc_containers is defined and lxc_containers) and
