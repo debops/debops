@@ -21,11 +21,6 @@
   when: (lxc_register_package_version is defined and
          lxc_register_package_version.stdout is version_compare('1.0','>='))
 
-# Manage LXC containers via Ansible when correct kernel is installed
-- include: manage_containers.yml
-  when: (lxc_containers is defined and lxc_containers) and
-        ansible_kernel is version_compare('3.10','>')
-
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'

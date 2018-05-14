@@ -167,6 +167,12 @@ Removed
   ``bootstrap.yml`` playbook uses the :ref:`debops.python` role to configure
   Python support on the host.
 
+- [debops.lxc] Remove support for direct LXC container management from the
+  role. This functionality is better suited for other tools like
+  :command:`lxc-*` set of commands, or the Ansible ``lxc_container`` module
+  which should be used in custom playbooks. The 'debops.lxc' role focus should
+  be configuration of LXC support on a host.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------
