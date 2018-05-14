@@ -8,7 +8,8 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened:
-    - '{{ lxc_distribution_packages[ansible_distribution] }}'
+    - '{{ lxc__base_packages }}'
+    - '{{ lxc__packages }}'
 
 - name: Check available LXC package version
   shell: lxc-create --version
