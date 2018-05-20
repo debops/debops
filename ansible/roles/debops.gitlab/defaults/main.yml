@@ -98,7 +98,10 @@ gitlab__fqdn: 'code.{{ gitlab_domain }}'
 #
 # Domain which will be used for nginx server and gitlab-shell access
 # GitLab will be configured with HTTPS enabled by default
-gitlab_domain: [ 'code.{{ ansible_domain }}' ]
+gitlab_domain: '{{ ansible_local.core.domain
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.domain|d())
+                   else (ansible_domain if ansible_domain else ansible_hostname) }}'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -209,7 +212,7 @@ gitlab_email_display_name: 'GitLab'
 # .. envvar:: gitlab_email_from [[[
 #
 # E-mail address used by GitLab application.
-gitlab_email_from: 'git@{{ gitlab_domain[0] }}'
+gitlab_email_from: 'git@{{ gitlab__fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_email_reply_to [[[
@@ -714,6 +717,14 @@ gitlab_ce_bundle_install_without:
 gitlab_ldap_enable: False
 
                                                                    # ]]]
+# .. envvar:: gitlab_ldap_manage [[[
+#
+# If enabled, the role will try to create/manage the relevant entries on the
+# LDAP server. If disabled, only the configuration file entries will be
+# created, you will need to configure the LDAP server yourself.
+gitlab_ldap_manage: True
+
+                                                                   # ]]]
 # .. envvar:: gitlab_ldap_domain [[[
 #
 # The base DNS domain used to generate LDAP configuration parameters.
@@ -916,7 +927,7 @@ gitlab__nginx_server:
   by_role: 'debops.gitlab'
   enabled: True
   type: 'rails'
-  name: '{{ gitlab_domain }}'
+  name: '{{ gitlab__fqdn }}'
   root: '{{ gitlab_ce_git_checkout }}/public'
 
   deny_hidden: False

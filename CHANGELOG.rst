@@ -131,6 +131,12 @@ Changed
 
 - [debops.gitlab] The role now supports installation of GitLab 10.7.
 
+- [debops.gitlab] The usage of :envvar:`gitlab__fqdn` variable is revamped
+  a bit - it's now used as the main variable that defines the GitLab
+  installation FQDN. You might need to update the Ansible inventory if you
+  changed the value of the ``gitlab_domain`` variable used previously for this
+  purpose.
+
 Removed
 ~~~~~~~
 
