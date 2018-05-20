@@ -110,6 +110,14 @@ Inventory variable changes
   :envvar:`nodejs__upstream_release` to better represent the contents, which is
   not a specific NodeJS version, but a specific major release.
 
+- The ``gitlab_domain`` variable, previously used to set the FQDN of the GitLab
+  installation, now only sets the domain part; it's value is also changed from
+  a YAML list to a string.
+
+  The :envvar:`gitlab__fqdn` variable is now used to set the GitLab FQDN and
+  uses the ``gitlab_domain`` value as the domain part.
+
+
 v0.7.2 (2018-03-28)
 -------------------
 
