@@ -104,7 +104,7 @@ You should read the [Getting Started with DebOps][getting-started] guide for
 a more in-depth explanation of how the project can be used to manage multiple
 hosts via Ansible.
 
-[getting-started]: https://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html
+[getting-started]: https://docs.debops.org/en/master/debops-playbooks/guides/getting-started.html
 
 
 Development
