@@ -23,6 +23,163 @@ lxc__base_packages: [ 'lxc', 'debootstrap' ]
 lxc__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# System-wide configuration [[[
+# -----------------------------
+
+# These variables define contents of the configuration files in the
+# :file:`/etc/lxc/` directory. See :ref:`lxc__ref_configuration` for more
+# details.
+
+# .. envvar:: lxc__default_configuration [[[
+#
+# The default LXC configuration files defined by the role.
+lxc__default_configuration:
+
+  - name: 'lxc'
+    comment: 'System-wide LXC configuration options'
+    options:
+
+      - name: 'lxc.lxcpath'
+        comment: 'Path where LXC containers are stored'
+        value: '/var/lib/lxc'
+
+      - name: 'lxc.cgroup.use'
+        value: '@all'
+
+      - name: 'lxc.default_config'
+        comment: |
+          Default configuration file used for new LXC containers if not
+          specified otherwise
+        value: '/etc/lxc/privileged.conf'
+
+  - name: 'unprivileged'
+    comment: |
+      Default configuration for unprivileged LXC containers
+      The values for user and group subuids are currently arbitrary. They will
+      be set dynamically in the future.
+    options:
+
+      - name: 'lxc.network.type'
+        value: 'veth'
+
+      - name: 'lxc.network.link'
+        value: 'br0'
+
+      - name: 'lxc.network.flags'
+        value: 'up'
+
+      - name: 'lxc.id_map_user'
+        alias: 'lxc.id_map'
+        value: 'u 0 1258512 65536'
+        state: 'comment'
+        separator: True
+
+      - name: 'lxc.id_map_group'
+        alias: 'lxc.id_map'
+        value: 'g 0 1258512 65536'
+        state: 'comment'
+
+      - name: 'lxc.start.auto'
+        value: '1'
+        separator: True
+
+      - name: 'lxc.cap.drop_secure'
+        alias: 'lxc.cap.drop'
+        value: 'mknod sys_rawio syslog wake_alarm'
+
+  - name: 'privileged'
+    comment: |
+      Default configuration for privileged LXC containers
+    options:
+
+      - name: 'lxc.network.type'
+        value: 'veth'
+
+      - name: 'lxc.network.link'
+        value: 'br0'
+
+      - name: 'lxc.network.flags'
+        value: 'up'
+
+      - name: 'lxc.start.auto'
+        value: '1'
+        separator: True
+
+      - name: 'lxc.cap.drop_secure'
+        alias: 'lxc.cap.drop'
+        value: 'mknod sys_rawio syslog wake_alarm'
+
+  - name: 'external-internal'
+    comment: |
+      Default configuration for privileged LXC containers with multiple network
+      interfaces
+    options:
+
+      - name: 'lxc.network.type_net0'
+        alias: 'lxc.network.type'
+        value: 'veth'
+
+      - name: 'lxc.network.link_net0'
+        alias: 'lxc.network.link'
+        value: 'br0'
+
+      - name: 'lxc.network.flags_net0'
+        alias: 'lxc.network.flags'
+        value: 'up'
+
+      - name: 'lxc.network.type_net1'
+        alias: 'lxc.network.type'
+        value: 'veth'
+        separator: True
+
+      - name: 'lxc.network.link_net1'
+        alias: 'lxc.network.link'
+        value: 'br1'
+
+      - name: 'lxc.network.flags_net1'
+        alias: 'lxc.network.flags'
+        value: 'up'
+
+      - name: 'lxc.start.auto'
+        value: '1'
+        separator: True
+
+      - name: 'lxc.cap.drop_secure'
+        alias: 'lxc.cap.drop'
+        value: 'mknod sys_rawio syslog wake_alarm'
+
+                                                                   # ]]]
+# .. envvar:: lxc__configuration [[[
+#
+# List of LXC configuration files which should be present on all hosts in the
+# Ansible inventory.
+lxc__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: lxc__group_configuration [[[
+#
+# List of LXC configuration files which should be present on hosts in
+# a specific Ansible inventory group.
+lxc__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: lxc__host_configuration [[[
+#
+# List of LXC configuration files which should be present on specific hosts in
+# the Ansible inventory.
+lxc__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: lxc__combined_configuration [[[
+#
+# The variable that combines all of the configuration lists and is used in the
+# role tasks.
+lxc__combined_configuration: '{{ lxc__default_configuration
+                                 + lxc__configuration
+                                 + lxc__group_configuration
+                                 + lxc__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Configure LXC environment [[[
 # -----------------------------
 

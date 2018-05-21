@@ -12,24 +12,6 @@
     state: 'mounted'
   when: ansible_distribution == 'Debian' and ansible_distribution_release == 'wheezy'
 
-- name: Generate LXC system configuration files
-  template:
-    src: '{{ lookup("template_src", "etc/lxc/" + item | basename) }}'
-    dest: '/etc/lxc/{{ item | basename | replace(".j2","") }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_fileglob: [ '../templates/etc/lxc/*.j2' ]
-
-- name: Generate default LXC configuration
-  template:
-    src: '{{ lookup("template_src", "etc/lxc/" + lxc_configuration_default + ".conf.j2") }}'
-    dest: '/etc/lxc/default.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-                                                                   # ]]]
-
 # Configure custom templates [[[
 
 - name: Prepare LXC common configuration

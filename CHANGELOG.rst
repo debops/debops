@@ -137,6 +137,15 @@ Changed
   changed the value of the ``gitlab_domain`` variable used previously for this
   purpose.
 
+- [debops.lxc] Redesign system-wide LXC configuration to use list of YAML
+  dictionaries merged together instead of custom Jinja templates.
+
+- [debops.lxc] Add :command:`lxc-prepare-ssh` script on the LXC hosts that can
+  be used to install OpenSSH and add the user's SSH authorized keys inside of
+  the LXC containers. This is a new way to prepare the LXC containers for
+  Ansible/DebOps management that doesn't require custom LXC template scripts
+  and can be used with different LXC container types.
+
 Removed
 ~~~~~~~
 

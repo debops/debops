@@ -11,6 +11,31 @@
     - '{{ lxc__base_packages }}'
     - '{{ lxc__packages }}'
 
+- name: Install custom LXC helper scripts
+  copy:
+    src: 'usr/local/bin/'
+    dest: '/usr/local/bin/'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Remove LXC configuration if requested
+  file:
+    path: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
+    state: 'absent'
+  with_items: '{{ lxc__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Generate LXC configuration
+  template:
+    src: 'etc/lxc/template.conf.j2'
+    dest: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ lxc__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+
 - name: Check available LXC package version
   shell: lxc-create --version
   register: lxc_register_package_version
