@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# Prepare a LXC container for remote management by adding authorized SSH keys
+# to its 'root' account. The script will ensure that OpenSSH is installed in
+# the container.
+
+set -o nounset -o pipefail -o errexit
+
+readonly SCRIPT="$(basename "${0}")"
+readonly CONTAINER="${1:-}"
+readonly AUTHORIZED_KEYS="${2:-"${HOME}/.ssh/authorized_keys"}"
+
+container_exists () {
+    local container
+    container="${1}"
+
+    if lxc-ls -1 | grep -q -E "^${container}$" ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+container_is_running () {
+    local container
+    container="${1}"
+
+    if [ "$(lxc-info -n "${container}" | grep -E "^State:\s" | awk '{print $2}')" = "RUNNING" ] ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+prepare_openssh () {
+    local container
+    container="${1}"
+
+    if ! lxc-attach -n "${container}" -- test -x /usr/sbin/sshd ; then
+        if lxc-attach -n "${container}" -- test -f /etc/debian_version ; then
+            printf "Installing OpenSSH service...\n"
+            lxc-attach -n "${container}" -- apt-get update
+            lxc-attach -n "${container}" -- apt-get -y --no-install-recommends install openssh-server
+        fi
+    fi
+}
+
+prepare_authorized_keys () {
+    local container
+    container="${1}"
+    local authorized_keys
+    authorized_keys="${2}"
+
+    local authorized_keys_content
+    authorized_keys_content="$(< "${authorized_keys}")"
+
+    if ! lxc-attach -n "${container}" -- test -r /root/.ssh/authorized_keys ; then
+        printf "Adding authorized SSH keys from '%s'..." "${authorized_keys}"
+        lxc-attach -n "${container}" -- mkdir -p -m 700 /root/.ssh
+        lxc-attach -n "${container}" -- tee -a /root/.ssh/authorized_keys <<< "${authorized_keys_content}" 1>/dev/null
+        lxc-attach -n "${container}" -- chmod 600 /root/.ssh/authorized_keys
+        printf " done\n"
+    fi
+}
+
+print_usage () {
+    cat <<EOF
+${SCRIPT}: add authorized SSH keys to an LXC container
+
+Usage: ${SCRIPT} <container-name> [authorized_keys_file]
+EOF
+}
+
+error_msg () {
+    printf "%s\n" "${*}" >&2
+}
+
+main () {
+    local container
+    container="${CONTAINER}"
+    local authorized_keys
+    authorized_keys="${AUTHORIZED_KEYS}"
+
+    if [ -n "${container}" ] ; then
+        if container_exists "${container}" ; then
+            if container_is_running "${container}" ; then
+                prepare_openssh "${container}"
+                prepare_authorized_keys "${container}" "${authorized_keys}"
+            else
+                printf "Container '%s' is not running, starting...\n" "${container}"
+                lxc-start -n "${container}" -d
+                lxc-wait -n "${container}" -s RUNNING
+                prepare_openssh "${container}"
+                prepare_authorized_keys "${container}" "${authorized_keys}"
+            fi
+        else
+            error_msg "Error: container '${container}' doesn't exist"
+            return 1
+        fi
+    else
+        print_usage
+        return 1
+    fi
+}
+
+main

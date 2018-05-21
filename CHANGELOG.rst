@@ -137,6 +137,15 @@ Changed
   changed the value of the ``gitlab_domain`` variable used previously for this
   purpose.
 
+- [debops.lxc] Redesign system-wide LXC configuration to use list of YAML
+  dictionaries merged together instead of custom Jinja templates.
+
+- [debops.lxc] Add :command:`lxc-prepare-ssh` script on the LXC hosts that can
+  be used to install OpenSSH and add the user's SSH authorized keys inside of
+  the LXC containers. This is a new way to prepare the LXC containers for
+  Ansible/DebOps management that doesn't require custom LXC template scripts
+  and can be used with different LXC container types.
+
 Removed
 ~~~~~~~
 
@@ -166,6 +175,16 @@ Removed
 - [debops.bootstrap] Remove management of Python packages from the role. The
   ``bootstrap.yml`` playbook uses the :ref:`debops.python` role to configure
   Python support on the host.
+
+- [debops.lxc] Remove support for direct LXC container management from the
+  role. This functionality is better suited for other tools like
+  :command:`lxc-*` set of commands, or the Ansible ``lxc_container`` module
+  which should be used in custom playbooks. The 'debops.lxc' role focus should
+  be configuration of LXC support on a host.
+
+- [debops.lxc] Remove custom LXC template support. The LXC containers can be
+  created by the normal templates provided by the ``lxc`` package, and then
+  configured using DebOps roles as usual.
 
 
 `debops v0.7.2`_ - 2018-03-28
