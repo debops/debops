@@ -182,6 +182,10 @@ Removed
   which should be used in custom playbooks. The 'debops.lxc' role focus should
   be configuration of LXC support on a host.
 
+- [debops.lxc] Remove custom LXC template support. The LXC containers can be
+  created by the normal templates provided by the ``lxc`` package, and then
+  configured using DebOps roles as usual.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------

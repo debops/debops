@@ -36,16 +36,6 @@
   with_items: '{{ lxc__combined_configuration | parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
-- name: Check available LXC package version
-  shell: lxc-create --version
-  register: lxc_register_package_version
-  changed_when: False
-
-# Configure LXC support when correct version is installed
-- include: configure_lxc.yml
-  when: (lxc_register_package_version is defined and
-         lxc_register_package_version.stdout is version_compare('1.0','>='))
-
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
