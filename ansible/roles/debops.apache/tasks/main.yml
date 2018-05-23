@@ -139,7 +139,7 @@
 
 # Manage Apache modules, part 2 [[[1
 - name: Detect if the rewrite module has been used in the active configuration
-  shell: grep --ignore-case '^\s*RewriteEngine On' {{ apache__config_path | quote }}/sites-enabled/* {{ apache__config_path | quote }}/conf-enabled/*
+  shell: grep --recursive --ignore-case '^\s*RewriteEngine On' {{ apache__config_path | quote }}
   register: apache__register_mod_rewrite_used
   check_mode: False
   failed_when: apache__register_mod_rewrite_used.rc not in [ 0, 1 ]
