@@ -122,11 +122,10 @@ core__admin_groups: [ 'admins' ]
 #
 # To override the admin accounts autodetected by Ansible, specify them in this
 # list.
-core__admin_users: '{{ (ansible_user
-                        if ansible_user|d()
-                        else (ansible_ssh_user
-                              if ansible_ssh_user|d()
-                              else lookup("env", "USER"))) }}'
+core__admin_users: [ '{{ (ansible_user
+                          if (ansible_user is defined and
+                              ansible_user != "root")
+                          else lookup("env", "USER")) }}' ]
 
                                                                    # ]]]
 # .. envvar:: core__admin_blacklist_default_users [[[
