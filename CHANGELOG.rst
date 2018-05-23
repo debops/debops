@@ -146,6 +146,11 @@ Changed
   Ansible/DebOps management that doesn't require custom LXC template scripts
   and can be used with different LXC container types.
 
+- [debops.core] The role will add any new administrator accounts to the list of
+  existing admin accounts instead of replacing them in the Ansible local fact
+  script. This should allow for multiple administrators to easily coexist and
+  run the DebOps playbooks/roles from their own accounts without issues.
+
 Removed
 ~~~~~~~
 
