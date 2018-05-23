@@ -24,6 +24,7 @@ etc.
 - :ref:`debops.dokuwiki`
 - :ref:`debops.etherpad`
 - :ref:`debops.gitlab`
+- :ref:`debops.icinga`
 - :ref:`debops.kibana`
 - :ref:`debops.librenms`
 - :ref:`debops.mailman`
@@ -183,6 +184,9 @@ Mail services
 Monitoring
 ----------
 
+- :ref:`debops.icinga`
+- :ref:`debops.icinga_db`
+- :ref:`debops.icinga_web`
 - :ref:`debops.librenms`
 - :ref:`debops.monit`
 - :ref:`debops.proc_hidepid`

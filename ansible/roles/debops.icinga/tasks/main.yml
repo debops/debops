@@ -1,0 +1,169 @@
+---
+
+- name: Add upstream Icinga APT key
+  apt_key:
+    id: '{{ icinga__upstream_apt_key_id | replace(" ","") }}'
+    state: 'present'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+  when: icinga__upstream|bool
+
+- name: Add upstream Icinga APT repository
+  apt_repository:
+    repo: '{{ icinga__upstream_apt_repo }}'
+    state: 'present'
+    update_cache: True
+  when: icinga__upstream|bool
+
+- name: Install required Icinga packages
+  package:
+    name: '{{ lookup("flattened",
+                     (icinga__base_packages + icinga__packages),
+                     wantlist=True) }}'
+    state: 'present'
+
+- name: Add Icinga user to system UNIX groups
+  user:
+    name: '{{ icinga__user }}'
+    groups: '{{ lookup("flattened", icinga__additional_groups, wantlist=True) | join(",") }}'
+    append: True
+  notify: [ 'Check icinga2 configuration and restart' ]
+
+- name: Load dependent configuration variables
+  include_vars:
+    dir: '{{ secret + "/icinga/dependent_config/" + inventory_hostname }}'
+    depth: '1'
+    name: 'icinga__vars_dependent_configuration'
+  when: (ansible_local|d() and ansible_local.icinga|d() and
+         (ansible_local.icinga.configured|d())|bool)
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Icinga local facts
+  template:
+    src: 'etc/ansible/facts.d/icinga.fact.j2'
+    dest: '/etc/ansible/facts.d/icinga.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: icinga__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: icinga__register_facts is changed
+
+- name: Check current Icinga diversions
+  environment:
+    LC_ALL: 'C'
+  shell: dpkg-divert --list '/etc/icinga2/*.dpkg-divert' | grep -E '^local diversion' | awk '{print $NF}'
+  register: icinga__register_diversions
+  check_mode: False
+  changed_when: False
+
+- name: Divert Icinga configuration
+  command: dpkg-divert --quiet --local --divert /etc/icinga2/{{ item.filename | d(item.name | regex_replace('.conf$','') + '.conf') }}.dpkg-divert --rename /etc/icinga2/{{ item.filename | d(item.name | regex_replace('.conf$','') + '.conf') }}
+  with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
+  notify: [ 'Check icinga2 configuration and restart' ]
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and (item.divert|d())|bool and
+         ('/etc/icinga2/' + (item.filename | d(item.name | regex_replace('.conf$','') + '.conf')) + '.dpkg-divert' not in icinga__register_diversions.stdout_lines))
+
+- name: Ensure that configuration directories exist
+  file:
+    path: '/etc/icinga2/{{ (item.filename | d(item.name | regex_replace(".conf$","") + ".conf")) | dirname }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and
+         ((item.filename | d(item.name | regex_replace(".conf$","") + ".conf")) | dirname != ''))
+
+- name: Remove Icinga configuration if requested
+  file:
+    path: '/etc/icinga2/{{ item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
+    state: 'absent'
+  with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
+  notify: [ 'Check icinga2 configuration and restart' ]
+  when: (item.name|d() and item.state|d('present') == 'absent' and item.divert is undefined)
+
+- name: Generate Icinga configuration files
+  template:
+    src: 'etc/icinga2/template.conf.j2'
+    dest: '/etc/icinga2/{{ item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode:  '{{ item.mode  | d("0644") }}'
+  with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
+  notify: [ 'Check icinga2 configuration and restart' ]
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert', 'feature' ])
+  no_log: '{{ item.no_log | d(omit) }}'
+
+- name: Revert original Icinga configuration
+  shell: rm -f /etc/icinga2/{{ item.filename | d(item.name | regex_replace('.conf$','') + '.conf') }} ; dpkg-divert --quiet --local --rename --remove /etc/icinga2/{{ item.filename | d(item.name | regex_replace('.conf$','') + '.conf') }}
+  args:
+    warn: False
+  with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
+  notify: [ 'Check icinga2 configuration and restart' ]
+  when: (item.name|d() and item.state|d('present') == 'absent' and (item.divert|d())|bool and
+         ('/etc/icinga2/' + (item.filename | d(item.name | regex_replace('.conf$','') + '.conf')) + '.dpkg-divert' in icinga__register_diversions.stdout_lines))
+
+- name: Configure state of Icinga features
+  file:
+    path: '/etc/icinga2/features-enabled/{{ item.feature_name }}.conf'
+    src: '../features-available/{{ item.feature_name }}.conf'
+    state: '{{ "link" if item.feature_state|d("present") == "present" else "absent" }}'
+  with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
+  notify: [ 'Check icinga2 configuration and restart' ]
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert' ] and
+         item.feature_name|d() and item.feature_state|d())
+
+- name: Copy custom files for Icinga
+  copy:
+    content: '{{ item.content | d(omit) }}'
+    src:     '{{ item.src     | d(omit) }}'
+    dest:    '{{ item.dest    | d(omit) }}'
+    force:   '{{ item.force   | d(omit) }}'
+    owner:   '{{ item.owner   | d("root") }}'
+    group:   '{{ item.group   | d("root") }}'
+    mode:    '{{ item.mode    | d("0755") }}'
+  with_flattened:
+    - '{{ icinga__custom_files }}'
+    - '{{ icinga__group_custom_files }}'
+    - '{{ icinga__host_custom_files }}'
+  when: ((item.src|d() or item.content|d()) and
+         item.dest|d() and item.state|d("present") != "absent")
+
+- name: Save dependent configuration on Ansible Controller
+  template:
+    src: 'secret/icinga/dependent_config/inventory_hostname/configuration.json.j2'
+    dest: '{{ secret + "/icinga/dependent_config/" + inventory_hostname + "/configuration.json" }}'
+  become: False
+  delegate_to: 'localhost'
+
+- name: Register Icinga node in Icinga Director
+  uri:
+    body_format: 'json'
+    headers:
+      Accept: 'application/json'
+    method: 'POST'
+    body: '{{ icinga__director_register_host_object }}'
+    url: '{{ icinga__director_register_api_url }}'
+    user: '{{ icinga__director_register_api_user }}'
+    password: '{{ icinga__director_register_api_password }}'
+    status_code: '201,500'
+    force_basic_auth: True
+  register: icinga__register_director_host
+  notify: [ 'Trigger Icinga Director configuration deployment' ]
+  when: icinga__director_enabled|bool and icinga__director_register|bool and
+        icinga__node_type != 'master'
+  changed_when: icinga__register_director_host.status == 201
+  tags: [ 'role::icinga:register' ]
+  no_log: True

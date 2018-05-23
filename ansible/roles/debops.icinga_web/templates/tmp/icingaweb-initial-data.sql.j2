@@ -1,0 +1,28 @@
+-- {{ ansible_managed }}
+
+INSERT INTO icingaweb_group (id, name, ctime)
+VALUES
+{% for element in icinga_web__initial_account_groups %}
+{%   if element.name|d() and element.state|d('present') != 'absent' %}
+{{ "    ({}, '{}', NOW()){}".format(loop.index, element.name, (';' if loop.last else ',')) }}
+{%   endif %}
+{% endfor %}
+
+INSERT INTO icingaweb_user (name, active, password_hash, ctime)
+VALUES
+{% for element in icinga_web__initial_accounts %}
+{%   if element.name|d() and element.state|d('present') != 'absent' %}
+{{ "    ('{}', 1, '{}', NOW()){}".format(element.name,
+    (element.password_hash | d((element.password | d(icinga_web__default_account_password))
+    | password_hash('md5', (65534 | random(seed=(element.name + inventory_hostname))
+    | string | hash('sha256'))[0:8]))), (';' if loop.last else ',')) }}
+{%   endif %}
+{% endfor %}
+
+INSERT INTO icingaweb_group_membership (group_id, username, ctime)
+VALUES
+{% for element in icinga_web__initial_accounts %}
+{%   if element.name|d() and element.state|d('present') != 'absent' %}
+{{ "    ({}, '{}', NOW()){}".format(element.group_id | d('1'), element.name, (';' if loop.last else ',')) }}
+{%   endif %}
+{% endfor %}
