@@ -199,6 +199,7 @@
                   + "/" + item.0.name + "_keyfile.raw") }}'
     path: '{{ item.0.crypttab_path | d(omit) }}'
     state: 'present'
+  no_log: True
   when: (item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
@@ -253,6 +254,8 @@
     rm -f {{ (cryptsetup__header_backup_remote_location + "/" + item.0.name + "_header_backup.raw") | quote }}
     cryptsetup luksHeaderBackup {{ item.0.ciphertext_block_device | quote }} \
       --header-backup-file {{ (cryptsetup__header_backup_remote_location + "/" + item.0.name + "_header_backup.raw") | quote }}
+  args:
+    warn: False
   changed_when: False
   when: ((item.0.backup_header|d(cryptsetup__header_backup) | bool) and
           item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and

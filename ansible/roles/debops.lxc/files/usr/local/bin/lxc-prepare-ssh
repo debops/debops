@@ -83,16 +83,13 @@ main () {
 
     if [ -n "${container}" ] ; then
         if container_exists "${container}" ; then
-            if container_is_running "${container}" ; then
-                prepare_openssh "${container}"
-                prepare_authorized_keys "${container}" "${authorized_keys}"
-            else
+            if ! container_is_running "${container}" ; then
                 printf "Container '%s' is not running, starting...\n" "${container}"
                 lxc-start -n "${container}" -d
                 lxc-wait -n "${container}" -s RUNNING
-                prepare_openssh "${container}"
-                prepare_authorized_keys "${container}" "${authorized_keys}"
             fi
+            prepare_openssh "${container}"
+            prepare_authorized_keys "${container}" "${authorized_keys}"
         else
             error_msg "Error: container '${container}' doesn't exist"
             return 1
