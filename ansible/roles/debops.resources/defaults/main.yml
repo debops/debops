@@ -86,6 +86,41 @@ resources__parent_dirs_group: '{{ omit }}'
 resources__parent_dirs_mode: '{{ omit }}'
                                                                    # ]]]
                                                                    # ]]]
+# Manage custom templates [[[
+# ---------------------------
+
+# These variables define how the role will manage custom templates on remote
+# hosts. See :ref:`resources__ref_templates` for more details.
+
+# .. envvar:: resources__group_name [[[
+#
+# Name of the directory which contains templates which should be generated on
+# hosts in a specific host group. This variable needs to be set on a group
+# level in the inventory to take effect, only one group is supported at a time.
+resources__group_name: 'nonexistent-host-group'
+
+                                                                   # ]]]
+# .. envvar:: resources__templates [[[
+#
+# Directory which contains templates that should be generated on all hosts in
+# the Ansible inventory.
+resources__templates: '{{ resources__src + "templates/by-group/all" }}'
+
+                                                                   # ]]]
+# .. envvar:: resources__group_templates [[[
+#
+# Directory which contains templates that should be generated on hosts in
+# a specific Ansible inventory group.
+resources__group_templates: '{{ resources__src + "templates/by-group/" + resources__group_name }}'
+
+                                                                   # ]]]
+# .. envvar:: resources__host_templates [[[
+#
+# Directory which contains templates that should be generated on specific hosts
+# in the Ansible inventory.
+resources__host_templates: '{{ resources__src + "templates/by-host/" + inventory_hostname }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Manage custom paths [[[
 # -----------------------
 
