@@ -5,6 +5,42 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "resources/pre_main.yml") }}'
 
+# Manage custom templates [[[1
+- name: Ensure that template directories exist
+  file:
+    path: '/{{ item.path }}'
+    mode: '{{ item.mode }}'
+    state: 'directory'
+  with_filetree:
+    - '{{ resources__host_templates }}'
+    - '{{ resources__group_templates }}'
+    - '{{ resources__templates }}'
+  when: item.state == 'directory'
+
+- name: Generate custom templates
+  template:
+    src: '{{ item.src }}'
+    dest: '/{{ item.path }}'
+    mode: '{{ item.mode }}'
+  with_filetree:
+    - '{{ resources__host_templates }}'
+    - '{{ resources__group_templates }}'
+    - '{{ resources__templates }}'
+  when: item.state == 'file'
+
+- name: Recreate custom symlinks
+  file:
+    src: '{{ item.src }}'
+    dest: '/{{ item.path }}'
+    mode: '{{ item.mode }}'
+    state: 'link'
+    force: True
+  with_filetree:
+    - '{{ resources__host_templates }}'
+    - '{{ resources__group_templates }}'
+    - '{{ resources__templates }}'
+  when: item.state == 'link'
+
 # Manage custom paths [[[1
 - name: Manage paths on remote hosts
   file:
@@ -180,42 +216,6 @@
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d('present') == 'absent'))
   tags: [ 'role::resources:files' ]
-
-# Manage custom templates [[[1
-- name: Ensure that template directories exist
-  file:
-    path: '/{{ item.path }}'
-    mode: '{{ item.mode }}'
-    state: 'directory'
-  with_filetree:
-    - '{{ resources__host_templates }}'
-    - '{{ resources__group_templates }}'
-    - '{{ resources__templates }}'
-  when: item.state == 'directory'
-
-- name: Generate custom templates
-  template:
-    src: '{{ item.src }}'
-    dest: '/{{ item.path }}'
-    mode: '{{ item.mode }}'
-  with_filetree:
-    - '{{ resources__host_templates }}'
-    - '{{ resources__group_templates }}'
-    - '{{ resources__templates }}'
-  when: item.state == 'file'
-
-- name: Recreate custom symlinks
-  file:
-    src: '{{ item.src }}'
-    dest: '/{{ item.path }}'
-    mode: '{{ item.mode }}'
-    state: 'link'
-    force: True
-  with_filetree:
-    - '{{ resources__host_templates }}'
-    - '{{ resources__group_templates }}'
-    - '{{ resources__templates }}'
-  when: item.state == 'link'
 
 # Manage custom delayed paths [[[1
 - name: Manage delayed paths on remote hosts
