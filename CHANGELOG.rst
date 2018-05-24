@@ -55,6 +55,10 @@ Added
   daemon will be started once network interfaces are configured and will not
   restart multiple times on each network interface change.
 
+- [debops.resources] The role can now generate custom files using templates,
+  based on a directory structure. See :ref:`resources__ref_templates` for more
+  details.
+
 Changed
 ~~~~~~~
 

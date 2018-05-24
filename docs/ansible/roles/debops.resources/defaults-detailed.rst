@@ -235,3 +235,61 @@ Create a custom :program:`cron` task that restarts a service daily:
          #!/bin/sh
          # {{ ansible_managed }}
          test -x /usr/bin/service && systemctl restart service
+
+.. _resources__ref_templates:
+
+resources__templates
+--------------------
+
+The :ref:`debops.resources` role supports dynamic generation of directories,
+templated files and symlinks using the `with_filetree`__ Ansible lookup plugin.
+
+.. __: https://docs.ansible.com/ansible/2.5/plugins/lookup/filetree.html
+
+The file, directory and symlink management is limited - the managed resources
+will be owned by ``root`` UNIX account and will be placed in the ``root`` UNIX
+group, however the specific file mode will be preserved; for example if you
+create a file with ``0600`` permissions, the same permissions will be set by
+the role on the remote host.
+
+For this functionality to work, the role expects a specific directory structure
+located in the :file:`ansible/resources/` directory (or wherever the
+:envvar:`resources__src` variable points to):
+
+.. code-block:: none
+
+   ansible/resources/
+   └── templates/
+       ├── by-group/
+       │   ├── all/
+       │   ├── group-name1/
+       │   └── group-name2/
+       └── by-host/
+           ├── hostname1/
+           └── hostname2/
+
+The ``with_filetree`` Ansible lookup plugin will look for resources to manage
+in specific hostname directory, then a specific group name directory defined by
+the :envvar:`resources__group_name` variable, then in the :file:`by-group/all/`
+directory. The resource found first in this order wins and no further checks
+are performed; this means that you can put a file in the :file:`by-group/all/`
+directory and then override it using a host-specific directory.
+
+Each directory structure starts at the root of the filesystem (:file:`/`), so
+to create a file in a subdirectory you need to recreate the entire path. For
+example, to create the :file:`/var/lib/application/custom.txt` file, it needs
+to be placed in:
+
+.. code-block:: none
+
+   ansible/resources/templates/by-group/all/var/lib/application/custom.txt
+
+In the templates, you can reference variables from the Ansible facts (including
+local facts managed by other roles) and Ansible inventory. Referencing
+variables from other roles might work only if these roles are included in the
+playbook, however that is not idempotent and should be avoided.
+
+To manage resources on a group level, you need to define the
+:envvar:`resources__group_name` variable in the inventory group that contains
+the directory name in the :file:`ansible/resources/template/by-group/`
+directory. Only one group level is supported.
