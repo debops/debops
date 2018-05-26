@@ -54,6 +54,14 @@ DebOps either in scope or used software. You might find some of them
 interesting, or if you don't want to use DebOps specifically, other projects
 here might be more to your liking.
 
+`Open Source Infrastructure`__
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a website that aggreagates information about, and links to, Open Source
+infrastructure projects.
+
+.. __: https://opensourceinfra.org/
+
 
 `Sovereign`__
 ~~~~~~~~~~~~~
