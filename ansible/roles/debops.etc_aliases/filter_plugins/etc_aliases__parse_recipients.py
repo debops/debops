@@ -20,6 +20,12 @@
 from __future__ import (absolute_import, division, print_function)
 from operator import itemgetter
 
+try:
+    unicode = unicode
+except NameError:
+    # py3
+    unicode = str
+
 __metaclass__ = type
 
 
