@@ -6,7 +6,7 @@
 
 [DEFAULT]
 
-ignoreip       = {{ (fail2ban_ignoreip_default|d([]) + fail2ban_ignoreip|d([])) | join(" ") }}
+ignoreip       = {{ (fail2ban_ignoreip_default|d([]) + fail2ban_ignoreip|d([]) + fail2ban_group_ignoreip|d([]) + fail2ban_host_ignoreip|d([])) | join(" ") }}
 
 findtime       = {{ fail2ban_findtime }}
 maxretry       = {{ fail2ban_maxretry }}
