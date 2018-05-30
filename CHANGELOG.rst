@@ -59,6 +59,11 @@ Added
   based on a directory structure. See :ref:`resources__ref_templates` for more
   details.
 
+- [debops.nginx] A ``default`` set of SSL ciphers can be specified using the
+  :envvar:`nginx_default_ssl_ciphers` variable. This disables the
+  ``ssl_ciphers`` option in the :command:`nginx` configuration and forces the
+  server to use the defaults provided by the OS.
+
 Changed
 ~~~~~~~
 
