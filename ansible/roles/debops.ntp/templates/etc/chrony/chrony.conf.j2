@@ -30,10 +30,10 @@ allow all
 deny all
 
 {%   if ntp__allow is string %}
-allow ntp__allow
+allow {{ ntp__allow }}
 {%   else %}
 {%     for address in ntp__allow %}
-allow address
+allow {{ address }}
 {%     endfor %}
 {%   endif %}
 
