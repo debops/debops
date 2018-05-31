@@ -6,7 +6,7 @@
 pool {{ ntp__servers }} iburst
 {% else %}
 {% for address in ntp__servers %}
-pool {{ address }} iburst
+{{ ntp__servers_as_pool | ternary('pool', 'server') }} {{ address }} iburst
 {% endfor %}
 {% endif %}
 
