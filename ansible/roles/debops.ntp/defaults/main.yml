@@ -214,7 +214,7 @@ ntp__ferm__dependent_rules:
     name: 'jump-filter-ntp'
     target: '{{ ntp__ferm_chain }}'
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -231,7 +231,7 @@ ntp__ferm__dependent_rules:
     recent_set_name: 'ntp-new'
     recent_log: False
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -251,7 +251,7 @@ ntp__ferm__dependent_rules:
     recent_target: '{{ ntp__ferm_recent_target }}'
     recent_log_prefix: 'ipt-recent-ntp: '
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -265,7 +265,7 @@ ntp__ferm__dependent_rules:
     role: 'ntp'
     role_weight: '40'
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
                                                                    # ]]]
