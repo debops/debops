@@ -26,7 +26,7 @@
 # SOFTWARE.
 
 
-from ansible.module_utils.basic import *
+from ansible.module_utils.basic import AnsibleModule
 
 DOCUMENTATION = '''
 ---
@@ -65,7 +65,7 @@ def get_installed_version(module):
 def install(module):
     cmd = [RSCRIPT, '--slave', '--no-save', '--no-restore-history', '-e',
            'install.packages(pkgs="{name:}", repos="{repos:}")'.format(
-                name=module.params['name'], repos=module.params['repo'])]
+            name=module.params['name'], repos=module.params['repo'])]
     (rc, stdout, stderr) = module.run_command(cmd, check_rc=True)
     return stderr
 
@@ -73,7 +73,7 @@ def install(module):
 def uninstall(module):
     cmd = [RSCRIPT, '--slave', '--no-save', '--no-restore-history', '-e',
            'remove.packages(pkgs="{name:}")'.format(
-                name=module.params['name'])]
+            name=module.params['name'])]
     (rc, stdout, stderr) = module.run_command(cmd, check_rc=True)
     return stderr
 
