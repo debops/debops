@@ -64,6 +64,11 @@ Added
   ``ssl_ciphers`` option in the :command:`nginx` configuration and forces the
   server to use the defaults provided by the OS.
 
+- [debops.dhparam] The role will set up a :command:`systemd` timer to
+  regenerate Diffie-Hellman parameters periodically if it's available. The
+  timer will use random delay time, up to 12h, to help with mass DHparam
+  generation in multiple LXC containers/VMs.
+
 Changed
 ~~~~~~~
 
