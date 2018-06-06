@@ -205,6 +205,12 @@ Removed
   created by the normal templates provided by the ``lxc`` package, and then
   configured using DebOps roles as usual.
 
+- [debops.postgresql_server] The tasks that modified the default ``template1``
+  database and its schema have been removed to make the PostgreSQL installation
+  more compatible with applications packaged in Debian that rely on the
+  PostgreSQL service. See the relevant commit for more details. Existing
+  installations shouldn't be affected.
+
 
 `debops v0.7.2`_ - 2018-03-28
 -----------------------------
