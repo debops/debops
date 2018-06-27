@@ -63,7 +63,7 @@
 
 {% endblock %}
 {% block nginx_tpl_block_location_root %}
-                try_files $uri $uri/ $uri.php;
+                try_files {{ item.try_files|default("$uri $uri/ $uri.php") | join(' ') }};
 {% endblock %}
 {% block nginx_tpl_block_custom_status_locations %}
 {% if item.php5_status|d(nginx_php5_status) and (nginx_status or nginx_status_localhost) %}
