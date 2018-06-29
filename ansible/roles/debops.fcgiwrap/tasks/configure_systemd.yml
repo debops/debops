@@ -15,7 +15,7 @@
 
 - name: Reload systemd units
   command: 'systemctl daemon-reload'
-  when: fcgiwrap__register_systemd.changed|bool
+  when: fcgiwrap__register_systemd is changed
 
 - name: Enable and start systemd units
   service:
@@ -25,5 +25,4 @@
   with_nested:
     - '{{ fcgiwrap__instances }}'
     - [ 'socket', 'service' ]
-  when: fcgiwrap__instances and fcgiwrap__register_systemd.changed|bool
-
+  when: fcgiwrap__instances and fcgiwrap__register_systemd is changed

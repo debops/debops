@@ -3,7 +3,7 @@ Other projects
 
 There are third-party projects that might be interesting for DebOps users,
 either as source of inspiration or as an alternative configuration management
-frameworks.
+framework.
 
 Third-party projects based on DebOps
 ------------------------------------
@@ -54,6 +54,14 @@ DebOps either in scope or used software. You might find some of them
 interesting, or if you don't want to use DebOps specifically, other projects
 here might be more to your liking.
 
+`Open Source Infrastructure`__
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a website that aggreagates information about, and links to, Open Source
+infrastructure projects.
+
+.. __: https://opensourceinfra.org/
+
 
 `Sovereign`__
 ~~~~~~~~~~~~~
@@ -77,6 +85,17 @@ friends, family members, and fellow activists.
 .. __: https://github.com/StreisandEffect/streisand
 
 
+`gluster.org Infrastructure`__
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Gluster team maintains a `set of Ansible playbooks and roles`__ that power
+the project's server infrastructure. The environment seems to be based on
+CentOS and FreeBSD hosts, and has very detailed documentation.
+
+.. __: https://gluster-infra-docs.readthedocs.io/
+.. __: https://github.com/gluster/gluster.org_ansible_configuration
+
+
 `ansible-lanparty`__
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -96,6 +115,26 @@ recording infrastructure used at the `FOSDEM`__ conference.
 
 .. __: https://github.com/FOSDEM/infrastructure
 .. __: https://fosdem.org/
+
+
+`Linux System Roles`__
+~~~~~~~~~~~~~~~~~~~~~~
+
+This is a small collection of Ansible roles focused on system administration,
+available on GitHub and through Ansible Galaxy. Project is focused on Fedora
+and Red Hat Enterprise Linux OS platforms.
+
+.. __: https://linux-system-roles.github.io/
+
+
+`Simple Ansible roles`__
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a set of interdependent Ansible roles maintained by Robert de Bock.
+Roles work on multiple platforms, and are designed to integrate well using
+"soft" dependencies on the playbook level, similarly to DebOps.
+
+.. __: https://robertdebock.nl/
 
 
 `LEAP Platform`__

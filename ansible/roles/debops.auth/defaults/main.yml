@@ -11,62 +11,7 @@
 # .. envvar:: auth_packages [[[
 #
 # List of Debian/Ubuntu packages installed by debops.auth
-auth_packages: [ 'sudo', 'libpam-cracklib' ]
-
-                                                                   # ]]]
-# .. envvar:: auth_wheel_group [[[
-#
-# System group that will be granted unrestricted access to root account
-auth_wheel_group: 'admins'
-
-                                                                   # ]]]
-# .. envvar:: auth_admin_groups [[[
-#
-# List of UNIX system groups which allow unrestricted system administrator
-# access. They will be created if not present.
-auth_admin_groups: '{{ ansible_local.core.admin_groups
-                       if (ansible_local|d() and ansible_local.core|d() and
-                           ansible_local.core.admin_groups|d())
-                       else [ "admins" ] }}'
-
-                                                                   # ]]]
-# .. envvar:: auth_admin_users [[[
-#
-# List of UNIX system accounts which belong to system administrators. The role
-# will ensure that the accounts exist and are present in the specified
-# administrator groups.
-auth_admin_users: '{{ ansible_local.core.admin_users
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.admin_users|d())
-                      else [] }}'
-
-                                                                   # ]]]
-# .. envvar:: auth_system_groups [[[
-#
-# List of default system accounts that are used in the playbook
-auth_system_groups:
-
-  # Global system administrators, unrestricted root access, unrestricted SSH
-  - 'admins'
-
-  # Users in this group can connect to the host using SSH service
-  - 'sshusers'
-
-  # Users in this group have access only to chrooted SFTP service (without full
-  # shell access) and cannot use SSH public keys in ~/.ssh/authorized_keys file
-  # (only keys in '/etc/ssh/authorized_keys.d/user' are allowed)
-  - 'sftponly'
-
-  # Users in this group can reload nginx service using sudo and have access to
-  # /etc/nginx/sites-local/ directory where they can put nginx vhost
-  # configuration files to be enabled by Ansible in nginx
-  # (this might be moved to 'nginx' role in the future)
-  - 'webadmins'
-
-  # This group grants full access to /proc filesystem when hidepid= option is
-  # active. You should add monitoring services to this group if they need full
-  # access to process information
-  - 'procadmins'
+auth_packages: [ 'libpam-cracklib' ]
 
                                                                    # ]]]
 # ---- nsswitch.conf options ----

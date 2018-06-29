@@ -92,7 +92,7 @@
     that:
       - 'foodsoft__register_secret_token.stdout|length > 120'
       - 'foodsoft__register_secret_token.stdout|length < 500'
-  when: foodsoft__register_secret_token|changed
+  when: foodsoft__register_secret_token is changed
   tags: [ 'role::foodsoft:gen_token' ]
 
 - name: Configure secret token for Foodsoft
@@ -103,7 +103,7 @@
     group: '{{ foodsoft__group }}'
     mode: '0640'
   tags: [ 'role::foodsoft:gen_token' ]
-  when: foodsoft__register_secret_token|changed
+  when: foodsoft__register_secret_token is changed
 
 - name: Create database schema and load defaults
   command: 'bundle exec rake db:setup'
@@ -149,5 +149,5 @@
 
 - name: Gather facts if they were modified
   action: setup
-  when: foodsoft__register_local_facts|changed
+  when: foodsoft__register_local_facts is changed
 # ]]]

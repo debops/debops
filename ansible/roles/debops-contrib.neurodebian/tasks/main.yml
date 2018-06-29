@@ -33,9 +33,9 @@
   # Not using a handler here as the handler would need to be flushed at this
   # point which is discouraged in DebOps because that would also flush all
   # other handlers notified up to this point.
-  when: neurodebian__register_apt_repository|changed or
-        neurodebian__register_apt_repository_absent|changed or
-        neurodebian__register_apt_key|changed
+  when: neurodebian__register_apt_repository is changed or
+        neurodebian__register_apt_repository_absent is changed or
+        neurodebian__register_apt_key is changed
 
 - name: Ensure specified packages are in there desired state
   package:

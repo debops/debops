@@ -1,0 +1,40 @@
+# {{ ansible_managed }}
+
+# vim:ft=sh
+
+# Hook installed by the 'debops.ifupdown' Ansible role
+
+# This hook is sourced directly into the dhclient-script(8) environment, be
+# careful about messing around in it. Bourne shell (/bin/sh) features are used
+# here.
+
+# This hook can be used to filter incoming DHCP options per the network
+# interface and ignore unwanted ones. See the dhclient-script(8) for
+# information about how this script is used by 'dhclient', and dhcp-options(5)
+# for information about possible DHCP options which can be ignored.
+
+
+case "$reason" in
+    BOUND|RENEW|REBIND|REBOOT|TIMEOUT)
+
+        case "$interface" in
+{% for interface, options in ifupdown__combined_interfaces.items() %}
+{%   if (options.state|d('present') != 'absent' and
+         options.dhcp_ignore is defined and options.dhcp_ignore) %}
+{% set dhcp_ignore = ([ options.dhcp_ignore ] if (options.dhcp_ignore is string) else options.dhcp_ignore) %}
+
+            {{ interface }})
+                echo "Ignoring DHCP options received via '${interface}' interface: {{ dhcp_ignore | join(',') }}"
+                unset {{ dhcp_ignore | join(' ') }}
+                ;;
+{%   endif %}
+{% endfor %}
+
+            *)
+                ;;
+
+        esac
+
+        ;;
+
+esac

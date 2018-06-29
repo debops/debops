@@ -62,7 +62,7 @@ service directly in your own role, for example:
 Avahi daemon automatically detects changes in the :file:`/etc/avahi/services/`
 directory and reloads all files, therefore service restart is not necessary.
 The format of the XML service file can be found in the
-:manpage:`avahi.service(5)` manual page.
+:man:`avahi.service(5)` manual page.
 
 
 Example inventory

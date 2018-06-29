@@ -24,10 +24,9 @@
 - name: Reload systemd configuration
   command: systemctl daemon-reload
   when: (ansible_service_mgr == 'systemd' and
-         reprepro_register_inotincoming_init|changed)
+         reprepro_register_inotincoming_init is changed)
 
 - name: Enable inoticoming service
   service:
     name: 'inoticoming'
     enabled: True
-

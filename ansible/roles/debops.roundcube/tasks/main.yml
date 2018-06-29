@@ -83,8 +83,8 @@
   register: roundcube__register_updatedb
   changed_when: not roundcube__register_updatedb.stdout == ''
   when: (not roundcube__register_version.stdout == '' and
-         roundcube__git_version | version_compare(roundcube__register_version.stdout, '>')) or
-        (not roundcube__register_version_old | skipped and
+         roundcube__git_version is version_compare(roundcube__register_version.stdout, '>')) or
+        (roundcube__register_version_old is not skipped and
          not roundcube__register_version_old.stdout == '')
   tags: [ 'role::roundcube:database' ]
 

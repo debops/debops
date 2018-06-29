@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+
+# Workaround for missing XDG_RUNTIME_DIR environment variable in interactive
+# login sessions. This assumes that an existing user session is present, for
+# example when a given UNIX account is configured to "linger" in logind.
+#
+# This workaround allows control over another user's 'systemd' instance, when
+# accessed via 'sudo' login session, for example:
+#
+#     sudo -u <user> -l
+#
+# The 'pam_systemd.so' PAM module will not help in this case because an
+# existing login session is present and the module refuses to create a new one.
+# More details: https://bugs.debian.org/825949, https://github.com/systemd/systemd/issues/7451
+
+if [ "`id -u`" -ne 0 ] && [ -n "${SUDO_USER}" ] && [ -z "${XDG_RUNTIME_DIR}" ] ; then
+    XDG_RUNTIME_DIR="/run/user/${UID}"
+    export XDG_RUNTIME_DIR
+fi

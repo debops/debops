@@ -13,7 +13,7 @@
 
 # The ``debops.elasticsearch`` role uses the ``debops.elatic_co`` Ansible role
 # to configure the Elastic APT repositories and install the packages. The role
-# also installs the Ansible facts that provide the :command:`elasticsearch`
+# also installs the Ansible facts that provide the ``elasticsearch``
 # version.
 
 # .. envvar:: elasticsearch__base_packages [[[
@@ -60,7 +60,7 @@ elasticsearch__group: 'elasticsearch'
 # .. envvar:: elasticsearch__inventory_group_all [[[
 #
 # Name of the Ansible inventory group which contains Elasticsearch host in
-# a "homogenous" configuration (each node having the same functions as every
+# a "homogeneous" configuration (each node having the same functions as every
 # other node).
 elasticsearch__inventory_group_all: 'debops_service_elasticsearch'
 
@@ -128,7 +128,7 @@ elasticsearch__allow_tcp: []
 #
 # List of network interface names or IP addresses on which Elasticsearch should
 # listen for connections. By default, if :ref:`debops.ferm` firewall is enabled,
-# Elastisearch will listen on ``localhost`` and private IP addresses only. See
+# Elasticsearch will listen on ``localhost`` and private IP addresses only. See
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html
 # for more details.
 elasticsearch__network_host: '{{ [ "_local_", "_site_" ]
@@ -385,15 +385,13 @@ elasticsearch__default_configuration:
       Elasticsearch performs poorly when the system is swapping the memory.
 
   - name: 'path.data'
-    value: '/path/to/data'
-    state: 'comment'
+    value: '/var/lib/elasticsearch'
     comment: |
       Path to directory where to store the data
       (separate multiple locations by comma)
 
   - name: 'path.logs'
-    value: '/path/to/logs'
-    state: 'comment'
+    value: '/var/log/elasticsearch'
     comment: 'Path to log files'
 
                                                                    # ]]]

@@ -17,7 +17,7 @@ with the assumption that the host has network connectivity at that point.
 ifup-allow-boot.service
 -----------------------
 
-This :command:`systemd` unit will bring up all network interface that are
+This :command:`systemd` unit will bring up all network interfaces that are
 marked by ``allow-boot`` and ``allow-hotplug`` parameters at system boot time.
 It is run after the :file:`networking.service` unit and will use the command
 :command:`systemctl start ifup@<interface>.service` to start the interfaces, so

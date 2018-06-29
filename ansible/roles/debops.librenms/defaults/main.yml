@@ -63,6 +63,13 @@ librenms__domain: '{{ ansible_local.core.domain
                       else (ansible_domain if ansible_domain else ansible_hostname) }}'
 
                                                                    # ]]]
+# .. envvar:: librenms__base_url [[[
+#
+# You can use this to force a particular hostname or port in LibreNMS, to for
+# example publish it behind a HTTP proxy.
+librenms__base_url: '/'
+
+                                                                   # ]]]
 # .. envvar:: librenms__nginx_auth_realm [[[
 #
 # Text displayed in the nginx HTTP Auth window when access policy is enabled.
@@ -438,6 +445,7 @@ librenms__config_authentication:
 librenms__config_installation:
   comment: 'Application directories, installation'
   install_dir: '{{ librenms__install_path }}'
+  base_url:    '{{ librenms__base_url }}'
   rrd_dir:     '{{ librenms__rrd_dir }}'
   log_dir:     '{{ librenms__log_dir }}'
   update:      '{{ librenms__update }}'
@@ -520,8 +528,10 @@ librenms__logrotate__dependent_config:
 # .. envvar:: librenms__php__dependent_packages [[[
 #
 # List of PHP packages to install by ``debops.php`` role.
-librenms__php__dependent_packages: [ 'mysql', 'gmp', 'gd', 'snmp',
-                                     'curl', 'mcrypt', 'json' ]
+librenms__php__dependent_packages:
+  - [ 'mysql', 'gmp', 'gd', 'snmp', 'curl', 'mcrypt', 'json' ]
+  - '{{ [ "xml", "mbstring", "zip" ]
+        if (php__version is version_compare("7.0",">=")) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__php__dependent_pools [[[
@@ -546,7 +556,7 @@ librenms__nginx__dependent_upstreams:
 #
 # The server configuration for ``debops.nginx`` Ansible role.
 librenms__nginx__dependent_servers:
- -  by_role: 'debops.librenms'
+  - by_role: 'debops.librenms'
     type: 'php'
     name: [ '{{ librenms__fqdn }}' ]
     root: '{{ librenms__install_path + "/html" }}'

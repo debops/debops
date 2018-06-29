@@ -116,7 +116,7 @@
     state: 'import'
     target: '{{ phpipam_database_schema }}'
   when: (phpipam_database_host == 'localhost' and
-         (phpipam_register_database_status is defined and phpipam_register_database_status.changed) and
+         (phpipam_register_database_status is defined and phpipam_register_database_status is changed) and
          (phpipam_register_configuration is defined and not phpipam_register_configuration.stat.exists))
 
 - name: Configure phpIPAM
@@ -134,4 +134,3 @@
     owner: '{{ phpipam_user }}'
     group: '{{ phpipam_group }}'
     mode: '0755'
-

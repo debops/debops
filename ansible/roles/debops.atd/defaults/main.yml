@@ -1,22 +1,24 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.atd default variables
+# ============================
 
 # .. contents:: Sections
 #    :local:
 
-# -------------------------------
-#   Job scheduler configuration
+
+# Job scheduler configuration [[[
 # -------------------------------
 
-# .. envvar:: atd_enabled
+# .. envvar:: atd_enabled [[[
 #
 # Enable or disable support for :command:`at` and :command:`batch` commands. Setting this
 # variable to ``False`` will uninstall the ``at`` package.
 atd_enabled: True
 
-
-# .. envvar:: atd_default_allow
+                                                                   # ]]]
+# .. envvar:: atd_default_allow [[[
 #
 # List of default UNIX user accounts which are allowed to use :command:`at` and
 # :command:`batch` commands. If this list is empty and ``atd_allow`` is also empty, any
@@ -26,8 +28,8 @@ atd_default_allow: [ '{{ (ansible_user
                               ansible_user != "root")
                           else lookup("env","USER")) }}' ]
 
-
-# .. envvar:: atd_allow
+                                                                   # ]]]
+# .. envvar:: atd_allow [[[
 #
 # List of UNIX user accounts which are allowed to use :command:`at` and :command:`batch`. If
 # this list is empty any user can use them as long as the :file:`/etc/at.deny` file is
@@ -35,8 +37,8 @@ atd_default_allow: [ '{{ (ansible_user
 # used for user accounts on all hosts in the cluster.
 atd_allow: []
 
-
-# .. envvar:: atd_group_allow
+                                                                   # ]]]
+# .. envvar:: atd_group_allow [[[
 #
 # List of UNIX user accounts which are allowed to use :command:`at` and :command:`batch`. If
 # this list is empty any user can use them as long as the :file:`/etc/at.deny` file is
@@ -45,8 +47,8 @@ atd_allow: []
 # supported at a time.
 atd_group_allow: []
 
-
-# .. envvar:: atd_host_allow
+                                                                   # ]]]
+# .. envvar:: atd_host_allow [[[
 #
 # List of UNIX user accounts which are allowed to use :command:`at` and :command:`batch`. If
 # this list is empty any user can use them as long as the :file:`/etc/at.deny` file is
@@ -54,53 +56,52 @@ atd_group_allow: []
 # used for user accounts on specific hosts.
 atd_host_allow: []
 
-
-# .. envvar:: atd_default_deny
+                                                                   # ]]]
+# .. envvar:: atd_default_deny [[[
 #
 # List of default UNIX user accounts which are denied access to :command:`at` and
 # :command:`batch` commands.
 atd_default_deny: []
 
-
-# .. envvar:: atd_deny
+                                                                   # ]]]
+# .. envvar:: atd_deny [[[
 #
 # List of UNIX user accounts which are denied access to :command:`at` and :command:`batch`
 # commands.
 atd_deny: []
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Batch job scheduler configuration [[[
 # -------------------------------------
-#   Batch job scheduler configuration
-# -------------------------------------
 
-# .. envvar:: atd_batch_base
+# .. envvar:: atd_batch_base [[[
 #
 # Base number of CPU threads that will be used to calculate minimum load
 # average which prevents job execution.
 atd_batch_base: '{{ ansible_processor_vcpus }}'
 
-
-# .. envvar:: atd_multiplier_min
+                                                                   # ]]]
+# .. envvar:: atd_multiplier_min [[[
 #
 # Minimum percentage of CPU load average boundary.
 atd_multiplier_min: '80'
 
-
-# .. envvar:: atd_multiplier_max
+                                                                   # ]]]
+# .. envvar:: atd_multiplier_max [[[
 #
 # Maximum percentage of CPU load average boundary.
 atd_multiplier_max: '100'
 
-
-# .. envvar:: atd_batch_multiplier
+                                                                   # ]]]
+# .. envvar:: atd_batch_multiplier [[[
 #
 # This variable will be multiplied the by number of CPUs available on a host to
 # modify the final CPU load average which prevents batch job execution.
 atd_batch_multiplier: '{{ ((atd_multiplier_max | int |
                             random(atd_multiplier_min | int)) / 100) }}'
 
-
-# .. envvar:: atd_batch_load
+                                                                   # ]]]
+# .. envvar:: atd_batch_load [[[
 #
 # CPU load average which will prevent batch job execution and will hold the
 # batch queue.
@@ -110,20 +111,20 @@ atd_batch_load: '{{ (ansible_local.atd.batch_load
                      else ((atd_batch_base | float) *
                            (atd_batch_multiplier | float))) }}'
 
-
-# .. envvar:: atd_interval_min
+                                                                   # ]]]
+# .. envvar:: atd_interval_min [[[
 #
 # Minimum time between batch job execution in seconds.
 atd_interval_min: '30'
 
-
-# .. envvar:: atd_interval_max
+                                                                   # ]]]
+# .. envvar:: atd_interval_max [[[
 #
 # Maximum time between batch job execution in seconds.
 atd_interval_max: '120'
 
-
-# .. envvar:: atd_batch_interval
+                                                                   # ]]]
+# .. envvar:: atd_batch_interval [[[
 #
 # Time in seconds between batch job execution.
 atd_batch_interval: '{{ (ansible_local.atd.batch_interval
@@ -131,4 +132,5 @@ atd_batch_interval: '{{ (ansible_local.atd.batch_interval
                              ansible_local.atd.batch_interval|d())
                          else (atd_interval_max | int |
                                random(atd_interval_min | int))) }}'
-
+                                                                   # ]]]
+                                                                   # ]]]

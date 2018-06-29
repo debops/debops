@@ -27,7 +27,9 @@
 # - ``mysql-5.7_galera-3``: use MySQL 5.7 engine with Galera from Codership
 #   repository
 #
-# - ``percona``: use Percona XtraDB engine from upstream repository
+# - ``percona``: use Percona default version XtraDB engine from upstream repository
+#
+# - ``percona-5.7``: use Percona 5.7 XtraDB engine from upstream repository
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
@@ -64,6 +66,7 @@ mariadb_server__apt_key_map:
   'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
   'mysql-5.7_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
   'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+  'percona-5.7':        '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__upstream_version [[[
@@ -92,6 +95,7 @@ mariadb_server__apt_repository_map:
     - 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
     - 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
   'percona':            'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+  'percona-5.7':        'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__base_packages [[[
@@ -118,6 +122,7 @@ mariadb_server__packages_map:
   'mysql-5.6_galera-3': [ 'mysql-wsrep-server-5.6', 'galera-3', 'galera-arbitrator-3' ]
   'mysql-5.7_galera-3': [ 'mysql-wsrep-server-5.7', 'galera-3', 'galera-arbitrator-3' ]
   'percona': [ 'percona-server-server' ]
+  'percona-5.7': [ 'percona-server-server-5.7' ]
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[
@@ -155,10 +160,16 @@ mariadb_server__allow: []
 mariadb_server__max_connections: '100'
 
                                                                    # ]]]
+# .. envvar:: mariadb_server__default_datadir [[[
+#
+# Default directory to store data
+mariadb_server__default_datadir: '/var/lib/mysql'
+
+                                                                   # ]]]
 # .. envvar:: mariadb_server__datadir [[[
 #
 # Directory to store data
-mariadb_server__datadir: '/var/lib/mysql'
+mariadb_server__datadir: '{{ mariadb_server__default_datadir }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__delegate_to [[[
@@ -239,7 +250,7 @@ mariadb_server__mysqld_pki_options:
 mariadb_server__mysqld_cluster_options:
   name: 'cluster-options'
   comment: 'Required for cluster operation'
-  state: '{{ "present" if mariadb_server__flavor in [ "mysql-5.6_galera-3", "percona" ] else "absent" }}'
+  state: '{{ "present" if mariadb_server__flavor in [ "mysql-5.6_galera-3", "percona", "percona-5.7" ] else "absent" }}'
   options:
     'binlog_format': 'ROW'
     'default_storage_engine': 'InnoDB'

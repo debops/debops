@@ -9,7 +9,7 @@ debops.fcgiwrap
    introduction
    getting-started
    defaults
-   defaults-configuration
+   defaults-detailed
    copyright
 
 ..

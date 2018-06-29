@@ -80,10 +80,10 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_pages_target_tag
-  changed_when: gitlab_register_pages_target_tag.stdout != gitlab_version_map[gitlab_version].pages
+  changed_when: gitlab_register_pages_target_tag.stdout != gitlab__fact_version.pages
 
 - name: Checkout gitlab-pages
-  command: git checkout -f {{ gitlab_version_map[gitlab_version].pages }}
+  command: git checkout -f {{ gitlab__fact_version.pages }}
   environment:
     GIT_WORK_TREE: '{{ gitlab_pages_checkout }}'
   args:
@@ -91,7 +91,7 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_pages_checkout
-  when: (gitlab_version_map[gitlab_version].pages|d() != gitlab_register_pages_target_tag.stdout|d()) or (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
+  when: (gitlab__fact_version.pages|d() != gitlab_register_pages_target_tag.stdout|d()) or (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
 
 - name: Setup gitlab-pages
   make:
@@ -100,4 +100,4 @@
     GOPATH: '{{ gitlab_app_root_path }}/go'
   become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_pages_checkout|changed
+  when: gitlab_register_pages_checkout is changed

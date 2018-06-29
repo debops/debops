@@ -8,6 +8,14 @@
   when: owncloud__webserver == "apache"
   with_flattened: '{{ owncloud__apache_modules }}'
 
+- name: Ensure restrictive permissions are set for the data directory
+  file:
+    path: '{{ owncloud__data_path }}'
+    state: 'directory'
+    owner: '{{ owncloud__app_user }}'
+    group: '{{ owncloud__app_group }}'
+    mode: '0770'
+
 # ownCloud ./config/ [[[
 
 - name: Install ownCloud config file
@@ -72,8 +80,6 @@
 
 - name: Get ownCloud setup status
   command: '{{ owncloud__occ_bin_file_path | quote }} check'
-  args:
-    executable: '/bin/sh'
   register: owncloud__register_occ_check
   changed_when: False
 
@@ -81,7 +87,7 @@
   set_fact:
     owncloud__do_autosetup: '{{ (owncloud__autosetup and
                                  owncloud__admin_username != "" and
-                                 (not owncloud__register_occ_check|skipped) and
+                                 (owncloud__register_occ_check is not skipped) and
                                  "is not installed" in owncloud__register_occ_check.stdout) }}'
 
 - name: Automatically finish setup via the occ tool
@@ -97,8 +103,6 @@
            '--admin-user={{ owncloud__admin_username }}'
            '--admin-pass={{ owncloud__admin_password }}'
            {% endif %}
-  args:
-    executable: '/bin/sh'
   register: owncloud__register_occ_install
   when: owncloud__do_autosetup|bool and owncloud__release not in [ '8.0' ]
   ## Did not work with 8.1.6-2.1 because of https://github.com/owncloud/core/issues/17583
@@ -194,13 +198,9 @@
 
 - name: Check ownCloud core integrity
   command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
-  args:
-    executable: '/bin/sh'
   register: owncloud__register_occ_integrity_check_core
-  failed_when: (owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
+  failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
   changed_when: False
-  # As of ownCloud 9.0.4, the results from `occ` don’t match the web interface output?
-  # Seems to work with ownCloud 9.0.8 and Nextcloud 11.
-  when: (owncloud__release | version_compare("9.0.8", ">="))
+  when: (owncloud__release is version_compare("9.0.8", ">="))
 
 # ]]]

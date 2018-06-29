@@ -41,7 +41,7 @@
     name: 'fcgiwrap'
     state: 'stopped'
     enabled: False
-  when: fcgiwrap__disable_default|bool and fcgiwrap__register_install.changed|bool
+  when: fcgiwrap__disable_default|bool and fcgiwrap__register_install is changed
 
 - name: Configure fcgiwrap instances in sysvinit
   include: configure_sysvinit.yml
@@ -52,4 +52,3 @@
   include: configure_systemd.yml
   when: (ansible_local|d() and ansible_local.init|d() and
           ansible_local.init == 'systemd')
-

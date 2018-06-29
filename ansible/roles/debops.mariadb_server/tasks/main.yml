@@ -49,6 +49,13 @@
     - '{{ "automysqlbackup" if mariadb_server__backup|bool else [] }}'
   register: mariadb_server__register_install_status
 
+- name: Stop database server on first install
+  service:
+    name: 'mysql'
+    state: 'stopped'
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
+
 - name: Add database server user to specified groups
   user:
     name: 'mysql'
@@ -70,6 +77,13 @@
     group: 'mysql'
     mode: '0755'
 
+- name: Move MariaDB data files to data directory
+  shell:
+    'mv {{ mariadb_server__default_datadir }}/* {{ mariadb_server__datadir }}'
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed) and
+         (mariadb_server__datadir != mariadb_server__default_datadir))
+
 - name: Configure database client on first install
   template:
     src: 'etc/mysql/conf.d/client.cnf.j2'
@@ -83,12 +97,12 @@
   include: 'configure_server.yml'
   tags: [ 'role::mariadb_server:configure' ]
 
-- name: Restart database server on first install
+- name: Start database server on first install
   service:
     name: 'mysql'
-    state: 'restarted'
+    state: 'started'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status|changed))
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
 
 - name: Secure database server
   include: 'secure_installation.yml'
@@ -113,4 +127,4 @@
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: mariadb_server__register_local_facts|changed
+  when: mariadb_server__register_local_facts is changed

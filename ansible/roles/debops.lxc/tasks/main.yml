@@ -8,27 +8,33 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened:
-    - '{{ lxc_distribution_packages[ansible_distribution] }}'
+    - '{{ lxc__base_packages }}'
+    - '{{ lxc__packages }}'
 
-- name: Check available LXC package version
-  shell: lxc-create --version
-  register: lxc_register_package_version
-  changed_when: False
+- name: Install custom LXC helper scripts
+  copy:
+    src: 'usr/local/bin/'
+    dest: '/usr/local/bin/'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
-# Configure LXC support when correct version is installed
-- include: configure_lxc.yml
-  when: (lxc_register_package_version is defined and
-         lxc_register_package_version.stdout | version_compare('1.0','>='))
+- name: Remove LXC configuration if requested
+  file:
+    path: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
+    state: 'absent'
+  with_items: '{{ lxc__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
 
-# Install backported Linux kernel on Debian Wheezy
-- include: install_kernel_from_backports.yml
-  when: (ansible_distribution == 'Debian' and
-         ansible_distribution_release == 'wheezy')
-
-# Manage LXC containers via Ansible when correct kernel is installed
-- include: manage_containers.yml
-  when: (lxc_containers is defined and lxc_containers) and
-        ansible_kernel | version_compare('3.10','>')
+- name: Generate LXC configuration
+  template:
+    src: 'etc/lxc/template.conf.j2'
+    dest: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ lxc__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -49,7 +55,7 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: lxc__register_facts|changed
+  when: lxc__register_facts is changed
 
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'lxc/post_main.yml') }}"

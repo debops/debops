@@ -371,7 +371,7 @@
     @if @ne($PUBLIC_IP,"") @if @ne($PRIVATE_IP,"") {
         table filter chain FORWARD {
 {%     if ferm__tpl_config['dmz_ports']|d() %}
-            protocol ({{ ferm__tpl_config['protocols']|d([ 'tcp' ]) | join(" ") }}) {
+            protocol ({{ ferm__tpl_config['protocol']|d([ 'tcp' ]) | join(" ") }}) {
 {%       if ferm__tpl_config['dmz_ports'] | length > 1 %}
                 mod multiport destination-ports ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
 {%       else %}
@@ -388,7 +388,7 @@
         table nat {
             chain PREROUTING {
 {%     if ferm__tpl_config['dmz_ports']|d() %}
-                protocol ({{ ferm__tpl_config['protocols']|d([ 'tcp' ]) | join(" ") }}) {
+                protocol ({{ ferm__tpl_config['protocol']|d([ 'tcp' ]) | join(" ") }}) {
 {%       if ferm__tpl_config['dmz_ports'] | length > 1 %}
                     mod multiport destination-ports ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
 {%       else %}

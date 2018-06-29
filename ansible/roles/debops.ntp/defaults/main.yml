@@ -100,6 +100,18 @@ ntp__servers_map:
 # Fudge local clock if time servers is not available.
 ntp__fudge: True
                                                                    # ]]]
+
+# .. envvar:: ntp__servers_as_pool [[[
+#
+# Treat NTP server addresses as pool addresses. The server name is expected
+# to resolve to multiple IP addresses which might change over time. This is
+# currently only supported by :program:`chrony`. Other NTP servers will
+# ignore this setting.
+ntp__servers_as_pool: '{{ False if ansible_distribution == "Debian"
+                                   and ansible_distribution_release == "jessie"
+                          else True }}'
+
+                                                                   # ]]]
                                                                    # ]]]
 # Timezone configuration [[[
 # --------------------------
@@ -202,7 +214,7 @@ ntp__ferm__dependent_rules:
     name: 'jump-filter-ntp'
     target: '{{ ntp__ferm_chain }}'
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -219,7 +231,7 @@ ntp__ferm__dependent_rules:
     recent_set_name: 'ntp-new'
     recent_log: False
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -239,7 +251,7 @@ ntp__ferm__dependent_rules:
     recent_target: '{{ ntp__ferm_recent_target }}'
     recent_log_prefix: 'ipt-recent-ntp: '
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -253,7 +265,7 @@ ntp__ferm__dependent_rules:
     role: 'ntp'
     role_weight: '40'
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
                                                                    # ]]]

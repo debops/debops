@@ -1,0 +1,27 @@
+#!/usr/bin/python3
+
+from __future__ import print_function
+from json import dumps
+from subprocess import Popen, PIPE
+import os
+import signal
+
+
+def run_command(command_args):
+    """Gather information about APT packages"""
+    process = Popen(command_args, stdout=PIPE, stderr=PIPE,
+                    preexec_fn=os.setsid)
+    stdout, stderr = process.communicate()
+    if stdout:
+        return stdout.decode('utf-8').strip().split('\n')
+    else:
+        return []
+
+
+output = {'installed':
+          run_command(["dpkg-query", "-f", "${binary:Package}\n", "-W"]),
+          'auto':      run_command(["apt-mark", "showauto"]),
+          'hold':      run_command(["apt-mark", "showhold"]),
+          'manual':    run_command(["apt-mark", "showmanual"])}
+
+print(dumps(output, sort_keys=True, indent=4))

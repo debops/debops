@@ -39,7 +39,8 @@ from debops import *
 from debops.cmds import *
 
 __author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
-__copyright__ = "Copyright 2014-2015 by Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel " \
+                "<h.goebel@crazy-compilers.com>"
 __licence__ = "GNU General Public License version 3 (GPL v3) or later"
 
 SKEL_DIRS = (
@@ -68,7 +69,7 @@ retry_files_enabled = False
 ;ssh_args = -o ControlMaster=auto -o ControlPersist=60s
 """
 
-DEFAULT_GITIGNORE = """\
+DEFAULT_GITIGNORE = r"""\
 ansible/{SECRET_NAME}
 {SECRET_NAME}
 {ENCFS_PREFIX}{SECRET_NAME}
@@ -151,15 +152,17 @@ def write_config_files(project_root):
     directory.
     """
     # Create .debops.cfg
-    write_file(os.path.join(project_root, DEBOPS_CONFIG), DEFAULT_DEBOPS_CONFIG)
+    write_file(os.path.join(project_root, DEBOPS_CONFIG),
+               DEFAULT_DEBOPS_CONFIG)
     # Create .gitignore
     write_file(os.path.join(project_root, '.gitignore'),
-               DEFAULT_GITIGNORE.format(SECRET_NAME=SECRET_NAME, ENCFS_PREFIX=ENCFS_PREFIX))
+               DEFAULT_GITIGNORE.format(SECRET_NAME=SECRET_NAME,
+                                        ENCFS_PREFIX=ENCFS_PREFIX))
 
     hosts_filename = os.path.join(project_root, "ansible", INVENTORY, "hosts")
     # Swap in different hosts file content depending on the host's OS/distro
     if (platform.system() == "Linux" and
-        platform.linux_distribution()[0].lower() in ("debian", "ubuntu")):
+            platform.linux_distribution()[0].lower() in ("debian", "ubuntu")):
         write_file(hosts_filename,
                    HOSTS_FILE_HEADER, HOSTS_FILE_CONTENT_CONTROLER)
     else:
@@ -171,18 +174,19 @@ def main(project_root):
     orig_project_root = project_root
     project_root = os.path.abspath(project_root)
 
-    #-- Check for existing debops project directory
+    # Check for existing debops project directory
     debops_project_root = find_debops_project(project_root, required=False)
 
     # Exit if DebOps configuration file has been found in project_dir
     if os.path.exists(os.path.join(project_root, DEBOPS_CONFIG)):
         error_msg("%s is already a DebOps project directory" % project_root)
 
-    # Exit if we are in a DebOps project dir and nested project would be created
+    # Exit if we are in a DebOps project dir and nested project
+    # would be created
     if debops_project_root:
         error_msg("You are inside %s project already" % debops_project_root)
 
-    #-- Main script
+    # Main script
 
     print("Creating new DebOps project directory in", orig_project_root, "...")
 

@@ -42,17 +42,17 @@ def ldappassword(secret, schema='SHA', salt=None):
             'Unknown/unsupported storage schema: {}'.format(schema))
 
     h = hashlib.new(htype)
-    h.update(secret)
+    h.update(secret.encode())
 
     if schema in ('SSHA', 'SMD5'):
         if salt is None:
-            salt = os.urandom(4)
+            salt = base64.standard_b64encode(os.urandom(4))
         h.update(salt)
     else:
-        salt = ''
+        salt = ''.encode()
 
     rv = base64.standard_b64encode(h.digest()+salt)
-    return '{{{}}}{}'.format(schema, rv)
+    return '{{{}}}{}'.format(schema, rv.decode())
 
 
 class FilterModule(object):

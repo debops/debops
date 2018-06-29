@@ -29,6 +29,7 @@ debops-padlock: encrypt secret directory with EncFS and GPG
 
 from __future__ import print_function
 
+import sys
 import os
 import shutil
 import argparse
@@ -77,7 +78,11 @@ def main(subcommand_func, **kwargs):
     # ---- Main script ----
 
     # Make sure required commands are present
-    require_commands('encfs', 'find', 'fusermount', 'gpg')
+    # OS X compatibility
+    if sys.platform == 'darwin':
+        require_commands('encfs', 'find', 'umount', 'gpg')
+    else:
+        require_commands('encfs', 'find', 'fusermount', 'gpg')
 
     inventory_path = find_inventorypath(project_root, required=False)
     # If inventory hasn't been found automatically, assume it's the default
@@ -119,7 +124,7 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     gpg = subprocess.Popen(['gpg', '--encrypt', '--armor',
                             '--output', encfs_keyfile] + recipients,
                            stdin=subprocess.PIPE)
-    gpg.communicate(pwd)
+    gpg.communicate(pwd.encode('utf-8'))
 
     # Mount the encfs to the config file will be written. Tell encfs
     # it to ask gpg for the password.
@@ -132,7 +137,7 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
         '--extpass',
         'gpg --no-mdc-warning --output - '+shquote(encfs_keyfile)],
         stdin=subprocess.PIPE)
-    encfs.communicate('p\n'+pwd)
+    encfs.communicate(('p\n'+pwd).encode('utf-8'))
 
     # Create padlock-script
     padlock_script = os.path.join(encfs_encrypted, PADLOCK_CMD)

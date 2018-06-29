@@ -97,14 +97,43 @@
     mode: '0755'
   when: dhparam__deploy_state in ['present']
 
-- name: Enable periodic DH parameters generation
+- name: Enable periodic DH parameters generation via cron
   cron:
     name: 'Generate new Diffie-Hellman ephemeral parameters'
     job: 'test -x {{ dhparam__generate_params }} && {{ dhparam__generate_params }} schedule'
     cron_file: 'dhparam-generate-params'
     user: 'root'
     special_time: '{{ dhparam__generate_cron_period }}'
-    state: '{{ "present" if (dhparam__generate_cron|bool and dhparam__deploy_state in ["present"]) else "absent" }}'
+    state: '{{ "present"
+               if (ansible_service_mgr != "systemd" and
+                   dhparam__generate_cron|bool and
+                   dhparam__deploy_state in ["present"])
+               else "absent" }}'
+
+- name: Setup systemd timer for periodic DH parameter regeneration
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/systemd/system/dhparam-generate-params.service'
+    - 'etc/systemd/system/dhparam-generate-params.timer'
+  register: dhparam__register_systemd
+  when: dhparam__deploy_state in ['present'] and ansible_service_mgr == 'systemd'
+
+- name: Enable systemd timer
+  systemd:
+    daemon_reload: True
+    name: 'dhparam-generate-params.timer'
+    enabled: '{{ True
+                 if (dhparam__generate_cron|bool)
+                 else False }}'
+    state: '{{ "started"
+                 if (dhparam__generate_cron|bool)
+                 else "stopped" }}'
+  when: dhparam__deploy_state in ['present'] and ansible_service_mgr == 'systemd'
 
 - name: Make sure the Ansible local facts directory exists
   file:
@@ -126,4 +155,4 @@
 
 - name: Gather facts if they changed
   action: setup
-  when: dhparam_register_facts|changed
+  when: dhparam_register_facts is changed

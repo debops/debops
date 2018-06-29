@@ -63,6 +63,15 @@
     mode: '0755'
   when: machine__enabled|bool
 
+- name: Ensure that required directories exist on older OS releases
+  file:
+    path: '/etc/tmpfiles.d/'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
+
 - name: Fix issue with dynamic MOTD on older OS releases
   template:
     src: 'etc/tmpfiles.d/motd-dynamic.conf.j2'
@@ -71,12 +80,12 @@
     group: 'root'
     mode: '0644'
   register: machine__register_tmpfiles
-  when: machine__enabled|bool and ansible_distribution_release in [ 'wheezy', 'jessie' ]
+  when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
 
 - name: Create /run/motd.dynamic symlink
   command: systemd-tmpfiles --create
   when: machine__enabled|bool and ansible_service_mgr == 'systemd' and
-        machine__register_tmpfiles|changed
+        machine__register_tmpfiles is changed
 
 - name: Check current MOTD diversions
   environment:
@@ -130,7 +139,7 @@
     - '{{ machine__register_motd_scripts_removed.results }}'
     - '{{ machine__register_motd_scripts_created.results }}'
   when: (item.item.name|d() and not (item.item.divert|d())|bool and
-         item.item.filename is undefined and item.changed|bool)
+         item.item.filename is undefined and item is changed)
 
 - name: Revert packaged MOTD scripts
   shell: rm -f /etc/update-motd.d/{{ item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }} ; dpkg-divert --quiet --local --rename --remove /etc/update-motd.d/{{ item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}
@@ -163,4 +172,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: machine__register_facts|changed
+  when: machine__register_facts is changed

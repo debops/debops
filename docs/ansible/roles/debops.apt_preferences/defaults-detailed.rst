@@ -14,7 +14,7 @@ examples for them.
 apt_preferences__list
 ---------------------
 
-List of :manpage:`apt_preferences(5)` "pins", each pin is defined by a YAML
+List of :man:`apt_preferences(5)` "pins", each pin is defined by a YAML
 dictionary. Supported parameters:
 
 ``package`` or ``packages``

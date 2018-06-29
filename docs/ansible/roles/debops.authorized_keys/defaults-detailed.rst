@@ -41,7 +41,7 @@ These parameters are related to SSH public key management:
 ``options``
   Optional. String or list of SSH options which should be set for each key
   specified on the ``sshkeys`` list. You can find more about available options
-  in :manpage:`authorized_keys(5)`.
+  in :man:`authorized_keys(5)`.
 
   If this parameter is not specified, SSH public keys will use options set in
   the :envvar:`authorized_keys__default_options` variable. To override this variable

@@ -20,7 +20,7 @@ variables are YAML dictionaries which contain global Mosquitto configuration
 stored in the :file:`/etc/mosquitto/conf.d/00_default.conf` configuration file.
 They are combined together, therefore it is possible to override the default
 options using the Ansible inventory. The Mosquitto configuration reference can
-be found in the :manpage:`mosquitto.conf(5)` manual page.
+be found in the :man:`mosquitto.conf(5)` manual page.
 
 Each key of the YAML dictionary is a Mosquitto option name. Dictionary keys
 cannot be specified by variable substitution. If the value is a string, it is
@@ -86,7 +86,7 @@ dictionary, with keys being the :command:`mosquitto` configuration options, and
 values being the option values; the format is similar to the one used in the
 :ref:`mosquitto__ref_options` configuration. You can find the possible
 configuration options and their meaning in the ``LISTENERS`` section of the
-:manpage:`mosquitto.conf(5)` manual page.
+:man:`mosquitto.conf(5)` manual page.
 
 The role knows about additional listener parameters, which are used to manage
 the configuration:
@@ -142,7 +142,7 @@ dictionary, with keys being the :command:`mosquitto` configuration options, and
 values being the option values; the format is similar to the one used in the
 :ref:`mosquitto__ref_options` configuration. You can find the possible
 configuration options and their meaning in the ``CONFIGURING BRIDGES`` section
-of the :manpage:`mosquitto.conf(5)` manual page.
+of the :man:`mosquitto.conf(5)` manual page.
 
 The role knows about additional bridge parameters, which are used to manage
 the configuration:

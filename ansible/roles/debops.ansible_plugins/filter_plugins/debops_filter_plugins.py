@@ -23,6 +23,12 @@
 from __future__ import (absolute_import, division, print_function)
 from operator import itemgetter
 
+try:
+    unicode = unicode
+except NameError:
+    # py3
+    unicode = str
+
 __metaclass__ = type
 
 
@@ -42,7 +48,8 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                                                  float, bool, dict))):
                 current_data.update({'value': new_value})
 
-            if (old_value is not None and old_state in ['comment']):
+            if (old_value is not None and old_state in ['comment'] and
+                    current_data['state'] != 'comment'):
                 current_data.update({'state': 'present'})
 
         elif isinstance(new_value, list):
@@ -63,8 +70,8 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                             'state': 'present'})
 
                         dict_element['real_weight'] = (
-                            int(dict_element.get('id'))
-                            + int(dict_element.get('weight')))
+                            int(dict_element.get('id')) +
+                            int(dict_element.get('weight')))
 
                         dict_value.update({element: dict_element})
                         current_data.update({'value': dict_value})
@@ -91,18 +98,18 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                                     in dict_value.keys()):
                                 id_src = element.get('copy_id_from')
                                 dict_element['id'] = (
-                                    int(dict_value[id_src].get('id'))
-                                    + int(dict_value[id_src].get('weight', 0)))
+                                    int(dict_value[id_src].get('id')) +
+                                    int(dict_value[id_src].get('weight', 0)))
 
                         if 'weight' in element:
                             dict_element['weight'] = (
                                 int(element.get('weight',
-                                    dict_element.get('weight', 0)))
-                                + int(dict_element.get('weight', 0)))
+                                    dict_element.get('weight', 0))) +
+                                int(dict_element.get('weight', 0)))
 
                         dict_element['real_weight'] = (
-                            int(dict_element.get('id'))
-                            + int(dict_element.get('weight')))
+                            int(dict_element.get('id')) +
+                            int(dict_element.get('weight')))
 
                         # Include any unknown keys
                         for key in element.keys():
@@ -173,18 +180,18 @@ def parse_kv_config(*args, **kwargs):
                     if element.get('copy_id_from') in parsed_config.keys():
                         id_src = element.get('copy_id_from')
                         current_param['id'] = (
-                            int(parsed_config[id_src].get('id'))
-                            + int(parsed_config[id_src].get('weight', 0)))
+                            int(parsed_config[id_src].get('id')) +
+                            int(parsed_config[id_src].get('weight', 0)))
 
                 if 'weight' in element:
                     current_param['weight'] = (
                         int(element.get('weight',
-                            current_param.get('weight', 0)))
-                        + int(current_param.get('weight', 0)))
+                            current_param.get('weight', 0))) +
+                        int(current_param.get('weight', 0)))
 
                 current_param['real_weight'] = (
-                    int(current_param.get('id'))
-                    + int(current_param.get('weight')))
+                    int(current_param.get('id')) +
+                    int(current_param.get('weight')))
 
                 _parse_kv_value(current_param, element,
                                 current_param.get('id'))
@@ -223,8 +230,8 @@ def parse_kv_config(*args, **kwargs):
                     })
 
                     current_param['real_weight'] = (
-                        int(current_param.get('id'))
-                        + int(current_param.get('weight')))
+                        int(current_param.get('id')) +
+                        int(current_param.get('weight')))
 
                     _parse_kv_value(current_param,
                                     {'value': value},
@@ -324,18 +331,18 @@ def parse_kv_items(*args, **kwargs):
                     if element.get('copy_id_from') in parsed_config.keys():
                         id_src = element.get('copy_id_from')
                         current_param['id'] = (
-                            int(parsed_config[id_src].get('id'))
-                            + int(parsed_config[id_src].get('weight', 0)))
+                            int(parsed_config[id_src].get('id')) +
+                            int(parsed_config[id_src].get('weight', 0)))
 
                 if 'weight' in element:
                     current_param['weight'] = (
                         int(element.get('weight',
-                            current_param.get('weight', 0)))
-                        + int(current_param.get('weight', 0)))
+                            current_param.get('weight', 0))) +
+                        int(current_param.get('weight', 0)))
 
                 current_param['real_weight'] = (
-                    int(current_param.get('id'))
-                    + int(current_param.get('weight')))
+                    int(current_param.get('id')) +
+                    int(current_param.get('weight')))
 
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
@@ -406,5 +413,5 @@ class FilterModule(object):
     def filters(self):
         return {
             'parse_kv_config': parse_kv_config,
-            'parse_kv_items':  parse_kv_items
+            'parse_kv_items': parse_kv_items
         }

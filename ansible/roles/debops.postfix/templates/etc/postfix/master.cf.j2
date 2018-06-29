@@ -6,7 +6,7 @@
 #
 # Do not forget to execute "postfix reload" after editing this file.
 #
-{% set postfix__tpl_default_chroot = ((postfix__version | version_compare("3.0.0", "<")) | ternary('yes', 'no')) %}
+{% set postfix__tpl_default_chroot = ((postfix__version is version_compare("3.0.0", "<")) | ternary('yes', 'no')) %}
 # ==========================================================================
 # service type  private unpriv  chroot  wakeup  maxproc command + args
 {{ "# {:<8}{:<6}{:<8}{:<8}{:<8}{:<8}{}".format('', '', '(yes)', '(yes)', '(' + postfix__tpl_default_chroot + ')', '(never)', '(100)') }}
@@ -52,7 +52,7 @@
 {%     set element_unpriv =   set_value(element.unpriv) | from_json %}
 {%     set element_chroot =   set_value(element.chroot) | from_json %}
 {%     if element_chroot == postfix__tpl_default_chroot[0] %}
-{%       if postfix__version | version_compare("3.0.0", "<") %}
+{%       if postfix__version is version_compare("3.0.0", "<") %}
 {%         set element_chroot = '-' %}
 {%       endif %}
 {%     endif %}

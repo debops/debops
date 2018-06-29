@@ -54,27 +54,10 @@ bootstrap__hostname_v6_loopback: False
 # APT and packages [[[
 # --------------------
 
-# .. envvar:: bootstrap__raw [[[
-#
-# Ensure :envvar:`bootstrap__mandatory_packages` are installed using ``raw`` Ansible
-# module before proceeding.
-bootstrap__raw: True
-
-                                                                   # ]]]
-# .. envvar:: bootstrap__mandatory_packages [[[
-#
-# Mandatory packages installed during bootstrap.
-bootstrap__mandatory_packages:
-  - 'python'
-  - 'python-apt'
-
-                                                                   # ]]]
 # .. envvar:: bootstrap__base_packages [[[
 #
 # Base packages installed during bootstrap.
 bootstrap__base_packages:
-  - 'python-pip'
-  - 'sudo'
   - 'lsb-release'
   - 'dbus'
 
@@ -129,7 +112,11 @@ bootstrap__admin_users: []
 #
 # All new user accounts will have their home directories in the first group
 # listed here as well, to allow easier communication between administrators.
-bootstrap__admin_groups: [ 'admins', 'staff', 'adm', 'sudo' ]
+bootstrap__admin_groups: '{{ ansible_local.system_groups.access.root
+                             if (ansible_local|d() and ansible_local.system_groups|d() and
+                                 ansible_local.system_groups.access|d() and
+                                 ansible_local.system_groups.access.root|d())
+                             else [ "admins" ] }}'
 
                                                                    # ]]]
 # .. envvar:: bootstrap__admin_home_path [[[
@@ -181,21 +168,6 @@ bootstrap__admin_shell: '/bin/bash'
 # which you don't like to be included, please modify the variable accordingly
 # to your requirements.
 bootstrap__admin_sshkeys: [ '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true") }}' ]
-                                                                   # ]]]
-                                                                   # ]]]
-# Access to sudo commands [[[
-# ---------------------------
-
-# .. envvar:: bootstrap__sudo [[[
-#
-# Configure passwordless :command:`sudo` access for selected accounts.
-bootstrap__sudo: True
-
-                                                                   # ]]]
-# .. envvar:: bootstrap__sudo_group [[[
-#
-# A group which grants passwordless :command:`sudo` access.
-bootstrap__sudo_group: '{{ bootstrap__admin_groups[0] | default("") }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

@@ -1,5 +1,15 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# debops.phpipam default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# .. envvar:: phpipam_mode [[[
+#
 # What parts of the "phpIPAM stack" to enable:
 #
 # - ``webui``: configure the Web interface
@@ -8,104 +18,210 @@
 #
 phpipam_mode: [ 'webui', 'scripts' ]
 
-
+                                                                   # ]]]
 # ---- Basic configuration options ----
 
+# .. envvar:: phpipam_dependencies [[[
+#
 # Should phpipam role manage it's own dependencies?
 phpipam_dependencies: True
 
+                                                                   # ]]]
+# .. envvar:: phpipam_domain [[[
+#
 # Domain on which phpIPAM is configured in nginx
 phpipam_domain: [ 'ipam.{{ ansible_domain }}' ]
 
+                                                                   # ]]]
+# .. envvar:: phpipam_nginx_auth_realm [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_nginx_auth_realm: 'IPAM access is restricted'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_nginx_access_policy [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_nginx_access_policy: ''
 
-
+                                                                   # ]]]
 # ---- User, group, database configuration ----
 
+# .. envvar:: phpipam_user [[[
+#
 # System user and group for phpIPAM application
 phpipam_user: 'phpipam'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_group [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_group: 'phpipam'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_home [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_home: '{{ (ansible_local.root.home
                    if (ansible_local|d() and ansible_local.root|d() and
                        ansible_local.root.home|d())
                    else "/var/local") + "/" + phpipam_user }}'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_database_user [[[
+#
 # phpIPAM MySQL database configuration
 phpipam_database_user: 'phpipam'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_database_host [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_database_host: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_database_name [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_database_name: 'phpipam'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_database_password [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/mysql/' + phpipam_database_user + '/password length=30') }}"
 
-
+                                                                   # ]]]
 # ---- Base application directories ----
 
+# .. envvar:: phpipam_src [[[
+#
 # Base path for git bare repository with phpIPAM source
 phpipam_src: '{{ (ansible_local.root.src
                   if (ansible_local|d() and ansible_local.root|d() and
                       ansible_local.root.src|d())
                   else "/usr/local/src") + "/" + phpipam_user }}'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_www [[[
+#
 # Base web root directory for phpIPAM website
 phpipam_www: '{{ (ansible_local.nginx.www if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.www is defined) else "/srv/www") + "/" + phpipam_user }}'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_webserver_user [[[
+#
 # phpIPAM webserver user (needs read-only access to the website code)
 phpipam_webserver_user: '{{ ansible_local.nginx.user if (ansible_local is defined and ansible_local.nginx is defined and ansible_local.nginx.user is defined) else "www-data" }}'
 
-
+                                                                   # ]]]
 # ---- git repository and checkout ----
 
+# .. envvar:: phpipam_git_repo [[[
+#
 # phpIPAM source repository
 phpipam_git_repo: 'https://github.com/debops/phpipam.git'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_git_dest [[[
+#
 # phpIPAM source directory on the host
 phpipam_git_dest: '{{ phpipam_src + "/" + phpipam_git_repo.split("://")[1] }}'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_git_version [[[
+#
 # phpIPAM git branch to deploy
 phpipam_git_version: 'master'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_git_checkout [[[
+#
 # Default path where phpIPAM source files will be deployed
 phpipam_git_checkout: '{{ phpipam_www + "/sites/" + phpipam_domain[0] + "/public" }}'
 
-
+                                                                   # ]]]
 # ---- Other variables ----
 
+# .. envvar:: phpipam_php_session_name [[[
+#
 # Custom PHP session name
 phpipam_php_session_name: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/php_session_name chars=hexdigits length=30') }}"
 
-
+                                                                   # ]]]
 # ---- phpipam-scripts ----
 
+# .. envvar:: phpipam_scripts_git_repo [[[
+#
 # phpIPAM scripts source repository
 phpipam_scripts_git_repo: 'https://github.com/debops/phpipam-scripts'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_git_dest [[[
+#
 # phpIPAM scripts source directory on the host
 phpipam_scripts_git_dest: '{{ "/usr/local/src/phpipam/" + phpipam_scripts_git_repo.split("://")[1] }}'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_git_version [[[
+#
 # phpIPAM scripts git branch to deploy
 phpipam_scripts_git_version: 'master'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_database_user [[[
+#
 # Database configuration for phpipam scripts
 phpipam_scripts_database_user: '{{ phpipam_database_user }}'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_database_host [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_scripts_database_host: '{{ phpipam_database_host }}'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_database_name [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_scripts_database_name: '{{ phpipam_database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_database_password [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 phpipam_scripts_database_password: '{{ phpipam_database_password }}'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_config_sections [[[
+#
 # List of phpIPAM sections to include in generated default configuration. If
 # none are specified, all sections will be included.
 phpipam_scripts_config_sections: []
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_config_subnets [[[
+#
 # List of phpIPAM subnets to include in generated default configuration. If
 # none are specified, all subnets will be included.
 phpipam_scripts_config_subnets: []
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_config_output [[[
+#
 # Default configuration file location
 phpipam_scripts_config_output: '/etc/dhcp/dhcpd-hosts.conf'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_config_restart_command [[[
+#
 # A command to issue after the configuration file is generated and changes were
 # noticed.
 phpipam_scripts_config_restart_command: '/etc/init.d/isc-dhcp-server restart'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_config_groups [[[
+#
 # Default configuration for phpipam-hosts script. It will create
 # a ``/etc/dhcp/dhcpd-hosts.conf`` file with all hosts configured in phpIPAM,
 # or just the sections/subnets specified above. If any changes are detected,
@@ -122,6 +238,10 @@ phpipam_scripts_config_groups:
     restart_command: '{{ phpipam_scripts_config_restart_command }}'
     restart: 'true'
 
+                                                                   # ]]]
+# .. envvar:: phpipam_scripts_cron_period [[[
+#
 # phpipam-hosts regeneration period in minutes (cron format)
 phpipam_scripts_cron_period: '*/5'
 
+                                                                   # ]]]

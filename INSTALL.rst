@@ -47,8 +47,9 @@ Debian
 
   On older Debian releases, you should consider installing Ansible by creating
   a ``.deb`` package from the official :command:`git` repository sources. You
-  can find a :command:`bootstrap-ansible.sh` script which can do this for you
-  automatically in the :ref:`debops.debops` Ansible role.
+  can find a :command:`bootstrap-ansible` script which can do this for you
+  automatically in the :ref:`debops.ansible` Ansible role :file:`files/`
+  subdirectory.
 
 macOS
   The ``debops`` Python package which contains scripts and modules used by the
@@ -152,7 +153,7 @@ DebOps monorepo
 
 If you installed DebOps using a Python package equal or newer than ``0.7.0``,
 the installation should include a set of DebOps playbooks and roles located in
-the ``debops`` Python pacakge directory. The scripts should automatically find
+the ``debops`` Python package directory. The scripts should automatically find
 them and use them as necessary.
 
 If you installed an older DebOps release, or you want to use the latest changes
@@ -210,3 +211,17 @@ commands available outside of the the Python virtual environment:
    ln -s debops-venv/bin/debops-init      /usr/local/bin/debops-init
    ln -s debops-venv/bin/debops-update    /usr/local/bin/debops-update
    ln -s debops-venv/bin/debops-defaults  /usr/local/bin/debops-defaults
+
+If your Ansible/DebOps-Controller machine has SElinux enabled, delegating tasks
+to ``localhost`` is problematic. `A workaround for this issue`__ is to add
+a definition for ``localhost`` to your inventory, outside of the
+``[debops_all_hosts]`` inventory group:
+
+.. __: https://dmsimard.com/2016/01/08/selinux-python-virtualenv-chroot-and-ansible-dont-play-nice/
+
+.. code-block:: none
+
+   localhost ansible_python_interpreter=/usr/bin/python
+
+This makes Ansible use the SElinux libraries from the python-environment
+*outside* of the virtualenv.

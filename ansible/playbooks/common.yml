@@ -11,13 +11,13 @@
     - name: Check for Ansible version without known vulnerabilities
       assert:
         that:
-          - 'ansible_version.full | version_compare("2.1.5.0", ">=")'
-          - '((ansible_version.minor == 2) and (ansible_version.full | version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
+          - 'ansible_version.full is version_compare("2.1.5.0", ">=")'
+          - '((ansible_version.minor == 2) and (ansible_version.full is version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
         msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! To skip, add "--skip-tags play::security-assertions" parameter. Check the debops-playbook changelog for details. Exiting.'
       run_once: True
       delegate_to: 'localhost'
 
-- include: service/core.yml
+- import_playbook: service/core.yml
 
 - name: Common configuration for all hosts
   hosts: [ 'debops_all_hosts', '!debops_no_common' ]
@@ -29,6 +29,9 @@
                    | combine(inventory__host_environment  | d({})) }}'
 
   roles:
+
+    - role: debops.etckeeper
+      tags: [ 'role::etckeeper' ]
 
     - role: debops.debops_fact
       tags: [ 'role::debops_fact' ]
@@ -70,11 +73,20 @@
     - role: debops.apt
       tags: [ 'role::apt' ]
 
+    - role: debops.python
+      tags: [ 'role::python' ]
+
     - role: debops.apt_listchanges
       tags: [ 'role::apt_listchanges' ]
 
     - role: debops.apt_install
       tags: [ 'role::apt_install' ]
+
+    - role: debops.sudo
+      tags: [ 'role::sudo' ]
+
+    - role: debops.system_groups
+      tags: [ 'role::system_groups' ]
 
     - role: debops.etc_services
       tags: [ 'role::etc_services' ]
@@ -150,3 +162,6 @@
 
     - role: debops.cron
       tags: [ 'role::cron' ]
+
+    - role: debops.apt_mark
+      tags: [ 'role::apt_mark' ]

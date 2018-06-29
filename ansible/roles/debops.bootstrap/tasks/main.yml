@@ -8,7 +8,6 @@
     state: 'present'
   tags: [ 'role::bootstrap:packages' ]
   with_flattened:
-    - '{{ bootstrap__mandatory_packages }}'
     - '{{ bootstrap__base_packages }}'
     - '{{ bootstrap__packages }}'
 # ]]]
@@ -34,42 +33,8 @@
   tags: [ 'role::bootstrap:admin' ]
 
 - name: Manage System Administrator accounts
-  include: admin_accounts.yml
+  import_tasks: admin_accounts.yml
   when: bootstrap__admin|bool
-  tags: [ 'role::bootstrap:admin' ]
-
-# Access to sudo commands [[[
-- name: Configure system group with passwordless access in sudo
-  ## `lineinfile` is used instead of `template` to allow other roles to take
-  ## over `sudo` management and prevent one role reverting the work of the
-  ## other role.
-  lineinfile:
-    dest: '/etc/sudoers.d/{{ bootstrap__sudo_group }}'
-    regexp: '{{ item.regexp }}'
-    line: '{{ item.line }}'
-    state: 'present'
-    create: True
-    owner: 'root'
-    group: 'root'
-    mode: '0440'
-    validate: 'visudo -cf "%s"'
-  tags: [ 'role::bootstrap:admin' ]
-  with_items:
-    - regexp: '^Defaults: %{{ bootstrap__sudo_group }} !?requiretty'
-      line:    'Defaults: %{{ bootstrap__sudo_group }} !requiretty'
-    - regexp: '^Defaults: %{{ bootstrap__sudo_group }} env_check\s'
-      line:    'Defaults: %{{ bootstrap__sudo_group }} env_check += "SSH_CLIENT"'
-    - regexp: '^%{{ bootstrap__sudo_group }}\s'
-      line:    '%{{ bootstrap__sudo_group }} ALL = (ALL:ALL) NOPASSWD: SETENV: ALL'
-  when: bootstrap__sudo|bool
-
-- name: Ensure /etc/sudoers includes /etc/sudoers.d
-  lineinfile:
-    dest: '/etc/sudoers'
-    regexp: '^#includedir\s+/etc/sudoers.d$'
-    line: '#includedir /etc/sudoers.d'
-    state: 'present'
-    validate: 'visudo -cf "%s"'
   tags: [ 'role::bootstrap:admin' ]
 
 # Hostname and domain [[[

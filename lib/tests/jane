@@ -40,6 +40,7 @@ readonly SCRIPTDIR="$( readlink -m "$( dirname "${0}" )" )"
 readonly SCRIPTPID="$$"
 readonly ARGS=( "${@:-}" )
 readonly PATH="${PATH}:${HOME}/.local/lib/${SCRIPTNAME}:/vagrant/lib/tests:/usr/local/lib/${SCRIPTNAME}:/usr/lib/${SCRIPTNAME}"
+readonly INVENTORY_PATH="/vagrant/lib/tests/inventory"
 
 readonly GLOBAL_LOCK_FILE="/var/tmp/${SCRIPTNAME}/global.lock"
 readonly GLOBAL_LOCK_FD="200"
@@ -65,6 +66,7 @@ readonly JANE_FORCE_TESTS="${JANE_FORCE_TESTS:-}"
 readonly JANE_TEST_PLAY="${JANE_TEST_PLAY:-}"
 readonly JANE_ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG:-/vagrant/lib/tests/ansible.cfg}"
 readonly JANE_ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY:-/vagrant/lib/tests/jane}"
+readonly JANE_INVENTORY_DIRS="${JANE_INVENTORY_DIRS:-common}"
 readonly JANE_INVENTORY_GROUPS="${JANE_INVENTORY_GROUPS:-debops_all_hosts}"
 readonly JANE_INVENTORY_HOSTVARS="${JANE_INVENTORY_HOSTVARS:-}"
 
@@ -177,14 +179,14 @@ sub__env () {
 
         ${SCRIPTNAME}|ci|script)
             ( set -o posix ; set \
-              | while read line ; do
+              | while read -r line ; do
                     printf "%s\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
                 done
             )
             ;;
         *)
             env \
-              | while read line ; do
+              | while read -r line ; do
                     printf "%s\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
                 done
             ;;
@@ -343,6 +345,10 @@ sub__ansible__playbook () {
     local ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG}"
     local ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY}"
     local jane_test_play="${JANE_TEST_PLAY}"
+    local inventory_path
+    IFS=':' read -r -a inventory_path <<< "${INVENTORY_PATH}"
+    local jane_inventory_dirs
+    read -r -a jane_inventory_dirs <<< "${JANE_INVENTORY_DIRS}"
     local jane_inventory_groups="${JANE_INVENTORY_GROUPS}"
     local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
     local -a test_playbooks
@@ -356,11 +362,13 @@ sub__ansible__playbook () {
     status_msg config "Ansible configuration file: '${ANSIBLE_CONFIG}'"
 
     if type jo > /dev/null 2>&1 ; then
-        if [ -n "${jane_inventory_hostvars[@]}" ] ; then
-            if [ -r "${jane_inventory_hostvars[@]}" ] ; then
-                local parsed_hostvars="$(<"${jane_inventory_hostvars[@]}")"
+        if [ -n "${jane_inventory_hostvars[*]}" ] ; then
+            if [ -r "${jane_inventory_hostvars[*]}" ] ; then
+                local parsed_hostvars
+                parsed_hostvars="$(<"${jane_inventory_hostvars[@]}")"
             else
-                local parsed_hostvars="$(jo -p "${jane_inventory_hostvars[@]}")"
+                local parsed_hostvars
+                parsed_hostvars="$(jo -p "${jane_inventory_hostvars[@]}")"
             fi
         else
             local parsed_hostvars=""
@@ -377,6 +385,10 @@ sub__ansible__playbook () {
     if [ -n "${parsed_hostvars}" ] ; then
         status_msg config "Custom Ansible inventory variables:"
         printf "%s\n" "${parsed_hostvars}"
+    fi
+
+    if [ -n "${jane_inventory_dirs[*]}" ] && [ "${jane_inventory_dirs[*]}" != "common" ] ; then
+        status_msg config "Custom inventory directories: ${jane_inventory_dirs[*]}"
     fi
 
     status_msg info "Performing Ansible syntax check..."
@@ -404,8 +416,10 @@ interesting_changes () {
     local forced_tests="${*:-}"
 
     if [ "$(git cat-file -t "${jane_diff_base_branch}" 2>/dev/null)" == "commit" ] ; then
-        local file_patterns="$(git_diff_file_pattern)"
-        local log_patterns="$(git_log_pattern)"
+        local file_patterns
+        local log_patterns
+        file_patterns="$(git_diff_file_pattern)"
+        log_patterns="$(git_log_pattern)"
 
         if [ -n "${file_patterns}" ] ; then
             local output="file patterns found"
@@ -437,7 +451,8 @@ git_log_pattern () {
     local jane_log_pattern="${JANE_LOG_PATTERN}"
 
     if [ -n "${jane_log_pattern}" ] ; then
-        local log_patterns_found="$(git log --format="%B" "$(git_rev_oldest_ancestor)~1..HEAD" \
+        local log_patterns_found
+        log_patterns_found="$(git log --format="%B" "$(git_rev_oldest_ancestor)~1..HEAD" \
             | grep -E "${jane_log_pattern}" || true)"
         printf "%s\n" "${log_patterns_found}"
     fi
@@ -447,7 +462,8 @@ git_log_pattern () {
 git_diff_file_pattern () {
     local jane_diff_pattern="${JANE_DIFF_PATTERN}"
 
-    local changed_files="$(git diff --name-only "$(git_rev_oldest_ancestor)~1..HEAD" \
+    local changed_files
+    changed_files="$(git diff --name-only "$(git_rev_oldest_ancestor)~1..HEAD" \
         | grep -E "${jane_diff_pattern}" || true)"
     printf "%s\n" "${changed_files}"
 }
@@ -456,7 +472,8 @@ git_diff_file_pattern () {
 git_rev_oldest_ancestor () {
     local jane_diff_base_branch="${JANE_DIFF_BASE_BRANCH}"
 
-    local oldest_ancestor="$(diff --old-line-format='' --new-line-format='' \
+    local oldest_ancestor
+    oldest_ancestor="$(diff --old-line-format='' --new-line-format='' \
         <(git rev-list --first-parent "${jane_diff_base_branch}") \
         <(git rev-list --first-parent "HEAD") | head -1)"
 
@@ -573,8 +590,10 @@ fix_libvirt_image_permissions () {
     local domain_id_file="${vagrant_dotfile_path}/machines/master/libvirt/id"
 
     if [ -r "${domain_id_file}" ] ; then
-        local libvirt_domain_uuid="$(<"${domain_id_file}")"
-        local libvirt_domain_name="$(virsh -c qemu:///system domname "${libvirt_domain_uuid}")"
+        local libvirt_domain_uuid
+        local libvirt_domain_name
+        libvirt_domain_uuid="$(<"${domain_id_file}")"
+        libvirt_domain_name="$(virsh -c qemu:///system domname "${libvirt_domain_uuid}")"
 
         sudo /usr/bin/env chmod a+r "/var/lib/libvirt/images/${libvirt_domain_name}.img"
     fi
@@ -671,7 +690,8 @@ destroy_vagrant_box () {
 acquire_global_lock () {
     local lock_fd="${GLOBAL_LOCK_FD}"
     local lock_file="${GLOBAL_LOCK_FILE}"
-    local lock_dir="$( dirname "${lock_file}" )"
+    local lock_dir
+    lock_dir="$( dirname "${lock_file}" )"
 
     # Create lock file
     mkdir -p "${lock_dir}"
@@ -691,7 +711,8 @@ acquire_global_lock () {
 release_global_lock () {
     local lock_fd="${GLOBAL_LOCK_FD}"
     local lock_file="${GLOBAL_LOCK_FILE}"
-    local lock_dir="$( dirname "${lock_file}" )"
+    local lock_dir
+    lock_dir="$( dirname "${lock_file}" )"
 
     status_msg info "Releasing global lock"
     flock -u "${lock_fd}"
@@ -700,7 +721,8 @@ release_global_lock () {
 
 clean_up () {
     local lock_file="${GLOBAL_LOCK_FILE}"
-    local lock_dir="$( dirname "${lock_file}" )"
+    local lock_dir
+    lock_dir="$( dirname "${lock_file}" )"
 
     if [ -n "${lock_dir}" ] && [ -d "${lock_dir}" ] ; then
         rm -rf "${lock_dir}"
@@ -828,19 +850,39 @@ generate_dynamic_inventory_groups () {
 }
 
 dynamic_inventory_list () {
+    local inventory_path
+    IFS=':' read -r -a inventory_path <<< "${INVENTORY_PATH}"
+    local jane_inventory_dirs
     local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
+    read -r -a jane_inventory_dirs <<< "${JANE_INVENTORY_DIRS}"
 
     # Jan-Piet Mens is awesome
     # http://jpmens.net/2016/03/05/a-shell-command-to-create-json-jo/
     if type jo > /dev/null 2>&1 ; then
-        if [ -n "${jane_inventory_hostvars[@]}" ] ; then
-            if [ -r "${jane_inventory_hostvars[@]}" ] ; then
-                local parsed_hostvars="$(<"${jane_inventory_hostvars[@]}")"
+        if [ -n "${jane_inventory_hostvars[*]}" ] ; then
+            if [ -r "${jane_inventory_hostvars[*]}" ] ; then
+                local parsed_hostvars
+                parsed_hostvars="$(<"${jane_inventory_hostvars[@]}")"
             else
-                local parsed_hostvars="$(jo ${jane_inventory_hostvars[*]})"
+                local parsed_hostvars
+                # shellcheck disable=SC2086
+                parsed_hostvars="$(jo ${jane_inventory_hostvars[*]})"
             fi
         else
             local parsed_hostvars="{}"
+        fi
+
+        if [ -n "${jane_inventory_dirs[*]}" ] ; then
+            local -a expanded_dirs
+            for directory in "${jane_inventory_dirs[@]}" ; do
+                for path_dir in "${inventory_path[@]}" ; do
+                    if [ -d "${path_dir}/${directory}" ] ; then
+                        expanded_dirs+=( "${inventory_path}/${directory}/*.json" )
+                    fi
+                done
+            done
+            # shellcheck disable=SC2068
+            parsed_hostvars="$(jq -s 'reduce .[] as $item ({}; . * $item)' ${expanded_dirs[@]} <(echo "${parsed_hostvars}"))"
         fi
 
         # jo needs to parse arguments as-is
@@ -851,6 +893,7 @@ dynamic_inventory_list () {
         # Reasons for specific variables:
         # 'ansible_connection'    - run Ansible locally, not remotely
         # 'dhparam__bits'         - bigger DH parameters generate very slowly
+        # 'nginx_http_server_names_hash_bucket_size' - hostnames based on UUIDs are long
         # 'secret'                - move 'secret/' directory outside the git checkout
         # 'tcpwrappers__deny_all' - otherwise Vagrant cannot access host via SSH to turn it off
         #                           (needs better implementation in the 'debops.tcpwrappers' role)
@@ -861,6 +904,7 @@ dynamic_inventory_list () {
     "vars": {
       "ansible_connection": "local",
       "dhparam__bits": [ "1024" ],
+      "nginx_http_server_names_hash_bucket_size": "128",
       "secret": "/tmp/secret",
       "tcpwrappers__deny_all": false
     }

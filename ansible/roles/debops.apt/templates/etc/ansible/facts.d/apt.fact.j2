@@ -1,65 +1,82 @@
-{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
-#!/usr/bin/env python
+#!/usr/bin/python{{ '2' if (ansible_python_version is version_compare('3.5', '<')) else '3' }}
 
 # {{ ansible_managed }}
-{% set apt__tpl_security_sources = [] %}
-{% set apt__tpl_default_sources = [] %}
-{% set apt__tpl_default_sources_map = {} %}
-{% set apt__tpl_source_distributions = {} %}
-{% for repo in apt__security_sources %}
-{%   set _ = apt__tpl_security_sources.extend(debops__tpl_macros.flattened(repo.uri, repo.uris) | from_json) %}
-{% endfor %}
-{% for repo in apt__default_sources %}
-{%   set repo_uris = (debops__tpl_macros.flattened(repo.uri, repo.uris) | from_json) %}
-{%   if repo.distribution|d() == apt__distribution %}
-{%     set _ = apt__tpl_default_sources.extend(repo_uris) %}
-{%   endif %}
-{%   if repo.distribution|d() and (repo.state|d("present") == "present") %}
-{%     set _ = apt__tpl_default_sources_map.update({ repo.distribution: ((apt__tpl_default_sources_map[repo.distribution]|d([])) + repo_uris) }) %}
-{%   endif %}
-{% endfor %}
 
 from __future__ import print_function
 from json import loads, dumps
 from sys import exit
 import os
 
+# Workaround to use Jinja template in a Python script
+"""
+{% import 'templates/import/debops__tpl_macros.j2'
+     as debops__tpl_macros with context %}
+{% set apt__tpl_security_sources = [] %}
+{% set apt__tpl_default_sources = [] %}
+{% set apt__tpl_default_sources_map = {} %}
+{% set apt__tpl_source_distributions = {} %}
+{% for repo in apt__security_sources %}
+{%   set _ = apt__tpl_security_sources.extend(
+                 debops__tpl_macros.flattened(
+                     repo.uri, repo.uris) | from_json) %}
+{% endfor %}
+{% for repo in apt__default_sources %}
+{%   set repo_uris = (debops__tpl_macros.flattened(
+                      repo.uri, repo.uris) | from_json) %}
+{%   if repo.distribution|d() == apt__distribution %}
+{%     set _ = apt__tpl_default_sources.extend(repo_uris) %}
+{%   endif %}
+{%   if repo.distribution|d() and
+        (repo.state|d("present") == "present") %}
+{%     set _ = apt__tpl_default_sources_map.update(
+                   { repo.distribution: (
+                       (apt__tpl_default_sources_map[repo.distribution]
+                       | d([])) + repo_uris) }) %}
+{%   endif %}
+{% endfor %}
+"""
+
 security_sources = loads('''{{ apt__tpl_security_sources | to_nice_json }}''')
 
 output = loads('''{{ ({
     "enabled": apt__enabled,
     "configured": (ansible_local.apt.configured
-                   if (ansible_local|d() and ansible_local.apt|d() and ansible_local.apt.configured|d())
+                   if (ansible_local|d() and ansible_local.apt|d() and
+                       ansible_local.apt.configured|d())
                    else False),
     "default_mirrors": apt__tpl_default_sources,
     "default_sources_map": apt__tpl_default_sources_map,
     }) | to_nice_json | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") }}''')
-{# regex_replace is a workaround for https://github.com/ansible/ansible/issues/23078 #}
 
-apt_sources_list = [ '/etc/apt/sources.list.dpkg-divert', '/etc/apt/sources.list' ]
+apt_sources_list = ['/etc/apt/sources.list.dpkg-divert',
+                    '/etc/apt/sources.list']
 
 source_deb = []
 source_deb_src = []
 
 apt_nonfree = False
-apt_nonfree_components = [ 'non-free', 'restricted', 'multiverse' ]
-apt_uri_types = [ 'http://', 'https://', 'ftp://' ]
+apt_nonfree_components = ['non-free', 'restricted', 'multiverse']
+apt_uri_types = ['http://', 'https://', 'ftp://']
 
 try:
     # Load the first found sources.list file from a specified list
-    fh = open(next(filename for filename in apt_sources_list if (os.path.isfile(filename) and os.access(filename, os.R_OK))))
+    fh = open(next(filename for filename in apt_sources_list
+                   if (os.path.isfile(filename) and os.access(filename,
+                       os.R_OK))))
 
     for line in fh:
         if line.startswith('deb'):
             source = line.split()
-            if source[1] not in source_deb and source[1] not in security_sources:
+            if (source[1] not in source_deb
+                    and source[1] not in security_sources):
                 for prefix in apt_uri_types:
                     if source[1].startswith(prefix):
                         source_deb.append(source[1])
 
         elif line.startswith('deb-src'):
             source = line.split()
-            if source[1] not in source_deb_src and source[1] not in security_sources:
+            if (source[1] not in source_deb_src
+                    and source[1] not in security_sources):
                 for prefix in apt_uri_types:
                     if source[1].startswith(prefix):
                         source_deb_src.append(source[1])
@@ -71,7 +88,8 @@ except Exception:
 
 try:
 
-    if (os.path.isfile(apt_sources_list[1]) and os.access(apt_sources_list[1], os.R_OK)):
+    if (os.path.isfile(apt_sources_list[1])
+            and os.access(apt_sources_list[1], os.R_OK)):
         fh = open(apt_sources_list[1])
 
         for line in fh:

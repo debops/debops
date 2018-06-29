@@ -6,13 +6,6 @@
   with_items: '{{ lookup("template", "lookup/stat_home_path.j2") | from_yaml }}'
   register: bootstrap__register_home
 
-- name: Create required system groups
-  group:
-    name: '{{ item }}'
-    state: 'present'
-    system: True
-  with_items: '{{ bootstrap__admin_groups }}'
-
 - name: Create admin accounts
   user:
     name: '{{ item.name }}'

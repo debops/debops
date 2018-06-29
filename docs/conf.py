@@ -64,6 +64,15 @@ html_context = {
     )
 }
 
+
+# Add custom .css and .js files from '_static/' directory in a way compatible
+# with ReadTheDocs.org deployment
+# Source: https://github.com/rtfd/sphinx_rtd_theme/issues/117
+def setup(app):
+    # app.add_javascript("custom.js")
+    app.add_stylesheet("theme_overrides.css")
+
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -74,7 +83,8 @@ html_context = {
 # ones.
 extensions = [
     'sphinx.ext.ifconfig',
-    'sphinx.ext.graphviz'
+    'sphinx.ext.graphviz',
+    'autolink'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -201,7 +211,7 @@ html_favicon = '_static/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

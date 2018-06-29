@@ -77,10 +77,10 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_target_tag
-  changed_when: gitlab_register_gitlab_workhorse_target_tag.stdout != gitlab_version_map[gitlab_version].gitlab_workhorse
+  changed_when: gitlab_register_gitlab_workhorse_target_tag.stdout != gitlab__fact_version.workhorse
 
 - name: Checkout gitlab-workhorse
-  command: git checkout -f {{ gitlab_version_map[gitlab_version].gitlab_workhorse }}
+  command: git checkout -f {{ gitlab__fact_version.workhorse }}
   environment:
     GIT_WORK_TREE: '{{ gitlab_workhorse_checkout }}'
   args:
@@ -88,11 +88,11 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_checkout
-  when: (gitlab_version_map[gitlab_version].gitlab_workhorse != gitlab_register_gitlab_workhorse_target_tag.stdout) or not gitlab_register_gitlab_workhorse_cloned.stat.exists
+  when: (gitlab__fact_version.workhorse != gitlab_register_gitlab_workhorse_target_tag.stdout) or not gitlab_register_gitlab_workhorse_cloned.stat.exists
 
 - name: Setup gitlab-workhorse
   make:
     chdir: '{{ gitlab_workhorse_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_gitlab_workhorse_checkout|changed
+  when: gitlab_register_gitlab_workhorse_checkout is changed

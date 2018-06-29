@@ -5,6 +5,18 @@ Getting started
    :local:
 
 
+Static GID assignment
+---------------------
+
+The ``procadmins`` group uses a static GID ``70``, chosen based on the default
+set of system groups provided in Debian with usable range between 61-99. This
+becomes important in environments with LXC containers where, depending on the
+configuration, host and container GIDs could differ, resulting in a different
+set of users being able to see the :file:`/proc` contents. Thus, the need to
+synchronize the GID between distinct environments sharing the same GID
+namespace (the same kernel).
+
+
 Ansible local facts
 -------------------
 

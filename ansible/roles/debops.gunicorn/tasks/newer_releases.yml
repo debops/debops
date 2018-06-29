@@ -116,9 +116,9 @@
 - name: Reload systemd configuration
   command: systemctl daemon-reload
   when: (ansible_service_mgr == 'systemd' and
-         (gunicorn__register_systemd_config|changed or
-          gunicorn__register_systemd_remove|changed or
-          gunicorn__register_systemd_per_instance|changed))
+         (gunicorn__register_systemd_config is changed or
+          gunicorn__register_systemd_remove is changed or
+          gunicorn__register_systemd_per_instance is changed))
 
 - name: Remove Unicorn instance configuration
   file:

@@ -90,7 +90,7 @@ From debops.php5 role to debops.php role
   +--------------------------+---------------------------+-----------------------------+
 
 - The package installation changed to not force PHP version in the package
-  name. For example, role can now install MariaDB support by specifying
+  name. For example, the role can now install MariaDB support by specifying
   :command:`mysql` package instead of ``php5-mysql``. The list of packages might need
   to be updated if you plan to use different PHP versions.
 

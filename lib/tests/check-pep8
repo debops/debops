@@ -19,7 +19,7 @@ printf "%s " "Searching for Python scripts"
 
 counter=0
 
-while read in ; do
+while read -r in ; do
     if file -i "${in}" | grep -q x-python ; then
         file_list+=("${in}")
         counter=$(( counter + 1 ))
@@ -28,7 +28,8 @@ while read in ; do
             printf "%s" "."
         fi
     fi
-done < <(find . -type f)
+done < <(find . -type f -not -iwholename "./.git/*" \
+    -not -wholename "./ansible/roles/debops.mailman/templates/etc/mailman/mm_cfg.py.j2")
 
 printf " %s\n" "found ${#file_list[@]} Python scripts"
 

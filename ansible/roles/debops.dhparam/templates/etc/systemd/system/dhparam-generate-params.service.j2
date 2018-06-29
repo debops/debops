@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Regenerate Diffie-Hellman parameters
+Documentation=https://docs.debops.org/en/master/ansible/roles/debops.dhparam/
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+Nice=10
+ExecStart={{ dhparam__generate_params }} run

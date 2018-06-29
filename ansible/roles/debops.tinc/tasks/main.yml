@@ -71,7 +71,7 @@
     state: '{{ (item.state|d("present") in ["absent"]) | ternary("started", "stopped") }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: tinc__systemd|bool and item.value.state|d('present') == 'absent' and
-        not tinc__register_install|changed
+        not tinc__register_install is changed
 
 - name: Remove tinc network configuration if requested
   file:
@@ -294,13 +294,13 @@
 
 - name: Reload systemd daemon configuration
   shell: systemctl daemon-reload ; systemctl enable tinc.service
-  when: tinc__register_systemd|changed
+  when: tinc__register_systemd is changed
 
 - name: Start tinc VPN networks on first install
   service:
     name: 'tinc'
     state: 'restarted'
-  when: not tinc__systemd|bool and tinc__register_install|changed
+  when: not tinc__systemd|bool and tinc__register_install is changed
 
 - name: Configure tinc network services in systemd
   service:
@@ -334,4 +334,4 @@
 
 - name: Reload facts if they were modified
   action: setup
-  when: tinc__register_facts|changed
+  when: tinc__register_facts is changed

@@ -11,11 +11,235 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
-Nothing new yet.
+UNIX account and group configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Configuration of UNIX system groups and accounts included in the ``admins``
+  UNIX group has been removed from the :ref:`debops.auth` role. This
+  functionality is now done by the :ref:`debops.system_groups` role. The
+  variable names and their values changed, see the :ref:`debops.system_groups`
+  role documentation for details.
+
+GitLab :command:`gitaly` installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.gitlab` role will now build and install the
+  :command:`gitaly` service using unprivileged ``git`` UNIX account instead of
+  ``root``. To perform the update correctly, you might need to remove directories
+
+  .. code-block:: console
+
+     /usr/local/src/gitlab/gitlab.com/gitaly.git/
+     /var/local/git/gitaly/
+
+  Some files in these directories are owned by ``root`` and that can prevent
+  the correct build of the Go binaries. You might also want to stop the
+  ``gitlab-gitaly.service`` service and start it afterwards.
+
+  The above steps shouldn't impact new GitLab installations.
+
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The ``console_preferred_editors`` list has been removed, configuration of the
+  preferred :command:`vim` editor is now done in the :ref:`debops.apt_install`
+  role which also installs it.
+
+- The ``console_custom_files`` variable has been removed along with the
+  functionality in ``debops.console`` role. Use the :ref:`debops.resources`
+  role variables to copy custom files instead. The role is also included in the
+  common playbook, although a bit earlier, which shouldn't impact normal use
+  cases.
+
+- The management of the :file:`/etc/hosts` file has been removed from the
+  ``debops.console`` role and is now done via the :ref:`debops.netbase` role
+  which has to be enabled through the Ansible inventory. The variables have
+  been renamed:
+
+  +-------------------------+--------------------------------+---------------+
+  | Old variable name       | New variable name              | Changed value |
+  +=========================+================================+===============+
+  | ``console_hosts``       | :envvar:`netbase__hosts`       | No            |
+  +-------------------------+--------------------------------+---------------+
+  | ``console_group_hosts`` | :envvar:`netbase__group_hosts` | No            |
+  +-------------------------+--------------------------------+---------------+
+  | ``console_host_hosts``  | :envvar:`netbase__host_hosts`  | No            |
+  +-------------------------+--------------------------------+---------------+
+
+- Configuration of the APT autoremove options has been moved from the
+  :ref:`debops.apt` role to the :ref:`debops.apt_mark` role, because the latter
+  role has more specific scope. The variable names as well as their default
+  values have been changed to correctly reflect the meaning of the
+  corresponding APT configuration options:
+
+  +--------------------------------+-----------------------------------------------------+------------------+
+  | Old variable name              | New variable name                                   | Changed value    |
+  +================================+=====================================================+==================+
+  | ``apt__autoremove_recommends`` | :envvar:`apt_mark__autoremove_recommends_important` | Yes, to ``True`` |
+  +--------------------------------+-----------------------------------------------------+------------------+
+  | ``apt__autoremove_suggests``   | :envvar:`apt_mark__autoremove_suggests_important`   | Yes, to ``True`` |
+  +--------------------------------+-----------------------------------------------------+------------------+
+
+  By default the APT packages installed via Recommends or Suggests dependencies
+  will not be considered for autoremoval. If the user sets any package
+  configuration via :ref:`debops.apt_mark` role, the autoremoval will be
+  enabled automatically.
+
+- The ``bootstrap__sudo`` and ``bootstrap__sudo_group`` variables have been
+  removed from the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook
+  now uses the :ref:`debops.sudo` role to configure :command:`sudo` service on
+  a host, use its variables instead to control the service in question.
+
+- The :envvar:`bootstrap__admin_groups` variable will now use list of UNIX
+  groups with ``root`` access defined by the :ref:`debops.system_groups` via
+  Ansible local facts.
+
+- The contents of the :envvar:`sshd__allow_groups` variable have been moved to
+  the new :envvar:`sshd__default_allow_groups` variable. The new variable also
+  uses the :ref:`debops.system_groups` Ansible local facts as a data source.
+
+- The ``bootstrap__raw`` and ``bootstrap__mandatory_packages`` variables have
+  been removed. See the :ref:`debops.python` role documentation for their
+  equivalents.
+
+- The ``apt_install__python_packages`` variable has been removed from the
+  :ref:`debops.apt_install` role. Use the :ref:`debops.python` Ansible role to
+  install Python packages.
+
+- The ``nodejs__upstream_version`` variable has been renamed to
+  :envvar:`nodejs__upstream_release` to better represent the contents, which is
+  not a specific NodeJS version, but a specific major release.
+
+- The ``gitlab_domain`` variable, previously used to set the FQDN of the GitLab
+  installation, now only sets the domain part; it's value is also changed from
+  a YAML list to a string.
+
+  The :envvar:`gitlab__fqdn` variable is now used to set the GitLab FQDN and
+  uses the ``gitlab_domain`` value as the domain part.
 
 
-v0.7.0
-------
+v0.7.2 (2018-03-28)
+-------------------
+
+No changes.
+
+
+v0.7.1 (2018-03-28)
+-------------------
+
+X.509 certificate changes
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.pki` role now generates the default X.509 certificate for
+  the ``domain`` PKI realm with a wildcard entry for the host's FQDN (for
+  example, ``*.host.example.org``). This will be true by default on new hosts
+  introduced to the cluster; if you want your old hosts to have the new X.509
+  certificates, you need to recreate the ``domain`` PKI realm by removing the
+  :file:`/etc/pki/realms/domain/` directory on the remote hosts and re-running
+  the :ref:`debops.pki` role against them.
+
+  The change is done in the :envvar:`pki_default_realms` variable, if you
+  redefined it in the Ansible inventory, you might want to update your version
+  to include the new SubjectAltName entry.
+
+- The latest :program:`acme-tiny` Python script uses ACMEv2 API by default, and
+  the :ref:`debops.pki` role is now compatible with the upstream changes. The
+  ACME certificates should work out of the box in new PKI realms, after the
+  :program:`acme-tiny` installation is updated.
+
+  The existing PKI realms will stop correctly regenerating Let's Encrypt
+  certificates, because their configuration is not updated automatically by the
+  role. The presence of the :file:`acme/error.log` file will prevent the
+  :program:`acme-tiny` script from requesting the certificates to not trip the
+  Let's Encrypt rate limits.
+
+  Easiest way to fix this is to remove the entire PKI realm
+  (:file:`/etc/pki/realms/*/` directory) and re-run the :ref:`debops.pki` role
+  against the host. The role will create a new PKI realm based on the previous
+  configuration and ACME certificates should start working again.  Services
+  like :program:`nginx` that have hooks in the :file:`/etc/pki/hooks/`
+  directory should be restarted automatically, you might need to manually
+  restart other services as needed.
+
+  Alternatively, you can update the Let's Encrypt API URL in the realm's
+  :file:`config/realm.conf` file by replacing the line:
+
+  .. code-block:: bash
+
+     config['acme_ca_api']='https://acme-v01.api.letsencrypt.org'
+
+  with:
+
+  .. code-block:: bash
+
+     config['acme_ca_api']='https://acme-v02.api.letsencrypt.org/directory'
+
+  This should tell the :program:`pki-realm` script to send requests for new
+  certificates to the correct URL. You still need to run the :ref:`debops.pki`
+  role against the host to install the updated :program:`pki-realm` script and
+  update the :program:`acme-tiny` script.
+
+Role changes
+~~~~~~~~~~~~
+
+- The :ref:`debops.debops` role now uses the :ref:`debops.ansible` role to
+  install Ansible instead of doing it by itself. The relevant code has been
+  removed, see the :ref:`debops.ansible` role documentation for new variables.
+
+- The ``debops-contrib.kernel_module`` role has been replaced by the
+  :ref:`debops.kmod` role. All of the variable names have been changed, as well
+  as their usage. See the documentation of the new role for more details.
+
+- The :ref:`debops.proc_hidepid` role was modified to use a static GID ``70``
+  for the ``procadmins`` group to allow synchronization between host and LXC
+  containers on that host. The role will apply changes in the
+  :file:`/etc/fstab` configuration file, but it will not change existing
+  :file:`/proc` mount options. You need to remount the filesystem manually,
+  with a command:
+
+  .. code-block:: console
+
+     ansible all -b -m command -a 'mount -o remount /proc'
+
+  The :file:`/proc` filesystem mounted inside of LXC containers cannot be
+  remounted this way, since it's most likely mounted by the host itself. You
+  will need to check the LXC container configuration in the
+  :file:`/var/lib/lxc/*/config` files and update the mount point options to use
+  the new static GID. Restart the LXC container afterwards to remount the
+  :file:`/proc` filesystem.
+
+  You will also need to restart all services that rely on the ``procadmins``
+  group, for example :command:`snmpd`, to activate the new GID.
+
+- The :ref:`debops.sysctl` configuration has been redesigned. The role now uses
+  YAML lists instead of YAML dictionaries as a base value of the
+  ``sysctl__*_parameters`` default variables. The kernel parameter
+  configuration format has also been changed to be easy to override via Ansible
+  inventory. Role can now configure multiple files in :file:`/etc/sysctl.d/`
+  directory. Refer to the role documentation for details.
+
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.netbox` role has been updated, some variable names were
+  changed:
+
+  +------------------------------------+------------------------------------------+---------------+
+  | Old variable name                  | New variable name                        | Changed value |
+  +------------------------------------+------------------------------------------+---------------+
+  | ``netbox__config_netbox_username`` | :envvar:`netbox__config_napalm_username` | No            |
+  +------------------------------------+------------------------------------------+---------------+
+  | ``netbox__config_netbox_password`` | :envvar:`netbox__config_napalm_password` | No            |
+  +------------------------------------+------------------------------------------+---------------+
+
+- The variables that specify files to ignore in the new :ref:`debops.etckeeper`
+  role have been renamed from their old versions in
+  ``debops-contrib.etckeeper`` role, and their value format changed as well.
+  See the documentation of the new role for details.
+
+
+v0.7.0 (2018-02-11)
+-------------------
 
 This is mostly a maintenance release, dedicated to reorganization of the DebOps
 :command:`git` repository and expanding documentation.
@@ -93,8 +317,8 @@ Inventory variable changes
   parameters, read the documentation of the new role for details.
 
 
-v0.6.0
-------
+v0.6.0 (2017-10-21)
+-------------------
 
 This is an initial release based off of the previous DebOps roles, playbooks
 and tools located in separate :command:`git` repositories. There should be no

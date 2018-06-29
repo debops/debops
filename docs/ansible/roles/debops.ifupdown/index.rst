@@ -11,6 +11,7 @@ debops.ifupdown
    defaults
    defaults-detailed
    ifupdown-systemd
+   custom-hooks
    copyright
    upgrade
 

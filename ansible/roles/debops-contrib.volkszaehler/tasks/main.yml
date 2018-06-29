@@ -64,10 +64,10 @@
     command: 'require'
     working_dir: '{{ volkszaehler__git_dest }}'
   environment:
-      PATH: '{{ ansible_env.PATH }}:/usr/local/bin'
+    PATH: '{{ ansible_env.PATH }}:/usr/local/bin'
   become: True
   become_user: '{{ volkszaehler__user }}'
-  when: volkszaehler__register_git|changed
+  when: volkszaehler__register_git is changed
 
 # Database initialization [[[
 - name: Write database initialization SQL dump
@@ -85,7 +85,7 @@
     name: '{{ volkszaehler__database_name }}'
     target: '{{ (volkszaehler__home_path + "/create_db.sql")|quote }}'
     state: 'import'
-  when: (volkszaehler__register_sql_init_dump|changed and volkszaehler__database in ['mariadb'])
+  when: (volkszaehler__register_sql_init_dump is changed and volkszaehler__database in ['mariadb'])
 
 - name: Insert demo data into database
   shell: cat {{ (volkszaehler__git_dest + "/misc/sql/demo.sql")|quote }} | mysql {{ volkszaehler__database_name }}
@@ -126,5 +126,5 @@
 
 - name: Gather facts if they were modified
   action: setup
-  when: volkszaehler__register_local_facts|changed
+  when: volkszaehler__register_local_facts is changed
 # ]]]

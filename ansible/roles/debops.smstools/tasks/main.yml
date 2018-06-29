@@ -81,7 +81,7 @@
 
 - name: Fix permissions manually if installed
   command: /usr/local/lib/smstools/fix-device-permissions
-  when: smstools_register_fixpermissions is defined and smstools_register_fixpermissions.changed
+  when: smstools_register_fixpermissions is defined and smstools_register_fixpermissions is changed
 
 - name: Configure SMS gateway test on reboot
   cron: name="SMS gateway test on reboot" user={{ smstools_service_user }}
@@ -105,4 +105,3 @@
             owner=root group=root mode=0644
   when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
         smstools_register_rsyslog.stat.exists
-

@@ -127,23 +127,11 @@ apt_install__base_packages:
   - 'ed'
   - 'lsb-release'
   - 'make'
-  - 'sudo'
   - 'git'
   - 'curl'
   - 'rsync'
   - 'bsdutils'
   - 'acl'
-
-                                                                   # ]]]
-# .. envvar:: apt_install__python_packages [[[
-#
-# List of Python packages to install.
-apt_install__python_packages:
-  - 'python'
-  - 'python-apt'
-  - 'python-pip'
-  - 'python-pycurl'
-  - 'python-httplib2'
 
                                                                    # ]]]
 # .. envvar:: apt_install__shell_packages [[[
@@ -164,13 +152,15 @@ apt_install__shell_packages:
   - 'nmon'
   - 'mtr-tiny'
   - 'mc'
-  - 'ranger'
 
                                                                    # ]]]
 # .. envvar:: apt_install__editor_packages [[[
 #
 # List of text editors to install.
 apt_install__editor_packages:
+
+  # The role also sets ``vim.basic`` as the default editor via
+  # the :envvar:`apt_install__default_alternatives` variable.
   - 'vim'
 
                                                                    # ]]]
@@ -213,6 +203,7 @@ apt_install__conditional_whitelist_packages:
   - 'haveged'
   - 'gnupg-curl'
   - 'needrestart'
+  - 'ranger'
 
                                                                    # ]]]
 # .. envvar:: apt_install__conditional_packages [[[
@@ -261,6 +252,19 @@ apt_install__conditional_packages:
     state: '{{ "present" if ansible_distribution_release not in
                [ "precise" ] else "absent" }}'
 
+  - name: 'ranger'
+    # Ranger is a console file manager written in Python. In Debian, ranger package
+    # depends on Python 2, therefore to allow Python 3-only environment it will
+    # be installed only if Ansible uses Python 2 interpreter. It can also be
+    # installed by adding the package name to the normal list of APT packages
+    # via Ansible inventory.
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present"
+               if ((ansible_python_version|d() is version_compare("3.5","<")) or
+                   (ansible_python_version|d() is version_compare("3.5",">=") and
+                    ansible_distribution_release not in [ "stretch" ]))
+               else "ignore" }}'
+
                                                                    # ]]]
 # .. envvar:: apt_install__firmware_packages [[[
 #
@@ -306,7 +310,6 @@ apt_install__firmware_packages:
 # conditional processing.
 apt_install__all_packages:
   - '{{ apt_install__base_packages }}'
-  - '{{ apt_install__python_packages }}'
   - '{{ apt_install__shell_packages }}'
   - '{{ apt_install__editor_packages }}'
   - '{{ apt_install__packages }}'
@@ -324,6 +327,17 @@ apt_install__all_packages:
 # which provide similar functionality, using ``update-alternatives`` package.
 # See :ref:`apt_install__ref_alternatives` for more details.
 
+# .. envvar:: apt_install__default_alternatives [[[
+#
+# List of default alternative symlinks set by the role.
+apt_install__default_alternatives:
+
+  # The role also installs the ``vim`` package via the
+  # :envvar:`apt_install__editor_packages` variable.
+  - name: 'editor'
+    path: '/usr/bin/vim.basic'
+
+                                                                   # ]]]
 # .. envvar:: apt_install__alternatives [[[
 #
 # List of alternative symlinks configured for all packages in the Ansible

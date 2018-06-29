@@ -13,6 +13,7 @@ debops.postfix
    defaults-maincf
    defaults-mastercf
    dependency
+   guides
    copyright
    upgrade
 

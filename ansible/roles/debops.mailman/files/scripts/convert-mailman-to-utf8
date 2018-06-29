@@ -54,11 +54,12 @@ convert_to_utf8 () {
     local from_encoding="${1}"
     shift
 
-    for filename in ${@} ; do
-        if [ -e ${filename} ] ; then
-            local file_encoding="$(file -b --mime-encoding "${filename}")"
+    for filename in "${@}" ; do
+        if [ -e "${filename}" ] ; then
+            local file_encoding
+            file_encoding="$(file -b --mime-encoding "${filename}")"
 
-            if [ "${file_encoding}" != "utf-8" -a "${file_encoding}" != "us-ascii" ] ; then
+            if [ "${file_encoding}" != "utf-8" ] && [ "${file_encoding}" != "us-ascii" ] ; then
 
                 echo "Converting ${filename} from ${file_encoding} to UTF-8"
                 iconv -f "${from_encoding}" -t utf-8 -o "${filename}.new" "${filename}"
@@ -67,9 +68,9 @@ convert_to_utf8 () {
             fi
 
             if [ "${from_encoding}" = "iso8859-2" ] ; then
-                if $(grep -q -E 'charset=[Ii][Ss][Oo]-8859-2' ${filename}) ; then
+                if grep -q -E 'charset=[Ii][Ss][Oo]-8859-2' "${filename}" ; then
                     echo "Updating the MIME charset string in ${filename}"
-                    sed -i "s/charset=[Ii][Ss][Oo]-8859-2/charset=utf-8/" ${filename}
+                    sed -i "s/charset=[Ii][Ss][Oo]-8859-2/charset=utf-8/" "${filename}"
                 fi
             fi
 
@@ -84,7 +85,7 @@ convert_polish () {
 
     if [ -r /var/lib/mailman/messages/pl/LC_MESSAGES/mailman.po ] ; then
 
-        cd /var/lib/mailman/messages/pl/LC_MESSAGES
+        cd /var/lib/mailman/messages/pl/LC_MESSAGES || exit 1
 
         read -r -d '' mailman_messages_patch <<EOF
 --- mailman.po
@@ -109,16 +110,16 @@ convert_polish () {
  #: Mailman/Cgi/options.py:911 Mailman/Cgi/options.py:921
 EOF
 
-        if $(patch -p0 -N --dry-run --silent <<< "${mailman_messages_patch}" > /dev/null 2>&1) ; then
-	    patch -p0 -N <<< "${mailman_messages_patch}"
-	    msgfmt mailman.po -o mailman.mo
+        if patch -p0 -N --dry-run --silent <<< "${mailman_messages_patch}" > /dev/null 2>&1 ; then
+            patch -p0 -N <<< "${mailman_messages_patch}"
+            msgfmt mailman.po -o mailman.mo
         fi
 
     fi
 
     if [ -r /usr/lib/mailman/Mailman/Defaults.py ] ; then
 
-        cd /usr/lib/mailman
+        cd /usr/lib/mailman || exit 1
 
         read -r -d '' mailman_defaults_patch <<EOF
 --- Mailman/Defaults.py
@@ -134,18 +135,17 @@ EOF
  add_language('ro',    _('Romanian'),            'iso-8859-2',  'ltr')
 EOF
 
-        if $(patch -p0 -N --dry-run --silent <<< "${mailman_defaults_patch}" > /dev/null 2>&1) ; then
-	    patch -p0 -N <<< "${mailman_defaults_patch}"
+        if patch -p0 -N --dry-run --silent <<< "${mailman_defaults_patch}" > /dev/null 2>&1 ; then
+            patch -p0 -N <<< "${mailman_defaults_patch}"
         fi
 
     fi
 
 }
 
-for lang in ${@}; do
+for lang in "${@}"; do
     case ${lang} in
         pl)   shift ; convert_polish ;;
         *)    shift ;;
     esac
 done
-

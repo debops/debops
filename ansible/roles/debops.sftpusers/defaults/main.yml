@@ -1,4 +1,12 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.sftpusers default variables
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+
 
 # ---- An example account entry ----
 
@@ -31,36 +39,64 @@
 
 # ---- Lists of different accounts to create/manage ----
 
+# .. envvar:: sftpusers_list [[[
+#
 # "Global" users
 sftpusers_list: []
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_group_list [[[
+#
 # "Host group" users
 sftpusers_group_list: []
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_host_list [[[
+#
 # "Host" users
 sftpusers_host_list: []
 
-
+                                                                   # ]]]
 # ---- Global defaults ----
 
+# .. envvar:: sftpusers_name_suffix [[[
+#
 # Add a suffix to an account name, for example: '-sftp'
 sftpusers_name_suffix: ""
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_system_group [[[
+#
 # System group that restricts account use to SFTPonly
 sftpusers_system_group: 'sftponly'
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_default_shell [[[
+#
 # Shell enforced on all SFTPonly accounts
 sftpusers_default_shell: '/usr/sbin/nologin'
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_default_groups [[[
+#
 # List of groups SFTPonly users belong in
 sftpusers_default_groups: [ '{{ sftpusers_system_group }}' ]
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_default_www_prefix [[[
+#
 # Path to directory where websites are stored
 sftpusers_default_www_prefix: '/srv/www'
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_default_www_group [[[
+#
 # System group which should be allowed access to website directory
 sftpusers_default_www_group: 'www-data'
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_default_mount_options [[[
+#
 # Mount options used to mount website directories in user home directories
 # (sftponly users don't have access to directories outside of their home
 # directory (/srv/sftpusers/username). Because of that website directories
@@ -68,14 +104,24 @@ sftpusers_default_www_group: 'www-data'
 # (/srv/sftpusers/username/sites/), thus allowing secure access)
 sftpusers_default_mount_options: 'bind'
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_default_home_prefix [[[
+#
 # Directory where SFTPonly user homes will be created
 sftpusers_default_home_prefix: '/srv/sftpusers'
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_default_home_mode [[[
+#
 # UNIX permissions enforced on users home directories
 sftpusers_default_home_mode: '0750'
 
+                                                                   # ]]]
+# .. envvar:: sftpusers_default_dirs [[[
+#
 # List of default directories created on SFTPonly accounts (users don't have
 # permission to access their home directory due to SFTPonly constraints, but they
 # can access subdirectories)
 sftpusers_default_dirs: [ 'files' ]
 
+                                                                   # ]]]

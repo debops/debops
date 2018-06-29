@@ -63,7 +63,7 @@ All of the mechanisms that detected the static network interface configuration,
 presence of NetworkManager, POSIX capabilities and different host types were
 removed, because the role is no longer enabled by default on all hosts. Make
 sure that you use the role only on hosts that are expected to be configured by
-the :command:`ifupdown` package, role will make no attempts to accommodate other
+the :command:`ifupdown` package, the role will make no attempts to accommodate other
 network configuration solutions at this time.
 
 Playbook changes

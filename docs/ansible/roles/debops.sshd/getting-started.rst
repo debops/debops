@@ -7,7 +7,7 @@ Getting started
 Useful variables
 ----------------
 
-This is a list of role variables which your most likely want to define in
+This is a list of role variables which you most likely want to define in
 Ansible inventory to customize OpenSSH server:
 
 :envvar:`sshd__whitelist` / :envvar:`sshd__group_whitelist` / :envvar:`sshd__host_whitelist`
@@ -17,13 +17,13 @@ Ansible inventory to customize OpenSSH server:
   lists.
 
 :envvar:`sshd__known_hosts` / :envvar:`sshd__group_known_hosts` / :envvar:`sshd__host_known_hosts`
-  You can add here lists of FQDN hostnames which should be added to systemwide
+  Here you can add lists of FQDN hostnames which should be added to systemwide
   :file:`/etc/ssh/ssh_known_hosts` file. For example, setting::
 
       sshd__known_hosts: [ 'github.com' ]
 
   will add GitHub SSH fingerprint and allow you to clone git repositories over
-  SSH with proper host authentication, without need to ignore host
+  SSH with proper host authentication, without the need to ignore host
   fingerprints.
 
 :envvar:`sshd__authorized_keys_lookup`

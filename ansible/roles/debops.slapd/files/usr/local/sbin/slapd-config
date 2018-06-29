@@ -3,7 +3,7 @@
 # This file is managed by Ansible, all changes will be lost
 #
 # slapd runtime configuration management tool
-# Homepage: http://blog.toxa.de/archives/484
+# Homepage: https://github.com/cepharum/slapd-config
 #
 # written by Thomas Urban <thomas.urban@cepharum.de>
 # (c) 2012-2013, cepharum GmbH, Berlin
@@ -30,17 +30,17 @@ AUTHENTICATION="${AUTHENTICATION:--Q -H ldapi:/// -Y EXTERNAL}"
 
 # detect base64 encoder/decoder
 if which base64 &>/dev/null; then
-	B64ENC="base64"
-	B64DEC="base64 -d"
+	B64ENC=( base64 )
+	B64DEC=( base64 -d )
 elif which openssl &>/dev/null; then
-	B64ENC="openssl base64"
-	B64DEC="openssl base64 -d"
+	B64ENC=( openssl base64 )
+	B64DEC=( openssl base64 -d )
 elif which recode &>/dev/null; then
-	B64ENC="recode ..base64"
-	B64DEC="recode base64.."
+	B64ENC=( recode ..base64 )
+	B64DEC=( recode base64.. )
 else
-	B64ENC="echo 'missing base64 encoder' >&2 && exit 5"
-	B64DEC="echo 'missing base64 decoder' >&2 && exit 5"
+	B64ENC=( echo 'missing base64 encoder' \>\&2 \&\& exit 5 )
+	B64DEC=( echo 'missing base64 decoder' \>\&2 \&\& exit 5 )
 fi
 
 
@@ -60,14 +60,15 @@ findEntries()
 
 	shift
 
+	# shellcheck disable=SC2086
 	ldapsearch $AUTHENTICATION -LLL -b "$basedn" "$query" "$@" | sed -ne '/^ *$/!p' | sed -ne '1h;1!H;${;x;s/\n //g;p;}'
 }
 
 DBName2DN()
 {
-	for dn in `listDatabaseDNs`; do
-		name="`DBDN2Name "$dn"`"
-		[ "${1}" = "$name" -o "${1}" = "${name#*\}}" ] && { echo $dn; return 0; }
+	for dn in $(listDatabaseDNs); do
+		name="$(DBDN2Name "$dn")"
+		[ "${1}" = "$name" ] || [ "${1}" = "${name#*\}}" ] && { echo "$dn"; return 0; }
 	done
 
 	echo "invalid database: ${1}" >&2
@@ -85,7 +86,7 @@ values2LDIF()
 	values=
 	i=0
 
-	while read line; do
+	while read -r line; do
 		# insert line break
 		[ $i -eq 0 ] || values="$values\n"
 
@@ -94,14 +95,14 @@ values2LDIF()
 
 		# base64-encode line if required
 		echo -n "$line" | awk '/^[\x01-\x09\x0B\x0C\x0E-\x1F\x21-\x39\x3B\x3D-\x7F][\x01-\x09\x0B\x0C\x0E-\x7F]*$/ {print "valid"}' | grep valid &>/dev/null || {
-			line="$(echo -n "$line" | $B64ENC)"
+			line="$(echo -n "$line" | "${B64ENC[@]}")"
 		}
 
 		values="$values${1}: ${line}"
 		i=$((i+1))
 	done
 
-	{ [ $i -lt 2 -a "${2}" != "nonumbers" ] && sed 's/^\([^:]\+: \){0}/\1/' <<<"$values" || echo "$values"; } | sed 's/\\n/\n/g' | sed -n ':p;s/\([^\n]\{78\}\)\([^\n]\)/\1\n \2/;tp;p'
+	{ [ $i -lt 2 ] && [ "${2}" != "nonumbers" ] && sed 's/^\([^:]\+: \){0}/\1/' <<<"$values" || echo "$values"; } | sed 's/\\n/\n/g' | sed -n ':p;s/\([^\n]\{78\}\)\([^\n]\)/\1\n \2/;tp;p'
 }
 
 listEntries()
@@ -132,13 +133,13 @@ readAttribute()
 /^'"$attr"':/!d
 s/^'"$attr"': *\({\(-\?[0-9][0-9]*\)}\)\?/=/
 s/^'"$attr"':: */!/
-p' | while read line; do
+p' | while read -r line; do
 		case "${line:0:1}" in
 			"=")
 				echo "${line:1}"
 				;;
 			'!')
-				echo -n "${line:1}" | $B64DEC
+				echo -n "${line:1}" | "${B64DEC[@]}"
 				;;
 		esac
 	done
@@ -150,6 +151,7 @@ writeAttribute()
 	attr="${2}"
 	[ "${3}" = "nonumbers" ] && mode=nonumbers || mode=
 
+	# shellcheck disable=SC2086
 	ldapmodify $AUTHENTICATION <<EOT
 dn: $dn
 changetype: modify
@@ -166,11 +168,11 @@ insertAttributeLine()
 	idx="${3}"
 	rule="${4//;/\\;}"
 
-	[ $idx -lt 1 ] && idx=1
+	[ "$idx" -lt 1 ] && idx=1
 
 	{
 		readAttribute "$dn" "$attr" | {
-			if [ $idx -le $(readAttribute "$dn" "$attr" | wc -l) ]; then
+			if [ "$idx" -le "$(readAttribute "$dn" "$attr" | wc -l)" ]; then
 				sed "${idx}i${rule}"
 			else
 				sed -n "p;\$i${rule}"
@@ -185,7 +187,10 @@ deleteAttributeLine()
 	attr="${2}"
 	idx="${3}"
 
-	[ $idx -ge 1 -a $idx -le `readAttribute "$dn" "$attr" | wc -l` ] || { echo "index out of bound" >&2; return 1; }
+	if ! [ "$idx" -ge 1 ] && [ "$idx" -le "$(readAttribute "$dn" "$attr" | wc -l)" ] ; then
+		echo "index out of bound" >&2
+		return 1
+	fi
 
 	readAttribute "$dn" "$attr" | sed "${idx}d" | writeAttribute "$dn" "$attr" "${4}"
 }
@@ -194,15 +199,16 @@ schema2CN()
 {
 	name="${1}"
 
-	grep -E '^[1-9][0-9]*$' <<<$name &>/dev/null && index="$((name-1))" || index="x"
+	grep -E '^[1-9][0-9]*$' <<<"$name" &>/dev/null && index="$((name-1))" || index="x"
 
-	cn=`findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed "/^dn: cn={$index}.\|}$name,cn=schema,cn=config\$/!d;s/^[^{]\+\({[^,]\+\),cn=schema,cn=config\$/\1/"`
+	cn=$(findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed "/^dn: cn={$index}.\|}$name,cn=schema,cn=config\$/!d;s/^[^{]\+\({[^,]\+\),cn=schema,cn=config\$/\1/")
 
-	if [ $? -ne 0 -o -z "`echo "$cn"`" ]; then
+	# shellcheck disable=SC2181
+	if [ $? -ne 0 ] || [ -z "$cn" ]; then
 		if [ -n "${2}" ]; then
 			idx=-1
-			for cidx in `findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed -n 's/^[^{]\+{\([0-9]\+\)}.*$/\1/p'`; do
-				[ $cidx -gt $idx ] && idx=$cidx
+			for cidx in $(findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed -n 's/^[^{]\+{\([0-9]\+\)}.*$/\1/p'); do
+				[ "$cidx" -gt "$idx" ] && idx=$cidx
 			done
 
 			echo "{$((idx+1))}$name"
@@ -210,13 +216,13 @@ schema2CN()
 			return 1
 		fi
 	else
-		echo $cn
+		echo "$cn"
 	fi
 }
 
 schema2DN()
 {
-	cn="`schema2CN "${1}"`" || return 1
+	cn="$(schema2CN "${1}")" || return 1
 	echo "cn=${cn},cn=schema,cn=config"
 }
 
@@ -238,17 +244,17 @@ testSchema()
 
 readSchema()
 {
-	dn="`schema2DN "${1}"`" || { echo "invalid or missing schema" >&2; exit 1; }
+	dn="$(schema2DN "${1}")" || { echo "invalid or missing schema" >&2; exit 1; }
 
 	cat <<EOT
-# Copy of schema `readAttribute "$dn" cn`
+# Copy of schema $(readAttribute "$dn" cn)
 # DN in LDAP is $dn
 
-`readAttribute "$dn" olcObjectIdentifier | sed 's/^/\nobjectidentifier /;s/ \(NAME\|DESC\|EQUALITY\|SUBSTR\|SYNTAX\|SINGLE-VALUE\|SUP\)/\n\t\1/g'`
+$(readAttribute "$dn" olcObjectIdentifier | sed 's/^/\nobjectidentifier /;s/ \(NAME\|DESC\|EQUALITY\|SUBSTR\|SYNTAX\|SINGLE-VALUE\|SUP\)/\n\t\1/g')
 
-`readAttribute "$dn" olcAttributeTypes | sed 's/^/\nattributetype /;s/ \(NAME\|DESC\|EQUALITY\|SUBSTR\|SYNTAX\|SINGLE-VALUE\|SUP\)/\n\t\1/g'`
+$(readAttribute "$dn" olcAttributeTypes | sed 's/^/\nattributetype /;s/ \(NAME\|DESC\|EQUALITY\|SUBSTR\|SYNTAX\|SINGLE-VALUE\|SUP\)/\n\t\1/g')
 
-`readAttribute "$dn" olcObjectClasses | sed 's/^/\nobjectclass /;s/ \(NAME\|DESC\|SUP\|STRUCTURAL\|AUXILIARY\|MAY\|MUST\)/\n\t\1/g'`
+$(readAttribute "$dn" olcObjectClasses | sed 's/^/\nobjectclass /;s/ \(NAME\|DESC\|SUP\|STRUCTURAL\|AUXILIARY\|MAY\|MUST\)/\n\t\1/g')
 EOT
 }
 
@@ -263,7 +269,7 @@ schemaFileToLDIF()
 		aline=""
 		cline=""
 
-		while read rule; do
+		while read -r rule; do
 			ruletype="${rule%% *}"
 			case "${ruletype,,}" in
 				objectidentifier)
@@ -304,6 +310,7 @@ writeSchema()
 		read -r classes
 
 		testSchema "${1}"
+		# shellcheck disable=SC2181
 		if [ $? -eq 0 ]; then
 			dn="$(schema2DN "${1}")"
 
@@ -326,6 +333,7 @@ $(sed 's/\\n/\n/g' <<<"$classes")
 -
 "
 
+			# shellcheck disable=SC2086
 			ldapmodify $AUTHENTICATION <<<"$ldif"
 		else
 			cn="$(schema2CN "${1}" y)"
@@ -344,6 +352,7 @@ cn: ${cn}
 			[ -n "$classes" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$classes")
 "
 
+			# shellcheck disable=SC2086
 			ldapadd $AUTHENTICATION <<<"$ldif"
 		fi
 	)
@@ -351,18 +360,20 @@ cn: ${cn}
 
 deleteSchema()
 {
-	dn="`schema2DN "${1}"`" || { echo "invalid or missing schema" >&2; exit 1; }
+	dn="$(schema2DN "${1}")" || { echo "invalid or missing schema" >&2; exit 1; }
 
 	idx="${dn#*{}"
 	idx="${idx%%\}*}"
 
+	# shellcheck disable=SC2086
 	ldapdelete $AUTHENTICATION "${dn}" || { echo "failed to delete schema ${dn}" >&2; exit 2; }
 
 	while testSchema "$((idx+1))"; do
-		olddn="`schema2DN "$((idx+1))"`"
-		newcn="`DN2Schema "${olddn}"`"
+		olddn="$(schema2DN "$((idx+1))")"
+		newcn="$(DN2Schema "${olddn}")"
 		newcn="{$idx}$newcn"
 
+		# shellcheck disable=SC2086
 		ldapmodify $AUTHENTICATION <<-EOT
 dn: ${olddn}
 changetype: modrdn
@@ -372,6 +383,7 @@ newsuperior: cn=schema,cn=config
 -
 		EOT
 
+		# shellcheck disable=SC2181
 		[ $? -ne 0 ] && { echo "failed to move schema $olddn to cn=$newcn,cn=schema,cn=config" >&2; exit 2; }
 	done
 }
@@ -383,17 +395,17 @@ listDatabaseDNs()
 
 listAllDatabases()
 {
-	for dn in `listDatabaseDNs`; do
-		echo "`DBDN2Name "$dn"`	$dn"
+	for dn in $(listDatabaseDNs); do
+		echo "$(DBDN2Name "$dn")	$dn"
 	done
 }
 
 listDatabases()
 {
-	for dn in `listDatabaseDNs`
+	for dn in $(listDatabaseDNs)
 	do
-		if suffix=`findEntries -dn "$dn" "olcSuffix=*" olcSuffix | grep -E '^olcSuffix: '`; then
-			echo "`DBDN2Name "$dn"`	${suffix#*: }	$dn"
+		if suffix=$(findEntries -dn "$dn" "olcSuffix=*" olcSuffix | grep -E '^olcSuffix: '); then
+			echo "$(DBDN2Name "$dn")	${suffix#*: }	$dn"
 		fi
 	done
 }
@@ -412,24 +424,26 @@ writeSslCertificate()
 		[ -f "$caFilename" ] || { echo "missing CA certificate file: $caFilename" >&2; exit 1; }
 
 		echo "setting up CA certificate file" >&2
+		# shellcheck disable=SC2086
 		ldapmodify $AUTHENTICATION <<-EOT
 dn: cn=config
 changetype: modify
 replace: olcTLSCACertificateFile
-`values2LDIF olcTLSCACertificateFile <<<"$caFilename"`
+$(values2LDIF olcTLSCACertificateFile <<<"$caFilename")
 -
 		EOT
 	fi
 
 	echo "setting up certificate/key files" >&2
+	# shellcheck disable=SC2086
 	ldapmodify $AUTHENTICATION <<-EOT
 dn: cn=config
 changetype: modify
 replace: olcTLSCertificateFile
-`values2LDIF olcTLSCertificateFile <<<"$certFilename"`
+$(values2LDIF olcTLSCertificateFile <<<"$certFilename")
 -
 replace: olcTLSCertificateKeyFile
-`values2LDIF olcTLSCertificateKeyFile <<<"$keyFilename"`
+$(values2LDIF olcTLSCertificateKeyFile <<<"$keyFilename")
 -
 	EOT
 }
@@ -439,6 +453,7 @@ deleteSslCertificate()
 	if [ -n "$(readAttribute "cn=config" "olcTLSCertificateFile")" ]
 	then
 		echo "dropping certificate/key file" >&2
+		# shellcheck disable=SC2086
 		ldapmodify $AUTHENTICATION <<-EOT
 dn: cn=config
 changetype: modify
@@ -452,6 +467,7 @@ delete: olcTLSCertificateKeyFile
 	if [ -n "$(readAttribute "cn=config" "olcTLSCACertificateFile")" ]
 	then
 		echo "dropping CA certificate file" >&2
+		# shellcheck disable=SC2086
 		ldapmodify $AUTHENTICATION <<-EOT
 dn: cn=config
 changetype: modify
@@ -646,14 +662,17 @@ actions are:
 				;;
 			write)
 				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db write <dbname> <attr> [ nonumbers ]\n       (providing value lines on stdin)\n"
+				# shellcheck disable=SC2086
 				writeAttribute "$(DBName2DN "${1}")" "${2}" ${3}
 				;;
 			insert)
 				[ $# -lt 4 ] && usage <<<"usage: $APPNAME db insert <dbname> <attr> <linenum> \"<value>\" [ nonumbers ]\n"
+				# shellcheck disable=SC2086
 				insertAttributeLine "$(DBName2DN "${1}")" "${2}" "${3}" "${4}" ${5}
 				;;
 			delete)
 				[ $# -lt 3 ] && usage <<<"usage: $APPNAME db delete <dbname> <attr> <linenum> [ nonumbers ]\n"
+				# shellcheck disable=SC2086
 				deleteAttributeLine "$(DBName2DN "${1}")" "${2}" "${3}" ${4}
 				;;
 			read-access)

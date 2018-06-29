@@ -19,7 +19,7 @@ printf "%s " "Searching for shell scripts"
 
 counter=0
 
-while read in ; do
+while read -r in ; do
     if file "${in}" | grep -q -E 'Bourne-Again shell script|bash script' ; then
         file_list+=("${in}")
         counter=$(( counter + 1 ))
@@ -28,7 +28,7 @@ while read in ; do
             printf "%s" "."
         fi
     fi
-done < <(find . -type f)
+done < <(find . -type f -not -iwholename "./.git/*")
 
 printf " %s\n" "found ${#file_list[@]} shell scripts"
 

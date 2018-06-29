@@ -91,12 +91,12 @@ test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax
 test-pep8:
 	@printf "%s\n" "Testing PEP8 compliance using pycodestyle..."
 	@pycodestyle --show-source --statistics .
-	@./lib/tests/check-pep8 || true
+	@./lib/tests/check-pep8
 
 .PHONY: test-shell
 test-shell:
 	@printf "%s\n" "Testing shell syntax using shellcheck..."
-	@./lib/tests/check-shell || true
+	@./lib/tests/check-shell
 
 .PHONY: test-docker-build
 test-docker-build:
@@ -121,7 +121,7 @@ test-playbook-syntax:
 .PHONY: test-yaml
 test-yaml:
 	@printf "%s\n" "Testing YAML syntax using yamllint..."
-	@yamllint . || true
+	@yamllint .
 
 .PHONY: test-debops-tools
 test-debops-tools:

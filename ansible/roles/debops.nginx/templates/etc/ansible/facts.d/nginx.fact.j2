@@ -3,6 +3,7 @@
 # Check nginx version
 nginx_version="$(/usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##')"
 
+cat << EOF
 {% set nginx_tpl_default_server = '' %}
 {% if (ansible_local is defined and ansible_local.nginx is defined and
        ansible_local.nginx.default_server is defined) %}
@@ -17,7 +18,6 @@ nginx_version="$(/usr/sbin/nginx -v 2>&1 | sed -e 's#^.*/##')"
 {% elif nginx_register_default_server_ssl|d() %}
 {%   set nginx_tpl_default_server_ssl = nginx_register_default_server_ssl %}
 {% endif %}
-cat << EOF
 {
 "acme": "{{ nginx_acme | bool | lower }}",
 "acme_domain": "{{ nginx_acme_domain }}",

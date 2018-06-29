@@ -90,7 +90,7 @@
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: postfix__register_facts|changed
+  when: postfix__register_facts is changed
 
 - name: Configure /etc/mailname
   copy:
@@ -137,7 +137,7 @@
   notify: [ 'Process Postfix Makefile', 'Check postfix and reload' ]
   no_log: '{{ item.no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
 
-- name: Gnereate Postfix lookup tables
+- name: Generate Postfix lookup tables
   template:
     src:   'etc/postfix/lookup_table.j2'
     dest:  '/etc/postfix/{{ item.name }}'
@@ -145,7 +145,7 @@
     group: '{{ item.group | d("root") }}'
     mode:  '{{ item.mode  | d("0644") }}'
   with_flattened:
-     - '{{ postfix__combined_lookup_tables | parse_kv_items }}'
+    - '{{ postfix__combined_lookup_tables | parse_kv_items }}'
   notify: [ 'Process Postfix Makefile', 'Check postfix and reload' ]
   when: item.name|d() and item.state|d('present') != 'absent'
   no_log: '{{ item.no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'

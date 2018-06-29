@@ -42,7 +42,7 @@
   command: cp {{ ipxe_tftp_root }}/debian-installer/amd64/initrd.gz {{ ipxe_debian_pxeboot_workdir }}/
   args:
     creates: '{{ ipxe_debian_pxeboot_workdir + "/initrd.gz" }}'
-  when: ipxe_register_debian_netinst|d() and ipxe_register_debian_netinst.changed
+  when: ipxe_register_debian_netinst|d() and ipxe_register_debian_netinst is changed
 
 - name: Download non-free firmware
   get_url:
@@ -56,17 +56,16 @@
     src: '{{ ipxe_debian_pxeboot_workdir + "/" + (ipxe_debian_pxeboot_firmware_url | basename) }}'
     dest: '{{ ipxe_debian_pxeboot_workdir + "/firmware" }}'
     copy: False
-  when: ipxe_register_firmware|d() and ipxe_register_firmware.changed
+  when: ipxe_register_firmware|d() and ipxe_register_firmware is changed
 
 - name: Create firmware cpio archive
   shell: pax -x sv4cpio -s'%{{ ipxe_debian_pxeboot_workdir }}/firmware%/firmware%'
          -w {{ ipxe_debian_pxeboot_workdir }}/firmware |
          gzip -c > {{ ipxe_debian_pxeboot_workdir }}/firmware.cpio.gz
-  when: ipxe_register_firmware|d() and ipxe_register_firmware.changed
+  when: ipxe_register_firmware|d() and ipxe_register_firmware is changed
 
 - name: Create Debian netboot initrd with firmware
   shell: cat {{ ipxe_debian_pxeboot_workdir + "/initrd.gz" }}
              {{ ipxe_debian_pxeboot_workdir + "/firmware.cpio.gz" }} >
              {{ ipxe_tftp_root + "/debian-installer/amd64/initrd.gz" }}
-  when: ipxe_register_firmware|d() and ipxe_register_firmware.changed
-
+  when: ipxe_register_firmware|d() and ipxe_register_firmware is changed

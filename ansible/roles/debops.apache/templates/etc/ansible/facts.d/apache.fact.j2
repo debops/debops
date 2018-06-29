@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python{{ '2' if (ansible_python_version is version_compare('3.5', '<')) else '3' }}
 
 # {{ ansible_managed }}
 
@@ -19,7 +19,7 @@ try:
         _re = re.match(r'Server version: Apache/(?P<version>[^ ]+)', line)
         if _re:
             output['version'] = _re.group('version')
-except:
+except Exception:
     pass
 
 if output['use_if_version']:

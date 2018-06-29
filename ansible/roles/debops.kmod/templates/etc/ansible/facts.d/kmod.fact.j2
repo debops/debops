@@ -1,0 +1,19 @@
+#!/usr/bin/python{{ '2' if (ansible_python_version is version_compare('3.5', '<')) else '3' }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+
+try:
+    import kmodpy
+    kernel_modules = [x[0] for x in kmodpy.Kmod().list()]
+except ImportError:
+    kernel_modules = []
+
+output = loads('''{{ {"configured": True,
+                      "enabled": kmod__enabled|bool} | to_nice_json }}''')
+
+output['modules'] = kernel_modules
+
+print(dumps(output, sort_keys=True, indent=4))

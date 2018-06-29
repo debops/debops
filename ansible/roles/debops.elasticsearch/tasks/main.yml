@@ -51,7 +51,7 @@
 
 - name: Reload systemd daemons
   command: systemctl daemon-reload
-  when: (elasticsearch__register_systemd|changed and
+  when: (elasticsearch__register_systemd is changed and
          ansible_service_mgr == 'systemd')
 
 - name: Generate Elasticsearch configuration
@@ -72,7 +72,7 @@
     group: '{{ elasticsearch__group }}'
     mode: '0660'
   notify: [ 'Restart elasticsearch' ]
-  when: elasticsearch__version | version_compare("5.0.0", ">=")
+  when: elasticsearch__version is version_compare("5.0.0", ">=")
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Check state of installed Elasticsearch plugins
@@ -84,7 +84,7 @@
   check_mode: False
 
 - name: Install Elasticsearch plugins
-  shell: bin/elasticsearch-plugin install {{ item.url | d(item.name) }} --batch
+  command: bin/elasticsearch-plugin install {{ item.url | d(item.name) }} --batch
   args:
     chdir: '/usr/share/elasticsearch'
   notify: [ 'Restart elasticsearch' ]
@@ -94,7 +94,7 @@
          (item.name if ':' not in item.name else item.name.split(':')[1]) not in elasticsearch__register_plugins.stdout_lines)
 
 - name: Remove Elasticsearch plugins
-  shell: bin/elasticsearch-plugin remove {{ item.name }}
+  command: bin/elasticsearch-plugin remove {{ item.name }}
   args:
     chdir: '/usr/share/elasticsearch'
   notify: [ 'Restart elasticsearch' ]
@@ -130,4 +130,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: elasticsearch__register_facts|changed
+  when: elasticsearch__register_facts is changed

@@ -6,7 +6,7 @@
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server' | grep -v '^$'
+  shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server*' | grep -v '^$'
   register: mariadb__register_version
   changed_when: False
   failed_when: False
@@ -97,7 +97,7 @@
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: mariadb__register_local_facts.changed|bool
+  when: mariadb__register_local_facts is changed
 
 - name: Manage database contents
   include: 'manage_contents.yml'

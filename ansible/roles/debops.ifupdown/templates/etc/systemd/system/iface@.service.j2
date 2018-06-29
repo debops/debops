@@ -16,7 +16,7 @@ IgnoreOnIsolate=yes
 
 [Service]
 {# https://bugs.debian.org/761909 #}
-{% if ansible_service_mgr == 'systemd' and ifupdown__tpl_systemd_version | version_compare('228.0', '>=') %}
+{% if ansible_service_mgr == 'systemd' and ifupdown__tpl_systemd_version is version_compare('228.0', '>=') %}
 # avoid stopping on shutdown via stopping system-iface.slice
 Slice=system.slice
 {% endif %}

@@ -206,7 +206,7 @@ pki_acme_tiny_bin: '/usr/local/lib/pki/acme-tiny'
 #
 # Name of the ACME API endpoint used by the ACME client. The name-URL mapping
 # is done in :envvar:`pki_acme_ca_api_map` dictionary variable.
-pki_acme_ca: 'le-live'
+pki_acme_ca: 'le-live-v2'
 
                                                                    # ]]]
 # .. envvar:: pki_acme_ca_api_map [[[
@@ -218,6 +218,8 @@ pki_acme_ca: 'le-live'
 pki_acme_ca_api_map:
   'le-live':    'https://acme-v01.api.letsencrypt.org'
   'le-staging': 'https://acme-staging.api.letsencrypt.org'
+  'le-live-v2': 'https://acme-v02.api.letsencrypt.org/directory'
+  'le-staging-v2': 'https://acme-staging-v02.api.letsencrypt.org/directory'
 
                                                                    # ]]]
 # .. envvar:: pki_acme_challenge_dir [[[
@@ -441,7 +443,10 @@ pki_default_realms:
 
   - name: 'domain'
     acme: False
-    default_subdomains: [ '{{ ansible_hostname }}', '_wildcard_' ]
+    default_subdomains:
+      - '{{ ansible_hostname }}'
+      - '*.{{ ansible_hostname }}'
+      - '_wildcard_'
 
                                                                    # ]]]
 # .. envvar:: pki_group_realms [[[
@@ -514,6 +519,13 @@ pki_ca_library: 'openssl'
 # Name of the default Certificate Authority to which host certificates are
 # directed if a PKI realm does not specify a default Authority.
 pki_default_authority: 'domain'
+
+                                                                   # ]]]
+# .. envvar:: pki_ca_name_constraints [[[
+#
+# Specify if the ``nameConstraints`` CA certificate extension should be
+# included in the generated CA certificates by default.
+pki_ca_name_constraints: True
 
                                                                    # ]]]
 # .. envvar:: pki_ca_domain [[[

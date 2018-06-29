@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python{{ '2' if (ansible_python_version is version_compare('3.5', '<')) else '3' }}
 
 # {{ ansible_managed }}
 
@@ -11,7 +11,7 @@ import redis
 
 output = {}
 sentinel_monitors = []
-sentinel_monitor_map = {}
+sentinel_mon_map = {}
 sentinel_known_sentinels = []
 redis_auth_group = '{{ redis__auth_group }}'
 redis_server_master_host = '{{ redis__server_master_host }}'
@@ -87,7 +87,9 @@ if os.path.isfile(redis_server_conf):
     except Exception:
         pass
 
-if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) and os.access(redis_sentinel_bin, os.X_OK):
+if (os.path.isfile(redis_sentinel_conf) and
+        os.path.isfile(redis_sentinel_bin) and
+        os.access(redis_sentinel_bin, os.X_OK)):
 
     sentinel_enabled = False
 
@@ -97,25 +99,25 @@ if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) an
         for line in fh:
             if line.startswith('sentinel monitor'):
                 sentinel_monitors.append(line.split(' ')[2])
-                sentinel_monitor_map.update({line.split(' ')[2]: {}})
+                sentinel_mon_map.update({line.split(' ')[2]: {}})
 
             elif line.startswith('sentinel current-epoch'):
                 sentinel_enabled = True
 
-        if sentinel_enabled and sentinel_monitor_map.keys():
-            for monitor in sentinel_monitor_map.keys():
+        if sentinel_enabled and sentinel_mon_map.keys():
+            for monitor in sentinel_mon_map.keys():
                 known_slaves = []
                 known_sentinels = []
                 fh.seek(0)
                 for line in fh:
 
                     if line.startswith('sentinel monitor ' + monitor):
-                        sentinel_monitor_map[monitor].update(
+                        sentinel_mon_map[monitor].update(
                             {"master_host": line.split(' ')[3],
                              "master_port": line.split(' ')[4]})
 
                     elif line.startswith('sentinel auth-pass ' + monitor):
-                        sentinel_monitor_map[monitor].update(
+                        sentinel_mon_map[monitor].update(
                             {"password": line.split(' ')[3].rstrip('\n')})
 
                     elif line.startswith('sentinel known-slave ' + monitor):
@@ -129,11 +131,11 @@ if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) an
                              "port": line.split(' ')[4]})
 
                 if known_slaves:
-                    sentinel_monitor_map[monitor].update(
+                    sentinel_mon_map[monitor].update(
                         {"slaves": known_slaves})
 
                 if known_sentinels:
-                    sentinel_monitor_map[monitor].update(
+                    sentinel_mon_map[monitor].update(
                         {"sentinels": known_sentinels})
 
         fh.close()
@@ -141,7 +143,7 @@ if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) an
         if sentinel_enabled and sentinel_monitors:
             output.update({"sentinel_enabled": True})
             output.update({"sentinel_monitors": sentinel_monitors})
-            output.update({"sentinel_monitor_map": sentinel_monitor_map})
+            output.update({"sentinel_monitor_map": sentinel_mon_map})
             output.update({"sentinel_notify_dir": redis_sentinel_notify_dir})
             output.update(
                 {"sentinel_trigger_dir": redis_sentinel_trigger_dir})
@@ -149,13 +151,16 @@ if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) an
             output.update({"enabled": True})
             output.update({"monitor": sentinel_monitors[0]})
             output.update(
-                {"host": sentinel_monitor_map[sentinel_monitors[0]]['master_host']})
+                {"host":
+                    sentinel_mon_map[sentinel_monitors[0]]['master_host']})
             output.update(
-                {"port": sentinel_monitor_map[sentinel_monitors[0]]['master_port']})
+                {"port":
+                    sentinel_mon_map[sentinel_monitors[0]]['master_port']})
 
-            if sentinel_monitor_map[sentinel_monitors[0]]['password']:
+            if sentinel_mon_map[sentinel_monitors[0]]['password']:
                 output.update(
-                    {"password": sentinel_monitor_map[sentinel_monitors[0]]['password']})
+                    {"password":
+                        sentinel_mon_map[sentinel_monitors[0]]['password']})
 
             if 'socket' in output:
                 output.pop('socket', None)
@@ -166,15 +171,6 @@ if os.path.isfile(redis_sentinel_conf) and os.path.isfile(redis_sentinel_bin) an
 if 'port' not in output and 'socket' not in output:
     output.pop('host', None)
 
-{# --- Too slow. Took around 0.6 seconds on ypid’s dev system.
-# import re
-# import apt
-# apt_cache = apt.Cache()
-# apt_redis_server_pkg = apt_cache['redis-server']
-# apt_redis_server_pkg_version = apt_redis_server_pkg.installed.version
-# redis_server_pkg_version = re.sub(r'-.*$', '', apt_redis_server_pkg_version)
-# output.update({"version": redis_server_pkg_version})
-#}
 if 'password' in output:
     try:
         r = redis.StrictRedis(
