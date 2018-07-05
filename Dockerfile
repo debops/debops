@@ -33,6 +33,7 @@ RUN apt-get -q update \
        iproute2 \
        levee \
        python-apt \
+       python-dnspython \
        python-ldap \
        python-pip \
        python-wheel \

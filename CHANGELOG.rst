@@ -69,6 +69,12 @@ Added
   timer will use random delay time, up to 12h, to help with mass DHparam
   generation in multiple LXC containers/VMs.
 
+- The DebOps installation now depends on the `dnspython`__ Python library. This
+  allows usage of the ``dig`` Ansible lookup plugin in DebOps roles to gather
+  data via DNS SRV records.
+
+  .. __: http://www.dnspython.org/
+
 Changed
 ~~~~~~~
 

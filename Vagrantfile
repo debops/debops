@@ -258,6 +258,7 @@ EOF
         jq \
         make \
         python-apt \
+        python-dnspython \
         python-jinja2 \
         python-ldap \
         python-nose2 \
