@@ -92,6 +92,15 @@ can usually be installed using a system package manager.
 
 .. __: https://www.gnupg.org/
 
+`python-dnspython`__
+  This is a Python library that provides various functions related to DNS
+  queries. Some of the DebOps roles rely on DNS records to get information
+  about the environment, like addresses of centralized services provided via
+  DNS SRV records. In Ansible, this library is required by the ``dig`` lookup
+  plugin.
+
+.. __: http://www.dnspython.org/
+
 `python-ldap`__
   This is a Python library which can be used to interface with the LDAP
   servers, Ansible `ldap_attr`__ and `ldap_entry`__ modules use it. You will
