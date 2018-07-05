@@ -26,6 +26,12 @@ DNS and PKI configuration you might encounter.
 Icinga 2 inter-node communication and PKI
 -----------------------------------------
 
+You might need to allow connections to the Icinga API interface, by default on
+port 5665, through the firewall. You can do this by setting the
+:envvar:`icinga__allow` or its group or host equivalent in the inventory.
+Usually only the master host needs the access opened, unless you plan to
+initiate connections from the master to the clients.
+
 Icinga 2 uses X.509 certificates for internal communication between the nodes,
 therefore the correct DNS records for the hosts are required. When DNS is not
 configured properly beforehand, communication between the cluster nodes can be
