@@ -41,6 +41,9 @@ Added
     Python versions used at the same time. The role is included in the
     ``common.yml`` playbook.
 
+  - Icinga 2 support has been implemented with :ref:`debops.icinga`,
+    :ref:`debops.icinga_db` and :ref:`debops.icinga_web` Ansible roles.
+
 - [debops.users] Selected UNIX accounts can now be configured to linger when
   not logged in via the ``item.linger`` parameter. This allows these accounts
   to maintain long-running services when not logged in via their own private
