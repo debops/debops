@@ -400,11 +400,14 @@ sub__ansible__playbook () {
     status_msg info "Second Ansible playbook run to test idempotency..."
     ansible-playbook "${test_playbooks[@]}" --diff | tee /tmp/ansible_idempotent.txt
 
-    if grep -qEm1 -e 'changed=0.*unreachable=0.*failed=0' /tmp/ansible_idempotent.txt ; then
-        status_msg ok "The playbook is idempotent"
-    else
+    # Extract all of the Ansible status lines from the output file and check if
+    # any of them are not idempotent
+    if grep -E -e 'ok=.*changed=.*unreachable=.*failed=.*' /tmp/ansible_idempotent.txt \
+        | grep -v -qE -e 'changed=0.*unreachable=0.*failed=0' ; then
         status_msg error "The playbook is NOT IDEMPOTENT"
         return 1
+    else
+        status_msg ok "The playbook is idempotent"
     fi
 }
 

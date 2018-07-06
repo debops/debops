@@ -1,0 +1,15 @@
+{% for element in item.config | parse_kv_items %}
+{%   if element.state|d("present") not in [ "absent", "ignore", "init" ] %}
+{%     if not loop.first %}
+
+{%     endif %}
+{{ '[{}]'.format(element.name) }}
+{%     if element.options|d() %}
+{%       for thing in element.options %}
+{%         if thing.state|d("present") not in [ "absent", "ignore", "init" ] %}
+{{ '{} = "{}"'.format(thing.name, thing.value) }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
