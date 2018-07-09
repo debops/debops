@@ -207,7 +207,7 @@
                         ((item.server  | d(postgresql__server if postgresql__server else "localhost")) | replace(".","\.")),
                         (item.port     | d(postgresql__port)),
                         (item.database | d("\*")),
-                        (item.role     | d("\*"))
+                        (item.name     | d(item.role | d(item.owner | d("\*"))))
                        ] | join(":")
                       ) + ":" }}'
     line: '{{ [
