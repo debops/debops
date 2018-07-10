@@ -174,6 +174,11 @@ Changed
   script. This should allow for multiple administrators to easily coexist and
   run the DebOps playbooks/roles from their own accounts without issues.
 
+- [debops.mariadb_server] [debops.mariadb] The MariaDB/MySQL server and client
+  will now use the ``utf8mb4`` encoding by default instead of the ``utf8``
+  which is an internal MySQL character encoding. This might impact existing
+  databases, see the :ref:`upgrade_notes` for details.
+
 Removed
 ~~~~~~~
 
