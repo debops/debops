@@ -198,10 +198,20 @@ work in Ubuntu.
 
 .. __: https://virtualenv.pypa.io/en/stable/
 
+First install python virtual-env packages and other system dependencies
+required for building:
+
 .. code-block:: console
 
    sudo apt-get install python-virtualenv virtualenv build-essential \
-                        python-dev libffi-dev libssl-dev
+                        python-dev libffi-dev libssl-dev libsasl2-dev \
+                        libldap2-dev
+
+
+Next we activate the DebOps virtual environment and prepare it for use:
+
+.. code-block:: console
+
    virtualenv debops-venv
    cd debops-venv
    source bin/activate
