@@ -38,6 +38,18 @@ GitLab :command:`gitaly` installation
 
   The above steps shouldn't impact new GitLab installations.
 
+UTF8 encoding in MariaDB
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.mariadb_server` and :ref:`debops.mariadb` roles will now use
+  the ``utf8mb4`` character encoding by default. This encoding is `the real
+  UTF-8 encoding`__ and not the internal MySQL encoding. This change might
+  impact existing MySQL databases; you can read `an UTF-8 conversion guide`__
+  to check if your database needs to be converted.
+
+  .. __: https://medium.com/@adamhooper/in-mysql-never-use-utf8-use-utf8mb4-11761243e434
+  .. __: https://mathiasbynens.be/notes/mysql-utf8mb4
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
