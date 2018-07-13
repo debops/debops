@@ -122,7 +122,7 @@ Provide an immutable :file:`README.md` file in the root directory of the ownClou
          This ownCloud instance is managed by Ansible.
          Changes done via the ownCloud web interface might be overwritten
          by subsequent Ansible runs.
-         Refer to https://docs.debops.org/en/latest/ansible/roles/ansible-owncloud/docs/index.html for details.
+         Refer to https://docs.debops.org/en/latest/ansible/roles/debops.owncloud/index.html for details.
        owner: 'root'
        group: 'root'
 
