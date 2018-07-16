@@ -21,13 +21,8 @@
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
+from past.builtins import basestring
 from operator import itemgetter
-
-try:
-    unicode = unicode
-except NameError:
-    # py3
-    unicode = str
 
 __metaclass__ = type
 
@@ -42,7 +37,7 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
         old_state = current_data.get('state', 'present')
         new_value = new_data.get('value')
 
-        if isinstance(new_value, (str, unicode, int, float, bool)):
+        if isinstance(new_value, (basestring, int, float, bool)):
             if (old_value is None or isinstance(old_value,
                                                 (str, unicode, int,
                                                  float, bool, dict))):
