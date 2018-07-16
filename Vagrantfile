@@ -259,6 +259,7 @@ EOF
         make \
         python-apt \
         python-dnspython \
+        python-future \
         python-jinja2 \
         python-ldap \
         python-nose2 \

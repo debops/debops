@@ -78,6 +78,14 @@ Added
 
   .. __: http://www.dnspython.org/
 
+- The DebOps installation now depends on the `future`__ Python library which
+  provides compatibility between Python 2.7 and Python 3.x environments. It is
+  currently used in the custom Ansible filter plugin provided by DebOps, but
+  its use will be extended to other scripts in the future to make the code more
+  readable.
+
+  .. __: http://python-future.org/
+
 Changed
 ~~~~~~~
 

@@ -34,6 +34,7 @@ RUN apt-get -q update \
        levee \
        python-apt \
        python-dnspython \
+       python-future \
        python-ldap \
        python-pip \
        python-wheel \

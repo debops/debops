@@ -112,6 +112,13 @@ can usually be installed using a system package manager.
 .. __: https://docs.ansible.com/ansible/latest/ldap_attr_module.html
 .. __: https://docs.ansible.com/ansible/latest/ldap_entry_module.html
 
+`python-future`__
+  This module provides a compatibility layer between Python 2.7 and Python 3.x
+  versions. It allows creation of code that can be run in both old and new
+  Python environments without changes.
+
+.. __: http://python-future.org/
+
 `python-netaddr`__
   This is a Python library which can be used to manipulate IP addresses in
   different ways. It's used by the ``ipaddr()`` Ansible filter plugin used in
