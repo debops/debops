@@ -79,34 +79,6 @@
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
   no_log: '{{ users__no_log | bool }}'
 
-- name: Manage home directory ACLs
-  acl:
-    path:        '{{ item.0.home | d("~" + item.0.name) }}'
-    default:     '{{ item.1.default     | d(omit) }}'
-    entity:      '{{ item.1.entity      | d(omit) }}'
-    entry:       '{{ item.1.entry       | d(omit) }}'
-    etype:       '{{ item.1.etype       | d(omit) }}'
-    permissions: '{{ item.1.permissions | d(omit) }}'
-    follow:      '{{ item.1.follow      | d(omit) }}'
-    recursive:   '{{ item.1.recursive   | d(omit) }}'
-    state:       '{{ item.1.state       | d("present") }}'
-  loop: '{{ (lookup("flattened",
-                    users__default_accounts
-                    + users__admin_accounts
-                    + users__accounts
-                    + users__group_accounts
-                    + users__host_accounts
-                    + users__dependent_accounts,
-                    wantlist=True))
-             | selectattr("home_acl", "defined") | list
-             | subelements("home_acl") }}'
-  loop_control:
-    label: '{{ {"name": item.0.name, "home_acl": item.1} }}'
-  when: (users__acl_enabled|bool and
-         item.0.name|d() and item.0.name != 'root' and item.0.state|d('present') != 'absent' and
-         item.0.createhome|d(True) and item.0.home_acl|d())
-  no_log: '{{ users__no_log | bool }}'
-
 - name: Allow specified UNIX accounts to linger when not logged in
   command: loginctl enable-linger {{ item.name }}
   args:
