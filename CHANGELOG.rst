@@ -187,6 +187,12 @@ Changed
   which is an internal MySQL character encoding. This might impact existing
   databases, see the :ref:`upgrade_notes` for details.
 
+- [debops.unattended_upgrades] On hosts without a domain set, the role enabled
+  all upgrades, not just security updates. This will not happen anymore, the
+  security updates are enabled everywhere by default, you need to enable all
+  upgrades specifically via the :envvar:`unattended_upgrades__release`
+  variable.
+
 Removed
 ~~~~~~~
 
