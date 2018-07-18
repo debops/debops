@@ -8,7 +8,7 @@
 {%       if params.forward|d()|bool %}
 {%         set ifupdown__tpl_forward_rules = (['domain $domains table filter chain FORWARD {']
              + (['    interface ' + interface_name + ' ' + params.forward_interface_ferm_rule|d("ACCEPT") + ";"]
-                if params.forward_interface_ferm_rule|d() != omit
+                if params.forward_interface_ferm_rule_enabled|d(True)|bool
                 else [])
              + (['    outerface ' + interface_name + ' ' + params.forward_outerface_ferm_rule|d("ACCEPT") + ";"]
                 if params.forward_outerface_ferm_rule_enabled|d(True)|bool
