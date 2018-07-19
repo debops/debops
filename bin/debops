@@ -194,28 +194,36 @@ def main(cmd_args):
     # Check if user specified a potential playbook name as the first
     # argument. If yes, use it as the playbook name and remove it from
     # the argument list
+    play_list = []
+    arg_list = []
     play = None
     if len(cmd_args) > 0:
-        maybe_play = cmd_args[0]
-        if os.path.isfile(maybe_play):
-            play = maybe_play
-        else:
-            play = find_playbook(config,
-                                 maybe_play + ".yml",
-                                 project_root,
-                                 monorepo_path,
-                                 DEBOPS_PY_PACKAGE,
-                                 playbooks_path)
-        if play:
-            cmd_args.pop(0)
-        del maybe_play
-    if not play:
+        for index, element in enumerate(cmd_args):
+            maybe_play = element
+            if os.path.isfile(maybe_play):
+                play = maybe_play
+            else:
+                play = find_playbook(config,
+                                     maybe_play + ".yml",
+                                     project_root,
+                                     monorepo_path,
+                                     DEBOPS_PY_PACKAGE,
+                                     playbooks_path)
+            if play:
+                play_list.append(play)
+            else:
+                arg_list.append(element)
+            del maybe_play
+
+    if not play_list:
         play = find_playbook(config,
                              "site.yml",
                              project_root,
                              monorepo_path,
                              DEBOPS_PY_PACKAGE,
                              playbooks_path)
+        if play:
+            play_list.append(play)
 
     inventory_path = find_inventorypath(project_root)
     os.environ['ANSIBLE_INVENTORY'] = inventory_path
@@ -237,9 +245,10 @@ def main(cmd_args):
     revert_unlock = padlock_unlock(encfs_encrypted)
     try:
         # Run ansible-playbook with custom environment
-        print("Running Ansible playbook from:")
-        print(play, "...")
-        return subprocess.call(['ansible-playbook', play] + cmd_args)
+        print("Running Ansible playbooks:")
+        for element in play_list:
+            print(element)
+        return subprocess.call(['ansible-playbook'] + play_list + arg_list)
     finally:
         if revert_unlock:
             padlock_lock(encfs_encrypted)
