@@ -193,6 +193,9 @@ Changed
   upgrades specifically via the :envvar:`unattended_upgrades__release`
   variable.
 
+- The :command:`debops` script can now parse multiple playbook names specified
+  in any order instead of just looking at the first argument passed to it.
+
 Removed
 ~~~~~~~
 
