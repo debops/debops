@@ -11,8 +11,8 @@
   with_items:
     - '{{ console__register_nfs_mount_points.results }}'
     - '{{ console__register_mount_points.results }}'
-  when: (ansible_service_mgr == 'systemd' and item.changed) and (
-        (item.opts | default(console_default_mount_nfs_options) is match(".*x-systemd.automount.*")
+  when: (ansible_service_mgr == 'systemd' and item.changed) and
+        ((item.opts | default(console_default_mount_nfs_options) is match(".*x-systemd.automount.*")
           and item.fstype is match("nfs.*")) or
         (item.opts | default(console_default_mount_options) is match(".*x-systemd.automount.*")))
 
