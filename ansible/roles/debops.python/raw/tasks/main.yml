@@ -2,7 +2,7 @@
 
 - name: Update APT repositories, install core Python packages
   raw: |
-    if [ -z "$(find /var/cache/apt/pkgcache.bin -mmin -43200)" ]; then
+    if [ -z "$(find /var/cache/apt/pkgcache.bin -mmin {{ python__raw_apt_cache_valid_time }})" ]; then
         apt-get -q update
     fi
     if [ "{{ python__raw_purge_v2 | bool | lower }}" = "true" ] && [ ! -f "/etc/ansible/facts.d/python.fact" ] ; then
