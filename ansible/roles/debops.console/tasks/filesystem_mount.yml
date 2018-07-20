@@ -17,6 +17,8 @@
   when: ((item.name is defined and item.name) and
          (item.src is defined and item.src) and
          (item.fstype is defined and item.fstype))
+  register: mount_points
+  notify: [ 'Restart local-fs' ]
 
 - name: Manage NFS mount points
   mount:
