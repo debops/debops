@@ -17,6 +17,15 @@
 #
 # Enable or disable Python management via the :ref:`debops.python` role.
 python__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: python__raw_apt_cache_valid_time [[[
+#
+# During Python bootstrapping, check if the APT cache was modified X minutes
+# ago (must be a negative number), by default 12h. If the APT cache is older
+# than the specified time in minutes, the role will automatically refresh it.
+# Set to ``0`` to refresh the APT cache on each Ansible run.
+python__raw_apt_cache_valid_time: '-{{ 60 * 60 * 12 }}'
                                                                    # ]]]
                                                                    # ]]]
 # Python 3 management [[[
