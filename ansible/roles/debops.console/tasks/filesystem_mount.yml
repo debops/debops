@@ -17,8 +17,8 @@
   when: ((item.name is defined and item.name) and
          (item.src is defined and item.src) and
          (item.fstype is defined and item.fstype))
-  register: mount_points
-  notify: [ 'Restart local-fs' ]
+  register: console__register_mount_points
+  notify: [ 'Restart local-fs.target' ]
 
 - name: Manage NFS mount points
   mount:
@@ -36,8 +36,8 @@
     - '{{ console_host_mounts_nfs }}'
   when: ((item.name is defined and item.name) and
          (item.src is defined and item.src))
-  register: nfs_mount_points
-  notify: [ 'Restart remote-fs' ]
+  register: console__register_nfs_mount_points
+  notify: [ 'Restart remote-fs.target' ]
 
 - name: Ensure mount directories exist when manually mounted
   file:

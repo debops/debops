@@ -3,22 +3,22 @@
 - name: Reload sysvinit
   command: telinit q
 
-- name: Restart remote-fs
+- name: Restart remote-fs.target
   systemd:
-    daemon_reload: yes
-    state: restarted
+    daemon_reload: True
+    state: 'restarted'
     name: 'remote-fs.target'
   with_items:
-    - '{{ nfs_mount_points.results }}'
+    - '{{ console__register_nfs_mount_points.results }}'
   when: ansible_service_mgr == 'systemd' and item.changed and
         (item.opts | default(console_default_mount_nfs_options) is match(".*x-systemd.automount.*"))
 
-- name: Restart local-fs
+- name: Restart local-fs.target
   systemd:
-    daemon_reload: yes
-    state: restarted
+    daemon_reload: True
+    state: 'restarted'
     name: 'local-fs.target'
   with_items:
-    - '{{ mount_points.results }}'
+    - '{{ console__register_mount_points.results }}'
   when: ansible_service_mgr == 'systemd' and item.changed and
         (item.opts | default(console_default_mount_options) is match(".*x-systemd.automount.*"))
