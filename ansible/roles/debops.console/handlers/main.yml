@@ -10,7 +10,7 @@
     name: 'remote-fs.target'
   with_items:
     - '{{ nfs_mount_points.results }}'
-  when: item.changed and
+  when: ansible_service_mgr == 'systemd' and item.changed and
         (item.opts | default(console_default_mount_nfs_options) is match(".*x-systemd.automount.*"))
 
 - name: Restart local-fs
@@ -20,5 +20,5 @@
     name: 'local-fs.target'
   with_items:
     - '{{ mount_points.results }}'
-  when: item.changed and
+  when: ansible_service_mgr == 'systemd' and item.changed and
         (item.opts | default(console_default_mount_options) is match(".*x-systemd.automount.*"))
