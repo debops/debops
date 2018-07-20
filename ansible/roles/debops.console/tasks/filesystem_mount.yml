@@ -34,6 +34,8 @@
     - '{{ console_host_mounts_nfs }}'
   when: ((item.name is defined and item.name) and
          (item.src is defined and item.src))
+  register: nfs_mount_points
+  notify: [ 'Restart remote-fs' ]
 
 - name: Ensure mount directories exist when manually mounted
   file:

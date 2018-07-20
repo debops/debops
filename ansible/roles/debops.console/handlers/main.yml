@@ -2,3 +2,13 @@
 
 - name: Reload sysvinit
   command: telinit q
+
+- name: Restart remote-fs
+  systemd:
+    daemon_reload: yes
+    state: restarted
+    name: 'remote-fs.target'
+  with_items:
+    - '{{ nfs_mount_points.results }}'
+  when: item.changed and
+        (item.opts | default(console_default_mount_nfs_options) is match(".*x-systemd.automount.*"))
