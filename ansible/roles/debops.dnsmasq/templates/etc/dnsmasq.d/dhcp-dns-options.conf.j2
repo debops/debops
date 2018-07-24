@@ -1,0 +1,151 @@
+# {{ ansible_managed }}
+
+# DHCP host configuration and DNS records
+
+{% for element in (dnsmasq__dhcp_hosts + dnsmasq__dns_records) %}
+{%   set entry = {} %}
+{%   for k, v in element.items() %}
+{%     set _ = entry.update({k.lower(): v}) %}
+{%   endfor %}
+{%   if entry.state|d('present') != 'absent' %}
+{%     set dhcp_host = [] %}
+{%     set host_record = [] %}
+{%     set cname = [] %}
+{%     set record_command = '' %}
+{%     set record_content = [] %}
+{%     if entry.hwaddr|d() %}
+{%       set _ = dhcp_host.extend( ([ entry.hwaddr ] if (entry.hwaddr is string) else entry.hwaddr) ) %}
+{%     elif entry.mac|d() %}
+{%       set _ = dhcp_host.extend( ([ entry.mac ] if (entry.mac is string) else entry.mac) ) %}
+{%     endif %}
+{%     if entry.id|d() %}
+{%       set _ = dhcp_host.append('id:' + entry.id) %}
+{%     endif %}
+{%     if entry.tag|d() %}
+{%       set _ = dhcp_host.append('set:' + entry.tag) %}
+{%     endif %}
+{%     if entry.ip|d() and entry.host is undefined %}
+{%       set _ = dhcp_host.extend( ([ entry.ip ] if (entry.ip is string) else entry.ip) | ipwrap ) %}
+{%     elif entry.ipaddr|d() and entry.host is undefined %}
+{%       set _ = dhcp_host.extend( ([ entry.ipaddr ] if (entry.ipaddr is string) else entry.ipaddr) | ipwrap ) %}
+{%     elif entry.address|d() and entry.host is undefined %}
+{%       set _ = dhcp_host.extend( ([ entry.address ] if (entry.address is string) else entry.address) | ipwrap ) %}
+{%     endif %}
+{%     if entry.name|d() %}
+{%       set _ = dhcp_host.append(entry.name) %}
+{%     elif entry.hostname|d() %}
+{%       set _ = dhcp_host.append(entry.hostname) %}
+{%     endif %}
+{%     if entry.lease|d() %}
+{%       set _ = dhcp_host.append(entry.lease) %}
+{%     elif entry.lease_time|d() %}
+{%       set _ = dhcp_host.append(entry.lease_time) %}
+{%     endif %}
+{%     if (entry.ignore|d())|bool %}
+{%       set _ = dhcp_host.append('ignore') %}
+{%     endif %}
+{%     if entry.domain|d() and (entry.ip|d() or entry.ipaddr|d() or entry.address|d()) %}
+{%       if entry.name|d() %}
+{%         set host_name = entry.name %}
+{%       elif entry.hostname|d() %}
+{%         set host_name = entry.hostname %}
+{%       endif %}
+{%       set _ = host_record.append(host_name + '.' + entry.domain) %}
+{%       if entry.ip|d() %}
+{%         set _ = host_record.extend( ([ entry.ip ] if (entry.ip is string) else entry.ip) | ipwrap ) %}
+{%       elif entry.ipaddr|d() %}
+{%         set _ = host_record.extend( ([ entry.ipaddr ] if (entry.ipaddr is string) else entry.ipaddr) | ipwrap ) %}
+{%       elif entry.address|d() %}
+{%         set _ = host_record.extend( ([ entry.address ] if (entry.address is string) else entry.address) | ipwrap ) %}
+{%       endif %}
+{%     endif %}
+{%     if (entry.host|d() or entry.a|d() or entry.aaaa|d()) and (entry.ip|d() or entry.ipaddr|d() or entry.address|d() or entry.target|d()) %}
+{%       set record_command = 'host-record' %}
+{%       if entry.host|d() %}
+{%         set _ = record_content.extend( ([ entry.host ] if (entry.host is string) else entry.host) ) %}
+{%       elif entry.a|d() %}
+{%         set _ = record_content.extend( ([ entry.a ] if (entry.a is string) else entry.a) ) %}
+{%       elif entry.aaaa|d() %}
+{%         set _ = record_content.extend( ([ entry.aaaa ] if (entry.aaaa is string) else entry.aaaa) ) %}
+{%       endif %}
+{%       if entry.ip|d() %}
+{%         set _ = record_content.extend( ([ entry.ip ] if (entry.ip is string) else entry.ip) ) %}
+{%       elif entry.ipaddr|d() %}
+{%         set _ = record_content.extend( ([ entry.ipaddr ] if (entry.ipaddr is string) else entry.ipaddr) ) %}
+{%       elif entry.address|d() %}
+{%         set _ = record_content.extend( ([ entry.address ] if (entry.address is string) else entry.address) ) %}
+{%       elif entry.target|d() %}
+{%         set _ = record_content.extend( ([ entry.target ] if (entry.target is string) else entry.target) ) %}
+{%       endif %}
+{%     elif entry.txt|d() and (entry.value|d() or entry.target|d()) %}
+{%       set record_command = 'txt-record' %}
+{%       set _ = record_content.extend( [ entry.txt ] ) %}
+{%       if entry.value|d() %}
+{%         set _ = record_content.extend( ([ entry.value ] if (entry.value is string) else entry.value) ) %}
+{%       elif entry.target|d() %}
+{%         set _ = record_content.extend( ([ entry.target ] if (entry.target is string) else entry.target) ) %}
+{%       endif %}
+{%     elif entry.cname|d() and entry.target|d() %}
+{%       set record_command = 'cname' %}
+{%       set _ = record_content.extend( [ entry.cname ] ) %}
+{%       set _ = record_content.extend( [ entry.target ] ) %}
+{%     elif entry.ptr|d() and entry.target|d() %}
+{%       set record_command = 'ptr-record' %}
+{%       set _ = record_content.extend( [ entry.ptr ] ) %}
+{%       set _ = record_content.extend( [ entry.target ] ) %}
+{%     elif entry.mx|d() %}
+{%       set record_command = 'mx-host' %}
+{%       set _ = record_content.extend( [ entry.mx ] ) %}
+{%       if entry.target|d() %}
+{%         set _ = record_content.extend( [ entry.target ] ) %}
+{%       endif %}
+{%       if entry.preference|d() %}
+{%         set _ = record_content.extend( [ entry.preference ] ) %}
+{%       elif entry.priority|d() %}
+{%         set _ = record_content.extend( [ entry.priority ] ) %}
+{%       endif %}
+{%     elif entry.srv|d() and entry.target|d() %}
+{%       set record_command = 'srv-host' %}
+{%       set _ = record_content.extend( [ entry.srv ] ) %}
+{%       set _ = record_content.extend( [ entry.target ] ) %}
+{%       if entry.port|d() %}
+{%         set _ = record_content.extend( [ entry.port ] ) %}
+{%       endif %}
+{%       if entry.preference|d() %}
+{%         set _ = record_content.extend( [ entry.preference ] ) %}
+{%       elif entry.priority|d() %}
+{%         set _ = record_content.extend( [ entry.priority ] ) %}
+{%       endif %}
+{%       if entry.weight|d() %}
+{%         set _ = record_content.extend( [ entry.weight ] ) %}
+{%       endif %}
+{%     endif %}
+{%     if (dhcp_host|d() or (record_command|d() and record_content|d()) or entry.raw|d()) %}
+{%       if not loop.first %}
+
+{%       endif %}
+{%       if entry.comment|d() %}
+{{ entry.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%       endif %}
+{%       if entry.raw|d() %}
+{%         if entry.state|d('present') == 'comment' %}
+{{ "{}".format(entry.raw | regex_replace('\n$','')) | comment(decoration='#', prefix='', postfix='') }}
+{%         else %}
+{{ "{}".format(entry.raw | regex_replace('\n$','')) }}
+{%         endif %}
+{%       elif dhcp_host|d() %}
+{{ '{}dhcp-host = {}'.format(('#' if (entry.state|d('present') == 'comment') else ''), dhcp_host | join(',')) }}
+{%         if host_record|d() %}
+{{ '{}host-record = {}'.format(('#' if (entry.state|d('present') == 'comment') else ''), host_record | join(',')) }}
+{%           if entry.cname|d() %}
+{%             for cname in ([ entry.cname ] if entry.cname is string else entry.cname) %}
+{{ '{}cname = {},{}'.format(('#' if (entry.state|d('present') == 'comment') else ''), cname + '.' + entry.domain, host_name + '.' + entry.domain) }}
+{%             endfor %}
+{%           endif %}
+{%         endif %}
+{%       elif (record_command|d() and record_content|d()) %}
+{{ '{}{} = {}'.format(('#' if (entry.state|d('present') == 'comment') else ''), record_command, record_content | join(',')) }}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
