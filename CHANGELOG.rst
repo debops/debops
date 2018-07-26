@@ -16,7 +16,13 @@ You can read information about required changes between releases in the
 `debops master`_ - unreleased
 -----------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v0.7.2...master
+.. _debops master: https://github.com/debops/debops/compare/v0.8.0...master
+
+
+`debops v0.8.0`_ - 2018-08-06
+-----------------------------
+
+.. _debops v0.8.0: https://github.com/debops/debops/compare/v0.7.2...v0.8.0
 
 Added
 ~~~~~
