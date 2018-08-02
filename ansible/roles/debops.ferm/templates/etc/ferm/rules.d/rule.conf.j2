@@ -71,6 +71,9 @@
 {%   if config.recent_target|d() %}
 {%     set _ = ferm__tpl_config.update({'recent_target': config.recent_target}) %}
 {%   endif %}
+{%   if config.snat_ip|d() %}
+{%     set _ = ferm__tpl_config.update({'snat_ip': config.snat_ip}) %}
+{%   endif %}
 {%   if config.subchain|d() %}
 {%     set _ = ferm__tpl_config.update({'subchain': (ferm__tpl_config['type'] + "-" + config.name | d((ferm__tpl_config['dport'][0] if ferm__tpl_config['dport']|d() else "rules")))}) %}
 {%   endif %}
@@ -413,9 +416,11 @@
                 destination $PUBLIC_IP DNAT to $PRIVATE_IP;
 {%     endif %}
             }
+{%     if ferm__tpl_config['snat_ip']|d() %}
             chain POSTROUTING {
-                source $PRIVATE_IP SNAT to $PUBLIC_IP;
+                destination $PRIVATE_IP SNAT to {{ ferm__tpl_config['snat_ip'] }};
             }
+{%     endif %}
         }
     }
 }
