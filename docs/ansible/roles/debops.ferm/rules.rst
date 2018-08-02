@@ -324,10 +324,12 @@ type-specific YAML keys are supported:
   or ``False``. Defaults to ``False``.
 
 ``public_ip``
-  IPv4 address on the public network which accepts connections, required.
+  IPv4 address on the public network which accepts connections, required. Only
+  1 IP address should be used at a time.
 
 ``private_ip``
-  IPv4 address of the host on the internal network, required.
+  IPv4 address of the host on the internal network, required. Only 1 IP address
+  should be used at a time.
 
 ``protocol(s)``
   Optional. List of protocols to forward. Defaults to ``tcp``.
