@@ -11,6 +11,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v0.8.0 (2018-08-06)
+-------------------
+
 UNIX account and group configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
