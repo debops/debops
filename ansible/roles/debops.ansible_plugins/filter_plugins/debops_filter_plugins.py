@@ -269,6 +269,10 @@ def parse_kv_items(*args, **kwargs):
             dictionary, keys are parameter names, values are default values to
             use when a parameter is not specified. Examples:
                       defaults={'some_param': 'default_value'}
+
+        merge_keys
+            list of keys in the dictionary that will be merged together. If not
+            specified, 'options' key instances will be merged by default.
     """
 
     input_args = []
@@ -342,13 +346,6 @@ def parse_kv_items(*args, **kwargs):
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
 
-                if 'options' in element:
-                    current_options = current_param.get('options', [])
-                    new_options = parse_kv_config(
-                        current_options + element.get('options'))
-
-                    current_param['options'] = new_options
-
                 # Set any default keys defined for the filter
                 if (kwargs.get('defaults') and
                         isinstance(kwargs.get('defaults'), dict)):
@@ -360,11 +357,29 @@ def parse_kv_items(*args, **kwargs):
                                         current_param.get(key,
                                                           defargs.get(key))))
 
+                merge_keys = ['options']
+                if (kwargs.get('merge_keys') and
+                        isinstance(kwargs.get('merge_keys'), list)):
+                    merge_keys.extend(kwargs.get('merge_keys'))
+
+                for key_name in merge_keys:
+                    if key_name in element:
+                        current_options = current_param.get(key_name, [])
+                        new_options = parse_kv_config(
+                            current_options + element.get(key_name))
+
+                        current_param[key_name] = new_options
+
+                known_keys = ['name', 'state', 'id', 'weight',
+                              'real_weight', 'separator',
+                              'comment', 'options']
+                if (kwargs.get('merge_keys') and
+                        isinstance(kwargs.get('merge_keys'), list)):
+                    known_keys.extend(kwargs.get('merge_keys'))
+
                 # Include any unknown keys
                 for unknown_key in element.keys():
-                    if unknown_key not in ['name', 'state', 'id', 'weight',
-                                           'real_weight', 'separator',
-                                           'comment', 'options']:
+                    if unknown_key not in known_keys:
                         current_param[unknown_key] = element.get(unknown_key)
 
                 # Fill any empty keys using other keys
