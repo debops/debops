@@ -353,8 +353,8 @@ def parse_kv_items(*args, **kwargs):
 
                     for key in defargs.keys():
                         current_param[key] = (
-                                current_param.get(key,
-                                                  defargs.get(key)))
+                            current_param.get(key,
+                                              defargs.get(key)))
 
                 merge_keys = ['options']
                 if (kwargs.get('merge_keys') and
