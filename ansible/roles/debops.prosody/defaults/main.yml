@@ -101,7 +101,7 @@ prosody__pki_hook_action: 'reload'
 # .. envvar:: prosody__deploy_state [[[
 #
 # Set to `absent` to disable and uninstall this role
-prosody__deploy_state: "present"
+prosody__deploy_state: true
 
                                                                    # ]]]
 # .. envvar:: prosody__domain [[[
@@ -232,10 +232,12 @@ prosody__config_http_server:
     - 5280
   http_interface:
     - '*'
+    - '::'
   https_port:
     - 5281
   https_interface:
     - '*'
+    - '::'
   https_ssl:
     certificate: '{{ prosdoy__pki_realm_path + "/" + prosody__pki_realm + "/" + prosody__pki_crt_filename }}'
     key: '{{ prosdoy__pki_realm_path + "/" + prosody__pki_realm + "/" + prosody__pki_key_filename }}'
@@ -363,7 +365,7 @@ prosody__combined_config_components: '{{ prosody__default_config_components
 prosody__ferm__dependent_rules:
 
   - type: 'accept'
-    dport: [ '5280', '5281' ]
+    dport: [ '5222', '5269' ]
     accept_any: True
     weight: '40'
     by_role: 'prosody'
