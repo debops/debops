@@ -1,7 +1,7 @@
 Introduction
 ============
 
-``debops.prometheus_alertmanager`` configures and manages the XMPP server prometheus_alertmanager.
+``debops.prometheus_alertmanager`` configures and manages the alertmanger server prometheus_alertmanager.
 
 
 Installation

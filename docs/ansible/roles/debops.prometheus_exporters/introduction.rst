@@ -1,7 +1,7 @@
 Introduction
 ============
 
-``debops.prometheus_exporters`` configures and manages the  prometheus exporters.
+``debops.prometheus_exporters`` configures and manages the prometheus exporters.
 
 
 Installation

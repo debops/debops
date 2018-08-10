@@ -1,7 +1,7 @@
 Introduction
 ============
 
-``debops.prometheus_server`` configures and manages the XMPP server prometheus_server.
+``debops.prometheus_server`` configures and manages the monitoring server prometheus_server.
 
 
 Installation
