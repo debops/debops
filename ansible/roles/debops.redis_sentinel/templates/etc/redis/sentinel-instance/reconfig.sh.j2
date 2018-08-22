@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Run scripts in /etc/redis/sentinel-{{ item.0.name }}/reconfig.d when Redis Sentinel notices
+# configuration change.
+
+
+set -o nounset -o pipefail -o errexit
+
+master_name="${1}"
+role="${2}"
+state="${3}"
+from_ip="${4}"
+from_port="${5}"
+to_ip="${6}"
+to_port="${7}"
+
+reconfig_dir="/etc/redis/sentinel-{{ item.0.name }}/reconfig.d"
+
+if [ -d "${reconfig_dir}" ] ; then
+    run-parts \
+        --arg="${master_name}" \
+        --arg="${role}" \
+        --arg="${state}" \
+        --arg="${from_ip}" \
+        --arg="${from_port}" \
+        --arg="${to_ip}" \
+        --arg="${to_port}" \
+        "${reconfig_dir}"
+fi

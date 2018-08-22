@@ -1,0 +1,37 @@
+# {{ ansible_managed }}
+
+{% if item.options|d() %}
+{%   for element in item.options %}
+{%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] and not (element.dynamic|d())|bool %}
+{%       if element.value is string and not element.value | bool %}
+{{ '{} {}'.format(element.name, element.value) }}
+{%       elif element.value | bool and element.value is not iterable %}
+{%         if element.value | string == '1' %}
+{{ '{} {}'.format(element.name, element.value) }}
+{%         else %}
+{{ '{} {}'.format(element.name, 'yes') }}
+{%         endif %}
+{%       elif not element.value | bool and element.value is not iterable %}
+{%         if element.value is not none %}
+{%           if element.value | int %}
+{{ '{} {}'.format(element.name, element.value) }}
+{%           else %}
+{%             if element.value | string == '0' %}
+{{ '{} {}'.format(element.name, element.value) }}
+{%             else %}
+{{ '{} {}'.format(element.name, 'no') }}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       elif element.value is iterable and element.value is not string and element.value is not mapping %}
+{%         if (element.multiple|d(True))|bool %}
+{%           for thing in (element.value | map(attribute='name') | list) %}
+{{ '{} {}'.format(element.name, thing) }}
+{%           endfor %}
+{%         else %}
+{{ '{} {}'.format(element.name, element.value | map(attribute='name') | list | join(' ')) }}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}

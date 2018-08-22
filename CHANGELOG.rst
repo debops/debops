@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+- New DebOps roles:
+
+  - :ref:`debops.redis_server` and :ref:`debops.redis_sentinel` roles, that
+    replace the existing ``debops.redis`` Ansible role. The new roles support
+    multiple Redis and Sentinel instances on a single host.
+
 - [debops.users] The role can now configure ACL entries of the user home
   directories using the ``item.home_acl`` parameter. This can be used for more
   elaborate access restrictions.
