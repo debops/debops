@@ -37,7 +37,7 @@
 - name: Detect PHP version from available packages
   environment:
     LC_ALL: 'C'
-  shell: apt-cache show {{ php__version_preference | join(' ') }} | grep -E '^Package:\s+php' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
+  shell: apt-cache show {{ php__version_preference | join(' ') }} | grep -E '^Package:\s+php[0-9.]+$' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
   register: php__register_version
   check_mode: False
   changed_when: False
