@@ -323,9 +323,14 @@ type-specific YAML keys are supported:
   Optional. Use `iptables multiport`_ extension. Possible values: ``True``
   or ``False``. Defaults to ``False``.
 
+``interface``
+  Optional. List of public network interfaces which accept connections.
+  At least one of ``interface`` or ``public_ip`` is required.
+
 ``public_ip``
-  IPv4 address on the public network which accepts connections, required. Only
-  1 IP address should be used at a time.
+  Optional. IPv4 address on the public network which accepts connections.
+  At least one of ``interface`` or ``public_ip`` is required. Only 1 IP address
+  should be used at a time.
 
 ``private_ip``
   IPv4 address of the host on the internal network, required. Only 1 IP address
