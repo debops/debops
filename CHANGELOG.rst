@@ -18,6 +18,13 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v0.8.0...master
 
+Added
+~~~~~
+
+- [debops.users] The role can now configure ACL entries of the user home
+  directories using the ``item.home_acl`` parameter. This can be used for more
+  elaborate access restrictions.
+
 
 `debops v0.8.0`_ - 2018-08-06
 -----------------------------
