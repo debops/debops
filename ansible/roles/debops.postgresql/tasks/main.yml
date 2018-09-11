@@ -59,6 +59,28 @@
     group: 'root'
     mode: '0644'
 
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save PostgreSQL local facts
+  template:
+    src: 'etc/ansible/facts.d/postgresql.fact.j2'
+    dest: '/etc/ansible/facts.d/postgresql.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: postgresql__register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: postgresql__register_local_facts|d() and
+        postgresql__register_local_facts is changed
+
 - name: Create PostgreSQL roles
   postgresql_user:
     name: '{{ item.name | d(item.role) }}'
@@ -234,25 +256,3 @@
     - '{{ postgresql__dependent_pgpass }}'
   when: item.owner|d() and item.owner
   no_log: True
-
-- name: Make sure that Ansible local fact directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save PostgreSQL local facts
-  template:
-    src: 'etc/ansible/facts.d/postgresql.fact.j2'
-    dest: '/etc/ansible/facts.d/postgresql.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  register: postgresql__register_local_facts
-
-- name: Re-read local facts if they have been modified
-  action: setup
-  when: postgresql__register_local_facts|d() and
-        postgresql__register_local_facts is changed
