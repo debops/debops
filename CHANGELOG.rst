@@ -25,6 +25,12 @@ Added
   directories using the ``item.home_acl`` parameter. This can be used for more
   elaborate access restrictions.
 
+Fixed
+~~~~~
+
+- [debops.kmod] The role should now work correctly in Ansible ``--check`` mode
+  before the Ansible local fact script is installed.
+
 
 `debops v0.8.0`_ - 2018-08-06
 -----------------------------
