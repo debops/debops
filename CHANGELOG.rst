@@ -31,6 +31,10 @@ Fixed
 - [debops.kmod] The role should now work correctly in Ansible ``--check`` mode
   before the Ansible local fact script is installed.
 
+- [debops.sysctl] The role should correctly handle nested lists in role
+  dependent variables, which are now flattened before being passed to the
+  configuration filter.
+
 
 `debops v0.8.0`_ - 2018-08-06
 -----------------------------
