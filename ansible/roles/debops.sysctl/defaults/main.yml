@@ -263,7 +263,7 @@ sysctl__dependent_parameters: []
 # Sysctl configuration file path where all kernel parameters will be configured
 # by ``debops.sysctl``.
 sysctl__combined_parameters: '{{ sysctl__default_parameters
-                                 + sysctl__dependent_parameters
+                                 + lookup("flattened", sysctl__dependent_parameters, wantlist=True)
                                  + sysctl__parameters
                                  + sysctl__group_parameters
                                  + sysctl__host_parameters }}'
