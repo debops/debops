@@ -22,6 +22,33 @@ You can use :ref:`debops.dnsmasq` or :ref:`debops.dhcpd` Ansible roles to
 manage a DHCP service on the LXC host or elsewhere in the network.
 
 
+Unprivileged containers
+-----------------------
+
+You can create unprivileged LXC container owned by the ``root`` account by
+using the command:
+
+.. code-block:: console
+
+   lxc-create -n <container> -f /etc/lxc/unprivileged.conf \
+              -t download -- --dist debian --release stretch --arch amd64
+
+The container will be configured to use subordinate UID/GID range defined by
+the :ref:`debops.root_account` Ansible role in the :file:`/etc/subuid` and
+:file:`/etc/subgid` databases. Since it's a container owned by ``root``, it
+will be automatically started on the boot of the host.
+
+Multiple LXC containers that use the same set of subUIDs/subGIDs might be able
+to access each others' resources in the case of a breakout, since from the
+perspective of the host their UIDs/GIDs are the same. You might want to
+consider this in the planning of your environment and use multiple
+subUID/subGID ranges for different LXC containers or groups of them.
+
+Currently unprivileged LXC containers managed in the DebOps environment should
+be fairly secure, owever you might want to consider enabling AppArmor for
+increased security against attacks directed at the LXC host.
+
+
 Privileged containers
 ---------------------
 
