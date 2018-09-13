@@ -5,6 +5,24 @@ Getting started
    :local:
 
 
+Subordinate UID/GID range for root
+----------------------------------
+
+`Linux user namespaces <https://en.wikipedia.org/wiki/Linux_namespaces#User_ID_(user)>`__
+can be used to create unprivileged LXC or Docker containers which don't use
+normal UID/GID ranges of the host system. These "subordinate" UID/GID ranges
+are configured in the :file:`/etc/subuid` and :file:`/etc/subgid` databases
+respectively.
+
+Unfortunately, Debian by default does not reserve a subordinate UID/GID range
+for the ``root`` account. In conjunction with the system automatically creating
+subUID/subGID ranges for new user accounts created on a host this might cause
+creation of the ``root`` subUID/subGID ranges difficult. To avoid this issue,
+the ``debops.root_account`` Ansible role will reserve a defined set of UID/GID
+ranges for the ``root`` account which can then be used to, for example, create
+unprivileged LXC containers.
+
+
 Example inventory
 -----------------
 

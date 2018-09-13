@@ -11,6 +11,21 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Subordinate UID/GID ranges for root
+-----------------------------------
+
+The :ref:`debops.root_account` role will register a set of UID/GID ranges for the
+``root`` account in the :file:`/etc/subuid` and :file:`/etc/subgid` databases.
+Depending on the OS distribution and release, these databases might contain
+existing UID/GID ranges which might interfere with the default set of
+100000-165536 UID/GID range selected for the ``root`` account.
+
+In that case you should either disable this functionality, or recreate the
+host, at which point the UID/GID ranges for ``root`` will be reserved first,
+and any new accounts created by the system will use subsequent UIDs/GIDs.
+You can also update the UID/GID ranges manually, or select different UID/GID
+ranges for the ``root`` account in the role defaults.
+
 
 v0.8.0 (2018-08-06)
 -------------------

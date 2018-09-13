@@ -25,6 +25,11 @@ Added
   directories using the ``item.home_acl`` parameter. This can be used for more
   elaborate access restrictions.
 
+- [debops.root_account] The role will reserve a set of UID/GID ranges for
+  subordinate UIDs/GIDs owned by the ``root`` account (they are not reserved by
+  default). This can be used to create unprivileged LXC containers owned by
+  ``root``. See the release notes for potential issues on existing systems.
+
 Fixed
 ~~~~~
 

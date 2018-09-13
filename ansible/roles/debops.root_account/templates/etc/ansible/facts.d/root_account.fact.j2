@@ -5,6 +5,7 @@
 from __future__ import print_function
 from json import loads, dumps
 from sys import exit
+from operator import itemgetter
 import os
 
 # Workaround for Jinja template in a Python script
@@ -30,5 +31,29 @@ if output['ssh_key']:
 
         except Exception:
             pass
+
+if os.path.exists('/etc/subuid') and os.path.isfile('/etc/subuid'):
+    try:
+        subuid_list = []
+        subgid_list = []
+        with open('/etc/subuid', 'r') as f:
+            for line in f:
+                if line.startswith('root:'):
+                    parts = line.strip().split(':')
+                    subuid_list.append({'start': parts[1],
+                                        'count': parts[2]})
+        with open('/etc/subgid', 'r') as f:
+            for line in f:
+                if line.startswith('root:'):
+                    parts = line.strip().split(':')
+                    subgid_list.append({'start': parts[1],
+                                        'count': parts[2]})
+            output.update({'subuids': sorted(subuid_list,
+                                             key=itemgetter('start'))})
+            output.update({'subgids': sorted(subgid_list,
+                                             key=itemgetter('start'))})
+
+    except Exception:
+        pass
 
 print(dumps(output, sort_keys=True, indent=2))
