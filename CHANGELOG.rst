@@ -37,6 +37,10 @@ Changed
   ``common.yml`` Ansible playbook to ensure that the ``root`` UID/GID ranges
   are reserved without issues on the initial host configuration.
 
+- [debops.lxc] The role will configure the default subUIDs and subGIDs for
+  unprivileged LXC containers based on the configured subordinate UID/GID
+  ranges for the ``root`` account.
+
 Fixed
 ~~~~~
 
