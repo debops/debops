@@ -25,6 +25,49 @@ lxc__base_packages: [ 'lxc', 'debootstrap' ]
 lxc__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# Unprivileged LXC containers [[[
+# -------------------------------
+
+# .. envvar:: lxc__root_subuid_start [[[
+#
+# Specify the first subUID of the unprivileged LXC containers managed by the
+# ``root`` system account.
+lxc__root_subuid_start: '{{ ansible_local.root_account.subuids[0]["start"]
+                            if (ansible_local|d() and ansible_local.root_account|d() and
+                                ansible_local.root_account.subuids|d())
+                            else "100000" }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc__root_subuid_count [[[
+#
+# Specify the number of subUIDs reserved for the unprivileged LXC containers
+# managed by the ``root`` system account.
+lxc__root_subuid_count: '{{ ansible_local.root_account.subuids[0]["count"]
+                            if (ansible_local|d() and ansible_local.root_account|d() and
+                                ansible_local.root_account.subuids|d())
+                            else "65536" }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc__root_subgid_start [[[
+#
+# Specify the first subGID of the unprivileged LXC containers managed by the
+# ``root`` system account.
+lxc__root_subgid_start: '{{ ansible_local.root_account.subgids[0]["start"]
+                            if (ansible_local|d() and ansible_local.root_account|d() and
+                                ansible_local.root_account.subgids|d())
+                            else "100000" }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc__root_subgid_count [[[
+#
+# Specify the number of subGIDs reserved for the unprivileged LXC containers
+# managed by the ``root`` system account.
+lxc__root_subgid_count: '{{ ansible_local.root_account.subgids[0]["count"]
+                            if (ansible_local|d() and ansible_local.root_account|d() and
+                                ansible_local.root_account.subgids|d())
+                            else "65536" }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # System-wide configuration [[[
 # -----------------------------
 
@@ -57,8 +100,6 @@ lxc__default_configuration:
   - name: 'unprivileged'
     comment: |
       Default configuration for unprivileged LXC containers.
-      The values for user and group subuids are currently arbitrary. They will
-      be set dynamically in the future.
     options:
 
       - name: 'lxc.network.type'
@@ -72,14 +113,12 @@ lxc__default_configuration:
 
       - name: 'lxc.id_map_user'
         alias: 'lxc.id_map'
-        value: 'u 0 1258512 65536'
-        state: 'comment'
+        value: 'u 0 {{ lxc__root_subuid_start }} {{ lxc__root_subuid_count }}'
         separator: True
 
       - name: 'lxc.id_map_group'
         alias: 'lxc.id_map'
-        value: 'g 0 1258512 65536'
-        state: 'comment'
+        value: 'g 0 {{ lxc__root_subgid_start }} {{ lxc__root_subgid_count }}'
 
       - name: 'lxc.start.auto'
         value: '1'
