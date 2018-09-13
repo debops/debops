@@ -73,6 +73,22 @@ roles that use them should be updated so that any changes that require custom
 templates or files can be done through normal Ansible functionality.
 
 
+Roles fail when running ``debops`` with the ``--skip-tags`` flag.
+-----------------------------------------------------------------
+
+This is due to the way tags are structured. As a general rule, if you use
+``--skip-tags``, you should use tags in the form ``skip::<role_name>`` as
+opposed to ``role::<role_name>``.
+
+If the role you want to skip does not have a matching ``skip::<role_name>``
+tag, please open an issue or, even better, create a pull request!
+
+See `Issue #444`__ for more information and an example of such a pull
+request.
+
+.. __: https://github.com/debops/debops/issues/444
+
+
 .. rubric:: Footnotes
 
 .. [#f1] Well, almost all; some of the old roles might still mess with stuff
