@@ -45,6 +45,7 @@
     path: '{{ "/usr/share/icingaweb2/modules/" + item.name }}'
     src: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
     state: 'link'
+    force: '{{ True if ansible_check_mode|bool else omit }}'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
   when: item.name|d() and item.git_repo|d() and
         item.git_version|d() and item.state|d('present') != 'absent'
@@ -54,6 +55,7 @@
     path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
     src: '{{ (item.path | d("/usr/share/icingaweb2/modules/" + item.name)) if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else omit }}'
     state: '{{ "link" if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else "absent" }}'
+    force: '{{ True if ansible_check_mode|bool else omit }}'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
   when: item.name|d()
 
