@@ -31,10 +31,16 @@ elastic_co__version: '{{ ansible_local.elastic_co.version
 elastic_co__key_id: '4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4'
 
                                                                    # ]]]
-# .. envvar:: elastic_co__repository [[[
+# .. envvar:: elastic_co__repositories [[[
 #
 # APT repository entry to configure for Elastic repository.
-elastic_co__repository: 'deb https://artifacts.elastic.co/packages/{{ elastic_co__version }}/apt stable main'
+elastic_co__repositories:
+  - repo: 'deb https://artifacts.elastic.co/packages/{{ elastic_co__version }}/apt stable main'
+  - enabled: "{{ ansible_distribution_release in [ 'wheezy', 'jessie' ] }}"
+    repo: 'deb [arch=amd64] https://packages.elastic.co/curator/5/debian stable main'
+  - enabled: "{{ ansible_distribution_release in [ 'stretch' ] }}"
+    repo: 'deb [arch=amd64] https://packages.elastic.co/curator/5/debian9 stable main'
+
                                                                    # ]]]
                                                                    # ]]]
 # Package overrides [[[
