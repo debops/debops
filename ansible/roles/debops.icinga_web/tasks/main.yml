@@ -52,7 +52,7 @@
 - name: Manage Icinga Web modules
   file:
     path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
-    src: '{{ item.path | d("/usr/share/icingaweb2/modules/" + item.name) }}'
+    src: '{{ (item.path | d("/usr/share/icingaweb2/modules/" + item.name)) if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else omit }}'
     state: '{{ "link" if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else "absent" }}'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
   when: item.name|d()
