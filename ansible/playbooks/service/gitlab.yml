@@ -14,10 +14,10 @@
       tags: [ 'role::gitlab', 'role::postgresql' ]
 
     - role: debops.system_groups
-      tags: [ 'role::system_groups' ]
+      tags: [ 'role::system_groups', 'skip::system_groups' ]
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ golang__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
@@ -27,15 +27,15 @@
         - '{{ gitlab__apt_preferences__dependent_list }}'
 
     - role: debops.golang
-      tags: [ 'role::golang' ]
+      tags: [ 'role::golang', 'skip::golang' ]
 
     - role: debops.nodejs
-      tags: [ 'role::nodejs' ]
+      tags: [ 'role::nodejs', 'skip::nodejs' ]
       nodejs__upstream: True
       nodejs__yarn_upstream: True
 
     - role: debops.etc_services
-      tags: [ 'role::etc_services' ]
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ gitlab__etc_services__dependent_list }}'
 
@@ -45,11 +45,11 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.ruby
-      tags: [ 'role::ruby' ]
+      tags: [ 'role::ruby', 'skip::ruby' ]
       ruby__dev_support: True
 
     - role: debops.postgresql
-      tags: [ 'role::postgresql' ]
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles:
         - '{{ gitlab__postgresql__dependent_roles }}'
       postgresql__dependent_groups:
@@ -63,11 +63,11 @@
       when: gitlab__database == 'postgresql'
 
     - role: debops.nginx
-      tags: [ 'role::nginx' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ gitlab__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ gitlab__nginx__dependent_upstreams }}'
 
     - role: debops.gitlab
-      tags: [ 'role::gitlab' ]
+      tags: [ 'role::gitlab', 'skip::gitlab' ]

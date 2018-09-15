@@ -11,16 +11,16 @@
   roles:
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ cran__apt_preferences__dependent_list }}'
         - '{{ java__apt_preferences__dependent_list
               if cran__java_integration|bool else [] }}'
 
     - role: debops.java
-      tags: [ 'role::java' ]
+      tags: [ 'role::java', 'skip::java' ]
       java__install_jdk: True
       when: cran__java_integration|bool
 
     - role: debops.cran
-      tags: [ 'role::cran' ]
+      tags: [ 'role::cran', 'skip::cran' ]

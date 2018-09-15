@@ -11,12 +11,12 @@
   roles:
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ salt__apt_preferences__dependent_list }}'
 
     - role: debops.etc_services
-      tags: [ 'role::etc_services' ]
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ salt__etc_services__dependent_list }}'
 
@@ -26,4 +26,4 @@
         - '{{ salt__ferm__dependent_rules }}'
 
     - role: debops.salt
-      tags: [ 'role::salt' ]
+      tags: [ 'role::salt', 'skip::salt' ]

@@ -21,13 +21,13 @@
       when: rabbitmq_management__local|bool
 
     - role: debops.etc_services
-      tags: [ 'role::etc_services' ]
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ rabbitmq_management__etc_services__dependent_list }}'
       when: rabbitmq_management__local|bool
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
 
@@ -37,14 +37,14 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.nginx
-      tags: [ 'role::nginx' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ rabbitmq_management__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ rabbitmq_management__nginx__dependent_upstreams }}'
 
     - role: debops.rabbitmq_server
-      tags: [ 'role::rabbitmq_server' ]
+      tags: [ 'role::rabbitmq_server', 'skip::rabbitmq_server' ]
       rabbitmq_server__dependent_role: 'rabbitmq_management'
       rabbitmq_server__dependent_state: '{{ rabbitmq_management__deploy_state }}'
       rabbitmq_server__dependent_config:
@@ -52,4 +52,4 @@
       when: rabbitmq_management__local|bool
 
     - role: debops.rabbitmq_management
-      tags: [ 'role::rabbitmq_management' ]
+      tags: [ 'role::rabbitmq_management', 'skip::rabbitmq_management' ]

@@ -17,7 +17,7 @@
       tags: [ 'role::owncloud', 'role::owncloud:env', 'role::nginx' ]
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences', 'role::nginx', 'role::php' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::nginx', 'role::php' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ owncloud__apt_preferences__dependent_list }}'
@@ -29,24 +29,24 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.mariadb
-      tags: [ 'role::mariadb' ]
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
       mariadb__dependent_databases: '{{ owncloud__mariadb__dependent_databases }}'
       mariadb__dependent_users: '{{ owncloud__mariadb__dependent_users }}'
       when: (owncloud__database == 'mariadb')
 
     - role: debops.postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles: '{{ owncloud__postgresql__dependent_roles }}'
       postgresql__dependent_groups: '{{ owncloud__postgresql__dependent_groups }}'
       postgresql__dependent_databases: '{{ owncloud__postgresql__dependent_databases }}'
       when: (owncloud__database == 'postgresql')
-      tags: [ 'role::postgresql' ]
 
     - role: debops.unattended_upgrades
-      tags: [ 'role::unattended_upgrades' ]
+      tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
       unattended_upgrades__dependent_origins: '{{ owncloud__unattended_upgrades__dependent_origins }}'
 
     - role: debops.php
-      tags: [ 'role::php' ]
+      tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ owncloud__php__dependent_packages }}'
       php__dependent_configuration:
@@ -55,17 +55,17 @@
         - '{{ owncloud__php__dependent_pools }}'
 
     - role: debops.logrotate
-      tags: [ 'role::logrotate' ]
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
         - '{{ owncloud__logrotate__dependent_config }}'
 
     - role: debops.nginx
-      tags: [ 'role::nginx' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ owncloud__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ owncloud__nginx__dependent_upstreams }}'
 
     - role: debops.owncloud
-      tags: [ 'role::owncloud' ]
+      tags: [ 'role::owncloud', 'skip::owncloud' ]

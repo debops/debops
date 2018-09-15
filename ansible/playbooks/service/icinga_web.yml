@@ -14,14 +14,14 @@
       tags: [ 'role::php', 'role::logrotate' ]
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ php__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ postgresql__apt_preferences__dependent_list | d([]) }}'
 
     - role: debops.logrotate
-      tags: [ 'role::logrotate' ]
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
@@ -31,21 +31,21 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.php
-      tags: [ 'role::php' ]
+      tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ icinga_web__php__dependent_packages }}'
       php__dependent_pools:
         - '{{ icinga_web__php__dependent_pools }}'
 
     - role: debops.nginx
-      tags: [ 'role::nginx' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ icinga_web__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ icinga_web__nginx__dependent_upstreams }}'
 
     - role: debops.postgresql
-      tags: [ 'role::postgresql' ]
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles:
         - '{{ icinga_web__postgresql__dependent_roles }}'
       postgresql__dependent_groups:
@@ -57,7 +57,7 @@
       when: icinga_web__database_type == 'postgresql'
 
     - role: debops.mariadb
-      tags: [ 'role::mariadb' ]
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
       mariadb__dependent_databases:
         - '{{ icinga_web__mariadb__dependent_databases }}'
       mariadb__dependent_users:
@@ -65,4 +65,4 @@
       when: icinga_web__database_type == 'mariadb'
 
     - role: debops.icinga_web
-      tags: [ 'role::icinga_web' ]
+      tags: [ 'role::icinga_web', 'skip::icinga_web' ]
