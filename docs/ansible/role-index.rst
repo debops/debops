@@ -104,6 +104,8 @@ Databases
 - :ref:`debops.postgresql`
 - :ref:`debops.postgresql_server`
 - :ref:`debops.redis`
+- :ref:`debops.redis_server`
+- :ref:`debops.redis_sentinel`
 - :ref:`debops.slapd`
 - ``debops.phpmyadmin``
 
