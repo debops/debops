@@ -74,6 +74,18 @@ Fixed
   dependent variables, which are now flattened before being passed to the
   configuration filter.
 
+Removed
+~~~~~~~
+
+- The old ``debops.redis`` Ansible role has been removed. It has been replaced
+  by the :ref:`debops.redis_server` and :ref:`debops.redis_sentinel` Ansible
+  roles. The new roles use their own Ansible inventory groups, therefore they
+  will need to be explicitly enabled to affect existing hosts.
+
+  You can use the :ref:`debops.debops_legacy` Ansible role to clean up old
+  configuration files, directories and diversions of ``debops.redis`` role from
+  remote hosts.
+
 
 `debops v0.8.0`_ - 2018-08-06
 -----------------------------
