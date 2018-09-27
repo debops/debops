@@ -46,6 +46,14 @@ not tested and may result in a broken installation or data corruption.
 You can install the PostgreSQL database using its DebOps role.
 See the :ref:`debops.postgresql_server` role documentation for more details.
 
+Redis support
+-------------
+
+Currently the ``debops.gitlab`` role expects a Redis Server instance installed
+on the host, for example by the :ref:`debops.redis_server` Ansible role.
+Support for distributed Redis Server service managed by Redis Sentinel is
+planned for a future release.
+
 Support for other services
 --------------------------
 
@@ -66,7 +74,7 @@ Example inventory
 
 To enable GitLab service on a host, it needs to be included in the
 ``[debops_service_gitlab]`` Ansible inventory group. You should also enable
-a suitable PostgreSQL database.
+a suitable PostgreSQL database and Redis Server service.
 
 Example Ansible inventory:
 
@@ -76,6 +84,9 @@ Example Ansible inventory:
    hostname
 
    [debops_service_postgresql_server]
+   hostname
+
+   [debops_service_redis_server]
    hostname
 
    [debops_service_gitlab]

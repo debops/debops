@@ -26,6 +26,28 @@ and any new accounts created by the system will use subsequent UIDs/GIDs.
 You can also update the UID/GID ranges manually, or select different UID/GID
 ranges for the ``root`` account in the role defaults.
 
+Changes to Redis support in GitLab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The Redis support has been removed from the :ref:`debops.gitlab` playbook.
+  Since GitLab still requires Redis to work properly, you need to enable
+  :ref:`debops.redis_server` role explicitly for the GitLab host. GitLab
+  installation instructions have been updated to reflect this fact.
+
+- To manage Redis on existing GitLab installations, you should enable the
+  :ref:`debops.redis_server` role on them and run the Redis and GitLab
+  playbooks afterwards. The existing Redis instance will be stopped and new
+  Redis instance will be set up, with the same TCP port and password. Since the
+  database will be empty, Gitaly service might stop working. After running the
+  Redis Server and GitLab playbooks, restart the entire GitLab slice to
+  re-populate Redis. You might expect existing GitLab sessions to be invalid
+  and users to have to log in again.
+
+- The :ref:`debops.redis_server` role will configure APT preferences on Debian
+  Stretch to install Redis from the ``stretch-backports`` repository. The
+  playbook run on existing installations will not upgrade the packages
+  automatically, but you might expect it on normal system upgrade.
+
 
 v0.8.0 (2018-08-06)
 -------------------

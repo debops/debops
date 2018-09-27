@@ -52,6 +52,15 @@ Changed
   it will only be installed on newer OS releases (Debian Buster, Ubuntu
   Bionic).
 
+- [debops.gitlab] The role has been updated to use Ansible local facts managed
+  by the :ref:`debops.redis_server` Ansible role. Redis Server support has been
+  removed from the GitLab playbook and needs to be explicitly enabled in the
+  inventory for GitLab to be installed correctly. This will allow to select
+  between local Server or Sentinel instance, to support clustered environments.
+
+  Check the :ref:`upgrade_notes` for issues with upgrading Redis Server support
+  on existing GitLab hosts.
+
 Fixed
 ~~~~~
 
