@@ -47,6 +47,11 @@ Changed
   unprivileged LXC containers based on the configured subordinate UID/GID
   ranges for the ``root`` account.
 
+- [debops.gitlab] The role will now install GitLab 10.8 by default, on Debian
+  Stretch and Ubuntu Xenial. The 11.x release now requires Ruby 2.4+, therefore
+  it will only be installed on newer OS releases (Debian Buster, Ubuntu
+  Bionic).
+
 Fixed
 ~~~~~
 
