@@ -20,19 +20,42 @@
 #
 # Both of these variables should be kept in sync.
 
+# .. envvar:: gitlab__release_map [[[
+#
+# This is the dictionary that keeps track of supported GitLab releases per OS
+# distribution/release. Older OS releases might not have the required
+# environment support, for example old Ruby or Go version.
+gitlab__release_map:
+
+  # OS releases with Ruby 2.1
+  'wheezy': '8-17-stable'
+  'jessie': '8-17-stable'
+  'trusty': '8-17-stable'
+
+  # OS releases with Ruby 2.3
+  'stretch': '10-7-stable'
+  'xenial':  '10-7-stable'
+
+  'buster':  '11-3-stable'
+  'bionic':  '11-3-stable'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__distribution_release [[[
+#
+# Specify the OS release which is used to select the version of GitLab to
+# install and APT package names.
+gitlab__distribution_release: '{{ ansible_local.core.distribution_release
+                                  if (ansible_local|d() and ansible_local.core|d() and
+                                      ansible_local.core.distribution_release|d())
+                                  else ansible_distribution_release }}'
+
+                                                                   # ]]]
 # .. envvar:: gitlab__release [[[
 #
 # Specify the GitLab release to install or manage. The role checks what release
 # is currently installed and can perform automatic upgrade if the installed
 # release is older than the specified. Downgrades are not supported.
-gitlab__release: '{{ "8-17-stable"
-                     if ((ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.distribution_release|d() and
-                          ansible_local.core.distribution_release in
-                          [ "wheezy", "jessie", "trusty" ]) or
-                         ansible_distribution_release in
-                         [ "wheezy", "jessie", "trusty" ])
-                     else "10-7-stable" }}'
+gitlab__release: '{{ gitlab__release_map[gitlab__distribution_release] }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_version [[[
@@ -109,15 +132,6 @@ gitlab_domain: '{{ ansible_local.core.domain
 # APT packages [[[
 # ----------------
 
-# .. envvar:: gitlab__distribution_release [[[
-#
-# The OS distribution relese which is used to select the correct package names.
-gitlab__distribution_release: '{{ ansible_local.core.distribution_release
-                                  if (ansible_local|d() and ansible_local.core|d() and
-                                      ansible_local.core.distribution_release|d())
-                                  else ansible_distribution_release }}'
-
-                                                                   # ]]]
 # .. envvar:: gitlab__base_packages [[[
 #
 # List of base APT packages required by GitLab.
