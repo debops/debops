@@ -48,6 +48,13 @@ Changes to Redis support in GitLab
   playbook run on existing installations will not upgrade the packages
   automatically, but you might expect it on normal system upgrade.
 
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :envvar:`bootstrap__etc_hosts` value has been changed from a boolean to
+  trinary ``present``/``absent``/``ignore`` to allow conditional removal of
+  :file:`/etc/hosts` entries, with ``present`` being the default.
+
 
 v0.8.0 (2018-08-06)
 -------------------
