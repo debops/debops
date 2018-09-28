@@ -64,6 +64,12 @@ Changed
 - [debops.owncloud] The role will now use Ansible facts managed by the
   :ref:`debops.redis_server` role to configure Redis support.
 
+- [debops.lxc] The :command:`lxc-prepare-ssh` script will now install SSH
+  public keys from the user account that is running the script via
+  :command:`sudo` instead of the system's ``root`` account, which is usually
+  what you want to do if other people manage their own LXC containers on
+  a host.
+
 Fixed
 ~~~~~
 
