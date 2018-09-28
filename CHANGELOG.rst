@@ -61,6 +61,9 @@ Changed
   Check the :ref:`upgrade_notes` for issues with upgrading Redis Server support
   on existing GitLab hosts.
 
+- [debops.owncloud] The role will now use Ansible facts managed by the
+  :ref:`debops.redis_server` role to configure Redis support.
+
 Fixed
 ~~~~~
 
