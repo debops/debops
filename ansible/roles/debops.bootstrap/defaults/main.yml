@@ -38,10 +38,16 @@ bootstrap__hostname: '{{ inventory_hostname_short | d(inventory_hostname.split("
                                                                    # ]]]
 # .. envvar:: bootstrap__etc_hosts [[[
 #
-# Add the hostname to /etc/hosts and make it point to 127.0.1.1
-# This is usually what you want except if you manage yourself the
+# If ``present``, add the hostname to :file:`/etc/hosts` and make it point to
+# 127.0.1.1 This is usually what you want except if you manage yourself the
 # hostname entry and want it to point to some other IP.
-bootstrap__etc_hosts: True
+#
+# If ``absent``, remove the 127.0.1.1 entry from :file:`/etc/hosts`. This might
+# be useful in distributed environments to keep uniform IP addresses based on
+# DNS on all hosts.
+#
+# If ``ignore``, don't modify anything in :file:`/etc/hosts`.
+bootstrap__etc_hosts: 'present'
 
                                                                    # ]]]
 # .. envvar:: bootstrap__hostname_v6_loopback [[[

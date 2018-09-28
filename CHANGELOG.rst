@@ -70,6 +70,11 @@ Changed
   what you want to do if other people manage their own LXC containers on
   a host.
 
+- [debops.bootstrap] The bootstrap role can now remove ``127.0.1.1`` entries
+  from :file:`/etc/hosts` to fix IP address resolution in distributed
+  environments. See the :envvar:`bootstrap__etc_hosts` variable for more
+  details.
+
 Fixed
 ~~~~~
 
