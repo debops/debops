@@ -43,18 +43,18 @@ on the same host as ownCloud or choose a different host:
 
 .. code-block:: none
 
-    [debops_service_redis]
+    [debops_service_redis_server]
     hostname
 
 This role will use a Redis server automatically when it is managed by
-:ref:`debops.redis`.
+:ref:`debops.redis_server` Ansible role.
 
 In case you chose a different host, you will need to specify which of your
 Redis servers the ownCloud instance should use by setting the Redis
 server host as :envvar:`owncloud__redis_host` and setting
 :envvar:`owncloud__redis_enabled` to ``True``.
 Additionally, you will need to set the :envvar:`owncloud__redis_password`.
-Refer to debops.redis_ for details.
+Refer to :ref:`debops.redis_server` documentation for details.
 
 .. _owncloud__ref_choosing_a_webserver:
 
