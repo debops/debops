@@ -1102,15 +1102,6 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.radvd\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
-'redis role':
-  <<: *test_role_2nd_deps
-  variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_redis'
-    JANE_INVENTORY_HOSTVARS: 'redis__overcommit_memory_enable=false'
-    JANE_DIFF_PATTERN: '.*/debops.redis/.*'
-    JANE_LOG_PATTERN: '\[debops\.redis\]'
-
 'redis_server role':
   <<: *test_role_2nd_deps
   variables:
