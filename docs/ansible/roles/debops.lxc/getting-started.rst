@@ -96,11 +96,9 @@ The :command:`lxc-prepare-ssh` is a custom script installed by the
 :ref:`debops.lxc` role. It will start the specified container, make sure that
 OpenSSH service is installed inside, and add the current user's
 :file:`~/.ssh/authorized_keys` contents on the ``root`` account inside of the
-container.
-
-Since these commands are executed using ``root`` account on the LXC host, that
-account should have a set of SSH authorized keys which are the same as the
-Ansible administrator. Alternatively, you can specify a custom file with
+container. The script will check if the ``${SUDO_USER}`` variable is defined in
+the environment and use that user's :file:`~/.ssh/authorized_keys` file as
+source of SSH public keys. Alternatively, you can specify a custom file with
 authorized SSH keys to add in the container's
 :file:`/root/.ssh/authorized_keys` file.
 
