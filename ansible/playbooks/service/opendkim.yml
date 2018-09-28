@@ -24,11 +24,11 @@
         - '{{ opendkim__secret__directories | d([]) }}'
 
     - role: debops.postfix
-      tags: [ 'role::postfix' ]
+      tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'opendkim'
           config: '{{ opendkim__postfix__dependent_maincf }}'
       when: opendkim__postfix_integration|bool
 
     - role: debops.opendkim
-      tags: [ 'role::opendkim' ]
+      tags: [ 'role::opendkim', 'skip::opendkim' ]

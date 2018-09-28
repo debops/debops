@@ -23,7 +23,7 @@
              (ansible_local.postfix.installed|d())|bool)
 
     - role: debops.postfix
-      tags: [ 'role::postfix' ]
+      tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'postwhite'
           config: '{{ postwhite__postfix__dependent_maincf }}'
@@ -31,4 +31,4 @@
              (ansible_local.postfix.installed|d())|bool)
 
     - role: debops.postwhite
-      tags: [ 'role::postwhite' ]
+      tags: [ 'role::postwhite', 'skip::postwhite' ]

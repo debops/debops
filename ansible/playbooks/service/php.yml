@@ -14,14 +14,14 @@
       tags: [ 'role::php', 'role::logrotate' ]
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ php__apt_preferences__dependent_list }}'
 
     - role: debops.logrotate
-      tags: [ 'role::logrotate' ]
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
     - role: debops.php
-      tags: [ 'role::php' ]
+      tags: [ 'role::php', 'skip::php' ]

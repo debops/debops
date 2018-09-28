@@ -11,14 +11,14 @@
   roles:
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ gunicorn__apt_preferences__dependent_list }}'
         - '{{ postgresql__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
     - role: debops.logrotate
-      tags: [ 'role::logrotate' ]
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ gunicorn__logrotate__dependent_config }}'
 
@@ -28,7 +28,7 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.postgresql
-      tags: [ 'role::postgresql' ]
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles:
         - '{{ netbox__postgresql__dependent_roles }}'
       postgresql__dependent_groups:
@@ -39,16 +39,16 @@
         - '{{ netbox__postgresql__dependent_pgpass }}'
 
     - role: debops.gunicorn
-      tags: [ 'role::gunicorn' ]
+      tags: [ 'role::gunicorn', 'skip::gunicorn' ]
       gunicorn__dependent_applications:
         - '{{ netbox__gunicorn__dependent_applications }}'
 
     - role: debops.nginx
-      tags: [ 'role::nginx' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_upstreams:
         - '{{ netbox__nginx__dependent_upstreams }}'
       nginx__dependent_servers:
         - '{{ netbox__nginx__dependent_servers }}'
 
     - role: debops.netbox
-      tags: [ 'role::netbox' ]
+      tags: [ 'role::netbox', 'skip::netbox' ]

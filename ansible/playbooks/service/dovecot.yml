@@ -24,7 +24,7 @@
         - '{{ postfix__ferm__dependent_rules }}'
 
     - role: debops.postfix
-      tags: [ 'role::postfix' ]
+      tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'dovecot'
           config: '{{ dovecot__postfix__dependent_maincf }}'
@@ -33,4 +33,4 @@
           config: '{{ dovecot__postfix__dependent_mastercf }}'
 
     - role: debops.dovecot
-      tags: [ 'role::dovecot' ]
+      tags: [ 'role::dovecot', 'skip::dovecot' ]

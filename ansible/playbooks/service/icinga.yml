@@ -19,12 +19,12 @@
         - '{{ icinga__secret__directories | d([]) }}'
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ icinga__apt_preferences__dependent_list }}'
 
     - role: debops.etc_services
-      tags: [ 'role::etc_services' ]
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ icinga__etc_services__dependent_list }}'
 
@@ -34,4 +34,4 @@
         - '{{ icinga__ferm__dependent_rules }}'
 
     - role: debops.icinga
-      tags: [ 'role::icinga' ]
+      tags: [ 'role::icinga', 'skip::icinga' ]
