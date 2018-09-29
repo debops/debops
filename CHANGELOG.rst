@@ -80,6 +80,10 @@ Changed
   environments. See the :envvar:`bootstrap__etc_hosts` variable for more
   details.
 
+- Various filter and lookup Ansible plugins have been migrated from the
+  playbook directory to the :ref:`debops.ansible_plugins` role. This role can
+  be used as hard dependency in other Ansible roles that rely on these plugins.
+
 Fixed
 ~~~~~
 
@@ -101,6 +105,10 @@ Removed
   You can use the :ref:`debops.debops_legacy` Ansible role to clean up old
   configuration files, directories and diversions of ``debops.redis`` role from
   remote hosts.
+
+- The ``ldap_entry`` and ``ldap_attr`` Ansible modules have been removed. They
+  are now included in Ansible core, there's no need to keep a separate copy in
+  the playbook.
 
 
 `debops v0.8.0`_ - 2018-08-06
