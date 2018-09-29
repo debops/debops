@@ -80,6 +80,10 @@ Changed
   environments. See the :envvar:`bootstrap__etc_hosts` variable for more
   details.
 
+- Various filter and lookup Ansible plugins have been migrated from the
+  playbook directory to the :ref:`debops.ansible_plugins` role. This role can
+  be used as hard dependency in other Ansible roles that rely on these plugins.
+
 Fixed
 ~~~~~
 
