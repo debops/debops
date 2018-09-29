@@ -60,6 +60,12 @@ Ansible roles:
   files are found, the lookup plugin returns the original path which
   corresponds to the file included in the role itself.
 
+``lists``
+  This lookup plugin implements the ``with_lists`` lookup. Similar to
+  ``with_flattened`` lookup, the difference is the lists are not flattened all
+  the way into a single list, therefore you can perform a "list of lists"
+  tasks.
+
 ``task_src``
   This lookup plugin allows injection of custom Ansible tasks into roles without
   the need to modify the roles themselves. It requires the ``debops`` Python
