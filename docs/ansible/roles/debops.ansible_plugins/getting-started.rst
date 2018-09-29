@@ -30,6 +30,10 @@ Custom Ansible filter plugins
 The role contains a set of custom Ansible filter plugins which can be used in
 Jinja templates:
 
+``globmatch``
+  This filter plugin can be used to filter strings or lists that match shell
+  glob patterns.
+
 ``ldappassword``
   This filter plugin can be used to convert plaintext passwords to hashes that
   can be stored in the LDAP ``userPassword`` attribute.
