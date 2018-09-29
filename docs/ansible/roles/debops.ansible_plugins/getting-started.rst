@@ -49,6 +49,17 @@ Custom Ansible lookup plugins
 The role contains a set of custom Ansible lookup plugins which can be used in
 Ansible roles:
 
+``file_src``
+  This lookup plugins allows "sideloading" files to copy into roles without the
+  need to modify the roles themselves. It requires the ``debops`` Python module
+  to be installed and uses configuration in :file:`.debops.cfg` to get a list
+  of directories that are bases to look for custom files.
+
+  If a file in specified subdirectory is found in one of the base directories,
+  its path will be returned to Ansible to use as a file source. If no custom
+  files are found, the lookup plugin returns the original path which
+  corresponds to the file included in the role itself.
+
 ``template_src``
   This lookup plugins allows "sideloading" Jinja templates into roles without
   the need to modify the roles themselves. It requires the ``debops`` Python
