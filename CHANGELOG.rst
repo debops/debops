@@ -102,6 +102,10 @@ Removed
   configuration files, directories and diversions of ``debops.redis`` role from
   remote hosts.
 
+- The ``ldap_entry`` and ``ldap_attr`` Ansible modules have been removed. They
+  are now included in Ansible core, there's no need to keep a separate copy in
+  the playbook.
+
 
 `debops v0.8.0`_ - 2018-08-06
 -----------------------------
