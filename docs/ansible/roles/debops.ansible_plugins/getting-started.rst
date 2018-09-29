@@ -46,6 +46,9 @@ Jinja templates:
   generate a configuration file with multiple key/value configuration
   structures.
 
+``split``
+  This filter plugin can be used to split strings, similarly to the
+  ``.split()`` function in Python.
 
 Custom Ansible lookup plugins
 -----------------------------
