@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+set -o nounset -o pipefail -o errexit
 
 sudo apt-get -qq update
 sudo apt-get -yq install graphviz
