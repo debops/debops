@@ -41,3 +41,21 @@ Jinja templates:
   looped Ansible tasks to manage multiple files with key/value syntax, or
   generate a configuration file with multiple key/value configuration
   structures.
+
+
+Custom Ansible lookup plugins
+-----------------------------
+
+The role contains a set of custom Ansible lookup plugins which can be used in
+Ansible roles:
+
+``template_src``
+  This lookup plugins allows "sideloading" Jinja templates into roles without
+  the need to modify the roles themselves. It requires the ``debops`` Python
+  module to be installed and uses configuration in :file:`.debops.cfg` to get
+  a list of directories that are bases to look for templates.
+
+  If a template file in specified subdirectory is found in one of the base
+  directories, its path will be returned to Ansible to use as a template. If no
+  custom templates are found, the lookup plugin returns the original path which
+  corresponds to the template included in the role itself.
