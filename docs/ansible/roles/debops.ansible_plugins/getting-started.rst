@@ -50,7 +50,7 @@ The role contains a set of custom Ansible lookup plugins which can be used in
 Ansible roles:
 
 ``file_src``
-  This lookup plugins allows "sideloading" files to copy into roles without the
+  This lookup plugin allows "sideloading" files to copy into roles without the
   need to modify the roles themselves. It requires the ``debops`` Python module
   to be installed and uses configuration in :file:`.debops.cfg` to get a list
   of directories that are bases to look for custom files.
@@ -60,8 +60,21 @@ Ansible roles:
   files are found, the lookup plugin returns the original path which
   corresponds to the file included in the role itself.
 
+``task_src``
+  This lookup plugin allows injection of custom Ansible tasks into roles without
+  the need to modify the roles themselves. It requires the ``debops`` Python
+  module to be installed and uses configuration in :file:`.debops.cfg` to get
+  a list of directories that are bases to look for a list of Ansible tasks.
+
+  If a file with list of tasks is found, they will be added to the Ansible
+  playbook execution, usually as "pre" or "post" tasks at the beginning or end
+  of a role. If no tasks are found, the plugin returns the path to
+  a predefined, usually empty file with no tasks, that gets included by
+  Ansible, avoiding the issue of missing task list. The roles that use this
+  plugin need to be prepared for this usage beforehand.
+
 ``template_src``
-  This lookup plugins allows "sideloading" Jinja templates into roles without
+  This lookup plugin allows "sideloading" Jinja templates into roles without
   the need to modify the roles themselves. It requires the ``debops`` Python
   module to be installed and uses configuration in :file:`.debops.cfg` to get
   a list of directories that are bases to look for templates.
