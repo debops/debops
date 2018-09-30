@@ -1,15 +1,71 @@
-{% set grub_tpl_default = '' %}
-{% if ansible_local|d() and ansible_local.grub|d() and ansible_local.grub.default|d() %}
-{% set grub_tpl_default = ansible_local.grub.default %}
-{% else %}
-{% set grub_tpl_default = grub_dependent_default %}
-{% endif %}
-{% set grub_tpl_local_kernel_options = [] %}
-{% if ansible_local|d() and ansible_local.grub|d() and ansible_local.grub.kernel_options|d() %}
-{% set grub_tpl_local_kernel_options = ansible_local.grub.kernel_options %}
-{% endif %}
-{% set grub_tpl_local_kernel_options = ((grub_tpl_local_kernel_options + grub_dependent_kernel_options) | sort | unique) %}
-{
-"default": "{{ grub_tpl_default }}",
-"kernel_options": {{ grub_tpl_local_kernel_options | to_nice_json }}
-}
+#!/usr/bin/python{{ '2' if (ansible_python_version is version_compare('3.5', '<')) else '3' }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import subprocess
+import os
+
+
+try:
+    from subprocess import DEVNULL
+except ImportError:
+    DEVNULL = open(os.devnull, 'wb')
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+grub_conf = '/etc/default/grub'
+grub_orig_conf = '/etc/default/grub.dpkg-divert'
+
+output = {'installed': cmd_exists('update-grub'),
+          'configured': True}
+
+if os.path.exists(grub_conf) and os.path.isfile(grub_conf):
+    try:
+        with open(grub_conf, 'r') as f:
+            for line in f:
+                if not line.startswith('#') and '=' in line:
+                    line = line.strip().split('=', 1)
+
+                    if line[0].lower() == 'grub_cmdline_linux_default':
+                        output['cmdline_default'] = (
+                                line[1].strip('"').split())
+
+                    elif line[0].lower() == 'grub_cmdline_linux':
+                        output['cmdline'] = line[1].strip('"').split()
+
+                    elif line[0].lower() == 'grub_default':
+                        output['default'] = line[1].strip('"')
+
+    except Exception:
+        pass
+
+if os.path.exists(grub_orig_conf) and os.path.isfile(grub_orig_conf):
+    try:
+        with open(grub_orig_conf, 'r') as f:
+            for line in f:
+                if not line.startswith('#') and '=' in line:
+                    line = line.strip().split('=', 1)
+
+                    if line[0].lower() == 'grub_cmdline_linux_default':
+                        output['original_cmdline_default'] = (
+                                line[1].strip('"').split())
+
+                    elif line[0].lower() == 'grub_cmdline_linux':
+                        output['original_cmdline'] = (
+                                line[1].strip('"').split())
+
+                    elif line[0].lower() == 'grub_default':
+                        output['original_default'] = line[1].strip('"')
+
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=4))

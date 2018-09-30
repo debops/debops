@@ -6,6 +6,27 @@
   args:
     creates: '/etc/default/grub.dpkg-divert'
 
+- name: Make sure that local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local GRUB facts
+  template:
+    src: 'etc/ansible/facts.d/grub.fact.j2'
+    dest: '/etc/ansible/facts.d/grub.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: grub__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: grub__register_facts is changed
+
 - name: Get default kernel parameters
   shell: test -f /etc/default/grub.dpkg-divert && . /etc/default/grub.dpkg-divert || . /etc/default/grub ; echo $GRUB_CMDLINE_LINUX_DEFAULT | tr " " "\n"
   register: grub_register_default_cmdline
@@ -34,24 +55,6 @@
     group:  'root'
     mode:   '0644'
   notify: [ 'Update GRUB' ]
-
-# Ansible facts [[[
-- name: Make sure that local fact directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save local GRUB facts
-  template:
-    src: 'etc/ansible/facts.d/grub.fact.j2'
-    dest: '/etc/ansible/facts.d/grub.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-# ]]]
 
 # Security and users [[[
 
