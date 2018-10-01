@@ -8,7 +8,7 @@ exec tail -n +5 $0
 {% else %}
 set superusers="{{ superusers }}"
 {%   for item in grub__combined_users %}
-password_pbkdf2 {{ item.name }} {{ lookup('file', secret + "/credentials/" + ansible_fqdn + "/grub/" + item.name + "/password_hash") }}
+password_pbkdf2 {{ item.name }} {{ lookup('file', secret + "/credentials/" + inventory_hostname + "/grub/" + item.name + "/password_hash") }}
 {%   endfor %}
 ## Workaround for https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/718670
 export superusers

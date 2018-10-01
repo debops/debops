@@ -40,7 +40,7 @@
 
 - name: Ensure secrets directories exist
   file:
-    path: '{{ secret + "/credentials/" + ansible_fqdn + "/grub/" + item.name }}'
+    path: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.name }}'
     state: 'directory'
     mode: '0750'
   become: False
@@ -52,7 +52,7 @@
 - name: Save plaintext password in secrets
   copy:
     content: "{{ item.password + '\n' }}"
-    dest: '{{ secret + "/credentials/" + ansible_fqdn + "/grub/" + item.name + "/password" }}'
+    dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.name + "/password" }}'
     mode: '0640'
   register: grub__register_pw_plain
   with_items: '{{ grub__combined_users }}'
@@ -84,7 +84,7 @@
 - name: Save hashed password in secrets
   copy:
     content: "{{ item.1.stdout_lines.0 + '\n' }}"
-    dest: '{{ secret + "/credentials/" + ansible_fqdn + "/grub/" + item.0.name + "/password_hash" }}'
+    dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_hash" }}'
     mode: '0640'
   with_together:
     - '{{ grub__combined_users }}'

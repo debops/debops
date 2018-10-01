@@ -89,6 +89,12 @@ Changed
   role variables easier. See the :ref:`debops.grub` documentation for more
   details.
 
+- [debops.grub] The user password storage path in :file:`secret/` directory has
+  been changed to use the ``inventory_hostname`` variable instead of the
+  ``ansible_fqdn`` variable. This change will force regeneration of password
+  hashes in existing installations, but shouldn't affect host access (passwords
+  stay the same).
+
 Fixed
 ~~~~~
 
