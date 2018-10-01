@@ -99,6 +99,10 @@ Fixed
   dependent variables, which are now flattened before being passed to the
   configuration filter.
 
+- [debops.grub] The role should now correctly revert custom patch to allow user
+  authentication in :file:`/etc/grub.d/10_linux` script, when the user list is
+  empty.
+
 Removed
 ~~~~~~~
 

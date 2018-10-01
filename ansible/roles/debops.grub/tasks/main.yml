@@ -132,13 +132,15 @@
     dest: '/etc/grub.d/10_linux'
     regexp: "^CLASS=(?:\\$\\{[A-Z_]+:-)?([\"'][\\w _-]+)([\"'])\\}?"
     replace: 'CLASS=${GRUB_LINUX_MENUENTRY_CLASS:-\1 ${GRUB_LINUX_MENUENTRY_CLASS_ADDITIONAL:-}\2}'
+  notify: [ 'Update GRUB' ]
   when: (grub__combined_users|length > 0)
 
 - name: Remove patch to allow to configure the default menu entry parameters
-  replace:
-    dest: '/etc/grub.d/10_linux'
-    regexp: "^CLASS=(?:\\$\\{[A-Z_]+:-)?([\"'][\\w _-]+)([\"'])\\}?"
-    replace: 'CLASS=${GRUB_LINUX_MENUENTRY_CLASS:-\1 ${GRUB_LINUX_MENUENTRY_CLASS_ADDITIONAL:-}\2}'
-  when: (grub__combined_users|length > 0)
+  shell: rm -f /etc/grub.d/10_linux ; dpkg-divert --quiet --local --rename --remove /etc/grub.d/10_linux
+  args:
+    warn: False
+    removes: '/etc/grub.d/10_linux.dpkg-divert'
+  notify: [ 'Update GRUB' ]
+  when: (grub__combined_users|length == 0)
 
 # ]]]
