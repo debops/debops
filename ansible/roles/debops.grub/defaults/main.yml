@@ -141,6 +141,11 @@ grub__default_configuration:
       - 'cgroup_enable=memory'
       - 'swapaccount=1'
 
+  # Disable I/O scheduler in virtual machines for better performance
+  - name: 'cmdline_linux_default'
+    value: [ 'elevator=noop' ]
+    state: '{{ "present" if (ansible_virtualization_role is defined) else "ignore" }}'
+
   # Activate GRUB serial console support when requested
   - name: 'terminal'
     comment: 'Uncomment to disable graphical terminal (grub-pc only)'
