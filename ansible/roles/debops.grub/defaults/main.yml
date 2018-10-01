@@ -159,19 +159,19 @@ grub__default_configuration:
   - name: 'terminal'
     comment: 'Uncomment to disable graphical terminal (grub-pc only)'
     value: 'serial'
-    state: '{{ "present" if grub_serial_console|bool else "ignore" }}'
+    state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
 
   # Specify additional parameters for the 'serial' GRUB command
   - name: 'serial_command'
-    value: 'serial --unit={{ grub_serial_console_unit }} --speed={{ grub_serial_console_speed }} --word=8 --parity=no --stop=1'
-    state: '{{ "present" if grub_serial_console|bool else "ignore" }}'
+    value: 'serial --unit={{ grub__serial_console_unit }} --speed={{ grub__serial_console_speed }} --word=8 --parity=no --stop=1'
+    state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
 
   # Configure serial console in Linux kernel when requested
   - name: 'cmdline_linux_default'
     value:
       - 'console=tty0'
-      - '{{ "console=ttyS{},{}n8".format(grub_serial_console_unit, grub_serial_console_speed) }}'
-    state: '{{ "present" if grub_serial_console|bool else "ignore" }}'
+      - '{{ "console=ttyS{},{}n8".format(grub__serial_console_unit, grub__serial_console_speed) }}'
+    state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
 
   # Activate custom hack for menu entry access restrictions when requested
   - name: 'linux_menuentry_class_additional'
@@ -179,10 +179,10 @@ grub__default_configuration:
       Needs to be exported until it is patched upstream.
       FIXME: Remove `export` when patched upstream has reached Debian stable.
       Currently unlikely because the patch was not accepted upstream.
-    value: '{{ grub_menuentry_access }}'
+    value: '{{ grub__menuentry_access }}'
     state: '{{ "present"
-               if (grub_combined_users|length > 0 and
-                   grub_menuentry_access is string)
+               if (grub__combined_users|length > 0 and
+                   grub__menuentry_access is string)
                else "absent" }}'
     export: True
 
@@ -233,55 +233,55 @@ grub__combined_configuration: '{{ grub__original_configuration
 # Serial console configuration [[[
 # --------------------------------
 
-# .. envvar:: grub_serial_console [[[
+# .. envvar:: grub__serial_console [[[
 #
 # Enable serial console (in both grub and kernel)
-grub_serial_console: False
+grub__serial_console: False
 
                                                                    # ]]]
-# .. envvar:: grub_serial_console_unit [[[
+# .. envvar:: grub__serial_console_unit [[[
 #
 # Serial port to enable console on (eg. ttyS0 => 0, ttyS1 => 1)
-grub_serial_console_unit: 0
+grub__serial_console_unit: 0
 
                                                                    # ]]]
-# .. envvar:: grub_serial_console_speed [[[
+# .. envvar:: grub__serial_console_speed [[[
 #
 # Speed of the serial port.
 # Other parameters (8 bits, no parity, 1 stop bit are hardcoded)
-grub_serial_console_speed: 115200
+grub__serial_console_speed: 115200
                                                                    # ]]]
                                                                    # ]]]
 # Security and users [[[
 # ----------------------
 
-# .. envvar:: grub_users [[[
+# .. envvar:: grub__users [[[
 #
 # Global list of GRUB users.
-grub_users: []
+grub__users: []
 
                                                                    # ]]]
-# .. envvar:: grub_group_users [[[
+# .. envvar:: grub__group_users [[[
 #
 # Host group list of GRUB users.
-grub_group_users: []
+grub__group_users: []
 
                                                                    # ]]]
-# .. envvar:: grub_host_users [[[
+# .. envvar:: grub__host_users [[[
 #
 # Host list of GRUB users.
-grub_host_users: []
+grub__host_users: []
 
                                                                    # ]]]
-# .. envvar:: grub_combined_users [[[
+# .. envvar:: grub__combined_users [[[
 #
 # Combined list as it is used internally by the role list of GRUB users.
 # If this list is empty no users will created and thus leaving GRUB without
 # password protection.
-grub_combined_users: '{{ grub_users + grub_group_users + grub_host_users }}'
+grub__combined_users: '{{ grub__users + grub__group_users + grub__host_users }}'
 
                                                                    # ]]]
-# .. envvar:: grub_menuentry_access [[[
+# .. envvar:: grub__menuentry_access [[[
 #
 # This option only takes effect when there is at least one user defined.
 #
@@ -298,37 +298,37 @@ grub_combined_users: '{{ grub_users + grub_group_users + grub_host_users }}'
 #
 # Using an empty string will result in the need to authenticate also for booting
 # those entries.
-grub_menuentry_access: '--unrestricted'
+grub__menuentry_access: '--unrestricted'
 
                                                                    # ]]]
-# .. envvar:: grub_iter_time [[[
+# .. envvar:: grub__iter_time [[[
 #
 # Number of PBKDF2 iterations.
 # Corresponds with the ``--iteration-count`` parameter.
 #
 # The current default of :command:`grub-mkpasswd-pbkdf2` is ``10000`` iterations.
 # Set to ``default`` to use the compiled-in default of :command:`grub-mkpasswd-pbkdf2`.
-grub_iter_time: 'default'
+grub__iter_time: 'default'
 
                                                                    # ]]]
-# .. envvar:: grub_salt_length [[[
+# .. envvar:: grub__salt_length [[[
 #
 # Length of the Salt in characters. One unique salt will be generated for each host.
 # Corresponds with the ``--salt`` parameter.
 #
 # The current default of :command:`grub-mkpasswd-pbkdf2` is ``64`` characters.
 # Set to ``default`` to use the compiled-in default of :command:`grub-mkpasswd-pbkdf2`.
-grub_salt_length: 'default'
+grub__salt_length: 'default'
 
                                                                    # ]]]
-# .. envvar:: grub_hash_length [[[
+# .. envvar:: grub__hash_length [[[
 #
 # Length of generated hash in characters.
 # Corresponds with the ``--buflen`` parameter.
 #
 # The current default of :command:`grub-mkpasswd-pbkdf2` is ``64`` characters.
 # Set to ``default`` to use the compiled-in default of :command:`grub-mkpasswd-pbkdf2`.
-grub_hash_length: 'default'
+grub__hash_length: 'default'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

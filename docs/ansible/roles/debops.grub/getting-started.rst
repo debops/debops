@@ -33,7 +33,7 @@ To enable password protection, simply define a superuser like this:
 
 .. code:: yaml
 
-   grub_users:
+   grub__users:
      - name: 'su'
        password: 'NBLWAThUq5'
        superuser: True

@@ -2,12 +2,12 @@
 ## {{ ansible_managed }}
 exec tail -n +5 $0
 
-{% set superusers = grub_combined_users|rejectattr("superuser", "none")|map(attribute = 'name')|join(' ') %}
+{% set superusers = grub__combined_users|rejectattr("superuser", "none")|map(attribute = 'name')|join(' ') %}
 {% if superusers|length == 0 %}
 ## No users have been defined.
 {% else %}
 set superusers="{{ superusers }}"
-{%   for item in grub_combined_users %}
+{%   for item in grub__combined_users %}
 password_pbkdf2 {{ item.name }} {{ lookup('file', secret + "/credentials/" + ansible_fqdn + "/grub/" + item.name + "/password_hash") }}
 {%   endfor %}
 ## Workaround for https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/718670
