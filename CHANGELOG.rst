@@ -84,6 +84,11 @@ Changed
   playbook directory to the :ref:`debops.ansible_plugins` role. This role can
   be used as hard dependency in other Ansible roles that rely on these plugins.
 
+- [debops.grub] The GRUB configuration has been redesigned, role now uses
+  merged variables to make configuration via Ansible inventory or dependent
+  role variables easier. See the :ref:`debops.grub` documentation for more
+  details.
+
 Fixed
 ~~~~~
 

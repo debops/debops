@@ -27,26 +27,6 @@
   action: setup
   when: grub__register_facts is changed
 
-- name: Get default kernel parameters
-  shell: test -f /etc/default/grub.dpkg-divert && . /etc/default/grub.dpkg-divert || . /etc/default/grub ; echo $GRUB_CMDLINE_LINUX_DEFAULT | tr " " "\n"
-  register: grub_register_default_cmdline
-  changed_when: False
-  check_mode: False
-  when: grub_save_options
-
-- name: Get old kernel parameters
-  shell: test -f /etc/default/grub.dpkg-divert && . /etc/default/grub.dpkg-divert || . /etc/default/grub ; echo $GRUB_CMDLINE_LINUX | tr " " "\n"
-  register: grub_register_old_cmdline
-  changed_when: False
-  check_mode: False
-  when: grub_save_options
-
-- name: Default kernel parameters
-  set_fact:
-    grub_fact_default_kernel_parameters: '{{ grub_register_default_cmdline.stdout_lines }}'
-    grub_fact_old_kernel_parameters:     '{{ grub_register_old_cmdline.stdout_lines }}'
-  when: grub_save_options
-
 - name: Configure /etc/default/grub
   template:
     src: 'etc/default/grub.j2'
