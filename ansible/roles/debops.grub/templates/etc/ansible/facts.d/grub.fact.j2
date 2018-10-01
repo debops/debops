@@ -21,8 +21,7 @@ def cmd_exists(cmd):
     )
 
 
-grub_conf = '/etc/default/grub'
-grub_orig_conf = '/etc/default/grub.dpkg-divert'
+grub_conf = '/etc/default/grub.d/ansible.cfg'
 
 output = {'installed': cmd_exists('update-grub'),
           'configured': True}
@@ -35,35 +34,19 @@ if os.path.exists(grub_conf) and os.path.isfile(grub_conf):
                     line = line.strip().split('=', 1)
 
                     if line[0].lower() == 'grub_cmdline_linux_default':
-                        output['cmdline_default'] = (
-                                line[1].strip('"').split())
+                        value = line[1].strip('"').split()
+                        if ('$' + line[0].upper()) in value:
+                            value.remove('$' + line[0].upper())
+                        output['cmdline_default'] = value
 
                     elif line[0].lower() == 'grub_cmdline_linux':
-                        output['cmdline'] = line[1].strip('"').split()
+                        value = line[1].strip('"').split()
+                        if ('$' + line[0].upper()) in value:
+                            value.remove('$' + line[0].upper())
+                        output['cmdline'] = value
 
                     elif line[0].lower() == 'grub_default':
                         output['default'] = line[1].strip('"')
-
-    except Exception:
-        pass
-
-if os.path.exists(grub_orig_conf) and os.path.isfile(grub_orig_conf):
-    try:
-        with open(grub_orig_conf, 'r') as f:
-            for line in f:
-                if not line.startswith('#') and '=' in line:
-                    line = line.strip().split('=', 1)
-
-                    if line[0].lower() == 'grub_cmdline_linux_default':
-                        output['original_cmdline_default'] = (
-                                line[1].strip('"').split())
-
-                    elif line[0].lower() == 'grub_cmdline_linux':
-                        output['original_cmdline'] = (
-                                line[1].strip('"').split())
-
-                    elif line[0].lower() == 'grub_default':
-                        output['original_default'] = line[1].strip('"')
 
     except Exception:
         pass

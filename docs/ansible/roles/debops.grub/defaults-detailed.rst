@@ -16,11 +16,11 @@ grub__configuration
 -------------------
 
 The ``grub__*_configuration`` variables define the contents of the
-:file:`/etc/default/grub` configuration file. The variables are lists of YAML
-dictionaries, the dictionaries with the same ``name`` parameter are merged
-together in an order specified by the :envvar:`grub__combined_configuration`
-variable, which allows some of the configuration to be modified via Ansible
-inventory or other Ansible roles.
+:file:`/etc/default/grub.d/ansible.cfg` configuration file. The variables are
+lists of YAML dictionaries, the dictionaries with the same ``name`` parameter
+are merged together in an order specified by the
+:envvar:`grub__combined_configuration` variable, which allows some of the
+configuration to be modified via Ansible inventory or other Ansible roles.
 
 
 Examples
@@ -98,6 +98,12 @@ a configuration file option using specific parameters:
 ``quote``
   Optional, boolean. If not specified or ``True``, the value will be quoted. If
   ``False``, the value will not be quoted.
+
+``original``
+  Optional, boolean. If ``True``, the role will add ``$GRUB_<NAME>`` string to
+  the given configuration option, based on the entry name. This allows to
+  preserve existing GRUB options from the :file:`/etc/default/grub`; this is
+  useful only for specific options like kernel parameters.
 
 ``export``
   Optional, boolean. if ``True``, the option will be exported in the GRUB

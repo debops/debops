@@ -13,10 +13,11 @@
 # GRUB configuration options [[[
 # ------------------------------
 
-# These variables define the contents of the :file:`/etc/default/grub`
-# configuration file which is used as a base to generate GRUB configuration in
-# :file:`/boot/grub/grub.cfg`. Option names don't contain the ``GRUB_`` prefix
-# and will be converted to uppercase in the final configuration file.
+# These variables define the contents of the
+# :file:`/etc/default/grub.d/ansible.cfg` configuration file which is used to
+# generate GRUB configuration in :file:`/boot/grub/grub.cfg`. Option names
+# don't contain the ``GRUB_`` prefix and will be converted to uppercase in the
+# final configuration file.
 #
 # See :ref:`grub__ref_configuration` for more details about the syntax.
 
@@ -47,15 +48,12 @@ grub__original_configuration:
     quote: False
 
   - name: 'cmdline_linux_default'
-    value:
-
-      - name: 'quiet'
-
-      - name: 'splash'
-        state: '{{ "present" if (ansible_distribution == "Ubuntu") else "ignore" }}'
+    value: []
+    original: True
 
   - name: 'cmdline_linux'
     value: []
+    original: True
 
   - name: 'badram'
     comment: |
@@ -111,21 +109,9 @@ grub__fact_configuration:
                else "0" }}'
 
   - name: 'cmdline_linux_default'
-    value: '{{ ansible_local.grub.original_cmdline_default
-               if (ansible_local|d() and ansible_local.grub|d() and
-                   ansible_local.grub.original_cmdline_default|d())
-               else [] }}'
-
-  - name: 'cmdline_linux_default'
     value: '{{ ansible_local.grub.cmdline_default
                if (ansible_local|d() and ansible_local.grub|d() and
                    ansible_local.grub.cmdline_default|d())
-               else [] }}'
-
-  - name: 'cmdline_linux'
-    value: '{{ ansible_local.grub.original_cmdline
-               if (ansible_local|d() and ansible_local.grub|d() and
-                   ansible_local.grub.original_cmdline|d())
                else [] }}'
 
   - name: 'cmdline_linux'

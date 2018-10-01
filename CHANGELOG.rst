@@ -86,8 +86,9 @@ Changed
 
 - [debops.grub] The GRUB configuration has been redesigned, role now uses
   merged variables to make configuration via Ansible inventory or dependent
-  role variables easier. See the :ref:`debops.grub` documentation for more
-  details.
+  role variables easier. The GRUB configuration is now stored in the
+  :file:`/etc/default/grub.d/` directory to allow for easier integration with
+  other software. See the :ref:`debops.grub` documentation for more details.
 
 - [debops.grub] The user password storage path in :file:`secret/` directory has
   been changed to use the ``inventory_hostname`` variable instead of the

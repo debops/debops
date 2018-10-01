@@ -1,36 +1,18 @@
 ---
 # vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Divert original /etc/default/grub
-  command: dpkg-divert --quiet --local --divert /etc/default/grub.dpkg-divert --rename /etc/default/grub
-  args:
-    creates: '/etc/default/grub.dpkg-divert'
-
-- name: Make sure that local fact directory exists
+- name: Create /etc/default/grub.d directory
   file:
-    path: '/etc/ansible/facts.d'
+    path: '/etc/default/grub.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
 
-- name: Save local GRUB facts
+- name: Generate GRUB configuration file
   template:
-    src: 'etc/ansible/facts.d/grub.fact.j2'
-    dest: '/etc/ansible/facts.d/grub.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: grub__register_facts
-
-- name: Update Ansible facts if they were modified
-  action: setup
-  when: grub__register_facts is changed
-
-- name: Configure /etc/default/grub
-  template:
-    src: 'etc/default/grub.j2'
-    dest: '/etc/default/grub'
+    src: 'etc/default/grub.d/ansible.cfg.j2'
+    dest: '/etc/default/grub.d/ansible.cfg'
     owner:  'root'
     group:  'root'
     mode:   '0644'
@@ -144,3 +126,24 @@
   when: (grub__combined_users|length == 0)
 
 # ]]]
+
+- name: Make sure that local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local GRUB facts
+  template:
+    src: 'etc/ansible/facts.d/grub.fact.j2'
+    dest: '/etc/ansible/facts.d/grub.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: grub__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: grub__register_facts is changed
