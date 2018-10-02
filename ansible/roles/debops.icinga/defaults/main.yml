@@ -660,6 +660,13 @@ icinga__default_configuration:
           }
         state: 'present'
 
+      - name: 'object_director_global'
+        value: |
+          object Zone "director-global" {
+            global = true
+          }
+        state: '{{ "present" if (icinga__director_enabled|bool) else "absent" }}'
+
   - name: 'conf.d/api-users.conf'
     comment: 'The APIUser objects are used for authentication against the API.'
     group: '{{ icinga__group }}'
