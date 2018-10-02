@@ -84,6 +84,18 @@ Changed
   playbook directory to the :ref:`debops.ansible_plugins` role. This role can
   be used as hard dependency in other Ansible roles that rely on these plugins.
 
+- [debops.grub] The GRUB configuration has been redesigned, role now uses
+  merged variables to make configuration via Ansible inventory or dependent
+  role variables easier. The GRUB configuration is now stored in the
+  :file:`/etc/default/grub.d/` directory to allow for easier integration with
+  other software. See the :ref:`debops.grub` documentation for more details.
+
+- [debops.grub] The user password storage path in :file:`secret/` directory has
+  been changed to use the ``inventory_hostname`` variable instead of the
+  ``ansible_fqdn`` variable. This change will force regeneration of password
+  hashes in existing installations, but shouldn't affect host access (passwords
+  stay the same).
+
 Fixed
 ~~~~~
 
@@ -93,6 +105,10 @@ Fixed
 - [debops.sysctl] The role should correctly handle nested lists in role
   dependent variables, which are now flattened before being passed to the
   configuration filter.
+
+- [debops.grub] The role should now correctly revert custom patch to allow user
+  authentication in :file:`/etc/grub.d/10_linux` script, when the user list is
+  empty.
 
 Removed
 ~~~~~~~

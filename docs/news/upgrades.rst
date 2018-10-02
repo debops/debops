@@ -55,6 +55,12 @@ Inventory variable changes
   trinary ``present``/``absent``/``ignore`` to allow conditional removal of
   :file:`/etc/hosts` entries, with ``present`` being the default.
 
+- The :ref:`debops.grub` role was redesigned, most of the ``grub_*`` default
+  variables have been removed and the new configuration method has been
+  implemented. The role variables have been namespaced, the role now uses
+  ``grub__*`` variabe naming scheme. Check the role documentation for details
+  about configuring GRUB via Ansible inventory.
+
 
 v0.8.0 (2018-08-06)
 -------------------
