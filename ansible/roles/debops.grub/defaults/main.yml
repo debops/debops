@@ -144,7 +144,7 @@ grub__default_configuration:
   # Disable I/O scheduler in virtual machines for better performance
   - name: 'cmdline_linux_default'
     value: [ 'elevator=noop' ]
-    state: '{{ "present" if (ansible_virtualization_role is defined) else "ignore" }}'
+    state: '{{ "present" if (ansible_virtualization_role|d() == "guest") else "ignore" }}'
 
   # Activate GRUB serial console support when requested
   - name: 'terminal'
