@@ -45,7 +45,7 @@ consider this in the planning of your environment and use multiple
 subUID/subGID ranges for different LXC containers or groups of them.
 
 Currently unprivileged LXC containers managed in the DebOps environment should
-be fairly secure, owever you might want to consider enabling AppArmor for
+be fairly secure, however you might want to consider enabling AppArmor for
 increased security against attacks directed at the LXC host.
 
 

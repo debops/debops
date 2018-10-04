@@ -566,13 +566,13 @@ when using such an example.
      - name: 'vault_ciphertext1'
        ciphertext_block_device: '/dev/mapper/vault_ciphertext0'
        manage_filesystem: False
-       cipher: 'twofish-cbc-plain'
-       key_size: 256
+       cipher: 'twofish-xts-plain64'
+       key_size: 512
 
      - name: 'vault'
        ciphertext_block_device: '/dev/mapper/vault_ciphertext1'
-       cipher: 'serpent-cbc-plain'
-       key_size: 256
+       cipher: 'serpent-xts-plain64'
+       key_size: 512
 
 This will encrypt :file:`/tmp/ciphertext_vault_file.raw` using the default cipher
 (:envvar:`cryptsetup__cipher` which defaults to AES) and make the "clear text" of
@@ -588,6 +588,15 @@ This is surely a more extreme example but it has been tested in a lab
 environment and the setup seems to work just fine. Also automatic
 mapping/mounting of all layers works seamlessly on system boot if configured to
 do so (which is the default).
+
+You can even boot from such a chained number of devices but you might need to
+manually list the ``vault_ciphertext`` device(s) in
+:file:`/etc/initramfs-tools/conf.d/cryptroot`. At least on Debian Stretch this
+is required.
+:command:`mkinitramfs -k -o /tmp/initramfs_tmp` and :command:`cat
+/var/tmp/mkinitramfs_$XXXX/conf/conf.d/cryptroot` can help you to see if the
+full chain is known to the initramfs. If so, regenerate the actual initramfs
+and reboot to test it.
 
 The list of cyphers and key sizes can be checked with :command:`cryptsetup benchmark`.
 You can check that the ciphers are chained as expected using :command:`cryptsetup status
