@@ -33,7 +33,7 @@ Configure unattended filesystem check and repair on boot:
    grub__configuration:
      - name: 'cmdline_linux_default'
        value:
-         - [ 'fsck.mode=force' ]
+         - 'fsck.mode=force'
 
 Remove the ``quiet`` parameter from the default kernel command line:
 
