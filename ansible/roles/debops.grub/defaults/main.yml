@@ -129,10 +129,10 @@ grub__default_configuration:
   # Set the default GRUB timeout depending on the host type (hardware or
   # virtual machine) to allow for faster booting of VMs
   - name: 'timeout'
-    value: '{{ "5"
+    value: '{{ grub__timeout_hardware
                if (ansible_virtualization_role is undefined or
                    ansible_virtualization_role not in [ "guest" ])
-               else "1" }}'
+               else grub__timeout_virtual }}'
 
   # Enable support for cgroup memory management, useful for LXC/Docker
   # containers
@@ -241,6 +241,22 @@ grub__serial_console_unit: 0
 # Speed of the serial port.
 # Other parameters (8 bits, no parity, 1 stop bit are hardcoded)
 grub__serial_console_speed: 115200
+                                                                   # ]]]
+                                                                   # ]]]
+# Timeouts [[[
+# ------------
+
+# .. envvar:: grub__timeout_hardware [[[
+#
+# GRUB timeout for hardware-based devices.
+grub__timeout_hardware: 5
+
+                                                                   # ]]]
+# .. envvar:: grub__timeout_virtual [[[
+#
+# GRUB timeout for virtual devices.
+grub__timeout_virtual: 1
+
                                                                    # ]]]
                                                                    # ]]]
 # Security and users [[[
