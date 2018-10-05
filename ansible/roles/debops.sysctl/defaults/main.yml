@@ -21,7 +21,7 @@
 # See :ref:`sysctl__ref_writable` for more details.
 sysctl__writable: '{{ [ "net" ]
                       if (ansible_virtualization_role == "guest" and
-                          ansible_virtualization_type in [ "lxc", "openvz" ])
+                          ansible_virtualization_type in [ "docker", "lxc", "openvz" ])
                       else (ansible_local.sysctl.writable
                             if (ansible_local|d() and ansible_local.sysctl|d() and
                                 ansible_local.sysctl.writable|d())
