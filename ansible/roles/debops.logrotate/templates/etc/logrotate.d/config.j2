@@ -3,7 +3,7 @@
 {% macro print_config(section) %}
 {%   if section.state is undefined or section.state != 'absent' %}
 {%     if section.comment|d() %}
-# {{ section.comment }}
+{{ section.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%     endif %}
 {%     if section.log|d() %}
 {%       if section.log is string %}
