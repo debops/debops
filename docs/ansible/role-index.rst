@@ -74,6 +74,7 @@ are not accessed directly by end users.
 - :ref:`debops.debops_api`
 - :ref:`debops.gitlab_runner`
 - :ref:`debops.fcgiwrap`
+- :ref:`debops.freeradius`
 - :ref:`debops.gunicorn`
 - :ref:`debops.memcached`
 - :ref:`debops.mosquitto`
@@ -201,6 +202,7 @@ Networking
 - :ref:`debops.avahi`
 - :ref:`debops.dhcpd`
 - :ref:`debops.dnsmasq`
+- :ref:`debops.freeradius`
 - :ref:`debops.ifupdown`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`
@@ -235,6 +237,7 @@ Security
 - :ref:`debops.authorized_keys`
 - :ref:`debops.fail2ban`
 - :ref:`debops.ferm`
+- :ref:`debops.freeradius`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`
 - :ref:`debops.sudo`

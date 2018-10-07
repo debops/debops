@@ -27,6 +27,9 @@ Added
     replace the existing ``debops.redis`` Ansible role. The new roles support
     multiple Redis and Sentinel instances on a single host.
 
+  - :ref:`debops.freeradius`, an Ansible role that can be used to manage
+    FreeRADIUS service, used in network management.
+
 - [debops.users] The role can now configure ACL entries of the user home
   directories using the ``item.home_acl`` parameter. This can be used for more
   elaborate access restrictions.
