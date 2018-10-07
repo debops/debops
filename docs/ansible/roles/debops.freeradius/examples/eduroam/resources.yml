@@ -1,0 +1,115 @@
+---
+
+# Configuration based on: https://wiki.freeradius.org/guide/eduroam
+
+# X.509 certificate configuration, based on DebOps PKI
+radius_pki_realm: 'domain'
+radius_cert_file: '/etc/pki/realms/{{ radius_pki_realm }}/default.crt'
+radius_key_file: '/etc/pki/realms/{{ radius_pki_realm }}/default.key'
+radius_ca_file: '/etc/pki/realms/{{ radius_pki_realm }}/CA.crt'
+
+# Directory where test configuration files are stored
+config_dir: '/srv/eapol-test'
+
+# Secret passphrase for the Access Points to authenticate with the RADIUS
+# Server
+radius_access_point_password: '{{ lookup("password", secret
+                                  + "/radius/known-secret-password") }}'
+
+# Example user to test authentication to RADIUS
+radius_test_user_identity: 'a_user@{{ ansible_domain }}'
+
+# Password of the client endpoint to authorized access to the network
+radius_test_user_password: '{{ lookup("password", secret
+                               + "/radius/default-test-password") }}'
+
+# Configuration for the 'debops.resources' Ansible role
+resources__host_files:
+
+  - content: |
+      #!/bin/bash
+
+      # Install eapol_test for testing RADIUS EAP connections
+
+      sudo apt-get update
+      sudo apt-get -yq install git build-essential \
+                               libssl-dev devscripts \
+                               pkg-config libnl-3-dev \
+                               libnl-genl-3-dev
+
+      git clone --depth 1 --no-single-branch https://github.com/FreeRADIUS/freeradius-server.git
+
+      cd freeradius-server/scripts/travis/
+
+      ./eapol_test-build.sh
+
+      sudo cp ./eapol_test/eapol_test /usr/local/bin/
+    dest: '/usr/local/bin/install-eapol_test'
+    mode: '0755'
+
+  - content: |
+      #
+      #   eapol_test -c eap-tls.conf -s "{{ radius_access_point_password }}" \
+      #              -a <radius-ip-server>
+      #
+      network={
+          key_mgmt=WPA-EAP
+          eap=TTLS
+          identity="{{ radius_test_user_identity }}"
+          anonymous_identity="anonymous@{{ ansible_domain }}"
+
+          # Uncomment to validate the server's certificate by checking
+          # it was signed by this CA.
+          ca_cert="{{ radius_ca_file }}"
+          password="{{ radius_test_user_password }}"
+          phase2="auth=PAP"
+      }
+    dest: '{{ config_dir }}/eap-tls.conf'
+    mode: '0644'
+
+  - content: |
+      #
+      #   eapol_test -c peap-mschapv2.conf -s "{{ radius_access_point_password }}" \
+      #              -a <radius-ip-address>
+      #
+      network={
+          key_mgmt=WPA-EAP
+          eap=PEAP
+          identity="{{ radius_test_user_identity }}"
+          anonymous_identity="anonymous@{{ ansible_domain }}"
+
+          # Uncomment to validate the server's certificate by checking
+          # it was signed by this CA.
+          ca_cert="{{ radius_ca_file }}"
+          password="{{ radius_test_user_password }}"
+          phase2="auth=MSCHAPV2 mschapv2_retry=0"
+          phase1="peapver=0"
+      }
+    dest: '{{ config_dir }}/peap-mschapv2.conf'
+    mode: '0644'
+
+  - content: |
+      #
+      #   eapol_test -c tls.conf -s "{{ radius_access_point_password }}" \
+      #              -a <radius-ip-address>
+      #
+      network={
+          key_mgmt=WPA-EAP
+          eap=TLS
+          anonymous_identity="anonymous@{{ ansible_domain }}"
+
+          # Uncomment to validate the server's certificate by checking
+          # it was signed by this CA.
+          ca_cert="{{ radius_ca_file }}"
+
+          # supplicant's public cert
+          client_cert="{{ radius_cert_file }}"
+
+          # supplicant's private key
+          private_key="{{ radius_key_file }}"
+
+          # password to decrypt private key
+          private_key_passwd=""
+      }
+    dest: '{{ config_dir }}/tls.conf'
+    mode: '0644'

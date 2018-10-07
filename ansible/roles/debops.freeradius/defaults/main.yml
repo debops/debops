@@ -1,0 +1,365 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.freeradius default variables
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# APT packages, FreeRADIUS version [[[
+# ------------------------------------
+
+# .. envvar:: freeradius__base_packages [[[
+#
+# List of essential APT packages to install for FreeRADIUS support.
+freeradius__base_packages: [ 'freeradius', 'freeradius-utils' ]
+
+                                                                   # ]]]
+# .. envvar:: freeradius__packages [[[
+#
+# List of additional APT packages to install with FreeRADIUS.
+freeradius__packages: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__version [[[
+#
+# The version of the installed FreeRADIUS package, gathered via Ansible local
+# facts. This variable can be used in conditions to enable/disable parts of the
+# configuration.
+freeradius__version: '{{ ansible_local.freeradius.version
+                         if (ansible_local|d() and ansible_local.freeradius|d() and
+                             ansible_local.freeradius.version|d())
+                         else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: freeradius__user [[[
+#
+# The UNIX system account which is used to manage FreeRADIUS service.
+freeradius__user: 'freerad'
+
+                                                                   # ]]]
+# .. envvar:: freeradius__group [[[
+#
+# The UNIX group which is used to manage FreeRADIUS service.
+freeradius__group: 'freerad'
+
+                                                                   # ]]]
+# .. envvar:: freeradius__conf_base_path [[[
+#
+# Absolute path to the base directory which contains the FreeRADIUS
+# configuration files. You most likely don't have to change this.
+freeradius__conf_base_path: '/etc/freeradius/3.0'
+                                                                   # ]]]
+                                                                   # ]]]
+# Internal firewall and ports [[[
+# -------------------------------
+
+# These variables define the firewall configuration for internal FreeRADIUS
+# communication, not intended for client endpoints.
+
+# .. envvar:: freeradius__default_ports [[[
+#
+# List of TCP/UDP ports which are managed by default in the firewall, for
+# internal communication. You can use port numbers or names from the
+# :file:`/etc/services` database.
+freeradius__default_ports: [ 'radius', 'radius-acct' ]
+
+                                                                   # ]]]
+# .. envvar:: freeradius__ports [[[
+#
+# List of TCP/UDP ports for internal communication which will be managed on all
+# hosts in the Ansible inventory.
+freeradius__ports: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__group_ports [[[
+#
+# List of TCP/UDP ports for internal communication which will be managed on
+# hosts in a specific Ansible inventory group.
+freeradius__group_ports: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__host_ports [[[
+#
+# List of TCP/UDP ports for internal communication which will be managed on
+# specific hosts in the Ansible inventory.
+freeradius__host_ports: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__accept_any [[[
+#
+# By default, internal firewall does not allow any connections from anywhere
+# and you need to specify IP addresses or CIDR subnets to allow for
+# communication to the FreeRADIUS service. If this variable is set to ``True``,
+# the configuration will be "flipped" - the role will allow internal
+# communication with FreeRADIUS from anywhere by default, and specifying IP
+# addresses or subnets will restrict it to only these hosts/networks.
+freeradius__accept_any: False
+
+                                                                   # ]]]
+# .. envvar:: freeradius__allow [[[
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# internal FreeRADIUS service, defined on all hosts in the Ansible inventory.
+freeradius__allow: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# internal FreeRADIUS service, defined on hosts in a specific Ansible inventory
+# group.
+freeradius__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# internal FreeRADIUS service, defined on specific hosts in the Ansible
+# inventory.
+freeradius__host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Public firewall and ports [[[
+# -----------------------------
+
+# These variables define the firewall configuration for public FreeRADIUS
+# services, like DHCP, intended for client endpoints.
+
+# .. envvar:: freeradius__public_ports [[[
+#
+# List of TCP/UDP ports for public communication which will be managed on all
+# hosts in the Ansible inventory.
+freeradius__public_ports: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__public_group_ports [[[
+#
+# List of TCP/UDP ports for public communication which will be managed on hosts
+# in a specific Ansible inventory group.
+freeradius__public_group_ports: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__public_host_ports [[[
+#
+# List of TCP/UDP ports for public communication which will be managed on
+# specific hosts in the Ansible inventory.
+freeradius__public_host_ports: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__public_accept_any [[[
+#
+# By default, if public TCP/UDP ports are specified, the firewall will accept
+# connections from any IP addresses or CIDR subnets to these ports, and
+# specifying hosts/networks in ``freeradius__public_*_allow`` variables will
+# restrict the connections to only these IP addresses/subnets. If this variable
+# is set to ``False``, the configuration will be "flipped" - the role will not
+# allow connections from anywhere to specified TCP/UDP ports, and you will need
+# to specify IP addresses/subnets that are allowed to connect.
+freeradius__public_accept_any: True
+
+                                                                   # ]]]
+# .. envvar:: freeradius__public_allow [[[
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# public FreeRADIUS service, defined on all hosts in the Ansible inventory.
+freeradius__public_allow: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__public_group_allow [[[
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# public FreeRADIUS service, defined on hosts in a specific Ansible inventory
+# group.
+freeradius__public_group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__public_host_allow [[[
+#
+# List of IP addresses or CIDR subnets which should be allowed to connect to
+# public FreeRADIUS service, defined on specific hosts in the Ansible
+# inventory.
+freeradius__public_host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# FreeRADIUS configuration files [[[
+# ----------------------------------
+
+# These variables define the contents of the FreeRADIUS configuration files
+# located in :file:`/etc/freeradius/` directory.
+# See :ref:`freeradius__ref_configuration` for more details.
+
+# .. envvar:: freeradius__default_configuration [[[
+#
+# The default FreeRADIUS configuration defined by the role.
+freeradius__default_configuration:
+
+  # Enable FreeRADIUS control socket for the 'radmin' command to work correctly
+  - name: 'sites-enabled/control-socket'
+    link_src: '../sites-available/control-socket'
+
+                                                                   # ]]]
+# .. envvar:: freeradius__configuration [[[
+#
+# Definition of FreeRADIUS configuration which should be managed on all hosts
+# in the Ansible inventory.
+freeradius__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__group_configuration [[[
+#
+# Definition of FreeRADIUS configuration which should be managed on hosts
+# in a specific Ansible inventory group.
+freeradius__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__host_configuration [[[
+#
+# Definition of FreeRADIUS configuration which should be managed on specific
+# hosts in the Ansible inventory.
+freeradius__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: freeradius__combined_configuration [[[
+#
+# The variable that combines all of the FreeRADIUS configuration lists and is
+# used in the role tasks and templates.
+freeradius__combined_configuration: '{{ freeradius__default_configuration
+                                        + freeradius__configuration
+                                        + freeradius__group_configuration
+                                        + freeradius__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: freeradius__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+freeradius__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: '{{ freeradius__default_ports
+               + freeradius__ports
+               + freeradius__group_ports
+               + freeradius__host_ports }}'
+    saddr: '{{ freeradius__allow
+               + freeradius__group_allow
+               + freeradius__host_allow }}'
+    protocols: [ 'tcp', 'udp' ]
+    accept_any: '{{ freeradius__accept_any }}'
+    weight: '50'
+    by_role: 'debops.freeradius'
+    name: 'radius_internal'
+    multiport: True
+
+  - type: 'accept'
+    dport: '{{ freeradius__public_ports
+               + freeradius__public_group_ports
+               + freeradius__public_host_ports }}'
+    saddr: '{{ freeradius__public_allow
+               + freeradius__public_group_allow
+               + freeradius__public_host_allow }}'
+    protocols: [ 'tcp', 'udp' ]
+    accept_any: '{{ freeradius__public_accept_any }}'
+    weight: '50'
+    by_role: 'debops.freeradius'
+    name: 'radius_public'
+    multiport: True
+    rule_state: '{{ "present"
+                    if (freeradius__public_ports
+                        + freeradius__public_group_ports
+                        + freeradius__public_host_ports)
+                    else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: freeradius__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+freeradius__logrotate__dependent_config:
+
+  - filename: 'freeradius'
+    divert: True
+    log: '/var/log/freeradius/radius.log'
+    comment: 'The main server log'
+    options: |
+      daily
+      rotate 52
+      missingok
+      compress
+      delaycompress
+      notifempty
+      copytruncate
+    state: 'present'
+
+  - filename: 'freeradius-monitor'
+    logs:
+      - '/var/log/freeradius/checkrad.log'
+      - '/var/log/freeradius/radwatch.log'
+    comment: 'Session monitoring utilities'
+    options: |
+      daily
+      rotate 52
+      missingok
+      compress
+      delaycompress
+      notifempty
+      nocreate
+    state: 'present'
+
+  - filename: 'freeradius-session'
+    logs:
+      - '/var/log/freeradius/radutmp'
+      - '/var/log/freeradius/radwtmp'
+    comment: 'Session database modules'
+    options: |
+      daily
+      rotate 52
+      missingok
+      compress
+      delaycompress
+      notifempty
+      nocreate
+    state: 'present'
+
+  - filename: 'freeradius-sql'
+    log: '/var/log/freeradius/sqllog.sql'
+    comment: 'SQL log files'
+    options: |
+      daily
+      rotate 52
+      missingok
+      compress
+      delaycompress
+      notifempty
+      nocreate
+    state: 'present'
+
+  - filename: 'freeradius-detail'
+    log: '/var/log/freeradius/radacct/*/detail'
+    comment: |
+      There are different detail-rotating strategies you can use.  One is
+      to write to a single detail file per IP and use the rotate config
+      below.  Another is to write to a daily detail file per IP with:
+          detailfile = ${radacctdir}/%{Client-IP-Address}/%Y%m%d-detail
+      (or similar) in radiusd.conf, without rotation.  If you go with the
+      second technique, you will need another cron job that removes old
+      detail files.  You do not need to comment out the below for method #2.
+    options: |
+      weekly
+      rotate 260
+      missingok
+      compress
+      delaycompress
+      notifempty
+      nocreate
+    state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
