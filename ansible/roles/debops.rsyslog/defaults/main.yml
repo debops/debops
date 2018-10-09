@@ -81,6 +81,14 @@ rsyslog__user: '{{ "syslog" if rsyslog__unprivileged|bool else "root" }}'
 rsyslog__group: '{{ "syslog" if rsyslog__unprivileged|bool else "root" }}'
 
                                                                    # ]]]
+# .. envvar:: rsyslog__append_groups [[[
+#
+# List of additional UNIX groups to add the rsyslog user into. The
+# ``ssl-cert`` UNIX group is used for the X.509 private key access.
+rsyslog__append_groups: '{{ ["ssl-cert"] if (rsyslog__unprivileged|bool
+				and rsyslog__pki|bool) else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: rsyslog__home [[[
 #
 # The home directory of the :envvar:`rsyslog__user` user, dependent on the OS
