@@ -23,7 +23,8 @@ snmpd_packages: []
 #
 # The user account used by the :command:`snmpd` daemon.
 snmpd_user: '{{ "snmp"
-                if (ansible_distribution == "Ubuntu" or
+                if ((ansible_distribution == "Ubuntu" and
+                    ansible_distribution_release not in ["bionic"]) or
                     ansible_distribution_release in [ "wheezy", "jessie" ])
                 else "Debian-snmp" }}'
 
@@ -32,7 +33,8 @@ snmpd_user: '{{ "snmp"
 #
 # The group used by the :command:`snmpd` daemon.
 snmpd_group: '{{ "snmp"
-                 if (ansible_distribution == "Ubuntu" or
+                 if ((ansible_distribution == "Ubuntu" and
+                     ansible_distribution_release not in ["bionic"]) or
                      ansible_distribution_release in [ "wheezy", "jessie" ])
                  else "Debian-snmp" }}'
 
