@@ -153,6 +153,15 @@ Removed
   :ref:`debops.dhcpd` Ansible role. It's now available as a separate
   :ref:`debops.dhcp_probe` role.
 
+- [debops.ferm] Automated configuration of packet forwarding with ``FORWARD``
+  chain rules and :command:`sysctl` configuration has been removed from the
+  role. Per-interface packet forwarding is now configurable using the
+  :ref:`debops.ifupdown` role, and you can still use the :ref:`debops.ferm` and
+  :ref:`debops.sysctl` roles to design custom forwarding configuration.
+
+  Support for this mechanism has also been removed from related roles like
+  :ref:`debops.libvirtd` and :ref:`debops.lxc`.
+
 
 `debops v0.8.0`_ - 2018-08-06
 -----------------------------
