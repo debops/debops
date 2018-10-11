@@ -47,6 +47,12 @@ Added
   "<role_name>/env" sub-roles will still run so that roles that depend on them
   will work as expected.
 
+- [debops.ifupdown] The role will now generate configuration for the
+  :ref:`debops.sysctl` role and use it in the playbook as a dependency, to
+  configure kernel parameters related to packet forwarding on managed network
+  interfaces. This functionality replaces centralized configuration of packet
+  forwarding on all network interfaces done by the :ref:`debops.ferm` role.
+
 Changed
 ~~~~~~~
 

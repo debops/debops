@@ -367,8 +367,26 @@ Firewall parameters
 
 ``forward``
   Optional, boolean. If absent and an interface is a bridge, or present and
-  ``True``, the role will generate configuration for the :ref:`debops.ferm` to
-  enable packet forwarding for a given interface.
+  ``True``, the role will generate configuration for the :ref:`debops.ferm` and
+  the :ref:`debops.sysctl` roles to enable packet forwarding for a given
+  interface.
+
+``forward_ipv6``
+  Optional, boolean. Only makes sense with the ``forward`` parameter present.
+  By default the role will enable forwarding on IPv6 networks, you can use this
+  parameter to disable it by setting it to ``False``.
+
+``forward_ipv4``
+  Optional, boolean. Only makes sense with the ``forward`` parameter present.
+  By default the role will enable forwarding on IPv4 networks, you can use this
+  parameter to disable it by setting it to ``False``.
+
+``accept_ra``
+  Optional, by default not defined. If ``0``, the SLAAC Router Advertisements
+  on IPv6 networks will be ignored by this interface. If ``1``, this interface
+  will accept the SLAAC Router Advertisements when forwarding is disabled,
+  ignore when forwarding is enabled. If ``2``, SLAAC Router Advertisements
+  received on this interface will be accepted even when forwarding is enabled.
 
 ``forward_interface_ferm_rule_enabled``
   Optional, boolean. Should a Firewall rule be configured which matches new

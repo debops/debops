@@ -48,6 +48,15 @@ Changes to Redis support in GitLab
   playbook run on existing installations will not upgrade the packages
   automatically, but you might expect it on normal system upgrade.
 
+Changes related to packet forwarding in firewall and sysctl
+-----------------------------------------------------------
+
+- The :ref:`debops.ifupdown` role now uses :ref:`debops.sysctl` role directly
+  as a dependency to generate forwarding configuration for each managed network
+  interface that has it enabled. This might impact packet forwarding on
+  existing systems; run the role with Ansible ``--diff --check`` options first
+  to review the planned changes to the host.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
