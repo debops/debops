@@ -22,6 +22,8 @@
   user:
     name: '{{ rsyslog__user }}'
     group: '{{ rsyslog__group }}'
+    groups: '{{ rsyslog__append_groups | join(",") | default(omit) }}'
+    append: True
     home: '{{ rsyslog__home }}'
     shell: '/bin/false'
     state: 'present'
