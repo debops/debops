@@ -14,15 +14,20 @@ from sys import exit
 {%     for element in ansible_local.tags %}
 {%       set _ = core__tpl_tags.append(element) %}
 {%     endfor %}
-{%   elif ansible_local|d() and ansible_local.root|d() and ansible_local.root.flags|d() %}
+{%   elif ansible_local|d() and ansible_local.root|d() and
+          ansible_local.root.flags|d() %}
 {%     for element in ansible_local.root.flags %}
 {%       set _ = core__tpl_tags.append(element) %}
 {%     endfor %}
 {%   endif %}
 {% endif %}
-{% set core__tpl_tags_list = (core__tpl_tags + core__tags|d([]) + core__group_tags|d([]) + core__host_tags|d([])) | difference(core__remove_tags|d([])) %}
+{% set core__tpl_tags_list = (core__tpl_tags + core__tags|d([])
+                              + core__group_tags|d([])
+                              + core__host_tags|d([]))
+                             | difference(core__remove_tags|d([])) %}
 {% if core__static_tags|d() %}
-{%   set core__tpl_tags_list = core__static_tags|d([]) | difference(core__remove_tags|d([])) %}
+{%   set core__tpl_tags_list = core__static_tags|d([])
+                               | difference(core__remove_tags|d([])) %}
 {% endif %}
 """
 
