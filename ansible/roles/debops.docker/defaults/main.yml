@@ -212,10 +212,12 @@ docker__fixed_cidr: ''
 # List of IP addresses of nameservers used by Docker. By default they
 # are gathered by the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of
 # the remote host.
-docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
+docker__dns_nameserver: '{{ ansible_local.resolver.upstream_nameservers
                             if (ansible_local|d() and ansible_local.resolver|d() and
-                                ansible_local.resolver.nameserver|d())
-                            else ansible_dns.nameservers }}'
+                                ansible_local.resolver.upstream_nameservers|d())
+                            else (ansible_dns.nameservers
+                                  if ("127.0.0.1" not in ansible_dns.nameservers)
+                                  else []) }}'
 
                                                                    # ]]]
 # .. envvar:: docker__dns_search [[[
@@ -224,8 +226,12 @@ docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
 # the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of the remote host.
 docker__dns_search: '{{ ansible_local.resolver.search
                         if (ansible_local|d() and ansible_local.resolver|d() and
-                            ansible_local.resolver.search|d())
-                        else ansible_dns.search|d() }}'
+                            ansible_local.resolver.search|d() and
+                            (ansible_local.resolver.upstream_nameservers|d() or
+                             "127.0.0.1" not in ansible_dns.nameservers))
+                        else (ansible_dns.search|d()
+                              if ("127.0.0.1" not in ansible_dns.nameservers)
+                              else []) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Remote Docker connection (TCP) [[[
