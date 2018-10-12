@@ -99,6 +99,17 @@ Changed
   hashes in existing installations, but shouldn't affect host access (passwords
   stay the same).
 
+- [debops.docker] If the Docker host uses a local nameserver, for example
+  :command:`dnsmasq` or :command:`unbound`, Docker containers might have
+  misconfigured DNS nameserver in :file:`/etc/resolv.conf` pointing to
+  ``127.0.0.1``. In these cases, the :ref:`debops.docker` role will configure
+  Docker to use the upstream nameservers from the host, managed by the
+  ``resolvconf`` APT package.
+
+  If no upstream nameservers are available, the role will not configure any
+  nameserver and search parameters, which will tell Docker to use the Google
+  nameservers.
+
 Fixed
 ~~~~~
 
