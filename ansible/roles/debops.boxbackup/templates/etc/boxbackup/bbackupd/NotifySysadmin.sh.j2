@@ -19,7 +19,7 @@ if [ "$1" = "" ]; then
 	echo "Usage: $0 <store-full|read-error|backup-error|backup-start|backup-finish>" >&2
 	exit 2
 elif [ "$1" = store-full ]; then
-	/usr/sbin/sendmail $SENDTO <<EOM
+	/usr/sbin/sendmail "$SENDTO" <<EOM
 Subject: $SUBJECT (store full)
 To: $SENDTO
 
@@ -33,7 +33,7 @@ Please adjust the limits on account {{ boxbackup_account }} on server {{ boxback
 
 EOM
 elif [ "$1" = read-error ]; then
-/usr/sbin/sendmail $SENDTO <<EOM
+/usr/sbin/sendmail "$SENDTO" <<EOM
 Subject: $SUBJECT (read errors)
 To: $SENDTO
 
@@ -49,11 +49,11 @@ these errors, and take appropriate action.
 Other files are being backed up.
 
 EOM
-elif [ "$1" = backup-start -o "$1" = backup-finish -o "$1" = backup-ok ]; then
+elif [ "$1" = backup-start ] || [ "$1" = backup-finish ] || [ "$1" = backup-ok ]; then
 	# do nothing by default
 	true
 else
-/usr/sbin/sendmail $SENDTO <<EOM
+/usr/sbin/sendmail "$SENDTO" <<EOM
 Subject: $SUBJECT (unknown)
 To: $SENDTO
 
