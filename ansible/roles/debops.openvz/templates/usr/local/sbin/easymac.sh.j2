@@ -65,7 +65,7 @@
 
 EMVersion=1.r3
 ReleaseYear=2009
-ReleaseDate=2009-04-08
+#ReleaseDate=2009-04-08
 
 
 #
@@ -75,27 +75,31 @@ ReleaseDate=2009-04-08
 # Random VMware MAC Address
 vmrandom() {
 	vmrandmac=$(dd if=/dev/urandom bs=1 count=3 2>/dev/null | od -tx1 | head -1 | cut -d' ' -f2- | awk '{ print "00:0c:29:"$1":"$2":"$3 }')
-	echo $vmrandmac
+	echo "$vmrandmac"
 }
 
 # Static VMware MAC Address
 vmstatic() {
-	max3f=$(printf "%02X" $(expr $(dd if=/dev/urandom bs=1 count=1 2>/dev/null | od -tu1 | head -1 | cut -d' ' -f2-) / 4) | tr A-Z a-z)
-	vmstatmac=$(echo -n "00:50:56:$max3f:" $(dd if=/dev/urandom bs=1 count=2 2>/dev/null | od -tx1 | head -1 | cut -d' ' -f2- | awk '{ print $1":"$2 }') | sed 's/\ //')
-	echo $vmstatmac
+	# shellcheck disable=SC2003
+	max3f=$(printf "%02X" "$(expr "$(dd if=/dev/urandom bs=1 count=1 2>/dev/null | od -tu1 | head -1 | cut -d' ' -f2-)" / 4)" | tr '[:upper:]' '[:lower:]')
+	# shellcheck disable=SC2046
+	vmstatmac=$(echo "00:50:56:$max3f:" $(dd if=/dev/urandom bs=1 count=2 2>/dev/null | od -tx1 | head -1 | cut -d' ' -f2- | awk '{ print $1":"$2 }') | sed 's/\ //')
+	echo "$vmstatmac"
 }
 
 # Global MAC Address (any valid MAC address, from the full range)
 global() {
         globalmac=$(dd if=/dev/urandom bs=1 count=6 2>/dev/null | od -tx1 | head -1 | cut -d' ' -f2- | awk '{ print $1":"$2":"$3":"$4":"$5":"$6 }')
-        echo $globalmac
+        echo "$globalmac"
 }
 
 # XenSource MAC Address
 xensource() {
-	max3f=$(printf "%02X" $(expr $(dd if=/dev/urandom bs=1 count=1 2>/dev/null | od -tu1 | head -1 | cut -d' ' -f2-) / 4) | tr A-Z a-z)
-	xensource=$(echo -n "00:50:56:$max3f:" $(dd if=/dev/urandom bs=1 count=2 2>/dev/null | od -tx1 | head -1 | cut -d' ' -f2- | awk '{ print $1":"$2 }') | sed 's/\ //')
-	echo $xensource
+	# shellcheck disable=SC2003
+	max3f=$(printf "%02X" "$(expr "$(dd if=/dev/urandom bs=1 count=1 2>/dev/null | od -tu1 | head -1 | cut -d' ' -f2-)" / 4)" | tr '[:upper:]' '[:lower:]')
+	# shellcheck disable=SC2046
+	xensource=$(echo "00:50:56:$max3f:" $(dd if=/dev/urandom bs=1 count=2 2>/dev/null | od -tx1 | head -1 | cut -d' ' -f2- | awk '{ print $1":"$2 }') | sed 's/\ //')
+	echo "$xensource"
 }
 
 
@@ -107,58 +111,58 @@ case "$1" in
 
 	r|-r|random|-random)
 		if [ "$2" != "-m" ]; then
-			echo -n "Random VMware MAC Address: "
+			echo "Random VMware MAC Address: "
 		fi
 		vmrandom
 		;;
 
 	R|-R|RANDOM|-RANDOM|Random|-Random)
 		if [ "$2" != "-m" ]; then
-			echo -n "Random VMware MAC Address: "
+			echo "Random VMware MAC Address: "
 		fi
-		vmrandom | tr a-z A-Z
+		vmrandom | tr '[:lower:]' '[:upper:]'
 		;;
 
 	s|-s|static|-static)
 		if [ "$2" != "-m" ]; then
-			echo -n "Static VMware MAC Address: "
+			echo "Static VMware MAC Address: "
 		fi
 		vmstatic
 		;;
 
 	S|-S|STATIC|-STATIC|Static|-Static)
 		if [ "$2" != "-m" ]; then
-			echo -n "Static VMware MAC Address: "
+			echo "Static VMware MAC Address: "
 		fi
-		vmstatic | tr a-z A-Z
+		vmstatic | tr '[:lower:]' '[:upper:]'
 		;;
 
 	g|-g|global|-global)
 		if [ "$2" != "-m" ]; then
-			echo -n "Global MAC Address: "
+			echo "Global MAC Address: "
 		fi
 		global
 		;;
 
 	G|-G|GLOBAL|-GLOBAL|Global|-Global)
 		if [ "$2" != "-m" ]; then
-			echo -n "Global MAC Address: "
+			echo "Global MAC Address: "
 		fi
-		global | tr a-z A-Z
+		global | tr '[:lower:]' '[:upper:]'
 		;;
 
 	x|-x|xen|-xen)
 		if [ "$2" != "-m" ]; then
-			echo -n "XenSource MAC Address: "
+			echo "XenSource MAC Address: "
 		fi
 		xensource
 		;;
 
 	X|-X|XEN|-XEN|Xen|-Xen)
 		if [ "$2" != "-m" ]; then
-			echo -n "XenSource MAC Address: "
+			echo "XenSource MAC Address: "
 		fi
-		xensource | tr a-z A-Z
+		xensource | tr '[:lower:]' '[:upper:]'
 		;;
 
 	*)
