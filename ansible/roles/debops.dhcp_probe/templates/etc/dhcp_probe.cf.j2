@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+
+{% if dhcp_probe__alert_program|d() %}
+# Send mail messages about unauthorized DHCP servers
+alert_program_name2 {{ dhcp_probe__alert_program }}
+{% endif %}
+{% if dhcp_probe__legal_servers|d() %}
+
+# List of IP addresses of legal DHCP servers
+{%   for address in ([ dhcp_probe__legal_servers ] if dhcp_probe__legal_servers is string else dhcp_probe__legal_servers) %}
+legal_server {{ address }}
+{%   endfor %}
+{% endif %}
+{% if dhcp_probe__legal_servers_ethersrc|d() %}
+
+# List of MAC addresses of legal DHCP servers
+{%   for address in ([ dhcp_probe__legal_servers_ethersrc ] if dhcp_probe__legal_servers_ethersrc is string else dhcp_probe__legal_servers_ethersrc) %}
+legal_server_ethersrc {{ address }}
+{%   endfor %}
+{% endif %}
+{% if dhcp_probe__options|d() %}
+
+# Custom options
+{{ dhcp_probe__options }}
+{% endif %}

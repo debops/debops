@@ -186,6 +186,7 @@ Mail services
 Monitoring
 ----------
 
+- :ref:`debops.dhcp_probe`
 - :ref:`debops.icinga`
 - :ref:`debops.icinga_db`
 - :ref:`debops.icinga_web`
@@ -200,6 +201,7 @@ Networking
 ----------
 
 - :ref:`debops.avahi`
+- :ref:`debops.dhcp_probe`
 - :ref:`debops.dhcpd`
 - :ref:`debops.dnsmasq`
 - :ref:`debops.freeradius`

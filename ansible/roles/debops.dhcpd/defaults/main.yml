@@ -21,8 +21,6 @@
 #
 # - ``relay``: host is an ISC DHCP relay, see dhcrelay(8)
 #
-# - ``probe``: configure only ``dhcp-probe`` when enabled
-#
 dhcpd_mode: 'server'
 
                                                                    # ]]]
@@ -259,52 +257,5 @@ dhcpd_includes: []
 # DHCP failover configuration. See :ref:`dhcpd_failovers` for more details.
 dhcpd_failovers: []
                                                                    # ]]]
-                                                                   # ]]]
-# dhcp-probe configuration [[[
-# ----------------------------
-
-# .. envvar:: dhcpd_probe [[[
-#
-# Enable or disable ``dhcp-probe`` script
-dhcpd_probe: False
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_probe_mail_to [[[
-#
-# List of mail recipients which will receive messages about unauthorized DHCP
-# servers. Set to ``[]`` to disable.
-dhcpd_probe_mail_to: [ 'root@{{ ansible_domain }}' ]
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_probe_page_to [[[
-#
-# Alternative list of mail recipients which will receive mail messages. Meant
-# to be used as a "pager service", you can use ``debops.smstools`` role to
-# setup a mail-SMS gateway and send the SMS messages that way.
-dhcpd_probe_page_to: []
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_probe_mail_timeout [[[
-#
-# Number of seconds between to wait between sending new mail messages
-dhcpd_probe_mail_timeout: '{{ (20 * 60) }}'
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_probe_page_timeout [[[
-#
-# Number of seconds between to wait between sending new pager messages
-dhcpd_probe_page_timeout: '{{ (20 * 60) }}'
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_probe_legal_servers [[[
-#
-# List of IP addresses of the host which are authorized DHCP servers.
-dhcpd_probe_legal_servers: []
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_probe_options [[[
-#
-# Additional ``dhcp-probe`` options specified as a YAML text block.
-dhcpd_probe_options: ''
                                                                    # ]]]
                                                                    # ]]]

@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Daemon to survey DHCP/BOOTP servers on LAN
+After=network-online.target
+Documentation=man:dhcp_probe(8)
+ConditionPathExists=/etc/dhcp_probe.cf
+PartOf=dhcp-probe.service
+ReloadPropagatedFrom=dhcp-probe.service
+Before=dhcp-probe.service
+
+[Service]
+Type=forking
+Slice=system-dhcp-probe.slice
+ExecStart=/usr/sbin/dhcp_probe -T -p /var/run/dhcp-probe/dhcp_probe.%i.pid %i
+
+PIDFile=/var/run/dhcp-probe/dhcp_probe.%i.pid
+
+# dhcp_probe ignores SIGTERM
+KillMode=control-group
+KillSignal=SIGKILL
+SuccessExitStatus=SIGKILL
+
+RuntimeDirectory=dhcp-probe
+RuntimeDirectoryMode=0755
+
+PrivateTmp=yes
+LimitNOFILE=65535
+PrivateDevices=yes
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=dhcp-probe.service
