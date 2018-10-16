@@ -30,6 +30,9 @@ Added
   - :ref:`debops.freeradius`, an Ansible role that can be used to manage
     FreeRADIUS service, used in network management.
 
+  - :ref:`debops.dhcp_probe`, can be used to install and configure
+    :command:`dhcp_probe` service, which passively detects rogue DHCP servers.
+
 - [debops.users] The role can now configure ACL entries of the user home
   directories using the ``item.home_acl`` parameter. This can be used for more
   elaborate access restrictions.
@@ -139,6 +142,10 @@ Removed
 - The ``ldap_entry`` and ``ldap_attr`` Ansible modules have been removed. They
   are now included in Ansible core, there's no need to keep a separate copy in
   the playbook.
+
+- Support for :command:`dhcp_probe` has been removed from the
+  :ref:`debops.dhcpd` Ansible role. It's now available as a separate
+  :ref:`debops.dhcp_probe` role.
 
 
 `debops v0.8.0`_ - 2018-08-06

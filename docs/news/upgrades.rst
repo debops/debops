@@ -61,6 +61,13 @@ Inventory variable changes
   ``grub__*`` variabe naming scheme. Check the role documentation for details
   about configuring GRUB via Ansible inventory.
 
+- Variables related to :command:`dhcp_probe` in the :ref:`debops.dhcpd` role
+  have been replaced with the variables from the :ref:`debops.dhcp_probe` role.
+  They are now namespaced and mostly with the same value types.
+
+  The new :ref:`debops.dhcp_probe` role utilizes :command:`systemd` templated
+  instances, and might not work correctly on older Debian/Ubuntu releases.
+
 
 v0.8.0 (2018-08-06)
 -------------------
