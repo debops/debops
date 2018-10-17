@@ -2,7 +2,10 @@
 
 # {{ ansible_managed }}
 
-if [ -r /etc/postgresql/{{ item.version | d(postgresql_server__version) }}/{{ item.name }}/postgresql.conf -a -x /usr/sbin/autopostgresqlbackup-{{ item.version | d(postgresql_server__version) }}-{{ item.name }} ]; then
-        /usr/sbin/autopostgresqlbackup-{{ item.version | d(postgresql_server__version) }}-{{ item.name }}
-fi
+VERSION="{{ item.version | d(postgresql_server__version) }}"
+NAME="{{ item.name }}"
 
+if [ -r "/etc/postgresql/${VERSION}/${NAME}/postgresql.conf" ] \
+   && [ -x "/usr/sbin/autopostgresqlbackup-${VERSION}-${NAME}" ]; then
+        "/usr/sbin/autopostgresqlbackup-${VERSION}-${NAME}"
+fi
