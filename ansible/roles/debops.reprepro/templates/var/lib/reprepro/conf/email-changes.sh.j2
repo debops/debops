@@ -1,10 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 # This file is managed remotely, all changes will be lost
 
 # Send information about repository changes to administrator
 # Sourced from: https://gist.github.com/vincentbernat/7404733
 
+
+MAIL_FROM="{{ reprepro_user + '@' + reprepro_fqdn }}"
+read -r -a MAIL_TO <<< "{{ reprepro_admin_email | join(' ') }}"
 
 [ -n "${REPREPRO_OUT_DIR}" ] || {
 	echo "needs to be run by reprepro!" >&2
@@ -15,7 +18,7 @@ cd "${REPREPRO_OUT_DIR}" || exit 1
 dsc() {
 	dsc="$(readlink --canonicalize "$1")"
 	tmp="$(mktemp -d)"
-        trap "rm -rf -- $tmp" EXIT
+        trap 'rm -rf -- $tmp' EXIT
 	(cd -- "$tmp" && dpkg-source --no-copy -x "$dsc" > /dev/null)
 	cat <<EOF > "$tmp/mail"
 
@@ -23,6 +26,7 @@ dsc() {
 
 EOF
 	changelog="$(echo "$tmp"/*/debian/changelog)"
+	# shellcheck disable=SC2129
 	dpkg-parsechangelog -l"$changelog" \
 		${OLDVERSION:+--since "$OLDVERSION"} \
 		${VERSION:+--to "$VERSION"} \
@@ -34,9 +38,9 @@ EOF
 EOF
 	cat "$dsc" >> "$tmp/mail"
 
-	mail -r {{ reprepro_user + "@" + reprepro_fqdn }} \
+	mail -r "${MAIL_FROM}" \
 	     -s "[PACKAGES] $CODENAME/$COMPONENT: $ACTION $NAME" \
-	     {{ reprepro_admin_email | join(" ") }} < "$tmp/mail"
+	     "${MAIL_TO[@]}" < "$tmp/mail"
 }
 
 ACTION="$1"
@@ -94,7 +98,7 @@ case "$ACTION" in
 		OLDVERSION="$1" ; shift
 		[ x"$1" = x"--" ] || exit 2
 		shift
-		while [ "$#" -gt 0 -a x"$1" != x"--" ]; do
+		while [ "$#" -gt 0 ] && [ x"$1" != x"--" ]; do
 			case "$1" in
 				*.dsc)
 					dsc "$1"
