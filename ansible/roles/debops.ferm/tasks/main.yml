@@ -158,21 +158,6 @@
   when: (not ferm__enabled | bool and ferm__flush | bool)
   tags: [ 'role::ferm:rules' ]
 
-- name: Configure sysctl
-  template:
-    src: 'etc/sysctl.d/30-ferm.conf.j2'
-    dest: '/etc/sysctl.d/30-ferm.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  register: ferm__register_sysctl
-  tags: [ 'role::ferm:rules' ]
-
-- name: Reload sysctl configuration if modified
-  command: sysctl -p /etc/sysctl.d/30-ferm.conf
-  when: ferm__register_sysctl is changed
-  tags: [ 'role::ferm:rules' ]
-
 - name: Remove deprecated ifupdown hook
   file:
     path: '/etc/network/if-pre-up.d/ferm-forward'

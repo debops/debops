@@ -1,9 +1,3 @@
-{% set ferm__tpl_forward = False                                                      %}
-{% if (ferm__forward | bool or
-       (ansible_local|d() and ansible_local.ferm|d() and
-        (ansible_local.ferm.forward|d() | bool)))                                     %}
-{%   set ferm__tpl_forward = True                                                     %}
-{% endif                                                                              %}
 {% set ferm__tpl_ansible_controllers = []                                             %}
 {% if ansible_local|d() and ansible_local.ferm|d() and
       ansible_local.ferm.ansible_controllers|d() %}
@@ -26,6 +20,5 @@
 {% set ferm__tpl_ansible_controllers_result = ferm__tpl_ansible_controllers | unique | sort %}
 {
 "enabled": "{{ ferm__enabled     | bool | lower }}",
-"forward": "{{ ferm__tpl_forward | bool | lower }}",
 "ansible_controllers": {{ ferm__tpl_ansible_controllers_result | to_nice_json }}
 }
