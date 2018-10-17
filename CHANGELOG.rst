@@ -47,6 +47,12 @@ Added
   "<role_name>/env" sub-roles will still run so that roles that depend on them
   will work as expected.
 
+- [debops.ifupdown] The role will now generate configuration for the
+  :ref:`debops.sysctl` role and use it in the playbook as a dependency, to
+  configure kernel parameters related to packet forwarding on managed network
+  interfaces. This functionality replaces centralized configuration of packet
+  forwarding on all network interfaces done by the :ref:`debops.ferm` role.
+
 Changed
 ~~~~~~~
 
@@ -150,6 +156,15 @@ Removed
 - Support for :command:`dhcp_probe` has been removed from the
   :ref:`debops.dhcpd` Ansible role. It's now available as a separate
   :ref:`debops.dhcp_probe` role.
+
+- [debops.ferm] Automated configuration of packet forwarding with ``FORWARD``
+  chain rules and :command:`sysctl` configuration has been removed from the
+  role. Per-interface packet forwarding is now configurable using the
+  :ref:`debops.ifupdown` role, and you can still use the :ref:`debops.ferm` and
+  :ref:`debops.sysctl` roles to design custom forwarding configuration.
+
+  Support for this mechanism has also been removed from related roles like
+  :ref:`debops.libvirtd` and :ref:`debops.lxc`.
 
 
 `debops v0.8.0`_ - 2018-08-06

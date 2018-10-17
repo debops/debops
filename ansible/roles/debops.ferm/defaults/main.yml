@@ -546,39 +546,29 @@ ferm__default_rules:
       @hook flush "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true";
     weight_class: 'post-hook'
 
+    # Remove obsolete forwarding rules
   - name: 'forward_external_in'
-    chain: 'FORWARD'
-    type: 'accept'
+    rule_state: 'absent'
     weight: '1'
     weight_class: 'any-forward'
-    interface_present: '{{ ferm__external_interfaces | unique }}'
-    comment: 'Forward incoming traffic to other hosts'
-    rule_state: '{{ "present"
-                    if (ferm__forward_accept|bool and ferm__forward | bool)
-                    else "ignore" }}'
-
-  - name: 'forward_external_out'
-    chain: 'FORWARD'
     type: 'accept'
+    chain: 'FORWARD'
+
+    # Remove obsolete forwarding rules
+  - name: 'forward_external_out'
+    rule_state: 'absent'
     weight: '2'
     weight_class: 'any-forward'
-    outerface_present: '{{ ferm__external_interfaces | unique }}'
-    comment: 'Forward outgoing traffic to other hosts'
-    rule_state: '{{ "present"
-                    if (ferm__forward_accept|bool and ferm__forward | bool)
-                    else "ignore" }}'
-
-  - name: 'forward_internal'
-    chain: 'FORWARD'
     type: 'accept'
-    interface_present: '{{ ferm__internal_interfaces }}'
-    outerface_present: '{{ ferm__internal_interfaces }}'
+    chain: 'FORWARD'
+
+    # Remove obsolete forwarding rules
+  - name: 'forward_internal'
+    rule_state: 'absent'
     weight: '3'
     weight_class: 'any-forward'
-    comment: 'Forward internal traffic between hosts'
-    rule_state: '{{ "present"
-                    if (ferm__forward_accept|bool and ferm__forward | bool)
-                    else "ignore" }}'
+    type: 'accept'
+    chain: 'FORWARD'
 
   - name: 'fix_bootpc_checksum'
     type: 'custom'
@@ -615,43 +605,6 @@ ferm__host_custom_files: []
 # command after its own configuration is reloaded. If :program:`fail2ban` is not present
 # or turned off, nothing will happen.
 ferm__fail2ban: True
-
-                                                                   # ]]]
-# .. envvar:: ferm__forward [[[
-#
-# Enable forwarding in :command:`ip(6)tables`. This option can be used by other
-# roles and it's status is saved in Ansible local facts, which will override
-# variable status from role defaults or inventory.
-ferm__forward: '{{ ansible_local.ferm.forward
-                   if (ansible_local|d() and ansible_local.ferm|d() and
-                       ansible_local.ferm.forward|d())
-                   else "False" }}'
-
-                                                                   # ]]]
-# .. envvar:: ferm__forward_accept [[[
-#
-# Should traffic be forwarded between the other hosts/containers if
-# :envvar:`ferm__forward` is ``True``?
-ferm__forward_accept: '{{ ansible_local.ferm.forward
-                          if (ansible_local|d() and ansible_local.ferm|d() and
-                              ansible_local.ferm.forward|d())
-                          else "False" }}'
-
-                                                                   # ]]]
-# .. envvar:: ferm__external_interfaces [[[
-#
-# List of interfaces that are connected to external network, traffic on these
-# interfaces will be forwarded to all hosts.
-ferm__external_interfaces:
-  - '{{ ansible_default_ipv4.interface | default("") }}'
-  - '{{ ansible_default_ipv6.interface | default("") }}'
-
-                                                                   # ]]]
-# .. envvar:: ferm__internal_interfaces [[[
-#
-# List of interfaces that are connected to internal network, traffic on these
-# interfaces will be forwarded only between hosts on that network.
-ferm__internal_interfaces: [ 'br1' ]
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

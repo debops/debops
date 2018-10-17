@@ -190,6 +190,11 @@ debops_legacy__remove_default_files:
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
 
+  # Old IP forwarding configuration defined by 'debops.ferm' role
+  - name: '/etc/sysctl.d/30-ferm.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and ansible_local.ferm is defined)
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: debops_legacy__remove_files [[[
