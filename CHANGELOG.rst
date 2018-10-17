@@ -113,6 +113,10 @@ Changed
   nameserver and search parameters, which will tell Docker to use the Google
   nameservers.
 
+- The test suite will now check POSIX shell scripts along with Bash scripts for
+  any issues via the :command:`shellcheck` linter. Outstanding issues found in
+  existing scripts have been fixed.
+
 Fixed
 ~~~~~
 
