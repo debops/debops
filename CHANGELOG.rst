@@ -166,6 +166,10 @@ Removed
   Support for this mechanism has also been removed from related roles like
   :ref:`debops.libvirtd` and :ref:`debops.lxc`.
 
+- The ``ansible_local.root.flags`` and ``ansible_local.root.uuid`` local facts
+  have been removed. They are replaced by ``ansible_local.tags`` and
+  ``ansible_local.uuid`` local facts, respectively.
+
 
 `debops v0.8.0`_ - 2018-08-06
 -----------------------------
