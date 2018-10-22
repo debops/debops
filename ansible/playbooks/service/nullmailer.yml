@@ -10,8 +10,17 @@
 
   roles:
 
+    - role: debops.etc_aliases/env
+      tags: [ 'role::etc_aliases', 'role::secret', 'role::nullmailer' ]
+
     - role: debops.nullmailer/env
       tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::nullmailer' ]
+      secret__directories:
+        - '{{ etc_aliases__secret__directories }}'
+        - '{{ postfix__secret__directories }}'
 
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
@@ -22,6 +31,9 @@
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ nullmailer__tcpwrappers__dependent_allow }}'
+
+    - role: debops.etc_aliases
+      tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
 
     - role: debops.nullmailer
       tags: [ 'role::nullmailer', 'skip::nullmailer' ]
