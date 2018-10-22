@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
+# import module snippets
+from ansible.module_utils.basic import *
 import os
 
 
@@ -26,7 +28,8 @@ DOCUMENTATION = """
 module: btrfs_subvolume
 short_description: Provides `create` and `delete` subvolumes methods.
 description:
-     - The M(btrfs_subvolume) module takes the command name followed by a list of space-delimited arguments.
+     - The M(btrfs_subvolume) module takes the command name followed by
+       a list of space-delimited arguments.
      - The given command will be executed on all selected nodes.
 version_added: 0.1
 author: Ilya Barsukov
@@ -49,7 +52,8 @@ options:
     commit:
         required: false
         description:
-            - wait for transaction commit at the end of the operation or of the each
+            - wait for transaction commit at the end of the operation
+              or of the each
         choices: ["each", "after", "no"]
         default: "no"
     recursive:
@@ -98,10 +102,12 @@ def get_subvolumes(path, subs=None):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            state=dict(required=True, choices=['present', 'absent'], type='str'),
+            state=dict(required=True, choices=['present', 'absent'],
+                       type='str'),
             path=dict(required=True, default=None, type='str'),
             qgroups=dict(default=[], type='list'),
-            commit=dict(default='no', choices=['after', 'each', 'no'], type='str'),
+            commit=dict(default='no', choices=['after', 'each', 'no'],
+                        type='str'),
             recursive=dict(default='False', type='bool')
         ),
         supports_check_mode=True
@@ -135,7 +141,8 @@ def main():
                 subvolume = os.path.sep.join(parents[:idx+1])
 
                 if not os.path.exists(subvolume):
-                    cmd = 'btrfs subvolume create {qgroups} {subvolume}'.format(
+                    cmd = ('btrfs subvolume create '
+                           '{qgroups} {subvolume}').format(
                         qgroups=' -i '.join(['']+module.params['qgroups']),
                         subvolume=subvolume,
                     )
@@ -169,7 +176,8 @@ def main():
                 for sub in reversed(subvolumes):
 
                     if os.path.exists(sub):
-                        cmd = 'btrfs subvolume delete {commit} {subvolume}'.format(
+                        cmd = ('btrfs subvolume delete '
+                               '{commit} {subvolume}').format(
                             commit=commit, subvolume=sub
                         )
 
@@ -189,7 +197,6 @@ def main():
 
     module.exit_json(**result)
 
-# import module snippets
-from ansible.module_utils.basic import *
+
 if __name__ == '__main__':
     main()
