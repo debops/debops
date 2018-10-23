@@ -107,6 +107,16 @@ point you can use normal DebOps ``bootstrap`` playbook and other playbooks to
 configure it.
 
 
+Predictable MAC addresses
+-------------------------
+
+The :command:`lxc-hwaddr-static` script can be used to generate predictable,
+randomized MAC addresses for LXC containers, based on the container name. The
+script will automatically save the generated MAC addresses in the container
+configuration files. Multiple network interfaces defined by the
+``lxc.network.type`` configuration option are supported.
+
+
 Example inventory
 -----------------
 

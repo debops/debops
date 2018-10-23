@@ -53,6 +53,9 @@ Added
   interfaces. This functionality replaces centralized configuration of packet
   forwarding on all network interfaces done by the :ref:`debops.ferm` role.
 
+- [debops.lxc] New :command:`lxc-hwaddr-static` script can be used to easily
+  generate random but predictable MAC addresses for LXC containers.
+
 Changed
 ~~~~~~~
 
