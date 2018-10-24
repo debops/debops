@@ -116,6 +116,11 @@ script will automatically save the generated MAC addresses in the container
 configuration files. Multiple network interfaces defined by the
 ``lxc.network.type`` configuration option are supported.
 
+The script can also be used as a "pre-start" LXC hook, to configure static MAC
+addresses at container start. This requires the container to be restarted for
+the new static MAC addresses to be used in network interface setup. This usage
+is enabled by default in DebOps via the common LXC container configuration.
+
 
 Example inventory
 -----------------

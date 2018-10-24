@@ -54,9 +54,11 @@ Added
   forwarding on all network interfaces done by the :ref:`debops.ferm` role.
 
 - [debops.lxc] New :command:`lxc-hwaddr-static` script can be used to easily
-  generate random but predictable MAC addresses for LXC containers. The script
-  can be run manually or executed as a "pre-start" LXC hook to configure static
-  MAC addresses automatically.
+  generate random but predictable MAC addresses for LXC containers.
+
+  The script can be run manually or executed as a "pre-start" LXC hook to
+  configure static MAC addresses automatically - this usage is enabled by
+  default via common LXC container configuration.
 
 Changed
 ~~~~~~~

@@ -221,6 +221,65 @@ lxc__combined_configuration: '{{ lxc__default_configuration
                                  + lxc__host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
+# Common container configuration [[[
+# ----------------------------------
+
+# These variables define the contents of the
+# :file:`/usr/share/lxc/config/common.conf.d/` directory. Files in this
+# directory that end in ``.conf`` are included in the common configuration of
+# each LXC container.
+#
+# The syntax is the same as the system-wide configuration.
+# See :ref:`lxc__ref_configuration` for details.
+
+# .. envvar:: lxc__common_default_conf [[[
+#
+# Default configuration for all LXC containers defined by the role.
+lxc__common_default_conf:
+
+  - name: 'static-hwaddr'
+    comment: |
+      Generate static, predictable MAC addresses for container network
+      interfaces before the container is started. Containers will have to be
+      restarted for new MAC addresses to be used.
+    options:
+
+      - name: 'lxc.hook.pre-start_hwaddr'
+        alias: 'lxc.hook.pre-start'
+        value: '/usr/local/bin/lxc-hwaddr-static'
+
+                                                                   # ]]]
+# .. envvar:: lxc__common_conf [[[
+#
+# Common configuration for all LXC containers defined on all hosts in the
+# Ansible inventory.
+lxc__common_conf: []
+
+                                                                   # ]]]
+# .. envvar:: lxc__common_group_conf [[[
+#
+# Common configuration for all LXC containers defined on hosts in a specific
+# Ansible inventory group.
+lxc__common_group_conf: []
+
+                                                                   # ]]]
+# .. envvar:: lxc__common_host_conf [[[
+#
+# Common configuration for all LXC containers defined on specific hosts in the
+# Ansible inventory.
+lxc__common_host_conf: []
+
+                                                                   # ]]]
+# .. envvar:: lxc__common_combined_conf [[[
+#
+# Variable which combines configuration from all common conf variables and is
+# used in the role tasks.
+lxc__common_combined_conf: '{{ lxc__common_default_conf
+                               + lxc__common_conf
+                               + lxc__common_group_conf
+                               + lxc__common_host_conf }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
