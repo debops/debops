@@ -280,6 +280,79 @@ lxc__common_combined_conf: '{{ lxc__common_default_conf
                                + lxc__common_host_conf }}'
                                                                    # ]]]
                                                                    # ]]]
+# LXC container defaults [[[
+# --------------------------
+
+# These variables define default configuration of LXC containers created by the
+# role. By default, if no other options are specified, the role will create
+# unprivileged LXC containers based on the host OS distribution and release,
+# with configured SSH access.
+
+# .. envvar:: lxc__default_container_config [[[
+#
+# Specify the default LXC configuration file used during container creation.
+lxc__default_container_config: '/etc/lxc/unprivileged.conf'
+
+                                                                   # ]]]
+# .. envvar:: lxc__default_container_ssh [[[
+#
+# If ``True``, the LXC containers created by the role will be configured with
+# SSH access by the :command:`lxc-prepare-ssh` script.
+# If ``False``, the LXC containers will not have direct SSH access configured.
+# This can be overriden for individual containers using the ``item.ssh``
+# parameter.
+lxc__default_container_ssh: True
+
+                                                                   # ]]]
+# .. envvar:: lxc__default_container_template [[[
+#
+# Specify the default LXC container template to use if none is defined. By
+# default the role creates unprivileged LXC containers.
+lxc__default_container_template: 'download'
+
+                                                                   # ]]]
+# .. envvar:: lxc__default_container_distribution [[[
+#
+# The default OS distribution used during container creation.
+lxc__default_container_distribution: '{{ ansible_local.core.distribution
+                                         if (ansible_local|d() and ansible_local.core|d() and
+                                            ansible_local.core.distribution|d())
+                                         else ansible_distribution }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc__default_container_release [[[
+#
+# The default OS release used during container creation.
+lxc__default_container_release: '{{ ansible_local.core.distribution_release
+                                    if (ansible_local|d() and ansible_local.core|d() and
+                                       ansible_local.core.distribution_release|d())
+                                    else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc__default_container_architecture [[[
+#
+# Specify the default processor architecture used during container creation
+# (required by the "download" LXC template).
+lxc__default_container_architecture: '{{ "amd64"
+                                         if (ansible_architecture == "x86_64")
+                                         else ansible_architecture }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LXC container instances [[[
+# ---------------------------
+
+# These variables can be used to create and manage LXC containers on LXC hosts.
+# See :ref:`lxc__ref_containers` for more details.
+
+# .. envvar:: lxc__containers [[[
+#
+# The list of LXC containers which should be configured on LXC hosts. Be aware
+# that containers with the same name on multiple LXC hosts might cause issues
+# due to the same static MAC addresses configured on each of them. This
+# situation should be avoided.
+lxc__containers: []
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 

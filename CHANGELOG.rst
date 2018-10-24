@@ -67,6 +67,11 @@ Added
   the LXC host and the LXC container via the ``root`` account directly, which
   is supported by the DebOps playbooks and roles.
 
+- [debops.lxc] The role can now manage LXC containers, again. This time the
+  functionality is implemented using the ``lxc_container`` Ansible module
+  instead of a series of shell tasks. By default unprivileged LXC containers
+  will be created, but users can change all parameters supported by the module.
+
 Changed
 ~~~~~~~
 

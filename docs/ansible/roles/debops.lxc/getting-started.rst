@@ -158,6 +158,9 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
+``role::lxc:containers``
+  Execute tasks that manage LXC containers.
+
 
 Other resources
 ---------------

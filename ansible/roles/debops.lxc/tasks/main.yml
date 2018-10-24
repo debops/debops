@@ -74,5 +74,63 @@
   action: setup
   when: lxc__register_facts is changed
 
+- name: Manage LXC containers
+  vars:
+    template_options:
+      - '--dist {{ (item.distribution | d(lxc__default_container_distribution)) | lower }}'
+      - '--release {{ (item.release   | d(lxc__default_container_release))      | lower }}'
+      - '--arch {{ (item.architecture | d(lxc__default_container_architecture)) | lower }}'
+  lxc_container:
+    name:                '{{ item.name                | d(item) }}'
+    archive:             '{{ item.archive             | d(omit) }}'
+    archive_compression: '{{ item.archive_compression | d(omit) }}'
+    archive_path:        '{{ item.archive_path        | d(omit) }}'
+    backing_store:       '{{ item.backing_store       | d(omit) }}'
+    clone_name:          '{{ item.clone_name          | d(omit) }}'
+    clone_snapshot:      '{{ item.clone_snapshot      | d(omit) }}'
+    config:              '{{ item.config              | d(lxc__default_container_config) }}'
+    container_command:   '{{ item.container_command   | d(omit) }}'
+    container_config:    '{{ item.container_config    | d(omit) }}'
+    container_log:       '{{ item.container_log       | d(omit) }}'
+    container_log_level: '{{ item.container_log_level | d(omit) }}'
+    directory:           '{{ item.directory           | d(omit) }}'
+    fs_size:             '{{ item.fs_size             | d(omit) }}'
+    fs_type:             '{{ item.fs_type             | d(omit) }}'
+    lv_name:             '{{ item.lv_name             | d(omit) }}'
+    lxc_path:            '{{ item.lxc_path            | d(omit) }}'
+    state:               '{{ item.state               | d("started") }}'
+    template:            '{{ item.template            | d(lxc__default_container_template) }}'
+    template_options:    '{{ item.template_options    | d((template_options | join(" "))
+                                                          if ((item.template | d(lxc__default_container_template)) == "download")
+                                                          else omit) }}'
+    thinpool:            '{{ item.thinpool            | d(omit) }}'
+    vg_name:             '{{ item.vg_name             | d(omit) }}'
+    vfs_root:            '{{ item.zfs_root            | d(omit) }}'
+  loop: '{{ lxc__containers }}'
+  tags: [ 'role::lxc:containers' ]
+
+  # Containers need to be restarted to use the configured static MAC addresses
+- name: Restart LXC containers after creation
+  lxc_container:
+    name: '{{ item.name | d(item) }}'
+    state: 'restarted'
+  loop: '{{ lxc__containers }}'
+  when: ansible_local|d() and ansible_local.lxc|d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
+        item.state|d("started") == "started"
+  tags: [ 'role::lxc:containers' ]
+
+- name: Prepare SSH access in LXC containers
+  shell: |
+    until lxc-prepare-ssh {{ item.name | d(item) }} ; do
+       ((c++)) && ((c==4)) && break
+       printf "Waiting for network connection inside container to settle...\n" ; sleep 5
+    done
+  loop: '{{ lxc__containers }}'
+  when: ansible_local|d() and ansible_local.lxc|d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
+        (item.ssh|d(lxc__default_container_ssh))|bool and item.state|d("started") == "started"
+  tags: [ 'role::lxc:containers' ]
+
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'lxc/post_main.yml') }}"
