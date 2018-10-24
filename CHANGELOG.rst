@@ -60,6 +60,13 @@ Added
   configure static MAC addresses automatically - this usage is enabled by
   default via common LXC container configuration.
 
+- The `lxc_ssh.py <https://github.com/andreasscherbaum/ansible-lxc-ssh>`__
+  Ansible connection plugin is now included by default in DebOps. This
+  connection plugin can be used to manage remote LXC containers with Ansible
+  via SSH and the :command:`lxc-attach` command. This requires connection to
+  the LXC host and the LXC container via the ``root`` account directly, which
+  is supported by the DebOps playbooks and roles.
+
 Changed
 ~~~~~~~
 
