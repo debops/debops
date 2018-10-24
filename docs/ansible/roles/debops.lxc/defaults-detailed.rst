@@ -15,8 +15,39 @@ lxc__configuration
 ------------------
 
 The ``lxc__*_configuration`` variables define the contents of the configuration
-files in the :file:`/etc/lxc/` directory. Each variable is a list of YAML
-dictionaries, each dictionary can contain specific parameters:
+files in the :file:`/etc/lxc/` directory.
+
+Examples
+~~~~~~~~
+
+Change the default LXC configuration file used to generate LXC containers to
+unprivileged:
+
+.. code-block:: yaml
+
+   lxc__configuration:
+
+     - name: 'lxc'
+       options:
+
+         - name: 'lxc.default_config'
+           value: '/etc/lxc/unprivileged.conf'
+
+The same change, written as a simple YAML dictionary:
+
+.. code-block:: yaml
+
+   lxc__configuration:
+
+     - name: 'lxc'
+       options:
+         - 'lxc.default_config': '/etc/lxc/unprivileged.conf'
+
+Syntax
+~~~~~~
+
+Each variable is a list of YAML dictionaries, each dictionary can contain
+specific parameters:
 
 ``name``
   Required. Name of the configuration file, saved as
@@ -99,32 +130,6 @@ dictionaries, each dictionary can contain specific parameters:
 
     - ``ignore``: a given entry will be ignored during configuration file
       generation.
-
-Examples
-~~~~~~~~
-
-Change the default LXC configuration file used to generate LXC containers to
-unprivileged:
-
-.. code-block:: yaml
-
-   lxc__configuration:
-
-     - name: 'lxc'
-       options:
-
-         - name: 'lxc.default_config'
-           value: '/etc/lxc/unprivileged.conf'
-
-The same change, written as a simple YAML dictionary
-
-.. code-block:: yaml
-
-   lxc__configuration:
-
-     - name: 'lxc'
-       options:
-         - 'lxc.default_config': '/etc/lxc/unprivileged.conf'
 
 
 .. _lxc__ref_containers:

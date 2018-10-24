@@ -130,8 +130,62 @@ To enable LXC support on a host, it needs to be added to the
 
 .. code-block:: none
 
-   [debops_service_lxc]
-   hostname
+   [debops_all_hosts:children]
+   lxc_hosts
+   containers
+
+   [debops_service_ifupdown:children]
+   lxc_hosts
+
+   [debops_service_lxc:children]
+   lxc_hosts
+
+   [lxc_hosts]
+   lxc-host    ansible_host=lxc-host.example.org
+
+   [containers]
+   webserver   ansible_host=webserver.example.org
+
+The LXC host should be configured with bridged networking to allow LXC
+containers to connect to the network. You can use the :ref:`debops.ifupdown`
+Ansible role to configure the network interfaces.
+
+
+Remote LXC management without SSH access
+----------------------------------------
+
+Remote LXC containers without SSH access can be accessed indirectly using the
+`lxc_ssh`__ Ansible connection plugin included with DebOps. This requires
+direct access to the ``root`` account on the LXC host and LXC container (even
+with unprivileged LXC containers), due to the connection plugin limitations.
+
+Example configuration of that connection in the Ansible inventory (variables
+specified in multiple lines for readability):
+
+.. code-block:: none
+
+   [debops_all_hosts:children]
+   lxc_hosts
+   containers
+
+   [debops_service_ifupdown:children]
+   lxc_hosts
+
+   [debops_service_lxc:children]
+   lxc_hosts
+
+   [lxc_hosts]
+   lxc-host    ansible_host=lxc-host.example.org
+
+   [containers]
+   webserver    ansible_connection=lxc_ssh ansible_user=root
+   webserver    ansible_host=lxc-host.example.org
+   webserver    ansible_ssh_extra_args=webserver
+
+The ``lxc_ssh`` connection plugin is unofficial and may not work correctly.
+Please report any issues, and if you know fixes for them, provide that as well!
+
+.. __: https://github.com/andreasscherbaum/ansible-lxc-ssh
 
 
 Example playbook
