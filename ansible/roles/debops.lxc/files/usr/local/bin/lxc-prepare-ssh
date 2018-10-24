@@ -9,7 +9,7 @@ set -o nounset -o pipefail -o errexit
 readonly SCRIPT="$(basename "${0}")"
 readonly CONTAINER="${1:-}"
 
-if [ -n "${SUDO_USER}" ] ; then
+if [ -n "${SUDO_USER:-}" ] ; then
     readonly USER_HOME="$(getent passwd "${SUDO_USER}" | cut -d: -f6)"
 else
     readonly USER_HOME="${HOME}"
