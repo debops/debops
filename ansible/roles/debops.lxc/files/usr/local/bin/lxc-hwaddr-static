@@ -31,7 +31,9 @@ if [ -n "${CONTAINER}" ] ; then
     if [ -r "${CONFIG}" ] ; then
 
         # Don't modify configuration files that already contain hardware addresses
-        if ! grep -qE '^lxc\.network\.hwaddr\s+=' "${CONFIG}" ; then
+        if ! grep -qE '^lxc\.network\.hwaddr\s+=' "${CONFIG}" \
+            && ! grep -qE '^# no-static-hwaddr' "${CONFIG}" \
+            && ! grep -qE '^# no-hwaddr-static' "${CONFIG}" ; then
 
             # Count number of network interfaces defined for a container
             iface_count="$(grep -cE '^lxc\.network\.type\s+=' "${CONFIG}")"
