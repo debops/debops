@@ -4,8 +4,18 @@
 
 from __future__ import print_function
 from json import dumps
-from sys import exit
+import lxc
+import os
 
-output = {'installed': True}
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('/usr/bin/lxc-create'),
+          'containers': list(lxc.list_containers())}
 
 print(dumps(output, sort_keys=True, indent=2))

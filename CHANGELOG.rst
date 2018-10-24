@@ -56,6 +56,22 @@ Added
 - [debops.lxc] New :command:`lxc-hwaddr-static` script can be used to easily
   generate random but predictable MAC addresses for LXC containers.
 
+  The script can be run manually or executed as a "pre-start" LXC hook to
+  configure static MAC addresses automatically - this usage is enabled by
+  default via common LXC container configuration.
+
+- The `lxc_ssh.py <https://github.com/andreasscherbaum/ansible-lxc-ssh>`__
+  Ansible connection plugin is now included by default in DebOps. This
+  connection plugin can be used to manage remote LXC containers with Ansible
+  via SSH and the :command:`lxc-attach` command. This requires connection to
+  the LXC host and the LXC container via the ``root`` account directly, which
+  is supported by the DebOps playbooks and roles.
+
+- [debops.lxc] The role can now manage LXC containers, again. This time the
+  functionality is implemented using the ``lxc_container`` Ansible module
+  instead of a series of shell tasks. By default unprivileged LXC containers
+  will be created, but users can change all parameters supported by the module.
+
 Changed
 ~~~~~~~
 
