@@ -114,13 +114,10 @@
   tags: [ 'role::sshd:config' ]
 
 - name: Make sure the system-wide known_hosts file exists
-  copy:
-    force:    False
-    dest:     '{{ sshd__known_hosts_file }}'
-    content:  ''
-    owner:    'root'
-    group:    'root'
-    mode:     '0644'
+  command: touch {{ sshd__known_hosts_file }}
+  args:
+    creates: '{{ sshd__known_hosts_file }}'
+    warn: False
   tags: [ 'role::sshd:known_hosts' ]
 
 - name: Get list of already scanned host fingerprints
