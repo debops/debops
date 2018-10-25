@@ -98,7 +98,10 @@
     fs_type:             '{{ item.fs_type             | d(omit) }}'
     lv_name:             '{{ item.lv_name             | d(omit) }}'
     lxc_path:            '{{ item.lxc_path            | d(omit) }}'
-    state:               '{{ item.state               | d("started") }}'
+    state:               '{{ item.state               | d("started"
+                                                          if (ansible_local|d() and ansible_local.lxc|d() and
+                                                              (item.name | d(item)) in ansible_local.lxc.containers|d())
+                                                          else "stopped") }}'
     template:            '{{ item.template            | d(lxc__default_container_template) }}'
     template_options:    '{{ item.template_options    | d((template_options | join(" "))
                                                           if ((item.template | d(lxc__default_container_template)) == "download")
@@ -109,11 +112,18 @@
   loop: '{{ lxc__containers }}'
   tags: [ 'role::lxc:containers' ]
 
-  # Containers need to be restarted to use the configured static MAC addresses
-- name: Restart LXC containers after creation
+- name: Configure static MAC addresses for new LXC containers
+  command: lxc-hwaddr-static {{ item.name | d(item) }}
+  loop: '{{ lxc__containers }}'
+  when: ansible_local|d() and ansible_local.lxc|d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
+        item.state|d("started") == "started"
+  tags: [ 'role::lxc:containers' ]
+
+- name: Start LXC containers after creation
   lxc_container:
     name: '{{ item.name | d(item) }}'
-    state: 'restarted'
+    state: '{{ "restarted" if (item.state is defined) else "started" }}'
   loop: '{{ lxc__containers }}'
   when: ansible_local|d() and ansible_local.lxc|d() and
         (item.name | d(item)) not in ansible_local.lxc.containers|d() and
