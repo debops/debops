@@ -142,6 +142,10 @@ Changed
   any issues via the :command:`shellcheck` linter. Outstanding issues found in
   existing scripts have been fixed.
 
+- [debops.librenms] The default dashboard in LibreNMS is changed from the
+  :file:`pages/front/default.php` to :file:`pages/front/tiles.php` which allows
+  for better customization.
+
 Fixed
 ~~~~~
 
