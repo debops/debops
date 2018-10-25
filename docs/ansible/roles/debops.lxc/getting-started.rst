@@ -33,6 +33,14 @@ using the command:
    lxc-create -n <container> -f /etc/lxc/unprivileged.conf \
               -t download -- --dist debian --release stretch --arch amd64
 
+The role will install the :command:`lxc-new-unprivileged` script which provides
+an equivalent functionality to the above command. With it, you can create new
+LXC unprivileged containers by running:
+
+.. code-block:: console
+
+   lxc-new-unprivileged <container>
+
 The container will be configured to use subordinate UID/GID range defined by
 the :ref:`debops.root_account` Ansible role in the :file:`/etc/subuid` and
 :file:`/etc/subgid` databases. Since it's a container owned by ``root``, it
