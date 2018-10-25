@@ -24,7 +24,7 @@ various things to be set up correctly is:
 
        docker run -e NGINX_UPSTREAM=docker_upstream -d ...
 
-2. Install and start :command:`docker-gen` will will generate :program:`nginx` configuration
+2. Install and start :command:`docker-gen` will generate :program:`nginx` configuration
    with all Docker upstreams specified.
 
 3. Install and start :program:`nginx` with templated configuration, and if upstream

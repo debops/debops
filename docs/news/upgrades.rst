@@ -12,7 +12,7 @@ Unreleased
 ----------
 
 Subordinate UID/GID ranges for root
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - The :ref:`debops.root_account` role will register a set of UID/GID ranges for
   the ``root`` account in the :file:`/etc/subuid` and :file:`/etc/subgid`
@@ -49,7 +49,7 @@ Changes to Redis support in GitLab
   automatically, but you might expect it on normal system upgrade.
 
 Changes related to packet forwarding in firewall and sysctl
------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - The :ref:`debops.ifupdown` role now uses :ref:`debops.sysctl` role directly
   as a dependency to generate forwarding configuration for each managed network
