@@ -95,7 +95,7 @@ keepalive = loads("""{{ item.keepalive | d('2') }}""")
 #       True or False
 #
 
-spew = loads("""{{ (item.spew | d(False)) | bool }}""")
+spew = loads("""{{ (item.spew | d(False)) | bool | lower }}""")
 
 #
 # Server mechanics
@@ -136,7 +136,7 @@ spew = loads("""{{ (item.spew | d(False)) | bool }}""")
 #       None to signal that Python should choose one on its own.
 #
 
-daemon = loads("""{{ (item.daemon | d(False)) | bool }}""")
+daemon = loads("""{{ (item.daemon | d(False)) | bool | lower }}""")
 pidfile = '{{item.pidfile | d(gunicorn__tpl_run_path + "/gunicorn-"
              + item.name + "/" + item.name + ".pid")}}'
 umask = loads("""{{ item.umask | d('0') }}""")
@@ -147,7 +147,7 @@ group = '{{item.group
            if (item.group is defined and item.group != omit)
            else gunicorn__group}}'
 tmp_upload_dir = loads("""{{ ("'" + item.tmp_upload_dir + "'")
-                              if item.tmp_upload_dir|d() else 'None' }}""")
+                              if item.tmp_upload_dir|d() else 'null' }}""")
 
 #
 #   Logging
@@ -166,7 +166,7 @@ accesslog = '{{item.accesslog | d("/var/log/gunicorn/" + item.name
 errorlog = '{{item.errorlog | d("/var/log/gunicorn/" + item.name
               + "/" + item.name + "_error.log")}}'
 loglevel = '{{ item.loglevel | d("info") }}'
-remote_header = loads("""{{ item.remote_host_header | d('X-Real-IP') }}""")
+remote_header = loads('''"{{ item.remote_host_header | d('X-Real-IP') }}"''')
 access_log_format = ('%({' + remote_header + '}i)s %(l)s %(u)s %(t)s '
                      '"%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"')
 
@@ -184,7 +184,7 @@ access_log_format = ('%({' + remote_header + '}i)s %(l)s %(u)s %(t)s '
 #
 
 proc_name = loads("""{{ ("'" + item.proc_name + "'")
-                         if item.proc_name|d() else 'None' }}""")
+                         if item.proc_name|d() else 'null' }}""")
 
 #
 # Server hooks
