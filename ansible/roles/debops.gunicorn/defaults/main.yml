@@ -16,7 +16,7 @@
 # .. envvar:: gunicorn__base_packages [[[
 #
 # The essential packages to install for gunicorn support.
-gunicorn__base_packages: [ 'gunicorn', 'gunicorn3', 'python-setproctitle' ]
+gunicorn__base_packages: [ ]
 
                                                                    # ]]]
 # .. envvar:: gunicorn__packages [[[
@@ -105,6 +105,25 @@ gunicorn__logrotate__dependent_config:
     postrotate: |
       invoke-rc.d --quiet gunicorn reload >/dev/null
     comment: 'Log rotation for Green Unicorn logs'
+                                                                   # ]]]
+
+# .. envvar:: gunicorn__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+gunicorn__python__dependent_packages3:
+
+  - 'gunicorn3'
+  - 'python3-setproctitle'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+gunicorn__python__dependent_packages2:
+
+  - 'gunicorn'
+  - 'python-setproctitle'
+
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
