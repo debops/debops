@@ -28,6 +28,7 @@ import pty
 import shlex
 import subprocess
 import sys
+import time
 from distutils.version import LooseVersion
 
 from ansible import constants as C
@@ -39,26 +40,22 @@ if LooseVersion(ansible_version) < LooseVersion('2.3.0.0'):
     from ansible.compat.six import text_type, binary_type
     from ansible.errors import AnsibleConnectionFailure, AnsibleError
     from ansible.plugins.connection import ConnectionBase
-if LooseVersion(ansible_version) >= LooseVersion('2.3.0.0'):
+else:  # newer version
     from ansible.errors import (AnsibleError, AnsibleConnectionFailure,
                                 AnsibleFileNotFound)
-    from ansible.errors import AnsibleOptionsError
     from ansible.compat import selectors
     from ansible.module_utils.six import PY3, text_type, binary_type
     if LooseVersion(ansible_version) < LooseVersion('2.4.0.0'):
         from ansible.compat.six.moves import shlex_quote
     else:
         from ansible.module_utils.six.moves import shlex_quote
-    from ansible.module_utils._text import to_bytes, to_native, to_text
-    if LooseVersion(ansible_version) >= LooseVersion('2.4.0.0'):
-        from ansible.module_utils.parsing.convert_bool import BOOLEANS, boolean
-    from ansible.plugins.connection import ConnectionBase, BUFSIZE
+    from ansible.plugins.connection import ConnectionBase
 
 if LooseVersion(ansible_version) >= LooseVersion('2.2.0.0'):
-    from ansible.module_utils._text import (to_bytes, to_text as to_unicode,
-                                            to_native as to_str)
+    from ansible.module_utils._text import to_bytes, to_text, to_native
 else:
-    from ansible.utils.unicode import to_bytes, to_unicode, to_str
+    from ansible.utils.unicode import (to_bytes, to_unicode as to_text,
+                                       to_native)
 
 try:
     from __main__ import display
@@ -239,8 +236,8 @@ class Connection(ConnectionBase):
         list ['-o', 'Foo=1', '-o', 'Bar=foo bar'] that can be added to
         the argument list. The list will not contain any empty elements.
         """
-        return ([to_unicode(x.strip())
-                for x in shlex.split(to_bytes(argstring)) if x.strip()])
+        return ([to_text(x.strip())
+                for x in shlex.split(argstring) if x.strip()])
 
     if LooseVersion(ansible_version) < LooseVersion('2.3.0.0'):
         def _add_args(self, explanation, args):
@@ -399,7 +396,7 @@ class Connection(ConnectionBase):
                     b_command, (
                         b"-o", b"KbdInteractiveAuthentication=no",
                         b"-o", (b"PreferredAuthentications=gssapi-with-mic,"
-                                "gssapi-keyex,hostbased,publickey"),
+                                b"gssapi-keyex,hostbased,publickey"),
                         b"-o", b"PasswordAuthentication=no"
                     ),
                     u"ansible_password/ansible_ssh_pass not set"
@@ -630,7 +627,7 @@ class Connection(ConnectionBase):
         if isinstance(cmd, (text_type, binary_type)):
             cmd = to_bytes(cmd)
         else:
-            cmd = map(to_bytes, cmd)
+            cmd = list(map(to_bytes, cmd))
 
         if not in_data:
             try:
@@ -922,7 +919,7 @@ class Connection(ConnectionBase):
         controlpersisterror = (b'Bad configuration option: ControlPersist'
                                in b_stderr
                                or (b'unknown configuration option: '
-                                   'ControlPersist') in b_stderr)
+                                   b'ControlPersist') in b_stderr)
         if p.returncode != 0 and controlpersisterror:
             raise AnsibleError(
                     ('using -c ssh on certain older ssh versions may not '
@@ -935,7 +932,7 @@ class Connection(ConnectionBase):
         # can retry a connection.
         controlpersist_broken_pipe = (
                 (b'mux_client_hello_exchange: write packet: '
-                 'Broken pipe') in b_stderr)
+                 b'Broken pipe') in b_stderr)
         if p.returncode == 255 and controlpersist_broken_pipe:
             raise AnsibleControlPersistBrokenPipeError(
                     ('SSH Error: data could not be sent because of '
@@ -955,14 +952,13 @@ class Connection(ConnectionBase):
             """Wrapper around _bare_run that retries the connection
             """
             return self._bare_run(cmd, in_data, sudoable, checkrc)
-
-    if LooseVersion(ansible_version) < LooseVersion('2.3.0.0'):
+    else:
         def _run(self, cmd, in_data, sudoable=True):
             '''
             Starts the command and communicates with it until it ends.
             '''
 
-            display_cmd = map(to_unicode, map(pipes.quote, cmd))
+            display_cmd = map(to_text, map(pipes.quote, cmd))
             display.vvv(u'SSH: EXEC {0}'.format(u' '.join(display_cmd)),
                         host=self.host)
 
@@ -976,7 +972,7 @@ class Connection(ConnectionBase):
             if isinstance(cmd, (text_type, binary_type)):
                 cmd = to_bytes(cmd)
             else:
-                cmd = map(to_bytes, cmd)
+                cmd = list(map(to_bytes, cmd))
 
             if not in_data:
                 try:
@@ -1351,8 +1347,8 @@ class Connection(ConnectionBase):
 
         if LooseVersion(ansible_version) < LooseVersion('2.3.0.0'):
             if not os.path.exists(in_path):
-                raise errors.AnsibleFileNotFound(("file or module does not "
-                                                  "exist: %s") % in_path)
+                raise AnsibleFileNotFound(("file or module does not "
+                                           "exist: %s") % in_path)
         if LooseVersion(ansible_version) >= LooseVersion('2.3.0.0'):
             if not os.path.exists(to_bytes(
                                   in_path, errors='surrogate_or_strict')):
