@@ -366,22 +366,29 @@ prosody__combined_config_components: '{{ prosody__default_config_components
 prosody__ferm__dependent_rules:
 
   - type: 'accept'
-    dport: [ '5280', '5281' ]
+    dport: [ '5222' ]
     accept_any: True
     weight: '40'
     by_role: 'prosody'
-    name: 'perosody-xmpp'
+    name: 'prosody-xmpp-client'
     multiport: True
-    rule_state: '{{ "present" if prosody__deploy_state|bool else "absent" }}'
-
+    rule_state: '{{ prosody__deploy_state }}'
+  - type: 'accept'
+    dport: [ '5269' ]
+    accept_any: True
+    weight: '40'
+    by_role: 'prosody'
+    name: 'prosody-xmpp-server'
+    multiport: True
+    rule_state: '{{ prosody__deploy_state }}'
   - type: 'accept'
     dport: [ '5280', '5281' ]
     accept_any: True
     weight: '40'
     by_role: 'prosody'
-    name: 'perosody-http'
+    name: 'prosody-http'
     multiport: True
-    rule_state: '{{ "present" if prosody__deploy_state|bool else "absent" }}'
+    rule_state: '{{ prosody__deploy_state }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
