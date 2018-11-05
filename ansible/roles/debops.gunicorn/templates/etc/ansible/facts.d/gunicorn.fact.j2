@@ -10,14 +10,20 @@ import os
 
 output = {"installed": True}
 
-gunicorn_bin = "/usr/bin/gunicorn"
+gunicorn_bin = "/usr/bin/{{ gunicorn__binary }}"
 
 try:
     if os.path.isfile(gunicorn_bin) and os.access(gunicorn_bin, os.X_OK):
         process = Popen([gunicorn_bin, '--version'], stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
 
-        output.update({"version": stderr.split()[2].replace(')', '')})
+        # Py2 gunicorn
+        version = stderr
+        # Py3 gunicorn
+        if len(stdout) > 0:
+            version = stdout
+
+        output.update({"version": version.split()[2].replace(')', '')})
 
     else:
         output.update({"installed": False})
