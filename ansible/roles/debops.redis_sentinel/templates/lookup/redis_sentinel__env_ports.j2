@@ -1,0 +1,11 @@
+{% set output = [] %}
+{%   for element in redis_sentinel__combined_configuration | parse_kv_items %}
+{%     if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] and element.options|d() %}
+{%       for option in element.options %}
+{%         if option.name == 'port' and option.value|d() %}
+{%           set _ = output.append(option.value) %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{{ output | to_yaml }}

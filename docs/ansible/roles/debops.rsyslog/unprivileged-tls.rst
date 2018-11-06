@@ -191,4 +191,3 @@ Of course, the contents of the logs should appear normally in the log files,
 for example in :file:`/var/log/remote/hosts/host/syslog` you should see::
 
     May 16 14:06:05 host user: Test log message, please ignore
-

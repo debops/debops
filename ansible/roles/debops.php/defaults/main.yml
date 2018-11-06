@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # Custom APT package repositories [[[
@@ -15,7 +17,7 @@
 #
 # List of APT package names which are scanned to check available PHP versions.
 # The first found package wins.
-php__version_preference: [ 'php7.0', 'php5' ]
+php__version_preference: [ 'php7.2', 'php7.1', 'php7.0', 'php5' ]
 
                                                                    # ]]]
 # .. envvar:: php__sury [[[
@@ -163,6 +165,7 @@ php__release_included_map:
   trusty:  '{{ php__php5_included_packages }}'
   xenial:  '{{ php__php_included_packages }}'
   zesty:   '{{ php__php_included_packages }}'
+  bionic:  '{{ php__php_included_packages }}'
 
                                                                    # ]]]
 # .. envvar:: php__php5_included_packages [[[
@@ -703,6 +706,7 @@ php__logrotate__dependent_config:
       - '/var/log/php{{ php__version }}-fpm.log'
       - '/var/log/php{{ php__version }}-fpm/*.log'
     options: |
+      create 0660 root adm
       rotate 12
       missingok
       weekly

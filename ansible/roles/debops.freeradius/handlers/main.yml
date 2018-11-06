@@ -1,0 +1,10 @@
+---
+
+- name: Check freeradius configuration and restart
+  command: freeradius -C
+  notify: [ 'Restart freeradius' ]
+
+- name: Restart freeradius
+  service:
+    name: 'freeradius'
+    state: 'restarted'

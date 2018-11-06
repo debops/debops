@@ -29,37 +29,39 @@ NAME="etherpad-lite"
 DEFAULTS="/etc/default/etherpad-lite"
 
 # Load defaults if available
+# shellcheck disable=SC1090
 [ -r "$DEFAULTS" ] && . "$DEFAULTS"
 
 set -e
 
+# shellcheck disable=SC1091
 . /lib/lsb/init-functions
 
 start() {
   echo "Starting $DESC... "
 
-    start-stop-daemon --start --chuid "$USER:$GROUP" --background --make-pidfile --pidfile /var/run/$NAME.pid --exec $EPLITE_DIR/$EPLITE_BIN -- $LOGFILE || true
+    start-stop-daemon --start --chuid "$USER:$GROUP" --background --make-pidfile --pidfile "/var/run/${NAME}.pid" --exec "$EPLITE_DIR/$EPLITE_BIN" -- "$LOGFILE" || true
   echo "done"
 }
 
 #We need this function to ensure the whole process tree will be killed
 killtree() {
-    local _pid=$1
-    local _sig=${2-TERM}
-    for _child in $(ps -o pid --no-headers --ppid ${_pid}); do
-        killtree ${_child} ${_sig}
+    _pid="$1"
+    _sig="${2-TERM}"
+    for _child in $(ps -o pid --no-headers --ppid "${_pid}"); do
+        killtree "${_child}" "${_sig}"
     done
-    kill -${_sig} ${_pid}
+    kill "-${_sig}" "${_pid}"
 }
 
 stop() {
   echo "Stopping $DESC... "
-  if test -f /var/run/$NAME.pid; then
-    while test -d /proc/$(cat /var/run/$NAME.pid); do
-      killtree $(cat /var/run/$NAME.pid) 15
+  if test -f "/var/run/${NAME}.pid"; then
+    while test -d "/proc/$(cat /var/run/${NAME}.pid)"; do
+      killtree "$(cat /var/run/${NAME}.pid)" 15
       sleep 0.5
     done
-    rm /var/run/$NAME.pid
+    rm "/var/run/${NAME}.pid"
   fi
   echo "done"
 }

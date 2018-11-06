@@ -47,6 +47,10 @@ with either a string, a YAML list or a YAML dictionary as values.
   Optional, string. Path to the Python executable to use. If not specified, the
   system Python version will be used.
 
+``binary``
+  Optional, string. Either ``gunicorn`` (default) or ``gunicorn3`` to run Python 3
+  compatible applications.
+
 ``mode``
   Optional, string. What mode to use for the application, usually ``wsgi`` or
   ``django``. This is only relevant on the older OS releases.

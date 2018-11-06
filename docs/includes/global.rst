@@ -721,7 +721,6 @@
 .. _debops.rabbitmq_server: https://github.com/debops/ansible-rabbitmq_server
 .. _debops.radvd: https://github.com/debops/ansible-radvd
 .. _debops.rails_deploy: https://github.com/debops/ansible-rails_deploy
-.. _debops.redis: https://github.com/debops/ansible-redis
 .. _debops.reprepro: https://github.com/debops/ansible-reprepro
 .. _debops.resources: https://github.com/debops/ansible-resources
 .. _debops.root_account: https://github.com/debops/ansible-root_account
@@ -820,7 +819,6 @@
 .. _debops.preseed documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-preseed/docs/index.html
 .. _debops.rabbitmq_management documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-rabbitmq_management/docs/index.html
 .. _debops.rabbitmq_server documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-rabbitmq_server/docs/index.html
-.. _debops.redis documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-redis/docs/index.html
 .. _debops.resources documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-resources/docs/index.html
 .. _debops.root_account documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-root_account/docs/index.html
 .. _debops.rsnapshot documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-rsnapshot/docs/index.html

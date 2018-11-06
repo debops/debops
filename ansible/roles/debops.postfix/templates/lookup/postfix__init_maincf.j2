@@ -1,7 +1,7 @@
 {% set postfix__tpl_init_maincf = [] %}
 {% for entry in postfix__combined_maincf %}
 {%   if 'section' not in entry.keys() %}
-{%     set entry_name = (entry.name | d(entry.keys()[0])) %}
+{%     set entry_name = (entry.name | d(entry | list | first)) %}
 {%     if entry_name is search('_sasl_') %}
 {%       set _ = postfix__tpl_init_maincf.append({'name': entry_name, 'state': 'init', 'section': 'auth'}) %}
 {%     elif entry_name.startswith('smtpd_tls_') %}

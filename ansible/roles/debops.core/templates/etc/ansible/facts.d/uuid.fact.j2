@@ -1,9 +1,26 @@
+#!/usr/bin/python{{ '2' if (ansible_python_version is version_compare('3.5', '<')) else '3' }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+
+# Workaround to allow Jinja template inside of a Python script
+"""
 {% set core__tpl_uuid = '' %}
 {% if ansible_local|d() and ansible_local.uuid|d() %}
 {%   set core__tpl_uuid = ansible_local.uuid %}
-{% elif ansible_local|d() and ansible_local.root|d() and ansible_local.root.uuid|d() %}
+{% elif ansible_local|d() and ansible_local.root|d() and
+        ansible_local.root.uuid|d() %}
 {%   set core__tpl_uuid = ansible_local.root.uuid %}
 {% else %}
-{%   set core__tpl_uuid = (core__register_uuid.stdout if (core__register_uuid|d() and core__register_uuid.stdout) else core__uuid_random) | lower %}
+{%   set core__tpl_uuid = (core__register_uuid.stdout
+                           if (core__register_uuid|d() and
+                               core__register_uuid.stdout)
+                           else core__uuid_random) | lower %}
 {% endif %}
-{{ core__tpl_uuid | to_nice_json }}
+"""
+
+output = loads('''{{ core__tpl_uuid | to_nice_json }}''')
+print(dumps(output, sort_keys=True, indent=2))

@@ -84,6 +84,12 @@
          (item.value.services|d() or item.value.type|d()))
   tags: [ 'role::avahi:alias', 'role::avahi:services' ]
 
+- name: Ensure that the avahi-daemon service in in the desired state
+  service:
+    name: 'avahi-daemon'
+    enabled: '{{ avahi__enabled|bool }}'
+    state: '{{ "started" if (avahi__enabled|bool) else "stopped" }}'
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'

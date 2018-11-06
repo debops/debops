@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # Custom local facts [[[
@@ -122,11 +124,15 @@ core__admin_groups: [ 'admins' ]
 #
 # To override the admin accounts autodetected by Ansible, specify them in this
 # list.
-core__admin_users: '{{ (ansible_user
-                        if ansible_user|d()
-                        else (ansible_ssh_user
-                              if ansible_ssh_user|d()
-                              else lookup("env", "USER"))) }}'
+core__admin_users: '{{ ((ansible_local.core.admin_users
+                         if (ansible_local|d() and ansible_local.core|d() and
+                             ansible_local.core.admin_users|d())
+                         else [])
+                        + [ (ansible_user
+                              if (ansible_user is defined and
+                                  ansible_user != "root")
+                              else lookup("env", "USER")) ])
+                        | unique }}'
 
                                                                    # ]]]
 # .. envvar:: core__admin_blacklist_default_users [[[

@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # General configuration [[[
@@ -29,7 +31,23 @@ debops_legacy__enabled: True
 # .. envvar:: debops_legacy__remove_default_diversions [[[
 #
 # The list of diversions to remove defined by the role.
-debops_legacy__remove_default_diversions: []
+debops_legacy__remove_default_diversions:
+
+  # Diversion created by the old 'debops.redis' Ansible role
+  - name: '/etc/redis/redis.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Diversion created by the old 'debops.redis' Ansible role
+  - name: '/etc/redis/sentinel.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: debops_legacy__remove_diversions [[[
@@ -122,6 +140,60 @@ debops_legacy__remove_default_files:
     state: '{{ "absent"
                if (ansible_local|d() and ansible_local.system_groups|d() and
                    (ansible_local.system_groups.configured|d()|bool))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' Ansible local fact
+  - name: '/etc/ansible/facts.d/redis.fact'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' configuration directory
+  - name: '/etc/redis/notify.d'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' configuration directory
+  - name: '/etc/redis/trigger.d'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' script directory
+  - name: '/usr/local/lib/redis'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' configuration file
+  - name: '/etc/redis/ansible-redis-dynamic.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' configuration file
+  - name: '/etc/redis/ansible-redis-static.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Old IP forwarding configuration defined by 'debops.ferm' role
+  - name: '/etc/sysctl.d/30-ferm.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and ansible_local.ferm is defined)
                else "ignore" }}'
 
                                                                    # ]]]

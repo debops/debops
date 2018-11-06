@@ -84,7 +84,7 @@
   check_mode: False
 
 - name: Install Elasticsearch plugins
-  shell: bin/elasticsearch-plugin install {{ item.url | d(item.name) }} --batch
+  command: bin/elasticsearch-plugin install {{ item.url | d(item.name) }} --batch
   args:
     chdir: '/usr/share/elasticsearch'
   notify: [ 'Restart elasticsearch' ]
@@ -94,7 +94,7 @@
          (item.name if ':' not in item.name else item.name.split(':')[1]) not in elasticsearch__register_plugins.stdout_lines)
 
 - name: Remove Elasticsearch plugins
-  shell: bin/elasticsearch-plugin remove {{ item.name }}
+  command: bin/elasticsearch-plugin remove {{ item.name }}
   args:
     chdir: '/usr/share/elasticsearch'
   notify: [ 'Restart elasticsearch' ]

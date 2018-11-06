@@ -39,6 +39,24 @@
   notify: [ 'Restart rabbitmq-server' ]
   no_log: True
 
+- name: Ensure that configuration directory exists
+  file:
+    path: '/etc/rabbitmq'
+    state: 'directory'
+    owner: '{{ rabbitmq_server__user }}'
+    group: '{{ rabbitmq_server__group }}'
+    mode: '0755'
+
+- name: Generate RabbitMQ environment file
+  template:
+    src: 'etc/rabbitmq/rabbitmq-env.conf.j2'
+    dest: '/etc/rabbitmq/rabbitmq-env.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart rabbitmq-server' ]
+  tags: [ 'role::rabbitmq_server:config' ]
+
 - name: Install RabbitMQ packages
   package:
     name: '{{ item }}'

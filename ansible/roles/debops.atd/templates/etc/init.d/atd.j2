@@ -21,13 +21,16 @@ PIDFILE=/var/run/atd.pid
 
 test -x $DAEMON || exit 0
 
+# shellcheck disable=SC1091
 . /lib/lsb/init-functions
 
+# shellcheck disable=SC1091
 [ -r /etc/default/atd ] && . /etc/default/atd
 
 case "$1" in
   start)
 	log_daemon_msg "Starting deferred execution scheduler" "atd"
+	# shellcheck disable=SC2086
 	start_daemon -p $PIDFILE $DAEMON $EXTRA_OPTS
 	log_end_msg $?
     ;;

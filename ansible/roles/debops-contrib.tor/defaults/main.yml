@@ -37,12 +37,24 @@ tor__deploy_state: 'present'
 tor__ferm__dependent_rules:
 
   - type: 'accept'
-    dport: [ 993, 465 ]
+    dport: '{{ ((tor_ports | map(attribute="orport") | list) + (tor_ports | map(attribute="dirport") | list)) | unique | sort }}'
     accept_any: True
     weight: '40'
     by_role: 'debops-contrib.tor'
     name: 'tor'
     rule_state: '{{ "present" if (tor__deploy_state != "purged") else "absent" }}'
+                                                                   # ]]]
+# .. envvar:: tor__ferm__dependent_rules [[[
+#
+# List of origin patterns managed by the :ref:`debops.unattended_upgrades` role.
+# https://trac.torproject.org/projects/tor/wiki/TorRelayGuide/DebianUbuntuUpdates
+tor__unattended_upgrades__dependent_origins:
+
+  - origin: 'origin=TorProject'
+    by_role: 'debops-contrib.tor'
+    state: '{{ "present"
+               if (tor__deploy_state == "present")
+               else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

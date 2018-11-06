@@ -19,7 +19,7 @@ connection. This mode is good for prototyping, testing and development
 environments, however it's not very resilient.
 
 In a cluster mode, multiple Elasticsearch nodes talk to each other in
-a configured network subnet, over TCP transport connection. Elasticsearch
+a configured network subnet, over TCP. Elasticsearch
 clients communicate with the cluster over HTTP REST interface, usually via
 a dedicated host with Kibana and/or Logstash as an intermediary.
 
@@ -73,7 +73,7 @@ for more details about node features.
 
 The inventory groups and their corresponding node functions are defined using
 default variables. The role uses Ansible inventory groups to automatically
-determine the list of hosts which will be used for discovery, as well as number
+determine the list of hosts which will be used for discovery, as well as the number
 of eligible master hosts, therefore direct changes to the node function
 variables should be done with care.
 

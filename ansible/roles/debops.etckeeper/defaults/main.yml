@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # General configuration, installation [[[
@@ -131,6 +133,12 @@ etckeeper__default_gitignore:
   - name: 'ssh-host-keys'
     comment: 'No need to track the SSH host keys'
     ignore: 'ssh/ssh_host_*_key'
+
+  - name: 'mandos-seckey'
+    comment: |
+      There is no benefit in tracking Mandos keys and it is a potential security
+      vulnerability in case the /etc/ repository is pushed to an external remote.
+    ignore: 'keys/mandos/seckey.txt'
 
   - name: 'xorg-conf-backup'
     ignore: 'X11/xorg.conf.backup'

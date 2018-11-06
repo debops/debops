@@ -1,0 +1,30 @@
+{% set output = [] %}
+{% for element in redis_server__combined_instances | parse_kv_items %}
+{%   set element_options = [
+  {"name": "port",         "value": element.port},
+  {"name": "bind",         "value": (element.bind         | d(redis_server__bind)), "multiple": False},
+  {"name": "dbfilename",   "value": (element.dbfilename   | d("dump-" + element.name + ".rdb"))},
+  {"name": "pidfile",      "value": (element.pidfile      | d("/var/run/redis-" + element.name + "/redis-server.pid"))},
+  {"name": "logfile",      "value": (element.logfile      | d("/var/log/redis/redis-server-" + element.name + ".log"))},
+  {"name": "unixsocket",   "value": (element.unixsocket   | d("/var/run/redis-" + element.name + "/redis-server.sock"))},
+  {"name": "syslog-ident", "value": (element.syslog_ident | d("redis-" + element.name))}
+] %}
+{%   set entry = {
+  "name": element.name,
+  "state": element.state | d('present'),
+  "requirepass": (element.requirepass | d(redis_server__auth_password)),
+  "port": element.port,
+  "options": (redis_server__default_base_options + redis_server__base_options + element_options) | parse_kv_config
+} %}
+{%   if element.port is undefined %}
+{%     set _ = entry.update({'state': "init"}) %}
+{%   endif %}
+{%   if element.systemd_override|d() %}
+{%     set _ = entry.update({'systemd_override': element.systemd_override}) %}
+{%   endif %}
+{%   if element.master_host|d() and element.master_port|d() %}
+{%     set _ = entry.update({'master_host': element.master_host, 'master_port': element.master_port}) %}
+{%   endif %}
+{%   set _ = output.append(entry) %}
+{% endfor %}
+{{ output | to_nice_yaml }}

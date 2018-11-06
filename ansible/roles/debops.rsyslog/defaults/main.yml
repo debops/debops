@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # General configuration [[[
@@ -77,6 +79,14 @@ rsyslog__user: '{{ "syslog" if rsyslog__unprivileged|bool else "root" }}'
 # The unprivileged system group account used by the ``rsyslogd`` daemon, when
 # unprivileged operation is enabled.
 rsyslog__group: '{{ "syslog" if rsyslog__unprivileged|bool else "root" }}'
+
+                                                                   # ]]]
+# .. envvar:: rsyslog__append_groups [[[
+#
+# List of additional UNIX groups to add the rsyslog user into. The
+# ``ssl-cert`` UNIX group is used for the X.509 private key access.
+rsyslog__append_groups: '{{ ["ssl-cert"] if (rsyslog__unprivileged|bool
+				and rsyslog__pki|bool) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__home [[[
@@ -333,16 +343,21 @@ rsyslog__host_forward: []
 # See :ref:`rsyslog__rules` for more details.
 rsyslog__weight_map:
   'global':    '05'
+  'globals':   '05'
   'module':    '10'
   'modules':   '10'
   'template':  '20'
   'templates': '20'
   'output':    '30'
+  'outputs':   '30'
   'service':   '30'
+  'services':  '30'
   'rule':      '50'
   'rules':     '50'
   'ruleset':   '50'
+  'rulesets':  '50'
   'input':     '90'
+  'inputs':    '90'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__rules [[[

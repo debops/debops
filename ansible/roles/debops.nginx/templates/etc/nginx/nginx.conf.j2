@@ -43,6 +43,10 @@ http {
 {{ nginx_http_options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
+{% if nginx_http_extra_options|d() and nginx_http_extra_options %}
+{{ nginx_http_extra_options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
+
+{% endif %}
 {% block nginx_tpl_block_log %}
 {%      set nginx_tpl_access_log_format = '' %}
 {%      if nginx_access_log_format is defined %}

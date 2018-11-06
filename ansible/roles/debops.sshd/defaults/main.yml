@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # OpenSSH packages [[[
@@ -286,12 +288,11 @@ sshd__custom_options: ''
 #
 # List of UNIX system groups which allow connections to SSH service defined by
 # default. The ``root`` UNIX group is used for backup connections, temporarily.
-sshd__default_allow_groups: '{{ [ "root" ] +
-                                (ansible_local.system_groups.access.sshd
+sshd__default_allow_groups: '{{ ([ "root" ] + ansible_local.system_groups.access.sshd)
                                  if (ansible_local|d() and ansible_local.system_groups|d() and
                                      ansible_local.system_groups.access|d() and
                                      ansible_local.system_groups.access.sshd|d())
-                                 else []) }}'
+                                 else [] }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__allow_groups [[[

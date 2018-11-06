@@ -30,7 +30,7 @@ DebOps development and maintenance.
 .. __: https://github.com/nickjj/ansigenome/
 .. __: https://github.com/nickjj/rolespec/
 
-Infortunately, the growing codebase resulted in quickly rising number of
+Unfortunately, the growing codebase resulted in quickly rising number of
 :command:`git` repositories to maintain, which sapped the available resources
 from project development. There were also issues with packaging the DebOps code
 and documentation in Debian, as well as no practical way to provide a "stable

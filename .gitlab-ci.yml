@@ -308,6 +308,14 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.debops_legacy/.*'
     JANE_LOG_PATTERN: '\[debops\.debops_legacy\]'
 
+'dhcp_probe role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dhcp_probe.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_dhcp_probe'
+    JANE_DIFF_PATTERN: '.*/debops.dhcp_probe/.*'
+    JANE_LOG_PATTERN: '\[debops\.dhcp_probe\]'
+
 'dhcpd role':
   <<: *test_role_no_deps
   variables:
@@ -477,15 +485,23 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.ferm/.*'
     JANE_LOG_PATTERN: '\[debops\.ferm\]'
 
+'freeradius role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/freeradius.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_freeradius'
+    JANE_DIFF_PATTERN: '.*/debops.freeradius/.*'
+    JANE_LOG_PATTERN: '\[debops\.freeradius\]'
+
 
 # --- g --- [[[2
 
 'gitlab role':
   <<: *test_role_3rd_deps
   variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_gitlab'
-    JANE_INVENTORY_HOSTVARS: 'redis__overcommit_memory_enable=false postgresql__delegate_to=localhost'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/redis_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_redis_server,debops_service_gitlab'
+    JANE_INVENTORY_HOSTVARS: 'postgresql__delegate_to=localhost'
     JANE_DIFF_PATTERN: '.*/debops.gitlab/.*'
     JANE_LOG_PATTERN: '\[debops\.gitlab\]'
     VAGRANT_MASTER_MEMORY: '4096'
@@ -582,6 +598,40 @@ stages:
 
 # --- i --- [[[2
 
+'icinga role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_pki,debops_service_icinga'
+    JANE_DIFF_PATTERN: '.*/debops.icinga/.*'
+    JANE_LOG_PATTERN: '\[debops\.icinga\]'
+
+'icinga_db/mariadb role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_pki,debops_service_mariadb_server,debops_service_icinga,debops_service_icinga_db'
+    JANE_DIFF_PATTERN: '.*/debops.icinga_db/.*'
+    JANE_LOG_PATTERN: '\[debops\.icinga_db\]'
+
+'icinga_db/postgresql role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_pki,debops_service_postgresql_server,debops_service_icinga,debops_service_icinga_db'
+    JANE_INVENTORY_HOSTVARS: 'postgresql__delegate_to=localhost'
+    JANE_DIFF_PATTERN: '.*/debops.icinga_db/.*'
+    JANE_LOG_PATTERN: '\[debops\.icinga_db\]'
+
+'icinga_web role':
+  <<: *test_role_3rd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml ${DEBOPS_PLAYBOOKS}/service/icinga_web.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_pki,debops_service_postgresql_server,debops_service_icinga,debops_service_icinga_db,debops_service_icinga_web'
+    JANE_INVENTORY_HOSTVARS: 'postgresql__delegate_to=localhost'
+    JANE_DIFF_PATTERN: '.*/debops.icinga_web/.*'
+    JANE_LOG_PATTERN: '\[debops\.icinga_web\]'
+
 'ifupdown role':
   <<: *test_role_1st_deps
   variables:
@@ -629,6 +679,8 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_kibana'
     JANE_DIFF_PATTERN: '.*/debops.kibana/.*'
     JANE_LOG_PATTERN: '\[debops\.kibana\]'
+    VAGRANT_MASTER_MEMORY: '2048'
+  tags: [ 'mem-2GB' ]
 
 'kmod role':
   <<: *test_role_no_deps
@@ -1100,14 +1152,21 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.radvd\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
-'redis role':
+'redis_server role':
   <<: *test_role_2nd_deps
   variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_redis'
-    JANE_INVENTORY_HOSTVARS: 'redis__overcommit_memory_enable=false'
-    JANE_DIFF_PATTERN: '.*/debops.redis/.*'
-    JANE_LOG_PATTERN: '\[debops\.redis\]'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_server.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_redis_server'
+    JANE_DIFF_PATTERN: '.*/debops.redis_server/.*'
+    JANE_LOG_PATTERN: '\[debops\.redis_server\]'
+
+'redis_sentinel role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_sentinel.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_redis_sentinel'
+    JANE_DIFF_PATTERN: '.*/debops.redis_sentinel/.*'
+    JANE_LOG_PATTERN: '\[debops\.redis_sentinel\]'
 
 'reprepro role':
   <<: *test_role_2nd_deps

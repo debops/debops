@@ -71,6 +71,9 @@
 {%   if config.recent_target|d() %}
 {%     set _ = ferm__tpl_config.update({'recent_target': config.recent_target}) %}
 {%   endif %}
+{%   if config.snat_ip|d() %}
+{%     set _ = ferm__tpl_config.update({'snat_ip': config.snat_ip}) %}
+{%   endif %}
 {%   if config.subchain|d() %}
 {%     set _ = ferm__tpl_config.update({'subchain': (ferm__tpl_config['type'] + "-" + config.name | d((ferm__tpl_config['dport'][0] if ferm__tpl_config['dport']|d() else "rules")))}) %}
 {%   endif %}
@@ -366,12 +369,26 @@
 {%     if ferm__tpl_config['domain_args'] %}}{% endif %}
 {%   elif ferm__tpl_config['type'] == 'dmz' %}
 {%     if ferm__tpl_config['domain_args'] %}{{ ferm__tpl_config['domain_args'] | join(" ") }} {% endif %}{
+{%       if ferm__tpl_config['interface']|d() %}
+    @def $PUBLIC_IF  = ({{ ferm__tpl_config['interface']  | unique | join(' ') }});
+{%       endif %}
+{%       if ferm__tpl_config['public_ip']|d() %}
     @def $PUBLIC_IP  = ( @ipfilter( ({{ ferm__tpl_config['public_ip']  | unique | join(' ') }}) ) );
+{%       endif %}
     @def $PRIVATE_IP = ( @ipfilter( ({{ ferm__tpl_config['private_ip'] | unique | join(' ') }}) ) );
-    @if @ne($PUBLIC_IP,"") @if @ne($PRIVATE_IP,"") {
+
+{%       if ferm__tpl_config['public_ip']|d() %}
+    @def $PUBLIC_IPV4 = "{{ ferm__tpl_config['public_ip'] | unique | ipv4 | first | d('') }}";
+    @def $PUBLIC_IPV6 = "{{ ferm__tpl_config['public_ip'] | unique | ipv6 | first | d('') }}";
+
+{%       endif %}
+    @def $PRIVATE_IPV4 = "{{ ferm__tpl_config['private_ip'] | unique | ipv4 | first | d('') }}";
+    @def $PRIVATE_IPV6 = "{{ ferm__tpl_config['private_ip'] | unique | ipv6 | first | d('') }}";
+
+    {% if ferm__tpl_config['interface']|d() %}@if @ne($PUBLIC_IF,""){% endif %}{% if ferm__tpl_config['public_ip']|d() %} @if @ne($PUBLIC_IP,""){% endif %} @if @ne($PRIVATE_IP,"") {
         table filter chain FORWARD {
 {%     if ferm__tpl_config['dmz_ports']|d() %}
-            protocol ({{ ferm__tpl_config['protocols']|d([ 'tcp' ]) | join(" ") }}) {
+            protocol ({{ ferm__tpl_config['protocol']|d([ 'tcp' ]) | join(" ") }}) {
 {%       if ferm__tpl_config['dmz_ports'] | length > 1 %}
                 mod multiport destination-ports ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
 {%       else %}
@@ -388,26 +405,29 @@
         table nat {
             chain PREROUTING {
 {%     if ferm__tpl_config['dmz_ports']|d() %}
-                protocol ({{ ferm__tpl_config['protocols']|d([ 'tcp' ]) | join(" ") }}) {
+                protocol ({{ ferm__tpl_config['protocol']|d([ 'tcp' ]) | join(" ") }}) {
 {%       if ferm__tpl_config['dmz_ports'] | length > 1 %}
                     mod multiport destination-ports ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
 {%       else %}
                     dport ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
 {%       endif %}
 {%       if ferm__tpl_config['dport']|d() %}
-                        destination $PUBLIC_IP DNAT to @cat($PRIVATE_IP, ":{{ ferm__tpl_config['dport'][0] }}");
+                        @if @eq($DOMAIN, ip)  @if @ne($PRIVATE_IPV4,"") {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IPV4 {% endif %}DNAT to @cat($PRIVATE_IPV4, ":{{ ferm__tpl_config['dport'][0] }}");
+                        @if @eq($DOMAIN, ip6) @if @ne($PRIVATE_IPV6,"") {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IPV6 {% endif %}DNAT to @cat($PRIVATE_IPV6, ":{{ ferm__tpl_config['dport'][0] }}");
 {%       else %}
-                        destination $PUBLIC_IP DNAT to $PRIVATE_IP;
+                        {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IP {% endif %}DNAT to $PRIVATE_IP;
 {%       endif %}
                     }
                 }
 {%     else %}
-                destination $PUBLIC_IP DNAT to $PRIVATE_IP;
+                {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IP {% endif %}DNAT to $PRIVATE_IP;
 {%     endif %}
             }
+{%     if ferm__tpl_config['snat_ip']|d() %}
             chain POSTROUTING {
-                source $PRIVATE_IP SNAT to $PUBLIC_IP;
+                destination $PRIVATE_IP SNAT to {{ ferm__tpl_config['snat_ip'] }};
             }
+{%     endif %}
         }
     }
 }

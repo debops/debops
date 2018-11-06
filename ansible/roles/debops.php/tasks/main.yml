@@ -95,7 +95,8 @@
     LC_ALL: 'C'
   script: script/php-synchronize-config.sh {{ php__version }}
   register: php__register_synchronize_config
-  changed_when: php__register_synchronize_config.stdout != ''
+  changed_when: php__register_synchronize_config.stdout is defined and
+                php__register_synchronize_config.stdout != ''
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
 
@@ -109,6 +110,7 @@
   register: php__register_diversions
   check_mode: False
   changed_when: False
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Divert default PHP-FPM configuration and pool
   command: dpkg-divert --quiet --local --divert {{ item + ".dpkg-divert" }}

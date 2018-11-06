@@ -49,7 +49,7 @@ system:
 
 - on MacOSX systems, it will be :file:`~/Library/Application Support/debops`
 
-Afterwards, you should check out the `Getting Started Guide <https://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html>`_
+Afterwards, you should check out the `Getting Started Guide <https://docs.debops.org/en/latest/debops-playbooks/guides/getting-started.html>`_
 to learn how to create and manage your first DebOps environment.
 
 

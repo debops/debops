@@ -1,0 +1,1264 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.icinga_web default variables
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# APT packages, UNIX environment [[[
+# ----------------------------------
+
+# .. envvar:: icinga_web__base_packages [[[
+#
+# List of default APT packages to install for Icinga 2 Web support.
+icinga_web__base_packages:
+  - 'icingaweb2'
+  - 'icingaweb2-module-doc'
+  - 'icingaweb2-module-monitoring'
+  - 'icingacli'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__packages [[[
+#
+# List of additional APT packages to install with Icinga 2 Web support.
+icinga_web__packages: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__user [[[
+#
+# The UNIX account used by Icinga 2 Web. This account should be present on the
+# system by default.
+icinga_web__user: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: Icinga_web__group [[[
+#
+# The UNIX group used by Icinga 2 Web. This group will be created automatically
+# by the APT package.
+icinga_web__group: 'icingaweb2'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__src [[[
+#
+# Directory where custom source code will be downloaded by the role, for
+# example module repositories.
+icinga_web__src: '{{ (ansible_local.root.src
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.src|d())
+                      else "/usr/local/src") + "/icinga_web" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuraton [[[
+# ------------------------
+
+# .. envvar:: icinga_web__fqdn [[[
+#
+# The Fully Qualified Domain Name of the Icinga 2 Web service. The web
+# interface will be available on this address. This address is also used to
+# access the Icinga 2 Director API.
+icinga_web__fqdn: 'icinga.{{ icinga_web__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__domain [[[
+#
+# The domain used by the Icinga 2 Web interface.
+icinga_web__domain: '{{ ansible_local.core.domain
+                        if (ansible_local|d() and ansible_local.core|d() and
+                            ansible_local.core.domain|d())
+                        else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__node_fqdn [[[
+#
+# The Fully Qualified Domain Name of the local Icinga 2 node. This hostname
+# will be used to access the Icinga 2 REST API.
+icinga_web__node_fqdn: '{{ ansible_local.core.fqdn
+                           if (ansible_local|d() and ansible_local.core|d() and
+                               ansible_local.core.fqdn|d())
+                           else ansible_fqdn }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga 2 Web modules [[[
+# ------------------------
+
+# These variables define what Icinga 2 Web modules should be installed and/or
+# enabled. External modules will be cloned using :command:`git` command.
+# See :ref:`icinga_web__ref_modules` for more details.
+
+# .. envvar:: icinga_web__default_modules [[[
+#
+# List of Icinga 2 Web modules installed by default.
+icinga_web__default_modules:
+
+  - name: 'toplevelview'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-toplevelview'
+    git_version: 'v0.2.1'
+    state: 'present'
+
+  - name: 'monitoring'
+    state: 'present'
+
+  - name: 'businessprocess'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-businessprocess'
+    git_version: 'v2.1.0'
+    state: 'present'
+
+  - name: 'graphite'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-graphite'
+    git_version: 'v1.0.1'
+    enabled: False
+    state: 'present'
+
+  - name: 'director'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-director'
+    git_version: 'v1.4.3'
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+  - name: 'generictts'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-generictts'
+    git_version: 'v2.0.0'
+    state: 'present'
+
+  - name: 'grafana'
+    git_repo: 'https://github.com/Mikesch-mp/icingaweb2-module-grafana'
+    git_version: 'v1.2.5'
+    state: 'present'
+
+  - name: 'map'
+    git_repo: 'https://github.com/nbuchwitz/icingaweb2-module-map'
+    git_version: 'v1.0.4'
+    state: 'present'
+
+  - name: 'pnp'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-pnp'
+    git_version: 'v1.1.0'
+    enabled: False
+    state: 'present'
+
+  - name: 'elasticsearch'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-elasticsearch'
+    git_version: 'v0.9.0'
+    state: 'present'
+
+  - name: 'cube'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-cube'
+    git_version: 'v1.0.1'
+    state: 'present'
+
+  - name: 'netboximport'
+    git_repo: 'https://github.com/Uberspace/icingaweb2-module-netboximport'
+    git_version: 'master'
+    state: 'present'
+
+  - name: 'doc'
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__modules [[[
+#
+# List of additional Icinga 2 Web modules that should be installed/managed by
+# the role.
+icinga_web__modules: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga 2 Web internal database [[[
+# ----------------------------------
+
+# .. envvar:: icinga_web__database_type [[[
+#
+# Specify the type of the database to use for Icinga 2 Web internal database,
+# either ``postgresql`` (preferred) or ``mariadb``. The role will try to detect
+# the available databases automatically based on the Ansible local facts.
+icinga_web__database_type: '{{ ansible_local.icinga_web.database_type
+                               if (ansible_local|d() and ansible_local.icinga_web|d() and
+                                   ansible_local.icinga_web.database_type|d())
+                               else ("postgresql"
+                                     if (ansible_local|d() and ansible_local.postgresql is defined)
+                                     else ("mariadb"
+                                           if (ansible_local|d() and ansible_local.mariadb is defined)
+                                           else "Icinga Web requires a database")) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_name [[[
+#
+# Name of the Icinga 2 Web internal database.
+icinga_web__database_name: '{{ "icingaweb2_production"
+                               if (icinga_web__database_type == "postgresql")
+                               else ("icingaweb2"
+                                     if (icinga_web__database_type == "mariadb")
+                                     else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_user [[[
+#
+# Name of the Icinga 2 Web internal database user.
+icinga_web__database_user: 'icingaweb2'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_password_path [[[
+#
+# Path to database password file located on the Ansible Controller. See the
+# :ref:`debops.secret` role for more details.
+icinga_web__database_password_path: '{{ secret + "/" + icinga_web__database_type + "/" +
+                                        ansible_local[icinga_web__database_type].delegate_to }}{%
+                                          if icinga_web__database_type=="postgresql" %}/{{ ansible_local[icinga_web__database_type].port }}{% endif
+                                        %}{{ "/credentials/" + icinga_web__database_user +
+                                        "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_password [[[
+#
+# Password for Icinga 2 Web internal database.
+icinga_web__database_password: "{{ lookup('password', icinga_web__database_password_path
+                                   + ' length=48 chars=ascii_letters,digits,.-_') }}"
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_host [[[
+#
+# The address of the Icinga 2 Web internal database server.
+icinga_web__database_host: '{{ ansible_local[icinga_web__database_type].server
+                               if (ansible_local|d() and ansible_local[icinga_web__database_type]|d() and
+                                   ansible_local[icinga_web__database_type].server|d())
+                               else "localhost" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_port [[[
+#
+# The port on which the Icinga 2 Web internal database server listens for
+# connections.
+icinga_web__database_port: '{{ ansible_local[icinga_web__database_type].port
+                               if (ansible_local|d() and ansible_local[icinga_web__database_type]|d() and
+                                   ansible_local[icinga_web__database_type].port|d())
+                               else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_delegate_to [[[
+#
+# The Ansible inventory name of the host to which the database tasks will be
+# delegated to.
+icinga_web__database_delegate_to: '{{ ansible_local[icinga_web__database_type].delegate_to
+                                      if (ansible_local|d() and ansible_local[icinga_web__database_type]|d() and
+                                          ansible_local[icinga_web__database_type].delegate_to|d())
+                                      else inventory_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_schema [[[
+#
+# Absolute path to the Icinga 2 Web internal database schema which will be
+# imported during initialization. The schema needs to be located on the remote
+# host with the database.
+icinga_web__database_schema: '{{ "/usr/share/icingaweb2/etc/schema/"
+                                 + ("pgsql.schema.sql"
+                                    if (icinga_web__database_type == "postgresql")
+                                    else "mysql.schema.sql") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__database_init [[[
+#
+# Enable or disable initialization of the Icinga 2 Web internal database.
+icinga_web__database_init: '{{ False
+                               if (ansible_local|d() and ansible_local.icinga_web|d() and
+                                   (ansible_local.icinga_web.installed|d())|bool)
+                               else True }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga 2 master database [[[
+# ----------------------------
+
+# These variables control configuration of the Icinga 2 master database,
+# managed by :ref:`debops.icinga_db` Ansible role. This database is usually on
+# the same host the Web interface is installed, but if not, you might need to
+# configure access to a remote database here.
+
+# .. envvar:: icinga_web__master_database_enabled [[[
+#
+# Enable or disable configuration of the Icinga 2 master database resource in
+# the Icinga 2 Web interface.
+# This does not control the configuration of the actual database, see
+# :ref:`debops.icinga_db` role for that.
+icinga_web__master_database_enabled: '{{ True
+                                         if (ansible_local|d() and ansible_local.icinga_db|d() and
+                                             (ansible_local.icinga_db.configured|d())|bool)
+                                         else False }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__master_database_type [[[
+#
+# Specify the type of the Icinga 2 master database, either ``postgresql`` or
+# ``mariadb``.
+icinga_web__master_database_type: '{{ ansible_local.icinga_db.type
+                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
+                                          ansible_local.icinga_db.type|d())
+                                      else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__master_database_name [[[
+#
+# Name of the Icinga 2 master database.
+icinga_web__master_database_name: '{{ ansible_local.icinga_db.dbc_dbname
+                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
+                                          ansible_local.icinga_db.dbc_dbname|d())
+                                      else "icinga2" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__master_database_user [[[
+#
+# Name of the Icinga 2 master database user.
+icinga_web__master_database_user: '{{ ansible_local.icinga_db.dbc_dbuser
+                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
+                                          ansible_local.icinga_db.dbc_dbuser|d())
+                                      else "icinga2" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__master_database_password [[[
+#
+# Password for the Icinga 2 master database.
+icinga_web__master_database_password: '{{ ansible_local.icinga_db.dbc_dbpass
+                                          if (ansible_local|d() and ansible_local.icinga_db|d() and
+                                              ansible_local.icinga_db.dbc_dbpass|d())
+                                          else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__master_database_host [[[
+#
+# The address of the Icinga 2 master database host.
+icinga_web__master_database_host: '{{ ansible_local.icinga_db.dbc_dbserver
+                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
+                                          ansible_local.icinga_db.dbc_dbserver|d())
+                                      else "localhost" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__master_database_port [[[
+#
+# The port on which the Icinga 2 master database listens for connections.
+icinga_web__master_database_port: '{{ ansible_local.icinga_db.dbc_dbport
+                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
+                                          ansible_local.icinga_db.dbc_dbport|d())
+                                      else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga 2 Director support [[[
+# -----------------------------
+
+# .. envvar:: icinga_web__director_enabled [[[
+#
+# Enable or disable support for Icinga 2 Web Director module.
+icinga_web__director_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_api_fqdn [[[
+#
+# Fully Qualified Domain Name which is part of the URL to the Icinga 2 Director
+# REST API. It is usually the same as the Icinga 2 Web interface FQDN.
+icinga_web__director_api_fqdn: '{{ icinga_web__fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_api_user [[[
+#
+# Name of the Icinga 2 Director API user, used by the :ref:`debops.icinga` role
+# to authenticate to the Director REST API.
+icinga_web__director_api_user: 'director-api'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_api_password [[[
+#
+# The password for the Icinga 2 Director API user used by the
+# :ref:`debops.icinga` role.
+icinga_web__director_api_password: '{{ lookup("password", secret + "/icinga_web/api/"
+                                       + icinga_web__director_api_fqdn + "/credentials/"
+                                       + icinga_web__director_api_user + "/password") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__directoor_database_type [[[
+#
+# Specify the database type for the Icinga 2 Director database, either
+# ``postgresql`` (preferred) or ``mariadb``. It's usually the same type as the
+# main Icinga 2 Web database.
+icinga_web__director_database_type: '{{ ansible_local.icinga_web.database_type
+                                        if (ansible_local|d() and ansible_local.icinga_web|d() and
+                                            ansible_local.icinga_web.database_type|d())
+                                        else ("postgresql"
+                                              if (ansible_local|d() and ansible_local.postgresql is defined)
+                                              else ("mariadb"
+                                                    if (ansible_local|d() and ansible_local.mariadb is defined)
+                                                    else "Icinga Director requires a database")) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_database_name [[[
+#
+# Name of the Icinga 2 Director database.
+icinga_web__director_database_name: '{{ "icinga2_director_production"
+                                        if (icinga_web__director_database_type == "postgresql")
+                                        else ("icinga2_director"
+                                              if (icinga_web__director_database_type == "mariadb")
+                                              else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_database_user [[[
+#
+# Name of the Icinga 2 Director database user.
+icinga_web__director_database_user: 'icinga2_director'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_database_password_path [[[
+#
+# Path to database password file located on the Ansible Controller for the
+# Icinga 2 Director database.
+icinga_web__director_database_password_path: '{{ secret + "/" + icinga_web__director_database_type + "/" +
+                                                 ansible_local[icinga_web__director_database_type].delegate_to }}{%
+                                                   if icinga_web__director_database_type=="postgresql" %}/{{ ansible_local[icinga_web__director_database_type].port }}{% endif
+                                                 %}{{ "/credentials/" + icinga_web__director_database_user +
+                                                 "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_database_password [[[
+#
+# Database password for the Icinga 2 Director database.
+icinga_web__director_database_password: "{{ lookup('password', icinga_web__director_database_password_path
+                                            + ' length=48 chars=ascii_letters,digits,.-_') }}"
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_database_host [[[
+#
+# Address of the Icinga 2 Director database server.
+icinga_web__director_database_host: '{{ ansible_local[icinga_web__director_database_type].server
+                                        if (ansible_local|d() and ansible_local[icinga_web__director_database_type]|d() and
+                                            ansible_local[icinga_web__director_database_type].server|d())
+                                        else "localhost" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_database_port [[[
+#
+# The port on which the Icinga 2 Director database server listens for
+# connections.
+icinga_web__director_database_port: '{{ ansible_local[icinga_web__director_database_type].port
+                                        if (ansible_local|d() and ansible_local[icinga_web__director_database_type]|d() and
+                                            ansible_local[icinga_web__director_database_type].port|d())
+                                        else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_database_delegate_to [[[
+#
+# The Ansible inventory hostname of the host where the database-related role
+# tasks will be delegated to.
+icinga_web__director_database_delegate_to: '{{ ansible_local[icinga_web__director_database_type].delegate_to
+                                               if (ansible_local|d() and ansible_local[icinga_web__director_database_type]|d() and
+                                                   ansible_local[icinga_web__director_database_type].delegate_to|d())
+                                               else inventory_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_database_init [[[
+#
+# Enable or disable initialization of the Icinga 2 Director database.
+icinga_web__director_database_init: '{{ False
+                                        if (ansible_local|d() and ansible_local.icinga_web|d() and
+                                            (ansible_local.icinga_web.installed|d())|bool)
+                                        else True }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_kickstart_enabled [[[
+#
+# Enable or disable initial import (kickstart) of the Icinga 2 configuration
+# into the Director database.
+icinga_web__director_kickstart_enabled: '{{ True
+                                            if (ansible_local|d() and ansible_local.icinga|d() and
+                                                (ansible_local.icinga.installed|d())|bool)
+                                            else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga 2 REST API [[[
+# ---------------------
+
+# These variables configure access to the Icinga 2 REST API. Using that API,
+# the Icinga 2 Web and Director interface communicates with the Icinga
+# 2 cluster nodes.
+
+# .. envvar:: icinga_web__icinga_api_fqdn [[[
+#
+# Fully Qualified Domain Name of the Icinga 2 API endpoint. It's usually on the
+# same host as the Icinga 2 Web interface.
+icinga_web__icinga_api_fqdn: '{{ icinga_web__node_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__icinga_api_port [[[
+#
+# The port on which the Icinga 2 service listens for new API connections.
+icinga_web__icinga_api_port: '5665'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__icinga_api_user [[[
+#
+# The name of the API user used for authentication to the Icinga 2 REST API.
+icinga_web__icinga_api_user: 'root'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__icinga_api_password [[[
+#
+# The password of the Icinga 2 REST API user.
+icinga_web__icinga_api_password: '{{ lookup("password", secret + "/icinga/api/"
+                                     + icinga_web__icinga_api_fqdn + "/credentials/"
+                                     + icinga_web__icinga_api_user
+                                     + "/password") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga 2 Web initial user accounts [[[
+# --------------------------------------
+
+# .. envvar:: icinga_web__initial_account_groups [[[
+#
+# List of initial user groups created by the role in the Icinga 2 Web database
+# during initialization. See :ref:`icinga_web__ref_initial_account_groups` for
+# more details.
+icinga_web__initial_account_groups:
+
+  - name: 'Administrators'
+
+  - name: 'Users'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__initial_accounts [[[
+#
+# List of initial user accounts created by the role in the Icinga 2 Web
+# database during initialization. See :ref:`icinga_web__ref_initial_accounts`
+# for more details.
+icinga_web__initial_accounts:
+
+  - name: 'root'
+    password: '{{ lookup("password", secret + "/icinga_web/auth/"
+                  + inventory_hostname + "/credentials/root/password") }}'
+
+  - name: '{{ icinga_web__director_api_user }}'
+    password: '{{ icinga_web__director_api_password }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_account_password [[[
+#
+# The default password used for the initial accounts which don't specifiy their
+# own password.
+icinga_web__default_account_password: '{{ lookup("password", secret + "/icinga_web/auth/"
+                                          + inventory_hostname + "/default_password") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`authentication.ini` configuration file [[[
+# -----------------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/authentication.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_authentication [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_authentication: '{{ (icinga_web__register_config.stdout
+                                         | from_json)["authentication.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_authentication [[[
+#
+# The default authentication configuration appled by the role.
+icinga_web__default_authentication:
+
+  - name: 'icingaweb2'
+    options:
+
+      - name: 'backend'
+        value: 'db'
+
+      - name: 'resource'
+        value: 'icingaweb_db'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__authentication [[[
+#
+# Custom authentication configuration defined in the Ansible inventory.
+icinga_web__authentication: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_authentication [[[
+#
+# The variable which combines the authentication configuration from different
+# source variables and is used by the role task to generate the actual file.
+icinga_web__combined_authentication: '{{ icinga_web__current_authentication
+                                         + icinga_web__default_authentication
+                                         + icinga_web__authentication }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`config.ini` configuration file [[[
+# ---------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/config.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_config [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_config: '{{ (icinga_web__register_config.stdout
+                                 | from_json)["config.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_config [[[
+#
+# The default global configuration appled by the role.
+icinga_web__default_config:
+
+  - name: 'global'
+    options:
+
+      - name: 'show_stacktraces'
+        value: '0'
+
+      - name: 'config_backend'
+        value: 'db'
+
+      - name: 'config_resource'
+        value: 'icingaweb_db'
+
+      - name: 'module_path'
+        value: '/usr/share/icingaweb2/modules'
+
+  - name: 'logging'
+    options:
+
+      - name: 'log'
+        value: 'syslog'
+
+      - name: 'level'
+        value: 'ERROR'
+
+      - name: 'application'
+        value: 'icingaweb2'
+
+      - name: 'facility'
+        value: 'user'
+
+  - name: 'themes'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__config [[[
+#
+# Custom global configuration defined in the Ansible inventory.
+icinga_web__config: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_config [[[
+#
+# The variable which combines the global configuration from different source
+# variables and is used by the role task to generate the actual file.
+icinga_web__combined_config: '{{ icinga_web__current_config
+                                 + icinga_web__default_config
+                                 + icinga_web__config }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`groups.ini` configuration file [[[
+# ---------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/groups.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_groups [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_groups: '{{ (icinga_web__register_config.stdout
+                                 | from_json)["groups.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_groups [[[
+#
+# The default group configuration appled by the role.
+icinga_web__default_groups:
+
+  - name: 'icingaweb2'
+    options:
+
+      - name: 'backend'
+        value: 'db'
+
+      - name: 'resource'
+        value: 'icingaweb_db'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__groups [[[
+#
+# Custom group configuration defined in the Ansible inventory.
+icinga_web__groups: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_groups [[[
+#
+# The variable which combines the group configuration from different source
+# variables and is used by the role task to generate the actual file.
+icinga_web__combined_groups: '{{ icinga_web__current_groups
+                                 + icinga_web__default_groups
+                                 + icinga_web__groups }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`resources.ini` configuration file [[[
+# ------------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/resources.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_resources [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_resources: '{{ (icinga_web__register_config.stdout
+                                    | from_json)["resources.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_resources [[[
+#
+# The default resource configuration appled by the role.
+icinga_web__default_resources:
+
+  - name: 'icingaweb_db'
+    options:
+
+      - name: 'type'
+        value: 'db'
+
+      - name: 'db'
+        value: '{{ "pgsql"
+                   if (icinga_web__database_type == "postgresql")
+                   else ("mysql"
+                         if (icinga_web__database_type == "mariadb")
+                         else "unknown") }}'
+
+      - name: 'host'
+        value: '{{ icinga_web__database_host }}'
+
+      - name: 'port'
+        value: '{{ icinga_web__database_port }}'
+        state: '{{ "present" if icinga_web__database_port|d() else "absent" }}'
+
+      - name: 'dbname'
+        value: '{{ icinga_web__database_name }}'
+
+      - name: 'username'
+        value: '{{ icinga_web__database_user }}'
+
+      - name: 'password'
+        value: '{{ icinga_web__database_password }}'
+
+      - name: 'charset'
+        value: 'utf8'
+
+      - name: 'persistent'
+        value: '0'
+
+      - name: 'use_ssl'
+        value: '0'
+
+  - name: 'icinga2'
+    state: '{{ "present"
+               if (icinga_web__master_database_enabled|bool)
+               else "ignore" }}'
+    options:
+
+      - name: 'type'
+        value: 'db'
+
+      - name: 'db'
+        value: '{{ "pgsql"
+                   if (icinga_web__master_database_type == "postgresql")
+                   else ("mysql"
+                         if (icinga_web__master_database_type == "mariadb")
+                         else "unknown") }}'
+
+      - name: 'host'
+        value: '{{ icinga_web__master_database_host }}'
+
+      - name: 'port'
+        value: '{{ icinga_web__master_database_port }}'
+        state: '{{ "present" if icinga_web__master_database_port|d() else "absent" }}'
+
+      - name: 'dbname'
+        value: '{{ icinga_web__master_database_name }}'
+
+      - name: 'username'
+        value: '{{ icinga_web__master_database_user }}'
+
+      - name: 'password'
+        value: '{{ icinga_web__master_database_password }}'
+
+      - name: 'charset'
+        value: 'utf8'
+
+      - name: 'persistent'
+        value: '0'
+
+      - name: 'use_ssl'
+        value: '0'
+
+  - name: 'icinga2_director'
+    options:
+
+      - name: 'type'
+        value: 'db'
+
+      - name: 'db'
+        value: '{{ "pgsql"
+                   if (icinga_web__director_database_type == "postgresql")
+                   else ("mysql"
+                         if (icinga_web__director_database_type == "mariadb")
+                         else "unknown") }}'
+
+      - name: 'host'
+        value: '{{ icinga_web__director_database_host }}'
+
+      - name: 'port'
+        value: '{{ icinga_web__director_database_port }}'
+        state: '{{ "present" if icinga_web__director_database_port|d() else "absent" }}'
+
+      - name: 'dbname'
+        value: '{{ icinga_web__director_database_name }}'
+
+      - name: 'username'
+        value: '{{ icinga_web__director_database_user }}'
+
+      - name: 'password'
+        value: '{{ icinga_web__director_database_password }}'
+
+      - name: 'charset'
+        value: 'utf8'
+
+      - name: 'persistent'
+        value: '0'
+
+      - name: 'use_ssl'
+        value: '0'
+
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__resources [[[
+#
+# Custom resource configuration defined in the Ansible inventory.
+icinga_web__resources: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_resources [[[
+#
+# The variable which combines the resource configuration from different source
+# variables and is used by the role task to generate the actual file.
+icinga_web__combined_resources: '{{ icinga_web__current_resources
+                                    + icinga_web__default_resources
+                                    + icinga_web__resources }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`roles.ini` configuration file [[[
+# --------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/roles.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_roles [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_roles: '{{ (icinga_web__register_config.stdout
+                                | from_json)["roles.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_roles [[[
+#
+# The default user role configuration appled by the role.
+icinga_web__default_roles:
+
+  - name: 'Administrators'
+    options:
+
+      - name: 'users'
+        value: '{{ (ansible_local.core.admin_users
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.admin_users|d())
+                    else []) | join(",") }}'
+
+      - name: 'permissions'
+        value: '*'
+
+      - name: 'groups'
+        value: 'Administrators'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__roles [[[
+#
+# Custom user role configuration defined in the Ansible inventory.
+icinga_web__roles: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_roles [[[
+#
+# The variable which combines the user role configuration from different source
+# variables and is used by the role task to generate the actual file.
+icinga_web__combined_roles: '{{ icinga_web__current_roles
+                                + icinga_web__default_roles
+                                + icinga_web__roles }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`modules/monitoring/backends.ini` configuration file [[[
+# ------------------------------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/modules/monitoring/backends.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_backends [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_backends: '{{ (icinga_web__register_config.stdout
+                                   | from_json)["modules/monitoring/backends.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_backends [[[
+#
+# The default monitoring backend configuration appled by the role.
+icinga_web__default_backends:
+
+  - name: 'icinga2'
+    state: '{{ "present"
+               if (icinga_web__master_database_enabled|bool)
+               else "ignore" }}'
+    options:
+
+      - name: 'type'
+        value: 'ido'
+
+      - name: 'resource'
+        value: 'icinga2'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__backends [[[
+#
+# Custom monitoring backend configuration defined in the Ansible inventory.
+icinga_web__backends: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_backends [[[
+#
+# The variable which combines the monitoring backend configuration from
+# different source variables and is used by the role task to generate the
+# actual file.
+icinga_web__combined_backends: '{{ icinga_web__current_backends
+                                   + icinga_web__default_backends
+                                   + icinga_web__backends }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`modules/monitoring/commandtransports.ini` configuration file [[[
+# ---------------------------------------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/modules/monitoring/commandtransports.ini`
+# configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_commandtransports [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_commandtransports: '{{ (icinga_web__register_config.stdout
+                                            | from_json)["modules/monitoring/commandtransports.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_commandtransports [[[
+#
+# The default command transport configuration appled by the role.
+icinga_web__default_commandtransports:
+
+  - name: 'icinga2'
+    options:
+
+      - name: 'transport'
+        value: 'api'
+
+      - name: 'host'
+        value: '{{ icinga_web__icinga_api_fqdn }}'
+
+      - name: 'port'
+        value: '{{ icinga_web__icinga_api_port }}'
+
+      - name: 'username'
+        value: '{{ icinga_web__icinga_api_user }}'
+
+      - name: 'password'
+        value: '{{ icinga_web__icinga_api_password }}'
+
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.icinga|d() and
+                   (ansible_local.icinga.installed|d())|bool)
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__commandtransports [[[
+#
+# Custom command transport configuration defined in the Ansible inventory.
+icinga_web__commandtransports: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_commandtransports [[[
+#
+# The variable which combines the command transport configuration from
+# different source variables and is used by the role task to generate the
+# actual file.
+icinga_web__combined_commandtransports: '{{ icinga_web__current_commandtransports
+                                            + icinga_web__default_commandtransports
+                                            + icinga_web__commandtransports }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`modules/director/config.ini` configuration file [[[
+# --------------------------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/modules/director/config.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_director_cfg [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_director_cfg: '{{ (icinga_web__register_config.stdout
+                                       | from_json)["modules/director/config.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_director_cfg [[[
+#
+# The default Icinga 2 Director configuration appled by the role.
+icinga_web__default_director_cfg:
+
+  - name: 'db'
+    options:
+
+      - name: 'resource'
+        value: 'icinga2_director'
+
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_cfg [[[
+#
+# Custom Icinga 2 Director configuration defined in the Ansible inventory.
+icinga_web__director_cfg: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_director_cfg [[[
+#
+# The variable which combines the Icinga 2 Director configuration from
+# different source variables and is used by the role task to generate the
+# actual file.
+icinga_web__combined_director_cfg: '{{ icinga_web__current_director_cfg
+                                       + icinga_web__default_director_cfg
+                                       + icinga_web__director_cfg }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :file:`modules/director/kickstart.ini` configuration file [[[
+# -----------------------------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/modules/director/kickstart.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_director_kickstart_cfg [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_director_kickstart_cfg: '{{ (icinga_web__register_config.stdout
+                                                 | from_json)["modules/director/kickstart.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_director_kickstart_cfg [[[
+#
+# The default kickstart configuration appled by the role.
+icinga_web__default_director_kickstart_cfg:
+
+  - name: 'config'
+    options:
+
+      - name: 'endpoint'
+        value: '{{ icinga_web__icinga_api_fqdn }}'
+
+      - name: 'host'
+        value: '{{ icinga_web__icinga_api_fqdn }}'
+
+      - name: 'port'
+        value: '{{ icinga_web__icinga_api_port }}'
+
+      - name: 'username'
+        value: '{{ icinga_web__icinga_api_user }}'
+
+      - name: 'password'
+        value: '{{ icinga_web__icinga_api_password }}'
+
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.icinga|d() and
+                   (ansible_local.icinga.installed|d())|bool)
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_kickstart_cfg [[[
+#
+# Custom kickstart configuration defined in the Ansible inventory.
+icinga_web__director_kickstart_cfg: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_director_kickstart [[[
+#
+# The variable which combines the kickstart configuration from different source
+# variables and is used by the role task to generate the actual file.
+icinga_web__combined_director_kickstart_cfg: '{{ icinga_web__current_director_kickstart_cfg
+                                                 + icinga_web__default_director_kickstart_cfg
+                                                 + icinga_web__director_kickstart_cfg }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: icinga_web__postgresql__dependent_roles [[[
+#
+# Configuration of PostgreSQL roles for :ref:`debops.postgresql` Ansible role.
+icinga_web__postgresql__dependent_roles:
+
+  # Owner of the main Icinga Web database
+  - name: '{{ icinga_web__database_name }}'
+    flags: [ 'NOLOGIN' ]
+
+  - name: '{{ icinga_web__database_user }}'
+    password: '{{ icinga_web__database_password }}'
+    db: '{{ icinga_web__database_name }}'
+    priv: [ 'ALL' ]
+
+  - name: '{{ icinga_web__director_database_name }}'
+    flags: [ 'NOLOGIN' ]
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+  - name: '{{ icinga_web__director_database_user }}'
+    password: '{{ icinga_web__director_database_password }}'
+    db: '{{ icinga_web__director_database_name }}'
+    priv: [ 'ALL' ]
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__postgresql__dependent_databases [[[
+#
+# Configuration of PostgreSQL databases for the :ref:`debops.postgresql` Ansible
+# role.
+icinga_web__postgresql__dependent_databases:
+
+  - name:  '{{ icinga_web__database_name }}'
+    owner: '{{ icinga_web__database_name }}'
+
+  - name:  '{{ icinga_web__director_database_name }}'
+    owner: '{{ icinga_web__director_database_name }}'
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__postgresql__dependent_groups [[[
+#
+# Configuration of PostgreSQL groups for the :ref:`debops.postgresql` Ansible role.
+icinga_web__postgresql__dependent_groups:
+
+  - roles:  [ '{{ icinga_web__database_user }}' ]
+    groups: [ '{{ icinga_web__database_name }}' ]
+    database: '{{ icinga_web__database_name }}'
+
+  - roles:  [ '{{ icinga_web__director_database_user }}' ]
+    groups: [ '{{ icinga_web__director_database_name }}' ]
+    database: '{{ icinga_web__director_database_name }}'
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__postgresql__dependent_extensions [[[
+#
+# Configuration of PostgreSQL extensions for the :ref:`debops.postgresql` Ansible
+# role.
+icinga_web__postgresql__dependent_extensions:
+
+  - database: '{{ icinga_web__director_database_name }}'
+    extension: 'pgcrypto'
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__mariadb__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.mariadb` Ansible role.
+icinga_web__mariadb__dependent_databases:
+
+  - name: '{{ icinga_web__database_name }}'
+
+  - name: '{{ icinga_web__director_database_name }}'
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__mariadb__dependent_users [[[
+#
+# User configuration for the :ref:`debops.mariadb` Ansible role.
+icinga_web__mariadb__dependent_users:
+
+  - database: '{{ icinga_web__database_name }}'
+    user: '{{ icinga_web__database_user }}'
+
+  - database: '{{ icinga_web__director_database_name }}'
+    user: '{{ icinga_web__director_database_user }}'
+    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__php__dependent_packages [[[
+#
+# List of ``php-*`` APT packages to install by the :ref:`debops.php` Ansible
+# role.
+icinga_web__php__dependent_packages:
+  - 'mysql'
+  - 'intl'
+  - 'ldap'
+  - 'imagick'
+  - 'pgsql'
+  - 'curl'
+  - 'yaml'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__php__dependent_pools [[[
+#
+# PHP-FPM pool configuration for the :ref:`debops.php` Ansible role.
+icinga_web__php__dependent_pools:
+
+  - name: 'icingaweb'
+    user: 'www-data'
+    group: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+icinga_web__nginx__dependent_upstreams:
+
+  - name: 'php_icingaweb'
+    type: 'php'
+    php_pool: 'icingaweb'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+icinga_web__nginx__dependent_servers:
+
+  - by_role: 'debops.icinga_web'
+    type: 'php'
+    name: '{{ icinga_web__fqdn }}'
+    root: '/usr/share/icingaweb2/public'
+    filename: 'debops.icinga_web'
+    php_upstream: 'php_icingaweb'
+
+    options: |
+      if (!-d $request_filename) {
+              rewrite ^/(.+)/$ /$1 permanent;
+      }
+
+    location_list:
+
+      - pattern: '/'
+        options: 'try_files $1 $uri $uri/ /index.php$is_args$args;'
+                                                                   # ]]]
+                                                                   # ]]]

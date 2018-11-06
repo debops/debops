@@ -31,13 +31,13 @@
   roles:
 
     - role: debops.etckeeper
-      tags: [ 'role::etckeeper' ]
+      tags: [ 'role::etckeeper', 'skip::etckeeper' ]
 
     - role: debops.debops_fact
-      tags: [ 'role::debops_fact' ]
+      tags: [ 'role::debops_fact', 'skip::debops_fact' ]
 
     - role: debops.environment
-      tags: [ 'role::environment' ]
+      tags: [ 'role::environment', 'skip::environment' ]
 
     - role: debops.nullmailer/env
       tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
@@ -50,8 +50,11 @@
       secret_directories:
         - '{{ pki_env_secret_directories }}'
 
+    - role: debops.root_account
+      tags: [ 'role::root_account', 'skip::root_account' ]
+
     - role: debops.apt_preferences
-      tags: [ 'apt_preferences', 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ sshd__apt_preferences__dependent_list }}'
         - '{{ apt__apt_preferences__dependent_list }}'
@@ -59,59 +62,62 @@
         - '{{ rsyslog__apt_preferences__dependent_list }}'
 
     - role: debops.apt_proxy
-      tags: [ 'role::apt_proxy' ]
+      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
 
     - role: debops.atd
-      tags: [ 'role::atd' ]
+      tags: [ 'role::atd', 'skip::atd' ]
 
     - role: debops.dhparam
-      tags: [ 'role::dhparam' ]
+      tags: [ 'role::dhparam', 'skip::dhparam' ]
 
     - role: debops.pki
-      tags: [ 'role::pki' ]
+      tags: [ 'role::pki', 'skip::pki' ]
 
     - role: debops.apt
-      tags: [ 'role::apt' ]
+      tags: [ 'role::apt', 'skip::apt' ]
 
     - role: debops.python
-      tags: [ 'role::python' ]
+      tags: [ 'role::python', 'skip::python' ]
 
     - role: debops.apt_listchanges
-      tags: [ 'role::apt_listchanges' ]
+      tags: [ 'role::apt_listchanges', 'skip::apt_listchanges' ]
 
     - role: debops.apt_install
-      tags: [ 'role::apt_install' ]
+      tags: [ 'role::apt_install', 'skip::apt_install' ]
 
     - role: debops.sudo
-      tags: [ 'role::sudo' ]
+      tags: [ 'role::sudo', 'skip::sudo' ]
 
     - role: debops.system_groups
-      tags: [ 'role::system_groups' ]
+      tags: [ 'role::system_groups', 'skip::system_groups' ]
 
     - role: debops.etc_services
-      tags: [ 'role::etc_services' ]
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ rsyslog__etc_services__dependent_list }}'
 
     - role: debops.logrotate
-      tags: [ 'role::logrotate' ]
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ rsyslog__logrotate__dependent_config }}'
 
     - role: debops.auth
-      tags: [ 'role::auth' ]
+      tags: [ 'role::auth', 'skip::auth' ]
 
     - role: debops.nsswitch
-      tags: [ 'role::nsswitch' ]
+      tags: [ 'role::nsswitch', 'skip::nsswitch' ]
 
     - role: debops.machine
-      tags: [ 'role::machine' ]
+      tags: [ 'role::machine', 'skip::machine' ]
+
+    - role: debops.users
+      tags: [ 'role::users', 'skip::users' ]
 
     - role: debops.resources
-      tags: [ 'role::resources' ]
+      tags: [ 'role::resources', 'skip::resources' ]
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ ntp__ferm__dependent_rules }}'
         - '{{ nullmailer__ferm__dependent_rules }}'
@@ -119,49 +125,43 @@
         - '{{ sshd__ferm__dependent_rules }}'
 
     - role: debops.tcpwrappers
-      tags: [ 'role::tcpwrappers' ]
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers_dependent_allow:
         - '{{ nullmailer__tcpwrappers__dependent_allow }}'
         - '{{ sshd__tcpwrappers__dependent_allow }}'
 
     - role: debops.locales
-      tags: [ 'role::locales' ]
+      tags: [ 'role::locales', 'skip::locales' ]
 
     - role: debops.ntp
-      tags: [ 'role::ntp' ]
-
-    - role: debops.root_account
-      tags: [ 'role::root_account' ]
+      tags: [ 'role::ntp', 'skip::ntp' ]
 
     - role: debops.proc_hidepid
-      tags: [ 'role::proc_hidepid' ]
+      tags: [ 'role::proc_hidepid', 'skip::proc_hidepid' ]
 
     - role: debops.console
-      tags: [ 'role::console' ]
+      tags: [ 'role::console', 'skip::console' ]
 
     - role: debops.sysctl
-      tags: [ 'role::sysctl' ]
+      tags: [ 'role::sysctl', 'skip::sysctl' ]
 
     - role: debops.nullmailer
-      tags: [ 'role::nullmailer' ]
+      tags: [ 'role::nullmailer', 'skip::nullmailer' ]
 
     - role: debops.rsyslog
-      tags: [ 'role::rsyslog' ]
+      tags: [ 'role::rsyslog', 'skip::rsyslog' ]
 
     - role: debops.unattended_upgrades
-      tags: [ 'role::unattended_upgrades' ]
-
-    - role: debops.users
-      tags: [ 'role::users' ]
+      tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
 
     - role: debops.authorized_keys
-      tags: [ 'role::authorized_keys' ]
+      tags: [ 'role::authorized_keys', 'skip::authorized_keys' ]
 
     - role: debops.sshd
-      tags: [ 'role::sshd' ]
+      tags: [ 'role::sshd', 'skip::sshd' ]
 
     - role: debops.cron
-      tags: [ 'role::cron' ]
+      tags: [ 'role::cron', 'skip::cron' ]
 
     - role: debops.apt_mark
-      tags: [ 'role::apt_mark' ]
+      tags: [ 'role::apt_mark', 'skip::apt_mark' ]

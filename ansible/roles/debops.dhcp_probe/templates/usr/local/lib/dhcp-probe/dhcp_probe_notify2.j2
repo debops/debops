@@ -1,0 +1,247 @@
+#!/usr/bin/perl -w
+
+# {{ ansible_managed }}
+
+# dhcp_probe_notify2 -p calling_prog_name -I interface_name -i IPaddress -m MACaddress [-y yiaddr]
+#
+# An external program called by dhcp_probe upon response of a response from an unexpected BootP/DHCP server.
+#
+# Called via specification of 'alert_program_name2' in /etc/dhcp_probe.cf file.
+# This version obeys the syntax provided by the 'alert_program_name2' statement,
+# not the syntax provided by the older 'alert_program_name' statement.
+#
+# Required options:
+#   -p calling_prog_name     the name of the calling program (e.g. 'dhcp_probe')
+#   -I interface_name        the name of the interface on which the unexpected response packet arrived (e.g. 'qfe0')
+#   -i IPaddress             the IP source address of the unexpected response packet (e.g. '192.168.0.1')
+#   -m MACaddress            the Ethernet source address of the unexpected response packet (e.g. '0:1:2:3:4:5')
+#
+# Optional options:
+#   -y yiaddr                the response packet's non-zero yiaddr value, when it falls within a "Lease Network of Interest" (e.g. '172.16.1.2')
+#
+# May send email subject to throttling.
+# May send page subject to throttling.
+#
+# You will need to edit the definitions below.
+#
+# Irwin Tillman
+
+
+use Sys::Hostname;
+use Sys::Syslog qw(:DEFAULT setlogsock);
+use Time::HiRes qw(gettimeofday); # from CPAN
+use Getopt::Std;
+use strict;
+
+#############################################################################
+#
+# Definitions you may need to edit
+
+my $SYSLOG_FACILITY="daemon";                   # name of facility to use if syslogging (e.g. 'daemon')
+my $SYSLOG_OPT = 'pid,cons';                    # comma-separated syslog options to use if syslogging (e.g. 'pid,cons') , ignored if not syslogging
+
+use vars qw($VERBOSE);
+$VERBOSE = 1;	# set to true to produce more verbose messages
+
+# We may send one piece of mail this way, subject to frequency throttling.
+# Use this set of definitions for a piece of email that is delivered as regular email (not a page).
+use vars qw($THROTTLE_MAIL_CMD $THROTTLE_MAIL_TIMEOUT $THROTTLE_MAIL_FROM $THROTTLE_MAIL_RECIPIENT $THROTTLE_MAIL_RECIPIENT_TEST $THROTTLE_MAIL_SUBJECT);
+{% if dhcp_probe__mail_to|d() %}
+$THROTTLE_MAIL_CMD = "{{ dhcp_probe__lib + '/mail-throttled' }}"; # set to "" to disable
+{% else %}
+$THROTTLE_MAIL_CMD = ""; # set to "" to disable
+{% endif %}
+$THROTTLE_MAIL_TIMEOUT = {{ dhcp_probe__mail_timeout | default('600') }}; # seconds
+$THROTTLE_MAIL_FROM = "{{ dhcp_probe__mail_from | replace('@', '\@') }}"; # e.g. "root"
+$THROTTLE_MAIL_RECIPIENT = "{{ dhcp_probe__mail_to | join(' ') | replace('@','\@') }}"; # space-separated email addresses, remember to escape '@' characters
+$THROTTLE_MAIL_SUBJECT = "{{ dhcp_probe__mail_subject }}";
+
+
+# We may also send another piece of email this way, subject to frequency throttling.
+# Use this set of definitions for a piece of email that is delivered to a pager (not as regular email).
+use vars qw($THROTTLE_PAGE_CMD $THROTTLE_PAGE_TIMEOUT $THROTTLE_PAGE_RECIPIENT);
+{% if dhcp_probe__page_to|d() %}
+$THROTTLE_PAGE_CMD = "{{ dhcp_probe__lib + '/mail-throttled' }}"; # set to "" to disable
+{% else %}
+$THROTTLE_PAGE_CMD = ""; # set to "" to disable
+{% endif %}
+$THROTTLE_PAGE_TIMEOUT = {{ dhcp_probe__page_timeout | default('600') }}; # seconds
+$THROTTLE_PAGE_RECIPIENT = "{{ dhcp_probe__page_to | join(' ') | replace('@','\@') }}"; # space-separated email addresses, remember to escape '@' characters
+
+
+# End of definitions you may need to edit
+#
+#############################################################################
+
+(my $prog = $0) =~ s/.*\///;
+
+# init our use of syslog
+# setlogsock('unix'); # talk to syslog with UNIX domain socket, not INET domain. XXX causes failure in Solaris 7
+openlog($prog, $SYSLOG_OPT, $SYSLOG_FACILITY);
+
+#############################################################################
+#
+# Parse options and arguments
+
+# We must use getopt() instead of getopts() to avoid throwing an error
+# if we are passed an unrecognized option.
+# We must silently ignore unrecognized options to be forward compatible with enhancements to dhcp_probe.
+use vars qw($opt_i $opt_I $opt_m $opt_p $opt_y);
+# &getopt('p:i:I:m:y:');
+&getopt('piImy');
+
+# Required options
+my $calling_program = $opt_p;
+my $ifname = $opt_I;
+my $ip_src = $opt_i;
+my $ether_src = $opt_m;
+#
+# Optional options
+my $yiaddr = $opt_y || "";
+
+
+# Enforce presence of required options
+unless ($calling_program) {
+	my_message('LOG_ERR', "${prog}: missing -p calling_program option");
+	exit 100;
+}
+unless ($ifname)  {
+	my_message('LOG_ERR', "${prog}: missing -I interface_name option");
+	exit 101;
+}
+unless ($ip_src)  {
+	my_message('LOG_ERR', "${prog}: missing -i ip_src_address option");
+	exit 102;
+}
+unless ($ether_src)  {
+	my_message('LOG_ERR', "${prog}: missing -m ether_src_address option");
+	exit 103;
+}
+
+# Done parsing options and arguments
+#
+#############################################################################
+
+# Miscellaneous Initialization
+
+my $hostname = hostname();
+
+my ($seconds, $microseconds) = gettimeofday;    # from Time::HiRes on CPAN
+my $timestamp = scalar(localtime($seconds));
+$timestamp =~ s/(\d\d:\d\d:\d\d)/$1.$microseconds/; # glue microsends to end of seconds
+
+
+
+# When we pass a key to THROTTLE_MAIL_CMD, we want the key to also include an indication
+# of whether the yiaddr option was specified.  (If we didn't include such an indication,
+# the following could happen: The first response we detect from a rogue server doesn't
+# distribute an "address of concern", so the yiaddr option wasn't specified.  We alert
+# based on that.  The next response we detect from a rogue server does distribute an
+# "address of concern", so the yiaddr is specified.  Our alert gets throttled since
+# the first alert we sent was "recent".  But this means the administrator doesn't get
+# notified that the rogue distributed an "address of interest".  So we need to
+# include the state of yiaddr option in the key we pass to THROTTLE_MAIL_CMD,
+# to ensure the second response isn't throttled using the same key as the first response.)
+# 
+# We can't just use the value of yiaddr itself as the string to incorporate into the key,
+# as that would result in a unqiue key for each distributed IP address.  Instead, we
+# will use the state of yiaddr (set or unset).
+#
+# Note this means that when a rogue DHCP server is distributing IP addresses that fall into "Networks of Concern",
+# we will very likely send more than one notification for it within each throttle period.
+# That's because while some of the responses from the rogue will have a yiaddr within a "Networks of Concern",
+# others (for example, DHCPNAK responses) will not.  This is unfortunate, but is better than the
+# alternative approach (of not taking into account the yiaddr state in the key), since that will
+# sometimes cause you to not be alerted at all to the "yiaddr falls into a Network of Concern" situation.
+#
+# Create a string based on the state of yiaddr, for later incorporation into the key.
+my $yiaddr_option_state = $yiaddr ? "yiaddr=set" : "yiaddr=unset";
+
+#############################################################################
+
+if ($THROTTLE_MAIL_CMD) {
+	# This command suppresses the message if it's sent a message to 'key' within 'throttle_seconds'
+	# I use the calling program's name and the offender's hardware address as the key.
+
+	my $subject_yiaddr_addendum = "";
+	$subject_yiaddr_addendum = ", YIADDR=$yiaddr" if $yiaddr;
+
+	unless (open(THROTTLE_MAIL, "| $THROTTLE_MAIL_CMD -l -k ${calling_program}_mail_${ether_src}_$yiaddr_option_state -t $THROTTLE_MAIL_TIMEOUT -f \"$THROTTLE_MAIL_FROM\" -r \"$THROTTLE_MAIL_RECIPIENT\" -s\"$THROTTLE_MAIL_SUBJECT (MAC=${ether_src}, IP=${ip_src}${subject_yiaddr_addendum})\"")) {
+
+		my_message('LOG_ERR', "${prog}: failure trying to send throttled email: can't execute '${THROTTLE_MAIL_CMD}': open(): $!");
+		exit 20;
+	}
+
+	print THROTTLE_MAIL
+			$timestamp, "\n",
+			"\n",
+			"$calling_program detected an unexpected BOOTP/DHCP server.\n",
+			"Host=$hostname, interface=${ifname}, IP source=${ip_src}, Ethernet source=${ether_src}\n";
+	print THROTTLE_MAIL "\nThis means that *there is* a rogue BOOTP/DHCP server operating.\n" if $VERBOSE;
+	if ($yiaddr) {
+		print THROTTLE_MAIL
+			"The server distributed IP address $yiaddr, which falls into a network of special concern.\n";
+	}
+
+	unless (close(THROTTLE_MAIL)) {
+		my_message('LOG_ERR',
+					"${prog}: failure trying to send throttled email: error executing '${THROTTLE_MAIL_CMD}': close(): " .
+						($! ?
+							"syserr closing pipe: $!"
+							:
+							"wait status $? from pipe"
+						) .
+					"\n"
+				);
+		exit 21;
+
+	}
+}
+
+
+
+
+if ($THROTTLE_PAGE_CMD) {
+	# This command suppresses the message if it's sent a message to 'key' within 'throttle_seconds'
+	# I use the calling program's name and the offender's hardware address as the key.
+
+	unless (open(THROTTLE_PAGE, "| $THROTTLE_PAGE_CMD -l -k ${calling_program}_page_${ether_src}_$yiaddr_option_state -t $THROTTLE_PAGE_TIMEOUT -r \"$THROTTLE_PAGE_RECIPIENT\"")) {
+		my_message('LOG_ERR', "${prog}: failure trying to send throttled page: can't execute '${THROTTLE_PAGE_CMD}': open(): $!\n");
+		exit 30;
+	}
+
+	print THROTTLE_PAGE "Rogue DHCP server IP=$ip_src MAC=$ether_src seen via host $hostname interface $ifname\n";
+	print THROTTLE_PAGE "This means *there is* a rogue BOOTP/DHCP server operating.\n" if $VERBOSE;
+	if ($yiaddr) {
+		print THROTTLE_PAGE
+			"Rogue server distributed yiaddr=$yiaddr, a special concern.\n";
+	}
+
+	unless (close(THROTTLE_PAGE)) {
+		my_message('LOG_ERR',
+					"${prog}: failure trying to send throttled page: error executing '${THROTTLE_PAGE_CMD}': close(): " .
+						($! ?
+							"syserr closing pipe: $!"
+							:
+							"wait status $? from pipe"
+						) .
+					"\n"
+				);
+		exit 31;
+	}
+
+}
+
+exit 0;
+
+#############################################################################
+
+sub my_message {
+	# Call with a syslog priority constant and a message string.
+	# We write the message to syslog, using the specified priority.
+	# Your message should not contain a newline.
+
+	my($priority, $msg) = @_;
+	syslog($priority, $msg);
+	return;
+}

@@ -35,38 +35,19 @@ related Ansible variables. If you're not, you may first want to read
 Packet Forwarding
 ~~~~~~~~~~~~~~~~~
 
-As the main concept of a gateway is to manage packet traversal between different
-networks this first has to be enabled by setting the following ``debops.ferm``
-variables.
+The configuration of packet forwarding is done on a per-interface basis. You
+can use the :ref:`debops.ferm` and :ref:`debops.ifupdown` Ansible roles to
+configure the respective firewall rules and kernel parameters, or use the
+:ref:`debops.ifupdown` role to configure network interfaces, which will include
+packet forwarding rules when necessary, for example for all bridge interfaces.
 
-* Define internal (trusted) and external (untrusted) network interfaces::
-
-    ferm__external_interfaces: [ 'eth0' ]
-    ferm__internal_interfaces: [ 'eth1' ]
-
-* Enable IP forwarding (default: ``False``)::
-
-    ferm__forward: True
-
-* Drop every packet in the ``FORWARD`` chain which is not specifically
-  permitted. This is the default::
-
-    ferm__default_policy_forward: DROP
-
-* As soon as :envvar:`ferm__forward` is enabled, the default role configuration
-  will create a default rule list which will accept every incoming or outgoing
-  packet with a valid forward target. This can make sense if forwarding should
-  be enabled on a virtualization host to allow packets in and out a separate
-  virtual machine network. However, for a Internet gateway this is too generous
-  and therefore should be redefined.
-
-  In case every connection traversing the network boundaries should be
-  explicitly defined, set an empty rule list here::
+In case every connection traversing the network boundaries should be
+explicitly defined, set an empty rule list here::
 
     ferm__rules_forward: []
 
-  On the other hand it might be useful to start with a less restrictive
-  forwarding rule list which allows all outgoing traffic::
+On the other hand it might be useful to start with a less restrictive
+forwarding rule list which allows all outgoing traffic::
 
     ferm__rules_forward:
       - chain: 'FORWARD'
@@ -83,14 +64,10 @@ variables.
                            ansible_local.ferm.forward | bool))
                          else "absent" }}'
 
-  If there are multiple internal interfaces additional rules permitting packet
-  forwarding between those might be necessary. Check the ``forward_internal`` rule of
-  the default :envvar:`ferm__default_rules` for an example.
-
-* Once a packet was accepted by the firewall all related packets belonging to
-  the same connection are accepted too. This is defined in the
-  ``connection_tracking`` rule which is loaded as part of the
-  :envvar:`ferm__default_rules` rule list.
+Once a packet was accepted by the firewall all related packets belonging to
+the same connection are accepted too. This is defined in the
+``connection_tracking`` rule which is loaded as part of the
+:envvar:`ferm__default_rules` rule list.
 
 
 .. _ferm__ref_guide_gateway_port_forwarding:

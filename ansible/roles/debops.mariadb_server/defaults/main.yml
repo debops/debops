@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # MariaDB Server APT packages [[[
@@ -160,10 +162,16 @@ mariadb_server__allow: []
 mariadb_server__max_connections: '100'
 
                                                                    # ]]]
+# .. envvar:: mariadb_server__default_datadir [[[
+#
+# Default directory to store data
+mariadb_server__default_datadir: '/var/lib/mysql'
+
+                                                                   # ]]]
 # .. envvar:: mariadb_server__datadir [[[
 #
 # Directory to store data
-mariadb_server__datadir: '/var/lib/mysql'
+mariadb_server__datadir: '{{ mariadb_server__default_datadir }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__delegate_to [[[
@@ -208,9 +216,9 @@ mariadb_server__mysqld_security_options:
 #
 # Configuration options related to charset and string encoding on the server.
 mariadb_server__mysqld_charset_options:
-  'character_set_server': 'utf8'
-  'collation_server':     'utf8_general_ci'
-  'init_connect':         'SET NAMES utf8'
+  'character_set_server': 'utf8mb4'
+  'collation_server':     'utf8mb4_general_ci'
+  'init_connect':         'SET NAMES utf8mb4'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__mysqld_network_options [[[
@@ -282,7 +290,7 @@ mariadb_server__mysqld_options:
 mariadb_server__client_options:
   - section: 'client'
     options:
-      'default_character_set': 'utf8'
+      'default_character_set': 'utf8mb4'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__options [[[

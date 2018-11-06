@@ -11,7 +11,7 @@
 {%   else %}
         location / {
 {%     block nginx_tpl_block_location_root %}
-                try_files {{ item.try_files|default(nginx_default_try_files) | join(' ') }} =404;
+                try_files {{ (([ item.try_files ] if item.try_files is string else item.try_files) if item.try_files|d() else nginx_default_try_files) | join(' ') }} =404;
 {%     endblock %}
         }
 {%   endif %}

@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # Installation [[[
@@ -185,7 +187,9 @@ dhparam__generate_init_count: '20'
 
 # .. envvar:: dhparam__generate_cron [[[
 #
-# Enable periodic Diffie-Hellman parameter re-generation.
+# Enable periodic Diffie-Hellman parameter re-generation. If :command:`systemd`
+# is present, the role will set up a systemd timer, otherwise the script will
+# be started periodically by :command:`cron` service.
 dhparam__generate_cron: True
 
                                                                    # ]]]
@@ -194,6 +198,8 @@ dhparam__generate_cron: True
 # Time interval between periodical DH parameter re-generation. You can use
 # units recognized by :program:`cron` Ansible module ``special_time`` parameter:
 # ``daily``, ``weekly``, ``monthly``, ``annually``, ``yearly``, ``reboot``.
+# If :command:`systemd` is used, see the :man:`systemd.time(7)` documentation
+# for possible ``OnCalendar=`` values.
 dhparam__generate_cron_period: 'monthly'
                                                                    # ]]]
                                                                    # ]]]

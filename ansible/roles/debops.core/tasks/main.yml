@@ -47,17 +47,8 @@
     dest: '/etc/ansible/facts.d/{{ item }}.fact'
     owner: 'root'
     group: 'root'
-    mode: '0644'
-  register: core__register_fact_files
-  with_items: [ 'root', 'tags', 'uuid' ]
-
-- name: Install core fact script
-  template:
-    src: 'etc/ansible/facts.d/core.fact.j2'
-    dest: '/etc/ansible/facts.d/core.fact'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
+  with_items: [ 'core', 'resolver', 'root', 'tags', 'uuid' ]
   register: core__register_core_fact
 
 - name: Install local fact scripts
@@ -71,6 +62,5 @@
 
 - name: Gather local facts if they changed
   action: setup
-  when: core__register_fact_files is changed or
-        core__register_core_fact is changed or
+  when: core__register_core_fact is changed or
         core__register_fact_scripts is changed

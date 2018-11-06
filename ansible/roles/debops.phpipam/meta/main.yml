@@ -24,7 +24,7 @@ dependencies:
            (phpipam_mode is defined and 'webui' in phpipam_mode))
 
   - role: debops.ferm
-    tags: [ 'role::ferm' ]
+    tags: [ 'role::ferm', 'skip::ferm' ]
     ferm__dependent_rules:
       - '{{ nginx__ferm__dependent_rules }}'
 
@@ -36,6 +36,8 @@ dependencies:
     tags: nginx
 
 galaxy_info:
+
+  role_name: 'phpipam'
   author: 'Maciej Delmanowski'
   description: 'Install phpIPAM, an Open Source IP Address Manager'
   company: 'DebOps'
@@ -53,6 +55,6 @@ galaxy_info:
       versions:
         - wheezy
         - jessie
-  categories:
+  galaxy_tags:
     - networking
-    - system
+    - ipam

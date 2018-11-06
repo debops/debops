@@ -1,0 +1,37 @@
+---
+
+- name: Configure Icinga service
+  hosts: [ 'debops_service_icinga' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.icinga/env
+      tags: [ 'role::icinga', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::icinga' ]
+      secret__directories:
+        - '{{ icinga__secret__directories | d([]) }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ icinga__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ icinga__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ icinga__ferm__dependent_rules }}'
+
+    - role: debops.icinga
+      tags: [ 'role::icinga', 'skip::icinga' ]

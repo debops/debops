@@ -1,0 +1,24 @@
+---
+
+- name: Manage FreeRADIUS service
+  hosts: [ 'debops_service_freeradius' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ freeradius__ferm__dependent_rules }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ freeradius__logrotate__dependent_config }}'
+
+    - role: debops.freeradius
+      tags: [ 'role::freeradius', 'skip::freeradius' ]

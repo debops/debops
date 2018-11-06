@@ -82,10 +82,10 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_target_tag
-  changed_when: gitlab_register_shell_target_tag.stdout != gitlab_version_map[gitlab_version].shell
+  changed_when: gitlab_register_shell_target_tag.stdout != gitlab__fact_version.shell
 
 - name: Checkout gitlab-shell
-  command: git checkout --force {{ gitlab_version_map[gitlab_version].shell }}
+  command: git checkout --force {{ gitlab__fact_version.shell }}
   environment:
     GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
   args:
@@ -93,7 +93,7 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_checkout
-  when: ((gitlab_version_map[gitlab_version].shell != gitlab_register_shell_target_tag.stdout) or
+  when: ((gitlab__fact_version.shell != gitlab_register_shell_target_tag.stdout) or
          not gitlab_register_shell_cloned.stat.exists | bool)
 
 - name: Configure gitlab-shell

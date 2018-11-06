@@ -6,11 +6,19 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # APT packages [[[
 # ----------------
 
+# .. envvar:: avahi__enabled [[[
+#
+# Should the Avahi service be enabled?
+avahi__enabled: True
+
+                                                                   # ]]]
 # .. envvar:: avahi__base_packages [[[
 #
 # List of APT packages to install for Avahi support.
@@ -412,6 +420,7 @@ avahi__ferm__dependent_rules:
     saddr: '{{ avahi__allow }}'
     protocol: 'udp'
     accept_any: True
+    rule_state: '{{ "present" if (avahi__enabled|bool) else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

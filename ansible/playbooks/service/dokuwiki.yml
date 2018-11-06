@@ -14,34 +14,34 @@
       tags: [ 'role::php', 'role::logrotate' ]
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ php__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
     - role: debops.logrotate
-      tags: [ 'role::logrotate' ]
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
     - role: debops.php
-      tags: [ 'role::php' ]
+      tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ dokuwiki__php__dependent_packages }}'
       php__dependent_pools:
         - '{{ dokuwiki__php__dependent_pools }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.nginx
-      tags: [ 'role::nginx' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_upstreams:
         - '{{ dokuwiki__nginx__dependent_upstreams }}'
       nginx__dependent_servers:
         - '{{ dokuwiki__nginx__dependent_servers }}'
 
     - role: debops.dokuwiki
-      tags: [ 'role::dokuwiki' ]
+      tags: [ 'role::dokuwiki', 'skip::dokuwiki' ]

@@ -11,19 +11,19 @@
   roles:
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferencesA' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ snmpd_apt_preferences_dependent_list }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ snmpd_ferm_dependent_rules }}'
 
     - role: debops.tcpwrappers
-      tags: [ 'role::tcpwrappers' ]
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers_dependent_allow:
         - '{{ snmpd_tcpwrappers_dependent_allow }}'
 
     - role: debops.snmpd
-      tags: [ 'role::snmpd' ]
+      tags: [ 'role::snmpd', 'skip::snmpd' ]

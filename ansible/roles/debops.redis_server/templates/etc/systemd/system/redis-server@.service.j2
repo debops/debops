@@ -1,0 +1,56 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Redis - advanced key-value store (%I)
+After=network.target
+Documentation=http://redis.io/documentation, man:redis-server(1)
+ConditionPathExists=/etc/redis/%I/redis.conf
+PartOf=redis-server.service
+ReloadPropagatedFrom=redis-server.service
+Before=redis-server.service
+
+[Service]
+Type=forking
+Slice=system-redis-server.slice
+ExecStart=/usr/bin/redis-server /etc/redis/%i/redis.conf
+ExecStop=/bin/kill -s TERM $MAINPID
+PIDFile=/var/run/redis-%i/redis-server.pid
+TimeoutStopSec=0
+Restart=always
+User=redis
+Group=redis
+RuntimeDirectory=redis-%i
+RuntimeDirectoryMode=2755
+
+# Disable OOM killer for Redis Server process
+OOMScoreAdjust=-1000
+
+UMask=007
+PrivateTmp=yes
+LimitNOFILE=65535
+PrivateDevices=yes
+ProtectHome=yes
+ReadOnlyDirectories=/
+ReadWriteDirectories=-/var/lib/redis
+ReadWriteDirectories=-/var/log/redis
+ReadWriteDirectories=-/var/run/redis-%i
+
+NoNewPrivileges=true
+CapabilityBoundingSet=CAP_SETGID CAP_SETUID CAP_SYS_RESOURCE
+MemoryDenyWriteExecute=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# redis-server can write to its own config file when in cluster mode so we
+# permit writing there by default. If you are not using this feature, it is
+# recommended that you replace the following lines with "ProtectSystem=full".
+ProtectSystem=true
+ReadWriteDirectories=-/etc/redis
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=redis-server.service

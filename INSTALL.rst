@@ -92,6 +92,15 @@ can usually be installed using a system package manager.
 
 .. __: https://www.gnupg.org/
 
+`python-dnspython`__
+  This is a Python library that provides various functions related to DNS
+  queries. Some of the DebOps roles rely on DNS records to get information
+  about the environment, like addresses of centralized services provided via
+  DNS SRV records. In Ansible, this library is required by the ``dig`` lookup
+  plugin.
+
+.. __: http://www.dnspython.org/
+
 `python-ldap`__
   This is a Python library which can be used to interface with the LDAP
   servers, Ansible `ldap_attr`__ and `ldap_entry`__ modules use it. You will
@@ -102,6 +111,13 @@ can usually be installed using a system package manager.
 .. __: https://www.python-ldap.org/en/latest/
 .. __: https://docs.ansible.com/ansible/latest/ldap_attr_module.html
 .. __: https://docs.ansible.com/ansible/latest/ldap_entry_module.html
+
+`python-future`__
+  This module provides a compatibility layer between Python 2.7 and Python 3.x
+  versions. It allows creation of code that can be run in both old and new
+  Python environments without changes.
+
+.. __: http://python-future.org/
 
 `python-netaddr`__
   This is a Python library which can be used to manipulate IP addresses in
@@ -189,10 +205,20 @@ work in Ubuntu.
 
 .. __: https://virtualenv.pypa.io/en/stable/
 
+First install python virtual-env packages and other system dependencies
+required for building:
+
 .. code-block:: console
 
    sudo apt-get install python-virtualenv virtualenv build-essential \
-                        python-dev libffi-dev libssl-dev
+                        python-dev libffi-dev libssl-dev libsasl2-dev \
+                        libldap2-dev
+
+
+Next we activate the DebOps virtual environment and prepare it for use:
+
+.. code-block:: console
+
    virtualenv debops-venv
    cd debops-venv
    source bin/activate

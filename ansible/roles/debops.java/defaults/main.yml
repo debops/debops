@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # Support for backported OpenJRE 8 environment [[[
@@ -47,7 +49,9 @@ java__v8_backported_releases: [ 'jessie' ]
 #
 # List of default APT packages which should be installed for Java Runtime
 # Environment.
-java__base_packages: '{{ ([ "openjdk-8-jre-headless" ] if java__install_v8|bool else [ "default-jre-headless" ])
+java__base_packages: '{{ ([ "openjdk-8-jre-headless" ]
+                          if (java__install_v8|bool)
+                          else [ "default-jre-headless" ])
                         + [ "ca-certificates-java" ] }}'
 
                                                                    # ]]]
@@ -109,7 +113,7 @@ java__apt_preferences__dependent_list:
     backports: [ 'jessie' ]
     reason:  'Requied by OpenJRE/OpenJDK 8 from Backports'
     by_role: 'debops.java'
-    state:   '{{ "present" if java__install_v8|bool else "absent" }}'
+    state:   '{{ "present" if (java__install_v8|bool) else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

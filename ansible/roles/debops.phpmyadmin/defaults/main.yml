@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # .. envvar:: phpmyadmin_dependencies [[[
@@ -29,7 +31,8 @@ phpmyadmin_password_length: '20'
 # .. envvar:: phpmyadmin_control_password [[[
 #
 # Default PHPMyAdmin control password
-phpmyadmin_control_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mysql/phpmyadmin/password length=' + phpmyadmin_password_length) }}"
+phpmyadmin_control_password: "{{ lookup('password', secret + '/mariadb/' + ansible_local['mariadb'].delegate_to + '/credentials/' + phpmyadmin_control_user + '/password length=' + phpmyadmin_password_length) }}"
+
 
                                                                    # ]]]
 # .. envvar:: phpmyadmin_allow [[[

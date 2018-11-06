@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # APT packages [[[
@@ -107,6 +109,49 @@ rabbitmq_server__amqp_allow: []
 #
 # If this list is empty, anybody can connect over encrypted connection.
 rabbitmq_server__amqps_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ environment [[[
+# ------------------------
+
+# These variables define contents of the
+# :file:`/etc/rabbitmq/rabbitmq-env.conf` configuration file. This file is
+# sourced by the RabbitMQ init script and should contain shell environment
+# variables that should be defined in the server environment. Each variable is
+# a YAML dictionary, dictionary keys are variable names (they will be written
+# as uppercase automatically), dictionary values are environment values.
+
+# You can find the list of known environment variables in the RabbitMQ
+# documentation: https://www.rabbitmq.com/configure.html#define-environment-variables
+
+# .. envvar:: rabbitmq_server__environment [[[
+#
+# The RabbitMQ environment variables defined on all hosts in the Ansible
+# inventory.
+rabbitmq_server__environment: {}
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_environment [[[
+#
+# The RabbitMQ environment variables defined on hosts in a specific Ansible
+# inventory group.
+rabbitmq_server__group_environment: {}
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_environment [[[
+#
+# The RabbitMQ environment variables defined on specific hosts in the Ansible
+# inventory.
+rabbitmq_server__host_environment: {}
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_environment [[[
+#
+# The variable which combines all of the environment variables and is used in
+# the configuration template.
+rabbitmq_server__combined_environment: '{{ rabbitmq_server__environment
+                                           | combine(rabbitmq_server__group_environment,
+                                                     rabbitmq_server__host_environment) }}'
                                                                    # ]]]
                                                                    # ]]]
 # RabbitMQ main configuration [[[

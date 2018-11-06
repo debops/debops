@@ -52,10 +52,9 @@ unlocks the encrypted directory and secrets are available again in the
 How to use LDAP variables
 -------------------------
 
-In the main DebOps playbook repository you can find the Ansible modules
-``ldap_attr`` and ``ldap_entry``. They can be used to access and control LDAP
-servers. In various DebOps roles, they are used to perform certain tasks in
-a shared environment.
+DebOps relies on the ``ldap_attr`` and ``ldap_entry`` Ansible modules to
+perform LDAP management on local or remote LDAP servers. In various DebOps
+roles, they are used to perform certain tasks in a shared environment.
 
 Some of the above tasks require admin privileges on the LDAP server. To provide
 access to it in a secure manner, ``debops.secret`` role keeps a set of

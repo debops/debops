@@ -9,6 +9,7 @@ debops.grub
    introduction
    getting-started
    defaults
+   defaults-detailed
    copyright
 
 ..

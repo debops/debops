@@ -63,6 +63,15 @@
     mode: '0755'
   when: machine__enabled|bool
 
+- name: Ensure that required directories exist on older OS releases
+  file:
+    path: '/etc/tmpfiles.d/'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
+
 - name: Fix issue with dynamic MOTD on older OS releases
   template:
     src: 'etc/tmpfiles.d/motd-dynamic.conf.j2'
@@ -71,7 +80,7 @@
     group: 'root'
     mode: '0644'
   register: machine__register_tmpfiles
-  when: machine__enabled|bool and ansible_distribution_release in [ 'wheezy', 'jessie' ]
+  when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
 
 - name: Create /run/motd.dynamic symlink
   command: systemd-tmpfiles --create

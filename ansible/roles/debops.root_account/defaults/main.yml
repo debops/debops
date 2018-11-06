@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # General configuration [[[
@@ -104,6 +106,38 @@ root_account__shell: ''
 # fixes the "mesg: ttyname failed: Inappropriate ioctl for device" error message.
 # See also: https://bugs.debian.org/794727, https://superuser.com/a/1253889
 root_account__fix_no_tty: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Subordinate UID/GID ranges [[[
+# ------------------------------
+
+# .. envvar:: root_accout__subuid_enabled [[[
+#
+# Enable or disable configuration of subordinate UIDs/GIDs for the ``root``
+# system account.
+root_account__subuid_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: root_account__subuid_start [[[
+#
+# List of subordinate UID/GID numbers which can be remapped to be the ``root``
+# account in new user namespaces created by the system ``root`` account.
+#
+# Multiple UID/GID ranges are possible, they shouldn't overlap with either
+# normal system UID/GID ranges or other subordinate UID/GID ranges for security
+# reasons. Check the contents of the :file:`/etc/subuid` and
+# :file:`/etc/subgid` files to verify what UID/GID ranges are used on a given
+# host.
+root_account__subuid_start: [ '100000' ]
+
+                                                                   # ]]]
+# .. envvar:: root_account__subuid_count [[[
+#
+# Specify the number of UIDs/GIDs to reserve for a given subordinate UID/GID
+# range. Remember that using lower UID/GID number than 65535 may cause issues
+# due to some system accounts like ``nobody`` and groups like ``nogroup``
+# having UID and GID numbers at the end of the normal 0-65535 range.
+root_account__subuid_count: '65535'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

@@ -13,33 +13,6 @@
   when: item.name|d()
   no_log: True
 
-- name: Revoke all privileges on template1 from PUBLIC
-  postgresql_privs:
-    database: 'template1'
-    port: '{{ item.port }}'
-    role: 'PUBLIC'
-    type: 'database'
-    privs: 'ALL'
-    state: 'absent'
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
-  become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d()
-
-- name: Revoke all privileges on schema public from PUBLIC
-  postgresql_privs:
-    database: 'template1'
-    port: '{{ item.port }}'
-    role: 'PUBLIC'
-    type: 'schema'
-    obj: 'public'
-    privs: 'ALL'
-    state: 'absent'
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
-  become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d()
-
 - name: Grant connect on postgres to PUBLIC
   postgresql_privs:
     database: 'postgres'

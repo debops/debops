@@ -5,9 +5,45 @@ language: 'python'
 
 matrix:
   include:
+
     - python: '2.7'
-    - python: '3.5'
+      env: 'MODE=docs'
+
+    - python: '2.7'
+      env: 'MODE=syntax'
+
+    - python: '2.7'
+      env: 'MODE=docker'
+
+    - python: '2.7'
+      env: 'MODE=build-sdist'
+
     - python: '3.6'
+      env: 'MODE=ansible'
+
+    - python: '3.5'
+      env: 'MODE=ansible'
+
+    - python: '2.7'
+      env: 'MODE=ansible'
+
+    - python: '3.6'
+      env: 'MODE=build-wheel'
+
+    - python: '3.5'
+      env: 'MODE=build-wheel'
+
+    - python: '2.7'
+      env: 'MODE=build-wheel'
+
+    - python: '3.6'
+      env: 'MODE=test'
+
+    - python: '3.5'
+      env: 'MODE=test'
+
+    - python: '2.7'
+      env: 'MODE=test'
 
 virtualenv:
   system_site_packages: false
@@ -20,17 +56,10 @@ cache:
     - '$HOME/.cache/pip'
 
 before_install:
-  - 'sudo apt-get -qq update'
-  - 'sudo apt-get install -yq graphviz'
-  - 'pip install --upgrade pip six setuptools wheel'
-  - 'pip install pycodestyle unittest2 nose2 cov-core ansible sphinx sphinx-autobuild sphinx_rtd_theme yamllint'
+  - "${TRAVIS_BUILD_DIR}/lib/travis/${MODE}/before_install.sh"
 
 install:
-  - 'pip list'
-  - 'ansible --version'
+  - "${TRAVIS_BUILD_DIR}/lib/travis/${MODE}/install.sh"
 
 script:
-  - 'make test-all'
-  - 'make check'
-  - 'make sdist-quiet wheel-quiet'
-  - 'pip install .'
+  - "${TRAVIS_BUILD_DIR}/lib/travis/${MODE}/script.sh"

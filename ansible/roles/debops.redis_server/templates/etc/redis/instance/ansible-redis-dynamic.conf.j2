@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Configure certain Redis server parameters dynamically.
+
+
+set -o nounset -o pipefail -o errexit
+
+# A workaround to have Jinja template in a shell script
+readarray -t redis_dynamic_config_map << EOF
+{% if item.options|d() %}
+{%   for element in item.options %}
+{%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] and (element.dynamic|d())|bool %}
+{%       if element.value is string and not element.value | bool %}
+{{ '{}={}'.format(element.name, element.value) }}
+{%       elif element.value | bool and element.value is not iterable %}
+{%         if element.value | string == '1' %}
+{{ '{}={}'.format(element.name, element.value) }}
+{%         else %}
+{{ '{}={}'.format(element.name, 'yes') }}
+{%         endif %}
+{%       elif not element.value | bool and element.value is not iterable %}
+{%         if element.value is not none %}
+{%           if element.value | int %}
+{{ '{}={}'.format(element.name, element.value) }}
+{%           else %}
+{%             if element.value | string == '0' %}
+{{ '{}={}'.format(element.name, element.value) }}
+{%             else %}
+{{ '{}={}'.format(element.name, 'no') }}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       elif element.value is iterable and element.value is not string and element.value is not mapping %}
+{{ '{}={}'.format(element.name, element.value | map(attribute='name') | list | join(' ')) }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+EOF
+
+declare -A dynamic_config
+
+if [[ "${redis_dynamic_config_map[*]}" ]] ; then
+    for line in "${redis_dynamic_config_map[@]}" ; do
+        key=${line%%=*}
+        value=${line#*=}
+        dynamic_config["${key}"]="${value}"
+    done
+fi
+
+subcommand="${1:-config}"
+
+redis_instance="{{ item.name }}"
+redis_host="localhost"
+
+redis_conf_port="$(grep --no-filename -E '^port\s+' "/etc/redis/${redis_instance}/redis.conf" "/etc/redis/${redis_instance}/ansible-redis-static.conf" || true)"
+redis_conf_password="$(grep --no-filename -E '^requirepass\s+' "/etc/redis/${redis_instance}/redis.conf" "/etc/redis/${redis_instance}/ansible-redis-static.conf" || true)"
+redis_conf_pidfile="$(grep --no-filename -E '^pidfile\s+' "/etc/redis/${redis_instance}/redis.conf" "/etc/redis/${redis_instance}/ansible-redis-static.conf" || true)"
+
+redis_port="$(echo "${redis_conf_port}" | tail -n 1 | awk '{print $2}')"
+redis_password="$(echo "${redis_conf_password}" | tail -n 1 | awk '{print $2}' | sed -e 's/^"//'  -e 's/"$//')"
+redis_pidfile="$(echo "${redis_conf_pidfile}" | tail -n 1 | awk '{print $2}' | sed -e 's/^"//'  -e 's/"$//')"
+
+redis_options=(-h "${redis_host}" -p "${redis_port}")
+
+if [ -n "${redis_password}" ] ; then
+    redis_options+=(-a "${redis_password}")
+fi
+
+if [ -f "${redis_pidfile}" ] ; then
+    if kill -0 "$(<"${redis_pidfile}")" > /dev/null 2>&1 ; then
+
+        if [ "${subcommand}" = "config" ]  ; then
+            for index in "${!dynamic_config[@]}" ; do
+                redis-cli "${redis_options[@]}" config set "${index}" "${dynamic_config[${index}]}"
+            done
+        fi
+
+        if [ "${subcommand}" = "config" ] || [ "${subcommand}" = "rewrite" ] ; then
+            redis-cli "${redis_options[@]}" config rewrite
+        fi
+
+    fi
+fi

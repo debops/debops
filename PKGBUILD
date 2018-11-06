@@ -18,14 +18,14 @@
 # Maintainer: Maciej Delmanowski <drybjed@gmail.com>
 pkgname=debops-git
 _pkgname=debops
-pkgver=0.7.2
+pkgver=0.8.0
 pkgrel=1
 pkgdesc="Your Debian-based data center in a box"
 arch=('any')
 url="https://github.com/debops/debops/"
 license=('GPL3')
-depends=('python2' 'ansible' 'python2-netaddr' 'python2-ldap' 'python2-passlib' 'util-linux' 'encfs' 'gnupg')
-makedepends=('python2-setuptools' 'git')
+depends=('python' 'ansible' 'python-dnspython' 'python-netaddr' 'python-ldap' 'python-passlib' 'python-future' 'util-linux' 'encfs' 'gnupg')
+makedepends=('python-setuptools' 'git')
 provides=('debops')
 conflicts=('debops')
 source=("$_pkgname::git+https://github.com/debops/debops")
@@ -43,5 +43,5 @@ build() {
 
 package() {
     cd "$_pkgname"
-    python2 setup.py install --root="$pkgdir" --optimize=1
+    python setup.py install --root="$pkgdir" --optimize=1
 }

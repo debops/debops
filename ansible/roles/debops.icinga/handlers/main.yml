@@ -1,0 +1,23 @@
+---
+
+- name: Check icinga2 configuration and restart
+  command: icinga2 daemon -C
+  notify: [ 'Restart icinga2' ]
+
+- name: Restart icinga2
+  service:
+    name: 'icinga2'
+    state: 'restarted'
+
+- name: Trigger Icinga Director configuration deployment
+  uri:
+    body_format: 'json'
+    headers:
+      Accept: 'application/json'
+    method: 'POST'
+    url: '{{ icinga__director_deploy_api_url }}'
+    user: '{{ icinga__director_deploy_api_user }}'
+    password: '{{ icinga__director_deploy_api_password }}'
+  run_once: True
+  when: icinga__director_deploy|bool
+  no_log: True

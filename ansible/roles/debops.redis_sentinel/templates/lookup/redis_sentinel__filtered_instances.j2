@@ -1,0 +1,49 @@
+{% set output = [] %}
+{% for element in redis_sentinel__combined_instances | parse_kv_items %}
+{%   set element_options = [
+  {"name": "port",         "value": element.port},
+  {"name": "bind",         "value": (element.bind         | d(redis_sentinel__bind)), "multiple": False},
+  {"name": "dir",          "value": (element.dir          | d("/var/lib/redis"))},
+  {"name": "pidfile",      "value": (element.pidfile      | d("/var/run/sentinel-" + element.name + "/redis-sentinel.pid"))},
+  {"name": "logfile",      "value": (element.logfile      | d("/var/log/redis/redis-sentinel-" + element.name + ".log"))},
+  {"name": "unixsocket",   "value": (element.unixsocket   | d("/var/run/sentinel-" + element.name + "/redis-sentinel.sock"))},
+  {"name": "syslog-ident", "value": (element.syslog_ident | d("sentinel-" + element.name))}
+] %}
+{%   set instance_monitors = [] %}
+{%   for monitor in redis_sentinel__combined_monitors | parse_kv_items %}
+{%     if monitor.name|d() and monitor.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%       if ((monitor.instance is defined and monitor.instance == element.name) or monitor.instance is undefined) %}
+{%         set _ = instance_monitors.extend([
+  {"name": ('monitor ' + monitor.name), "value": (monitor.host + ' ' + monitor.port|string + ' ' + monitor.quorum|string), "separator": True},
+  {"name": ('notification-script ' + monitor.name), "value": ('/etc/redis/sentinel-' + element.name + '/notify.sh')},
+  {"name": ('client-reconfig-script ' + monitor.name), "value": ('/etc/redis/sentinel-' + element.name + '/reconfig.sh')}
+]) %}
+{%         if ((monitor.password is defined and monitor.password|bool) or monitor.password is undefined) %}
+{%           set _ = instance_monitors.extend([
+  {"name": ('auth-pass ' + monitor.name), "value": (monitor.password | d(redis_sentinel__auth_password))}
+]) %}
+{%         endif %}
+{%         for key, value in monitor.items() %}
+{%           if key not in [ 'name', 'host', 'id', 'instance', 'state', 'weight', 'separator', 'real_weight', 'port', 'quorum', 'password' ] %}
+{%             set _ = instance_monitors.extend([
+  {"name": (key + ' ' + monitor.name), "value": value}
+]) %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{%   set entry = {
+  "name": element.name,
+  "state": element.state | d('present'),
+  "options": (redis_sentinel__default_base_options + redis_sentinel__base_options + element_options + instance_monitors) | parse_kv_config
+} %}
+{%   if element.port is undefined %}
+{%     set _ = entry.update({'state': "init"}) %}
+{%   endif %}
+{%   if element.systemd_override|d() %}
+{%     set _ = entry.update({'systemd_override': element.systemd_override}) %}
+{%   endif %}
+{%   set _ = output.append(entry) %}
+{% endfor %}
+{{ output | to_nice_yaml }}

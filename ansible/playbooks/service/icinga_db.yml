@@ -1,0 +1,14 @@
+---
+
+- name: Configure Icinga database
+  hosts: [ 'debops_service_icinga_db' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.icinga_db
+      tags: [ 'role::icinga_db', 'skip::icinga_db' ]

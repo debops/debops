@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Run scripts in /etc/redis/sentinel-{{ item.0.name }}/notify.d when Redis Sentinel notices
+# configuration change.
+
+
+set -o nounset -o pipefail -o errexit
+
+event_type="${1}"
+event_desc="${2}"
+
+notify_dir="/etc/redis/sentinel-{{ item.0.name }}/notify.d"
+
+if [ -d "${notify_dir}" ] ; then
+    run-parts \
+        --arg="${event_type}" \
+        --arg="${event_desc}" \
+        "${notify_dir}"
+fi

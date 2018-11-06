@@ -21,6 +21,7 @@
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
+from past.builtins import basestring
 from operator import itemgetter
 
 try:
@@ -42,7 +43,7 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
         old_state = current_data.get('state', 'present')
         new_value = new_data.get('value')
 
-        if isinstance(new_value, (str, unicode, int, float, bool)):
+        if isinstance(new_value, (basestring, int, float, bool)):
             if (old_value is None or isinstance(old_value,
                                                 (str, unicode, int,
                                                  float, bool, dict))):
@@ -70,8 +71,8 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                             'state': 'present'})
 
                         dict_element['real_weight'] = (
-                            int(dict_element.get('id'))
-                            + int(dict_element.get('weight')))
+                            int(dict_element.get('id')) +
+                            int(dict_element.get('weight')))
 
                         dict_value.update({element: dict_element})
                         current_data.update({'value': dict_value})
@@ -98,18 +99,18 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                                     in dict_value.keys()):
                                 id_src = element.get('copy_id_from')
                                 dict_element['id'] = (
-                                    int(dict_value[id_src].get('id'))
-                                    + int(dict_value[id_src].get('weight', 0)))
+                                    int(dict_value[id_src].get('id')) +
+                                    int(dict_value[id_src].get('weight', 0)))
 
                         if 'weight' in element:
                             dict_element['weight'] = (
                                 int(element.get('weight',
-                                    dict_element.get('weight', 0)))
-                                + int(dict_element.get('weight', 0)))
+                                    dict_element.get('weight', 0))) +
+                                int(dict_element.get('weight', 0)))
 
                         dict_element['real_weight'] = (
-                            int(dict_element.get('id'))
-                            + int(dict_element.get('weight')))
+                            int(dict_element.get('id')) +
+                            int(dict_element.get('weight')))
 
                         # Include any unknown keys
                         for key in element.keys():
@@ -180,18 +181,18 @@ def parse_kv_config(*args, **kwargs):
                     if element.get('copy_id_from') in parsed_config.keys():
                         id_src = element.get('copy_id_from')
                         current_param['id'] = (
-                            int(parsed_config[id_src].get('id'))
-                            + int(parsed_config[id_src].get('weight', 0)))
+                            int(parsed_config[id_src].get('id')) +
+                            int(parsed_config[id_src].get('weight', 0)))
 
                 if 'weight' in element:
                     current_param['weight'] = (
                         int(element.get('weight',
-                            current_param.get('weight', 0)))
-                        + int(current_param.get('weight', 0)))
+                            current_param.get('weight', 0))) +
+                        int(current_param.get('weight', 0)))
 
                 current_param['real_weight'] = (
-                    int(current_param.get('id'))
-                    + int(current_param.get('weight')))
+                    int(current_param.get('id')) +
+                    int(current_param.get('weight')))
 
                 _parse_kv_value(current_param, element,
                                 current_param.get('id'))
@@ -230,8 +231,8 @@ def parse_kv_config(*args, **kwargs):
                     })
 
                     current_param['real_weight'] = (
-                        int(current_param.get('id'))
-                        + int(current_param.get('weight')))
+                        int(current_param.get('id')) +
+                        int(current_param.get('weight')))
 
                     _parse_kv_value(current_param,
                                     {'value': value},
@@ -274,6 +275,10 @@ def parse_kv_items(*args, **kwargs):
             dictionary, keys are parameter names, values are default values to
             use when a parameter is not specified. Examples:
                       defaults={'some_param': 'default_value'}
+
+        merge_keys
+            list of keys in the dictionary that will be merged together. If not
+            specified, 'options' key instances will be merged by default.
     """
 
     input_args = []
@@ -331,28 +336,21 @@ def parse_kv_items(*args, **kwargs):
                     if element.get('copy_id_from') in parsed_config.keys():
                         id_src = element.get('copy_id_from')
                         current_param['id'] = (
-                            int(parsed_config[id_src].get('id'))
-                            + int(parsed_config[id_src].get('weight', 0)))
+                            int(parsed_config[id_src].get('id')) +
+                            int(parsed_config[id_src].get('weight', 0)))
 
                 if 'weight' in element:
                     current_param['weight'] = (
                         int(element.get('weight',
-                            current_param.get('weight', 0)))
-                        + int(current_param.get('weight', 0)))
+                            current_param.get('weight', 0))) +
+                        int(current_param.get('weight', 0)))
 
                 current_param['real_weight'] = (
-                    int(current_param.get('id'))
-                    + int(current_param.get('weight')))
+                    int(current_param.get('id')) +
+                    int(current_param.get('weight')))
 
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
-
-                if 'options' in element:
-                    current_options = current_param.get('options', [])
-                    new_options = parse_kv_config(
-                        current_options + element.get('options'))
-
-                    current_param['options'] = new_options
 
                 # Set any default keys defined for the filter
                 if (kwargs.get('defaults') and
@@ -361,15 +359,32 @@ def parse_kv_items(*args, **kwargs):
 
                     for key in defargs.keys():
                         current_param[key] = (
-                            element.get(key,
-                                        current_param.get(key,
-                                                          defargs.get(key))))
+                            current_param.get(key,
+                                              defargs.get(key)))
+
+                merge_keys = ['options']
+                if (kwargs.get('merge_keys') and
+                        isinstance(kwargs.get('merge_keys'), list)):
+                    merge_keys.extend(kwargs.get('merge_keys'))
+
+                for key_name in merge_keys:
+                    if key_name in element:
+                        current_options = current_param.get(key_name, [])
+                        new_options = parse_kv_config(
+                            current_options + element.get(key_name))
+
+                        current_param[key_name] = new_options
+
+                known_keys = ['name', 'state', 'id', 'weight',
+                              'real_weight', 'separator',
+                              'comment', 'options']
+                if (kwargs.get('merge_keys') and
+                        isinstance(kwargs.get('merge_keys'), list)):
+                    known_keys.extend(kwargs.get('merge_keys'))
 
                 # Include any unknown keys
                 for unknown_key in element.keys():
-                    if unknown_key not in ['name', 'state', 'id', 'weight',
-                                           'real_weight', 'separator',
-                                           'comment', 'options']:
+                    if unknown_key not in known_keys:
                         current_param[unknown_key] = element.get(unknown_key)
 
                 # Fill any empty keys using other keys
@@ -413,5 +428,5 @@ class FilterModule(object):
     def filters(self):
         return {
             'parse_kv_config': parse_kv_config,
-            'parse_kv_items':  parse_kv_items
+            'parse_kv_items': parse_kv_items
         }

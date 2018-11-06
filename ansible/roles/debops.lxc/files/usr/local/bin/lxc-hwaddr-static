@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Usage: lxc-hwaddr-static <container_name>
+
+# For specified LXC container, generate a random but predictable MAC address
+# for each configured network interface and save it in the configuration file.
+
+# MAC addresses are expected to conform to a set of Locally Administered
+# Address Ranges: https://serverfault.com/questions/40712/
+
+# This script can be used as a pre-start hook via the 'lxc.hook.pre-start'
+# option in the container configuration, however on the container start the new
+# MAC addresses added to the config file are not known to LXC scripts. New MAC
+# addresses will be used after a container is restarted.
+
+
+set -o nounset -o pipefail -o errexit
+
+readonly SCRIPT="$(basename "${0}")"
+readonly CONTAINER="${LXC_NAME:-${1:-}}"
+readonly CONFIG="${LXC_CONFIG_FILE:-/var/lib/lxc/${CONTAINER}/config}"
+
+# First character in a static prefix
+readonly MAC_LAA1=( {0..9} {a..f} )
+
+# Second character in a static prefix
+readonly MAC_LAA2=( 2 6 a e )
+
+
+if [ -n "${CONTAINER}" ] ; then
+    if [ -r "${CONFIG}" ] ; then
+
+        # Don't modify configuration files that already contain hardware addresses
+        if ! grep -qE '^lxc\.network\.hwaddr\s+=' "${CONFIG}" \
+            && ! grep -qE '^# no-static-hwaddr' "${CONFIG}" \
+            && ! grep -qE '^# no-hwaddr-static' "${CONFIG}" ; then
+
+            # Count number of network interfaces defined for a container
+            iface_count="$(grep -cE '^lxc\.network\.type\s+=' "${CONFIG}")"
+
+            # Convert the container name into a number usable by RANDOM
+            container_seed="$(printf "%s" "${CONTAINER}" | od -An -vtu1 | tr -d '[:blank:]')"
+
+            for (( i=1 ; i<=iface_count ; i++ )) ; do
+
+                # Seed the randomizer with a predictable string based on container
+                # name and the network interface number
+                RANDOM="${container_seed}${i}"
+                interface_seed="${CONTAINER}${i}"
+
+                # Generate random MAC address based on predictable seed
+                static_prefix="${MAC_LAA1[ $RANDOM % ${#MAC_LAA1[@]} ]}${MAC_LAA2[ $RANDOM % ${#MAC_LAA2[@]} ]}"
+                static_hwaddr="$(printf "%s" "${interface_seed}" | md5sum | sed "s/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/${static_prefix}:\1:\2:\3:\4:\5/")"
+
+                # Configure the generated MAC address for each network interface
+                # found in the container configuration file
+                printf "Setting a static MAC address for interface %s: %s\n" "${i}" "${static_hwaddr}"
+                awk "/^lxc.network.type/{x++} x==${i}{sub(/lxc.network.type.*$/,\"&\\nlxc.network.hwaddr = ${static_hwaddr}\")}1" "${CONFIG}" > "${CONFIG}.tmp"
+                mv "${CONFIG}.tmp" "${CONFIG}"
+
+            done
+
+        else
+            printf "Configuration file '%s' already contains MAC addresses, skipping\n" "${CONFIG}"
+            exit 0
+        fi
+
+    else
+        printf "Warning: '%s' file not found, skipping\n" "${CONFIG}"
+    fi
+else
+    cat <<EOF
+${SCRIPT}: generate static and predictable MAC addresses for LXC containers
+
+Usage: ${SCRIPT} <container_name>
+EOF
+fi

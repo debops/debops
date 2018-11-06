@@ -32,13 +32,13 @@ the outside world without proper encryption and authentication.
 You can install additional plugins that provide encrypted connections,
 authentication, authorization and access control:
 
-- `X-Pack <https://www.elastic.co/products/x-pack>`_, an Elasticsearch BV
+- `X-Pack <https://www.elastic.co/products/x-pack>`_, an Elastic
   commercial plugin with free trial period. Supports encryption,
   authentication, access control, integrates with Kibana and Logstash. Since
   the plugin is developed by the same team, its releases are in parallel with
   Elasticsearch.
 
-- `Search Guard <http://floragunn.com/searchguard/>`_, an open source third
+- `Search Guard <https://search-guard.com/>`_, an open source third
   party plugin with commercial support. Has features comparable with X-Pack,
   with more basic features like HTTP and transport encryption, basic
   authentication and access control available free of charge.
@@ -60,10 +60,11 @@ at least three (3) nodes to ensure consistency in the cluster. To enable
 cluster mode, you will need to configure the firewall for Elasticsearch and use
 one or multiple Ansible inventory groups to design your cluster architecture.
 
-The role currently dos not support deployment of multiple Elasticsearch
+The role currently does not support deployment of multiple Elasticsearch
 instances on one host. As an alternative, consider setting up an internal
 container environment with each Elasticsearch instance in a separate container
-with its own IP address.
+with its own IP address or use `Elastic Cloud Enterprise
+<https://www.elastic.co/cloud/enterprise>`_ which does this for you and more.
 
 See the :ref:`elasticsearch__ref_clustering` for more details.
 
