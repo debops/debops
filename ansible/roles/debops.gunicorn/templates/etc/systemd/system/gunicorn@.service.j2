@@ -13,7 +13,7 @@ Wants=network-online.target
 PermissionsStartOnly=true
 EnvironmentFile=-/etc/default/gunicorn-%i
 PIDFile=/run/gunicorn-%i/%i.pid
-ExecStart=/usr/bin/{{ item.binary if (item.binary is defined) else gunicorn__binary }} --config=/etc/gunicorn/%i.conf.py ${GUNICORN_OPTS}
+ExecStart=/usr/bin/{{ gunicorn__binary }} --config=/etc/gunicorn/%i.conf.py ${GUNICORN_OPTS}
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 Restart=always
