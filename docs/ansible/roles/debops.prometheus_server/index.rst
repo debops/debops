@@ -6,7 +6,6 @@ debops.prometheus_server
 .. toctree::
    :maxdepth: 2
 
-   introduction
    getting-started
    defaults
    defaults-detailed

@@ -16,13 +16,13 @@
 prometheus_exporters__base_packages:
   "{{ ([ 'prometheus-node-exporter'   ] if 'node' in prometheus_exporters__exporters else [])
     + ([ 'prometheus-mysqld-exporter' ] if 'mysqld' in prometheus_exporters__exporters else [])
-    + ([ 'golang', 'libsystemd-dev', 'build-essential' ] if 'postfix' in prometheus_exporters__exporters else []) }}"
-                                                                   # ]]]
+    + ([ 'libsystemd-dev', 'build-essential' ] if 'postfix' in prometheus_exporters__exporters else []) }}"
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__packages [[[
 #
 # List of additional APT packages to install with prometheus.
 prometheus_exporters__packages: []
+                                                                   # ]]]
                                                                    # ]]]
 # prometheus exporter Configuration [[[
 # ---------------------------------
@@ -34,6 +34,8 @@ prometheus_exporters__deploy_state: "present"
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__exporters [[[
 #
+# list of enabled exporters
+# currently available are `node`, `mysqld`, `postfix`
 prometheus_exporters__exporters:
   - 'node'
 #  - 'mysqld'
@@ -57,6 +59,7 @@ prometheus_exporter__mysql__dependencies:
 # ------------
 #
 # This is soposed to secure the access to the prometheus exporter
+# More details at :ref:`nginx__ref_default_variable_details`
 
 # .. envvar:: prometheus_exporters__nginx [[[
 #
@@ -114,18 +117,20 @@ prometheus_exporters__nginx__dependent_htpasswd:
 
 # .. envvar:: prometheus_exporters__accept_any [[[
 #
-# Make the prometheus exporter aviable under the port 9090
+# Make the prometheus exporter public aviable
+# More infos :ref:`ferm__ref_type_accept`
 prometheus_exporters__accept_any: False
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__allow [[[
 #
 # List of IP addresses or CIDR subnets which can access the prometheus exporter
-# By default access from the net is forbidden
+# By default access from the net is forbidden by :envvar:`prometheus_exporters__accept_any`
 prometheus_exporters__allow: []
                                                                    # ]]]
 # .. envvar:: prometheus_exporters__ferm__dependent_rules [[[
 #
 # Ferm rules
+# More details :ref:`ferm__ref_firewall_rules`
 prometheus_exporters__ferm__dependent_rules:
   - name: 'prometheus_exporter_node'
     type: 'accept'
@@ -152,6 +157,7 @@ prometheus_exporters__ferm__dependent_rules:
 # .. envvar:: prometheus_exporters__tcpwrappers__dependent_allow [[[
 #
 # Configuration for the debops.tcpwrappers Ansible role.
+# More details at :ref:`tcpwrappers__allow`
 prometheus_exporters__tcpwrappers__dependent_allow:
   - daemon: '{{ [ "prometheus-node-exporter" ] if "node" in prometheus_exporters__exporters else []
           + [ "prometheus-mysqld-exporter" ] if "mysqld" in prometheus_exporters__exporters else []

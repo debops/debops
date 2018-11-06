@@ -5,11 +5,23 @@ Getting started
    :local:
 
 
-Default configuration
----------------------
+Introduction
+------------
 
+The Alertmanager handles alerts sent by client applications such as the Prometheus server. It takes care of deduplicating, grouping, and routing them to the correct receiver integration such as email, PagerDuty, or OpsGenie. It also takes care of silencing and inhibition of alerts.
 
+[Source](https://prometheus.io/docs/alerting/alertmanager/)
 
+Usage
+-----
+
+By default all exporter only listen on localhost (blocked by firewall).
+This can be changed with the following variables:
+
+- :envvar:`prometheus_alertmanager__nginx` activate secure ports with a nginx proxy
+- :envvar:`prometheus_alertmanager__allow` allow direct tcp connection
+
+The used port is 9093 or if nginx proxy is activated 19093
 
 Example inventory
 -----------------

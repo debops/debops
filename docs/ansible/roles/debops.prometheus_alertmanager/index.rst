@@ -6,7 +6,6 @@ debops.prometheus_alertmanager
 .. toctree::
    :maxdepth: 2
 
-   introduction
    getting-started
    defaults
    copyright
