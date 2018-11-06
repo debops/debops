@@ -1,15 +1,6 @@
 # {{ ansible_managed }}
 
-# vim:ft=python:
-
-from json import loads
-
-# Workaround for Jinja template in Python script
-"""
-{% set gunicorn__tpl_run_path = (item.run_path
-   if (item.run_path is defined and item.run_path != omit) else '/run') %}
-"""
-
+{% set gunicorn__tpl_run_path = (item.run_path if (item.run_path is defined and item.run_path != omit) else '/run') %}
 #
 # Server socket
 #
@@ -28,9 +19,8 @@ from json import loads
 #       range.
 #
 
-bind = '{{item.bind | d("unix:" + gunicorn__tpl_run_path
-          + "/gunicorn-" + item.name + "/" + item.name + ".sock")}}'
-backlog = loads("""{{ item.backlog | d('2048') }}""")
+bind = '{{ item.bind | d("unix:" + gunicorn__tpl_run_path + "/gunicorn-" + item.name + "/" + item.name + ".sock") }}'
+backlog = {{ item.backlog | d('2048') }}
 
 #
 # Worker processes
@@ -81,11 +71,11 @@ backlog = loads("""{{ item.backlog | d('2048') }}""")
 #       A positive integer. Generally set in the 1-5 seconds range.
 #
 
-workers = loads("""{{ item.workers | d(gunicorn__workers) }}""")
+workers = {{ item.workers | d(gunicorn__workers) }}
 worker_class = '{{ item.worker_class | d("sync") }}'
-worker_connections = loads("""{{ item.worker_connections | d('1000') }}""")
-timeout = loads("""{{ item.timeout | d('30') }}""")
-keepalive = loads("""{{ item.keepalive | d('2') }}""")
+worker_connections = {{ item.worker_connections | d('1000') }}
+timeout = {{ item.timeout | d('30') }}
+keepalive = {{ item.keepalive | d('2') }}
 
 #
 #   spew - Install a trace function that spews every line of Python
@@ -95,7 +85,7 @@ keepalive = loads("""{{ item.keepalive | d('2') }}""")
 #       True or False
 #
 
-spew = loads("""{{ (item.spew | d(False)) | bool | lower }}""")
+spew = {{ (item.spew | d(False)) | bool }}
 
 #
 # Server mechanics
@@ -136,18 +126,12 @@ spew = loads("""{{ (item.spew | d(False)) | bool | lower }}""")
 #       None to signal that Python should choose one on its own.
 #
 
-daemon = loads("""{{ (item.daemon | d(False)) | bool | lower }}""")
-pidfile = '{{item.pidfile | d(gunicorn__tpl_run_path + "/gunicorn-"
-             + item.name + "/" + item.name + ".pid")}}'
-umask = loads("""{{ item.umask | d('0') }}""")
-user = '{{item.user
-          if (item.user is defined and item.user != omit)
-          else gunicorn__user}}'
-group = '{{item.group
-           if (item.group is defined and item.group != omit)
-           else gunicorn__group}}'
-tmp_upload_dir = loads("""{{ ("'" + item.tmp_upload_dir + "'")
-                              if item.tmp_upload_dir|d() else 'null' }}""")
+daemon = {{ (item.daemon | d(False)) | bool }}
+pidfile = '{{ item.pidfile | d(gunicorn__tpl_run_path + "/gunicorn-" + item.name + "/" + item.name + ".pid") }}'
+umask = {{ item.umask | d('0') }}
+user = '{{ item.user if (item.user is defined and item.user != omit) else gunicorn__user }}'
+group = '{{ item.group if (item.group is defined and item.group != omit) else gunicorn__group }}'
+tmp_upload_dir = {{ ("'" + item.tmp_upload_dir + "'") if item.tmp_upload_dir|d() else 'None' }}
 
 #
 #   Logging
@@ -161,14 +145,11 @@ tmp_upload_dir = loads("""{{ ("'" + item.tmp_upload_dir + "'")
 #       A string of "debug", "info", "warning", "error", "critical"
 #
 
-accesslog = '{{item.accesslog | d("/var/log/gunicorn/" + item.name
-               + "/" + item.name + "_access.log")}}'
-errorlog = '{{item.errorlog | d("/var/log/gunicorn/" + item.name
-              + "/" + item.name + "_error.log")}}'
+accesslog = '{{ item.accesslog | d("/var/log/gunicorn/" + item.name + "/" + item.name + "_access.log") }}'
+errorlog = '{{ item.errorlog | d("/var/log/gunicorn/" + item.name + "/" + item.name + "_error.log") }}'
 loglevel = '{{ item.loglevel | d("info") }}'
-remote_header = loads('''"{{ item.remote_host_header | d('X-Real-IP') }}"''')
-access_log_format = ('%({' + remote_header + '}i)s %(l)s %(u)s %(t)s '
-                     '"%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"')
+{% set gunicorn__tpl_remote_host_header = item.remote_host_header | d('X-Real-IP') %}
+access_log_format = '%({{ "{" + gunicorn__tpl_remote_host_header + "}" }}i)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 #
 # Process naming
@@ -183,8 +164,7 @@ access_log_format = ('%({' + remote_header + '}i)s %(l)s %(u)s %(t)s '
 #       A string or None to choose a default of something like 'gunicorn'.
 #
 
-proc_name = loads("""{{ ("'" + item.proc_name + "'")
-                         if item.proc_name|d() else 'null' }}""")
+proc_name = {{ ("'" + item.proc_name + "'") if item.proc_name|d() else 'None' }}
 
 #
 # Server hooks
@@ -204,42 +184,34 @@ proc_name = loads("""{{ ("'" + item.proc_name + "'")
 #       A callable that takes a server instance as the sole argument.
 #
 
-
 def post_fork(server, worker):
     server.log.info("Worker spawned (pid: %s)", worker.pid)
-
 
 def pre_fork(server, worker):
     pass
 
-
 def pre_exec(server):
     server.log.info("Forked child, re-executing.")
-
 
 def when_ready(server):
     server.log.info("Server is ready. Spawning workers")
 
-
 def worker_int(worker):
     worker.log.info("worker received INT or QUIT signal")
 
-    # get traceback info
-    import threading
-    import sys
-    import traceback
+    ## get traceback info
+    import threading, sys, traceback
     id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
     code = []
     for threadId, stack in sys._current_frames().items():
-        code.append("\n# Thread: %s(%d)" % (id2name.get(threadId, ""),
-                                            threadId))
+        code.append("\n# Thread: %s(%d)" % (id2name.get(threadId,""),
+            threadId))
         for filename, lineno, name, line in traceback.extract_stack(stack):
             code.append('File: "%s", line %d, in %s' % (filename,
-                                                        lineno, name))
+                lineno, name))
             if line:
                 code.append("  %s" % (line.strip()))
     worker.log.debug("\n".join(code))
-
 
 def worker_abort(worker):
     worker.log.info("worker received SIGABRT signal")
