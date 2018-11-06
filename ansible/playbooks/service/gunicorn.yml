@@ -20,5 +20,12 @@
       logrotate__dependent_config:
         - '{{ gunicorn__logrotate__dependent_config }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::gunicorn' ]
+      python__dependent_packages3:
+        - '{{ gunicorn__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ gunicorn__python__dependent_packages2 }}'
+
     - role: debops.gunicorn
       tags: [ 'role::gunicorn', 'skip::gunicorn' ]

@@ -151,6 +151,9 @@ Changed
   role to allow for resources owned by UNIX accounts/groups other than
   ``root``.
 
+- [debops.gunicorn] The role depends on :ref:`debops.python` now to install the
+  required packages. Please update your custom playbooks accordingly.
+
 Fixed
 ~~~~~
 
