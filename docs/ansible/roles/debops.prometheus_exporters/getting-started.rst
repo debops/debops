@@ -29,10 +29,18 @@ Secure ports are:
 - `19154` postfix
 
 
+Exporters
+~~~~~~~~~
+
+You can define which exporter is going to be installed,
+with the :envvar:`prometheus_exporters__exporters` variable.
+
+
 Example inventory
 -----------------
 
-To enable Prosody server support on a host, it needs to be included in the Ansible inventory in a specific group:
+To enable Prometheus exporters on a host,
+the host needs to be included in the Ansible inventory in a specific group:
 
 .. code-block:: none
 

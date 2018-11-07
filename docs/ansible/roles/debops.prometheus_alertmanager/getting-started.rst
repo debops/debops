@@ -26,7 +26,8 @@ The used port is 9093 or if nginx proxy is activated 19093
 Example inventory
 -----------------
 
-To enable Prosody server support on a host, it needs to be included in the Ansible inventory in a specific group:
+To enable Prometheus Alertmanager on a host,
+the host needs to be included in the Ansible inventory in a specific group:
 
 .. code-block:: none
 
