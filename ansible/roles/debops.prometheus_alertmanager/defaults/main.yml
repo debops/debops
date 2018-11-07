@@ -92,10 +92,7 @@ prometheus_alertmanager__smtp_config:
   global:
     # The smarthost and SMTP sender used for mail notifications.
     smtp_smarthost: 'localhost:25'
-    smtp_from: 'alertmanager@{{ ansible_domain }}'
-    smtp_auth_username: 'alertmanager'
-    smtp_auth_password: '{{ lookup("password", secret + "/credentials/" +
-                            ansible_fqdn + "/prometheus_alert/smtp/password length=20") }}'
+    smtp_from: 'alertmanager@{{ ansible_fqdn }}'
   receivers:
     - name: 'root'
       email_configs:
