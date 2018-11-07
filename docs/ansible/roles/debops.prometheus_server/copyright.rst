@@ -1,4 +1,4 @@
 Copyright
 =========
 
-.. literalinclude:: ../../../../ansible/roles/debops.prosmetheus_server/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/debops.prometheus_server/COPYRIGHT
