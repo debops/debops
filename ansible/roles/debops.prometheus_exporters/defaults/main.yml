@@ -171,20 +171,35 @@ prometheus_exporters__tcpwrappers__dependent_allow:
 # Configuration for :ref:`debops.etc_services` role. It will set up
 # a entry in :file:`/etc/services`.
 prometheus_exporters__etc_services__dependent_list:
-  - name: 'prometheus_node_exporter'
+  - name: 'prom-node'
     port: 9100
     accept_any: '{{ prometheus_exporters__accept_any }}'
     comment: 'Prometheus node exporter for metric providing'
     state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
-  - name: 'prometheus_mysqld_exporter'
+  - name: 'prom-mysqld'
     port: 9104
     accept_any: '{{ prometheus_exporters__accept_any }}'
     comment: 'Prometheus mysql exporter for metric providing'
     state: '{{ prometheus_exporters__deploy_state if "mysqld" in prometheus_exporters__exporters else "absent" }}'
-  - name: 'prometheus_postfix_exporter'
+  - name: 'prom-postfix'
     port: 9154
     accept_any: '{{ prometheus_exporters__accept_any }}'
     comment: 'Prometheus postfix exporter for metric providing'
+    state: '{{ prometheus_exporters__deploy_state if "postfix" in prometheus_exporters__exporters else "absent" }}'
+  - name: 'prom-https-node'
+    port: 19100
+    accept_any: '{{ prometheus_exporters__accept_any }}'
+    comment: 'Prometheus node exporter for metric providing over https'
+    state: '{{ prometheus_exporters__deploy_state if "node" in prometheus_exporters__exporters else "absent" }}'
+  - name: 'prom-https-mysqld'
+    port: 19104
+    accept_any: '{{ prometheus_exporters__accept_any }}'
+    comment: 'Prometheus mysql exporter for metric providing over https'
+    state: '{{ prometheus_exporters__deploy_state if "mysqld" in prometheus_exporters__exporters else "absent" }}'
+  - name: 'prom-https-postfix'
+    port: 19154
+    accept_any: '{{ prometheus_exporters__accept_any }}'
+    comment: 'Prometheus postfix exporter for metric providing over https'
     state: '{{ prometheus_exporters__deploy_state if "postfix" in prometheus_exporters__exporters else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
