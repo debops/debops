@@ -865,6 +865,38 @@ gitlab__apt_preferences__dependent_list:
     by_role: 'debops.gitlab'
 
                                                                    # ]]]
+# .. envvar:: gitlab__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+gitlab__logrotate__dependent_config:
+
+  - filename: 'gitlab'
+    sections:
+
+      - log: '{{ gitlab_home }}/gitlab/log/*.log'
+        comment: |
+          GitLab logrotate settings
+          based on: https://stackoverflow.com/a/4883967
+        options: |
+          daily
+          missingok
+          rotate 90
+          compress
+          notifempty
+          copytruncate
+        state: 'present'
+
+      - log: '{{ gitlab_home }}/gitlab-shell/gitlab-shell.log'
+        options: |
+          daily
+          missingok
+          rotate 90
+          compress
+          notifempty
+          copytruncate
+        state: 'present'
+
+                                                                   # ]]]
 # .. envvar:: gitlab__postgresql__dependent_roles [[[
 #
 # Configuration of PostgreSQL roles for :ref:`debops.postgresql` Ansible role.
