@@ -166,7 +166,7 @@ resolv-file = /etc/resolvconf/upstream.conf
 
 {% if dnsmasq__dhcp_hosts is defined %}
 {% for host in dnsmasq__dhcp_hosts %}
-dhcp-host={{ host.mac }},{{ host.ip  }}{% if host.name is defined %},{{ host.name }}{% else %}{% if host.lease_time is defined %},{% endif %}{% endif %}{% if host.lease_time is defined %},{{ host.lease_time }}{% else %},1d{% endif %}
+dhcp-host={{ host.mac }},{% if host.tag is defined %}set:{{ host.tag }},{% endif %}{{ host.ip  }}{% if host.name is defined %},{{ host.name }}{% else %}{% if host.lease_time is defined %},{% endif %}{% endif %}{% if host.lease_time is defined %},{{ host.lease_time }}{% else %},1d{% endif %}
 
 {% endfor %}
 {% endif %}
