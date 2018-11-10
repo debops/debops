@@ -16,7 +16,9 @@
 # .. envvar:: lxc__base_packages [[[
 #
 # List of base APT packages to install for LXC support.
-lxc__base_packages: [ 'lxc', 'lxcfs', 'debootstrap' ]
+lxc__base_packages:
+  - [ 'lxc', 'lxcfs', 'debootstrap' ]
+  - '{{ [ "dnsmasq-base", "resolvconf" ] if (lxc__net_deploy_state == "present") else [] }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__packages [[[
@@ -68,6 +70,93 @@ lxc__root_subgid_count: '{{ ansible_local.root_account.subgids[0]["count"]
                             else "65536" }}'
                                                                    # ]]]
                                                                    # ]]]
+# LXC internal network configuration [[[
+# --------------------------------------
+
+# These variables define configuration of the internal LXC network for local
+# containers. If you want to support container networking on multiple LXC hosts
+# at once, you should set up external DHCP/DNS server and connect the LXC
+# containers to the host bridge interfaces instead.
+
+# .. envvar:: lxc__net_deploy_state [[[
+#
+# If ``present``, the role will configure internal LXC network using the
+# ``lxc-net`` service. If ``absent``, the internal LXC network will be disabled
+# and de-configured.
+lxc__net_deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_bridge [[[
+#
+# Name of the network bridge which will be configured for the internal LXC
+# network.
+lxc__net_bridge: 'lxcbr0'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_address [[[
+#
+# The IPv4 address and CIDR mask of the internal LXC bridge, which will be the
+# NAT gateway for the LXC containers. This value will be used to configure the
+# internal :command:`dnsmasq` DHCP server.
+#
+# You should ensure that the internal LXC network does not collide with other
+# local networks, to avoid routing issues.
+lxc__net_address: '10.0.3.1/24'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_dhcp_start [[[
+#
+# The index of the IP address from the above subnet that starts the DHCP range.
+# First IP address is usually the gateway address, therefore you need to start
+# with a higher number.
+lxc__net_dhcp_start: '2'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_dhcp_end [[[
+#
+# The index of the IP address from the above subnet that ends the DHCP range.
+# Negative number tells the role to count from the end of the subnet; last IP
+# address is usually the broadcast address, therefore you need to get at least
+# one address before it.
+lxc__net_dhcp_end: '-2'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_domain [[[
+#
+# The DNS domain used for the internal LXC network. By default it is based on
+# the LXC host domain.
+#
+# The :command:`resolvconf` service will be used to add or remove the LXC
+# domain in the :file:`/etc/resolv.conf`; with local DNS resolver, for example
+# :command:`dnsmasq`, configured on the LXC host the containers can then be
+# accessed by their hostnames instead of the IP addresses.
+lxc__net_domain: 'lxc.{{ ansible_local.core.domain
+                         if (ansible_local|d() and ansible_local.core|d() and
+                             ansible_local.core.domain|d())
+                         else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_interface_fqdn [[[
+#
+# The DNS name of the internal LXC bridge / internal LXC gateway registered in
+# the :command:`dnsmasq` service; it can be seen for example in traceroutes.
+lxc__net_interface_fqdn: '{{ ansible_hostname }}.{{ lxc__net_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_dnsmasq_conf [[[
+#
+# Absolute path to the custom :command:`dnsmasq` configuration file used by the
+# internal LXC network.
+lxc__net_dnsmasq_conf: '/etc/lxc/lxc-net-dnsmasq.conf'
+
+                                                                   # ]]]
+# .. envvar:: lxc__net_dnsmasq_options [[[
+#
+# String or YAML text block with additional :man:`dnsmasq(8)` options added to
+# its custom configuration file.
+lxc__net_dnsmasq_options: ''
+                                                                   # ]]]
+                                                                   # ]]]
 # System-wide configuration [[[
 # -----------------------------
 
@@ -106,7 +195,7 @@ lxc__default_configuration:
         value: 'veth'
 
       - name: 'lxc.network.link'
-        value: 'br0'
+        value: '{{ "lxcbr0" if (lxc__net_deploy_state == "present") else "br0" }}'
 
       - name: 'lxc.network.flags'
         value: 'up'
@@ -137,7 +226,7 @@ lxc__default_configuration:
         value: 'veth'
 
       - name: 'lxc.network.link'
-        value: 'br0'
+        value: '{{ "lxcbr0" if (lxc__net_deploy_state == "present") else "br0" }}'
 
       - name: 'lxc.network.flags'
         value: 'up'
@@ -162,7 +251,7 @@ lxc__default_configuration:
 
       - name: 'lxc.network.link_net0'
         alias: 'lxc.network.link'
-        value: 'br0'
+        value: '{{ "lxcbr0" if (lxc__net_deploy_state == "present") else "br0" }}'
 
       - name: 'lxc.network.flags_net0'
         alias: 'lxc.network.flags'

@@ -19,6 +19,103 @@
     group: 'root'
     mode: '0755'
 
+- name: Disable internal network when requested
+  systemd:
+    name: 'lxc-net.service'
+    state: 'stopped'
+  when: (lxc__net_deploy_state == 'absent' and
+         ansible_service_mgr == 'systemd')
+  tags: [ 'role::lxc:net' ]
+
+- name: Remove lxc-net support files
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  loop:
+    - '{{ lxc__net_dnsmasq_conf }}'
+    - '/usr/local/lib/lxc-net-resolvconf'
+    - '/etc/systemd/system/lxc-net.service.d'
+    - '/etc/ferm/hooks/post.d/restart-lxc-net'
+  register: lxc__register_net_remove
+  when: lxc__net_deploy_state == 'absent'
+  tags: [ 'role::lxc:net' ]
+
+- name: Generate lxc-net configuration file
+  template:
+    src: 'etc/default/lxc-net.j2'
+    dest: '/etc/default/lxc-net'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: lxc__register_net_config
+  tags: [ 'role::lxc:net' ]
+
+- name: Generate lxc-net dnsmasq config file
+  template:
+    src: 'etc/lxc/lxc-net-dnsmasq.conf.j2'
+    dest: '{{ lxc__net_dnsmasq_conf }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: lxc__register_net_dnsmasq
+  when: lxc__net_deploy_state == 'present'
+  tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
+
+- name: Install lxc-net ferm hook
+  template:
+    src: 'etc/ferm/hooks/post.d/restart-lxc-net.j2'
+    dest: '/etc/ferm/hooks/post.d/restart-lxc-net'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (lxc__net_deploy_state == 'present' and
+         ansible_local|d() and ansible_local.ferm|d() and
+         (ansible_local.ferm.enabled|d())|bool)
+  tags: [ 'role::lxc:net' ]
+
+- name: Generate lxc-net-resolvconf hook script
+  template:
+    src: 'usr/local/lib/lxc-net-resolvconf.j2'
+    dest: '/usr/local/lib/lxc-net-resolvconf'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: lxc__net_deploy_state == 'present'
+  tags: [ 'role::lxc:net' ]
+
+- name: Create lxc-net service override directory
+  file:
+    path: '/etc/systemd/system/lxc-net.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: lxc__net_deploy_state == 'present'
+  tags: [ 'role::lxc:net' ]
+
+- name: Hook lxc-net-reslvconf script to the lxc-net service
+  template:
+    src: 'etc/systemd/system/lxc-net.service.d/resolvconf.conf.j2'
+    dest: '/etc/systemd/system/lxc-net.service.d/resolvconf.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: lxc__register_net_systemd
+  when: lxc__net_deploy_state == 'present'
+  tags: [ 'role::lxc:net' ]
+
+- name: Reconfigure systemd services when modified
+  systemd:
+    name: '{{ "lxc-net.service" if (lxc__net_deploy_state == "present") else omit }}'
+    state: '{{ "restarted" if (lxc__net_deploy_state == "present") else omit }}'
+    daemon_reload: True
+  when: (ansible_service_mgr == 'systemd' and
+         (lxc__register_net_remove|d({}) is changed or
+          lxc__register_net_config|d({}) is changed or
+          lxc__register_net_dnsmasq|d({}) is changed or
+          lxc__register_net_systemd|d({}) is changed))
+  tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
+
 - name: Remove LXC configuration if requested
   file:
     path: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'

@@ -20,6 +20,16 @@ files in the :file:`/etc/lxc/` directory.
 Examples
 ~~~~~~~~
 
+Select the default bridge interface used by new unprivileged LXC containers:
+
+.. code-block:: yaml
+
+   lxc__configuration:
+
+     - name: 'unprivileged'
+       options:
+         - 'lxc.network.link': 'br0'
+
 Change the default LXC configuration file used to generate LXC containers to
 unprivileged:
 

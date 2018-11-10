@@ -11,11 +11,17 @@ LXC support in DebOps
 This role focuses only on the LXC configuration itself. You will need to use
 other DebOps roles to manage additional required subsystems.
 
+The role will configure an internal ``lxcbr0`` bridge for the local Linux
+Containers, using the ``lxc-net`` service. The internal network will have its
+own DHCP/DNS server with ``lxc.{{ ansible_domain }}`` DNS domain by default.
+You can configure a DNS proxy on the LXC host to be able to access the LXC
+containers by their DNS names instead of their IP addresses.
+
 Additional bridge network interfaces can be maintained using the
 :ref:`debops.ifupdown` role. By default the :command:`ifupdown` role creates
 the ``br0`` network bridge attached to the external network, which is defined
 in the LXC configuration as the default network interface to attach the
-containers.
+containers, if the internal bridge is disabled.
 
 The containers will use DHCP to get their network interface configuration.
 You can use :ref:`debops.dnsmasq` or :ref:`debops.dhcpd` Ansible roles to
@@ -140,10 +146,7 @@ To enable LXC support on a host, it needs to be added to the
 
    [debops_all_hosts:children]
    lxc_hosts
-   containers
-
-   [debops_service_ifupdown:children]
-   lxc_hosts
+   lxc_containers
 
    [debops_service_lxc:children]
    lxc_hosts
@@ -151,12 +154,13 @@ To enable LXC support on a host, it needs to be added to the
    [lxc_hosts]
    lxc-host    ansible_host=lxc-host.example.org
 
-   [containers]
+   [lxc_containers]
    webserver   ansible_host=webserver.example.org
 
-The LXC host should be configured with bridged networking to allow LXC
-containers to connect to the network. You can use the :ref:`debops.ifupdown`
-Ansible role to configure the network interfaces.
+By default, containers will use the ``lxcbr0`` bridge managed by the role, with
+their own internal subdomain. You can use the :ref:`debops.ifupdown` Ansible
+role to configure additional network bridges on the LXC host, if you want to
+attach the containers to the public network.
 
 
 Remote LXC management without SSH access
@@ -174,10 +178,7 @@ specified in multiple lines for readability):
 
    [debops_all_hosts:children]
    lxc_hosts
-   containers
-
-   [debops_service_ifupdown:children]
-   lxc_hosts
+   lxc_containers
 
    [debops_service_lxc:children]
    lxc_hosts
@@ -185,7 +186,7 @@ specified in multiple lines for readability):
    [lxc_hosts]
    lxc-host    ansible_host=lxc-host.example.org
 
-   [containers]
+   [lxc_containers]
    webserver    ansible_connection=lxc_ssh ansible_user=root
    webserver    ansible_host=lxc-host.example.org
    webserver    ansible_ssh_extra_args=webserver
@@ -222,6 +223,12 @@ Available role tags:
 
 ``role::lxc:containers``
   Execute tasks that manage LXC containers.
+
+``role::lxc:net``
+  Manage internal LXC network configuration.
+
+``role::lxc:dnsmasq``
+  Manage the :command:`dnsmasq` instance of the internal LXC network.
 
 
 Other resources
