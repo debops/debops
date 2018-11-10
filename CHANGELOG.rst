@@ -72,6 +72,11 @@ Added
   instead of a series of shell tasks. By default unprivileged LXC containers
   will be created, but users can change all parameters supported by the module.
 
+- [debops.lxc] The role will now configure a ``lxcbr0`` bridge with internal
+  DNS/DHCP server for LXC containers, using the ``lxc-net`` service. With this
+  change, use of the :ref:`debops.ifupdown` role to prepare a default bridge
+  for LXC containers is not required anymore.
+
 Changed
 ~~~~~~~
 

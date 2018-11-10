@@ -104,6 +104,14 @@ Inventory variable changes
   You can use the :ref:`debops.ifupdown` role to configure packet forwarding
   per network interface, in the firewall as well as via the kernel parameters.
 
+Other changes
+~~~~~~~~~~~~~
+
+- The :ref:`debops.lxc` role will configure new LXC containers to attach to the
+  ``lxcbr0`` bridge by default. Existing LXC containers will not be modified.
+  You can change the default bridge used on container creation using the
+  :ref:`lxc__ref_configuration` variables.
+
 
 v0.8.0 (2018-08-06)
 -------------------
