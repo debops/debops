@@ -73,6 +73,15 @@ main () {
             lxc-start -n "${container}" -d
             lxc-wait -n "${container}" -s RUNNING
 
+            # During container creation, a static hostname is added into
+            # '/etc/hosts' which breaks proper DNS domain resolution of the
+            # container. Because we are using DHCP/DNS server to manage
+            # containers, remove the static host entry to fix the issue.
+            if lxc-attach -n "${container}" -- grep -q '127.0.1.1' /etc/hosts ; then
+                printf "Removing static host entry from /etc/hosts...\n"
+                lxc-attach -n "${container}" -- sed -i "/127\.0\.1\.1/d" /etc/hosts > /dev/null
+            fi
+
             until lxc-prepare-ssh "${container}" ; do
                 ((c++)) && ((c==4)) && break
                 printf "Waiting for network inside container to settle...\n"
