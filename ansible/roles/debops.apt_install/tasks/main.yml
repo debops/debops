@@ -3,6 +3,15 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "apt_install/pre_main.yml") }}'
 
+- name: Debconf module dependencies
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: '{{ apt_install__recommends|bool }}'
+  with_items:
+      - 'debconf'
+      - 'debconf-utils'
+
 - name: Apply requested packages configuration
   debconf:
     name:      '{{ item.name }}'
