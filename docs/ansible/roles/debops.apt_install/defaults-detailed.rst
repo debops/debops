@@ -39,6 +39,7 @@ Examples
 Define the path to Matlab installation for matlab-support :
 
 .. code-block:: yaml
+
    apt_install__debconf:
      - name: 'matlab-support'
        question: 'matlab-support/matlab-install-glob'
