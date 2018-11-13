@@ -114,6 +114,34 @@ apt_install__cache_valid_time: '{{ ansible_local.core.cache_valid_time
                                    else (60 * 60 * 24 * 7) }}'
                                                                    # ]]]
                                                                    # ]]]
+# Debconf package configuration [[[
+# --------------------------------
+
+# These lists can be used to insert new values into the debconf database. This
+# allow to overwrite some default answer before installing a package and avoid
+# using ``dpkg-reconfigure`` to set the wanted answer.
+# See :ref:`apt_install__ref_debconf` for more details.
+
+# .. envvar:: apt_install__debconf [[[
+#
+# List of values to configure for all hosts in the Ansible inventory.
+apt_install__debconf: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__group_debconf [[[
+#
+# List of values to configure for hosts in specific Ansible
+# inventory group.
+apt_install__group_debconf: []
+
+                                                                   # ]]]
+# .. envvar:: apt_install__host_debconf [[[
+#
+# List of values to configure for specific hosts in the Ansible
+# inventory.
+apt_install__host_debconf: []
+                                                                   # ]]]
+                                                                   # ]]]
 # APT package lists [[[
 # ---------------------
 
