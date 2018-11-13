@@ -1,6 +1,8 @@
 Default variable details
 ========================
 
+.. include:: ../../../includes/global.rst
+
 Some of ``debops.apt_install`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
@@ -9,7 +11,7 @@ examples for them.
    :local:
    :depth: 1
 
- .. _apt_install__ref_debconf:
+.. _apt_install__ref_debconf:
 
 apt_install__debconf
 -------------------------
