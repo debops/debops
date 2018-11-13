@@ -3,6 +3,31 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "apt_install/pre_main.yml") }}'
 
+- name: Debconf module dependencies
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: '{{ apt_install__recommends|bool }}'
+  with_items:
+    - 'debconf'
+    - 'debconf-utils'
+
+- name: Apply requested packages configuration
+  debconf:
+    name:      '{{ item.name }}'
+    question:  '{{ item.question | d(omit) }}'
+    selection: '{{ item.selection | d(omit) }}'
+    setting:   '{{ item.setting | d(omit) }}'
+    unseen:    '{{ item.unseen | d(omit) }}'
+    value:     '{{ item.value | d(omit) }}'
+    answer:    '{{ item.answer | d(omit) }}'
+    vtype:     '{{ item.vtype | d(omit) }}'
+  with_flattened:
+    - '{{ apt_install__debconf }}'
+    - '{{ apt_install__group_debconf }}'
+    - '{{ apt_install__host_debconf }}'
+  when: item.name|d()
+
 - name: Install requested APT packages
   apt:
     name: '{{ item }}'

@@ -1,6 +1,8 @@
 Default variable details
 ========================
 
+.. include:: ../../../includes/global.rst
+
 Some of ``debops.apt_install`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
@@ -8,6 +10,43 @@ examples for them.
 .. contents::
    :local:
    :depth: 1
+
+.. _apt_install__ref_debconf:
+
+apt_install__debconf
+-------------------------
+
+These YAML lists can be used to add some values to Debconf database. Each entry
+has the same keys as the ones used by `Ansible debconf module`_. See its
+documentation for parameter advanced usage and syntax.
+
+``name``
+  Required. Name of the package to configure.
+
+``question``
+  A debconf configuration setting.
+
+``unseen``
+  Do not set 'seen' flag when pre-seeding.
+
+``value``
+  Value to set the configuration to.
+
+``vtype``
+  The type of the value supplied.
+
+Examples
+~~~~~~~~
+
+Define the path to Matlab installation for matlab-support :
+
+.. code-block:: yaml
+
+   apt_install__debconf:
+     - name: 'matlab-support'
+       question: 'matlab-support/matlab-install-glob'
+       value: '/usr/local/MATLAB/R2018b'
+       vtype: 'string'
 
 .. _apt_install__all_packages:
 
