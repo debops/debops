@@ -3,9 +3,9 @@
 [Unit]
 Description=Docker Application Container Engine
 Documentation=https://docs.docker.com
-After=network-online.target docker.socket firewalld.service
+BindsTo=containerd.service
+After=network-online.target firewalld.service
 Wants=network-online.target
-Requires=docker.socket
 
 [Service]
 Type=notify
@@ -21,23 +21,38 @@ EnvironmentFile=-/etc/default/docker
 ExecStart=/usr/bin/docker -d -H fd:// $DOCKER_OPTS
 {% endif %}
 ExecReload=/bin/kill -s HUP $MAINPID
-LimitNOFILE=1048576
+TimeoutSec=0
+RestartSec=2
+Restart=always
+
+# Note that StartLimit* options were moved from "Service" to "Unit" in systemd 229.
+# Both the old, and new location are accepted by systemd 229 and up, so using the old location
+# to make them work for either version of systemd.
+StartLimitBurst=3
+
+# Note that StartLimitInterval was renamed to StartLimitIntervalSec in systemd 230.
+# Both the old, and new name are accepted by systemd 230 and up, so using the old name to make
+# this option work for either version of systemd.
+StartLimitInterval=60s
+
 # Having non-zero Limit*s causes performance problems due to accounting overhead
 # in the kernel. We recommend using cgroups to do container-local accounting.
+LimitNOFILE=infinity
 LimitNPROC=infinity
 LimitCORE=infinity
-# Uncomment TasksMax if your systemd version supports it.
-# Only systemd 226 and above support this version.
+
+# Comment TasksMax if your systemd version does not supports it.
+# Only systemd 226 and above support this option.
 TasksMax=infinity
-TimeoutStartSec=0
+
 # set delegate yes so that systemd does not reset the cgroups of docker containers
 Delegate=yes
+
 # kill only the docker process, not all processes in the cgroup
 KillMode=process
-# restart the docker process if it exits prematurely
-Restart=on-failure
-StartLimitBurst=3
-StartLimitInterval=60s
 
 [Install]
 WantedBy=multi-user.target
+
+
+
