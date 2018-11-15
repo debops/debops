@@ -131,8 +131,8 @@
     group: 'root'
     mode: '0440'
   when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d()|bool) and
-         (nginx__deploy_state in [ 'present' ]))
+         (ansible_local.sudo.installed|d())|bool and
+         nginx__deploy_state in [ 'present' ])
 
 - name: Divert original /etc/nginx/nginx.conf
   command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert
