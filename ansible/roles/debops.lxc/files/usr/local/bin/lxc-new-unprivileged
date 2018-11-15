@@ -82,6 +82,7 @@ main () {
                 lxc-attach -n "${container}" -- sed -i "/127\.0\.1\.1/d" /etc/hosts > /dev/null
             fi
 
+            c=0
             until lxc-prepare-ssh "${container}" ; do
                 ((c++)) && ((c==4)) && break
                 printf "Waiting for network inside container to settle...\n"
