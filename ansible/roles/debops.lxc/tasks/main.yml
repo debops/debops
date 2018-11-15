@@ -229,6 +229,9 @@
 
 - name: Prepare SSH access in LXC containers
   shell: |
+    if lxc-attach -n "{{ item.name | d(item) }}" -- grep -q '127.0.1.1' /etc/hosts ; then
+        lxc-attach -n "{{ item.name | d(item) }}" -- sed -i "/127\.0\.1\.1/d" /etc/hosts > /dev/null
+    fi
     until lxc-prepare-ssh {{ item.name | d(item) }} ; do
        ((c++)) && ((c==4)) && break
        printf "Waiting for network connection inside container to settle...\n" ; sleep 5
