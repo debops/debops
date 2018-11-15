@@ -135,7 +135,7 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     encfs = subprocess.Popen([
         'encfs', encfs_encrypted, encfs_decrypted,
         '--extpass',
-        'gpg --no-mdc-warning --output - '+shquote(encfs_keyfile)],
+        'gpg --decrypt --no-mdc-warning --output - '+shquote(encfs_keyfile)],
         stdin=subprocess.PIPE)
     encfs.communicate(('p\n'+pwd).encode('utf-8'))
 
