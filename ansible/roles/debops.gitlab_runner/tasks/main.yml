@@ -210,7 +210,9 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: gitlab_runner__vagrant_libvirt|bool
+  when: (ansible_local|d() and ansible_local.sudo|d() and
+         (ansible_local.sudo.installed|d()|bool)) and
+         (gitlab_runner__vagrant_libvirt|bool))
 
 - name: Find 'vagrant-libvirt' source code
   command: find /usr/share/rubygems-integration/all/gems -maxdepth 1 -type d -name 'vagrant-libvirt-*'
@@ -233,7 +235,9 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: gitlab_runner__vagrant_lxc|bool
+  when: (ansible_local|d() and ansible_local.sudo|d() and
+         (ansible_local.sudo.installed|d()|bool) and
+         gitlab_runner__vagrant_lxc|bool)
 
 - name: Make sure that Ansible fact directory exists
   file:
