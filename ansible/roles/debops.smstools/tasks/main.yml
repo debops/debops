@@ -62,7 +62,7 @@
   template: src=etc/sudoers.d/smstools.j2 dest=/etc/sudoers.d/smstools
             owner=root group=root mode=0440
   when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d()|bool))
+         (ansible_local.sudo.installed|d())|bool)
 
 - name: Configure xinetd SMS service
   template: src=etc/xinetd.d/sms.j2 dest=/etc/xinetd.d/sms
