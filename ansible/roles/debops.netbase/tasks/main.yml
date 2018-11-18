@@ -9,6 +9,15 @@
     - '{{ netbase__packages }}'
   when: netbase__enabled|bool
 
+- name: Generate /etc/hosts database
+  template:
+    src: 'etc/hosts.j2'
+    dest: '/etc/hosts'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: netbase__enabled|bool and netbase__hosts_config_type == 'template'
+
 - name: Manage entries in /etc/hosts
   lineinfile:
     dest:    '/etc/hosts'
@@ -16,7 +25,7 @@
     line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
   with_dict: '{{ netbase__hosts | combine(netbase__group_hosts, netbase__host_hosts) }}'
-  when: netbase__enabled|bool
+  when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile'
 
 - name: Manage entries in /etc/networks
   lineinfile:
