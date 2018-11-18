@@ -77,6 +77,13 @@ Added
   change, use of the :ref:`debops.ifupdown` role to prepare a default bridge
   for LXC containers is not required anymore.
 
+- [debops.netbase] When a large number of hosts is defined for the
+  :file:`/etc/hosts` database, the role will switch to generating the file
+  using the ``template`` Ansible module instead of managing individual lines
+  using the ``lineinfile`` module, to make the operation faster. As a result,
+  custom modifications done by other tools in the host database will not be
+  preserved.
+
 Changed
 ~~~~~~~
 
