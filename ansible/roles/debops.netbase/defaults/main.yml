@@ -34,7 +34,7 @@ netbase__packages: []
 # Host database in :file:`/etc/hosts` [[[
 # ---------------------------------------
 
-# These variables define what host entries should be present in the
+# The variables below define what host entries should be present in the
 # :file:`/etc/hosts` database. Each dictionary key is an IP address and value
 # should be a string or a YAML list of FQDN addresses or hostnames. Example:
 #
@@ -47,6 +47,39 @@ netbase__packages: []
 # Entries with empty values will be removed from the database.
 # See the :man:`hosts(5)` manual page for more details.
 
+# .. envvar:: netbase__hosts_config_type [[[
+#
+# The host database configuration method used by the role.
+#
+# If ``lineinfile``, the configuration will be done using the ``lineinfile``
+# Ansible module. This allows the database to be updated by other mechanisms
+# than Ansible, but the configuration is very slow. This is suitable for small
+# number of host entries, otherwise you should think about setting up a local
+# DNS server instead.
+#
+# If ``template``, the hosts database will be generated using the ``template``
+# Ansible module. This makes the configuration much faster, which is useful
+# with large list of hosts, but the database cannot be modified by other tools,
+# the changes will not be preserved by Ansible.
+netbase__hosts_config_type: '{{ "template"
+                                if ((netbase__hosts
+                                     | combine(netbase__group_hosts, netbase__host_hosts)).keys()
+                                    | count > 20)
+                                else "lineinfile" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__default_hosts [[[
+#
+# The default set of host database entries, included in the generated template
+# file. This variable is not combined with other ``netbase__*_hosts``
+# variables.
+netbase__default_hosts:
+  '127.0.0.1': 'localhost'
+  '::1':     [ 'localhost', 'ip6-localhost', 'ip6-loopback' ]
+  'ff02::1':   'ip6-allnodes'
+  'ff02::2':   'ip6-allrouters'
+
+                                                                   # ]]]
 # .. envvar:: netbase__hosts [[[
 #
 # YAML dictionary of host entries which should be present on all hosts in the
