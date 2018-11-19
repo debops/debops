@@ -473,7 +473,7 @@ Vagrant.configure("2") do |config|
     end
 
     if VAGRANT_NODES != 0
-        (1..VAGRANT_NODES).each do |i|
+        (1..VAGRANT_NODES.to_i).each do |i|
             config.vm.define "node#{i}", autostart: false do |node|
 
                 node.vm.box = VAGRANT_NODE_BOX
