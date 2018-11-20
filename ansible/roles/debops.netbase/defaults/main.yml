@@ -38,7 +38,11 @@ netbase__packages: []
 #
 # Set a hostname for a given host. It should contain only characters supported
 # in the DNS: alphanumeric, and a dash; no dots or other punctuation.
-netbase__hostname: '{{ ansible_hostname }}'
+#
+# By default, the role will configure the hostname based on the Ansible
+# inventory configuration. To preserve existing hostname, set the value to
+# ``'{{ ansible_hostname }}'``.
+netbase__hostname: '{{ inventory_hostname_short | d(inventory_hostname.split(".")[0]) }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__domain [[[
