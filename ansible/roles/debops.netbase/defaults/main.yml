@@ -34,6 +34,18 @@ netbase__packages: []
 # Hostname and domain [[[
 # -----------------------
 
+# .. envvar:: netbase__hostname_config_enabled [[[
+#
+# Enable or disable configuration of the hostname based on presence of the
+# ``cap_sys_admin`` POSIX capability. Hostname will still be defined in
+# :file:`/etc/hosts` if the local domain configuration is enabled.
+netbase__hostname_config_enabled: '{{ True
+                                      if (((ansible_system_capabilities_enforced|d())|bool and
+                                           "cap_sys_admin" in ansible_system_capabilities) or
+                                          not (ansible_system_capabilities_enforced|d(True))|bool)
+                                      else False }}'
+
+                                                                   # ]]]
 # .. envvar:: netbase__hostname [[[
 #
 # Set a hostname for a given host. It should contain only characters supported
