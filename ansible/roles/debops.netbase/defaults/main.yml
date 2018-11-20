@@ -31,6 +31,54 @@ netbase__base_packages: [ 'netbase' ]
 netbase__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# Hostname and domain [[[
+# -----------------------
+
+# .. envvar:: netbase__hostname_config_enabled [[[
+#
+# Enable or disable configuration of the hostname based on presence of the
+# ``cap_sys_admin`` POSIX capability. Hostname will still be defined in
+# :file:`/etc/hosts` if the local domain configuration is enabled.
+netbase__hostname_config_enabled: '{{ True
+                                      if (((ansible_system_capabilities_enforced|d())|bool and
+                                           "cap_sys_admin" in ansible_system_capabilities) or
+                                          not (ansible_system_capabilities_enforced|d(True))|bool)
+                                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__hostname [[[
+#
+# Set a hostname for a given host. It should contain only characters supported
+# in the DNS: alphanumeric, and a dash; no dots or other punctuation.
+#
+# By default, the role will configure the hostname based on the Ansible
+# inventory configuration. To preserve existing hostname, set the value to
+# ``'{{ ansible_hostname }}'``.
+netbase__hostname: '{{ (inventory_hostname_short | d(inventory_hostname.split(".")[0]))
+                       if (inventory_hostname_short | d(inventory_hostname.split(".")[0]) != "localhost")
+                       else ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__domain [[[
+#
+# Define a local domain for a given host. This domain will be added in
+# :file:`/etc/hosts` and will override any information coming from the DNS
+# service. If it's set to an empty string, the domain will not be configured in
+# :file:`/etc/hosts`, and existing local domain configuration will be removed.
+#
+# To configure local domain based on Ansible inventory host configuration, you
+# can set the value to: ``'{{ inventory_hostname.split(".")[1:] | join(".") }}'``
+netbase__domain: ''
+
+                                                                   # ]]]
+# .. envvar:: netbase__domain_host_entry [[[
+#
+# The actual :file:`/etc/hosts` entry with the local domain definition. It will
+# be set under the ``127.0.1.1`` IPv4 address.
+netbase__domain_host_entry: '{{ [ netbase__hostname + "." + netbase__domain, netbase__hostname ]
+                                if netbase__domain|d() else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Host database in :file:`/etc/hosts` [[[
 # ---------------------------------------
 
@@ -72,9 +120,10 @@ netbase__hosts_config_type: '{{ "template"
 #
 # The default set of host database entries, included in the generated template
 # file. This variable is not combined with other ``netbase__*_hosts``
-# variables.
+# variables in the template.
 netbase__default_hosts:
   '127.0.0.1': 'localhost'
+  '127.0.1.1': '{{ netbase__domain_host_entry }}'
   '::1':     [ 'localhost', 'ip6-localhost', 'ip6-loopback' ]
   'ff02::1':   'ip6-allnodes'
   'ff02::2':   'ip6-allrouters'

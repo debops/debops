@@ -84,6 +84,10 @@ Added
   custom modifications done by other tools in the host database will not be
   preserved.
 
+- [debops.netbase] The role can now configure the hostname in the
+  :file:`/etc/hostname` file, as well as the local domain configuration in
+  :file:`/etc/hosts` database.
+
 Changed
 ~~~~~~~
 

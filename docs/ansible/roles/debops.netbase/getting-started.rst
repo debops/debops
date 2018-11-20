@@ -69,4 +69,4 @@ Other resources
 
 List of other useful resources related to the ``debops.netbase`` Ansible role:
 
-- Manual pages: :man:`hosts(5)`, :man:`networks(5)`
+- Manual pages: :man:`hostname(5)`, :man:`hosts(5)`, :man:`networks(5)`
