@@ -9,6 +9,27 @@
     - '{{ netbase__packages }}'
   when: netbase__enabled|bool
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save netbase local facts
+  template:
+    src: 'etc/ansible/facts.d/netbase.fact.j2'
+    dest: '/etc/ansible/facts.d/netbase.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: netbase__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: netbase__register_facts is changed
+
 - name: Manage the hostname
   hostname:
     name: '{{ netbase__hostname }}'
@@ -40,24 +61,3 @@
     state:   '{{ "present" if item.value|d() else "absent" }}'
   with_dict: '{{ netbase__networks | combine(netbase__group_networks, netbase__host_networks) }}'
   when: netbase__enabled|bool
-
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save netbase local facts
-  template:
-    src: 'etc/ansible/facts.d/netbase.fact.j2'
-    dest: '/etc/ansible/facts.d/netbase.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: netbase__register_facts
-
-- name: Update Ansible facts if they were modified
-  action: setup
-  when: netbase__register_facts is changed
