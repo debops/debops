@@ -1,11 +1,15 @@
 # {{ ansible_managed }}
 
 {% for key, value in netbase__default_hosts | dictsort %}
+{%   if value|d() %}
 {{ '{}\t{}{}'.format(key, ('\t' if key | length < 8 else ''), ([ value ] if value is string else value) | join(' ')) }}
+{%   endif %}
 {% endfor %}
 {% if (netbase__hosts | combine(netbase__group_hosts, netbase__host_hosts)) %}
 
 {%   for key, value in (netbase__hosts | combine(netbase__group_hosts, netbase__host_hosts)) | dictsort %}
+{%     if value|d() %}
 {{ '{}\t{}{}'.format(key, ('\t' if key | length < 8 else ''), ([ value ] if value is string else value) | join(' ')) }}
+{%     endif %}
 {%   endfor %}
 {% endif %}
