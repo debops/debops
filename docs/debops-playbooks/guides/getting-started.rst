@@ -146,15 +146,19 @@ completely separate Ansible accounts with administrative access. If you
 configure the ``ansible_user`` variable before bootstrapping the host, the
 specified username will be used to create an administrator account.
 
-bootstrap__domain
-~~~~~~~~~~~~~~~~~
+netbase__domain
+~~~~~~~~~~~~~~~
 
-If hosts that you want to manage don't have a DNS domain set, or it's incorrect (for example your VPS provider's domain instead of your own), the [debops.bootstrap](https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/) role can be used to easily fix that and configure your own domain. By setting this variable to, for example:
+If hosts that you want to manage don't have a DNS domain set, or it's incorrect
+(for example your VPS provider's domain instead of your own), the
+:ref:`debops.netbase` role included in the bootstrap playbook can be used to
+easily fix that and configure your own domain. By setting this variable to, for
+example:
 
 .. code-block:: yaml
 
    ---
-   bootstrap__domain: 'example.com'
+   netbase__domain: 'example.com'
 
 By running the ``debops bootstrap`` command (see further down), your domain
 will be configured in the remote hosts' :file:`/etc/hosts` file. Additionally, the

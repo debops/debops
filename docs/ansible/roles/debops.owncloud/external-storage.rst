@@ -40,12 +40,12 @@ and include this:
      - 'samba-common'
      - 'samba-common-bin'
 
-   # Set AD domain. It might be required to adjust in case `bootstrap__domain`
+   # Set AD domain. It might be required to adjust in case `netbase__domain`
    # is not equal to the Samba domain/workgroup.
    # ownCloud as of 9.0 provides a Domain field when setting up an external
    # storage but configuring this here is still nice in case you need to debug
    # a SMB/CIFS share using `smbclient`.
-   samba__workgroup: '{{ bootstrap__domain }}'
+   samba__workgroup: '{{ netbase__domain }}'
 
    samba__global_custom:
      ## DFS workaround:

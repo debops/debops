@@ -122,11 +122,6 @@ Changed
   what you want to do if other people manage their own LXC containers on
   a host.
 
-- [debops.bootstrap] The bootstrap role can now remove ``127.0.1.1`` entries
-  from :file:`/etc/hosts` to fix IP address resolution in distributed
-  environments. See the :envvar:`bootstrap__etc_hosts` variable for more
-  details.
-
 - Various filter and lookup Ansible plugins have been migrated from the
   playbook directory to the :ref:`debops.ansible_plugins` role. This role can
   be used as hard dependency in other Ansible roles that rely on these plugins.
@@ -185,6 +180,15 @@ Changed
   which seems to be broken at the moment. New default variable is added to
   allow selection of the image version.
 
+- The hostname and domain configuration during bootstrapping is now done by the
+  :ref:`debops.netbase` Ansible role. The default for this role is to remove
+  the ``127.0.1.1`` host entry from the :file:`/etc/hosts` file to ensure that
+  domain resolution relies on DNS.
+
+  If you are using local domain configured in :file:`/etc/hosts` file, you
+  should define the :envvar:`netbase__domain` variable in the Ansible inventory
+  with your desired domain.
+
 Fixed
 ~~~~~
 
@@ -231,6 +235,12 @@ Removed
 - The ``ansible_local.root.flags`` and ``ansible_local.root.uuid`` local facts
   have been removed. They are replaced by ``ansible_local.tags`` and
   ``ansible_local.uuid`` local facts, respectively.
+
+- The hostname and domain configuration has been removed from the
+  :ref:`debops.bootstrap` role. This functionality is now handled by the
+  :ref:`debops.netbase` role, which has been included in the bootstrap
+  playbook. The relevant inventory variables have been renamed, check the
+  :ref:`upgrade_notes` for details.
 
 
 `debops v0.8.0`_ - 2018-08-06
