@@ -31,6 +31,33 @@ netbase__base_packages: [ 'netbase' ]
 netbase__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# Hostname and domain [[[
+# -----------------------
+
+# .. envvar:: netbase__hostname [[[
+#
+# Set a hostname for a given host. It should contain only characters supported
+# in the DNS: alphanumeric, and a dash; no dots or other punctuation.
+netbase__hostname: '{{ ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__domain [[[
+#
+# Define a local domain for a given host. This domain will be added in
+# :file:`/etc/hosts` and will override any information coming from the DNS
+# service. If it's set to an empty string, the domain will not be configured in
+# :file:`/etc/hosts`, and existing local domain configuration will be removed.
+netbase__domain: ''
+
+                                                                   # ]]]
+# .. envvar:: netbase__domain_host_entry [[[
+#
+# The actual :file:`/etc/hosts` entry with the local domain definition. It will
+# be set under the ``127.0.1.1`` IPv4 address.
+netbase__domain_host_entry: '{{ [ netbase__hostname + "." + netbase__domain, netbase__hostname ]
+                                if netbase__domain|d() else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Host database in :file:`/etc/hosts` [[[
 # ---------------------------------------
 
@@ -72,9 +99,10 @@ netbase__hosts_config_type: '{{ "template"
 #
 # The default set of host database entries, included in the generated template
 # file. This variable is not combined with other ``netbase__*_hosts``
-# variables.
+# variables in the template.
 netbase__default_hosts:
   '127.0.0.1': 'localhost'
+  '127.0.1.1': '{{ netbase__domain_host_entry }}'
   '::1':     [ 'localhost', 'ip6-localhost', 'ip6-loopback' ]
   'ff02::1':   'ip6-allnodes'
   'ff02::2':   'ip6-allrouters'

@@ -9,6 +9,11 @@
     - '{{ netbase__packages }}'
   when: netbase__enabled|bool
 
+- name: Manage the hostname
+  hostname:
+    name: '{{ netbase__hostname }}'
+  when: netbase__enabled|bool
+
 - name: Generate /etc/hosts database
   template:
     src: 'etc/hosts.j2'
@@ -24,7 +29,7 @@
     regexp:  '^{{ item.key | replace(".","\.") }}\s+'
     line:    "{{ item.key }}\t{{ ('\t' if (item.key | string | length < 8) else '') }}{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
-  with_dict: '{{ netbase__hosts | combine(netbase__group_hosts, netbase__host_hosts) }}'
+  with_dict: '{{ netbase__default_hosts | combine(netbase__hosts, netbase__group_hosts, netbase__host_hosts) }}'
   when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile'
 
 - name: Manage entries in /etc/networks
