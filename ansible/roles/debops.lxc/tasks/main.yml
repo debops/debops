@@ -11,6 +11,24 @@
     - '{{ lxc__base_packages }}'
     - '{{ lxc__packages }}'
 
+- name: Create required directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  loop:
+    - '/usr/local/lib/lxc'
+
+- name: Install custom LXC hooks
+  copy:
+    src: 'usr/local/lib/lxc/'
+    dest: '/usr/local/lib/lxc/'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
 - name: Install custom LXC helper scripts
   copy:
     src: 'usr/local/bin/'
@@ -33,7 +51,6 @@
     state: 'absent'
   loop:
     - '{{ lxc__net_dnsmasq_conf }}'
-    - '/usr/local/lib/lxc-net-resolvconf'
     - '/etc/systemd/system/lxc-net.service.d'
     - '/etc/ferm/hooks/post.d/restart-lxc-net'
   register: lxc__register_net_remove
@@ -71,16 +88,6 @@
   when: (lxc__net_deploy_state == 'present' and
          ansible_local|d() and ansible_local.ferm|d() and
          (ansible_local.ferm.enabled|d())|bool)
-  tags: [ 'role::lxc:net' ]
-
-- name: Generate lxc-net-resolvconf hook script
-  template:
-    src: 'usr/local/lib/lxc-net-resolvconf.j2'
-    dest: '/usr/local/lib/lxc-net-resolvconf'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: lxc__net_deploy_state == 'present'
   tags: [ 'role::lxc:net' ]
 
 - name: Create lxc-net service override directory
