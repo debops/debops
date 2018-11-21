@@ -19,6 +19,7 @@
     group: 'root'
     mode: '0755'
   loop:
+    - '/etc/systemd/system/lxc@.service.d'
     - '/usr/local/lib/lxc'
 
 - name: Install custom LXC hooks
@@ -36,6 +37,15 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+
+- name: Install lxc@.service poweroff override
+  template:
+    src: 'etc/systemd/system/lxc@.service.d/poweroff.conf.j2'
+    dest: '/etc/systemd/system/lxc@.service.d/poweroff.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: lxc__register_systemd_poweroff
 
 - name: Disable internal network when requested
   systemd:
@@ -120,7 +130,8 @@
          (lxc__register_net_remove|d({}) is changed or
           lxc__register_net_config|d({}) is changed or
           lxc__register_net_dnsmasq|d({}) is changed or
-          lxc__register_net_systemd|d({}) is changed))
+          lxc__register_net_systemd|d({}) is changed or
+          lxc__register_systemd_poweroff|d({}) is changed))
   tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
 
 - name: Remove LXC configuration if requested
@@ -178,6 +189,27 @@
   action: setup
   when: lxc__register_facts is changed
 
+- name: Stop LXC containers if requested
+  systemd:
+    name: 'lxc@{{ item.name | d(item) }}.service'
+    state: 'stopped'
+    enabled: '{{ True if item.state | d("started") == "stopped" else False }}'
+  loop: '{{ lxc__containers }}'
+  when: ansible_local|d() and ansible_local.lxc|d() and
+        (item.name | d(item)) in ansible_local.lxc.containers|d() and
+        item.state|d("started") in [ "stopped", "absent" ]
+  tags: [ 'role::lxc:containers' ]
+
+- name: Destroy LXC containers if requested
+  lxc_container:
+    name:  '{{ item.name | d(item) }}'
+    state: 'absent'
+  loop: '{{ lxc__containers }}'
+  tags: [ 'role::lxc:containers' ]
+  when: ansible_local|d() and ansible_local.lxc|d() and
+        (item.name | d(item)) in ansible_local.lxc.containers|d() and
+        item.state|d("started") == "absent"
+
 - name: Manage LXC containers
   vars:
     template_options:
@@ -215,6 +247,9 @@
     vfs_root:            '{{ item.zfs_root            | d(omit) }}'
   loop: '{{ lxc__containers }}'
   tags: [ 'role::lxc:containers' ]
+  when: ansible_local|d() and ansible_local.lxc|d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
+        item.state|d("started") != "absent"
 
 - name: Configure static MAC addresses for new LXC containers
   command: lxc-hwaddr-static {{ item.name | d(item) }}
@@ -225,9 +260,10 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Start LXC containers after creation
-  lxc_container:
-    name: '{{ item.name | d(item) }}'
+  systemd:
+    name: 'lxc@{{ item.name | d(item) }}.service'
     state: '{{ "restarted" if (item.state is defined) else "started" }}'
+    enabled: '{{ True if item.state|d("started") == "started" else False }}'
   loop: '{{ lxc__containers }}'
   when: ansible_local|d() and ansible_local.lxc|d() and
         (item.name | d(item)) not in ansible_local.lxc.containers|d() and

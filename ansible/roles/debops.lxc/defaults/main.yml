@@ -209,7 +209,7 @@ lxc__default_configuration:
         value: 'g 0 {{ lxc__root_subgid_start }} {{ lxc__root_subgid_count }}'
 
       - name: 'lxc.start.auto'
-        value: '1'
+        value: '0'
         separator: True
 
       - name: 'lxc.cap.drop_secure'
@@ -248,7 +248,7 @@ lxc__default_configuration:
         value: 'up'
 
       - name: 'lxc.start.auto'
-        value: '1'
+        value: '0'
         separator: True
 
       - name: 'lxc.cap.drop_secure'
@@ -286,7 +286,7 @@ lxc__default_configuration:
         value: 'up'
 
       - name: 'lxc.start.auto'
-        value: '1'
+        value: '0'
         separator: True
 
       - name: 'lxc.cap.drop_secure'
@@ -351,6 +351,16 @@ lxc__common_default_conf:
       - name: 'lxc.hook.pre-start_hwaddr'
         alias: 'lxc.hook.pre-start'
         value: '/usr/local/bin/lxc-hwaddr-static'
+
+  - name: 'destroy-systemd-instance'
+    comment: |
+      At container destruction, ensure that its corresponding systemd service
+      instance is disabled.
+    options:
+
+      - name: 'lxc.hook.destroy_systemd_instance'
+        alias: 'lxc.hook.destroy'
+        value: '/usr/local/lib/lxc/lxc-destroy-systemd-instance'
 
                                                                    # ]]]
 # .. envvar:: lxc__common_conf [[[

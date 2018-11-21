@@ -92,7 +92,13 @@ main () {
         if container_exists "${container}" ; then
             if ! container_is_running "${container}" ; then
                 printf "Container '%s' is not running, starting...\n" "${container}"
-                lxc-start -n "${container}" -d
+
+                if pidof systemd > /dev/null 2>&1 ; then
+                    systemctl enable "lxc@${container}.service"
+                    systemctl start "lxc@${container}.service"
+                else
+                    lxc-start -n "${container}" -d
+                fi
                 lxc-wait -n "${container}" -s RUNNING
             fi
             prepare_openssh "${container}"
