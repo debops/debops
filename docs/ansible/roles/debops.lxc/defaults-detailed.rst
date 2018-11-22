@@ -279,6 +279,13 @@ containers when managed by the :ref:`debops.lxc` Ansible role:
   If not specified, the value of :envvar:`lxc__default_container_ssh` will
   determine the SSH status.
 
+``systemd_override``
+  Optional. YAML text block that contains :command:`systemd` unit configuration
+  for a particular LXC container instance. If specified, the configuration will
+  be added or removed depending on the LXC container state. When the
+  :command:`systemd` configuration is changed, the LXC container will be
+  restarted.
+
 ``distribution``
   Optional. Specify the name of the OS distribution to use with the
   ``lxc-download`` LXC template. If not specified, the

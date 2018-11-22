@@ -104,13 +104,36 @@ Inventory variable changes
   You can use the :ref:`debops.ifupdown` role to configure packet forwarding
   per network interface, in the firewall as well as via the kernel parameters.
 
-Other changes
-~~~~~~~~~~~~~
+Changes related to LXC containers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - The :ref:`debops.lxc` role will configure new LXC containers to attach to the
   ``lxcbr0`` bridge by default. Existing LXC containers will not be modified.
   You can change the default bridge used on container creation using the
   :ref:`lxc__ref_configuration` variables.
+
+- The :ref:`debops.lxc` role has been updated to use the :command:`systemd`
+  ``lxc@.service`` instances to manage the containers instead of using the
+  :command:`lxc-*` commands directly. Existing LXC containers should not be
+  affected, but it is recommended to switch them under the :command:`systemd`
+  control. To do that, you should disable the container autostart in the
+  :file:`/var/lib/lxc/<container>/config` configuration files:
+
+  .. code-block:: none
+
+     lxc.start.auto = 0
+
+  This will make sure that the containers are not started by the
+  ``lxc.service`` service on boot. Next, after stopping the running containers,
+  enable and start the containers via the :command:`systemd` instance:
+
+  .. code-block:: console
+
+     systemctl enable lxc@<container>.service
+     systemctl start lxc@<container>.service
+
+  This should ensure that the containers are properly shut down and started
+  with the host system.
 
 
 v0.8.0 (2018-08-06)

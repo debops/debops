@@ -170,6 +170,12 @@ Changed
 - [debops.gunicorn] The role depends on :ref:`debops.python` now to install the
   required packages. Please update your custom playbooks accordingly.
 
+- [debops.lxc] The LXC configuration managed by the role will use the
+  :command:`systemd` ``lxc@.service`` instances to manage the containers
+  instead of using the :command:`lxc-*` commands directly. This allows the
+  containers to be shut down properly without hitting a timeout and forced
+  killing of container processes.
+
 Fixed
 ~~~~~
 

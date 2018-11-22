@@ -70,7 +70,13 @@ main () {
                           --arch "${architecture}"
 
             lxc-hwaddr-static "${container}"
-            lxc-start -n "${container}" -d
+
+            if pidof systemd > /dev/null 2>&1 ; then
+                systemctl enable "lxc@${container}.service"
+                systemctl start "lxc@${container}.service"
+            else
+                lxc-start -n "${container}" -d
+            fi
             lxc-wait -n "${container}" -s RUNNING
 
             # During container creation, a static hostname is added into
@@ -82,6 +88,7 @@ main () {
                 lxc-attach -n "${container}" -- sed -i "/127\.0\.1\.1/d" /etc/hosts > /dev/null
             fi
 
+            c=0
             until lxc-prepare-ssh "${container}" ; do
                 ((c++)) && ((c==4)) && break
                 printf "Waiting for network inside container to settle...\n"

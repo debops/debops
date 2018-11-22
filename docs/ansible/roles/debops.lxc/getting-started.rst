@@ -96,6 +96,66 @@ the configuration of each created LXC container in the
 :file:`/var/lib/lxc/<container>/config` configuration file.
 
 
+LXC containers are managed by systemd
+-------------------------------------
+
+The LXC containers created by the role tasks or by the
+:command:`lxc-new-unprivileged` script are managed by :command:`systemd`,
+specifically by the ``lxc@.service`` unit. This is done because on Debian
+Stretch using the :command:`lxc-stop` command directly to stop a container
+results in a timeout and container processes being forcibly killed by the
+system. The :command:`lxc@.service` :command:`systemd` unit is modified by the
+:ref:`debops.lxc` role to shutdown the container "from the inside" via the
+:command:`lxc-attach` command, which results in a properly shut down container.
+
+The containers are configured to not start automatically by the ``lxc.service``
+unit. Instead, each LXC container has its corresponding ``lxc@.service``
+instance that will be started by :command:`systemd` on system boot. On
+container destruction, either by the :ref:`debops.lxc` role or by the
+:command:`lxc-destroy` command, the instance will be disabled automatically.
+
+To start a LXC container using :command:`systemd` instances, you can issue the
+command:
+
+.. code-block:: console
+
+   systemctl start lxc@<container>.service
+
+To stop a running LXC container started by :command:`systemd`, you can execute
+the command:
+
+.. code-block:: console
+
+   systemctl stop lxc@<container>.service
+
+With this setup, you should avoid using the ``lxc-*`` commands that affect the
+containers directly, unless the container started by the :command:`systemd` is
+stopped first. Otherwise the state of the container managed by the
+:command:`systemd` instance might get desynchronized.
+
+References and more details about the issues:
+
+- `Debian Bug #831691: Please use lxc.haltsignal = SIGRTMIN+3 for systemd containers`__
+
+  .. __: https://bugs.debian.org/831691
+
+- `[lxc-users] Graceful Shutdown/Reboot`__
+
+  .. __: https://lists.linuxcontainers.org/pipermail/lxc-users/2017-February/012827.html
+
+- `GitHub issue: Please use lxc.haltsignal = SIGRTMIN+3 for systemd containers`__
+
+  .. __: https://github.com/lxc/lxc/issues/1085
+
+- `GitHub issue: lxc stop does not stop my container`__
+
+  .. __: https://github.com/lxc/lxd/issues/2947
+
+- `Forum post: 'lxc-stop -n <container>' takes too long`__
+
+  .. __: https://forum.turris.cz/t/lxc-stop-n-container-takes-too-long/6358
+
+
 SSH access to containers
 ------------------------
 
