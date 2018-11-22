@@ -210,6 +210,48 @@
         (item.name | d(item)) in ansible_local.lxc.containers|d() and
         item.state|d("started") == "absent"
 
+- name: Remove systemd LXC instance configuration if requested
+  file:
+    path: '/etc/systemd/system/lxc@{{ item.name }}.service.d'
+    state: 'absent'
+  loop: '{{ lxc__containers }}'
+  register: lxc__register_systemd_remove_override
+  when: ansible_local|d() and ansible_local.lxc|d() and
+        (item.name | d(item)) in ansible_local.lxc.containers|d() and
+        item.state|d("started") == "absent" and item.systemd_override|d()
+  tags: [ 'role::lxc:containers' ]
+
+- name: Create systemd override directories for LXC instances
+  file:
+    path: '/etc/systemd/system/lxc@{{ item.name }}.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  loop: '{{ lxc__containers }}'
+  when: item.state|d("started") != "absent" and item.systemd_override|d()
+  tags: [ 'role::lxc:containers' ]
+
+- name: Generate systemd LXC instance override files
+  template:
+    src: 'etc/systemd/system/lxc@.service.d/ansible-override.conf.j2'
+    dest: '/etc/systemd/system/lxc@{{ item.name }}.service.d/ansible-override.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  loop: '{{ lxc__containers }}'
+  register: lxc__register_systemd_create_override
+  when: item.state|d("started") != "absent" and item.systemd_override|d()
+  tags: [ 'role::lxc:containers' ]
+
+- name: Reload systemd configuration when needed
+  systemd:
+    daemon_reload: True
+  when: ansible_service_mgr == 'systemd' and
+        lxc__register_systemd_create_override is changed or
+        lxc__register_systemd_remove_override is changed
+  tags: [ 'role::lxc:containers' ]
+
 - name: Manage LXC containers
   vars:
     template_options:
@@ -268,6 +310,16 @@
   when: ansible_local|d() and ansible_local.lxc|d() and
         (item.name | d(item)) not in ansible_local.lxc.containers|d() and
         item.state|d("started") == "started"
+  tags: [ 'role::lxc:containers' ]
+
+- name: Restart LXC containers when modified
+  systemd:
+    name: 'lxc@{{ item.0.name | d(item.0) }}.service'
+    state: 'restarted'
+  loop: '{{ lxc__containers | zip(lxc__register_systemd_create_override.results|d([])) | list }}'
+  when: ansible_local|d() and ansible_local.lxc|d() and
+        (item.0.name | d(item.0)) in ansible_local.lxc.containers|d() and
+        item.0.state|d('started') == 'started' and item.1 is changed
   tags: [ 'role::lxc:containers' ]
 
 - name: Prepare SSH access in LXC containers

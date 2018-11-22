@@ -19,5 +19,10 @@ if [ -n "${CONTAINER}" ] ; then
             /bin/systemctl --no-ask-password disable "lxc@${CONTAINER}.service"
         fi
 
+        if [ -d "/etc/systemd/system/lxc@${CONTAINER}.service.d" ] ; then
+            rm -rf "/etc/systemd/system/lxc@${CONTAINER}.service.d"
+            /bin/systemctl --no-ask-password daemon-reload
+        fi
+
     fi
 fi
