@@ -117,7 +117,7 @@ else
     fi
 
     if [ -n "${accept_ra}" ]; then
-        echo -n "${accept_ra}" > "/proc/sys/net/ipv6/conf/${INTERFACE}/accept_ra"
+        sysctl "net.ipv6.conf.${INTERFACE}.accept_ra=${accept_ra}"
     fi
 
     if [ -n "${post_tinc_up}" ]; then
