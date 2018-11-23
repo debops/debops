@@ -58,5 +58,3 @@ Note that if you bridge the `tap` interface to a wired interface in the
       port: '49180'
       link_type: 'dynamic'
       connect_to: '{{ groups.tinc_dualstack }}'
-
-
