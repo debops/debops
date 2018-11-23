@@ -10,6 +10,7 @@ debops.tinc
    getting-started
    defaults
    defaults-detailed
+   examples
    copyright
    upgrade
 

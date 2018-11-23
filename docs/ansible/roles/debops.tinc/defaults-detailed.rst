@@ -280,26 +280,3 @@ Each Tinc network is described by specific parameters:
   You will have the same variables available.
   If you use this, make sure you review and understand
   `debops.tinc/templates/etc/tinc/networks/tinc-down.j2`.
-
-Examples
-~~~~~~~~
-
-Minimal configuration of a default Tinc ``mesh0`` VPN:
-
-.. code-block:: yaml
-
-   tinc__networks:
-     'mesh0':
-       port: '655'
-
-Create a separate Tinc network with a specific group of hosts included in the
-``[tinc_vpn]`` Ansible inventory group:
-
-.. code-block:: yaml
-
-   # inventory/group_vars/tinc_vpn/tinc.yml
-   tinc__group_networks:
-     'vpn0':
-       port: '656'
-       inventory_groups: 'tinc_vpn'
-       connect_to: '{{ groups.tinc_vpn }}'
