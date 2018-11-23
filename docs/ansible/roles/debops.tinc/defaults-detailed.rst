@@ -252,6 +252,35 @@ Each Tinc network is described by specific parameters:
   :command:`resolvconf` command. This option is used only in the "static"
   network interface configuration.
 
+``accept_ra``
+  Optional. Specify the `accept_ra` value for the configured tinc interface.
+  If missing or `True`, defaults to `'1'`. If set to anything else than
+  `'0'`, `'1'`, `'2'` or `True`, the value will not be set and behaviour
+  will depend on the OS settings.
+  See: `ip-sysctl.txt` in the Linux Kernel Documentation.
+
+``post_up``
+  Optional. If defined, `debops.tinc` will call this code after setting up
+  the interface when it is going up.
+
+``pre_down``
+  Optional. If defined, `debops.tinc` will call this code before cleaning up
+  the interface when it is going down.
+
+``tinc_up``
+  Optional. If defined, `debops.tinc` will not attempt to help you configure
+  the interface when it is going up but will try run this instead.
+  You will have the same variables available.
+  If you use this, make sure you review and understand
+  `debops.tinc/templates/etc/tinc/networks/tinc-up.j2`.
+
+``tinc_down``
+  Optional. If defined, `debops.tinc` will not attempt to help you configure
+  the interface when it is going down but will try to run this instead.
+  You will have the same variables available.
+  If you use this, make sure you review and understand
+  `debops.tinc/templates/etc/tinc/networks/tinc-down.j2`.
+
 Examples
 ~~~~~~~~
 
