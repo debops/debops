@@ -252,25 +252,31 @@ Each Tinc network is described by specific parameters:
   :command:`resolvconf` command. This option is used only in the "static"
   network interface configuration.
 
-Examples
-~~~~~~~~
+``accept_ra``
+  Optional. Specify the `accept_ra` value for the configured tinc interface.
+  If missing or `True`, defaults to `'1'`. If set to anything else than
+  `'0'`, `'1'`, `'2'` or `True`, the value will not be set and behaviour
+  will depend on the OS settings.
+  See: `ip-sysctl.txt` in the Linux Kernel Documentation.
 
-Minimal configuration of a default Tinc ``mesh0`` VPN:
+``post_up``
+  Optional. If defined, `debops.tinc` will call this code after setting up
+  the interface when it is going up.
 
-.. code-block:: yaml
+``pre_down``
+  Optional. If defined, `debops.tinc` will call this code before cleaning up
+  the interface when it is going down.
 
-   tinc__networks:
-     'mesh0':
-       port: '655'
+``tinc_up``
+  Optional. If defined, `debops.tinc` will not attempt to help you configure
+  the interface when it is going up but will try run this instead.
+  You will have the same variables available.
+  If you use this, make sure you review and understand
+  `debops.tinc/templates/etc/tinc/networks/tinc-up.j2`.
 
-Create a separate Tinc network with a specific group of hosts included in the
-``[tinc_vpn]`` Ansible inventory group:
-
-.. code-block:: yaml
-
-   # inventory/group_vars/tinc_vpn/tinc.yml
-   tinc__group_networks:
-     'vpn0':
-       port: '656'
-       inventory_groups: 'tinc_vpn'
-       connect_to: '{{ groups.tinc_vpn }}'
+``tinc_down``
+  Optional. If defined, `debops.tinc` will not attempt to help you configure
+  the interface when it is going down but will try to run this instead.
+  You will have the same variables available.
+  If you use this, make sure you review and understand
+  `debops.tinc/templates/etc/tinc/networks/tinc-down.j2`.

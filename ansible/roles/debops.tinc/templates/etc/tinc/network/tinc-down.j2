@@ -2,7 +2,8 @@
 
 # {{ ansible_managed }}
 
-custom_tinc_up="{{ item.value.tinc_up|d() }}"
+custom_tinc_down="{{ item.value.tinc_down|d() }}"
+pre_tinc_down="{{ item.value.pre_down|d() }}"
 
 tinc_mode="{{ item.value.tinc_options.Mode|d() }}"
 
@@ -53,9 +54,13 @@ EOF
 
 manage_dhclient="{{ (item.value.dhclient|d(True)) | bool | lower }}"
 
-if [ -n "${custom_tinc_up}" ] ; then
-    eval "${custom_tinc_up}"
+if [ -n "${custom_tinc_down}" ] ; then
+    eval "${custom_tinc_down}"
 else
+    if [ -n "${pre_tinc_down}" ]; then
+        eval "${pre_tinc_down}"
+    fi
+
     if [ "${link_type}" = "static" ] ; then
 
         if [ -n "${resolvconf_config}" ] ; then
