@@ -28,6 +28,10 @@
 #
 #     APT_HTTP_PROXY=""           (http://apt.example.org:3142)
 #         Set a custom APT cache URL inside the Vagrant box.
+#
+#     APT_FORCE_NETWORK="4" / APT_FORCE_NETWORK="6"
+#         Configure APT to connect only over IPv4 or IPv6 network. This might
+#         be required when connectivity on either network is spotty or broken.
 
 
 $provision_box = <<SCRIPT
@@ -39,6 +43,7 @@ readonly PROVISION_GITLAB_CI="#{ENV['GITLAB_CI']}"
 readonly PROVISION_VAGRANT_HOSTNAME="#{ENV['VAGRANT_HOSTNAME']}"
 readonly PROVISION_APT_HTTP_PROXY="#{ENV['APT_HTTP_PROXY']}"
 readonly PROVISION_APT_HTTPS_PROXY="#{ENV['APT_HTTPS_PROXY']}"
+readonly PROVISION_APT_FORCE_NETWORK="#{ENV['APT_FORCE_NETWORK']}"
 readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
 
 # Install the Jane script
@@ -112,6 +117,22 @@ EOF
     else
         tee -a "/etc/apt/apt.conf.d/00aptproxy" > "/dev/null" <<EOF
 Acquire::https::Proxy "DIRECT";
+EOF
+    fi
+fi
+
+# Force IPv4/IPv6 connections in APT depending on the test network requirements
+# https://bugs.debian.org/611891
+if [ -n "${PROVISION_APT_FORCE_NETWORK}" ] ; then
+    if [ "${PROVISION_APT_FORCE_NETWORK}" = "4" ] ; then
+        jane notify info "Forcing APT to only use IPv4 network"
+        tee -a "/etc/apt/apt.conf.d/00force-ip-network" > "/dev/null" <<EOF
+Acquire::ForceIPv4 "true";
+EOF
+    elif [ "${PROVISION_APT_FORCE_NETWORK}" = "6" ] ; then
+        jane notify info "Forcing APT to only use IPv6 network"
+        tee -a "/etc/apt/apt.conf.d/00force-ip-network" > "/dev/null" <<EOF
+Acquire::ForceIPv6 "true";
 EOF
     fi
 fi
@@ -313,6 +334,7 @@ JANE_VAGRANT_INCEPTION="true"
 PROVISION_GITLAB_CI="#{ENV['GITLAB_CI']}"
 PROVISION_APT_HTTP_PROXY="#{ENV['APT_HTTP_PROXY']}"
 PROVISION_APT_HTTPS_PROXY="#{ENV['APT_HTTPS_PROXY']}"
+PROVISION_APT_FORCE_NETWORK="#{ENV['APT_FORCE_NETWORK']}"
 
 # Configure GitLab CI environment
 if [ -n "${PROVISION_GITLAB_CI}" ] && [ "${PROVISION_GITLAB_CI}" == "true" ] ; then
@@ -370,6 +392,22 @@ if [ -n "${PROVISION_APT_HTTP_PROXY}" ] ; then
     cat "/etc/apt/apt.conf.d/00aptproxy" <<EOF
 Acquire::http::Proxy "${PROVISION_APT_HTTP_PROXY}";
 EOF
+fi
+
+# Force IPv4/IPv6 connections in APT depending on the test network requirements
+# https://bugs.debian.org/611891
+if [ -n "${PROVISION_APT_FORCE_NETWORK}" ] ; then
+    if [ "${PROVISION_APT_FORCE_NETWORK}" = "4" ] ; then
+        jane notify info "Forcing APT to only use IPv4 network"
+        cat "/etc/apt/apt.conf.d/00force-ip-network" <<EOF
+Acquire::ForceIPv4 "true";
+EOF
+    elif [ "${PROVISION_APT_FORCE_NETWORK}" = "6" ] ; then
+        jane notify info "Forcing APT to only use IPv6 network"
+        cat "/etc/apt/apt.conf.d/00force-ip-network" <<EOF
+Acquire::ForceIPv6 "true";
+EOF
+    fi
 fi
 
 jane notify info "Vagrant node provisioning complete"
