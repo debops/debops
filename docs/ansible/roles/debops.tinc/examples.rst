@@ -39,8 +39,8 @@ This assumes a ``[tinc_dualstack]`` group with IPv4-accessible hosts and a
 
 Hosts in ``[tinc_dualstack]`` should have the `tap` interface bridged via
 `br0` to an interfaces that is receiving router advertisements.
-See `debops.ifupdown` for information on how to do that and `debops.radvd`
-if you need to set up router advertisement.
+See :ref:`debops.ifupdown` for information on how to do that and
+:ref:`debops.radvd` if you need to set up router advertisement.
 
 Note that if you bridge the `tap` interface to a wired interface in the
 ``[tinc_ipv4only]`` hosts, you may be providing IPv6 to the whole network.

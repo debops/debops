@@ -13,12 +13,14 @@ hwaddr_prefix="{{ item.value.hwaddr_prefix | d(tinc__hwaddr_prefix) }}"
 link_type="{{ item.value.link_type|d() }}"
 link_metric="{{ item.value.metric|d() }}"
 
+read -r accept_ra << EOF
 {% set tinc__tpl_accept_ra = '1'
        if item.value.accept_ra|d(True) == True
        else item.value.accept_ra  %}
-accept_ra="{{ tinc__tpl_accept_ra
-              if tinc__tpl_accept_ra in ['0', '1', '2']
-              else '' }}"
+{{ tinc__tpl_accept_ra
+   if tinc__tpl_accept_ra in ['0', '1', '2']
+   else '' }}
+EOF
 
 
 readarray -t interface_addresses << EOF
@@ -115,7 +117,7 @@ else
     fi
 
     if [ -n "${accept_ra}" ]; then
-        sysctl net.ipv6.conf.${INTERFACE}.accept_ra=${accept_ra}
+        echo -n "${accept_ra}" > "/proc/sys/net/ipv6/conf/${INTERFACE}/accept_ra"
     fi
 
     if [ -n "${post_tinc_up}" ]; then
