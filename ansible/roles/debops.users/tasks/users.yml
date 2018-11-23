@@ -24,6 +24,40 @@
   getent:
     database: 'group'
 
+- name: Get preferred shells
+  set_fact:
+    users__register_shell_path: '{{ item.shell|d() }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  register: users__register_shell_paths
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Get preferred shells as set
+  set_fact:
+    users__register_shell_paths_set: |
+      {{ users__register_shell_paths.results |
+         map(attribute='ansible_facts.users__register_shell_path') |
+         unique | list
+      }}
+
+- name: Check if preferred shell exists
+  stat: path="{{ item }}"
+  with_flattened:
+    - '{{ users__register_shell_paths_set }}'
+    - '{{ [ users__default_shell ] if users__default_shell|d() else [] }}'
+  register: users__register_shell_stats
+
+- name: Fail if setting a shell that does not exist
+  fail:
+    msg: "Trying to set a shell that does not exist, this can lock you out!"
+  with_items: '{{ users__register_shell_stats.results }}'
+  when: not item.stat.exists
+
 - name: Manage user accounts
   user:
     name:               '{{ item.name }}'
