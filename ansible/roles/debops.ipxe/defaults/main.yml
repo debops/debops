@@ -94,7 +94,7 @@ ipxe_debian_installer_keymap: 'us'
 # .. envvar:: ipxe_debian_installer_mirror [[[
 #
 # Address of the Debian mirror used to download the Installer files.
-ipxe_debian_installer_mirror: 'httpredir.debian.org'
+ipxe_debian_installer_mirror: 'deb.debian.org'
 
                                                                    # ]]]
 # .. envvar:: ipxe_debian_pxeboot [[[
@@ -107,13 +107,21 @@ ipxe_debian_pxeboot: True
 #
 # Add non-free firmware to Debian netinst ``initrd.gz``. See
 # https://wiki.debian.org/DebianInstaller/NetbootFirmware for more details.
-ipxe_debian_pxeboot_firmware: True
+ipxe_debian_pxeboot_firmware: False
 
                                                                    # ]]]
 # .. envvar:: ipxe_debian_pxeboot_release [[[
 #
 # Debian release to use for Debian netinst (``jessie``, ``stable``, etc.).
 ipxe_debian_pxeboot_release: 'stable'
+
+                                                                   # ]]]
+# .. envvar:: ipxe_debian_pxeboot_version [[[
+#
+# Specify the version of the Debian netinst to download. The ``current`` is the
+# most recent, but at this time seems to be broken, therefore use an older
+# version by default.
+ipxe_debian_pxeboot_version: '20170615'
 
                                                                    # ]]]
 # .. envvar:: ipxe_debian_pxeboot_workdir [[[
@@ -125,7 +133,7 @@ ipxe_debian_pxeboot_workdir: '/usr/local/src/ipxe/debian-pxeboot'
 # .. envvar:: ipxe_debian_pxeboot_url [[[
 #
 # URL of the ``netboot.tar.gz`` tarball with Debian netinst.
-ipxe_debian_pxeboot_url: 'http://{{ ipxe_debian_installer_mirror }}/debian/dists/{{ ipxe_debian_pxeboot_release }}/main/installer-amd64/current/images/netboot/netboot.tar.gz'
+ipxe_debian_pxeboot_url: 'http://{{ ipxe_debian_installer_mirror }}/debian/dists/{{ ipxe_debian_pxeboot_release }}/main/installer-amd64/{{ ipxe_debian_pxeboot_version }}/images/netboot/netboot.tar.gz'
 
                                                                    # ]]]
 # .. envvar:: ipxe_debian_pxeboot_firmware_url [[[
