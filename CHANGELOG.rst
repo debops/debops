@@ -180,6 +180,11 @@ Changed
   This is done to solve the connectivity issues with ``cdimage.debian.org``
   host.
 
+- [debops.ipxe] The role will install the original release of the
+  ``netboot.tar.gz`` Debian Installer image instead of the current release,
+  which seems to be broken at the moment. New default variable is added to
+  allow selection of the image version.
+
 Fixed
 ~~~~~
 
