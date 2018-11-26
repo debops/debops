@@ -176,6 +176,10 @@ Changed
   containers to be shut down properly without hitting a timeout and forced
   killing of container processes.
 
+- [debops.ipxe] The role will no longer install non-free firmware by default.
+  This is done to solve the connectivity issues with ``cdimage.debian.org``
+  host.
+
 Fixed
 ~~~~~
 
