@@ -71,10 +71,6 @@ Changes related to packet forwarding in firewall and sysctl
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- The :envvar:`bootstrap__etc_hosts` value has been changed from a boolean to
-  trinary ``present``/``absent``/``ignore`` to allow conditional removal of
-  :file:`/etc/hosts` entries, with ``present`` being the default.
-
 - The :ref:`debops.grub` role was redesigned, most of the ``grub_*`` default
   variables have been removed and the new configuration method has been
   implemented. The role variables have been namespaced, the role now uses
@@ -103,6 +99,32 @@ Inventory variable changes
 
   You can use the :ref:`debops.ifupdown` role to configure packet forwarding
   per network interface, in the firewall as well as via the kernel parameters.
+
+- Host and domain management has been removed from the :ref:`debops.bootstrap`
+  role. This functionality is now done via the :ref:`debops.netbase` role,
+  included in the bootstrap playbook. Some of the old variables have their new
+  equivalents:
+
+  +-----------------------------------------------+--------------------------------------------+---------------+
+  | Old variable name                             | New variable name                          | Changed value |
+  +===============================================+============================================+===============+
+  | ``bootstrap__hostname_domain_config_enabled`` | :envvar:`netbase__hostname_config_enabled` | No            |
+  +-----------------------------------------------+--------------------------------------------+---------------+
+  | ``bootstrap__hostname``                       | :envvar:`netbase__hostname`                | No            |
+  +-----------------------------------------------+--------------------------------------------+---------------+
+  | ``bootstrap__domain``                         | :envvar:`netbase__domain`                  | No            |
+  +-----------------------------------------------+--------------------------------------------+---------------+
+  | ``bootstrap__etc_hosts``                      | Removed                                    | No            |
+  +-----------------------------------------------+--------------------------------------------+---------------+
+  | ``bootstrap__hostname_v6_loopback``           | Removed                                    | No            |
+  +-----------------------------------------------+--------------------------------------------+---------------+
+
+  Support for configuring IPv6 loopback address has been removed entirely. This
+  was required when some of the DebOps roles relied on the ``ansible_fqdn``
+  value for task delegation between hosts. Since then, task delegation has been
+  updated to use the ``inventory_hostname`` values and ensuring that the IPv6
+  loopback address resolves to a FQDN address of the host is no longer
+  required.
 
 Changes related to LXC containers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -10,55 +10,6 @@
 # .. include:: ../../../includes/global.rst
 
 
-# Hostname and domain [[[
-# -----------------------
-
-# .. envvar:: bootstrap__hostname_domain_config_enabled [[[
-#
-# Should the hostname and domain be configured during bootstrap?
-bootstrap__hostname_domain_config_enabled: '{{ (True
-                                                if (ansible_local|d() and
-                                                    ansible_local.cap12s|d() and
-                                                    (not ansible_local.cap12s.enabled|bool or
-                                                     "cap_sys_admin" in ansible_local.cap12s.list))
-                                                else False) | bool }}'
-
-                                                                   # ]]]
-# .. envvar:: bootstrap__domain [[[
-#
-# Set custom DNS domain on a given host.
-bootstrap__domain: '{{ inventory_hostname.split(".")[1:] | join(".") }}'
-
-                                                                   # ]]]
-# .. envvar:: bootstrap__hostname [[[
-#
-# Set custom DNS hostname on a given host.
-bootstrap__hostname: '{{ inventory_hostname_short | d(inventory_hostname.split(".")[0]) }}'
-
-                                                                   # ]]]
-# .. envvar:: bootstrap__etc_hosts [[[
-#
-# If ``present``, add the hostname to :file:`/etc/hosts` and make it point to
-# 127.0.1.1 This is usually what you want except if you manage yourself the
-# hostname entry and want it to point to some other IP.
-#
-# If ``absent``, remove the 127.0.1.1 entry from :file:`/etc/hosts`. This might
-# be useful in distributed environments to keep uniform IP addresses based on
-# DNS on all hosts.
-#
-# If ``ignore``, don't modify anything in :file:`/etc/hosts`.
-bootstrap__etc_hosts: 'present'
-
-                                                                   # ]]]
-# .. envvar:: bootstrap__hostname_v6_loopback [[[
-#
-# Set custom DNS hostname on a given host also for IPv6.
-# This is only needed when you don't have properly working DNS and still need
-# to resolve the hostname as IPv6 address.
-# Refer to https://github.com/debops/ansible-bootstrap/pull/9
-bootstrap__hostname_v6_loopback: False
-                                                                   # ]]]
-                                                                   # ]]]
 # APT and packages [[[
 # --------------------
 

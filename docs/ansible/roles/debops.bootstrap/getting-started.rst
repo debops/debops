@@ -17,16 +17,17 @@ The default DebOps :file:`bootstrap.yml` playbook expects the hosts to be in the
    hostname ansible_ssh_host=hostname.example.com
 
 You might want to set the default DNS domain used by your hosts. To do that,
-set the variable below in :file:`ansible/inventory/group_vars/all/bootstrap.yml` or
+set the variable below in :file:`ansible/inventory/group_vars/all/netbase.yml` or
 in a similar place in inventory:
 
 .. code-block:: yaml
 
-   bootstrap__domain: 'example.com'
+   netbase__domain: 'example.com'
 
-In this case, ``debops.bootstrap`` will configure the hosts so that their Fully
-Qualified Domain Name will be, for example, ``hostname.example.com`` - each
-host will be placed on a subdomain inside the ``example.com`` domain.
+In this case, ``debops.netbase`` role included in the bootstrap playbook will
+configure the hosts so that their Fully Qualified Domain Name will be, for
+example, ``hostname.example.com`` - each host will be placed on a subdomain
+inside the ``example.com`` domain.
 
 You can also set the domain through the inventory directly, by setting it in
 the host's label in the inventory:
