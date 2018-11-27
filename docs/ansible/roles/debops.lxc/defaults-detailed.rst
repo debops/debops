@@ -204,6 +204,32 @@ overridden template options:
        template: 'debian'
        template_options: ''
 
+Create custom directory on LXC host and share it between two unprivileged LXC
+containers using the :ref:`debops.resources` and :ref:`debops.lxc` roles,
+mounted at :file:`/opt` directory inside of the containers:
+
+.. code-block:: yaml
+
+   resources__host_paths:
+
+     - name: '/srv/shared/lxc-opt'
+       state: 'directory'
+       owner: '100000'
+       group: '100000'
+       mode: '0755'
+
+   lxc__containers:
+
+     - name: 'container1'
+       fstab: |
+         /srv/shared/lxc-opt opt none bind 0 0
+       state: 'started'
+
+     - name: 'container2'
+       fstab: |
+         /srv/shared/lxc-opt opt none bind 0 0
+       state: 'started'
+
 Syntax
 ~~~~~~
 
@@ -265,6 +291,16 @@ manage LXC containers are:
 
 The parameters below can be used to configure additional aspects of the LXC
 containers when managed by the :ref:`debops.lxc` Ansible role:
+
+``fstab``
+  Optional. YAML text block with :man:`fstab(5)` configuration to mount
+  filesystems inside of the LXC containers. If this parameter is specified, the
+  role will create the :file:`/var/lib/lxc/<container>/fstab` file with the
+  contents of this parameter and configure the container to mount the
+  filesystems specified in this file. Existing LXC containers are not modified.
+
+  See the :man:`lxc.container.conf(5)` ``lxc.mount`` option documentation for
+  more details.
 
 ``ssh``
   Optional, boolean. If ``True``, the role will use the
