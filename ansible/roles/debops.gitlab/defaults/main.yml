@@ -836,6 +836,128 @@ gitlab__piwik_url: ''
 gitlab__piwik_site_id: '0'
                                                                    # ]]]
                                                                    # ]]]
+
+# Gitlab Container Registry configuration [[[
+# -----------------------
+
+# It is possible to integrate the Docker Container Registry into GitLab,
+# enabling each project to store it Docker images.
+# You need to install and configure a Registry by yourself first. See `Deploy a registry server <https://docs.docker.com/registry/deploying/>`_
+#
+# More information about the Docker Registry here: `About Regitry <https://docs.docker.com/registry/introduction/>`_
+#
+# GitLab documentation: `GitLab Container Registry administration <https://docs.gitlab.com/ee/administration/container_registry.html>`_ and
+# `Enable the Container Registry for your project <https://docs.gitlab.com/ee/user/project/container_registry.html#enable-the-container-registry-for-your-project>`_
+
+# .. envvar:: gitlab__registry_enable [[[
+#
+# Whether to enable GitLab Docker Container Registry. Available in Gitlab 8.9 and newer.
+
+
+gitlab__registry_enable: false
+                                                                   # ]]]
+
+
+# .. envvar:: gitlab__registry_host [[[
+#
+# The host (or FQDN) displayed to the GitLab user when configuring the Project Container Registry.
+# The DNS configuration should point to the Docker Registry Server, because GitLab does not proxyes the connection
+# to the registry.
+# Example: 'registry.example.com'
+
+gitlab__registry_host: 'registry.{{ gitlab_domain }}'
+                                                                   # ]]]
+
+# .. envvar:: gitlab__registry_host_port [[[
+#
+# The TCP port displayed to the GitLab user when configuring the Project Container Registry.
+# Combining the ``gitlab__registry_host`` and ``gitlab__registry_port`` results in
+# ``docker login registry.example.com:5000
+# The TCP port must enable access to the Docker Registry service, please check your ``ferm`` settings.
+#
+# It is not needed to use port ``5000``, if configured accordingly with :ref:`debops.nginx` it is possible to
+# use port 443 and ACME TLS certificates.
+
+gitlab__registry_port: 5000
+                                                                   # ]]]
+
+# .. envvar:: gitlab__registry_api_url [[[
+#
+# The internal URL to the Docker Registry.
+# Will be used by GitLab to directly communicate with the Registry API.
+# Example: ``http://localhost:5005``, if the docker Registry service listen on
+# the ``localhost`` machine on port ``5005``.
+
+gitlab__registry_api_url: 'http://localhost:5005'
+                                                                   # ]]]
+
+
+# .. envvar:: gitlab__registry_private_key [[[
+#
+# The private key fullpath location that is a pair of Registry’s ``rootcertbundle``.
+# Read the `token auth configuration documentation <https://docs.docker.com/registry/configuration/#token>`_ .
+#
+# If you are hosting the Docker Registry in the same host together with GitLab then you only need to point the
+# Docker Registry ENV variable ``REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE`` to the correspoding public key.
+# Example: ``REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE=/etc/pki/realms/domain/default.crt`` and
+# ``gitlab__registry_private_key: /etc/pki/realms/domain/default.key``.
+
+gitlab__registry_private_key: '{{ gitlab__registry_pki_path + "/" +
+                                  gitlab__registry_pki_realm + "/" +
+                                  gitlab__registry_pki_key }}'
+                                                                   # ]]]
+
+
+# .. envvar:: gitlab__registry_pki_path [[[
+#
+# Default PKI path to use.
+
+gitlab__registry_pki_path: '{{ ansible_local.pki.path
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.path|d())
+                               else "/etc/pki/realms" }}'
+                                                                   # ]]]
+
+# .. envvar:: gitlab__registry_pki_default_realm [[[
+#
+# Default PKI realm to use.
+
+gitlab__registry_pki_default_realm: '{{ ansible_local.pki.realm
+                                if (ansible_local|d() and ansible_local.pki|d() and
+                                    ansible_local.pki.realm|d())
+                                else "domain" }}'
+                                                                   # ]]]
+
+# .. envvar:: gitlab__registry_pki_realm [[[
+#
+# PKI realm to use.
+
+gitlab__registry_pki_realm: '{{ gitlab__registry_pki_default_realm }}'
+                                                                   # ]]]
+
+# .. envvar:: gitlab__registry_pki_key [[[
+#
+# Default PKI certificate file to use.
+
+gitlab__registry_pki_key: 'default.key'
+                                                                   # ]]]
+
+# .. envvar:: gitlab__registry_path [[[
+#
+# The path shared by the Docker Registry and Gitlab. This should be the same directory like specified in Registry’s ``rootdirectory``.
+# This path needs to be readable by the GitLab user, the web-server user and the Registry user.
+
+gitlab__registry_path: '/srv/docker/registry'
+                                                                   # ]]]
+
+# .. envvar:: gitlab__registry_issuer [[[
+#
+# This should be the same value as configured in Registry’s ``issuer``.
+
+gitlab__registry_issuer: 'gitlab-issuer'
+                                                                   # ]]]
+                                                                   # ]]]
+
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
