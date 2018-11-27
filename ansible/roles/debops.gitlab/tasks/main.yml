@@ -45,6 +45,14 @@
     state: 'present'
   when: gitlab_support_filesystem_acl|bool
 
+- name: Allow GitLab user to the ~/.ssh directory
+  file:
+    path: '{{ gitlab_home + "/.ssh" }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0700'
+
 - name: Configure ~/.gitconfig
   template:
     src: 'var/local/git/gitconfig.j2'
