@@ -33,6 +33,11 @@ Added
   - :ref:`debops.dhcp_probe`, can be used to install and configure
     :command:`dhcp_probe` service, which passively detects rogue DHCP servers.
 
+  - :ref:`debops.mount`, the role allows configuration of :file:`/etc/fstab`
+    entries for local devices, bind mounts and can be used to create or modify
+    directories, to permit access to resources by different applications. The
+    role is included by default in the ``common.yml`` playbook.
+
 - [debops.users] The role can now configure ACL entries of the user home
   directories using the ``item.home_acl`` parameter. This can be used for more
   elaborate access restrictions.

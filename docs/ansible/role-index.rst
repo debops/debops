@@ -127,6 +127,7 @@ other hosts.
 - :ref:`debops.cryptsetup`
 - :ref:`debops.iscsi`
 - :ref:`debops.lvm`
+- :ref:`debops.mount`
 - :ref:`debops.nfs`
 - :ref:`debops.nfs_server`
 - :ref:`debops.persistent_paths`
@@ -262,6 +263,7 @@ System configuration
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
 - :ref:`debops.machine`
+- :ref:`debops.mount`
 - :ref:`debops.netbase`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
