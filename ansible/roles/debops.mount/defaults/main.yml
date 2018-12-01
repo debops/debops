@@ -1,0 +1,119 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.mount default variables
+# ==============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: mount__enabled [[[
+#
+# Enable or disable support for local device mounts, bind mounts and custom
+# directories.
+mount__enabled: '{{ True
+                    if (((ansible_system_capabilities_enforced|d())|bool and
+                         "cap_sys_admin" in ansible_system_capabilities) or
+                        not (ansible_system_capabilities_enforced|d(True))|bool)
+                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: mount__base_packages [[[
+#
+# List of APT packages to install for correct filesystem management.
+mount__base_packages: '{{ [ "acl" ]
+                          if (((mount__directories
+                                + mount__group_directories
+                                + mount__host_directories)
+                               | flatten) | selectattr("acl", "defined") | list
+                               | subelements("acl"))
+                          else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: mount__packages [[[
+#
+# List of additional APT packages to install for filesystem management.
+mount__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Device mounts [[[
+# -----------------
+
+# These variables control local device mounts, usually external disk drives,
+# LVM block devices or other storage. See :ref:`mount__ref_devices` for
+# more details.
+
+# .. envvar:: mount__devices [[[
+#
+# Define local mounts for all hosts in the Ansible inventory.
+mount__devices: []
+
+                                                                   # ]]]
+# .. envvar:: mount__group_devices [[[
+#
+# Define local mounts for hosts in a specific Ansible inventory group.
+mount__group_devices: []
+
+                                                                   # ]]]
+# .. envvar:: mount__host_devices [[[
+#
+# Define local mounts for specific hosts in the Ansible inventory.
+mount__host_devices: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom directories [[[
+# ----------------------
+
+# These variables can be used to create custom directories on mounted
+# filesystems with specific permissions, ACLs, etc.
+# See :ref:`mount__ref_directories` for more details.
+
+# .. envvar:: mount__directories [[[
+#
+# List of directories to manage on all hosts in the Ansible inventory.
+mount__directories: []
+
+                                                                   # ]]]
+# .. envvar:: mount__group_directories [[[
+#
+# List of directories to manage on hosts in a specific Ansible inventory group.
+mount__group_directories: []
+
+                                                                   # ]]]
+# .. envvar:: mount__host_directories [[[
+#
+# List of directories to manage on specific hosts in the Ansible inventory.
+mount__host_directories: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Bind mounts [[[
+# ---------------
+
+# These variables define configuration of bind mounts, separately from normal
+# filesystems to allow bind-mounting of existing directories.
+# See :ref:`mount__ref_binds` for more details.
+
+# .. envvar:: mount__binds [[[
+#
+# Define bind mounts for all hosts in the Ansible inventory.
+mount__binds: []
+
+                                                                   # ]]]
+# .. envvar:: mount__group_binds [[[
+#
+# Define bind mounts for hosts in a specific Ansible inventory group.
+mount__group_binds: []
+
+                                                                   # ]]]
+# .. envvar:: mount__host_binds [[[
+#
+# Define bind mounts for specific hosts in the Ansible inventory.
+mount__host_binds: []
+                                                                   # ]]]
+                                                                   # ]]]
