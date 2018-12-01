@@ -155,15 +155,6 @@
          (item.state|d('present') == 'absent'))
                                                                    # ]]]
 
-- name: Remove old unattended-upgrades configuration
-  file:
-    path: '/etc/apt/apt.conf.d/{{ item }}'
-    state: 'absent'
-  with_items:
-    - '25auto-upgrades.conf'
-    - '55unattended-upgrades.conf'
-  when: apt__enabled|bool
-
 - name: Update APT cache
   apt:
     update_cache: True
