@@ -92,7 +92,7 @@ apt__install_suggests: False
 # .. envvar:: apt__base_packages [[[
 #
 # Default base packages to install.
-apt__base_packages: [ 'apt-transport-https', 'ca-certificates' ]
+apt__base_packages: [ 'lsb-release', 'apt-transport-https', 'ca-certificates' ]
 
                                                                    # ]]]
 # .. envvar:: apt__packages [[[
@@ -488,46 +488,6 @@ apt__combined_sources: '{{ apt__sources +
                            apt__original_sources +
                            apt__default_sources +
                            apt__security_sources }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# -----------------------------------------
-
-# .. envvar:: apt__apt_preferences__dependent_list [[[
-#
-# Configuration for the ``debops.apt_preferences`` role.
-apt__apt_preferences__dependent_list:
-
-    ## Remove configuration from `debops.apt` context which is now managed by
-    ## `debops.apt_install`.
-  - package: 'git git-*'
-    delete: True
-    backports: [ 'wheezy' ]
-    reason:  'Better support for git submodules - https://stackoverflow.com/a/7593496'
-    by_role: 'debops.apt'
-
-    ## Remove configuration from `debops.apt` context which is now managed by
-    ## `debops.apt_install`.
-  - package: 'irqbalance'
-    delete: True
-    backports: [ 'wheezy' ]
-    reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
-    by_role: 'debops.apt'
-
-    ## Remove configuration from `debops.apt` context which is now managed by
-    ## `debops.apt_install`.
-  - package: 'irqbalance'
-    delete: True
-    backports: [ 'jessie' ]
-    reason:  'Bug fixes and memory leak fixes.'
-    by_role: 'debops.apt'
-
-    ## Remove configuration from `debops.apt` context which is now managed by
-    ## debops.apt_cacher_ng_.
-  - package: 'apt-cacher-ng'
-    delete: True
-    by_role: 'debops.apt'
-    backports: [ 'jessie' ]
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

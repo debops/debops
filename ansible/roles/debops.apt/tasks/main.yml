@@ -1,6 +1,16 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - '{{ apt__base_packages }}'
+    - '{{ apt__packages }}'
+  when: apt__enabled|bool
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -21,16 +31,6 @@
 - name: Update Ansible facts if they were modified
   action: setup
   when: (apt__enabled|bool and apt__register_facts is changed)
-
-- name: Install required packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ apt__base_packages }}'
-    - '{{ apt__packages }}'
-  when: apt__enabled|bool
 
 - name: Ensure that APT default configuration is absent
   file:
@@ -154,15 +154,6 @@
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d('present') == 'absent'))
                                                                    # ]]]
-
-- name: Remove old unattended-upgrades configuration
-  file:
-    path: '/etc/apt/apt.conf.d/{{ item }}'
-    state: 'absent'
-  with_items:
-    - '25auto-upgrades.conf'
-    - '55unattended-upgrades.conf'
-  when: apt__enabled|bool
 
 - name: Update APT cache
   apt:
