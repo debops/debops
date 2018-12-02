@@ -194,6 +194,11 @@ Changed
   should define the :envvar:`netbase__domain` variable in the Ansible inventory
   with your desired domain.
 
+- [debops.netbase] The role is redesigned to use list variables instead of YAML
+  dictionaries for the :file:`/etc/hosts` database. This allows for adding the
+  host IPv4 and/or IPv6 addresses defined by Ansible facts when the custom
+  local domain is enabled. See :ref:`netbase__ref_hosts` for details.
+
 Fixed
 ~~~~~
 

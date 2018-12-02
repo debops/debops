@@ -61,20 +61,36 @@ netbase__hostname: '{{ (inventory_hostname_short | d(inventory_hostname.split(".
                                                                    # ]]]
 # .. envvar:: netbase__domain [[[
 #
-# Define a local domain for a given host. This domain will be added in
-# :file:`/etc/hosts` and will override any information coming from the DNS
-# service. If it's set to an empty string, the domain will not be configured in
-# :file:`/etc/hosts`, and existing local domain configuration will be removed.
+# Define a local domain for a given host. This domain will be added in the
+# :file:`/etc/hosts` database and will override any information coming from the
+# DNS service. If it's set to an empty string, the domain will not be
+# configured in the :file:`/etc/hosts` database.
 #
 # To configure local domain based on Ansible inventory host configuration, you
 # can set the value to: ``'{{ inventory_hostname.split(".")[1:] | join(".") }}'``
 netbase__domain: ''
 
                                                                    # ]]]
+# .. envvar:: netbase__host_ipv4_address [[[
+#
+# The IPv4 address which will be used to create the host record in the
+# :file:`/etc/hosts` database with the FQDN and the hostname. If the host does
+# not have a proper IPv4 address associated with it and you want to use IPv4
+# networking, you can use ``127.0.1.1`` to set the hostname.
+netbase__host_ipv4_address: '{{ ansible_default_ipv4.address | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__host_ipv6_address [[[
+#
+# The IPv6 address which will be used to create the host record in the
+# :file:`/etc/hosts` database with the FQDN and the hostname.
+netbase__host_ipv6_address: '{{ ansible_default_ipv6.address | d() }}'
+
+                                                                   # ]]]
 # .. envvar:: netbase__domain_host_entry [[[
 #
 # The actual :file:`/etc/hosts` entry with the local domain definition. It will
-# be set under the ``127.0.1.1`` IPv4 address.
+# be set as the IPv4 and/or IPv6 addresses defined in above variables.
 netbase__domain_host_entry: '{{ [ netbase__hostname + "." + netbase__domain, netbase__hostname ]
                                 if netbase__domain|d() else [] }}'
                                                                    # ]]]
@@ -82,18 +98,8 @@ netbase__domain_host_entry: '{{ [ netbase__hostname + "." + netbase__domain, net
 # Host database in :file:`/etc/hosts` [[[
 # ---------------------------------------
 
-# The variables below define what host entries should be present in the
-# :file:`/etc/hosts` database. Each dictionary key is an IP address and value
-# should be a string or a YAML list of FQDN addresses or hostnames. Example:
-#
-# .. code-block:: yaml
-#
-#    netbase__hosts:
-#      '192.0.2.1': [ 'router.example.org', 'router' ]
-#      '192.0.2.2': 'db.example.org'
-#
-# Entries with empty values will be removed from the database.
-# See the :man:`hosts(5)` manual page for more details.
+# The ``netbase__*_hosts`` variables below define the host records in the
+# :file:`/etc/hosts` database. See :ref:`netbase__ref_hosts` for more details.
 
 # .. envvar:: netbase__hosts_config_type [[[
 #
@@ -118,40 +124,58 @@ netbase__hosts_config_type: '{{ "template"
                                                                    # ]]]
 # .. envvar:: netbase__default_hosts [[[
 #
-# The default set of host database entries, included in the generated template
-# file. This variable is not combined with other ``netbase__*_hosts``
-# variables in the template.
+# The default set of host database entries, defined by the role.
 netbase__default_hosts:
-  '127.0.0.1': 'localhost'
-  '127.0.1.1': '{{ netbase__domain_host_entry }}'
-  '::1':     [ 'localhost', 'ip6-localhost', 'ip6-loopback' ]
-  'ff02::1':   'ip6-allnodes'
-  'ff02::2':   'ip6-allrouters'
+
+  - '127.0.0.1': [ 'localhost' ]
+  - '127.0.1.1': []
+  - '::1':       [ 'localhost', 'ip6-localhost', 'ip6-loopback' ]
+  - 'ff02::1':   [ 'ip6-allnodes' ]
+  - 'ff02::2':   [ 'ip6-allrouters' ]
+
+  - name:  '{{ netbase__host_ipv4_address }}'
+    value: '{{ netbase__domain_host_entry }}'
+    separator: '{{ True
+                   if (netbase__host_ipv4_address != "127.0.1.1")
+                   else False }}'
+
+  - name:  '{{ netbase__host_ipv6_address }}'
+    value: '{{ netbase__domain_host_entry }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__hosts [[[
 #
-# YAML dictionary of host entries which should be present on all hosts in the
-# Ansible inventory.
+# YAML list of host entries which should be present on all hosts in the Ansible
+# inventory.
 #
 # Since the host database is supposed to be the same across all hosts, you
 # should most likely stick to using this variable and define it for the ``all``
 # inventory group.
-netbase__hosts: {}
+netbase__hosts: []
 
                                                                    # ]]]
 # .. envvar:: netbase__group_hosts [[[
 #
-# YAML dictionary of host entries which should be present on hosts in
-# a specific Ansible inventory group.
-netbase__group_hosts: {}
+# YAML list of host entries which should be present on hosts in a specific
+# Ansible inventory group.
+netbase__group_hosts: []
 
                                                                    # ]]]
 # .. envvar:: netbase__host_hosts [[[
 #
-# YAML dictionary of host entries which should be present on specific hosts in
-# the Ansible inventory.
-netbase__host_hosts: {}
+# YAML list of host entries which should be present on specific hosts in the
+# Ansible inventory.
+netbase__host_hosts: []
+
+                                                                   # ]]]
+# .. envvar:: netbase__combined_hosts [[[
+#
+# The variable which combines all other hosts lists and is used in the role
+# tasks and templates.
+netbase__combined_hosts: '{{ netbase__default_hosts
+                            + netbase__hosts
+                            + netbase__group_hosts
+                            + netbase__host_hosts }}'
                                                                    # ]]]
                                                                    # ]]]
 # Network database in :file:`/etc/networks` [[[
