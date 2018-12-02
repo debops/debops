@@ -1,15 +1,10 @@
 # {{ ansible_managed }}
 
-{% for key, value in netbase__default_hosts | dictsort %}
-{%   if value|d() %}
-{{ '{}\t{}{}'.format(key, ('\t' if key | length < 8 else ''), ([ value ] if value is string else value) | join(' ')) }}
+{% for element in netbase__combined_hosts | parse_kv_config %}
+{%   if element.name|d() and element.value|d() %}
+{%     if (element.separator|d())|bool %}
+
+{%     endif %}
+{{ '{}\t{}{}'.format(element.name, ('\t' if element.name | length < 8 else ''), ([ element.value ] if element.value is string else (element.value | selectattr('name', 'defined') | map(attribute='name') | list) | join(' '))) }}
 {%   endif %}
 {% endfor %}
-{% if (netbase__hosts | combine(netbase__group_hosts, netbase__host_hosts)) %}
-
-{%   for key, value in (netbase__hosts | combine(netbase__group_hosts, netbase__host_hosts)) | dictsort %}
-{%     if value|d() %}
-{{ '{}\t{}{}'.format(key, ('\t' if key | length < 8 else ''), ([ value ] if value is string else value) | join(' ')) }}
-{%     endif %}
-{%   endfor %}
-{% endif %}

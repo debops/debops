@@ -126,6 +126,10 @@ Inventory variable changes
   loopback address resolves to a FQDN address of the host is no longer
   required.
 
+- The ``netbase__*_hosts`` variables in the :ref:`debops.netbase` role have
+  been redesigned to use YAML lists instead of dictionaries. See
+  :ref:`netbase__ref_hosts` for more details.
+
 Changes related to LXC containers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

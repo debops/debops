@@ -14,6 +14,7 @@ network or larger clusters usage of a real DNS server is preferred.
 
    getting-started
    defaults
+   defaults-detailed
 
 Copyright
 ---------
