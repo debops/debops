@@ -5,38 +5,11 @@ Getting started
    :local:
 
 
-Host and network database bootstrapping
----------------------------------------
-
-Since the role is not included directly in the :file:`common.yml` playbook, if
-you need to configure the host database before the common playbook is applied,
-you can execute the role before the common or site playbook:
-
-.. code-block:: console
-
-   debops service/netbase -l <hosts> && debops common -l <hosts>
-
-
 Example inventory
 -----------------
 
-To enable support for the ``debops.netbase`` role, the host(s) need to be
-included in the ``[debops_service_netbase]`` Ansible inventory group:
-
-.. code-block:: none
-
-   [debops_service_netbase]
-   hostname
-
-A common practice is to maintain the same host and network database across
-multiple hosts in a cluster. To do that effectively, you can use inventory
-parent/children groups to, for example, enable the role on all DebOps-managed
-hosts:
-
-.. code-block:: none
-
-   [debops_service_netbase:children]
-   debops_all_hosts
+The role is included by default in the ``bootstrap.yml`` and ``common.yml``
+playbook, therefore you don't need to do anything to enable it.
 
 
 Example playbook
