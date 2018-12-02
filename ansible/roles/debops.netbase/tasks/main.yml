@@ -33,6 +33,7 @@
 - name: Manage the hostname
   hostname:
     name: '{{ netbase__hostname }}'
+  register: netbase__register_hostname
   when: netbase__enabled|bool and netbase__hostname_config_enabled|bool
 
 - name: Generate /etc/hosts database
@@ -42,6 +43,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  register: netbase__register_hosts_template
   when: netbase__enabled|bool and netbase__hosts_config_type == 'template'
 
 - name: Manage entries in /etc/hosts
@@ -52,6 +54,7 @@
                  else ((item.value|d()) | selectattr('name', 'defined') | map(attribute='name') | list | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
   loop: '{{ netbase__combined_hosts | parse_kv_config }}'
+  register: netbase__register_hosts_lineinfile
   when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile' and item.name|d()
 
 - name: Manage entries in /etc/networks
@@ -61,4 +64,14 @@
     line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
   with_dict: '{{ netbase__networks | combine(netbase__group_networks, netbase__host_networks) }}'
+  register: netbase__register_networks
   when: netbase__enabled|bool
+
+  # This task is here in case that the hostname or domain of the host was
+  # changed, to ensure that the Ansible facts are updated
+- name: Update Ansible facts if databases were modified
+  action: setup
+  when: netbase__register_hostname is changed or
+        netbase__register_hosts_template is changed or
+        netbase__register_hosts_lineinfile is changed or
+        netbase__register_networks is changed
