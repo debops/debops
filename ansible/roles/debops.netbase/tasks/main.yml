@@ -54,6 +54,8 @@
                  else ((item.value|d()) | selectattr('name', 'defined') | map(attribute='name') | list | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
   loop: '{{ netbase__combined_hosts | parse_kv_config }}'
+  loop_control:
+    label: '{{ {item.name: (item.value|d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
   register: netbase__register_hosts_lineinfile
   when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile' and item.name|d()
 

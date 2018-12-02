@@ -198,6 +198,8 @@ Changed
   dictionaries for the :file:`/etc/hosts` database. This allows for adding the
   host IPv4 and/or IPv6 addresses defined by Ansible facts when the custom
   local domain is enabled. See :ref:`netbase__ref_hosts` for details.
+  The role has also been included in the ``common.yml`` playbook to ensure that
+  the host database is up to date as soon as possible.
 
 Fixed
 ~~~~~
