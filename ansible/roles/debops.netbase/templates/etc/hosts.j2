@@ -5,6 +5,6 @@
 {%     if (element.separator|d())|bool %}
 
 {%     endif %}
-{{ '{}\t{}{}'.format(element.name, ('\t' if element.name | length < 8 else ''), ([ element.value ] if element.value is string else (element.value | selectattr('name', 'defined') | map(attribute='name') | list) | join(' '))) }}
+{{ '{}\t{}{}'.format(element.name, ('\t' if element.name | length < 8 else ''), (element.value if element.value is string else (element.value | selectattr('name', 'defined') | map(attribute='name') | list) | join(' '))) }}
 {%   endif %}
 {% endfor %}
