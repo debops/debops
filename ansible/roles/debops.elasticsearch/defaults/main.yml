@@ -308,6 +308,21 @@ elasticsearch__jvm_memory_min_heap_size: '{{ (((ansible_memtotal_mb|int
 elasticsearch__jvm_memory_max_heap_size: '{{ elasticsearch__jvm_memory_min_heap_size }}'
                                                                    # ]]]
                                                                    # ]]]
+# Paths [[[
+# ---------
+
+# The variables below configure paths used by Elasticsearch. See
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/path-settings.html
+# for more details.
+
+# .. envvar:: elasticsearch__path_data [[[
+#
+# List of all data paths. They will be created and permissions will be updated if needed.
+elasticsearch__path_data:
+  - '/var/lib/elasticsearch'
+
+                                                                   # ]]]
+                                                                   # ]]]
 # Elasticsearch configuration file [[[
 # ------------------------------------
 
@@ -387,7 +402,7 @@ elasticsearch__default_configuration:
       Elasticsearch performs poorly when the system is swapping the memory.
 
   - name: 'path.data'
-    value: '/var/lib/elasticsearch'
+    value: '{{ elasticsearch__path_data }}'
     comment: |
       Path to directory where to store the data
       (separate multiple locations by comma)
