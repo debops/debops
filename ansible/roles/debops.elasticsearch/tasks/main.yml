@@ -75,6 +75,16 @@
   when: elasticsearch__version is version_compare("5.0.0", ">=")
   tags: [ 'role::elasticsearch:config' ]
 
+- name: Manage data paths
+  file:
+    path:    '{{ item }}'
+    state:   'directory'
+    owner:   '{{ elasticsearch__user }}'
+    group:   '{{ elasticsearch__group }}'
+    mode:    '0750'
+  with_flattened:
+    - '{{ elasticsearch__path_data }}'
+
 - name: Check state of installed Elasticsearch plugins
   command: bin/elasticsearch-plugin list
   args:
