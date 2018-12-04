@@ -815,8 +815,8 @@ owncloud__role_config:
   'updatechecker': '{{ True if (owncloud__variant in ["nextcloud"]) else False }}'
 
   'memcache.local':
-    state: '{{ "present" if (owncloud__apcu_enabled|bool) else "absent" }}'
-    value: '\\OC\\Memcache\\APCu'
+    state: 'present'
+    value: '{{ "\\OC\\Memcache\\Redis" if (owncloud__redis_enabled|bool) else "\\OC\\Memcache\\APCu" }}'
 
   'memcache.locking':
     state: '{{ "present" if (owncloud__redis_enabled|bool) else "absent" }}'
