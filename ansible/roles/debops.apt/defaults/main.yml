@@ -356,6 +356,19 @@ apt__original_sources:
                          else "absent" }}'
 
                                                                    # ]]]
+# .. envvar:: apt__default_sources_present [[[
+#
+# Define if the default APT package sources for specific distributions should
+# be used or not.
+# If package sources are defined in specific group, host or on all hosts in
+# Ansible inventory, the default sources will be disabled.
+apt__default_sources_present: '{{ "True"
+                                  if ( not apt__group_sources and
+                                       not apt__host_sources and
+                                       not apt__sources )
+                                    else "False" }}'
+
+                                                                   # ]]]
 # .. envvar:: apt__default_sources [[[
 #
 # List of the default APT package sources for specific distributions. These are
@@ -406,6 +419,32 @@ apt__default_sources:
     distribution: 'Devuan'
 
                                                                    # ]]]
+# .. envvar:: apt__security_sources_state [[[
+#
+# Enable (if ``present``) or disable (if ``absent``) the default APT
+# repositories proving security updates.
+# If a local security mirror is defined in Ansible inventory group or host,
+# this will disable the default security repositories.
+apt__security_sources_state: '{{ "present"
+                                  if ( not apt__group_security_sources and
+                                       not apt__host_security_sources )
+                                  else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__group_security_sources [[[
+#
+# List of APT repositories that provide security updates for hosts in
+# specific Ansible inventory group.
+apt__group_security_sources: []
+
+                                                                   # ]]]
+# .. envvar:: apt__host_security_sources [[[
+#
+# List of APT repositories that provide security updates for hosts in
+# specific Ansible inventory host.
+apt__host_security_sources: []
+
+                                                                   # ]]]
 # .. envvar:: apt__security_sources [[[
 #
 # List of APT package sources that provide security updates. This list is used
@@ -419,7 +458,7 @@ apt__security_sources:
     suite:      '{{ apt__distribution_release + "/updates" }}'
     components: '{{ apt__distribution_components }}'
     distribution: 'Debian'
-    state:      '{{ "present"
+    state:      '{{ apt__security_sources_state
                     if (apt__distribution_release|d("unknown")
                         in apt__distribution_release_map[apt__distribution]|d([]))
                     else "absent" }}'
@@ -451,7 +490,7 @@ apt__security_sources:
     suite:      '{{ apt__distribution_release + "-security" }}'
     components: '{{ apt__distribution_components }}'
     distribution: 'Ubuntu'
-    state:      '{{ "present"
+    state:      '{{ apt__security_sources_state
                     if (apt__architecture in ["amd64", "i386"])
                     else "absent" }}'
 
@@ -461,7 +500,7 @@ apt__security_sources:
     suite:      '{{ apt__distribution_release + "-security" }}'
     components: '{{ apt__distribution_components }}'
     distribution: 'Ubuntu'
-    state:      '{{ "present"
+    state:      '{{ apt__security_sources_state
                     if (apt__architecture not in ["amd64", "i386"])
                     else "absent" }}'
 
@@ -471,7 +510,7 @@ apt__security_sources:
     suite:      '{{ apt__distribution_release + "-security" }}'
     components: '{{ apt__distribution_components }}'
     distribution: 'Devuan'
-    state:      '{{ "present"
+    state:      '{{ apt__security_sources_state
                     if (apt__distribution_release|d("unknown")
                         in apt__distribution_release_map[apt__distribution]|d([]))
                     else "absent" }}'
@@ -485,8 +524,10 @@ apt__security_sources:
 apt__combined_sources: '{{ apt__sources +
                            apt__group_sources +
                            apt__host_sources +
-                           apt__original_sources +
-                           apt__default_sources +
+                           apt__original_sources }} +
+                           {{ apt__default_sources if apt__default_sources_present else [] }} +
+                           {{ apt__host_security_sources +
+                           apt__group_security_sources +
                            apt__security_sources }}'
                                                                    # ]]]
                                                                    # ]]]

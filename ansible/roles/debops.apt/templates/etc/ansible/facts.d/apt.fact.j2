@@ -15,7 +15,7 @@ import os
 {% set apt__tpl_default_sources = [] %}
 {% set apt__tpl_default_sources_map = {} %}
 {% set apt__tpl_source_distributions = {} %}
-{% for repo in apt__security_sources %}
+{% for repo in ( apt__host_security_sources, apt__group_security_sources, apt__security_sources ) %}
 {%   set _ = apt__tpl_security_sources.extend(
                  debops__tpl_macros.flattened(
                      repo.uri, repo.uris) | from_json) %}
