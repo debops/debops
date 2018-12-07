@@ -39,6 +39,11 @@ allow {{ address }}
 
 {% endif %}
 
+{% if ntp__fudge is defined and ntp__fudge %}
+# Fudge local clock if time servers is not available
+local stratum 10
+{% endif %}
+
 # This directive specify the location of the file containing ID/key pairs for
 # NTP authentication.
 keyfile /etc/chrony/chrony.keys
