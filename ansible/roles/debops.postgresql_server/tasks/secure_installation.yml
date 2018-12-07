@@ -12,8 +12,6 @@
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d()
   no_log: True
-  register: postgresql_server__register_postgresql_user
-  failed_when: "'cannot execute ALTER ROLE in a read-only transaction' not in postgresql_server__register_postgresql_user.msg"
 
 - name: Grant connect on postgres to PUBLIC
   postgresql_privs:
@@ -27,8 +25,6 @@
     - '{{ postgresql_server__clusters }}'
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d()
-  register: postgresql_server__register_postgresql_privs
-  failed_when: "'cannot execute GRANT in a read-only transaction' not in postgresql_server__register_postgresql_privs.msg"
 
 - name: Revoke temporary on postgres from PUBLIC
   postgresql_privs:
@@ -42,5 +38,3 @@
     - '{{ postgresql_server__clusters }}'
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d()
-  register: postgresql_server__register_postgresql_revoke
-  failed_when: "'cannot execute REVOKE in a read-only transaction' not in postgresql_server__register_postgresql_revoke.msg"
