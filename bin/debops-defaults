@@ -52,7 +52,8 @@ def cat(filename, outstream):
         fh = io.open(filename, encoding="utf-8")
     except IOError as e:
         # This should only happen if the user listed a unknown role.
-        outstream.write('%s: %s\n' % (e.strerror, e.filename))
+        message = u'%s: %s\n' % (e.strerror, e.filename)
+        outstream.write(message.encode())
         return
     try:
         # Read input file as Unicode object and pass it to outstream.
