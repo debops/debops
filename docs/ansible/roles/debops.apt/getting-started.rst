@@ -11,7 +11,9 @@ Default configuration
 Role tries to detect the original APT repositories configured on the system and
 use them in the generated :file:`/etc/apt/sources.list` configuration file. They
 will be placed before the default repositories, with assumption that the
-original repositories pointed to the closest mirror.
+original repositories pointed to the closest mirror. The original APT
+repositories can be completely disabled by setting ``apt__original_sources: []``
+in your inventory.
 
 The ``non-free`` repositories will be enabled automatically on hardware-based
 hosts in case any non-free firmware is required. Otherwise, only the ``main``
@@ -31,6 +33,34 @@ following setting in your inventory:
 .. code-block:: yaml
 
    apt__enabled: False
+
+
+If you have a local APT mirror that you want a group of hosts to use
+exclusively, you could compose your inventory like this:
+
+.. code-block:: yaml
+
+   # Don't use the default mirrors
+   apt__default_sources_state: 'absent'
+   
+   # Don't use the default security mirrors
+   apt__security_sources_state: 'absent'
+   
+   # Replace the original APT mirror
+   apt__original_sources: []
+   
+   # Define local APT mirror
+   apt__group_sources:
+     - uri:          'http://mirrors.domain.fqdn/debian'
+       comment:      '{{ "Local " + apt__distribution + " repositories" }}'
+       distribution: 'Debian'
+
+   # Define local APT security mirrors
+   apt__group_security_sources:
+     - uri:          'http://mirrors.domain.fqdn/debian-security'
+       comment:      '{{ "Local " + apt__distribution + " Security repository" }}'
+       suite:        '{{ apt__distribution_release + "/updates" }}'
+       distribution: 'Debian'
 
 
 Example playbook
