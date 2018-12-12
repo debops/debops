@@ -19,6 +19,7 @@
     group: 'root'
     mode: '0755'
   loop:
+    - '/etc/systemd/system/lxc.service.d'
     - '/etc/systemd/system/lxc@.service.d'
     - '/usr/local/lib/lxc'
 
@@ -38,14 +39,18 @@
     group: 'root'
     mode: '0755'
 
-- name: Install lxc@.service poweroff override
+- name: Install systemd service overrides
   template:
-    src: 'etc/systemd/system/lxc@.service.d/poweroff.conf.j2'
-    dest: '/etc/systemd/system/lxc@.service.d/poweroff.conf'
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: lxc__register_systemd_poweroff
+  loop:
+    - 'etc/systemd/system/lxc.service.d/exec-override.conf'
+    - 'etc/systemd/system/lxc@.service.d/poweroff.conf'
+    - 'etc/systemd/system/lxc@.service.d/partof.conf'
+  register: lxc__register_systemd_overrides
 
 - name: Disable internal network when requested
   systemd:
@@ -131,7 +136,7 @@
           lxc__register_net_config|d({}) is changed or
           lxc__register_net_dnsmasq|d({}) is changed or
           lxc__register_net_systemd|d({}) is changed or
-          lxc__register_systemd_poweroff|d({}) is changed))
+          lxc__register_systemd_overrides|d({}) is changed))
   tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
 
 - name: Remove LXC configuration if requested

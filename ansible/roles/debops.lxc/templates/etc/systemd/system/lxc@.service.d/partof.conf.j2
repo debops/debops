@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+# These parameters allow restarts of all LXC containers at once by issuing the
+# command: systemctl restart lxc.service
+
+[Unit]
+ConditionPathExists=/var/lib/lxc/%i/config
+PartOf=lxc.service
+ReloadPropagatedFrom=lxc.service
