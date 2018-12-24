@@ -234,6 +234,31 @@ nginx__http_auth_htpasswd:
   users: '{{ nginx_http_auth_users }}'
 
                                                                    # ]]]
+# .. envvar:: nginx_http_server_names_hash_bucket_size [[[
+#
+# The default value of 'server_names_hash_bucket_size' depends on the size
+# of the processor’s cache line. If a large number of server names are
+# defined, or unusually long server names are defined,
+# tuning the 'server_names_hash_max_size' and
+# 'server_names_hash_bucket_size' directives at the http level may
+# become necessary.
+# More information can be found at:
+#
+# - http://nginx.org/en/docs/http/ngx_http_core_module.html#server_names_hash_bucket_size
+#
+nginx_http_server_names_hash_bucket_size: 64
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_server_names_hash_max_size [[[
+#
+# Sets the maximum size of the server names hash tables.
+# More information can be found at:
+#
+# - http://nginx.org/en/docs/http/ngx_http_core_module.html#server_names_hash_max_size
+#
+nginx_http_server_names_hash_max_size: 512
+
+                                                                   # ]]]
 # .. envvar:: nginx_http_options [[[
 #
 # Default http { } options.
