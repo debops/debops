@@ -3,7 +3,11 @@
 [Unit]
 Description=Docker Application Container Engine
 Documentation=https://docs.docker.com
+{% if docker__register_version.stdout is version('18.09', '>=') %}
 BindsTo=containerd.service
+{% else %}
+Requires=docker.socket
+{% endif %}
 After=network-online.target firewalld.service
 Wants=network-online.target
 
