@@ -54,6 +54,19 @@
     path: '{{ netbox__git_checkout }}'
   register: netbox__register_installed
 
+- name: Check current virtualenv version
+  stat:
+    path: '{{ netbox__virtualenv + "/bin/python" }}'
+  register: netbox__register_virtualenv_version
+
+- name: Remove old python2 based virtualenv
+  file:
+    path: '{{ netbox__virtualenv }}'
+    state: 'absent'
+  register: netbox__register_virtalenv_deleted
+  when: ( netbox__virtualenv_version == '3' and
+          netbox__register_virtualenv_version.stat.lnk_target|d() == 'python2' )
+
 - name: Create NetBox checkout directory
   file:
     path: '{{ netbox__git_checkout }}'
@@ -98,7 +111,8 @@
   when: (netbox__register_source.before is undefined or
          (netbox__register_source.before|d() and netbox__register_target_branch.stdout|d() and
           netbox__register_source.before != netbox__register_target_branch.stdout) or
-          not netbox__register_installed.stat.exists|bool)
+          not netbox__register_installed.stat.exists|bool or
+          netbox__register_virtalenv_deleted.changed|bool)
 
 - name: Create Python virtualenv for NetBox
   pip:
