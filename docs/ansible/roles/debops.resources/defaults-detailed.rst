@@ -52,11 +52,18 @@ located in the :file:`ansible/resources/` directory (or wherever the
            └── hostname2/
 
 The ``with_filetree`` Ansible lookup plugin will look for resources to manage
-in specific hostname directory, then a specific group name directory defined by
-the :envvar:`resources__group_name` variable, then in the :file:`by-group/all/`
-directory. The resource found first in this order wins and no further checks
+in specific hostname directory, then of all the groups the current host is in
+(based on the content of the variable `group_names`), then in the :file:`by-group/all/` directory.
+The resource found first in this order wins and no further checks
 are performed; this means that you can put a file in the :file:`by-group/all/`
 directory and then override it using a host-specific directory.
+The groups directories are read in the order dictated by Ansible during inventory parsing.
+
+See `Ansible - Playbooks Varibles<https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#accessing-information-about-other-hosts-with-magic-variables>`_
+to learn about the variable `group_names`.
+See `Ansible - Working with Inventory<https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#how-variables-are-merged>`_
+for more information on how to use `ansible_group_priority` to change the merge order
+for groups of the same level (after the parent/child order is resolved).
 
 Each directory structure starts at the root of the filesystem (:file:`/`), so
 to create a file in a subdirectory you need to recreate the entire path. For
