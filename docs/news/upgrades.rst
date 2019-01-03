@@ -132,14 +132,11 @@ Inventory variable changes
 
 - The ``resources__group_name`` variable has been removed in favor of using
   all the groups the current hosts is in. This change has been reflected in the
-  updated variable ``resources__group_templates``.
-  If you need to use a specific group update the ``resources__group_templates``
-  accordingly.   Read the documentation about `resources__templates <https://docs.debops.org/en/master/ansible/roles/debops.resources/defaults-detailed.html#resources-templates>`_
-  for more information on templating with `debops`. Example:
-
-  .. code-block:: none
-
-    resources__group_templates: '{{ (resources__src + "templates/by-group/" + "special_group") | list }}'
+  updated variable :envvar:`resources__group_templates`.
+  If you need to use a specific group update the :envvar:`resources__group_templates`
+  accordingly.
+  Read the documentation about :ref:`resources__ref_templates` for more details on
+  templating with `debops.resources`.
 
 Changes related to LXC containers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
