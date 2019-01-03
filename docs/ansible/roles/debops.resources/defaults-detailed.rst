@@ -52,11 +52,20 @@ located in the :file:`ansible/resources/` directory (or wherever the
            └── hostname2/
 
 The ``with_filetree`` Ansible lookup plugin will look for resources to manage
-in specific hostname directory, then a specific group name directory defined by
-the :envvar:`resources__group_name` variable, then in the :file:`by-group/all/`
-directory. The resource found first in this order wins and no further checks
+in specific hostname directory, then of all the groups the current host is in
+(based on the content of the variable `group_names`), then in the :file:`by-group/all/` directory.
+The resource found first in this order wins and no further checks
 are performed; this means that you can put a file in the :file:`by-group/all/`
 directory and then override it using a host-specific directory.
+The groups directories are read in the order dictated by Ansible during inventory parsing.
+
+See `Ansible - Playbooks Variables`__ to learn about the ``group_names`` variable, and `Ansible - Working with Inventory`__
+
+.. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#accessing-information-about-other-hosts-with-magic-variables
+.. __: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#how-variables-are-merged
+
+for more information on how to use ``ansible_group_priority`` to change the merge order
+for groups of the same level (after the parent/child order is resolved).
 
 Each directory structure starts at the root of the filesystem (:file:`/`), so
 to create a file in a subdirectory you need to recreate the entire path. For
@@ -71,11 +80,6 @@ In the templates, you can reference variables from the Ansible facts (including
 local facts managed by other roles) and Ansible inventory. Referencing
 variables from other roles might work only if these roles are included in the
 playbook, however that is not idempotent and should be avoided.
-
-To manage resources on a group level, you need to define the
-:envvar:`resources__group_name` variable in the inventory group that contains
-the directory name in the :file:`ansible/resources/template/by-group/`
-directory. Only one group level is supported.
 
 .. _resources__ref_paths:
 
