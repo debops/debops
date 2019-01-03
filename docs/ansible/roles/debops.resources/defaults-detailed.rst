@@ -59,8 +59,11 @@ are performed; this means that you can put a file in the :file:`by-group/all/`
 directory and then override it using a host-specific directory.
 The groups directories are read in the order dictated by Ansible during inventory parsing.
 
-See .. _`Ansible - Playbooks Variables`: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#accessing-information-about-other-hosts-with-magic-variables
-to learn about the ``group_names`` variable, and .. _`Ansible - Working with Inventory`: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#how-variables-are-merged
+See `Ansible - Playbooks Variables`__ to learn about the ``group_names`` variable, and `Ansible - Working with Inventory`__
+
+.. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#accessing-information-about-other-hosts-with-magic-variables
+.. __: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#how-variables-are-merged
+
 for more information on how to use ``ansible_group_priority`` to change the merge order
 for groups of the same level (after the parent/child order is resolved).
 
