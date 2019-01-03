@@ -79,11 +79,6 @@ local facts managed by other roles) and Ansible inventory. Referencing
 variables from other roles might work only if these roles are included in the
 playbook, however that is not idempotent and should be avoided.
 
-To manage resources on a group level, you need to define the
-:envvar:`resources__group_name` variable in the inventory group that contains
-the directory name in the :file:`ansible/resources/template/by-group/`
-directory. Only one group level is supported.
-
 .. _resources__ref_paths:
 
 resources__paths
