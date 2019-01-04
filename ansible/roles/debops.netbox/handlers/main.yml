@@ -4,6 +4,7 @@
   service:
     name: 'gunicorn'
     state: 'restarted'
+    args: 'netbox'
   when: (not netbox__app_internal_appserver|bool and
          ansible_local|d() and ansible_local.gunicorn|d() and
          ansible_local.gunicorn.installed|bool)
