@@ -201,6 +201,11 @@ Changed
   The role has also been included in the ``common.yml`` playbook to ensure that
   the host database is up to date as soon as possible.
 
+- [debops.resources] Changed behaviour of used groups for templating. Now all
+  groups the host is in, will be used to search for template files.
+  Read the documentation about :ref:`resources__ref_templates` for more details
+  on templating with `debops`.
+
 Fixed
 ~~~~~
 
@@ -253,6 +258,10 @@ Removed
   :ref:`debops.netbase` role, which has been included in the bootstrap
   playbook. The relevant inventory variables have been renamed, check the
   :ref:`upgrade_notes` for details.
+
+- The ``resources__group_name`` variable has been removed in favor of using
+  all the groups the current hosts is in. This change has been reflected in the
+  updated variable ``resources__group_templates``.
 
 
 `debops v0.8.0`_ - 2018-08-06

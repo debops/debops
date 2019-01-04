@@ -130,6 +130,14 @@ Inventory variable changes
   been redesigned to use YAML lists instead of dictionaries. See
   :ref:`netbase__ref_hosts` for more details.
 
+- The ``resources__group_name`` variable has been removed in favor of using
+  all the groups the current hosts is in. This change has been reflected in the
+  updated variable :envvar:`resources__group_templates`.
+  If you need to use a specific group update the :envvar:`resources__group_templates`
+  accordingly.
+  Read the documentation about :ref:`resources__ref_templates` for more details on
+  templating with `debops.resources`.
+
 Changes related to LXC containers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
