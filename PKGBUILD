@@ -38,7 +38,7 @@ pkgver() {
 
 build() {
     cd "$_pkgname"
-    python2 setup.py build
+    python setup.py build
 }
 
 package() {
