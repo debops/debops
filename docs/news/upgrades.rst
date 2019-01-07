@@ -68,6 +68,38 @@ Changes related to packet forwarding in firewall and sysctl
   :ref:`debops.ifupdown` role and their removal shouldn't impact connectivity,
   however you should check the modifications to the firewall just in case.
 
+Redesigned DNSmasq support
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.dnsmasq` role has been redesigned from the ground up. The
+  configuration is now merged from multiple sources (role defaults, Ansible
+  inventory), role defines separate subdomains for each of the network
+  interfaces, and automatically enables support for local Consul DNS service or
+  LXC subdomain if they are detected on the host.
+
+- Most of the ``dnsmasq__*`` default variables that defined the
+  :command:`dnsmasq` configuration have been removed. Their functionality is
+  exposed either as parameters of network interface configuration, or can be
+  easily changed via the main configuration pipeline. See the documentation of
+  :ref:`dnsmasq__ref_configuration` or :ref:`dnsmasq__ref_interfaces` for more
+  details. If you use DNSmasq on a host managed by DebOps, you will have to
+  modify your Ansible inventory.
+
+- The generated :command:`dnsmasq` configuration has been split from a single
+  ``00_main.conf`` configuration file into multiple separate files stored in
+  the :file:`/etc/dnsmasq.d/` directory. The old ``00_main.conf`` configuration
+  file will be automatically removed if found, to avoid issues with duplicated
+  configuration options.
+
+- The role provides an easy to use way to define DHCP clients with IP address
+  reservation, as well as DNS resource records. See
+  :ref:`dnsmasq__ref_dhcp_dns_entries` documentation for examples and more
+  details.
+
+- The configuration of TCP Wrappers for the TFTP service has been removed from
+  the :ref:`debops.dnsmasq` role, and is now done via the
+  :ref:`debops.tcpwrappers` Ansible role and its dependent variables.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

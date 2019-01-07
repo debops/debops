@@ -10,6 +10,9 @@
 
   roles:
 
+    - role: debops.dnsmasq/env
+      tags: [ 'role::dnsmasq', 'role::ferm', 'role::tcpwrappers' ]
+
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
@@ -17,6 +20,8 @@
 
     - role: debops.tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
+      tcpwrappers__dependent_allow:
+        - '{{ dnsmasq__env_tcpwrappers__dependent_allow }}'
 
     - role: debops.dnsmasq
       tags: [ 'role::dnsmasq', 'skip::dnsmasq' ]

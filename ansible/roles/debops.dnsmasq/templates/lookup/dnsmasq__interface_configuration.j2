@@ -1,0 +1,150 @@
+{% set dnsmasq__tpl_interface_configuration = [] %}
+{% for interface in (dnsmasq__combined_interfaces | flatten | parse_kv_items) %}
+{%   set dnsmasq__tpl_ipv4 = [] %}
+{%   set dnsmasq__tpl_ipv6 = [] %}
+{%   if hostvars[inventory_hostname]["ansible_" + interface.name]|d() %}
+{%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4|d() %}
+{%       set _ = dnsmasq__tpl_ipv4.append(hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
+                                          + (hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
+                                             + hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.netmask) | ipaddr('prefix')|string) %}
+{%       if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries|d() %}
+{%         for element in hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries %}
+{%           set _ = dnsmasq__tpl_ipv4.append(element.address + '/' + (element.address + '/' + element.netmask) | ipaddr('prefix')|string) %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv6|d() %}
+{%       for element in hostvars[inventory_hostname]["ansible_" + interface.name].ipv6 %}
+{%         if not element.address | ipv6('link-local') %}
+{%           set _ = dnsmasq__tpl_ipv6.append(element.address + '/' + element.prefix) %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{%   if interface.address|d() %}
+{%     for element in ([ interface.address ] if interface.address is string else interface.address) %}
+{%       if element | ipv4('host/prefix') %}
+{%         set _ = dnsmasq__tpl_ipv4.append(element) %}
+{%       elif element | ipv6('host/prefix') and not element | ipv6('link-local') %}
+{%         set _ = dnsmasq__tpl_ipv6.append(element) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{%   if interface.addresses|d() %}
+{%     for element in ([ interface.addresses ] if interface.addresses is string else interface.addresses) %}
+{%       if element | ipv4('host/prefix') %}
+{%         set _ = dnsmasq__tpl_ipv4.append(element) %}
+{%       elif element | ipv6('host/prefix') and not element | ipv6('link-local') %}
+{%         set _ = dnsmasq__tpl_ipv6.append(element) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{%   set interface_hostname = (interface.hostname | d(dnsmasq__hostname)) %}
+{%   set interface_domain = (interface.domain | d(interface.name + "." + dnsmasq__base_domain)) %}
+{%   set interface_base = {"name": (interface.filename | d("interface-" + interface.name + ".conf")), "state": (interface.state | d("present"))} %}
+{%   set interface_search = [] %}
+{%   if interface.search|d() %}
+{%     set _ = interface_search.extend([ interface.search ] if interface.search is string else interface.search) %}
+{%   endif %}
+{%   if (interface_domain.endswith(dnsmasq__base_domain) and interface_domain.split(".") | length >= 3 and dnsmasq__base_domain.split(".") | length >= 2) %}
+{%     set _ = interface_search.append(dnsmasq__base_domain) %}
+{%   endif %}
+{%   set interface_options = [] %}
+{%   set _ = interface_options.append({
+  "name": "interface",
+  "value": interface.name
+}) %}
+{%   set _ = interface_options.append({
+  "name": "interface-name_domain",
+  "option": "interface-name",
+  "value": (interface_hostname + "." + interface_domain + "," + interface.name)
+}) %}
+{%   if (not interface.dhcp_enabled|d(True))|bool %}
+{%     set _ = interface_options.append({
+  "name": "no-dhcp-interface",
+  "value": interface.name
+}) %}
+{%   else %}
+{%     for host_address in dnsmasq__tpl_ipv4 %}
+{%       set _ = interface_options.append({
+  "name": ("dhcp_range_" + (host_address | replace('.','_') | replace('/','_'))),
+  "option": "dhcp-range",
+  "separator": True,
+  "value": ("set:" + interface.name + "," + host_address | ipv4(interface.dhcp_range_start | d("10")) | ipv4('address') + ',' + host_address | ipv4(interface.dhcp_range_end | d("-10")) | ipv4('address') + ',' + host_address | ipv4('netmask') + ',' + interface.dhcp_lease | d('24h'))
+}) %}
+{%     endfor %}
+{%     for host_address in dnsmasq__tpl_ipv6 %}
+{%       set _ = interface_options.append({
+  "name": ("dhcp_range_" + (host_address | replace(':','_') | replace('/','_'))),
+  "option": "dhcp-range",
+  "value": ("set:" + interface.name + "," + host_address | ipv6(interface.dhcp_range_start | d("10")) | ipv6('address') + ',' + host_address | ipv6(interface.dhcp_range_end | d("-10")) | ipv6('address') + ',' + interface.dhcp_ipv6_mode | d("ra-names,ra-stateless,slaac") + "," + host_address | ipv6('prefix')|string + ',' + interface.dhcp_lease | d('24h'))
+}) %}
+{%     endfor %}
+{%     if (interface.router_enabled|d(True))|bool %}
+{%       if interface.router_gateway|d() %}
+{%         set _ = interface_options.append({
+  "name": "dhcp_option_ipv4_router",
+  "option": "dhcp-option",
+  "value": ("tag:" + interface.name + ",option:router," + interface.router_gateway)
+}) %}
+{%       else %}
+{%         set _ = interface_options.append({
+  "name": "dhcp_option_ipv4_router",
+  "option": "dhcp-option",
+  "value": ("tag:" + interface.name + ",option:router,0.0.0.0")
+}) %}
+{%       endif %}
+{%     elif not (interface.router_enabled|d(True))|bool %}
+{%       set _ = interface_options.append({
+  "name": "dhcp_option_ipv4_router",
+  "option": "dhcp-option",
+  "comment": "IPv4 router is not advertised",
+  "value": ("tag:" + interface.name + ",option:router")
+}) %}
+{%     endif %}
+{%   endif %}
+{%   if dnsmasq__tpl_ipv6|d() %}
+{%     set _ = interface_options.append({
+  "name": "dhcp_option6_dns_server",
+  "option": "dhcp-option",
+  "comment": "Advertise RDNSS servers for local IPv6 network",
+  "value": ("tag:" + interface.name + ",option6:dns-server," + dnsmasq__tpl_ipv6 | ipv6("address") | ipwrap | join(","))
+}) %}
+{%   endif %}
+{%   set _ = interface_options.append({
+  "name": "dhcp_option_search",
+  "option": "dhcp-option",
+  "value": ("tag:" + interface.name + ",option:domain-search," + ([ interface_domain ] + ([ interface_search ] if interface_search is string else interface_search)) | unique | join(","))
+}) %}
+{%   set _ = interface_options.append({
+  "name": "dhcp_option6_search",
+  "option": "dhcp-option",
+  "value": ("tag:" + interface.name + ",option6:domain-search," + ([ interface_domain ] + ([ interface_search ] if interface_search is string else interface_search)) | unique | join(","))
+}) %}
+{%   for host_address in (dnsmasq__tpl_ipv4 + dnsmasq__tpl_ipv6) %}
+{%     set _ = interface_options.append({
+  "name": ("domain_" + (host_address | replace('.','_') | replace('/','_'))),
+  "option": "domain",
+  "value": (interface_domain + "," + host_address | ipaddr('subnet') + (",local" if (host_address | ipaddr('prefix') in [ 8, 16, 24 ]) else ""))
+}) %}
+{%   endfor %}
+{%   if (interface.boot_enabled|d(dnsmasq__boot_enabled))|bool %}
+{%     set _ = interface_options.extend([{
+  "name": "enable-tftp",
+  "comment": "Enable TFTP support",
+  "value": interface.name
+}, {
+  "name": "tftp-root",
+  "value": (interface.boot_tftp_root | d(dnsmasq__boot_tftp_root)) + "," + interface.name
+}]) %}
+{%     if not dnsmasq__boot_ipxe_enabled|bool %}
+{%       set _ = interface_options.append({
+  "name": "dhcp-boot",
+  "value": ("tag:" + interface.name + "," + interface.boot_filename | d("pxelinux.0") + (("," + interface.boot_server) if interface.boot_server|d() else ""))
+}) %}
+{%     endif %}
+{%   endif %}
+{%   set _ = interface_base.update({"options": interface_options}) %}
+{%   set _ = dnsmasq__tpl_interface_configuration.append(interface_base) %}
+{% endfor %}
+{{ dnsmasq__tpl_interface_configuration | to_nice_yaml }}

@@ -2,34 +2,90 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ dnsmasq__base_packages + dnsmasq__packages }}'
     state: 'present'
-  with_flattened:
-    - '{{ dnsmasq__base_packages }}'
-    - '{{ dnsmasq__packages }}'
+  register: dnsmasq__register_packages
+  until: dnsmasq__register_packages is succeeded
 
-- name: Get list of local search domains
-  shell: grep search /etc/resolv.conf | cut -d' ' -f2- | tr ' ' '\n'
-  register: dnsmasq__register_search
-  changed_when: False
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
-- name: Get dnsmasq version
-  shell: dnsmasq --version | head -n 1 | awk '{print $3}'
-  register: dnsmasq__version
-  changed_when: False
-
-- name: Create main dnsmasq configuration
+- name: Generate dnsmasq Ansible local facts
   template:
-    src: 'etc/dnsmasq.d/00_main.conf.j2'
-    dest: '/etc/dnsmasq.d/00_main.conf'
+    src: 'etc/ansible/facts.d/dnsmasq.fact.j2'
+    dest: '/etc/ansible/facts.d/dnsmasq.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
+                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+  register: dnsmasq__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: dnsmasq__register_facts is changed
+
+  # This directory is required, otherwise dnsmasq won't start when TFTP support
+  # is enabled
+- name: Make sure TFTP root directory exists
+  file:
+    path: '{{ dnsmasq__boot_tftp_root }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: dnsmasq__boot_enabled|bool
+
+- name: Remove dnsmasq configuration if requested
+  file:
+    path: '/etc/dnsmasq.d/{{ item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
+    state: 'absent'
+  with_items: '{{ dnsmasq__combined_configuration | parse_kv_items }}'
+  notify: [ 'Test and restart dnsmasq' ]
+  when: (item.name|d() and item.state|d('present') == 'absent')
+
+- name: Generate dnsmasq configuration
+  template:
+    src: 'etc/dnsmasq.d/template.conf.j2'
+    dest: '/etc/dnsmasq.d/{{ item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+  with_items: '{{ dnsmasq__combined_configuration | parse_kv_items }}'
+  notify: [ 'Test and restart dnsmasq' ]
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ])
+
+- name: Remove DHCP host configuration and DNS records if requested
+  file:
+    path: '/etc/dnsmasq.d/{{ dnsmasq__dhcp_dns_filename }}'
+    state: 'absent'
+  notify: [ 'Test and restart dnsmasq' ]
+  when: not dnsmasq__dhcp_hosts|d() and not dnsmasq__dns_records|d()
+
+- name: Generate DHCP host configuration and DNS records
+  template:
+    src: 'etc/dnsmasq.d/dhcp-dns-options.conf.j2'
+    dest: '/etc/dnsmasq.d/{{ dnsmasq__dhcp_dns_filename }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test and restart dnsmasq' ]
+  when: dnsmasq__dhcp_hosts|d() or dnsmasq__dns_records|d()
+
+- name: Divert original dnsmasq environment file
+  command: dpkg-divert --quiet --local
+           --divert "/etc/default/dnsmasq.dpkg-divert"
+           --rename "/etc/default/dnsmasq"
+  args:
+    creates: '/etc/default/dnsmasq.dpkg-divert'
   notify: [ 'Test and restart dnsmasq' ]
 
-- name: Configure defaults for dnsmasq service
+- name: Configure dnsmasq environment file
   template:
     src: 'etc/default/dnsmasq.j2'
     dest: '/etc/default/dnsmasq'
@@ -40,7 +96,7 @@
                        and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
 
-- name: Configure custom nameservers
+- name: Configure custom nameservers in resolvconf
   template:
     src: 'etc/resolvconf/upstream.conf.j2'
     dest: '/etc/resolvconf/upstream.conf'
@@ -51,77 +107,3 @@
                        and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
   when: dnsmasq__nameservers|d()
-
-- name: Create interface dnsmasq configuration
-  template:
-    src: 'etc/dnsmasq.d/interface.conf.j2'
-    dest: '/etc/dnsmasq.d/interface_{{ item.interface }}.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
-  with_items: '{{ dnsmasq__interfaces }}'
-  when: item.interface is defined and item.interface
-  notify: [ 'Test and restart dnsmasq' ]
-
-- name: Remove legacy configuration
-  file:
-    path: '{{ item }}'
-    state: 'absent'
-  with_flattened:
-    - '/etc/ferm/filter-input.d/dnsmasq.conf'
-
-- name: Remove legacy configuration
-  file:
-    path: '/etc/ferm/filter-input.d/dnsmasq_interface_{{ item.interface }}.conf'
-    state: 'absent'
-  when: item.interface|d()
-  with_items: '{{ dnsmasq__interfaces }}'
-
-- name: Allow access to TFTP in tcpwrappers
-  template:
-    src: 'etc/hosts.allow.d/50_dnsmasq_tftpd.j2'
-    dest: '/etc/hosts.allow.d/50_dnsmasq_tftpd_{{ item.interface }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
-  with_items: '{{ dnsmasq__interfaces }}'
-  when: (dnsmasq__tftp|bool and item.interface|d())
-  notify: [ 'Assemble hosts.allow.d' ]
-
-- name: Make sure TFTP root directory exists
-  file:
-    path: '{{ dnsmasq__tftp_root }}'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: dnsmasq__tftp|bool
-
-# Ansible facts [[[
-- name: Make sure Ansible fact directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Create local facts of dnsmasq
-  template:
-    src: 'etc/ansible/facts.d/dnsmasq.fact.j2'
-    dest: '/etc/ansible/facts.d/dnsmasq.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
-  register: dnsmasq__register_facts
-
-- name: Reload facts if they were modified
-  action: setup
-  when: dnsmasq__register_facts is changed
-# ]]]

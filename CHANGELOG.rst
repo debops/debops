@@ -206,6 +206,11 @@ Changed
   Read the documentation about :ref:`resources__ref_templates` for more details
   on templating with `debops`.
 
+- [debops.dnsmasq] The role has been redesigned from the groun up with new
+  configuration pipeline, support for multiple subdomains and better default
+  configuration. See the :ref:`debops.dnsmasq` role documentation as well as
+  the :ref:`upgrade_notes` for more details.
+
 Fixed
 ~~~~~
 
