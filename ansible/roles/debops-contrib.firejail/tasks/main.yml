@@ -203,6 +203,7 @@
   file:
     path: '~/.local/share/applications'
     state: 'directory'
+  become: True
   become_user: '{{ item.name }}'
   no_log: '{{ not (firejail__ansible_log | bool) }}'
   when: firejail__deploy_state in ["present"] and item.name != "root"
@@ -212,6 +213,7 @@
   command: firecfg --fix
   register: firejail__register_cmd_firecfg_fix
   changed_when: ("created" in firejail__register_cmd_firecfg_fix.stdout)
+  become: True
   become_user: '{{ item.name }}'
   no_log: '{{ not (firejail__ansible_log | bool) }}'
   when: firejail__deploy_state in ["present"] and item.name != "root"

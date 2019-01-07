@@ -14,6 +14,7 @@
 
   when: rails_deploy_database_adapter == 'postgresql' and
         inventory_hostname == rails_deploy_hosts_master
+  become: True
   become_user: '{{ rails_deploy_postgresql_super_username }}'
 
 - name: Create PostgreSQL database if enabled
@@ -30,6 +31,7 @@
   register: rails_deploy_register_database_created
   when: rails_deploy_database_adapter == 'postgresql' and
         inventory_hostname == rails_deploy_hosts_master
+  become: True
   become_user: '{{ rails_deploy_postgresql_super_username }}'
 
 - name: Create MySQL user
@@ -43,6 +45,7 @@
     state: 'present'
   when: rails_deploy_database_adapter == 'mysql' and
         inventory_hostname == rails_deploy_hosts_master
+  become: True
   become_user: '{{ rails_deploy_mysql_super_username }}'
 
 - name: Create MySQL database if enabled
@@ -57,4 +60,5 @@
   register: rails_deploy_register_database_created
   when: rails_deploy_database_adapter == 'mysql' and
         inventory_hostname == rails_deploy_hosts_master
+  become: True
   become_user: '{{ rails_deploy_mysql_super_username }}'

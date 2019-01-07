@@ -62,6 +62,7 @@
     dest: '{{ debops_api__input_data_repo_dest }}'
     update: '{{ debops_api__input_data_repo_update | bool }}'
     recursive: True
+  become: True
   become_user: '{{ debops_api__user }}'
   tags: [ 'role::debops_api:git' ]
 
@@ -83,6 +84,7 @@
     update: True
     # verify_commit:
     # version:
+  become: True
   become_user: '{{ debops_api__user }}'
   tags: [ 'role::debops_api:git' ]
 
@@ -137,6 +139,7 @@
 - name: Run initial DebOps API data build
   command: '{{ debops_api__cron_script }}'
   when: not debops_api__register_public_api_dir.stat.exists
+  become: True
   become_user: '{{ debops_api__user }}'
 
 # ]]]

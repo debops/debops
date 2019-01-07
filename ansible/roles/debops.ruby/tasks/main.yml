@@ -76,5 +76,6 @@
     - '{{ ruby__group_user_gems }}'
     - '{{ ruby__host_user_gems }}'
     - '{{ ruby__dependent_user_gems }}'
+  become: True
   become_user: '{{ item.user | d(item.owner) }}'
   when: (item.user|d() or item.owner|d())

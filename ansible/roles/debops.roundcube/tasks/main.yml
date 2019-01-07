@@ -81,6 +81,7 @@
   command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_checkout }}/SQL'
   args:
     chdir: '{{ roundcube__git_checkout }}'
+  become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_updatedb
   changed_when: not roundcube__register_updatedb.stdout == ''

@@ -6,6 +6,7 @@
        remote={{ rails_deploy_git_remote }} accept_hostkey=yes
   register: rails_deploy_register_repo_status
   when: rails_deploy_git_location is defined and rails_deploy_git_location
+  become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Detect a temporary public deploy page
@@ -19,6 +20,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
   changed_when: False
+  become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Update gems
@@ -27,6 +29,7 @@
   changed_when: False
   when: rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
+  become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Restart the background worker asynchronously
@@ -45,6 +48,7 @@
         inventory_hostname == rails_deploy_hosts_master and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
+  become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Store mtime of the config folder
@@ -65,6 +69,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
   with_items: '{{ rails_deploy_pre_migrate_shell_commands }}'
+  become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Migrate the database
@@ -76,6 +81,7 @@
         (rails_deploy_register_mtime_schema.stat.mtime != ansible_local.rails_deploy[rails_deploy_service].mtime.schema) or
         ansible_local.rails_deploy[rails_deploy_service].mtime.schema is undefined))
   register: rails_deploy_register_migration
+  become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Execute shell commands after migration
@@ -84,6 +90,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
   with_items: '{{ rails_deploy_post_migrate_shell_commands }}'
+  become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Reload the backend server
@@ -147,6 +154,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
   with_items: '{{ rails_deploy_post_restart_shell_commands }}'
+  become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Disable the temporary deploy page
@@ -155,4 +163,5 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
   changed_when: False
+  become: True
   become_user: '{{ rails_deploy_service }}'
