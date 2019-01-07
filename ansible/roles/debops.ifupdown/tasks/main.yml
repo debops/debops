@@ -8,6 +8,8 @@
     - '{{ ifupdown__base_packages }}'
     - '{{ ifupdown__dynamic_packages }}'
     - '{{ ifupdown__packages }}'
+  register: ifupdown__register_packages
+  until: ifupdown__register_packages is succeeded
 
 - name: Create custom ifupdown systemd services
   include: ifup_systemd.yml

@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ opendkim__base_packages }}'
     - '{{ opendkim__packages }}'
+  register: opendkim__register_packages
+  until: opendkim__register_packages is succeeded
   notify: [ 'Check opendkim and restart' ]
   when: ansible_pkg_mgr == 'apt'
 

@@ -10,6 +10,8 @@
     - '{{ librenms__base_packages }}'
     - '{{ librenms__monitoring_packages }}'
     - '{{ librenms__packages }}'
+  register: librenms__register_packages
+  until: librenms__register_packages is succeeded
 
 - name: Enable non-free MIBs support
   lineinfile:
@@ -129,6 +131,8 @@
   composer:
     command: install
     working_dir: '{{ librenms__install_path }}'
+  register: librenms__register_composer
+  until: librenms__register_composer is succeeded
   become: True
   become_user: '{{ librenms__user }}'
   when: not librenms__composer_phar|bool

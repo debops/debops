@@ -59,6 +59,8 @@
                               ansible_local.core.cache_valid_time|d())
                            else "86400" }}'
   with_items: [ 'apt-transport-https', 'openssl', 'ca-certificates' ]
+  register: gitlab_runner__register_apt_https
+  until: gitlab_runner__register_apt_https is succeeded
 
 - name: Add gitlab-runner APT key
   apt_key:
@@ -68,6 +70,8 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: gitlab_runner__register_apt_key
+  until: gitlab_runner__register_apt_key is succeeded
   when: gitlab_runner__apt_upstream|bool
 
 - name: Configure gitlab-runner APT repository
@@ -85,6 +89,8 @@
   with_flattened:
     - '{{ gitlab_runner__base_packages }}'
     - '{{ gitlab_runner__packages }}'
+  register: gitlab_runner__register_packages
+  until: gitlab_runner__register_packages is succeeded
 
 - name: Check if GitLab service is available
   uri:

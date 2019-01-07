@@ -10,6 +10,8 @@
   with_flattened:
     - '{{ lxc__base_packages }}'
     - '{{ lxc__packages }}'
+  register: lxc__register_packages
+  until: lxc__register_packages is succeeded
 
 - name: Create required directories
   file:

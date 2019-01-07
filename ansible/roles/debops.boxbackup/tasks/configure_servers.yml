@@ -2,6 +2,8 @@
 
 - name: Install Box Backup server packages
   apt: pkg=boxbackup-server state=latest install_recommends=no
+  register: boxbackup__register_server_packages
+  until: boxbackup__register_server_packages is succeeded
 
 - name: Make sure that boxbackup server directories exists
   file: path={{ item }} state=directory owner=bbstored group=bbstored mode=0700

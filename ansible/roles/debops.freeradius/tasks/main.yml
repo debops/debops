@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ freeradius__base_packages }}'
     - '{{ freeradius__packages }}'
+  register: freeradius__register_packages
+  until: freeradius__register_packages is succeeded
 
 - name: Enable FreeRADIUS service in systemd to start at boot time
   systemd:

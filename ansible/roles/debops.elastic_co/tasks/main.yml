@@ -8,6 +8,8 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: elastic_co__register_apt_key
+  until: elastic_co__register_apt_key is succeeded
 
 - name: Configure Elastic APT repository
   apt_repository:
@@ -28,6 +30,7 @@
     - '{{ elastic_co__host_packages }}'
     - '{{ elastic_co__dependent_packages }}'
   register: elastic_co__register_install
+  until: elastic_co__register_install is succeeded
 
 - name: Make sure that Ansible local facts directory exists
   file:

@@ -8,6 +8,8 @@
   with_flattened:
     - '{{ dokuwiki__base_packages }}'
     - '{{ dokuwiki__packages }}'
+  register: dokuwiki__register_packages
+  until: dokuwiki__register_packages is succeeded
 
 - name: Create DokuWiki group
   group:

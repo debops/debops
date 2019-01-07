@@ -2,6 +2,8 @@
 
 - name: Install dbconfig-common
   apt: pkg=dbconfig-common state=latest install_recommends=no
+  register: phpmyadmin__register_dbconfig_packages
+  until: phpmyadmin__register_dbconfig_packages is succeeded
 
 - name: Pre-configure PHPMyAdmin database
   template: src=etc/dbconfig-common/phpmyadmin.conf.j2
@@ -10,6 +12,8 @@
 
 - name: Install PHPMyAdmin packages
   apt: pkg=phpmyadmin state=latest install_recommends=no
+  register: phpmyadmin__register_packages
+  until: phpmyadmin__register_packages is succeeded
 
 - name: Create database for PHPMyAdmin
   mysql_db: name={{ phpmyadmin_control_database | default('phpmyadmin') }} state=present

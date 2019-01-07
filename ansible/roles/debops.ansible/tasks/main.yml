@@ -8,6 +8,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: ansible__register_apt_key
+  until: ansible__register_apt_key is succeeded
   when: ansible__deploy_type == 'upstream'
 
 - name: Add Ansible upstream APT repository
@@ -24,6 +26,8 @@
   with_flattened:
     - '{{ ansible__base_packages }}'
     - '{{ ansible__packages }}'
+  register: ansible__register_packages
+  until: ansible__register_packages is succeeded
 
 - name: Bootstrap Ansible from source
   script: 'script/bootstrap-ansible "{{ ansible__bootstrap_version }}"'

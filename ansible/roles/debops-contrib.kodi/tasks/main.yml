@@ -7,6 +7,8 @@
     name: '{{ item }}'
     state: '{{ "present" if (kodi__deploy_state == "present") else "absent" }}'
   with_flattened: '{{ kodi__base_packages }}'
+  register: kodi__register_packages
+  until: kodi__register_packages is succeeded
   tags: [ 'role::kodi:pkgs' ]
 
 # System user and group [[[

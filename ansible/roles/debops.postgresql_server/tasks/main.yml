@@ -8,6 +8,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: postgresql_server__register_apt_key
+  until: postgresql_server__register_apt_key is succeeded
   when: postgresql_server__upstream|bool
   tags: [ 'role::postgresql_server:packages' ]
 

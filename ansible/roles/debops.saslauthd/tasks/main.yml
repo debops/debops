@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ saslauthd__base_packages }}'
     - '{{ saslauthd__packages }}'
+  register: saslauthd__register_packages
+  until: saslauthd__register_packages is succeeded
 
 - name: Stop saslauthd instance before removal
   command: /etc/init.d/saslauthd stop-instance saslauthd-{{ item.name }}

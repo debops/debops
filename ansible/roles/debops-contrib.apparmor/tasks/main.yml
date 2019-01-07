@@ -25,6 +25,8 @@
   with_flattened:
     - '{{ apparmor__base_packages }}'
     - '{{ apparmor__packages }}'
+  register: apparmor__register_packages
+  until: apparmor__register_packages is succeeded
 
 - name: Setup apparmor=1 security=apparmor as kernel parameter
   lineinfile:

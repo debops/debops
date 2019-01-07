@@ -5,6 +5,8 @@
     name: 'rsnapshot'
     state: 'installed'
     install_recommends: False
+  register: rsnapshot__register_packages
+  until: rsnapshot__register_packages is succeeded
   when: inventory_hostname in rsnapshot_clients
 
 - name: Install custom backup scripts
@@ -102,6 +104,8 @@
     name: 'rsync'
     state: 'installed'
     install_recommends: False
+  register: rsnapshot__register_packages_server
+  until: rsnapshot__register_packages_server is succeeded
   when: (inventory_hostname in rsnapshot_servers and
          inventory_hostname not in rsnapshot_clients)
 

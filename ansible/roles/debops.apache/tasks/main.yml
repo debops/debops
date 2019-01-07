@@ -20,6 +20,8 @@
     - '{{ apache__group_packages }}'
     - '{{ apache__host_packages }}'
     - '{{ apache__dependent_packages }}'
+  register: apache__register_packages
+  until: apache__register_packages is succeeded
 
 # Manage Apache modules [[[1
 - name: Get list of available modules

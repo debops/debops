@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ postwhite__base_packages }}'
     - '{{ postwhite__packages }}'
+  register: postwhite__register_packages
+  until: postwhite__register_packages is succeeded
 
 - name: Create the UNIX system group
   group:

@@ -8,6 +8,8 @@
   with_flattened:
     - '{{ logrotate__base_packages }}'
     - '{{ logrotate__packages }}'
+  register: logrotate__register_packages
+  until: logrotate__register_packages is succeeded
   when: logrotate__enabled|bool
 
 - name: Manage the log rotation period in cron

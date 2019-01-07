@@ -13,6 +13,8 @@
     state: 'latest'
     install_recommends: False
   with_flattened: '{{ btrfs__base_packages }}'
+  register: btrfs__register_packages
+  until: btrfs__register_packages is succeeded
   tags: [ 'role::btrfs:pkts' ]
 
 - name: Create BTRFS subvolumes

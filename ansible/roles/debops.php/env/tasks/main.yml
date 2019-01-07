@@ -11,6 +11,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: php__register_apt_key
+  until: php__register_apt_key is succeeded
   when: php__sury|bool
 
 - name: Add Ondrej Sury repository

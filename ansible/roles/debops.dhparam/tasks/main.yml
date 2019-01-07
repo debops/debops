@@ -57,6 +57,8 @@
   with_flattened:
     - '{{ dhparam__base_packages }}'
     - '{{ dhparam__packages }}'
+  register: dhparam__register_packages
+  until: dhparam__register_packages is succeeded
   tags: [ 'meta::provision' ]
 
 - name: Create required directories

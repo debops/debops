@@ -9,6 +9,8 @@
     - '{{ rsyslog__base_packages }}'
     - '{{ rsyslog__tls_packages if rsyslog__pki|bool else [] }}'
     - '{{ rsyslog__packages }}'
+  register: rsyslog__register_packages
+  until: rsyslog__register_packages is succeeded
   when: rsyslog__enabled|bool
 
 - name: Create required system group

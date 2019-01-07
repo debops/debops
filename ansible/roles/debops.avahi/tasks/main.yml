@@ -49,6 +49,8 @@
   with_flattened:
     - '{{ avahi__base_packages }}'
     - '{{ avahi__packages }}'
+  register: avahi__register_packages
+  until: avahi__register_packages is succeeded
 
 - name: Manage advertisement of additional hosts over Avahi
   lineinfile:

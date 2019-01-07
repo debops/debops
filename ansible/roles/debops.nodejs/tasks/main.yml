@@ -8,6 +8,8 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: nodejs__register_apt_key_node
+  until: nodejs__register_apt_key_node is succeeded
   when: nodejs__upstream|bool
 
 - name: Configure upstream APT repository
@@ -25,6 +27,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: nodejs__register_apt_key_yarn
+  until: nodejs__register_apt_key_yarn is succeeded
   when: nodejs__yarn_upstream|bool
 
 - name: Add upstream Yarn APT repository
@@ -38,6 +42,8 @@
   package:
     name: 'npm'
     state: 'absent'
+  register: nodejs__register_purge_npm
+  until: nodejs__register_purge_npm is succeeded
   when: nodejs__npm_git_enabled|bool
 
 - name: Install APT packages
@@ -62,6 +68,8 @@
     - '{{ nodejs__group_packages }}'
     - '{{ nodejs__host_packages }}'
     - '{{ nodejs__dependent_packages }}'
+  register: nodejs__register_packages
+  until: nodejs__register_packages is succeeded
 
 - name: Clone NPM repository
   git:

@@ -11,6 +11,8 @@
     - '{{ java__group_packages }}'
     - '{{ java__host_packages }}'
     - '{{ java__dependent_packages }}'
+  register: java__register_packages
+  until: java__register_packages is succeeded
 
 - name: Update Java alternatives
   command: 'update-java-alternatives -s {{ java__alternatives }}'

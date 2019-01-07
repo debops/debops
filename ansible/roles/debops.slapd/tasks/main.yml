@@ -24,6 +24,8 @@
     state: 'latest'
     install_recommends: False
   with_items: [ 'slapd', 'ldap-utils', 'python-ldap' ]
+  register: slapd__register_packages
+  until: slapd__register_packages is succeeded
 
 - name: Install helper scripts
   copy:

@@ -9,6 +9,8 @@
   with_flattened:
     - '{{ apt__base_packages }}'
     - '{{ apt__packages }}'
+  register: apt__register_packages
+  until: apt__register_packages
   when: apt__enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
@@ -98,6 +100,8 @@
     - '{{ apt__keys }}'
     - '{{ apt__group_keys }}'
     - '{{ apt__host_keys }}'
+  register: apt__register_apt_key
+  until: apt__register_apt_key is succeeded
   # `item.state`, `item.architecture`, `item.distribution` and `item.distribution_release` need to be checked here.
   # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
   when: (apt__enabled|bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
@@ -163,6 +167,8 @@
                              apt__register_sources_diversion is changed or
                              apt__register_repositories is changed)
                          else apt__cache_valid_time }}'
+  register: apt__register_apt_update
+  until: apt__register_apt_update is succeeded
   when: apt__enabled|bool
 
 - name: Update the role status in local facts

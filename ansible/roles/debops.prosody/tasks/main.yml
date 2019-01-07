@@ -8,6 +8,8 @@
   with_flattened:
     - '{{ prosody__base_packages }}'
     - '{{ prosody__packages }}'
+  register: prosody__register_packages
+  until: prosody__register_packages is succeeded
 
 - name: Generate Prosody configuration
   template:

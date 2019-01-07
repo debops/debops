@@ -22,6 +22,8 @@
             if (ansible_distribution_release in libvirtd__base_packages_map.keys())
             else libvirtd__base_packages }}' ]
     - '{{ libvirtd__kvm_packages if libvirtd__kvm_support|bool else [] }}'
+  register: libvirtd__register_packages
+  until: libvirtd__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
   file:

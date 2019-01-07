@@ -9,6 +9,8 @@
     - '{{ etherpad__base_packages }}'
     - '{{ etherpad__document_packages if etherpad_abiword|bool else [] }}'
     - '{{ etherpad__packages }}'
+  register: etherpad__register_packages
+  until: etherpad__register_packages is succeeded
 
 - name: Create Etherpad system group
   group:

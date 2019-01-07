@@ -148,6 +148,8 @@
     command: install
     working_dir: '{{ roundcube__git_checkout }}'
   become_user: '{{ roundcube__user }}'
+  register: roundcube__register_composer
+  until: roundcube__register_composer is succeeded
   when: not roundcube__composer_phar|bool
 
 - name: Install Javascript packages

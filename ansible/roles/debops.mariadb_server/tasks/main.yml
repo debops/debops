@@ -24,6 +24,8 @@
   with_flattened: '{{ ([ mariadb_server__apt_key ]
                        if mariadb_server__apt_key is string
                        else mariadb_server__apt_key) }}'
+  register: mariadb_server__register_apt_key
+  until: mariadb_server__register_apt_key is succeeded
   when: mariadb_server__flavor in mariadb_server__apt_key_map.keys()
 
 - name: Add custom APT repository
@@ -48,6 +50,7 @@
     - '{{ mariadb_server__packages }}'
     - '{{ "automysqlbackup" if mariadb_server__backup|bool else [] }}'
   register: mariadb_server__register_install_status
+  until: mariadb_server__register_install_status is succeeded
 
 - name: Stop database server on first install
   service:

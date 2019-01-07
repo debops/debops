@@ -4,6 +4,8 @@
   package:
     name: '{{ (mount__base_packages + mount__packages) | flatten }}'
     state: 'present'
+  register: mount__register_packages
+  until: mount__register_packages is succeeded
   when: mount__enabled|bool
 
   # This task allows configuration of the outer mount point attributes, but

@@ -9,6 +9,8 @@
     - '{{ volkszaehler__base_packages }}'
     - '{{ volkszaehler__optional_packages }}'
     - '{{ volkszaehler__packages }}'
+  register: volkszaehler__register_packages
+  until: volkszaehler__register_packages is succeeded
   tags: [ 'role::volkszaehler:pkgs' ]
 # ]]]
 
@@ -65,6 +67,8 @@
     working_dir: '{{ volkszaehler__git_dest }}'
   environment:
     PATH: '{{ ansible_env.PATH }}:/usr/local/bin'
+  register: volkszaehler__register_composer
+  until: volkszaehler__register_composer is succeeded
   become: True
   become_user: '{{ volkszaehler__user }}'
   when: volkszaehler__register_git is changed

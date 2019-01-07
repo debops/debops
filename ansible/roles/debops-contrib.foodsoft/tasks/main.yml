@@ -8,6 +8,8 @@
     state: '{{ "present" if (foodsoft__deploy_state == "present") else "absent" }}'
   with_flattened:
     - '{{ foodsoft__base_packages }}'
+  register: foodsoft__register_packages
+  until: foodsoft__register_packages is succeeded
   tags: [ 'role::foodsoft:pkgs' ]
 # ]]]
 
@@ -57,6 +59,8 @@
     exclude_groups: '{{ foodsoft__bundler_exclude_groups }}'
     extra_args: '--without development --deployment'
     # user_install: True
+  register: foodsoft__register_bundler
+  until: foodsoft__register_bundler is succeeded
   tags: [ 'role::foodsoft:gems' ]
   # become: True
   # become_user: '{{ foodsoft__user }}'

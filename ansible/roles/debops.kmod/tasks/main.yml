@@ -12,6 +12,8 @@
   with_flattened:
     - '{{ kmod__base_packages }}'
     - '{{ kmod__packages }}'
+  register: kmod__register_packages
+  until: kmod__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
   file:

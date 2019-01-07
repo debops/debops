@@ -8,6 +8,8 @@
   with_flattened:
     - '{{ libvirt__base_packages }}'
     - [ '{{ libvirt__packages_map[ansible_distribution_release]|d(libvirt__packages) }}' ]
+  register: libvirt__register_packages
+  until: libvirt__register_packages is succeeded
 
 - name: Create configuration directory
   file:

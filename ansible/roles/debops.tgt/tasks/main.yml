@@ -9,6 +9,8 @@
     state: 'present'
     install_recommends: False
   with_items: '{{ tgt_packages }}'
+  register: tgt__register_packages
+  until: tgt__register_packages is succeeded
 
 - name: Configure tgt global options
   template:

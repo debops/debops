@@ -8,6 +8,8 @@
   with_flattened:
     - '{{ apt_listchanges__base_packages }}'
     - '{{ apt_listchanges__packages }}'
+  register: apt_listchanges__register_packages
+  until: apt_listchanges__register_packages is succeeded
 
 - name: Configure apt-listchanges
   template:

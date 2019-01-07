@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ dropbear_initramfs__base_packages }}'
     - '{{ dropbear_initramfs__packages }}'
+  register: dropbear_initramfs__register_packages
+  until: dropbear_initramfs__register_packages is succeeded
   tags: [ 'role::dropbear_initramfs:pkgs' ]
 
 - name: Configure network in initramfs using kernel command line

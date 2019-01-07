@@ -8,6 +8,8 @@
     - '{{ nullmailer__base_packages }}'
     - '{{ nullmailer__smtpd_packages }}'
     - '{{ nullmailer__packages }}'
+  register: nullmailer__register_packages
+  until: nullmailer__register_packages is succeeded
   when: nullmailer__deploy_state|d('present') != 'absent'
 
 - name: Purge other SMTP servers

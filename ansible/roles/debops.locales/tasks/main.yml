@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ locales__base_packages }}'
     - '{{ locales__packages }}'
+  register: locales__register_packages
+  until: locales__register_packages is succeeded
 
 - name: Ensure that specified locales exist
   locale_gen:

@@ -56,6 +56,8 @@
         keyring: '{{ owncloud__system_home + "/.gnupg/pubring.gpg" }}'
         keyserver: '{{ owncloud__keyserver }}'
         state: 'present'
+      register: owncloud__register_apt_key_nextcloud
+      until: owncloud__register_apt_key_nextcloud is succeeded
 
     # Get latest patch version for release [[[2
 

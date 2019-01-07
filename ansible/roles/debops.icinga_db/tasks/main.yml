@@ -18,6 +18,8 @@
                      (icinga_db__base_packages + icinga_db__packages),
                      wantlist=True) }}'
     state: 'present'
+  register: icinga_db__register_packages
+  until: icinga_db__register_packages is succeeded
   notify: [ 'Check icinga2 configuration and restart' ]
   when: icinga_db__icinga_installed|bool and
         icinga_db__type != 'unknown'

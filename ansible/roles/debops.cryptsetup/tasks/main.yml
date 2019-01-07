@@ -33,6 +33,8 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened: '{{ cryptsetup__base_packages }}'
+  register: cryptsetup__register_packages
+  until: cryptsetup__register_packages is succeeded
 
 - name: Create keyfile and backup directories on the remote system
   file:

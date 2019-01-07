@@ -20,6 +20,8 @@
     - [ '{{ "lldpd" if snmpd_lldpd else [] }}' ]
     - [ '{{ "lm-sensors" if (ansible_virtualization_role is undefined or ansible_virtualization_role not in [ "guest" ]) else [] }}' ]
     - '{{ snmpd_packages }}'
+  register: snmpd__register_packages
+  until: snmpd__register_packages is succeeded
 
 - name: Uninstall packages if requested
   apt:

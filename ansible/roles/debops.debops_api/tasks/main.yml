@@ -13,6 +13,8 @@
     - '{{ debops_api__python3_packages
           if (debops_api__python_version|int == 3)
           else debops_api__python2_packages }}'
+  register: debops_api__register_packages
+  until: debops_api__register_packages is succeeded
   tags: [ 'role::debops_api:pkts' ]
 
 # ]]]

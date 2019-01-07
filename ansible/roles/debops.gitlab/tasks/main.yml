@@ -9,6 +9,8 @@
     - '{{ gitlab__base_packages }}'
     - '{{ gitlab__release_packages[gitlab__distribution_release] | d([]) }}'
     - '{{ gitlab__database_packages[gitlab__distribution_release][gitlab__database] | d([]) }}'
+  register: gitlab__register_packages
+  until: gitlab__register_packages is succeeded
 
 - name: Create GitLab system group
   group:

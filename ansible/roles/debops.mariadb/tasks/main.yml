@@ -23,6 +23,8 @@
   with_flattened: '{{ ([ mariadb__apt_key ]
                        if mariadb__apt_key is string
                        else mariadb__apt_key) }}'
+  register: mariadb__register_apt_key
+  until: mariadb__register_apt_key is succeeded
   when: (mariadb__flavor not in [ 'mariadb', 'mysql' ]) and
         mariadb__apt_key
 
@@ -63,6 +65,8 @@
     - '{{ mariadb__base_packages }}'
     - '{{ mariadb__packages_map[mariadb__flavor] }}'
     - '{{ mariadb__packages }}'
+  register: mariadb__register_packages
+  until: mariadb__register_packages is succeeded
 
 - name: Check if MariaDB config directory exists
   stat:

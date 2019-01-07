@@ -6,6 +6,8 @@
                      (icinga_web__base_packages + icinga_web__packages),
                      wantlist=True) }}'
     state: 'present'
+  register: icinga_web__register_packages
+  until: icinga_web__register_packages is succeeded
 
 - name: Get current Icinga Web configuration
   script: 'script/icingaweb-config{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}'

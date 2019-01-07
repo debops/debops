@@ -8,6 +8,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: postgresql__register_apt_key
+  until: postgresql__register_apt_key is succeeded
   when: postgresql__upstream|bool
 
 - name: Add upstream PostgreSQL APT repository
@@ -42,6 +44,8 @@
     - '{{ postgresql__base_packages }}'
     - '{{ postgresql__python_packages }}'
     - '{{ postgresql__packages }}'
+  register: postgresql__register_packages
+  until: postgresql__register_packages is succeeded
 
 - name: Check if database server is installed
   environment:

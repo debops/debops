@@ -11,6 +11,8 @@
     - '{{ hashicorp__base_packages }}'
     - '{{ hashicorp__packages }}'
     - '{{ hashicorp__dependent_packages }}'
+  register: hashicorp__register_packages
+  until: hashicorp__register_packages is succeeded
   when: (hashicorp__applications or hashicorp__dependent_applications)
 
 
@@ -103,6 +105,8 @@
         keyring: '{{ hashicorp__home + "/.gnupg/pubring.gpg" }}'
         keyserver: '{{ hashicorp__keyserver }}'
         state: 'present'
+      register: hashicorp__register_apt_key
+      until: hashicorp__register_apt_key is succeeded
 
 
     # HashiCorp application archive download [[[2

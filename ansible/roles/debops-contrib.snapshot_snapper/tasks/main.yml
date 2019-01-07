@@ -26,6 +26,8 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened: '{{ snapshot_snapper__combined_packages }}'
+  register: snapshot_snapper__register_packages
+  until: snapshot_snapper__register_packages is succeeded
 
 # .. ]]]
 

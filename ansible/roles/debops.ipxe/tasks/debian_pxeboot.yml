@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: [ 'pax', 'cpio' ]
+  register: ipxe__register_pxeboot_packages
+  until: ipxe__register_pxeboot_package is succeeded
 
 - name: Create pxeboot work directory
   file:

@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ netbox__base_packages }}'
     - '{{ netbox__packages }}'
+  register: netbox__register_packages
+  until: netbox__register_packages is succeeded
 
 - name: Create NetBox system group
   group:
@@ -107,6 +109,7 @@
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_checkout
+  until: netbox__register_checkout is succeeded
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
   when: (netbox__register_source.before is undefined or
          (netbox__register_source.before|d() and netbox__register_target_branch.stdout|d() and
@@ -125,6 +128,7 @@
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_virtualenv
+  until: netbox__register_virtualenv is succeeded
   changed_when: (netbox__register_virtualenv is success and
                  netbox__register_virtualenv.stdout is search('New python executable in'))
 
@@ -142,6 +146,8 @@
     virtualenv: '{{ netbox__virtualenv }}'
     requirements: '{{ netbox__git_checkout + "/requirements.txt" }}'
     extra_args: '--upgrade'
+  register: netbox__register_pip_install
+  until: netbox__register_pip_install is succeeded
   become: True
   become_user: '{{ netbox__user }}'
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]

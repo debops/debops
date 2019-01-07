@@ -4,6 +4,8 @@
   package:
     name: '{{ dhcp_probe__base_packages + dhcp_probe__packages }}'
     state: 'present'
+  register: dhcp_probe__register_packages
+  until: dhcp_probe__register_packages is succeeded
 
 - name: Ensure that sysvinit dhcp-probe service is stopped on install
   systemd:

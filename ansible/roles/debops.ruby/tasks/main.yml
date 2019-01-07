@@ -11,6 +11,8 @@
     - '{{ ruby__group_packages }}'
     - '{{ ruby__host_packages }}'
     - '{{ ruby__dependent_packages }}'
+  register: ruby__register_packages
+  until: ruby__register_packages is succeeded
 
 - name: Install Ruby gems
   gem:

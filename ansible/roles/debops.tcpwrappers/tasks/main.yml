@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ tcpwrappers__base_packages }}'
     - '{{ tcpwrappers__packages }}'
+  register: tcpwrappers__register_packages
+  until: tcpwrappers__register_packages is succeeded
   when: tcpwrappers__enabled | bool
 
 - name: Make sure /etc/hosts.allow.d directory exists

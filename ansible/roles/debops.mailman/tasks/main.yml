@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: '{{ mailman__packages }}'
+  register: mailman__register_packages
+  until: mailman__register_packages is succeeded
 
 - name: Apply patches to Mailman source code
   patch:

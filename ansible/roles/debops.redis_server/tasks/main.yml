@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ redis_server__base_packages }}'
     - '{{ redis_server__packages }}'
+  register: redis_server__register_packages
+  until: redis_server__register_packages is succeeded
 
 - name: Ensure that standalone Redis Server is stopped on install
   systemd:

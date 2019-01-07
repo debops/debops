@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ cron__base_packages }}'
     - '{{ cron__packages }}'
+  register: cron__register_packages
+  until: cron__register_packages is succeeded
   when: cron__enabled|bool
 
 - name: Remove custom cron files

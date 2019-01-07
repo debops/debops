@@ -16,6 +16,8 @@
     - [ '{{ "dovecot-mysql" if (("sql" in dovecot_user_accounts) and ("mysql" in dovecot_sql_driver)) else [] }}' ]
     - [ '{{ "dovecot-pgsql" if (("sql" in dovecot_user_accounts) and ("pgsql" in dovecot_sql_driver)) else [] }}' ]
     - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
+  register: dovecot__register_packages
+  until: dovecot__register_packages is succeeded
 
 - name: Divert original Dovecot configuration
   command: dpkg-divert --quiet --local --divert /etc/dovecot/conf.d/{{ item }}.dpkg-divert --rename /etc/dovecot/conf.d/{{ item }}

@@ -8,6 +8,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: icinga__register_apt_key
+  until: icinga__register_apt_key is succeeded
   when: icinga__upstream|bool
 
 - name: Add upstream Icinga APT repository
@@ -23,6 +25,8 @@
                      (icinga__base_packages + icinga__packages),
                      wantlist=True) }}'
     state: 'present'
+  register: icinga__register_packages
+  until: icinga__register_packages is succeeded
 
 - name: Add Icinga user to system UNIX groups
   user:

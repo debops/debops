@@ -5,6 +5,8 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened: '{{ machine__packages }}'
+  register: machine__register_packages
+  until: machine__register_packages is succeeded
   when: machine__enabled|bool
 
 - name: Generate machine-info config file

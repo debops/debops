@@ -6,6 +6,8 @@
     state: 'latest'
     install_recommends: False
   with_items: [ 'ldapscripts', 'ldap-utils', 'pwgen' ]
+  register: slapd__register_ldapscripts_packages
+  until: slapd__register_ldapscripts_packages is succeeded
 
 - name: Configure ldapscripts
   template:
