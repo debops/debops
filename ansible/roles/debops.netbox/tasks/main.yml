@@ -38,16 +38,6 @@
     - '{{ netbox__config_media_root }}'
     - '{{ netbox__config_reports_root }}'
 
-- name: Create Python virtualenv for NetBox
-  pip:
-    name: 'wsgiref'
-    virtualenv: '{{ netbox__virtualenv }}'
-  become: True
-  become_user: '{{ netbox__user }}'
-  register: netbox__register_virtualenv
-  changed_when: (netbox__register_virtualenv is success and
-                 netbox__register_virtualenv.stdout is search('New python executable in'))
-
 - name: Clone NetBox source code
   git:
     repo: '{{ netbox__git_repo }}'
@@ -63,6 +53,19 @@
   stat:
     path: '{{ netbox__git_checkout }}'
   register: netbox__register_installed
+
+- name: Check current virtualenv version
+  stat:
+    path: '{{ netbox__virtualenv + "/bin/python" }}'
+  register: netbox__register_virtualenv_version
+
+- name: Remove old python2 based virtualenv
+  file:
+    path: '{{ netbox__virtualenv }}'
+    state: 'absent'
+  register: netbox__register_virtalenv_deleted
+  when: ( netbox__virtualenv_version == '3' and
+          netbox__register_virtualenv_version.stat.lnk_target|d() == 'python2' )
 
 - name: Create NetBox checkout directory
   file:
@@ -108,21 +111,22 @@
   when: (netbox__register_source.before is undefined or
          (netbox__register_source.before|d() and netbox__register_target_branch.stdout|d() and
           netbox__register_source.before != netbox__register_target_branch.stdout) or
-          not netbox__register_installed.stat.exists|bool)
+          not netbox__register_installed.stat.exists|bool or
+          netbox__register_virtalenv_deleted.changed|bool)
 
-# This is required due to an issue with setuptools
-# https://github.com/digitalocean/netbox/issues/864
-- name: Upgrade pip and setuptools in the virtualenv
-  environment:
-    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
-    PATH: '{{ netbox__virtualenv_env_path }}'
-  shell: pip install --upgrade --force-reinstall pip setuptools
-  args:
-    chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
+- name: Create Python virtualenv for NetBox
+  pip:
+    name: [ 'pip', 'setuptools' ]
+    virtualenv: '{{ netbox__virtualenv }}'
+    virtualenv_python: '{{ "python" + netbox__virtualenv_version }}'
+    # This is required due to an issue with setuptools
+    # https://github.com/digitalocean/netbox/issues/864
+    state: 'forcereinstall'
   become: True
   become_user: '{{ netbox__user }}'
-  when: netbox__register_checkout is changed
+  register: netbox__register_virtualenv
+  changed_when: (netbox__register_virtualenv is success and
+                 netbox__register_virtualenv.stdout is search('New python executable in'))
 
 - name: Clean up stale Python bytecode
   shell: find . -name '*.pyc' -delete
