@@ -40,17 +40,12 @@ netbox__domain: '{{ ansible_local.core.domain
 netbox__base_packages:
   - 'git'
   - 'build-essential'
-  - 'python-dev'
-  - 'python-pip'
   - 'libxml2-dev'
   - 'libxslt1-dev'
   - 'libffi-dev'
   - 'graphviz'
   - 'libpq-dev'
   - 'libssl-dev'
-  - '{{ "python-virtualenv"
-        if (ansible_distribution_release in [ "wheezy", "precise" ])
-        else "virtualenv" }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__packages [[[
@@ -138,7 +133,7 @@ netbox__git_repo: 'https://github.com/digitalocean/netbox.git'
 # .. envvar:: netbox__git_version [[[
 #
 # The :command:`git` branch or tag which will be installed.
-netbox__git_version: 'v2.4.9'
+netbox__git_version: 'master'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_dest [[[
@@ -156,6 +151,17 @@ netbox__git_checkout: '{{ netbox__virtualenv + "/app" }}'
 # Python virtualenv configuration [[[
 # -----------------------------------
 
+# .. envvar:: netbox__virtualenv_version [[[
+#
+# Beginning with v2.5, NetBox will no longer support Python 2.
+# When this is set to `3` a **new** Python 3 `virtualenv` environment will be
+# created next to the old one.
+# Valid values are `3` or an empty string.
+netbox__virtualenv_version: '{{ ""
+                                 if netbox__git_version|replace("v", "") is version("2.5", "<")
+                                 else "3" }}'
+
+                                                                   # ]]]
 # .. envvar:: netbox__virtualenv [[[
 #
 # Path where the NetBox ``virtualenv`` directory will be stored.
@@ -586,6 +592,22 @@ netbox__app_params:
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
 
+# .. envvar:: netbox__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+netbox__python__dependent_packages3:
+
+  - 'python3-dev'
+
+                                                                   # ]]]
+# .. envvar:: netbox__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+netbox__python__dependent_packages2:
+
+  - 'python-dev'
+
+                                                                   # ]]]
 # .. envvar:: netbox__gunicorn__dependent_applications [[[
 #
 # Configuration for the :ref:`debops.gunicorn` Ansible role.

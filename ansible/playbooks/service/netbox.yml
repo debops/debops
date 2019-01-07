@@ -39,11 +39,13 @@
         - '{{ netbox__postgresql__dependent_pgpass }}'
 
     - role: debops.python
-      tags: [ 'role::python', 'skip::python', 'role::gunicorn' ]
+      tags: [ 'role::python', 'skip::python', 'role::gunicorn', 'role::netbox' ]
       python__dependent_packages3:
         - '{{ gunicorn__python__dependent_packages3 }}'
+        - '{{ netbox__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ gunicorn__python__dependent_packages2 }}'
+        - '{{ netbox__python__dependent_packages2 }}'
 
     - role: debops.gunicorn
       tags: [ 'role::gunicorn', 'skip::gunicorn' ]
