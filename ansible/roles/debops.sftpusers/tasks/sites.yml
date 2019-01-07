@@ -20,7 +20,7 @@
     state: 'directory'
     owner: 'root'
     group: '{{ item.group | default(item.name + sftpusers_name_suffix) }}'
-    mode: '2775'
+    mode: '02775'
   with_flattened:
     - '{{ sftpusers_list }}'
     - '{{ sftpusers_group_list }}'
@@ -34,7 +34,7 @@
     state: 'directory'
     owner: 'root'
     group: '{{ item.0.group | default(item.0.name + sftpusers_name_suffix) }}'
-    mode: '2775'
+    mode: '02775'
   with_subelements:
     - '{{ sftpusers_list + sftpusers_group_list + sftpusers_host_list  }}'
     - 'sites'
@@ -47,7 +47,7 @@
     state: 'directory'
     owner: 'root'
     group: '{{ item.group | default(item.name + sftpusers_name_suffix) }}'
-    mode: '2775'
+    mode: '02775'
   with_flattened:
     - '{{ sftpusers_list }}'
     - '{{ sftpusers_group_list }}'
