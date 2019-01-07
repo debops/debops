@@ -5,7 +5,7 @@
     name: '{{ item.group | default(item.name + gitusers_name_suffix) }}'
     state: 'absent'
   with_flattened:
-    - gitusers_list
-    - gitusers_group_list
-    - gitusers_host_list
+    - '{{ gitusers_list }}'
+    - '{{ gitusers_group_list }}'
+    - '{{ gitusers_host_list }}'
   when: (item.name is defined and (item.state is defined and item.state == 'absent'))

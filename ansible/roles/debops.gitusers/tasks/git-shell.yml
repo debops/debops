@@ -37,9 +37,9 @@
     group: '{{ gitusers_default_www_group }}'
     mode: '0711'
   with_flattened:
-    - gitusers_list
-    - gitusers_group_list
-    - gitusers_host_list
+    - '{{ gitusers_list }}'
+    - '{{ gitusers_group_list }}'
+    - '{{ gitusers_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
@@ -65,8 +65,8 @@
     group: 'root'
     mode: '0755'
   with_flattened:
-    - gitusers_list
-    - gitusers_group_list
-    - gitusers_host_list
+    - '{{ gitusers_list }}'
+    - '{{ gitusers_group_list }}'
+    - '{{ gitusers_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')))

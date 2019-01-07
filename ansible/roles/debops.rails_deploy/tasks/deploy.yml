@@ -64,7 +64,7 @@
   when: rails_deploy_pre_migrate_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
-  with_items: rails_deploy_pre_migrate_shell_commands
+  with_items: '{{ rails_deploy_pre_migrate_shell_commands }}'
   become_user: '{{ rails_deploy_service }}'
 
 - name: Migrate the database
@@ -83,7 +83,7 @@
   when: rails_deploy_post_migrate_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
-  with_items: rails_deploy_post_migrate_shell_commands
+  with_items: '{{ rails_deploy_post_migrate_shell_commands }}'
   become_user: '{{ rails_deploy_service }}'
 
 - name: Reload the backend server
@@ -96,7 +96,7 @@
         rails_deploy_register_mtime_config.stat.mtime == ansible_local.rails_deploy[rails_deploy_service].mtime.config and
         not rails_deploy_backend_always_restart)
   delegate_to: '{{ item }}'
-  with_items: groups[rails_deploy_hosts_group]
+  with_items: '{{ groups[rails_deploy_hosts_group] }}'
 
 - name: Restart the backend server
   service: name={{ rails_deploy_service }} state=restarted
@@ -111,14 +111,14 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed))
   delegate_to: '{{ item }}'
-  with_items: groups[rails_deploy_hosts_group]
+  with_items: '{{ groups[rails_deploy_hosts_group] }}'
 
 - name: Set the extra services state
   service: name={{ item.name }}
            state={{ item.changed_state | default('reloaded') }}
   when: rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed and rails_deploy_extra_services
-  with_items: rails_deploy_extra_services
+  with_items: '{{ rails_deploy_extra_services }}'
 
 - name: Set the initial backend server state
   service: name={{ rails_deploy_service }}
@@ -139,14 +139,14 @@
            enabled={{ item.enabled | default(True) }}
   when: rails_deploy_git_location is defined and rails_deploy_git_location and
         rails_deploy_extra_services
-  with_items: rails_deploy_extra_services
+  with_items: '{{ rails_deploy_extra_services }}'
 
 - name: Execute shell commands after the backend is ready
   shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
   when: rails_deploy_post_restart_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
-  with_items: rails_deploy_post_restart_shell_commands
+  with_items: '{{ rails_deploy_post_restart_shell_commands }}'
   become_user: '{{ rails_deploy_service }}'
 
 - name: Disable the temporary deploy page

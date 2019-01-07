@@ -6,9 +6,9 @@
     state: 'present'
     user: '{{ item.name + gitusers_name_suffix }}'
   with_flattened:
-    - gitusers_list
-    - gitusers_group_list
-    - gitusers_host_list
+    - '{{ gitusers_list }}'
+    - '{{ gitusers_group_list }}'
+    - '{{ gitusers_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.sshkeys is defined and item.sshkeys))
@@ -18,9 +18,9 @@
     dest: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}/.ssh/authorized_keys'
     state: 'absent'
   with_flattened:
-    - gitusers_list
-    - gitusers_group_list
-    - gitusers_host_list
+    - '{{ gitusers_list }}'
+    - '{{ gitusers_group_list }}'
+    - '{{ gitusers_host_list }}'
   when: ((item.name is defined and item.name) and
          (item.state is undefined or (item.state is defined and item.state != 'absent')) and
          (item.sshkeys is defined and item.sshkeys == False))
