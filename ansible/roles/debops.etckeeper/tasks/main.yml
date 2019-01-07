@@ -69,8 +69,7 @@
       {%   if (item.name|d() and item.state|d('present') != 'absent') %}
       {%     if item.comment|d() %}
 
-      {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
-      {%     endif %}
+      {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}{%     endif %}
       {{ (item.ignore | d(item.name)) | regex_replace('\n$','') }}
       {%     if item.comment|d() %}
 

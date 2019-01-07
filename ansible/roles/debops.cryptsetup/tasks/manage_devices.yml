@@ -45,7 +45,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Generate text/passphrase keyfile on the Ansible controller
-  shell: '{{ item.keyfile_gen_command|d(cryptsetup__keyfile_gen_command)}} | tr -d "\n" > {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}'
+  shell: '{{ item.keyfile_gen_command|d(cryptsetup__keyfile_gen_command) }} | tr -d "\n" > {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}'
   args:
     creates: '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
   become: False
