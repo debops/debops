@@ -158,7 +158,10 @@
   become_user: '{{ rails_deploy_service }}'
 
 - name: Disable the temporary deploy page
-  command: rm -f public/index.html chdir={{ rails_deploy_src }}
+  command: rm -f public/index.html
+  args:
+    chdir: '{{ rails_deploy_src }}'
+    warn: False
   when: register_rails_deploy_public_deploy_page.stat.exists and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed

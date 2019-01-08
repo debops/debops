@@ -15,6 +15,7 @@
          dpkg-divert --quiet --local --rename --remove "/{{ item.path }}"
   args:
     removes: '/{{ item.path }}.dpkg-divert'
+    warn: False
   when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ])
   with_items: '{{ apt_cacher_ng__configuration_files }}'
 

@@ -168,14 +168,6 @@
   when: (nginx__deploy_state in [ 'present' ])
   notify: [ 'Test nginx and reload' ]
 
-  # Remove temporary old files if they are present
-- name: Remove remnants of dpkg-diverted configuration
-  command: rm -f /etc/nginx/fastcgi_params.dpkg-divert /etc/nginx/fastcgi_params.dpkg-divert.lock
-  args:
-    removes: '/etc/nginx/fastcgi_params.dpkg-divert.lock'
-  notify: [ 'Test nginx and reload' ]
-  when: (nginx__deploy_state in [ 'present' ])
-
 - name: Disable default nginx site
   file:
     path: '/etc/nginx/sites-enabled/default'
