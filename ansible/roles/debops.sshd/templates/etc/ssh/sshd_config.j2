@@ -26,9 +26,9 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 {%   endif %}
 {% endfor %}
 
-{% for ca_key_file in sshd__trusted_user_ca_key_files %}
-TrustedUserCAKeys {{ ca_key_file }}
-{% endfor %}
+{% if sshd__trusted_user_ca_keys | d() | length > 0 and sshd__trusted_user_ca_keys_file is defined %}
+TrustedUserCAKeys {{ sshd__trusted_user_ca_keys_file }}
+{% endif %}
 
 {% set sshd__tpl_ciphers_max_version =  sshd__ciphers_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
 {% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
