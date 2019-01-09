@@ -70,11 +70,9 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
-  shell: git rev-parse {{ dokuwiki__git_version }}
+  command: git rev-parse {{ dokuwiki__git_version }}
   args:
-    executable: '/bin/sh'
     chdir: '{{ dokuwiki__git_dest }}'
-    warn: False
   become: True
   become_user: '{{ dokuwiki__user }}'
   register: dokuwiki__register_target_branch

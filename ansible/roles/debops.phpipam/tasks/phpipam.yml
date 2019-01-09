@@ -62,10 +62,9 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ phpipam_git_checkout }}'
-  shell: git rev-parse {{ phpipam_git_version }}
-         chdir={{ phpipam_git_dest }}
+  command: git rev-parse {{ phpipam_git_version }}
   args:
-    executable: '/bin/sh'
+    chdir: '{{ phpipam_git_dest }}'
   become: True
   become_user: '{{ phpipam_user }}'
   register: phpipam_register_target_branch
@@ -74,10 +73,9 @@
 - name: Checkout phpIPAM
   environment:
     GIT_WORK_TREE: '{{ phpipam_git_checkout }}'
-  shell: git checkout -f {{ phpipam_git_version }}
-         chdir={{ phpipam_git_dest }}
+  command: git checkout -f {{ phpipam_git_version }}
   args:
-    executable: '/bin/sh'
+    chdir: '{{ phpipam_git_dest }}'
   become: True
   become_user: '{{ phpipam_user }}'
   register: phpipam_register_checkout

@@ -34,7 +34,7 @@
   tags: [ 'role::rsnapshot:sshkeys' ]
 
 - name: Remove known host fingerprints from ~/.ssh/known_hosts
-  shell: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }}
+  command: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }}
   with_items: '{{ rsnapshot_external_servers }}'
   when: rsnapshot_reset_sshkeys is defined and rsnapshot_reset_sshkeys
   tags: [ 'role::rsnapshot:sshkeys' ]

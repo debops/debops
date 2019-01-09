@@ -35,7 +35,7 @@
   when: slapd_pki|d() and slapd_pki | bool and not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
 - name: Configure TLS certificates (first time only)
-  shell: 'ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.stdout|d() + "/configure_tlscerts.ldif" }}'
+  command: 'ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.stdout|d() + "/configure_tlscerts.ldif" }}'
   when: slapd_pki|d() and slapd_pki | bool and not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
 - name: Configure TLS certificates

@@ -88,11 +88,9 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  shell: git rev-parse {{ netbox__git_version }}
+  command: git rev-parse {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
-    executable: '/bin/sh'
-    warn: False
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_target_branch
@@ -101,11 +99,9 @@
 - name: Checkout NetBox
   environment:
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  shell: git checkout -f {{ netbox__git_version }}
+  command: git checkout -f {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
-    executable: '/bin/sh'
-    warn: False
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_checkout
@@ -133,10 +129,9 @@
                  netbox__register_virtualenv.stdout is search('New python executable in'))
 
 - name: Clean up stale Python bytecode
-  shell: find . -name '*.pyc' -delete
+  command: find . -name '*.pyc' -delete
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
   become: True
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout is changed
@@ -178,10 +173,9 @@
   environment:
     VIRTUAL_ENV: '{{ netbox__virtualenv }}'
     PATH: '{{ netbox__virtualenv_env_path }}'
-  shell: ./manage.py migrate
+  command: ./manage.py migrate
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
   become: True
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout is changed
@@ -210,10 +204,9 @@
   environment:
     VIRTUAL_ENV: '{{ netbox__virtualenv }}'
     PATH: '{{ netbox__virtualenv_env_path }}'
-  shell: ./manage.py collectstatic --no-input
+  command: ./manage.py collectstatic --no-input
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
   become: True
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout is changed
@@ -222,10 +215,9 @@
   environment:
     VIRTUAL_ENV: '{{ netbox__virtualenv }}'
     PATH: '{{ netbox__virtualenv_env_path }}'
-  shell: ./manage.py loaddata initial_data
+  command: ./manage.py loaddata initial_data
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
   become: True
   become_user: '{{ netbox__user }}'
   when: (netbox__load_initial_data|bool and not netbox__register_installed.stat.exists|bool and
