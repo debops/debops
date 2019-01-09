@@ -103,6 +103,14 @@
   check_mode: False
   tags: [ 'role::sshd:config' ]
 
+- name: Get list of available host certs
+  shell: find /etc/ssh -maxdepth 1 -type f -name 'ssh_host_*_key-cert.pub' -exec basename {} .pub \;
+  register: sshd__register_host_certs
+  changed_when: False
+  check_mode: False
+  when: sshd__scan_for_host_certs
+  tags: [ 'role::sshd:config' ]
+
 - name: Setup trusted user CA key file
   template:
     src:      '{{ lookup("template_src", "etc/ssh/trusted_user_ca_file.pem.j2") }}'
