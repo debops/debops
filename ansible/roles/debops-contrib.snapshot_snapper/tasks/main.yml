@@ -52,7 +52,7 @@
   failed_when: False
   changed_when: False
   check_mode: False
-  when: snapshot_snapper__directory != "" and "mlocate" in snapshot_snapper__combined_packages
+  when: snapshot_snapper__directory|d() and "mlocate" in snapshot_snapper__combined_packages
   register: snapshot_snapper__register_updatedb_configured
 
 - name: Configure updatedb to exclude snapshots

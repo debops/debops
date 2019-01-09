@@ -84,13 +84,13 @@
       fi
     done
   register: apparmor__register_enforce_all_profiles
-  changed_when: (apparmor__register_enforce_all_profiles.stdout != "")
+  changed_when: (apparmor__register_enforce_all_profiles.stdout|d())
   when: (apparmor__enforce_all_profiles|d() | bool)
 
 - name: Set profile status
   command: aa-{{ item.value }} "{{ item.key }}"
   register: apparmor__register_profile_status
-  # changed_when: (apparmor__register_profile_status.stdout|d() != "")
+  # changed_when: (apparmor__register_profile_status.stdout|d())
   ## FIXME: Currently changed_when seems to be tricky.
   changed_when: False
   failed_when: |

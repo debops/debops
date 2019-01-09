@@ -32,7 +32,7 @@
                        if users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].creates|d()
                        else omit) }}'
   register: users__register_dotfiles_command
-  changed_when: users__register_dotfiles_command.stdout != '' and
+  changed_when: users__register_dotfiles_command.stdout|d() and
                 not users__register_dotfiles_command.stdout.startswith('skipped, since ')
   with_flattened:
     - '{{ users__root_accounts }}'

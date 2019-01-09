@@ -65,7 +65,7 @@
     - '{{ apt_install__group_alternatives }}'
     - '{{ apt_install__host_alternatives }}'
   when: item.name|d() and not item.path|d()
-  changed_when: apt_install__register_alternatives.stdout != ''
+  changed_when: apt_install__register_alternatives.stdout|d()
 
 - name: Make sure that Ansible fact directory exists
   file:

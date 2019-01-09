@@ -86,7 +86,7 @@
 - name: Determine if ownCloud autosetup should be done
   set_fact:
     owncloud__do_autosetup: '{{ (owncloud__autosetup and
-                                 owncloud__admin_username != "" and
+                                 owncloud__admin_username|d() and
                                  (owncloud__register_occ_check is not skipped) and
                                  "is not installed" in owncloud__register_occ_check.stdout) }}'
 

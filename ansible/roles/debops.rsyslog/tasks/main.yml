@@ -50,7 +50,7 @@
     done
   register: rsyslog__register_file_permissions
   when: rsyslog__unprivileged|bool
-  changed_when: rsyslog__register_file_permissions.stdout != ''
+  changed_when: rsyslog__register_file_permissions.stdout|d()
   notify: [ 'Restart rsyslogd' ]
 
 - name: Divert main rsyslog configuration

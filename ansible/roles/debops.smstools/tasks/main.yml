@@ -13,15 +13,15 @@
 
 - name: Stop smsd for home directory change
   service: name=smstools state=stopped
-  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+  when: smstools_register_home is defined and smstools_register_home.stdout|d()
 
 - name: Fix smsd home directory
   user: name=smsd home=/var/spool/sms
-  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+  when: smstools_register_home is defined and smstools_register_home.stdout|d()
 
 - name: Start smsd with new home directory
   service: name=smstools state=started
-  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+  when: smstools_register_home is defined and smstools_register_home.stdout|d()
 
 - name: Configure smsd
   template: src=etc/smsd.conf.j2 dest=/etc/smsd.conf
