@@ -1,7 +1,7 @@
 ---
 
 - name: Install SMS Tools packages
-  apt: name={{ item }} state=latest install_recommends=no
+  apt: name={{ item }} state=present install_recommends=no
   with_items: [ 'smstools', 'xinetd', 'libconfig-tiny-perl' ]
   register: smstools__register_packages
   until: smstools__register_packages is succeeded

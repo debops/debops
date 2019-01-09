@@ -1,7 +1,7 @@
 ---
 
 - name: Install dbconfig-common
-  apt: pkg=dbconfig-common state=latest install_recommends=no
+  apt: pkg=dbconfig-common state=present install_recommends=no
   register: phpmyadmin__register_dbconfig_packages
   until: phpmyadmin__register_dbconfig_packages is succeeded
 
@@ -11,7 +11,7 @@
             owner=root group=root mode=0600
 
 - name: Install PHPMyAdmin packages
-  apt: pkg=phpmyadmin state=latest install_recommends=no
+  apt: pkg=phpmyadmin state=present install_recommends=no
   register: phpmyadmin__register_packages
   until: phpmyadmin__register_packages is succeeded
 
