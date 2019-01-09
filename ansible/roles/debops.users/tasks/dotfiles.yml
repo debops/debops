@@ -6,6 +6,7 @@
   git:
     repo: '{{ item.dotfiles_repo | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].repo) }}'
     dest: '{{ item.dotfiles_dest | d(users__dotfiles_dest) }}'
+    version: '{{ item.dotfiles_version | d("master") }}'
     update: '{{ (item.dotfiles_update | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].update | d(users__dotfiles_update))) | bool }}'
   with_flattened:
     - '{{ users__root_accounts }}'
