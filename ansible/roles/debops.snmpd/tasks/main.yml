@@ -41,7 +41,10 @@
   notify: [ 'Restart snmpd' ]
 
 - name: Reload systemd daemon and enable snmpd.service
-  shell: systemctl daemon-reload ; systemctl enable snmpd.service
+  systemd:
+    daemon_reload: True
+    name: 'snmpd.service'
+    enabled: True
   when: ((ansible_local|d() and ansible_local.init|d() and
           ansible_local.init == "systemd") and not ansible_local.snmpd|d())
 

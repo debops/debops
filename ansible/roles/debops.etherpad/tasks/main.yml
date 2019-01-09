@@ -88,6 +88,7 @@
   command: git checkout --force {{ etherpad_version }}
   args:
     chdir: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
+    warn: False
   environment:
     GIT_WORK_TREE: '{{ etherpad_home + "/" + etherpad_repository }}'
   become: True
@@ -175,7 +176,8 @@
   when: ansible_service_mgr == 'systemd'
 
 - name: Reload systemd daemons
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          (etherpad__register_sysvinit is changed or
           etherpad__register_systemd is changed))

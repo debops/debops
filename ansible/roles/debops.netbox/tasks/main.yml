@@ -91,6 +91,7 @@
   command: git rev-parse {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
+    warn: False
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_target_branch
@@ -102,6 +103,7 @@
   command: git checkout -f {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
+    warn: False
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_checkout
@@ -235,7 +237,8 @@
   when: netbox__app_internal_appserver|bool
 
 - name: Reload systemd configuration
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          netbox__register_systemd is changed)
 

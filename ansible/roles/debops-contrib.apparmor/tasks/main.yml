@@ -147,6 +147,8 @@
 
 - name: Unload AppArmor profiles
   command: service apparmor teardown
+  args:
+    warn: False
   when: (not (apparmor__enabled|d() | bool))
 
 - name: Ensure AppArmor service is stopped

@@ -102,6 +102,7 @@
   command: mount {{ item.home | default(sftpusers_default_home_prefix + "/" + item.name + sftpusers_name_suffix) }}/sites
   args:
     creates: '{{ item.home | default(sftpusers_default_home_prefix + "/" + item.name + sftpusers_name_suffix) }}/sites/{{ item.sites[0] }}'
+    warn: False
   with_flattened:
     - '{{ sftpusers_list }}'
     - '{{ sftpusers_group_list }}'

@@ -294,7 +294,10 @@
   when: tinc__systemd | bool
 
 - name: Reload systemd daemon configuration
-  shell: systemctl daemon-reload ; systemctl enable tinc.service
+  systemd:
+    daemon_reload: True
+    name: 'tinc.service'
+    enabled: True
   when: tinc__register_systemd is changed
 
 - name: Start tinc VPN networks on first install

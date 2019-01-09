@@ -50,7 +50,8 @@
   register: elasticsearch__register_systemd
 
 - name: Reload systemd daemons
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (elasticsearch__register_systemd is changed and
          ansible_service_mgr == 'systemd')
 

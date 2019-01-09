@@ -34,6 +34,7 @@
   command: git rev-parse HEAD
   args:
     chdir: '{{ roundcube__git_dest }}'
+    warn: False
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_current_head
@@ -44,6 +45,7 @@
   command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ roundcube__git_dest }}'
+    warn: False
   become: True
   become_user: '{{ roundcube__user }}'
   changed_when: False
@@ -99,6 +101,7 @@
     GIT_WORK_TREE: '{{ roundcube__git_checkout }}'
   args:
     chdir: '{{ roundcube__git_dest }}'
+    warn: False
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_target_tag
@@ -110,6 +113,7 @@
     GIT_WORK_TREE: '{{ roundcube__git_checkout }}'
   args:
     chdir: '{{ roundcube__git_dest }}'
+    warn: False
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_checkout
