@@ -7,10 +7,12 @@
 
 - name: Make sure that boxbackup server directories exists
   file: path={{ item }} state=directory owner=bbstored group=bbstored mode=0700
-  with_items: [ '/etc/boxbackup', '/etc/boxbackup/bbstored', '{{ boxbackup_storage }}', '{{ boxbackup_storage }}/backup' ]
+  with_items: [ '/etc/boxbackup', '/etc/boxbackup/bbstored',
+                '{{ boxbackup_storage }}', '{{ boxbackup_storage }}/backup' ]
 
 - name: Check block size of storage device
-  shell: "dumpe2fs -h $(df {{ boxbackup_storage }} | tail -n 1 | awk '{ print $1 }') | grep 'Block size' | awk '{ print $3 }'"
+  shell: "dumpe2fs -h $(df {{ boxbackup_storage }} | tail -n 1 \
+          | awk '{ print $1 }') | grep 'Block size' | awk '{ print $3 }'"
   register: boxbackup_storage_blocksize
   changed_when: False
 

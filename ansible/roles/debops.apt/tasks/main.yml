@@ -94,7 +94,8 @@
     state:     '{{ item.state     | d("present"
                                       if (item.architecture|d(apt__architecture) == apt__architecture and
                                           item.distribution|d(apt__distribution) == apt__distribution and
-                                          item.distribution_release|d(apt__distribution_release) == apt__distribution_release)
+                                          item.distribution_release|d(apt__distribution_release)
+                                          == apt__distribution_release)
                                       else omit) }}'
   with_flattened:
     - '{{ apt__keys }}'
@@ -119,7 +120,8 @@
     state:    '{{ item.state    | d("present"
                                     if (item.architecture|d(apt__architecture) == apt__architecture and
                                         item.distribution|d(apt__distribution) == apt__distribution and
-                                        item.distribution_release|d(apt__distribution_release) == apt__distribution_release)
+                                        item.distribution_release|d(apt__distribution_release)
+                                        == apt__distribution_release)
                                     else "absent") }}'
   with_flattened:
     - '{{ apt__repositories }}'

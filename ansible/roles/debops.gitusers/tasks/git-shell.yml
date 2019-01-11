@@ -19,7 +19,8 @@
 - name: Prepare gituser environment
   template:
     src: 'srv/gitusers/{{ item.1 }}.j2'
-    dest: '{{ item.0.home | default(gitusers_default_home_prefix + "/" + item.0.name + gitusers_name_suffix) }}/.{{ item.1 }}'
+    dest: '{{ item.0.home | default(gitusers_default_home_prefix + "/"
+                                    + item.0.name + gitusers_name_suffix) }}/.{{ item.1 }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -45,7 +46,8 @@
 
 - name: Create root directory for user websites
   file:
-    path: '{{ gitusers_default_www_prefix }}/{{ item.0.group | default(item.0.name + gitusers_name_suffix) }}/{{ item.1 }}'
+    path: '{{ gitusers_default_www_prefix }}/{{ item.0.group | default(item.0.name
+                                                                       + gitusers_name_suffix) }}/{{ item.1 }}'
     state: 'directory'
     owner: 'root'
     group: '{{ item.0.group | default(item.0.name + gitusers_name_suffix) }}'
@@ -58,7 +60,8 @@
 
 - name: Symlink git-shell-commands to user directories
   file:
-    path: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) + "/git-shell-commands" }}'
+    path: '{{ item.home | default(gitusers_default_home_prefix + "/"
+                                  + item.name + gitusers_name_suffix) + "/git-shell-commands" }}'
     src: '{{ gitusers_git_scripts + "/git-shell-commands/" }}'
     state: 'link'
     owner: 'root'

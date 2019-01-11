@@ -88,7 +88,8 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab__gitaly_checkout
-  when: (gitlab__fact_version.gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
+  when: (gitlab__fact_version.gitaly != gitlab_register_gitaly_target_tag.stdout) or
+         not gitlab_register_gitaly_cloned.stat.exists
 
 - name: Stop gitaly service for an upgrade
   service:

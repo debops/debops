@@ -236,7 +236,8 @@
   lineinfile:
     dest: '{{ "~" + item.owner }}/.pgpass'
     regexp: '{{ "^" + ([
-                        ((item.server  | d(postgresql__server if postgresql__server else "localhost")) | replace(".","\.")),
+                        ((item.server  | d(postgresql__server if postgresql__server else "localhost"))
+                         | replace(".","\.")),
                         (item.port     | d(postgresql__port)),
                         (item.database | d("\*")),
                         (item.name     | d(item.role | d(item.owner | d("\*"))))

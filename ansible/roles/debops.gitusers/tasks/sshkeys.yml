@@ -15,7 +15,8 @@
 
 - name: Remove ~/.ssh/authorized_keys from user account if disabled
   file:
-    dest: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}/.ssh/authorized_keys'
+    dest: '{{ item.home | default(gitusers_default_home_prefix + "/"
+                                  + item.name + gitusers_name_suffix) }}/.ssh/authorized_keys'
     state: 'absent'
   with_flattened:
     - '{{ gitusers_list }}'

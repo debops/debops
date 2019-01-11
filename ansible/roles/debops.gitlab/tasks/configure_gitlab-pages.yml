@@ -96,7 +96,8 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_pages_checkout
-  when: (gitlab__fact_version.pages|d() != gitlab_register_pages_target_tag.stdout|d()) or (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
+  when: (gitlab__fact_version.pages|d() != gitlab_register_pages_target_tag.stdout|d()) or
+         (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
 
 - name: Setup gitlab-pages
   make:

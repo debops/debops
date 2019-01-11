@@ -115,8 +115,11 @@
 
 - name: Symlink SSL root certificate
   file:
-    src: '{{ item.pki_path | d(postgresql_server__pki_path) + "/" + item.pki_realm | d(postgresql_server__pki_realm) + "/" + item.pki_ca | d(postgresql_server__pki_ca) }}'
-    dest: '{{ (item.data_directory | d(postgresql_server__data_directory + (item.version | d(postgresql_server__version)) + "/" + item.name)) + "/root.crt" }}'
+    src: '{{ item.pki_path | d(postgresql_server__pki_path) + "/" + item.pki_realm | d(postgresql_server__pki_realm)
+             + "/" + item.pki_ca | d(postgresql_server__pki_ca) }}'
+    dest: '{{ (item.data_directory | d(postgresql_server__data_directory
+                                       + (item.version | d(postgresql_server__version)) + "/" + item.name))
+              + "/root.crt" }}'
     state: 'link'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
@@ -127,8 +130,11 @@
 
 - name: Symlink SSL certificate
   file:
-    src: '{{ item.pki_path | d(postgresql_server__pki_path) + "/" + item.pki_realm | d(postgresql_server__pki_realm) + "/" + item.pki_crt | d(postgresql_server__pki_crt) }}'
-    dest: '{{ (item.data_directory | d(postgresql_server__data_directory + (item.version | d(postgresql_server__version)) + "/" + item.name)) + "/server.crt" }}'
+    src: '{{ item.pki_path | d(postgresql_server__pki_path) + "/" + item.pki_realm | d(postgresql_server__pki_realm)
+             + "/" + item.pki_crt | d(postgresql_server__pki_crt) }}'
+    dest: '{{ (item.data_directory | d(postgresql_server__data_directory
+                                       + (item.version | d(postgresql_server__version)) + "/" + item.name))
+              + "/server.crt" }}'
     state: 'link'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
@@ -139,8 +145,11 @@
 
 - name: Symlink SSL key
   file:
-    src: '{{ item.pki_path | d(postgresql_server__pki_path) + "/" + item.pki_realm | d(postgresql_server__pki_realm) + "/" + item.pki_key | d(postgresql_server__pki_key) }}'
-    dest: '{{ (item.data_directory | d(postgresql_server__data_directory + (item.version | d(postgresql_server__version)) + "/" + item.name)) + "/server.key" }}'
+    src: '{{ item.pki_path | d(postgresql_server__pki_path) + "/" + item.pki_realm | d(postgresql_server__pki_realm)
+             + "/" + item.pki_key | d(postgresql_server__pki_key) }}'
+    dest: '{{ (item.data_directory | d(postgresql_server__data_directory
+                                       + (item.version | d(postgresql_server__version)) + "/" + item.name))
+              + "/server.key" }}'
     state: 'link'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
@@ -152,7 +161,8 @@
 - name: Start PostgreSQL clusters when not started
   command: pg_ctlcluster {{ item.version | d(postgresql_server__version) }} {{ item.name }} start
   args:
-    creates: '{{ item.external_pid_file | d("/var/run/postgresql/" + (item.version | d(postgresql_server__version)) + "-" + item.name + ".pid") }}'
+    creates: '{{ item.external_pid_file | d("/var/run/postgresql/" + (item.version | d(postgresql_server__version))
+                                            + "-" + item.name + ".pid") }}'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: (ansible_service_mgr != 'systemd' and

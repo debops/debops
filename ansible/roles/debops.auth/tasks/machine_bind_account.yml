@@ -15,7 +15,9 @@
   no_log: True
 
 - name: Generate host password
-  shell: echo -n {{ lookup('password', auth_nslcd_bind_host_password + ' length=' + auth_nslcd_password_length) }} | openssl dgst -sha1 -binary | openssl enc -base64 | awk '{print "{SHA}"$0}'
+  shell: echo -n {{ lookup('password', auth_nslcd_bind_host_password + ' length='
+                                       + auth_nslcd_password_length) }} \
+         | openssl dgst -sha1 -binary | openssl enc -base64 | awk '{print "{SHA}"$0}'
   register: auth_register_nslcd_bind_host_password
   when: (auth_register_nslcd_bind_host_hash is undefined or
          (auth_register_nslcd_bind_host_hash is defined and not auth_register_nslcd_bind_host_hash))
@@ -50,7 +52,8 @@
     dn: '{{ auth_nslcd_bind_host_dn }}'
     objectClass: [ 'device', 'simpleSecurityObject' ]
     attributes:
-      userPassword: '{{ auth_register_nslcd_bind_host_password.stdout | default(auth_register_nslcd_bind_host_hash) }}'
+      userPassword: '{{ auth_register_nslcd_bind_host_password.stdout
+                        | default(auth_register_nslcd_bind_host_hash) }}'
     state: 'present'
     server_uri: '{{ secret_ldap_server_uri }}'
     start_tls:  '{{ secret_ldap_start_tls }}'
@@ -73,5 +76,6 @@
   become: '{{ secret_ldap_sudo }}'
   delegate_to: '{{ secret_ldap_delegate_to }}'
   with_dict:
-    userPassword: '{{ auth_register_nslcd_bind_host_password.stdout | default(auth_register_nslcd_bind_host_hash | d()) }}'
+    userPassword: '{{ auth_register_nslcd_bind_host_password.stdout
+                      | default(auth_register_nslcd_bind_host_hash | d()) }}'
   no_log: True

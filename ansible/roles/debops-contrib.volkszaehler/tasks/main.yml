@@ -75,7 +75,8 @@
 
 # Database initialization [[[
 - name: Write database initialization SQL dump
-  shell: php {{ (volkszaehler__git_dest + "/misc/tools/doctrine")|quote }} orm:schema-tool:create --dump-sql > {{ (volkszaehler__home_path + "/create_db.sql")|quote }}
+  shell: php {{ (volkszaehler__git_dest + "/misc/tools/doctrine")|quote }} \
+         orm:schema-tool:create --dump-sql > {{ (volkszaehler__home_path + "/create_db.sql")|quote }}
   become: True
   become_user: '{{ volkszaehler__user }}'
   register: volkszaehler__register_sql_init_dump

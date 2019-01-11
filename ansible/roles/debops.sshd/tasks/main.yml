@@ -4,7 +4,8 @@
   include: '{{ lookup("task_src", "sshd/pre_main.yml") }}'
 
 - name: Check if OpenSSH is installed (or half-installed)
-  script: 'scripts/dpkg-state{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }} openssh-server'
+  script: 'scripts/dpkg-state{{ "2" if (ansible_python_version is version_compare("3.5", "<"))
+                                    else "3" }} openssh-server'
   register: sshd__register_prev_pkg_state
   changed_when: False
   failed_when: sshd__register_prev_pkg_state.rc != 0 or

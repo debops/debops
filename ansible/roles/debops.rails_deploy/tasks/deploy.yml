@@ -24,7 +24,8 @@
   become_user: '{{ rails_deploy_service }}'
 
 - name: Update gems
-  command: bundle install --deployment --without={{ rails_deploy_bundle_without | difference([rails_deploy_system_env]) | join(',') }}
+  command: bundle install --deployment
+           --without={{ rails_deploy_bundle_without | difference([rails_deploy_system_env]) | join(',') }}
            chdir={{ rails_deploy_src }}
   changed_when: False
   when: rails_deploy_register_repo_status is defined and
@@ -78,7 +79,8 @@
         (rails_deploy_database_force_migrate or
         (rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed and
-        (rails_deploy_register_mtime_schema.stat.mtime != ansible_local.rails_deploy[rails_deploy_service].mtime.schema) or
+        (rails_deploy_register_mtime_schema.stat.mtime !=
+         ansible_local.rails_deploy[rails_deploy_service].mtime.schema) or
         ansible_local.rails_deploy[rails_deploy_service].mtime.schema is undefined))
   register: rails_deploy_register_migration
   become: True
@@ -100,7 +102,8 @@
         (inventory_hostname == rails_deploy_hosts_master or
         inventory_hostname != item) and
         not rails_deploy_register_migration is changed and
-        rails_deploy_register_mtime_config.stat.mtime == ansible_local.rails_deploy[rails_deploy_service].mtime.config and
+        rails_deploy_register_mtime_config.stat.mtime == ansible_local.rails_deploy[rails_deploy_service].mtime.config
+        and
         not rails_deploy_backend_always_restart)
   delegate_to: '{{ item }}'
   with_items: '{{ groups[rails_deploy_hosts_group] }}'
@@ -113,7 +116,8 @@
         (inventory_hostname == rails_deploy_hosts_master or
         inventory_hostname != item)
         or
-        rails_deploy_register_mtime_config.stat.mtime != ansible_local.rails_deploy[rails_deploy_service].mtime.config or
+        rails_deploy_register_mtime_config.stat.mtime != ansible_local.rails_deploy[rails_deploy_service].mtime.config
+        or
         (rails_deploy_backend_always_restart and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed))

@@ -20,7 +20,8 @@
   with_items: '{{ debops__pip_packages }}'
   register: debops__register_pip_install
   until: debops__register_pip_install is succeeded
-  notify: '{{ [ "Update DebOps in the background with " + debops__update_method ] if not debops__update_method == "sync" else omit }}'
+  notify: '{{ [ "Update DebOps in the background with " + debops__update_method ]
+              if not debops__update_method == "sync" else omit }}'
   when: item|d()
 
 - name: Configure system-wide DebOps scripts

@@ -93,7 +93,8 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_checkout
-  when: (gitlab__fact_version.workhorse != gitlab_register_gitlab_workhorse_target_tag.stdout) or not gitlab_register_gitlab_workhorse_cloned.stat.exists
+  when: (gitlab__fact_version.workhorse != gitlab_register_gitlab_workhorse_target_tag.stdout) or
+         not gitlab_register_gitlab_workhorse_cloned.stat.exists
 
 - name: Setup gitlab-workhorse
   make:

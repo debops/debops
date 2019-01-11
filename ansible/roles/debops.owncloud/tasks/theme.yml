@@ -46,7 +46,8 @@
 
 - name: Copy additional theme files
   copy:
-    dest:           '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) if (not item.key.startswith("/")) else item.key }}'
+    dest:           '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key)
+                        if (not item.key.startswith("/")) else item.key }}'
     backup:         '{{ item.value.backup         | d(omit) }}'
     content:        '{{ item.value.content        | d(omit) }}'
     directory_mode: '{{ item.value.directory_mode | d(omit) }}'

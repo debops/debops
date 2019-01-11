@@ -44,9 +44,15 @@
 - name: Manage list of CNAME entries
   lineinfile:
     dest: '{{ avahi__alias_config_file }}'
-    regexp: '{{ "^" + (item.value.cname if item.value.cname.endswith("." + avahi__domain) else (item.value.cname + "." + avahi__domain)) + "$" }}'
-    line: '{{ (item.value.cname if item.value.cname.endswith("." + avahi__domain) else (item.value.cname + "." + avahi__domain)) }}'
-    state: '{{ "present" if item.value.cname_state|d(item.value.state | d("present")) != "absent" else "absent" }}'
+    regexp: '{{ "^" + (item.value.cname
+                       if item.value.cname.endswith("." + avahi__domain)
+                       else (item.value.cname + "." + avahi__domain)) + "$" }}'
+    line: '{{ (item.value.cname
+               if item.value.cname.endswith("." + avahi__domain)
+               else (item.value.cname + "." + avahi__domain)) }}'
+    state: '{{ "present"
+               if item.value.cname_state|d(item.value.state | d("present")) != "absent"
+               else "absent" }}'
   with_dict: '{{ avahi__combined_services }}'
   register: avahi__register_aliases
   when: item.value.cname|d()

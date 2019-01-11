@@ -29,8 +29,10 @@
 
 - name: Generate Preseed configuration
   template:
-    src: '{{ lookup("template_src", "srv/www/preseed/configs/d-i/" + item.type | default(preseed__distribution | lower) + ".cfg.j2") }}'
-    dest: '{{ preseed__www + "/" + item.name + "/d-i/" + item.release | default(preseed__release) + "/preseed.cfg" }}'
+    src: '{{ lookup("template_src", "srv/www/preseed/configs/d-i/"
+             + item.type | default(preseed__distribution | lower) + ".cfg.j2") }}'
+    dest: '{{ preseed__www + "/" + item.name + "/d-i/"
+              + item.release | default(preseed__release) + "/preseed.cfg" }}'
     owner: '{{ preseed__user }}'
     group: '{{ preseed__group }}'
     mode: '0644'
@@ -39,8 +41,10 @@
 
 - name: Generate postinst scripts
   template:
-    src: '{{ lookup("template_src", "srv/www/preseed/configs/d-i/" + item.type | default(preseed__distribution | lower) + ".sh.j2") }}'
-    dest: '{{ preseed__www + "/" + item.name + "/d-i/" + item.release | default(preseed__release) + "/postinst.sh" }}'
+    src: '{{ lookup("template_src", "srv/www/preseed/configs/d-i/"
+                    + item.type | default(preseed__distribution | lower) + ".sh.j2") }}'
+    dest: '{{ preseed__www + "/" + item.name + "/d-i/"
+              + item.release | default(preseed__release) + "/postinst.sh" }}'
     owner: '{{ preseed__user }}'
     group: '{{ preseed__group }}'
     mode: '0644'

@@ -2,7 +2,8 @@
 
 - name: Create default directories in user homes
   file:
-    path: '{{ item.0.home | default(sftpusers_default_home_prefix + "/" + item.0.name + sftpusers_name_suffix) }}/{{ item.1 }}'
+    path: '{{ item.0.home | default(sftpusers_default_home_prefix + "/"
+                                    + item.0.name + sftpusers_name_suffix) }}/{{ item.1 }}'
     state: 'directory'
     owner: '{{ item.0.name + sftpusers_name_suffix }}'
     group: '{{ item.0.group | default(item.0.name + sftpusers_name_suffix) }}'
@@ -15,7 +16,8 @@
 
 - name: Create custom directories in user homes
   file:
-    path: '{{ item.0.home | default(sftpusers_default_home_prefix + "/" + item.0.name + sftpusers_name_suffix) }}/{{ item.1 }}'
+    path: '{{ item.0.home | default(sftpusers_default_home_prefix + "/"
+                                    + item.0.name + sftpusers_name_suffix) }}/{{ item.1 }}'
     state: 'directory'
     owner: '{{ item.0.name + sftpusers_name_suffix }}'
     group: '{{ item.0.group | default(item.0.name + sftpusers_name_suffix) }}'

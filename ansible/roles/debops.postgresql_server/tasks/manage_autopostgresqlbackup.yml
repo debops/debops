@@ -36,7 +36,8 @@
 
 - name: Disable autopostgresqlbackup from running daily
   file:
-    path: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version)) | replace(".","_") }}-{{ item.name }}'
+    path: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version))
+                                                   | replace(".","_") }}-{{ item.name }}'
     state: 'absent'
   when: ((item.auto_backup|d() and not item.auto_backup | bool) or not postgresql_server__auto_backup | bool)
   with_flattened:
@@ -45,7 +46,8 @@
 - name: Enable autopostgresqlbackup to run daily
   template:
     src: 'etc/cron.daily/autopostgresqlbackup.j2'
-    dest: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version)) | replace(".","_") }}-{{ item.name }}'
+    dest: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version))
+                                                   | replace(".","_") }}-{{ item.name }}'
     owner: 'root'
     group: 'root'
     mode: '0755'

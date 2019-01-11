@@ -92,7 +92,8 @@
   service:
     name: 'nginx'
     state: 'restarted'
-  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and nginx__deploy_state in [ 'present' ])
+  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and
+         nginx__deploy_state in [ 'present' ])
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: awk '$1=="nameserver" {if(/%/){sub(/[0-9a-fA-F:]+/, "[&]", $2)}; print $2}' /etc/resolv.conf

@@ -28,30 +28,39 @@
   command: apt-mark auto {{ ((item.packages | d([ item.name ])) | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
   when: (apt_mark__enabled|bool and
-         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed)) | symmetric_difference(apt_mark__fact_manual) and
-         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed)) | difference(apt_mark__fact_auto) and
+         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+         | symmetric_difference(apt_mark__fact_manual) and
+         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+         | difference(apt_mark__fact_auto) and
          item.state|d('manual') in [ 'auto', 'auto-hold', 'auto-unhold' ])
 
 - name: Set package state as installed manually
-  command: apt-mark manual {{ ((item.packages | d([ item.name ])) | intersect(apt_mark__fact_installed)) | join(' ') }}
+  command: apt-mark manual {{ ((item.packages | d([ item.name ]))
+                               | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
   when: (apt_mark__enabled|bool and
-         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed)) | symmetric_difference(apt_mark__fact_auto) and
-         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed)) | difference(apt_mark__fact_manual) and
+         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+         | symmetric_difference(apt_mark__fact_auto) and
+         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+         | difference(apt_mark__fact_manual) and
          item.state|d('manual') in [ 'manual', 'manual-hold', 'manual-unhold' ])
 
 - name: Hold current package state
-  command: apt-mark hold {{ ((item.packages | d([ item.name ])) | intersect(apt_mark__fact_installed)) | join(' ') }}
+  command: apt-mark hold {{ ((item.packages | d([ item.name ]))
+                             | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
   when: (apt_mark__enabled|bool and
-        (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed)) | difference(apt_mark__fact_hold) and
+        (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+        | difference(apt_mark__fact_hold) and
         item.state|d('manual') in [ 'hold', 'auto-hold', 'manual-hold' ])
 
 - name: Unhold current package state
-  command: apt-mark unhold {{ ((item.packages | d([ item.name ])) | intersect(apt_mark__fact_installed)) | join(' ') }}
+  command: apt-mark unhold {{ ((item.packages | d([ item.name ]))
+                               | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
   when: (apt_mark__enabled|bool and
-        (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed)) | intersect(apt_mark__fact_hold) and
+        (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+        | intersect(apt_mark__fact_hold) and
         item.state|d('manual') in [ 'unhold', 'auto-unhold', 'manual-unhold' ])
 
 - name: Make sure that Ansible local facts directory exists

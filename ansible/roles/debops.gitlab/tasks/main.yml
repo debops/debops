@@ -66,7 +66,8 @@
 - include: download_gitlab_ce.yml
 
 - name: Check GitLab version numbers
-  script: 'script/gitlab-version{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }} {{ gitlab_ce_git_checkout }}'
+  script: 'script/gitlab-version{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}
+           {{ gitlab_ce_git_checkout }}'
   register: gitlab__register_version
   changed_when: False
   check_mode: False

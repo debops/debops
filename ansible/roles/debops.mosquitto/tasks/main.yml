@@ -103,7 +103,8 @@
 
 - name: Create user/password entries
   environment:
-    MOSQUITTO_PASSWORD: '{{ item.password | d(lookup("password", mosquitto__password_secret_path + "/" + item.name | d(item))) }}'
+    MOSQUITTO_PASSWORD: '{{ item.password
+                            | d(lookup("password", mosquitto__password_secret_path + "/" + item.name | d(item))) }}'
   command: 'mosquitto_passwd -b {{ mosquitto__password_file }} {{ item.name | d(item) }} ${MOSQUITTO_PASSWORD}'
   with_flattened:
     - '{{ mosquitto__auth_users }}'
