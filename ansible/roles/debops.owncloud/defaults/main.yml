@@ -176,8 +176,8 @@ owncloud__deploy_state: 'present'
 
 # .. envvar:: owncloud__system_user [[[
 #
-# Name of the system account which will perform signature and archive
-# verification.
+# Name of the system account which will perform archive
+# verification using the OpenPGP signature.
 owncloud__system_user: 'nextcloud'
 
                                                                    # ]]]
@@ -286,6 +286,7 @@ owncloud__dpkg_hook_script: '{{
 # .. envvar:: owncloud__auto_database_upgrade_migration_test
 #
 # Whether database schema migration should be simulated before upgrading the production database.
+# For Nextcloud it cannot be configured and this variable is ignored.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/package_upgrade.html#migration-test>`__ for details.
 owncloud__auto_database_upgrade_migration_test: True
 
@@ -293,7 +294,7 @@ owncloud__auto_database_upgrade_migration_test: True
 # .. envvar:: owncloud__auto_database_upgrade_3party_app_disable
 #
 # Should third party apps by disabled during/after upgrades? The upstream default as of ownCloud 9.0
-# is ``True``.
+# is ``True``. For Nextcloud it cannot be configured and this variable is ignored.
 owncloud__auto_database_upgrade_3party_app_disable: True
 
 
@@ -413,8 +414,9 @@ owncloud__variant_name_map:
 #
 # * ownCloud ``10.0``
 #
-# * Nextcloud ``12.0``
 # * Nextcloud ``13.0``
+# * Nextcloud ``14.0``
+# * Nextcloud ``15.0``
 #
 # For Nextcloud refer to the `Nextcloud Maintenance and Release Schedule <https://github.com/nextcloud/server/wiki/Maintenance-and-Release-Schedule>`_.
 # and the `Nextcloud Server Changelog <https://nextcloud.com/changelog/>`_.
@@ -423,7 +425,7 @@ owncloud__variant_name_map:
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
 owncloud__release: '{{ "10.0"
                        if (owncloud__variant == "owncloud")
-                       else "12.0" }}'
+                       else "14.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -2013,7 +2015,7 @@ owncloud__nginx__dependent_servers:
           access_log off;
           {% endif %}
 
-      - pattern: '~* \.(?:svg|gif|png|html|ttf|woff|ico|jpg|jpeg)$'
+      - pattern: '~* \.(?:svg|gif|png|html|ttf|woff2?|ico|jpg|jpeg)$'
         options: |
           try_files $uri /index.php$uri$is_args$args;
 
