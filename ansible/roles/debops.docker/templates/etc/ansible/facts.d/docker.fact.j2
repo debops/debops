@@ -5,7 +5,25 @@
 from __future__ import print_function
 from json import dumps
 from sys import exit
+import subprocess
+import os
 
-output = {'installed': True}
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('docker')}
+
+try:
+    output['version'] = subprocess.check_output(
+            ['docker', 'version', '--format',
+             '{{ "{{" }}.Server.Version{{ "}}" }}']).strip('\n')
+
+except Exception:
+    pass
 
 print(dumps(output, sort_keys=True, indent=2))

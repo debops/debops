@@ -3,7 +3,7 @@
 {%  if docker__bridge|d() -%}
 {%    set _ = docker__tpl_options.update({"bridge": docker__bridge}) %}
 {%- endif %}
-{%  if docker__live_restore|d() and docker__register_version.stdout is version_compare('1.12', '>=') -%}
+{%  if docker__live_restore|d() and docker__version is version_compare('1.12', '>=') -%}
 {%    set lv_value = true if docker__live_restore else false %}
 {%    set _  = docker__tpl_options.update({"live-restore": lv_value}) %}
 {%- endif %}
@@ -27,7 +27,7 @@
 {%-   endfor %}
 {%    set _ = docker__tpl_options.update({"dns-search": docker__tpl_dns_search}) %} 
 {%- endif %}
-{%  if docker__listen|d() and docker__register_version.stdout is version_compare('1.10', '>=') -%}
+{%  if docker__listen|d() and docker__version is version_compare('1.10', '>=') -%}
 {%    set docker__tpl_listen = [] %}
 {%    for element in docker__listen -%}
 {%      set _ = docker__tpl_listen.append(element) %} 
