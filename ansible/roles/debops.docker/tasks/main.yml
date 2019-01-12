@@ -20,25 +20,14 @@
     update_cache: True
   when: docker__upstream|d() | bool
 
-- name: Make sure that systemd directory exists
-  file:
-    path: '/etc/systemd/system'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker:config' ]
-
-- name: Make sure that docker.service.d directory exists
+- name: Make sure that docker.service.d override directory exists
   file:
     path: '/etc/systemd/system/docker.service.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (ansible_service_mgr == 'systemd' and
-        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
+  when: ansible_service_mgr == 'systemd'
   tags: [ 'role::docker:config' ]
 
 - name: Remove other version if upstream is modified
@@ -156,41 +145,24 @@
   tags: [ 'role::docker:config' ]
   when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout is version_compare('1.10', '>='))
 
-- name: Install Debian systemd service unit
+- name: Configure Docker systemd overrides
   template:
-    src: 'etc/systemd/system/docker.service.j2'
-    dest: '/etc/systemd/system/docker.service'
+    src: 'etc/systemd/system/docker.service.d/{{ item }}.j2'
+    dest: '/etc/systemd/system/docker.service.d/{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: docker__register_systemd_service
+  loop: [ 'execstart-override.conf', 'http-proxy.conf' ]
+  register: docker__register_systemd_overrides
   notify: ['Restart docker' ]
   when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker:config' ]
-
-- name: Configure Docker proxy
-  template:
-    src: 'etc/systemd/system/docker.service.d/http-proxy.conf.j2'
-    dest: '/etc/systemd/system/docker.service.d/http-proxy.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  register: docker__register_systemd_proxy_present
-  notify: ['Restart docker' ]
-  when: (ansible_service_mgr == 'systemd' and
-        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
 - name: Reload systemd daemons
   systemd:
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
-         ((docker__register_systemd_service|d() and
-         docker__register_systemd_service is changed) or
-         (docker__register_systemd_proxy_present|d() and
-         docker__register_systemd_proxy_present is changed) or
-         (docker__register_systemd_proxy_absent|d() and
-         docker__register_systemd_proxy_absent is changed)))
+         docker__register_systemd_overrides is changed)
   tags: [ 'role::docker:config' ]
 
 - name: Add specified users to 'docker' group
