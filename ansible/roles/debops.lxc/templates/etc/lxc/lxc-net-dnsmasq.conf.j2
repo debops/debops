@@ -14,6 +14,12 @@ auth-zone = {{ lxc__net_domain }},{{ lxc__net_address | ipaddr('subnet') }}
 
 # Set the FQDN name of the bridge interface in the DNS
 interface-name = {{ lxc__net_interface_fqdn }},{{ lxc__net_bridge }}
+{% if (lxc__net_domain.split('.') | length >= 3 and lxc__net_domain.split('.')[1:] | length >= 2) %}
+
+# Include the parent domain as searchable via resolvconf
+dhcp-option = tag:{{ lxc__net_bridge }},option:domain-search,{{ lxc__net_domain }},{{ lxc__net_domain.split('.')[1:] | join('.') }}
+dhcp-option = tag:{{ lxc__net_bridge }},option6:domain-search,{{ lxc__net_domain }},{{ lxc__net_domain.split('.')[1:] | join('.') }}
+{% endif %}
 {% if lxc__net_dnsmasq_options|d() %}
 
 # Additional dnsmasq options
