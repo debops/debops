@@ -194,7 +194,12 @@ lxc__default_configuration:
         value: 'veth'
 
       - name: 'lxc.network.link'
-        value: '{{ "lxcbr0" if (lxc__net_deploy_state == "present") else "br0" }}'
+        value: '{{ "br0"
+                   if (ansible_local|d() and ansible_local.ifupdown|d() and
+                       (ansible_local.ifupdown.configured|d())|bool)
+                   else (lxc__net_bridge
+                         if (lxc__net_deploy_state == "present")
+                         else "br0") }}'
 
       - name: 'lxc.network.flags'
         value: 'up'
@@ -242,7 +247,12 @@ lxc__default_configuration:
         value: 'veth'
 
       - name: 'lxc.network.link'
-        value: '{{ "lxcbr0" if (lxc__net_deploy_state == "present") else "br0" }}'
+        value: '{{ "br0"
+                   if (ansible_local|d() and ansible_local.ifupdown|d() and
+                       (ansible_local.ifupdown.configured|d())|bool)
+                   else (lxc__net_bridge
+                         if (lxc__net_deploy_state == "present")
+                         else "br0") }}'
 
       - name: 'lxc.network.flags'
         value: 'up'
@@ -255,6 +265,56 @@ lxc__default_configuration:
         alias: 'lxc.cap.drop'
         value: 'mknod sys_rawio syslog wake_alarm'
 
+    # Configuration for unprivileged LXC containers that uses only the internal
+    # bridge managed by the 'lxc-net' service
+  - name: 'internal-unprivileged'
+    state: '{{ "present" if (lxc__net_deploy_state == "present") else "absent" }}'
+    options:
+
+      - name: 'lxc.network.type'
+        value: 'veth'
+
+      - name: 'lxc.network.link'
+        value: '{{ lxc__net_bridge }}'
+
+      - name: 'lxc.network.flags'
+        value: 'up'
+
+      - name: 'lxc.id_map_user'
+        alias: 'lxc.id_map'
+        value: 'u 0 {{ lxc__root_subuid_start }} {{ lxc__root_subuid_count }}'
+        separator: True
+
+      - name: 'lxc.id_map_group'
+        alias: 'lxc.id_map'
+        value: 'g 0 {{ lxc__root_subgid_start }} {{ lxc__root_subgid_count }}'
+
+      - name: 'lxc.start.auto'
+        value: '0'
+        separator: True
+
+      - name: 'lxc.cap.drop_secure'
+        alias: 'lxc.cap.drop'
+        value: 'mknod sys_rawio syslog wake_alarm'
+
+      # Select how many CPUs are available inside of the container
+      - name: 'lxc.cgroup.cpuset.cpus'
+        value: '0-{{ ansible_processor_vcpus|int - 1 }}'
+        state: 'comment'
+        separator: True
+
+      # Limit the amount of memory available inside of the container
+      - name: 'lxc.cgroup.memory.limit_in_bytes'
+        value: '{{ (ansible_memtotal_mb|int / 1024) | round | int }}G'
+        state: 'comment'
+
+      # Limit available swap space inside of the container. The value is
+      # a combined memory (above) + swap size, it should be bigger than the
+      # amount of memory allocated to the container.
+      - name: 'lxc.cgroup.memory.memsw.limit_in_bytes'
+        value: '{{ ((ansible_memtotal_mb|int + ansible_swaptotal_mb|int) / 1024) | round | int }}G'
+        state: 'comment'
+
     # Default configuration for privileged LXC containers with multiple network
     # interfaces
   - name: 'external-internal'
@@ -266,7 +326,12 @@ lxc__default_configuration:
 
       - name: 'lxc.network.link_net0'
         alias: 'lxc.network.link'
-        value: '{{ "lxcbr0" if (lxc__net_deploy_state == "present") else "br0" }}'
+        value: '{{ "br0"
+                   if (ansible_local|d() and ansible_local.ifupdown|d() and
+                       (ansible_local.ifupdown.configured|d())|bool)
+                   else (lxc__net_bridge
+                         if (lxc__net_deploy_state == "present")
+                         else "br0") }}'
 
       - name: 'lxc.network.flags_net0'
         alias: 'lxc.network.flags'
