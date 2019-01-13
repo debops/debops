@@ -39,7 +39,7 @@ sudo__packages: []
 # Enable or disable a workaround for :command:`sudo` login session not having
 # a ``$XDG_RUNTIME_DIR`` environment variable set. This allows control over
 # another user's :command:`systemd` instance.
-sudo__logind_session: True
+sudo__logind_session: '{{ True if (ansible_service_mgr == "systemd") else False }}'
                                                                    # ]]]
                                                                    # ]]]
 # Sudoers configuration [[[
