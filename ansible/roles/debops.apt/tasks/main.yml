@@ -20,6 +20,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: apt__enabled|bool
 
 - name: Save APT local facts
   template:
@@ -29,6 +30,7 @@
     group: 'root'
     mode: '0755'
   register: apt__register_facts
+  when: apt__enabled|bool
 
 - name: Update Ansible facts if they were modified
   action: setup
