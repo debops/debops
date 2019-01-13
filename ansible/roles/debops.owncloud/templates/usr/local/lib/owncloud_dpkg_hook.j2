@@ -41,8 +41,8 @@ grep -q 'maintenance.*true' '{{ owncloud__deploy_path }}/config/config.php' || e
 
 ## Do the upgrade.
 occ_options=(
-    "{{ '' if (owncloud__auto_database_upgrade_migration_test|bool) else '--skip-migration-test' }}"
-    "{{ '' if (owncloud__auto_database_upgrade_3party_app_disable|bool) else '--no-app-disable' }}"
+    "{{ '' if (owncloud__variant == 'nextcloud' or owncloud__auto_database_upgrade_migration_test|bool) else '--skip-migration-test' }}"
+    "{{ '' if (owncloud__variant == 'nextcloud' or owncloud__auto_database_upgrade_3party_app_disable|bool) else '--no-app-disable' }}"
 )
 # shellcheck disable=SC2086
 '{{ owncloud__occ_bin_file_path }}' upgrade ${occ_options[*]}

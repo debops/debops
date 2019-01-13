@@ -14,7 +14,7 @@ them.
 mount__devices
 --------------
 
-The ``mount__*_devices`` variables define a list of YAML dictionaires that
+The ``mount__*_devices`` variables define a list of YAML dictionaries that
 configure local device mounts. They can be used to configure any mount type,
 however remote devices should be avoided (the role is executed early in the
 DebOps ``common.yml`` playbook, when network configuration might not be
@@ -81,7 +81,7 @@ module:
   point. If not specified, ``defaults`` will be used instead.
 
 ``dump``
-  Optional. This field determines which filesystems should be backeed up by the
+  Optional. This field determines which filesystems should be backed up by the
   :man:`dump(8)` command. If not specified, ``0`` is set by default.
 
 ``passno``
@@ -198,7 +198,7 @@ Syntax
 ~~~~~~
 
 The ``mount__*_directories`` lists contain YAML dictionaries, each dictionary
-can have spcific parameters, that reflect the Ansible ``file`` module
+can have specific parameters, that reflect the Ansible ``file`` module
 parameters:
 
 ``path`` / ``dest`` / ``name``

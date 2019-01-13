@@ -17,6 +17,7 @@
       command: 'config:app:set {{ owncloud__apps_item.key | quote }} {{ owncloud__apps_setting_item.key | quote }}
                 --value={{ owncloud__apps_setting_item.value|string | quote }}'
   when: (owncloud__apps_setting_item is defined)
+  tags: [ 'role::owncloud:occ' ]
 
 - name: 'Construct occ command for ownCloud files:scan configuration'
   set_fact:
@@ -27,6 +28,7 @@
       ## for details.
       command: 'files:scan --path {{ owncloud__files_scan_item.item.dest | quote }}'
   when: (owncloud__files_scan_item is defined)
+  tags: [ 'role::owncloud:occ' ]
 
   # An alternative would be
   # https://doc.owncloud.org/server/9.1/admin_manual/configuration_user/user_provisioning_api.html
@@ -35,6 +37,7 @@
   command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }}
                {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
   environment: '{{ owncloud__occ_item.env|d({}) }}'
+  tags: [ 'role::owncloud:occ' ]
   ## TODO: Upstream needs to fix proper support for `changed_when`.
   changed_when: False
   # changed_when: (owncloud__occ_item.command|d(omit) is match("config:app:set") and
@@ -80,4 +83,4 @@
     owncloud__occ_run_output: '{{ owncloud__occ_run.stdout_lines
                                   | map("regex_replace", "^[^{} ].*$", "") | join("") | from_json }}'
   when: (owncloud__occ_item|d() and (owncloud__occ_item.get_output|d() | bool) and (not ansible_check_mode))
-  tags: [ 'role::owncloud:occ_config' ]
+  tags: [ 'role::owncloud:occ_config', 'role::owncloud:occ' ]

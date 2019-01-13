@@ -211,10 +211,14 @@ Changed
   Read the documentation about :ref:`resources__ref_templates` for more details
   on templating with `debops`.
 
-- [debops.dnsmasq] The role has been redesigned from the groun up with new
+- [debops.dnsmasq] The role has been redesigned from the ground up with new
   configuration pipeline, support for multiple subdomains and better default
   configuration. See the :ref:`debops.dnsmasq` role documentation as well as
   the :ref:`upgrade_notes` for more details.
+
+- [debops.owncloud] Drop support for Nextcloud 12.0 which is EOF. Add support
+  for Nextcloud 14.0 and 15.0 and make Nextcloud 14.0 the default Nextcloud
+  version.
 
 Fixed
 ~~~~~
