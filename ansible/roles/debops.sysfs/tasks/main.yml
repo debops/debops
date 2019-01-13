@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ sysfs__base_packages }}'
     - '{{ sysfs__packages }}'
+  register: sysfs__register_packages
+  until: sysfs__register_packages is succeeded
   when: sysfs__enabled|bool
 
 - name: Check if the dependent configuration exists

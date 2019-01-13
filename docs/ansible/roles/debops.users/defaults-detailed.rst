@@ -287,6 +287,11 @@ a specific account.
   instead, by default cloning the :command:`git` repository to :file:`~/.config/dotfiles/`
   directory.
 
+``dotfiles_version``
+  Optional. Specify a :command:`git` branch or tag  of the user configuration
+  files which should be downloaded and checked out. If not specified, role will
+  automatically check out the ``master`` branch.
+
 ``dotfiles_update``
   Optional, boolean. Specify if the user configuration files repository should
   be updated on each Ansible run. If not set, the default from

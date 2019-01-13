@@ -1,7 +1,9 @@
 ---
 
 - name: Install dbconfig-common
-  apt: pkg=dbconfig-common state=latest install_recommends=no
+  apt: pkg=dbconfig-common state=present install_recommends=no
+  register: phpmyadmin__register_dbconfig_packages
+  until: phpmyadmin__register_dbconfig_packages is succeeded
 
 - name: Pre-configure PHPMyAdmin database
   template: src=etc/dbconfig-common/phpmyadmin.conf.j2
@@ -9,7 +11,9 @@
             owner=root group=root mode=0600
 
 - name: Install PHPMyAdmin packages
-  apt: pkg=phpmyadmin state=latest install_recommends=no
+  apt: pkg=phpmyadmin state=present install_recommends=no
+  register: phpmyadmin__register_packages
+  until: phpmyadmin__register_packages is succeeded
 
 - name: Create database for PHPMyAdmin
   mysql_db: name={{ phpmyadmin_control_database | default('phpmyadmin') }} state=present
@@ -22,4 +26,5 @@
 
 - name: Create PHPMyAdmin control user
   mysql_user: name={{ phpmyadmin_control_user | default('phpmyadmin') }} state=present
-              password={{ phpmyadmin_control_password }} priv='{{ phpmyadmin_control_database | default('phpmyadmin') }}.*:ALL'
+              password={{ phpmyadmin_control_password }} priv='{{ phpmyadmin_control_database
+                                                                  | default('phpmyadmin') }}.*:ALL'

@@ -10,6 +10,8 @@
     - '{{ librenms__base_packages }}'
     - '{{ librenms__monitoring_packages }}'
     - '{{ librenms__packages }}'
+  register: librenms__register_packages
+  until: librenms__register_packages is succeeded
 
 - name: Enable non-free MIBs support
   lineinfile:
@@ -46,6 +48,7 @@
     dest: '{{ librenms__install_path }}'
     version: '{{ librenms__install_version }}'
     update: False
+  become: True
   become_user: '{{ librenms__user }}'
   register: librenms__register_source
   no_log: True
@@ -129,6 +132,8 @@
   composer:
     command: install
     working_dir: '{{ librenms__install_path }}'
+  register: librenms__register_composer
+  until: librenms__register_composer is succeeded
   become: True
   become_user: '{{ librenms__user }}'
   when: not librenms__composer_phar|bool
@@ -137,21 +142,25 @@
   command: php build-base.php
   args:
     chdir: '{{ librenms__install_path }}'
+  become: True
   become_user: '{{ librenms__user }}'
   when: (librenms__register_database_status|d() and librenms__register_database_status is changed)
   tags: [ 'role::librenms:database' ]
 
 - name: Get list of existing users from LibreNMS database
   command: mysql -ssNe "select username from users"
+  become: True
   become_user: '{{ librenms__user }}'
   register: librenms__register_users
   changed_when: False
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
 
 - name: Create admin accounts
-  command: 'php adduser.php {{ item }} {{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/librenms/admin/" + item + "/password") }} 10'
+  command: 'php adduser.php {{ item }} {{ lookup("password", secret + "/credentials/" + ansible_fqdn
+                                                             + "/librenms/admin/" + item + "/password") }} 10'
   args:
     chdir: '{{ librenms__install_path }}'
+  become: True
   become_user: '{{ librenms__user }}'
   with_items: '{{ librenms__admin_accounts }}'
   when: (librenms__admin_accounts|d([]) and (item not in librenms__register_users.stdout_lines))
@@ -200,6 +209,7 @@
 
 - name: Get list of known devices from LibreNMS database
   command: mysql -ssNe "select hostname from devices"
+  become: True
   become_user: '{{ librenms__user }}'
   register: librenms__register_devices
   changed_when: False
@@ -209,6 +219,7 @@
   command: php addhost.php {{ item }}
   args:
     chdir: '{{ librenms__install_path }}'
+  become: True
   become_user: '{{ librenms__user }}'
   with_items: '{{ librenms__devices }}'
   when: (librenms__devices|d([]) and (item not in librenms__register_devices.stdout_lines))

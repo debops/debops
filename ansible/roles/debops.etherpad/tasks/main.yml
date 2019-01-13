@@ -9,6 +9,8 @@
     - '{{ etherpad__base_packages }}'
     - '{{ etherpad__document_packages if etherpad_abiword|bool else [] }}'
     - '{{ etherpad__packages }}'
+  register: etherpad__register_packages
+  until: etherpad__register_packages is succeeded
 
 - name: Create Etherpad system group
   group:
@@ -68,7 +70,7 @@
     group: '{{ etherpad_group }}'
     mode: '0755'
   when: (etherpad_register_source is defined and etherpad_register_source is changed) or
-        (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
   tags: [ 'role::etherpad:source' ]
 
 - name: Prepare Etherpad worktree
@@ -79,13 +81,14 @@
     group: '{{ etherpad_group }}'
     mode: '0644'
   when: (etherpad_register_source is defined and etherpad_register_source is changed) or
-        (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
   tags: [ 'role::etherpad:source' ]
 
 - name: Checkout Etherpad
   command: git checkout --force {{ etherpad_version }}
   args:
     chdir: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
+    warn: False
   environment:
     GIT_WORK_TREE: '{{ etherpad_home + "/" + etherpad_repository }}'
   become: True
@@ -93,13 +96,14 @@
   register: etherpad_register_checkout
   notify: [ 'Restart etherpad-lite' ]
   when: (etherpad_register_source is defined and etherpad_register_source is changed) or
-        (etherpad_register_directory is defined and etherpad_register_directory.stat.exists == False)
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
   tags: [ 'role::etherpad:source' ]
 
 ## Not used anywhere but it should stay for now: See https://github.com/debops/ansible-etherpad/pull/13
 - name: Generate Etherpad session key
   set_fact:
-    etherpad_session_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/etherpad/session_key chars=ascii,numbers,digits,hexdigits length=30") }}'
+    etherpad_session_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn
+                              + "/etherpad/session_key chars=ascii,numbers,digits,hexdigits length=30") }}'
   when: secret is defined and secret
 
 - name: Generate Etherpad configuration
@@ -173,7 +177,8 @@
   when: ansible_service_mgr == 'systemd'
 
 - name: Reload systemd daemons
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          (etherpad__register_sysvinit is changed or
           etherpad__register_systemd is changed))
@@ -205,7 +210,9 @@
 
 - name: Make API calls
   uri:
-    url: 'http://localhost:{{ etherpad_port }}/api/{{ etherpad_api_version }}/{{ item.method }}?apikey={{ etherpad_api_key.stdout }}{% if item.args|d() %}{% for key, value in item.args.items() %}{{ "&" + key + "=" + value }}{% endfor %}{% endif %}'
+    url: 'http://localhost:{{ etherpad_port }}/api/{{ etherpad_api_version }}/{{ item.method }}?apikey={{
+          etherpad_api_key.stdout }}{% if item.args|d() %}{% for key, value in item.args.items() %}{{
+          "&" + key + "=" + value }}{% endfor %}{% endif %}'
   register: etherpad_api_calls_exec
   ## error while evaluating conditional???
   # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()

@@ -9,6 +9,8 @@
     - '{{ rsyslog__base_packages }}'
     - '{{ rsyslog__tls_packages if rsyslog__pki|bool else [] }}'
     - '{{ rsyslog__packages }}'
+  register: rsyslog__register_packages
+  until: rsyslog__register_packages is succeeded
   when: rsyslog__enabled|bool
 
 - name: Create required system group
@@ -42,13 +44,18 @@
 
 - name: Update directory and file permissions
   shell: |
-    [ ! -d {{ rsyslog__home }} ] || ( [ "$(stat -c '%G' {{ rsyslog__home }})" = "{{ rsyslog__group }}" ] || ( chown -v root:{{ rsyslog__group }} {{ rsyslog__home }} ; chmod -v 775 {{ rsyslog__home }} ) )
+    [ ! -d {{ rsyslog__home }} ] \
+      || ( [ "$(stat -c '%G' {{ rsyslog__home }})" = "{{ rsyslog__group }}" ] \
+             || ( chown -v root:{{ rsyslog__group }} {{ rsyslog__home }} ; \
+                  chmod -v 775 {{ rsyslog__home }} ) )
     for i in {{ rsyslog__default_logfiles | join(" ") }} ; do
-      [ ! -f ${i} ] || ( [ "$(stat -c '%U' ${i})" = "{{ rsyslog__file_owner }}" ] || chown -v {{ rsyslog__file_owner }}:{{ rsyslog__file_group }} ${i} )
+      [ ! -f ${i} ] || \
+        ( [ "$(stat -c '%U' ${i})" = "{{ rsyslog__file_owner }}" ] \
+        || chown -v {{ rsyslog__file_owner }}:{{ rsyslog__file_group }} ${i} )
     done
   register: rsyslog__register_file_permissions
   when: rsyslog__unprivileged|bool
-  changed_when: rsyslog__register_file_permissions.stdout != ''
+  changed_when: rsyslog__register_file_permissions.stdout|d()
   notify: [ 'Restart rsyslogd' ]
 
 - name: Divert main rsyslog configuration
@@ -78,7 +85,8 @@
 - name: Divert the custom rsyslog configuration
   environment:
     LC_ALL: 'C'
-  command: dpkg-divert --local --divert /etc/rsyslog.d/{{ item.divert_to | d(item.filename + ".dpkg-divert") }} --rename /etc/rsyslog.d/{{ item.filename }}
+  command: dpkg-divert --local --divert /etc/rsyslog.d/{{ item.divert_to | d(item.filename + ".dpkg-divert") }}
+                       --rename /etc/rsyslog.d/{{ item.filename }}
   args:
     creates: '/etc/rsyslog.d/{{ item.divert_to | d(item.filename + ".dpkg-divert") }}'
   register: rsyslog__register_divert_rules
@@ -98,7 +106,9 @@
 - name: Generate rsyslog configuration rules
   template:
     src: 'etc/rsyslog.d/rules.conf.j2'
-    dest: '/etc/rsyslog.d/{{ item.filename | d((item.weight if item.weight|d() else rsyslog__weight_map[item.type|d("rules")]) + "-" + (item.name|d("rules")) + "." + (item.suffix |d ("conf"))) }}'
+    dest: '/etc/rsyslog.d/{{ item.filename
+                             | d((item.weight if item.weight|d() else rsyslog__weight_map[item.type|d("rules")])
+                                 + "-" + (item.name|d("rules")) + "." + (item.suffix |d ("conf"))) }}'
     owner: '{{ item.owner | d("root") }}'
     group: '{{ item.group | d("root") }}'
     mode:  '{{ item.mode  | d("0644") }}'
@@ -116,7 +126,9 @@
 
 - name: Remove custom config files when requested
   file:
-    path: '/etc/rsyslog.d/{{ item.filename | d((item.weight if item.weight|d() else rsyslog__weight_map[item.type|d("rules")]) + "-" + (item.name|d("rules")) + "." + (item.suffix | d("conf"))) }}'
+    path: '/etc/rsyslog.d/{{ item.filename
+                             | d((item.weight if item.weight|d() else rsyslog__weight_map[item.type|d("rules")])
+                                 + "-" + (item.name|d("rules")) + "." + (item.suffix | d("conf"))) }}'
     state: 'absent'
   with_flattened:
     - '{{ rsyslog_pools | d([]) }}'
@@ -133,7 +145,8 @@
   notify: [ 'Restart rsyslogd' ]
 
 - name: Revert original rsyslog config rules
-  shell: rm -f /etc/rsyslog.d/{{ item.filename }} ; dpkg-divert --quiet --local --rename --remove /etc/rsyslog.d/{{ item.filename }}
+  shell: rm -f /etc/rsyslog.d/{{ item.filename }} ;
+         dpkg-divert --quiet --local --rename --remove /etc/rsyslog.d/{{ item.filename }}
   args:
     removes: '/etc/rsyslog.d/{{ item.divert_to | d(item.filename + ".dpkg-divert") }}'
     warn: False

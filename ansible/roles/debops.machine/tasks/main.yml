@@ -5,6 +5,8 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened: '{{ machine__packages }}'
+  register: machine__register_packages
+  until: machine__register_packages is succeeded
   when: machine__enabled|bool
 
 - name: Generate machine-info config file
@@ -96,19 +98,28 @@
   changed_when: False
 
 - name: Divert packaged MOTD scripts
-  command: dpkg-divert --quiet --local --divert /etc/update-motd.d/{{ item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}.disabled --rename /etc/update-motd.d/{{ item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}
+  command: dpkg-divert --quiet --local
+           --divert /etc/update-motd.d/{{ item.filename
+                                          | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}.disabled
+           --rename /etc/update-motd.d/{{ item.filename
+                                          | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}
   args:
-    creates: '{{ "/etc/update-motd.d/" + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) + ".disabled" }}'
+    creates: '{{ "/etc/update-motd.d/" + (item.filename
+                                          | d(("%02d" | format(item.weight|int))|string + "-" + item.name))
+                                       + ".disabled" }}'
   with_flattened: '{{ machine__motd_combined_scripts | parse_kv_items }}'
   when: (machine__enabled|bool and
          (item.filename is defined or item.name is defined) and
          (item.state|d('present') not in [ 'init', 'absent', 'ignore', 'revert' ]) and
          ((item.divert|d())|bool and
-         '/etc/update-motd.d/' + (item.filename | d(item.weight|string + "-" + item.name)) + '.disabled' not in machine__register_motd_diversions.stdout_lines))
+         '/etc/update-motd.d/' + (item.filename
+                                  | d(item.weight|string + "-" + item.name))
+                               + '.disabled' not in machine__register_motd_diversions.stdout_lines))
 
 - name: Remove dynamic MOTD scripts
   file:
-    path: '{{ machine__motd_update_dir + "/" + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) }}'
+    path: '{{ machine__motd_update_dir + "/"
+              + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) }}'
     state: 'absent'
   with_flattened: '{{ machine__motd_combined_scripts | parse_kv_items }}'
   register: machine__register_motd_scripts_removed
@@ -120,7 +131,8 @@
   copy:
     src: '{{ item.src | d(omit) }}'
     content: '{{ item.content | d(omit) }}'
-    dest: '{{ machine__motd_update_dir + "/" + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) }}'
+    dest: '{{ machine__motd_update_dir + "/"
+              + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
@@ -134,7 +146,8 @@
 - name: Remove unknown MOTD scripts
   shell: find /etc/update-motd.d -maxdepth 1 -type f
          -name '*-{{ item.item.name }}'
-         ! -name '{{ ("%02d" | format((item.item.weight | d("0"))|int))|string + "-" + item.item.name }}' -exec rm -vf {} +
+         ! -name '{{ ("%02d" | format((item.item.weight | d("0"))|int))|string + "-" + item.item.name }}'
+         -exec rm -vf {} +
   with_items:
     - '{{ machine__register_motd_scripts_removed.results }}'
     - '{{ machine__register_motd_scripts_created.results }}'
@@ -142,16 +155,24 @@
          item.item.filename is undefined and item is changed)
 
 - name: Revert packaged MOTD scripts
-  shell: rm -f /etc/update-motd.d/{{ item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }} ; dpkg-divert --quiet --local --rename --remove /etc/update-motd.d/{{ item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}
+  shell: rm -f /etc/update-motd.d/{{ item.filename
+                                     | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}
+         ; dpkg-divert --quiet --local --rename
+                       --remove /etc/update-motd.d/{{ item.filename
+                                                      | d(("%02d" | format(item.weight|int))|string
+                                                          + "-" + item.name) }}
   args:
     warn: False
-    removes: '{{ "/etc/update-motd.d/" + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) + ".disabled" }}'
+    removes: '{{ "/etc/update-motd.d/" + (item.filename
+                                          | d(("%02d" | format(item.weight|int))|string + "-" + item.name))
+                                       + ".disabled" }}'
   with_flattened: '{{ machine__motd_combined_scripts | parse_kv_items }}'
   when: ((not machine__enabled|bool and (item.divert|d())|bool) or
           ((item.filename is defined or item.name is defined) and
            item.state|d('present') in [ 'absent', 'revert' ] and
            (item.divert|d())|bool and
-           '/etc/update-motd.d/' + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) + '.disabled' in machine__register_motd_diversions.stdout_lines))
+           '/etc/update-motd.d/' + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name))
+                                 + '.disabled' in machine__register_motd_diversions.stdout_lines))
 
 - name: Make sure that Ansible local facts directory exists
   file:

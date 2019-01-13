@@ -42,6 +42,7 @@
   git:
     repo: '{{ gitlab_shell_git_repo }}'
     dest: '{{ gitlab_shell_git_dest }}'
+    version: 'master'
     bare: True
     update: True
   become: True
@@ -79,6 +80,7 @@
     GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_target_tag
@@ -90,6 +92,7 @@
     GIT_WORK_TREE: '{{ gitlab_shell_git_checkout }}'
   args:
     chdir: '{{ gitlab_shell_git_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_shell_checkout

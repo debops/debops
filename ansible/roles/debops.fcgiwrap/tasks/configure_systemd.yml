@@ -14,7 +14,8 @@
   when: fcgiwrap__instances
 
 - name: Reload systemd units
-  command: 'systemctl daemon-reload'
+  systemd:
+    daemon_reload: True
   when: fcgiwrap__register_systemd is changed
 
 - name: Enable and start systemd units

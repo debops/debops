@@ -36,6 +36,10 @@ shell: test-shell
 syntax:         ## Check Ansible playbook syntax
 syntax: test-playbook-syntax
 
+.PHONY: lint
+lint:           ## Check Ansible roles using ansible-lint
+lint: test-ansible-lint
+
 .PHONY: test
 test:           ## Perform all DebOps tests
 test: test-all
@@ -85,7 +89,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml test-shell test-docker-build
+test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml test-ansible-lint test-shell test-docker-build
 
 .PHONY: test-pep8
 test-pep8:
@@ -117,6 +121,11 @@ test-playbook-syntax:
 	@ANSIBLE_ROLES_PATH="ansible/roles" ansible-playbook --syntax-check \
 		ansible/playbooks/bootstrap.yml \
 		ansible/playbooks/site.yml
+
+.PHONY: test-ansible-lint
+test-ansible-lint:
+	@printf "%s\n" "Checking Ansible roles using ansible-lint..."
+	@ansible-lint roles/*
 
 .PHONY: test-yaml
 test-yaml:

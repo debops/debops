@@ -4,9 +4,12 @@
   become_user: '{{ item.name }}'
   become: True
   git:
-    repo: '{{ item.dotfiles_repo | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].repo) }}'
+    repo: '{{ item.dotfiles_repo | d(users__dotfiles_combined_map[item.dotfiles_name
+                                   | d(users__dotfiles_name)].repo) }}'
     dest: '{{ item.dotfiles_dest | d(users__dotfiles_dest) }}'
-    update: '{{ (item.dotfiles_update | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].update | d(users__dotfiles_update))) | bool }}'
+    version: '{{ item.dotfiles_version | d("master") }}'
+    update: '{{ (item.dotfiles_update | d(users__dotfiles_combined_map[item.dotfiles_name
+                                        | d(users__dotfiles_name)].update | d(users__dotfiles_update))) | bool }}'
   with_flattened:
     - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'
@@ -22,7 +25,8 @@
 - name: Configure users dotfiles
   become_user: '{{ item.name }}'
   become: True
-  command: '{{ item.dotfiles_command | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].command) }}'
+  command: '{{ item.dotfiles_command | d(users__dotfiles_combined_map[item.dotfiles_name
+                                       | d(users__dotfiles_name)].command) }}'
   args:
     chdir: '{{ item.dotfiles_dest | d(users__dotfiles_dest) }}'
     creates: '{{ item.dotfiles_creates
@@ -31,7 +35,7 @@
                        if users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].creates|d()
                        else omit) }}'
   register: users__register_dotfiles_command
-  changed_when: users__register_dotfiles_command.stdout != '' and
+  changed_when: users__register_dotfiles_command.stdout|d() and
                 not users__register_dotfiles_command.stdout.startswith('skipped, since ')
   with_flattened:
     - '{{ users__root_accounts }}'
@@ -43,13 +47,17 @@
     - '{{ users__dependent_accounts }}'
   when: (item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
          item.dotfiles_enabled | d(users__dotfiles_enabled) | bool and
-         item.dotfiles_command | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].command|d()))
+         item.dotfiles_command | d(users__dotfiles_combined_map[item.dotfiles_name
+                                 | d(users__dotfiles_name)].command|d()))
   no_log: '{{ users__no_log | bool }}'
 
 - name: Configure users shell if specified
   user:
     name: '{{ item.name }}'
-    shell: '{{ item.shell | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].shell if (item.dotfiles_enabled | d(users__dotfiles_enabled) | bool and users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].shell|d()) else (users__default_shell if users__default_shell else omit)) }}'
+    shell: '{{ item.shell | d(users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].shell
+                 if (item.dotfiles_enabled | d(users__dotfiles_enabled) | bool and
+                     users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].shell|d())
+                 else (users__default_shell if users__default_shell else omit)) }}'
   with_flattened:
     - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'

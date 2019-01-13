@@ -8,6 +8,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver|d())
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: bitcoind__register_apt_key
+  until: bitcoind__register_apt_key is succeeded
 
 - name: Configure upstream APT repository
   apt_repository:
@@ -20,6 +22,8 @@
     name: '{{ item }}'
     state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
   with_flattened: '{{ bitcoind__base_packages }}'
+  register: bitcoind__register_packages
+  until: bitcoind__register_packages is succeeded
   tags: [ 'role::bitcoind:pkgs' ]
 
 # System user and group [[[

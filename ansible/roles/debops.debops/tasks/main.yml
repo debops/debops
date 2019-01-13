@@ -9,6 +9,8 @@
     - [ 'git', 'python-pip' ]
     - '{{ debops__base_packages }}'
     - '{{ debops__packages }}'
+  register: debops__register_packages
+  until: debops__register_packages is succeeded
   when: item|d()
 
 - name: Install DebOps from PyPI
@@ -16,7 +18,10 @@
     name: '{{ item }}'
     state: 'present'
   with_items: '{{ debops__pip_packages }}'
-  notify: '{{ [ "Update DebOps in the background with " + debops__update_method ] if not debops__update_method == "sync" else omit }}'
+  register: debops__register_pip_install
+  until: debops__register_pip_install is succeeded
+  notify: '{{ [ "Update DebOps in the background with " + debops__update_method ]
+              if not debops__update_method == "sync" else omit }}'
   when: item|d()
 
 - name: Configure system-wide DebOps scripts
@@ -38,8 +43,9 @@
   git:
     repo: '{{ debops__project_git_repo }}'
     dest: '{{ debops__project_name if debops__project_name else debops__project_git_repo | basename }}'
+    version: 'master'
     update: True
-  when: debops__project_git_repo != ''
+  when: debops__project_git_repo|d()
 
 - name: Initialize new project
   become: '{{ debops__install_systemwide|bool }}'
@@ -47,4 +53,4 @@
   args:
     creates: '{{ debops__project_name }}/.debops.cfg'
   when: debops__project_name|d() and
-        debops__project_git_repo == ''
+        not debops__project_git_repo|d()

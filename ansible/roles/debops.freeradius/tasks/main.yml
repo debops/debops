@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ freeradius__base_packages }}'
     - '{{ freeradius__packages }}'
+  register: freeradius__register_packages
+  until: freeradius__register_packages is succeeded
 
 - name: Enable FreeRADIUS service in systemd to start at boot time
   systemd:
@@ -52,9 +54,11 @@
 - name: Divert the FreeRADIUS configuration files
   vars:
     divert_state: '{{ item.divert | d(True if ((freeradius__conf_base_path + "/"
-                      + (item.filename | d(item.name))) in freeradius__register_conffiles.stdout_lines) else False) }}'
+                      + (item.filename
+                         | d(item.name))) in freeradius__register_conffiles.stdout_lines) else False) }}'
     divert_filename: '{{ item.divert_filename
-                         | d((((item.filename | d(item.name))|dirname + "/.") if ((item.filename | d(item.name))|dirname) else ".")
+                         | d((((item.filename | d(item.name))|dirname + "/.")
+                              if ((item.filename | d(item.name))|dirname) else ".")
                              + (item.filename | d(item.name))|basename + ".dpkg-divert") }}'
   command: dpkg-divert --quiet --local
                        --divert {{ freeradius__conf_base_path + '/' + divert_filename }}
@@ -112,7 +116,8 @@
 - name: Remove FreeRADIUS configuration files
   vars:
     divert_state: '{{ item.divert | d(True if ((freeradius__conf_base_path + "/"
-                      + (item.filename | d(item.name))) in freeradius__register_conffiles.stdout_lines) else False) }}'
+                      + (item.filename
+                         | d(item.name))) in freeradius__register_conffiles.stdout_lines) else False) }}'
   file:
     dest: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
     state: 'absent'
@@ -124,12 +129,15 @@
 - name: Revert FreeRADIUS configuration files
   vars:
     divert_state: '{{ item.divert | d(True if ((freeradius__conf_base_path + "/"
-                      + (item.filename | d(item.name))) in freeradius__register_conffiles.stdout_lines) else False) }}'
+                      + (item.filename
+                         | d(item.name))) in freeradius__register_conffiles.stdout_lines) else False) }}'
     divert_filename: '{{ item.divert_filename
-                         | d((((item.filename | d(item.name))|dirname + "/.") if ((item.filename | d(item.name))|dirname) else ".")
+                         | d((((item.filename | d(item.name))|dirname + "/.")
+                              if ((item.filename | d(item.name))|dirname) else ".")
                              + (item.filename | d(item.name))|basename + ".dpkg-divert") }}'
   shell: rm -f {{ freeradius__conf_base_path + '/' + (item.filename | d(item.name)) }}
-         ; dpkg-divert --quiet --local --rename --remove {{ freeradius__conf_base_path + '/' + (item.filename | d(item.name)) }}
+         ; dpkg-divert --quiet --local --rename
+                       --remove {{ freeradius__conf_base_path + '/' + (item.filename | d(item.name)) }}
   args:
     warn: False
   with_items: '{{ freeradius__combined_configuration | parse_kv_items }}'

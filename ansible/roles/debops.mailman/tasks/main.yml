@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: '{{ mailman__packages }}'
+  register: mailman__register_packages
+  until: mailman__register_packages is succeeded
 
 - name: Apply patches to Mailman source code
   patch:
@@ -46,14 +48,16 @@
   tags: [ 'role::mailman:lang' ]
 
 - name: Reconfigure mailman package
-  shell: dpkg-reconfigure --frontend noninteractive mailman
+  command: dpkg-reconfigure --frontend noninteractive mailman
   register: mailman__package_reconfigure
   when: (mailman__register_debconf_question1 is changed or
          mailman__register_debconf_question2 is changed)
   tags: [ 'role::mailman:lang' ]
 
 - name: Run language pack conversion script
-  script: scripts/convert-mailman-to-utf8 {{ (mailman__default_languages + mailman__languages + mailman__register_debconf.current["mailman/used_languages"].split(" ") | unique) | join(' ') }}
+  script: scripts/convert-mailman-to-utf8
+          {{ (mailman__default_languages + mailman__languages
+              + mailman__register_debconf.current["mailman/used_languages"].split(" ") | unique) | join(' ') }}
   register: mailman__register_convert_script
   changed_when: mailman__register_convert_script.stdout
   when: ((mailman__register_patches|d() and mailman__register_patches is changed) or
@@ -84,8 +88,11 @@
   when: mailman__register_postfix_transport is changed
 
 - name: Create Mailman site list
-  shell: echo | newlist {{ '' if (mailman__site_list_notify|bool) else '--quiet' }} --language={{ mailman__site_language }} {{ mailman__site_list }} {{ mailman__site_admin }}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + mailman__site_list + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
+  shell: echo | newlist {{ '' if (mailman__site_list_notify|bool) else '--quiet' }}
+                        --language={{ mailman__site_language }} {{ mailman__site_list }} {{ mailman__site_admin }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/'
+            + mailman__site_domain + '/' + mailman__site_list
+            + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
   args:
     creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
     executable: '/bin/sh'
@@ -95,12 +102,16 @@
   no_log: True
 
 - name: Set site administrator password
-  command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
+  command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn
+                         + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length='
+                         + mailman__site_password_length) }}
   when: mailman__register_site_list is changed
   no_log: True
 
 - name: Set list creator password
-  command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/site/list_creator_password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
+  command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + ansible_fqdn
+                            + '/mailman/site/list_creator_password chars=ascii,numbers,digits,hexdigits length='
+                            + mailman__site_password_length) }}
   when: mailman__register_site_list is changed
   no_log: True
 
@@ -126,9 +137,15 @@
          {{ item.password }}
          {% else %}
          {% if item.domain|d() and item.domain %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + item.domain + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman__admin_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/'
+                               + item.domain + '/' + item.name
+                               + '/owner/password chars=ascii,numbers,digits,hexdigits length='
+                               + mailman__admin_password_length) }}
          {% else %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/' + mailman__site_domain + '/' + item.name + '/owner/password chars=ascii,numbers,digits,hexdigits length=' + mailman__admin_password_length) }}
+         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/'
+                               + mailman__site_domain + '/' + item.name
+                               + '/owner/password chars=ascii,numbers,digits,hexdigits length='
+                               + mailman__admin_password_length) }}
          {% endif %}
          {% endif %}
   args:

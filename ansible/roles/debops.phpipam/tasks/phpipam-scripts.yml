@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: [ 'python-mysqldb' ]
+  register: phpipam__register_packages
+  until: phpipam__register_packages is succeeded
 
 - name: Clone phpipam-scripts
   git:

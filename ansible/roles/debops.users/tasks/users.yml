@@ -45,7 +45,8 @@
     name:               '{{ item.name }}'
     uid:                '{{ item.uid                | d(omit) }}'
     group:              '{{ item.group              | d(omit) }}'
-    groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups) | intersect(getent_group.keys())) | join(",") ) if item.groups is defined else omit }}'
+    groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups)
+                               | intersect(getent_group.keys())) | join(",") ) if item.groups is defined else omit }}'
     append:             '{{ item.append             | d(True) }}'
     state:              '{{ item.state              | d("present") }}'
     comment:            '{{ item.comment            | d(omit) }}'

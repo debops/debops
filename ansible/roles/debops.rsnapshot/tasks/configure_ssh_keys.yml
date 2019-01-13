@@ -22,7 +22,11 @@
   authorized_key:
     user: 'root'
     key: '{{ rsnapshot_register_ssh.key + " " + rsnapshot_register_ssh.comment }}'
-    key_options: 'no-pty,no-agent-forwarding,no-X11-forwarding,no-port-forwarding,command="{{ hostvars[item].rsnapshot_ssh_command if (hostvars[item].rsnapshot_ssh_command|d() and hostvars[item].rsnapshot_ssh_command|bool) else rsnapshot_ssh_command }}"'
+    key_options: 'no-pty,no-agent-forwarding,no-X11-forwarding,no-port-forwarding,command="{{
+                  hostvars[item].rsnapshot_ssh_command
+                  if (hostvars[item].rsnapshot_ssh_command|d() and
+                      hostvars[item].rsnapshot_ssh_command|bool)
+                  else rsnapshot_ssh_command }}"'
     state: 'present'
   delegate_to: '{{ item }}'
   with_items: '{{ rsnapshot_servers }}'
@@ -36,12 +40,22 @@
     warn: False
 
 - name: Remove known host fingerprints from ~/.ssh/known_hosts
-  shell: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }}
+  command: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host
+                                                      if (hostvars[item].rsnapshot_backup_host|d() and
+                                                          hostvars[item].rsnapshot_backup_host|bool)
+                                                      else hostvars[item].ansible_fqdn }}
   with_items: '{{ rsnapshot_servers }}'
   when: rsnapshot_reset_sshkeys is defined and rsnapshot_reset_sshkeys
 
 - name: Get list of already scanned host fingerprints
-  shell: ssh-keygen -f /root/.ssh/known_hosts -F {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }} | grep -q '^# Host {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }} found'
+  shell: ssh-keygen -f /root/.ssh/known_hosts -F {{ hostvars[item].rsnapshot_backup_host
+                                                    if (hostvars[item].rsnapshot_backup_host|d() and
+                                                        hostvars[item].rsnapshot_backup_host|bool)
+                                                    else hostvars[item].ansible_fqdn }}
+         | grep -q '^# Host {{ hostvars[item].rsnapshot_backup_host
+                               if (hostvars[item].rsnapshot_backup_host|d() and
+                                   hostvars[item].rsnapshot_backup_host|bool)
+                               else hostvars[item].ansible_fqdn }} found'
   with_items: '{{ rsnapshot_servers }}'
   when: ((item is defined and item) and item != inventory_hostname and
          hostvars[item].ansible_fqdn is defined)
@@ -50,13 +64,21 @@
   failed_when: False
 
 - name: Scan SSH fingerprints of rsnapshot servers with custom hostname
-  shell: 'ssh-keyscan -H -T 10 -p {{ hostvars[item].rsnapshot_ssh_port if (hostvars[item].rsnapshot_ssh_port|d() and hostvars[item].rsnapshot_ssh_port) else rsnapshot_ssh_port }} {{ hostvars[item].rsnapshot_backup_host }} >> /root/.ssh/known_hosts'
+  shell: 'ssh-keyscan -H -T 10 -p {{ hostvars[item].rsnapshot_ssh_port
+                                     if (hostvars[item].rsnapshot_ssh_port|d() and
+                                         hostvars[item].rsnapshot_ssh_port)
+                                     else rsnapshot_ssh_port }}
+                                     {{ hostvars[item].rsnapshot_backup_host }} >> /root/.ssh/known_hosts'
   with_items: '{{ rsnapshot_register_known_hosts.results }}'
   when: ((item.rc is defined and item.rc > 0) and
          (item.rsnapshot_backup_host is defined and item.rsnapshot_backup_host))
 
 - name: Scan SSH fingerprints of rsnapshot servers
-  shell: 'ssh-keyscan -H -T 10 -p {{ hostvars[item.item].rsnapshot_ssh_port if (hostvars[item.item].rsnapshot_ssh_port|d() and hostvars[item.item].rsnapshot_ssh_port) else rsnapshot_ssh_port }} {{ hostvars[item.item].ansible_fqdn }} >> /root/.ssh/known_hosts'
+  shell: 'ssh-keyscan -H -T 10 -p {{ hostvars[item.item].rsnapshot_ssh_port
+                                     if (hostvars[item.item].rsnapshot_ssh_port|d() and
+                                         hostvars[item.item].rsnapshot_ssh_port)
+                                     else rsnapshot_ssh_port }}
+                                     {{ hostvars[item.item].ansible_fqdn }} >> /root/.ssh/known_hosts'
   with_items: '{{ rsnapshot_register_known_hosts.results }}'
   when: item.rc is defined and item.rc > 0
 

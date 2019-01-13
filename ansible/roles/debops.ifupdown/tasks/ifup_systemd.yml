@@ -20,7 +20,8 @@
   register: ifupdown__register_systemd_services
 
 - name: Reload systemd services
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: ansible_service_mgr == 'systemd' and ifupdown__register_systemd_services is changed
 
   ## https://stackoverflow.com/a/28888474

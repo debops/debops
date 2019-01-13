@@ -16,7 +16,8 @@
   when: ((not ansible_check_mode) and 'Invalid configID' in owncloud__register_ldap_default_config_exits.stdout|d(""))
 
 - name: Set LDAP password
-  command: php --file "{{ owncloud__app_home }}/occ" ldap:set-config "" ldapAgentPassword "{{ owncloud__ldap_password }}"
+  command: php --file "{{ owncloud__app_home }}/occ"
+               ldap:set-config "" ldapAgentPassword "{{ owncloud__ldap_password }}"
   changed_when: False
   become: True
   become_user: '{{ owncloud__app_user }}'

@@ -10,6 +10,7 @@
     - '{{ tinc__base_packages }}'
     - '{{ tinc__packages }}'
   register: tinc__register_install
+  until: tinc__register_install is succeeded
 
 # Create user [[[1
 - name: Create system group for VPN service
@@ -82,7 +83,8 @@
 
 - name: Create required directories
   file:
-    path: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.hostname | d(tinc__hostname)) | replace("-","_") }}.d'
+    path: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.hostname | d(tinc__hostname))
+                                                                  | replace("-","_") }}.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -155,17 +157,21 @@
                        and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
 
 - name: Initialize RSA key pairs
-  shell: yes | tincd -n {{ item.value.name | d(item.key) }} -K {{ item.value.rsa_key_length | d(tinc__rsa_key_length) }}
+  shell: yes | tincd -n {{ item.value.name | d(item.key) }}
+                     -K {{ item.value.rsa_key_length | d(tinc__rsa_key_length) }}
   args:
     creates: '/etc/tinc/{{ item.value.name | d(item.key) }}/rsa_key.priv'
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent'
 
 - name: Create persistent copy of host public key
-  command: cp /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") }}
-              /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") + ".d/99_rsa-public-key" }}
+  command: cp /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
+                                                                     | replace("-","_") }}
+              /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
+                                                                     | replace("-","_") + ".d/99_rsa-public-key" }}
   args:
-    creates: /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") + ".d/99_rsa-public-key" }}
+    creates: /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
+                                                                    | replace("-","_") + ".d/99_rsa-public-key" }}
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent'
 
@@ -173,7 +179,8 @@
 - name: Generate host configuration file
   template:
     src: 'etc/tinc/network/hosts/host-config.j2'
-    dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") }}.d/00_host-config'
+    dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
+                                                                  | replace("-","_") }}.d/00_host-config'
     owner: 'root'
     group: 'root'
     mode: '0640'
@@ -184,8 +191,10 @@
 
 - name: Assemble host configuration file from parts
   assemble:
-    src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") }}.d'
-    dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") }}'
+    src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
+                                                                 | replace("-","_") }}.d'
+    dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
+                                                                  | replace("-","_") }}'
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0640'
@@ -196,15 +205,19 @@
 # Tinc host configuration distribution [[[1
 - name: Upload public keys from hosts to Ansible Controller
   fetch:
-    src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname)) | replace("-","_") }}'
-    dest: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key) + "/by-network/" + item.value.name | d(item.key) + "/hosts/" + (item.value.hostname | d(tinc__hostname) | replace("-","_")) }}'
+    src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
+                                                                 | replace("-","_") }}'
+    dest: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key)
+              + "/by-network/" + item.value.name | d(item.key) + "/hosts/"
+              + (item.value.hostname | d(tinc__hostname) | replace("-","_")) }}'
     flat: True
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent'
 
 - name: Download public keys per network
   copy:
-    src: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key) + "/by-network/" + item.value.name | d(item.key) + "/hosts/" }}'
+    src: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key)
+             + "/by-network/" + item.value.name | d(item.key) + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/'
     owner: 'root'
     group: '{{ tinc__group }}'
@@ -240,7 +253,8 @@
 
 - name: Download public keys per host
   copy:
-    src: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key) + "/by-host/" + ((item.value.inventory_hostname | d(tinc__inventory_hostname))) + "/hosts/" }}'
+    src: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key)
+             + "/by-host/" + ((item.value.inventory_hostname | d(tinc__inventory_hostname))) + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/'
     owner: 'root'
     group: '{{ tinc__group }}'
@@ -293,7 +307,10 @@
   when: tinc__systemd | bool
 
 - name: Reload systemd daemon configuration
-  shell: systemctl daemon-reload ; systemctl enable tinc.service
+  systemd:
+    daemon_reload: True
+    name: 'tinc.service'
+    enabled: True
   when: tinc__register_systemd is changed
 
 - name: Start tinc VPN networks on first install

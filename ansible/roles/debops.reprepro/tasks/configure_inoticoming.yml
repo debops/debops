@@ -3,8 +3,10 @@
 - name: Install inoticoming package
   apt:
     name: 'inoticoming'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
+  register: reprepro__register_inotincoming
+  until: reprepro__register_inotincoming is succeeded
 
 - name: Configure inoticoming service
   template:
@@ -22,7 +24,8 @@
   notify: [ 'Restart inoticoming' ]
 
 - name: Reload systemd configuration
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          reprepro_register_inotincoming_init is changed)
 

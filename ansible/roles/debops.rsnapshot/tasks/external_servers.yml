@@ -34,13 +34,17 @@
   tags: [ 'role::rsnapshot:sshkeys' ]
 
 - name: Remove known host fingerprints from ~/.ssh/known_hosts
-  shell: ssh-keygen -f /root/.ssh/known_hosts -R {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }}
+  command: ssh-keygen -f /root/.ssh/known_hosts
+                      -R {{ hostvars[item].rsnapshot_backup_host if (hostvars[item].rsnapshot_backup_host|d() and
+                            hostvars[item].rsnapshot_backup_host|bool) else hostvars[item].ansible_fqdn }}
   with_items: '{{ rsnapshot_external_servers }}'
   when: rsnapshot_reset_sshkeys is defined and rsnapshot_reset_sshkeys
   tags: [ 'role::rsnapshot:sshkeys' ]
 
 - name: Get list of already scanned host fingerprints
-  shell: ssh-keygen -f /root/.ssh/known_hosts -F {{ item.backup_host | default(item.name) }} | grep -q '^# Host {{ item.backup_host | default(item.name) }} found'
+  shell: ssh-keygen -f /root/.ssh/known_hosts
+                    -F {{ item.backup_host | default(item.name) }}
+         | grep -q '^# Host {{ item.backup_host | default(item.name) }} found'
   with_items: '{{ rsnapshot_external_servers }}'
   when: (inventory_hostname in rsnapshot_clients and
          ((item is defined and item) and item != inventory_hostname and
@@ -51,14 +55,16 @@
   tags: [ 'role::rsnapshot:sshkeys' ]
 
 - name: Scan SSH fingerprints of rsnapshot servers with custom hostname
-  shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d(rsnapshot_ssh_port) }} {{ item.backup_host }} >> /root/.ssh/known_hosts'
+  shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d(rsnapshot_ssh_port) }}
+                      {{ item.backup_host }} >> /root/.ssh/known_hosts'
   with_items: '{{ rsnapshot_register_external_known_hosts.results }}'
   when: ((item.rc is defined and item.rc > 0) and
          (item.backup_host is defined and item.backup_host))
   tags: [ 'role::rsnapshot:sshkeys' ]
 
 - name: Scan SSH fingerprints of rsnapshot servers
-  shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d(rsnapshot_ssh_port) }} {{ item.item.name }} >> /root/.ssh/known_hosts'
+  shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d(rsnapshot_ssh_port) }}
+                      {{ item.item.name }} >> /root/.ssh/known_hosts'
   with_items: '{{ rsnapshot_register_external_known_hosts.results }}'
   when: item.rc is defined and item.rc > 0
   tags: [ 'role::rsnapshot:sshkeys' ]

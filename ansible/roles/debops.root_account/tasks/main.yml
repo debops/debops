@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ root_account__base_packages }}'
     - '{{ root_account__packages }}'
+  register: root_account__register_packages
+  until: root_account__register_packages is succeeded
   when: root_account__enabled|bool
 
 - name: Check available SSH key types
@@ -74,7 +76,8 @@
   command: usermod --add-subuids {{ (item|string + "-" + (item|int + root_account__subuid_count|int)|string) }}
                    --add-subgids {{ (item|string + "-" + (item|int + root_account__subuid_count|int)|string) }} root
   with_items: '{{ root_account__subuid_start }}'
-  when: root_account__enabled|bool and root_account__subuid_enabled|bool and root_account__register_subuid.stdout == ''
+  when: root_account__enabled|bool and root_account__subuid_enabled|bool and
+        not root_account__register_subuid.stdout|d()
 
 - name: Fix shell usage without TTY present
   lineinfile:

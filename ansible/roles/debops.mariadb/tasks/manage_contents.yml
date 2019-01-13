@@ -29,7 +29,9 @@
     group: 'root'
     mode: '0600'
   with_together:
-    - '{{ mariadb__databases + lookup("flattened", mariadb__dependent_databases, wantlist=True) + mariadb_databases|d([]) }}'
+    - '{{ mariadb__databases
+          + lookup("flattened", mariadb__dependent_databases, wantlist=True)
+          + mariadb_databases|d([]) }}'
     - '{{ mariadb__register_database_status.results }}'
   delegate_to: '{{ mariadb__delegate_to }}'
   when: ((item.0.database|d(False) or item.0.name|d(False)) and
@@ -43,7 +45,9 @@
     target: '{{ item.0.target }}'
     state: 'import'
   with_together:
-    - '{{ mariadb__databases + lookup("flattened", mariadb__dependent_databases, wantlist=True) + mariadb_databases|d([]) }}'
+    - '{{ mariadb__databases
+          + lookup("flattened", mariadb__dependent_databases, wantlist=True)
+          + mariadb_databases|d([]) }}'
     - '{{ mariadb__register_database_status.results }}'
   delegate_to: '{{ mariadb__delegate_to }}'
   when: ((item.0.database|d(False) or item.0.name|d(False)) and

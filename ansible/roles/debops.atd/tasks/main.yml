@@ -6,6 +6,8 @@
     state: '{{ "present" if atd_enabled|bool else "absent" }}'
     purge: True
     install_recommends: False
+  register: atd__register_packages
+  until: atd__register_packages is succeeded
 
 - name: Generate consistent atd variables
   set_fact:

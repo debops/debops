@@ -9,6 +9,8 @@
     state: 'present'
     install_recommends: False
   with_items: '{{ iscsi__packages }}'
+  register: iscsi__register_packages
+  until: iscsi__register_packages is succeeded
 
 - name: Configure iSCSI Initiator IQN
   lineinfile:

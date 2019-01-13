@@ -34,6 +34,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: nginx__register_apt_key
+  until: nginx__register_apt_key is succeeded
   when: (nginx_flavor in [ 'nginx.org', 'passenger' ])
 
 - name: Add flavor APT repository
@@ -50,6 +52,8 @@
   when: (nginx__deploy_state in [ 'present' ])
   with_flattened:
     - '{{ nginx_base_packages }}'
+  register: nginx__register_packages_present
+  until: nginx__register_packages_present is succeeded
 
 - name: Ensure Nginx packages are in their desired state
   package:
@@ -57,6 +61,8 @@
     state: '{{ "present" if (nginx__deploy_state == "present") else "absent" }}'
   with_flattened:
     - '{{ nginx__flavor_packages }}'
+  register: nginx__register_packages_flavor
+  until: nginx__register_packages_flavor is succeeded
 
 - name: Create default nginx directories
   file:
@@ -86,7 +92,8 @@
   service:
     name: 'nginx'
     state: 'restarted'
-  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and nginx__deploy_state in [ 'present' ])
+  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and
+         nginx__deploy_state in [ 'present' ])
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: awk '$1=="nameserver" {if(/%/){sub(/[0-9a-fA-F:]+/, "[&]", $2)}; print $2}' /etc/resolv.conf
@@ -161,14 +168,6 @@
   with_items: [ 'acme-challenge', 'ssl' ]
   when: (nginx__deploy_state in [ 'present' ])
   notify: [ 'Test nginx and reload' ]
-
-  # Remove temporary old files if they are present
-- name: Remove remnants of dpkg-diverted configuration
-  command: rm -f /etc/nginx/fastcgi_params.dpkg-divert /etc/nginx/fastcgi_params.dpkg-divert.lock
-  args:
-    removes: '/etc/nginx/fastcgi_params.dpkg-divert.lock'
-  notify: [ 'Test nginx and reload' ]
-  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Disable default nginx site
   file:

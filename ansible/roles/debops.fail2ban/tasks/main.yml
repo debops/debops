@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: [ 'fail2ban', 'whois' ]
+  register: fail2ban__register_packages
+  until: fail2ban__register_packages is succeeded
 
 - name: Divert original fail2ban configuration
   command: dpkg-divert --quiet --local --divert /etc/fail2ban/jail.conf.dpkg-divert --rename /etc/fail2ban/jail.conf

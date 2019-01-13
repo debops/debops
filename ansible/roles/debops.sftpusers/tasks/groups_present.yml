@@ -9,7 +9,8 @@
     - '{{ sftpusers_list }}'
     - '{{ sftpusers_group_list }}'
     - '{{ sftpusers_host_list }}'
-  when: (((item.name is defined and item.name) and (item.gid is undefined or (item.gid is defined and not item.gid))) and
+  when: (((item.name is defined and item.name) and (item.gid is undefined or
+          (item.gid is defined and not item.gid))) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 - name: Create user groups with GIDs

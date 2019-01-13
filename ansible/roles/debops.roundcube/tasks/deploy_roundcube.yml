@@ -34,6 +34,8 @@
   command: git rev-parse HEAD
   args:
     chdir: '{{ roundcube__git_dest }}'
+    warn: False
+  become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_current_head
   changed_when: False
@@ -43,6 +45,8 @@
   command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ roundcube__git_dest }}'
+    warn: False
+  become: True
   become_user: '{{ roundcube__user }}'
   changed_when: False
   when: roundcube__register_cloned.stat.exists
@@ -59,8 +63,10 @@
   git:
     repo: '{{ roundcube__git_repo }}'
     dest: '{{ roundcube__git_dest }}'
+    version: 'master'
     bare: True
     update: True
+  become: True
   become_user: '{{ roundcube__user }}'
 
 - name: Restore HEAD to previous checkout
@@ -95,6 +101,8 @@
     GIT_WORK_TREE: '{{ roundcube__git_checkout }}'
   args:
     chdir: '{{ roundcube__git_dest }}'
+    warn: False
+  become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_target_tag
   changed_when: roundcube__register_target_tag.stdout != roundcube__git_version
@@ -105,12 +113,15 @@
     GIT_WORK_TREE: '{{ roundcube__git_checkout }}'
   args:
     chdir: '{{ roundcube__git_dest }}'
+    warn: False
+  become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_checkout
   changed_when: roundcube__register_target_tag.stdout != roundcube__git_version
 
 - name: Read PHP composer template
   command: cat {{ roundcube__git_checkout }}/composer.json-dist
+  become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_composer_json
   changed_when: False
@@ -131,6 +142,7 @@
     url: '{{ roundcube__composer_phar_url }}'
     dest: '{{ roundcube__git_checkout }}'
     mode: '0640'
+  become: True
   become_user: '{{ roundcube__user }}'
   when: roundcube__composer_phar|bool
 
@@ -138,6 +150,7 @@
   command: php composer.phar install
   args:
     chdir: '{{ roundcube__git_checkout }}'
+  become: True
   become_user: '{{ roundcube__user }}'
   when: roundcube__composer_phar|bool
   register: roundcube__register_composer_phar
@@ -147,7 +160,10 @@
   composer:
     command: install
     working_dir: '{{ roundcube__git_checkout }}'
+  become: True
   become_user: '{{ roundcube__user }}'
+  register: roundcube__register_composer
+  until: roundcube__register_composer is succeeded
   when: not roundcube__composer_phar|bool
 
 - name: Install Javascript packages
@@ -155,6 +171,7 @@
   args:
     chdir: '{{ roundcube__git_checkout }}'
     creates: 'program/js/jquery.min.js'
+  become: True
   become_user: '{{ roundcube__user }}'
 
 - name: Enable cleandb.sh Cron job

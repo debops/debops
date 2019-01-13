@@ -10,6 +10,8 @@
   with_flattened:
     - '{{ bootstrap__base_packages }}'
     - '{{ bootstrap__packages }}'
+  register: bootstrap__register_packages
+  until: bootstrap__register_packages is succeeded
 # ]]]
 
 - name: Gather information about existing users

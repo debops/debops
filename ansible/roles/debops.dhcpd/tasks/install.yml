@@ -21,6 +21,8 @@
     state: 'present'
   with_flattened:
     - '{{ dhcpd_base_packages_map[dhcpd_mode] }}'
+  register: dhcpd__register_packages
+  until: dhcpd__register_packages is succeeded
 
 - name: Reconfigure ISC DHCP relay
   command: dpkg-reconfigure --frontend=noninteractive isc-dhcp-relay

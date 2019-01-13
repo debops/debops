@@ -4,6 +4,8 @@
   apt_key:
     url: '{{ hwraid_repository_key_url }}'
     state: 'present'
+  register: hwraid__register_apt_key
+  until: hwraid__register_apt_key is succeeded
 
 - name: Select supported release for current distribution
   set_fact:
@@ -36,6 +38,8 @@
   with_subelements:
     - '{{ hwraid_device_database }}'
     - 'packages'
+  register: hwraid__register_packages
+  until: hwraid__register_packages is succeeded
   when: ((hwraid_register_release is defined and hwraid_register_release) and
          item.0.module not in hwraid_blacklist and
          item.0.module in hwraid_register_modules.stdout_lines)

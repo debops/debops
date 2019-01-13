@@ -11,6 +11,8 @@
     - '{{ ruby__group_packages }}'
     - '{{ ruby__host_packages }}'
     - '{{ ruby__dependent_packages }}'
+  register: ruby__register_packages
+  until: ruby__register_packages is succeeded
 
 - name: Install Ruby gems
   gem:
@@ -74,5 +76,6 @@
     - '{{ ruby__group_user_gems }}'
     - '{{ ruby__host_user_gems }}'
     - '{{ ruby__dependent_user_gems }}'
+  become: True
   become_user: '{{ item.user | d(item.owner) }}'
   when: (item.user|d() or item.owner|d())

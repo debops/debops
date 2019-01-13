@@ -12,28 +12,40 @@
 
 - name: Calculate default container disk size in GB
   set_fact:
-    openvz_configfile_calculated_diskspace: '{{ ((((openvz_register_storage_size.stdout|int / openvz_configfile_container_count|int)|round|int) / 1024) / 1024)|round }}'
+    openvz_configfile_calculated_diskspace: '{{ ((((openvz_register_storage_size.stdout
+                                                   | int / openvz_configfile_container_count|int)|round|int)
+                                                  / 1024) / 1024)|round }}'
 
 - name: Calculate default container disk size limit in GB
   set_fact:
-    openvz_configfile_calculated_diskspace_limit: '{{ ((((openvz_register_storage_size.stdout|int / openvz_configfile_container_count|int) * openvz_configfile_diskspace_limit_multiplier|float) / 1024 / 1024)|round) }}'
+    openvz_configfile_calculated_diskspace_limit: '{{ ((((openvz_register_storage_size.stdout
+                                                          | int / openvz_configfile_container_count|int)
+                                                         * openvz_configfile_diskspace_limit_multiplier|float)
+                                                        / 1024 / 1024)|round) }}'
 
 - name: Calculate default container disk inode number
   set_fact:
-    openvz_configfile_calculated_diskinodes: '{{ ((openvz_register_storage_inodes.stdout|int / openvz_configfile_container_count|int)|round|int) }}'
+    openvz_configfile_calculated_diskinodes: '{{ ((openvz_register_storage_inodes.stdout|int
+                                                   / openvz_configfile_container_count|int)|round|int) }}'
 
 - name: Calculate default container disk inode limit
   set_fact:
-    openvz_configfile_calculated_diskinodes_limit: '{{ (((openvz_register_storage_inodes.stdout|int / openvz_configfile_container_count|int) * openvz_configfile_diskinodes_limit_multiplier|float)|int) }}'
+    openvz_configfile_calculated_diskinodes_limit: '{{ (((openvz_register_storage_inodes.stdout|int
+                                                          / openvz_configfile_container_count|int)
+                                                         * openvz_configfile_diskinodes_limit_multiplier|float)
+                                                        |int) }}'
 
 - name: Calculate total memory allocated for a container in MB
   set_fact:
-    openvz_configfile_calculated_total_memory: '{{ ((ansible_memtotal_mb|int - openvz_configfile_memory_padding|int)|int / openvz_configfile_container_count|int)|round|int }}'
+    openvz_configfile_calculated_total_memory: '{{ ((ansible_memtotal_mb|int - openvz_configfile_memory_padding|int)
+                                                    |int / openvz_configfile_container_count|int)|round|int }}'
 
 - name: Calculate VSwap allocated from total memory in MB
   set_fact:
-    openvz_configfile_calculated_vswap: '{{ (openvz_configfile_calculated_total_memory|int * openvz_configfile_vswap_multiplier|float)|round|int }}'
+    openvz_configfile_calculated_vswap: '{{ (openvz_configfile_calculated_total_memory|int
+                                             * openvz_configfile_vswap_multiplier|float)|round|int }}'
 
 - name: Calculate RAM allocated for a container in MB
   set_fact:
-    openvz_configfile_calculated_ram: '{{ (openvz_configfile_calculated_total_memory|int - openvz_configfile_calculated_vswap|int)|round|int }}'
+    openvz_configfile_calculated_ram: '{{ (openvz_configfile_calculated_total_memory|int
+                                           - openvz_configfile_calculated_vswap|int)|round|int }}'

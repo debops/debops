@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ radvd__base_packages }}'
     - '{{ radvd__packages }}'
+  register: radvd__register_packages
+  until: radvd__register_packages is succeeded
 
 - name: Generate radvd configuration
   template:

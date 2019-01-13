@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ nfs_server__base_packages }}'
     - '{{ nfs_server__packages }}'
+  register: nfs_server__register_packages
+  until: nfs_server__register_packages is succeeded
 
 - name: Configure NFS server
   template:

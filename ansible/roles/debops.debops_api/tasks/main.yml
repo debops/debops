@@ -13,6 +13,8 @@
     - '{{ debops_api__python3_packages
           if (debops_api__python_version|int == 3)
           else debops_api__python2_packages }}'
+  register: debops_api__register_packages
+  until: debops_api__register_packages is succeeded
   tags: [ 'role::debops_api:pkts' ]
 
 # ]]]
@@ -59,7 +61,9 @@
     repo: '{{ debops_api__input_data_repo_url }}'
     dest: '{{ debops_api__input_data_repo_dest }}'
     update: '{{ debops_api__input_data_repo_update | bool }}'
+    version: 'master'
     recursive: True
+  become: True
   become_user: '{{ debops_api__user }}'
   tags: [ 'role::debops_api:git' ]
 
@@ -78,9 +82,11 @@
   git:
     repo: '{{ debops_api__app_repo_url }}'
     dest: '{{ debops_api__app_repo_dest }}'
+    version: 'master'
     update: True
     # verify_commit:
     # version:
+  become: True
   become_user: '{{ debops_api__user }}'
   tags: [ 'role::debops_api:git' ]
 
@@ -135,6 +141,7 @@
 - name: Run initial DebOps API data build
   command: '{{ debops_api__cron_script }}'
   when: not debops_api__register_public_api_dir.stat.exists
+  become: True
   become_user: '{{ debops_api__user }}'
 
 # ]]]

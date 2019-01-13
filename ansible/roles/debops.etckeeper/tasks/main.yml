@@ -38,6 +38,8 @@
   with_flattened:
     - '{{ etckeeper__base_packages }}'
     - '{{ etckeeper__packages }}'
+  register: etckeeper__register_packages
+  until: etckeeper__register_packages is succeeded
   when: etckeeper__enabled|bool
 
 - name: Create etckeeper configuration
@@ -67,8 +69,7 @@
       {%   if (item.name|d() and item.state|d('present') != 'absent') %}
       {%     if item.comment|d() %}
 
-      {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
-      {%     endif %}
+      {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}{%     endif %}
       {{ (item.ignore | d(item.name)) | regex_replace('\n$','') }}
       {%     if item.comment|d() %}
 

@@ -8,6 +8,8 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: cran__register_apt_key
+  until: cran__register_apt_key is succeeded
   when: cran__upstream|bool and ansible_pkg_mgr == 'apt'
 
 - name: Configure upstream APT repository
@@ -27,6 +29,8 @@
     - '{{ cran__group_packages }}'
     - '{{ cran__host_packages }}'
     - '{{ cran__dependent_packages }}'
+  register: cran__register_packages
+  until: cran__register_packages is succeeded
 
 - name: Configure Java environment in R
   command: R CMD javareconf

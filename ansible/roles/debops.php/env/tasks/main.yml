@@ -11,6 +11,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: php__register_apt_key
+  until: php__register_apt_key is succeeded
   when: php__sury|bool
 
 - name: Add Ondrej Sury repository
@@ -37,7 +39,8 @@
 - name: Detect PHP version from available packages
   environment:
     LC_ALL: 'C'
-  shell: apt-cache show {{ php__version_preference | join(' ') }} | grep -E '^Package:\s+php[0-9.]+$' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
+  shell: apt-cache show {{ php__version_preference | join(' ') }}
+         | grep -E '^Package:\s+php[0-9.]+$' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
   register: php__register_version
   check_mode: False
   changed_when: False
@@ -46,7 +49,9 @@
 - name: Detect PHP long version from available packages
   environment:
     LC_ALL: 'C'
-  shell: apt-cache policy {{ php__version_preference | join(' ') }} | grep -E '^\s+Candidate:\s+' | grep --invert-match 'none' | head -n 1 | sed --regexp-extended 's/\s*[[:alnum:]]+:\s* ([^+-]+).*/\1/g;'
+  shell: apt-cache policy {{ php__version_preference | join(' ') }}
+         | grep -E '^\s+Candidate:\s+' | grep --invert-match 'none' | head -n 1
+         | sed --regexp-extended 's/\s*[[:alnum:]]+:\s* ([^+-]+).*/\1/g;'
   register: php__register_long_version
   check_mode: False
   changed_when: False

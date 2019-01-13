@@ -34,6 +34,7 @@
   git:
     repo: '{{ phpipam_git_repo }}'
     dest: '{{ phpipam_git_dest }}'
+    version: 'master'
     bare: True
     update: True
   become: True
@@ -59,20 +60,24 @@
     mode: '0644'
 
 - name: Get commit hash of target checkout
-  shell: GIT_WORK_TREE={{ phpipam_git_checkout }} git rev-parse {{ phpipam_git_version }}
-         chdir={{ phpipam_git_dest }}
+  environment:
+    GIT_WORK_TREE: '{{ phpipam_git_checkout }}'
+  command: git rev-parse {{ phpipam_git_version }}
   args:
-    executable: '/bin/sh'
+    chdir: '{{ phpipam_git_dest }}'
+    warn: False
   become: True
   become_user: '{{ phpipam_user }}'
   register: phpipam_register_target_branch
   changed_when: phpipam_register_target_branch.stdout != phpipam_register_source.before
 
 - name: Checkout phpIPAM
-  shell: GIT_WORK_TREE={{ phpipam_git_checkout }} git checkout -f {{ phpipam_git_version }}
-         chdir={{ phpipam_git_dest }}
+  environment:
+    GIT_WORK_TREE: '{{ phpipam_git_checkout }}'
+  command: git checkout -f {{ phpipam_git_version }}
   args:
-    executable: '/bin/sh'
+    chdir: '{{ phpipam_git_dest }}'
+    warn: False
   become: True
   become_user: '{{ phpipam_user }}'
   register: phpipam_register_checkout

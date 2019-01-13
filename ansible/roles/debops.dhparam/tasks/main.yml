@@ -36,7 +36,9 @@
 - name: Generate Diffie-Hellman params on Ansible Controller
   command: |
     {% if dhparam__source_library == 'gnutls' %}
-    certtool --generate-dh-params --outfile {{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }} --bits {{ item }}
+    certtool --generate-dh-params
+             --outfile {{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }}
+             --bits {{ item }}
     {% elif dhparam__source_library == 'openssl' %}
     openssl dhparam -out {{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }} {{ item }}
     {% endif %}
@@ -57,6 +59,8 @@
   with_flattened:
     - '{{ dhparam__base_packages }}'
     - '{{ dhparam__packages }}'
+  register: dhparam__register_packages
+  until: dhparam__register_packages is succeeded
   tags: [ 'meta::provision' ]
 
 - name: Create required directories
@@ -82,7 +86,8 @@
 
 - name: Create default symlinks for all sets
   file:
-    src: '{{ "params/" + dhparam__set_prefix + item + "/" + dhparam__prefix + dhparam__default_length + dhparam__suffix }}'
+    src: '{{ "params/" + dhparam__set_prefix + item + "/"
+             + dhparam__prefix + dhparam__default_length + dhparam__suffix }}'
     path: '{{ dhparam__path + "/" + dhparam__set_prefix + item }}'
     state: 'link'
   when: dhparam__deploy_state in ['present']

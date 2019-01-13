@@ -26,6 +26,8 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened: '{{ snapshot_snapper__combined_packages }}'
+  register: snapshot_snapper__register_packages
+  until: snapshot_snapper__register_packages is succeeded
 
 # .. ]]]
 
@@ -50,7 +52,7 @@
   failed_when: False
   changed_when: False
   check_mode: False
-  when: snapshot_snapper__directory != "" and "mlocate" in snapshot_snapper__combined_packages
+  when: snapshot_snapper__directory|d() and "mlocate" in snapshot_snapper__combined_packages
   register: snapshot_snapper__register_updatedb_configured
 
 - name: Configure updatedb to exclude snapshots
@@ -66,7 +68,8 @@
 - name: Check which snapper /etc/snapper/configs/ exist
   stat:
     path: '/etc/snapper/configs/{{ item.name }}'
-  when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and (item.state|d("present") == "present"))
+  when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and
+         (item.state|d("present") == "present"))
   register: snapshot_snapper__register_snapper_configs
   tags: [ 'role::snapshot_snapper:reinit' ]
   with_items: '{{ snapshot_snapper__volumes_combined }}'
@@ -74,7 +77,8 @@
 - name: Check which snapper snapshot directories exist
   stat:
     path: '{{ item.path + "/" + snapshot_snapper__directory }}'
-  when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and (item.state|d("present") == "present"))
+  when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and
+         (item.state|d("present") == "present"))
   tags: [ 'role::snapshot_snapper:reinit' ]
   register: snapshot_snapper__register_snapshot_directory
   with_items: '{{ snapshot_snapper__volumes_combined }}'
@@ -84,7 +88,8 @@
     path: '/etc/snapper/configs/{{ item.0.item.name }}'
     state: 'absent'
   tags: [ 'role::snapshot_snapper:reinit' ]
-  when: (item.0 is not skipped and item.1 is not skipped and item.0.stat.exists|d(item.0.stat.isreg) and not item.1.stat.exists)
+  when: (item.0 is not skipped and item.1 is not skipped and
+         item.0.stat.exists|d(item.0.stat.isreg) and not item.1.stat.exists)
   register: snapshot_snapper__register_snapper_configs_delete
   with_together:
     - '{{ snapshot_snapper__register_snapper_configs.results }}'

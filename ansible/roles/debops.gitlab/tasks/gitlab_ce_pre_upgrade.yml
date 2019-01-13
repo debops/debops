@@ -23,8 +23,10 @@
   command: bundle exec rake gitlab:backup:create RAILS_ENV=production
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
+  register: gitlab__register_backup
   become: True
   become_user: '{{ gitlab_user }}'
+  changed_when: gitlab__register_backup.stdout|d()
 
 - name: Stop GitLab before upgrade (sysvinit)
   service:

@@ -8,6 +8,7 @@
     - '{{ proc_hidepid__base_packages }}'
     - '{{ proc_hidepid__packages }}'
   register: proc_hidepid__register_install
+  until: proc_hidepid__register_install is succeeded
   when: proc_hidepid__enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
@@ -102,7 +103,8 @@
   when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd'
 
 - name: Reload systemd daemons
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: proc_hidepid__register_logind is changed
 
 - name: Update Ansible facts if they were modified

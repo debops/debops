@@ -109,7 +109,9 @@
     - 'gitlab-sidekiq.service'
     - 'gitlab-unicorn.service'
     - 'gitlab-workhorse.service'
-    - '{{ "gitlab-gitaly.service" if (gitlab_version is version_compare("9.0", operator="gt", strict=True)) else [] }}'
+    - '{{ "gitlab-gitaly.service"
+          if (gitlab_version is version_compare("9.0", operator="gt", strict=True))
+          else [] }}'
   register: gitlab__register_systemd_services
   when: (gitlab_register_ce_checkout is changed and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
@@ -124,7 +126,8 @@
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Reload systemd daemons
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == "systemd" and
          (gitlab__register_sysvinit_script is changed or
           gitlab__register_systemd_services is changed or
@@ -138,7 +141,9 @@
          ansible_service_mgr != 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab SysVinit service (systemd)
-  command: systemctl enable gitlab
+  systemd:
+    name: 'gitlab'
+    enabled: True
   when: (gitlab_register_ce_checkout is changed and
          ansible_service_mgr == 'systemd' and not gitlab_use_systemd|bool)
 
@@ -152,7 +157,9 @@
     - 'gitlab-sidekiq.service'
     - 'gitlab-unicorn.service'
     - 'gitlab-workhorse.service'
-    - '{{ "gitlab-gitaly.service" if (gitlab_version is version_compare("9.0", operator="gt", strict=True)) else [] }}'
+    - '{{ "gitlab-gitaly.service"
+          if (gitlab_version is version_compare("9.0", operator="gt", strict=True))
+          else [] }}'
   when: (gitlab_register_ce_checkout is changed and
          gitlab_use_systemd|bool)
 
@@ -188,7 +195,9 @@
   # The RubyGems.org website has frequent timeouts, so we will try and install
   # everything again as long as there are errors.
 - name: Update Ruby gems
-  shell: bundle install --deployment --without {{ gitlab_ce_bundle_install_without[gitlab__database] }} --retry 9999 >> /tmp/gitlab-bundle-install.log 2>&1 ;
+  shell: bundle install --deployment
+                        --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
+                        --retry 9999 >> /tmp/gitlab-bundle-install.log 2>&1 ;
          rm -f /tmp/gitlab-bundle-install.log
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
@@ -288,5 +297,6 @@
     special_time: '{{ gitlab_backup_frequency }}'
     state: 'present'
     user: '{{ gitlab_user }}'
-    job: 'cd {{ gitlab_ce_git_checkout }} ; PATH=/usr/local/bin:/usr/bin:/bin bundle exec rake gitlab:backup:create RAILS_ENV=production CRON=1'
+    job: 'cd {{ gitlab_ce_git_checkout }} \
+          ; PATH=/usr/local/bin:/usr/bin:/bin bundle exec rake gitlab:backup:create RAILS_ENV=production CRON=1'
     cron_file: 'gitlab-backup'

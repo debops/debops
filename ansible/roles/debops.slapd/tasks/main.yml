@@ -21,9 +21,11 @@
 - name: Install OpenLDAP packages
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   with_items: [ 'slapd', 'ldap-utils', 'python-ldap' ]
+  register: slapd__register_packages
+  until: slapd__register_packages is succeeded
 
 - name: Install helper scripts
   copy:
@@ -46,7 +48,7 @@
   with_items: '{{ slapd_ldap_schema }}'
   register: slapd_register_load_schema
   when: slapd_ldap_schema is defined and slapd_ldap_schema
-  changed_when: slapd_register_load_schema.stdout != ""
+  changed_when: slapd_register_load_schema.stdout|d()
 
 - include: password_config_admin.yml
 - include: password_basedn_admin.yml

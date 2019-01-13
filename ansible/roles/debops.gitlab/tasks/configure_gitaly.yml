@@ -13,6 +13,7 @@
   command: git rev-parse HEAD
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+    warn: False
   register: gitlab_register_gitaly_current_head
   changed_when: False
   become: True
@@ -23,6 +24,7 @@
   command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+    warn: False
   changed_when: False
   become: True
   become_user: '{{ gitlab_user }}'
@@ -32,6 +34,7 @@
   git:
     repo: '{{ gitlab__gitaly_repo }}'
     dest: '{{ gitlab__gitaly_dest }}'
+    version: 'master'
     bare: True
     update: True
   become: True
@@ -69,6 +72,7 @@
     GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitaly_target_tag
@@ -80,10 +84,12 @@
     GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab__gitaly_checkout
-  when: (gitlab__fact_version.gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
+  when: (gitlab__fact_version.gitaly != gitlab_register_gitaly_target_tag.stdout) or
+         not gitlab_register_gitaly_cloned.stat.exists
 
 - name: Stop gitaly service for an upgrade
   service:

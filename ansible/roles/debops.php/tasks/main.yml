@@ -19,6 +19,8 @@
     install_recommends: False
   with_flattened:
     - '{{ php__register_filtered_packages.stdout.strip().splitlines() }}'
+  register: php__register_packages
+  until: php__register_packages is succeeded
   notify: [ 'Restart php-fpm' ]
 
 - name: Ensure older PHP packages are absent on reset
@@ -98,7 +100,7 @@
   script: script/php-synchronize-config.sh {{ php__version }}
   register: php__register_synchronize_config
   changed_when: php__register_synchronize_config.stdout is defined and
-                php__register_synchronize_config.stdout != ''
+                php__register_synchronize_config.stdout|d()
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
 

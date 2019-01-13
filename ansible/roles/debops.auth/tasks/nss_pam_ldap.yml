@@ -15,6 +15,8 @@
     state: 'present'
     install_recommends: False
   with_items: [ 'libnss-ldapd', 'libpam-ldapd', 'openssl', 'ca-certificates' ]
+  register: auth__register_pam_ldap_packages
+  until: auth__register_pam_ldap_packages is succeeded
 
 - name: Divert original /etc/nslcd.conf
   command: dpkg-divert --quiet --local --divert /etc/nslcd.conf.dpkg-divert --rename /etc/nslcd.conf

@@ -17,7 +17,7 @@
   file:
     path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name }}'
     state: 'directory'
-  when: (owncloud__theme_directory_name != "")
+  when: (owncloud__theme_directory_name|d())
   tags:
     - 'role::owncloud:theme:common_settings'
 
@@ -30,7 +30,7 @@
     group: '{{ owncloud__app_group }}'
     mode: '0640'
     validate: 'php -f %s'
-  when: (owncloud__theme_directory_name != "")
+  when: (owncloud__theme_directory_name|d())
   tags: [ 'role::owncloud:theme:common_settings' ]
 
 - name: Ensure that parent directories exist
@@ -41,12 +41,13 @@
     group: '{{ item.value.base_directory_group | d(omit) }}'
     mode:  '{{ item.value.base_directory_mode  | d(omit) }}'
   with_dict: '{{ owncloud__theme_copy_files_combined }}'
-  when: (owncloud__theme_directory_name != "" and item.value.state|d("present") == "present")
+  when: (owncloud__theme_directory_name|d() and item.value.state|d("present") == "present")
   tags: [ 'role::owncloud:theme:copy' ]
 
 - name: Copy additional theme files
   copy:
-    dest:           '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) if (not item.key.startswith("/")) else item.key }}'
+    dest:           '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key)
+                        if (not item.key.startswith("/")) else item.key }}'
     backup:         '{{ item.value.backup         | d(omit) }}'
     content:        '{{ item.value.content        | d(omit) }}'
     directory_mode: '{{ item.value.directory_mode | d(omit) }}'
@@ -62,7 +63,7 @@
     src:            '{{ item.value.src            | d(omit) }}'
     validate:       '{{ item.value.validate       | d(omit) }}'
   with_dict: '{{ owncloud__theme_copy_files_combined }}'
-  when: (owncloud__theme_directory_name != "" and item.value.state|d("present") == "present")
+  when: (owncloud__theme_directory_name|d() and item.value.state|d("present") == "present")
   tags: [ 'role::owncloud:theme:copy' ]
 
 - name: Activate custom theme
@@ -72,7 +73,7 @@
     owner: 'root'
     group: '{{ owncloud__app_group }}'
     mode: '0640'
-  when: (owncloud__theme_active != "")
+  when: (owncloud__theme_active|d())
   tags: [ 'role::owncloud:theme:activate' ]
 
 # .. ]]]
@@ -83,14 +84,14 @@
   file:
     path: '{{ owncloud__deploy_path }}/config/theme.config.php'
     state: 'absent'
-  when: (owncloud__theme_active == "")
+  when: (not owncloud__theme_active|d())
   tags: [ 'role::owncloud:theme:activate' ]
 
 - name: Delete additional theme files
   file:
     path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key }}'
     state: 'absent'
-  when: (owncloud__theme_directory_name != "" and item.value.state|d("present") == "absent")
+  when: (owncloud__theme_directory_name|d() and item.value.state|d("present") == "absent")
   with_dict: '{{ owncloud__theme_copy_files_combined }}'
   tags: [ 'role::owncloud:theme:copy' ]
 

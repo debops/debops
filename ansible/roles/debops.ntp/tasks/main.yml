@@ -10,6 +10,8 @@
     state: '{{ "present" if (ansible_local|d() and ansible_local.ntp|d()) else "latest" }}'
     install_recommends: False
   with_items: [ 'tzdata' ]
+  register: ntp__register_apt_tzdata
+  until: ntp__register_apt_tzdata is succeeded
 
 - name: Ensure that alternative daemons/programs are not installed
   apt:
@@ -21,6 +23,8 @@
     - [ '{{ "ntpdate" if (ntp__daemon != "ntpdate" and not ntp__ignore_ntpdate|bool) else [] }}' ]
     - [ '{{ "ntp" if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}' ]
     - [ '{{ "openntpd" if (ntp__daemon != "openntpd") else [] }}' ]
+  register: ntp__register_apt_purge
+  until: ntp__register_apt_purge is succeeded
 
   # Installs either ntpdate, NTPd, chrony or OpenNTPd on all hosts except inside containers
 - include: install.yml
