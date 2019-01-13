@@ -6,7 +6,8 @@
 - name: Regenerate DH parameters on first install
   at:
     command: |
-      test -x {{ dhparam__generate_params }} && (echo 'nice {{ dhparam__generate_params }} run' | batch > /dev/null 2>&1) || true
+      test -x {{ dhparam__generate_params }} \
+      && (echo 'nice {{ dhparam__generate_params }} run' | batch > /dev/null 2>&1) || true
     count: '{{ dhparam__generate_init_count }}'
     units: '{{ dhparam__generate_init_units }}'
     unique: True

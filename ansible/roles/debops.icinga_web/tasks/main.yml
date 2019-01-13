@@ -6,6 +6,8 @@
                      (icinga_web__base_packages + icinga_web__packages),
                      wantlist=True) }}'
     state: 'present'
+  register: icinga_web__register_packages
+  until: icinga_web__register_packages is succeeded
 
 - name: Get current Icinga Web configuration
   script: 'script/icingaweb-config{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}'
@@ -19,11 +21,11 @@
     state: 'directory'
     owner: '{{ icinga_web__user }}'
     group: '{{ icinga_web__group }}'
-    mode: '{{ item.mode | d("2770") }}'
+    mode: '{{ item.mode | d("02770") }}'
   with_items:
 
     - name: 'enabledModules'
-      mode: '2750'
+      mode: '02750'
 
     - name: 'modules/monitoring'
 
@@ -53,7 +55,8 @@
 - name: Manage Icinga Web modules
   file:
     path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
-    src: '{{ (item.path | d("/usr/share/icingaweb2/modules/" + item.name)) if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else omit }}'
+    src: '{{ (item.path | d("/usr/share/icingaweb2/modules/" + item.name))
+             if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else omit }}'
     state: '{{ "link" if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else "absent" }}'
     force: '{{ True if ansible_check_mode|bool else omit }}'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'

@@ -25,6 +25,8 @@
   with_flattened:
     - '{{ apparmor__base_packages }}'
     - '{{ apparmor__packages }}'
+  register: apparmor__register_packages
+  until: apparmor__register_packages is succeeded
 
 - name: Setup apparmor=1 security=apparmor as kernel parameter
   lineinfile:
@@ -82,18 +84,19 @@
       fi
     done
   register: apparmor__register_enforce_all_profiles
-  changed_when: (apparmor__register_enforce_all_profiles.stdout != "")
+  changed_when: (apparmor__register_enforce_all_profiles.stdout|d())
   when: (apparmor__enforce_all_profiles|d() | bool)
 
 - name: Set profile status
   command: aa-{{ item.value }} "{{ item.key }}"
   register: apparmor__register_profile_status
-  # changed_when: (apparmor__register_profile_status.stdout|d() != "")
+  # changed_when: (apparmor__register_profile_status.stdout|d())
   ## FIXME: Currently changed_when seems to be tricky.
   changed_when: False
   failed_when: |
     apparmor__register_profile_status.rc != 0 and (
-      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?" not in apparmor__register_profile_status.stderr and
+      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?"
+      not in apparmor__register_profile_status.stderr and
       apparmor__fact_apparmor_enabled_and_loaded|bool
     )
   ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
@@ -145,6 +148,8 @@
 
 - name: Unload AppArmor profiles
   command: service apparmor teardown
+  args:
+    warn: False
   when: (not (apparmor__enabled|d() | bool))
 
 - name: Ensure AppArmor service is stopped

@@ -108,6 +108,7 @@
     update:           '{{ item["_update"]       | d(omit) }}'
     verify_commit:    '{{ item.verify_commit    | d(omit) }}'
     version:          '{{ item.version          | d(omit) }}'
+  become: True
   become_user:        '{{ item.owner            | d("root") }}'
   with_flattened:
     - '{{ resources__repositories }}'

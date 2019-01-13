@@ -56,11 +56,15 @@
         keyring: '{{ owncloud__system_home + "/.gnupg/pubring.gpg" }}'
         keyserver: '{{ owncloud__keyserver }}'
         state: 'present'
+      register: owncloud__register_apt_key_nextcloud
+      until: owncloud__register_apt_key_nextcloud is succeeded
 
     # Get latest patch version for release [[[2
 
     - name: Query for the full version string of the current release
-      shell: curl -s -m 900 {{ (owncloud__variant_download_url_map[owncloud__variant] + "/") | quote }} | sed --silent 's/.*href="nextcloud-\({{ owncloud__release | regex_escape() }}[^"]\+\).zip.asc".*/\1/p' | sort --version-sort --reverse
+      shell: curl -s -m 900 {{ (owncloud__variant_download_url_map[owncloud__variant] + "/") | quote }}
+             | sed --silent 's/.*href="nextcloud-\({{ owncloud__release | regex_escape() }}[^"]\+\).zip.asc".*/\1/p'
+             | sort --version-sort --reverse
       args:
         warn: False
         executable: '/bin/sh'
@@ -93,8 +97,10 @@
     # Nextcloud application archive authenticity verification [[[2
 
     - name: Read checksum from file
-      shell: cat {{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] + "/" +
-                    owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip.sha512" }} | grep '.zip$'
+      shell: cat {{ owncloud__src + "/" + owncloud__variant + "/"
+                    + owncloud__register_full_version.stdout_lines[0] + "/"
+                    + owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0]
+                    + ".zip.sha512" }} | grep '.zip$'
       args:
         executable: '/bin/sh'
       changed_when: False
@@ -115,17 +121,22 @@
         LC_MESSAGES: 'C'
       shell: |
           set -o nounset -o pipefail -o errexit
-          gpg --verify {{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] + "/" +
-                          owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip.asc" }} \
-                       {{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] + "/" +
-                          owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip" }} 2>&1 \
+          gpg --verify {{ owncloud__src + "/" + owncloud__variant + "/"
+                          + owncloud__register_full_version.stdout_lines[0] + "/"
+                          + owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0]
+                          + ".zip.asc" }} \
+                       {{ owncloud__src + "/" + owncloud__variant + "/"
+                          + owncloud__register_full_version.stdout_lines[0] + "/"
+                          + owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0]
+                          + ".zip" }} 2>&1 \
             | sed --silent 's/^Primary key fingerprint: \(.*\)$/\1/p;'
       args:
         executable: '/bin/bash'
       changed_when: False
       register: owncloud__register_verify_authenticity
       failed_when: (owncloud__register_verify_authenticity.rc != 0 or
-                    (owncloud__register_verify_authenticity.stdout|replace(" ","")) != (owncloud__upstream_key_fingerprint|replace(" ","")))
+                    (owncloud__register_verify_authenticity.stdout|replace(" ",""))
+                    != (owncloud__upstream_key_fingerprint|replace(" ","")))
       tags: [ 'role::nextcloud:verify' ]
 
 - name: Unpack the application archive
@@ -137,5 +148,3 @@
     owner: '{{ owncloud__app_user }}'
     group: '{{ owncloud__app_group }}'
     creates: '{{ owncloud__deploy_path + "/index.php" }}'
-  become: True
-  become_user: '{{ owncloud__app_user }}'

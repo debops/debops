@@ -59,6 +59,8 @@
                               ansible_local.core.cache_valid_time|d())
                            else "86400" }}'
   with_items: [ 'apt-transport-https', 'openssl', 'ca-certificates' ]
+  register: gitlab_runner__register_apt_https
+  until: gitlab_runner__register_apt_https is succeeded
 
 - name: Add gitlab-runner APT key
   apt_key:
@@ -68,6 +70,8 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: gitlab_runner__register_apt_key
+  until: gitlab_runner__register_apt_key is succeeded
   when: gitlab_runner__apt_upstream|bool
 
 - name: Configure gitlab-runner APT repository
@@ -85,6 +89,8 @@
   with_flattened:
     - '{{ gitlab_runner__base_packages }}'
     - '{{ gitlab_runner__packages }}'
+  register: gitlab_runner__register_packages
+  until: gitlab_runner__register_packages is succeeded
 
 - name: Check if GitLab service is available
   uri:
@@ -98,7 +104,12 @@
   uri:
     url: '{{ (item.api_url | d(gitlab_runner__api_url)) + "api/v4/runners" }}'
     method: 'POST'
-    body: 'token={{ item.token | d(gitlab_runner__token) }}&description={{ item.name | urlencode }}&tag_list={{ ((item.tags|d([]) + (gitlab_runner__shell_tags if (item.executor == "shell") else []) + gitlab_runner__combined_tags) | unique | join(",")) | urlencode }}&run_untagged={{ item.run_untagged | d(gitlab_runner__run_untagged) }}'
+    body: 'token={{ item.token | d(gitlab_runner__token) }}&description={{ item.name
+           | urlencode }}&tag_list={{ ((item.tags|d([])
+                                        + (gitlab_runner__shell_tags
+                                           if (item.executor == "shell") else [])
+                                        + gitlab_runner__combined_tags) | unique | join(","))
+           | urlencode }}&run_untagged={{ item.run_untagged | d(gitlab_runner__run_untagged) }}'
     status_code: '200,201'
   register: gitlab_runner__register_new_instances
   with_flattened:
@@ -130,8 +141,11 @@
     headers:
       'PRIVATE-TOKEN': '{{ gitlab_runner__api_token }}'
   with_together:
-    - '{{ gitlab_runner__default_instances + gitlab_runner__instances + gitlab_runner__group_instances + gitlab_runner__host_instances }}'
-    - '{{ ansible_local.gitlab_runner.instance_tokens if (ansible_local|d() and ansible_local.gitlab_runner|d() and ansible_local.gitlab_runner.instance_tokens|d()) else [] }}'
+    - '{{ gitlab_runner__default_instances + gitlab_runner__instances
+          + gitlab_runner__group_instances + gitlab_runner__host_instances }}'
+    - '{{ ansible_local.gitlab_runner.instance_tokens
+          if (ansible_local|d() and ansible_local.gitlab_runner|d() and
+              ansible_local.gitlab_runner.instance_tokens|d()) else [] }}'
   when: (gitlab_runner__register_api.status|d() and gitlab_runner__register_api.status == 200 and
          gitlab_runner__api_token and item.0.name|d() and item.1.name|d() and item.0.name == item.1.name and
          (item.0.state|d() and item.0.state == 'absent'))

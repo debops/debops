@@ -11,6 +11,8 @@
   with_items:
     - 'debconf'
     - 'debconf-utils'
+  register: apt_install__register_debconf_packages
+  until: apt_install__register_debconf_packages
 
 - name: Apply requested packages configuration
   debconf:
@@ -38,6 +40,8 @@
   with_flattened: '{{ lookup("template",
                       "lookup/apt_install__all_packages.j2",
                       convert_data=False) | from_json }}'
+  register: apt_install__register_packages
+  until: apt_install__register_packages
   when: apt_install__enabled|bool
 
 - name: Configure alternative symlinks
@@ -61,7 +65,7 @@
     - '{{ apt_install__group_alternatives }}'
     - '{{ apt_install__host_alternatives }}'
   when: item.name|d() and not item.path|d()
-  changed_when: apt_install__register_alternatives.stdout != ''
+  changed_when: apt_install__register_alternatives.stdout|d()
 
 - name: Make sure that Ansible fact directory exists
   file:

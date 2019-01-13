@@ -20,7 +20,7 @@
     state: 'directory'
     owner: 'root'
     group: '{{ item.group | default(item.name + sftpusers_name_suffix) }}'
-    mode: '2775'
+    mode: '02775'
   with_flattened:
     - '{{ sftpusers_list }}'
     - '{{ sftpusers_group_list }}'
@@ -30,11 +30,12 @@
 
 - name: Create website public directories
   file:
-    path: '{{ sftpusers_default_www_prefix }}/{{ item.0.group | default(item.0.name + sftpusers_name_suffix) }}/sites/{{ item.1 }}/public'
+    path: '{{ sftpusers_default_www_prefix }}/{{ item.0.group | default(item.0.name
+                + sftpusers_name_suffix) }}/sites/{{ item.1 }}/public'
     state: 'directory'
     owner: 'root'
     group: '{{ item.0.group | default(item.0.name + sftpusers_name_suffix) }}'
-    mode: '2775'
+    mode: '02775'
   with_subelements:
     - '{{ sftpusers_list + sftpusers_group_list + sftpusers_host_list  }}'
     - 'sites'
@@ -47,7 +48,7 @@
     state: 'directory'
     owner: 'root'
     group: '{{ item.group | default(item.name + sftpusers_name_suffix) }}'
-    mode: '2775'
+    mode: '02775'
   with_flattened:
     - '{{ sftpusers_list }}'
     - '{{ sftpusers_group_list }}'
@@ -60,9 +61,11 @@
 # https://github.com/ansible/ansible/issues/7121
 
 - name: Unmount website directories in user homes when requested
-  command: umount {{ item.home | default(sftpusers_default_home_prefix + "/" + item.name + sftpusers_name_suffix) }}/sites
+  command: umount {{ item.home | default(sftpusers_default_home_prefix + "/"
+                                         + item.name + sftpusers_name_suffix) }}/sites
   args:
-    removes: '{{ item.home | default(sftpusers_default_home_prefix + "/" + item.name + sftpusers_name_suffix) }}/sites/{{ item.sites[0] }}'
+    removes: '{{ item.home | default(sftpusers_default_home_prefix + "/"
+                                     + item.name + sftpusers_name_suffix) }}/sites/{{ item.sites[0] }}'
   with_flattened:
     - '{{ sftpusers_list }}'
     - '{{ sftpusers_group_list }}'
@@ -99,9 +102,12 @@
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 - name: Mount website directories in user homes
-  command: mount {{ item.home | default(sftpusers_default_home_prefix + "/" + item.name + sftpusers_name_suffix) }}/sites
+  command: mount {{ item.home | default(sftpusers_default_home_prefix + "/"
+                                        + item.name + sftpusers_name_suffix) }}/sites
   args:
-    creates: '{{ item.home | default(sftpusers_default_home_prefix + "/" + item.name + sftpusers_name_suffix) }}/sites/{{ item.sites[0] }}'
+    creates: '{{ item.home | default(sftpusers_default_home_prefix + "/"
+                                     + item.name + sftpusers_name_suffix) }}/sites/{{ item.sites[0] }}'
+    warn: False
   with_flattened:
     - '{{ sftpusers_list }}'
     - '{{ sftpusers_group_list }}'

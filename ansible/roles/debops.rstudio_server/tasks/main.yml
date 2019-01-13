@@ -55,6 +55,8 @@
   with_flattened:
     - '{{ rstudio_server__base_packages }}'
     - '{{ rstudio_server__packages }}'
+  register: rstudio_server__register_packages
+  until: rstudio_server__register_packages is succeeded
 
 - name: Create source directory
   file:
@@ -71,6 +73,8 @@
     url: '{{ rstudio_server__libssl_deb_url }}'
     dest: '{{ rstudio_server__src + "/" + rstudio_server__libssl_deb_url | basename }}'
     checksum: '{{ rstudio_server__libssl_deb_checksum }}'
+  register: rstudio_server__register_libssl_downgrade
+  until: rstudio_server__register_libssl_downgrade is succeeded
   when: rstudio_server__libssl_downgrade|bool and
         not rstudio_server__libssl_in_apt|bool
 
@@ -79,12 +83,16 @@
     url: '{{ rstudio_server__rstudio_deb_url }}'
     dest: '{{ rstudio_server__src + "/" + rstudio_server__rstudio_deb_url | basename }}'
     checksum: '{{ rstudio_server__rstudio_deb_checksum }}'
+  register: rstudio_server__register_rstudio_package
+  until: rstudio_server__register_rstudio_package is succeeded
   when: not rstudio_server__rstudio_in_apt|bool
 
 - name: Install libssl 1.0.0 .deb package
   apt:
     deb: '{{ rstudio_server__src + "/" + rstudio_server__libssl_deb_url | basename }}'
     state: 'present'
+  register: rstudio_server__register_libssl_deb
+  until: rstudio_server__register_libssl_deb is succeeded
   when: rstudio_server__libssl_downgrade|bool and
         not rstudio_server__libssl_in_apt|bool
 
@@ -92,6 +100,8 @@
   apt:
     deb: '{{ rstudio_server__src + "/" + rstudio_server__rstudio_deb_url | basename }}'
     state: 'present'
+  register: rstudio_server__register_rstudio_deb
+  until: rstudio_server__register_rstudio_deb is succeeded
   when: not rstudio_server__rstudio_in_apt|bool
 
 - name: Configure RStudio Server

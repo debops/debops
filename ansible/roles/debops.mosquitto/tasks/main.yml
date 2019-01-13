@@ -15,6 +15,8 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: mosquitto__register_apt_key
+  until: mosquitto__register_apt_key is succeeded
   when: mosquitto__upstream|bool and ansible_distribution in [ 'Debian' ]
 
 - name: Configure upstream APT repository
@@ -31,12 +33,16 @@
   with_flattened:
     - '{{ mosquitto__base_packages }}'
     - '{{ mosquitto__packages }}'
+  register: mosquitto__register_packages
+  until: mosquitto__register_packages is succeeded
 
 - name: Install required Python modules
   pip:
     name: '{{ item }}'
     state: 'present'
   with_items: '{{ mosquitto__pip_packages }}'
+  register: mosquitto__register_pip_install
+  until: mosquitto__register_pip_install is succeeded
   when: mosquitto__pip_packages|d()
 
 - name: Check the installed Mosquitto version
@@ -97,7 +103,8 @@
 
 - name: Create user/password entries
   environment:
-    MOSQUITTO_PASSWORD: '{{ item.password | d(lookup("password", mosquitto__password_secret_path + "/" + item.name | d(item))) }}'
+    MOSQUITTO_PASSWORD: '{{ item.password
+                            | d(lookup("password", mosquitto__password_secret_path + "/" + item.name | d(item))) }}'
   command: 'mosquitto_passwd -b {{ mosquitto__password_file }} {{ item.name | d(item) }} ${MOSQUITTO_PASSWORD}'
   with_flattened:
     - '{{ mosquitto__auth_users }}'

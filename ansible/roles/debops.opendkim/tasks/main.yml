@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ opendkim__base_packages }}'
     - '{{ opendkim__packages }}'
+  register: opendkim__register_packages
+  until: opendkim__register_packages is succeeded
   notify: [ 'Check opendkim and restart' ]
   when: ansible_pkg_mgr == 'apt'
 
@@ -65,13 +67,14 @@
     group: 'root'
     mode: '0644'
   register: opendkim__register_pid_socket
+  notify: [ 'Check opendkim and reload' ]
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
          [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ])
 
 - name: Update systemd runtime configuration
-  command: systemctl daemon-reload
-  notify: [ 'Check opendkim and reload' ]
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
          [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] and
@@ -149,6 +152,6 @@
     state: 'directory'
     owner: '{{ opendkim__user }}'
     group: '{{ opendkim__postfix_group }}'
-    mode: '2750'
+    mode: '02750'
   when: opendkim__postfix_integration|bool
   notify: [ 'Check opendkim and restart' ]

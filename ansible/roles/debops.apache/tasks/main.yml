@@ -5,8 +5,11 @@
   assert:
     that:
       - 'ansible_version.full is version_compare("2.1.5.0", ">=")'
-      - '((ansible_version.minor == 2) and (ansible_version.full is version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
-    msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! Exiting.'
+      - '((ansible_version.minor == 2) and
+          (ansible_version.full is version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
+    msg: |
+      VULNERABLE or unsupported Ansible version DETECTED, please update to
+      Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! Exiting.
   run_once: True
   delegate_to: 'localhost'
 
@@ -20,6 +23,8 @@
     - '{{ apache__group_packages }}'
     - '{{ apache__host_packages }}'
     - '{{ apache__dependent_packages }}'
+  register: apache__register_packages
+  until: apache__register_packages is succeeded
 
 # Manage Apache modules [[[1
 - name: Get list of available modules
@@ -32,7 +37,10 @@
 
 - name: Set list of available modules
   set_fact:
-    apache__tpl_available_modules: '{{ apache__register_mods_available.files|d({}) | map(attribute="path") | map("replace", apache__config_path + "/mods-available/", "") | map("regex_replace", "\.load$", "") | list }}'
+    apache__tpl_available_modules: '{{ apache__register_mods_available.files|d({})
+                                       | map(attribute="path")
+                                       | map("replace", apache__config_path + "/mods-available/", "")
+                                       | map("regex_replace", "\.load$", "") | list }}'
   tags: [ 'role::apache:modules' ]
 
 - include: apache_module_state.yml
@@ -40,11 +48,13 @@
 # Manage Apache configuration snippets [[[1
 - name: Divert conf-available configuration
   command: dpkg-divert --quiet --local
-             --divert {{ ((item.value.divert | d(apache__config_path + "/conf-available/" + (item.value.divert_filename|d(item.key)) + ".conf"))
+             --divert {{ ((item.value.divert | d(apache__config_path + "/conf-available/"
+                                                 + (item.value.divert_filename|d(item.key)) + ".conf"))
                          + item.value.divert_suffix|d(".dpkg-divert")) | quote }}
              --rename {{ (apache__config_path + "/conf-available/" + item.key + ".conf") | quote }}
   args:
-    creates: '{{ ( item.value.divert | d(apache__config_path + "/conf-available/" + (item.value.divert_filename|d(item.key)) + ".conf"))
+    creates: '{{ ( item.value.divert | d(apache__config_path + "/conf-available/"
+                                         + (item.value.divert_filename|d(item.key)) + ".conf"))
                  + item.value.divert_suffix|d(".dpkg-divert") }}'
   when: (item.value.type|d("default") in ["divert"])
   with_dict: '{{ apache__combined_snippets }}'
@@ -59,7 +69,10 @@
 
 - name: Create conf-available snippets
   template:
-    src: 'etc/apache2/conf-available/{{ "raw" if (item.value.type|d("default") in ["divert", "raw"] and item.value.raw|d()) else item.key }}.conf.j2'
+    src: 'etc/apache2/conf-available/{{ "raw"
+                                        if (item.value.type|d("default") in ["divert", "raw"] and
+                                            item.value.raw|d())
+                                        else item.key }}.conf.j2'
     dest: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
     owner: 'root'
     group: 'root'
@@ -87,14 +100,21 @@
 - name: Divert sites-available configuration
   command: dpkg-divert --quiet --local
              --divert {{ ((item.divert | d(apache__config_path + "/sites-available/"
-                                           + (item.divert_filename|d(item.filename | d(item.name if (item.name is string) else item.name[0] | d("default"))))
+                                           + (item.divert_filename|d(item.filename | d(item.name
+                                                                                       if (item.name is string)
+                                                                                       else item.name[0]
+                                                                                            | d("default"))))
                                            + ".conf"))
                           + item.divert_suffix|d(".dpkg-divert")) | quote }}
              --rename {{ (apache__config_path + "/sites-available/"
-                          + (item.filename | d(item.name if (item.name is string) else item.name[0] | d("default"))) + ".conf") | quote }}
+                          + (item.filename | d(item.name
+                                               if (item.name is string)
+                                               else item.name[0] | d("default"))) + ".conf") | quote }}
   args:
     creates: '{{ (item.divert | d(apache__config_path + "/sites-available/"
-                                  + (item.divert_filename|d(item.filename | d(item.name if (item.name is string) else item.name[0] | d("default"))))
+                                  + (item.divert_filename|d(item.filename | d(item.name
+                                                                              if (item.name is string)
+                                                                              else item.name[0] | d("default"))))
                                   + ".conf"))
                  + item.divert_suffix|d(".dpkg-divert") }}'
   when: (item.type|d(apache__vhost_type) in ["divert"])
@@ -102,7 +122,9 @@
 
 - name: Remove sites-available configuration
   file:
-    path: '{{ apache__config_path }}/sites-available/{{ item.filename | d(item.name if (item.name is string) else item.name[0] | d("default")) }}.conf'
+    path: '{{ apache__config_path }}/sites-available/{{ item.filename | d(item.name
+                                                                          if (item.name is string)
+                                                                          else item.name[0] | d("default")) }}.conf'
     state: 'absent'
   when: (item.state|d("present") == 'absent')
   with_flattened: '{{ apache__combined_vhosts }}'
@@ -111,7 +133,9 @@
 - name: Create sites-available configuration
   template:
     src: 'etc/apache2/sites-available/{{ item.type | d(apache__vhost_type) }}.conf.j2'
-    dest: '{{ apache__config_path }}/sites-available/{{ item.filename | d(item.name if (item.name is string) else item.name[0] | d("default")) }}.conf'
+    dest: '{{ apache__config_path }}/sites-available/{{ item.filename | d(item.name
+                                                                          if (item.name is string)
+                                                                          else item.name[0] | d("default")) }}.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -122,8 +146,12 @@
 
 - name: Enable/disable Apache virtual hosts
   file:
-    path: '{{ apache__config_path }}/sites-enabled/{{ item.filename | d(item.name if (item.name is string) else item.name[0] | d("default")) }}.conf'
-    src: '../sites-available/{{ item.filename | d(item.name if (item.name is string) else item.name[0] | d("default")) }}.conf'
+    path: '{{ apache__config_path }}/sites-enabled/{{ item.filename | d(item.name
+                                                                        if (item.name is string)
+                                                                        else item.name[0] | d("default")) }}.conf'
+    src: '../sites-available/{{ item.filename | d(item.name
+                                                  if (item.name is string)
+                                                  else item.name[0] | d("default")) }}.conf'
     force: '{{ ansible_check_mode|d() | bool }}'
     state: '{{ item.enabled|d(True) | bool | ternary("link", "absent")
                if (item.state|d("present") != "absent")

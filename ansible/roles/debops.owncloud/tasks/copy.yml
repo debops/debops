@@ -58,6 +58,8 @@
   loop_control:
     loop_var: 'owncloud__files_scan_item'
   when: owncloud__files_scan_item is changed
-  with_items: '{{ (owncloud__register_create_user_files.results|d([]) + owncloud__register_delete_user_files.results|d([]))
-                  if (owncloud__register_create_user_files is defined and owncloud__register_create_user_files is not skipped)
+  with_items: '{{ (owncloud__register_create_user_files.results|d([])
+                   + owncloud__register_delete_user_files.results|d([]))
+                  if (owncloud__register_create_user_files is defined and
+                      owncloud__register_create_user_files is not skipped)
                   else [] }}'

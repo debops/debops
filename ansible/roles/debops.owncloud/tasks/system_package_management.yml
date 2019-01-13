@@ -34,6 +34,7 @@
     #                else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
   register: owncloud__register_apt_key
+  until: owncloud__register_apt_key is succeeded
   when: (owncloud__variant in ["owncloud"])
 
 - name: Ensure old APT OpenPGP public key are absent
@@ -55,6 +56,8 @@
 - name: Update APT repository cache
   apt:
     update_cache: True
+  register: owncloud__register_apt_cache
+  until: owncloud__register_apt_cache is succeeded
   when: owncloud__register_apt_key is changed or owncloud__register_apt_repository is changed
 
   ## Use filename when available (2.1.0) https://github.com/ansible/ansible-modules-core/pull/2696
@@ -81,6 +84,7 @@
                    ))
                  else "present") }}'
   register: owncloud__register_apt_install
+  until: owncloud__register_apt_install is succeeded
   with_flattened:
     - '{{ owncloud__base_packages }}'
     - '{{ owncloud__packages }}'

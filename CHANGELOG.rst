@@ -93,6 +93,11 @@ Added
   :file:`/etc/hostname` file, as well as the local domain configuration in
   :file:`/etc/hosts` database.
 
+- Ansible roles included in DebOps are now checked using `ansible-lint`__ tool.
+  All existing issues found by the script have been fixed.
+
+  .. __: https://docs.ansible.com/ansible-lint/
+
 Changed
 ~~~~~~~
 

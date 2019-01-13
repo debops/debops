@@ -37,7 +37,8 @@
     mode: '0644'
 
 - name: Get list of already scanned hostname fingerprints
-  shell: ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_hostname }} | grep -q '^# Host {{ hostvars[item].ansible_hostname }} found'
+  shell: ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_hostname }}
+         | grep -q '^# Host {{ hostvars[item].ansible_hostname }} found'
   with_items: '{{ openvz_cluster }}'
   when: ((item is defined and item) and item != inventory_hostname and
          hostvars[item].ansible_hostname is defined)
@@ -46,7 +47,8 @@
   failed_when: False
 
 - name: Get list of already scanned FQDN fingerprints
-  shell: ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_fqdn }} | grep -q '^# Host {{ hostvars[item].ansible_fqdn }} found'
+  shell: ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_fqdn }}
+         | grep -q '^# Host {{ hostvars[item].ansible_fqdn }} found'
   with_items: '{{ openvz_cluster }}'
   when: ((item is defined and item) and item != inventory_hostname and
          hostvars[item].ansible_fqdn is defined)
@@ -65,13 +67,15 @@
   # If you use '--limit', hosts not included in the limit will not have their
   # fingerprint scanned. Use '--tags openvz' without '--limit' to fix that
 - name: Scan SSH fingerprints of OpenVZ hosts
-  shell: '{{ openvz_root_ssh_known_hosts_command }} {{ hostvars[item.item].ansible_hostname }} {{ hostvars[item.item].ansible_fqdn }} >> {{ openvz_root_ssh_known_hosts_file }}'
+  shell: '{{ openvz_root_ssh_known_hosts_command }} {{ hostvars[item.item].ansible_hostname }}
+          {{ hostvars[item.item].ansible_fqdn }} >> {{ openvz_root_ssh_known_hosts_file }}'
   with_flattened:
     - '{{ openvz_register_root_ssh_known_hosts_hostname.results }}'
     - '{{ openvz_register_root_ssh_known_hosts_fqdn.results }}'
   when: item is defined and item.rc is defined and item.rc > 0
 
 - name: Scan SSH fingerprints of custom hosts
-  shell: '{{ openvz_root_ssh_known_hosts_command }} {{ item.item.split(".") | first }} {{ item.item }} >> {{ openvz_root_ssh_known_hosts_file }}'
+  shell: '{{ openvz_root_ssh_known_hosts_command }} {{ item.item.split(".") | first }}
+          {{ item.item }} >> {{ openvz_root_ssh_known_hosts_file }}'
   with_items: '{{ openvz_register_root_ssh_known_hosts_custom.results }}'
   when: item is defined and item.rc is defined and item.rc > 0

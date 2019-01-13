@@ -1,11 +1,14 @@
 ---
 
 - name: Install Box Backup client package
-  apt: pkg=boxbackup-client state=latest install_recommends=no
+  apt: pkg=boxbackup-client state=present install_recommends=no
+  register: boxbackup__register_client_packages
+  until: boxbackup__register_client_packages is succeeded
 
 - name: Set backup softlimit size for client hosts
   set_fact:
-    boxbackup_softlimit: '{{ (ansible_mounts|sum(attribute="size_total")/1024/1024 + boxbackup_softlimit_padding)|int }}'
+    boxbackup_softlimit: '{{ (ansible_mounts|sum(attribute="size_total")/1024/1024
+                              + boxbackup_softlimit_padding)|int }}'
   when: (boxbackup_softlimit is undefined or not boxbackup_softlimit)
 
 - name: Set backup hardlimit size for client hosts
@@ -14,7 +17,8 @@
   when: (boxbackup_hardlimit is undefined or not boxbackup_hardlimit)
 
 - name: Create accounts for client hosts
-  command: bbstoreaccounts create {{ boxbackup_account }} {{ boxbackup_discnum }} {{ boxbackup_softlimit }}M {{ boxbackup_hardlimit }}M
+  command: bbstoreaccounts create {{ boxbackup_account }} {{ boxbackup_discnum }}
+                                  {{ boxbackup_softlimit }}M {{ boxbackup_hardlimit }}M
            creates={{ boxbackup_storage }}/backup/{{ boxbackup_account }}/info.rfw
   delegate_to: '{{ boxbackup_server }}'
 
@@ -40,7 +44,8 @@
   notify: [ 'Restart boxbackup-client' ]
 
 - name: Create encryption key on client hosts
-  command: openssl rand -out /etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw {{ boxbackup_encrypt_bits }}
+  command: openssl rand -out /etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw
+                        {{ boxbackup_encrypt_bits }}
            creates=/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw
   notify:
     - Restart boxbackup-client

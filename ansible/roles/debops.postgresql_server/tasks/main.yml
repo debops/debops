@@ -8,6 +8,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: postgresql_server__register_apt_key
+  until: postgresql_server__register_apt_key is succeeded
   when: postgresql_server__upstream|bool
   tags: [ 'role::postgresql_server:packages' ]
 
@@ -64,7 +66,7 @@
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Get current maximum shared memory value
-  shell: cat /proc/sys/kernel/shmmax
+  command: cat /proc/sys/kernel/shmmax
   register: postgresql_server__register_sysctl_shmmax
   changed_when: False
   tags: [ 'role::postgresql_server:config' ]

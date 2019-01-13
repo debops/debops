@@ -13,8 +13,13 @@
   when: rails_deploy_service is defined and rails_deploy_service and
         rails_deploy_register_deploy_key is defined
 
+  # FIXME: Use a proper Ansible module instead of the 'command' module
 - name: Transfer the deploy key to Github
-  command: "curl --silent --header 'Authorization: token {{ rails_deploy_git_access_token }}' --data '{{ rails_deploy_key_data | to_nice_json }}' https://api.github.com/repos/{{ rails_deploy_git_account }}/{{ rails_deploy_git_repo }}/keys"
+  command: "curl --silent --header 'Authorization: token {{ rails_deploy_git_access_token }}'
+                 --data '{{ rails_deploy_key_data | to_nice_json }}'
+                 https://api.github.com/repos/{{ rails_deploy_git_account }}/{{ rails_deploy_git_repo }}/keys"
+  args:
+    warn: False
   changed_when: False
   when: rails_deploy_git_access_token and
         'file://' not in rails_deploy_git_location and
@@ -22,7 +27,8 @@
         'github' in rails_deploy_git_host
 
 - name: Get the Gitlab repo id
-  uri: url=https://{{ rails_deploy_git_host }}/api/v3/projects/{{ rails_deploy_git_account }}%2F{{ rails_deploy_git_repo }}
+  uri: url=https://{{ rails_deploy_git_host }}/api/v3/projects/{{
+           rails_deploy_git_account }}%2F{{ rails_deploy_git_repo }}
        HEADER_PRIVATE-TOKEN='{{ rails_deploy_git_access_token }}'
   register: rails_deploy_register_gitlab_response
   when: rails_deploy_git_access_token and
@@ -30,8 +36,14 @@
         rails_deploy_register_deploy_key is defined and
         not 'github' in rails_deploy_git_host
 
+  # FIXME: Use a proper Ansible module instead of the 'command' module
 - name: Transfer the deploy key to Gitlab
-  command: "curl --insecure --header 'PRIVATE-TOKEN: {{ rails_deploy_git_access_token }}' --data '{{ rails_deploy_key_data | to_nice_json }}' https://{{ rails_deploy_git_host }}/api/v3/projects/{{ rails_deploy_register_gitlab_response.json.id }}/keys"
+  command: "curl --insecure --header 'PRIVATE-TOKEN: {{ rails_deploy_git_access_token }}'
+                 --data '{{ rails_deploy_key_data | to_nice_json }}'
+                 https://{{ rails_deploy_git_host }}/api/v3/projects/{{
+                   rails_deploy_register_gitlab_response.json.id }}/keys"
+  args:
+    warn: False
   changed_when: False
   register: foo
   when: rails_deploy_git_access_token and

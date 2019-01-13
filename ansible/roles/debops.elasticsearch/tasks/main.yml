@@ -50,7 +50,8 @@
   register: elasticsearch__register_systemd
 
 - name: Reload systemd daemons
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (elasticsearch__register_systemd is changed and
          ansible_service_mgr == 'systemd')
 
@@ -101,7 +102,8 @@
   with_flattened:
     - '{{ elasticsearch__combined_plugins }}'
   when: (item.name|d() and item.state|d('present') != 'absent' and
-         (item.name if ':' not in item.name else item.name.split(':')[1]) not in elasticsearch__register_plugins.stdout_lines)
+         (item.name if ':' not in item.name else item.name.split(':')[1])
+         not in elasticsearch__register_plugins.stdout_lines)
 
 - name: Remove Elasticsearch plugins
   command: bin/elasticsearch-plugin remove {{ item.name }}
@@ -111,7 +113,8 @@
   with_flattened:
     - '{{ elasticsearch__combined_plugins }}'
   when: (item.name|d() and item.state|d('present') == 'absent' and
-         (item.name if ':' not in item.name else item.name.split(':')[1]) in elasticsearch__register_plugins.stdout_lines)
+         (item.name if ':' not in item.name else item.name.split(':')[1])
+         in elasticsearch__register_plugins.stdout_lines)
 
 - name: Save Elasticsearch dependent configuration on Ansible Controller
   template:

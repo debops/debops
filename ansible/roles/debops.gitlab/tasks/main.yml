@@ -3,12 +3,14 @@
 - name: Install required packages
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   with_flattened:
     - '{{ gitlab__base_packages }}'
     - '{{ gitlab__release_packages[gitlab__distribution_release] | d([]) }}'
     - '{{ gitlab__database_packages[gitlab__distribution_release][gitlab__database] | d([]) }}'
+  register: gitlab__register_packages
+  until: gitlab__register_packages is succeeded
 
 - name: Create GitLab system group
   group:
@@ -64,7 +66,8 @@
 - include: download_gitlab_ce.yml
 
 - name: Check GitLab version numbers
-  script: 'script/gitlab-version{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }} {{ gitlab_ce_git_checkout }}'
+  script: 'script/gitlab-version{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}
+           {{ gitlab_ce_git_checkout }}'
   register: gitlab__register_version
   changed_when: False
   check_mode: False

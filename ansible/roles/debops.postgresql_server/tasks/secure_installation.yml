@@ -9,6 +9,7 @@
     state: 'present'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
+  become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d()
   no_log: True
@@ -23,6 +24,7 @@
     state: 'present'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
+  become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d()
 
@@ -36,5 +38,6 @@
     state: 'absent'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
+  become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when: item.name|d()

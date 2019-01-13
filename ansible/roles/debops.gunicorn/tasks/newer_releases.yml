@@ -114,7 +114,8 @@
         item.name|d() and item.state|d('present') != 'absent'
 
 - name: Reload systemd configuration
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          (gunicorn__register_systemd_config is changed or
           gunicorn__register_systemd_remove is changed or

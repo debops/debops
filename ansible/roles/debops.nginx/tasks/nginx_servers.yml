@@ -2,7 +2,9 @@
 
 - name: Create global webroot directories if allowed
   file:
-    path: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/{{ item.public_dir_name | d(nginx_public_dir_name) }}'
+    path: '{{ nginx_www }}/sites/{{ item.name
+                                    if item.name is string else item.name[0]
+                                      | d("default") }}/{{ item.public_dir_name | d(nginx_public_dir_name) }}'
     state: 'directory'
     owner: '{{ nginx_webroot_owner }}'
     group: '{{ nginx_webroot_group }}'
@@ -22,7 +24,8 @@
 - name: Create default welcome page if enabled
   template:
     src: '{{ item.welcome_template | d(nginx_welcome_template) }}'
-    dest: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/public/index.html'
+    dest: '{{ nginx_www }}/sites/{{ item.name
+                                    if item.name is string else item.name[0] | d("default") }}/public/index.html'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.owner | d(nginx_webroot_group) }}'
     force: '{{ item.welcome_force|d() | bool }}'
@@ -42,7 +45,8 @@
 - name: Copy 'normalize.css' CSS file for welcome page
   template:
     src: 'srv/www/sites/welcome/public/normalize.css'
-    dest: '{{ nginx_www }}/sites/{{ item.name if item.name is string else item.name[0] | d("default") }}/public/normalize.css'
+    dest: '{{ nginx_www }}/sites/{{ item.name
+                                    if item.name is string else item.name[0] | d("default") }}/public/normalize.css'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.owner | d(nginx_webroot_group) }}'
     force: '{{ item.welcome_force|d() | bool }}'
@@ -61,7 +65,9 @@
 
 - name: Remove nginx server configuration if requested
   file:
-    path: '/etc/nginx/sites-available/{{ item.filename | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'
+    path: '/etc/nginx/sites-available/{{ item.filename | d(item.name
+                                                           if item.name is string
+                                                           else item.name[0] | d("default")) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ nginx__servers }}'
@@ -100,8 +106,9 @@
 - name: Get first server that listens on http port for default_server roulette
   set_fact:
     nginx_register_default_server_http: '{{ item.name if item.name is string else item.name[0] | d("default") }}'
-  with_flattened: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers +
-                   nginx_servers|d([]) + nginx_default_servers|d([]) + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
+  with_flattened: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers
+                       + nginx_servers|d([]) + nginx_default_servers|d([])
+                       + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
   when: (item.state|d('present') != 'absent' and
          (item.enabled|d(True)|bool) and
          (item.listen|d(True)) and
@@ -110,8 +117,9 @@
 - name: Get first server that listens on https port for default_server roulette
   set_fact:
     nginx_register_default_server_https: '{{ item.name if item.name is string else item.name[0] | d("default") }}'
-  with_flattened: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers +
-                   nginx_servers|d([]) + nginx_default_servers|d([]) + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
+  with_flattened: '{{ (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers
+                       + nginx_servers|d([]) + nginx_default_servers|d([])
+                       + nginx_internal_servers|d([]) + nginx_dependent_servers|d([]))[::-1] }}'
   when: (item.state|d('present') != 'absent' and (item.enabled is undefined or item.enabled|bool) and
          (item.listen_ssl is undefined or item.listen_ssl|d()) and
          ((item.ssl|d() and item.ssl | bool) or
@@ -134,7 +142,9 @@
 - name: Generate nginx server configuration
   template:
     src: 'etc/nginx/sites-available/{{ item.type | d(nginx_default_type) }}.conf.j2'
-    dest: '/etc/nginx/sites-available/{{ item.filename | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'
+    dest: '/etc/nginx/sites-available/{{ item.filename | d(item.name
+                                                           if item.name is string
+                                                           else item.name[0] | d("default")) }}.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -153,7 +163,8 @@
 
 - name: Disable nginx server configuration
   file:
-    path: '/etc/nginx/sites-enabled/{{ item.filename | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'
+    path: '/etc/nginx/sites-enabled/{{ item.filename
+                                       | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ nginx__servers }}'
@@ -182,8 +193,10 @@
 
 - name: Enable nginx server configuration
   file:
-    path: '/etc/nginx/sites-enabled/{{ item.filename | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'
-    src: '/etc/nginx/sites-available/{{ item.filename | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'
+    path: '/etc/nginx/sites-enabled/{{ item.filename
+                                       | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'
+    src: '/etc/nginx/sites-available/{{ item.filename
+                                        | d(item.name if item.name is string else item.name[0] | d("default")) }}.conf'
     state: 'link'
     owner: 'root'
     group: 'root'

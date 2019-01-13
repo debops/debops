@@ -9,6 +9,8 @@
     url: '{{ openvz_apt_repository_key_url }}'
     id: '{{ openvz_apt_repository_key_id }}'
     state: 'present'
+  register: openvz__register_apt_key
+  until: openvz__register_apt_key is succeeded
 
 - name: Add OpenVZ APT repository
   apt_repository:
@@ -19,9 +21,11 @@
 - name: Install OpenVZ packages
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   with_items: [ 'vzctl', 'vzquota', 'vzdump', 'ploop', 'uuid-runtime' ]
+  register: openvz__register_packages
+  until: openvz__register_packages is succeeded
 
 - name: Symlink container storage to /vz
   file:

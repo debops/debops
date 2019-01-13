@@ -7,7 +7,11 @@
   assert:
     that:
       - 'ansible_version.full is version_compare("2.2.3.0", ">=")'
-    msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.2.3 or a newer! To skip, add "--skip-tags play::security-assertions" parameter. Refer to the changelog of debops.cryptsetup for details. Exiting.'
+    msg: |
+      VULNERABLE or unsupported Ansible version DETECTED, please update to
+      Ansible >= v2.2.3 or a newer!
+      To skip, add "--skip-tags play::security-assertions" parameter. Refer to
+      the changelog of debops.cryptsetup for details. Exiting.
   run_once: True
   delegate_to: 'localhost'
   tags:
@@ -17,8 +21,10 @@
 - name: Assert that combined device configuration is valid
   assert:
     that:
-      - '(cryptsetup__combined_devices | map(attribute="ciphertext_block_device") | unique | length) == (cryptsetup__combined_devices | length)'
-      - '(cryptsetup__combined_devices | map(attribute="name") | unique | length) == (cryptsetup__combined_devices | length)'
+      - '(cryptsetup__combined_devices | map(attribute="ciphertext_block_device")
+          | unique | length) == (cryptsetup__combined_devices | length)'
+      - '(cryptsetup__combined_devices | map(attribute="name")
+          | unique | length) == (cryptsetup__combined_devices | length)'
   run_once: True
   delegate_to: 'localhost'
 
@@ -33,6 +39,8 @@
     name: '{{ item }}'
     state: 'present'
   with_flattened: '{{ cryptsetup__base_packages }}'
+  register: cryptsetup__register_packages
+  until: cryptsetup__register_packages is succeeded
 
 - name: Create keyfile and backup directories on the remote system
   file:
@@ -44,16 +52,22 @@
   when: item.condition
   with_flattened:
     - path: '{{ cryptsetup__keyfile_remote_location }}'
-      condition: '{{ (cryptsetup__combined_devices | selectattr("remote_keyfile", "undefined") | list | length) > 0 }}'
+      condition: '{{ (cryptsetup__combined_devices
+                      | selectattr("remote_keyfile", "undefined") | list | length) > 0 }}'
     - path: '{{ cryptsetup__header_backup_remote_location }}'
-      condition: '{{ ((cryptsetup__combined_devices | selectattr("backup_header", "defined") | selectattr("backup_header") | list | length) > 0) or
-                      (cryptsetup__header_backup|bool and ((cryptsetup__combined_devices | selectattr("backup_header", "undefined") | list | length) > 0)) }}'
+      condition: '{{ ((cryptsetup__combined_devices
+                       | selectattr("backup_header", "defined")
+                       | selectattr("backup_header") | list | length) > 0) or
+                     (cryptsetup__header_backup|bool and ((cryptsetup__combined_devices
+                                                           | selectattr("backup_header", "undefined")
+                                                           | list | length) > 0)) }}'
 
 # Making the execution_strategy configurable per device would also be possible
 # using Jinja filters but that seems to fail for some reason:
 #
 # - debug:
-#     msg: '{{ ([{"execution_strategy": "serial"}, {"some":23}]) | selectattr("execution_strategy", "equalto", "serial") | list }}'
+#     msg: '{{ ([{"execution_strategy": "serial"}, {"some":23}])
+#              | selectattr("execution_strategy", "equalto", "serial") | list }}'
 #
 - include: 'manage_devices.yml'
   when: cryptsetup__devices_execution_strategy == 'parallel'

@@ -86,7 +86,7 @@
 - name: Determine if ownCloud autosetup should be done
   set_fact:
     owncloud__do_autosetup: '{{ (owncloud__autosetup and
-                                 owncloud__admin_username != "" and
+                                 owncloud__admin_username|d() and
                                  (owncloud__register_occ_check is not skipped) and
                                  "is not installed" in owncloud__register_occ_check.stdout) }}'
 
@@ -99,7 +99,7 @@
            '--database-host={{ owncloud__database_map[owncloud__database].dbhost }}'
            '--database-user={{ owncloud__database_map[owncloud__database].dbuser }}'
            '--database-pass={{ owncloud__database_map[owncloud__database].dbpass }}'
-           {% if owncloud__admin_username != False %}
+           {% if owncloud__admin_username %}
            '--admin-user={{ owncloud__admin_username }}'
            '--admin-pass={{ owncloud__admin_password }}'
            {% endif %}
@@ -135,7 +135,8 @@
 - name: Capture occ output in variable
   set_fact:
     owncloud__occ_config_current: '{{ owncloud__occ_run_output }}'
-  when: (owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and (not ansible_check_mode))
+  when: (owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and
+         (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]
 
 - name: Set ownCloud apps configuration for each app
@@ -169,7 +170,8 @@
     name: 'ownCloud Background Jobs'
     minute: '{{ owncloud__cron_minute }}'
     user: '{{ owncloud__app_user }}'
-    job: 'test -x /usr/bin/php && test -e {{ (owncloud__deploy_path + "/cron.php") | quote }} && /usr/bin/php -f {{ (owncloud__deploy_path + "/cron.php") | quote }}'
+    job: 'test -x /usr/bin/php && test -e {{ (owncloud__deploy_path + "/cron.php") | quote }}
+          && /usr/bin/php -f {{ (owncloud__deploy_path + "/cron.php") | quote }}'
     cron_file: 'owncloud'
 
 # .. ]]]
@@ -199,7 +201,8 @@
 - name: Check ownCloud core integrity
   command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
   register: owncloud__register_occ_integrity_check_core
-  failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
+  failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or
+                owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
   changed_when: False
   when: (owncloud__release is version_compare("9.0.8", ">="))
 

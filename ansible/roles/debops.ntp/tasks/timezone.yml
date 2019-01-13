@@ -41,7 +41,7 @@
          ntp__register_etc_localtime.stat.islnk|bool)
 
 - name: Configure timezone with timedatectl
-  shell: 'timedatectl set-timezone {{ ntp__timezone }}'
+  command: 'timedatectl set-timezone {{ ntp__timezone }}'
   when: (ansible_service_mgr == "systemd" and
             ntp__daemon == 'systemd-timesyncd') and
         (ansible_local is undefined or
@@ -50,7 +50,7 @@
             (ntp__register_etc_timezone|d() and ntp__register_etc_timezone is changed))
 
 - name: Reconfigure tzdata
-  shell: dpkg-reconfigure --frontend noninteractive tzdata
+  command: dpkg-reconfigure --frontend noninteractive tzdata
   when: ((ntp__register_debconf_set_area|d() and ntp__register_debconf_set_area is changed) or
          (ntp__register_debconf_set_zone|d() and ntp__register_debconf_set_zone is changed) or
          (ntp__register_etc_timezone|d() and ntp__register_etc_timezone is changed))

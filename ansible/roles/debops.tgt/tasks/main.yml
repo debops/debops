@@ -9,6 +9,8 @@
     state: 'present'
     install_recommends: False
   with_items: '{{ tgt_packages }}'
+  register: tgt__register_packages
+  until: tgt__register_packages is succeeded
 
 - name: Configure tgt global options
   template:
@@ -16,7 +18,7 @@
     dest: '/etc/tgt/conf.d/00_tgt_options.conf'
     owner: 'root'
     group: 'root'
-    mode: '600'
+    mode: '0600'
   notify: [ 'Reload tgt' ]
 
 - name: Remove iSCSI targets if requested
@@ -34,7 +36,7 @@
     dest: '/etc/tgt/conf.d/{{ item.filename | default(item.name) }}.conf'
     owner: 'root'
     group: 'root'
-    mode: '600'
+    mode: '0600'
   with_items: '{{ tgt_targets }}'
   notify: [ 'Reload tgt' ]
   when: ((item.name is defined and item.name) and

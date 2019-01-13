@@ -8,6 +8,8 @@
   with_flattened:
     - '{{ console_base_packages }}'
     - '{{ console_conditional_packages }}'
+  register: console__register_packages
+  until: console__register_packages is succeeded
   when: item is defined and item
   tags: [ 'meta::provision' ]
 

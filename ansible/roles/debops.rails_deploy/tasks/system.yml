@@ -1,8 +1,10 @@
 ---
 
 - name: Install app packages
-  apt: pkg={{ item }} state=latest install_recommends=False
-  with_items: rails_deploy_packages + [ 'git' ]
+  apt: pkg={{ item }} state=present install_recommends=False
+  with_items: '{{ rails_deploy_packages + [ "git" ] }}'
+  register: rails_deploy__register_packages
+  until: rails_deploy__register_packages is succeeded
 
 - name: Create app group
   group: name={{ rails_deploy_service }} system=True state=present

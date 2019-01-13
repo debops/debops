@@ -4,6 +4,8 @@
   apt:
     update_cache: True
     cache_valid_time: '{{ "86400" if ansible_local|d() else omit }}'
+  register: core__register_apt_update
+  until: core__register_apt_update is succeeded
   when: ansible_pkg_mgr == 'apt'
   tags: [ 'meta::provision' ]
 
@@ -16,6 +18,8 @@
     - '{{ core__packages }}'
     - '{{ core__group_packages }}'
     - '{{ core__host_packages }}'
+  register: core__register_packages
+  until: core__register_packages is succeeded
   tags: [ 'meta::provision' ]
 
 - name: Create root directories

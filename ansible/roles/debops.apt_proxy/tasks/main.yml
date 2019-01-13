@@ -7,6 +7,8 @@
   when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable|bool
   with_flattened:
     - '{{ apt_proxy__base_packages }}'
+  register: apt_proxy__register_packages
+  until: apt_proxy__register_packages is succeeded
 
 - name: Copy get-reachable-apt-proxy to remote host
   copy:

@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ etc_services__base_packages }}'
     - '{{ etc_services__packages }}'
+  register: etc_services__register_packages
+  until: etc_services__register_packages is succeeded
 
 - name: Make sure /etc/services.d directory exists
   file:

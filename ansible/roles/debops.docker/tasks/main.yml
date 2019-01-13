@@ -8,6 +8,8 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: docker__register_apt_key
+  until: docker__register_apt_key is succeeded
   when: docker__upstream|d() | bool
 
 - name: Configure upstream APT repository
@@ -45,6 +47,7 @@
     state: 'absent'
     install_recommends: False
   register: docker__register_other_version_removed
+  until: docker__register_other_version_removed is succeeded
   with_flattened:
     - '{{ "docker.io" if docker__upstream|d()
                 else docker__upstream_packagename }}'
@@ -56,7 +59,7 @@
     path: '{{ item }}'
     state: 'absent'
   tags: [ 'role::docker:config' ]
-  with_flattened:
+  with_items:
     - '/etc/systemd/system/docker.service'
     - '/lib/systemd/system/docker.service'
     - '/etc/default/docker'
@@ -74,6 +77,8 @@
     - '{{ docker__upstream_packagename if docker__upstream|d() else "docker.io" }}'
     - '{{ docker__base_packages }}'
     - '{{ docker__packages }}'
+  register: docker__register_packages
+  until: docker__register_packages is succeeded
 
 - name: Install Python packages in virtualenv
   pip:
@@ -177,8 +182,8 @@
   tags: [ 'role::docker:config' ]
 
 - name: Reload systemd daemons
-  command: systemctl daemon-reload
-  notify: [ 'Restart docker']
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          ((docker__register_systemd_service|d() and
          docker__register_systemd_service is changed) or

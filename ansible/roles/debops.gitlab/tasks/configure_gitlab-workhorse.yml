@@ -13,6 +13,7 @@
   command: git rev-parse HEAD
   args:
     chdir: '{{ gitlab_workhorse_dest }}'
+    warn: False
   register: gitlab_register_gitlab_workhorse_current_head
   changed_when: False
   become: True
@@ -23,6 +24,7 @@
   command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ gitlab_workhorse_dest }}'
+    warn: False
   changed_when: False
   become: True
   become_user: '{{ gitlab_user }}'
@@ -32,6 +34,7 @@
   git:
     repo: '{{ gitlab_workhorse_repo }}'
     dest: '{{ gitlab_workhorse_dest }}'
+    version: 'master'
     bare: True
     update: True
   become: True
@@ -74,6 +77,7 @@
     GIT_WORK_TREE: '{{ gitlab_workhorse_checkout }}'
   args:
     chdir: '{{ gitlab_workhorse_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_target_tag
@@ -85,10 +89,12 @@
     GIT_WORK_TREE: '{{ gitlab_workhorse_checkout }}'
   args:
     chdir: '{{ gitlab_workhorse_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab_workhorse_checkout
-  when: (gitlab__fact_version.workhorse != gitlab_register_gitlab_workhorse_target_tag.stdout) or not gitlab_register_gitlab_workhorse_cloned.stat.exists
+  when: (gitlab__fact_version.workhorse != gitlab_register_gitlab_workhorse_target_tag.stdout) or
+         not gitlab_register_gitlab_workhorse_cloned.stat.exists
 
 - name: Setup gitlab-workhorse
   make:

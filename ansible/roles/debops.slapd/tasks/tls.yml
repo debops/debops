@@ -15,28 +15,33 @@
   changed_when: False
 
 - name: Create random temporary directory for ldif file
-  command: mktemp -d
+  tempfile:
+    state: 'directory'
   register: slapd_register_tempdir
-  when: slapd_pki|d() and slapd_pki | bool and not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
+  when: slapd_pki|d() and slapd_pki | bool and
+        not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
 - name: Prepare temporary ldif file
   template:
     src: 'tmp/configure_tlscerts.ldif.j2'
-    dest: '{{ slapd_register_tempdir.stdout|d() + "/configure_tlscerts.ldif" }}'
+    dest: '{{ slapd_register_tempdir.path|d() + "/configure_tlscerts.ldif" }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: slapd_pki|d() and slapd_pki | bool and not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
+  when: slapd_pki|d() and slapd_pki | bool and
+        not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
 - name: Restart slapd (first time only)
   service:
     name: 'slapd'
     state: 'restarted'
-  when: slapd_pki|d() and slapd_pki | bool and not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
+  when: slapd_pki|d() and slapd_pki | bool and
+        not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
 - name: Configure TLS certificates (first time only)
-  shell: 'ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.stdout|d() + "/configure_tlscerts.ldif" }}'
-  when: slapd_pki|d() and slapd_pki | bool and not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
+  command: 'ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.path|d() + "/configure_tlscerts.ldif" }}'
+  when: slapd_pki|d() and slapd_pki | bool and
+        not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
 - name: Configure TLS certificates
   ldap_attr:

@@ -10,6 +10,8 @@
   with_flattened:
     - '{{ lxc__base_packages }}'
     - '{{ lxc__packages }}'
+  register: lxc__register_packages
+  until: lxc__register_packages is succeeded
 
 - name: Create required directories
   file:
@@ -283,11 +285,13 @@
     lxc_path:            '{{ item.lxc_path            | d(omit) }}'
     state:               '{{ item.state               | d("started"
                                                           if (ansible_local|d() and ansible_local.lxc|d() and
-                                                              (item.name | d(item)) in ansible_local.lxc.containers|d())
+                                                              (item.name | d(item))
+                                                              in ansible_local.lxc.containers|d())
                                                           else "stopped") }}'
     template:            '{{ item.template            | d(lxc__default_container_template) }}'
     template_options:    '{{ item.template_options    | d((template_options | join(" "))
-                                                          if ((item.template | d(lxc__default_container_template)) == "download")
+                                                          if ((item.template
+                                                               | d(lxc__default_container_template)) == "download")
                                                           else omit) }}'
     thinpool:            '{{ item.thinpool            | d(omit) }}'
     vg_name:             '{{ item.vg_name             | d(omit) }}'

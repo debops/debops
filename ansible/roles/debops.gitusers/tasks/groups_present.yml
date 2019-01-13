@@ -6,10 +6,11 @@
     system: '{{ item.systemgroup | default("no") }}'
     state: 'present'
   with_flattened:
-    - gitusers_list
-    - gitusers_group_list
-    - gitusers_host_list
-  when: (((item.name is defined and item.name) and (item.gid is undefined or (item.gid is defined and not item.gid))) and
+    - '{{ gitusers_list }}'
+    - '{{ gitusers_group_list }}'
+    - '{{ gitusers_host_list }}'
+  when: (((item.name is defined and item.name) and
+          (item.gid is undefined or (item.gid is defined and not item.gid))) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 - name: Create user groups with GIDs
@@ -19,8 +20,8 @@
     gid: '{{ item.gid }}'
     state: 'present'
   with_flattened:
-    - gitusers_list
-    - gitusers_group_list
-    - gitusers_host_list
+    - '{{ gitusers_list }}'
+    - '{{ gitusers_group_list }}'
+    - '{{ gitusers_host_list }}'
   when: ((item.name is defined and item.name) and (item.gid is defined and item.gid) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))

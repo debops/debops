@@ -15,6 +15,7 @@
          dpkg-divert --quiet --local --rename --remove "/{{ item.path }}"
   args:
     removes: '/{{ item.path }}.dpkg-divert'
+    warn: False
   when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ])
   with_items: '{{ apt_cacher_ng__configuration_files }}'
 
@@ -23,6 +24,8 @@
     name: '{{ item }}'
     state: '{{ "present" if (apt_cacher_ng__deploy_state == "present") else "absent" }}'
   with_flattened: '{{ apt_cacher_ng__base_packages }}'
+  register: apt_cacher_ng__register_packages
+  until: apt_cacher_ng__register_packages is succeeded
 
 - name: Run tasks related to deploy state present
   include: state_present.yml

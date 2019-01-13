@@ -3,8 +3,10 @@
 - name: Install SKS Keyserver
   apt:
     name: 'sks'
-    state: 'latest'
+    state: 'present'
     install_recommends: 'no'
+  register: sks__register_packages
+  until: sks__register_packages is succeeded
 
 - name: Configure firewall for SKS Keyserver
   template:
@@ -31,6 +33,7 @@
   when: sks_register_database_pre_build is defined and not sks_register_database_pre_build.stat.exists
 
 - name: Build SKS Keyserver database
+  become: True
   become_user: 'debian-sks'
   command: /usr/sbin/sks build chdir=/var/lib/sks creates=/var/lib/sks/DB/key
   when: sks_autoinit is defined and sks_autoinit

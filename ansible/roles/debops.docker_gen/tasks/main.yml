@@ -79,7 +79,8 @@
   notify: [ 'Restart docker-gen' ]
 
 - name: Reload systemd daemons
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: ((ansible_local|d() and ansible_local.init|d() and ansible_local.init == 'systemd') and
          (docker_gen__register_service|d() and docker_gen__register_service is changed))
 

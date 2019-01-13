@@ -8,6 +8,8 @@
   with_flattened:
     - '{{ unattended_upgrades__base_packages }}'
     - '{{ unattended_upgrades__packages }}'
+  register: unattended_upgrades__register_packages
+  until: unattended_upgrades__register_packages is succeeded
   when: unattended_upgrades__enabled | bool
 
 - name: Configure debconf answer

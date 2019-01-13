@@ -26,14 +26,16 @@
   check_mode: False
 
 - name: Get list of blacklisted certificates
-  shell: grep -E -e '{{ pki_system_ca_certificates_blacklist | join("' -e '") }}' /etc/ca-certificates.conf | sed -e 's/^!//'
+  shell: grep -E -e '{{ pki_system_ca_certificates_blacklist | join("' -e '") }}'
+         /etc/ca-certificates.conf | sed -e 's/^!//'
   register: pki_register_ca_certificates_blacklist
   changed_when: False
   check_mode: False
   when: pki_system_ca_certificates_blacklist is defined and pki_system_ca_certificates_blacklist
 
 - name: Get list of whitelisted certificates
-  shell: grep -E -e '{{ pki_system_ca_certificates_whitelist | join("' -e '") }}' /etc/ca-certificates.conf | sed -e 's/^!//'
+  shell: grep -E -e '{{ pki_system_ca_certificates_whitelist | join("' -e '") }}'
+              /etc/ca-certificates.conf | sed -e 's/^!//'
   register: pki_register_ca_certificates_whitelist
   changed_when: False
   check_mode: False

@@ -12,6 +12,8 @@
   with_flattened:
     - '{{ kmod__base_packages }}'
     - '{{ kmod__packages }}'
+  register: kmod__register_packages
+  until: kmod__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -65,8 +67,8 @@
   with_items: '{{ kmod__combined_load | parse_kv_items }}'
   register: kmod__register_load
   when: kmod__enabled|bool and item.name|d() and item.state|d('present') not in [ 'config', 'absent', 'ignore' ] and
-        item.modules is undefined and ansible_local|d() and ansible_local.kmod|d() and ansible_local.kmod.modules|d() and
-        item.name not in ansible_local.kmod.modules
+        item.modules is undefined and ansible_local|d() and ansible_local.kmod|d() and
+        ansible_local.kmod.modules|d() and item.name not in ansible_local.kmod.modules
 
 - name: Update Ansible facts if modules were loaded
   action: setup

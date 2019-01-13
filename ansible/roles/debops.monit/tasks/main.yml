@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ monit__base_packages }}'
     - '{{ monit__packages }}'
+  register: monit__register_packages
+  until: monit__register_packages is succeeded
 
 - name: Remove Monit configuration if requested
   file:

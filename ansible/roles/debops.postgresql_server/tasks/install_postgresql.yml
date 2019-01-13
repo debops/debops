@@ -24,6 +24,8 @@
             if (postgresql_server__autopostgresqlbackup|d() and
                 postgresql_server__autopostgresqlbackup | bool)
             else [] }}' ]
+  register: postgresql_server__register_packages
+  until: postgresql_server__register_packages is succeeded
 
 - name: Check if default PostgreSQL cluster exists
   stat:

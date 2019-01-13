@@ -15,6 +15,8 @@
   with_flattened:
     - '{{ ferm__base_packages }}'
     - '{{ ferm__packages }}'
+  register: ferm__register_packages
+  until: ferm__register_packages is succeeded
   when: ferm__enabled | bool
 
 - name: Make sure required directories exist
@@ -23,7 +25,7 @@
     state: 'directory'
     owner: 'root'
     group: 'adm'
-    mode: '2750'
+    mode: '02750'
   with_items:
     - '/etc/ferm/rules.d'
     - '/etc/ferm/filter-input.d'
@@ -85,7 +87,9 @@
 
 - name: Remove firewall rules
   file:
-    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class | d(item.value.type | d("default"))] | d("80"))|int + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
+    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class
+                                                 | d(item.value.type | d("default"))] | d("80"))|int
+                                + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     state: 'absent'
   with_dict: '{{ ferm__parsed_rules }}'
   register: ferm__register_rules_removed
@@ -95,7 +99,9 @@
 - name: Generate firewall rules
   template:
     src: 'etc/ferm/rules.d/{{ item.value.template | d("rule") }}.conf.j2'
-    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class | d(item.value.type | d("default"))] | d("80"))|int + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
+    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class
+                                                 | d(item.value.type | d("default"))] | d("80"))|int
+                                + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -107,7 +113,11 @@
 - name: Remove unknown firewall rules
   shell: find /etc/ferm/rules.d -maxdepth 1 -type f
          -name '*_rule_{{ item.item.value.name | d(item.item.key) }}.conf'
-         ! -name '{{ "%03d" | format((ferm__combined_weight_map[item.item.value.weight_class | d(item.item.value.type | d("default"))] | d("80"))|int + (item.item.value.weight | d("0"))|int) }}_rule_{{ item.item.value.name | d(item.item.key) }}.conf' -exec rm -vf {} +
+         ! -name '{{ "%03d" | format((ferm__combined_weight_map[item.item.value.weight_class
+                                      | d(item.item.value.type | d("default"))] | d("80"))|int
+                     + (item.item.value.weight | d("0"))|int) }}_rule_{{ item.item.value.name
+                                                                         | d(item.item.key) }}.conf'
+         -exec rm -vf {} +
   with_items:
     - '{{ ferm__register_rules_removed.results }}'
     - '{{ ferm__register_rules_created.results }}'
@@ -116,7 +126,9 @@
 
 - name: Remove iptables INPUT rules if requested
   file:
-    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d("50")) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()]
+           | d(item.weight | d("50")) }}_{{ item.filename
+           | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ ferm_input_list }}'
@@ -130,7 +142,9 @@
 - name: Configure iptables INPUT rules
   template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d("50")) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()]
+           | d(item.weight | d("50")) }}_{{ item.filename
+           | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'

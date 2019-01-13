@@ -14,22 +14,26 @@
 - name: Construct occ command for ownCloud apps configuration
   set_fact:
     owncloud__occ_item:
-      command: 'config:app:set {{ owncloud__apps_item.key | quote }} {{ owncloud__apps_setting_item.key | quote }} --value={{ owncloud__apps_setting_item.value|string | quote }}'
+      command: 'config:app:set {{ owncloud__apps_item.key | quote }} {{ owncloud__apps_setting_item.key | quote }}
+                --value={{ owncloud__apps_setting_item.value|string | quote }}'
   when: (owncloud__apps_setting_item is defined)
 
 - name: 'Construct occ command for ownCloud files:scan configuration'
   set_fact:
     owncloud__occ_item:
       ## Does not support JSON output although it is listed in the help as of ownCloud 9.0.4.
-      ## Refer to https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html#file-operations
+      ## Refer to
+      ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html#file-operations
       ## for details.
       command: 'files:scan --path {{ owncloud__files_scan_item.item.dest | quote }}'
   when: (owncloud__files_scan_item is defined)
 
-  # An alternative would be https://doc.owncloud.org/server/9.1/admin_manual/configuration_user/user_provisioning_api.html
+  # An alternative would be
+  # https://doc.owncloud.org/server/9.1/admin_manual/configuration_user/user_provisioning_api.html
   # but `occ` is preferred in the case of Ansible.
 - name: Run given occ commands
-  command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }} {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
+  command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }}
+               {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
   environment: '{{ owncloud__occ_item.env|d({}) }}'
   ## TODO: Upstream needs to fix proper support for `changed_when`.
   changed_when: False
@@ -37,7 +41,8 @@
   ## Has changed in ownCloud 9.0 and does not work anymore.
   # changed_when: ('No such app enabled:' not in owncloud__occ_run.stdout and
                   # ' already ' not in owncloud__occ_run.stdout)
-  failed_when: ((owncloud__occ_run.rc != 0 and 'already exists' not in owncloud__occ_run.stdout and 'already installed' not in owncloud__occ_run.stdout) or
+  failed_when: ((owncloud__occ_run.rc != 0 and 'already exists' not in owncloud__occ_run.stdout and
+                 'already installed' not in owncloud__occ_run.stdout) or
                 ('An unhandled exception has been thrown:' in owncloud__occ_run.stdout))
   no_log: True
   register: owncloud__occ_run
@@ -45,7 +50,7 @@
   become_user: '{{ owncloud__app_user }}'
   ## https://github.com/debops/ansible-owncloud/issues/62
   when: (owncloud__occ_item|d() and
-         owncloud__occ_item.command|d("") != "" and
+         owncloud__occ_item.command|d() and
          (owncloud__occ_item.when|d(True) | bool) and not (
            ansible_local|d() and ansible_local.owncloud|d() and
            ansible_local.owncloud.maintenance|d() | bool and (
@@ -72,6 +77,7 @@
 - name: Convert occ output into Ansible data structure
   set_fact:
     ## regex_replace: Relies on the fact that `json_pretty` indents the JSON encoded object.
-    owncloud__occ_run_output: '{{ owncloud__occ_run.stdout_lines | map("regex_replace", "^[^{} ].*$", "") | join("") | from_json }}'
+    owncloud__occ_run_output: '{{ owncloud__occ_run.stdout_lines
+                                  | map("regex_replace", "^[^{} ].*$", "") | join("") | from_json }}'
   when: (owncloud__occ_item|d() and (owncloud__occ_item.get_output|d() | bool) and (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]

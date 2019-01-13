@@ -13,6 +13,7 @@
   command: git rev-parse HEAD
   args:
     chdir: '{{ gitlab_pages_dest }}'
+    warn: False
   register: gitlab_register_pages_current_head
   changed_when: False
   become: True
@@ -24,6 +25,7 @@
   command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ gitlab_pages_dest }}'
+    warn: False
   changed_when: False
   become: True
   become_user: '{{ gitlab_user }}'
@@ -34,6 +36,7 @@
   git:
     repo: '{{ gitlab_pages_repo }}'
     dest: '{{ gitlab_pages_dest }}'
+    version: 'master'
     bare: True
     update: True
   become: True
@@ -77,6 +80,7 @@
     GIT_WORK_TREE: '{{ gitlab_pages_checkout }}'
   args:
     chdir: '{{ gitlab_pages_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_pages_target_tag
@@ -88,10 +92,12 @@
     GIT_WORK_TREE: '{{ gitlab_pages_checkout }}'
   args:
     chdir: '{{ gitlab_pages_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_pages_checkout
-  when: (gitlab__fact_version.pages|d() != gitlab_register_pages_target_tag.stdout|d()) or (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
+  when: (gitlab__fact_version.pages|d() != gitlab_register_pages_target_tag.stdout|d()) or
+         (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
 
 - name: Setup gitlab-pages
   make:

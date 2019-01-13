@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ tcpwrappers__base_packages }}'
     - '{{ tcpwrappers__packages }}'
+  register: tcpwrappers__register_packages
+  until: tcpwrappers__register_packages is succeeded
   when: tcpwrappers__enabled | bool
 
 - name: Make sure /etc/hosts.allow.d directory exists
@@ -41,7 +43,8 @@
 
 - name: Remove hosts.allow entries if requested
   file:
-    path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
+    path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename
+            | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
     state: 'absent'
   with_flattened:
     - '{{ tcpwrappers__allow }}'
@@ -59,7 +62,8 @@
 - name: Generate hosts.allow entries
   template:
     src: 'etc/hosts.allow.d/allow.j2'
-    dest: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
+    dest: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename
+            | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'

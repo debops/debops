@@ -70,6 +70,8 @@
   with_flattened:
     - '{{ unbound__base_packages }}'
     - '{{ unbound__packages }}'
+  register: unbound__register_packages
+  until: unbound__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
   file:

@@ -23,7 +23,7 @@
 - name: Install PKI packages
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
     cache_valid_time: '{{ ansible_local.core.cache_valid_time
                           if (ansible_local|d() and ansible_local.core|d() and
@@ -35,6 +35,8 @@
           if (pki_acme|bool or pki_acme_install|bool)
           else [] }}'
     - '{{ pki_packages }}'
+  register: pki__register_packages
+  until: pki__register_packages is succeeded
   when: pki_enabled | bool
 # .. ]]]
 
@@ -66,7 +68,9 @@
   assert:
     that:
       - 'pki__register_bash_version.stdout | regex_replace("[^0-9.]", "") is version_compare("4.3.0", ">=")'
-      - 'pki__register_crypto_library_version.stdout | regex_replace("[a-z]", "") is version_compare("1.0.1" if (pki_ca_library == "openssl") else pki__register_crypto_library_version.stdout, ">=")'
+      - 'pki__register_crypto_library_version.stdout | regex_replace("[a-z]", "")
+         is version_compare("1.0.1" if (pki_ca_library == "openssl")
+                                    else pki__register_crypto_library_version.stdout, ">=")'
   delegate_to: 'localhost'
   become: False
   run_once: True
@@ -143,24 +147,24 @@
     PKI_LIBRARY: '{{ item.library | d(pki_library) }}'
     PKI_ACME_LIBRARY: '{{ item.acme_library | d(pki_acme_library) }}'
   command: |
-           "{{ pki_fact_lib_path }}/pki-realm" init -n "{{ item.name }}"
-           --authority-preference "{{ (item.authority_preference | d(pki_authority_preference)) | join('/') }}"
-           --library "{{ item.library | d(pki_library) }}"
-           --realm-key-size "{{ item.realm_key_size | d(pki_realm_key_size) }}"
-           --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}"
-           --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
-           --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
-           --private-dir-acl-groups "{{ (item.private_dir_acl_groups | d(pki_private_dir_acl_groups)) | join('/') }}"
-           --private-file-acl-groups "{{ (item.private_file_acl_groups | d(pki_private_file_acl_groups)) | join('/') }}"
-           --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}"
-           --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
-           --acme-default-subdomains "{{ (item.acme_default_subdomains | d(pki_acme_default_subdomains)) | join('/') }}"
-           --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
-           --default-domain "{{ item.default_domain | d(pki_default_domain) }}"
-           --default-subdomains "{{ (item.default_subdomains | d(pki_default_subdomains)) | join('/') }}"
-           --dhparam "{{ (item.dhparam | d(pki_dhparam)) | bool | lower }}"
-           --dhparam-file "{{ item.dhparam_file | d(pki_dhparam_file) }}"
-           --selfsigned-sign-days "{{ item.selfsigned_sign_days|d('365') }}"
+    "{{ pki_fact_lib_path }}/pki-realm" init -n "{{ item.name }}"
+    --authority-preference "{{ (item.authority_preference | d(pki_authority_preference)) | join('/') }}"
+    --library "{{ item.library | d(pki_library) }}"
+    --realm-key-size "{{ item.realm_key_size | d(pki_realm_key_size) }}"
+    --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}"
+    --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
+    --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
+    --private-dir-acl-groups "{{ (item.private_dir_acl_groups | d(pki_private_dir_acl_groups)) | join('/') }}"
+    --private-file-acl-groups "{{ (item.private_file_acl_groups | d(pki_private_file_acl_groups)) | join('/') }}"
+    --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}"
+    --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
+    --acme-default-subdomains "{{ (item.acme_default_subdomains | d(pki_acme_default_subdomains)) | join('/') }}"
+    --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
+    --default-domain "{{ item.default_domain | d(pki_default_domain) }}"
+    --default-subdomains "{{ (item.default_subdomains | d(pki_default_subdomains)) | join('/') }}"
+    --dhparam "{{ (item.dhparam | d(pki_dhparam)) | bool | lower }}"
+    --dhparam-file "{{ item.dhparam_file | d(pki_dhparam_file) }}"
+    --selfsigned-sign-days "{{ item.selfsigned_sign_days|d('365') }}"
   args:
     creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
   with_flattened:
@@ -308,7 +312,8 @@
   environment:
     PKI_ROOT: '{{ secret + "/pki" }}'
     PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
-    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
+    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/"
+                             + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
   command: ./lib/pki-authority init --name "{{ item.name }}"
            --default-sign-base "{{ pki_default_sign_base }}"
            --root-sign-multiplier "{{ pki_default_root_sign_multiplier }}"
@@ -329,7 +334,8 @@
     PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
     PKI_ROOT: '{{ secret + "/pki" }}'
     PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
-    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/" + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
+    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/"
+                             + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
   command: ./lib/pki-authority new-ca --name "{{ item.name }}"
            --type "{{ item.type | d('') }}"
            --domain "{{ item.domain | d(pki_ca_domain) }}"
@@ -369,7 +375,7 @@
   become: False
   run_once: True
   when: (pki_authorities or pki_dependent_authorities)
-  changed_when: pki_register_sign_by_host.stdout != ""
+  changed_when: pki_register_sign_by_host.stdout|d()
 # ]]]
 
 # Download files [[[

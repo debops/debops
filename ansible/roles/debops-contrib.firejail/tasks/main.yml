@@ -12,6 +12,8 @@
     - '{{ firejail__packages }}'
     - '{{ firejail__group_packages }}'
     - '{{ firejail__host_packages }}'
+  register: firejail__register_packages
+  until: firejail__register_packages is succeeded
   tags: [ 'role::firejail:pkgs' ]
 # ]]]
 
@@ -26,7 +28,8 @@
 
 - name: Set program file path of firejail for later use in the role
   set_fact:
-    firejail__program_file_path: '{{ (firejail__register_program_file_path.stdout_lines + ["/usr/bin/firejail"]) | first }}'
+    firejail__program_file_path: '{{ (firejail__register_program_file_path.stdout_lines
+                                      + ["/usr/bin/firejail"]) | first }}'
   when: (firejail__program_file_path == "auto")
 # ]]]
 
@@ -74,7 +77,10 @@
   set_fact:
     firejail__fact_installed_programs: '{{
       firejail__register_cmd_which_programs.results
-      | selectattr("rc", "defined") | selectattr("rc", "equalto", 0) | map(attribute="stdout_lines") | map("first") | map("basename") | list }}'
+      | selectattr("rc", "defined")
+      | selectattr("rc", "equalto", 0)
+      | map(attribute="stdout_lines")
+      | map("first") | map("basename") | list }}'
 
 # ]]]
 
@@ -92,9 +98,11 @@
                if (
                  firejail__deploy_state in ["present"] and (
                    (item in firejail__combined_program_sandboxes and (
-                     (firejail__combined_program_sandboxes[item].system_wide_sandboxed|d(firejail__program_sandboxes_system_wide_sandboxed) == "present") or
+                     (firejail__combined_program_sandboxes[item].system_wide_sandboxed
+                      | d(firejail__program_sandboxes_system_wide_sandboxed) == "present") or
                      (
-                       (firejail__combined_program_sandboxes[item].system_wide_sandboxed|d(firejail__program_sandboxes_system_wide_sandboxed) == "if_installed") and
+                       (firejail__combined_program_sandboxes[item].system_wide_sandboxed
+                        | d(firejail__program_sandboxes_system_wide_sandboxed) == "if_installed") and
                        item in firejail__fact_installed_programs
                      )
                    )) or (item not in firejail__combined_program_sandboxes and (
@@ -187,7 +195,8 @@
            )
          ) or (
            item.stat.lnk_source == firejail__program_file_path and
-           (item.stat.path|basename not in (firejail__combined_program_sandboxes.keys() | union(firejail__fact_system_wide_profiles)))
+           (item.stat.path|basename not in (firejail__combined_program_sandboxes.keys()
+                                            | union(firejail__fact_system_wide_profiles)))
          )
         ))
   with_items: '{{ firejail__register_profile_program_symlinks_stat.results }}'
@@ -201,6 +210,7 @@
   file:
     path: '~/.local/share/applications'
     state: 'directory'
+  become: True
   become_user: '{{ item.name }}'
   no_log: '{{ not (firejail__ansible_log | bool) }}'
   when: firejail__deploy_state in ["present"] and item.name != "root"
@@ -210,6 +220,7 @@
   command: firecfg --fix
   register: firejail__register_cmd_firecfg_fix
   changed_when: ("created" in firejail__register_cmd_firecfg_fix.stdout)
+  become: True
   become_user: '{{ item.name }}'
   no_log: '{{ not (firejail__ansible_log | bool) }}'
   when: firejail__deploy_state in ["present"] and item.name != "root"

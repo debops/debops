@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: '{{ lvm__packages }}'
+  register: lvm__register_packages
+  until: lvm__register_packages is succeeded
 
 - name: Divert original lvm.conf
   command: dpkg-divert --quiet --local --divert /etc/lvm/lvm.conf.dpkg-divert --rename /etc/lvm/lvm.conf

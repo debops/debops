@@ -1,7 +1,8 @@
 ---
 
 - name: Reload systemd units
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: ansible_local|d() and ansible_local.init|d() and
         ansible_local.init in [ 'systemd' ]
 

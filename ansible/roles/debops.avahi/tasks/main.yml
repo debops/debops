@@ -49,12 +49,16 @@
   with_flattened:
     - '{{ avahi__base_packages }}'
     - '{{ avahi__packages }}'
+  register: avahi__register_packages
+  until: avahi__register_packages is succeeded
 
 - name: Manage advertisement of additional hosts over Avahi
   lineinfile:
     dest: '/etc/avahi/hosts'
     regexp: '{{ "^" + item.key + "\s+" }}'
-    line: '{{ item.key }} {{ (item.value if item.value.endswith("." + avahi__domain) else (item.value + "." + avahi__domain)) }}'
+    line: '{{ item.key }} {{ (item.value
+                              if item.value.endswith("." + avahi__domain)
+                              else (item.value + "." + avahi__domain)) }}'
     state: 'present'
   with_dict: '{{ avahi__hosts | combine(avahi__group_hosts) | combine(avahi__host_hosts) }}'
   when: item.key|d() and item.value|d()

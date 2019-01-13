@@ -64,6 +64,8 @@
   with_flattened:
     - '{{ rabbitmq_server__base_packages }}'
     - '{{ rabbitmq_server__packages }}'
+  register: rabbitmq_server__register_packages
+  until: rabbitmq_server__register_packages is succeeded
 
 - name: Check if the dependent config file exists
   stat:

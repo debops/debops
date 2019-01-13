@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ netbase__base_packages }}'
     - '{{ netbase__packages }}'
+  register: netbase__register_packages
+  until: netbase__register_packages is succeeded
   when: netbase__enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
@@ -50,7 +52,8 @@
   lineinfile:
     dest:    '/etc/hosts'
     regexp:  '^{{ item.name | replace(".","\.") }}\s+'
-    line:    "{{ item.name }}\t{{ ('\t' if (item.name | string | length < 8) else '') }}{{ item.value if (item.value is string)
+    line:    "{{ item.name }}\t{{ ('\t' if (item.name | string | length < 8) else '') }}{{ item.value
+                 if (item.value is string)
                  else ((item.value|d()) | selectattr('name', 'defined') | map(attribute='name') | list | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
   loop: '{{ netbase__combined_hosts | parse_kv_config }}'
