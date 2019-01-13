@@ -13,6 +13,7 @@
   when: rails_deploy_service is defined and rails_deploy_service and
         rails_deploy_register_deploy_key is defined
 
+  # FIXME: Use a proper Ansible module instead of the 'command' module
 - name: Transfer the deploy key to Github
   command: "curl --silent --header 'Authorization: token {{ rails_deploy_git_access_token }}'
                  --data '{{ rails_deploy_key_data | to_nice_json }}'
@@ -35,6 +36,7 @@
         rails_deploy_register_deploy_key is defined and
         not 'github' in rails_deploy_git_host
 
+  # FIXME: Use a proper Ansible module instead of the 'command' module
 - name: Transfer the deploy key to Gitlab
   command: "curl --insecure --header 'PRIVATE-TOKEN: {{ rails_deploy_git_access_token }}'
                  --data '{{ rails_deploy_key_data | to_nice_json }}'
