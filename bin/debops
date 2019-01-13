@@ -36,7 +36,7 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
-import ansible
+from distutils.version import LooseVersion as ver
 from debops import ANSIBLE_CONFIG_FILE, ENCFS_PREFIX, SECRET_NAME
 from debops import DEBOPS_PY_PACKAGE
 from debops import read_config
@@ -130,12 +130,20 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
             os.path.join(playbooks_path, "..", "roles"),
             os.path.join(playbooks_path, "roles"),
             "/etc/ansible/roles")))
+
+    ansible_version_out = subprocess.check_output(["ansible-playbook",
+                                                   "--version"]).decode()
+
+    # Get first line and split by spaces to get second 'word'.
+    ansible_version = str(ansible_version_out.splitlines()[0].split()[1])
+
     for plugin_type in ('action', 'callback', 'connection',
                         'filter', 'lookup', 'vars'):
         plugin_type = plugin_type+"_plugins"
         defaults[plugin_type] = PATHSEP.join(custom_paths(plugin_type))
 
-        if ansible.__version__ >= "1.7" and ansible.__version__ < "2.0":
+        if (ver(ansible_version) >= ver("1.7") and
+                ver(ansible_version) < ver("2.0")):
             # work around a bug obviously introduced in 1.7, see
             # https://github.com/ansible/ansible/issues/8555
             if ' ' in defaults[plugin_type]:
