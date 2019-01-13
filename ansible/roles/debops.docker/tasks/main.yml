@@ -20,25 +20,14 @@
     update_cache: True
   when: docker__upstream|d() | bool
 
-- name: Make sure that systemd directory exists
-  file:
-    path: '/etc/systemd/system'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker:config' ]
-
-- name: Make sure that docker.service.d directory exists
+- name: Make sure that docker.service.d override directory exists
   file:
     path: '/etc/systemd/system/docker.service.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (ansible_service_mgr == 'systemd' and
-        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
+  when: ansible_service_mgr == 'systemd'
   tags: [ 'role::docker:config' ]
 
 - name: Remove other version if upstream is modified
@@ -79,6 +68,27 @@
     - '{{ docker__packages }}'
   register: docker__register_packages
   until: docker__register_packages is succeeded
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save APT local facts
+  template:
+    src: 'etc/ansible/facts.d/docker.fact.j2'
+    dest: '/etc/ansible/facts.d/docker.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: docker__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: docker__register_facts is changed
 
 - name: Install Python packages in virtualenv
   pip:
@@ -125,15 +135,6 @@
     mode: '0755'
   when: docker__ferm_post_hook|bool
 
-- name: Check Docker version
-  environment:
-    LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' '{{ ("docker-ce" if docker__upstream|d() else "docker.io") }}' | cut -d- -f1
-  register: docker__register_version
-  changed_when: False
-  failed_when: False
-  tags: [ 'role::docker:config' ]
-
 - name: Configure Docker options
   template:
     src: 'etc/default/docker.j2'
@@ -143,7 +144,7 @@
     mode: '0644'
   notify: [ 'Restart docker' ]
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr != 'systemd' or docker__register_version.stdout is version_compare('1.10', '<'))
+  when: (ansible_service_mgr != 'systemd' or docker__version is version_compare('1.10', '<'))
 
 - name: Configure Docker systemd options
   template:
@@ -154,43 +155,26 @@
     mode: '0644'
   notify: [ 'Restart docker' ]
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr == 'systemd' and docker__register_version.stdout is version_compare('1.10', '>='))
+  when: (ansible_service_mgr == 'systemd' and docker__version is version_compare('1.10', '>='))
 
-- name: Install Debian systemd service unit
+- name: Configure Docker systemd overrides
   template:
-    src: 'etc/systemd/system/docker.service.j2'
-    dest: '/etc/systemd/system/docker.service'
+    src: 'etc/systemd/system/docker.service.d/{{ item }}.j2'
+    dest: '/etc/systemd/system/docker.service.d/{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: docker__register_systemd_service
+  loop: [ 'execstart-override.conf', 'http-proxy.conf' ]
+  register: docker__register_systemd_overrides
   notify: ['Restart docker' ]
   when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker:config' ]
-
-- name: Configure Docker proxy
-  template:
-    src: 'etc/systemd/system/docker.service.d/http-proxy.conf.j2'
-    dest: '/etc/systemd/system/docker.service.d/http-proxy.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  register: docker__register_systemd_proxy_present
-  notify: ['Restart docker' ]
-  when: (ansible_service_mgr == 'systemd' and
-        (docker__env_http_proxy is defined or docker__env_https_proxy is defined))
   tags: [ 'role::docker:config' ]
 
 - name: Reload systemd daemons
   systemd:
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
-         ((docker__register_systemd_service|d() and
-         docker__register_systemd_service is changed) or
-         (docker__register_systemd_proxy_present|d() and
-         docker__register_systemd_proxy_present is changed) or
-         (docker__register_systemd_proxy_absent|d() and
-         docker__register_systemd_proxy_absent is changed)))
+         docker__register_systemd_overrides is changed)
   tags: [ 'role::docker:config' ]
 
 - name: Add specified users to 'docker' group
@@ -201,24 +185,3 @@
   with_items: '{{ docker__admins }}'
   when: item|d()
   tags: [ 'role::docker:config', 'role::docker:admins' ]
-
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save APT local facts
-  template:
-    src: 'etc/ansible/facts.d/docker.fact.j2'
-    dest: '/etc/ansible/facts.d/docker.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: docker__register_facts
-
-- name: Update Ansible facts if they were modified
-  action: setup
-  when: docker__register_facts is changed

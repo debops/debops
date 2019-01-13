@@ -117,6 +117,16 @@ docker__base_packages:
 #
 # List of additional packages to install with Docker.
 docker__packages: []
+
+                                                                   # ]]]
+# .. envvar:: docker__version [[[
+#
+# Specify the Docker version installed on a host. This variable is populated
+# automatically via Ansible local facts and shouldn't be set manually.
+docker__version: '{{ ansible_local.docker.version
+                     if (ansible_local|d() and ansible_local.docker|d() and
+                         ansible_local.docker.version|d())
+                     else "0.0.0" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Docker Python environment [[[
