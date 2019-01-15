@@ -11,6 +11,14 @@
   register: ifupdown__register_packages
   until: ifupdown__register_packages is succeeded
 
+- name: Purge conflicting packages
+  apt:
+    name: '{{ item }}'
+    state: 'absent'
+    purge: True
+  with_flattened:
+    - '{{ ifupdown__purge_packages }}'
+
 - name: Create custom ifupdown systemd services
   include: ifup_systemd.yml
 
