@@ -48,9 +48,35 @@ snmpd_logging_options: '-LScd'
                                                                    # ]]]
 # .. envvar:: snmpd_custom_options [[[
 #
-# Custom ``snmpd`` options written in YAML text block format, inserted into
-# ``/etc/snmp/snmpd.conf`` configuration file.
+# Custom ``snmpd`` options written in YAML text block format,
+# inserted into ``/etc/snmp/snmpd.conf`` configuration file on
+# all hosts in the inventory.
 snmpd_custom_options: ''
+
+                                                                   # ]]]
+# .. envvar:: snmpd_group_custom_options [[[
+#
+# Custom ``snmpd`` options written in YAML text block format,
+# inserted into ``/etc/snmp/snmpd.conf`` configuration file on
+# hosts in specific inventory group.
+snmpd_group_custom_options: ''
+
+                                                                   # ]]]
+# .. envvar:: snmpd_host_custom_options [[[
+#
+# Custom ``snmpd`` options written in YAML text block format,
+# inserted into ``/etc/snmp/snmpd.conf`` configuration file on
+# specific hosts in the inventory.
+snmpd_host_custom_options: ''
+
+                                                                   # ]]]
+# .. envvar:: snmpd_combined_custom_options [[[
+#
+# List which combines all of the ``snmp_*_custom_options`` entries
+# together and is used in the role tasks and templates.
+snmpd_combined_custom_options: '{{ snmpd_custom_options
+                                   + snmpd_group_custom_options
+                                   + snmpd_host_custom_options }}'
 
                                                                    # ]]]
 # .. envvar:: snmpd_download_mibs [[[
