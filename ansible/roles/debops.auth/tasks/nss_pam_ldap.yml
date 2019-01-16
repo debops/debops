@@ -11,10 +11,13 @@
 
 - name: Install packages require for LDAP authentication
   apt:
-    name: '{{ item }}'
+    name:
+      - 'libnss-ldapd'
+      - 'libpam-ldapd'
+      - 'openssl'
+      - 'ca-certificates'
     state: 'present'
     install_recommends: False
-  with_items: [ 'libnss-ldapd', 'libpam-ldapd', 'openssl', 'ca-certificates' ]
   register: auth__register_pam_ldap_packages
   until: auth__register_pam_ldap_packages is succeeded
 

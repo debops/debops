@@ -2,10 +2,11 @@
 
 - name: Install required packages
   apt:
-    name: '{{ item }}'
+    name:
+      - 'fail2ban'
+      - 'whois'
     state: 'present'
     install_recommends: False
-  with_items: [ 'fail2ban', 'whois' ]
   register: fail2ban__register_packages
   until: fail2ban__register_packages is succeeded
 
