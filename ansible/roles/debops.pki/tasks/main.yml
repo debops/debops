@@ -22,19 +22,16 @@
 # Install PKI packages [[[
 - name: Install PKI packages
   apt:
-    name: '{{ item }}'
+    name: '{{ pki_base_packages
+            + pki_acme_packages
+                if (pki_acme|bool or pki_acme_install|bool) else []
+            +  pki_packages }}'
     state: 'present'
     install_recommends: False
     cache_valid_time: '{{ ansible_local.core.cache_valid_time
                           if (ansible_local|d() and ansible_local.core|d() and
                               ansible_local.core.cache_valid_time|d())
                           else "86400" }}'
-  with_flattened:
-    - '{{ pki_base_packages }}'
-    - '{{ pki_acme_packages
-          if (pki_acme|bool or pki_acme_install|bool)
-          else [] }}'
-    - '{{ pki_packages }}'
   register: pki__register_packages
   until: pki__register_packages is succeeded
   when: pki_enabled | bool

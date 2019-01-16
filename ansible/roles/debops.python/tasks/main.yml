@@ -2,10 +2,9 @@
 
 - name: Install requested APT packages
   apt:
-    name: '{{ item }}'
+    name: '{{ python__combined_packages }}'
     state: 'present'
     install_recommends: False
-  with_flattened: '{{ python__combined_packages }}'
   register: python__register_apt_packages
   until: python__register_apt_packages is succeeded
   when: python__enabled|bool and ansible_pkg_mgr == 'apt'
