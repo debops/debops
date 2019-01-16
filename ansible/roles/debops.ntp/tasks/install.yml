@@ -2,14 +2,12 @@
 
 - name: Install required packages
   apt:
-    name: '{{ item }}'
+    name: '{{ "chrony" if (ntp__daemon == "chrony") else ""
+            + "ntpdate" if (ntp__daemon == "ntpdate") else ""
+            + "ntp" if (ntp__daemon == "ntpd") else ""
+            + "openntpd" if (ntp__daemon == "openntpd") else "" }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - [ '{{ "chrony" if (ntp__daemon == "chrony") else [] }}' ]
-    - [ '{{ "ntpdate" if (ntp__daemon == "ntpdate") else [] }}' ]
-    - [ '{{ "ntp" if (ntp__daemon == "ntpd") else [] }}' ]
-    - [ '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}' ]
   register: ntp__register_apt_install
   until: ntp__register_apt_install is succeeded
 

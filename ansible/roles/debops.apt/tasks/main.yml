@@ -3,12 +3,10 @@
 
 - name: Install required packages
   apt:
-    name: '{{ item }}'
+    name: '{{ apt__base_packages
+            + apt__packages }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - '{{ apt__base_packages }}'
-    - '{{ apt__packages }}'
   register: apt__register_packages
   until: apt__register_packages
   when: apt__enabled|bool

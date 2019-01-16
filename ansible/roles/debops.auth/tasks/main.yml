@@ -5,10 +5,9 @@
 
 - name: Install auth-related packages
   apt:
-    name: '{{ item }}'
+    name: '{{ auth_packages }}'
     state: 'present'
     install_recommends: 'no'
-  with_items: '{{ auth_packages }}'
   register: auth__register_packages
   until: auth__register_packages is succeeded
 

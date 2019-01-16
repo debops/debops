@@ -2,12 +2,10 @@
 
 - name: Install required packages
   apt:
-    name: '{{ item }}'
+    name: '{{ logrotate__base_packages
+            + logrotate__packages }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - '{{ logrotate__base_packages }}'
-    - '{{ logrotate__packages }}'
   register: logrotate__register_packages
   until: logrotate__register_packages is succeeded
   when: logrotate__enabled|bool
