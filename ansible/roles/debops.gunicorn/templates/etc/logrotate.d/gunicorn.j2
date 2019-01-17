@@ -12,7 +12,7 @@
     su {{ item.user if (item.user is defined and item.user != omit) else gunicorn__user }} {{ item.group if (item.group is defined and item.group != omit) else gunicorn__group }}
 
     postrotate
-        invoke-rc.d --quiet gunicorn reload >/dev/null
+        invoke-rc.d --quiet gunicorn@{{ item.name }} reload >/dev/null
 
     endscript
 }
