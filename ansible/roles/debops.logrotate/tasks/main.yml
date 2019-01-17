@@ -2,8 +2,7 @@
 
 - name: Install required packages
   apt:
-    name: '{{ logrotate__base_packages
-            + logrotate__packages }}'
+    name: '{{ (logrotate__base_packages + logrotate__packages) | flatten }}'
     state: 'present'
     install_recommends: False
   register: logrotate__register_packages
