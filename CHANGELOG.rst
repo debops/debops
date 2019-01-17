@@ -215,6 +215,11 @@ Changed
   for Nextcloud 14.0 and 15.0 and make Nextcloud 14.0 the default Nextcloud
   version.
 
+- The ``debops`` Python package has dropped the hard dependency on Ansible.
+  This allows DebOps to be installed in a separate environment than Ansible,
+  allowing for example to mix Homebrew Ansible with DebOps from PyPI on macOS.
+  The installation instructions have also been updated to reflect the change.
+
 Fixed
 ~~~~~
 

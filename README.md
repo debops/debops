@@ -64,11 +64,29 @@ More quick start tips can be found [in the DebOps quick start guide][quick-start
 Installation
 ------------
 
-DebOps requires a Python 2.7 environment and Ansible 2.4+ to work correctly.
-You can read the [installation instructions][install] in the DebOps
-documentation.
+DebOps roles are available on [Ansible Galaxy][debops-galaxy] and can be
+installed using the [Mazer][mazer] content manager, with the command:
 
-[install]: https://github.com/debops/debops/blob/master/INSTALL.rst
+    mazer install debops.debops
+
+[debops-galaxy]: https://galaxy.ansible.com/debops/debops/
+[mazer]: https://galaxy.ansible.com/docs/mazer/index.html
+
+
+Alternatively, you can install the [DebOps Python package][debops-pypi]. It
+includes the DebOps roles and playbooks, as well as additional scripts which
+can be used to setup separate project directories and run Ansible in
+a convenient way. To install the Python package with Ansible and other required
+dependencies, run the command:
+
+    pip install --user debops[ansible]
+
+[debops-pypi]: https://pypi.org/project/debops/
+
+Read the [installation instructions][install] in the DebOps documentation for
+more details about required software and dependencies.
+
+[install]: https://docs.debops.org/en/master/user-guide/install.html
 
 
 ## Getting started
