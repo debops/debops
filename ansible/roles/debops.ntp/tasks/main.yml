@@ -14,10 +14,7 @@
 
 - name: Ensure that alternative daemons/programs are not installed
   apt:
-    name: '{{ "chrony" if (ntp__daemon != "chrony") else ""
-            + "ntpdate" if (ntp__daemon != "ntpdate" and not ntp__ignore_ntpdate|bool) else ""
-            + "ntp" if (ntp__daemon not in [ "ntpd", "openntpd"]) else ""
-            + "openntpd" if (ntp__daemon != "openntpd") else "" }}'
+    name: '{{ ntp__purge_packages | flatten }}'
     state: 'absent'
     purge: True
   register: ntp__register_apt_purge
