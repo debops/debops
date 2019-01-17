@@ -44,6 +44,18 @@
     - '{{ gunicorn__dependent_applications }}'
   when: item.name|d() and item.state|d('present') != 'absent'
 
+- name: Create logrotate configs
+  template:
+    src: 'etc/logrotate.d/gunicorn.j2'
+    dest: '/etc/logrotate.d/gunicorn-{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ gunicorn__applications }}'
+    - '{{ gunicorn__dependent_applications }}'
+  when: item.name|d() and item.state|d('present') != 'absent'
+
 - name: Check if systemd instances for Green Unicorn are configured
   stat:
     path: '/etc/systemd/system/gunicorn@.service'

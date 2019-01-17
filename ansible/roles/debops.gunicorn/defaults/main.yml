@@ -85,7 +85,7 @@ gunicorn__apt_preferences__dependent_list:
 gunicorn__logrotate__dependent_config:
 
   - filename: 'gunicorn'
-    logs: [ '/var/log/gunicorn/*.log', '/var/log/gunicorn/*/*.log' ]
+    logs: [ '/var/log/gunicorn/*.log' ]
     divert: True
     options: |
       rotate 4
@@ -95,6 +95,7 @@ gunicorn__logrotate__dependent_config:
       notifempty
       weekly
       sharedscripts
+      su {{ gunicorn__user }} {{ gunicorn__group }}
     postrotate: |
       invoke-rc.d --quiet gunicorn reload >/dev/null
     comment: 'Log rotation for Green Unicorn logs'
