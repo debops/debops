@@ -319,7 +319,7 @@ if [ -z "${JANE_BOX_INIT:-}" ] ; then
     # virt-sysprep zeroes out files in /usr/local/*, apparently.
     # So we need to install PyPI packages on the real box, not the template.
     jane notify install "Installing test requirements via PyPI..."
-    pip install debops testinfra ${ansible_from_pypi}
+    pip install debops netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
     jane notify cache "Cleaning up cache directories..."
     rm -rf /root/.cache/* /tmp/*
 fi
@@ -426,7 +426,7 @@ if [ "${PROVISION_ANSIBLE_FROM}" == "pypi" ] ; then
 fi
 
 jane notify install "Installing test requirements via PyPI..."
-sudo pip install debops testinfra ${ansible_from_pypi}
+sudo pip install debops netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
 jane notify cache "Cleaning up cache directories..."
 sudo rm -rf /root/.cache/* /tmp/*
 

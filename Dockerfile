@@ -43,8 +43,7 @@ RUN apt-get -q update \
        sudo \
        tree \
     && pip install \
-       ansible \
-       debops \
+       debops[ansible] \
     && echo "Cleaning up cache directories..." \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb /root/.cache/*
 
