@@ -2,10 +2,10 @@
 
 - name: Install required packages
   apt:
-    name: '{{ rsyslog__base_packages
-            + rsyslog__tls_packages
-                if (rsyslog__pki|bool) else []
-            + rsyslog__packages }}'
+    name: '{{ (rsyslog__base_packages
+             + (rsyslog__tls_packages if (rsyslog__pki|bool) else [])
+             + rsyslog__packages)
+               | flatten }}'
     state: 'present'
     install_recommends: False
   register: rsyslog__register_packages
