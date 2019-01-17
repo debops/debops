@@ -20,8 +20,11 @@
 
 import os
 
-from debops import *
-from debops.cmds import *
+try:
+    from debops import *
+    from debops.cmds import *
+except ImportError:
+    pass
 
 try:
     from ansible.plugins.lookup import LookupBase
@@ -64,6 +67,8 @@ class LookupModule(LookupBase):
                     terms = utils.listify_lookup_plugin_terms(
                             terms, self.basedir, inject)
                     ret = []
+                    config = {}
+                    places = []
 
                     # this can happen if the variable contains a string,
                     # strictly not desired for lookup plugins, but users may
@@ -71,9 +76,11 @@ class LookupModule(LookupBase):
                     if not isinstance(terms, list):
                         terms = [terms]
 
-                    project_root = find_debops_project(required=False)
-                    config = read_config(project_root)
-                    places = []
+                    try:
+                        project_root = find_debops_project(required=False)
+                        config = read_config(project_root)
+                    except NameError:
+                        pass
 
                     if ('paths' in config and
                             conf_tpl_paths in config['paths']):
@@ -114,6 +121,8 @@ class LookupModule(LookupBase):
 
                 def run(self, terms, variables=None, **kwargs):
                     ret = []
+                    config = {}
+                    places = []
 
                     # this can happen if the variable contains a string,
                     # strictly not desired for lookup plugins, but users may
@@ -121,9 +130,11 @@ class LookupModule(LookupBase):
                     if not isinstance(terms, list):
                         terms = [terms]
 
-                    project_root = find_debops_project(required=False)
-                    config = read_config(project_root)
-                    places = []
+                    try:
+                        project_root = find_debops_project(required=False)
+                        config = read_config(project_root)
+                    except NameError:
+                        pass
 
                     if 'paths' in config and conf_tpl_paths in config['paths']:
                         custom_places = (
