@@ -36,8 +36,8 @@ gitlab__release_map:
   'stretch': '10-8-stable'
   'xenial':  '10-8-stable'
 
-  'buster':  '11-3-stable'
-  'bionic':  '11-3-stable'
+  'buster':  '11-6-stable'
+  'bionic':  '11-6-stable'
 
                                                                    # ]]]
 # .. envvar:: gitlab__distribution_release [[[
@@ -148,6 +148,7 @@ gitlab__base_packages: [ 'build-essential', 'cmake', 'git', 'pkg-config', 'pytho
 gitlab__release_packages:
   jessie:  [ 'libssl-dev' ]
   stretch: [ 'libssl1.0-dev', 'libre2-dev' ]
+  buster:  [ 'libssl-dev', 'libre2-dev' ]
   precise: [ 'libssl-dev' ]
   trusty:  [ 'libssl-dev' ]
   xenial:  [ 'libssl-dev', 'libre2-dev' ]
@@ -162,6 +163,8 @@ gitlab__database_packages:
   jessie:
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
   stretch:
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+  buster:
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
   precise:
     postgresql: [ 'libpq-dev', 'ruby-pg' ]
@@ -238,13 +241,13 @@ gitlab_email_from: 'git@{{ gitlab__fqdn }}'
 # .. envvar:: gitlab_email_reply_to [[[
 #
 # E-mail Reply-To address added to GitLab mails.
-gitlab_email_reply_to: 'admin+gitlab@{{ ansible_domain }}'
+gitlab_email_reply_to: 'admin+gitlab@{{ gitlab_domain }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_admin_email [[[
 #
 # Default admin account e-mail address.
-gitlab_admin_email: 'admin@{{ ansible_domain }}'
+gitlab_admin_email: 'admin@{{ gitlab_domain }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_admin_password [[[
@@ -748,7 +751,7 @@ gitlab_ldap_manage: True
 # .. envvar:: gitlab_ldap_domain [[[
 #
 # The base DNS domain used to generate LDAP configuration parameters.
-gitlab_ldap_domain: '{{ ansible_domain }}'
+gitlab_ldap_domain: '{{ gitlab_domain }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_ldap_label [[[
@@ -760,7 +763,7 @@ gitlab_ldap_label: '{{ gitlab_ldap_domain }}'
 # .. envvar:: gitlab_ldap_host [[[
 #
 # FQDN address of the LDAP server to connect to.
-gitlab_ldap_host: 'ldap.{{ ansible_domain }}'
+gitlab_ldap_host: 'ldap.{{ gitlab_domain }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_ldap_port [[[

@@ -59,6 +59,15 @@ nginx_base_packages: [ 'python-passlib' ]
 nginx_flavor: 'full'
 
                                                                    # ]]]
+# .. envvar:: nginx__flavor_distribution_release [[[
+#
+# Specify the OS distribution release to use in falvored repositories.
+nginx__flavor_distribution_release: '{{ ansible_local.core.distribution_release
+                                        if (ansible_local|d() and ansible_local.core|d() and
+                                            ansible_local.core.distribution_release|d())
+                                        else ansible_distribution_release }}'
+
+                                                                   # ]]]
 # .. envvar:: nginx__flavor_apt_key_id [[[
 #
 nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
@@ -79,8 +88,8 @@ nginx__flavor_apt_key_id_map:
 # .. envvar:: nginx__flavor_apt_repository_map [[[
 #
 nginx__flavor_apt_repository_map:
-  'nginx.org': 'deb https://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx'
-  'passenger': 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ ansible_distribution_release }} main'
+  'nginx.org': 'deb https://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ nginx__flavor_distribution_release }} nginx'
+  'passenger': 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ nginx__flavor_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_packages [[[
@@ -107,7 +116,7 @@ nginx_flavor_package_map:
     - 'nginx-extras'
     - 'ruby'
     - '{{ "passenger"
-          if (ansible_distribution_release in
+          if (nginx__flavor_distribution_release in
               [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
           else "libnginx-mod-http-passenger" }}'
 

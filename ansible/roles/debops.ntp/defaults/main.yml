@@ -101,8 +101,8 @@ ntp__servers_map:
 # :program:`ntpd` specific.
 # Fudge local clock if time servers is not available.
 ntp__fudge: True
-                                                                   # ]]]
 
+                                                                   # ]]]
 # .. envvar:: ntp__servers_as_pool [[[
 #
 # Treat NTP server addresses as pool addresses. The server name is expected
@@ -112,7 +112,38 @@ ntp__fudge: True
 ntp__servers_as_pool: '{{ False if ansible_distribution == "Debian"
                                    and ansible_distribution_release == "jessie"
                           else True }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
 
+# .. envvar:: ntp__base_packages [[[
+#
+# List of APT packages to install for NTP support.
+ntp__base_packages:
+  - '{{ "chrony"   if (ntp__daemon == "chrony")   else [] }}'
+  - '{{ "ntp"      if (ntp__daemon == "ntpd")     else [] }}'
+  - '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}'
+  - '{{ "ntpdate"  if (ntp__daemon == "ntpdate")  else [] }}'
+
+
+                                                                   # ]]]
+# .. envvar:: ntp__packages [[[
+#
+# List of additional APT packages to install with NTP support.
+ntp__packages: []
+
+                                                                   # ]]]
+# .. envvar:: ntp__purge_packages [[[
+#
+# List of APT packages to purge during NTP configuration to avoid issues with
+# conflicting services.
+ntp__purge_packages:
+  - '{{ "chrony"   if (ntp__daemon != "chrony")                  else [] }}'
+  - '{{ "ntp"      if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}'
+  - '{{ "openntpd" if (ntp__daemon != "openntpd")                else [] }}'
+  - '{{ "ntpdate"  if (ntp__daemon != "ntpdate" and
+                       not ntp__ignore_ntpdate|bool)             else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Timezone configuration [[[

@@ -45,6 +45,15 @@ nodejs__upstream: '{{ ansible_local.nodejs.upstream|bool
 nodejs__upstream_release: 'node_8.x'
 
                                                                    # ]]]
+# .. envvar:: nodejs__upstream_distribution_release [[[
+#
+# Specify the OS distribution release to use for the upstream APT repository.
+nodejs__upstream_distribution_release: '{{ ansible_local.core.distribution_release
+                                           if (ansible_local|d() and ansible_local.core|d() and
+                                               ansible_local.core.distribution_release|d())
+                                           else ansible_distribution_release }}'
+
+                                                                   # ]]]
 # .. envvar:: nodejs__upstream_key_id [[[
 #
 # GPG fingerprint of APT repository signing key.
@@ -54,7 +63,7 @@ nodejs__upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
 # .. envvar:: nodejs__upstream_repository [[[
 #
 # URL of the NodeSource APT repository in ``sources.list`` format.
-nodejs__upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__upstream_release }} {{ ansible_distribution_release }} main'
+nodejs__upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__upstream_release }} {{ nodejs__upstream_distribution_release }} main'
                                                                    # ]]]
                                                                    # ]]]
 # NPM installation via git [[[

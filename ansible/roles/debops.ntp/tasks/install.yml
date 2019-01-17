@@ -2,10 +2,7 @@
 
 - name: Install required packages
   apt:
-    name: '{{ "chrony" if (ntp__daemon == "chrony") else ""
-            + "ntpdate" if (ntp__daemon == "ntpdate") else ""
-            + "ntp" if (ntp__daemon == "ntpd") else ""
-            + "openntpd" if (ntp__daemon == "openntpd") else "" }}'
+    name: '{{ (ntp__base_packages + ntp__packages) | flatten }}'
     state: 'present'
     install_recommends: False
   register: ntp__register_apt_install
