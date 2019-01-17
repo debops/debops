@@ -12,7 +12,7 @@
 
 - name: Purge other SMTP servers
   apt:
-    name: '{{ nullmailer__purge_mta_packages }}'
+    name: '{{ nullmailer__purge_mta_packages | flatten }}'
     state: 'absent'
     purge: True
   when: (nullmailer__deploy_state|d('present') != 'absent' and

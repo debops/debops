@@ -2,9 +2,10 @@
 
 - name: Install Postfix APT packages
   apt:
-    name: '{{ postfix__base_packages
-            + postfix__dependent_packages
-            + postfix__packages }}'
+    name: '{{ (postfix__base_packages
+             + postfix__dependent_packages
+             + postfix__packages)
+             | flatten }}'
     state: 'present'
     install_recommends: False
   register: postfix__register_packages
@@ -14,7 +15,7 @@
 
 - name: Purge other SMTP servers
   apt:
-    name: '{{ postfix__purge_packages }}'
+    name: '{{ postfix__purge_packages | flatten }}'
     state: 'absent'
     purge: True
   when: postfix__purge_packages|d() and ansible_pkg_mgr == 'apt'

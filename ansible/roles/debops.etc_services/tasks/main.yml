@@ -2,8 +2,7 @@
 
 - name: Install required packages
   package:
-    name: '{{ etc_services__base_packages
-            + etc_services__packages }}'
+    name: '{{ (etc_services__base_packages + etc_services__packages) | flatten }}'
     state: 'present'
   register: etc_services__register_packages
   until: etc_services__register_packages is succeeded

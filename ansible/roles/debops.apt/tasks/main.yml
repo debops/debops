@@ -3,8 +3,7 @@
 
 - name: Install required packages
   apt:
-    name: '{{ apt__base_packages
-            + apt__packages }}'
+    name: '{{ (apt__base_packages + apt__packages) | flatten }}'
     state: 'present'
     install_recommends: False
   register: apt__register_packages

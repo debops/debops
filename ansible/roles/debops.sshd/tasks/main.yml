@@ -60,11 +60,12 @@
 
 - name: Ensure OpenSSH support is installed
   apt:
-    name: '{{ sshd__base_packages
-            + sshd__recommended_packages
-            + sshd__optional_packages
-            + sshd__ldap_packages
-            + sshd__packages }}'
+    name: '{{ (sshd__base_packages
+             + sshd__recommended_packages
+             + sshd__optional_packages
+             + sshd__ldap_packages
+             + sshd__packages)
+             | flatten }}'
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.sshd|d())
                else "latest" }}'

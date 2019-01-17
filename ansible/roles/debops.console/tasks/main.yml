@@ -2,8 +2,7 @@
 
 - name: Install requested packages
   apt:
-    name: '{{ console_base_packages
-            + console_conditional_packages }}'
+    name: '{{ (console_base_packages + console_conditional_packages) | flatten }}'
     state: 'present'
     install_recommends: False
   register: console__register_packages
