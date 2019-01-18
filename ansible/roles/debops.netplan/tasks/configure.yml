@@ -1,0 +1,8 @@
+---
+- name: Configuring Netplan
+  template:
+    src: etc/netplan/config.yaml.j2
+    dest: "{{ netplan__config_file }}"
+  become: true
+  when: netplan__configuration != []
+  notify: netplan generate config

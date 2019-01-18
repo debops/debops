@@ -1,0 +1,95 @@
+---
+# defaults file for netplan
+netplan__config_file: /etc/netplan/config.yaml
+
+# switch to enable/disable the role completely
+netplan__enabled: true
+
+# apt packages required for netplan
+netplan__base_packages: [ 'netplan', 'netplan.io' ]
+
+# the primary search domain
+netplan__pri_domain: example.org
+
+# Either networkd or NetworkManager
+netplan__renderer: networkd
+
+# should existing configurations be removed
+netplan__remove_existing: true
+
+# host configuration
+netplan__configuration:
+  {}
+  # network:
+  #   version: 2
+  #   ethernets:
+  #     enp0s3:
+  #       dhcp4: true
+  #     enp0s8:
+  #       addresses:
+  #         - 192.168.250.10/24
+  #         - 192.168.250.11/24
+  #       nameservers:
+  #         addresses:
+  #           - 10.0.2.3
+  #           - 8.8.8.8
+  #           - 8.8.4.4
+  #         search:
+  #           # Custom variable
+  #           - "{{ netplan__pri_domain }}"
+  #       gateway4: 192.168.250.1
+  #       optional: true
+  #       routes:
+  #         - to: 0.0.0.0/0
+  #           via: 9.9.9.9
+  #           on-link: true
+  #         - to: 192.168.5.0/24
+  #           via: 192.168.5.1
+  #           table: 102
+  #       routing-policy:
+  #         - from: 192.168.5.0/24
+  #           table: 102
+  #     lo:
+  #       match:
+  #         name: lo
+  #       addresses: [7.7.7.7/32]
+  #   wifis:
+  #     wlp2s0b1:
+  #       dhcp4: no
+  #       dhcp6: no
+  #       addresses: [192.168.0.21/24]
+  #       gateway4: 192.168.0.1
+  #       access-points:
+  #         "network_ssid_name":
+  #           password: "**********"
+  #   bonds:
+  #     bond0:
+  #       dhcp4: yes
+  #       interfaces:
+  #         - enp0s3
+  #         - enp4s0
+  #       parameters:
+  #         # modes can be one of balance-rr, active-backup, balance-xor, broadcast,
+  #         # 802.3ad, balance-tlb, and balance-alb.
+  #         mode: active-backup
+  #         primary: enp0s3
+  #   bridges:
+  #     # br0:
+  #     #   dhcp4: yes
+  #     #   interfaces:
+  #     #     - enp0s3
+  #     br0:
+  #       addresses: [10.3.99.25/24]
+  #       interfaces: [vlan15]
+  #   vlans:
+  #     vlan15:
+  #       accept-ra: no
+  #       id: 15
+  #       link: enp0s25
+  #   routes:
+  #   - to: 0.0.0.0/0
+  #     via: 10.11.0.6
+  #   - to: 10.11.11.0/24
+  #     via: 10.11.9.254
+  #   - to: 10.6.0.0/23
+  #     via: 10.11.9.254

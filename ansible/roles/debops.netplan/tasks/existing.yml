@@ -1,0 +1,21 @@
+---
+- name: Capturing Existing Configurations
+  find:
+    paths: /etc/netplan
+    patterns: "*.yml,*.yaml"
+  register: _netplan_configs
+
+- name: Show existing configurations
+  debug:
+    var: _netplan_configs
+  when: debug is defined and ( debug | bool )
+
+- name: Removing Existing Configurations
+  file:
+    path: "{{ item['path'] }}"
+    state: absent
+  become: true
+  with_items: "{{ _netplan_configs['files'] }}"
+  when:
+    - item['path'] != netplan__config_file
+    - netplan__configuration != []
