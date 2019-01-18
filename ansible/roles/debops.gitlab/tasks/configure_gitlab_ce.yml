@@ -273,6 +273,7 @@
 
 - name: Precompile GitLab assets
   command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
+           NODE_OPTIONS='--max_old_space_size=4096'
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
