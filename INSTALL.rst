@@ -13,22 +13,22 @@ Installation types
 
 DebOps can be installed in different ways depending on your needs:
 
-- as a Python package in a Python environment of a given UNIX account.
+- As a Python package in a Python environment of a given UNIX account.
   Different UNIX accounts can use their own versions of DebOps.
 
-- as a Python package in a Python :command:`virtualenv` environment. A given
+- As a Python package in a Python :command:`virtualenv` environment. A given
   UNIX account can use different versions of DebOps by switching to each
   :command:`virtualenv` environment.
 
-- as a set of Ansible roles and playbooks installed from the Ansible Galaxy
+- As a set of Ansible roles and playbooks installed from the Ansible Galaxy
   using the :command:`mazer` content manager. This is a good solution if you
   are interested only in specific DebOps roles and you don't want to use the
   additional scripts to manage your environments.
 
-In any case, the installation will be performed on a Linux or macOS computer
-which will be called the "Ansible Controller". This machine will be used to
-execute Ansible commands against other, remote hosts which will be managed
-using DebOps roles and playbooks.
+In any case, the installation will be performed on a Linux, macOS or Windows
+(WSL) computer which will be called the "Ansible Controller". This machine will
+be used to execute Ansible commands against other, remote hosts which will be
+managed using DebOps roles and playbooks.
 
 DebOps doesn't use any active services on the Ansible Controller host in the
 infrastructure that is managed, therefore you might consider a laptop or
@@ -52,9 +52,9 @@ playbooks in a convenient way.
 
 .. __: https://pypi.org/project/debops/
 
-Ansible is an optional dependency of the ``debops`` Python package. This allows
-you to use your own Ansible installation (either in a different Python
-environment, or from OS packages) with DebOps.
+Ansible is an optional installation dependency of the ``debops`` Python
+package. This allows you to use your own Ansible installation (either in
+a different Python environment, or from OS packages) with DebOps.
 
 Required Python packages
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,10 +98,10 @@ Ansible:
 .. __: https://github.com/drkjam/netaddr/
 
 `passlib`__
-  This is a Python library which is used by Ansible ``password()`` lookup
-  plugin to encrypt passwords on Ansible Controller. This is required in DebOps
-  roles that use :ref:`debops.secret` role to generate random passwords and
-  store them in the :file:`secret/` directory. The library is available on
+  This is a Python library which is used by the Ansible ``password()`` lookup
+  plugin to encrypt passwords on the Ansible Controller. This is required in
+  DebOps roles that use :ref:`debops.secret` role to generate random passwords
+  and store them in the :file:`secret/` directory. The library is available on
   Debian as the ``python-passlib`` APT package, it can also be installed via
   PyPI.
 
@@ -157,9 +157,9 @@ required by DebOps separately.
 Ansible notes
 ~~~~~~~~~~~~~
 
-Current, stable Ansible release is required to run DebOps playbooks and roles.
-Older Ansible releases may work for a time, but support for them is not
-guaranteed by the project.
+The latest stable Ansible release is required to run DebOps playbooks and
+roles. Older Ansible releases may work for a time, but support for them is not
+guaranteed by the DebOps project.
 
 Ansible can be `installed in a variety of methods`__, you can choose your
 preferred one depending on the platform you use for the Ansible Controller.
@@ -179,9 +179,10 @@ Debian
   automatically build a Debian package suitable for DebOps.
 
 macOS
-  The :ref:`debops.pki` role requires Bash 4.x on the Ansible Controller for
-  the management of the internal Certificate Authority. On macOS, you might
-  need to upgrade an existing Bash 3.x installation before using DebOps.
+  The :ref:`debops.pki` role requires Bash 4.x or higher on the Ansible
+  Controller for the management of the internal Certificate Authority. On
+  macOS, you might need to upgrade an existing Bash 3.x installation before
+  using DebOps.
 
 
 Additional, useful software
@@ -338,7 +339,7 @@ arguments, the repository will be installed in:
 
    ~/.local/share/debops/debops/
 
-Running the :command:`debops-update` again will refresh the repository.
+Running :command:`debops-update` command again will refresh the repository.
 
 If you specify a directory as an argument to the :command:`debops-update`
 command, the monorepo will be cloned into the :file:`debops/` subdirectory of
