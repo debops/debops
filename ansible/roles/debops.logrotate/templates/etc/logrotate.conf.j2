@@ -79,7 +79,7 @@
 {% for item in logrotate__default_config %}
 {%   if item.sections|d() %}
 {%     for section in item.sections %}
-{%       if (section.log|d() or section.logs|d()) and section.state|d('present') != 'absent' %}
+{%       if (section.log|d() or section.logs|d() or section.filename|d()) and section.state|d('present') != 'absent' %}
 {{ print_config(section) -}}
 {%         if not loop.last %}
 
@@ -87,7 +87,7 @@
 {%       endif %}
 {%     endfor %}
 {%   else %}
-{%     if (item.log|d() or item.logs|d()) and item.state|d('present') != 'absent' %}
+{%     if (item.log|d() or item.logs|d() or item.filename|d()) and item.state|d('present') != 'absent' %}
 {{ print_config(item) -}}
 {%       if not loop.last %}
 
