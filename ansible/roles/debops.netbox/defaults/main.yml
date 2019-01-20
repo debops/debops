@@ -158,7 +158,8 @@ netbox__git_checkout: '{{ netbox__virtualenv + "/app" }}'
 # created next to the old one.
 # Valid values are `3` or an empty string.
 netbox__virtualenv_version: '{{ ""
-                                 if netbox__git_version|replace("v", "") is version("2.5", "<")
+                                 if ( netbox__git_version | regex_search("^v?[0-9\.]+")
+                                   and netbox__git_version|replace("v", "") is version("2.5", "<") )
                                  else "3" }}'
 
                                                                    # ]]]
