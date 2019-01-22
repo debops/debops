@@ -141,6 +141,10 @@ They will be installed in the :file:`~/.local/lib/python2.7/site-packages/`
 directory, the scripts and other binaries will be installed in
 :file:`~/.local/bin` directory which should be included in your ``$PATH``.
 
+.. note:: The ``debops`` Python package contains its own set of DebOps roles
+          and playbooks, which can be accessed by the :command:`debops` script,
+          you don't need to install the monorepo separately.
+
 Installation of DebOps without Ansible
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
