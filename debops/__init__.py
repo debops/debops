@@ -197,12 +197,20 @@ def padlock_unlock(encrypted_path):
     configfile = os.path.join(encrypted_path, ENCFS_CONFIGFILE)
     crypted_configfile = configfile+'.asc'
 
-    if (not os.path.exists(keyfile) or
-            not os.path.exists(crypted_configfile)):
-        return False
+    # Location of an alternative executable that will mount the decrypted dir
+    unlock_cmd = os.path.join(encrypted_path, PADLOCK_CMD)
 
     # Cut the EncFS directory prefix to get the decrypted directory name
     decrypted_path = ''.join(encrypted_path.rsplit(ENCFS_PREFIX, 1))
+
+    if os.path.exists(keyfile) and os.path.exists(crypted_configfile):
+        print("Mounting '{}' using encfs..".format(encrypted_path))
+        unlock_cmd = None
+    elif os.access(unlock_cmd, os.X_OK):
+        print(
+            "Mounting '{}' using '{}'..".format(encrypted_path, unlock_cmd))
+    else:
+        return False
 
     # Check if encrypted directory is already mounted
     # NB: This only tests if encfs_decrypted as a mount-point at all,
@@ -214,6 +222,11 @@ def padlock_unlock(encrypted_path):
     # Make sure the mount directory exists
     if not os.path.isdir(decrypted_path):
         os.makedirs(decrypted_path)
+
+    if unlock_cmd is not None:
+        subprocess.check_output([unlock_cmd, encrypted_path, decrypted_path],
+                                stderr=subprocess.STDOUT)
+        return True
 
     # Make sure the named pipe for the configfile exists
     if not os.path.exists(configfile):
