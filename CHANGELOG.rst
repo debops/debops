@@ -224,6 +224,10 @@ Changed
   allowing for example to mix Homebrew Ansible with DebOps from PyPI on macOS.
   The installation instructions have also been updated to reflect the change.
 
+- The :command:`debops-init` script will now generate new Ansible inventory
+  files using the hostname as well as a host FQDN to better promote the use of
+  DNS records in Ansible inventory.
+
 Fixed
 ~~~~~
 
