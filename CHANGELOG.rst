@@ -47,6 +47,10 @@ Added
   default). This can be used to create unprivileged LXC containers owned by
   ``root``. See the release notes for potential issues on existing systems.
 
+- [debops.root_account] You can now configure the state and contents of the
+  :file:`/root/.ssh/authorized_keys` file using the :ref:`debops.root_account`
+  role, with support for global, per inventory group and per host SSH keys.
+
 - DebOps roles are now tagged with ``skip::<role_name>`` Ansible tags. You can
   use these tags to skip roles without any side-effects; for example
   "<role_name>/env" sub-roles will still run so that roles that depend on them
