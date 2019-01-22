@@ -65,6 +65,24 @@
     mode: '0700'
   when: root_account__enabled|bool
 
+- name: Configure authorized SSH keys for root account
+  authorized_key:
+    key: "{{ q('flattened', root_account__authorized_keys
+                            + root_account__group_authorized_keys
+                            + root_account__host_authorized_keys)
+              | join('\n') }}"
+    exclusive: '{{ root_account__authorized_keys_exclusive|bool }}'
+    state: 'present'
+    user: 'root'
+  when: root_account__enabled|bool and root_account__authorized_keys|d() and
+        root_account__authorized_keys_state != 'absent'
+
+- name: Remove /root/.ssh/authorized_keys file if requested
+  file:
+    path: '/root/.ssh/authorized_keys'
+    state: 'absent'
+  when: root_account__enabled|bool and root_account__authorized_keys_state == 'absent'
+
 - name: Check subuid presence for root account
   shell: grep -E '^root:' /etc/subuid || true
   register: root_account__register_subuid

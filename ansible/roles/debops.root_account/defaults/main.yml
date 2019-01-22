@@ -108,6 +108,51 @@ root_account__shell: ''
 root_account__fix_no_tty: True
                                                                    # ]]]
                                                                    # ]]]
+# Authorized SSH keys [[[
+# -----------------------
+
+# .. envvar:: root_account__authorized_keys [[[
+#
+# List of public SSH keys which will be added to the
+# :file:`/root/.ssh/authorized_keys` file on all hosts in the Ansible
+# inventory.
+root_account__authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: root_account__group_authorized_keys [[[
+#
+# List of public SSH keys which will be added to the
+# :file:`/root/.ssh/authorized_keys` file on hosts in a specific Ansible
+# inventory group.
+root_account__group_authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: root_account__host_authorized_keys [[[
+#
+# List of public SSH keys which will be added to the
+# :file:`/root/.ssh/authorized_keys` file on specific hosts in the Ansible
+# inventory.
+root_account__host_authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: root_account__authorized_keys_exclusive [[[
+#
+# If ``True``, only the public SSH keys defined in the above variable will be
+# present on the ``root`` account, all other keys will be removed.
+#
+# If ``False``, the public SSH keys defined in the above variable will be added
+# to the existing keys on the ``root`` account.
+root_account__authorized_keys_exclusive: False
+
+                                                                   # ]]]
+# .. envvar:: root_account__authorized_keys_state [[[
+#
+# If ``present``, the role will manage the :file:`/root/.ssh/authorized_keys`
+# file and add any public SSH keys to the ``root`` account. If ``absent``, the
+# :file:`/root/.ssh/authorized_keys` file will be removed.
+root_account__authorized_keys_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
 # Subordinate UID/GID ranges [[[
 # ------------------------------
 
