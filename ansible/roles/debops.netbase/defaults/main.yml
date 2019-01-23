@@ -71,6 +71,13 @@ netbase__hostname: '{{ (inventory_hostname_short | d(inventory_hostname.split(".
 # database. The existing ``127.0.1.1`` entry will be removed to not override
 # the DNS resolution.
 #
+# If the host has been configured with a domain in :file:`/etc/hosts` file and
+# its FQDN points to any other IP address than ``127.0.1.1``, the role will
+# generate the IPv4 and IPv6 entries for this domain which should preserve the
+# existing configuration, with assumption that the :file:`/etc/hosts` entry is
+# supposed to be there for the correct domain resolution, for example this
+# domain is not defined in the DNS.
+#
 # If the host has been installed without a domain specified, a domain will be
 # generated based on the ``ansible_host`` variable (if it's set to a FQDN
 # address) or ``inventory_hostname`` variable, and saved in the
@@ -82,11 +89,16 @@ netbase__domain: '{{ ""
                            (not ansible_local.netbase.self_local|d())|bool) or
                           ((ansible_local.netbase.self_address|d()) == "127.0.1.1" and
                             ansible_local.netbase.self_domain|d())))
-                     else ((ansible_host | d(ansible_ssh_host | d("0"))).split(".")[1:] | join(".")
-                           if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ipaddr)
-                           else (inventory_hostname.split(".")[1:] | join(".")
-                                 if (inventory_hostname.split(".") | count > 1)
-                                 else inventory_hostname)) }}'
+                     else (ansible_local.netbase.self_domain
+                           if (ansible_local|d() and ansible_local.netbase|d() and
+                               (ansible_local.netbase.self_domain|d()) and
+                               (ansible_local.netbase.self_address|d()) != "127.0.1.1" and
+                               (ansible_local.netbase.self_local|d())|bool)
+                           else ((ansible_host | d(ansible_ssh_host | d("0"))).split(".")[1:] | join(".")
+                                 if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ipaddr)
+                                 else (inventory_hostname.split(".")[1:] | join(".")
+                                       if (inventory_hostname.split(".") | count > 1)
+                                       else inventory_hostname))) }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__host_ipv4_address [[[
