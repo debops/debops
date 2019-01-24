@@ -130,10 +130,16 @@ lxc__net_dhcp_end: '-2'
 # domain in the :file:`/etc/resolv.conf`; with local DNS resolver, for example
 # :command:`dnsmasq`, configured on the LXC host the containers can then be
 # accessed by their hostnames instead of the IP addresses.
-lxc__net_domain: 'lxc.{{ ansible_local.core.domain
-                         if (ansible_local|d() and ansible_local.core|d() and
-                             ansible_local.core.domain|d())
-                         else (ansible_domain if ansible_domain else ansible_hostname) }}'
+lxc__net_domain: '{{ ansible_local.lxc.net_domain
+                     if (ansible_local|d() and ansible_local.lxc|d() and
+                         ansible_local.lxc.net_domain|d())
+                     else ("lxc." + (ansible_local.core.domain
+                                     if (ansible_local|d() and
+                                         ansible_local.core|d() and
+                                         ansible_local.core.domain|d())
+                                     else (ansible_domain
+                                           if ansible_domain
+                                           else ansible_hostname))) }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__net_interface_fqdn [[[
