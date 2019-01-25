@@ -418,10 +418,22 @@ fi
 if ! [ -d src/controller ] ; then
     debops-init src/controller
     sed -i '/ansible_connection=local$/ s/^#//' src/controller/ansible/inventory/hosts
+
+    vagrant_controller="$(echo "${SSH_CLIENT}" | awk '{print $1}')"
+    mkdir -p "src/controller/ansible/inventory/group_vars/all"
     mkdir -p "src/controller/ansible/inventory/host_vars/$(hostname)"
-    if [ -z "#{ENV['CONTROLLER']}" ] || [ "#{ENV['CONTROLLER']}" != "true" ] ; then
-        printf "%s\n" "---\n\n# Use smaller DH parameters to speed up test runs\ndhparam__bits: [ '1024' ]" > "src/controller/ansible/inventory/host_vars/$(hostname)/dhparam.yml"
-    fi
+    cat <<EOF >> "src/controller/ansible/inventory/group_vars/all/dhparam.yml"
+---
+
+# Use smaller Diffie-Hellman parameters to speed up test runs
+dhparam__bits: [ '1024' ]
+EOF
+    cat <<EOF >> "src/controller/ansible/inventory/group_vars/all/core.yml"
+---
+
+# Vagrant client detected from \\$SSH_CLIENT variable
+core__ansible_controllers: [ '${vagrant_controller}' ]
+EOF
 fi
 
 jane notify info "Ansible Controller provisioning complete"
