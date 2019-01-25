@@ -442,7 +442,7 @@ SCRIPT
 require 'securerandom'
 
 VAGRANT_DOMAIN = ENV['VAGRANT_DOMAIN'] || 'vagrant.test'
-VAGRANT_HOSTNAME_MASTER = ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant' + '/vagrant_hostname_master'
+VAGRANT_HOSTNAME_MASTER = (ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant') + '/vagrant_hostname_master'
 if File.exist? VAGRANT_HOSTNAME_MASTER
       master_hostname = IO.read( VAGRANT_HOSTNAME_MASTER ).strip
 else
