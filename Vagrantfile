@@ -34,6 +34,37 @@
 #         be required when connectivity on either network is spotty or broken.
 
 
+$fix_hostname_dns = <<SCRIPT
+set -o nounset -o pipefail -o errexit
+
+current_fqdn="$(hostname --fqdn)"
+current_hostname="$(hostname)"
+
+current_default_dev="$(ip route | grep -E '^default via' | awk '{print $5}')"
+current_default_ip="$(ip route  | grep "dev "${current_default_dev}"" | grep -v -E '^default via' | grep src | awk '{print $NF}')"
+
+# Fix for https://github.com/hashicorp/vagrant/issues/7263
+if grep "127.0.0.1" /etc/hosts | grep "${current_fqdn}" > /dev/null ; then
+    printf "Updating the box IP address to '%s' in /etc/hosts...\n" "${current_default_ip}"
+    sed -i -e "/^127\.0\.0\.1.*$(hostname -f | sed -e 's/\./\\\./g')/d" /etc/hosts
+    printf "%s\t%s %s\n" "${current_default_ip:-127.0.1.1}" "${current_fqdn}" "${current_hostname}" >> /etc/hosts
+fi
+
+printf "%s\n" "Restarting network services to get the correct hostname in the DHCP lease..."
+if [ -d /run/systemd/system ] ; then
+    if [ "$(systemctl is-active systemd-networkd.service)" == "active" ] ; then
+        printf "%s\n" "Restarting systemd-networkd.service"
+        systemctl restart systemd-networkd.service
+    else
+        printf "%s\n" "Restarting networking.service"
+        systemctl restart networking.service
+    fi
+else
+    printf "%s\n" "Restarting networking init script"
+    /etc/init.d/networking restart
+fi
+SCRIPT
+
 $provision_box = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
@@ -175,62 +206,6 @@ if [ -n "${provision_apt_https_proxy}" ] ; then
     fi
 fi
 
-# Configure hostname and domain
-REAL_HOSTNAME=""
-if [ -n "${PROVISION_VAGRANT_HOSTNAME}" ] ; then
-    export REAL_HOSTNAME="${PROVISION_VAGRANT_HOSTNAME}"
-elif [ -n "${PROVISION_GITLAB_CI}" ] && [ "${PROVISION_GITLAB_CI}" == "true" ] ; then
-    export REAL_HOSTNAME="ci-$(cat /proc/sys/kernel/random/uuid)"
-fi
-
-if [ -n "${REAL_HOSTNAME}" ] ; then
-    current_fqdn="$(dnsdomainname -A)"
-    jane notify info "Changing box hostname to '${REAL_HOSTNAME}'..."
-    if [ -d /run/systemd/system ] ; then
-        hostnamectl set-hostname "${REAL_HOSTNAME}"
-        if [ "$(systemctl is-active systemd-networkd.service)" == "active" ] ; then
-            jane notify info "Requesting restart of 'systemd-networkd.service'"
-            systemctl restart systemd-networkd.service
-        else
-            jane notify info "Requesting restart of 'networking.service'..."
-            systemctl restart networking.service
-        fi
-    else
-        hostname "${REAL_HOSTNAME}"
-        printf "%s\n" "${REAL_HOSTNAME}" > /etc/hostname
-        jane notify info "Requesting restart of 'networking' service..."
-        /etc/init.d/networking restart
-    fi
-    jane notify info "Waiting for network configuration to settle..."
-    loop_timeout=5
-    sleep 2
-    until [ "$(dnsdomainname -A)" != "${current_fqdn}" ] || [ ${loop_timeout} -eq 7 ] ; do
-        jane notify info "Waiting for new FQDNs..."
-        sleep $(( loop_timeout++ ))
-    done
-    if [ -z "$(dnsdomainname)" ] ; then
-        jane notify warning "DNS domain configuration failed, enforcing in /etc/hosts...."
-        known_fqdns=( $(dnsdomainname -A) )
-        for item in "${!known_fqdns[@]}" ; do
-            case "${known_fqdns[${item}]}" in
-                *.*)
-                    jane notify info "Adding FQDN: '${known_fqdns[${item}]}'..."
-                    ip_index="$(( ${item} + 1 ))"
-                    printf "%s\n" "127.0.1.${ip_index} ${known_fqdns[${item}]} $(hostname)" >> /etc/hosts
-                    ;;
-            esac
-        done
-    fi
-    if [ "${REAL_HOSTNAME}" == "$(hostname)" ] ; then
-        jane notify ok "Hostname changed successfully"
-        jane notify info "Hostname: '$(hostname)'"
-        jane notify info "Domain: '$(dnsdomainname)'"
-        jane notify info "FQDN: '$(hostname --fqdn)'"
-    else
-        jane notify warning "Hostname change to '${REAL_HOSTNAME}' failed"
-    fi
-fi
-
 ansible_from_debian=""
 ansible_from_pypi=""
 ansible_from_devel=""
@@ -368,24 +343,6 @@ else
     apt-get -qq update
 fi
 
-# Configure hostname and domain
-REAL_HOSTNAME="ci-$(cat /proc/sys/kernel/random/uuid)"
-
-if [ -n "${REAL_HOSTNAME}" ] ; then
-    jane notify info "Changing box hostname to '${REAL_HOSTNAME}'..."
-    if [ -d /run/systemd/system ] ; then
-        hostnamectl set-hostname "${REAL_HOSTNAME}"
-        systemctl restart networking.service
-    else
-        hostname "${REAL_HOSTNAME}"
-        printf "%s\n" "${REAL_HOSTNAME}" > /etc/hostname
-        /etc/init.d/networking restart
-    fi
-    jane notify ok "Hostname changed to '$(hostname)'"
-    jane notify info "FQDN: '$(hostname --fqdn)'"
-    jane notify info "DOMAIN: '$(dnsdomainname)'"
-fi
-
 # Configure APT cache
 if [ -n "${PROVISION_APT_HTTP_PROXY}" ] ; then
     jane notify info "Configuring APT cache at '${PROVISION_APT_HTTP_PROXY}'"
@@ -453,6 +410,18 @@ fi
 jane notify info "Ansible Controller provisioning complete"
 SCRIPT
 
+require 'securerandom'
+
+VAGRANT_DOMAIN = ENV['VAGRANT_DOMAIN'] || 'vagrant.test'
+VAGRANT_HOSTNAME_MASTER = ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant' + '/vagrant_hostname_master'
+if File.exist? VAGRANT_HOSTNAME_MASTER
+      master_hostname = IO.read( VAGRANT_HOSTNAME_MASTER ).strip
+else
+      master_hostname = "debops-#{SecureRandom.hex(3)}"
+      IO.write( VAGRANT_HOSTNAME_MASTER, master_hostname )
+end
+master_fqdn = master_hostname + '.' + VAGRANT_DOMAIN
+
 VAGRANT_NODES = ENV['VAGRANT_NODES'] || 0
 VAGRANT_NODE_BOX = ENV['VAGRANT_NODE_BOX'] || 'debian/stretch64'
 
@@ -470,14 +439,15 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "master", primary: true do |subconfig|
         subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/stretch64'
-        subconfig.vm.provision "shell", inline: $provision_box, keep_color: true, run: "always"
+        subconfig.vm.hostname = master_fqdn
+
+        subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
+        subconfig.vm.provision "shell", inline: $provision_box,    keep_color: true, run: "always"
 
         subconfig.vm.provider "libvirt" do |libvirt, override|
             # On a libvirt provider, default sync method is NFS. If we switch
             # it to 'rsync', this will drop the dependency on NFS on the host.
             override.vm.synced_folder ENV['CI_PROJECT_DIR'] || ".", "/vagrant", type: "rsync"
-
-            override.vm.network :public_network, :dev => ENV['VAGRANT_MASTER_PUBLIC_BRIDGE'] || 'br0', :type => 'bridge'
 
             libvirt.random_hostname = true
             libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '512'
