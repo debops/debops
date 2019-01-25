@@ -41,7 +41,16 @@ current_fqdn="$(hostname --fqdn)"
 current_hostname="$(hostname)"
 
 current_default_dev="$(ip route | grep -E '^default via' | awk '{print $5}')"
-current_default_ip="$(ip route  | grep "dev "${current_default_dev}"" | grep -v -E '^default via' | grep src | awk '{print $NF}')"
+
+# In the 'ip route' table, find all of the lines that describe the default
+# route based on the device, fint the 'src' field and print out the next field
+# which will contain the IP address of the host.
+current_default_ip="$(ip route \
+                      | grep "dev "${current_default_dev}"" \
+                      | grep -v -E '^default via' \
+                      | grep src \
+                      | awk '{for (I=1;I<=NF;I++) if ($I == "src") {print $(I+1)};}' \
+                      | uniq)"
 
 # Fix for https://github.com/hashicorp/vagrant/issues/7263
 if grep "127.0.0.1" /etc/hosts | grep "${current_fqdn}" > /dev/null ; then
