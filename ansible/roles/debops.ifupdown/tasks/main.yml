@@ -19,6 +19,15 @@
   with_flattened:
     - '{{ ifupdown__purge_packages }}'
 
+  # The systemd-networkd service will fight with ifupdown over control of the
+  # network interfaces, therefore we will stop and disable it here.
+- name: Stop and disable systemd-networkd service
+  systemd:
+    name: 'systemd-networkd.service'
+    state: 'stopped'
+    enabled: False
+  when: ansible_service_mgr == 'systemd'
+
 - name: Create custom ifupdown systemd services
   include: ifup_systemd.yml
 
