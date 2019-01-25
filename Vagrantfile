@@ -272,6 +272,7 @@ EOF
         python-unittest2 \
         python-wheel \
         python-yaml \
+        rsync \
         shellcheck \
         yamllint ${ansible_from_debian}
 
@@ -294,7 +295,15 @@ if [ -z "${JANE_BOX_INIT:-}" ] ; then
     # virt-sysprep zeroes out files in /usr/local/*, apparently.
     # So we need to install PyPI packages on the real box, not the template.
     jane notify install "Installing test requirements via PyPI..."
-    pip install debops netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
+
+    pip install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
+    mkdir /tmp/build
+    rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
+    cd /tmp/build
+    make sdist > /dev/null
+    pip install dist/*
+    cd - > /dev/null
+
     jane notify cache "Cleaning up cache directories..."
     rm -rf /root/.cache/* /tmp/*
 fi
@@ -383,7 +392,15 @@ if [ "${PROVISION_ANSIBLE_FROM}" == "pypi" ] ; then
 fi
 
 jane notify install "Installing test requirements via PyPI..."
-sudo pip install debops netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
+
+sudo pip install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
+mkdir /tmp/build
+rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
+cd /tmp/build
+make sdist > /dev/null
+sudo pip install dist/*
+cd - > /dev/null
+
 jane notify cache "Cleaning up cache directories..."
 sudo rm -rf /root/.cache/* /tmp/*
 
