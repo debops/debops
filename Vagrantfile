@@ -668,10 +668,12 @@ Vagrant.configure("2") do |config|
             override.vm.synced_folder ENV['CI_PROJECT_DIR'] || ".", "/vagrant", type: "rsync"
 
             libvirt.random_hostname = true
-            libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '512'
+            libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '1024'
+            libvirt.cpus =   ENV['VAGRANT_MASTER_CPUS']   || '2'
 
             if ENV['GITLAB_CI'] != "true"
-                libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '1024'
+                libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '2048'
+                libvirt.cpus =   ENV['VAGRANT_MASTER_CPUS']   || '4'
             end
 
             if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
