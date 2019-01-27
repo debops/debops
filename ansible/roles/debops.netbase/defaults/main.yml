@@ -101,6 +101,20 @@ netbase__domain: '{{ ""
                                        else inventory_hostname))) }}'
 
                                                                    # ]]]
+# .. envvar:: netbase__aliases [[[
+#
+# List of additional alias names defined for the current host, including its
+# hostname, in the :file:`/etc/hosts` database. This list is automatically
+# generated using the Ansible local facts. If you plan to change it, ensure
+# that the hostname is specified first to avoid any issues with name
+# resolution.
+netbase__aliases: '{{ ([ netbase__hostname ]
+                       + (ansible_local.netbase.self_aliases
+                          if (ansible_local|d() and ansible_local.netbase|d() and
+                              ansible_local.netbase.self_aliases|d())
+                          else []) | unique) }}'
+
+                                                                   # ]]]
 # .. envvar:: netbase__host_ipv4_address [[[
 #
 # The IPv4 address which will be used to create the host record in the
@@ -121,7 +135,7 @@ netbase__host_ipv6_address: '{{ ansible_default_ipv6.address | d() }}'
 #
 # The actual :file:`/etc/hosts` entry with the local domain definition. It will
 # be set as the IPv4 and/or IPv6 addresses defined in above variables.
-netbase__domain_host_entry: '{{ [ netbase__hostname + "." + netbase__domain, netbase__hostname ]
+netbase__domain_host_entry: '{{ ([ netbase__hostname + "." + netbase__domain ] + netbase__aliases)
                                 if netbase__domain|d() else [] }}'
                                                                    # ]]]
                                                                    # ]]]

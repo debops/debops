@@ -18,6 +18,9 @@ Returned JSON keys:
 
   - "self_domain"   The host's domain extracted from the FQDN name.
 
+  - "self_aliases"  List of additional host aliases (including the primary
+                    hostname) defined in the '/etc/hosts' file.
+
   - "self_address"  IP address resolved by the host from it's FQDN name.
 
   - "self_local"    If True, the script detected the FQDN and IP address
@@ -52,5 +55,11 @@ with open('/etc/hosts', 'r') as hosts:
         if (output['self_fqdn'] in line.split()[1:]
                 and output['self_address'] in line.split()[0]):
             output['self_local'] = True
+            aliases = ([e for e in line.split()
+                       if (e not in ([output['self_fqdn'],
+                                      output['self_address'],
+                                      output['self_domain']]))])
+            if aliases:
+                output['self_aliases'] = aliases
 
 print(dumps(output, sort_keys=True, indent=4))
