@@ -438,6 +438,10 @@ readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
 
 jane notify info "Configuring Ansible Controller host..."
 
+# Ensure that the Ansible Controller host has up to date APT cache to be able
+# to install the packages without friction.
+sudo apt-get -q update
+
 ansible_from_pypi=""
 if [ "${PROVISION_ANSIBLE_FROM}" == "pypi" ] ; then
     ansible_from_pypi="ansible"
