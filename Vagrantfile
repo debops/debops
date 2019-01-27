@@ -96,6 +96,12 @@ cat <<EOF >> "/etc/avahi/services/debops-cluster.service"
 </service-group>
 EOF
 
+# When external DHCP server is providing networking, its DNS may contain
+# a record for the inital hostname of the Vagrant box, sent by default by the
+# DHCP client. To avoid name resolution issues, release the current DHCP lease
+# and obtain it again, with the new hostname. Hopefully, the DHCP server is
+# configured to keep the lease for the same IP for a short time; otherwise
+# Vagrant might lose track of the box network configuration.
 printf "%s\n" "Restarting network services to get the correct hostname in the DHCP lease..."
 if [ -d /run/systemd/system ] ; then
     if [ "$(systemctl is-active systemd-networkd.service)" == "active" ] ; then
