@@ -586,7 +586,16 @@ else
 end
 master_fqdn = master_hostname + '.' + VAGRANT_DOMAIN
 
-VAGRANT_NODES = ENV['VAGRANT_NODES'] || 0
+# Persist the number of additional nodes in the DebOps cluster to allow
+# 'vagrant' commands without the VAGRANT_NODES variable being set in the
+# environment.
+VAGRANT_NODE_NUMBER = (ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant') + '/vagrant_node_number'
+if File.exist? VAGRANT_NODE_NUMBER
+    VAGRANT_NODES = ENV['VAGRANT_NODES'] || IO.read( VAGRANT_NODE_NUMBER ).strip
+else
+    VAGRANT_NODES = ENV['VAGRANT_NODES'] || 0
+end
+IO.write( VAGRANT_NODE_NUMBER, VAGRANT_NODES )
 VAGRANT_NODE_BOX = ENV['VAGRANT_NODE_BOX'] || 'debian/stretch64'
 
 # Vagrant removed the atlas.hashicorp.com to vagrantcloud.com
