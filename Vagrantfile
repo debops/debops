@@ -475,7 +475,7 @@ if ! [ -d src/controller ] ; then
     debops-init src/controller
     sed -i '/ansible_connection=local$/ s/^#//' src/controller/ansible/inventory/hosts
 
-    vagrant_controller="$(echo "${SSH_CLIENT}" | awk '{print $1}')"
+    vagrant_controller="$(printf "${SSH_CLIENT}\\n" | awk '{print $1}')"
     mkdir -p "src/controller/ansible/inventory/group_vars/all"
     mkdir -p "src/controller/ansible/inventory/host_vars/$(hostname)"
     cat <<EOF >> "src/controller/ansible/inventory/group_vars/all/dhparam.yml"
