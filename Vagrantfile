@@ -57,6 +57,10 @@ if grep "127.0.0.1" /etc/hosts | grep "${current_fqdn}" > /dev/null ; then
     printf "Updating the box IP address to '%s' in /etc/hosts...\n" "${current_default_ip}"
     sed -i -e "/^127\.0\.0\.1.*$(hostname -f | sed -e 's/\./\\\./g')/d" /etc/hosts
 
+    # The upstream Vagrant box image contains 'stretch' as an alias of
+    # 'localhost', let's remove it to avoid potential issues.
+    sed -i -r -e 's/^127\.0\.0\.1\\s+localhost.*$/127.0.0.1\\tlocalhost/' /etc/hosts
+
     # This provisioning script is executed on all nodes in the cluster,
     # the "master" node does not have a suffix to extract.
     if printf "${current_hostname}\n" | grep -E '^.*\-.*\-node[0-9]{1,3}$' ; then
