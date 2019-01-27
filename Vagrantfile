@@ -142,6 +142,7 @@ readonly PROVISION_APT_HTTP_PROXY="#{ENV['APT_HTTP_PROXY']}"
 readonly PROVISION_APT_HTTPS_PROXY="#{ENV['APT_HTTPS_PROXY']}"
 readonly PROVISION_APT_FORCE_NETWORK="#{ENV['APT_FORCE_NETWORK']}"
 readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly VAGRANT_PREPARE_BOX="#{ENV['VAGRANT_PREPARE_BOX']}"
 
 # Install the Jane script
 if ! type jane > /dev/null 2>&1 ; then
@@ -372,6 +373,11 @@ if [ -z "${JANE_BOX_INIT:-}" ] ; then
 
     jane notify cache "Cleaning up cache directories..."
     rm -rf /root/.cache/* /tmp/*
+fi
+
+if [ -n "${VAGRANT_PREPARE_BOX}" ] ; then
+    jane notify info "Removing host entry from '/etc/hosts' for CI environment"
+    sed -i -e "/$(hostname --fqdn)/d" /etc/hosts
 fi
 
 jane notify success "Vagrant box provisioning complete"
