@@ -79,6 +79,20 @@ fi
 # other nodes in the cluster. Avahi might be blocked later by the firewall, but
 # that is expected; the service is not used for anything in particular beyond
 # initial cluster provisioning.
+#
+mkdir -p "/etc/systemd/system/avahi-daemon.service.d"
+cat <<EOF >> "/etc/systemd/system/avahi-daemon.service.d/rlimits-override.conf"
+# Override installed by DebOps Vagrantfile
+#
+# Avoid issues with low nproc limits on LXC hosts with unprivileged LXC
+# containers sharing host UIDs/GIDs
+# Ref: https://github.com/lxc/lxd/issues/2948
+# Ref: https://loune.net/2011/02/avahi-setrlimit-nproc-and-lxc/
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/avahi-daemon -s --no-rlimits
+EOF
+systemctl daemon-reload
 apt-get -q update
 apt-get -qy install avahi-daemon avahi-utils libnss-mdns
 
