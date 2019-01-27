@@ -678,7 +678,7 @@ Vagrant.configure("2") do |config|
         subconfig.vm.provision "shell" do |s|
             s.inline = <<-SHELL
                 chown vagrant:vagrant /home/vagrant/.ssh/id_rsa
-                chmod 400 /home/vagrant/.ssh/id_rsa
+                chmod 600 /home/vagrant/.ssh/id_rsa
             SHELL
         end
 
