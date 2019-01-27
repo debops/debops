@@ -56,8 +56,41 @@ current_default_ip="$(ip route \
 if grep "127.0.0.1" /etc/hosts | grep "${current_fqdn}" > /dev/null ; then
     printf "Updating the box IP address to '%s' in /etc/hosts...\n" "${current_default_ip}"
     sed -i -e "/^127\.0\.0\.1.*$(hostname -f | sed -e 's/\./\\\./g')/d" /etc/hosts
-    printf "%s\t%s %s\n" "${current_default_ip:-127.0.1.1}" "${current_fqdn}" "${current_hostname}" >> /etc/hosts
+
+    # This provisioning script is executed on all nodes in the cluster,
+    # the "master" node does not have a suffix to extract.
+    if printf "${current_hostname}\n" | grep -E '^.*\-.*\-node[0-9]{1,3}$' ; then
+        node_short="$(printf "${current_hostname}" | awk -F'-' '{print $3}')"
+    else
+        node_short="master"
+    fi
+
+    # Add an '/etc/hosts' entry for the current host. The rest of the cluster
+    # will be defined later by the master node.
+    printf "%s\t%s %s %s\n" "${current_default_ip:-127.0.1.1}" "${current_fqdn}" \
+           "${current_hostname}" "${node_short}" >> /etc/hosts
 fi
+
+# Install Avahi and configure a custom service to help the master host detct
+# other nodes in the cluster. Avahi might be blocked later by the firewall, but
+# that is expected; the service is not used for anything in particular beyond
+# initial cluster provisioning.
+apt-get -q update
+apt-get -qy install avahi-daemon avahi-utils libnss-mdns
+
+cluster_prefix="$(hostname | sed -e 's/-node.*$//')"
+
+cat <<EOF >> "/etc/avahi/services/debops-cluster.service"
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">%h</name>
+  <service>
+    <type>_${cluster_prefix}-cluster._tcp</type>
+    <port>22</port>
+  </service>
+</service-group>
+EOF
 
 printf "%s\n" "Restarting network services to get the correct hostname in the DHCP lease..."
 if [ -d /run/systemd/system ] ; then
@@ -443,6 +476,85 @@ EOF
 # Vagrant client detected from \\$SSH_CLIENT variable
 core__ansible_controllers: [ '${vagrant_controller}' ]
 EOF
+    # Provide an 'alias' for the master host in Ansible inventory, for
+    # convenience and parity with an alias in the '/etc/hosts database.
+    cat <<EOF >> "src/controller/ansible/inventory/master"
+# DebOps master node
+[master]
+$(hostname)
+EOF
+    # Create the 'nodes' Ansible inventory group for all remote cluster nodes.
+    cat <<EOF >> "src/controller/ansible/inventory/nodes"
+# All DebOps test nodes in the inventory
+[nodes]
+EOF
+    cluster_nodes=( $(avahi-browse _$(hostname)-cluster._tcp -pt \
+                    | awk -F';' '{print $4}' | sort | uniq | xargs) )
+
+    for node in ${cluster_nodes[@]} ; do
+
+       if printf "${node}\\n" | grep -E '^.*\-.*\-node[0-9]{1,3}$' > /dev/null ; then
+            node_short="$(printf "${node}\\n" | awk -F'-' '{print $3}')"
+            node_pad=" "
+        else
+            node_short=""
+            node_pad=""
+        fi
+
+        if ! grep "${node}.$(dnsdomainname)" /etc/hosts > /dev/null ; then
+            jane notify info "Creating ${node}.$(dnsdomainname) host record"
+            printf "%s\t%s %s%s%s\n" "$(getent hosts ${node}.local | awk '{print $1'})" \
+                   "${node}.$(dnsdomainname)" "${node}" "${node_pad}" "${node_short}" \
+                   | sudo tee --append /etc/ho
+
+            jane notify info "Adding ${node}.$(dnsdomainname) to Ansible inventory"
+            printf "%s ansible_host=%s\n" "${node}" "${node}.$(dnsdomainname)" \
+                   >> src/controller/ansible/inventory/hosts
+
+            # Scan the SSH host fingerprints of the detected nodes based on
+            # their DNS records. This is done for Ansible usage as well as to
+            # allow creation of the DNS records on remote nodes.
+            ssh-keyscan -H "${node}.$(dnsdomainname)" >> ~/.ssh/known_hosts 2>/dev/null
+            ssh-keyscan -H "${node_short}" >> ~/.ssh/known_hosts 2>/dev/null
+            ssh-keyscan -H "${node}" >> ~/.ssh/known_hosts 2>/dev/null
+
+            # Add the detected node to the 'nodes' Ansible inventory group.
+            printf "%s\n" "${node}" >> "src/controller/ansible/inventory/nodes"
+            if [ -n "${node_short}" ] ; then
+
+                # Create an 'alias' in the Ansible inventory for a given node,
+                # for convenience and parity with an alise in the '/etc/hosts'
+                # database.
+                cat <<EOF >> "src/controller/ansible/inventory/${node_short}"
+[${node_short}]
+${node}
+EOF
+            fi
+
+            # Connect to each detected node and use Avahi to discover other
+            # nodes in the cluster and create host entries in the '/etc/hosts'
+            # database on the remote nodes.
+            # This does not work during initial '/etc/hosts' configuration and
+            # has to be done from the master node.
+            ssh "${node}.$(dnsdomainname)" <<'SSHEND' > /dev/null 2>&1
+cluster_nodes=( $(avahi-browse _$(hostname | sed -e 's/\\-node[0-9]\\{1,3\\}$//')-cluster._tcp -pt \
+                | awk -F';' '{print $4}' | sort | uniq | xargs) )
+for node in ${cluster_nodes[@]} ; do
+    if printf "${node}\n" | grep -E '^.*\-.*\\-node[0-9]{1,3}$' ; then
+        node_short="$(printf "${node}\\n" | awk -F'-' '{print $3}')"
+    else
+        node_short="master"
+    fi
+    if ! grep "${node}.$(dnsdomainname)" /etc/hosts > /dev/null ; then
+        printf "Creating %s host record\\n" "${node}.$(dnsdomainname)"
+        printf "%s\\t%s %s %s\\n" "$(getent hosts ${node}.local | awk '{print $1'})" \
+               "${node}.$(dnsdomainname)" "${node}" "${node_short}" \
+               | sudo tee --append /etc/hosts > /dev/null
+    fi
+done
+SSHEND
+        fi
+    done
 fi
 
 jane notify info "Ansible Controller provisioning complete"
@@ -475,12 +587,57 @@ end
 
 Vagrant.configure("2") do |config|
 
+    # Create and provision additional nodes first, so that the master node has
+    # time to do provisioning and cluster detection using Avahi later.
+    if VAGRANT_NODES != 0
+        (1..VAGRANT_NODES.to_i).each do |i|
+
+            node_fqdn = master_hostname + "-node#{i}." + VAGRANT_DOMAIN
+            config.vm.define "node#{i}", autostart: true do |node|
+
+                node.vm.box = VAGRANT_NODE_BOX
+                node.vm.hostname = node_fqdn
+                node.vm.provision "shell", inline: $fix_hostname_dns,   keep_color: true
+                node.vm.provision "shell", inline: $provision_node_box, keep_color: true, run: "always"
+
+                # Don't populate '/vagrant' directory on other nodes
+                node.vm.synced_folder ".", "/vagrant", disabled: true
+
+                node.vm.provider "libvirt" do |libvirt, override|
+                    libvirt.random_hostname = true
+                    libvirt.memory = ENV['VAGRANT_NODE_MEMORY'] || '512'
+                    libvirt.cpus   = ENV['VAGRANT_NODE_CPUS']   || '2'
+
+                    if ENV['GITLAB_CI'] != "true"
+                        libvirt.memory = ENV['VAGRANT_NODE_MEMORY'] || '1024'
+                    end
+
+                    if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
+                        override.ssh.insert_key = false
+                    end
+                end
+
+            end
+        end
+    end
+
     config.vm.define "master", primary: true do |subconfig|
         subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/stretch64'
         subconfig.vm.hostname = master_fqdn
 
         subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
         subconfig.vm.provision "shell", inline: $provision_box,    keep_color: true, run: "always"
+
+        # Inject the insecure Vagrant SSH key into the master node so it can be
+        # used by Ansible and cluster detection to connect to the other nodes.
+        subconfig.vm.provision "file", source: "#{Dir.home}/.vagrant.d/insecure_private_key", \
+                                       destination: "/home/vagrant/.ssh/id_rsa"
+        subconfig.vm.provision "shell" do |s|
+            s.inline = <<-SHELL
+                chown vagrant:vagrant /home/vagrant/.ssh/id_rsa
+                chmod 400 /home/vagrant/.ssh/id_rsa
+            SHELL
+        end
 
         subconfig.vm.provider "libvirt" do |libvirt, override|
             # On a libvirt provider, default sync method is NFS. If we switch
@@ -499,10 +656,6 @@ Vagrant.configure("2") do |config|
             end
         end
 
-        if ENV['GITLAB_CI'] != "true"
-            subconfig.vm.provision "shell", inline: $provision_controller, keep_color: true, privileged: false
-        end
-
         if Vagrant::Util::Platform.windows? then
             # MS Windows doesn't support symlinks, so disable directory sync under it.
             # DebOps will be installed normally, via 'debops-update'
@@ -512,22 +665,13 @@ Vagrant.configure("2") do |config|
             subconfig.vm.synced_folder ENV['CI_PROJECT_DIR'] || ".", "/vagrant"
         end
 
+        if ENV['GITLAB_CI'] != "true"
+            subconfig.vm.provision "shell", inline: $provision_controller, keep_color: true, privileged: false
+        end
+
         if ENV['CI'] != "true"
             subconfig.vm.post_up_message = "Thanks for trying DebOps! After logging in, run:
-            cd src/controller ; debops"
-        end
-    end
-
-    if VAGRANT_NODES != 0
-        (1..VAGRANT_NODES.to_i).each do |i|
-            config.vm.define "node#{i}", autostart: false do |node|
-
-                node.vm.box = VAGRANT_NODE_BOX
-                node.vm.provision "shell", inline: $provision_node_box, keep_color: true, run: "always"
-
-                # Don't populate '/vagrant' directory on other nodes
-                node.vm.synced_folder ".", "/vagrant", disabled: true
-            end
+            cd src/controller ; debops common --diff"
         end
     end
 

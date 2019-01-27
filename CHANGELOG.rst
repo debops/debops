@@ -102,6 +102,12 @@ Added
 
   .. __: https://docs.ansible.com/ansible-lint/
 
+- The hosts managed by the DebOps Vagrant environment will now use Avahi to
+  detect multiple cluster nodes and generate host records in the
+  :file:`/etc/hosts` database on these nodes. This allows usage of real DNS
+  FQDNs and hostnames in the test environment without reliance on an external
+  DHCP/DNS services.
+
 Changed
 ~~~~~~~
 
