@@ -93,12 +93,15 @@ ExecStart=
 ExecStart=/usr/sbin/avahi-daemon -s --no-rlimits
 EOF
 systemctl daemon-reload
-apt-get -q update
-apt-get -qy install avahi-daemon avahi-utils libnss-mdns
+if ! type avahi-daemon > /dev/null ; then
+    apt-get -q update
+    apt-get -qy install avahi-daemon avahi-utils libnss-mdns
+fi
 
 cluster_prefix="$(hostname | sed -e 's/-node.*$//')"
 
-cat <<EOF >> "/etc/avahi/services/debops-cluster.service"
+if ! [ -f "/etc/avahi/services/debops-cluster.service" ] ; then
+    cat <<EOF > "/etc/avahi/services/debops-cluster.service"
 <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
@@ -109,6 +112,7 @@ cat <<EOF >> "/etc/avahi/services/debops-cluster.service"
   </service>
 </service-group>
 EOF
+fi
 
 # When external DHCP server is providing networking, its DNS may contain
 # a record for the inital hostname of the Vagrant box, sent by default by the
