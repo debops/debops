@@ -543,7 +543,7 @@ EOF
             jane notify info "Creating ${node}.$(dnsdomainname) host record"
             printf "%s\t%s %s%s%s\n" "$(getent hosts ${node}.local | awk '{print $1'})" \
                    "${node}.$(dnsdomainname)" "${node}" "${node_pad}" "${node_short}" \
-                   | sudo tee --append /etc/ho
+                   | sudo tee --append /etc/hosts
 
             jane notify info "Adding ${node}.$(dnsdomainname) to Ansible inventory"
             printf "%s ansible_host=%s\n" "${node}" "${node}.$(dnsdomainname)" \
