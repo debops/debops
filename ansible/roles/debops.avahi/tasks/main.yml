@@ -40,6 +40,28 @@
     mode: '0644'
   when: avahi__register_divert is changed
 
+- name: Create avahi-daemon systemd override directory
+  file:
+    path: '/etc/systemd/system/avahi-daemon.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: ansible_service_mgr == 'systemd' and
+        ansible_virtualization_type in [ 'lxc', 'docker' ] and
+        ansible_virtualization_role == 'guest'
+
+- name: Install avahi-daemon exec override on LXC guests
+  template:
+    src: 'etc/systemd/system/avahi-daemon.service.d/exec-override.conf.j2'
+    dest: '/etc/systemd/system/avahi-daemon.service.d/exec-override.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: ansible_service_mgr == 'systemd' and
+        ansible_virtualization_type in [ 'lxc', 'docker' ] and
+        ansible_virtualization_role == 'guest'
+
 # The rest of the role continues as normal.
 
 - name: Install required packages
