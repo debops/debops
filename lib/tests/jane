@@ -40,7 +40,7 @@ readonly SCRIPTDIR="$( readlink -m "$( dirname "${0}" )" )"
 readonly SCRIPTPID="$$"
 readonly ARGS=( "${@:-}" )
 readonly PATH="${PATH}:${HOME}/.local/lib/${SCRIPTNAME}:/vagrant/lib/tests:/usr/local/lib/${SCRIPTNAME}:/usr/lib/${SCRIPTNAME}"
-readonly INVENTORY_PATH="/vagrant/lib/tests/inventory"
+readonly INVENTORY_PATH="${INVENTORY_PATH:-/vagrant/lib/tests/inventory}"
 
 readonly GLOBAL_LOCK_FILE="/var/tmp/${SCRIPTNAME}/global.lock"
 readonly GLOBAL_LOCK_FD="200"
@@ -550,6 +550,10 @@ prepare_vagrant_box () {
     local VAGRANT_BOX="${base_vagrant_box}"
     export VAGRANT_DOTFILE_PATH
 
+    # The box is prepared for CI environment
+    local VAGRANT_PREPARE_BOX="true"
+    export VAGRANT_PREPARE_BOX
+
     status_msg info "Preparing Vagrant box using '${base_vagrant_box}'..."
     vagrant up
 
@@ -840,14 +844,19 @@ list_inventory_groups () {
 generate_dynamic_inventory_groups () {
     local jane_inventory_groups="${JANE_INVENTORY_GROUPS}"
     local -a inventory_groups
+    local host_fqdn
+    host_fqdn="$(hostname --fqdn)"
+    local ssh_client_ip
+    ssh_client_ip="$(echo "${SSH_CLIENT:-}" | awk '{print $1}')"
 
     IFS="," read -r -a inventory_groups <<< "${jane_inventory_groups}"
 
     for element in "${inventory_groups[@]}" ; do
         # jo needs to parse arguments as-is
         # shellcheck disable=SC2046
-        printf "%s\n" "${element}=$(jo hosts='["localhost"]' \
+        printf "%s\n" "${element}=$(jo hosts=$(jo -a "${host_fqdn}") \
             vars=$(jo ansible_connection="local" dhparam__bits='["1024"]' \
+                      core__ansible_controllers="${ssh_client_ip}" \
             secret="/tmp/secret" tcpwrappers__deny_all=false))"
     done
 }
@@ -858,6 +867,8 @@ dynamic_inventory_list () {
     local jane_inventory_dirs
     local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
     read -r -a jane_inventory_dirs <<< "${JANE_INVENTORY_DIRS}"
+    local host_fqdn
+    host_fqdn="$(hostname --fqdn)"
 
     # Jan-Piet Mens is awesome
     # http://jpmens.net/2016/03/05/a-shell-command-to-create-json-jo/
@@ -891,7 +902,7 @@ dynamic_inventory_list () {
         # jo needs to parse arguments as-is
         # shellcheck disable=SC2046 disable=SC2086
         jo -p $(generate_dynamic_inventory_groups) \
-            _meta=$(jo hostvars=$(jo localhost="${parsed_hostvars}"))
+            _meta=$(jo hostvars=$(jo "${host_fqdn}"="${parsed_hostvars}"))
     else
         # Reasons for specific variables:
         # 'ansible_connection'    - run Ansible locally, not remotely
@@ -903,7 +914,7 @@ dynamic_inventory_list () {
         cat<<EOF
 {
   "debops_all_hosts": {
-    "hosts": [ "localhost" ],
+    "hosts": [ "${host_fqdn}" ],
     "vars": {
       "ansible_connection": "local",
       "dhparam__bits": [ "1024" ],
@@ -914,7 +925,7 @@ dynamic_inventory_list () {
   },
   "_meta": {
     "hostvars": {
-      "localhost": {}
+      "${host_fqdn}": {}
     }
   }
 }

@@ -21,7 +21,8 @@
     group: 'root'
     mode: '0755'
     remote_src: True
-  when: avahi__register_alias_git is changed
+  when: avahi__register_alias_git is changed and
+        not ansible_check_mode|bool
 
 - name: Install avahi-alias.service
   template:

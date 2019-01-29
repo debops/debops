@@ -34,13 +34,13 @@ radvd__packages: []
 # .. envvar:: radvd__rdnss [[[
 #
 # List of DNS nameservers which should be advertised to the IPv6 clients.
-radvd__rdnss: '{{ ansible_dns.nameservers | ipv6 }}'
+radvd__rdnss: '{{ (ansible_dns.nameservers | d([])) | ipv6 }}'
 
                                                                    # ]]]
 # .. envvar:: radvd__dnssl [[[
 #
 # List of DNS search domains which should be advertised to the IPv6 clients.
-radvd__dnssl: '{{ ansible_dns.search }}'
+radvd__dnssl: '{{ ansible_dns.search | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: radvd__minimum_advertisement_interval [[[

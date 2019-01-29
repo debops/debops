@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+# Avoid issues with low nproc limits on LXC hosts with unprivileged LXC
+# containers sharing host UIDs/GIDs
+# Ref: https://github.com/lxc/lxd/issues/2948
+# Ref: https://loune.net/2011/02/avahi-setrlimit-nproc-and-lxc/
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/avahi-daemon -s --no-rlimits
