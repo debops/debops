@@ -115,6 +115,13 @@ nullmailer__defaulthost: '{{ nullmailer__mailname }}'
 # The string appended to the host part of the e-mail addresses without a dot.
 nullmailer__defaultdomain: '{{ nullmailer__domain }}'
                                                                    # ]]]
+
+# .. envvar:: nullmailer__allmailfrom [[[
+#
+# Force envelope sender. Needed for some mail relays with authentication if
+# they don't allow arbitrary envelope sender addresses. (Needs nullmailer >= 1.4)
+nullmailer__allmailfrom: ''
+                                                                   # ]]]
                                                                    # ]]]
 # SMTP relay configuration [[[
 # ----------------------------
@@ -233,6 +240,10 @@ nullmailer__configuration_files:
   - dest: '/etc/nullmailer/sendtimeout'
     content: '{{ nullmailer__sendtimeout }}'
     state: '{{ "present" if nullmailer__sendtimeout else "absent" }}'
+
+  - dest: '/etc/nullmailer/allmailfrom'
+    content: '{{ nullmailer__allmailfrom }}'
+    state: '{{ "present" if nullmailer__allmailfrom else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__private_configuration_files [[[
