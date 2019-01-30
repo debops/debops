@@ -160,3 +160,28 @@
           (item.filename|d() and (item.state|d() and item.state == 'absent'))) and
          (item.divert|d() and item.divert|bool))
   notify: [ 'Restart rsyslogd' ]
+
+- name: Remove template files if requested
+  file:
+    dest: '/etc/rsyslog.d/{{ item.name }}.template'
+    state: 'absent'
+  with_flattened:
+    - '{{ rsyslog__conf_additional_templates }}'
+  notify: [ 'Restart rsyslogd' ]
+  when: (item.name|d() and
+         ((item.state|d() and item.state == 'absent') or
+          (item.delete|d() and item.delete|bool)))
+
+- name: Create template files if defined
+  template:
+    src: 'etc/rsyslog.d/template.conf.j2'
+    dest: '/etc/rsyslog.d/{{ item.name }}.template'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ rsyslog__conf_additional_templates }}'
+  notify: [ 'Restart rsyslogd' ]
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool))
+

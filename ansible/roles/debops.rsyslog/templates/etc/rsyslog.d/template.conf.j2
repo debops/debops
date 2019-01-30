@@ -1,0 +1,16 @@
+{#
+    ==== template for rsyslog created via debops.rsyslog role ====
+#}
+# {{ ansible_managed }}
+
+{% if item.name is defined and item.name %}
+{% if item.comment is defined and item.comment %}
+# {{ item.comment }}
+{% endif %}
+template(
+        name="{{ item.name }}"
+        {% if item.options is defined and item.options %}
+        {{ item.options | indent(8) | regex_replace("(?m)^\s*$", "") }}
+        {% endif %}
+)
+{% endif %}
