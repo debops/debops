@@ -189,15 +189,14 @@ mandatory.
   If this parameter is defined and ``absent``, template file will be removed
   from the rsyslog configuration. Optional.
 
-Example of template definition:
+Example of a template definition:
 
 .. code-block:: yaml
 
-rsyslog__conf_additional_templates:
-  - '{{ rsyslog_template_news }}'
-rsyslog_template_news:
-  name: "RemoteServiceNewsLog"
-  comment: "Very interesting news!"
-  options: |
-    type="string"
-    string="/var/log/remote/services/news/news.log"
+   rsyslog__conf_additional_templates:
+     - rsyslog_template_news:
+       name: "RemoteServiceNewsLog"
+       comment: "Very interesting news!"
+       options: |
+         type="string"
+         string="/var/log/remote/services/news/news.log"
