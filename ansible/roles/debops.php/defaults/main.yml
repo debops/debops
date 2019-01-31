@@ -89,6 +89,10 @@ php__base_packages:
   - '{{ "php" + php__version }}'
   - 'curl'
   - 'gd'
+  - '{{ []
+        if (ansible_distribution_release in
+            [ "wheezy", "jessie", "precise", "trusty"])
+        else "composer" }}'
   - '{{ "mcrypt"
         if (php__version is version_compare("7.2","<"))
         else [] }}'
