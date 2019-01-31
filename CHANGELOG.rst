@@ -108,6 +108,9 @@ Added
   FQDNs and hostnames in the test environment without reliance on an external
   DHCP/DNS services.
 
+- [debops.php] The role will install the ``composer`` APT package on Debian
+  Stretch, Ubuntu Xenial and their respective newer OS releases.
+
 Changed
 ~~~~~~~
 

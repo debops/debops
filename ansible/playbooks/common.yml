@@ -12,8 +12,14 @@
       assert:
         that:
           - 'ansible_version.full is version_compare("2.1.5.0", ">=")'
-          - '((ansible_version.minor == 2) and (ansible_version.full is version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
-        msg: 'VULNERABLE or unsupported Ansible version DETECTED, please update to Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! To skip, add "--skip-tags play::security-assertions" parameter. Check the debops-playbook changelog for details. Exiting.'
+          - '((ansible_version.minor == 2) and
+              (ansible_version.full is version_compare("2.2.2.0", ">="))) or
+             (ansible_version.minor != 2)'
+        msg: |
+          VULNERABLE or unsupported Ansible version DETECTED, please update to
+          Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! To skip, add
+          "--skip-tags play::security-assertions" parameter. Check the
+          debops-playbook changelog for details. Exiting.
       run_once: True
       delegate_to: 'localhost'
 

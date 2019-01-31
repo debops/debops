@@ -8,6 +8,8 @@
     state: '{{ "present" if (apache__deploy_state == "present") else "absent" }}'
   with_flattened:
     - '{{ apache__base_packages  }}'
+  register: apache__register_base_packages
+  until: apache__register_base_packages is succeeded
   tags: [ 'role::apache:pkgs' ]
 
 # Ansible facts [[[1
