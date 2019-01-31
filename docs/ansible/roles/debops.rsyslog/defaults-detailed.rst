@@ -194,8 +194,7 @@ Example of a template definition:
 .. code-block:: yaml
 
    rsyslog__conf_additional_templates:
-     - rsyslog_template_news:
-       name: "RemoteServiceNewsLog"
+     - name: "RemoteServiceNewsLog"
        comment: "Very interesting news!"
        options: |
          type="string"
