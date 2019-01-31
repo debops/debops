@@ -163,3 +163,39 @@ The parameters below can be used in the main list or in the ``sections`` list:
 
 You can see many examples of the rules in :file:`defaults/main.yml` file of the
 ``debops.rsyslog`` role.
+
+.. _rsyslog__conf_additional_templates:
+
+rsyslog__conf_additional_templates
+----------------------------------
+
+This list defines additional rsyslog templates. 
+
+Each additional template can have following parameters, some of them are
+mandatory.
+
+``name```
+  Name of the template. Required.
+
+``comment``
+  Comment to the template, which you want to see on the top of the
+  template file. Optional.
+
+``options``
+  Text block with value mapping specified in the template format, check
+  rsyslog documentation or examples if not sure about syntax. Required.
+
+``state``
+  If this parameter is defined and ``absent``, template file will be removed
+  from the rsyslog configuration. Optional.
+
+Example of a template definition:
+
+.. code-block:: yaml
+
+   rsyslog__conf_additional_templates:
+     - name: "RemoteServiceNewsLog"
+       comment: "Very interesting news!"
+       options: |
+         type="string"
+         string="/var/log/remote/services/news/news.log"

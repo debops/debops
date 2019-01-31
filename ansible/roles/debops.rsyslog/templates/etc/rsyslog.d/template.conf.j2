@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+
+{#
+#    ==== template for rsyslog created via debops.rsyslog role ====
+#
+# List of parameters supported by this template:
+#
+#   - item.name: ''
+#       Name of the template. Required.
+#
+#   - item.comment: ''
+#       Comment to the template, which you want to see on the top of the
+#       template file. Optional.
+#
+#   - item.options: |
+#       Text block with value mapping specified in the template format, check
+#       rsyslog documentation or examples if not sure about syntax. Required.
+#
+#   - item.state: 'present'
+#       If this parameter is defined and 'absent', template file will be removed
+#       from the rsyslog configuration. Optional.
+#}
+
+{% if item.name is defined and item.name                                    %}
+{% if item.comment is defined and item.comment                              %}
+# {{ item.comment }}
+{% endif                                                                    %}
+template(
+        name="{{ item.name }}"
+        {% if item.options is defined and item.options                      %}
+{{ item.options | indent(8) | regex_replace("(?m)^\s*$", "") }}
+        {% endif                                                            %}
+)
+{% endif                                                                    %}
