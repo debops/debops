@@ -167,10 +167,9 @@
     state: 'absent'
   with_flattened:
     - '{{ rsyslog__conf_additional_templates }}'
+  when: (item.name|d() and item.options|d() and
+         (item.state|d() and item.state == 'absent'))
   notify: [ 'Restart rsyslogd' ]
-  when: (item.name|d() and
-         ((item.state|d() and item.state == 'absent') or
-          (item.delete|d() and item.delete|bool)))
 
 - name: Create template files if defined
   template:
@@ -181,6 +180,6 @@
     mode: '0644'
   with_flattened:
     - '{{ rsyslog__conf_additional_templates }}'
+  when: (item.name|d() and and item.options|d() and
+         item.state|d('present') != 'absent')
   notify: [ 'Restart rsyslogd' ]
-  when: (item.name|d() and item.state|d('present') != 'absent' and
-         (item.delete is undefined or not item.delete|bool))

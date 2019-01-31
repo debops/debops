@@ -185,6 +185,19 @@ mandatory.
   Text block with value mapping specified in the template format, check
   rsyslog documentation or examples if not sure about syntax. Required.
 
-``delete``
-  If this parameter is defined and ``True``, template file will be removed
+``state``
+  If this parameter is defined and ``absent``, template file will be removed
   from the rsyslog configuration. Optional.
+
+Example of template definition:
+
+.. code-block:: yaml
+
+rsyslog__conf_additional_templates:
+  - '{{ rsyslog_template_news }}'
+rsyslog_template_news:
+  name: "RemoteServiceNewsLog"
+  comment: "Very interesting news!"
+  options: |
+    type="string"
+    string="/var/log/remote/services/news/news.log"
