@@ -125,7 +125,7 @@ test-playbook-syntax:
 .PHONY: test-ansible-lint
 test-ansible-lint:
 	@printf "%s\n" "Checking Ansible roles using ansible-lint..."
-	@ansible-lint roles/* roles/*/env roles/*/raw
+	@ansible-lint roles/* roles/*/env roles/*/raw ansible/playbooks/*.yml ansible/playbooks/service/*.yml
 
 .PHONY: test-yaml
 test-yaml:
