@@ -30,6 +30,9 @@ Each entry is a YAML dictionary that defines a set of one or more
   Name of the configuration file in the :file:`/etc/cron.d/` directory. Required
   when the YAML list format is used. If not specified, the dictionary key will
   be used as the name.
+  Notice in order for a :program:`cron` job to actually be executed, the file
+  name must be entirely made up of letters, digits and can only contain the
+  special signs underscore ('_') and hypen ('-').
 
 ``environment``
   Optional. A YAML dictionary which defines what variables should be present in
