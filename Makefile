@@ -1,7 +1,7 @@
 # DebOps Makefile
 
 .PHONY: all
-all:
+all: help
 
 .PHONY: help
 help:
