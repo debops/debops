@@ -1,7 +1,7 @@
 # DebOps Makefile
 
 .PHONY: all
-all:
+all: help
 
 .PHONY: help
 help:
@@ -16,6 +16,10 @@ check: fail-if-git-dirty
 clean:          ## Clean up project directory
 clean: clean-tests clean-sdist clean-wheel
 
+.PHONY: versions
+versions:       ## Check versions of upstream software
+versions: check-versions
+
 .PHONY: docker
 docker:         ## Check Docker image build
 docker: test-docker-build
@@ -23,6 +27,10 @@ docker: test-docker-build
 .PHONY: docs
 docs:           ## Build Sphinx documentation
 docs: test-docs
+
+.PHONY: links
+links:          ## Check external links in documentation
+links: check-links
 
 .PHONY: pep8
 pep8:           ## Test Python PEP8 compliance
@@ -110,10 +118,19 @@ test-docker-build:
 clean-tests:
 	@rm -vrf .coverage docs/_build/* docs/ansible/roles/*/defaults.rst
 
+.PHONY: check-versions
+check-versions:
+	@./lib/tests/check-watch
+
 .PHONY: test-docs
 test-docs:
 	@printf "%s\n" "Testing HTML documentation generation..."
 	@cd docs && sphinx-build -n -W -b html -d _build/doctrees . _build/html
+
+.PHONY: check-links
+check-links:
+	@printf "%s\n" "Checking external links in documentation..."
+	@cd docs && sphinx-build -n -b linkcheck -d _build/doctrees . _build/linkcheck
 
 .PHONY: test-playbook-syntax
 test-playbook-syntax:

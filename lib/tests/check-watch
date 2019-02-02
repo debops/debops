@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Find all watch files in DebOps roles and check for upstream versions
+
+# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019 DebOps https://debops.org/
+
+
+set -o nounset -o pipefail -o errexit
+
+declare -a file_list
+
+if ! type uscan > /dev/null 2>&1 ; then
+    printf "%s\n" "Error: uscan not found. Install the devscripts APT package"
+    exit 1
+fi
+
+printf "%s " "Searching for watch files"
+
+counter=0
+
+while read -r in ; do
+    file_list+=("${in}")
+    counter=$(( counter + 1 ))
+    counter_state=$(( counter % 5 ))
+    if [ ${counter_state} -eq 0 ] ; then
+        printf "%s" "."
+    fi
+done < <(find ansible/roles -type f -not -iwholename "./.git/*" -name "watch" -or -name "watch-*")
+
+printf " %s\n" "found ${#file_list[@]} watch files"
+
+printf "%-30s %-20s %-15s %-10s\n" "Ansible role" "Package" "Current" "Upstream"
+printf "%$(tput cols)s\n" | tr ' ' '-'
+
+for watch_file in "${file_list[@]}" ; do
+    watch_role="$(grep -E '^# Role:\s' "${watch_file}" | awk '{print $3}' || true)"
+    watch_package="$(grep -E '^# Package:\s' "${watch_file}" | awk '{print $3}')"
+    role_version="$(grep -E '^# Version:\s' "${watch_file}" | awk '{print $3}')"
+
+    # If first character is not a number, that's probably a branch name instead
+    # of a tag. Branches can be upgradeable so there's no fixed version.
+    if [[ "${role_version}" =~ ^[0-9] ]] ; then
+        # It's a proper version number
+        watch_version="${role_version}"
+    else
+        # It's a branch name, stick with 0 so uscan doesn't complain
+        watch_version="0"
+    fi
+
+    upstream_version="$(uscan --no-conf --watchfile "${watch_file}" \
+                              --package "${watch_package}" \
+                              --upstream-version "${watch_version}" \
+                              --safe --no-download --no-verbose \
+                        | grep 'Newest version of' \
+                        | awk '{print $10}' \
+                        | sed -e 's/,//' || true)"
+    if [ -n "${upstream_version}" ] ; then
+        printf "%-30s %-20s %-15s %-10s\n" "${watch_role}" "${watch_package}" "${role_version}" "${upstream_version}"
+    else
+        printf "%-30s %-20s %-15s\n" "${watch_role}" "${watch_package}" "${role_version}"
+    fi
+done

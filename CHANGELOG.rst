@@ -111,6 +111,12 @@ Added
 - [debops.php] The role will install the ``composer`` APT package on Debian
   Stretch, Ubuntu Xenial and their respective newer OS releases.
 
+- You can use the :command:`make versions` command in the root of the DebOps
+  monorepo to check currently "pinned" and upstream versions of third-party
+  software installed and managed by DebOps, usually via :command:`git`
+  repositories. This requires the :command:`uscan` command from the Debian
+  ``devscripts`` APT package to be present.
+
 Changed
 ~~~~~~~
 
