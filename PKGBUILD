@@ -18,7 +18,7 @@
 # Maintainer: Maciej Delmanowski <drybjed@gmail.com>
 pkgname=debops-git
 _pkgname=debops
-pkgver=0.8.0
+pkgver=0.8.1
 pkgrel=1
 pkgdesc="Your Debian-based data center in a box"
 arch=('any')

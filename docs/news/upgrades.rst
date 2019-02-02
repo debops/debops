@@ -11,6 +11,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v0.8.1 (2019-02-02)
+-------------------
+
 Subordinate UID/GID ranges for root
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
