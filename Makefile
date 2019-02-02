@@ -28,6 +28,10 @@ docker: test-docker-build
 docs:           ## Build Sphinx documentation
 docs: test-docs
 
+.PHONY: links
+links:          ## Check external links in documentation
+links: check-links
+
 .PHONY: pep8
 pep8:           ## Test Python PEP8 compliance
 pep8: test-pep8
@@ -122,6 +126,11 @@ check-versions:
 test-docs:
 	@printf "%s\n" "Testing HTML documentation generation..."
 	@cd docs && sphinx-build -n -W -b html -d _build/doctrees . _build/html
+
+.PHONY: check-links
+check-links:
+	@printf "%s\n" "Checking external links in documentation..."
+	@cd docs && sphinx-build -n -b linkcheck -d _build/doctrees . _build/linkcheck
 
 .PHONY: test-playbook-syntax
 test-playbook-syntax:
