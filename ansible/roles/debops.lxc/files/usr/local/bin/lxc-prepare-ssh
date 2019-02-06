@@ -10,12 +10,14 @@ readonly SCRIPT="$(basename "${0}")"
 readonly CONTAINER="${1:-}"
 
 if [ -n "${SUDO_USER:-}" ] ; then
-    readonly USER_HOME="$(getent passwd "${SUDO_USER}" | cut -d: -f6)"
+    readonly SUDO_USER_HOME="$(getent passwd "${SUDO_USER}" | cut -d: -f6)"
+    readonly SUDO_AUTHORIZED_KEYS="${SUDO_USER_HOME}/.ssh/authorized_keys"
 else
-    readonly USER_HOME="${HOME}"
+    readonly SUDO_AUTHORIZED_KEYS=""
 fi
 
-readonly AUTHORIZED_KEYS="${2:-"${USER_HOME}/.ssh/authorized_keys"}"
+readonly USER_HOME="${HOME}"
+readonly AUTHORIZED_KEYS="${USER_HOME}/.ssh/authorized_keys"
 
 container_exists () {
     local container
@@ -58,23 +60,34 @@ prepare_authorized_keys () {
     local authorized_keys
     authorized_keys="${2}"
 
-    local authorized_keys_content
-    authorized_keys_content="$(< "${authorized_keys}")"
+    local -a authorized_keys_content
+    readarray -t authorized_keys_content <<< "$(< "${authorized_keys}")"
 
-    if ! lxc-attach -n "${container}" -- test -r /root/.ssh/authorized_keys ; then
-        printf "Adding authorized SSH keys from '%s'..." "${authorized_keys}"
-        lxc-attach -n "${container}" -- mkdir -p -m 700 /root/.ssh
-        lxc-attach -n "${container}" -- tee -a /root/.ssh/authorized_keys <<< "${authorized_keys_content}" 1>/dev/null
-        lxc-attach -n "${container}" -- chmod 600 /root/.ssh/authorized_keys
-        printf " done\n"
+    if ! lxc-attach -n "${container}" -- test -d /root/.ssh ; then
+        lxc-attach -n "${container}" -- mkdir -p -m 0700 /root/.ssh
+        lxc-attach -n "${container}" -- touch /root/.ssh/authorized_keys
+        lxc-attach -n "${container}" -- chmod 0600 /root/.ssh/authorized_keys
     fi
+    printf "Adding authorized SSH keys from '%s'...\n" "${authorized_keys}"
+    for key_line in "${authorized_keys_content[@]}" ; do
+        if ssh-keygen -l -f - <<< "${key_line}" > /dev/null ; then
+            if ! lxc-attach -n "${container}" -- grep -Fxq "${key_line}" /root/.ssh/authorized_keys ; then
+                ssh-keygen -l -f - <<< "${key_line}"
+                lxc-attach -n "${container}" -- tee -a /root/.ssh/authorized_keys <<< "${key_line}" 1>/dev/null
+            fi
+        fi
+    done
 }
 
 print_usage () {
     cat <<EOF
 ${SCRIPT}: add authorized SSH keys to an LXC container
 
-Usage: ${SCRIPT} <container-name> [authorized_keys_file]
+Usage: ${SCRIPT} <container-name>
+
+The keys will be taken from files:
+    /root/.ssh/authorized_keys
+    \${SUDO_USER}/.ssh/authorized_keys
 EOF
 }
 
@@ -85,8 +98,8 @@ error_msg () {
 main () {
     local container
     container="${CONTAINER}"
-    local authorized_keys
-    authorized_keys="${AUTHORIZED_KEYS}"
+    local -a authorized_keys
+    authorized_keys=( "${AUTHORIZED_KEYS}" "${SUDO_AUTHORIZED_KEYS}" )
 
     if [ -n "${container}" ] ; then
         if container_exists "${container}" ; then
@@ -102,7 +115,11 @@ main () {
                 lxc-wait -n "${container}" -s RUNNING
             fi
             prepare_openssh "${container}"
-            prepare_authorized_keys "${container}" "${authorized_keys}"
+            for key_file in "${authorized_keys[@]}" ; do
+                if [ -f "${key_file}" ] ; then
+                    prepare_authorized_keys "${container}" "${key_file}"
+                fi
+            done
         else
             error_msg "Error: container '${container}' doesn't exist"
             return 1
