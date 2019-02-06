@@ -10,12 +10,14 @@ readonly SCRIPT="$(basename "${0}")"
 readonly CONTAINER="${1:-}"
 
 if [ -n "${SUDO_USER:-}" ] ; then
-    readonly USER_HOME="$(getent passwd "${SUDO_USER}" | cut -d: -f6)"
+    readonly SUDO_USER_HOME="$(getent passwd "${SUDO_USER}" | cut -d: -f6)"
+    readonly SUDO_AUTHORIZED_KEYS="${SUDO_USER_HOME}/.ssh/authorized_keys"
 else
-    readonly USER_HOME="${HOME}"
+    readonly SUDO_AUTHORIZED_KEYS=""
 fi
 
-readonly AUTHORIZED_KEYS="${2:-"${USER_HOME}/.ssh/authorized_keys"}"
+readonly USER_HOME="${HOME}"
+readonly AUTHORIZED_KEYS="${USER_HOME}/.ssh/authorized_keys"
 
 container_exists () {
     local container
@@ -74,7 +76,11 @@ print_usage () {
     cat <<EOF
 ${SCRIPT}: add authorized SSH keys to an LXC container
 
-Usage: ${SCRIPT} <container-name> [authorized_keys_file]
+Usage: ${SCRIPT} <container-name>
+
+The keys will be taken from files:
+    /root/.ssh/authorized_keys
+    \${SUDO_USER}/.ssh/authorized_keys
 EOF
 }
 
@@ -85,8 +91,8 @@ error_msg () {
 main () {
     local container
     container="${CONTAINER}"
-    local authorized_keys
-    authorized_keys="${AUTHORIZED_KEYS}"
+    local -a authorized_keys
+    authorized_keys=( "${AUTHORIZED_KEYS}" "${SUDO_AUTHORIZED_KEYS}" )
 
     if [ -n "${container}" ] ; then
         if container_exists "${container}" ; then
@@ -102,7 +108,11 @@ main () {
                 lxc-wait -n "${container}" -s RUNNING
             fi
             prepare_openssh "${container}"
-            prepare_authorized_keys "${container}" "${authorized_keys}"
+            for key_file in "${authorized_keys[@]}" ; do
+                if [ -f "${key_file}" ] ; then
+                    prepare_authorized_keys "${container}" "${key_file}"
+                fi
+            done
         else
             error_msg "Error: container '${container}' doesn't exist"
             return 1
