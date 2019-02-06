@@ -32,6 +32,7 @@ RUN apt-get -q update \
        --no-install-recommends -yq install \
        iproute2 \
        levee \
+       openssh-client \
        python-apt \
        python-dnspython \
        python-future \
