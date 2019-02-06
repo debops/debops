@@ -60,16 +60,23 @@ prepare_authorized_keys () {
     local authorized_keys
     authorized_keys="${2}"
 
-    local authorized_keys_content
-    authorized_keys_content="$(< "${authorized_keys}")"
+    local -a authorized_keys_content
+    readarray -t authorized_keys_content <<< "$(< "${authorized_keys}")"
 
-    if ! lxc-attach -n "${container}" -- test -r /root/.ssh/authorized_keys ; then
-        printf "Adding authorized SSH keys from '%s'..." "${authorized_keys}"
-        lxc-attach -n "${container}" -- mkdir -p -m 700 /root/.ssh
-        lxc-attach -n "${container}" -- tee -a /root/.ssh/authorized_keys <<< "${authorized_keys_content}" 1>/dev/null
-        lxc-attach -n "${container}" -- chmod 600 /root/.ssh/authorized_keys
-        printf " done\n"
+    if ! lxc-attach -n "${container}" -- test -d /root/.ssh ; then
+        lxc-attach -n "${container}" -- mkdir -p -m 0700 /root/.ssh
+        lxc-attach -n "${container}" -- touch /root/.ssh/authorized_keys
+        lxc-attach -n "${container}" -- chmod 0600 /root/.ssh/authorized_keys
     fi
+    printf "Adding authorized SSH keys from '%s'...\n" "${authorized_keys}"
+    for key_line in "${authorized_keys_content[@]}" ; do
+        if ssh-keygen -l -f - <<< "${key_line}" > /dev/null ; then
+            if ! lxc-attach -n "${container}" -- grep -Fxq "${key_line}" /root/.ssh/authorized_keys ; then
+                ssh-keygen -l -f - <<< "${key_line}"
+                lxc-attach -n "${container}" -- tee -a /root/.ssh/authorized_keys <<< "${key_line}" 1>/dev/null
+            fi
+        fi
+    done
 }
 
 print_usage () {

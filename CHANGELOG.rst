@@ -24,7 +24,8 @@ Changed
 - [debops.lxc] The :command:`lxc-prepare-ssh` script will read the public SSH
   keys from specific files (``root`` key file, and the ``$SUDO_USER`` key file)
   and will not accept any custom files to read from, to avoid possible security
-  issues.
+  issues. Each public SSH key listed in the key files is validated before being
+  added to the container's ``root`` account.
 
 
 `debops v0.8.1`_ - 2019-02-02
