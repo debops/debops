@@ -36,6 +36,11 @@ Changed
   issues. Each public SSH key listed in the key files is validated before being
   added to the container's ``root`` account.
 
+- [debops.gitlab] The GitLab playbook will import the
+  :ref:`debops.docker_registry` playbook to ensure that configuration related
+  to Docker Registry defined in the GitLab service is properly applied during
+  installation/management.
+
 
 `debops v0.8.1`_ - 2019-02-02
 -----------------------------

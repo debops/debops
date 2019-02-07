@@ -54,6 +54,25 @@ on the host, for example by the :ref:`debops.redis_server` Ansible role.
 Support for distributed Redis Server service managed by Redis Sentinel is
 planned for a future release.
 
+Docker Registry support
+-----------------------
+
+The :ref:`debops.docker_registry` Ansible role can be used as a backend to the
+GitLab Container Registry service. The ``debops.gitlab`` playbook will import
+the :ref:`debops.docker_registry` playbook to faciliate configuration
+synchronization between the two services. The installation process with Docker
+Registry role enabled will be:
+
+- Install PostgreSQL server, Redis Server
+- Install Docker Registry service
+- Install GitLab, using facts from Docker Registry role
+- Update Docker Registry service with facts from GitLab role
+
+This should avoid issue with circular dependencies in the configuration of both
+services. The Docker Registry requires PKI support, therefore it's good
+practice to apply the ``common.yml`` DebOps playbook, or at least the
+:ref:`debops.pki` role, before the GitLab installation begins.
+
 Support for other services
 --------------------------
 
@@ -87,6 +106,9 @@ Example Ansible inventory:
    hostname
 
    [debops_service_redis_server]
+   hostname
+
+   [debops_service_docker_registry]
    hostname
 
    [debops_service_gitlab]
