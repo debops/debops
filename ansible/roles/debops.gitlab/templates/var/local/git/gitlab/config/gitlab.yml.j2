@@ -203,13 +203,13 @@ production: &base
       cron: "0 * * * *"
 
   registry:
-    # enabled: true
-    # host: registry.example.com
-    # port: 5005
-    # api_url: http://localhost:5000/ # internal address to the registry, will be used by GitLab to directly communicate with API
-    # key: config/registry.key
-    # path: shared/registry
-    # issuer: gitlab-issuer
+    enabled: {{ gitlab__registry_enable }}
+    host: "{{ gitlab__registry_host }}"
+    port: {{ gitlab__registry_port }}
+    api_url: "{{ gitlab__registry_api_url }}"
+    key: "{{ gitlab__registry_private_key }}"
+    path: "{{ gitlab__registry_path }}"
+    issuer: "{{ gitlab__registry_issuer }}"
 
   #
   # 2. GitLab CI settings
