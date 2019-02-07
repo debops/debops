@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Perform garbage collection in the Docker Registry
+
+
+set -o nounset -o pipefail -o errexit
+
+readonly CONFIG_FILE="{{ docker_registry__config_file }}"
+
+if docker-registry garbage-collect "${CONFIG_FILE}" --dry-run \
+   | grep --extended-regexp "^blob eligible for deletion" > /dev/null ; then
+    sudo systemctl stop docker-registry.service
+    docker-registry garbage-collect "${CONFIG_FILE}" --delete-untagged > /dev/null 2>&1
+    sudo systemctl start docker-registry.service
+fi

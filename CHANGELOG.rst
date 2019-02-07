@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v0.8.1...master
 
+Added
+~~~~~
+
+- New DebOps roles:
+
+  - :ref:`debops.docker_registry` role provides support for Docker Registry.
+    The role can be used as standalone or as a backend for the GitLab Container
+    Registry service, with :ref:`debops.gitlab` role.
+
 Changed
 ~~~~~~~
 
