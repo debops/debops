@@ -215,6 +215,34 @@
          (item.state|d('present') == 'absent'))
   tags: [ 'role::resources:files' ]
 
+# Manage ACLs [[[1
+- name: Set ACLs on remote hosts
+  acl:
+    path:        '{{ item.1.path        | d(item.0.name) | d(item.0.dest) | d(item.0.path) }}'
+    default:     '{{ item.1.default     | d(omit) }}'
+    entity:      '{{ item.1.entity      | d(omit) }}'
+    entry:       '{{ item.1.entry       | d(omit) }}'
+    etype:       '{{ item.1.etype       | d(omit) }}'
+    permissions: '{{ item.1.permissions | d(omit) }}'
+    follow:      '{{ item.1.follow      | d(omit) }}'
+    recursive:   '{{ item.1.recursive   | d(omit) }}'
+    state:       '{{ item.1.state       | d("present") }}'
+  loop: '{{ (lookup("flattened",
+                    resources__paths
+                    + resources__group_paths
+                    + resources__host_paths
+                    + resources__files
+                    + resources__group_files
+                    + resources__host_files,
+                    wantlist=True))
+             | selectattr("acl", "defined") | list
+             | subelements("acl") }}'
+  loop_control:
+    label: '{{ {"name": (item.0.name | d(item.0.dest) | d(item.0.path)),
+                "acl": item.1} }}'
+  when: item.0.state|d('present') != 'absent'
+  tags: [ 'role::resources:acl' ]
+
 # Manage custom delayed paths [[[1
 - name: Manage delayed paths on remote hosts
   file:
