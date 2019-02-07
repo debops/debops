@@ -203,13 +203,15 @@ production: &base
       cron: "0 * * * *"
 
   registry:
-    enabled: {{ gitlab__registry_enable }}
-    host: "{{ gitlab__registry_host }}"
-    port: {{ gitlab__registry_port }}
+    enabled: {{ gitlab__registry_enabled }}
+    host: "{{ gitlab__registry_host_fqdn }}"
+{% if gitlab__registry_host_port | int != 443 %}
+    port: {{ gitlab__registry_host_port }}
+{% endif %}
     api_url: "{{ gitlab__registry_api_url }}"
     key: "{{ gitlab__registry_private_key }}"
     path: "{{ gitlab__registry_path }}"
-    issuer: "{{ gitlab__registry_issuer }}"
+    issuer: "{{ gitlab__registry_token_issuer }}"
 
   #
   # 2. GitLab CI settings
