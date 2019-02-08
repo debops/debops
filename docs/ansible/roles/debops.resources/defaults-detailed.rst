@@ -101,7 +101,7 @@ details for certain parameters:
   treated as a directory which will be created if it doesn't exist.
 
 ``item.acl``
-  Optional. Please take a look :ref:`resources__ref_acl` section.
+  Optional. Please take look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -174,7 +174,7 @@ parameters:
   using the :ref:`resources__ref_paths` variables.
 
 ``item.acl``
-  Optional. Please take a look :ref:`resources__ref_acl` section.
+  Optional. Please take look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -212,7 +212,7 @@ Here are some important parameters used by the role:
   Required. Path where downloaded resource should be stored.
 
 ``item.acl``
-  Optional. Please take a look :ref:`resources__ref_acl` section.
+  Optional. Please take look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -247,7 +247,7 @@ Here are some more important parameters:
   Required. Path on the remote host where the archive should be unpacked.
 
 ``item.acl``
-  Optional. Please take a look :ref:`resources__ref_acl` section.
+  Optional. Please take look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -296,7 +296,7 @@ Here are some more important parameters:
   be created. If specified and ``absent``, file will be removed.
 
 ``item.acl``
-  Optional. Please take a look :ref:`resources__ref_acl` section.
+  Optional. Please take look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -323,18 +323,50 @@ Create a custom :program:`cron` task that restarts a service daily:
 
 .. _resources__ref_acl:
 
-resources__*.acl
-----------------
+ACL support
+-----------
 
 Some of :ref:`debops.resources` variables also have the possibility to manage
 the ACLs (:ref:`resources__ref_paths`, :ref:`resources__ref_repositories`,
 :ref:`resources__ref_urls`, :ref:`resources__ref_archives` and
 :ref:`resources__ref_files`).
 
+Examples
+~~~~~~~~
+
+Create a directory on all hosts and allow ``adm`` group and ``joe`` user
+to access to any new content:
+
+.. code-block:: yaml
+
+   resources__paths:
+     - '/tmp/dir1'
+       acl:
+         - default: True
+           etype: 'group'
+           entity: 'adm'
+           permissions: 'rX'
+         - default: True
+           etype: 'user'
+           entity: 'joe'
+           permissions: 'rX'
+
+Remove ACLs related to ``joe`` user on a file on all hosts:
+
+.. code-block:: yaml
+
+   resources__files:
+     - dest: '/tmp/file'
+       state: 'present'
+       acl:
+         - etype: 'user'
+           entity: 'joe'
+           state: 'absent'
+
 Parameters related to ACL
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``acl``
+``item.acl``
   Optional. Configure filesystem ACL entries of the current file or directory.
   This parameter is a list of YAML dictionaries. See the documentation of the
   `Ansible acl module`_ for details about each parameters (what they can be
@@ -344,7 +376,7 @@ Parameters related to ACL
   ``default``
     Optional, boolean. If ``True``, set a given ACL entry as the default for
     new files and directories inside a given directory. Only works with
-    directories.
+    directories and can't be removed with ``state`` set to ``absent``.
 
   ``entity``
     Name of the UNIX user account or group that a given ACL entry applies to.
@@ -364,31 +396,3 @@ Parameters related to ACL
     Optional. If not specified or ``present``, the ACL entry will be created.
     If ``absent``, the ACL entry will be removed. The ``query`` state doesn't
     make sense in this context and shouldn't be used.
-
-Examples
-~~~~~~~~
-
-Create a directory on all hosts and allow ``adm`` group to access to any
-new content:
-
-.. code-block:: yaml
-
-   resources__paths:
-     - '/tmp/dir1'
-       acl:
-         - entity: 'adm'
-           default: True
-           etype: group
-           permissions: 'rX'
-           state: 'present'
-
-Remove ACLs related to ``joe`` user on a file on all hosts:
-
-.. code-block:: yaml
-
-   resources__files:
-     - dest: '/tmp/file'
-       acl:
-         - entity: 'joe'
-           etype: user
-           state: 'absent'
