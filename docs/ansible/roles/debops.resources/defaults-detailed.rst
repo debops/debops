@@ -340,7 +340,7 @@ to access to any new content:
 .. code-block:: yaml
 
    resources__paths:
-     - '/tmp/dir1'
+     - dest: '/tmp/dir1'
        acl:
          - default: True
            etype: 'group'
