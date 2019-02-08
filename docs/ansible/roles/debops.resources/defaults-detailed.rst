@@ -100,42 +100,8 @@ details for certain parameters:
   Optional. Specify state of the given path. If not specified, the element is
   treated as a directory which will be created if it doesn't exist.
 
-Parameters related to ACL
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-These lists came with an additional parameter to extend the features and allow
-to directly manage it's ACLs.
-
-``acl``
-  Optional. Configure filesystem ACL entries of the current directory. This
-  parameter is a list of YAML dictionaries. See the documentation of the
-  `Ansible acl module`_ for details about each parameters (what they can be
-  used to and their format) as well as the :man:`acl(5)`, :man:`setfacl(1)`
-  and :man:`getfacl` manual pages. Some useful parameters:
-
-  ``default``
-    Optional, boolean. If ``True``, set a given ACL entry as the default for
-    new files and directories inside a given directory. Only works with
-    directories.
-
-  ``entity``
-    Name of the UNIX user account or group that a given ACL entry applies to.
-
-  ``etype``
-    Specify the ACL entry type to configure. Valid choices: ``user``,
-    ``group``, ``mask``, ``other``.
-
-  ``permissions``
-    Specify the permission to apply for a given ACL entry. This parameter
-    cannot be specified when the state of an ACL entry is set to ``absent``.
-
-  ``recursive``
-    Apply a given ACL entry recursively to all entities in a given path.
-
-  ``state``
-    Optional. If not specified or ``present``, the ACL entry will be created.
-    If ``absent``, the ACL entry will be removed. The ``query`` state doesn't
-    make sense in this context and shouldn't be used.
+``item.acl``
+  Optional. Please take a look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -207,6 +173,9 @@ parameters:
   permissions allow. You can create or change directory permissions as needed
   using the :ref:`resources__ref_paths` variables.
 
+``item.acl``
+  Optional. Please take a look :ref:`resources__ref_acl` section.
+
 Examples
 ~~~~~~~~
 
@@ -274,6 +243,9 @@ Here are some more important parameters:
 ``item.dest`` or ``item.name`` or ``item.path``
   Required. Path on the remote host where the archive should be unpacked.
 
+``item.acl``
+  Optional. Please take a look :ref:`resources__ref_acl` section.
+
 Examples
 ~~~~~~~~
 
@@ -320,6 +292,9 @@ Here are some more important parameters:
   Optional. If not specified, or if specified and ``present``, the file(s) will
   be created. If specified and ``absent``, file will be removed.
 
+``item.acl``
+  Optional. Please take a look :ref:`resources__ref_acl` section.
+
 Examples
 ~~~~~~~~
 
@@ -342,3 +317,74 @@ Create a custom :program:`cron` task that restarts a service daily:
          #!/bin/sh
          # {{ ansible_managed }}
          test -x /usr/bin/service && systemctl restart service
+
+.. _resources__ref_acl:
+
+resources__*.acl
+----------------
+
+Some of :ref:`debops.resources` variables also have the possibility to manage
+the ACLs (:ref:`resources__ref_paths`, :ref:`resources__ref_repositories`,
+:ref:`resources__ref_archives` and :ref:`resources__ref_files`).
+
+Parameters related to ACL
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``acl``
+  Optional. Configure filesystem ACL entries of the current file or directory.
+  This parameter is a list of YAML dictionaries. See the documentation of the
+  `Ansible acl module`_ for details about each parameters (what they can be
+  used to and their format) as well as the :man:`acl(5)`, :man:`setfacl(1)`
+  and :man:`getfacl` manual pages. Some useful parameters:
+
+  ``default``
+    Optional, boolean. If ``True``, set a given ACL entry as the default for
+    new files and directories inside a given directory. Only works with
+    directories.
+
+  ``entity``
+    Name of the UNIX user account or group that a given ACL entry applies to.
+
+  ``etype``
+    Specify the ACL entry type to configure. Valid choices: ``user``,
+    ``group``, ``mask``, ``other``.
+
+  ``permissions``
+    Specify the permission to apply for a given ACL entry. This parameter
+    cannot be specified when the state of an ACL entry is set to ``absent``.
+
+  ``recursive``
+    Apply a given ACL entry recursively to all entities in a given path.
+
+  ``state``
+    Optional. If not specified or ``present``, the ACL entry will be created.
+    If ``absent``, the ACL entry will be removed. The ``query`` state doesn't
+    make sense in this context and shouldn't be used.
+
+Examples
+~~~~~~~~
+
+Create a directory on all hosts and allow ``adm`` group to access to any
+new content:
+
+.. code-block:: yaml
+
+   resources__paths:
+     - '/tmp/dir1'
+       acl:
+         - entity: 'adm'
+           default: True
+           etype: group
+           permissions: 'rX'
+           state: 'present'
+
+Remove ACLs related to ``joe`` user on a file on all hosts:
+
+.. code-block:: yaml
+
+   resources__files:
+     - dest: '/tmp/file'
+       acl:
+         - entity: 'joe'
+           etype: user
+           state: 'absent'
