@@ -81,7 +81,7 @@ with specific parameters:
   If the value is empty, the host record will be removed from the database.
 
 ``separator``
-  Optional, boolean. If set and ``True``, the generated templae will contain an
+  Optional, boolean. If set and ``True``, the generated template will contain an
   empty line before a given entry, to allow for better readability. This
   parameter is ignored when the ``lineinfile`` mode is used to manage the
   database.

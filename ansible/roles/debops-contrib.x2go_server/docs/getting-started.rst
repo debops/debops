@@ -21,7 +21,7 @@ To setup and manage the X2Go server, add the hosts to the
 If you are using debops.sshd_ for configuring your OpenSSH server, you will
 need to adopt some of the defaults of this role to allow X2Go clients to
 connect to the X2Go server via SSH.
-The recommended way to do those adoptions is to symlink the
+The recommended way to do this adaption is to symlink the
 :file:`docs/inventory/debops_service_x2go_server_global_role_vars` file shipped
 with this role into your inventory under
 :file:`ansible/inventory/group_vars/debops_service_x2go_server_global_role_vars`
