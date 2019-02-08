@@ -92,11 +92,14 @@ owncloud__base_php_packages:
   - 'mbstring'
   - 'zip'
 
+  ## Required for the "OpenOTP Two Factor Authentication" (twofactor_rcdevsopenotp) as of NC 14.
+  - 'ldap'
+  - 'soap'
+
   - '{{ [ "apcu" ] if (owncloud__apcu_enabled|bool) else [] }}'
   - '{{ [ "mysql" ] if (owncloud__database in [ "mariadb", "mysql" ]) else [] }}'
   - '{{ [ "pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
   - '{{ [ "redis" ] if (owncloud__redis_enabled | bool) else [] }}'
-  - '{{ [ "ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
 
   ## Seems to be required at least for PHP7.0 to fix:
   ## PHP Warning: PHP Startup: Unable to load dynamic library '/usr/lib/php/20151012/redis.so'
