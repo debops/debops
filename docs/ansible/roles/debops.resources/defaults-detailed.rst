@@ -211,6 +211,9 @@ Here are some important parameters used by the role:
 ``item.dest`` or ``item.name`` or ``item.path``
   Required. Path where downloaded resource should be stored.
 
+``item.acl``
+  Optional. Please take a look :ref:`resources__ref_acl` section.
+
 Examples
 ~~~~~~~~
 
@@ -325,7 +328,8 @@ resources__*.acl
 
 Some of :ref:`debops.resources` variables also have the possibility to manage
 the ACLs (:ref:`resources__ref_paths`, :ref:`resources__ref_repositories`,
-:ref:`resources__ref_archives` and :ref:`resources__ref_files`).
+:ref:`resources__ref_urls`, :ref:`resources__ref_archives` and
+:ref:`resources__ref_files`).
 
 Parameters related to ACL
 ~~~~~~~~~~~~~~~~~~~~~~~~~
