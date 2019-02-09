@@ -9,10 +9,11 @@ set -o nounset -o pipefail -o errexit
 
 readonly CONFIG_FILE="{{ docker_registry__config_file }}"
 readonly REGISTRY_BIN="{{ docker_registry__binary }}"
+readonly DELETE_UNTAGGED="{{ '--delete-untagged' if (docker_registry__version is version('2.7.1', '>=')) else '' }}"
 
 if "${REGISTRY_BIN}" garbage-collect "${CONFIG_FILE}" --dry-run \
    | grep --extended-regexp "^blob eligible for deletion" > /dev/null ; then
     sudo systemctl stop docker-registry.service
-    "${REGISTRY_BIN}" garbage-collect "${CONFIG_FILE}" --delete-untagged > /dev/null 2>&1
+    "${REGISTRY_BIN}" garbage-collect "${CONFIG_FILE}" "${DELETE_UNTAGGED}" > /dev/null 2>&1
     sudo systemctl start docker-registry.service
 fi
