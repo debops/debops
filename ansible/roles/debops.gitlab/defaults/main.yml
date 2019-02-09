@@ -1154,6 +1154,7 @@ gitlab__nginx_pages_server:
   name: [ '{{ gitlab_pages_domain }}', '*.{{ gitlab_pages_domain }}' ]
   filename: 'gitlab-pages'
   proxy_pass: 'http://localhost:{{ gitlab_pages_port }}'
+  state: '{{ "present" if gitlab_pages_domain|d() else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
