@@ -136,7 +136,7 @@ gitlab_domain: '{{ ansible_local.core.domain
 #
 # List of base APT packages required by GitLab.
 gitlab__base_packages: [ 'build-essential', 'cmake', 'git', 'pkg-config', 'python-docutils',
-                         'unzip', 'acl',
+                         'unzip', 'acl', 'ssl-cert',
                          'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
                          'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
                          'libicu-dev', 'zlib1g-dev', 'libyaml-dev' ]
@@ -505,7 +505,7 @@ gitlab_group: 'git'
 # List of additional system groups to add to the GitLab user account.
 # The ``sshusers`` UNIX group is used in DebOps to limit SSH access. See the
 # :ref:`debops.system_groups` role for more details.
-gitlab_user_append_groups: [ 'sshusers' ]
+gitlab_user_append_groups: [ 'sshusers', 'ssl-cert' ]
 
                                                                    # ]]]
 # .. envvar:: gitlab__shell [[[
