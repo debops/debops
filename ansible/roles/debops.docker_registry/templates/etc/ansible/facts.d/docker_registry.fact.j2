@@ -1,0 +1,50 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from yaml import load
+from sys import exit
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+config_file = loads('''{{ docker_registry__config_file | to_nice_json }}''')
+
+output = loads('''{{ {"host_fqdn": docker_registry__fqdn,
+                      "host_port": 443} | to_nice_json }}''')
+
+output['installed'] = cmd_exists('docker-registry')
+
+try:
+    output['version'] = subprocess.check_output(
+            ['docker-registry', '-v']).strip('\n') \
+                                      .split()[2] \
+                                      .split('+')[0] \
+                                      .lstrip('v')
+
+except Exception:
+    pass
+
+try:
+    with open(config_file, 'r') as f:
+        config = load(f)
+        output['api_url'] = ('http://' + config.get('http').get('addr') + '/')
+        if config.get('storage').get('filesystem'):
+            output['storage_type'] = 'filesystem'
+            output['storage_path'] = config.get('storage') \
+                                           .get('filesystem') \
+                                           .get('rootdirectory')
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=2))

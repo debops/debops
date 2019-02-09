@@ -296,6 +296,7 @@ Virtualization
 
 - :ref:`debops.docker`
 - :ref:`debops.docker_gen`
+- :ref:`debops.docker_registry`
 - :ref:`debops.libvirt`
 - :ref:`debops.libvirtd`
 - :ref:`debops.libvirtd_qemu`
