@@ -26,7 +26,10 @@ output['installed'] = cmd_exists('docker-registry')
 
 try:
     output['version'] = subprocess.check_output(
-            ['docker-registry', '-v']).strip('\n').split()[2].lstrip('v')
+            ['docker-registry', '-v']).strip('\n') \
+                                      .split()[2] \
+                                      .split('+')[0] \
+                                      .lstrip('v')
 
 except Exception:
     pass
