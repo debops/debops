@@ -8,6 +8,23 @@
   register: docker_registry__register_packages
   until: docker_registry__register_packages is succeeded
 
+- name: Check current docker-registry diversions
+  environment:
+    LC_ALL: 'C'
+  shell: dpkg-divert --list '/etc/docker/registry/*.dpkg-divert' | awk '{print $NF}'
+  register: docker_registry__register_diversions
+  check_mode: False
+  changed_when: False
+
+- name: Divert the original docker-registry config file
+  command: dpkg-divert --quiet --local
+           --divert "/etc/docker/registry/config.yml.dpkg-divert"
+           --rename "/etc/docker/registry/config.yml"
+  args:
+    creates: '/etc/docker/registry/config.yml.dpkg-divert'
+  notify: [ 'Restart docker-registry' ]
+  when: '"/etc/docker/registry/config.yml.dpkg-divert" not in docker_registry__register_diversions.stdout_lines'
+
 - name: Create Docker Registry UNIX group
   group:
     name: '{{ docker_registry__group }}'
