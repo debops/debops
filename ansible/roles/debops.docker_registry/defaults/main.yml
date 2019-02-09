@@ -202,7 +202,7 @@ docker_registry__allow: []
 # GitLab Container Registry integration is enabled, the internal HTTP Basic
 # Auth is disabled.
 docker_registry__basic_auth: '{{ False
-                                 if docker_registry__gitlab_enabled|bool
+                                 if docker_registry__token_enabled|bool
                                  else True }}'
 
                                                                    # ]]]
@@ -295,91 +295,105 @@ docker_registry__redis_password: '{{ ansible_local.redis_server.password
 docker_registry__redis_db: 0
                                                                    # ]]]
                                                                    # ]]]
-# GitLab Container Registry integration [[[
-# -----------------------------------------
+# Token-based authentication [[[
+# ------------------------------
 
-# .. envvar:: docker_registry__gitlab_enabled [[[
-#
-# Enable or disable support for GitLab Container Registry configuration.
-docker_registry__gitlab_enabled: '{{ True
-                                     if (ansible_local|d() and ansible_local.gitlab|d() and
-                                         (ansible_local.gitlab.registry|d())|bool)
-                                     else False }}'
+# The Docker Registry supports token-based authentication, which allows
+# external services to authenticate Docker clients to the Registry.
 
-                                                                   # ]]]
-# .. envvar:: docker_registry__gitlab_fqdn [[[
+# .. envvar:; docker_registry__token_provider [[[
 #
-# The Fully Qualified Domain Name of the GitLab installation. This will be used
-# to redirect HTTP clients that open the main page of Docker Registry to point
-# them to an useful user interface instead.
-docker_registry__gitlab_fqdn: '{{ ansible_local.gitlab.fqdn
-                                  if (ansible_local|d() and ansible_local.gitlab|d() and
-                                      ansible_local.gitlab.fqdn|d())
-                                  else ("code." + docker_registry__domain) }}'
+# By default GitLab is used as an authentication service, but other roles that
+# implement the needed Ansible local facts can be used as well. Specify the
+# role name in this variable to use its facts as a data source.
+docker_registry__token_provider: 'gitlab'
 
                                                                    # ]]]
-# .. envvar:: docker_registry__gitlab_token_realm_url [[[
+# .. envvar:: docker_registry__token_enabled [[[
 #
-# The URL of the GitLab Container Registry API endpoint, passed to the Docker
+# Enable or disable support for token-based authentication.
+docker_registry__token_enabled: '{{ True
+                                    if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                        (ansible_local[docker_registry__token_provider].registry|d())|bool)
+                                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_fqdn [[[
+#
+# The Fully Qualified Domain Name of the authentication service website. This
+# will be used to redirect HTTP clients that open the main page of Docker
+# Registry to point them to an useful user interface instead.
+docker_registry__token_fqdn: '{{ ansible_local[docker_registry__token_provider].fqdn
+                                 if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                     ansible_local[docker_registry__token_provider].fqdn|d())
+                                 else ("code." + docker_registry__domain) }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_realm_url [[[
+#
+# The URL of the authentication service API endpoint, passed to the Docker
 # clients. The clients can use this URL to request signed authentication tokens
-# from GitLab Container Registry service.
-docker_registry__gitlab_token_realm_url: '{{ ansible_local.gitlab.registry_token_realm_url
-                                             if (ansible_local|d() and ansible_local.gitlab|d() and
-                                                 ansible_local.gitlab.registry_token_realm_url|d())
-                                             else "" }}'
+# from the authentication service.
+docker_registry__token_realm_url: '{{ ansible_local[docker_registry__token_provider].registry_token_realm_url
+                                      if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                          ansible_local[docker_registry__token_provider].registry_token_realm_url|d())
+                                      else "" }}'
 
                                                                    # ]]]
-# .. envvar:: docker_registry__gitlab_token_issuer [[[
+# .. envvar:: docker_registry__token_issuer [[[
 #
-# The GitLab Container Registry token issuer string, included in the issued
-# tokens. This value needs to be the same in the GitLab Container Registry
+# The authentication service token issuer string, included in the issued
+# tokens. This value needs to be the same in the authentication service
 # configuration file.
-docker_registry__gitlab_token_issuer: '{{ ansible_local.gitlab.registry_token_issuer
-                                          if (ansible_local|d() and ansible_local.gitlab|d() and
-                                              ansible_local.gitlab.registry_token_issuer|d())
-                                          else "" }}'
+docker_registry__token_issuer: '{{ ansible_local[docker_registry__token_provider].registry_token_issuer
+                                   if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                       ansible_local[docker_registry__token_provider].registry_token_issuer|d())
+                                   else "" }}'
                                                                    # ]]]
-# .. envvar:: docker_registry__gitlab_service [[[
+# .. envvar:: docker_registry__token_service [[[
 #
 # Name of the authentication service in Docker Registry, used in the URLs
-# passed to the GitLab Container Reigistry API endpoint.
-docker_registry__gitlab_service: 'container_registry'
+# passed to the authentication source API endpoint.
+docker_registry__token_service: '{{ ansible_local[docker_registry__token_provider].registry_token_service
+                                    if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                        ansible_local[docker_registry__token_provider].registry_token_service|d())
+                                    else "" }}'
 
                                                                    # ]]]
-# .. envvar:: docker_registry__gitlab_pki_path [[[
+# .. envvar:: docker_registry__token_pki_path [[[
 #
 # The absolute path to the root of the PKI infrastructure, managed by the
 # :ref:`debops.pki` Ansible role.
-docker_registry__gitlab_pki_path: '{{ ansible_local.pki.path
-                                      if (ansible_local|d() and ansible_local.pki|d() and
-                                          ansible_local.pki.path|d())
-                                      else "/etc/pki/realms" }}'
+docker_registry__token_pki_path: '{{ ansible_local.pki.path
+                                     if (ansible_local|d() and ansible_local.pki|d() and
+                                         ansible_local.pki.path|d())
+                                     else "/etc/pki/realms" }}'
 
                                                                    # ]]]
-# .. envvar:: docker_registry__gitlab_pki_realm [[[
+# .. envvar:: docker_registry__token_pki_realm [[[
 #
-# Name of the PKI realm used by GitLab Container Registry service to sign the
+# Name of the PKI realm used by the authentication service to sign the
 # authentication tokens that provide access to the Docker Registry.
-docker_registry__gitlab_pki_realm: '{{ ansible_local.gitlab.registry_pki_realm
-                                       if (ansible_local|d() and ansible_local.gitlab|d() and
-                                           ansible_local.gitlab.registry_pki_realm|d())
-                                       else "domain" }}'
+docker_registry__token_pki_realm: '{{ ansible_local[docker_registry__token_provider].registry_pki_realm
+                                      if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                          ansible_local[docker_registry__token_provider].registry_pki_realm|d())
+                                      else "domain" }}'
 
                                                                    # ]]]
-# .. envvar:: docker_registry__gitlab_pki_crt [[[
+# .. envvar:: docker_registry__token_pki_crt [[[
 #
 # The name of the file in the PKI realm which contains the X.509 certificate.
-docker_registry__gitlab_pki_crt: 'default.crt'
+docker_registry__token_pki_crt: 'default.crt'
 
                                                                    # ]]]
-# .. envvar:: docker_registry__gitlab_certificate [[[
+# .. envvar:: docker_registry__token_certificate [[[
 #
 # Absolute path of the file which contains the X.509 certificate that can be
-# used by Docker Registry to authenticate the tokens signed by the GitLab
-# Container Registry, sent by the Docker clients.
-docker_registry__gitlab_certificate: '{{ docker_registry__gitlab_pki_path + "/"
-                                         + docker_registry__gitlab_pki_realm + "/"
-                                         + docker_registry__gitlab_pki_crt }}'
+# used by Docker Registry to authenticate the tokens signed by the
+# authentication service, sent by the Docker clients.
+docker_registry__token_certificate: '{{ docker_registry__token_pki_path + "/"
+                                        + docker_registry__token_pki_realm + "/"
+                                        + docker_registry__token_pki_crt }}'
                                                                    # ]]]
                                                                    # ]]]
 # Docker Registry configuration [[[
@@ -458,15 +472,15 @@ docker_registry__default_config:
         cache:
           blobdescriptor: 'redis'
 
-  - name: 'default-gitlab'
-    state: '{{ "present" if docker_registry__gitlab_enabled|bool else "absent" }}'
+  - name: 'default-token'
+    state: '{{ "present" if docker_registry__token_enabled|bool else "absent" }}'
     config:
       auth:
         token:
-          realm: '{{ docker_registry__gitlab_token_realm_url }}'
-          issuer: '{{ docker_registry__gitlab_token_issuer }}'
-          service: '{{ docker_registry__gitlab_service }}'
-          rootcertbundle: '{{ docker_registry__gitlab_certificate }}'
+          realm: '{{ docker_registry__token_realm_url }}'
+          issuer: '{{ docker_registry__token_issuer }}'
+          service: '{{ docker_registry__token_service }}'
+          rootcertbundle: '{{ docker_registry__token_certificate }}'
 
                                                                    # ]]]
 # .. envvar:: docker_registry__config [[[
@@ -599,8 +613,8 @@ docker_registry__nginx__dependent_servers:
 
       - pattern: '/'
         options: |
-          {% if docker_registry__gitlab_enabled|bool %}
-          return 307 $scheme://{{ docker_registry__gitlab_fqdn }}/;
+          {% if docker_registry__token_enabled|bool %}
+          return 307 $scheme://{{ docker_registry__token_fqdn }}/;
           {% else %}
           return 307 /v2/;
           {% endif %}
