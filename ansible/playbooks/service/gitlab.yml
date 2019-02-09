@@ -76,3 +76,9 @@
 
     - role: debops.gitlab
       tags: [ 'role::gitlab', 'skip::gitlab' ]
+
+# Import the 'debops.docker_registry' playbook to apply configuration of the
+# Docker Registry that is defined by the 'debops.gitlab' role. This has an
+# effect only when the 'debops.docker_registry' role is enabled on the host via
+# its corresponding Ansible inventory group.
+- import_playbook: 'docker_registry.yml'

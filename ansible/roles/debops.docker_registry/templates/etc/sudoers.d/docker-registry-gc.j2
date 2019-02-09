@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+
+# Allow the '{{ docker_registry__user }}' UNIX account to stop and start the
+# Docker Registry service. This is required to correctly perform the garbage
+# collection using a cron script.
+
+Cmnd_Alias DOCKER_REGISTRY_STOP    = /bin/systemctl stop docker-registry.service
+Cmnd_Alias DOCKER_REGISTRY_START   = /bin/systemctl start docker-registry.service
+Cmnd_Alias DOCKER_REGISTRY_RESTART = /bin/systemctl restart docker-registry.service
+Cmnd_Alias DOCKER_REGISTRY_RELOAD  = /bin/systemctl reload docker-registry.service
+Cmnd_Alias DOCKER_REGISTRY_STATUS  = /bin/systemctl status docker-registry.service
+
+{{ docker_registry__user }} ALL = (root) NOPASSWD: DOCKER_REGISTRY_STOP
+{{ docker_registry__user }} ALL = (root) NOPASSWD: DOCKER_REGISTRY_START
+{{ docker_registry__user }} ALL = (root) NOPASSWD: DOCKER_REGISTRY_RESTART
+{{ docker_registry__user }} ALL = (root) NOPASSWD: DOCKER_REGISTRY_RELOAD
+{{ docker_registry__user }} ALL = (root) NOPASSWD: DOCKER_REGISTRY_STATUS

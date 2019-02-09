@@ -18,14 +18,41 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v0.8.1...master
 
+Added
+~~~~~
+
+- New DebOps roles:
+
+  - :ref:`debops.docker_registry` role provides support for Docker Registry.
+    The role can be used as standalone or as a backend for the GitLab Container
+    Registry service, with :ref:`debops.gitlab` role.
+
 Changed
 ~~~~~~~
+
+- Updates of upstream application versions:
+
+  - [debops.gitlab] The role will install GitLab 11.7 on supported platforms
+    (Debian Buster, Ubuntu Bionic), existing installations will be upgraded.
 
 - [debops.lxc] The :command:`lxc-prepare-ssh` script will read the public SSH
   keys from specific files (``root`` key file, and the ``$SUDO_USER`` key file)
   and will not accept any custom files to read from, to avoid possible security
   issues. Each public SSH key listed in the key files is validated before being
   added to the container's ``root`` account.
+
+- [debops.gitlab] The GitLab playbook will import the
+  :ref:`debops.docker_registry` playbook to ensure that configuration related
+  to Docker Registry defined in the GitLab service is properly applied during
+  installation/management.
+
+Fixed
+~~~~~
+
+- [debops.redis_server] Use the :file:`redis.conf` file to lookup passwords via
+  the :command:`redis-password` script. This file has the ``redis-auth`` UNIX
+  group and any accounts in this group should now be able to look up the Redis
+  passwords correctly.
 
 
 `debops v0.8.1`_ - 2019-02-02
