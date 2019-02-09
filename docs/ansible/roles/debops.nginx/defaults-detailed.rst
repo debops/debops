@@ -45,6 +45,30 @@ Common role options
   configurations for the same ``item.name``. For example separate
   configuration for HTTP and HTTPS.
 
+``hostname``
+  Optional. String or a list of hostnames or subdomain names without dots. If
+  it's defined, the role will generate ``server { }`` blocks that support
+  redirecting the short hostnames or subdomains in the ``*.local`` domain
+  managed by Avahi/mDNS to their corresponding FQDNs. For example:
+
+  - ``host/`` -> ``host.example.com``
+  - ``host.local`` -> ``host.example.com``
+
+  The ``example.com`` domain will be based on the first value of the ``name``
+  parameter. Users can use the short hostnames in browsers by appending ``/``
+  character after the short name. Specifying directories or arguments is also
+  supported.
+
+  This allows the :command:`nginx` webserver to correctly handle short
+  subdomains passed to it via DNS suffixes defined in :file:`/etc/resolv.conf`,
+  or subdomains reachable via Avahi ``*.local`` domain.
+
+  If the ``hostname`` parameter is not specified, the role will automatically
+  generate subdomains based on the value of the ``name`` parameter; only
+  alphanumeric subdomains with optional dashes and underscores are supported in
+  this mode. To tell the role to not autogenerate the redirection, set the
+  ``hostname`` parameter to ``False``.
+
 ``enabled``
   Optional, boolean. Defaults to ``True``.
   Specifies if the configuration should be enabled by creating a symlink in

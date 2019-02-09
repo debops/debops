@@ -27,6 +27,12 @@ Added
     The role can be used as standalone or as a backend for the GitLab Container
     Registry service, with :ref:`debops.gitlab` role.
 
+- [debops.nginx] The role will automatically generate configuration which
+  redirects short hostnames or subdomains to their FQDN equivalents. This
+  allows HTTP clients to reach websites by specifying their short names via DNS
+  suffixes from :file:`/etc/resolv.conf` file, or using ``*.local`` domain
+  names managed by Avahi/mDNS to redirect HTTP clients to the correct FQDNs.
+
 Changed
 ~~~~~~~
 
