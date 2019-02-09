@@ -46,6 +46,14 @@ Changed
   to Docker Registry defined in the GitLab service is properly applied during
   installation/management.
 
+Fixed
+~~~~~
+
+- [debops.redis_server] Use the :file:`redis.conf` file to lookup passwords via
+  the :command:`redis-password` script. This file has the ``redis-auth`` UNIX
+  group and any accounts in this group should now be able to look up the Redis
+  passwords correctly.
+
 
 `debops v0.8.1`_ - 2019-02-02
 -----------------------------
