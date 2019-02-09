@@ -146,8 +146,9 @@
   template:
     src: 'etc/docker/registry/config.yml.j2'
     dest: '{{ docker_registry__config_file }}'
+    owner: '{{ docker_registry__user }}'
     group: '{{ docker_registry__group }}'
-    mode: '0640'
+    mode: '0600'
   notify: [ 'Restart docker-registry' ]
   register: docker_registry__register_config
 
