@@ -15,7 +15,7 @@ readonly DELETE_UNTAGGED="{{ '--delete-untagged' if (docker_registry__version is
 readonly REDIS_ENABLED="{{ docker_registry__redis_enabled | bool | lower }}"
 readonly REDIS_DATABASE="{{ docker_registry__redis_db }}"
 
-if "${REGISTRY_BIN}" garbage-collect "${CONFIG_FILE}" --dry-run \
+if "${REGISTRY_BIN}" garbage-collect "${CONFIG_FILE}" --dry-run 2>/dev/null \
    | grep --extended-regexp "^blob eligible for deletion" > /dev/null ; then
     sudo systemctl stop docker-registry.service
     "${REGISTRY_BIN}" garbage-collect "${CONFIG_FILE}" "${DELETE_UNTAGGED}" > /dev/null 2>&1
