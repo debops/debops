@@ -436,6 +436,52 @@
 {%     endif                                                                %}
 
 {% endif                                                                    %}
+{% if item.hostname is undefined                         %}
+{%   set nginx__tpl_hostnames = []                       %}
+{%   for element in ([ item.name ] if (item.name is string) else item.name) %}
+{%     set element_hostname = element.split('.')[0] %}
+{%     if ('.' not in element_hostname and not element_hostname | ipaddr and
+                 element_hostname not in ([ item.name ] if (item.name is string) else item.name) and
+                 element_hostname is not search('[^a-zA-Z0-9\-\_]+')) %}
+{%       set _ = nginx__tpl_hostnames.append(element_hostname) %}
+{%     endif %}
+{%   endfor %}
+{% else %}
+{%   set nginx__tpl_hostnames = ([ item.hostname ] if (item.hostname is string) else item.hostname) %}
+{% endif %}
+{% set nginx__tpl_hostname_domain = (item.name if item.name is string else item.name[0]).split('.')[1:] | join('.') %}
+{% if nginx__tpl_hostnames|d()                           %}
+# Support for redirection via DNS suffixes in /etc/resolv.conf
+server {
+{%   if item.listen|d(True)                            %}
+{%       for port in nginx_tpl_listen                  %}
+        listen {{ port }};
+{%       endfor                                        %}
+
+{%       for address in nginx__tpl_hostnames %}
+        server_name {{ address }};
+{%       endfor                                        %}
+
+{%   endif                                             %}
+        return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} $scheme://$host.{{ nginx__tpl_hostname_domain }}$request_uri;
+}
+
+# Support for redirection via Avahi/mDNS '*.local' domain
+server {
+{%   if item.listen|d(True)                            %}
+{%       for port in nginx_tpl_listen                  %}
+        listen {{ port }};
+{%       endfor                                        %}
+
+{%       for address in nginx__tpl_hostnames %}
+        server_name {{ address }}.local;
+{%       endfor                                        %}
+
+{%   endif                                             %}
+        return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} $scheme://$host_without_local.{{ nginx__tpl_hostname_domain }}$request_uri;
+}
+
+{% endif                                                 %}
 {% if item.redirect_from|d() and item.name|d()           %}
 {%     if item.name is string or item.name | length == 1 %}
 # Cannot redirect from only one name: {{ item.name if item.name is string else item.name | join(', ') }}
