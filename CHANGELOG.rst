@@ -30,6 +30,11 @@ Added
 Changed
 ~~~~~~~
 
+- Updates of upstream application versions:
+
+  - [debops.gitlab] The role will install GitLab 11.7 on supported platforms
+    (Debian Buster, Ubuntu Bionic), existing installations will be upgraded.
+
 - [debops.lxc] The :command:`lxc-prepare-ssh` script will read the public SSH
   keys from specific files (``root`` key file, and the ``$SUDO_USER`` key file)
   and will not accept any custom files to read from, to avoid possible security
