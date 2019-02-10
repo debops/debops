@@ -437,6 +437,20 @@
 
 {% endif                                                                    %}
 {% set nginx__tpl_hostname_domain = item.hostname_domain | d((item.name if item.name is string else item.name[0]).split('.')[1:] | join('.')) %}
+{% set nginx__tpl_final_hostname_domain = [] %}
+{% if item.hostname_domain is undefined %}
+{%   for domain_suffix in nginx__hostname_domains[::-1] %}
+{%     if nginx__tpl_hostname_domain.endswith(domain_suffix) %}
+{%       if nginx__tpl_final_hostname_domain %}
+{%         set _ = nginx__tpl_final_hostname_domain.pop() %}
+{%       endif %}
+{%       set _ = nginx__tpl_final_hostname_domain.append(domain_suffix) %}
+{%     endif %}
+{%   endfor %}
+{%   if nginx__tpl_final_hostname_domain %}
+{%     set nginx__tpl_hostname_domain = nginx__tpl_final_hostname_domain[0] %}
+{%   endif %}
+{% endif %}
 {% if item.hostname is undefined                         %}
 {%   set nginx__tpl_hostnames = []                       %}
 {%   for element in ([ item.name ] if (item.name is string) else item.name) %}

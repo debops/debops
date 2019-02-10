@@ -81,6 +81,10 @@ Common role options
   Supporting more than one level of subdomains with DNS suffixes on the clients
   depends on the :man:`resolv.conf(5)` configuration, the ``ndots`` parameter.
 
+  If this parameter is not specified, the role will check the list in the
+  :envvar:`nginx__hostname_domains` for possible domain suffixes and use the
+  first one found there that matches the current server subdomain.
+
 ``enabled``
   Optional, boolean. Defaults to ``True``.
   Specifies if the configuration should be enabled by creating a symlink in
