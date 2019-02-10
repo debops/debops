@@ -15,17 +15,12 @@
 
 # .. envvar:: ferm__enabled [[[
 #
-# Enable or disable :command:`iptables` management by checking if ``cap_sys_admin``
+# Enable or disable :command:`iptables` management by checking if ``cap_net_admin``
 # POSIX capability is set on the host.
 ferm__enabled: '{{ True
-                   if (ansible_local is undefined or
-                        (ansible_local.cap12s|d() and ansible_local.cap12s.enabled|d() and
-                          (
-                            (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list) or
-                            not ansible_local.cap12s.enabled | bool
-                          )
-                        )
-                      )
+                   if (((ansible_system_capabilities_enforced|d())|bool and
+                        "cap_net_admin" in ansible_system_capabilities) or
+                       not (ansible_system_capabilities_enforced|d(True))|bool)
                    else False }}'
 
                                                                    # ]]]
