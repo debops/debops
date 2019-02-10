@@ -54,10 +54,10 @@ Common role options
   - ``host/`` -> ``host.example.com``
   - ``host.local`` -> ``host.example.com``
 
-  The ``example.com`` domain will be based on the first value of the ``name``
-  parameter. Users can use the short hostnames in browsers by appending ``/``
-  character after the short name. Specifying directories or arguments is also
-  supported.
+  The ``example.com`` domain will be based on the ``hostname_domain``
+  parameter, or if not specified on the first value of the ``name`` parameter.
+  Users can use the short hostnames in browsers by appending ``/`` character
+  after the short name. Specifying directories or arguments is also supported.
 
   This allows the :command:`nginx` webserver to correctly handle short
   subdomains passed to it via DNS suffixes defined in :file:`/etc/resolv.conf`,
@@ -68,6 +68,18 @@ Common role options
   alphanumeric subdomains with optional dashes and underscores are supported in
   this mode. To tell the role to not autogenerate the redirection, set the
   ``hostname`` parameter to ``False``.
+
+``hostname_domain``
+  Optional. Specify the base DNS domain to use for short hostnames and
+  subdomains. You can use this to set the base domain in multi-subdomain
+  environments. For example, setting it to ``example.com`` will result in
+  redirects:
+
+  - ``host/`` -> ``host.example.com``
+  - ``sub.host/`` -> ``sub.host.example.com``
+
+  Supporting more than one level of subdomains with DNS suffixes on the clients
+  depends on the :man:`resolv.conf(5)` configuration, the ``ndots`` parameter.
 
 ``enabled``
   Optional, boolean. Defaults to ``True``.
