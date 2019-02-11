@@ -420,9 +420,9 @@ clear_env = {{ 'yes' if ((item.clear_env|d() and item.clear_env|bool) or php__fp
 ; Note: set an empty value to allow all extensions.
 ; Default Value: .php #}
 {% if item.security_limit_extensions|d() %}
-security.limit_extensions = {{ item.security_limit_extensions if item.security_limit_extensions is string else item.security_limit_extensions | join(',') }}
+security.limit_extensions = {{ item.security_limit_extensions if item.security_limit_extensions is string else item.security_limit_extensions | join(' ') }}
 {% else %}
-security.limit_extensions = {{ php__fpm_security_limit_extensions if php__fpm_security_limit_extensions is string else php__fpm_security_limit_extensions | join(',') }}
+security.limit_extensions = {{ php__fpm_security_limit_extensions if php__fpm_security_limit_extensions is string else php__fpm_security_limit_extensions | join(' ') }}
 {% endif %}
 
 {% if (php__fpm_environment or php__fpm_group_environment or php__fpm_host_environment or item.environment|d()) %}
