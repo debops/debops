@@ -75,6 +75,14 @@ General
 
 - Support Debian Buster in :ref:`apt_preferences__list`.
 
+:ref:`debops.golang` role
+'''''''''''''''''''''''''
+
+- The role has been redesigned from the ground up, and can be used to install
+  Go applications either from APT packages, build them from source, or download
+  precompiled binaries from remote resources. See the role documentation for
+  more details.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 

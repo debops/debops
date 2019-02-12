@@ -18,6 +18,12 @@ Role configuration changes
   configuration, the ``router_enabled`` parameter has been renamed to the
   ``router_state`` parameter, with changed value type.
 
+- In the :ref:`debops.golang` role, the ``golang__*_packages`` variables are
+  used to define Go packages instead of simple list of APT packages, with
+  entirely new syntax. Existing roles that rely on these variables might need
+  to be updated. See the :ref:`golang__ref_packages` documentation for more
+  details.
+
 
 v1.1.0 (2019-08-25)
 -------------------
