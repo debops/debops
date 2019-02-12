@@ -48,7 +48,8 @@
   when: rsnapshot_reset_sshkeys is defined and rsnapshot_reset_sshkeys
 
 - name: Get list of already scanned host fingerprints
-  shell: ssh-keygen -f /root/.ssh/known_hosts -F {{ hostvars[item].rsnapshot_backup_host
+  shell: set -o nounset -o pipefail -o errexit &&
+         ssh-keygen -f /root/.ssh/known_hosts -F {{ hostvars[item].rsnapshot_backup_host
                                                     if (hostvars[item].rsnapshot_backup_host|d() and
                                                         hostvars[item].rsnapshot_backup_host|bool)
                                                     else hostvars[item].ansible_fqdn }}
@@ -56,6 +57,8 @@
                                if (hostvars[item].rsnapshot_backup_host|d() and
                                    hostvars[item].rsnapshot_backup_host|bool)
                                else hostvars[item].ansible_fqdn }} found'
+  args:
+    executable: '/bin/bash'
   with_items: '{{ rsnapshot_servers }}'
   when: ((item is defined and item) and item != inventory_hostname and
          hostvars[item].ansible_fqdn is defined)

@@ -17,7 +17,10 @@
 - name: Check LVM version
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'lvm2' | grep -v '^$' | cut -d- -f1
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-query -W -f='${Version}\n' 'lvm2' | grep -v '^$' | cut -d- -f1
+  args:
+    executable: '/bin/bash'
   register: lvm__register_version
   changed_when: False
   check_mode: False

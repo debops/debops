@@ -88,14 +88,15 @@
   when: mailman__register_postfix_transport is changed
 
 - name: Create Mailman site list
-  shell: echo | newlist {{ '' if (mailman__site_list_notify|bool) else '--quiet' }}
+  shell: set -o nounset -o pipefail -o errexit &&
+         echo | newlist {{ '' if (mailman__site_list_notify|bool) else '--quiet' }}
                         --language={{ mailman__site_language }} {{ mailman__site_list }} {{ mailman__site_admin }}
          {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/'
             + mailman__site_domain + '/' + mailman__site_list
             + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
   args:
     creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
-    executable: '/bin/sh'
+    executable: '/bin/bash'
   become: True
   become_user: 'list'
   register: mailman__register_site_list
@@ -127,7 +128,8 @@
   when: item.name|d() and item.state|d() and item.state == 'absent'
 
 - name: Create Mailman lists
-  shell: echo | newlist --language={{ item.language | default(mailman__site_language) }}
+  shell: set -o nounset -o pipefail -o errexit &&
+         echo | newlist --language={{ item.language | default(mailman__site_language) }}
          {% if item.notify|d() and not item.notify|bool %} --quiet {% endif %}
          {% if item.domain|d() and item.domain %}
          --urlhost={{ item.domain }} --emailhost={{ item.domain }}
@@ -150,7 +152,7 @@
          {% endif %}
   args:
     creates: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
-    executable: '/bin/sh'
+    executable: '/bin/bash'
   with_items: '{{ mailman__lists }}'
   become: True
   become_user: 'list'

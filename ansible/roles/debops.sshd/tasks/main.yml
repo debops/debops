@@ -76,7 +76,10 @@
 - name: Check OpenSSH server version
   environment:
     LC_MESSAGES: 'C'
-  shell: 'dpkg-query -W -f="\${Version}\n" "openssh-server" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
+  shell: 'set -o nounset -o pipefail -o errexit &&
+          dpkg-query -W -f="\${Version}\n" "openssh-server" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
+  args:
+    executable: '/bin/bash'
   register: sshd__register_version
   changed_when: False
   check_mode: False
@@ -142,7 +145,10 @@
   tags: [ 'role::sshd:known_hosts' ]
 
 - name: Get list of already scanned host fingerprints
-  shell: ssh-keygen -f {{ sshd__known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
+  shell: set -o nounset -o pipefail -o errexit &&
+         ssh-keygen -f {{ sshd__known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
+  args:
+    executable: '/bin/bash'
   with_flattened:
     - '{{ sshd__known_hosts }}'
     - '{{ sshd__group_known_hosts }}'

@@ -4,7 +4,10 @@
   # hardware virtualization support in the guest correctly. This is an
   # additional runtime check to account for that.
 - name: Check if host supports hardware virtualization
-  shell: egrep --color=auto 'vmx|svm|0xc0f' /proc/cpuinfo || true
+  shell: set -o nounset -o pipefail -o errexit &&
+         egrep --color=auto 'vmx|svm|0xc0f' /proc/cpuinfo || true
+  args:
+    executable: '/bin/bash'
   register: libvirtd_qemu__register_hw_virt
   check_mode: False
   changed_when: False

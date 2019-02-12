@@ -15,9 +15,12 @@
   no_log: True
 
 - name: Generate host password
-  shell: echo -n {{ lookup('password', auth_nslcd_bind_host_password + ' length='
+  shell: set -o nounset -o pipefail -o errexit &&
+         echo -n {{ lookup('password', auth_nslcd_bind_host_password + ' length='
                                        + auth_nslcd_password_length) }} \
          | openssl dgst -sha1 -binary | openssl enc -base64 | awk '{print "{SHA}"$0}'
+  args:
+    executable: '/bin/bash'
   register: auth_register_nslcd_bind_host_password
   when: (auth_register_nslcd_bind_host_hash is undefined or
          (auth_register_nslcd_bind_host_hash is defined and not auth_register_nslcd_bind_host_hash))

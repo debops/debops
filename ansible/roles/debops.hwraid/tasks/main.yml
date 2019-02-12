@@ -26,7 +26,9 @@
   when: hwraid_register_release is defined and hwraid_register_release
 
 - name: Get list of active kernel modules
-  shell: lsmod | awk '{print $1}'
+  shell: set -o nounset -o pipefail -o errexit && lsmod | awk '{print $1}'
+  args:
+    executable: '/bin/bash'
   register: hwraid_register_modules
   changed_when: False
 

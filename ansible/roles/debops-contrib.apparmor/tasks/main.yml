@@ -77,12 +77,15 @@
 ## which throws an exception when AppArmor has not been enabled yet.
 - name: Put all profiles into enforcement mode
   shell: |
+    set -o nounset -o pipefail -o errexit &&
     find /etc/apparmor.d -maxdepth 1 -type f | while read file
     do
       if grep --quiet "flags\s*=.*complain" "$file"; then
         aa-enforce "$file"
       fi
     done
+  args:
+    executable: '/bin/bash'
   register: apparmor__register_enforce_all_profiles
   changed_when: (apparmor__register_enforce_all_profiles.stdout|d())
   when: (apparmor__enforce_all_profiles|d() | bool)

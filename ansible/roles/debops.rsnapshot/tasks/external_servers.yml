@@ -42,9 +42,12 @@
   tags: [ 'role::rsnapshot:sshkeys' ]
 
 - name: Get list of already scanned host fingerprints
-  shell: ssh-keygen -f /root/.ssh/known_hosts
+  shell: set -o nounset -o pipefail -o errexit &&
+         ssh-keygen -f /root/.ssh/known_hosts
                     -F {{ item.backup_host | default(item.name) }}
          | grep -q '^# Host {{ item.backup_host | default(item.name) }} found'
+  args:
+    executable: '/bin/bash'
   with_items: '{{ rsnapshot_external_servers }}'
   when: (inventory_hostname in rsnapshot_clients and
          ((item is defined and item) and item != inventory_hostname and

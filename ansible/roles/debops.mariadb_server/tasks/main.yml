@@ -7,9 +7,12 @@
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server'
                                          'percona-server-server' 'mysql-wsrep-server-5.6'
          | grep -v '^$'
+  args:
+    executable: '/bin/bash'
   register: mariadb_server__register_version
   check_mode: False
   changed_when: False

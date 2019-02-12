@@ -46,7 +46,10 @@
 - name: Check current FreeRADIUS diversions
   environment:
     LC_ALL: 'C'
-  shell: dpkg-divert --list '/etc/freeradius/*.dpkg-divert' | awk '{print $NF}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '/etc/freeradius/*.dpkg-divert' | awk '{print $NF}' || true
+  args:
+    executable: '/bin/bash'
   register: freeradius__register_diversions
   check_mode: False
   changed_when: False

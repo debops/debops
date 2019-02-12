@@ -24,7 +24,10 @@
 - name: Get default PostgreSQL version
   environment:
     LC_ALL: 'C'
-  shell: "apt-cache policy postgresql | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
+  shell: "set -o nounset -o pipefail -o errexit &&
+          apt-cache policy postgresql | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
+  args:
+    executable: '/bin/bash'
   register: postgresql_server__register_version
   changed_when: False
   tags: [ 'role::postgresql_server:packages', 'role::postgresql_server:config',

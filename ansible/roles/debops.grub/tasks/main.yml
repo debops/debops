@@ -48,11 +48,14 @@
 ## is the workaround to make it idempotent.
 ## This is not too bad because depending on the iteration count chosen this operation could take a while ;)
 - name: Generate salted hash from user password
-  shell: echo '{{ item.0.password }}\n{{ item.0.password }}' | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
+  shell: set -o nounset -o pipefail -o errexit &&
+         echo '{{ item.0.password }}\n{{ item.0.password }}' | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
          {{ "" if grub__iter_time|d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
          {{ "" if grub__salt_length|d() == "default" else ("--salt=" + grub__salt_length) }}
          {{ "" if grub__hash_length|d() == "default" else ("--buflen=" + grub__hash_length) }}
          | perl -ne 's/^(:?Your PBKDF2|PBKDF2 hash of your password) is //ms && print'
+  args:
+    executable: '/bin/bash'
   register: grub__register_pw_hashes
   with_together:
     - '{{ grub__combined_users }}'

@@ -1,13 +1,17 @@
 ---
 
 - name: Check if libssl1.0.0 package is available
-  shell: apt-cache pkgnames | grep libssl1.0.0 || true
+  shell: set -o nounset -o pipefail -o errexit && apt-cache pkgnames | grep libssl1.0.0 || true
+  args:
+    executable: '/bin/bash'
   register: rstudio_server__register_package_libssl
   changed_when: False
   check_mode: False
 
 - name: Check if rstudio-server package is available
-  shell: apt-cache pkgnames | grep rstudio-server || true
+  shell: set -o nounset -o pipefail -o errexit && apt-cache pkgnames | grep rstudio-server || true
+  args:
+    executable: '/bin/bash'
   register: rstudio_server__register_package_rstudio
   changed_when: False
   check_mode: False

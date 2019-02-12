@@ -1,8 +1,9 @@
 ---
 
 - name: Check if shared memory support is available
-  shell: mount | grep /dev/shm || true
+  shell: set -o nounset -o pipefail -o errexit && mount | grep /dev/shm || true
   args:
+    executable: '/bin/bash'
     warn: False
   register: postgresql_server__register_shm
   changed_when: False

@@ -1,7 +1,9 @@
 ---
 
 - name: Check systemd version
-  shell: systemd --version | head -n 1 | awk '{print $2}'
+  shell: set -o nounset -o pipefail -o errexit && systemd --version | head -n 1 | awk '{print $2}'
+  args:
+    executable: '/bin/bash'
   register: ifupdown__register_systemd_version
   check_mode: False
   changed_when: False

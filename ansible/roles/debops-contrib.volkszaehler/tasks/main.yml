@@ -93,7 +93,10 @@
   when: (volkszaehler__register_sql_init_dump is changed and volkszaehler__database in ['mariadb'])
 
 - name: Insert demo data into database
-  shell: cat {{ (volkszaehler__git_dest + "/misc/sql/demo.sql")|quote }} | mysql {{ volkszaehler__database_name }}
+  shell: set -o nounset -o pipefail -o errexit &&
+         cat {{ (volkszaehler__git_dest + "/misc/sql/demo.sql")|quote }} | mysql {{ volkszaehler__database_name }}
+  args:
+    executable: '/bin/bash'
   become: True
   become_user: '{{ volkszaehler__user }}'
   when: (not (ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"]|bool
