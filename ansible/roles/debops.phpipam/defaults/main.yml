@@ -50,13 +50,14 @@ phpipam__domain: [ 'ipam.{{ ansible_domain }}' ]
                                                                    # ]]]
 # .. envvar:: phpipam__nginx_auth_realm [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# Webserver authentication realm.
 phpipam__nginx_auth_realm: 'IPAM access is restricted'
 
                                                                    # ]]]
 # .. envvar:: phpipam__nginx_access_policy [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# Name of the "nginx access policy" for phpIPAM. See ``debops.nginx``
+# Ansible role for more details.
 phpipam__nginx_access_policy: ''
 
                                                                    # ]]]
@@ -127,19 +128,19 @@ phpipam__nginx_server:
 
 # .. envvar:: phpipam__user [[[
 #
-# System user and group for phpIPAM application
+# System user for phpIPAM application
 phpipam__user: 'phpipam'
 
                                                                    # ]]]
 # .. envvar:: phpipam__group [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# System group for phpIPAM application
 phpipam__group: 'phpipam'
 
                                                                    # ]]]
 # .. envvar:: phpipam__home [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# Home directory of the ``phpipam__user`` user.
 phpipam__home: '{{ (ansible_local.root.home
                    if (ansible_local|d() and ansible_local.root|d() and
                        ansible_local.root.home|d())
@@ -154,19 +155,20 @@ phpipam__database_user: 'phpipam'
                                                                    # ]]]
 # .. envvar:: phpipam__database_host [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# The hostname or IP address of the database server to use for the
+# phpIPAM database.
 phpipam__database_host: 'localhost'
 
                                                                    # ]]]
 # .. envvar:: phpipam__database_name [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# The database name used by the phpIPAM
 phpipam__database_name: 'phpipam'
 
                                                                    # ]]]
 # .. envvar:: phpipam__database_password [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# The database password used by the phpIPAM
 phpipam__database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/mysql/' + phpipam__database_user + '/password length=30') }}"
 
                                                                    # ]]]
@@ -202,7 +204,7 @@ phpipam__webserver_user: '{{ ansible_local.nginx.user if (ansible_local is defin
 # .. envvar:: phpipam__git_repo [[[
 #
 # phpIPAM source repository
-phpipam__git_repo: 'https://github.com/debops/phpipam.git'
+phpipam__git_repo: 'https://github.com/phpipam/phpipam.git'
 
                                                                    # ]]]
 # .. envvar:: phpipam__git_dest [[[
@@ -263,19 +265,20 @@ phpipam__scripts_database_user: '{{ phpipam__database_user }}'
                                                                    # ]]]
 # .. envvar:: phpipam__scripts_database_host [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# The hostname or IP address of the database server to use for the
+# phpIPAM DebOps scrips.
 phpipam__scripts_database_host: '{{ phpipam__database_host }}'
 
                                                                    # ]]]
 # .. envvar:: phpipam__scripts_database_name [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# The database name used by the phpIPAM DebOps scrips
 phpipam__scripts_database_name: '{{ phpipam__database_name }}'
 
                                                                    # ]]]
 # .. envvar:: phpipam__scripts_database_password [[[
 #
-# FIXME(yaml4rst): Describe what this variable is doing.
+# The database password used by the phpIPAM DebOps scrips
 phpipam__scripts_database_password: '{{ phpipam__database_password }}'
 
                                                                    # ]]]
