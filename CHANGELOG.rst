@@ -52,6 +52,9 @@ Changed
   to Docker Registry defined in the GitLab service is properly applied during
   installation/management.
 
+- [debops.phpipam] The relevant inventory variables have been renamed, check the
+  :ref:`upgrade_notes` for details.
+
 Fixed
 ~~~~~
 

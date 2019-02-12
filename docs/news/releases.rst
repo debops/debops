@@ -2,7 +2,7 @@ Stable releases
 ===============
 
 At the moment there are no stable releases of DebOps. First stable release,
-``v1.0.0`` is planned for spring 2018.
+``v1.0.0`` is planned for spring 2020.
 
 DebOps codebase is tagged using the `Semantic Versioning`__ system. The
 ``v0.y.z`` series is used to stabilize and clean up the existing code.
