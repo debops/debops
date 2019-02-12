@@ -29,7 +29,7 @@
         - '{{ phpipam__php__dependent_packages }}'
       php__dependent_pools: [ '{{ phpipam__php5_pool }}' ]
       when: ((phpipam__dependencies is defined and phpipam__dependencies) and
-        (phpipam_mode is defined and 'webui' in phpipam_mode))
+        (phpipam__mode is defined and 'webui' in phpipam__mode))
 
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
@@ -37,10 +37,10 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.nginx
-      nginx_servers: [ '{{ phpipam_nginx_server }}' ]
-      nginx_upstreams: [ '{{ phpipam_nginx_upstream_php5 }}' ]
-      when: ((phpipam_dependencies is defined and phpipam_dependencies) and
-        (phpipam_mode is defined and 'webui' in phpipam_mode))
+      nginx_servers: [ '{{ phpipam__nginx_server }}' ]
+      nginx_upstreams: [ '{{ phpipam__nginx_upstream_php5 }}' ]
+      when: ((phpipam__dependencies is defined and phpipam__dependencies) and
+        (phpipam__mode is defined and 'webui' in phpipam__mode))
       tags: nginx
 
     - role: debops.phpipam
