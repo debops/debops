@@ -7,6 +7,7 @@ from json import dumps
 from sys import exit
 import subprocess
 import os
+import re
 
 
 def cmd_exists(cmd):
@@ -19,9 +20,13 @@ def cmd_exists(cmd):
 output = {'installed': cmd_exists('docker')}
 
 try:
-    output['version'] = subprocess.check_output(
-            ['docker', 'version', '--format',
-             '{{ "{{" }}.Server.Version{{ "}}" }}']).strip('\n')
+    version_stdout = subprocess.check_output(
+            ["dpkg-query", "-W", "-f=${Version}\n'",
+             "{{ docker__upstream_packagename if docker__upstream|d() else "docker.io" }}"]).split('+')[0]
+
+    match = re.search(r'^(?:[^:]:)?(?P<docker_version>[^~]+)', version_stdout)
+    if match:
+        output['version'] = match.group('docker_version')
 
 except Exception:
     pass
