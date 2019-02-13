@@ -1,4 +1,4 @@
 Copyright
 =========
 
-.. literalinclude:: ../../../../ansible/roles/debops.dokuwiki/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/debops.phpipam/COPYRIGHT
