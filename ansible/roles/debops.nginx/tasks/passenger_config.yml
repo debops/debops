@@ -11,9 +11,10 @@
   when: nginx_passenger_root is undefined or not nginx_passenger_root
 
 - name: Detect passenger ruby
-  shell: "passenger-config about ruby-command | grep Command | tail -1 | awk -F: '{print $2}'"
+  shell: "set -o nounset -o pipefail -o errexit &&
+          passenger-config about ruby-command | grep Command | tail -1 | awk -F: '{print $2}'"
   args:
-    executable: '/bin/sh'
+    executable: '/bin/bash'
   register: nginx_register_passenger_ruby
   changed_when: False
 

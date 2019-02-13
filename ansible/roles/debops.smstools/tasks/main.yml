@@ -7,7 +7,9 @@
   until: smstools__register_packages is succeeded
 
 - name: Check current smsd home directory
-  shell: getent passwd smsd | grep "/home/smsd" || true
+  shell: set -o nounset -o pipefail -o errexit && getent passwd smsd | grep "/home/smsd" || true
+  args:
+    executable: '/bin/bash'
   register: smstools_register_home
   changed_when: False
 

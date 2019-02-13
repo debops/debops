@@ -46,7 +46,9 @@
   when: mosquitto__pip_packages|d()
 
 - name: Check the installed Mosquitto version
-  shell: mosquitto -h | head -n 1 | awk '{print $3}'
+  shell: set -o nounset -o pipefail -o errexit && mosquitto -h | head -n 1 | awk '{print $3}'
+  args:
+    executable: '/bin/bash'
   register: mosquitto__register_version
   changed_when: False
   check_mode: False

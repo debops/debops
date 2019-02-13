@@ -68,7 +68,9 @@
         item.state|d('present') != 'absent'
 
 - name: Get list of dpkg-stateoverride paths
-  shell: dpkg-statoverride --list | awk '{print $4}'
+  shell: set -o nounset -o pipefail -o errexit && dpkg-statoverride --list | awk '{print $4}'
+  args:
+    executable: '/bin/bash'
   register: saslauthd__register_statoverride
   changed_when: False
   check_mode: False

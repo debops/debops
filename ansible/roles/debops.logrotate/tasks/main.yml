@@ -11,6 +11,7 @@
 
 - name: Manage the log rotation period in cron
   shell: |
+    set -o nounset -o pipefail -o errexit &&
     {% if logrotate__cron_period in [ 'hourly', 'weekly', 'monthly' ] %}
     test -z "$(dpkg-divert --list /etc/cron.daily/logrotate)" \
       || dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate ;
@@ -21,6 +22,7 @@
     dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate
     {% endif %}
   args:
+    executable: '/bin/bash'
     creates: '{{ "/etc/cron." + logrotate__cron_period + "/logrotate"
                  if (logrotate__cron_period in [ "hourly", "weekly", "monthly" ])
                  else "/etc/cron.daily/logrotate" }}'
@@ -51,7 +53,10 @@
 - name: Check current logrotate diversions
   environment:
     LC_ALL: 'C'
-  shell: dpkg-divert --list '/etc/logrotate.d/*.dpkg-divert' | awk '{print $NF}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '/etc/logrotate.d/*.dpkg-divert' | awk '{print $NF}' || true
+  args:
+    executable: '/bin/bash'
   register: logrotate__register_diversions
   check_mode: False
   changed_when: False

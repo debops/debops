@@ -49,9 +49,11 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Generate text/passphrase keyfile on the Ansible controller
-  shell: '{{ item.keyfile_gen_command|d(cryptsetup__keyfile_gen_command) }} \
+  shell: 'set -o nounset -o pipefail -o errexit &&
+          {{ item.keyfile_gen_command|d(cryptsetup__keyfile_gen_command) }} \
           | tr -d "\n" > {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}'
   args:
+    executable: '/bin/bash'
     creates: '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
   become: False
   delegate_to: 'localhost'
@@ -171,7 +173,8 @@
 #   delegate_to: 'localhost'
 
 - name: Create encryption layer
-  shell: cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
+  shell: set -o nounset -o pipefail -o errexit &&
+         cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
          --batch-mode --verbose
          {{ "" if (item.0.hash|d(cryptsetup__hash) == "default")
                else ("--hash=" + item.0.hash|d(cryptsetup__hash)) }}
@@ -189,6 +192,8 @@
                         else cryptsetup__keyfile_remote_location)
                         + "/" + item.0.name + "_keyfile.raw") }}'
          '{{ item.0.ciphertext_block_device }}'
+  args:
+    executable: '/bin/bash'
   register: cryptsetup__register_cmd
   changed_when: ("Command successful." == cryptsetup__register_cmd.stdout)
   when: (item.0.state|d(cryptsetup__state) in

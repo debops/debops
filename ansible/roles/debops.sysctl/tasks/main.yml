@@ -50,7 +50,10 @@
   when: item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Check sysctl command capabilities
-  shell: sysctl --help | grep -E '^\s+\-\-system\s+' || true
+  shell: set -o nounset -o pipefail -o errexit &&
+         sysctl --help | grep -E '^\s+\-\-system\s+' || true
+  args:
+    executable: '/bin/bash'
   register: sysctl__register_system
   when: sysctl__register_config_created is changed or
         sysctl__register_config_removed is changed
@@ -58,12 +61,15 @@
 
 - name: Apply kernel parameters if they were modified
   shell: |
+    set -o nounset -o pipefail -o errexit &&
     {% if (sysctl__register_system.stdout|d()) %}
     sysctl --system
     {% else %}
     sysctl -e -p $(find /etc/sysctl.d -mindepth 1 -maxdepth 1 -name '*.conf' -print0 | sort -z | xargs -r0)
                  /etc/sysctl.conf
     {% endif %}
+  args:
+    executable: '/bin/bash'
   when: sysctl__register_config_created is changed or
         sysctl__register_config_removed is changed
 

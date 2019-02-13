@@ -1,12 +1,18 @@
 ---
 
 - name: Check the disk size of OpenVZ storage
-  shell: df {{ openvz_container_storage }} | tail -n 1 | awk '{print $2}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         df {{ openvz_container_storage }} | tail -n 1 | awk '{print $2}'
+  args:
+    executable: '/bin/bash'
   register: openvz_register_storage_size
   changed_when: False
 
 - name: Check number of disk inodes on OpenVZ storage
-  shell: df -i {{ openvz_container_storage }} | tail -n 1 | awk '{print $2}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         df -i {{ openvz_container_storage }} | tail -n 1 | awk '{print $2}'
+  args:
+    executable: '/bin/bash'
   register: openvz_register_storage_inodes
   changed_when: False
 

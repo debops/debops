@@ -189,7 +189,10 @@
   when: gitlab_runner__ssh_known_hosts|d()
 
 - name: Get list of already scanned host fingerprints
-  shell: ssh-keygen -f {{ gitlab_runner__home }}/.ssh/known_hosts -F {{ item }} | grep -q '^# Host {{ item }} found'
+  shell: set -o nounset -o pipefail -o errexit &&
+         ssh-keygen -f {{ gitlab_runner__home }}/.ssh/known_hosts -F {{ item }} | grep -q '^# Host {{ item }} found'
+  args:
+    executable: '/bin/bash'
   with_items: '{{ gitlab_runner__ssh_known_hosts }}'
   when: gitlab_runner__ssh_known_hosts|d()
   register: gitlab_runner__register_known_hosts

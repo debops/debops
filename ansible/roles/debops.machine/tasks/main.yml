@@ -34,9 +34,11 @@
   when: machine__enabled|bool and machine__etc_issue_state|d('present') != 'absent'
 
 - name: Revert original /etc/issue file
-  shell: rm -f /etc/issue ; dpkg-divert --quiet --local --rename --remove /etc/issue
+  shell: set -o nounset -o pipefail -o errexit &&
+         rm -f /etc/issue ; dpkg-divert --quiet --local --rename --remove /etc/issue
   args:
     warn: False
+    executable: '/bin/bash'
     removes: '/etc/issue.dpkg-divert'
   when: machine__enabled|bool and machine__etc_issue_state|d('present') == 'absent'
 
@@ -92,7 +94,10 @@
 - name: Check current MOTD diversions
   environment:
     LC_ALL: 'C'
-  shell: dpkg-divert --list '/etc/update-motd.d/*.disabled' | awk '{print $NF}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '/etc/update-motd.d/*.disabled' | awk '{print $NF}' || true
+  args:
+    executable: '/bin/bash'
   register: machine__register_motd_diversions
   check_mode: False
   changed_when: False

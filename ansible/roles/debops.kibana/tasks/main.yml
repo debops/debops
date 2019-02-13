@@ -42,8 +42,10 @@
   tags: [ 'role::kibana:config' ]
 
 - name: Check state of installed Kibana plugins
-  shell: bin/kibana-plugin list | cut -d@ -f1
+  shell: set -o nounset -o pipefail -o errexit &&
+         bin/kibana-plugin list | cut -d@ -f1
   args:
+    executable: '/bin/bash'
     chdir: '/usr/share/kibana'
   register: kibana__register_plugins
   become: True

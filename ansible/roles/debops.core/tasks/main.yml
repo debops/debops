@@ -41,7 +41,10 @@
   become: False
 
 - name: Read the host UUID
-  shell: dmidecode --string system-uuid | tail -n 1 || true
+  shell: set -o nounset -o pipefail -o errexit &&
+         dmidecode --string system-uuid | tail -n 1 || true
+  args:
+    executable: '/bin/bash'
   register: core__register_uuid
   changed_when: False
 

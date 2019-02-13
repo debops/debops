@@ -177,7 +177,10 @@
   tags: [ 'role::librenms:config' ]
 
 - name: Check list of current user accounts
-  shell: 'getent passwd | cut -d: -f1'
+  shell: 'set -o nounset -o pipefail -o errexit &&
+          getent passwd | cut -d: -f1'
+  args:
+    executable: '/bin/bash'
   register: librenms__register_passwd
   changed_when: False
   when: librenms__home_snmp_conf|d() and librenms__home_snmp_conf

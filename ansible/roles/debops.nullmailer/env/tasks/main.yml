@@ -3,7 +3,12 @@
 - name: Check if MTA is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg --get-selections | grep -w -E '({{ nullmailer__skip_mta_packages | join("|") }})' | awk '{print $1}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg --get-selections
+              | grep -w -E '({{ nullmailer__skip_mta_packages | join("|") }})'
+              | awk '{print $1}' || true
+  args:
+    executable: '/bin/bash'
   register: nullmailer__register_mta
   changed_when: False
   failed_when: False

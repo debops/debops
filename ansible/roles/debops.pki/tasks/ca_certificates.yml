@@ -8,34 +8,49 @@
     value: '{{ "yes" if (pki_system_ca_certificates_trust_new | bool) else "no" }}'
 
 - name: Get list of known certificates
-  shell: grep -E -e '^[^#].*$' /etc/ca-certificates.conf | sed -e 's/^!//'
+  shell: set -o nounset -o pipefail -o errexit &&
+         grep -E -e '^[^#].*$' /etc/ca-certificates.conf | sed -e 's/^!//' || true
+  args:
+    executable: '/bin/bash'
   register: pki_register_ca_certificates_known
   changed_when: False
   check_mode: False
 
 - name: Get list of untrusted certificates
-  shell: grep -E -e '^!+' /etc/ca-certificates.conf | sed -e 's/^!//'
+  shell: set -o nounset -o pipefail -o errexit &&
+         grep -E -e '^!+' /etc/ca-certificates.conf | sed -e 's/^!//' || true
+  args:
+    executable: '/bin/bash'
   register: pki_register_ca_certificates_untrusted
   changed_when: False
   check_mode: False
 
 - name: Get list of trusted certificates
-  shell: grep -E -e '^[^#!].*$' /etc/ca-certificates.conf | sed -e 's/^!//'
+  shell: set -o nounset -o pipefail -o errexit &&
+         grep -E -e '^[^#!].*$' /etc/ca-certificates.conf | sed -e 's/^!//' || true
+  args:
+    executable: '/bin/bash'
   register: pki_register_ca_certificates_trusted
   changed_when: False
   check_mode: False
 
 - name: Get list of blacklisted certificates
-  shell: grep -E -e '{{ pki_system_ca_certificates_blacklist | join("' -e '") }}'
-         /etc/ca-certificates.conf | sed -e 's/^!//'
+  shell: set -o nounset -o pipefail -o errexit &&
+         grep -E -e '{{ pki_system_ca_certificates_blacklist | join("' -e '") }}'
+         /etc/ca-certificates.conf | sed -e 's/^!//' || true
+  args:
+    executable: '/bin/bash'
   register: pki_register_ca_certificates_blacklist
   changed_when: False
   check_mode: False
   when: pki_system_ca_certificates_blacklist is defined and pki_system_ca_certificates_blacklist
 
 - name: Get list of whitelisted certificates
-  shell: grep -E -e '{{ pki_system_ca_certificates_whitelist | join("' -e '") }}'
-              /etc/ca-certificates.conf | sed -e 's/^!//'
+  shell: set -o nounset -o pipefail -o errexit &&
+         grep -E -e '{{ pki_system_ca_certificates_whitelist | join("' -e '") }}'
+              /etc/ca-certificates.conf | sed -e 's/^!//' || true
+  args:
+    executable: '/bin/bash'
   register: pki_register_ca_certificates_whitelist
   changed_when: False
   check_mode: False

@@ -123,7 +123,10 @@
         etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
 
 - name: Unstage and remove ignored files from Git index
-  shell: etckeeper vcs ls-files -i --exclude-standard -z | xargs -0 --no-run-if-empty etckeeper vcs rm --cached --
+  shell: set -o nounset -o pipefail -o errexit &&
+         etckeeper vcs ls-files -i --exclude-standard -z | xargs -0 --no-run-if-empty etckeeper vcs rm --cached --
+  args:
+    executable: '/bin/bash'
   register: etckeeper__register_git_rm_cached_ignored_files
   when:
     - etckeeper__enabled|bool

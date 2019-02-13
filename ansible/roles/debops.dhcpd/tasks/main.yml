@@ -4,7 +4,10 @@
 - include: install.yml
 
 - name: Get list of nameservers configured in /etc/resolv.conf
-  shell: grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}' || true
+  args:
+    executable: '/bin/bash'
   register: dhcpd_register_nameservers
   changed_when: False
   when: dhcpd_mode == 'server'

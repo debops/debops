@@ -2,11 +2,14 @@
 
 - name: Check Ansible Controller library version
   shell: |
+    set -o nounset -o pipefail -o errexit &&
     {% if dhparam__source_library == 'gnutls' %}
     certtool --version | head -n 1 | awk '{print $NF}'
     {% elif dhparam__source_library == 'openssl' %}
     openssl version | awk '{print $2}'
     {% endif %}
+  args:
+    executable: '/bin/bash'
   changed_when: False
   register: dhparam__register_version
   delegate_to: 'localhost'

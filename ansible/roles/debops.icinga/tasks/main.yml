@@ -67,7 +67,10 @@
 - name: Check current Icinga diversions
   environment:
     LC_ALL: 'C'
-  shell: dpkg-divert --list '/etc/icinga2/*.dpkg-divert' | grep -E '^local diversion' | awk '{print $NF}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '/etc/icinga2/*.dpkg-divert' | grep -E '^local diversion' | awk '{print $NF}' || true
+  args:
+    executable: '/bin/bash'
   register: icinga__register_diversions
   check_mode: False
   changed_when: False
