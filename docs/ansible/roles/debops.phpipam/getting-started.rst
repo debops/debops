@@ -33,7 +33,7 @@ Post-install steps
 ------------------
 
 When Ansible is finished, you need to finish the configuration by opening the
-``https://ipam.<domain>/install.php`` page. There you will be able to finish
+``https://ipam.<domain>`` page. There you will be able to finish
 the installation process.
 
 You can then login and configure it using the administrative
