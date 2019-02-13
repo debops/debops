@@ -32,16 +32,14 @@
 
 - name: Remove other version if upstream is modified
   apt:
-    name: '{{ item }}'
+    name: '{{ ((["docker.io"] if docker__upstream|d()
+                else [docker__upstream_packagename])
+               + (["docker-engine"] if docker__upstream|d()
+                 else [])) | flatten }}'
     state: 'absent'
     install_recommends: False
   register: docker__register_other_version_removed
   until: docker__register_other_version_removed is succeeded
-  with_flattened:
-    - '{{ "docker.io" if docker__upstream|d()
-                else docker__upstream_packagename }}'
-    - '{{ "docker-engine" if docker__upstream|d()
-                else [] }}'
 
 - name: Remove startup file(s) if present
   file:
@@ -58,14 +56,12 @@
 
 - name: Install required packages
   apt:
-    name: '{{ item }}'
+    name: '{{ (docker__mandatory_packages
+               + [ docker__packagename ]
+               + docker__base_packages
+               + docker__packages) | flatten }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - '{{ docker__mandatory_packages }}'
-    - '{{ docker__upstream_packagename if docker__upstream|d() else "docker.io" }}'
-    - '{{ docker__base_packages }}'
-    - '{{ docker__packages }}'
   register: docker__register_packages
   until: docker__register_packages is succeeded
 
