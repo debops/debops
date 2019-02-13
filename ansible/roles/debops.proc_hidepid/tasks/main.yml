@@ -1,0 +1,112 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ proc_hidepid__base_packages }}'
+    - '{{ proc_hidepid__packages }}'
+  register: proc_hidepid__register_install
+  until: proc_hidepid__register_install is succeeded
+  when: proc_hidepid__enabled|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save proc_hidepid local facts
+  template:
+    src: 'etc/ansible/facts.d/proc_hidepid.fact.j2'
+    dest: '/etc/ansible/facts.d/proc_hidepid.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: proc_hidepid__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: proc_hidepid__register_facts is changed
+
+- name: Ensure that UNIX system group with /proc access exists
+  group:
+    name: '{{ proc_hidepid__group }}'
+    gid: '{{ proc_hidepid__gid if proc_hidepid__gid|d() else omit }}'
+    state: 'present'
+    system: True
+  when: proc_hidepid__enabled|bool
+
+- name: Configure /proc with hidepid= option in /etc/fstab
+  mount:
+    name: '/proc'
+    src: 'proc'
+    fstype: 'proc'
+    opts: 'defaults,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }}'
+    state: 'mounted'
+  register: proc_hidepid__register_mount
+  when: proc_hidepid__enabled|bool and proc_hidepid__remount|bool
+
+  # This is a workaround for Ubuntu bug: https://bugs.launchpad.net/ubuntu/+source/mountall/+bug/1039887
+- name: Remount /proc from rc.local when needed
+  lineinfile:
+    dest: '/etc/rc.local'
+    regexp: '^mount -o remount,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }} /proc'
+    line: 'mount -o remount,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }} /proc'
+    insertbefore: 'exit 0'
+    state: 'present'
+  when: (proc_hidepid__enabled|bool and proc_hidepid__remount|bool and
+         (ansible_distribution in [ 'Ubuntu' ] and
+          ansible_distribution_release in [ 'trusty' ]))
+
+- name: Check /proc/sched_debug file attributes
+  stat:
+    path: '/proc/sched_debug'
+  register: proc_hidepid__register_sched
+
+- name: Generate tmpfiles configuration for securing /proc/sched_debug
+  template:
+    src: 'etc/tmpfiles.d/proc-sched_debug.conf.j2'
+    dest: '/etc/tmpfiles.d/proc-sched_debug.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: proc_hidepid__register_tmpfiles
+  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
+        proc_hidepid__secure_scheduler_enabled|bool
+
+- name: Secure /proc/sched_debug file access
+  command: systemd-tmpfiles --create
+  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
+        proc_hidepid__register_tmpfiles is changed
+
+- name: Create the systemd-logind configuration directory
+  file:
+    path: '/etc/systemd/system/systemd-logind.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd'
+
+- name: Ensure that logind is exempt from hidepid
+  template:
+    src: 'etc/systemd/system/systemd-logind.service.d/hidepid.conf.j2'
+    dest: '/etc/systemd/system/systemd-logind.service.d/hidepid.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: proc_hidepid__register_logind
+  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd'
+
+- name: Reload systemd daemons
+  systemd:
+    daemon_reload: True
+  when: proc_hidepid__register_logind is changed
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: proc_hidepid__register_mount is changed

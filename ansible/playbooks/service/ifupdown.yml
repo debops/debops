@@ -11,12 +11,22 @@
   roles:
 
     - role: debops.ifupdown/env
-      tags: [ 'role::ifupdown', 'role::ferm' ]
+      tags: [ 'role::ifupdown', 'role::kmod', 'role::ferm', 'role::sysctl' ]
+
+    - role: debops.kmod
+      tags: [ 'role::kmod', 'skip::kmod' ]
+      kmod__dependent_load:
+        - '{{ ifupdown__env_kmod__dependent_load }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ ifupdown__env_ferm__dependent_rules }}'
 
+    - role: debops.sysctl
+      tags: [ 'role::sysctl', 'skip::sysctl' ]
+      sysctl__dependent_parameters:
+        - '{{ ifupdown__env_sysctl__dependent_parameters }}'
+
     - role: debops.ifupdown
-      tags: [ 'role::ifupdown' ]
+      tags: [ 'role::ifupdown', 'skip::ifupdown' ]

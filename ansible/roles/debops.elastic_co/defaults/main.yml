@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # APT repository configuration [[[
@@ -22,7 +22,19 @@
 elastic_co__version: '{{ ansible_local.elastic_co.version
                          if (ansible_local|d() and ansible_local.elastic_co|d() and
                              ansible_local.elastic_co.version|d())
-                         else "5.x" }}'
+                         else "6.x" }}'
+
+                                                                   # ]]]
+# .. envvar:: elastic_co__curator_version [[[
+#
+# Specify the major version of the Elastic Curator APT repository you wish to install.
+# The role will remember the selected version using Ansible local facts which
+# should ensure that in the future currently installed version of the APT
+# repository stays the same on a given host.
+elastic_co__curator_version: '{{ ansible_local.elastic_co.curator_version
+                                 if (ansible_local|d() and ansible_local.elastic_co|d() and
+                                     ansible_local.elastic_co.curator_version|d())
+                                 else "5" }}'
 
                                                                    # ]]]
 # .. envvar:: elastic_co__key_id [[[
@@ -31,10 +43,18 @@ elastic_co__version: '{{ ansible_local.elastic_co.version
 elastic_co__key_id: '4609 5ACC 8548 582C 1A26 99A9 D27D 666C D88E 42B4'
 
                                                                    # ]]]
-# .. envvar:: elastic_co__repository [[[
+# .. envvar:: elastic_co__repositories [[[
 #
-# APT repository entry to configure for Elasticsearch BV. repository.
-elastic_co__repository: 'deb https://artifacts.elastic.co/packages/{{ elastic_co__version }}/apt stable main'
+# APT repository entry to configure for Elastic repository.
+elastic_co__repositories:
+  - repo: 'deb https://artifacts.elastic.co/packages/{{ elastic_co__version }}/apt stable main'
+
+  - repo: 'deb https://packages.elastic.co/curator/{{ elastic_co__curator_version }}/debian stable main'
+    enabled: "{{ ansible_distribution_release in [ 'wheezy', 'jessie' ] }}"
+
+  - repo: 'deb https://packages.elastic.co/curator/{{ elastic_co__curator_version }}/debian9 stable main'
+    enabled: "{{ ansible_distribution_release in [ 'stretch' ] }}"
+
                                                                    # ]]]
                                                                    # ]]]
 # Package overrides [[[
@@ -83,7 +103,7 @@ elastic_co__dependent_packages: []
 
 # .. envvar:: elastic_co__apt_preferences__dependent_list [[[
 #
-# Configuration for the debops.apt_preferences_ Ansible role.
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
 elastic_co__apt_preferences__dependent_list:
 
   - package: 'heartbeat'

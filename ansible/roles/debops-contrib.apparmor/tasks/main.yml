@@ -25,6 +25,8 @@
   with_flattened:
     - '{{ apparmor__base_packages }}'
     - '{{ apparmor__packages }}'
+  register: apparmor__register_packages
+  until: apparmor__register_packages is succeeded
 
 - name: Setup apparmor=1 security=apparmor as kernel parameter
   lineinfile:
@@ -75,25 +77,29 @@
 ## which throws an exception when AppArmor has not been enabled yet.
 - name: Put all profiles into enforcement mode
   shell: |
+    set -o nounset -o pipefail -o errexit &&
     find /etc/apparmor.d -maxdepth 1 -type f | while read file
     do
       if grep --quiet "flags\s*=.*complain" "$file"; then
         aa-enforce "$file"
       fi
     done
+  args:
+    executable: '/bin/bash'
   register: apparmor__register_enforce_all_profiles
-  changed_when: (apparmor__register_enforce_all_profiles.stdout != "")
+  changed_when: (apparmor__register_enforce_all_profiles.stdout|d())
   when: (apparmor__enforce_all_profiles|d() | bool)
 
 - name: Set profile status
   command: aa-{{ item.value }} "{{ item.key }}"
   register: apparmor__register_profile_status
-  # changed_when: (apparmor__register_profile_status.stdout|d() != "")
+  # changed_when: (apparmor__register_profile_status.stdout|d())
   ## FIXME: Currently changed_when seems to be tricky.
   changed_when: False
   failed_when: |
     apparmor__register_profile_status.rc != 0 and (
-      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?" not in apparmor__register_profile_status.stderr and
+      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?"
+      not in apparmor__register_profile_status.stderr and
       apparmor__fact_apparmor_enabled_and_loaded|bool
     )
   ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
@@ -134,17 +140,19 @@
 
 - name: Reload changed profiles
   command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
-  when: (item|changed and not apparmor__register_tunables|changed)
+  when: (item is changed and apparmor__register_tunables is not changed)
   with_items: '{{ apparmor__register_local_config.results }}'
 
 - name: Reload AppArmor all profiles
   service:
     name: 'apparmor'
     state: 'reloaded'
-  when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables|changed
+  when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables is changed
 
 - name: Unload AppArmor profiles
   command: service apparmor teardown
+  args:
+    warn: False
   when: (not (apparmor__enabled|d() | bool))
 
 - name: Ensure AppArmor service is stopped

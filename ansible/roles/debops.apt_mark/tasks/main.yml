@@ -1,0 +1,85 @@
+---
+
+- name: Configure APT autoremove options
+  template:
+    src: 'etc/apt/apt.conf.d/25autoremove-recommends.conf.j2'
+    dest: '/etc/apt/apt.conf.d/25autoremove-recommends.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: apt_mark__enabled|bool
+
+- name: Check state of the APT packages
+  script: 'script/apt-mark-status{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}'
+  register: apt_mark__register_state
+  changed_when: False
+  check_mode: False
+  when: apt_mark__enabled|bool
+
+- name: Set facts about APT package state
+  set_fact:
+    apt_mark__fact_auto:      '{{ (apt_mark__register_state.stdout|from_json)["auto"] }}'
+    apt_mark__fact_hold:      '{{ (apt_mark__register_state.stdout|from_json)["hold"] }}'
+    apt_mark__fact_installed: '{{ (apt_mark__register_state.stdout|from_json)["installed"] }}'
+    apt_mark__fact_manual:    '{{ (apt_mark__register_state.stdout|from_json)["manual"] }}'
+  when: apt_mark__enabled|bool
+
+- name: Set package state as installed automatically
+  command: apt-mark auto {{ ((item.packages | d([ item.name ])) | intersect(apt_mark__fact_installed)) | join(' ') }}
+  with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
+  when: (apt_mark__enabled|bool and
+         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+         | symmetric_difference(apt_mark__fact_manual) and
+         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+         | difference(apt_mark__fact_auto) and
+         item.state|d('manual') in [ 'auto', 'auto-hold', 'auto-unhold' ])
+
+- name: Set package state as installed manually
+  command: apt-mark manual {{ ((item.packages | d([ item.name ]))
+                               | intersect(apt_mark__fact_installed)) | join(' ') }}
+  with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
+  when: (apt_mark__enabled|bool and
+         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+         | symmetric_difference(apt_mark__fact_auto) and
+         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+         | difference(apt_mark__fact_manual) and
+         item.state|d('manual') in [ 'manual', 'manual-hold', 'manual-unhold' ])
+
+- name: Hold current package state
+  command: apt-mark hold {{ ((item.packages | d([ item.name ]))
+                             | intersect(apt_mark__fact_installed)) | join(' ') }}
+  with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
+  when: (apt_mark__enabled|bool and
+        (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+        | difference(apt_mark__fact_hold) and
+        item.state|d('manual') in [ 'hold', 'auto-hold', 'manual-hold' ])
+
+- name: Unhold current package state
+  command: apt-mark unhold {{ ((item.packages | d([ item.name ]))
+                               | intersect(apt_mark__fact_installed)) | join(' ') }}
+  with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
+  when: (apt_mark__enabled|bool and
+        (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
+        | intersect(apt_mark__fact_hold) and
+        item.state|d('manual') in [ 'unhold', 'auto-unhold', 'manual-unhold' ])
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save apt-mark local facts
+  template:
+    src: 'etc/ansible/facts.d/apt_mark.fact.j2'
+    dest: '/etc/ansible/facts.d/apt_mark.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: apt_mark__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: apt_mark__register_facts is changed

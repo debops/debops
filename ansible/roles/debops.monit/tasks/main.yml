@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ monit__base_packages }}'
     - '{{ monit__packages }}'
+  register: monit__register_packages
+  until: monit__register_packages is succeeded
 
 - name: Remove Monit configuration if requested
   file:
@@ -48,4 +50,4 @@
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: monit__register_facts|changed
+  when: monit__register_facts is changed

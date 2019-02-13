@@ -1,0 +1,14 @@
+---
+
+- name: Clean up legacy configuration
+  hosts: [ 'debops_all_hosts' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.debops_legacy
+      tags: [ 'role::debops_legacy', 'skip::debops_legacy' ]

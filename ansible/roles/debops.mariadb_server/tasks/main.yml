@@ -7,7 +7,12 @@
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server' 'percona-server-server' 'mysql-wsrep-server-5.6' | grep -v '^$'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server'
+                                         'percona-server-server' 'mysql-wsrep-server-5.6'
+         | grep -v '^$'
+  args:
+    executable: '/bin/bash'
   register: mariadb_server__register_version
   check_mode: False
   changed_when: False
@@ -24,6 +29,8 @@
   with_flattened: '{{ ([ mariadb_server__apt_key ]
                        if mariadb_server__apt_key is string
                        else mariadb_server__apt_key) }}'
+  register: mariadb_server__register_apt_key
+  until: mariadb_server__register_apt_key is succeeded
   when: mariadb_server__flavor in mariadb_server__apt_key_map.keys()
 
 - name: Add custom APT repository
@@ -48,6 +55,14 @@
     - '{{ mariadb_server__packages }}'
     - '{{ "automysqlbackup" if mariadb_server__backup|bool else [] }}'
   register: mariadb_server__register_install_status
+  until: mariadb_server__register_install_status is succeeded
+
+- name: Stop database server on first install
+  service:
+    name: 'mysql'
+    state: 'stopped'
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
 
 - name: Add database server user to specified groups
   user:
@@ -70,6 +85,13 @@
     group: 'mysql'
     mode: '0755'
 
+- name: Move MariaDB data files to data directory
+  shell:
+    'mv {{ mariadb_server__default_datadir }}/* {{ mariadb_server__datadir }}'
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed) and
+         (mariadb_server__datadir != mariadb_server__default_datadir))
+
 - name: Configure database client on first install
   template:
     src: 'etc/mysql/conf.d/client.cnf.j2'
@@ -83,12 +105,12 @@
   include: 'configure_server.yml'
   tags: [ 'role::mariadb_server:configure' ]
 
-- name: Restart database server on first install
+- name: Start database server on first install
   service:
     name: 'mysql'
-    state: 'restarted'
+    state: 'started'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status|changed))
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
 
 - name: Secure database server
   include: 'secure_installation.yml'
@@ -113,4 +135,4 @@
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: mariadb_server__register_local_facts|changed
+  when: mariadb_server__register_local_facts is changed

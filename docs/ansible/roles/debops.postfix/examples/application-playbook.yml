@@ -1,0 +1,63 @@
+---
+
+# This is a playbook for an example 'application' role which uses
+# 'debops.postfix' as a dependency and passes its own set of
+# configuration options to it.
+
+- name: Manage application
+  hosts: [ 'debops_service_application' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    # This role along with 'debops.etc_aliases' can be used to maintain the
+    # /etc/aliases database.
+    #
+    #- role: debops.etc_aliases/env
+    #  tags: [ 'role::etc_aliases', 'role::secret' ]
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix' ]
+      secret__directories:
+        - '{{ postfix__secret__directories }}'
+
+    # Normally a 'debops.ferm' role would be here for 'debops.postfix'
+    # to manage the firewall. You don't need it if you run the main
+    # 'debops.postfix' playbook before yours.
+    #
+    #- role: debops.ferm
+    #  tags: [ 'role::ferm', 'skip::ferm' ]
+    #  ferm__dependent_rules:
+    #    - '{{ etc_aliases__secret__directories }}'
+    #    - '{{ postfix__ferm__dependent_rules }}'
+
+    #- role: debops.etc_aliases
+    #  tags: [ 'role::etc_aliases' ]
+
+    - role: debops.postfix
+      tags: [ 'role::postfix' ]
+
+      postfix__dependent_packages:
+        - '{{ application__postfix__dependent_packages }}'
+
+      postfix__dependent_maincf:
+
+        # Short form of dependent configuration
+        - application: '{{ application__postfix__dependent_maincf }}'
+
+      postfix__dependent_mastercf:
+
+        # Expanded form of dependent configuration
+        - role: 'application'
+          config: '{{ application__postfix__dependent_mastercf }}'
+          state: 'present'
+
+    - role: application
+      tags: [ 'role::application' ]

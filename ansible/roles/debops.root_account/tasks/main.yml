@@ -1,10 +1,31 @@
 ---
 
+- name: Ensure that required packages are installed
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ root_account__base_packages }}'
+    - '{{ root_account__packages }}'
+  register: root_account__register_packages
+  until: root_account__register_packages is succeeded
+  when: root_account__enabled|bool
+
 - name: Check available SSH key types
   shell: ssh -Q key 2>/dev/null || echo "ssh-rsa"
   register: root_account__register_key_types
   changed_when: False
   check_mode: False
+
+- name: Check if preferred shell exists
+  stat: path="{{ root_account__shell }}"
+  register: root_account__register_shell
+  when: root_account__enabled|bool and root_account__shell|d(False)
+
+- name: Fail if setting a shell that does not exist
+  fail:
+    msg: "Trying to set a shell that does not exist, this can lock you out!"
+  when: root_account__enabled|bool and root_account__shell|d(False) and not root_account__register_shell.stat.exists
 
 - name: Enforce root system group
   group:
@@ -44,6 +65,46 @@
     mode: '0700'
   when: root_account__enabled|bool
 
+- name: Configure authorized SSH keys for root account
+  authorized_key:
+    key: "{{ q('flattened', root_account__authorized_keys
+                            + root_account__group_authorized_keys
+                            + root_account__host_authorized_keys)
+              | join('\n') }}"
+    exclusive: '{{ root_account__authorized_keys_exclusive|bool }}'
+    state: 'present'
+    user: 'root'
+  when: root_account__enabled|bool and root_account__authorized_keys|d() and
+        root_account__authorized_keys_state != 'absent'
+
+- name: Remove /root/.ssh/authorized_keys file if requested
+  file:
+    path: '/root/.ssh/authorized_keys'
+    state: 'absent'
+  when: root_account__enabled|bool and root_account__authorized_keys_state == 'absent'
+
+- name: Check subuid presence for root account
+  shell: grep -E '^root:' /etc/subuid || true
+  register: root_account__register_subuid
+  check_mode: False
+  changed_when: False
+  when: root_account__enabled|bool and root_account__subuid_enabled|bool
+
+- name: Add subuids and subgids for root account
+  command: usermod --add-subuids {{ (item|string + "-" + (item|int + root_account__subuid_count|int)|string) }}
+                   --add-subgids {{ (item|string + "-" + (item|int + root_account__subuid_count|int)|string) }} root
+  with_items: '{{ root_account__subuid_start }}'
+  when: root_account__enabled|bool and root_account__subuid_enabled|bool and
+        not root_account__register_subuid.stdout|d()
+
+- name: Fix shell usage without TTY present
+  lineinfile:
+    dest: '/root/.profile'
+    regexp: "^.*mesg n.*$"
+    line: 'tty -s && mesg n || true'
+    state: 'present'
+  when: root_account__enabled|bool and root_account__fix_no_tty|bool
+
 - name: Make sure Ansible fact directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -63,4 +124,4 @@
 
 - name: Reload facts if they were modified
   action: setup
-  when: root_account__register_facts|changed
+  when: root_account__register_facts is changed

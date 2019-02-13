@@ -721,7 +721,6 @@
 .. _debops.rabbitmq_server: https://github.com/debops/ansible-rabbitmq_server
 .. _debops.radvd: https://github.com/debops/ansible-radvd
 .. _debops.rails_deploy: https://github.com/debops/ansible-rails_deploy
-.. _debops.redis: https://github.com/debops/ansible-redis
 .. _debops.reprepro: https://github.com/debops/ansible-reprepro
 .. _debops.resources: https://github.com/debops/ansible-resources
 .. _debops.root_account: https://github.com/debops/ansible-root_account
@@ -820,7 +819,6 @@
 .. _debops.preseed documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-preseed/docs/index.html
 .. _debops.rabbitmq_management documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-rabbitmq_management/docs/index.html
 .. _debops.rabbitmq_server documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-rabbitmq_server/docs/index.html
-.. _debops.redis documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-redis/docs/index.html
 .. _debops.resources documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-resources/docs/index.html
 .. _debops.root_account documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-root_account/docs/index.html
 .. _debops.rsnapshot documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-rsnapshot/docs/index.html
@@ -1033,6 +1031,8 @@
 .. _APT: https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
 .. _Advanced Packaging Tool: https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
 
+.. _Ubuntu: https://www.ubuntu.com/
+
 .. _Free software: https://en.wikipedia.org/wiki/Free_software
 .. _GPL-3.0: https://en.wikipedia.org/wiki/GNU_GPLv3
 .. _Open-source software: https://en.wikipedia.org/wiki/Open-source_software
@@ -1129,6 +1129,7 @@
 .. _SKS OpenPGP keyserver pool: https://sks-keyservers.net/
 .. Prefer the last one.
 
+.. _Elastic: https://elastic.co/
 .. _OpenPGP Best Practices: https://help.riseup.net/en/security/message-security/openpgp/best-practices
 .. _HashiCorp: https://en.wikipedia.org/wiki/HashiCorp
 .. _HashiCorp Security Policy: https://www.hashicorp.com/security.html
@@ -1140,6 +1141,9 @@
 .. _Infrastructures.Org: http://www.infrastructures.org/
 .. _Debian Policy Manual: https://www.debian.org/doc/debian-policy/
 .. _Computing Infrastructure Setup Protocols: http://infrastructure.blueprint.org/Home
+
+.. _CRAN: https://cran.r-project.org/
+.. _The Comprehensive R Archive Network: https://cran.r-project.org/
 
 .. _ReadTheDocs: https://readthedocs.org/
 

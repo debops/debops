@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!{{ ansible_python['executable'] }}
 
 # {{ ansible_managed }}
 
@@ -19,7 +19,7 @@ try:
         _re = re.match(r'Server version: Apache/(?P<version>[^ ]+)', line)
         if _re:
             output['version'] = _re.group('version')
-except:
+except Exception:
     pass
 
 if output['use_if_version']:

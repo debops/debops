@@ -1,0 +1,75 @@
+---
+
+- name: Check if modprobe is available
+  stat:
+    path: '/sbin/modprobe'
+  register: kmod__register_modprobe
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ kmod__base_packages }}'
+    - '{{ kmod__packages }}'
+  register: kmod__register_packages
+  until: kmod__register_packages is succeeded
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save kmod local facts
+  template:
+    src: 'etc/ansible/facts.d/kmod.fact.j2'
+    dest: '/etc/ansible/facts.d/kmod.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: kmod__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: kmod__register_facts is changed
+
+- name: Configure kernel modules
+  include_tasks: 'modprobe.yml'
+  loop_control:
+    loop_var: 'module'
+  with_items: '{{ kmod__combined_modules | parse_kv_items }}'
+  when: kmod__enabled|bool
+
+- name: Remove module load configuration
+  file:
+    dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
+    state: 'absent'
+  with_items: '{{ kmod__combined_load | parse_kv_items }}'
+  when: kmod__enabled|bool and item.name|d() and item.state|d('present') == 'absent'
+
+- name: Configure module loading at boot
+  template:
+    src: 'etc/modules-load.d/module.conf.j2'
+    dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ kmod__combined_load | parse_kv_items }}'
+  when: kmod__enabled|bool and item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
+
+- name: Load missing kernel modules enabled at boot
+  modprobe:
+    name: '{{ item.name }}'
+    state: 'present'
+  with_items: '{{ kmod__combined_load | parse_kv_items }}'
+  register: kmod__register_load
+  when: kmod__enabled|bool and item.name|d() and item.state|d('present') not in [ 'config', 'absent', 'ignore' ] and
+        item.modules is undefined and ansible_local|d() and ansible_local.kmod|d() and
+        ansible_local.kmod.modules|d() and item.name not in ansible_local.kmod.modules
+
+- name: Update Ansible facts if modules were loaded
+  action: setup
+  when: kmod__register_load is changed

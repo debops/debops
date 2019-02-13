@@ -1,0 +1,46 @@
+---
+# Manage UNIX user accounts
+users__accounts:
+
+  # A basic account
+  - name: 'user1'
+    group: 'user1'
+
+  # More elaborate account with SSH access and dotfiles
+  - name: 'user2'
+    group: 'user2'
+    groups: [ 'sshusers' ]
+    shell: '/bin/zsh'
+    dotfiles_enabled: True
+
+  # An user account with a random password, stored in 'secret/'. This user
+  # account will be added in the 'users' UNIX group instead of its own group.
+  - name: 'user3'
+    update_password: 'on_create'
+    password: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn
+                  + "/users/user3/password encrypt=sha512_crypt length=30") }}'
+
+  # Remove an user account if it exists
+  - name: 'user_removed'
+    state: 'absent'
+
+  # An example SFTPonly application account with custom ACL entries for the web
+  # server access. SFTPonly configuration is managed in the 'debops.sshd' role,
+  # SSH keys need to be set up with 'debops.authorized_keys', home directory is
+  # owned by the 'root' account and users don't have write permissions there,
+  # only in subdirectories.
+  - name: 'application'
+    group: 'application'
+    groups: 'sftopnly'
+    comment: 'SFTPonly application account'
+    shell: '/usr/sbin/nologin'
+    dotfiles_enabled: False
+    home: '/home/application'
+    home_owner: 'root'
+    home_group: 'application'
+    home_mode: '0750'
+    home_acl:
+
+      - entity: 'www-data'
+        etype: 'group'
+        permissions: 'x'

@@ -8,6 +8,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: postgresql_server__register_apt_key
+  until: postgresql_server__register_apt_key is succeeded
   when: postgresql_server__upstream|bool
   tags: [ 'role::postgresql_server:packages' ]
 
@@ -22,7 +24,10 @@
 - name: Get default PostgreSQL version
   environment:
     LC_ALL: 'C'
-  shell: "apt-cache policy postgresql | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
+  shell: "set -o nounset -o pipefail -o errexit &&
+          apt-cache policy postgresql | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
+  args:
+    executable: '/bin/bash'
   register: postgresql_server__register_version
   changed_when: False
   tags: [ 'role::postgresql_server:packages', 'role::postgresql_server:config',
@@ -64,7 +69,7 @@
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Get current maximum shared memory value
-  shell: cat /proc/sys/kernel/shmmax
+  command: cat /proc/sys/kernel/shmmax
   register: postgresql_server__register_sysctl_shmmax
   changed_when: False
   tags: [ 'role::postgresql_server:config' ]
@@ -98,5 +103,5 @@
 - name: Re-read local facts if they have been modified
   action: setup
   when: postgresql_server__register_local_facts|d() and
-        postgresql_server__register_local_facts.changed
+        postgresql_server__register_local_facts is changed
   tags: [ 'role::postgresql_server:config' ]

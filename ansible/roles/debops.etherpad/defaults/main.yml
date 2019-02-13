@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # APT packages [[[
@@ -60,6 +60,12 @@ etherpad_home: '{{ (ansible_local.root.app
                     if (ansible_local|d() and ansible_local.root|d() and
                         ansible_local.root.app|d())
                     else "/var/local") + "/" + etherpad_user }}'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__shell [[[
+#
+# The default shell used by the Etherpad account.
+etherpad__shell: '/usr/sbin/nologin'
 
                                                                    # ]]]
 # .. envvar:: etherpad_src_dir [[[
@@ -142,36 +148,48 @@ etherpad_welcome_text: |
 
 # .. envvar:: etherpad_database_server [[[
 #
-# FQDN of the MariaDB database host. It will be configured by
-# the debops.mariadb_ role.
+# FQDN of the database host. It will be configured by
+# the :ref:`debops.mariadb` or :ref:`debops.postgresql` role.
 etherpad_database_server: '{{ ansible_local.mariadb.server
                               if (ansible_local|d() and ansible_local.mariadb|d() and
                                   ansible_local.mariadb.server|d())
-                              else "" }}'
+                              else (ansible_local.postgresql.server
+                                    if (ansible_local|d() and ansible_local.postgresql|d() and
+                                        ansible_local.postgresql.server|d())
+                                    else "") }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_user [[[
 #
-# MariaDB database user to use for Etherpad.
+# Database user to use for Etherpad.
 etherpad_database_user: '{{ etherpad_system_name }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_name [[[
 #
-# Name of the MariaDB database to use for Etherpad.
+# Name of the database to use for Etherpad.
 etherpad_database_name: '{{ etherpad_system_name }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_password [[[
 #
-# MariaDB database password for the Etherpad database user.
-etherpad_database_password: "{{ lookup('password', secret + '/mariadb/'
+# Database password for the Etherpad database user.
+etherpad_database_password: "{{ lookup('password', secret + '/'
+                                + ('mariadb'
+                                   if etherpad__database == 'mysql'
+                                   else ('postgresql'
+                                         if etherpad__database == 'postgres'
+                                         else etherpad__database)) + '/'
                                 + (ansible_local.mariadb.delegate_to + '/'
                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()
-                                   else '')
+                                   else (ansible_local.postgresql.delegate_to + '/'
+                                         if ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.delegate_to|d()
+                                         else ''))
                                 + (ansible_local.mariadb.port + '/'
                                    if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d()
-                                   else '')
+                                   else (ansible_local.postgresql.port + '/'
+                                         if ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.port|d()
+                                         else ''))
                                 + '/credentials/' + etherpad_database_user + '/password length=48') }}"
 
                                                                    # ]]]
@@ -182,7 +200,9 @@ etherpad_database_password: "{{ lookup('password', secret + '/mariadb/'
 # databases will be available in the future.
 etherpad__database: '{{ "mysql"
                         if (ansible_local|d() and ansible_local.mariadb is defined)
-                        else "sqlite" }}'
+                        else ("postgres"
+                              if (ansible_local|d() and ansible_local.postgresql is defined)
+                              else "sqlite") }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_connection [[[
@@ -206,8 +226,8 @@ etherpad_database_config:
     password: '{{ etherpad_database_password }}'
     socket:   '/var/run/mysqld/mysqld.sock'
     port:     '3306'
-  postgresql:
-    hostname: 'localhost'
+  postgres:
+    hostname: '{{ etherpad_database_server }}'
     username: '{{ etherpad_database_user }}'
     database: '{{ etherpad_database_name }}'
     password: '{{ etherpad_database_password }}'
@@ -234,14 +254,14 @@ etherpad_port: '9001'
 #
 # List of Etherpad administrative accounts. Passwords are generated
 # automatically and are saved in the secret/ directory. Refer to the
-# debops.secret_ role for more details.
+# :ref:`debops.secret` role for more details.
 etherpad_admins: [ 'admin' ]
 
                                                                    # ]]]
 # .. envvar:: etherpad_users [[[
 #
 # List of Etherpad user accounts. Passwords are generated automatically and
-# are saved in the secret/ directory. Refer to the debops.secret_ role for
+# are saved in the secret/ directory. Refer to the :ref:`debops.secret` role for
 # more details.
 etherpad_users: []
 
@@ -310,11 +330,16 @@ etherpad_abiword: True
 #
 # Default Etherpad plugin list (alphabetically sorted).
 etherpad__default_plugins:
+  - name: 'pg'
+    state: '{{ "present"
+               if (etherpad__database == "postgres")
+               else "absent" }}'
   - name: 'sqlite3'
     state: '{{ "present"
                if (etherpad__database == "sqlite")
                else "absent" }}'
 
+  - 'gyp'
   - 'bcrypt'
   - 'ep_adminpads'
   - 'ep_align'
@@ -402,7 +427,7 @@ etherpad_api_calls: []
 etherpad_api_version: '1.2.12'
 
                                                                    # ]]]
-# .. envvar:: etherpad_apki_key_file [[[
+# .. envvar:: etherpad_api_key_file [[[
 #
 # Filepath of the API key file.
 etherpad_api_key_file: '{{ etherpad_home + "/" + etherpad_repository }}/APIKEY.txt'
@@ -420,7 +445,7 @@ etherpad_api_calls_debug: False
 
 # .. envvar:: etherpad__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services` Ansible role.
 etherpad__etc_services__dependent_list:
 
   - name: 'etherpad-lite'
@@ -430,7 +455,7 @@ etherpad__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: etherpad__logrotate__dependent_config [[[
 #
-# Configuration for the debops.logrotate_ Ansible role.
+# Configuration for the :ref:`debops.logrotate` Ansible role.
 etherpad__logrotate__dependent_config:
 
   - filename: 'etherpad-lite'
@@ -447,7 +472,7 @@ etherpad__logrotate__dependent_config:
                                                                    # ]]]
 # .. envvar:: etherpad__mariadb__dependent_users [[[
 #
-# User configuration for the debops.mariadb_ Ansible role.
+# User configuration for the :ref:`debops.mariadb` Ansible role.
 etherpad__mariadb__dependent_users:
 
   - name: '{{ etherpad_database_user }}'
@@ -459,15 +484,50 @@ etherpad__mariadb__dependent_users:
                                                                    # ]]]
 # .. envvar:: etherpad__mariadb__dependent_databases [[[
 #
-# Database configuration for the debops.mariadb_ Ansible role.
+# Database configuration for the :ref:`debops.mariadb` Ansible role.
 etherpad__mariadb__dependent_databases:
 
   - database: '{{ etherpad_database_name }}'
 
                                                                    # ]]]
+# .. envvar:: etherpad__postgresql__dependent_roles [[[
+#
+# User configuration for the :ref:`debops.postgresql` Ansible role.
+etherpad__postgresql__dependent_roles:
+
+  - name: '{{ etherpad_database_user }}'
+    password: '{{ etherpad_database_password }}'
+    flags: [ 'NOSUPERUSER', 'NOCREATEDB', 'LOGIN' ]
+
+                                                                   # ]]]
+# .. envvar:: etherpad__postgresql__dependent_groups [[[
+#
+# Group configuration for the :ref:`debops.postgresql` Ansible role.
+etherpad__postgresql__dependent_groups:
+
+                                                                   # ]]]
+# .. envvar:: etherpad__postgresql__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.postgresql` Ansible role.
+etherpad__postgresql__dependent_databases:
+
+  - name: '{{ etherpad_database_name }}'
+    port: '5432'
+    owner: '{{ etherpad_database_user }}'
+    encoding: '{{ etherpad_database_encoding | d(omit) }}'
+    lc_collate: '{{ etherpad_database_collate | d(omit) }}'
+    lc_ctype: '{{ etherpad_database_ctype | d(omit) }}'
+
+                                                                   # ]]]
+# .. envvar:: etherpad__postgresql__dependent_pgpass [[[
+#
+# ``~/.pgpass`` configuration for the :ref:`debops.postgresql` Ansible role.
+etherpad__postgresql__dependent_pgpass:
+
+                                                                   # ]]]
 # .. envvar:: etherpad__nginx__dependent_upstreams [[[
 #
-# Upstream configuration for the debops.nginx_ Ansible role.
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
 etherpad__nginx__dependent_upstreams:
 
   - name: '{{ etherpad_system_name }}'
@@ -477,7 +537,7 @@ etherpad__nginx__dependent_upstreams:
                                                                    # ]]]
 # .. envvar:: etherpad__nginx__dependent_servers [[[
 #
-# Server configuration for the debops.nginx_ Ansible role.
+# Server configuration for the :ref:`debops.nginx` Ansible role.
 etherpad__nginx__dependent_servers:
   - by_role: 'debops.etherpad'
     enabled: True

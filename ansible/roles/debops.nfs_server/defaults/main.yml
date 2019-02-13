@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # APT packages [[[
@@ -16,7 +16,7 @@
 # .. envvar:: nfs_server__base_packages [[[
 #
 # List of base APT packages required by the NFS server.
-nfs_server__base_packages: [ 'nfs-kernel-server' ]
+nfs_server__base_packages: [ 'nfs-kernel-server', 'acl' ]
 
                                                                    # ]]]
 # .. envvar:: nfs_server__packages [[[
@@ -71,7 +71,7 @@ nfs_server__service_ports:
   'rpc.statd-bc': '{{ (nfs_server__anchor_port | int + 4) }}'
 
                                                                    # ]]]
-# .. envvar:: nfs_server__firewall_ports {{{
+# .. envvar:: nfs_server__firewall_ports [[[
 #
 # List of TCP/UDP ports which should be opened in the firewall for NFS access.
 nfs_server__firewall_ports: '{{ ([ "nfs", "sunrpc" ] + nfs_server__service_ports.keys())
@@ -208,7 +208,7 @@ nfs_server__combined_exports: '{{ lookup("flattened", nfs_server__default_export
 
 # .. envvar:: nfs_server__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services` Ansible role.
 nfs_server__etc_services__dependent_list:
 
   - name: 'rpc.nfs-cb'
@@ -234,7 +234,7 @@ nfs_server__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: nfs_server__tcpwrappers__dependent_allow [[[
 #
-# Configuration for the debops.tcpwrappers_ Ansible role.
+# Configuration for the :ref:`debops.tcpwrappers` Ansible role.
 nfs_server__tcpwrappers__dependent_allow:
 
   - daemon: [ 'rpcbind', 'mountd', 'lockd', 'statd' ]
@@ -246,7 +246,7 @@ nfs_server__tcpwrappers__dependent_allow:
                                                                    # ]]]
 # .. envvar:: nfs_server__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ Ansible role.
+# Configuration for the :ref:`debops.ferm` Ansible role.
 nfs_server__ferm__dependent_rules:
   - name: 'nfs_server'
     type: 'accept'

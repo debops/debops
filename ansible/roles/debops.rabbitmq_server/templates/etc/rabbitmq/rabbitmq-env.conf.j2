@@ -1,0 +1,7 @@
+# {{ ansible_managed }}}
+
+# Custom environment variables for RabbitMQ Server
+
+{% for env_key, env_value in rabbitmq_server__combined_environment.items() %}
+{{ '{}="{}"'.format(env_key | upper, env_value) }}
+{% endfor %}

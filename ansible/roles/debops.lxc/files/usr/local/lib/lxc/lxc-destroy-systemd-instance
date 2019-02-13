@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Script installed by the 'debops.lxc' Ansible role
+
+# This hook script is executed by 'lxc-destroy' command via the
+# 'lxc.hook.destroy' LXC configuration option. It will disable the
+# 'lxc@<container>.service' systemd service instance when its corresponding LXC
+# container is destroyed.
+
+set -o nounset -o pipefail -o errexit
+
+readonly SCRIPT="$(basename "${0}")"
+readonly CONTAINER="${LXC_NAME:-${1:-}}"
+
+if [ -n "${CONTAINER}" ] ; then
+    if pidof systemd > /dev/null 2>&1 ; then
+
+        if [ "$(systemctl is-enabled "lxc@${CONTAINER}.service")" = "enabled" ] ; then
+            /bin/systemctl --no-ask-password disable "lxc@${CONTAINER}.service"
+        fi
+
+        if [ -d "/etc/systemd/system/lxc@${CONTAINER}.service.d" ] ; then
+            rm -rf "/etc/systemd/system/lxc@${CONTAINER}.service.d"
+            /bin/systemctl --no-ask-password daemon-reload
+        fi
+
+    fi
+fi

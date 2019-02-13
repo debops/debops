@@ -1,13 +1,14 @@
 .. _debops.apt:
 
-Ansible role: debops.apt
-========================
+debops.apt
+==========
 
 .. toctree::
    :maxdepth: 2
 
    introduction
    getting-started
+   defaults
    defaults-detailed
    copyright
    upgrade

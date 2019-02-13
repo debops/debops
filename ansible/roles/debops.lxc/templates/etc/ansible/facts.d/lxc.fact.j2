@@ -1,0 +1,48 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import lxc
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+lxc_net_conf = '/etc/default/lxc-net'
+
+output = {'installed': cmd_exists('/usr/bin/lxc-create'),
+          'containers': list(lxc.list_containers())}
+
+if os.path.exists(lxc_net_conf) and os.path.isfile(lxc_net_conf):
+    try:
+        with open(lxc_net_conf, 'r') as f:
+
+            lxc_net_vars = {}
+
+            for line in f:
+                if not line.startswith('#') and '=' in line:
+                    line = line.strip().split('=')
+                    lxc_net_vars.update({line[0].lower():
+                                         line[1].strip('"')})
+
+            output['net_enabled'] = False
+            if lxc_net_vars['use_lxc_bridge'] == 'true':
+                output['net_enabled'] = True
+
+            if output['net_enabled']:
+                output['net_bridge'] = lxc_net_vars['lxc_bridge']
+                output['net_address'] = lxc_net_vars['lxc_addr']
+                output['net_subnet'] = lxc_net_vars['lxc_network']
+                output['net_domain'] = lxc_net_vars['lxc_domain']
+
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=2))

@@ -1,0 +1,199 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.system_groups default variables
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: system_groups__enabled [[[
+#
+# Enable or disable support for managing UNIX system groups.
+system_groups__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: system_groups__sudo_enabled [[[
+#
+# Enable or disable support for :file:`/etc/sudoers.d/` configuration.
+system_groups__sudo_enabled: '{{ True
+                                 if (ansible_local|d() and ansible_local.sudo|d() and
+                                     (ansible_local.sudo.installed|d()|bool))
+                                 else False }}'
+
+                                                                   # ]]]
+# .. envvar:: system_groups__admins_sudo_nopasswd [[[
+#
+# If enabled, the role will add the ``NOPASSWD:`` tag in the ``sudoers``
+# configuration of the ``admins`` and ``wheel`` UNIX groups. This allows
+# execution of :command:`sudo` commands without password authentication.
+# See :man:`sudoers(5)` for more details.
+#
+# You can disable this and configure the ``ansible_become_pass`` variable in
+# the Ansible inventory for each affected host to provide password
+# authentication. You can use the Ansible Vault functionality to encrypt the
+# password in inventory variables, or store the password in the :file:`secret/`
+# directory and use the ``lookup('file')`` module to retrieve it.
+# See :ref:`debops.secret` documentation for details.
+system_groups__admins_sudo_nopasswd: True
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX system groups [[[
+# ----------------------
+
+# These lists define what UNIX system groups should be present on
+# DebOps-managed hosts and configure additional facilities like :command:`sudo`
+# access. See :ref:`system_groups__ref_list` for more details.
+
+# .. envvar:: system_groups__default_list [[[
+#
+# List of UNIX system groups defined by default by the role.
+system_groups__default_list:
+
+  # This is the current default UNIX group which grants unrestricted 'root'
+  # shell access via the `sudo` command.
+  #
+  # Users in the 'admins' UNIX group are allowed to connect to the host via SSH
+  # service and gain shell access on the host. They can also use the `sudo`
+  # command to execute commands as any UNIX account or gain superuser ('root')
+  # access.
+  - name: 'admins'
+    sudoers: |
+      # This might be required to allow Ansible pipelining connections
+      Defaults: %admins !requiretty
+
+      # This variable is used to configure access by Ansible Controller hosts
+      Defaults: %admins env_check += "SSH_CLIENT"
+
+      # Allow execution of any command as any user on the system.
+      # This is required for Ansible operation.
+      %admins ALL = (ALL:ALL) {{ 'NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '' }}ALL
+    members: '{{ ansible_local.core.admin_users
+                 if (ansible_local|d() and ansible_local.core|d() and
+                     ansible_local.core.admin_users|d())
+                 else [] }}'
+    access: [ 'root', 'sshd' ]
+
+
+  # This might be a new future UNIX system group that grants admin access, it
+  # is not currently created on the hosts.
+  # See https://en.wikipedia.org/wiki/Wheel_(Unix_term) for rationale.
+  #
+  # Users in the 'wheel' UNIX group are allowed to connect to the host via SSH
+  # service and gain shell access on the host. They can also use the `sudo`
+  # command to execute commands as any UNIX account or gain superuser ('root')
+  # access.
+  - name: 'wheel'
+    sudoers: |
+      # This might be required to allow Ansible pipelining connections
+      Defaults: %wheel !requiretty
+
+      # This variable is used to configure access by Ansible Controller hosts
+      Defaults: %wheel env_check += "SSH_CLIENT"
+
+      # Allow execution of any command as any user on the system.
+      # This is required for Ansible operation.
+      %wheel ALL = (ALL:ALL) {{ 'NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '' }}ALL
+    members: '{{ ansible_local.core.admin_users
+                 if (ansible_local|d() and ansible_local.core|d() and
+                     ansible_local.core.admin_users|d())
+                 else [] }}'
+    access: [ 'root', 'sshd' ]
+    state: 'init'
+
+
+  # This group is present on Debian installations by default.
+  #
+  # Users in the 'adm' UNIX group have read-only access to various log files in
+  # the '/var/log/' directory as well as firewall configuration in the
+  # '/etc/ferm/' directory.
+  - name: 'adm'
+    members: '{{ ansible_local.core.admin_users
+                 if (ansible_local|d() and ansible_local.core|d() and
+                     ansible_local.core.admin_users|d())
+                 else [] }}'
+
+
+  # This group is present on Debian installations by default.
+  #
+  # Users in the 'staff' UNIX group have write access to the '/usr/local/' and
+  # '/var/local/' directories and can manage content inside of them.
+  - name: 'staff'
+    members: '{{ ansible_local.core.admin_users
+                 if (ansible_local|d() and ansible_local.core|d() and
+                     ansible_local.core.admin_users|d())
+                 else [] }}'
+
+
+  # Users in the 'sshusers' UNIX group are allowed to connect to the host via
+  # SSH service and gain shell access on the host.  See the 'debops.sshd' role
+  # for more details.
+  - name: 'sshusers'
+    access: [ 'sshd' ]
+
+
+  # Users in the 'sftponly' UNIX group have access to chrooted SFTP service,
+  # without full shell access. They cannot use SSH public keys in the
+  # '~/.ssh/authorized_keys' file, only keys in the
+  # '/etc/ssh/authorized_keys.d/<user>' file are allowed.
+  # See the 'debops.sshd' and 'debops.authorized_keys' roles for more details.
+  - name: 'sftponly'
+    access: [ 'sshd' ]
+
+
+  # This is a UNIX group used in multiple DebOps roles. Its configuration will
+  # be conditional in the future so that it's not created on DebOps hosts that
+  # don't provide webserver services.
+  #
+  # Users in the 'webadmins' UNIX group can reload webserver services using
+  # specific `sudo` commands. See the 'debops.nginx' or 'debops.php' roles for
+  # more details.
+  - name: 'webadmins'
+    access: [ 'webserver' ]
+
+                                                                   # ]]]
+# .. envvar:: system_groups__list [[[
+#
+# List of UNIX system groups that should be present on all hosts in the Ansible
+# inventory.
+system_groups__list: []
+
+                                                                   # ]]]
+# .. envvar:: system_groups__group_list [[[
+#
+# List of UNIX system groups that should be present on hosts in a specific
+# Ansible inventory group.
+system_groups__group_list: []
+
+                                                                   # ]]]
+# .. envvar:: system_groups__host_list [[[
+#
+# List of UNIX system groups that should be present on specific hosts in the
+# Ansible inventory.
+system_groups__host_list: []
+
+                                                                   # ]]]
+# .. envvar:: system_groups__dependent_list [[[
+#
+# List of UNIX system groups that are defined by other Ansible roles via role
+# dependent variables.
+system_groups__dependent_list: []
+
+                                                                   # ]]]
+# .. envvar:: system_groups__combined_list [[[
+#
+# List which combines all of the other UNIX group lists and is used in the role
+# tasks.
+system_groups__combined_list: '{{ system_groups__default_list
+                                  + system_groups__dependent_list
+                                  + system_groups__list
+                                  + system_groups__group_list
+                                  + system_groups__host_list }}'
+                                                                   # ]]]
+                                                                   # ]]]

@@ -11,19 +11,19 @@
   roles:
 
     - role: debops.etc_services
-      tags: [ 'role::etc_services', 'role::ferm' ]
+      tags: [ 'role::etc_services', 'skip::etc_services', 'role::ferm' ]
       etc_services__dependent_list:
         - '{{ nfs_server__etc_services__dependent_list }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nfs_server__ferm__dependent_rules }}'
 
     - role: debops.tcpwrappers
-      tags: [ 'role::tcpwrappers' ]
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ nfs_server__tcpwrappers__dependent_allow }}'
 
     - role: debops.nfs_server
-      tags: [ 'role::nfs_server' ]
+      tags: [ 'role::nfs_server', 'skip::nfs_server' ]

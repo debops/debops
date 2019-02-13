@@ -2,23 +2,27 @@
 
 - name: Install required packages
   apt:
-    name: '{{ item }}'
+    name: '{{ (logrotate__base_packages + logrotate__packages) | flatten }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - '{{ logrotate__base_packages }}'
-    - '{{ logrotate__packages }}'
+  register: logrotate__register_packages
+  until: logrotate__register_packages is succeeded
   when: logrotate__enabled|bool
 
 - name: Manage the log rotation period in cron
   shell: |
+    set -o nounset -o pipefail -o errexit &&
     {% if logrotate__cron_period in [ 'hourly', 'weekly', 'monthly' ] %}
-    test -z "$(dpkg-divert --list /etc/cron.daily/logrotate)" || dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate ;
-    dpkg-divert --quiet --local --divert /etc/cron.{{ logrotate__cron_period }}/logrotate --rename /etc/cron.daily/logrotate
+    test -z "$(dpkg-divert --list /etc/cron.daily/logrotate)" \
+      || dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate ;
+    dpkg-divert --quiet --local
+                --divert /etc/cron.{{ logrotate__cron_period }}/logrotate
+                --rename /etc/cron.daily/logrotate
     {% else %}
     dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate
     {% endif %}
   args:
+    executable: '/bin/bash'
     creates: '{{ "/etc/cron." + logrotate__cron_period + "/logrotate"
                  if (logrotate__cron_period in [ "hourly", "weekly", "monthly" ])
                  else "/etc/cron.daily/logrotate" }}'
@@ -49,13 +53,18 @@
 - name: Check current logrotate diversions
   environment:
     LC_ALL: 'C'
-  shell: dpkg-divert --list '/etc/logrotate.d/*.dpkg-divert' | awk '{print $NF}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '/etc/logrotate.d/*.dpkg-divert' | awk '{print $NF}' || true
+  args:
+    executable: '/bin/bash'
   register: logrotate__register_diversions
   check_mode: False
   changed_when: False
 
 - name: Divert the custom log rotation config
-  command: dpkg-divert --quiet --local --divert /etc/logrotate.d/{{ item.filename }}.dpkg-divert --rename /etc/logrotate.d/{{ item.filename }}
+  command: dpkg-divert --quiet --local
+           --divert /etc/logrotate.d/{{ item.filename }}.dpkg-divert
+           --rename /etc/logrotate.d/{{ item.filename }}
   with_flattened:
     - '{{ logrotate__config }}'
     - '{{ logrotate__group_config }}'
@@ -95,7 +104,8 @@
          item.divert is undefined)
 
 - name: Revert original log rotation configuration
-  shell: rm -f /etc/logrotate.d/{{ item.filename }} ; dpkg-divert --quiet --local --rename --remove /etc/logrotate.d/{{ item.filename }}
+  shell: rm -f /etc/logrotate.d/{{ item.filename }}
+         ; dpkg-divert --quiet --local --rename --remove /etc/logrotate.d/{{ item.filename }}
   args:
     warn: False
   with_flattened:
@@ -107,4 +117,3 @@
           (item.filename|d() and (item.state|d() and item.state == 'absent'))) and
          (item.divert|d() and item.divert|bool and
           '/etc/logrotate.d/' + item.filename + '.dpkg-divert' in logrotate__register_diversions.stdout_lines))
-

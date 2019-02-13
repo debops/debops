@@ -7,6 +7,11 @@
 
 set -o nounset -o pipefail -o errexit
 
+# Ensure that the required directory exists, otherwise the restart of the
+# OpenSSH daemon during playbook execution inside of the container will fail with:
+# "Missing privilege separation directory: /run/sshd"
+sudo mkdir -p /run/sshd
+
 if ! [ -d "src" ] ; then
 
     debops-init src/controller

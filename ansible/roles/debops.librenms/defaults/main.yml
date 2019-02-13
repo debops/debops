@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # System packages [[[
@@ -21,6 +23,7 @@ librenms__base_packages:
         if (ansible_local|d() and ansible_local.apt|d() and
             (ansible_local.apt.nonfree|d())|bool)
         else [] }}'
+  - '{{ "composer" if not librenms__composer_phar|bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__monitoring_packages [[[
@@ -60,6 +63,13 @@ librenms__domain: '{{ ansible_local.core.domain
                       if (ansible_local|d() and ansible_local.core|d() and
                           ansible_local.core.domain|d())
                       else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: librenms__base_url [[[
+#
+# You can use this to force a particular hostname or port in LibreNMS, to for
+# example publish it behind a HTTP proxy.
+librenms__base_url: '/'
 
                                                                    # ]]]
 # .. envvar:: librenms__nginx_auth_realm [[[
@@ -145,6 +155,14 @@ librenms__log_dir: '{{ (ansible_local.root.log
                         if (ansible_local|d() and ansible_local.root|d() and
                             ansible_local.root.log|d())
                         else "/var/log") + "/librenms" }}'
+
+                                                                   # ]]]
+# .. envvar:: librenms__config_mode [[[
+#
+# LibreNMS config mode. This allows to override the default config mode
+# so that the other system users (i.e. syslog) could execute scripts
+# such as syslog.php.
+librenms__config_mode: '0600'
                                                                    # ]]]
                                                                    # ]]]
 # LibreNMS sources [[[
@@ -166,6 +184,33 @@ librenms__install_version: 'master'
 #
 # Enable or disable daily upgrades pulled from LibreNMS ``git`` repository.
 librenms__update: True
+                                                                   # ]]]
+                                                                   # ]]]
+# PHP Composer support [[[
+# ------------------------
+
+# .. envvar:: librenms__composer_phar [[[
+#
+# If this is set to ``True`` the ``composer.phar`` script will be downloaded
+# from the :envvar:`librenms__composer_phar_url` and used to install the
+# missing PHP packages. If this is set to ``False`` the system-wide
+# :command:`composer` is used.
+# WARNING: Setting this variable to ``True`` has some security implications as
+# the download is not cryptographically verified. This is only meant to be a
+# work-around for old distribution releases not supporting the downstream
+# packaged :command:`composer`.
+librenms__composer_phar: '{{ True
+                             if ansible_distribution_release in [ "jessie", "trusty" ]
+                             else False }}'
+
+                                                                   # ]]]
+# .. envvar:: librenms__composer_phar_url [[[
+#
+# URL to the file:`composer.phar` script which will be used to install PHP
+# packages not available in the APT repository on distribution releases which
+# don't package PHP composer. If this is set to ``False``, :command:`composer`
+# will be installed via APT package manager.
+librenms__composer_phar_url: 'https://getcomposer.org/composer.phar'
                                                                    # ]]]
                                                                    # ]]]
 # Database configuration [[[
@@ -273,7 +318,7 @@ librenms__network_map_items: [ 'xdp' ]
 # .. envvar:: librenms__front_page [[[
 #
 # Name of the ``.php`` page that is displayed by default.
-librenms__front_page: 'pages/front/default.php'
+librenms__front_page: 'pages/front/tiles.php'
 
                                                                    # ]]]
 # .. envvar:: librenms__public_status [[[
@@ -410,6 +455,7 @@ librenms__config_authentication:
 librenms__config_installation:
   comment: 'Application directories, installation'
   install_dir: '{{ librenms__install_path }}'
+  base_url:    '{{ librenms__base_url }}'
   rrd_dir:     '{{ librenms__rrd_dir }}'
   log_dir:     '{{ librenms__log_dir }}'
   update:      '{{ librenms__update }}'
@@ -492,8 +538,10 @@ librenms__logrotate__dependent_config:
 # .. envvar:: librenms__php__dependent_packages [[[
 #
 # List of PHP packages to install by ``debops.php`` role.
-librenms__php__dependent_packages: [ 'mysql', 'gmp', 'gd', 'snmp',
-                                     'curl', 'mcrypt', 'json' ]
+librenms__php__dependent_packages:
+  - [ 'mysql', 'gmp', 'gd', 'snmp', 'curl', 'mcrypt', 'json' ]
+  - '{{ [ "xml", "mbstring", "zip" ]
+        if (php__version is version_compare("7.0",">=")) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__php__dependent_pools [[[
@@ -518,7 +566,7 @@ librenms__nginx__dependent_upstreams:
 #
 # The server configuration for ``debops.nginx`` Ansible role.
 librenms__nginx__dependent_servers:
- -  by_role: 'debops.librenms'
+  - by_role: 'debops.librenms'
     type: 'php'
     name: [ '{{ librenms__fqdn }}' ]
     root: '{{ librenms__install_path + "/html" }}'

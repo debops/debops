@@ -18,7 +18,7 @@ export MIBS=
 SNMPDRUN=yes
 
 # snmpd options (use syslog, close stdin/out/err).
-SNMPDOPTS='{{ snmpd_logging_options }} -Lf /dev/null -u {{ snmpd_user }} -g snmp -I -smux,mteTrigger,mteTriggerConf -p /run/snmpd.pid'
+SNMPDOPTS='{{ snmpd_logging_options }} -Lf /dev/null -u {{ snmpd_user }} -g {{ snmpd_group }} -I -smux,mteTrigger,mteTriggerConf -p /run/snmpd.pid'
 
 {% if ansible_distribution_release in [ 'wheezy', 'precise', 'trusty' ] %}
 # snmptrapd control (yes means start daemon).  As of net-snmp version

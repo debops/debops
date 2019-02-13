@@ -1,0 +1,54 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Redis - advanced key-value store (%I) - Sentinel
+After=network.target
+Documentation=http://redis.io/documentation, man:redis-sentinel(1)
+ConditionPathExists=/etc/redis/sentinel-%I/sentinel.conf
+PartOf=redis-sentinel.service
+ReloadPropagatedFrom=redis-sentinel.service
+Before=redis-sentinel.service
+After=redis-server.service
+
+[Service]
+Type=forking
+Slice=system-redis-sentinel.slice
+ExecStart=/usr/bin/redis-sentinel /etc/redis/sentinel-%i/sentinel.conf
+ExecStop=/bin/kill -s TERM $MAINPID
+PIDFile=/var/run/sentinel-%i/redis-sentinel.pid
+TimeoutStopSec=0
+Restart=always
+User=redis
+Group=redis
+RuntimeDirectory=sentinel-%i
+RuntimeDirectoryMode=2755
+
+UMask=007
+PrivateTmp=yes
+LimitNOFILE=65535
+PrivateDevices=yes
+ProtectHome=yes
+ReadOnlyDirectories=/
+ReadWriteDirectories=-/var/lib/redis
+ReadWriteDirectories=-/var/log/redis
+ReadWriteDirectories=-/var/run/sentinel-%i
+
+NoNewPrivileges=true
+CapabilityBoundingSet=CAP_SETGID CAP_SETUID CAP_SYS_RESOURCE
+MemoryDenyWriteExecute=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# redis-server can write to its own config file when in cluster mode so we
+# permit writing there by default. If you are not using this feature, it is
+# recommended that you replace the following lines with "ProtectSystem=full".
+ProtectSystem=true
+ReadWriteDirectories=-/etc/redis
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=redis-sentinel.service

@@ -1,0 +1,240 @@
+---
+
+- name: Install Redis Server packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ redis_server__base_packages }}'
+    - '{{ redis_server__packages }}'
+  register: redis_server__register_packages
+  until: redis_server__register_packages is succeeded
+
+- name: Ensure that standalone Redis Server is stopped on install
+  systemd:
+    name: 'redis-server.service'
+    state: 'stopped'
+  when: ((ansible_local is undefined or
+          ansible_local.redis_server is undefined) and
+         ansible_service_mgr == 'systemd')
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Setup Redis local facts
+  template:
+    src: 'etc/ansible/facts.d/redis_server.fact.j2'
+    dest: '/etc/ansible/facts.d/redis_server.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: redis_server__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: redis_server__register_facts is changed
+
+- name: Install custom Redis scripts
+  copy:
+    src: 'usr/local/bin/'
+    dest: '/usr/local/bin/'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create Redis auth UNIX group
+  group:
+    name: '{{ redis_server__auth_group }}'
+    state: 'present'
+    system: True
+
+- name: Create Redis instance directories
+  file:
+    path: '/etc/redis/{{ item.name }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Install the original Redis config file to instance
+  command: 'install -o {{ redis_server__user }} -g {{ redis_server__auth_group }} -m 0640
+            /etc/redis/redis.conf /etc/redis/{{ item.name }}/redis.conf'
+  args:
+    creates: '/etc/redis/{{ item.name }}/redis.conf'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Generate dynamic Redis configuration scripts
+  template:
+    src: 'etc/redis/instance/ansible-redis-dynamic.conf.j2'
+    dest: '/etc/redis/{{ item.name }}/ansible-redis-dynamic.conf'
+    owner: 'root'
+    group: '{{ redis_server__group }}'
+    mode: '0750'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  register: redis_server__register_config_dynamic
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Generate static Redis configuration files
+  template:
+    src: 'etc/redis/instance/ansible-redis-static.conf.j2'
+    dest: '/etc/redis/{{ item.name }}/ansible-redis-static.conf'
+    owner: 'root'
+    group: '{{ redis_server__group }}'
+    mode: '0640'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  register: redis_server__register_config_static
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Remove include line from redis.conf
+  lineinfile:
+    dest: '/etc/redis/{{ item.item.name }}/redis.conf'
+    regexp: '^include\s+/etc/redis/{{ item.item.name }}/ansible-redis-static.conf'
+    state: 'absent'
+  with_items: '{{ redis_server__register_config_static.results }}'
+  when: item is changed
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Add include line into redis.conf
+  lineinfile:
+    dest: '/etc/redis/{{ item.item.name }}/redis.conf'
+    regexp: '^include\s+/etc/redis/{{ item.item.name }}/ansible-redis-static.conf'
+    line: 'include /etc/redis/{{ item.item.name }}/ansible-redis-static.conf'
+    insertafter: 'EOF'
+    state: 'present'
+  with_items: '{{ redis_server__register_config_static.results }}'
+  when: not ansible_check_mode|bool and item is changed
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Install custom systemd unit files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/systemd/system/redis-server@.service'
+    - 'etc/systemd/system/redis-server.service'
+  register: redis_server__register_systemd
+
+- name: Create systemd override directories for instances
+  file:
+    path: '/etc/systemd/system/redis-server@{{ item.name }}.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.systemd_override|d()
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Generate systemd instance override files
+  template:
+    src: 'etc/systemd/system/redis-server@.service.d/ansible-override.conf.j2'
+    dest: '/etc/systemd/system/redis-server@{{ item.name }}.service.d/ansible-override.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.systemd_override|d()
+  register: redis_server__register_systemd_override
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Stop Redis instances if requested
+  systemd:
+    name: 'redis-server@{{ item.name }}.service'
+    state: 'stopped'
+    enabled: False
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') == 'absent'
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Remove Redis instance systemd override if requested
+  file:
+    path: '/etc/systemd/system/redis-server@{{ item.name }}.service.d'
+    state: 'absent'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  register: redis_server__register_systemd_remove
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') == 'absent'
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Remove Redis instance configuration if requested
+  file:
+    path: '/etc/redis/{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') == 'absent'
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Reload systemd configuration when needed
+  systemd:
+    daemon_reload: True
+  when: ansible_service_mgr == 'systemd' and
+        redis_server__register_systemd is changed or
+        redis_server__register_systemd_remove is changed or
+        redis_server__register_systemd_override is changed
+
+- name: Ensure that Redis instances are started
+  systemd:
+    name: 'redis-server@{{ item.name }}.service'
+    state: 'started'
+    enabled: True
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Restart Redis instances if their configuration changed
+  systemd:
+    name: 'redis-server@{{ item.item.name }}.service'
+    state: 'restarted'
+  with_items: '{{ redis_server__register_config_static.results }}'
+  when: item is changed
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Apply dynamic configuration to Redis instances
+  command: '/etc/redis/{{ item.item.name }}/ansible-redis-dynamic.conf config'
+  with_items: '{{ redis_server__register_config_dynamic.results }}'
+  when: item is changed
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Set Redis Server slave status on first install
+  redis:
+    command: 'slave'
+    master_host: '{{ item.master_host }}'
+    master_port: '{{ item.master_port }}'
+    login_port: '{{ item.port }}'
+    login_password: '{{ item.requirepass | d(omit) }}'
+  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  when: ((ansible_local is undefined or
+          (ansible_local.redis_server is undefined or
+           (ansible_local.redis_server.instances is undefined or
+            (item.name not in
+             (ansible_local.redis_server.instances
+              | selectattr('name', 'defined') | list
+              | map(attribute='name') | list))))) and
+         item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+         item.master_host|d() and item.master_port|d())
+  no_log: '{{ redis_server__no_log }}'
+
+- name: Reload facts if they were modified
+  action: setup
+  when: (redis_server__register_config_static is changed or
+         redis_server__register_config_dynamic is changed)

@@ -6,7 +6,7 @@
 
 [DEFAULT]
 
-ignoreip       = {{ (fail2ban_ignoreip_default|d([]) + fail2ban_ignoreip|d([])) | join(" ") }}
+ignoreip       = {{ (fail2ban_ignoreip_default|d([]) + fail2ban_ignoreip|d([]) + fail2ban_group_ignoreip|d([]) + fail2ban_host_ignoreip|d([])) | join(" ") }}
 
 findtime       = {{ fail2ban_findtime }}
 maxretry       = {{ fail2ban_maxretry }}
@@ -23,13 +23,13 @@ chain          = {{ fail2ban_chain }}
 position       = {{ fail2ban_position }}
 
 {% if fail2ban_default_actions is defined and fail2ban_default_actions %}
-{% for name, commands in fail2ban_default_actions.iteritems() %}
+{% for name, commands in fail2ban_default_actions.items() %}
 {{ "%-14s" | format(name) }} = {{ commands | indent(17) }}
 
 {% endfor %}
 {% endif %}
 {% if fail2ban_custom_actions is defined and fail2ban_custom_actions %}
-{% for name, commands in fail2ban_custom_actions.iteritems() %}
+{% for name, commands in fail2ban_custom_actions.items() %}
 {{ "%-14s" | format(name) }} = {{ commands | indent(17) }}
 
 {% endfor %}

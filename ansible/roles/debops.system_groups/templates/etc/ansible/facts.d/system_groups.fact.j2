@@ -1,0 +1,62 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+
+# A workaround for Jinja templates in Python scripts
+"""
+{% set system_groups__tpl_acl = {} %}
+{% set system_groups__tpl_access = (
+  ansible_local.system_groups.access
+  if (ansible_local|d() and ansible_local.system_groups|d() and
+      ansible_local.system_groups.access|d()) else {}) %}
+{% for element in (system_groups__combined_list | parse_kv_items) %}
+{%   if (element.name|d() and element.state|d('present') not in
+         [ 'init', 'absent', 'ignore' ]) %}
+{%     if element.access|d() %}
+{%       for token in ([ element.access ]
+                         if element.access is string
+                         else element.access) %}
+{%         set _ = system_groups__tpl_access.update(
+               {token:
+                (((system_groups__tpl_access[token]|d([]))
+                  + [ element.name ]) | unique)}) %}
+{%       endfor %}
+{%     endif %}
+{%     if element.allow|d() %}
+{%       for token in ([ element.allow ]
+                         if element.allow is string
+                         else element.allow) %}
+{%         set _ = system_groups__tpl_access.update(
+               {token:
+                (((system_groups__tpl_access[token]|d([]))
+                  + [ element.name ]) | unique)}) %}
+{%       endfor %}
+{%     endif %}
+{%     if element.deny|d() %}
+{%       for token in ([ element.deny ]
+                         if element.deny is string
+                         else element.deny) %}
+{%         if element.name in (system_groups__tpl_access[token]|d([])) %}
+{%           set _ = system_groups__tpl_access[token].remove(element.name) %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{% for element, group_list in system_groups__tpl_access.items() %}
+{%   if group_list %}
+{%     set _ = system_groups__tpl_acl.update({element: group_list}) %}
+{%   endif %}
+{% endfor %}
+"""
+
+output = loads("""{{ {'configured': True,
+                      'enabled': system_groups__enabled|bool,
+                      'access': system_groups__tpl_acl
+                     } | to_nice_json }}""")
+
+print(dumps(output, sort_keys=True, indent=4))

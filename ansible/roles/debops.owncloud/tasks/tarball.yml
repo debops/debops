@@ -1,0 +1,150 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Create Nextcloud group
+  group:
+    name: '{{ owncloud__system_group }}'
+    state: 'present'
+    system: True
+  tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
+
+- name: Create Nextcloud user
+  user:
+    name: '{{ owncloud__system_user }}'
+    group: '{{ owncloud__system_group }}'
+    home: '{{ owncloud__system_home }}'
+    comment: '{{ owncloud__comment }}'
+    shell: '{{ owncloud__shell }}'
+    system: True
+    state: 'present'
+  tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
+
+- name: Create source directory
+  file:
+    path: '{{ owncloud__src }}'
+    state: 'directory'
+    owner: '{{ owncloud__system_user }}'
+    group: '{{ owncloud__system_group }}'
+    mode: '0755'
+
+- name: Create deployment directory
+  file:
+    path: '{{ owncloud__deploy_path }}'
+    state: 'directory'
+    owner: '{{ owncloud__app_user }}'
+    group: '{{ owncloud__app_group }}'
+    mode: '0750'
+
+
+# OpenPGP keys, application download and validation [[[1
+
+- become: True
+  become_user: '{{ owncloud__system_user }}'
+  block:
+
+    # OpenPGP key management [[[2
+
+    - name: Ensure user GnuPG directory exists
+      file:
+        path: '{{ owncloud__system_home + "/.gnupg" }}'
+        state: 'directory'
+        mode: '0700'
+
+    - name: Ensure the Nextcloud OpenPGP key is present
+      apt_key:
+        id: '{{ owncloud__upstream_key_fingerprint | replace(" ","") }}'
+        keyring: '{{ owncloud__system_home + "/.gnupg/pubring.gpg" }}'
+        keyserver: '{{ owncloud__keyserver }}'
+        state: 'present'
+      register: owncloud__register_apt_key_nextcloud
+      until: owncloud__register_apt_key_nextcloud is succeeded
+
+    # Get latest patch version for release [[[2
+
+    - name: Query for the full version string of the current release
+      shell: curl -s -m 900 {{ (owncloud__variant_download_url_map[owncloud__variant] + "/") | quote }}
+             | sed --silent 's/.*href="nextcloud-\({{ owncloud__release | regex_escape() }}[^"]\+\).zip.asc".*/\1/p'
+             | sort --version-sort --reverse
+      args:
+        warn: False
+        executable: '/bin/sh'
+      register: owncloud__register_full_version
+      changed_when: False
+      tags: [ 'role::nextcloud:verify' ]
+
+    # Nextcloud application archive download [[[2
+
+    - name: Create source directories
+      file:
+        path: '{{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] }}'
+        state: 'directory'
+        owner: '{{ owncloud__system_user }}'
+        group: '{{ owncloud__system_group }}'
+        mode: '0755'
+      tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
+
+    - name: Download application files needed for verification
+      get_url:
+        url: '{{ owncloud__variant_download_url_map[owncloud__variant] + "/" +
+                 owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + "." + item }}'
+        dest: '{{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] }}'
+      with_items:
+        - 'zip.asc'
+        - 'zip.sha512'
+      register: owncloud__register_download_assurance
+      tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
+
+    # Nextcloud application archive authenticity verification [[[2
+
+    - name: Read checksum from file
+      shell: cat {{ owncloud__src + "/" + owncloud__variant + "/"
+                    + owncloud__register_full_version.stdout_lines[0] + "/"
+                    + owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0]
+                    + ".zip.sha512" }} | grep '.zip$'
+      args:
+        executable: '/bin/sh'
+      changed_when: False
+      register: owncloud__register_checksum
+      tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
+
+    - name: Download application archive
+      get_url:
+        url: '{{ owncloud__variant_download_url_map[owncloud__variant] + "/" +
+                 owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip" }}'
+        dest: '{{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] }}'
+        checksum: 'sha512:{{ (owncloud__register_checksum.stdout_lines[0]).split(" ") | first }}'
+      when: owncloud__register_download_assurance is changed
+      tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
+
+    - name: Verify OpenPGP signature
+      environment:
+        LC_MESSAGES: 'C'
+      shell: |
+          set -o nounset -o pipefail -o errexit
+          gpg --verify {{ owncloud__src + "/" + owncloud__variant + "/"
+                          + owncloud__register_full_version.stdout_lines[0] + "/"
+                          + owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0]
+                          + ".zip.asc" }} \
+                       {{ owncloud__src + "/" + owncloud__variant + "/"
+                          + owncloud__register_full_version.stdout_lines[0] + "/"
+                          + owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0]
+                          + ".zip" }} 2>&1 \
+            | sed --silent 's/^Primary key fingerprint: \(.*\)$/\1/p;'
+      args:
+        executable: '/bin/bash'
+      changed_when: False
+      register: owncloud__register_verify_authenticity
+      failed_when: (owncloud__register_verify_authenticity.rc != 0 or
+                    (owncloud__register_verify_authenticity.stdout|replace(" ",""))
+                    != (owncloud__upstream_key_fingerprint|replace(" ","")))
+      tags: [ 'role::nextcloud:verify' ]
+
+- name: Unpack the application archive
+  unarchive:
+    remote_src: True
+    src: '{{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] + "/" +
+             owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip" }}'
+    dest: '{{ owncloud__deploy_path + "/.." }}'
+    owner: '{{ owncloud__app_user }}'
+    group: '{{ owncloud__app_group }}'
+    creates: '{{ owncloud__deploy_path + "/index.php" }}'

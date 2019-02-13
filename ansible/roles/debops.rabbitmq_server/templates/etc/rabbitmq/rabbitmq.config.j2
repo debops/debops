@@ -77,7 +77,7 @@
 {%               set _ = rabbitmq_server__tpl_options.update({ option.name: option_params }) %}
 {%             endif %}
 {%           elif option is mapping and (not option.name|d() and not option.state|d()) %}
-{%             for option_key, option_value in option.iteritems() %}
+{%             for option_key, option_value in option.items() %}
 {%               set option_params = (rabbitmq_server__tpl_options[option_key].copy() if rabbitmq_server__tpl_options[option_key] is defined else {}) %}
 {%               set _ = option_params.update({
   'name':   option_key,
@@ -144,9 +144,9 @@
 {{ '{}'.format(elements.value | to_json) -}}
 {%   elif elements.type == 'atom' %}
 {%     if elements.value is string %}
-{%       if elements.value | search('^[A-Z].+') %}
+{%       if elements.value is search('^[A-Z].+') %}
 {{ "'{}'".format(elements.value) -}}
-{%       elif elements.value | search('[^a-zA-Z0-9@_].+') %}
+{%       elif elements.value is search('[^a-zA-Z0-9@_].+') %}
 {{ "'{}'".format(elements.value) -}}
 {%       else %}
 {{ '{}'.format(elements.value) -}}
@@ -154,9 +154,9 @@
 {%     elif elements.value is not string and elements.value is not mapping %}
 {%       set rabbitmq_server__tpl_atom_list = [] %}
 {%       for thing in elements.value %}
-{%         if thing | search('^[A-Z].+') %}
+{%         if thing is search('^[A-Z].+') %}
 {%           set _ = rabbitmq_server__tpl_atom_list.append("'{}'".format(thing)) %}
-{%         elif thing | search('[^a-zA-Z0-9@_].+') %}
+{%         elif thing is search('[^a-zA-Z0-9@_].+') %}
 {%          set _ = rabbitmq_server__tpl_atom_list.append("'{}'".format(thing)) %}
 {%         else %}
 {%           set _ = rabbitmq_server__tpl_atom_list.append('{}'.format(thing)) %}
@@ -173,7 +173,7 @@
 {# ------------------------------------------------------------------ #}
 {% macro print_options(elements) %}
 {%   set rabbitmq_server__tpl_print_options = [] %}
-{%   for key, value in elements.iteritems() %}
+{%   for key, value in elements.items() %}
 {%     if value.state|d('present') not in [ 'absent' ] %}
 {%       set _ = rabbitmq_server__tpl_print_options.append(value) %}
 {%     endif %}
@@ -207,7 +207,7 @@
 {# ------------------------------------------------------------------ #}
 {% macro print_erlang(erlang_config) %}
 {%   set rabbitmq_server__tpl_sorted_config = [] %}
-{%   for application, params in erlang_config.iteritems() %}
+{%   for application, params in erlang_config.items() %}
 {%     set _ = rabbitmq_server__tpl_sorted_config.append(params) %}
 {%   endfor %}
 {%   for params in rabbitmq_server__tpl_sorted_config | sort(attribute='weight') %}

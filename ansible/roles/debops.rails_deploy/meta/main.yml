@@ -19,7 +19,7 @@ dependencies:
           'ruby' in rails_deploy_dependencies
     tags: ruby
 
-  - role: debops.redis
+  - role: debops.redis_server
     when: rails_deploy_worker_enabled and
           rails_deploy_dependencies is defined and
           'redis' in rails_deploy_dependencies
@@ -64,24 +64,26 @@ dependencies:
     tags: monit
 
 galaxy_info:
+
+  role_name: 'rails_deploy'
   author: 'Nick Janetakis'
   description: 'Deploy and monitor rails applications'
   company: 'DebOps'
   license: 'GNU General Public License v3'
   min_ansible_version: '1.7.0'
   platforms:
-  - name: Ubuntu
-    versions:
-    - precise
-    - quantal
-    - raring
-    - saucy
-    - trusty
-  - name: Debian
-    versions:
-    - wheezy
-    - jessie
-  categories:
-  - development
-  - system
-
+    - name: Ubuntu
+      versions:
+        - precise
+        - quantal
+        - raring
+        - saucy
+        - trusty
+    - name: Debian
+      versions:
+        - wheezy
+        - jessie
+  galaxy_tags:
+    - development
+    - ruby
+    - rails

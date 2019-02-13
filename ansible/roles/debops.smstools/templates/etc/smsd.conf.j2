@@ -7,7 +7,7 @@
 devices = {% for modem in smstools_devices %}{{ modem.name }}{% if not loop.last %}, {% endif %}{% endfor %}
 
 # Global options
-{% for key, value in smstools_global_options.iteritems() %}
+{% for key, value in smstools_global_options.items() %}
 {{ key }} = {{ value }}
 {% endfor %}
 
@@ -30,7 +30,7 @@ stats_no_zeroes = yes
 {% for modem in smstools_devices %}
 [{{ modem.name }}]
 device = {{ modem.device }}
-{% for key, value in modem.options.iteritems() %}
+{% for key, value in modem.options.items() %}
 {{ key }} = {{ value }}
 {% endfor %}
 {% endfor %}

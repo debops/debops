@@ -13,6 +13,7 @@
   command: git rev-parse HEAD
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+    warn: False
   register: gitlab_register_gitaly_current_head
   changed_when: False
   become: True
@@ -23,6 +24,7 @@
   command: git symbolic-ref HEAD refs/heads/master
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+    warn: False
   changed_when: False
   become: True
   become_user: '{{ gitlab_user }}'
@@ -32,6 +34,7 @@
   git:
     repo: '{{ gitlab__gitaly_repo }}'
     dest: '{{ gitlab__gitaly_dest }}'
+    version: 'master'
     bare: True
     update: True
   become: True
@@ -46,11 +49,6 @@
     mode: '0644'
   changed_when: False
   when: gitlab_register_gitaly_cloned.stat.exists
-
-- name: Check if gitaly is checked out
-  stat:
-    path: '{{ gitlab__gitaly_checkout }}'
-  register: gitlab_register_gitaly_directory
 
 - name: Create gitaly checkout directory
   file:
@@ -74,21 +72,24 @@
     GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitaly_target_tag
-  changed_when: gitlab_register_gitaly_target_tag.stdout != gitlab_version_map[gitlab_version].gitaly
+  changed_when: gitlab_register_gitaly_target_tag.stdout != gitlab__fact_version.gitaly
 
 - name: Checkout gitaly
-  command: git checkout -f {{ gitlab_version_map[gitlab_version].gitaly }}
+  command: git checkout -f {{ gitlab__fact_version.gitaly }}
   environment:
     GIT_WORK_TREE: '{{ gitlab__gitaly_checkout }}'
   args:
     chdir: '{{ gitlab__gitaly_dest }}'
+    warn: False
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_gitlab__gitaly_checkout
-  when: (gitlab_version_map[gitlab_version].gitaly != gitlab_register_gitaly_target_tag.stdout) or not gitlab_register_gitaly_cloned.stat.exists
+  when: (gitlab__fact_version.gitaly != gitlab_register_gitaly_target_tag.stdout) or
+         not gitlab_register_gitaly_cloned.stat.exists
 
 - name: Stop gitaly service for an upgrade
   service:
@@ -97,14 +98,14 @@
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
          ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed)
+         gitlab_register_gitlab__gitaly_checkout is changed)
 
 - name: Setup gitaly
   make:
     chdir: '{{ gitlab__gitaly_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_gitlab__gitaly_checkout|changed
+  when: gitlab_register_gitlab__gitaly_checkout is changed
 
 - name: Start gitaly service after an upgrade
   service:
@@ -113,7 +114,7 @@
   when: (ansible_local|d() and ansible_local.gitlab|d() and
          (ansible_local.gitlab.installed|d() | bool) and
          ansible_service_mgr == 'systemd' and
-         gitlab_register_gitlab__gitaly_checkout|changed)
+         gitlab_register_gitlab__gitaly_checkout is changed)
 
 - name: Configure Gitaly
   template:

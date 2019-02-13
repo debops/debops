@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # .. envvar:: nginx_allow [[[
@@ -59,6 +59,15 @@ nginx_base_packages: [ 'python-passlib' ]
 nginx_flavor: 'full'
 
                                                                    # ]]]
+# .. envvar:: nginx__flavor_distribution_release [[[
+#
+# Specify the OS distribution release to use in falvored repositories.
+nginx__flavor_distribution_release: '{{ ansible_local.core.distribution_release
+                                        if (ansible_local|d() and ansible_local.core|d() and
+                                            ansible_local.core.distribution_release|d())
+                                        else ansible_distribution_release }}'
+
+                                                                   # ]]]
 # .. envvar:: nginx__flavor_apt_key_id [[[
 #
 nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
@@ -79,8 +88,8 @@ nginx__flavor_apt_key_id_map:
 # .. envvar:: nginx__flavor_apt_repository_map [[[
 #
 nginx__flavor_apt_repository_map:
-  'nginx.org': 'deb https://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} nginx'
-  'passenger': 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ ansible_distribution_release }} main'
+  'nginx.org': 'deb https://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ nginx__flavor_distribution_release }} nginx'
+  'passenger': 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ nginx__flavor_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_packages [[[
@@ -107,7 +116,7 @@ nginx_flavor_package_map:
     - 'nginx-extras'
     - 'ruby'
     - '{{ "passenger"
-          if (ansible_distribution_release in
+          if (nginx__flavor_distribution_release in
               [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
           else "libnginx-mod-http-passenger" }}'
 
@@ -127,6 +136,12 @@ nginx_user: 'www-data'
 # It is exposed using Ansible local facts as 'ansible_local.nginx.www'
 nginx_www: '/srv/www'
 
+                                                                   # ]]]
+# .. envvar:: nginx_public_dir_name [[[
+#
+# public folder foreach website
+# It cat be overwritten per servers
+nginx_public_dir_name: 'public'
                                                                    # ]]]
 # .. envvar:: nginx_etc_path [[[
 #
@@ -215,7 +230,7 @@ nginx_http_auth_basic_name: 'nginx_http'
 #
 # List of HTTP Basic Auth accounts which need to login before accessing this
 # server. Passwords are generated automatically and stored in 'secret/'
-# directory (see debops.secret_ role). If this list empty, access is not
+# directory (see :ref:`debops.secret` role). If this list empty, access is not
 # restricted.
 nginx_http_auth_users: []
 
@@ -226,6 +241,31 @@ nginx_http_auth_users: []
 nginx__http_auth_htpasswd:
   name: '{{ nginx_http_auth_basic_name }}'
   users: '{{ nginx_http_auth_users }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_server_names_hash_bucket_size [[[
+#
+# The default value of 'server_names_hash_bucket_size' depends on the size
+# of the processor’s cache line. If a large number of server names are
+# defined, or unusually long server names are defined,
+# tuning the 'server_names_hash_max_size' and
+# 'server_names_hash_bucket_size' directives at the http level may
+# become necessary.
+# More information can be found at:
+#
+# - http://nginx.org/en/docs/http/ngx_http_core_module.html#server_names_hash_bucket_size
+#
+nginx_http_server_names_hash_bucket_size: 64
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_server_names_hash_max_size [[[
+#
+# Sets the maximum size of the server names hash tables.
+# More information can be found at:
+#
+# - http://nginx.org/en/docs/http/ngx_http_core_module.html#server_names_hash_max_size
+#
+nginx_http_server_names_hash_max_size: 512
 
                                                                    # ]]]
 # .. envvar:: nginx_http_options [[[
@@ -271,6 +311,13 @@ nginx_http_options: |
     text/x-cross-domain-policy;
 
 # ]]]
+# .. envvar:: nginx_http_extra_options [[[
+#
+# A string or YAML text block with additional nginx options placed in the
+# :file:`/etc/nginx/nginx.conf` inside of the "http" block.
+nginx_http_extra_options: ''
+
+                                                                   # ]]]
 # .. envvar:: nginx_extra_options [[[
 #
 # A string or YAML text block with additional nginx options placed in the
@@ -348,7 +395,7 @@ nginx_default_keepalive_timeout: 60
 # .. envvar:: nginx_pki [[[
 #
 # Enable or disable support for PKI/SSL/TLS in nginx.
-# Defaults to ``True`` if debops.pki_ is enabled on the remote host.
+# Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
 nginx_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
                (ansible_local.pki.enabled|d() | bool) }}'
 
@@ -532,6 +579,23 @@ nginx_hsts_subdomains: True
 nginx_hsts_preload: False
 
                                                                    # ]]]
+# .. envvar:: nginx_enable_http2 [[[
+#
+# Enable HTTP/2 (formerly HTTP QUICK) on nginx.
+# HTTP/2 enables a server to pre‑emptively push resources to a remote client,
+# anticipating that the client may soon request those resource, hence
+# reducing the number of RTTs (Round Trip Times).
+# Available with nginx version >= 1.9.5
+nginx_enable_http2: True
+
+                                                                   # ]]]
+# .. envvar:: nginx_enable_sdpy [[[
+#
+# Enables experimental support for .. _SPDY: https://www.chromium.org/spdy/spdy-protocol HTTP protocol.
+# Available with nginx version >= 1.4 && < 1.9.5
+nginx_enable_sdpy: False
+
+                                                                   # ]]]
 # .. envvar:: nginx__http_csp_append [[[
 #
 # CSP directives to append to all policies. This can be used to set the
@@ -624,6 +688,17 @@ nginx_acme_server: False
 # server needs to be configured to answer the queries.
 # Set to ``False`` to disable the redirect.
 nginx_acme_domain: 'acme.{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__hostname_domains [[[
+#
+# Specify the domains which will be used as a base domains for automatic short
+# name generation. It will not be used if it's defined on the server level.
+# First domain from the list that matches, wins.
+nginx__hostname_domains: [ '{{ ansible_local.core.domain
+                               if (ansible_local|d() and ansible_local.core|d() and
+                                   ansible_local.core.domain|d())
+                               else (ansible_domain if ansible_domain else ansible_hostname) }}' ]
 
                                                                    # ]]]
 # .. envvar:: nginx_status [[[
@@ -768,6 +843,12 @@ nginx__maps: []
 # List of default nginx map definitions
 nginx__default_maps:
 
+  # Extract the subdomain from the '*.local' domain managed by Avahi and expose
+  # it as a variable which can be used to redirect the HTTP clients to websites
+  - name: 'host_without_local'
+    map: '$host $host_without_local'
+    mapping: '~*^(?<subdomain>[a-zA-Z0-9\-\_\.]+)\.local$ $subdomain;'
+
   # Support WebSocket connection upgrade as a proxy
   # Documentation: https://nginx.org/en/docs/http/websocket.html
   - name: 'connection_upgrade'
@@ -895,6 +976,19 @@ nginx_default_try_files:
   - '/index.html'
   - '/index.htm'
 
+                                                                   # ]]]
+# .. envvar:: nginx__log_format [[[
+#
+# log_format nginx configuration in /etc/nginx/conf.d/
+nginx__log_format: []
+
+  #- name: 'main'
+  #  log_format: '$remote_addr - $remote_user [$time_local] "$request_method $scheme://$host$request_uri $server_protocol" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"'
+                                                                   # ]]]
+# .. envvar:: nginx__dependent_log_format [[[
+#
+# log_format nginx configuration in /etc/nginx/conf.d/
+nginx__dependent_log_format: []
                                                                    # ]]]
 # .. envvar:: nginx__custom_config [[[
 #
@@ -1049,5 +1143,9 @@ nginx_ssl_ciphers:
   # FIPS 140-2 compliant (https://en.wikipedia.org/wiki/FIPS_140-2)
   # https://community.qualys.com/thread/12182
   fips: 'FIPS@STRENGTH:!aNULL:!eNULL'
+
+  # This cipher set disables the 'ssl_ciphers' option in 'nginx' and the
+  # default set of SSL ciphers for a given platform will be used.
+  default: ''
                                                                    # ]]]
                                                                    # ]]]

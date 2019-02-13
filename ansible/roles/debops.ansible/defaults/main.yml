@@ -1,0 +1,96 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.ansible default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# Installation, APT packages [[[
+# ------------------------------
+
+# .. envvar:: ansible__deploy_type [[[
+#
+# Select how Ansible should be installed by the role:
+#
+# - ``system``: install Ansible using current OS packages, possibly from the
+#               backports repository.
+#
+# - ``upstream``: install Ansible from the upstream APT repository on
+#                 Launchpad (PPA, usable on Debian as well).
+#
+# - ``bootstrap``: install APT packages required for Ansible and build a local
+#                  ``.deb`` package using the upstream GitHub repository.
+#
+ansible__deploy_type: '{{ "upstream"
+                          if (ansible_distribution_release in
+                              [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+                          else "system" }}'
+
+                                                                   # ]]]
+# .. envvar:: ansible__upstream_apt_key [[[
+#
+# The OpenPGP key of the Ansible upstream APT repository.
+ansible__upstream_apt_key: '6125 E2A8 C77F 2818 FB7B D15B 93C4 A3FD 7BB9 C367'
+
+                                                                   # ]]]
+# .. envvar:: ansible__upstream_apt_repository [[[
+#
+# The APT repository URI of the upstream Ansible repository.
+ansible__upstream_apt_repository: 'deb http://ppa.launchpad.net/ansible/ansible/ubuntu xenial main'
+
+                                                                   # ]]]
+# .. envvar:: ansible__base_packages [[[
+#
+# List of APT packages to install for Ansible support.
+ansible__base_packages:
+  - '{{ "ansible"
+        if (ansible__deploy_type in [ "system", "upstream" ])
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: ansible__packages [[[
+#
+# List of additional APT packages to install with Ansible.
+ansible__packages: []
+
+                                                                   # ]]]
+# .. envvar:: ansible__bootstrap_version [[[
+#
+# Specify the :command:`git` repository branch, tag or commit id which should
+# be used by the :command:`bootstrap-ansible` script to build the Ansible
+# ``.deb`` package.
+ansible__bootstrap_version: 'devel'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: ansible__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+ansible__apt_preferences__dependent_list:
+
+  - package: 'ansible'
+    backports: [ "wheezy", "jessie", "stretch" ]
+    reason: 'Compatibility with upstream release'
+    by_role: 'debops_ansible'
+    state: '{{ "absent"
+               if (ansible__deploy_type == "upstream")
+               else "present" }}'
+
+  - package: 'ansible'
+    pin: 'release o=LP-PPA-ansible-ansible'
+    priority: '600'
+    by_role: 'debops_ansible'
+    filename: 'debops_ansible_upstream.pref'
+    reason: 'Recent version from upstream PPA'
+    state: '{{ "present"
+               if (ansible__deploy_type == "upstream")
+               else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]

@@ -11,6 +11,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: php__register_apt_key
+  until: php__register_apt_key is succeeded
   when: php__sury|bool
 
 - name: Add Ondrej Sury repository
@@ -32,12 +34,16 @@
 
 - name: Gather facts on reset
   action: setup
-  when: php__register_local_facts_reset|changed
+  when: php__register_local_facts_reset is changed
 
 - name: Detect PHP version from available packages
   environment:
     LC_ALL: 'C'
-  shell: apt-cache show {{ php__version_preference | join(' ') }} | grep -E '^Package:\s+php' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
+  shell: set -o nounset -o pipefail -o errexit &&
+         apt-cache show {{ php__version_preference | join(' ') }}
+         | grep -E '^Package:\s+php[0-9.]+$' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
+  args:
+    executable: '/bin/bash'
   register: php__register_version
   check_mode: False
   changed_when: False
@@ -46,7 +52,12 @@
 - name: Detect PHP long version from available packages
   environment:
     LC_ALL: 'C'
-  shell: apt-cache policy {{ php__version_preference | join(' ') }} | grep -E '^\s+Candidate:\s+' | grep --invert-match 'none' | head -n 1 | sed --regexp-extended 's/\s*[[:alnum:]]+:\s* ([^+-]+).*/\1/g;'
+  shell: set -o nounset -o pipefail -o errexit &&
+         apt-cache policy {{ php__version_preference | join(' ') }}
+         | grep -E '^\s+Candidate:\s+' | grep --invert-match 'none' | head -n 1
+         | sed --regexp-extended 's/\s*[[:alnum:]]+:\s* ([^+-]+).*/\1/g;'
+  args:
+    executable: '/bin/bash'
   register: php__register_long_version
   check_mode: False
   changed_when: False
@@ -68,16 +79,16 @@
 - name: Set PHP base paths
   set_fact:
     php__etc_base: '{{ ("/etc/php/" + php__version)
-                       if (php__version | version_compare("7.0", ">=") or php__sury|bool)
+                       if (php__version is version_compare("7.0", ">=") or php__sury|bool)
                        else "/etc/php5" }}'
     php__lib_base: '{{ ("/usr/lib/php/" + php__version)
-                       if (php__version | version_compare("7.0", ">=") or php__sury|bool)
+                       if (php__version is version_compare("7.0", ">=") or php__sury|bool)
                        else "/usr/lib/php5" }}'
     php__run_base: '{{ "/run/php"
-                       if (php__version | version_compare("7.0", ">=") or php__sury|bool)
+                       if (php__version is version_compare("7.0", ">=") or php__sury|bool)
                        else "/run" }}'
     php__logrotate_lib_base: '{{ "/usr/lib/php"
-                                 if (php__version | version_compare("7.0", ">=") or php__sury|bool)
+                                 if (php__version is version_compare("7.0", ">=") or php__sury|bool)
                                  else "/usr/lib/php5" }}'
   tags: [ 'role::php:pools', 'role::php:config' ]
 

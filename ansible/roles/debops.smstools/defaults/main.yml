@@ -1,33 +1,67 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.smstools default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
 
 # ---- TCP -> SMS gateway ----
 
+# .. envvar:: smstools_service_allow [[[
+#
 # List of IP addresses or CIDR network ranges which are allowed to access TCP
 # service
 smstools_service_allow: []
 
-
+                                                                   # ]]]
 # ---- mail -> SMS gateway ----
 
 # Settings for subdomains and domains which are used to send messages to SMS
 # gateway
 
+# .. envvar:: smstools_mail_transport_subdomain [[[
+#
 # Subdomain for SMS transport
 smstools_mail_transport_subdomain: 'sms'
 
+                                                                   # ]]]
+# .. envvar:: smstools_mail_alias_subdomain [[[
+#
 # Subdomain for mail aliases which are resolved to mobile numbers
 smstools_mail_alias_subdomain: 'gsm'
 
+                                                                   # ]]]
+# .. envvar:: smstools_mail_domain [[[
+#
 # Main domain used by this role
 smstools_mail_domain: '{{ ansible_domain }}'
 
+                                                                   # ]]]
+# .. envvar:: smstools_mail_transport_domain [[[
+#
 # Domains that combine above subdomains with main host domain
 smstools_mail_transport_domain: '{{ smstools_mail_transport_subdomain }}.{{ smstools_mail_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: smstools_mail_alias_domain [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 smstools_mail_alias_domain: '{{ smstools_mail_alias_subdomain }}.{{ smstools_mail_domain }}'
 
+                                                                   # ]]]
+# .. envvar:: smstools_default_country_prefix [[[
+#
 # Default country prefix (with +) to add if number has only 9 digits
 smstools_default_country_prefix: ''
 
+                                                                   # ]]]
+# .. envvar:: smstools_default_senders [[[
+#
 # List of default mail senders that are allowed to send mail messages to mobile
 # recipients
 # Options:
@@ -36,52 +70,90 @@ smstools_default_country_prefix: ''
 smstools_default_senders:
   - name: 'root@{{ smstools_mail_domain }}'
 
+                                                                   # ]]]
+# .. envvar:: smstools_senders [[[
+#
 # Additional list of mail senders
 smstools_senders: []
 
+                                                                   # ]]]
+# .. envvar:: smstools_mail_recipients [[[
+#
 # Hash table which specifies mail alias to mobile number mapping. Aliases will
 # be generated in a domain specified with smstools_mail_alias_* variables
 smstools_mail_recipients: {}
   #'recipient1': [ '+00123123123' ]
   #'recipient2': [ '+00123123123', '+00321321321' ]
 
+                                                                   # ]]]
+# .. envvar:: smstools_mail_aliases [[[
+#
 # Hash table which specifies aliases for groups of recipients from
 # smstools_mail_recipients table. Aliases will be created in a domain specified
 # with smstools_mail_alias_* variables
 smstools_mail_aliases: {}
   #'alias': [ 'recipient1', 'recipient2' ]
 
+                                                                   # ]]]
+# .. envvar:: smstools_mail_msgdel_list [[[
+#
 # List of regexps which will be used to find and remove strings in SMS messages
 # before they are sent
 smstools_mail_msgdel_list: []
   #- 'linux'
   #- '^Ansible'
 
+                                                                   # ]]]
+# .. envvar:: smstools_sms_log [[[
+#
 # Log sent SMS messages for accounting purposes, use monthly log rotation, logs
 # should be kept for 2 years
 smstools_sms_log: '/var/log/sms.log'
+
+                                                                   # ]]]
+# .. envvar:: smstools_sms_log_rotation [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 smstools_sms_log_rotation: 'monthly'
+
+                                                                   # ]]]
+# .. envvar:: smstools_sms_log_rotation_interval [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
 smstools_sms_log_rotation_interval: '{{ (12 * 2) }}'
 
-
+                                                                   # ]]]
 # ---- SMS gateway testing ----
 
+# .. envvar:: smstools_test_recipients [[[
+#
 # List of mobile numbers to send a test message to on host reboot
 # Example: [ '+00123123123' ]
 smstools_test_recipients: []
 
+                                                                   # ]]]
+# .. envvar:: smstools_test_message [[[
+#
 # Test message to send on host reboot
 smstools_test_message: 'This is a test of the SMS gateway on {{ ansible_fqdn }} sent at $(date)'
 
-
+                                                                   # ]]]
 # ---- smstools options ----
 
+# .. envvar:: smstools_sleep [[[
+#
 # Time between queue checks, in seconds
 smstools_sleep: 1
 
+                                                                   # ]]]
+# .. envvar:: smstools_stats_interval [[[
+#
 # Generate modem stats once a day
 smstools_stats_interval: '{{ (60 * 60 * 24)|round|int }}'
 
+                                                                   # ]]]
+# .. envvar:: smstools_global_options [[[
+#
 # Hash with options configured in /etc/smsd.conf
 smstools_global_options:
   delaytime: '{{ smstools_sleep }}'
@@ -90,6 +162,9 @@ smstools_global_options:
   autosplit: 3
   loglevel: 5
 
+                                                                   # ]]]
+# .. envvar:: smstools_devices [[[
+#
 # List of modems known to smsd, by default it's configured to use one modem on
 # serial interface
 smstools_devices:
@@ -99,9 +174,12 @@ smstools_devices:
       baudrate: 115200
       incoming: yes
 
-# Configuration for other Ansible roles
-# -------------------------------------
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
+# .. envvar:: smstools__etc_services__dependent_list [[[
+#
 # Configuration for the debops.etc_services_ Ansible role.
 smstools__etc_services__dependent_list:
 
@@ -109,7 +187,9 @@ smstools__etc_services__dependent_list:
     port: '{{ smstools_service_port }}'
     comment: 'SMS service'
 
-
+                                                                   # ]]]
+# .. envvar:: smstools__tcpwrappers__dependent_allow [[[
+#
 # Configuration for the debops.tcpwrappers_ Ansible role.
 smstools__tcpwrappers__dependent_allow:
 
@@ -119,7 +199,9 @@ smstools__tcpwrappers__dependent_allow:
     filename: 'smstools_dependency_allow'
     comment: 'Allow connections to SMS service'
 
-
+                                                                   # ]]]
+# .. envvar:: smstools__ferm__dependent_rules [[[
+#
 # Configuration for the debops.ferm_ Ansible role.
 smstools__ferm__dependent_rules:
 
@@ -128,7 +210,9 @@ smstools__ferm__dependent_rules:
     dport: [ '{{ smstools_service_name }}' ]
     saddr: '{{ smstools_service_allow }}'
 
-
+                                                                   # ]]]
+# .. envvar:: smstools__postfix__dependent_maincf [[[
+#
 # The Postfix 'main.cf' configuration for the debops.postfix_ Ansible role.
 smstools__postfix__dependent_maincf:
 
@@ -153,6 +237,9 @@ smstools__postfix__dependent_maincf:
   - name: 'sms_destination_recipient_limit'
     value: 1
 
+                                                                   # ]]]
+# .. envvar:: smstools__postfix__dependent_mastercf [[[
+#
 # The Postfix 'master.cf' configuration for the debops.postfix_ Ansible role.
 smstools__postfix__dependent_mastercf:
 
@@ -165,3 +252,5 @@ smstools__postfix__dependent_mastercf:
       flags=hqu user=smsd argv=/usr/local/lib/smstools/sms-transport
       ${sender} ${mailbox}
     command: 'pipe'
+                                                                   # ]]]
+                                                                   # ]]]

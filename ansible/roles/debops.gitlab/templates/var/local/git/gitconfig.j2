@@ -5,9 +5,9 @@
 
 [user]
 	name		= {{ gitlab_email_name | default('GitLab') }}
-	email		= {{ gitlab_email_from | default('git@' + gitlab_domain[0]) }}
+	email		= {{ gitlab_email_from | default('git@' + gitlab__fqdn) }}
 
-{% if gitlab_version | version_compare("8.7", operator="ge", strict=True) %}
+{% if gitlab_version is version_compare("8.7", operator="ge", strict=True) %}
 [gc]
 	auto		= 0
 {% endif %}

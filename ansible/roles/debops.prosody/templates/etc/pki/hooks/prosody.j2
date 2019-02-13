@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Reload or restart prosody on a certificate state change
+
+set -o nounset -o pipefail -o errexit
+
+prosody_config="/etc/prosody/prosody.conf.lua"
+prosody_action="{{ prosody__pki_hook_action }}"
+
+# Check if current PKI realm is used by the 'prosody' webserver
+certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${prosody_config} || true)
+
+# Get list of current realm states
+states=( $(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ") )
+
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                prosody_state="$(systemctl is-active prosody.service)"
+                if [ "${prosody_state}" = "active" ] ; then
+                    if /usr/sbin/prosody -c "${prosody_config}" -t > /dev/null 2>&1 ; then
+                        systemctl "${prosody_action}" prosody.service
+                    fi
+                fi
+            fi
+
+            break
+        fi
+
+    done
+
+fi

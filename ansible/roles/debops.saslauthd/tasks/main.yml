@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ saslauthd__base_packages }}'
     - '{{ saslauthd__packages }}'
+  register: saslauthd__register_packages
+  until: saslauthd__register_packages is succeeded
 
 - name: Stop saslauthd instance before removal
   command: /etc/init.d/saslauthd stop-instance saslauthd-{{ item.name }}
@@ -66,7 +68,9 @@
         item.state|d('present') != 'absent'
 
 - name: Get list of dpkg-stateoverride paths
-  shell: dpkg-statoverride --list | awk '{print $4}'
+  shell: set -o nounset -o pipefail -o errexit && dpkg-statoverride --list | awk '{print $4}'
+  args:
+    executable: '/bin/bash'
   register: saslauthd__register_statoverride
   changed_when: False
   check_mode: False
@@ -108,4 +112,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: saslauthd__register_facts|changed
+  when: saslauthd__register_facts is changed

@@ -11,6 +11,8 @@
     - '{{ hashicorp__base_packages }}'
     - '{{ hashicorp__packages }}'
     - '{{ hashicorp__dependent_packages }}'
+  register: hashicorp__register_packages
+  until: hashicorp__register_packages is succeeded
   when: (hashicorp__applications or hashicorp__dependent_applications)
 
 
@@ -56,7 +58,7 @@
     state: 'directory'
     owner: '{{ hashicorp__user }}'
     group: '{{ hashicorp__group }}'
-    mode: '0755'
+    mode: '0750'
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
   when: (hashicorp__applications or hashicorp__dependent_applications)
   tags: [ 'role::hashicorp:unpack', 'role::hashicorp:install' ]
@@ -103,6 +105,8 @@
         keyring: '{{ hashicorp__home + "/.gnupg/pubring.gpg" }}'
         keyserver: '{{ hashicorp__keyserver }}'
         state: 'present'
+      register: hashicorp__register_apt_key
+      until: hashicorp__register_apt_key is succeeded
 
 
     # HashiCorp application archive download [[[2
@@ -177,7 +181,9 @@
                  item + "_" + hashicorp__combined_version_map[item] + "_" + hashicorp__tar_suffix }}'
         dest: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] }}'
         creates: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/" +
-                     ((hashicorp__combined_binary_map[item] if hashicorp__combined_binary_map[item] is string else hashicorp__combined_binary_map[item]|first)
+                     ((hashicorp__combined_binary_map[item]
+                       if hashicorp__combined_binary_map[item] is string
+                       else hashicorp__combined_binary_map[item]|first)
                       if hashicorp__combined_binary_map[item]|d() else item) }}'
       with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
       register: hashicorp__register_unpack
@@ -189,7 +195,8 @@
         src: '{{ hashicorp__src + "/" + item + "/" + hashicorp__combined_version_map[item] + "/" +
                  item + "_" + hashicorp__combined_version_map[item] + "_" + hashicorp__consul_webui_suffix }}'
         dest: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/web_ui" + "/" }}'
-        creates: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/web_ui/index.html" }}'
+        creates: '{{ hashicorp__lib + "/" + item + "/"
+                     + hashicorp__combined_version_map[item] + "/web_ui/index.html" }}'
       with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
       register: hashicorp__register_unpack_webui
       when: hashicorp__consul_webui|bool and item == 'consul'
@@ -200,17 +207,20 @@
 
 - name: Install HashiCorp applications
   shell: install --mode 755 --owner root --group root --target-directory {{ hashicorp__bin }}
-         {{ ((hashicorp__combined_binary_map[item.0] if hashicorp__combined_binary_map[item.0] is string else hashicorp__combined_binary_map[item.0] | join(' '))
+         {{ ((hashicorp__combined_binary_map[item.0]
+              if hashicorp__combined_binary_map[item.0] is string
+              else hashicorp__combined_binary_map[item.0] | join(' '))
              if hashicorp__combined_binary_map[item.0]|d() else item.0) }}
          {% if item.0 == 'terraform' %}
-         ; find . -maxdepth 1 -type f -name 'terraform-*' -exec install -m 755 -o root -g root -t {{ hashicorp__bin }} {} +
+         ; find . -maxdepth 1 -type f -name 'terraform-*'
+                  -exec install -m 755 -o root -g root -t {{ hashicorp__bin }} {} +
          {% endif %}
   args:
     chdir: '{{ hashicorp__lib + "/" + item.0 + "/" + hashicorp__combined_version_map[item.0] }}'
   with_together:
     - '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
     - '{{ hashicorp__register_unpack.results }}'
-  when: (item.1|changed or (ansible_local|d() and
+  when: (item.1 is changed or (ansible_local|d() and
          (ansible_local.hashicorp is not defined or
           (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
            (ansible_local.hashicorp.applications[item.0] is not defined or
@@ -224,7 +234,7 @@
   args:
     warn: False
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
-  when: (hashicorp__consul_webui|bool and item == 'consul' and hashicorp__register_unpack_webui|changed)
+  when: (hashicorp__consul_webui|bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
 
 
 # Ansible local facts [[[1
@@ -251,4 +261,4 @@
 - name: Reload facts if they were modified
   action: setup
   when: ((hashicorp__applications or hashicorp__dependent_applications) and
-         hashicorp__register_facts|changed)
+         hashicorp__register_facts is changed)

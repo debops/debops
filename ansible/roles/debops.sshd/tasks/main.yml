@@ -4,7 +4,8 @@
   include: '{{ lookup("task_src", "sshd/pre_main.yml") }}'
 
 - name: Check if OpenSSH is installed (or half-installed)
-  script: scripts/dpkg-state openssh-server
+  script: 'scripts/dpkg-state{{ "2" if (ansible_python_version is version_compare("3.5", "<"))
+                                    else "3" }} openssh-server'
   register: sshd__register_prev_pkg_state
   changed_when: False
   failed_when: sshd__register_prev_pkg_state.rc != 0 or
@@ -59,22 +60,26 @@
 
 - name: Ensure OpenSSH support is installed
   apt:
-    name: '{{ item }}'
+    name: '{{ (sshd__base_packages
+             + sshd__recommended_packages
+             + sshd__optional_packages
+             + sshd__ldap_packages
+             + sshd__packages)
+             | flatten }}'
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.sshd|d())
                else "latest" }}'
     install_recommends: False
-  with_flattened:
-    - '{{ sshd__base_packages }}'
-    - '{{ sshd__recommended_packages }}'
-    - '{{ sshd__optional_packages }}'
-    - '{{ sshd__ldap_packages }}'
-    - '{{ sshd__packages }}'
+  register: sshd__register_packages
+  until: sshd__register_packages is succeeded
 
 - name: Check OpenSSH server version
   environment:
     LC_MESSAGES: 'C'
-  shell: 'dpkg-query -W -f="\${Version}\n" "openssh-server" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
+  shell: 'set -o nounset -o pipefail -o errexit &&
+          dpkg-query -W -f="\${Version}\n" "openssh-server" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
+  args:
+    executable: '/bin/bash'
   register: sshd__register_version
   changed_when: False
   check_mode: False
@@ -86,13 +91,13 @@
     chdir: '/etc/ssh'
     creates: '/etc/ssh/ssh_host_ed25519_key'
   when: sshd__register_version.stdout|d() and
-        sshd__register_version.stdout | version_compare('6.5', '>=')
+        sshd__register_version.stdout is version_compare('6.5', '>=')
   tags: [ 'role::sshd:config' ]
 
 - name: Configure authorized_keys lookup
   include: authorized_keys_lookup.yml
   when: sshd__register_version.stdout|d() and
-        sshd__register_version.stdout | version_compare('6.2', '>=') and
+        sshd__register_version.stdout is version_compare('6.2', '>=') and
         sshd__authorized_keys_lookup|bool
   tags: [ 'role::sshd:config' ]
 
@@ -101,6 +106,25 @@
   register: sshd__register_host_keys
   changed_when: False
   check_mode: False
+  tags: [ 'role::sshd:config' ]
+
+- name: Get list of available host certs
+  shell: find /etc/ssh -maxdepth 1 -type f -name 'ssh_host_*_key-cert.pub' -exec basename {} .pub \;
+  register: sshd__register_host_certs
+  changed_when: False
+  check_mode: False
+  when: sshd__scan_for_host_certs
+  tags: [ 'role::sshd:config' ]
+
+- name: Setup trusted user CA key file
+  template:
+    src:      '{{ lookup("template_src", "etc/ssh/trusted_user_ca_file.pem.j2") }}'
+    dest:     '{{ sshd__trusted_user_ca_keys_file }}'
+    owner:    'root'
+    group:    'root'
+    mode:     '0644'
+  when: sshd__trusted_user_ca_keys | d() | length > 0  and
+        sshd__trusted_user_ca_keys_file is defined
   tags: [ 'role::sshd:config' ]
 
 - name: Setup /etc/ssh/sshd_config
@@ -114,17 +138,17 @@
   tags: [ 'role::sshd:config' ]
 
 - name: Make sure the system-wide known_hosts file exists
-  copy:
-    force:    False
-    dest:     '{{ sshd__known_hosts_file }}'
-    content:  ''
-    owner:    'root'
-    group:    'root'
-    mode:     '0644'
+  command: touch {{ sshd__known_hosts_file }}
+  args:
+    creates: '{{ sshd__known_hosts_file }}'
+    warn: False
   tags: [ 'role::sshd:known_hosts' ]
 
 - name: Get list of already scanned host fingerprints
-  shell: ssh-keygen -f {{ sshd__known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
+  shell: set -o nounset -o pipefail -o errexit &&
+         ssh-keygen -f {{ sshd__known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
+  args:
+    executable: '/bin/bash'
   with_flattened:
     - '{{ sshd__known_hosts }}'
     - '{{ sshd__group_known_hosts }}'
@@ -133,6 +157,7 @@
   register: sshd__register_known_hosts
   changed_when: False
   failed_when: False
+  check_mode: False
   tags: [ 'role::sshd:known_hosts' ]
 
 - name: Scan SSH fingerprints of specified hosts
@@ -167,9 +192,9 @@
     group: 'root'
     mode: '0755'
 
-- name: Copy Ansible local fact script
-  copy:
-    src: 'scripts/sshd.fact'
+- name: Save Ansible local fact script
+  template:
+    src: 'etc/ansible/facts.d/sshd.fact.j2'
     dest: '/etc/ansible/facts.d/sshd.fact'
     owner: 'root'
     group: 'root'
@@ -179,7 +204,7 @@
 - name: Reload Ansible local facts
   setup:
     filter: ansible_local
-  when: sshd__register_fact_script|changed
+  when: sshd__register_fact_script is changed
 
 - name: Post hooks
   include: '{{ lookup("task_src", "sshd/post_main.yml") }}'

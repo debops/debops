@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ netbox__base_packages }}'
     - '{{ netbox__packages }}'
+  register: netbox__register_packages
+  until: netbox__register_packages is succeeded
 
 - name: Create NetBox system group
   group:
@@ -24,24 +26,19 @@
     state: 'present'
     system: True
 
-- name: Create source and library directories
+- name: Create additional directories used by Netbox
   file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
     mode: '0755'
-  with_items: [ '{{ netbox__src }}', '{{ netbox__lib }}' ]
-
-- name: Create Python virtualenv for NetBox
-  pip:
-    name: 'wsgiref'
-    virtualenv: '{{ netbox__virtualenv }}'
-  become: True
-  become_user: '{{ netbox__user }}'
-  register: netbox__register_virtualenv
-  changed_when: (netbox__register_virtualenv|success and
-                 netbox__register_virtualenv.stdout|search('New python executable in'))
+  with_items:
+    - '{{ netbox__src }}'
+    - '{{ netbox__lib }}'
+    - '{{ netbox__data }}'
+    - '{{ netbox__config_media_root }}'
+    - '{{ netbox__config_reports_root }}'
 
 - name: Clone NetBox source code
   git:
@@ -58,6 +55,19 @@
   stat:
     path: '{{ netbox__git_checkout }}'
   register: netbox__register_installed
+
+- name: Check current virtualenv version
+  stat:
+    path: '{{ netbox__virtualenv + "/bin/python" }}'
+  register: netbox__register_virtualenv_version
+
+- name: Remove old python2 based virtualenv
+  file:
+    path: '{{ netbox__virtualenv }}'
+    state: 'absent'
+  register: netbox__register_virtalenv_deleted
+  when: ( netbox__virtualenv_version == '3' and
+          netbox__register_virtualenv_version.stat.lnk_target|d() == 'python2' )
 
 - name: Create NetBox checkout directory
   file:
@@ -78,10 +88,9 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  shell: git rev-parse {{ netbox__git_version }}
+  command: git rev-parse {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
-    executable: '/bin/sh'
     warn: False
   become: True
   become_user: '{{ netbox__user }}'
@@ -91,42 +100,55 @@
 - name: Checkout NetBox
   environment:
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  shell: git checkout -f {{ netbox__git_version }}
+  command: git checkout -f {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
-    executable: '/bin/sh'
     warn: False
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_checkout
+  until: netbox__register_checkout is succeeded
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
   when: (netbox__register_source.before is undefined or
          (netbox__register_source.before|d() and netbox__register_target_branch.stdout|d() and
           netbox__register_source.before != netbox__register_target_branch.stdout) or
-          not netbox__register_installed.stat.exists|bool)
+          not netbox__register_installed.stat.exists|bool or
+          netbox__register_virtalenv_deleted.changed|bool)
 
-# This is required due to an issue with setuptools
-# https://github.com/digitalocean/netbox/issues/864
-- name: Upgrade pip and setuptools in the virtualenv
-  environment:
-    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
-    PATH: '{{ netbox__virtualenv_env_path }}'
-  shell: pip install --upgrade --force-reinstall pip setuptools
-  args:
-    chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
+- name: Create Python virtualenv for NetBox
+  pip:
+    name: [ 'pip', 'setuptools' ]
+    virtualenv: '{{ netbox__virtualenv }}'
+    virtualenv_python: '{{ "python" + netbox__virtualenv_version }}'
+    # This is required due to an issue with setuptools
+    # https://github.com/digitalocean/netbox/issues/864
+    state: 'forcereinstall'
   become: True
   become_user: '{{ netbox__user }}'
-  when: netbox__register_checkout|changed
+  register: netbox__register_virtualenv
+  until: netbox__register_virtualenv is succeeded
+  changed_when: (netbox__register_virtualenv is success and
+                 netbox__register_virtualenv.stdout is search('New python executable in'))
+
+- name: Clean up stale Python bytecode
+  command: find . -name '*.pyc' -delete
+  args:
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+  become: True
+  become_user: '{{ netbox__user }}'
+  when: netbox__register_checkout is changed
 
 - name: Install NetBox requirements in virtualenv
   pip:
     virtualenv: '{{ netbox__virtualenv }}'
     requirements: '{{ netbox__git_checkout + "/requirements.txt" }}'
+    extra_args: '--upgrade'
+  register: netbox__register_pip_install
+  until: netbox__register_pip_install is succeeded
   become: True
   become_user: '{{ netbox__user }}'
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
-  when: netbox__register_checkout|changed
+  when: netbox__register_checkout is changed
 
 - name: Install additional Python modules in virtualenv
   pip:
@@ -136,7 +158,8 @@
   become: True
   become_user: '{{ netbox__user }}'
   with_flattened: '{{ netbox__virtualenv_pip_packages }}'
-  when: netbox__register_checkout|changed
+  when: netbox__register_checkout is changed and
+        item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Generate NetBox configuration
   template:
@@ -152,13 +175,12 @@
   environment:
     VIRTUAL_ENV: '{{ netbox__virtualenv }}'
     PATH: '{{ netbox__virtualenv_env_path }}'
-  shell: ./manage.py migrate
+  command: ./manage.py migrate
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
   become: True
   become_user: '{{ netbox__user }}'
-  when: netbox__register_checkout|changed
+  when: netbox__register_checkout is changed
   register: netbox__register_migration
 
 - name: Create superuser account
@@ -168,42 +190,41 @@
     SUPERUSER_NAME: '{{ netbox__superuser_name }}'
     SUPERUSER_EMAIL: '{{ netbox__superuser_email }}'
     SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
-  shell: echo "from django.contrib.auth.models import User;
+  shell: set -o nounset -o pipefail -o errexit &&
+         echo "from django.contrib.auth.models import User;
                User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
          | ./manage.py shell
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
+    executable: '/bin/bash'
   become: True
   become_user: '{{ netbox__user }}'
   when: (not netbox__register_installed.stat.exists|bool and
-         not netbox__register_migration.stdout|search('No migrations to apply.'))
+         not netbox__register_migration.stdout is search('No migrations to apply.'))
   no_log: True
 
 - name: Generate static assets
   environment:
     VIRTUAL_ENV: '{{ netbox__virtualenv }}'
     PATH: '{{ netbox__virtualenv_env_path }}'
-  shell: ./manage.py collectstatic --no-input
+  command: ./manage.py collectstatic --no-input
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
   become: True
   become_user: '{{ netbox__user }}'
-  when: netbox__register_checkout|changed
+  when: netbox__register_checkout is changed
 
 - name: Load initial data
   environment:
     VIRTUAL_ENV: '{{ netbox__virtualenv }}'
     PATH: '{{ netbox__virtualenv_env_path }}'
-  shell: ./manage.py loaddata initial_data
+  command: ./manage.py loaddata initial_data
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: '/bin/sh'
   become: True
   become_user: '{{ netbox__user }}'
   when: (netbox__load_initial_data|bool and not netbox__register_installed.stat.exists|bool and
-         not netbox__register_migration.stdout|search('No migrations to apply.'))
+         not netbox__register_migration.stdout is search('No migrations to apply.'))
 
 - name: Generate systemd service unit
   template:
@@ -217,9 +238,10 @@
   when: netbox__app_internal_appserver|bool
 
 - name: Reload systemd configuration
-  command: systemctl daemon-reload
+  systemd:
+    daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
-         netbox__register_systemd|changed)
+         netbox__register_systemd is changed)
 
 - name: Enable and start netbox internal appserver
   service:
@@ -227,4 +249,25 @@
     state: 'started'
     enabled: True
   when: (netbox__app_internal_appserver|bool and ansible_service_mgr == 'systemd' and
-         netbox__register_systemd|changed and not netbox__register_installed.stat.exists|bool)
+         netbox__register_systemd is changed and not netbox__register_installed.stat.exists|bool)
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save NetBox local facts
+  template:
+    src: 'etc/ansible/facts.d/netbox.fact.j2'
+    dest: '/etc/ansible/facts.d/netbox.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: netbox__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: netbox__register_facts is changed

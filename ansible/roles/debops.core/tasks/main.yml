@@ -4,6 +4,8 @@
   apt:
     update_cache: True
     cache_valid_time: '{{ "86400" if ansible_local|d() else omit }}'
+  register: core__register_apt_update
+  until: core__register_apt_update is succeeded
   when: ansible_pkg_mgr == 'apt'
   tags: [ 'meta::provision' ]
 
@@ -16,6 +18,8 @@
     - '{{ core__packages }}'
     - '{{ core__group_packages }}'
     - '{{ core__host_packages }}'
+  register: core__register_packages
+  until: core__register_packages is succeeded
   tags: [ 'meta::provision' ]
 
 - name: Create root directories
@@ -37,7 +41,10 @@
   become: False
 
 - name: Read the host UUID
-  shell: dmidecode --string system-uuid | tail -n 1 || true
+  shell: set -o nounset -o pipefail -o errexit &&
+         dmidecode --string system-uuid | tail -n 1 || true
+  args:
+    executable: '/bin/bash'
   register: core__register_uuid
   changed_when: False
 
@@ -47,17 +54,8 @@
     dest: '/etc/ansible/facts.d/{{ item }}.fact'
     owner: 'root'
     group: 'root'
-    mode: '0644'
-  register: core__register_fact_files
-  with_items: [ 'root', 'tags', 'uuid' ]
-
-- name: Install core fact script
-  template:
-    src: 'etc/ansible/facts.d/core.fact.j2'
-    dest: '/etc/ansible/facts.d/core.fact'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
+  with_items: [ 'core', 'resolver', 'root', 'tags', 'uuid' ]
   register: core__register_core_fact
 
 - name: Install local fact scripts
@@ -71,6 +69,5 @@
 
 - name: Gather local facts if they changed
   action: setup
-  when: core__register_fact_files|changed or
-        core__register_core_fact|changed or
-        core__register_fact_scripts|changed
+  when: core__register_core_fact is changed or
+        core__register_fact_scripts is changed

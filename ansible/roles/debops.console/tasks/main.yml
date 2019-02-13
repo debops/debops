@@ -2,12 +2,11 @@
 
 - name: Install requested packages
   apt:
-    name: '{{ item }}'
+    name: '{{ (console_base_packages + console_conditional_packages) | flatten }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - '{{ console_base_packages }}'
-    - '{{ console_conditional_packages }}'
+  register: console__register_packages
+  until: console__register_packages is succeeded
   when: item is defined and item
   tags: [ 'meta::provision' ]
 
@@ -37,27 +36,6 @@
           console_register_inittab.stat.exists))
   notify: [ 'Reload sysvinit' ]
 
-- name: Divert original /etc/issue
-  command: dpkg-divert --quiet --local --divert /etc/issue.dpkg-divert --rename /etc/issue
-  args:
-    creates: '/etc/issue.dpkg-divert'
-
-- name: Configure /etc/issue
-  template:
-    src: '{{ lookup("template_src", "etc/issue.j2") }}'
-    dest: '/etc/issue'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
-- name: Configure /etc/motd
-  template:
-    src: '{{ lookup("template_src", "etc/motd.j2") }}'
-    dest: '/etc/motd'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
 - name: Configure fsck behaviour on boot
   lineinfile:
     dest: '/etc/default/rcS'
@@ -66,98 +44,11 @@
     line: 'FSCKFIX={{ console_fsckfix }}'
   when: ansible_distribution_release in console_fsckfix_releases
 
-- name: Ensure that specified locales exist
-  locale_gen:
-    name: '{{ item }}'
-    state: 'present'
-  with_items: '{{ console_locales }}'
-  when: (console_locales is defined and console_locales)
-  tags: [ 'role::console:locale' ]
-
-- name: Set default system locale
-  debconf:
-    name: 'locales'
-    question: 'locales/default_environment_locale'
-    vtype: 'string'
-    value: '{{ console_locales_default }}'
-  register: console_register_default_locale
-  when: (console_locales|d() and console_locales_default|d())
-  tags: [ 'role::console:locale' ]
-
-- name: Update /etc/default/locale
-  command: update-locale LANG={{ console_locales_default }}
-  when: console_register_default_locale|d() and
-        console_register_default_locale.changed
-  tags: [ 'role::console:locale' ]
-
-- name: Get list of available text editors
-  command: update-alternatives --list editor
-  register: console_register_installed_editors
-  changed_when: False
-  check_mode: False
-  tags: [ 'role::console:editor' ]
-
-- name: Configure system-wide editor
-  alternatives:
-    name: 'editor'
-    path: '{{ (console_preferred_editors | intersect(console_register_installed_editors.stdout_lines)) | first }}'
-  tags: [ 'role::console:editor' ]
-
-  # Enable hidepid= only on specific hosts
-- include: proc_hidepid.yml
-  when: (ansible_local|d() and ((ansible_local.root|d() and 'ignore-cap12s' in ansible_local.root.flags) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
-
-- name: Make sure that Ansible fact directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Install proc hidepid fact script
-  template:
-    src: 'etc/ansible/facts.d/proc.fact.j2'
-    dest: '/etc/ansible/facts.d/proc.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Remove obsolet sysctl configuration file
-  file:
-    path: '/etc/sysctl.d/10-debops.console.conf'
-    state: 'absent'
-
-- name: Manage entries in /etc/hosts
-  lineinfile:
-    dest: '/etc/hosts'
-    regexp: '^{{ item.key | replace(".","\.") }}\s+'
-    line: "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
-    state: '{{ "present" if item.value|d() else "absent" }}'
-  with_dict: '{{ console_hosts|combine(console_group_hosts,console_host_hosts) }}'
-  tags: [ 'role::console:hosts' ]
-
-- name: Copy custom files to remote hosts
-  copy:
-    src: '{{ item.src }}'
-    dest: '{{ item.dest }}'
-    owner: '{{ item.owner | d(omit) }}'
-    group: '{{ item.group | d(omit) }}'
-    mode: '{{ item.mode | d(omit) }}'
-    directory_mode: '{{ item.directory_mode | d(omit) }}'
-    follow: '{{ item.follow | d(omit) }}'
-    force: '{{ item.force | d(omit) }}'
-  with_items: '{{ console_custom_files }}'
-  when: (item.src|d() and item.dest|d())
-  tags: [ 'role::console:custom_files' ]
-
 - include: filesystem_mount.yml
   tags: [ 'role::console:mount' ]
   when: (
           ansible_local|d() and (
-            (ansible_local.root|d() and 'ignore-cap12s' in ansible_local.root.flags) or (
+            (ansible_local.tags|d() and 'ignore-cap12s' in ansible_local.tags) or (
               ansible_local.cap12s|d() and (
                 not ansible_local.cap12s.enabled|bool or
                 (ansible_local.cap12s.enabled|bool and 'cap_sys_admin' in ansible_local.cap12s.list)
@@ -165,6 +56,3 @@
             )
           )
         )
-
-- include: sysnews.yml
-  when: console_sysnews is defined and console_sysnews

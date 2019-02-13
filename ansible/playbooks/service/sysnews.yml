@@ -1,0 +1,14 @@
+---
+
+- name: Manage System News entries
+  hosts: [ 'debops_service_sysnews' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.sysnews
+      tags: [ 'role::sysnews', 'skip::sysnews' ]

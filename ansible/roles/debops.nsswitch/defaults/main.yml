@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # General configuration [[[
@@ -87,8 +87,8 @@ nsswitch__combined_services: '{{ lookup("flattened", (nsswitch__default_services
 # services. The presence of a given NSS service here doesn't mean that it will
 # be activated. See :ref:`nsswitch__ref_database_map` for more details.
 nsswitch__default_database_map:
-  'passwd':     [ 'compat', 'sss', 'ldap', 'winbind' ]
-  'group':      [ 'compat', 'sss', 'ldap', 'winbind' ]
+  'passwd':     [ 'compat', 'mymachines', 'systemd', 'sss', 'ldap', 'winbind' ]
+  'group':      [ 'compat', 'mymachines', 'systemd', 'sss', 'ldap', 'winbind' ]
   'shadow':     [ 'compat', 'sss', 'ldap' ]
   'gshadow':    [ 'files' ]
   'initgroups': []
@@ -97,6 +97,12 @@ nsswitch__default_database_map:
 
     - 'files'
 
+    - 'mymachines'
+
+    - 'libvirt'
+
+    - 'libvirt_guest'
+
     - [ 'mdns_minimal', '[NOTFOUND=return]' ]
 
     - replace: 'mdns4_minimal'
@@ -104,9 +110,13 @@ nsswitch__default_database_map:
                                       ansible_local.avahi.ipv6|bool) else "mdns4_minimal" }}'
       action:  '[NOTFOUND=return]'
 
+    - [ 'resolve', '[!UNAVAIL=return]' ]
+
     - 'dns'
 
     - 'wins'
+
+    - 'myhostname'
 
   'networks':   [ 'files' ]
   'protocols':  [ 'db',  'files' ]

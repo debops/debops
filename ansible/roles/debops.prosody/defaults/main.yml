@@ -1,0 +1,394 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.prosody default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: prosody__base_packages [[[
+#
+# List of base packages to install.
+prosody__base_packages:
+  - 'prosody'
+  - 'lua-zlib'
+  - 'lua-sec'
+  - 'prosody-modules'  # for ldap auth
+  - '{{ "lua-event" if prosody__use_libevent|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__packages [[[
+#
+# List of additional APT packages to install with Prosody.
+prosody__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# PKI [[[
+# -------
+
+# .. envvar:: prosody__pki [[[
+#
+# Enable or disable support for PKI/SSL/TLS in prosody.
+# Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
+prosody__pki: '{{ ansible_local|d() and ansible_local.pki|d() and
+               (ansible_local.pki.enabled|d() | bool) }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__pki_realm_path [[[
+#
+# Directory path where PKI realm live.
+prosdoy__pki_realm_path: '{{ ansible_local.pki.path
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.path|d())
+                            else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__pki_realm [[[
+#
+# Default PKI realm to use.
+prosody__pki_realm: '{{ ansible_local.pki.realm
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.realm|d())
+                       else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__pki_crt_filename [[[
+#
+# Default CRT file name to use.
+prosody__pki_crt_filename: '{{ ansible_local.pki.crt
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.crt|d())
+                              else "default.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__pki_key_filename [[[
+#
+# Default private key file name to use.
+prosody__pki_key_filename: '{{ ansible_local.pki.key
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.key|d())
+                              else "default.key" }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__pki_hook_name [[[
+#
+# Name of the hook script which will be stored in hook directory.
+prosody__pki_hook_name: 'prosody'
+
+                                                                   # ]]]
+# .. envvar:: prosody__pki_hook_path [[[
+#
+# Directory with PKI hooks.
+prosody__pki_hook_path: '{{ ansible_local.pki.hooks
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.hooks|d())
+                         else "/etc/pki/hooks" }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__pki_hook_action [[[
+#
+# Specify how changes in PKI should affect prosody, either 'reload' or 'restart'.
+prosody__pki_hook_action: 'reload'
+                                                                   # ]]]
+                                                                   # ]]]
+# Prosody Configuration [[[
+# -------------------------
+
+# .. envvar:: prosody__deploy_state [[[
+#
+# Set to `absent` to disable and uninstall this role
+prosody__deploy_state: "present"
+
+                                                                   # ]]]
+# .. envvar:: prosody__domain [[[
+#
+# The hosts's DNS domain name used in the Prosody configuration.
+prosody__domain: '{{ ansible_local.core.domain
+                     if (ansible_local|d() and ansible_local.core|d() and
+                         ansible_local.core.domain|d())
+                     else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__admins [[[
+#
+# List of admin jabber accounts of this prosody instance
+prosody__admins: []
+
+                                                                   # ]]]
+# .. envvar:: prosody__use_libevent [[[
+#
+# Set this to true to enable the libevent backend
+# @see https://prosody.im/doc/libevent
+prosody__use_libevent: false
+
+                                                                   # ]]]
+# .. envvar:: prosody__modules_default [[[
+#
+# Modules that are loaded by default
+# @see https://prosody.im/doc/configure
+prosody__modules_default:
+  - "roster"
+  - "saslauth"
+  - "tls"
+  - "dialback"
+  - "disco"
+  - "private"
+  - "vcard"
+  - "privacy"  #@TODO check version < 0.10
+  - "compression"
+  - "version"
+  - "uptime"
+  - "time"
+  - "ping"
+  - "pep"
+  - "admin_adhoc"
+  - "posix"
+  - "groups"
+  - "carbons"
+  - "mam"
+  - "blocking"
+  - "smacks"
+  #- "s2s_auth_dane"
+
+                                                                   # ]]]
+# .. envvar:: prosody__modules [[[
+#
+# Modules that should be enabled
+prosody__modules: '{{ prosody__modules_default }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__authentication [[[
+#
+# Providers:
+#  - internal_plain
+#  - internal_hashed
+#  - cyrus
+#  - anonymous
+#  - ldap2 (TODO)
+#
+# https://prosody.im/doc/authentication
+prosody__authentication: 'internal_plain'
+
+                                                                   # ]]]
+# .. envvar:: prosody__insecure_domains [[[
+#
+# List of insecure domains. As example `gmail.com`
+# https://prosody.im/doc/s2s
+prosody__insecure_domains: []
+
+                                                                   # ]]]
+# .. envvar:: prosody__allow_registration [[[
+#
+# Allow new registrations
+prosody__allow_registration: False
+
+                                                                   # ]]]
+# .. envvar:: prosody__config_ldap [[[
+#
+# LDAP config, this is used when `prosody__authentication` is ldap2.
+# https://modules.prosody.im/mod_auth_ldap2.html
+prosody__config_ldap:
+  ldap:
+    hostname: 'ldap.{{ ansible_domain }}'
+    user:
+      basedn: 'ou=users,..@TODO'
+      usernamefield: 'uid'
+    bind_dn: 'uid=....,dc=...@TODO'
+    bind_password: 'lookup..@TODO'
+    use_tls: True
+
+                                                                   # ]]]
+# .. envvar:: prosody__default_config_global [[[
+#
+# Main prosody configuration, default values
+# @see https://prosody.im/doc/configure
+prosody__default_config_global:
+  admins: '{{ prosody__admins }}'
+  modules_enabled: '{{ prosody__modules }}'
+  allow_registration: '{{ prosody__allow_registration }}'
+  daemonize: True
+  pidfile: "/var/run/prosody/prosody.pid"
+  use_libevent: '{{ prosody__use_libevent }}'
+  c2s_require_encryption: True
+  s2s_require_encryption: True
+  s2s_secure_auth: True
+  s2s_insecure_domains: '{{ prosody__insecure_domains }}'
+  authentication: '{{ prosody__authentication }}'
+  log:
+    info: "/var/log/prosody/prosody.log"
+    error: "/var/log/prosody/prosody.err"
+
+                                                                   # ]]]
+# .. envvar:: prosody__config_http_server [[[
+#
+# HTTP server specific settings.
+# More infos at https://prosody.im/doc/http
+prosody__config_http_server:
+  http_port:
+    - 5280
+  http_interface:
+    - '*'
+  https_port:
+    - 5281
+  https_interface:
+    - '*'
+  https_ssl:
+    certificate: '{{ prosdoy__pki_realm_path + "/" + prosody__pki_realm + "/" + prosody__pki_crt_filename }}'
+    key: '{{ prosdoy__pki_realm_path + "/" + prosody__pki_realm + "/" + prosody__pki_key_filename }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__config_gloabl [[[
+#
+# Mapping for global configs which will be managed on all hosts in the Ansible
+# inventory.
+prosody__config_global: {}
+
+                                                                   # ]]]
+# .. envvar:: prosody__group_config_gloabl [[[
+#
+# Mapping for global configs which will be managed on specific groups in the Ansible
+# inventory.
+prosody__group_config_global: {}
+
+                                                                   # ]]]
+# .. envvar:: prosody__host_config_gloabl [[[
+#
+# Mapping for global configs which will be managed on specific hosts in the Ansible
+# inventory.
+prosody__host_config_global: {}
+
+                                                                   # ]]]
+# .. envvar:: prosody__combined_config_gloabl [[[
+#
+# Mapping which combines all of the global config variables and is used
+# in the configuration template.
+prosody__combined_config_global: '{{ prosody__default_config_global | combine(
+                                  prosody__config_http_server
+                                , prosody__config_ldap if prosody__authentication == "ldap2" else {}
+                                , prosody__config_global
+                                , prosody__group_config_global
+                                , prosody__host_config_global ) }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__config_virtual_hosts [[[
+#
+# List of virtual hosts
+prosody__config_virtual_hosts:
+  - name: '{{ ansible_domain }}'
+    enabled: false
+    pki_realm: 'domain'
+
+                                                                   # ]]]
+# .. envvar:: prosody__http_upload [[[
+#
+#  http_upload enables upload via http(s) for clients to share files
+#  https://modules.prosody.im/mod_http_upload.html
+#  XEP-0363
+prosody__http_upload: True
+
+                                                                   # ]]]
+# .. envvar:: prosody__muc [[[
+#
+#  muc (multi user channel) enables group channel function.
+#  https://prosody.im/doc/modules/mod_muc
+#  XEP-0045
+prosody__muc: True
+
+                                                                   # ]]]
+# .. envvar:: prosody__config_http_upload [[[
+#
+#  http_upload config is for client upload via http(s) to share files
+#  https://modules.prosody.im/mod_http_upload.html
+#  XEP-0363
+prosody__config_http_upload:
+  - domain: 'upload.{{ prosody__domain }}'
+    params: '"http_upload"'
+
+                                                                   # ]]]
+# .. envvar:: prosody__config_muc [[[
+#
+#  muc (multi user channel) config for group channel function.
+#  https://prosody.im/doc/modules/mod_muc
+#  XEP-0045
+prosody__config_muc:
+  - domain: 'conference.{{ prosody__domain }}'
+    params: '"muc"'
+
+                                                                   # ]]]
+# .. envvar:: prosody__default_config_components [[[
+#
+# List of default components
+prosody__default_config_components: '{{ (prosody__config_http_upload if prosody__http_upload|bool else [])
+                                      + (prosody__config_muc if prosody__muc|bool else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__config_components [[[
+#
+# List of components which will be managed on all hosts in the Ansible
+# inventory.
+prosody__config_components: []
+
+                                                                   # ]]]
+# .. envvar:: prosody__group_config_components [[[
+#
+# List of components which will be managed on specific groups in the Ansible
+# inventory.
+prosody__group_config_components: []
+
+                                                                   # ]]]
+# .. envvar:: prosody__host_config_components [[[
+#
+# List of components which will be managed on specific hosts in the Ansible
+# inventory.
+prosody__host_config_components: []
+
+                                                                   # ]]]
+# .. envvar:: prosody__combined_config_components [[[
+#
+# List which combines all of the global config variables and is used
+# in the configuration template.
+prosody__combined_config_components: '{{ prosody__default_config_components
+                                       + prosody__config_components
+                                       + prosody__group_config_components
+                                       + prosody__host_config_components  }}'
+
+                                                                   # ]]]
+# .. envvar:: prosody__ferm__dependent_rules [[[
+#
+# Configuration for :command:`iptables` firewall manged by :program:`ferm`.
+prosody__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ '5222' ]
+    accept_any: True
+    weight: '40'
+    by_role: 'prosody'
+    name: 'prosody-xmpp-client'
+    multiport: True
+    rule_state: '{{ prosody__deploy_state }}'
+  - type: 'accept'
+    dport: [ '5269' ]
+    accept_any: True
+    weight: '40'
+    by_role: 'prosody'
+    name: 'prosody-xmpp-server'
+    multiport: True
+    rule_state: '{{ prosody__deploy_state }}'
+  - type: 'accept'
+    dport: [ '5280', '5281' ]
+    accept_any: True
+    weight: '40'
+    by_role: 'prosody'
+    name: 'prosody-http'
+    multiport: True
+    rule_state: '{{ prosody__deploy_state }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

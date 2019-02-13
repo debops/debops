@@ -1,0 +1,56 @@
+---
+
+- name: Install locale packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ locales__base_packages }}'
+    - '{{ locales__packages }}'
+  register: locales__register_packages
+  until: locales__register_packages is succeeded
+
+- name: Ensure that specified locales exist
+  locale_gen:
+    name: '{{ item.name | d(item) }}'
+    state: '{{ item.state | d("present") }}'
+  with_flattened:
+    - '{{ locales__default_list }}'
+    - '{{ locales__list }}'
+    - '{{ locales__group_list }}'
+    - '{{ locales__host_list }}'
+    - '{{ locales__dependent_list }}'
+
+- name: Set default system locale
+  debconf:
+    name: 'locales'
+    question: 'locales/default_environment_locale'
+    vtype: 'string'
+    value: '{{ locales__system_lang }}'
+  register: locales__register_system_lang
+  when: ansible_pkg_mgr == 'apt' and locales__system_lang|d()
+
+- name: Update /etc/default/locale
+  command: 'update-locale LANG={{ locales__system_lang }}'
+  when: ansible_pkg_mgr == 'apt' and locales__register_system_lang is changed
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save locale local facts
+  template:
+    src: 'etc/ansible/facts.d/locales.fact.j2'
+    dest: '/etc/ansible/facts.d/locales.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: locales__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: locales__register_facts is changed

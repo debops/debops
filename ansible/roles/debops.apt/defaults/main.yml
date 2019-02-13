@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # General configuration [[[
@@ -80,24 +80,10 @@ apt__cache_valid_time: '{{ ansible_local.core.cache_valid_time
 apt__install_recommends: False
 
                                                                    # ]]]
-# .. envvar:: apt__autoremove_recommends [[[
-#
-# Enable or disable automatic removal of recommended APT packages by the
-# ``apt-get autoremove`` command.
-apt__autoremove_recommends: False
-
-                                                                   # ]]]
 # .. envvar:: apt__install_suggests [[[
 #
 # Enable or disable automatic installation of suggested APT packages.
 apt__install_suggests: False
-
-                                                                   # ]]]
-# .. envvar:: apt__autoremove_suggests [[[
-#
-# Enable or disable automatic removal of suggested APT packages by the
-# ``apt-get autoremove`` command.
-apt__autoremove_suggests: False
                                                                    # ]]]
                                                                    # ]]]
 # Packages to install [[[
@@ -106,7 +92,7 @@ apt__autoremove_suggests: False
 # .. envvar:: apt__base_packages [[[
 #
 # Default base packages to install.
-apt__base_packages: [ 'python-apt', 'apt-transport-https', 'ca-certificates' ]
+apt__base_packages: [ 'lsb-release', 'apt-transport-https', 'ca-certificates' ]
 
                                                                    # ]]]
 # .. envvar:: apt__packages [[[
@@ -167,6 +153,31 @@ apt__group_repositories: []
 apt__host_repositories: []
                                                                    # ]]]
                                                                    # ]]]
+# APT configuration files [[[
+# ---------------------------
+
+# These lists define additional APT configuration files in
+# :file:`/etc/apt/apt.conf.d/` directory.
+# See :ref:`apt__ref_conf` for more details.
+
+# .. envvar:: apt__conf [[[
+#
+# List of additional APT configuration to add on all hosts in Ansible inventory.
+apt__conf: []
+                                                                   # ]]]
+# .. envvar:: apt__group_conf [[[
+#
+# List of additional APT configuration to add on hosts in specific Ansible
+# inventory group.
+apt__group_conf: []
+                                                                   # ]]]
+# .. envvar:: apt__host_conf [[[
+#
+# List of additional APT configuration to add on specific hosts in Ansible
+# inventory.
+apt__host_conf: []
+                                                                   # ]]]
+                                                                   # ]]]
 # Distribution and release detection [[[
 # --------------------------------------
 
@@ -185,7 +196,6 @@ apt__architecture: '{{ apt__architecture_map[ansible_architecture]
 # used.
 apt__architecture_map:
   'x86_64': 'amd64'
-  'i386':   'i386'
   'armv7l': 'armhf'
 
                                                                    # ]]]
@@ -346,6 +356,15 @@ apt__original_sources:
                          else "absent" }}'
 
                                                                    # ]]]
+# .. envvar:: apt__default_sources_state [[[
+#
+# Enable (if ``present``) or disable (if ``absent``) the default APT
+# package sources for specific distributions.
+# If package sources are defined in specific group, host or on all hosts in
+# Ansible inventory, it may be desirable not to include the default sources.
+apt__default_sources_state: 'present'
+
+                                                                   # ]]]
 # .. envvar:: apt__default_sources [[[
 #
 # List of the default APT package sources for specific distributions. These are
@@ -359,10 +378,12 @@ apt__default_sources:
   - uri:          'http://deb.debian.org/debian'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Debian'
+    state:        '{{ apt__default_sources_state }}'
 
   - uri:          'http://mirrordirector.raspbian.org/raspbian/'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Raspbian'
+    state:        '{{ apt__default_sources_state }}'
 
   - uri:          'http://repos.rcn-ee.com/debian/'
     comment:      'rcn-ee.net repository as used on BeagleBoards for additional hardware support'
@@ -371,7 +392,7 @@ apt__default_sources:
     suite:        '{{ apt__distribution_release }}'
     components:   [ "main" ]
     distribution: 'Debian'
-    state:        '{{ "present"
+    state:        '{{ apt__default_sources_state
                       if (apt__architecture in ["armhf"] and
                           ("cape_universal" in ansible_cmdline) or
                           ("bone_capemgr" in ansible_cmdline))
@@ -380,20 +401,44 @@ apt__default_sources:
   - uri:          'http://archive.ubuntu.com/ubuntu'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Ubuntu'
-    state:        '{{ "present"
+    state:        '{{ apt__default_sources_state
                       if (apt__architecture in ["amd64", "i386"])
                       else "absent" }}'
 
-  - uri: 'http://ports.ubuntu.com/ubuntu-ports'
-    comment: '{{ "Official " + apt__distribution + " Port repositories" }}'
+  - uri:          'http://ports.ubuntu.com/ubuntu-ports'
+    comment:      '{{ "Official " + apt__distribution + " Port repositories" }}'
     distribution: 'Ubuntu'
-    state:       '{{ "present"
-                     if (apt__architecture not in ["amd64", "i386"])
-                     else "absent" }}'
+    state:        '{{ apt__default_sources_state
+                      if (apt__architecture not in ["amd64", "i386"])
+                      else "absent" }}'
 
   - uri:          'http://auto.mirror.devuan.org/merged'
     comment:      '{{ "Official " + apt__distribution + " repositories" }}'
     distribution: 'Devuan'
+    state:        '{{ apt__default_sources_state }}'
+
+                                                                   # ]]]
+# .. envvar:: apt__security_sources_state [[[
+#
+# Enable (if ``present``) or disable (if ``absent``) the default APT
+# repositories proving security updates.
+# If a local security mirror is defined in Ansible inventory group or host,
+# it may be desirable not to include the default security sources.
+apt__security_sources_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: apt__group_security_sources [[[
+#
+# List of APT repositories that provide security updates for hosts in
+# specific Ansible inventory group.
+apt__group_security_sources: []
+
+                                                                   # ]]]
+# .. envvar:: apt__host_security_sources [[[
+#
+# List of APT repositories that provide security updates for hosts in
+# specific Ansible inventory host.
+apt__host_security_sources: []
 
                                                                    # ]]]
 # .. envvar:: apt__security_sources [[[
@@ -403,68 +448,68 @@ apt__default_sources:
 # from normal repositories.
 apt__security_sources:
 
-  - uri:        'http://security.debian.org/'
-    comment:    'Debian Security repository'
-    type:       '{{ apt__source_types }}'
-    suite:      '{{ apt__distribution_release + "/updates" }}'
-    components: '{{ apt__distribution_components }}'
+  - uri:          'http://security.debian.org/'
+    comment:      'Debian Security repository'
+    type:         '{{ apt__source_types }}'
+    suite:        '{{ apt__distribution_release + "/updates" }}'
+    components:   '{{ apt__distribution_components }}'
     distribution: 'Debian'
-    state:      '{{ "present"
-                    if (apt__distribution_release|d("unknown")
-                        in apt__distribution_release_map[apt__distribution]|d([]))
-                    else "absent" }}'
+    state:        '{{ apt__security_sources_state
+                      if (apt__distribution_release|d("unknown")
+                          in apt__distribution_release_map[apt__distribution]|d([]))
+                      else "absent" }}'
 
     # This version may be present on some installations. It's here so that the
     # fact script knows that a given URL is a secuirity source and doesn't
     # create normal entries. This version is not added to the final file.
-  - uri:        'http://security.debian.org'
-    comment:    'Debian Security repository'
-    type:       '{{ apt__source_types }}'
-    suite:      '{{ apt__distribution_release + "/updates" }}'
-    components: '{{ apt__distribution_components }}'
+  - uri:          'http://security.debian.org'
+    comment:      'Debian Security repository'
+    type:         '{{ apt__source_types }}'
+    suite:        '{{ apt__distribution_release + "/updates" }}'
+    components:   '{{ apt__distribution_components }}'
     distribution: 'Debian'
-    state: 'absent'
+    state:        'absent'
 
     # This version shows up in Debian Stretch APT configuration.
     # It's disabled by default to not create duplicate entries.
-  - uri:        'http://security.debian.org/debian-security'
-    comment:    'Debian Security repository'
-    type:       '{{ apt__source_types }}'
-    suite:      '{{ apt__distribution_release + "/updates" }}'
-    components: '{{ apt__distribution_components }}'
+  - uri:          'http://security.debian.org/debian-security'
+    comment:      'Debian Security repository'
+    type:         '{{ apt__source_types }}'
+    suite:        '{{ apt__distribution_release + "/updates" }}'
+    components:   '{{ apt__distribution_components }}'
     distribution: 'Debian'
-    state: 'absent'
+    state:        'absent'
 
-  - uri:        'http://security.ubuntu.com/ubuntu'
-    comment:    'Ubuntu Security repository'
-    type:       '{{ apt__source_types }}'
-    suite:      '{{ apt__distribution_release + "-security" }}'
-    components: '{{ apt__distribution_components }}'
+  - uri:          'http://security.ubuntu.com/ubuntu'
+    comment:      'Ubuntu Security repository'
+    type:         '{{ apt__source_types }}'
+    suite:        '{{ apt__distribution_release + "-security" }}'
+    components:   '{{ apt__distribution_components }}'
     distribution: 'Ubuntu'
-    state:      '{{ "present"
-                    if (apt__architecture in ["amd64", "i386"])
-                    else "absent" }}'
+    state:        '{{ apt__security_sources_state
+                      if (apt__architecture in ["amd64", "i386"])
+                      else "absent" }}'
 
-  - uri:        'http://ports.ubuntu.com/ubuntu-ports'
-    comment:    'Ubuntu Ports Security repository'
-    type:       '{{ apt__source_types }}'
-    suite:      '{{ apt__distribution_release + "-security" }}'
-    components: '{{ apt__distribution_components }}'
+  - uri:          'http://ports.ubuntu.com/ubuntu-ports'
+    comment:      'Ubuntu Ports Security repository'
+    type:         '{{ apt__source_types }}'
+    suite:        '{{ apt__distribution_release + "-security" }}'
+    components:   '{{ apt__distribution_components }}'
     distribution: 'Ubuntu'
-    state:      '{{ "present"
-                    if (apt__architecture not in ["amd64", "i386"])
-                    else "absent" }}'
+    state:        '{{ apt__security_sources_state
+                      if (apt__architecture not in ["amd64", "i386"])
+                      else "absent" }}'
 
-  - uri:        'http://auto.mirror.devuan.org/merged'
-    comment:    'Devuan Security repository'
-    type:       '{{ apt__source_types }}'
-    suite:      '{{ apt__distribution_release + "-security" }}'
-    components: '{{ apt__distribution_components }}'
+  - uri:          'http://auto.mirror.devuan.org/merged'
+    comment:      'Devuan Security repository'
+    type:         '{{ apt__source_types }}'
+    suite:        '{{ apt__distribution_release + "-security" }}'
+    components:   '{{ apt__distribution_components }}'
     distribution: 'Devuan'
-    state:      '{{ "present"
-                    if (apt__distribution_release|d("unknown")
-                        in apt__distribution_release_map[apt__distribution]|d([]))
-                    else "absent" }}'
+    state:        '{{ apt__security_sources_state
+                      if (apt__distribution_release|d("unknown")
+                          in apt__distribution_release_map[apt__distribution]|d([]))
+                      else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: apt__combined_sources [[[
@@ -477,47 +522,9 @@ apt__combined_sources: '{{ apt__sources +
                            apt__host_sources +
                            apt__original_sources +
                            apt__default_sources +
+                           apt__host_security_sources +
+                           apt__group_security_sources +
                            apt__security_sources }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# -----------------------------------------
-
-# .. envvar:: apt__apt_preferences__dependent_list [[[
-#
-# Configuration for the debops.apt_preferences_ role.
-apt__apt_preferences__dependent_list:
-
-    ## Remove configuration from `debops.apt` context which is now managed by
-    ## `debops.apt_install`.
-  - package: 'git git-*'
-    delete: True
-    backports: [ 'wheezy' ]
-    reason:  'Better support for git submodules - https://stackoverflow.com/a/7593496'
-    by_role: 'debops.apt'
-
-    ## Remove configuration from `debops.apt` context which is now managed by
-    ## `debops.apt_install`.
-  - package: 'irqbalance'
-    delete: True
-    backports: [ 'wheezy' ]
-    reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
-    by_role: 'debops.apt'
-
-    ## Remove configuration from `debops.apt` context which is now managed by
-    ## `debops.apt_install`.
-  - package: 'irqbalance'
-    delete: True
-    backports: [ 'jessie' ]
-    reason:  'Bug fixes and memory leak fixes.'
-    by_role: 'debops.apt'
-
-    ## Remove configuration from `debops.apt` context which is now managed by
-    ## debops.apt_cacher_ng_.
-  - package: 'apt-cacher-ng'
-    delete: True
-    by_role: 'debops.apt'
-    backports: [ 'jessie' ]
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

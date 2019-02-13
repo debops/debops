@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# Perform garbage collection in the Docker Registry
+
+
+set -o nounset -o pipefail -o errexit
+
+readonly CONFIG_FILE="{{ docker_registry__config_file }}"
+readonly REGISTRY_BIN="{{ docker_registry__binary }}"
+readonly DELETE_UNTAGGED="{{ '--delete-untagged' if (docker_registry__version is version('2.7.1', '>=')) else '' }}"
+
+# Redis support
+readonly REDIS_ENABLED="{{ docker_registry__redis_enabled | bool | lower }}"
+readonly REDIS_DATABASE="{{ docker_registry__redis_db }}"
+
+if "${REGISTRY_BIN}" garbage-collect "${CONFIG_FILE}" --dry-run 2>/dev/null \
+   | grep --extended-regexp "^blob eligible for deletion" > /dev/null ; then
+    sudo systemctl stop docker-registry.service
+    "${REGISTRY_BIN}" garbage-collect "${CONFIG_FILE}" "${DELETE_UNTAGGED}" > /dev/null 2>&1
+
+    # Flush Redis cache entries related to Docker Registry. Currently it
+    # flushes all cache data, but could be improved later to remove only
+    # specific keys.
+    if [ "${REDIS_ENABLED}" == "true" ] ; then
+        redis-cli -a "$(redis-password)" -n "${REDIS_DATABASE}" --raw keys "blobs::sha256:*" 2>/dev/null \
+            | xargs redis-cli -a "$(redis-password)" -n "${REDIS_DATABASE}" del 1>/dev/null 2>&1
+        redis-cli -a "$(redis-password)" -n "${REDIS_DATABASE}" --raw keys "repository::*::blobs::sha256:*" 2>/dev/null \
+            | xargs redis-cli -a "$(redis-password)" -n "${REDIS_DATABASE}" del 1>/dev/null 2>&1
+    fi
+
+    sudo systemctl start docker-registry.service
+fi

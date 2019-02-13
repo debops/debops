@@ -8,6 +8,8 @@
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
+  register: salt__register_apt_key
+  until: salt__register_apt_key is succeeded
   when: salt__upstream|bool
 
 - name: Configure upstream APT repository
@@ -20,10 +22,12 @@
 - name: Install Salt Master packages
   package:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
   with_flattened:
     - '{{ salt__base_packages }}'
     - '{{ salt__packages }}'
+  register: salt__register_packages
+  until: salt__register_packages is succeeded
 
 - name: Configure Salt Master using Ansible
   template:

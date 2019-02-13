@@ -15,6 +15,8 @@
   with_flattened:
     - '{{ ferm__base_packages }}'
     - '{{ ferm__packages }}'
+  register: ferm__register_packages
+  until: ferm__register_packages is succeeded
   when: ferm__enabled | bool
 
 - name: Make sure required directories exist
@@ -23,7 +25,7 @@
     state: 'directory'
     owner: 'root'
     group: 'adm'
-    mode: '2750'
+    mode: '02750'
   with_items:
     - '/etc/ferm/rules.d'
     - '/etc/ferm/filter-input.d'
@@ -85,7 +87,9 @@
 
 - name: Remove firewall rules
   file:
-    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class | d(item.value.type | d("default"))] | d("80"))|int + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
+    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class
+                                                 | d(item.value.type | d("default"))] | d("80"))|int
+                                + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     state: 'absent'
   with_dict: '{{ ferm__parsed_rules }}'
   register: ferm__register_rules_removed
@@ -95,7 +99,9 @@
 - name: Generate firewall rules
   template:
     src: 'etc/ferm/rules.d/{{ item.value.template | d("rule") }}.conf.j2'
-    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class | d(item.value.type | d("default"))] | d("80"))|int + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
+    dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class
+                                                 | d(item.value.type | d("default"))] | d("80"))|int
+                                + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -107,16 +113,22 @@
 - name: Remove unknown firewall rules
   shell: find /etc/ferm/rules.d -maxdepth 1 -type f
          -name '*_rule_{{ item.item.value.name | d(item.item.key) }}.conf'
-         ! -name '{{ "%03d" | format((ferm__combined_weight_map[item.item.value.weight_class | d(item.item.value.type | d("default"))] | d("80"))|int + (item.item.value.weight | d("0"))|int) }}_rule_{{ item.item.value.name | d(item.item.key) }}.conf' -exec rm -vf {} +
+         ! -name '{{ "%03d" | format((ferm__combined_weight_map[item.item.value.weight_class
+                                      | d(item.item.value.type | d("default"))] | d("80"))|int
+                     + (item.item.value.weight | d("0"))|int) }}_rule_{{ item.item.value.name
+                                                                         | d(item.item.key) }}.conf'
+         -exec rm -vf {} +
   with_items:
     - '{{ ferm__register_rules_removed.results }}'
     - '{{ ferm__register_rules_created.results }}'
-  when: (item.item.key|d() and item.changed|bool)
+  when: (item.item.key|d() and item is changed)
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove iptables INPUT rules if requested
   file:
-    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d("50")) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()]
+           | d(item.weight | d("50")) }}_{{ item.filename
+           | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ ferm_input_list }}'
@@ -130,7 +142,9 @@
 - name: Configure iptables INPUT rules
   template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()] | d(item.weight | d("50")) }}_{{ item.filename | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()]
+           | d(item.weight | d("50")) }}_{{ item.filename
+           | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -147,9 +161,9 @@
   service:
     name: 'ferm'
     state: 'restarted'
-  when: (ferm__enabled | bool and (ferm__register_files.changed|bool or
-         ferm__register_rules_created|changed or ferm__register_rules_removed|changed or
-         ferm__register_input_rules_del.changed|bool or ferm__register_input_rules_add.changed|bool))
+  when: (ferm__enabled | bool and (ferm__register_files is changed or
+         ferm__register_rules_created is changed or ferm__register_rules_removed is changed or
+         ferm__register_input_rules_del is changed or ferm__register_input_rules_add is changed))
 
 - name: Clear iptables rules if ferm is disabled
   service:
@@ -158,37 +172,10 @@
   when: (not ferm__enabled | bool and ferm__flush | bool)
   tags: [ 'role::ferm:rules' ]
 
-- name: Configure sysctl
-  template:
-    src: 'etc/sysctl.d/30-ferm.conf.j2'
-    dest: '/etc/sysctl.d/30-ferm.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  register: ferm__register_sysctl
-  tags: [ 'role::ferm:rules' ]
-
-- name: Reload sysctl configuration if modified
-  command: sysctl -p /etc/sysctl.d/30-ferm.conf
-  when: ferm__register_sysctl.changed | bool
-  tags: [ 'role::ferm:rules' ]
-
-- name: Ensure that /etc/network/if-pre-up.d exists
+- name: Remove deprecated ifupdown hook
   file:
-    path: '/etc/network/if-pre-up.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Configure forwarding in ifupdown if enabled
-  template:
-    src: 'etc/network/if-pre-up.d/ferm-forward.j2'
-    dest: '/etc/network/if-pre-up.d/ferm-forward'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  tags: [ 'role::ferm:rules' ]
+    path: '/etc/network/if-pre-up.d/ferm-forward'
+    state: 'absent'
 
 - name: Disable ferm after changes when requested
   lineinfile:
@@ -217,4 +204,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: ferm__register_facts|changed
+  when: ferm__register_facts is changed

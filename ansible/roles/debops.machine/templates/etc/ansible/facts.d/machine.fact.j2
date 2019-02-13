@@ -1,0 +1,23 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+
+output = loads('''{{ {'configured': True,
+                      'enabled': machine__enabled|bool
+                      } | to_nice_json }}''')
+
+machine_info = '/etc/machine-info'
+
+if os.path.exists(machine_info) and os.path.isfile(machine_info):
+    with open(machine_info, "r") as f:
+        for line in f:
+            if not line.startswith('#') and '=' in line:
+                line = line.strip().split('=')
+                output.update({str(line[0]).lower(): str(line[1]).strip('"')})
+
+print(dumps(output, sort_keys=True, indent=4))

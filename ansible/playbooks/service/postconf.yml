@@ -25,12 +25,12 @@
         - '{{ postfix__secret__directories }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ postfix__ferm__dependent_rules }}'
 
     - role: debops.postfix
-      tags: [ 'role::postfix' ]
+      tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'postconf'
           config: '{{ postconf__postfix__dependent_maincf }}'
@@ -41,4 +41,4 @@
         - '{{ postconf__postfix__dependent_lookup_tables }}'
 
     - role: debops.postconf
-      tags: [ 'role::postconf' ]
+      tags: [ 'role::postconf', 'skip::postconf' ]

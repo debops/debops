@@ -21,11 +21,12 @@
     state: 'present'
   with_flattened:
     - '{{ dhcpd_base_packages_map[dhcpd_mode] }}'
-    - '{{ dhcpd_base_packages_map["probe"] }}'
+  register: dhcpd__register_packages
+  until: dhcpd__register_packages is succeeded
 
 - name: Reconfigure ISC DHCP relay
   command: dpkg-reconfigure --frontend=noninteractive isc-dhcp-relay
   notify: [ 'Restart dhcp relay' ]
   when:
     - ansible_os_family == "Debian"
-    - dhcpd_register_relay_debconf|d() and dhcpd_register_relay_debconf.changed
+    - dhcpd_register_relay_debconf|d() and dhcpd_register_relay_debconf is changed

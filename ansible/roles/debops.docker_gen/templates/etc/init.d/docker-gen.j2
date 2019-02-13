@@ -19,7 +19,7 @@ set -e
 
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
-BASE=$(basename $0)
+BASE="$(basename "$0")"
 
 # modify these in /etc/default/$BASE (/etc/default/docker-gen)
 DOCKER_GEN=/usr/bin/$BASE
@@ -32,14 +32,16 @@ DOCKER_GEN__OPTIONS=
 DOCKER_GEN__DESC="docker-gen"
 
 # Get lsb functions
+# shellcheck disable=SC1091
 . /lib/lsb/init-functions
 
-if [ -f /etc/default/$BASE ]; then
-	. /etc/default/$BASE
+if [ -f "/etc/default/$BASE" ]; then
+	# shellcheck disable=SC1090
+	. "/etc/default/$BASE"
 fi
 
 # Check docker-gen is present
-if [ ! -x $DOCKER_GEN ]; then
+if [ ! -x "$DOCKER_GEN" ]; then
 	log_failure_msg "$DOCKER_GEN not present or not executable"
 	exit 1
 fi
@@ -57,10 +59,13 @@ case "$1" in
 
 		touch "$DOCKER_GEN__LOGFILE"
 
+		# shellcheck disable=SC2039
 		ulimit -n 1048576
 		if [ "$BASH" ]; then
+			# shellcheck disable=SC2039
 			ulimit -u 1048576
 		else
+			# shellcheck disable=SC2039
 			ulimit -p 1048576
 		fi
 
@@ -71,7 +76,7 @@ case "$1" in
 			--pidfile "$DOCKER_GEN__SSD_PIDFILE" \
 			--make-pidfile \
 			-- \
-				$DOCKER_GEN__OPTIONS -config=$DOCKER_GEN__CONFIG \
+				$DOCKER_GEN__OPTIONS -config="$DOCKER_GEN__CONFIG" \
 					>> "$DOCKER_GEN__LOGFILE" 2>&1
 		log_end_msg $?
 		;;
@@ -85,9 +90,9 @@ case "$1" in
 
 	restart)
 		fail_unless_root
-		docker_gen__pid=`cat "$DOCKER_GEN__SSD_PIDFILE" 2>/dev/null`
+		docker_gen__pid="$(cat "$DOCKER_GEN__SSD_PIDFILE" 2>/dev/null)"
 		[ -n "$docker_gen__pid" ] \
-			&& ps -p $docker_gen__pid > /dev/null 2>&1 \
+			&& ps -p "$docker_gen__pid" > /dev/null 2>&1 \
 			&& $0 stop
 		$0 start
 		;;

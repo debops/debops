@@ -1,0 +1,43 @@
+# {{ ansible_managed }}
+
+# If you change this file, run 'update-grub' afterwards to update
+# /boot/grub/grub.cfg.
+# For full documentation of the options in this file, see:
+#   info -f grub -n 'Simple configuration'
+
+{% for element in grub__combined_configuration | parse_kv_config %}
+{%   if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     set element_comment = ('#' if element.state|d('present') == 'comment' else '') %}
+{%     set element_export = ('export ' if (element.export|d(False))|bool else '') %}
+{%     set element_quote = ('"' if (element.quote|d(True))|bool else '') %}
+{%     set element_name = ('grub_' + (element.name | lower | regex_replace('^grub_',''))) | upper %}
+{%     set element_original = ((('$grub_' + (element.name | lower | regex_replace('^grub_','')) + ' ') | upper) if (element.original|d())|bool else '')  %}
+{%     set element_value = element.value|d('') %}
+{%     if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='\n', postfix='') -}}
+{%     endif %}
+{%     if element_value is string %}
+{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value, element_quote) }}
+{%     elif element_value | bool and element_value is not iterable %}
+{%       if element_value | string == '1' %}
+{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value, element_quote) }}
+{%       else %}
+{{ '{}{}{}={}{}{}'.format(element_comment, element_export, element_name, element_quote, 'true', element_quote) }}
+{%       endif %}
+{%     elif not element_value | bool and element_value is not iterable %}
+{%       if element_value is not none %}
+{%         if element_value | int %}
+{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value, element_quote) }}
+{%         else %}
+{%           if element_value | string == '0' %}
+{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value, element_quote) }}
+{%           else %}
+{{ '{}{}{}={}{}{}'.format(element_comment, element_export, element_name, element_quote, 'false', element_quote) }}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     elif element_value is iterable and element_value is not string and element_value is not mapping %}
+{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' '), element_quote) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}

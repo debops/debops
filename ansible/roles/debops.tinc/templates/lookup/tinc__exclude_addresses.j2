@@ -1,5 +1,5 @@
 {% set tinc__tpl_exclude_addresses = [] %}
-{% for key, network in tinc__combined_networks.iteritems() %}
+{% for key, network in tinc__combined_networks.items() %}
 {%   if hostvars[inventory_hostname]["ansible_" + (network.interface | replace('-','_') | replace('.','_'))]|d() %}
 {%     set tinc__tpl_interface = hostvars[inventory_hostname]["ansible_" + (network.interface | replace('-','_') | replace('.','_'))] %}
 {%     if tinc__tpl_interface.ipv4|d() and tinc__tpl_interface.ipv4.address|d() %}

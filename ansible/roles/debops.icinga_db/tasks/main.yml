@@ -1,0 +1,55 @@
+---
+
+- name: Set dbconfig configuration for Icinga database
+  debconf:
+    name: 'icinga2-{{ icinga_db__feature }}'
+    question: '{{ item }}'
+    vtype: 'boolean'
+    value: 'true'
+  with_items:
+    - 'icinga2-{{ icinga_db__feature }}/dbconfig-install'
+    - 'icinga2-{{ icinga_db__feature }}/dbconfig-upgrade'
+  when: icinga_db__icinga_installed|bool and
+        icinga_db__type != 'unknown'
+
+- name: Install required packages
+  package:
+    name: '{{ lookup("flattened",
+                     (icinga_db__base_packages + icinga_db__packages),
+                     wantlist=True) }}'
+    state: 'present'
+  register: icinga_db__register_packages
+  until: icinga_db__register_packages is succeeded
+  notify: [ 'Check icinga2 configuration and restart' ]
+  when: icinga_db__icinga_installed|bool and
+        icinga_db__type != 'unknown'
+
+- name: Ensure that IDO feature is enabled
+  file:
+    path: '/etc/icinga2/features-enabled/{{ icinga_db__feature }}.conf'
+    src: '../features-available/{{ icinga_db__feature }}.conf'
+    state: 'link'
+  notify: [ 'Check icinga2 configuration and restart' ]
+  when: icinga_db__icinga_installed|bool and
+        icinga_db__feature != 'unknown'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Icinga database local facts
+  template:
+    src: 'etc/ansible/facts.d/icinga_db.fact.j2'
+    dest: '/etc/ansible/facts.d/icinga_db.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: icinga_db__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: icinga_db__register_facts is changed

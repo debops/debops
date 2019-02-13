@@ -30,6 +30,7 @@ events {
 }
 
 http {
+        include {{ nginx_etc_path }}/conf.d/*.conf;
         include /etc/nginx/mime.types;
         default_type application/octet-stream;
 
@@ -38,16 +39,26 @@ http {
         server_names_hash_bucket_size {{ nginx_http_server_names_hash_bucket_size | default('64') }};
         server_names_hash_max_size {{ nginx_http_server_names_hash_max_size | default('512') }};
 
-        # Logging
-        access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log') }};
-        error_log  {{ nginx_http_error_log  | default(nginx_log_path + '/error.log')  }};
-
-        add_header X-Clacks-Overhead "GNU Terry Pratchett";
-
 {% if nginx_http_options|d() and nginx_http_options %}
 {{ nginx_http_options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
 
 {% endif %}
+{% if nginx_http_extra_options|d() and nginx_http_extra_options %}
+{{ nginx_http_extra_options | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
+
+{% endif %}
+{% block nginx_tpl_block_log %}
+{%      set nginx_tpl_access_log_format = '' %}
+{%      if nginx_access_log_format is defined %}
+{%          set nginx_tpl_access_log_format = ' ' +  nginx_access_log_format %}
+{%      endif %}
+        # Logging
+        access_log {{ nginx_http_access_log | default(nginx_log_path + '/access.log' + nginx_tpl_access_log_format) }};
+        error_log  {{ nginx_http_error_log  | default(nginx_log_path + '/error.log')  }};
+{% endblock %}
+
+        add_header X-Clacks-Overhead "GNU Terry Pratchett";
+
 {% if nginx_http_client_max_body_size|d() and nginx_http_client_max_body_size %}
         client_max_body_size {{ nginx_http_client_max_body_size }};
 
@@ -86,7 +97,6 @@ http {
 {% endif %}
 {% endif %}
         # Virtual Hosts Configs
-        include {{ nginx_etc_path }}/conf.d/*.conf;
         include {{ nginx_etc_path }}/sites-enabled/*.conf;
 }
 {% if nginx_extra_options %}

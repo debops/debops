@@ -1,0 +1,30 @@
+---
+
+- name: Manage Tor relay
+  hosts: [ 'debops_service_tor' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.secret
+      tags: [ 'role::tor' ]
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ tor__ferm__dependent_rules }}'
+
+    - role: debops.unattended_upgrades
+      tags: [ 'role::unattended_upgrades' ]
+      unattended_upgrades__dependent_origins: '{{ tor__unattended_upgrades__dependent_origins }}'
+
+    - role: nusenu.relayor
+      become: False
+      tags: [ 'role::relayor' ]
+
+    - role: debops-contrib.tor
+      tags: [ 'role::tor' ]

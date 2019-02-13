@@ -4,10 +4,12 @@
 - name: Install Samba packages
   apt:
     pkg: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   with_flattened:
     - '{{ samba__base_packages }}'
+  register: samba__register_packages
+  until: samba__register_packages is succeeded
 
 - name: Create root Samba directories
   file:

@@ -1,0 +1,40 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import os
+
+output = {'configured': True,
+          'writable': []}
+
+# Find all paths in '/proc/sys/' that are writable, ie. mounted with
+# read-write permission. If there are no writable paths found, and /proc/sys
+# itself is writable, assume that all paths are writable and add all of them to
+# the list.
+
+proc_sys_rw = True
+
+with open('/proc/mounts', 'r') as mounts:
+    for line in mounts:
+        if line.startswith('proc ') or line.startswith('none '):
+            entry = line.strip().split()
+
+            if entry[1] == '/proc/sys':
+                entry_options = entry[3].split(',')
+                if 'ro' in entry_options:
+                    proc_sys_rw = False
+
+            elif entry[1].startswith('/proc/sys/'):
+                entry_path = entry[1].lstrip('/proc/sys/').replace('/', '.')
+                entry_options = entry[3].split(',')
+                if entry_path:
+                    if 'rw' in entry_options:
+                        output['writable'].append(entry_path)
+
+if not output['writable'] and proc_sys_rw:
+    for element in os.listdir('/proc/sys'):
+        output['writable'].append(element)
+
+print(dumps(output, sort_keys=True, indent=4))

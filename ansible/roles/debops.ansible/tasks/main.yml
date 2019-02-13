@@ -1,0 +1,59 @@
+---
+
+- name: Add Ansible upstream APT key
+  apt_key:
+    id: '{{ ansible__upstream_apt_key | replace(" ","") }}'
+    state: 'present'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+  register: ansible__register_apt_key
+  until: ansible__register_apt_key is succeeded
+  when: ansible__deploy_type == 'upstream'
+
+- name: Add Ansible upstream APT repository
+  apt_repository:
+    repo: '{{ ansible__upstream_apt_repository }}'
+    state: 'present'
+    update_cache: True
+  when: ansible__deploy_type == 'upstream'
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ ansible__base_packages }}'
+    - '{{ ansible__packages }}'
+  register: ansible__register_packages
+  until: ansible__register_packages is succeeded
+
+- name: Bootstrap Ansible from source
+  script: 'script/bootstrap-ansible "{{ ansible__bootstrap_version }}"'
+  when: (ansible__deploy_type == 'bootstrap' and
+         (ansible_local is undefined or
+          (ansible_local.ansible is undefined or
+           not (ansible_local.ansible.installed|d())|bool or
+                (ansible_local.ansible.deploy_type|d(ansible__deploy_type) != 'bootstrap'))))
+
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Ansible local facts
+  template:
+    src: 'etc/ansible/facts.d/ansible.fact.j2'
+    dest: '/etc/ansible/facts.d/ansible.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: ansible__register_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: ansible__register_facts is changed

@@ -1,0 +1,14 @@
+---
+
+- name: Manage /proc hidepid= configuration
+  hosts: [ 'debops_all_hosts', 'debops_service_proc_hidepid' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.proc_hidepid
+      tags: [ 'role::proc_hidepid', 'skip::proc_hidepid' ]

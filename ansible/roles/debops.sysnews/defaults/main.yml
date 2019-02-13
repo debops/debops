@@ -1,0 +1,157 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.sysnews default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: sysnews__base_packages [[[
+#
+# List of the default APT packages to install for System News support.
+sysnews__base_packages: [ 'sysnews' ]
+
+                                                                   # ]]]
+# .. envvar:: sysnews__packages [[[
+#
+# List of additional APT packages to install for System News support.
+sysnews__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# News notification [[[
+# ---------------------
+
+# .. envvar:: sysnews__notification [[[
+#
+# Enable or disable notification about unread News items after login.
+sysnews__notification: True
+
+                                                                   # ]]]
+# .. envvar:: sysnews__notification_min_uid [[[
+#
+# Specify the minimum UID number for an UNIX account to see the notification.
+# This is done so that the news notification does not show up after switching
+# to the ``root`` account via :command:`su` or :command:`sudo`.
+sysnews__notification_min_uid: '900'
+
+                                                                   # ]]]
+# .. envvar:: sysnews__notification_max_uid [[[
+#
+# Specify the maximum UID number for an UNIX account to see the notification.
+# This might be useful if you want to limit the System News to only for the
+# system administrators in a multi-person team.
+#
+# The value usually would be ``999`` for non-clustered hosts where normal users
+# start at ``1000``, and ``9999`` for clustered hosts where users in the LDAP
+# database might start at ``10000``. By default, all users will see the
+# notification.
+sysnews__notification_max_uid: ''
+
+                                                                   # ]]]
+# .. envvar:: sysnews__notification_command [[[
+#
+# The shell command executed to display System News notification after login.
+sysnews__notification_command: '/usr/bin/news -l -n'
+                                                                   # ]]]
+                                                                   # ]]]
+# Misc configuration [[[
+# ----------------------
+
+# .. envvar:: sysnews__group [[[
+#
+# Name of the UNIX system group which grants write access to the
+# :file:`/var/lib/sysnews/` directory. This group is defined in the
+# :command:`sysnews` Debian package and preferably shouldn't be changed.
+sysnews__group: 'staff'
+
+                                                                   # ]]]
+# .. envvar:: sysnews__entry_contact [[[
+#
+# The string used as the contact information for the host administrators,
+# inserted in one of the default System News entries if set.
+sysnews__entry_contact: '{{ ansible_local.machine.contact
+                            if (ansible_local|d() and ansible_local.machine|d() and
+                                ansible_local.machine.contact|d())
+                            else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# System News static entries [[[
+# ------------------------------
+
+# These variables define configuration of the System News entries which will
+# not expire automatically. See :ref:`sysnews__ref_entries` for more details.
+
+# .. envvar:: sysnews__default_entries [[[
+#
+# List of default System News entries defined by the role.
+sysnews__default_entries:
+
+  - name: 'Welcome to System News'
+    content: |
+      This host has support for the "System News" bulletin, which can be read
+      using the 'news' command.
+
+      Members of the '{{ sysnews__group }}' UNIX system group can create news entries in the form
+      of text files located in the '/var/lib/sysnews/' directory. The news items
+      will automatically expire after a month, unless they are specifically
+      marked for no expiration.
+
+      Read the news(1) manpage for more details.
+    state: 'present'
+
+  - name: 'This machine is managed using Ansible'
+    content: |
+      Ansible is a Configuration Management tool used to configure hosts in an
+      automated fashion.
+
+      Any changes in files which are managed using Ansible may be unexpectedly
+      lost if not accounted for by the system administrator. These files can be
+      recognized by a special annotation near the top of the file which informs
+      that this file is managed remotely.
+      {% if sysnews__entry_contact|d() %}
+
+      If you want to perform system modifications on this host, consider
+      contacting the system administrators first. They can be reached using
+      {{ sysnews__entry_contact }}
+      {% endif %}
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: sysnews__entries [[[
+#
+# List of System News entries which should be present on all hosts in the
+# Ansible inventory.
+sysnews__entries: []
+
+                                                                   # ]]]
+# .. envvar:: sysnews__group_entries [[[
+#
+# List of System News entries which should be present on hosts in a specific
+# Ansible inventory group.
+sysnews__group_entries: []
+
+                                                                   # ]]]
+# .. envvar:: sysnews__host_entries [[[
+#
+# List of System News entries which should be present on specific hosts in the
+# Ansible inventory.
+sysnews__host_entries: []
+
+                                                                   # ]]]
+# .. envvar:: sysnews__combined_entries [[[
+#
+# This list combines all of the other System News entry lists and passes them
+# to the role tasks.
+sysnews__combined_entries: '{{ sysnews__default_entries
+                               + sysnews__entries
+                               + sysnews__group_entries
+                               + sysnews__host_entries }}'
+                                                                   # ]]]
+                                                                   # ]]]

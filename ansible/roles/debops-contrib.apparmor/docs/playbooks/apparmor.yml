@@ -11,7 +11,9 @@
   roles:
 
     - role: debops.grub
-      grub_dependent_kernel_options: '{{ apparmor__kernel_options }}'
+      grub__dependent_configuration:
+        - name: 'cmdline_linux_default'
+          value: '{{ apparmor__kernel_options }}'
       when: (not (apparmor__manage_grub|d() | bool))
       tags: [ 'role::grub' ]
 

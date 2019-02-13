@@ -6,6 +6,8 @@
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
 
 # Package installation [[[
@@ -28,14 +30,17 @@ gitlab_runner__apt_key: '1A4C919DB987D435939638B914219A96E15E78F4'
 # .. envvar:: gitlab_runner__apt_repo [[[
 #
 # APT ``sources.list`` configuration of the upstream GitLab Runner repository.
-gitlab_runner__apt_repo: 'deb https://packages.gitlab.com/runner/gitlab-ci-multi-runner/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main'
+gitlab_runner__apt_repo: 'deb https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__base_packages [[[
 #
 # List of APT packages which will be installed by the role.
 gitlab_runner__base_packages:
-  - 'gitlab-ci-multi-runner'
+  - 'gitlab-runner'
+  - '{{ [ "vagrant-libvirt", "libguestfs-tools", "busybox", "patch" ]
+        if gitlab_runner__vagrant_libvirt|bool
+        else [] }}'
   - '{{ "vagrant-lxc" if gitlab_runner__vagrant_lxc|bool else [] }}'
 
                                                                    # ]]]
@@ -319,6 +324,32 @@ gitlab_runner__host_custom_files: []
 # These variables control what features are configured on the GitLab Runner
 # host to use by the shell executor.
 
+# .. envvar:: gitlab_runner__vagrant_libvirt [[[
+#
+# Enable or disable support for Vagrant libvirt plugin (configuration of this
+# support also implies installation of :command:`vagrant` on the GitLab Runner
+# host).
+#
+# Enabling Vagrant libvirt will add the ``gitlab-runner`` UNIX account to the
+# ``libvirt`` and ``kvm`` UNIX groups, required for libvirt access by Vagrant.
+gitlab_runner__vagrant_libvirt: '{{ True
+                                    if (ansible_local|d() and ansible_local.libvirtd|d() and
+                                        (ansible_local.libvirtd.installed|d())|bool and
+                                        (ansible_distribution_release not in
+                                         [ "wheezy", "jessie", "precise", "trusty" ]))
+                                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__vagrant_libvirt_patch [[[
+#
+# Patch ``vagrant-libvirt`` source code to fix an issue with removed SSH host
+# keys that prevent interaction with Vagrant VMs.
+# See the patch file in :file:`files/patches/` directory for more details.
+gitlab_runner__vagrant_libvirt_patch: '{{ True
+                                          if (gitlab_runner__vagrant_libvirt|bool)
+                                          else False }}'
+
+                                                                   # ]]]
 # .. envvar:: gitlab_runner__vagrant_lxc [[[
 #
 # Enable or disable support for Vagrant LXC plugin (configuration of this
@@ -416,7 +447,7 @@ gitlab_runner__ssh_password: ''
 # Docker executor configuration [[[
 # ---------------------------------
 
-# You should referer to the `Doccker executor documentation <https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnersdocker-section>`_
+# You should refer to the `Docker executor documentation <https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnersdocker-section>`_
 # for information about what can be configured and what's the specific syntax
 # of each option.
 
@@ -517,7 +548,7 @@ gitlab_runner__docker_allowed_services: []
 # Docker Machine and autoscaling [[[
 # ----------------------------------
 
-# You should referer to the `GitLab Runner autoscaling documentation <https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnersmachine-section>`_
+# You should refer to the `GitLab Runner autoscaling documentation <https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnersmachine-section>`_
 # for information about what can be configured and what's the specific syntax
 # of each option.
 
@@ -586,7 +617,7 @@ gitlab_runner__machine_options: []
 # Distributed cache configuration [[[
 # -----------------------------------
 
-# You should referer to the `GitLab Runner cache documentation <https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnerscache-section>`_
+# You should refer to the `GitLab Runner cache documentation <https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnerscache-section>`_
 # for information about what can be configured and what's the specific syntax
 # of each option.
 
@@ -637,7 +668,12 @@ gitlab_runner__cache_bucket_location: ''
 # Enable or disable connections to the S3 service over HTTP instead of HTTPS.
 gitlab_runner__cache_insecure: False
                                                                    # ]]]
+# .. envvar:: gitlab_runner__cache_shared [[[
+#
+# Enables cache sharing between runners.
+gitlab_runner__cache_shared: False
 
+                                                                   # ]]]
 # .. envvar:: gitlab_runner__run_untagged [[[
 #
 # Enable or disable running untagged jobs.

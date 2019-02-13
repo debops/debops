@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # Global options [[[
@@ -31,6 +31,7 @@ ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and ansible_local|d() and
 #
 # Choices (string):
 #
+# - chrony
 # - ntpdate
 # - ntpd
 # - openntpd
@@ -100,6 +101,49 @@ ntp__servers_map:
 # :program:`ntpd` specific.
 # Fudge local clock if time servers is not available.
 ntp__fudge: True
+
+                                                                   # ]]]
+# .. envvar:: ntp__servers_as_pool [[[
+#
+# Treat NTP server addresses as pool addresses. The server name is expected
+# to resolve to multiple IP addresses which might change over time. This is
+# currently only supported by :program:`chrony`. Other NTP servers will
+# ignore this setting.
+ntp__servers_as_pool: '{{ False if ansible_distribution == "Debian"
+                                   and ansible_distribution_release == "jessie"
+                          else True }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: ntp__base_packages [[[
+#
+# List of APT packages to install for NTP support.
+ntp__base_packages:
+  - '{{ "chrony"   if (ntp__daemon == "chrony")   else [] }}'
+  - '{{ "ntp"      if (ntp__daemon == "ntpd")     else [] }}'
+  - '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}'
+  - '{{ "ntpdate"  if (ntp__daemon == "ntpdate")  else [] }}'
+
+
+                                                                   # ]]]
+# .. envvar:: ntp__packages [[[
+#
+# List of additional APT packages to install with NTP support.
+ntp__packages: []
+
+                                                                   # ]]]
+# .. envvar:: ntp__purge_packages [[[
+#
+# List of APT packages to purge during NTP configuration to avoid issues with
+# conflicting services.
+ntp__purge_packages:
+  - '{{ "chrony"   if (ntp__daemon != "chrony")                  else [] }}'
+  - '{{ "ntp"      if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}'
+  - '{{ "openntpd" if (ntp__daemon != "openntpd")                else [] }}'
+  - '{{ "ntpdate"  if (ntp__daemon != "ntpdate" and
+                       not ntp__ignore_ntpdate|bool)             else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Timezone configuration [[[
@@ -129,11 +173,10 @@ ntp__openntpd_options: '-f /etc/openntpd/ntpd.conf -s'
 # .. envvar:: ntp__listen [[[
 #
 # List of interfaces :program:`ntpd` should listen on.
-# Specify::
+# Specify ``ntp__listen: '*'`` to listen on all interfaces.
 #
-#     ntp__listen: '*'
-#
-# to listen on all interfaces.
+# The :program:`chrony` service only supports one listen interface for each of
+# the IPv4 and IPv6 protocols. It must be specified as an IP address.
 ntp__listen: []
 
                                                                    # ]]]
@@ -192,7 +235,7 @@ ntp__ferm_recent_target: 'DROP'
 
 # .. envvar:: ntp__ferm__dependent_rules [[[
 #
-# Configuration of the Linux firewall using debops.ferm_.
+# Configuration of the Linux firewall using :ref:`debops.ferm`.
 ntp__ferm__dependent_rules:
 
   - type: 'accept'
@@ -204,7 +247,7 @@ ntp__ferm__dependent_rules:
     name: 'jump-filter-ntp'
     target: '{{ ntp__ferm_chain }}'
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -221,7 +264,7 @@ ntp__ferm__dependent_rules:
     recent_set_name: 'ntp-new'
     recent_log: False
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -241,7 +284,7 @@ ntp__ferm__dependent_rules:
     recent_target: '{{ ntp__ferm_recent_target }}'
     recent_log_prefix: 'ipt-recent-ntp: '
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
 
@@ -255,7 +298,7 @@ ntp__ferm__dependent_rules:
     role: 'ntp'
     role_weight: '40'
     rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd" ] and
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
                       ntp__firewall_access|bool)
                     else "absent" }}'
                                                                    # ]]]

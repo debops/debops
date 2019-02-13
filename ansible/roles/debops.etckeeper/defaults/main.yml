@@ -1,0 +1,298 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.etckeeper default variables
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration, installation [[[
+# ---------------------------------------
+
+# .. envvar:: etckeeper__enabled [[[
+#
+# Enable or disable support for :program:`etckeeper` on a given host. Disabling
+# this option does not remove existing :program:`etckeeper` installation and
+# committing changes via Ansible local facts will be disabled.
+etckeeper__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__installed [[[
+#
+# This variable keeps the install status of :command:`etckeeper` to distinguish
+# between new and existing installation.
+etckeeper__installed: '{{ ansible_local.etckeeper.installed
+                          if (ansible_local|d() and ansible_local.etckeeper|d() and
+                              ansible_local.etckeeper.installed|d())
+                          else False }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__base_packages [[[
+#
+# List of default APT packages to install for :program:`etckeeper` support.
+etckeeper__base_packages:
+  - '{{ "mercurial" if (etckeeper__vcs == "hg") else etckeeper__vcs }}'
+  - 'etckeeper'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__packages [[[
+#
+# List of additional APT packages to install with :program:`etckeeper`.
+etckeeper__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Package management options [[[
+# ------------------------------
+
+# .. envvar:: etckeeper__highlevel_package_manager [[[
+#
+# The high-level package manager that's being used.
+# (:command:`apt`, :command:`pacman-g2`, :command:`yum`, :command:`dnf`, :command:`zypper` etc).
+# This will only be used when your distribution was not able to predefine this.
+etckeeper__highlevel_package_manager: '{{ ansible_local.etckeeper.highlevel_package_manager
+                                          if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                              ansible_local.etckeeper.highlevel_package_manager|d())
+                                          else ansible_pkg_mgr }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__lowlevel_package_manager [[[
+#
+# The low-level package manager that's being used.
+# (:command:`dpkg`, :command:`rpm`, :command:`pacman`, :command:`pacman-g2`, etc)
+# This will only be used when your distribution was not able to predefine this.
+etckeeper__lowlevel_package_manager: '{{ ansible_local.etckeeper.lowlevel_package_manager
+                                         if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                             ansible_local.etckeeper.lowlevel_package_manager|d())
+                                         else etckeeper__high_low_pkg_map[etckeeper__highlevel_package_manager] }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__high_low_pkg_map [[[
+#
+# A YAML dictionary that maps the high-level package manager to a low-level
+# package manager.
+etckeeper__high_low_pkg_map:
+  'apt':       'dpkg'
+  'yum':       'rpm'
+  'dnf':       'rpm'
+  'zypper':    'rpm'
+  'pacman':    'pacman'
+                                                                   # ]]]
+                                                                   # ]]]
+# Commit messages [[[
+# -------------------
+
+# .. envvar:: etckeeper__commit_message_init [[[
+#
+# Commit message for the initial commit created by the role.
+etckeeper__commit_message_init: 'Initial commit by "debops.etckeeper" Ansible role'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__commit_message_update [[[
+#
+# Commit message for the subsequent commits created by the role.
+etckeeper__commit_message_update: 'Committed by "debops.etckeeper" Ansible role'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__commit_message_fact [[[
+#
+# Commit message used by the Ansible local fact.
+etckeeper__commit_message_fact: 'Committed by Ansible local facts'
+                                                                   # ]]]
+                                                                   # ]]]
+# Version control ignore list [[[
+# -------------------------------
+
+# These list variables define what paths in :file:`/etc` directory should be
+# ignored by :program:`etckeeper`. They will be added in the
+# :file:`/etc/.gitignore` file. See :ref:`etckeeper__ref_gitignore` for more
+# details.
+
+# .. envvar:: etckeeper__block_marker [[[
+#
+# The string that marks the beginning and end of the section in the
+# :file:`.gitignore` file managed by the ``debops.etckeeper` role. It shouldn't
+# be changed once deployed, the ``{mark}`` string is required.
+etckeeper__block_marker: '# {mark} section managed by debops.etckeeper Ansible role'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__default_gitignore [[[
+#
+# The default list of :file:`.gitignore` paths defined by the role.
+etckeeper__default_gitignore:
+
+  - name: 'tor-keys'
+    comment: |
+      There is no benefit in tracking Tor keys and it is a potential security
+      vulnerability.
+    ignore: 'tor/keys/'
+
+  - name: 'ssh-host-keys'
+    comment: 'No need to track the SSH host keys'
+    ignore: 'ssh/ssh_host_*_key'
+
+  - name: 'mandos-seckey'
+    comment: |
+      There is no benefit in tracking Mandos keys and it is a potential security
+      vulnerability in case the /etc/ repository is pushed to an external remote.
+    ignore: 'keys/mandos/seckey.txt'
+
+  - name: 'xorg-conf-backup'
+    ignore: 'X11/xorg.conf.backup'
+
+  - name: 'apparmor-libvirt'
+    comment: |
+      Files are generated and managed by libvirt and it is believed that there
+      is very little benefit in tracking these files.
+    ignore: 'apparmor.d/libvirt/*.files'
+
+  - name: 'zfs-zpool-cache'
+    ignore: 'zfs/zpool.cache'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__gitignore [[[
+#
+# List of :file:`.gitignore` paths which should be ignored on all hosts in the
+# Ansible inventory.
+etckeeper__gitignore: []
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__group_gitignore [[[
+#
+# List of :file:`.gitignore` paths which should be ignored on hosts in
+# a specific Ansible inventory group.
+etckeeper__group_gitignore: []
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__host_gitignore [[[
+#
+# List of :file:`.gitignore` paths which should be ignored on specific hosts in
+# the Ansible inventory.
+etckeeper__host_gitignore: []
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__combined_gitignore [[[
+#
+# List which combines all of the :file:`.gitignore` entries together and is
+# used in the role tasks and templates.
+etckeeper__combined_gitignore: '{{ etckeeper__default_gitignore
+                                   + etckeeper__gitignore
+                                   + etckeeper__group_gitignore
+                                   + etckeeper__host_gitignore }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Version control options [[[
+# ---------------------------
+
+# .. envvar:: etckeeper__vcs [[[
+#
+# Which VCS to use to version :file:`/etc` directory. Supported commands:
+#
+# - :command:`git` (default)
+# - :command:`hg`
+# - :command:`bzr`
+# - :command:`darcs`
+#
+# Note that any other VCS than :command:`git` has not really been tested. You might
+# have to fix some bugs in this role when you want to use them.
+etckeeper__vcs: '{{ ansible_local.etckeeper.vcs
+                    if (ansible_local|d() and ansible_local.etckeeper|d() and
+                        ansible_local.etckeeper.vcs|d())
+                    else "git" }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__vcs_user [[[
+#
+# The committer name for :program:`etckeeper` to use in commits if no
+# interactive user was detected.
+etckeeper__vcs_user: 'The /etc Keeper'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__vcs_email [[[
+#
+# Email address for :program:`etckeeper` to use in commits if no interactive
+# user was detected.
+etckeeper__vcs_email: 'root@{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__git_commit_options [[[
+#
+# Options passed to :command:`git commit` when run by :program:`etckeeper`.
+etckeeper__git_commit_options: '{{ ansible_local.etckeeper.git_commit_options
+                                   if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                       ansible_local.etckeeper.git_commit_options|d())
+                                   else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__hg_commit_options [[[
+#
+# Options passed to :command:`hg commit` when run by :program:`etckeeper`.
+etckeeper__hg_commit_options: '{{ ansible_local.etckeeper.hg_commit_options
+                                  if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                      ansible_local.etckeeper.hg_commit_options|d())
+                                  else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__bzr_commit_options [[[
+#
+# Options passed to :command:`bzr commit` when run by :program:`etckeeper`.
+etckeeper__bzr_commit_options: '{{ ansible_local.etckeeper.bzr_commit_options
+                                   if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                       ansible_local.etckeeper.bzr_commit_options|d())
+                                   else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__darcs_commit_options [[[
+#
+# Options passed to :command:`darcs record` when run by :program:`etckeeper`.
+etckeeper__darcs_commit_options: '{{ ansible_local.etckeeper.darcs_commit_options
+                                     if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                         ansible_local.etckeeper.darcs_commit_options|d())
+                                     else "-a" }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__avoid_daily_autocommits [[[
+#
+# Set this option to ``True`` to avoid :program:`etckeeper` committing existing
+# changes to :file:`/etc` automatically once per day.
+etckeeper__avoid_daily_autocommits: '{{ True
+                                        if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                            (ansible_local.etckeeper.avoid_daily_autocommits|d() == "1"))
+                                        else False }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__avoid_special_file_warning [[[
+#
+# Set this option to ``True`` to avoid special file warning (the option is
+# enabled automatically by cronjob regardless).
+etckeeper__avoid_special_file_warning: '{{ True
+                                           if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                               (ansible_local.etckeeper.avoid_special_file_warning|d() == "1"))
+                                           else False }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__avoid_commit_before_install [[[
+#
+# Set this option to ``True`` to avoid :program:`etckeeper` committing existing
+# changes to /etc before installation. It will cancel the installation, so
+# you can commit the changes by hand.
+etckeeper__avoid_commit_before_install: '{{ True
+                                            if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                                (ansible_local.etckeeper.avoid_commit_before_install|d() == "1"))
+                                            else False }}'
+
+                                                                   # ]]]
+# .. envvar:: etckeeper__push_remote [[[
+#
+# To push each commit to a remote, put the name of the remote here (eg,
+# "origin" for ``git``). Space-separated lists of multiple remotes also work
+# (eg, "origin gitlab github" for git).
+etckeeper__push_remote: '{{ ansible_local.etckeeper.push_remote
+                            if (ansible_local|d() and ansible_local.etckeeper|d() and
+                                ansible_local.etckeeper.push_remote|d())
+                            else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]

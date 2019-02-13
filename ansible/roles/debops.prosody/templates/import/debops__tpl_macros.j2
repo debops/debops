@@ -1,0 +1,236 @@
+{# vim: foldmarker=[[[,]]]:foldmethod=marker
+# Commonly used set of macros in DebOps.
+# It can be imported in repositories as needed.
+# Changes to this file should go upstream: https://github.com/debops/debops-playbooks/blob/master/templates/debops__tpl_macros.j2
+#
+# Copyright [[[
+# =============
+#
+# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@drybjed.net>
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2014-2017 DebOps https://debops.org/
+#
+# This file is part of DebOps.
+#
+# DebOps is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3, as
+# published by the Free Software Foundation.
+#
+# DebOps is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with DebOps. If not, see https://www.gnu.org/licenses/.
+#
+# ]]]
+#
+# Usage [[[
+# =========
+#
+# Copy the template file to `./templates/import/debops__tpl_macros.j2` of your
+# role and import it from there into various other templates or even use it
+# in templates which are called by {{ lookup("template", ...) }}.
+#
+# Make sure to retain the filename of this file so that automatic updates of
+# this file can be implemented.
+#
+# To use the macros in your own template, this file needs to be imported like so:
+#
+# {% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+#
+# Then you can start using the macros like this:
+#
+# {{ debops__tpl_macros.indent(some_content, 4) }}
+#
+# ]]] #}
+
+{% macro get_realm_yaml_list(domains, fallback_realm) %}{# [[[ #}
+{% set custom_realm_list = [] %}
+{% if domains and (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d()) %}
+{%   for domain in (get_yaml_list_for_elem(domains) | from_yaml) %}
+{%     if domain in ansible_local.pki.known_realms %}
+{%       set _ = custom_realm_list.append(domain) %}
+{%     elif (domain.split('.')[1:] | join('.')) in ansible_local.pki.known_realms %}
+{%       set _ = custom_realm_list.append(domain.split('.')[1:] | join('.')) %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if custom_realm_list|length == 0 %}
+{%   set _ = custom_realm_list.append(fallback_realm) %}
+{% endif %}
+{{ custom_realm_list | to_nice_yaml }}
+{% endmacro %}{# ]]] #}
+
+{% macro get_apache_version() %}{# [[[ #}
+{{ ansible_local.apache.version
+   if (ansible_local|d() and ansible_local.apache|d() and
+       ansible_local.apache.version|d())
+   else "2.4.0" -}}
+{% endmacro %}{# ]]] #}
+
+{% macro get_apache_min_version() %}{# [[[ #}
+{{ ansible_local.apache.min_version
+   if (ansible_local|d() and ansible_local.apache|d() and
+       ansible_local.apache.min_version|d())
+   else "2.4.0" -}}
+{% endmacro %}{# ]]] #}
+
+{% macro get_openssl_version() %}{# [[[ #}
+{{ ansible_local.pki.openssl_version
+   if (ansible_local|d() and ansible_local.pki|d() and
+       ansible_local.pki.openssl_version|d())
+   else "0.0.0" }}
+{% endmacro %}{# ]]] #}
+
+{% macro get_gnutls_version() %}{# [[[ #}
+{{ ansible_local.pki.gnutls_version
+   if (ansible_local|d() and ansible_local.pki|d() and
+       ansible_local.pki.gnutls_version|d())
+   else "0.0.0" }}
+{% endmacro %}{# ]]] #}
+
+{% macro indent(content, width=4, indentfirst=False) %}{# [[[ #}
+{#
+## Fixed version of the `indent` filter which does not insert trailing spaces on empty lines.
+## Note that you can not use this macro like a filter but have to use it like a regular macro.
+## Example: {{ debops__tpl_macros.indent(some_content, 4) }}
+##
+## Python re.sub seems to default to re.MULTILINE in Ansible.
+#}
+{{ content | indent(width, indentfirst) | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") -}}
+{% endmacro %}{# ]]] #}
+
+{%  macro merge_dict(current_dict, to_merge_dict, dict_key='name') %}{# [[[ #}
+{#
+## Recursively merges nested dictionaries or a nested dictionary with a list of
+## dictionaries. In the second case, a key name can be given whose value will
+## be used as top-level key for the dictionary item. Note that for merging simple
+## dictionaries you should use the regular `combined` Jinja filter.
+##
+## This can be used to define default variables as YAML dictionaries and then
+## use YAML lists of dictionaries either in the inventory or in role dependent
+## variables which lets you add multiple YAML lists together.
+##
+## Arguments:
+##   current_dict:   Nested dictionary whose values might get overwritten if
+##                   defined in `to_merge_dict`.
+##   to_merge_dict:  Dictionary or list of dictionaries being merged into `current_dict`.
+##   dict_key:       Key in the `to_merge_dict` item which is used to match the
+##                   dictionary item being merged in `current_dict` in case `to_merge_dict`
+##                   is a list of dictionaries.
+##
+## Return: JSON-formatted dictionary
+##
+## Examples:
+##
+## 1. Merge single-nested dictionaries:
+##     {{ debops__tmpl_macros.merge_dict({'item1': {'key1': 'val1', 'key2': 'val2'},
+##                                        'item2': {'key3': 'val3', 'key4': 'val4'}},
+##                                       {'item1': {'key2': 'new_val2'},
+##                                        'item2': {'key5': 'val5'    }}) }}
+##
+##     Will output: {"item1": {"key1": "val1", "key2": "new_val2"},
+##                   "item2": {"key3": "val3", "key4": "val4", "key5": "val5"}}
+##
+## 2. Merge double-nested dictionaries:
+##     {{ debops__tmpl_macros.merge_dict({'item1': {'prop1': {'key1': 'val1'}}},
+##                                       {'item1': {'prop1': {'key3': 'val3'},
+##                                                  'prop2': {'key2': 'val2'}}}) }}
+##
+##     Will output: {"item1": {"prop1": {"key1": "val1", "key3": "val3"},
+##                             "prop2": {"key2": "val2"}}}
+##
+## 3. Merge nested dictionary with list of dictionaries:
+##     {{ debops__tmpl_macros.merge_dict({'item1': {'key1': 'val1', 'key2': 'val2'}},
+##                                       [{'name': 'item2', 'key3': 'val3'},
+##                                        {'name': 'item3', 'key4': 'val4'}]) }}
+##
+##     Will output: {"item1: {"key1": "val1", "key2": "val2"},
+##                   "item2: {"name": "item2", "key3": "val3"},
+##                   "item3: {"name": "item3", "key4": "val4"}}
+#}
+{%   set merged_dict = current_dict %}
+{%   if to_merge_dict %}
+{%     if to_merge_dict is mapping %}
+{%       for dict_name in to_merge_dict.keys() | sort %}
+{%         if to_merge_dict[dict_name][dict_key]|d() %}
+{%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%         elif to_merge_dict[dict_name][dict_key] is undefined %}
+{%           set _ = merged_dict.update({dict_name:(current_dict[dict_name]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%         endif %}
+{%       endfor %}
+{%     elif to_merge_dict is not string and to_merge_dict is not mapping %}
+{%       set flattened_dict = lookup("flattened", to_merge_dict) %}
+{%       for element in ([ flattened_dict ] if flattened_dict is mapping else flattened_dict) %}
+{%         if element[dict_key]|d() %}
+{%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]]|d({}) | combine(element, recursive=True))}) %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{{ merged_dict | to_json }}
+{% endmacro %}{# ]]] #}
+
+{% macro flattened() %}{# [[[ #}
+{# This macro does what the flattened lookup from Ansible fails to do in Jinja templates as of Ansible 2.2.
+## All macro arguments are flattened into one "flat" list.
+## Uses a less known feature of Jinja for using the *args and *kwargs syntax as known from
+## Python. Even if the macro does not declare any arguments, it will happyily
+## flatten any non-key-value arguments you provide.
+## Additional key-value arguments can be used to influence the behavoir of the macro.
+## The macro uses recursion to flatten nested lists.
+## Ref: https://stackoverflow.com/questions/13944751/args-kwargs-in-jinja2-macros
+## Retruns flattened object as JSON which you will need to deserialize using `from_json`.
+## Usage:
+##
+## {{ debops__tpl_macros.flattened(['list1', 55, ["deeplist1", "deeplist elem", True, False, undefined], {'mapping': True}], 'raw1', 22, True, False) }}
+## → ["list1", 55, "deeplist1", "deeplist elem", true, false, "raw1", 22, true, false]
+##
+## {{ debops__tpl_macros.flattened(['list1', 55, ["deeplist1", "deeplist elem", True, False, undefined], {'mapping': True}], 'raw1', 22, True, False, filter_undef=False) }}
+## → ["list1", 55, "deeplist1", "deeplist elem", true, false, null, "raw1", 22, true, false]
+##
+## {{ debops__tpl_macros.flattened(['list1', 55, ["deeplist1", "deeplist elem", True, False, undefined], {'mapping': True}], 'raw1', 22, True, False, filter_mapping=False) }}
+## → ["list1", 55, "deeplist1", "deeplist elem", true, false, {"mapping": true}, "raw1", 22, true, false]
+##
+## Ansible versions tested with: 2.1, 2.2
+## Jinja versions tested with: 2.8.1
+#}
+{% set filter_undef = kwargs.filter_undef|d(True) | bool %}
+{% set filter_mapping = kwargs.filter_mapping|d(True) | bool %}
+{# The following options are planned but currently don’t work: #}
+{% set append_mapping_keys = kwargs.append_mapping_keys|d(False) | bool %}
+{% set append_mapping_values = kwargs.append_mapping_values|d(False) | bool %}
+{#
+{{ "filter_undef:" + (filter_undef | string) }}
+{{ "filter_mapping:" + (filter_mapping | string) }}
+{{ "varargs:" + (varargs | string) }}
+#}
+{% set elem_flattened = [] %}
+{% for arg in varargs %}
+{#
+{{ "arg: " + (arg | string) }}
+#}
+{%   if filter_undef and (arg is undefined) %}
+{#     Filter out. #}
+{%   elif append_mapping_keys and (arg is mapping) %}
+{#     Does not work as of Jinja 2.8? #}
+{%     set _ = elem_flattened.extend(flattened(arg.keys(), filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%   elif append_mapping_values and (arg is mapping) %}
+{#     Does not work as of Jinja 2.8? #}
+{%     set _ = elem_flattened.extend(flattened(arg.values(), filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%   elif filter_mapping and (arg is mapping) %}
+{#     Filter out. #}
+{%   elif (arg is undefined) %}
+{%     set _ = elem_flattened.append(None) %}
+{%   elif (arg is string) or (arg is number) or (arg is sameas True) or (arg is sameas False) or (arg is mapping) %}
+{%     set _ = elem_flattened.append(arg) %}
+{%   elif (arg is iterable) %}
+{%     for element in arg %}
+{%       set _ = elem_flattened.extend(flattened(element, filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
+{{ elem_flattened | to_json }}
+{% endmacro %}{# ]]] #}

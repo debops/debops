@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # OpenSSH packages [[[
@@ -185,6 +185,26 @@ sshd__listen: []
 sshd__host_keys: [ 'ed25519', 'rsa', 'ecdsa' ]
 
                                                                    # ]]]
+# .. envvar:: sshd__trusted_user_ca_keys [[[
+#
+# List of CA public keys used to assemble a TrustedUserCAKeys file.
+sshd__trusted_user_ca_keys: []
+
+                                                                   # ]]]
+# .. envvar:: sshd__trusted_user_ca_keys_file [[[
+#
+# File name which will contain CA trusted keys
+sshd__trusted_user_ca_keys_file: '/etc/ssh/trusted-user-ca-keys.pem'
+
+                                                                   # ]]]
+# .. envvar:: sshd__scan_for_host_certs [[[
+#
+# Detect, and add, any host certificates found in /etc/ssh/ that match
+# ssh_host_*_key-cert.pub, as long as the key type matches whats in
+# `sshd__host_keys`
+sshd__scan_for_host_certs: False
+
+                                                                   # ]]]
 # .. envvar:: sshd__banner [[[
 #
 # Path to file which should be displayed before user authentication.
@@ -230,6 +250,13 @@ sshd__x11_forwarding: 'no'
 sshd__max_auth_tries: '4'
 
                                                                    # ]]]
+# .. envvar:: sshd__max_sessions [[[
+#
+# Maximum number of open shell, login or subsystem (e.g. sftp) sessions
+# permitted per network connection.
+sshd__max_sessions: '10'
+
+                                                                   # ]]]
 # .. envvar:: sshd__max_startups [[[
 #
 # Maximum number of unauthenticated connections (3), after which there's 80%
@@ -244,11 +271,27 @@ sshd__max_startups: '3:80:7'
 sshd__login_grace_time: '30s'
 
                                                                    # ]]]
+# .. envvar:: sshd__client_alive_count_max [[[
+#
+# Sets the number of client alive messages which may be sent without sshd
+# receiving any messages back from the client.
+sshd__client_alive_count_max: '3'
+
+                                                                   # ]]]
+# .. envvar:: sshd__compression [[[
+#
+# Specifies whether compression is enabled after the user has authenticated
+# successfully. The argument must be yes, delayed (a legacy synonym for yes)
+# or no.  The default is yes.
+sshd__compression: 'yes'
+
+                                                                   # ]]]
 # .. envvar:: sshd__privilege_separation [[[
 #
 # Specify if ``sshd`` should use unprivileged processes for incoming session
 # authentication. Setting this to ``sandbox`` enables use of additional
-# kernel restrictions.
+# kernel restrictions. This option has no effect with ``sshd`` version 7.5+
+# since privilege separation became mandatory.
 sshd__privilege_separation: 'sandbox'
 
                                                                    # ]]]
@@ -261,10 +304,21 @@ sshd__custom_options: ''
 # Group-based access control [[[
 # ------------------------------
 
+# .. envvar:: sshd__default_allow_groups [[[
+#
+# List of UNIX system groups which allow connections to SSH service defined by
+# default. The ``root`` UNIX group is used for backup connections, temporarily.
+sshd__default_allow_groups: '{{ ([ "root" ] + ansible_local.system_groups.access.sshd)
+                                 if (ansible_local|d() and ansible_local.system_groups|d() and
+                                     ansible_local.system_groups.access|d() and
+                                     ansible_local.system_groups.access.sshd|d())
+                                 else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: sshd__allow_groups [[[
 #
 # List of UNIX groups which allow connections to SSH service (global).
-sshd__allow_groups: [ 'root', 'admins', 'sshusers', 'sftponly' ]
+sshd__allow_groups: []
 
                                                                    # ]]]
 # .. envvar:: sshd__group_allow_groups [[[
@@ -410,7 +464,7 @@ sshd__macs_map:
            'umac-128@openssh.com' ]
 
   # Source: https://xivilization.net/~marek/blog/2015/01/12/secure-secure-shell-on-debian-wheezy/
-  '6.0': [ 'hmac-sha2-512', 'hmac-sha2-256' , 'hmac-ripemd160' ]
+  '6.0': [ 'hmac-sha2-512', 'hmac-sha2-256', 'hmac-ripemd160' ]
 
                                                                    # ]]]
 # .. envvar:: sshd__macs_additional [[[
@@ -510,7 +564,7 @@ sshd__ldap_bind_dn: '{{ sshd__ldap_bind_cn + "," + sshd__ldap_bind_basedn }}'
 # .. envvar:: sshd__ldap_bind_basepw [[[
 #
 # Base path to file with host LDAP password in ``secret/`` directory. See
-# debops.secret_ Ansible role for more details.
+# :ref:`debops.secret` for more details.
 sshd__ldap_bind_basepw: '{{ secret + "/credentials/" +
                             ansible_fqdn + "/ldap/host/binddn/" +
                             sshd__ldap_bind_dn + ".password" }}'
@@ -578,7 +632,8 @@ sshd__match_list: [ '{{ sshd__match_group_sftponly }}' ]
 # .. envvar:: sshd__match_group_sftponly [[[
 #
 # Default ``Match`` conditional block which defines configuration for SFTPonly
-# accounts.
+# accounts. The ``stfponly`` UNIX system group is created by the
+# :ref:`debops.system_groups` Ansible role.
 sshd__match_group_sftponly:
   match: 'Group sftponly'
   options: |

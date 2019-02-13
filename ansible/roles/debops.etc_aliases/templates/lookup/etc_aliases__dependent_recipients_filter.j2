@@ -15,7 +15,7 @@
 {%         set _ = etc_aliases__tpl_dependent_recipients.pop(element.role, None) %}
 {%       endif %}
 {%     else %}
-{%       for role, config in element.iteritems() %}
+{%       for role, config in element.items() %}
 {%         set flattened_config = lookup('flattened', config) %}
 {%         set _ = etc_aliases__tpl_dependent_recipients.update({
   role: ([ flattened_config ] if flattened_config is mapping else flattened_config)
@@ -25,7 +25,7 @@
 {%   endfor %}
 {% endif %}
 {% set etc_aliases__tpl_output = [] %}
-{% for key, value in etc_aliases__tpl_dependent_recipients.iteritems() %}
+{% for key, value in etc_aliases__tpl_dependent_recipients.items() %}
 {%   set _ = etc_aliases__tpl_output.extend(value) %}
 {% endfor %}
 {{ etc_aliases__tpl_output | to_yaml }}

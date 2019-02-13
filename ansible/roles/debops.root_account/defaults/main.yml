@@ -7,16 +7,28 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # General configuration [[[
 # -------------------------
 
-# .. envvar:: root_account__enable [[[
+# .. envvar:: root_account__enabled [[[
 #
 # Whether to manage the root account.
 root_account__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: root_account__base_packages [[[
+#
+# List of APT packages required by the role.
+root_account__base_packages: [ 'openssh-client' ]
+
+                                                                   # ]]]
+# .. envvar:: root_account__packages [[[
+#
+# List of additional APT packages to install for root account support.
+root_account__packages: []
 
                                                                    # ]]]
 # .. envvar:: root_account__password [[[
@@ -85,6 +97,92 @@ root_account__ssh_key_bits: '4096'
 #
 # Default root shell, set to empty string to not change the shell.
 root_account__shell: ''
+
+                                                                   # ]]]
+# .. envvar:: root_account__fix_no_tty [[[
+#
+# When enabled, the role will ensure that the :command:`mesg n` command located
+# in the :file:`/root/.profile` file will be run only when TTY is present. This
+# fixes the "mesg: ttyname failed: Inappropriate ioctl for device" error message.
+# See also: https://bugs.debian.org/794727, https://superuser.com/a/1253889
+root_account__fix_no_tty: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Authorized SSH keys [[[
+# -----------------------
+
+# .. envvar:: root_account__authorized_keys [[[
+#
+# List of public SSH keys which will be added to the
+# :file:`/root/.ssh/authorized_keys` file on all hosts in the Ansible
+# inventory.
+root_account__authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: root_account__group_authorized_keys [[[
+#
+# List of public SSH keys which will be added to the
+# :file:`/root/.ssh/authorized_keys` file on hosts in a specific Ansible
+# inventory group.
+root_account__group_authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: root_account__host_authorized_keys [[[
+#
+# List of public SSH keys which will be added to the
+# :file:`/root/.ssh/authorized_keys` file on specific hosts in the Ansible
+# inventory.
+root_account__host_authorized_keys: []
+
+                                                                   # ]]]
+# .. envvar:: root_account__authorized_keys_exclusive [[[
+#
+# If ``True``, only the public SSH keys defined in the above variable will be
+# present on the ``root`` account, all other keys will be removed.
+#
+# If ``False``, the public SSH keys defined in the above variable will be added
+# to the existing keys on the ``root`` account.
+root_account__authorized_keys_exclusive: False
+
+                                                                   # ]]]
+# .. envvar:: root_account__authorized_keys_state [[[
+#
+# If ``present``, the role will manage the :file:`/root/.ssh/authorized_keys`
+# file and add any public SSH keys to the ``root`` account. If ``absent``, the
+# :file:`/root/.ssh/authorized_keys` file will be removed.
+root_account__authorized_keys_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# Subordinate UID/GID ranges [[[
+# ------------------------------
+
+# .. envvar:: root_accout__subuid_enabled [[[
+#
+# Enable or disable configuration of subordinate UIDs/GIDs for the ``root``
+# system account.
+root_account__subuid_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: root_account__subuid_start [[[
+#
+# List of subordinate UID/GID numbers which can be remapped to be the ``root``
+# account in new user namespaces created by the system ``root`` account.
+#
+# Multiple UID/GID ranges are possible, they shouldn't overlap with either
+# normal system UID/GID ranges or other subordinate UID/GID ranges for security
+# reasons. Check the contents of the :file:`/etc/subuid` and
+# :file:`/etc/subgid` files to verify what UID/GID ranges are used on a given
+# host.
+root_account__subuid_start: [ '100000' ]
+
+                                                                   # ]]]
+# .. envvar:: root_account__subuid_count [[[
+#
+# Specify the number of UIDs/GIDs to reserve for a given subordinate UID/GID
+# range. Remember that using lower UID/GID number than 65535 may cause issues
+# due to some system accounts like ``nobody`` and groups like ``nogroup``
+# having UID and GID numbers at the end of the normal 0-65535 range.
+root_account__subuid_count: '65535'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

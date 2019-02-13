@@ -1,0 +1,137 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ (mount__base_packages + mount__packages) | flatten }}'
+    state: 'present'
+  register: mount__register_packages
+  until: mount__register_packages is succeeded
+  when: mount__enabled|bool
+
+  # This task allows configuration of the outer mount point attributes, but
+  # will not change them while the device is mounted.
+- name: Ensure that the mount points exist
+  file:
+    path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
+    owner:   '{{ item.owner   | d("root") }}'
+    group:   '{{ item.group   | d(item.owner | d("root")) }}'
+    mode:    '{{ item.mode    | d("0755") }}'
+    state:   'directory'
+  loop: '{{ (mount__devices
+             + mount__group_devices
+             + mount__host_devices)
+            | flatten }}'
+  when: (mount__enabled|bool and item.state|d('mounted') in [ 'mounted', 'present', 'unmounted' ] and
+         (item.device | d(item.src)) not in (ansible_mounts | map(attribute='device') | list))
+
+- name: Stop devices automounted by systemd if requested
+  systemd:
+    name: '{{ item.name | regex_replace("^/","") | regex_replace("/","-") + ".automount" }}'
+    state: 'stopped'
+  loop: '{{ (mount__devices
+             + mount__group_devices
+             + mount__host_devices)
+            | flatten }}'
+  when: (mount__enabled|bool and ansible_service_mgr == 'systemd' and
+         item.state|d('mounted') in [ 'unmounted', 'absent' ] and
+         (((item.opts if (item.opts is string) else item.opts | join(','))
+           if item.opts|d() else 'defaults') is match(".*x-systemd.automount.*")))
+
+- name: Manage device mounts
+  mount:
+    src:    '{{ item.src }}'
+    path:   '{{ item.path   | d(item.dest | d(item.name)) }}'
+    fstype: '{{ item.fstype | d("auto") }}'
+    opts:   '{{ ((item.opts if (item.opts is string) else (item.opts | join(",")))
+                 if item.opts|d() else "defaults") }}'
+    dump:   '{{ item.dump   | d(omit) }}'
+    passno: '{{ item.passno | d(omit) }}'
+    state:  '{{ item.state  | d("mounted") }}'
+    fstab:  '{{ item.fstab  | d(omit) }}'
+  loop: '{{ (mount__devices
+             + mount__group_devices
+             + mount__host_devices)
+            | flatten }}'
+  register: mount__register_devices
+  when: (mount__enabled|bool and
+         (item.name|d() or item.dest|d() or item.path|d()) and
+         item.src|d() and item.fstype|d())
+
+- name: Restart 'local-fs.target' systemd unit
+  systemd:
+    name: 'local-fs.target'
+    state: 'restarted'
+    daemon_reload: True
+  loop: '{{ mount__register_devices.results }}'
+  when: (mount__enabled|bool and ansible_service_mgr == 'systemd' and item is changed and
+         (((item.opts if (item.opts is string) else item.opts | join(','))
+           if item.opts|d() else 'defaults') is match(".*x-systemd.automount.*")))
+
+- name: Manage directories
+  file:
+    path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
+    owner:   '{{ item.owner   | d("root") }}'
+    group:   '{{ item.group   | d(item.owner | d("root")) }}'
+    mode:    '{{ item.mode    | d("0755") }}'
+    recurse: '{{ item.recurse | d(omit) }}'
+    state:   '{{ item.state   | d("directory") }}'
+  loop: '{{ (mount__directories
+             + mount__group_directories
+             + mount__host_directories)
+            | flatten }}'
+  when: mount__enabled|bool and (item.path|d() or item.dest|d() or item.name|d()) and
+        item.state|d('directory') in [ 'directory', 'absent' ]
+
+- name: Manage directory ACLs
+  acl:
+    path:        '{{ item.0.path        | d(item.0.dest | d(item.0.name)) }}'
+    default:     '{{ item.1.default     | d(omit) }}'
+    entity:      '{{ item.1.entity      | d(omit) }}'
+    etype:       '{{ item.1.etype       | d(omit) }}'
+    permissions: '{{ item.1.permissions | d(omit) }}'
+    follow:      '{{ item.1.follow      | d(omit) }}'
+    recursive:   '{{ item.1.recursive   | d(omit) }}'
+    state:       '{{ item.1.state       | d("present") }}'
+  loop: '{{ ((mount__directories
+             + mount__group_directories
+             + mount__host_directories)
+             | flatten) | selectattr("acl", "defined") | list
+             | subelements("acl") }}'
+  loop_control:
+    label: '{{ {"name": item.0.name, "acl": item.1} }}'
+  when: mount__enabled|bool and (item.0.path|d() or item.0.dest|d() or item.0.name|d()) and
+        item.0.state|d('directory') == 'directory' and item.0.acl|d()
+
+- name: Manage bind mounts
+  mount:
+    src:    '{{ item.src }}'
+    path:   '{{ item.path   | d(item.dest | d(item.name)) }}'
+    fstype: '{{ item.fstype | d("none") }}'
+    opts:   '{{ ((item.opts if (item.opts is string) else (item.opts | join(","))) if item.opts|d() else "bind") }}'
+    dump:   '{{ item.dump   | d(omit) }}'
+    passno: '{{ item.passno | d(omit) }}'
+    state:  '{{ item.state  | d("mounted") }}'
+    fstab:  '{{ item.fstab  | d(omit) }}'
+  loop: '{{ (mount__binds
+             + mount__group_binds
+             + mount__host_binds)
+            | flatten }}'
+  when: (mount__enabled|bool and
+         (item.name|d() or item.dest|d() or item.path|d()) and
+         item.src|d())
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save mount local facts
+  template:
+    src: 'etc/ansible/facts.d/mount.fact.j2'
+    dest: '/etc/ansible/facts.d/mount.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'

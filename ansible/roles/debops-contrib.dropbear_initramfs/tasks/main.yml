@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ dropbear_initramfs__base_packages }}'
     - '{{ dropbear_initramfs__packages }}'
+  register: dropbear_initramfs__register_packages
+  until: dropbear_initramfs__register_packages is succeeded
   tags: [ 'role::dropbear_initramfs:pkgs' ]
 
 - name: Configure network in initramfs using kernel command line
@@ -35,7 +37,10 @@
 
 - name: Configure authorized ssh keys
   authorized_key:
-    key: "{{ (item.sshkeys if item.sshkeys is string else (item.sshkeys | unique | join('\n') | string)) if item.sshkeys|d() else '' }}"
+    key: "{{ (item.sshkeys
+              if item.sshkeys is string
+              else (item.sshkeys | unique | join('\n') | string))
+             if item.sshkeys|d() else '' }}"
     user: '{{ item.user | d("root") }}'
     path: '{{ "/etc/initramfs-tools/root/.ssh/authorized_keys"
               if ("dropbear" in dropbear_initramfs__base_packages)
@@ -44,11 +49,15 @@
     key_options: '{{ ((item.options if item.options is string else item.options|join(","))
                        if item.options is defined
                        else (
-                         (dropbear_initramfs__authorized_keys_options if dropbear_initramfs__authorized_keys_options is string else dropbear_initramfs__authorized_keys_options|join(","))
+                         (dropbear_initramfs__authorized_keys_options
+                          if dropbear_initramfs__authorized_keys_options is string
+                          else dropbear_initramfs__authorized_keys_options|join(","))
                          if dropbear_initramfs__authorized_keys_options != omit else ""
                        )
                      ) + (
-                       (("," + item.key_options) if item.key_options is string else ("," + item.key_options|join(",")))
+                       (("," + item.key_options)
+                        if item.key_options is string
+                        else ("," + item.key_options|join(",")))
                        if item.key_options|d()
                        else ""
                      ) }}'

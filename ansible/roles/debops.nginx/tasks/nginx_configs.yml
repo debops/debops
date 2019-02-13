@@ -76,6 +76,32 @@
   when: (item.name|d() and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
 
+- name: Remove nginx log_format if requested
+  file:
+    dest: '/etc/nginx/conf.d/log_{{ item.name }}.conf'
+    state: 'absent'
+  with_flattened:
+    - '{{ nginx__log_format }}'
+    - '{{ nginx__dependent_log_format }}'
+  notify: [ 'Test nginx and reload' ]
+  when: (item.name|d() and
+         ((item.state|d('present') == 'absent') or
+          (item.delete|d() and item.delete|bool)))
+
+- name: Configure nginx log_format
+  template:
+    src: 'etc/nginx/conf.d/log_format.conf.j2'
+    dest: '/etc/nginx/conf.d/log_{{ item.name }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ nginx__log_format }}'
+    - '{{ nginx__dependent_log_format }}'
+  notify: [ 'Test nginx and reload' ]
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool))
+
 - name: Remove custom nginx configuration if requested
   file:
     dest: '/etc/nginx/conf.d/{{ item.filename | d("custom_" + item.name + ".conf") }}'

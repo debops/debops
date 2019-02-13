@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+export CONFIG="/etc/openntpd/ntpd.conf"
+
+if [ "${METHOD}"X = "loopback"X ] || [ "${METHOD}"X = "none"X ]
+then
+    exit 0
+fi
+
+# Only run from ifup.
+if [ "$MODE" != start ]; then
+    exit 0
+fi
+
+# Don't try to restart openntpd.service under systemd if it's not running
+# This avoids issues with openntpd restarting early during boot
+if [ -d /run/systemd/system ]; then
+    if [ "$(systemctl is-active openntpd.service)" = "active" ] ; then
+        systemctl restart --no-block openntpd.service || true
+    fi
+else
+    invoke-rc.d openntpd force-reload || true
+fi

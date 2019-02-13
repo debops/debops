@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+debops-task: run ansible with some customization
+"""
+# Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Part of the DebOps - https://debops.org/
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# https://www.gnu.org/copyleft/gpl.html
+
+
+from __future__ import print_function
+
+from debops import *
+from debops.cmds import *
+
+__author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel " \
+                "<h.goebel@crazy-compilers.com>"
+__licence__ = "GNU General Public License version 3 (GPL v3) or later"
+
+
+DEBOPS_RESERVED_NAMES = ["task", "init", "update", "defaults", "padlock"]
+
+# ---- DebOps environment setup ----
+
+# Find DebOps configuration file
+project_root = find_debops_project(required=True)
+# Source DebOps configuration file
+# todo: need to decide on semantics!
+# config = read_config(project_root)
+
+
+# ---- Main script ----
+
+# Make sure required commands are present
+require_commands('ansible')
+
+ansible_inventory = find_inventorypath(project_root)
+
+# Get module name from the script name if script is named 'debops-*'
+module_name = SCRIPT_NAME.rsplit('-', 1)[-1]
+if module_name not in DEBOPS_RESERVED_NAMES:
+    module = ["-m", module_name]
+else:
+    module = []
+
+os.environ['ANSIBLE_HOSTS'] = os.path.abspath(ansible_inventory)
+
+# Allow insecure SSH connections if requested
+if INSECURE:
+    os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
+
+# Run ansible with custom environment
+cmd = ['ansible'] + module + sys.argv[1:]
+subprocess.call(cmd)

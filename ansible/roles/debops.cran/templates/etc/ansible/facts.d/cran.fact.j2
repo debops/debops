@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!{{ ansible_python['executable'] }}
 
 # {{ ansible_managed }}
 
@@ -9,7 +9,9 @@ import subprocess
 import signal
 import os
 
-output = loads('''{{ {"installed": True, "mirror": cran__upstream_mirror} | to_json }}''')
+output = loads('''{{ {"installed": True,
+                      "mirror": cran__upstream_mirror
+                     } | to_json }}''')
 
 try:
     with open(os.devnull, 'w') as devnull:

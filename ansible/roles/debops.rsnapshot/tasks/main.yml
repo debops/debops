@@ -5,6 +5,8 @@
     name: 'rsnapshot'
     state: 'installed'
     install_recommends: False
+  register: rsnapshot__register_packages
+  until: rsnapshot__register_packages is succeeded
   when: inventory_hostname in rsnapshot_clients
 
 - name: Install custom backup scripts
@@ -50,7 +52,10 @@
 - name: Check rsnapshot version
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'rsnapshot' | cut -d- -f1
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-query -W -f='${Version}\n' 'rsnapshot' | cut -d- -f1
+  args:
+    executable: '/bin/bash'
   register: rsnapshot_register_version
   changed_when: False
   failed_when: False
@@ -102,6 +107,8 @@
     name: 'rsync'
     state: 'installed'
     install_recommends: False
+  register: rsnapshot__register_packages_server
+  until: rsnapshot__register_packages_server is succeeded
   when: (inventory_hostname in rsnapshot_servers and
          inventory_hostname not in rsnapshot_clients)
 

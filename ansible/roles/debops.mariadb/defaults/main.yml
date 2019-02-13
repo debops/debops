@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # MariaDB server configuration [[[
@@ -72,6 +72,8 @@ mariadb__delegate_to: '{{ mariadb__server
 #
 # - ``percona``: use Percona XtraDB engine from upstream repository
 #
+# - ``percona-5.7``: use Percona 5.7 XtraDB engine from upstream repository
+#
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
 mariadb__flavor: '{{ (ansible_local.mariadb.flavor
@@ -107,6 +109,7 @@ mariadb__apt_key_map:
   'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
   'mysql-5.7_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
   'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+  'percona-5.7':        '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
 
                                                                    # ]]]
 # .. envvar:: mariadb__upstream_version [[[
@@ -131,6 +134,7 @@ mariadb__apt_repository_map:
   'mysql-5.6_galera-3': 'deb http://releases.galeracluster.com/mysql-wsrep-5.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
   'mysql-5.7_galera-3': 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
   'percona':            'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+  'percona-5.7':        'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb__base_packages [[[
@@ -157,6 +161,7 @@ mariadb__packages_map:
   'mysql-5.6_galera-3': [ 'mysql-wsrep-client-5.6' ]
   'mysql-5.7_galera-3': [ 'mysql-wsrep-client-5.7' ]
   'percona': [ 'percona-server-client' ]
+  'percona-5.7': [ 'percona-server-client-5.7' ]
                                                                    # ]]]
                                                                    # ]]]
 # MariaDB client system-wide configuration [[[
@@ -171,7 +176,7 @@ mariadb__packages_map:
 #
 # Configuration options related to charset and string encoding on the client.
 mariadb__client_charset_options:
-  'default_character_set': 'utf8'
+  'default_character_set': 'utf8mb4'
 
                                                                    # ]]]
 # .. envvar:: mariadb__client_remote_host_options [[[
@@ -245,7 +250,7 @@ mariadb__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
 
 # .. envvar:: mariadb__pki [[[
 #
-# Enable or disable support for SSL in MariaDB (using debops.pki_).
+# Enable or disable support for SSL in MariaDB (using :ref:`debops.pki`).
 mariadb__pki: '{{ (True
                    if (ansible_local|d() and ansible_local.pki|d() and
                        ansible_local.pki.enabled|d() and
@@ -334,7 +339,7 @@ mariadb__default_privileges_grant: 'ALL'
 # .. envvar:: mariadb__password_length [[[
 #
 # Length of automatically generated user accounts, saved in the ``secret/``
-# directory. See debops.secret_ role for more details about passwords.
+# directory. See :ref:`debops.secret` role for more details about passwords.
 mariadb__password_length: '48'
 
                                                                    # ]]]

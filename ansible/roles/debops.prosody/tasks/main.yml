@@ -1,0 +1,50 @@
+---
+
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ prosody__base_packages }}'
+    - '{{ prosody__packages }}'
+  register: prosody__register_packages
+  until: prosody__register_packages is succeeded
+
+- name: Generate Prosody configuration
+  template:
+    src: 'etc/prosody/prosody.cfg.lua.j2'
+    dest: '/etc/prosody/prosody.cfg.lua'
+  notify: [ 'Restart prosody' ]
+
+- name: Enable Services
+  service:
+    name: '{{ item }}'
+    enabled: 'yes'
+    state: 'started'
+  with_items:
+    - prosody
+
+- name: Make sure that PKI hook directory exists
+  file:
+    path: '{{ prosody__pki_hook_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (prosody__pki|bool and prosody__deploy_state in [ 'present' ])
+
+- name: Manage PKI prosody hook
+  template:
+    src: 'etc/pki/hooks/prosody.j2'
+    dest: '{{ prosody__pki_hook_path + "/" + prosody__pki_hook_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (prosody__pki|bool and prosody__deploy_state in [ 'present' ])
+
+- name: Ensure the PKI prosody hook is absent
+  file:
+    path: '{{ prosody__pki_hook_path }}'
+    state: 'absent'
+  when: (prosody__deploy_state in [ 'absent' ])

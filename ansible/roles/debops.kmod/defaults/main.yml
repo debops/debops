@@ -1,0 +1,149 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.kmod default variables
+# =============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: kmod__enabled [[[
+#
+# Enable or disable support for kernel module management. The role will check
+# if the :command:`/sbin/modprobe` is present on a host and will enable/disable
+# itself automatically as needed. You can use this variable to override this
+# mechanism.
+kmod__enabled: '{{ True
+                   if (kmod__register_modprobe.stat.exists|bool)
+                   else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Installation, APT packages [[[
+# ------------------------------
+
+# .. envvar:: kmod__base_packages [[[
+#
+# List of APT packages to install. They are used by the role internally.
+kmod__base_packages:
+  - '{{ "python-kmodpy" if (kmod__enabled|bool) else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: kmod__packages [[[
+#
+# List of additional APT packages to install.
+kmod__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Kernel module configuration [[[
+# -------------------------------
+
+# These variables define what kernel module configuration should be present on
+# a host. See :ref:`kmod__ref_modules` for more details.
+
+# .. envvar:: kmod__default_modules [[[
+#
+# List of default kernel module configuration entries defined by the role.
+kmod__default_modules:
+
+  - name: 'blacklist-firewire-thunderbolt'
+    state: 'config'
+    comment: |
+      Protection against Firewire DMA attacks
+      https://security.stackexchange.com/a/49158/79474
+      https://github.com/lfit/itpol/blob/master/linux-workstation-security.md#blacklisting-modules
+    blacklist:
+      - 'firewire_sbp2'
+      - 'firewire_ohci'
+      - 'firewire_core'
+      - 'thunderbolt'
+
+                                                                   # ]]]
+# .. envvar:: kmod__modules [[[
+#
+# List of kernel module configuration entries which should be present on all
+# hosts in the Ansible inventory.
+kmod__modules: []
+
+                                                                   # ]]]
+# .. envvar:: kmod__group_modules [[[
+#
+# List of kernel module configuration entries which should be present on hosts
+# in a specific Ansible inventory group.
+kmod__group_modules: []
+
+                                                                   # ]]]
+# .. envvar:: kmod__host_modules [[[
+#
+# List of kernel module configuration entries which should be present on
+# specific hosts in the Ansible inventory.
+kmod__host_modules: []
+
+                                                                   # ]]]
+# .. envvar:: kmod__dependent_modules [[[
+#
+# List of kernel module configuration entries which are defined by other
+# Ansible roles through role dependent variables.
+kmod__dependent_modules: []
+
+                                                                   # ]]]
+# .. envvar:: kmod__combined_modules [[[
+#
+# The variable that combines all lists of kernel module parameters and passes
+# them to the role tasks.
+kmod__combined_modules: '{{ kmod__default_modules
+                            + lookup("flattened", kmod__dependent_modules, wantlist=True)
+                            + kmod__modules
+                            + kmod__group_modules
+                            + kmod__host_modules }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Kernel module loading at boot [[[
+# ---------------------------------
+
+# These variables control what kernel modules should be loaded at boot time.
+# See :ref:`kmod__ref_load` for more details.
+
+# .. envvar:: kmod__load [[[
+#
+# List of kernel modules which should be loaded at boot time on all hosts in the
+# Ansible inventory.
+kmod__load: []
+
+                                                                   # ]]]
+# .. envvar:: kmod__group_load [[[
+#
+# List of kernel modules which should be loaded at boot time on hosts in
+# a specific Ansible inventory group.
+kmod__group_load: []
+
+                                                                   # ]]]
+# .. envvar:: kmod__host_load [[[
+#
+# List of kernel modules which should be loaded at boot time on specific hosts
+# in the Ansible inventory.
+kmod__host_load: []
+
+                                                                   # ]]]
+# .. envvar:: kmod__dependent_load [[[
+#
+# List of kernel modules to loat at boot time, defined by other Ansible roles
+# through role dependent variables.
+kmod__dependent_load: []
+
+                                                                   # ]]]
+# .. envvar:: kmod__combined_load [[[
+#
+# Variable which combines all of the kernel module load lists and passes them
+# to the role tasks.
+kmod__combined_load: '{{ lookup("flattened", kmod__dependent_load, wantlist=True)
+                         + kmod__load
+                         + kmod__group_load
+                         + kmod__host_load }}'
+                                                                   # ]]]
+                                                                   # ]]]

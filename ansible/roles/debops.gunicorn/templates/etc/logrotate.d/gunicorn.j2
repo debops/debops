@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+# Log rotation for Green Unicorn logs
+/var/log/gunicorn/{{ item.name }}/*.log {
+    rotate 4
+    compress
+    delaycompress
+    missingok
+    notifempty
+    weekly
+    sharedscripts
+    su {{ item.user if (item.user is defined and item.user != omit) else gunicorn__user }} {{ item.group if (item.group is defined and item.group != omit) else gunicorn__group }}
+    postrotate
+        invoke-rc.d --quiet gunicorn@{{ item.name }} reload >/dev/null
+    endscript
+}

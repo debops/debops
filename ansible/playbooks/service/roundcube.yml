@@ -1,0 +1,61 @@
+---
+
+- name: Install and manage Roundcube Web mail
+  hosts: [ 'debops_service_roundcube' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::nginx', 'role::php' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ php__apt_preferences__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm', 'role::nginx' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.php
+      tags: [ 'role::php', 'skip::php' ]
+      php__dependent_packages:
+        - '{{ roundcube__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ roundcube__php__dependent_pools }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ roundcube__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ roundcube__nginx__dependent_upstreams }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
+      mariadb__dependent_users:
+        - database: '{{ roundcube__database_map[roundcube__database].dbname }}'
+          user: '{{ roundcube__database_map[roundcube__database].dbuser }}'
+          password: '{{ roundcube__database_map[roundcube__database].dbpass }}'
+          owner: '{{ roundcube__user }}'
+          group: '{{ roundcube__group }}'
+          home: '{{ roundcube__home }}'
+          system: True
+          priv_aux: False
+      mariadb__server: '{{ roundcube__database_map[roundcube__database].dbhost }}'
+      when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
+
+    - role: debops.roundcube
+      tags: [ 'role::roundcube', 'skip::roundcube' ]

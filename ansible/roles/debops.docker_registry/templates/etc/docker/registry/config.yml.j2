@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+{% set docker_registry__tpl_config = {} %}
+{% for element in docker_registry__combined_config | parse_kv_config %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] and element.config|d() %}
+{%     set combined_config = docker_registry__tpl_config | combine(element.config, recursive=True) %}
+{%     set _ = docker_registry__tpl_config.update(combined_config) %}
+{%   endif %}
+{% endfor %}
+{{ docker_registry__tpl_config | to_nice_yaml }}

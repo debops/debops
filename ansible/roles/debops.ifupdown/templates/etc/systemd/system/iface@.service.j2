@@ -2,7 +2,7 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description=Bring network interface up for %I
+Description=Bring network interface up for %i
 Documentation=man:interfaces(5) man:ifup(8)
 Documentation=https://bugs.debian.org/765000
 Documentation=https://bugs.debian.org/819314
@@ -16,11 +16,11 @@ IgnoreOnIsolate=yes
 
 [Service]
 {# https://bugs.debian.org/761909 #}
-{% if ansible_service_mgr == 'systemd' and ifupdown__tpl_systemd_version | version_compare('228.0', '>=') %}
+{% if ansible_service_mgr == 'systemd' and ifupdown__tpl_systemd_version is version_compare('228.0', '>=') %}
 # avoid stopping on shutdown via stopping system-iface.slice
 Slice=system.slice
 {% endif %}
-ExecStart=/bin/sh -ec 'ifup --allow=boot %I; ifquery --state %I'
-ExecStop=/sbin/ifdown %I
+ExecStart=/bin/sh -ec 'ifup --allow=boot %i; ifquery --state %i'
+ExecStop=/sbin/ifdown %i
 RemainAfterExit=true
 TimeoutStartSec=5min

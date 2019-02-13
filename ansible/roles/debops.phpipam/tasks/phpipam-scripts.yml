@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: [ 'python-mysqldb' ]
+  register: phpipam__register_packages
+  until: phpipam__register_packages is succeeded
 
 - name: Clone phpipam-scripts
   git:
@@ -20,7 +22,7 @@
   args:
     chdir: '{{ phpipam_scripts_git_dest }}'
   when: phpipam_register_scripts_src is defined and
-        phpipam_register_scripts_src.changed
+        phpipam_register_scripts_src is changed
 
 - name: Configure phpipam-scripts
   template:
@@ -47,4 +49,3 @@
     job: '/usr/local/sbin/phpipam-hosts-wrapper'
     user: 'root'
     state: 'present'
-

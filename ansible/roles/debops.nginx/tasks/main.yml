@@ -34,6 +34,8 @@
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
+  register: nginx__register_apt_key
+  until: nginx__register_apt_key is succeeded
   when: (nginx_flavor in [ 'nginx.org', 'passenger' ])
 
 - name: Add flavor APT repository
@@ -50,6 +52,8 @@
   when: (nginx__deploy_state in [ 'present' ])
   with_flattened:
     - '{{ nginx_base_packages }}'
+  register: nginx__register_packages_present
+  until: nginx__register_packages_present is succeeded
 
 - name: Ensure Nginx packages are in their desired state
   package:
@@ -57,6 +61,8 @@
     state: '{{ "present" if (nginx__deploy_state == "present") else "absent" }}'
   with_flattened:
     - '{{ nginx__flavor_packages }}'
+  register: nginx__register_packages_flavor
+  until: nginx__register_packages_flavor is succeeded
 
 - name: Create default nginx directories
   file:
@@ -86,7 +92,8 @@
   service:
     name: 'nginx'
     state: 'restarted'
-  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and nginx__deploy_state in [ 'present' ])
+  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and
+         nginx__deploy_state in [ 'present' ])
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: awk '$1=="nameserver" {if(/%/){sub(/[0-9a-fA-F:]+/, "[&]", $2)}; print $2}' /etc/resolv.conf
@@ -123,14 +130,16 @@
     mode: '0775'
   when: (nginx__deploy_state in [ 'present' ])
 
-- name: Allow webadmins to reload nginx using sudo
+- name: Allow webadmins to control nginx system service using sudo
   template:
     src: 'etc/sudoers.d/nginx_webadmins.j2'
     dest: '/etc/sudoers.d/nginx_webadmins'
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (ansible_local|d() and ansible_local.sudo|d() and
+         (ansible_local.sudo.installed|d())|bool and
+         nginx__deploy_state in [ 'present' ])
 
 - name: Divert original /etc/nginx/nginx.conf
   command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert
@@ -156,17 +165,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: [ 'acme-challenge' ]
+  with_items: [ 'acme-challenge', 'ssl' ]
   when: (nginx__deploy_state in [ 'present' ])
   notify: [ 'Test nginx and reload' ]
-
-  # Remove temporary old files if they are present
-- name: Remove remnants of dpkg-diverted configuration
-  command: rm -f /etc/nginx/fastcgi_params.dpkg-divert /etc/nginx/fastcgi_params.dpkg-divert.lock
-  args:
-    removes: '/etc/nginx/fastcgi_params.dpkg-divert.lock'
-  notify: [ 'Test nginx and reload' ]
-  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Disable default nginx site
   file:
@@ -227,12 +228,13 @@
 
 - name: Gather facts if they were modified
   action: setup
-  when: (nginx_register_local_facts.changed and nginx__deploy_state in [ 'present' ])
+  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
 
 - include: 'nginx_htpasswd.yml'
   when: (nginx__deploy_state in [ 'present' ])
 
 - include: 'nginx_configs.yml'
+  tags: [ 'role::nginx:servers' ]
   when: (nginx__deploy_state in [ 'present' ])
 
 - include: 'nginx_servers.yml'
@@ -274,7 +276,7 @@
 
 - name: Gather facts if they were modified
   action: setup
-  when: (nginx_register_local_facts.changed and nginx__deploy_state in [ 'present' ])
+  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
 
 - name: DebOps post_tasks hook
   include: '{{ lookup("task_src", "nginx/post_main.yml") }}'

@@ -1,0 +1,101 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+from operator import itemgetter
+import subprocess
+import signal
+import os
+import redis
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+def unwrap_quotes(input_line):
+    out = input_line.split(' ')[1].rstrip('\n')
+    if out.startswith('"') and out.endswith('"'):
+        out = out[1:-1]
+    return out
+
+
+def get_immediate_subdirectories(a_dir):
+    return [name for name in os.listdir(a_dir)
+            if os.path.isdir(os.path.join(a_dir, name))]
+
+
+output = {}
+
+output['auth_group'] = '{{ redis_server__auth_group }}'
+
+output['installed'] = cmd_exists('redis-server')
+
+if output['installed']:
+    try:
+        redis_server_version_stdout = subprocess.check_output(
+                ["dpkg-query", "-W", "-f=${Version}\n'",
+                 "redis-server"]).split('-')[0]
+        output['version'] = redis_server_version_stdout.split(':')[1]
+
+    except Exception:
+        pass
+
+    redis_instances = []
+
+    for directory in get_immediate_subdirectories('/etc/redis'):
+        instance = {'name': directory}
+        if os.path.isfile('/etc/redis/' + directory + '/redis.conf'):
+            for config_file in ['/etc/redis/' + directory
+                                + '/redis.conf',
+                                '/etc/redis/' + directory
+                                + '/ansible-redis-static.conf']:
+                try:
+                    with open(config_file) as fh:
+                        for line in fh:
+                            if line.startswith('bind'):
+                                instance['bind'] = unwrap_quotes(line)
+
+                            if line.startswith('port'):
+                                instance['port'] = unwrap_quotes(line)
+
+                            elif line.startswith('unixsocket'):
+                                instance['socket'] = unwrap_quotes(line)
+
+                            elif line.startswith('masterauth'):
+                                instance['password'] = unwrap_quotes(line)
+
+                    try:
+                        r = redis.StrictRedis(
+                                host=instance['bind'],
+                                port=instance['port'],
+                                password=instance['password'])
+                        instance['role'] = str(r.info()['role'])
+                        instance['redis_mode'] = str(r.info()['redis_mode'])
+                        if instance['role'] == 'slave':
+                            instance['master_host'] = (
+                                    str(r.info()['master_host']))
+                            instance['master_port'] = (
+                                    str(r.info()['master_port']))
+                    except Exception:
+                        pass
+
+                except Exception:
+                    pass
+
+            redis_instances.append(instance)
+            if instance['name'] == 'main':
+                output['bind'] = instance['bind']
+                output['port'] = instance['port']
+                output['password'] = instance['password']
+                output['socket'] = instance['socket']
+
+    output['instances'] = sorted(redis_instances, key=itemgetter('port'))
+
+print(dumps(output, sort_keys=True, indent=2))

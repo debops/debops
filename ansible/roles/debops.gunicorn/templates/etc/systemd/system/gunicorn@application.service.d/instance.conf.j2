@@ -19,7 +19,7 @@ TimeoutStopSec={{ item.systemd_timeout | d(gunicorn__systemd_timeout) }}
 {{ 'Environment="{}={}"'.format(element.name | upper, element.value|d('')) }}
 {%       endif %}
 {%     else %}
-{%       for key, value in element.iteritems() %}
+{%       for key, value in element.items() %}
 {{ 'Environment="{}={}"'.format(key | upper, value) }}
 {%       endfor %}
 {%     endif %}
@@ -28,11 +28,11 @@ TimeoutStopSec={{ item.systemd_timeout | d(gunicorn__systemd_timeout) }}
 {% if item.app_module|d() %}
 
 ExecStart=
-ExecStart={{ (item.python + ' ') if item.python|d() else '' }}/usr/bin/gunicorn --config=/etc/gunicorn/%i.conf.py ${GUNICORN_OPTS} {{ item.app_module }}
+ExecStart={{ (item.python + ' ') if item.python|d() else '' }}/usr/bin/{{ item.binary | d(gunicorn__binary) }} --config=/etc/gunicorn/%i.conf.py ${GUNICORN_OPTS} {{ item.app_module }}
 {% elif item.args|d() %}
 
 ExecStart=
-ExecStart={{ (item.python + ' ') if item.python|d() else '' }}/usr/bin/gunicorn --config=/etc/gunicorn/%i.conf.py {{ ([ item.args ] if item.args is string else item.args) | join(' ') }}
+ExecStart={{ (item.python + ' ') if item.python|d() else '' }}/usr/bin/{{ item.binary | d(gunicorn__binary) }} --config=/etc/gunicorn/%i.conf.py {{ ([ item.args ] if item.args is string else item.args) | join(' ') }}
 {% elif item.exec|d() %}
 
 # Configure custom Green Unicorn launcher

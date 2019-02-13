@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: [ 'reprepro', 'dpkg-dev' ]
+  register: reprepro__register_packages
+  until: reprepro__register_packages is succeeded
 
 - name: Create system group for reprepro
   group:
@@ -114,4 +116,3 @@
     group: '{{ reprepro_group }}'
     mode: '0755'
   with_items: [ 'email-changes.sh' ]
-

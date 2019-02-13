@@ -3,20 +3,19 @@
 # This file is managed by Ansible, all changes will be lost
 
 if tty -s ; then
-	if [ -r ${HOME}/.motd ] ; then
-		cat ${HOME}/.motd
-	fi
-	echo "Run '<command>' for help, or 'exit' to leave.  Available commands:"
+    if [ -r "${HOME}/.motd" ] ; then
+        cat "${HOME}/.motd"
+    fi
+    echo "Run '<command>' for help, or 'exit' to leave.  Available commands:"
 else
-	echo "Run '<command>' for help.  Available commands:"
+    echo "Run '<command>' for help.  Available commands:"
 fi
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit
 
 for cmd in * ; do
-	case "$cmd" in
-	help) ;;
-	*) [ -f "$cmd" ] && [ -x "$cmd" ] && echo "$cmd" ;;
-	esac
+    case "$cmd" in
+    help) ;;
+    *) [ -f "$cmd" ] && [ -x "$cmd" ] && echo "$cmd" ;;
+    esac
 done
-

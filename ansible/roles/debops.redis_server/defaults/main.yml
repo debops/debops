@@ -1,0 +1,438 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.redis_server default variables
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# APT packages, Redis version [[[
+# -------------------------------
+
+# .. envvar:: redis_server__base_packages [[[
+#
+# List of the default APT packages to install for Redis Server support.
+redis_server__base_packages: [ 'redis-server', 'redis-tools' ]
+
+                                                                   # ]]]
+# .. envvar:: redis_server__packages [[[
+#
+# List of additional APT packages to install with Redis Server.
+redis_server__packages: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__version [[[
+#
+# The version of the installed Redis Server. It will be detected via Ansible
+# local facts, installed by the role.
+redis_server__version: '{{ ansible_local.redis_server.version
+                           if (ansible_local|d() and ansible_local.redis_server|d() and
+                               ansible_local.redis_server.version|d())
+                           else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: redis_server__user [[[
+#
+# Name of the UNIX system account which is used to run the Redis Server.
+redis_server__user: 'redis'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__group [[[
+#
+# Name of the UNIX system group which is used to run the Redis Server.
+redis_server__group: 'redis'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__auth_group [[[
+#
+# Name of the UNIX system group which has read-only access to the Redis Server
+# configuration and can be used to retrieve the authentication password by
+# running the :command:`redis-password` script.
+redis_server__auth_group: 'redis-auth'
+                                                                   # ]]]
+                                                                   # ]]]
+# Domain, password authentication [[[
+# -----------------------------------
+
+# .. envvar:: redis_server__domain [[[
+#
+# The DNS domain used in the role to configure Redis and Sentinel parameters,
+# primarly to retrieve the shared password.
+redis_server__domain: '{{ ansible_local.core.domain
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.domain|d())
+                          else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__auth_password [[[
+#
+# The password used for authentication in Redis. The same password is used on
+# all nodes in the Redis/Sentinel cluster to simplify authentication.
+redis_server__auth_password: '{{ ansible_local.redis_server.password
+                                 if (ansible_local|d() and ansible_local.redis_server|d() and
+                                     ansible_local.redis_server.password|d())
+                                 else (lookup("password", secret +
+                                       "/redis/clusters/" + redis_server__domain +
+                                       "/password length=" + redis_server__password_length +
+                                       " chars=ascii_letters,digits,-_.")) }}'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__password_length [[[
+#
+# Length of the generated random passwords. Redis documentation suggests to use
+# long passwords due to speed of the engine making it easy to test short
+# passwords. See: https://redis.io/topics/security
+redis_server__password_length: '256'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__no_log [[[
+#
+# Enable or disable logging of the Ansible tasks that may contain passwords.
+redis_server__no_log: '{{ secret__no_log | d(True) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Memory management [[[
+# ---------------------
+
+# .. envvar:: redis_server__maxmemory_multiplier [[[
+#
+# Specify the base amount of the system memory which will be available to Redis
+# Server instances. By default half of the available memory will be used.
+redis_server__maxmemory_multiplier: '0.5'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__maxmemory_total [[[
+#
+# Calculate the maximum amount of system memory available to Redis Server
+# instances, based on the specified amount of available memory.
+redis_server__maxmemory_total: '{{ (((ansible_memtotal_mb|int * 1024 * 1024)
+                                     * redis_server__maxmemory_multiplier|float) | round | int) }}'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__maxmemory_instances [[[
+#
+# Set the number of Redis Server instances which will split the available
+# memory equally among themselves. The Redis Server instances defined
+# "manually" via the configuration pipeline are not counted.
+# See :ref:`redis_server__ref_config_pipeline` for more details.
+redis_server__maxmemory_instances: '{{ redis_server__combined_instances
+                                       | parse_kv_items
+                                       | selectattr("state", "equalto", "present")
+                                       | list | count | int }}'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__maxmemory_shared [[[
+#
+# Calculate the amount of system memory used by each Redis Server instance.
+redis_server__maxmemory_shared: '{{ (redis_server__maxmemory_total | int
+                                     / redis_server__maxmemory_instances | int)
+                                    | round | int }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
+# -------------------------
+
+# .. envvar:: redis_server__bind [[[
+#
+# A string or a list of IP addresses on which Redis Server instances should
+# listen for connections. It can be overridden per instance, see
+# :ref:`redis_server__ref_instances` for more details.
+#
+# By default Redis Server instances will listen only on the loopback network
+# interface. To listen for IPv4 and IPv6 connections you can set this variable
+# to ``[ '0.0.0.0', '::' ]``. Ensure that the firewall access is configured
+# properly to avoid security issues.
+redis_server__bind: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Redis Server instances over the network, on all hosts in the Ansible
+# inventory. This variable configures the firewall for all instances at the
+# same time, for individual instance configuration you should modify the
+# :envvar:`redis_server__ferm__dependent_rules` variable directly.
+redis_server__allow: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Redis Server instances over the network, on hosts in the specific Ansible
+# inventory group. This variable configures the firewall for all instances at
+# the same time, for individual instance configuration you should modify the
+# :envvar:`redis_server__ferm__dependent_rules` variable directly.
+redis_server__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Redis Server instances over the network, on specific hosts in the Ansible
+# inventory. This variable configures the firewall for all instances at the
+# same time, for individual instance configuration you should modify the
+# :envvar:`redis_server__ferm__dependent_rules` variable directly.
+redis_server__host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis Server base options [[[
+# -----------------------------
+
+# .. envvar:: redis_server__default_base_options [[[
+#
+# The default set of configuration options, applied to all Redis Server
+# instances. See :ref:`redis_server__ref_configuration` for more details.
+redis_server__default_base_options:
+
+  - name: 'masterauth'
+    value: '{{ redis_server__auth_password }}'
+
+  - name: 'requirepass'
+    value: '{{ redis_server__auth_password }}'
+
+  - name: 'always-show-logo'
+    value: False
+    state: '{{ "present"
+               if (redis_server__version is version_compare("4.0.0", ">="))
+               else "ignore" }}'
+
+  - name: 'syslog-enabled'
+    value: True
+
+  - name: 'syslog-facility'
+    value: 'local0'
+
+  - name: 'loglevel'
+    value: 'notice'
+    dynamic: True
+
+  - name: 'slave-read-only'
+    value: True
+    dynamic: True
+
+  - name: 'slave-serve-stale-date'
+    value: True
+    dynamic: True
+
+  - name: 'min-slaves-to-write'
+    value: 0
+    dynamic: True
+
+  - name: 'maxmemory'
+    value: '{{ redis_server__maxmemory_shared }}'
+    dynamic: True
+
+  - name: 'maxmemory-policy'
+    value: 'volatile-lru'
+    dynamic: True
+
+  - name: 'maxmemory-samples'
+    value: 3
+    dynamic: True
+
+  - name: 'save'
+    value: [ '900 1', '300 10', '60 10000' ]
+    dynamic: True
+
+  # This parameter should be synchronized with the 'net.core.somaxconn' sysctl
+  # parameter of the host
+  - name: 'tcp-backlog'
+    value: 128
+
+                                                                   # ]]]
+# .. envvar:: redis_server__base_options [[[
+#
+# An additional set of the configuration options, applied to all Redis Server
+# instances. See :ref:`redis_server__ref_configuration` for more details.
+redis_server__base_options: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis Server instances [[[
+# --------------------------
+
+# These variables define what Redis Server instances are present on the host.
+# See :ref:`redis_server__ref_instances` for more details.
+
+# .. envvar:: redis_server__default_instances [[[
+#
+# The list of the Redis Server instances defined by default by the role.
+redis_server__default_instances:
+
+  - name: 'main'
+    port: '6379'
+    pidfile: '/var/run/redis/redis-server.pid'
+    unixsocket: '/var/run/redis/redis-server.sock'
+    systemd_override: |
+      [Service]
+      PIDFile=/var/run/redis/redis-server.pid
+      RuntimeDirectory=redis
+      ReadWriteDirectories=-/var/run/redis
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__instances [[[
+#
+# List of the Redis Server instances defined on all hosts in the Ansible
+# inventory.
+redis_server__instances: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__group_instances [[[
+#
+# List of the Redis Server instances defined on hosts in a specific Ansible
+# inventory group.
+redis_server__group_instances: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__host_instances [[[
+#
+# List of the Redis Server instances defined on specific hosts in the Ansible
+# inventory.
+redis_server__host_instances: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__combined_instances [[[
+#
+# Variable which combines all of the defined Redis Server instance lists and is
+# used in the role tasks and templates.
+redis_server__combined_instances: '{{ redis_server__default_instances
+                                      + redis_server__instances
+                                      + redis_server__group_instances
+                                      + redis_server__host_instances }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis Server configuration options [[[
+# --------------------------------------
+
+# These variables define the configuration used by the
+# :ref:`debops.redis_server` Ansible role to manage the Redis Server instances.
+# See :ref:`redis_server__ref_configuration` for more details.
+
+# .. envvar:: redis_server__default_configuration [[[
+#
+# The default Redis Server configuration, generated automatically, based on the
+# defined Redis Server instances.
+redis_server__default_configuration: '{{ lookup("template", "lookup/redis_server__filtered_instances.j2")
+                                         | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__configuration [[[
+#
+# The Redis Server configuration options defined for all hosts in the Ansible
+# inventory.
+redis_server__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__group_configuration [[[
+#
+# The Redis Server configuration options defined for hosts in a specific
+# Ansible inventory group.
+redis_server__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__host_configuration [[[
+#
+# The Redis Server configuration options defined for specific hosts in the
+# Ansible inventory.
+redis_server__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: redis_server__combined_configuration [[[
+#
+# The variable which combines lists with Redis Server configuration options and
+# is used in the role tasks and templates.
+redis_server__combined_configuration: '{{ redis_server__default_configuration
+                                          + redis_server__configuration
+                                          + redis_server__group_configuration
+                                          + redis_server__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: redis_server__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+redis_server__apt_preferences__dependent_list:
+
+  - packages: [ 'redis', 'redis-*' ]
+    backports: [ 'stretch' ]
+    by_role: 'debops.redis_server'
+    reason: 'Support for multiple Redis instances, compatibility with newer Debian releases'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+redis_server__etc_services__dependent_list:
+
+  - name: 'redis-server'
+    port: '6379'
+    comment: 'Redis Server'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+redis_server__python__dependent_packages3:
+
+  - 'python3-redis'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+redis_server__python__dependent_packages2:
+
+  - 'python-redis'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+redis_server__ferm__dependent_rules:
+
+  - name: 'redis_server'
+    type: 'accept'
+    dport: '{{ redis_server__env_ports }}'
+    saddr: '{{ redis_server__allow + redis_server__group_allow + redis_server__host_allow }}'
+    weight: '40'
+    accept_any: False
+    multiport: True
+    by_role: 'debops.redis_server'
+
+                                                                   # ]]]
+# .. envvar:: redis_server__sysctl__dependent_parameters [[[
+#
+# Configuration for the :ref:`debops.sysctl` Ansible role.
+redis_server__sysctl__dependent_parameters:
+
+  - name: 'redis-server'
+    weight: 80
+    options:
+
+      - name: 'vm.overcommit_memory'
+        comment: |
+          Required to allow background saving of the Redis database without
+          issues. Ref: https://redis.io/topics/faq
+        value: 1
+
+                                                                   # ]]]
+# .. envvar:: redis_server__sysfs__dependent_attributes [[[
+#
+# Configuration for the :ref:`debops.sysfs` Ansible role.
+redis_server__sysfs__dependent_attributes:
+
+  - role: 'redis_server'
+    config:
+      - name: 'transparent_hugepages'
+        state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]

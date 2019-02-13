@@ -1,0 +1,265 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.netbase default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration, APT packages [[[
+# ---------------------------------------
+
+# .. envvar:: netbase__enabled [[[
+#
+# Enable or disable support for local host and network database management.
+netbase__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: netbase__base_packages [[[
+#
+# List of base APT packages to linstall for netbase support.
+netbase__base_packages: [ 'netbase', 'libcap2-bin' ]
+
+                                                                   # ]]]
+# .. envvar:: netbase__packages [[[
+#
+# List of additional APT packages to install for netbase support.
+netbase__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Hostname and domain [[[
+# -----------------------
+
+# .. envvar:: netbase__hostname_config_enabled [[[
+#
+# Enable or disable configuration of the hostname based on presence of the
+# ``cap_sys_admin`` POSIX capability. Hostname will still be defined in
+# :file:`/etc/hosts` if the local domain configuration is enabled.
+netbase__hostname_config_enabled: '{{ True
+                                      if (((ansible_system_capabilities_enforced|d())|bool and
+                                           "cap_sys_admin" in ansible_system_capabilities) or
+                                          not (ansible_system_capabilities_enforced|d(True))|bool)
+                                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__hostname [[[
+#
+# Set a hostname for a given host. It should contain only characters supported
+# in the DNS: alphanumeric, and a dash; no dots or other punctuation.
+#
+# By default, the role will configure the hostname based on the Ansible
+# inventory configuration. To preserve existing hostname, set the value to
+# ``'{{ ansible_hostname }}'``.
+netbase__hostname: '{{ (inventory_hostname_short | d(inventory_hostname.split(".")[0]))
+                       if (inventory_hostname_short | d(inventory_hostname.split(".")[0]) != "localhost")
+                       else ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__domain [[[
+#
+# Define a local domain for a given host. If this variable is empty, no domain
+# configuration will be added to the :file:`/etc/hosts` database and it's
+# assumed that a DNS service manages the local domain.
+#
+# If the host has been installed with a domain, and its FQDN points to the
+# ``127.0.1.1`` address, the role assumes that a DNS service for the local
+# domain is present, and will not configure a domain in the :file:`/etc/hosts`
+# database. The existing ``127.0.1.1`` entry will be removed to not override
+# the DNS resolution.
+#
+# If the host has been configured with a domain in :file:`/etc/hosts` file and
+# its FQDN points to any other IP address than ``127.0.1.1``, the role will
+# generate the IPv4 and IPv6 entries for this domain which should preserve the
+# existing configuration, with assumption that the :file:`/etc/hosts` entry is
+# supposed to be there for the correct domain resolution, for example this
+# domain is not defined in the DNS.
+#
+# If the host has been installed without a domain specified, a domain will be
+# generated based on the ``ansible_host`` variable (if it's set to a FQDN
+# address) or ``inventory_hostname`` variable, and saved in the
+# :file:`/etc/hosts` database. The host's FQDN and hostname will point to the
+# default IPv4 and IPv6 addresses of the host.
+netbase__domain: '{{ ""
+                     if (ansible_local|d() and ansible_local.netbase|d() and
+                         (((ansible_local.netbase.self_address|d()) != "127.0.1.1" and
+                           (not ansible_local.netbase.self_local|d())|bool) or
+                          ((ansible_local.netbase.self_address|d()) == "127.0.1.1" and
+                            ansible_local.netbase.self_domain|d())))
+                     else (ansible_local.netbase.self_domain
+                           if (ansible_local|d() and ansible_local.netbase|d() and
+                               (ansible_local.netbase.self_domain|d()) and
+                               (ansible_local.netbase.self_address|d()) != "127.0.1.1" and
+                               (ansible_local.netbase.self_local|d())|bool)
+                           else ((ansible_host | d(ansible_ssh_host | d("0"))).split(".")[1:] | join(".")
+                                 if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ipaddr)
+                                 else (inventory_hostname.split(".")[1:] | join(".")
+                                       if (inventory_hostname.split(".") | count > 1)
+                                       else inventory_hostname))) }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__aliases [[[
+#
+# List of additional alias names defined for the current host, including its
+# hostname, in the :file:`/etc/hosts` database. This list is automatically
+# generated using the Ansible local facts. If you plan to change it, ensure
+# that the hostname is specified first to avoid any issues with name
+# resolution.
+netbase__aliases: '{{ ([ netbase__hostname ]
+                       + (ansible_local.netbase.self_aliases
+                          if (ansible_local|d() and ansible_local.netbase|d() and
+                              ansible_local.netbase.self_aliases|d())
+                          else []) | unique) }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__host_ipv4_address [[[
+#
+# The IPv4 address which will be used to create the host record in the
+# :file:`/etc/hosts` database with the FQDN and the hostname. If the host does
+# not have a proper IPv4 address associated with it and you want to use IPv4
+# networking, you can use ``127.0.1.1`` to set the hostname.
+netbase__host_ipv4_address: '{{ ansible_default_ipv4.address | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__host_ipv6_address [[[
+#
+# The IPv6 address which will be used to create the host record in the
+# :file:`/etc/hosts` database with the FQDN and the hostname.
+netbase__host_ipv6_address: '{{ ansible_default_ipv6.address | d() }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__domain_host_entry [[[
+#
+# The actual :file:`/etc/hosts` entry with the local domain definition. It will
+# be set as the IPv4 and/or IPv6 addresses defined in above variables.
+netbase__domain_host_entry: '{{ ([ netbase__hostname + "." + netbase__domain ] + netbase__aliases)
+                                if netbase__domain|d() else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Host database in :file:`/etc/hosts` [[[
+# ---------------------------------------
+
+# The ``netbase__*_hosts`` variables below define the host records in the
+# :file:`/etc/hosts` database. See :ref:`netbase__ref_hosts` for more details.
+
+# .. envvar:: netbase__hosts_config_type [[[
+#
+# The host database configuration method used by the role.
+#
+# If ``lineinfile``, the configuration will be done using the ``lineinfile``
+# Ansible module. This allows the database to be updated by other mechanisms
+# than Ansible, but the configuration is very slow. This is suitable for small
+# number of host entries, otherwise you should think about setting up a local
+# DNS server instead.
+#
+# If ``template``, the hosts database will be generated using the ``template``
+# Ansible module. This makes the configuration much faster, which is useful
+# with large list of hosts, but the database cannot be modified by other tools,
+# the changes will not be preserved by Ansible.
+netbase__hosts_config_type: '{{ "template"
+                                if ((netbase__hosts
+                                     | combine(netbase__group_hosts, netbase__host_hosts)).keys()
+                                    | count > 15)
+                                else "lineinfile" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__default_hosts [[[
+#
+# The default set of host database entries, defined by the role.
+netbase__default_hosts:
+
+  - '127.0.0.1': [ 'localhost' ]
+  - '127.0.1.1': []
+  - '::1':       [ 'localhost', 'ip6-localhost', 'ip6-loopback' ]
+  - 'ff02::1':   [ 'ip6-allnodes' ]
+  - 'ff02::2':   [ 'ip6-allrouters' ]
+
+  - name:  '{{ netbase__host_ipv4_address }}'
+    value: '{{ netbase__domain_host_entry }}'
+    separator: '{{ True
+                   if (netbase__host_ipv4_address != "127.0.1.1")
+                   else False }}'
+
+  - name:  '{{ netbase__host_ipv6_address }}'
+    value: '{{ netbase__domain_host_entry }}'
+
+                                                                   # ]]]
+# .. envvar:: netbase__hosts [[[
+#
+# YAML list of host entries which should be present on all hosts in the Ansible
+# inventory.
+#
+# Since the host database is supposed to be the same across all hosts, you
+# should most likely stick to using this variable and define it for the ``all``
+# inventory group.
+netbase__hosts: []
+
+                                                                   # ]]]
+# .. envvar:: netbase__group_hosts [[[
+#
+# YAML list of host entries which should be present on hosts in a specific
+# Ansible inventory group.
+netbase__group_hosts: []
+
+                                                                   # ]]]
+# .. envvar:: netbase__host_hosts [[[
+#
+# YAML list of host entries which should be present on specific hosts in the
+# Ansible inventory.
+netbase__host_hosts: []
+
+                                                                   # ]]]
+# .. envvar:: netbase__combined_hosts [[[
+#
+# The variable which combines all other hosts lists and is used in the role
+# tasks and templates.
+netbase__combined_hosts: '{{ netbase__default_hosts
+                            + netbase__hosts
+                            + netbase__group_hosts
+                            + netbase__host_hosts }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network database in :file:`/etc/networks` [[[
+# ---------------------------------------------
+
+# These variables define what network entries should be present in the
+# :file:`/etc/networks` database. Each dictionary key is a network name and
+# value should be a string or a YAML list of a class A, B or C network address
+# and optional aliases. Example:
+#
+# .. code-block:: yaml
+#
+#    netbase__networks:
+#      'net.example.org': '192.0.2.0'
+#
+# Entries with empty values will be removed from the database.
+# See the :man:`networks(5)` manual page for more details.
+
+# .. envvar:: netbase__networks [[[
+#
+# YAML dictionary of network entries which should be present on all hosts in
+# the Ansible inventory.
+#
+# Since the network database is supposed to be the same across all hosts, you
+# should most likely stick to using this variable and define it for the ``all``
+# inventory group.
+netbase__networks: {}
+
+                                                                   # ]]]
+# .. envvar:: netbase__group_networks [[[
+#
+# YAML dictionary of network entries which should be present on hosts in
+# a specific Ansible inventory group.
+netbase__group_networks: {}
+
+                                                                   # ]]]
+# .. envvar:: netbase__host_networks [[[
+#
+# YAML dictionary of network entries which should be present on specific hosts
+# in the Ansible inventory.
+netbase__host_networks: {}
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,14 @@
+---
+
+- name: Manage kernel modules
+  hosts: [ 'debops_service_kmod' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.kmod
+      tags: [ 'role::kmod', 'skip::kmod' ]

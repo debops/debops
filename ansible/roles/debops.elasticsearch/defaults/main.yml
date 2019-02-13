@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # APT packages, version [[[
@@ -15,7 +15,7 @@
 
 # The ``debops.elasticsearch`` role uses the ``debops.elatic_co`` Ansible role
 # to configure the Elastic APT repositories and install the packages. The role
-# also installs the Ansible facts that provide the :command:`elasticsearch`
+# also installs the Ansible facts that provide the ``elasticsearch``
 # version.
 
 # .. envvar:: elasticsearch__base_packages [[[
@@ -62,7 +62,7 @@ elasticsearch__group: 'elasticsearch'
 # .. envvar:: elasticsearch__inventory_group_all [[[
 #
 # Name of the Ansible inventory group which contains Elasticsearch host in
-# a "homogenous" configuration (each node having the same functions as every
+# a "homogeneous" configuration (each node having the same functions as every
 # other node).
 elasticsearch__inventory_group_all: 'debops_service_elasticsearch'
 
@@ -129,8 +129,8 @@ elasticsearch__allow_tcp: []
 # .. envvar:: elasticsearch__network_host [[[
 #
 # List of network interface names or IP addresses on which Elasticsearch should
-# listen for connections. By default, if debops.ferm_ firewall is enabled,
-# Elastisearch will listen on ``localhost`` and private IP addresses only. See
+# listen for connections. By default, if :ref:`debops.ferm` firewall is enabled,
+# Elasticsearch will listen on ``localhost`` and private IP addresses only. See
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html
 # for more details.
 elasticsearch__network_host: '{{ [ "_local_", "_site_" ]
@@ -266,9 +266,9 @@ elasticsearch__node_ingest: '{{ True
 # capabilities. If this variable is enabled, :command:`systemd` memlock limit
 # is configured.
 elasticsearch__memory_lock: '{{ True
-                                if (not ansible_system_capabilities_enforced|bool or
-                                    (ansible_system_capabilities_enforced|bool and
-                                     "cap_ipc_lock" in ansible_system_capabilities))
+                                if (not (ansible_system_capabilities_enforced|d())|bool or
+                                    ((ansible_system_capabilities_enforced|d())|bool and
+                                     "cap_ipc_lock" in (ansible_system_capabilities|d([]))))
                                 else False }}'
 
                                                                    # ]]]
@@ -306,6 +306,21 @@ elasticsearch__jvm_memory_min_heap_size: '{{ (((ansible_memtotal_mb|int
 # This usually should be the same as the minimum heap size, for performance
 # reasons.
 elasticsearch__jvm_memory_max_heap_size: '{{ elasticsearch__jvm_memory_min_heap_size }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Paths [[[
+# ---------
+
+# The variables below configure paths used by Elasticsearch. See
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/path-settings.html
+# for more details.
+
+# .. envvar:: elasticsearch__path_data [[[
+#
+# List of all data paths. They will be created and permissions will be updated if needed.
+elasticsearch__path_data:
+  - '/var/lib/elasticsearch'
+
                                                                    # ]]]
                                                                    # ]]]
 # Elasticsearch configuration file [[[
@@ -387,15 +402,13 @@ elasticsearch__default_configuration:
       Elasticsearch performs poorly when the system is swapping the memory.
 
   - name: 'path.data'
-    value: '/path/to/data'
-    state: 'comment'
+    value: '{{ elasticsearch__path_data }}'
     comment: |
       Path to directory where to store the data
       (separate multiple locations by comma)
 
   - name: 'path.logs'
-    value: '/path/to/logs'
-    state: 'comment'
+    value: '/var/log/elasticsearch'
     comment: 'Path to log files'
 
                                                                    # ]]]
@@ -621,7 +634,7 @@ elasticsearch__combined_plugins: '{{ lookup("flattened", (elasticsearch__plugins
 
 # .. envvar:: elasticsearch__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services` Ansible role.
 elasticsearch__etc_services__dependent_list:
 
   - name: 'elasticsearch-http'
@@ -633,7 +646,7 @@ elasticsearch__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: elasticsearch__elastic_co__dependent_packages [[[
 #
-# Configuration for the ``debops.elastic_co`` Ansible role.
+# Configuration for the :ref:`debops.elastic_co` Ansible role.
 elasticsearch__elastic_co__dependent_packages:
   - '{{ elasticsearch__base_packages }}'
   - '{{ elasticsearch__packages }}'
@@ -641,7 +654,7 @@ elasticsearch__elastic_co__dependent_packages:
                                                                    # ]]]
 # .. envvar:: elasticsearch__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ Ansible role.
+# Configuration for the :ref:`debops.ferm` Ansible role.
 elasticsearch__ferm__dependent_rules:
 
   - name: 'elasticsearch_http'

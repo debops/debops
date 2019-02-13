@@ -1,0 +1,47 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+from pwd import getpwuid
+from grp import getgrall
+from os import stat
+
+
+def find_owner(filename):
+    return getpwuid(stat(filename).st_uid).pw_name
+
+
+output = {'configured': True,
+          'enabled': False,
+          'gid': '',
+          'group': '',
+          'level': '',
+          'proc_owner': find_owner('/proc')}
+
+with open('/proc/mounts', 'r') as mounts:
+    for line in mounts:
+        if line.startswith('proc '):
+            entry = line.strip().split()
+
+            if entry[1] == '/proc':
+                entry_options = entry[3].split(',')
+
+                # Check if any option of a given mount entry has 'hidepid='
+                if any("hidepid=" in s for s in entry_options):
+                    output['enabled'] = True
+
+                    for option in entry_options:
+                        if option.startswith('hidepid='):
+                            output['level'] = option.split('=')[1]
+                        elif option.startswith('gid='):
+                            output['gid'] = option.split('=')[1]
+
+if output['gid']:
+    groups = getgrall()
+    for group in groups:
+        if str(group.gr_gid) == output['gid']:
+            output['group'] = group.gr_name
+
+print(dumps(output, sort_keys=True, indent=4))

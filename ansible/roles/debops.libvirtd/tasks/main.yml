@@ -1,5 +1,17 @@
 ---
 
+  # When nested KVM is enabled on a host, Ansible does not recognize the
+  # hardware virtualization support in the guest correctly. This is an
+  # additional runtime check to account for that.
+- name: Check if host supports hardware virtualization
+  shell: set -o nounset -o pipefail -o errexit &&
+         egrep 'vmx|svm|0xc0f' /proc/cpuinfo || true
+  args:
+    executable: '/bin/bash'
+  register: libvirtd__register_hw_virt
+  check_mode: False
+  changed_when: False
+
 - name: Install libvirtd support
   apt:
     name: '{{ item }}'
@@ -12,9 +24,9 @@
     - [ '{{ libvirtd__base_packages_map[ansible_distribution_release]
             if (ansible_distribution_release in libvirtd__base_packages_map.keys())
             else libvirtd__base_packages }}' ]
-    - [ '{{ [] if (ansible_virtualization_type in [ "kvm" ] and
-                   ansible_virtualization_role in [ "guest" ])
-                   else libvirtd__kvm_packages }}' ]
+    - '{{ libvirtd__kvm_packages if libvirtd__kvm_support|bool else [] }}'
+  register: libvirtd__register_packages
+  until: libvirtd__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -35,7 +47,7 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: libvirtd__register_facts|changed
+  when: libvirtd__register_facts is changed
 
 - name: Divert managed configuration files
   command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'
@@ -74,6 +86,15 @@
   with_items: '{{ libvirtd__admins }}'
   when: libvirtd__admins|d()
 
+- name: Install ferm post hook
+  template:
+    src: 'etc/ferm/hooks/post.d/reload-libvirtd.j2'
+    dest: '/etc/ferm/hooks/post.d/reload-libvirtd'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: libvirtd__ferm_post_hook|bool
+
 - name: Configure Kernel Same-page Merging
   template:
     src: 'etc/sysfs.d/ksm.conf.j2'
@@ -85,7 +106,10 @@
   when: ansible_distribution_release not in [ 'wheezy' ]
 
 - name: Check /sys filesystem mount options
-  shell: findmnt -n -o FS-OPTIONS --target /sys | tr ',' '\n'
+  shell: set -o nounset -o pipefail -o errexit &&
+         findmnt -n -o FS-OPTIONS --target /sys | tr ',' '\n'
+  args:
+    executable: '/bin/bash'
   register: libvirtd__register_sysfs
   changed_when: False
   check_mode: False

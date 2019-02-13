@@ -11,9 +11,7 @@
               else "www-data" }}'
     group: 'root'
     mode: '0700'
-  when: (owncloud__webserver in ["nginx"] and owncloud__nginx_client_body_temp_path != "")
-
-# ownCloud directories [[[
+  when: (owncloud__webserver in ["nginx"] and owncloud__nginx_client_body_temp_path|d())
 
 - name: Ensure the custom temp directories are setup
   file:
@@ -22,22 +20,10 @@
     owner: '{{ owncloud__app_user }}'
     group: '{{ owncloud__app_group }}'
     mode: '{{ item.mode|d("1750") }}'
-  when: (item.path != "")
+  when: item.path|d()
   with_items:
     - path: '{{ owncloud__temp_path }}'
     - path: '{{ owncloud__php_temp_path }}'
-    - path: '{{ owncloud__nginx_client_body_temp_path }}'
-      mode: '0700'
-
-- name: Ensure a custom data directory is setup
-  file:
-    path: '{{ owncloud__data_path }}'
-    state: 'directory'
-    owner: '{{ owncloud__app_user }}'
-    group: '{{ owncloud__app_group }}'
-    mode: '0770'
-
-# .. ]]]
 
 # Ansible local facts [[[
 
@@ -60,5 +46,5 @@
 
 - name: Gather facts if they were modified
   action: setup
-  when: owncloud__register_local_facts|changed
+  when: owncloud__register_local_facts is changed
                                                                    # ]]]

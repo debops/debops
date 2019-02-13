@@ -11,20 +11,19 @@
   roles:
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ sshd__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ sshd__ferm__dependent_rules }}'
 
     - role: debops.tcpwrappers
-      tags: [ 'role::tcpwrappers' ]
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers_dependent_allow:
         - '{{ sshd__tcpwrappers__dependent_allow }}'
 
     - role: debops.sshd
-      tags: [ 'role::sshd' ]
-
+      tags: [ 'role::sshd', 'skip::sshd' ]

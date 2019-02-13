@@ -1,5 +1,16 @@
 ---
 
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ users__base_packages }}'
+    - '{{ users__packages }}'
+  register: users__register_packages
+  until: users__register_packages is succeeded
+  when: users__enabled | bool
+
 - name: DebOps pre_tasks hook
   include: "{{ lookup('task_src', 'users/pre_main.yml') }}"
 

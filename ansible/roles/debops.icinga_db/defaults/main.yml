@@ -1,0 +1,76 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.icinga_db default variables
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: icinga_db__icinga_installed [[[
+#
+# Variable which defines if Icinga 2 has been installed on the host. If it's
+# not installed, the role will not perform the database configuration.
+#
+# You should install Icinga with the :ref:`debops.icinga` role before
+# configuring a database for it. The default DebOps playbook should do that
+# automatically if the main Icinga role is enabled on a host.
+icinga_db__icinga_installed: '{{ True
+                                 if (ansible_local|d() and ansible_local.icinga|d() and
+                                     (ansible_local.icinga.installed|d())|bool)
+                                 else False }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__type [[[
+#
+# The database type to configure for Icinga 2, either PostgreSQL (preferred) or
+# MariaDB/MySQL. Debian installation supports only one database type at a time.
+icinga_db__type: '{{ ansible_local.icinga_db.type
+                     if (ansible_local|d() and ansible_local.icinga_db|d() and
+                         ansible_local.icinga_db.type|d())
+                     else ("postgresql"
+                           if (ansible_local|d() and ansible_local.postgresql is defined)
+                           else ("mariadb"
+                                 if (ansible_local|d() and ansible_local.mariadb is defined)
+                                 else "unknown")) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__feature [[[
+#
+# Name of the IDO feature to enable for Icinga 2. This should correspond with
+# the selected database type.
+icinga_db__feature: '{{ "ido-pgsql"
+                        if (icinga_db__type == "postgresql")
+                        else ("ido-mysql"
+                              if (icinga_db__type == "mariadb")
+                              else "unknown") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: icinga_db__base_packages [[[
+#
+# The list of APT packages to install for Icinga 2 database support. The
+# database configuration will be performed by the ``dbconfig`` infrastructure.
+icinga_db__base_packages:
+
+  - '{{ "icinga2-ido-pgsql"
+        if (icinga_db__type == "postgresql")
+        else ("icinga2-ido-mysql"
+              if (icinga_db__type == "mariadb")
+              else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__packages [[[
+#
+# List of additional APT packages to install with Icinga 2 database support.
+icinga_db__packages: []
+                                                                   # ]]]
+                                                                   # ]]]

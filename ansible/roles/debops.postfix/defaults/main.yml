@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # APT packages, version [[[
@@ -135,7 +135,7 @@ postfix__allow_smtps: []
 
 # .. envvar:: postfix__pki [[[
 #
-# Enable or disable support for TLS in Postfix, managed by the debops.pki_
+# Enable or disable support for TLS in Postfix, managed by the :ref:`debops.pki`
 # Ansible role.
 postfix__pki: '{{ (True
                    if (ansible_local|d() and ansible_local.pki|d() and
@@ -219,7 +219,7 @@ postfix__tls_key_file: '{{ (postfix__pki_path + "/" + postfix__pki_realm + "/" +
 # .. envvar:: postfix__dhparam [[[
 #
 # Enable or disable support for custom Diffie-Hellman parameters managed by the
-# debops.dhparam_ Ansible role.
+# :ref:`debops.dhparam` Ansible role.
 postfix__dhparam: '{{ ansible_local.dhparam.enabled
                       if (ansible_local|d() and ansible_local.dhparam|d() and
                           ansible_local.dhparam.enabled is defined)
@@ -229,7 +229,7 @@ postfix__dhparam: '{{ ansible_local.dhparam.enabled
 # .. envvar:: postfix__dhparam_set [[[
 #
 # Name of the Diffie-Hellman parameter set to use in Postfix configuration. See
-# debops.dhparam_ Ansible role for more details.
+# :ref:`debops.dhparam` Ansible role for more details.
 postfix__dhparam_set: 'default'
 
                                                                    # ]]]
@@ -308,7 +308,7 @@ postfix__original_maincf:
       fresh installs.
     section: 'base'
     state: '{{ "present"
-               if (postfix__version | version_compare("3.0.0", ">="))
+               if (postfix__version is version_compare("3.0.0", ">="))
                else "ignore" }}'
 
   - name: 'smtpd_tls_cert_file'
@@ -342,7 +342,7 @@ postfix__original_maincf:
   - name: 'smtpd_relay_restrictions'
     section: 'base'
     state: '{{ "present"
-               if (postfix__version | version_compare("2.10.0", ">="))
+               if (postfix__version is version_compare("2.10.0", ">="))
                else "ignore" }}'
     value:
 
@@ -439,7 +439,7 @@ postfix__default_maincf:
     value: True
     section: 'base'
     state: '{{ "present"
-               if (postfix__version | version_compare("2.9.0", ">="))
+               if (postfix__version is version_compare("2.9.0", ">="))
                else "ignore" }}'
 
                                                                    # ]]]
@@ -611,7 +611,7 @@ postfix__tls_maincf:
     value: 'NO_COMPRESSION'
     section: 'tls'
     state: '{{ "present"
-              if (postfix__version | version_compare("2.11.0", ">="))
+              if (postfix__version is version_compare("2.11.0", ">="))
               else "ignore" }}'
 
                                                                    # ]]]
@@ -676,7 +676,7 @@ postfix__restrictions_maincf:
     copy_id_from: 'smtpd_sender_restrictions'
     weight: 40
     state: '{{ "present"
-               if (postfix__version | version_compare("2.10.0", ">="))
+               if (postfix__version is version_compare("2.10.0", ">="))
                else "ignore" }}'
 
   - name: 'smtpd_recipient_restrictions'
@@ -886,7 +886,7 @@ postfix__original_mastercf:
       - name: 'smtpd_relay_restrictions'
         value: [ 'permit_sasl_authenticated', 'reject' ]
         state: '{{ "present"
-                  if (postfix__version | version_compare("2.10.0", ">="))
+                  if (postfix__version is version_compare("2.10.0", ">="))
                   else "ignore" }}'
 
       - milter_macro_daemon_name: 'ORIGINATING'
@@ -921,7 +921,7 @@ postfix__original_mastercf:
       - name: 'smtpd_relay_restrictions'
         value: [ 'permit_sasl_authenticated', 'reject' ]
         state: '{{ "present"
-                  if (postfix__version | version_compare("2.10.0", ">="))
+                  if (postfix__version is version_compare("2.10.0", ">="))
                   else "ignore" }}'
 
       - milter_macro_daemon_name: 'ORIGINATING'
@@ -1320,7 +1320,7 @@ postfix__combined_lookup_tables: '{{ ([ postfix__dependent_lookup_tables_filter 
 
 # .. envvar:: postfix__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ Ansible role.
+# Configuration for the :ref:`debops.ferm` Ansible role.
 postfix__ferm__dependent_rules:
 
   - name: 'postfix_smtp'

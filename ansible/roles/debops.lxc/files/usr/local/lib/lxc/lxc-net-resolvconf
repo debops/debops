@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Script installed by the 'debops.lxc' Ansible role
+
+# Hook script executed by the 'lxc-net' systemd service on start and stop,
+# which maintains the '/run/resolvconf/interface/lxcbr0.lxc-net' configuration
+# file
+
+set -o nounset -o pipefail -o errexit
+
+readonly SCRIPT="$(basename "${0}")"
+readonly COMMAND="${1:-}"
+
+if [ -f "/etc/default/lxc-net" ] ; then
+
+    # shellcheck disable=SC1091
+    source /etc/default/lxc-net
+
+    readonly RESOLVCONF_FILE="/run/resolvconf/interface/${LXC_BRIDGE}.lxc-net"
+
+    case "${COMMAND}" in
+        start)
+            if [ -f "${RESOLVCONF_FILE}" ] ; then
+                rm -f "${RESOLVCONF_FILE}"
+            fi
+            printf "search %s\n" "${LXC_DOMAIN}" > "${RESOLVCONF_FILE}"
+            resolvconf -u
+            ;;
+        stop)
+            if [ -f "${RESOLVCONF_FILE}" ] ; then
+                rm -f "${RESOLVCONF_FILE}"
+            fi
+            resolvconf -u
+            ;;
+        *)
+            printf "This script shouldn't be used as standalone. Exiting\n"
+            exit 1
+            ;;
+    esac
+fi

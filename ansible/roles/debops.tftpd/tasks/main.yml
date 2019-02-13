@@ -6,6 +6,7 @@
     state: 'present'
     install_recommends: False
   register: tftpd_register_install
+  until: tftpd_register_install is succeeded
 
 - name: Set tftpd-hpa parameters
   template:
@@ -18,5 +19,4 @@
 
 - name: Reconfigure TFTP server
   command: dpkg-reconfigure --frontend=noninteractive tftpd-hpa
-  when: tftpd_register_template is defined and tftpd_register_template.changed
-
+  when: tftpd_register_template is defined and tftpd_register_template is changed

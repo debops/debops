@@ -3,9 +3,10 @@
 - name: Install OpenVZ kernel
   apt:
     name: '{{ openvz_kernel_name }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   register: openvz_kernel_status
+  until: openvz_kernel_status is succeeded
 
 - name: Set default kernel in GRUB
   lineinfile:
@@ -18,13 +19,13 @@
 - name: Update grub
   shell: update-grub 2>&1
   register: openvz_grub_status
-  when: (openvz_kernel_status is defined and openvz_kernel_status.changed) or
-        (openvz_grub_configuration is defined and openvz_grub_configuration.changed)
+  when: (openvz_kernel_status is defined and openvz_kernel_status is changed) or
+        (openvz_grub_configuration is defined and openvz_grub_configuration is changed)
 
 - name: List current OpenVZ containers
   shell: vzlist --all 2>&1
   register: openvz_vzlist_status
-  when: openvz_kernel_status is defined and openvz_kernel_status.changed
+  when: openvz_kernel_status is defined and openvz_kernel_status is changed
 
 - name: Send mail to administrator about new or updated kernel
   mail:
@@ -33,4 +34,4 @@
     to: '{{ openvz_mail_to | join(",") }}'
     charset: 'utf8'
     body: '{{ openvz_mail_kernel_body }}'
-  when: openvz_kernel_status is defined and openvz_kernel_status.changed
+  when: openvz_kernel_status is defined and openvz_kernel_status is changed

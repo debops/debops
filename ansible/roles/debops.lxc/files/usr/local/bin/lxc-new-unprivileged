@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# A simple script to create na uprivileged LXC container based on current LXC
+# host distribution, release and architecture. The script uses the
+# 'lxc-hwaddr-static' and 'lxc-prepare-ssh' commands to further configure the
+# created LXC container.
+
+# Usage: lxc-new-unprivileged <container> [config-file]
+
+
+set -o nounset -o pipefail -o errexit
+
+readonly SCRIPT="$(basename "${0}")"
+readonly CONTAINER="${1:-}"
+readonly CONFIG_FILE="${2:-/etc/lxc/unprivileged.conf}"
+
+readonly DISTRIBUTION="$(lsb_release -i | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
+readonly RELEASE="$(lsb_release -c | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
+readonly ARCHITECTURE="$(dpkg --print-architecture)"
+
+container_exists () {
+    local container
+    container="${1}"
+
+    if lxc-ls -1 | grep -q -E "^${container}$" ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+print_usage () {
+    cat <<EOF
+${SCRIPT}: create new unprivileged LXC container based on LXC host
+
+Usage: ${SCRIPT} <container-name> [config-file]
+EOF
+}
+
+error_msg () {
+    printf "%s\n" "${*}" >&2
+}
+
+main () {
+    local container
+    container="${CONTAINER}"
+
+    local config_file
+    config_file="${CONFIG_FILE}"
+
+    local distribution
+    distribution="${DISTRIBUTION}"
+
+    local release
+    release="${RELEASE}"
+
+    local architecture
+    architecture="${ARCHITECTURE}"
+
+    if [ -n "${container}" ] ; then
+        if ! container_exists "${container}" ; then
+
+            printf "Container '%s' doesn't exist, creating...\n" "${container}"
+
+            lxc-create --name "${container}" \
+                       --config "${config_file}" \
+                       --template "download" \
+                       -- --dist "${distribution}" \
+                          --release "${release}" \
+                          --arch "${architecture}"
+
+            lxc-hwaddr-static "${container}"
+
+            if pidof systemd > /dev/null 2>&1 ; then
+                systemctl enable "lxc@${container}.service"
+                systemctl start "lxc@${container}.service"
+            else
+                lxc-start -n "${container}" -d
+            fi
+            lxc-wait -n "${container}" -s RUNNING
+
+            # During container creation, a static hostname is added into
+            # '/etc/hosts' which breaks proper DNS domain resolution of the
+            # container. Because we are using DHCP/DNS server to manage
+            # containers, remove the static host entry to fix the issue.
+            if lxc-attach -n "${container}" -- grep -q '127.0.1.1' /etc/hosts ; then
+                printf "Removing static host entry from /etc/hosts...\n"
+                lxc-attach -n "${container}" -- sed -i "/127\.0\.1\.1/d" /etc/hosts > /dev/null
+            fi
+
+            c=0
+            until lxc-prepare-ssh "${container}" ; do
+                ((c++)) && ((c==4)) && break
+                printf "Waiting for network inside container to settle...\n"
+                sleep 5
+            done
+
+        else
+            error_msg "Error: container '${container}' already exists"
+            return 1
+        fi
+    else
+        print_usage
+        return 1
+    fi
+}
+
+main

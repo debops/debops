@@ -1,0 +1,76 @@
+---
+
+# ---- git clone && git checkout ----
+
+- name: Create GitLab source directory
+  file:
+    path: '{{ gitlab_src_path }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0750'
+
+- name: Clone GitLab CE source code
+  git:
+    repo: '{{ gitlab_ce_git_repo }}'
+    dest: '{{ gitlab_ce_git_dest }}'
+    version: 'master'
+    bare: True
+    update: True
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_ce_source
+
+- name: Check if GitLab CE is checked out
+  stat:
+    path: '{{ gitlab_ce_git_checkout }}'
+  register: gitlab_register_ce_directory
+
+- name: Create GitLab CE checkout directory
+  file:
+    path: '{{ gitlab_ce_git_checkout }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0755'
+
+- name: Prepare GitLab CE worktree
+  copy:
+    content: 'gitdir: {{ gitlab_ce_git_dest }}'
+    dest: '{{ gitlab_ce_git_checkout + "/.git" }}'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0644'
+
+- name: Get commit hash of target checkout
+  command: git rev-parse {{ gitlab__release }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
+  args:
+    chdir: '{{ gitlab_ce_git_dest }}'
+    warn: False
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_ce_target_branch
+  changed_when: gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before
+
+- include: gitlab_ce_pre_upgrade.yml
+  when: (ansible_local|d() and ansible_local.gitlab|d() and
+         (ansible_local.gitlab.installed|d() | bool) and
+         ((gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before) or
+         (ansible_local.gitlab.version is defined and ansible_local.gitlab.version != gitlab_version)))
+
+- name: Checkout GitLab CE
+  command: git checkout -f {{ gitlab__release }}
+  environment:
+    GIT_WORK_TREE: '{{ gitlab_ce_git_checkout }}'
+  args:
+    chdir: '{{ gitlab_ce_git_dest }}'
+    warn: False
+  become: True
+  become_user: '{{ gitlab_user }}'
+  register: gitlab_register_ce_checkout
+  when: (gitlab_register_ce_source.before is undefined or
+         (gitlab_register_ce_source.before is defined and
+          gitlab_register_ce_target_branch.stdout is defined and
+          gitlab_register_ce_source.before != gitlab_register_ce_target_branch.stdout))

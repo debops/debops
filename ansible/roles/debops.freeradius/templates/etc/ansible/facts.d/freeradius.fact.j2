@@ -1,0 +1,28 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('freeradius')}
+
+try:
+    version_stdout = subprocess.check_output(
+            ["dpkg-query", "-W", "-f=${Version}\n'",
+             "freeradius"]).split('+')[0]
+    output['version'] = version_stdout
+
+except Exception:
+    pass
+print(dumps(output, sort_keys=True, indent=4))

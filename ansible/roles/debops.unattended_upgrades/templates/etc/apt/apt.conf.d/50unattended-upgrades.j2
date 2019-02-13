@@ -4,28 +4,27 @@
 // Unattended-Upgrade::Origins-Pattern controls which packages are
 // upgraded.
 Unattended-Upgrade::Origins-Pattern {
-{% set unattended_upgrades__tpl_origins = [] %}
-{% set unattended_upgrades__tpl_security_origins_found = False %}
-{% set unattended_upgrades__tpl_release_origins_found = False %}
-{% for element in unattended_upgrades__origins_lookup if not unattended_upgrades__tpl_security_origins_found|bool %}
-{%   if element in unattended_upgrades__security_origins.keys() %}
+{% set unattended_upgrades__tpl_security_origins = [] %}
+{% set unattended_upgrades__tpl_release_origins = [] %}
+{% for element in unattended_upgrades__origins_lookup  %}
+{%   if element in unattended_upgrades__security_origins.keys()
+        and not unattended_upgrades__tpl_security_origins %}
 {%     for item in unattended_upgrades__security_origins[element] %}
-{%       set _ = unattended_upgrades__tpl_origins.append(item) %}
+{%       set _ = unattended_upgrades__tpl_security_origins.append(item) %}
 {%     endfor %}
-{%     set unattended_upgrades__tpl_security_origins_found = True %}
 {%   endif %}
 {% endfor %}
 {% if unattended_upgrades__release | bool %}
-{%   for element in unattended_upgrades__origins_lookup if not unattended_upgrades__tpl_release_origins_found|bool %}
-{%     if element in unattended_upgrades__release_origins.keys() %}
+{%   for element in unattended_upgrades__origins_lookup %}
+{%     if element in unattended_upgrades__release_origins.keys()
+          and not unattended_upgrades__tpl_release_origins %}
 {%       for item in unattended_upgrades__release_origins[element] %}
-{%         set _ = unattended_upgrades__tpl_origins.append(item) %}
+{%         set _ = unattended_upgrades__tpl_release_origins.append(item) %}
 {%       endfor %}
-{%       set unattended_upgrades__tpl_release_origins_found = True %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% set unattended_upgrades__tpl_origins = unattended_upgrades__tpl_macros.get_origins_as_json(unattended_upgrades__tpl_origins) | from_json %}
+{% set unattended_upgrades__tpl_origins = unattended_upgrades__tpl_macros.get_origins_as_json(unattended_upgrades__tpl_security_origins + unattended_upgrades__tpl_release_origins) | from_json %}
 {% for item in unattended_upgrades__tpl_origins %}
         "{{ item }}";
 {% endfor %}

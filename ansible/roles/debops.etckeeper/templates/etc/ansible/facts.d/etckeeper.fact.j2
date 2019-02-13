@@ -1,0 +1,58 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import subprocess
+import os
+
+
+try:
+    from subprocess import DEVNULL
+except ImportError:
+    DEVNULL = open(os.devnull, 'wb')
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+config_file = '/etc/etckeeper/etckeeper.conf'
+
+output = loads('''{{ {"installed": False,
+                      "commit": False,
+                      "configured": True,
+                      "enabled": etckeeper__enabled|bool
+                     } | to_nice_json }}''')
+
+commit_msg = loads('''{{ etckeeper__commit_message_fact | to_json }}''')
+
+output['installed'] = cmd_exists('etckeeper')
+
+if output['enabled'] is True and output['installed'] is True:
+    etckeeper_unclean_rc = subprocess.call(
+        ['etckeeper', 'unclean'],
+        stdout=DEVNULL, stderr=DEVNULL)
+
+    if etckeeper_unclean_rc == 0:  # The /etc is unclean
+        subprocess.call(
+            ['etckeeper', 'commit', commit_msg],
+            stdout=DEVNULL, stderr=DEVNULL)
+        output['commit'] = True
+
+    if os.path.exists(config_file) and os.path.isfile(config_file):
+        try:
+            with open(config_file, 'r') as f:
+                for line in f:
+                    if not line.startswith('#') and '=' in line:
+                        line = line.strip().split('=')
+                        output.update({line[0].lower():
+                                       line[1].strip('"')})
+        except Exception:
+            pass
+
+print(dumps(output, sort_keys=True, indent=4))

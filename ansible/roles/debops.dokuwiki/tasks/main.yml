@@ -8,6 +8,8 @@
   with_flattened:
     - '{{ dokuwiki__base_packages }}'
     - '{{ dokuwiki__packages }}'
+  register: dokuwiki__register_packages
+  until: dokuwiki__register_packages is succeeded
 
 - name: Create DokuWiki group
   group:
@@ -41,6 +43,7 @@
   git:
     repo: '{{ dokuwiki__git_repo }}'
     dest: '{{ dokuwiki__git_dest }}'
+    version: 'master'
     bare: True
     update: True
   become: True
@@ -67,9 +70,8 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
-  shell: git rev-parse {{ dokuwiki__git_version }}
+  command: git rev-parse {{ dokuwiki__git_version }}
   args:
-    executable: '/bin/sh'
     chdir: '{{ dokuwiki__git_dest }}'
     warn: False
   become: True

@@ -4,16 +4,20 @@
 
 # phpipam-hosts wrapper script
 
-{% if phpipam_scripts_config_groups is defined and phpipam_scripts_config_groups %}
-{%   if phpipam_scripts_config_groups.keys() | count == 1 %}
-{%     for group, config in phpipam_scripts_config_groups.iteritems() %}
-/usr/local/sbin/phpipam-hosts -g {{ group }} -x > /dev/null
-{%     endfor %}
-{%   else %}
-{%     for group, config in phpipam_scripts_config_groups.iteritems() %}
-/usr/local/sbin/phpipam-hosts -g {{ group }}
-{%     endfor %}
-/usr/local/sbin/phpipam-hosts -X > /dev/null
-{%   endif %}
-{% endif %}
+number_of_groups="{{ phpipam_scripts_config_groups.keys() | count }}"
+readarray -t config_groups << EOF
+{% for group, config in phpipam_scripts_config_groups.items() %}
+{{ group }}
+{% endfor %}
+EOF
 
+if [ "${number_of_groups}" -eq 1 ] ; then
+    for config_group in "${config_groups[@]}" ; do
+        /usr/local/sbin/phpipam-hosts -g "${config_group}" -x > /dev/null
+    done
+else
+    for config_group in "${config_groups[@]}" ; do
+        /usr/local/sbin/phpipam-hosts -g "${config_group}"
+    done
+    /usr/local/sbin/phpipam-hosts -X > /dev/null
+fi

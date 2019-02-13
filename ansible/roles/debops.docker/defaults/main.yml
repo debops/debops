@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # Docker packages and installation [[[
@@ -39,9 +39,7 @@ docker__distribution_release: '{{ ansible_local.core.distribution_release
 # Note that switching from upstream to default on one host, may not always
 # work. You may need to manually remove the upstream version and configuration.
 docker__upstream: '{{ True
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.distribution_release|d() and
-                          ansible_local.core.distribution_release == "stretch")
+                      if (docker__distribution_release == "stretch")
                       else False }}'
 
                                                                    # ]]]
@@ -79,7 +77,7 @@ docker__upstream_packagename: '{{ "docker-" + docker__upstream_edition }}'
 docker__upstream_arch_map:
   'x86_64': 'amd64'
   'armhf':  'armhf'
-
+  'armv7l':  'armhf'
                                                                    # ]]]
 # .. envvar:: docker__upstream_repository [[[
 #
@@ -109,6 +107,7 @@ docker__base_packages:
   - "python-pip"
   - "python-setuptools"
   - "python-virtualenv"
+  - 'python-dev'
   - '{{ [ "virtualenv" ] if (ansible_distribution_release not in ["trusty", "wheezy"]) else [] }}'
   - "bridge-utils"
   - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
@@ -118,6 +117,16 @@ docker__base_packages:
 #
 # List of additional packages to install with Docker.
 docker__packages: []
+
+                                                                   # ]]]
+# .. envvar:: docker__version [[[
+#
+# Specify the Docker version installed on a host. This variable is populated
+# automatically via Ansible local facts and shouldn't be set manually.
+docker__version: '{{ ansible_local.docker.version
+                     if (ansible_local|d() and ansible_local.docker|d() and
+                         ansible_local.docker.version|d())
+                     else "0.0.0" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Docker Python environment [[[
@@ -211,22 +220,28 @@ docker__fixed_cidr: ''
 # .. envvar:: docker__dns_nameserver [[[
 #
 # List of IP addresses of nameservers used by Docker. By default they
-# are gathered by the debops.core_ role from the :file:`/etc/resolv.conf` file of
+# are gathered by the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of
 # the remote host.
-docker__dns_nameserver: '{{ ansible_local.resolver.nameserver
+docker__dns_nameserver: '{{ ansible_local.resolver.upstream_nameservers
                             if (ansible_local|d() and ansible_local.resolver|d() and
-                                ansible_local.resolver.nameserver|d())
-                            else [] }}'
+                                ansible_local.resolver.upstream_nameservers|d())
+                            else (ansible_dns.nameservers
+                                  if ("127.0.0.1" not in ansible_dns.nameservers)
+                                  else []) }}'
 
                                                                    # ]]]
 # .. envvar:: docker__dns_search [[[
 #
 # List of DNS search domains to use by Docker. By default they are gathered by
-# the debops.core_ role from the :file:`/etc/resolv.conf` file of the remote host.
+# the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of the remote host.
 docker__dns_search: '{{ ansible_local.resolver.search
                         if (ansible_local|d() and ansible_local.resolver|d() and
-                            ansible_local.resolver.search|d())
-                        else [] }}'
+                            ansible_local.resolver.search|d() and
+                            (ansible_local.resolver.upstream_nameservers|d() or
+                             "127.0.0.1" not in ansible_dns.nameservers))
+                        else (ansible_dns.search|d()
+                              if ("127.0.0.1" not in ansible_dns.nameservers)
+                              else []) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Remote Docker connection (TCP) [[[
@@ -235,7 +250,7 @@ docker__dns_search: '{{ ansible_local.resolver.search
 # .. envvar:: docker__tcp [[[
 #
 # Enable or disable listening for TLS connections on the TCP docker port. By
-# default remote connections are enabled if the debops.pki_ role has been
+# default remote connections are enabled if the :ref:`debops.pki` role has been
 # configured on remote host (access is controlled by the firewall).
 docker__tcp: '{{ docker__pki | bool }}'
 
@@ -313,7 +328,7 @@ docker__env_no_proxy: '{{ ansible_env.no_proxy | d() }}'
 #
 # List of host connections configured in the Docker daemon (``--host`` parameter).
 docker__listen:
-  - '{{ "fd://" if ansible_service_mgr == "systemd" else "unix:///var/run/docker.sock" }}'
+  - '{{ "unix:///var/run/docker.sock" }}'
   - '{{ docker__tcp_listen }}'
 
                                                                    # ]]]
@@ -377,6 +392,8 @@ docker__storage_options: {}
 # 'daemon.json'.
 docker__custom_daemon_options: {}
 
+    # {"cgroup-parent": "limit-docker-memory.slice"}
+
                                                                    # ]]]
 # .. envvar:: docker__options [[[
 #
@@ -397,7 +414,7 @@ docker__options: []
 
 # .. envvar:: docker__pki [[[
 #
-# Enable or disable support for PKI certificates managed by debops.pki_.
+# Enable or disable support for PKI certificates managed by :ref:`debops.pki`.
 docker__pki: '{{ (True
                   if (ansible_local|d() and ansible_local.pki|d() and
                       ansible_local.pki.enabled|d() | bool)
@@ -476,7 +493,7 @@ docker__ferment_wrapper: '{{ (ansible_local.root.lib
 
 # .. envvar:: docker__etc_services__dependent_list [[[
 #
-# Configuration for debops.etc_services_ role which registers port numbers
+# Configuration for :ref:`debops.etc_services` role which registers port numbers
 # for Docker REST API.
 docker__etc_services__dependent_list:
 
@@ -491,7 +508,7 @@ docker__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: docker__ferm__dependent_rules [[[
 #
-# Configuration for debops.ferm_ role which enables support for :program:`ferment`
+# Configuration for :ref:`debops.ferm` role which enables support for :program:`ferment`
 # script and opens access to the Docker REST API in the firewall.
 docker__ferm__dependent_rules:
 

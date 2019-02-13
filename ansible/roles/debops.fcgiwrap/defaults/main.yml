@@ -1,82 +1,86 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.fcgiwrap default variables
+# =================================
 
 # .. contents:: Sections
 #    :local:
+#
+# .. include:: ../../../includes/global.rst
 
-# --------------------------
-#   fcgiwrap configuration
+
+# fcgiwrap configuration [[[
 # --------------------------
 
-# .. envvar:: fcgiwrap__packages
+# .. envvar:: fcgiwrap__packages [[[
 #
 # List of APT packages to install.
 fcgiwrap__packages: [ 'fcgiwrap' ]
 
-
-# .. envvar:: fcgiwrap__instances
+                                                                   # ]]]
+# .. envvar:: fcgiwrap__instances [[[
 #
 # List of ``fcgiwrap`` instances to configure. See :ref:`fcgiwrap__instances`
 # for more details.
 fcgiwrap__instances: []
 
-
-# .. envvar:: fcgiwrap__disable_default
+                                                                   # ]]]
+# .. envvar:: fcgiwrap__disable_default [[[
 #
 # By default role disables the original system-wide instance and uses only
 # per-user instances.
 fcgiwrap__disable_default: True
 
-
-# .. envvar:: fcgiwrap__threads
+                                                                   # ]]]
+# .. envvar:: fcgiwrap__threads [[[
 #
 # Number of cgiwrap threads to start if not specified in instance
 # configuration.
 fcgiwrap__threads: '{{ ansible_processor_cores }}'
 
-
-# .. envvar:: fcgiwrap__options_map
+                                                                   # ]]]
+# .. envvar:: fcgiwrap__options_map [[[
 #
 # Map of options passed to ``fcgiwrap`` depending on the installed version.
 fcgiwrap__options_map:
   '1.1': '-f -c {{ fcgiwrap__threads }}'
   '1.0': '-c {{ fcgiwrap__threads }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# User and group configuration [[[
 # --------------------------------
-#   User and group configuration
-# --------------------------------
 
-# .. envvar:: fcgiwrap__user
+# .. envvar:: fcgiwrap__user [[[
 #
 # Default user account which will be used to start ``fcgiwrap`` if none is
 # specified in instance configuration.
 fcgiwrap__user: 'www-data'
 
-
-# .. envvar:: fcgiwrap__group
+                                                                   # ]]]
+# .. envvar:: fcgiwrap__group [[[
 #
 # Default group which will be used to start ``fcgiwrap`` if none is specified
 # in instance configuration.
 fcgiwrap__group: 'www-data'
 
-
-# .. envvar:: fcgiwrap__socket_user
+                                                                   # ]]]
+# .. envvar:: fcgiwrap__socket_user [[[
 #
 # Owner of the socket used to communicate with ``fcgiwrap`` process if none is
 # specified in instance configuration.
 fcgiwrap__socket_user: 'www-data'
 
-
-# .. envvar:: fcgiwrap__socket_group
+                                                                   # ]]]
+# .. envvar:: fcgiwrap__socket_group [[[
 #
 # Default socket group if none is specified in instance configuration.
 fcgiwrap__socket_group: 'www-data'
 
-
-# .. envvar:: fcgiwrap__socket_mode
+                                                                   # ]]]
+# .. envvar:: fcgiwrap__socket_mode [[[
 #
 # Default permissions set on the ``fcgiwrap`` socket.
 fcgiwrap__socket_mode: '0660'
-
+                                                                   # ]]]
+                                                                   # ]]]

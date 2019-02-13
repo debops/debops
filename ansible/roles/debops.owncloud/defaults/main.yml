@@ -4,10 +4,11 @@
 # Default variables
 # =================
 
+# .. include:: ../../../includes/global.rst
+# .. include:: includes/role.rst
+
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: includes/all.rst
 #
 # .. Role maintainer note:
 # .. The official ownCloud documentation is also written is RST.
@@ -24,12 +25,7 @@
 #
 # List of base packages required by ownCloud.
 owncloud__base_packages:
-  - '{{ [ ("owncloud-deps-php" + ansible_local.php.version) ]
-        if (owncloud__variant == "owncloud" and
-            ansible_local|d() and ansible_local.php|d() and
-            ansible_local.php.version|d())
-        else [] }}'
-  - '{{ [ "owncloud" ]
+  - '{{ [ "owncloud-files" ]
         if (owncloud__variant == "owncloud")
         else [] }}'
   - '{{ [ "curl", "unzip" ]
@@ -46,7 +42,7 @@ owncloud__base_packages:
 
   ## Useful for debugging. Refer to `owncloud__base_php_packages` for the PHP packages
   - '{{ [ "smbclient" ] if (owncloud__smb_support|bool) else [] }}'
-  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("9.0", ">=")) else [] }}'
+  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release is version_compare("9.0", ">=")) else [] }}'
 
 
 # .. envvar:: owncloud__required_php_packages
@@ -68,9 +64,7 @@ owncloud__required_php_packages:
   # - 'SimpleXML'
   # - 'XMLWriter'
 
-  - 'mbstring'
   # - 'posix'
-  - 'zip'
   # - 'zlib'
 
 
@@ -81,7 +75,6 @@ owncloud__required_php_packages:
 owncloud__recommended_php_packages:
   - 'curl'
   - 'bz2'
-  - 'intl'
   - 'mcrypt'
 
   # Recommended/Optional: SFTP storage
@@ -96,20 +89,26 @@ owncloud__base_php_packages:
         if (owncloud__variant == "nextcloud")
         else [] }}'
 
+  - 'mbstring'
+  - 'zip'
+
+  ## Required for the "OpenOTP Two Factor Authentication" (twofactor_rcdevsopenotp) as of NC 14.
+  - 'ldap'
+  - 'soap'
+
   - '{{ [ "apcu" ] if (owncloud__apcu_enabled|bool) else [] }}'
   - '{{ [ "mysql" ] if (owncloud__database in [ "mariadb", "mysql" ]) else [] }}'
   - '{{ [ "pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
   - '{{ [ "redis" ] if (owncloud__redis_enabled | bool) else [] }}'
-  - '{{ [ "ldap" ] if (owncloud__ldap_enabled | bool) else [] }}'
 
   ## Seems to be required at least for PHP7.0 to fix:
   ## PHP Warning: PHP Startup: Unable to load dynamic library '/usr/lib/php/20151012/redis.so'
   ## - /usr/lib/php/20151012/redis.so: undefined symbol: igbinary_serialize in Unknown on line 0
   - '{{ [ "igbinary" ]
-        if (not (ansible_distribution == "Ubuntu" and (ansible_distribution_version|version_compare("15.10", "<"))))
+        if (not (ansible_distribution == "Ubuntu" and (ansible_distribution_version is version_compare("15.10", "<"))))
         else [] }}'
 
-  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release | version_compare("8.9.9", "<=")) else [] }}'
+  - '{{ [ "libsmbclient" ] if (owncloud__smb_support|bool and owncloud__release is version_compare("8.9.9", "<=")) else [] }}'
 
   ## Included in normal PHP installations but require it here because it is
   ## used internally by the role:
@@ -123,7 +122,7 @@ owncloud__optional_php_packages:
   - '{{ owncloud__recommended_php_packages
         if (owncloud__variant == "nextcloud")
         else [] }}'
-
+  - 'intl'
   - 'imagick'
 
 
@@ -180,8 +179,8 @@ owncloud__deploy_state: 'present'
 
 # .. envvar:: owncloud__system_user [[[
 #
-# Name of the system account which will perform signature and archive
-# verification.
+# Name of the system account which will perform archive
+# verification using the OpenPGP signature.
 owncloud__system_user: 'nextcloud'
 
                                                                    # ]]]
@@ -274,7 +273,7 @@ owncloud__keyserver: '{{ ansible_local.core.keyserver
 # .. note:: :envvar:`owncloud__auto_database_upgrade_enabled` depends on
 #    automatic database upgrades to be enabled.
 #
-owncloud__auto_database_upgrade_enabled: True
+owncloud__auto_database_upgrade_enabled: '{{ True if (owncloud__variant == "owncloud") else False }}'
 
 
 # .. envvar:: owncloud__dpkg_hook_script
@@ -290,6 +289,7 @@ owncloud__dpkg_hook_script: '{{
 # .. envvar:: owncloud__auto_database_upgrade_migration_test
 #
 # Whether database schema migration should be simulated before upgrading the production database.
+# For Nextcloud it cannot be configured and this variable is ignored.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/package_upgrade.html#migration-test>`__ for details.
 owncloud__auto_database_upgrade_migration_test: True
 
@@ -297,7 +297,7 @@ owncloud__auto_database_upgrade_migration_test: True
 # .. envvar:: owncloud__auto_database_upgrade_3party_app_disable
 #
 # Should third party apps by disabled during/after upgrades? The upstream default as of ownCloud 9.0
-# is ``True``.
+# is ``True``. For Nextcloud it cannot be configured and this variable is ignored.
 owncloud__auto_database_upgrade_3party_app_disable: True
 
 
@@ -373,12 +373,13 @@ owncloud__post_upgrade_hook_host_list: []
 #
 # Supported variants:
 #
-# * ``owncloud`` (legacy variant, not recommended for new deployments)
+# * ``owncloud`` (legacy variant, not recommended for new deployments, not well tested)
 # * ``nextcloud`` (Main supported variant in the future. Currently supported on Debian stretch, refer to `issue 45 <https://github.com/debops/ansible-owncloud/issues/45>`_ for details)
 #
-owncloud__variant: '{{ "nextcloud"
-                       if (ansible_distribution_release in [ "stretch" ])
-                       else "owncloud" }}'
+owncloud__variant: '{{ ansible_local.owncloud.variant
+                       if (ansible_local|d() and ansible_local.owncloud|d() and
+                           ansible_local.owncloud.variant|d())
+                       else "nextcloud" }}'
 
 
 # .. envvar:: owncloud__variant_download_url_map
@@ -414,19 +415,20 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * ownCloud ``9.0`` (upstream support will be dropped in 2017-10)
-# * ownCloud ``9.1``
+# * ownCloud ``10.0``
 #
-# * Nextcloud ``11.0``
-# * Nextcloud ``12.0``
+# * Nextcloud ``13.0``
+# * Nextcloud ``14.0``
+# * Nextcloud ``15.0``
 #
-# Refer to the `ownCloud Maintenance and Release Schedule <https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule>`_
+# For Nextcloud refer to the `Nextcloud Maintenance and Release Schedule <https://github.com/nextcloud/server/wiki/Maintenance-and-Release-Schedule>`_.
+# and the `Nextcloud Server Changelog <https://nextcloud.com/changelog/>`_.
+#
+# For ownCloud refer to the `ownCloud Maintenance and Release Schedule <https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule>`_
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
-#
-# For Nextcloud refer to the `Nextcloud Server Changelog <https://nextcloud.com/changelog/>`_.
-owncloud__release: '{{ "9.0"
+owncloud__release: '{{ "10.0"
                        if (owncloud__variant == "owncloud")
-                       else "11.0" }}'
+                       else "14.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -572,35 +574,35 @@ owncloud__apcu_enabled: True
 # requirement is not meet for Ubuntu trusty (neither in the release repos nor
 # in backports) thus Redis will not be enabled automatically by the role.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id4>`__ for details.
-owncloud__redis_enabled: '{{ ansible_local|d() and ansible_local.redis|d() and
-                             ansible_local.redis.enabled|d() | bool and
+owncloud__redis_enabled: '{{ ansible_local|d() and ansible_local.redis_server|d() and
+                             ansible_local.redis_server.installed|d() | bool and
                              (not (ansible_distribution == "Ubuntu" and ansible_distribution_release == "trusty")) }}'
 
 
 # .. envvar:: owncloud__redis_host
 #
 # Redis server to use when :envvar:`owncloud__redis_enabled` is ``True``.
-owncloud__redis_host: '{{ ansible_local.redis.host
-                          if (ansible_local|d() and ansible_local.redis|d() and
-                              ansible_local.redis.host|d())
+owncloud__redis_host: '{{ ansible_local.redis_server.host
+                          if (ansible_local|d() and ansible_local.redis_server|d() and
+                              ansible_local.redis_server.host|d())
                           else "localhost" }}'
 
 
 # .. envvar:: owncloud__redis_port
 #
 # Network port on which the Redis server is listening on.
-owncloud__redis_port: '{{ ansible_local.redis.port
-                          if (ansible_local|d() and ansible_local.redis|d() and
-                              ansible_local.redis.port|d())
+owncloud__redis_port: '{{ ansible_local.redis_server.port
+                          if (ansible_local|d() and ansible_local.redis_server|d() and
+                              ansible_local.redis_server.port|d())
                           else "6379" }}'
 
 
 # .. envvar:: owncloud__redis_password
 #
 # Redis server authentication password.
-owncloud__redis_password: '{{ ansible_local.redis.password
-                              if (ansible_local|d() and ansible_local.redis|d() and
-                                  ansible_local.redis.password|d())
+owncloud__redis_password: '{{ ansible_local.redis_server.password
+                              if (ansible_local|d() and ansible_local.redis_server|d() and
+                                  ansible_local.redis_server.password|d())
                               else omit }}'
 
 # .. Database configuration [[[1
@@ -621,7 +623,7 @@ owncloud__database: 'mariadb'
 # .. envvar:: owncloud__database_server
 #
 # FQDN of the database server. It will be configured by
-# the debops.mariadb_ or debops.postgresql_ role.
+# the :ref:`debops.mariadb` or :ref:`debops.postgresql` role.
 owncloud__database_server: '{{ ansible_local[owncloud__database].server }}'
 
 
@@ -716,7 +718,7 @@ owncloud__password_length: 20
 # .. envvar:: owncloud__admin_password
 #
 # Default admin password.
-# A random password will be generate by default as documented by the debops.secret_ role.
+# A random password will be generate by default as documented by the :ref:`debops.secret` role.
 owncloud__admin_password: '{{ lookup("password", owncloud__admin_password_path
                               + " length=" + (owncloud__password_length|string)) }}'
 
@@ -818,8 +820,8 @@ owncloud__role_config:
   'updatechecker': '{{ True if (owncloud__variant in ["nextcloud"]) else False }}'
 
   'memcache.local':
-    state: '{{ "present" if (owncloud__apcu_enabled|bool) else "absent" }}'
-    value: '\\OC\\Memcache\\APCu'
+    state: '{{ "present" if (owncloud__apcu_enabled|bool or owncloud__redis_enabled|bool) else "absent" }}'
+    value: '{{ "\\OC\\Memcache\\Redis" if (owncloud__redis_enabled|bool) else "\\OC\\Memcache\\APCu" }}'
 
   'memcache.locking':
     state: '{{ "present" if (owncloud__redis_enabled|bool) else "absent" }}'
@@ -947,6 +949,8 @@ owncloud__role_apps_config:
 
   password_policy:
     ## Default is 6 as of Nextcloud 11 which is not state of the art.
+    ## Default is 8 as of Nextcloud 12+.
+    ## https://github.com/nextcloud/password_policy/blob/master/lib/PasswordPolicyConfig.php
     minLength: 8
 
 
@@ -1033,10 +1037,12 @@ owncloud__smb_support: False
 #
 #      - command: 'app:enable external'
 #
+#      - command: 'app:install calendar'
+#        when: '{{ owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("13.0", ">=") }}'
+#      - command: 'app:enable calendar'
+#
 #      ## Create an additional admin account.
 #      - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
-#        ## Does not work with ownCloud 8.0 or below so don’t run it there.
-#        when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
 #        env:
 #          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
 #                       ansible_fqdn + '/owncloud/admin/' + 'admin' +
@@ -1045,7 +1051,7 @@ owncloud__smb_support: False
 #      ## Create an regular user. Note that you probably want to use an existing
 #      ## user database like LDAP.
 #      - command: 'user:add --password-from-env --display-name="Normal user" user'
-#        when: '{{ owncloud__release | version_compare("8.1", ">=") }}'
+#        when: '{{ owncloud__release is version_compare("8.1", ">=") }}'
 #        env:
 #          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
 #                       ansible_fqdn + '/owncloud/users/' + 'user' +
@@ -1063,7 +1069,7 @@ owncloud__role_occ_cmd_list:
   ## is setup by this role using packages.
   ## Since ownCloud 9 it is called `updatenotification`.
   - command: 'app:disable updater'
-    when: '{{ owncloud__release | version_compare("8.2", "<=") }}'
+    when: '{{ owncloud__release is version_compare("8.2", "<=") }}'
 
   - command: 'app:enable user_ldap'
     when: '{{ owncloud__ldap_enabled|bool }}'
@@ -1672,7 +1678,11 @@ owncloud__nginx_client_body_temp_path: ''
 owncloud__nginx_access_log_assets: True
                                                                    # ]]]
                                                                    # ]]]
-# PHP [[[
+# .. PHP [[[
+#
+# ---
+# PHP
+# ---
 
 # .. envvar:: owncloud__php_temp_path [[[
 #
@@ -1683,24 +1693,25 @@ owncloud__nginx_access_log_assets: True
 # uses to a path with more space available.
 # This directory is used to cache uploaded files when using Apache.
 # See also :envvar:`owncloud__temp_path`.
-
+#
 # Empty string will not change the temp directory of PHP.
 owncloud__php_temp_path: ''
 
                                                                    # ]]]
-# .. envvar:: owncloud__php_output_buffering
+# .. envvar:: owncloud__php_output_buffering [[[
 #
 # Output buffering set in PHP, with amount set in megabytes.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php>`__ for details.
 owncloud__php_output_buffering: '0'
 
 
-# .. envvar:: owncloud__php_max_children
+                                                                   # ]]]
+# .. envvar:: owncloud__php_max_children [[[
 #
 # Max children processes to run in php fpm.
 # FIXME: Check if default of debops.php_ might be sufficient.
 owncloud__php_max_children: '50'
-
+                                                                   # ]]]
                                                                    # ]]]
 # .. Role-dependent configuration [[[1
 #
@@ -1710,9 +1721,9 @@ owncloud__php_max_children: '50'
 
 # .. envvar:: owncloud__apt_preferences__dependent_list
 #
-# Configuration for the debops.apt_preferences_ role.
+# Configuration for the :ref:`debops.apt_preferences` role.
 #
-# .. TODO: Consider moving logic to the debops.php role.
+# .. TODO: Consider moving logic to the :ref:`debops.php` role.
 #
 owncloud__apt_preferences__dependent_list:
 
@@ -1725,9 +1736,9 @@ owncloud__apt_preferences__dependent_list:
 
 # .. envvar:: owncloud__apt_preferences__dependent_list_optional
 #
-# Optional configuration for the debops.apt_preferences_ role.
+# Optional configuration for the :ref:`debops.apt_preferences` role.
 # Only required when APT preference presets from the
-# debops.apt_preferences_ role are used.
+# :ref:`debops.apt_preferences` role are used.
 owncloud__apt_preferences__dependent_list_optional:
 
   - package: 'owncloud owncloud*'
@@ -1743,7 +1754,7 @@ owncloud__apt_preferences__dependent_list_optional:
 
 # .. envvar:: owncloud__mariadb__dependent_databases [[[
 #
-# Configuration of the database managed by the debops.mariadb_ role.
+# Configuration of the database managed by the :ref:`debops.mariadb` role.
 owncloud__mariadb__dependent_databases:
 
   - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
@@ -1752,7 +1763,7 @@ owncloud__mariadb__dependent_databases:
                                                                    # ]]]
 # .. envvar:: owncloud__mariadb__dependent_users [[[
 #
-# Configuration of the database user managed by the debops.mariadb_ role.
+# Configuration of the database user managed by the :ref:`debops.mariadb` role.
 owncloud__mariadb__dependent_users:
 
   - database: '{{ owncloud__database_map[owncloud__database].dbname }}'
@@ -1762,16 +1773,16 @@ owncloud__mariadb__dependent_users:
                                                                    # ]]]
 # .. envvar:: owncloud__postgresql__dependent_roles [[[
 #
-# Configuration of the database roles managed by the debops.postgresql_ role.
+# Configuration of the database roles managed by the :ref:`debops.postgresql` role.
 owncloud__postgresql__dependent_roles:
 
-  - name: '{{ owncloud__database_name }}' # Separate role is needed when owncloud__database_name != owncloud__database_user
-  - name: '{{ owncloud__database_user }}' # Password is not passed directly - it will be read from the file
+  - name: '{{ owncloud__database_name }}'  # Separate role is needed when owncloud__database_name != owncloud__database_user
+  - name: '{{ owncloud__database_user }}'  # Password is not passed directly - it will be read from the file
 
                                                                    # ]]]
 # .. envvar:: owncloud__postgresql__dependent_groups [[[
 #
-# Configuration of the database groups managed by the debops.postgresql_ role.
+# Configuration of the database groups managed by the :ref:`debops.postgresql` role.
 owncloud__postgresql__dependent_groups:
 
   - roles: [ '{{ owncloud__database_user }}' ]
@@ -1782,7 +1793,7 @@ owncloud__postgresql__dependent_groups:
                                                                    # ]]]
 # .. envvar:: owncloud__postgresql__dependent_databases [[[
 #
-# Configuration of the database managed by the debops.postgresql_ role.
+# Configuration of the database managed by the :ref:`debops.postgresql` role.
 owncloud__postgresql__dependent_databases:
 
   - name: '{{ owncloud__database_name }}'
@@ -1808,9 +1819,9 @@ owncloud__logrotate__dependent_config:
       delaycompress
 # ]]]
 
-# .. envvar:: owncloud__apache__dependent_snippets
+# .. envvar:: owncloud__apache__dependent_snippets [[[
 #
-# Apache configuration snippets managed by the debops.apache_ role.
+# Apache configuration snippets managed by the :ref:`debops.apache` role.
 # Disable the :file:`/etc/apache2/conf-enabled/owncloud.conf` which configures
 # ownCloud below ``/owncloud``.
 owncloud__apache__dependent_snippets:
@@ -1821,7 +1832,7 @@ owncloud__apache__dependent_snippets:
 
 # .. envvar:: owncloud__apache__dependent_vhosts
 #
-# Apache virtual host managed by the debops.apache_ role.
+# Apache virtual host managed by the :ref:`debops.apache` role.
 owncloud__apache__dependent_vhosts:
 
   - type: 'default'
@@ -1840,7 +1851,7 @@ owncloud__apache__dependent_vhosts:
       SetEnv HTTP_HOME {{ owncloud__app_home }}
 
       {# Does not work.
-      ## Tested with while uploading with:
+      ## Tested while uploading with:
       ## while true; do df -h /tmp|tail -n 1; sleep 0.1; done
       ## Currently configured in PHP Apache scope: owncloud__php__dependent_configuration
       {% if owncloud__php_temp_path != "" %}
@@ -1870,19 +1881,17 @@ owncloud__apache__dependent_vhosts:
 
 # .. envvar:: owncloud__nginx__dependent_servers
 #
-# :program:`nginx` server configuration managed by the debops.nginx_ role.
+# :program:`nginx` server configuration managed by the :ref:`debops.nginx` role.
 owncloud__nginx__dependent_servers:
 
-  ## https://github.com/owncloud/documentation/blob/master/admin_manual/installation/nginx_owncloud_9x.rst
-  ## https://github.com/owncloud/documentation/blob/master/admin_manual/installation/nginx_examples.rst
-  ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html
+  ## https://docs.nextcloud.com/server/13/admin_manual/installation/nginx.html
   - type: 'default'
     enabled: True
-    default: False
     by_role: 'debops.owncloud'
     filename: 'debops.owncloud'
     name: '{{ owncloud__fqdn }}'
     root: '{{ owncloud__deploy_path }}'
+    deny_hidden: False
 
     ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
     ## DebOps default should be fine.
@@ -1890,7 +1899,7 @@ owncloud__nginx__dependent_servers:
 
     robots_tag: [ 'none' ]
     permitted_cross_domain_policies: 'none'
-    frame_options: '{{ omit if (owncloud__variant in ["nextcloud"] and owncloud__release | version_compare("12.0", ">=")) else "SAMEORIGIN" }}'
+    frame_options: '{{ omit if (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">=")) else "SAMEORIGIN" }}'
 
     options: |
       add_header X-Download-Options noopen;
@@ -1907,8 +1916,18 @@ owncloud__nginx__dependent_servers:
       rewrite ^/.well-known/host-meta.json /public.php?service=host-meta-json last;
       {% endif %}
 
+      {% if (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("13.0", ">=")) %}
+      # Enable gzip but do not remove ETag headers
+      gzip on;
+      gzip_vary on;
+      gzip_comp_level 4;
+      gzip_min_length 256;
+      gzip_proxied expired no-cache no-store private no_last_modified no_etag auth;
+      gzip_types application/atom+xml application/javascript application/json application/ld+json application/manifest+json application/rss+xml application/vnd.geo+json application/vnd.ms-fontobject application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/bmp image/svg+xml image/x-icon text/cache-manifest text/css text/plain text/vcard text/vnd.rim.location.xloc text/vtt text/x-component text/x-cross-domain-policy;
+      {% else %}
       # Disable gzip to avoid the removal of the ETag header
       gzip off;
+      {% endif %}
 
       # Uncomment if your server is build with the ngx_pagespeed module
       # This module is currently not supported.
@@ -1967,7 +1986,7 @@ owncloud__nginx__dependent_servers:
 
           fastcgi_intercept_errors on;
 
-          {% if (ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0") | version_compare("1.7.11",'>=') %}
+          {% if (ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0") is version_compare("1.7.11",'>=') %}
           fastcgi_request_buffering off;
           {% endif %}
 
@@ -1984,10 +2003,10 @@ owncloud__nginx__dependent_servers:
           # Make sure it is BELOW the PHP block
 
           try_files $uri /index.php$uri$is_args$args;
-          add_header Cache-Control "public, max-age=7200";
+          add_header Cache-Control "public, max-age=15778463";
 
           add_header X-Content-Type-Options nosniff;
-          {% if not (owncloud__variant in ["nextcloud"] and owncloud__release | version_compare("12.0", ">=")) %}
+          {% if not (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">=")) %}
           add_header X-Frame-Options "SAMEORIGIN";
           {% endif %}
           add_header X-XSS-Protection "1; mode=block";
@@ -1999,7 +2018,7 @@ owncloud__nginx__dependent_servers:
           access_log off;
           {% endif %}
 
-      - pattern: '~* \.(?:svg|gif|png|html|ttf|woff|ico|jpg|jpeg)$'
+      - pattern: '~* \.(?:svg|gif|png|html|ttf|woff2?|ico|jpg|jpeg)$'
         options: |
           try_files $uri /index.php$uri$is_args$args;
 
@@ -2018,7 +2037,7 @@ owncloud__nginx__dependent_servers:
 
 # .. envvar:: owncloud__nginx__dependent_upstreams
 #
-# PHP upstream server configuration managed by the debops.nginx_ role.
+# PHP upstream server configuration managed by the :ref:`debops.nginx` role.
 owncloud__nginx__dependent_upstreams:
 
   - name: 'php_owncloud'
@@ -2037,7 +2056,7 @@ owncloud__nginx__dependent_upstreams:
 
 # .. envvar:: owncloud__php__dependent_packages
 #
-# List of PHP packages to install using the debops.php_ role.
+# List of PHP packages to install using the :ref:`debops.php` role.
 owncloud__php__dependent_packages:
 
   - '{{ owncloud__base_php_packages }}'
@@ -2047,17 +2066,35 @@ owncloud__php__dependent_packages:
 
 # .. envvar:: owncloud__php__dependent_configuration
 #
-# :file:`php.ini` configuration managed by the debops.php_ role.
+# :file:`php.ini` configuration managed by the :ref:`debops.php` role.
 owncloud__php__dependent_configuration:
 
   - filename: '10-owncloud'
     by_role: 'debops.owncloud'
     state: '{{ "present"
-               if ((owncloud__apcu_enabled|bool) and (owncloud__release | match("8\.1")))
+               if ((owncloud__apcu_enabled|bool) and (owncloud__release is match("8\.1")))
                else "absent" }}'
     options: |
       ; Workaround for: https://github.com/owncloud/core/issues/17329
       apc.enable_cli = 1
+
+  - filename: '30-owncloud-opcache'
+    by_role: 'debops.owncloud'
+    state: '{{ "present"
+               if (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">="))
+               else "absent" }}'
+    options: |
+      ; https://docs.nextcloud.com/server/13/admin_manual/configuration_server/server_tuning.html#enable-php-opcache
+
+      [opcache]
+
+      opcache.enable=1
+      opcache.enable_cli=1
+      opcache.interned_strings_buffer=8
+      opcache.max_accelerated_files=10000
+      opcache.memory_consumption=128
+      opcache.save_comments=1
+      opcache.revalidate_freq=1
 
   - filename: 'debops.owncloud'
     path: 'apache2/conf.d/'
@@ -2072,7 +2109,7 @@ owncloud__php__dependent_configuration:
 
 # .. envvar:: owncloud__php__dependent_pools
 #
-# PHP pools managed by the debops.php_ role.
+# PHP pools managed by the :ref:`debops.php` role.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html#php-ini-configuration-notes>`__ for details.
 owncloud__php__dependent_pools:
   name: 'owncloud'
@@ -2128,7 +2165,7 @@ owncloud__php__dependent_pools:
 
 # .. envvar:: owncloud__unattended_upgrades__dependent_origins
 #
-# List of origin patterns managed by the debops.unattended_upgrades_ role.
+# List of origin patterns managed by the :ref:`debops.unattended_upgrades` role.
 owncloud__unattended_upgrades__dependent_origins:
 
   - origin: 'site=download.owncloud.org'

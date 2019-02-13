@@ -1,0 +1,229 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.debops_legacy default variables
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: debops_legacy__enabled [[[
+#
+# Enable or disable support for removing legacy files, packages and diversions
+# managed by DebOps.
+debops_legacy__enabled: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Diversion cleanup [[[
+# ---------------------
+
+# These lists define what diversions created by the :command:`dpkg-divert`
+# command should be removed. The modified files specified here will be removed,
+# and the original files which were diverted will be moved back into place.
+# See :ref:`debops_legacy__ref_remove_diversions` for more details.
+
+# .. envvar:: debops_legacy__remove_default_diversions [[[
+#
+# The list of diversions to remove defined by the role.
+debops_legacy__remove_default_diversions:
+
+  # Diversion created by the old 'debops.redis' Ansible role
+  - name: '/etc/redis/redis.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Diversion created by the old 'debops.redis' Ansible role
+  - name: '/etc/redis/sentinel.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_diversions [[[
+#
+# The list of diversions to remove on all hosts in the Ansible inventory.
+debops_legacy__remove_diversions: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_group_diversions [[[
+#
+# The list of diversions to remove on hosts in a specific Ansible inventory
+# group.
+debops_legacy__remove_group_diversions: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_host_diversions [[[
+#
+# The list of diversions to remove on specific hosts in the Ansible inventory.
+debops_legacy__remove_host_diversions: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_combined_diversions [[[
+#
+# The list which combines all of the diversion configuration variables and is
+# used in the role tasks.
+debops_legacy__remove_combined_diversions: '{{ debops_legacy__remove_default_diversions
+                                               + debops_legacy__remove_diversions
+                                               + debops_legacy__remove_group_diversions
+                                               + debops_legacy__remove_host_diversions }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT package cleanup [[[
+# -----------------------
+
+# These lists define what APT packages should be removed on hosts managed by
+# DebOps. See :ref:`debops_legacy__ref_remove_packages` for more details.
+
+# .. envvar:: debops_legacy__remove_default_packages [[[
+#
+# List of APT packages to remove defined by the role.
+debops_legacy__remove_default_packages: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_packages [[[
+#
+# List of APT packages to remove on all hosts in the Ansible inventory.
+debops_legacy__remove_packages: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_group_packages [[[
+#
+# List of APT packages to remove on hosts in a specific Ansible inventory
+# group.
+debops_legacy__remove_group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_host_packages [[[
+#
+# List of APT packages to remove on specific hosts in the Ansible inventory.
+debops_legacy__remove_host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_combined_packages [[[
+#
+# The list which combines all of the APT package lists and is used in the role
+# tasks.
+debops_legacy__remove_combined_packages: '{{ debops_legacy__remove_default_packages
+                                             + debops_legacy__remove_packages
+                                             + debops_legacy__remove_group_packages
+                                             + debops_legacy__remove_host_packages }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# File cleanup [[[
+# ----------------
+
+# These lists define what files or directories will be removed by the role on
+# hosts managed by DebOps. See :ref:`debops_legacy__ref_remove_files` for more
+# details.
+
+# .. envvar:: debops_legacy__remove_default_files [[[
+#
+# List of files or directories to remove defined by the role.
+debops_legacy__remove_default_files:
+
+  # This is a legacy file that configured 'sudo' to allow members of the
+  # 'admins' UNIX group privileged access without password authentication.
+  #
+  # The replacement file is: '/etc/sudoers.d/system_groups-admins'.
+  - name: '/etc/sudoers.d/admins'
+    state: '{{ "absent"
+               if (ansible_local|d() and ansible_local.system_groups|d() and
+                   (ansible_local.system_groups.configured|d()|bool))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' Ansible local fact
+  - name: '/etc/ansible/facts.d/redis.fact'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' configuration directory
+  - name: '/etc/redis/notify.d'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' configuration directory
+  - name: '/etc/redis/trigger.d'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' script directory
+  - name: '/usr/local/lib/redis'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' configuration file
+  - name: '/etc/redis/ansible-redis-dynamic.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Legacy 'debops.redis' configuration file
+  - name: '/etc/redis/ansible-redis-static.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and
+                   (ansible_local.redis_server is defined or
+                    ansible_local.redis_sentinel is defined))
+               else "ignore" }}'
+
+  # Old IP forwarding configuration defined by 'debops.ferm' role
+  - name: '/etc/sysctl.d/30-ferm.conf'
+    state: '{{ "absent"
+               if (ansible_local|d() and ansible_local.ferm is defined)
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_files [[[
+#
+# List of files or directories to remove on all hosts in the Ansible inventory.
+debops_legacy__remove_files: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_group_files [[[
+#
+# List of files or directories to remove on hosts in a specific Ansible
+# inventory group.
+debops_legacy__remove_group_files: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_host_files [[[
+#
+# List of files or directories to remove on specific hosts in the Ansible
+# inventory.
+debops_legacy__remove_host_files: []
+
+                                                                   # ]]]
+# .. envvar:: debops_legacy__remove_combined_files [[[
+#
+# The list which combines all of the file/directory lists and is used in the
+# role tasks.
+debops_legacy__remove_combined_files: '{{ debops_legacy__remove_default_files
+                                          + debops_legacy__remove_files
+                                          + debops_legacy__remove_group_files
+                                          + debops_legacy__remove_host_files }}'
+                                                                   # ]]]
+                                                                   # ]]]

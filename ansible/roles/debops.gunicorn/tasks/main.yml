@@ -1,13 +1,5 @@
 ---
 
-- name: Install required packages
-  package:
-    name: '{{ item }}'
-    state: 'present'
-  with_flattened:
-    - '{{ gunicorn__base_packages }}'
-    - '{{ gunicorn__packages }}'
-
 - name: Configure Green Unicorn on older OS releases
   include_tasks: 'older_releases.yml'
   when: ansible_distribution_release in
@@ -37,4 +29,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: gunicorn__register_facts|changed
+  when: gunicorn__register_facts is changed

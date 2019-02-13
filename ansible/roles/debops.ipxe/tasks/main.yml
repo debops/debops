@@ -8,6 +8,8 @@
     name: 'ipxe'
     state: 'present'
     install_recommends: False
+  register: ipxe__register_packages
+  until: ipxe__register_packages is succeeded
   when: ipxe_tftp is defined and ipxe_tftp
 
 - name: Make sure that TFTP root directory exists
@@ -59,4 +61,3 @@
 
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'ipxe/post_main.yml') }}"
-

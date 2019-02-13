@@ -1,0 +1,171 @@
+---
+
+- name: Install Redis Sentinel packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ redis_sentinel__base_packages }}'
+    - '{{ redis_sentinel__packages }}'
+  register: redis_sentinel__register_packages
+  until: redis_sentinel__register_packages is succeeded
+
+- name: Ensure that standalone Redis Sentinel is stopped on install
+  systemd:
+    name: 'redis-sentinel.service'
+    state: 'stopped'
+  when: ((ansible_local is undefined or
+          ansible_local.redis_sentinel is undefined) and
+         ansible_service_mgr == 'systemd')
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Setup Redis Sentinel local facts
+  template:
+    src: 'etc/ansible/facts.d/redis_sentinel.fact.j2'
+    dest: '/etc/ansible/facts.d/redis_sentinel.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: redis_sentinel__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: redis_sentinel__register_facts is changed
+
+- name: Create Redis Sentinel auth UNIX group
+  group:
+    name: '{{ redis_sentinel__auth_group }}'
+    state: 'present'
+    system: True
+
+- name: Create Redis Sentinel instance directories
+  file:
+    path: '/etc/redis/sentinel-{{ item.0.name + item.1 }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  loop: '{{ redis_sentinel__combined_configuration | parse_kv_items
+            | product([ "", "/reconfig.d", "/notify.d" ]) | list }}'
+  when: item.0.name|d() and item.0.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Generate initial Redis Sentinel configuration
+  template:
+    src: 'etc/redis/sentinel-instance/sentinel.conf.j2'
+    dest: '/etc/redis/sentinel-{{ item.name }}/sentinel.conf'
+    owner: '{{ redis_sentinel__user }}'
+    group: '{{ redis_sentinel__auth_group }}'
+    mode: '0640'
+    force: False
+  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  register: redis_sentinel__register_config_init
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Generate Redis Sentinel notify and reconfig scripts
+  template:
+    src: 'etc/redis/sentinel-instance/{{ item.1 }}.j2'
+    dest: '/etc/redis/sentinel-{{ item.0.name }}/{{ item.1 }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  loop: '{{ redis_sentinel__combined_configuration | parse_kv_items
+            | product([ "notify.sh", "reconfig.sh" ]) | list }}'
+  when: item.0.name|d() and item.0.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Install custom systemd unit files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/systemd/system/redis-sentinel@.service'
+    - 'etc/systemd/system/redis-sentinel.service'
+  register: redis_sentinel__register_systemd
+
+- name: Create systemd override directories for instances
+  file:
+    path: '/etc/systemd/system/redis-sentinel@{{ item.name }}.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.systemd_override|d()
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Generate systemd instance override files
+  template:
+    src: 'etc/systemd/system/redis-sentinel@.service.d/ansible-override.conf.j2'
+    dest: '/etc/systemd/system/redis-sentinel@{{ item.name }}.service.d/ansible-override.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.systemd_override|d()
+  register: redis_sentinel__register_systemd_override
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Stop Redis Sentinel instances if requested
+  systemd:
+    name: 'redis-sentinel@{{ item.name }}.service'
+    state: 'stopped'
+    enabled: False
+  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') == 'absent'
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Remove Redis Sentinel instance systemd override if requested
+  file:
+    path: '/etc/systemd/system/redis-sentinel@{{ item.name }}.service.d'
+    state: 'absent'
+  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  register: redis_sentinel__register_systemd_remove
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') == 'absent'
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Remove Redis Sentinel instance configuration if requested
+  file:
+    path: '/etc/redis/sentinel-{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') == 'absent'
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Reload systemd configuration when needed
+  systemd:
+    daemon_reload: True
+  when: ansible_service_mgr == 'systemd' and
+        redis_sentinel__register_systemd is changed or
+        redis_sentinel__register_systemd_remove is changed or
+        redis_sentinel__register_systemd_override is changed
+
+- name: Ensure that Redis Sentinel instances are started
+  systemd:
+    name: 'redis-sentinel@{{ item.name }}.service'
+    state: 'started'
+    enabled: True
+  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  no_log: '{{ redis_sentinel__no_log }}'
+
+- name: Reload facts if they were modified
+  action: setup
+  when: redis_sentinel__register_config_init is changed

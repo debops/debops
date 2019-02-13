@@ -7,6 +7,8 @@
   with_flattened:
     - '{{ cron__base_packages }}'
     - '{{ cron__packages }}'
+  register: cron__register_packages
+  until: cron__register_packages is succeeded
   when: cron__enabled|bool
 
 - name: Remove custom cron files
@@ -31,7 +33,8 @@
   with_subelements:
     - '{{ cron__combined_jobs | selectattr("custom_files", "defined") | list }}'
     - 'custom_files'
-  when: (cron__enabled|bool and item.0.state|d('present') not in [ 'absent', 'ignore' ] and item.1.state|d('present') != 'absent' and
+  when: (cron__enabled|bool and item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.1.state|d('present') != 'absent' and
          (item.1.src|d() or item.1.content|d()) and item.1.dest|d())
 
 - name: Remove cron job files
@@ -75,3 +78,24 @@
     - '{{ cron__combined_jobs }}'
     - 'jobs'
   when: cron__enabled|bool and item.0.state|d('present') not in [ 'absent', 'ignore' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save cron local facts
+  template:
+    src: 'etc/ansible/facts.d/cron.fact.j2'
+    dest: '/etc/ansible/facts.d/cron.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: cron__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: cron__register_facts is changed

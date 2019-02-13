@@ -1,0 +1,173 @@
+#!/usr/bin/perl -w
+
+# {{ ansible_managed }}
+
+# $Header: /usr/local/etc/RCS/mail-throttled,v 1.11 2008/12/06 01:50:28 root Exp $
+
+# mail-throttled [-l] [-D dbm_file] -k key -t throttle_seconds [-f from] -r recipient [-d] [-T tie_attempts_max] [-S tie_retry_sleep] [-s subject]
+#
+# Sends mail body (read from STDIN) to 'recipient', but avoids doing so "too frequently."
+#
+# You provide a 'key', which is an arbitrary string used to identify this notification.
+# You also provide 'throttle_seconds', an integer.  If we've sent anything that
+# specified this 'key' within the last 'throttle_seconds', we do not send the message.
+# Otherwise, we send the message, and the remember that we've sent a message for this 'key'
+# at the current time.
+#
+# This key/timesent tuples are stored on-disk, in a dbm.  As a result, the 'key'
+# you supply must satisfy the syntactic requirements for dbm keys.  
+# The caller needs to have permission to read and write this DBM (and create it if
+# it does not already exist).  If you fail to specify a dbm_file, we'll use a default
+# value, which may not be what you want (since the caller might not be able to r/w that
+# particular DBM).
+# We never clean this dbm.  You can safely erase it entirely, if you don't mind losing
+# the state, and you know the caller has permission to create a new instance of the DBM.
+#
+# The 'recipient' should be a valid email address.  Naturally, it should not
+# be one that will cause any ack or bounce mail to return to us!
+# If there are several addresses (delimited by spaces), be sure to quote them as a single arg.
+#
+# If a subject is specified, be sure to quote it if it contains any spaces or other shell
+# metachars.
+#
+# If -l is specified, then any errors, warnings, or debugging output is written to syslog
+# in addition to its usual destination (STDERR).  This is helpful if you call this from an
+# environment where STDERR may get lost.
+#
+# Irwin Tillman
+
+use Getopt::Std;
+use GDBM_File;
+use Errno qw(EAGAIN);
+use Sys::Syslog qw(:DEFAULT setlogsock);
+
+use strict;
+use warnings;
+
+use vars qw($DBM_FILE_DEFAULT $MAILCMD $MAILCMD_OPTS $FROM_DEFAULT);
+$DBM_FILE_DEFAULT = '{{ dhcp_probe__cache + "/mail-throttled.gdbm" }}';
+$MAILCMD = "/usr/lib/sendmail";
+# $MAILCMD_OPTS = "-t -ODeliveryMode=queueonly";
+$MAILCMD_OPTS = "-t";
+$FROM_DEFAULT = "root";
+
+my $SYSLOG_FACILITY="daemon";                   # name of facility to use if syslogging
+my $SYSLOG_OPT = 'pid,cons';                    # syslog options to use if syslogging, ignored otherwise
+my $SYSLOG_PRIORITY = 'LOG_ERR';
+
+# The tie() call sometimes fails with EAGAIN.
+# Perhaps that's due to some other process having the DBM open;
+# in fact, that may be more likely if the process that calls us may calls us multiple times in quick succession.
+# So when tie() fails with EAGAIN, we can sleep and retry some number of times before giving up entirely.
+my $TIE_ATTEMPTS_MAX = 3;	#  number of times to try tie() before giving up
+my $TIE_RETRY_SLEEP = 1;	#  seconds to sleep before retrying tie()
+
+(my $prog = $0) =~ s/.*\///;
+
+use vars qw($opt_f $opt_D $opt_d $opt_k $opt_l $opt_r $opt_s $opt_S $opt_t $opt_T);
+&getopts('dD:f:k:lr:s:S:t:T:');
+
+my $debug = $opt_d || "";
+my $dbm_file = $opt_D || $DBM_FILE_DEFAULT;
+my $key = $opt_k || "";
+my $from = $opt_f || $FROM_DEFAULT;
+my $recipient = $opt_r || "";
+my $throttle_secs = $opt_t || 1;
+my $subject = $opt_s || "";
+my $also_syslog = $opt_l || "";
+my $tie_attempts_max = $opt_T || $TIE_ATTEMPTS_MAX; # we deliberately override if CLI option specifies 0, as that makes no sense
+my $tie_retry_sleep = $opt_S || $TIE_RETRY_SLEEP;
+
+if ($also_syslog) {
+	# init our use of syslog
+	# setlogsock('unix'); # talk to syslog with UNIX domain socket, not INET domain. XXX causes failure in Solaris 7
+	openlog($prog, $SYSLOG_OPT, $SYSLOG_FACILITY);
+}
+
+my_warn("${prog}:\nkey=$key\nthrottle_secs=$throttle_secs\nfrom=$from\nrecipient=$recipient\ntie_attempts_max=$tie_attempts_max\ntie_retry_sleep=$tie_retry_sleep\nsubject=$subject") if $debug;
+
+# certain options and args are required
+&Usage() unless ($key && $throttle_secs && $recipient);
+
+my %last_sent = ();
+my $tie_succeeded = 0;
+my $tie_attempts_left = $TIE_ATTEMPTS_MAX;
+
+while ($tie_attempts_left--) {
+	if (tie(%last_sent, 'GDBM_File', $dbm_file, &GDBM_WRCREAT, 0644)) {
+		$tie_succeeded = 1;
+		last;
+	}
+	# the tie() failed
+
+	if ($! == EAGAIN) {
+		# The failure may be due to a transient problem.
+		# Retrying may help.
+		sleep $TIE_RETRY_SLEEP;
+		next;
+
+	} else {
+		# Some other (presumably more serious) error.
+		last;
+	}
+}
+unless ($tie_succeeded) {
+	my_warn("${prog}: can't tie ${dbm_file}: $!");
+	exit 10;
+}
+
+my @mailbody = "";
+@mailbody = <STDIN>; # read it even if we decide not to send it
+
+my $now = time;
+
+my_warn("now = $now") if $debug;
+
+$last_sent{$key} = 0 unless defined($last_sent{$key}); # so it's defined before we use it in subtraction (placate use strict)
+
+if ($now - $last_sent{$key} >= $throttle_secs) {
+	my_warn("last_sent = $last_sent{$key}, will send") if $debug;
+	unless (open(MAIL, "| $MAILCMD $MAILCMD_OPTS -f\"$from\"")) {
+		my_warn("${prog}: error executing '${MAILCMD}': open(): $!");
+		exit 20;
+	}
+	print MAIL	"From: $from\n",
+				"To: $recipient\n",
+				($subject ? "Subject: $subject\n" : "") ,
+				"\n",
+				@mailbody;
+	unless (close(MAIL)) {
+		my_warn("${prog}: error executing '${MAILCMD}': close(): " .
+			($! ?
+				"syserror closing pipe: $!"
+				:
+				"wait status $? from pipe"
+			)
+		);
+		exit 21;
+	}
+
+	$last_sent{$key} = $now;
+} else {
+	my_warn("last_sent = $last_sent{$key}, suppressing") if $debug;
+}
+
+untie %last_sent;
+
+exit 0;
+
+
+
+sub Usage {
+	my_warn("Usage: $prog [-l] [-D dbm_file] -k key -t throttle_seconds [-f from] -r recipient [-T tie_attempts_max] [-S tie_retry_sleep] [-s subject]");
+	exit 1;
+}
+
+
+sub my_warn {
+	# Just a wrapper for warn, but with a possible copy to syslog too.
+	my $msg = shift;
+	warn $msg, "\n";
+	syslog($SYSLOG_PRIORITY, $msg) if $also_syslog;
+	return;
+}

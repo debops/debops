@@ -1,0 +1,82 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ netbase__base_packages }}'
+    - '{{ netbase__packages }}'
+  register: netbase__register_packages
+  until: netbase__register_packages is succeeded
+  when: netbase__enabled|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save netbase local facts
+  template:
+    src: 'etc/ansible/facts.d/netbase.fact.j2'
+    dest: '/etc/ansible/facts.d/netbase.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: netbase__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: netbase__register_facts is changed
+
+- name: Manage the hostname
+  hostname:
+    name: '{{ netbase__hostname }}'
+  register: netbase__register_hostname
+  when: netbase__enabled|bool and netbase__hostname_config_enabled|bool
+
+- name: Generate /etc/hosts database
+  template:
+    src: 'etc/hosts.j2'
+    dest: '/etc/hosts'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: netbase__register_hosts_template
+  when: netbase__enabled|bool and netbase__hosts_config_type == 'template'
+
+- name: Manage entries in /etc/hosts
+  lineinfile:
+    dest:    '/etc/hosts'
+    regexp:  '^{{ item.name | replace(".","\.") }}\s+'
+    line:    "{{ item.name }}\t{{ ('\t' if (item.name | string | length < 8) else '') }}{{ item.value
+                 if (item.value is string)
+                 else ((item.value|d()) | selectattr('name', 'defined') | map(attribute='name') | list | join(' ')) }}"
+    state:   '{{ "present" if item.value|d() else "absent" }}'
+  loop: '{{ netbase__combined_hosts | parse_kv_config }}'
+  loop_control:
+    label: '{{ {item.name: (item.value|d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
+  register: netbase__register_hosts_lineinfile
+  when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile' and item.name|d()
+
+- name: Manage entries in /etc/networks
+  lineinfile:
+    dest:    '/etc/networks'
+    regexp:  '^{{ item.key | replace(".","\.") }}\s+'
+    line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
+    state:   '{{ "present" if item.value|d() else "absent" }}'
+  with_dict: '{{ netbase__networks | combine(netbase__group_networks, netbase__host_networks) }}'
+  register: netbase__register_networks
+  when: netbase__enabled|bool
+
+  # This task is here in case that the hostname or domain of the host was
+  # changed, to ensure that the Ansible facts are updated
+- name: Update Ansible facts if databases were modified
+  action: setup
+  when: netbase__register_hostname is changed or
+        netbase__register_hosts_template is changed or
+        netbase__register_hosts_lineinfile is changed or
+        netbase__register_networks is changed

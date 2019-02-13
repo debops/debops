@@ -1,0 +1,19 @@
+---
+
+- name: Manage Prosody
+  hosts: [ 'debops_service_prosody' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ prosody__ferm__dependent_rules }}'
+
+    - role: debops.prosody
+      tags: [ 'role::prosody', 'skip::prosody' ]

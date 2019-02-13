@@ -2,11 +2,11 @@
 
 # This file is managed by Ansible, all changes will be lost
 
+# shellcheck disable=SC2016
 print_if_repo='
-	if $(git --git-dir="$1" rev-parse) ; then
-		printf "%s\n" "${1#./}" | sed -e "s/\.git$//i"
-	fi
+    if $(git --git-dir="$1" rev-parse) ; then
+        printf "%s\n" "${1#./}" | sed -e "s/\.git$//i"
+    fi
 '
 
-find -type d -name "*.git" -exec sh -c "$print_if_repo" -- \{} \; -prune 2>/dev/null | sort
-
+find . -type d -name "*.git" -exec sh -c "$print_if_repo" -- \{\} \; -prune 2>/dev/null | sort

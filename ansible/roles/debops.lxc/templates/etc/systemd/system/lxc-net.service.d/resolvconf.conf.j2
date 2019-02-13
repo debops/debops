@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+# Automatically add/remove internal LXC domain in /etc/resolv.conf using
+# 'resolvconf' service
+
+[Unit]
+
+# By default 'lxc-net.service' on Debian depends on network-online.target,
+# which doesn't work correctly (see: https://unix.stackexchange.com/questions/209832/).
+#
+# Add a dependency on 'network.target' so that lxc-net at least is configured
+# after ferm.service and sets up its networking as expected.
+After=network.target
+
+[Service]
+
+# Automatically add / remove LXC subdomain in /etc/resolv.conf. With usable
+# local DNS resolver this allows to access the LXC containers from the LXC host
+# via their names instead of their IP addresses.
+ExecStart=/usr/local/lib/lxc/lxc-net-resolvconf start
+ExecStop=/usr/local/lib/lxc/lxc-net-resolvconf stop

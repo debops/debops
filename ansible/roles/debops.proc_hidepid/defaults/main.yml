@@ -1,0 +1,103 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.proc_hidepid default variables
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration, APT packages [[[
+# ---------------------------------------
+
+# .. envvar:: proc_hidepid__enabled [[[
+#
+# Enable or disable support for managing the ``/proc`` ``hidepid=`` option
+# using Ansible.
+proc_hidepid__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__base_packages [[[
+#
+# List of APT packages required for hidepid support.
+proc_hidepid__base_packages: [ 'libcap2-bin' ]
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__packages [[[
+#
+# List of additional APT packages to install with hidepid support.
+proc_hidepid__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# The ``/proc`` filesystem options [[[
+# ------------------------------------
+
+# .. envvar:: proc_hidepid__remount [[[
+#
+# When enabled, the role will try and remount the ``/proc`` filesystem to
+# enable the ``hidepid=`` options. This might not be possible in certain
+# environments like LXC/Docker containers, in which case the role will only
+# passively set up the required facts and other configuration.
+proc_hidepid__remount: '{{ True
+                           if ((((ansible_system_capabilities_enforced|d())|bool and
+                                 "cap_sys_admin" in ansible_system_capabilities) or
+                                not (ansible_system_capabilities_enforced|d(True))|bool) and
+                               (ansible_local|d() and ansible_local.proc_hidepid|d() and
+                                (ansible_local.proc_hidepid.proc_owner|d("root")) == "root"))
+                           else False }}'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__level [[[
+#
+# Specify what level of protection for the ``/proc`` files to configure:
+#
+# - ``0``: no protection, files are world-readable
+#
+# - ``1``: the ``/proc`` contents are protected using UNIX permissions, file
+#          owners can access their own files
+#
+# - ``2``: the ``/proc`` contents are invisible to non-owners, only ``root``
+#          and users in the specific UNIX system group can see everything
+#
+proc_hidepid__level: '2'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__group [[[
+#
+# Name of the UNIX system group which will have unrestricted access to the
+# ``/proc`` filesystem.
+proc_hidepid__group: 'procadmins'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__gid [[[
+#
+# The GID used by the UNIX system group. If not specified, it will be selected
+# automatically. If you change the GID, you need to remount the :file:`/proc`
+# filesystem manually and restart any services that rely on this functionality.
+proc_hidepid__gid: '70'
+                                                                   # ]]]
+                                                                   # ]]]
+# The ``/proc/sched_debug`` options [[[
+# -------------------------------------
+
+# .. envvar:: proc_hidepid__secure_scheduler_enabled [[[
+#
+# Enable or disable file attributes change of the :file:`/proc/sched_debug`
+# file to not be world-readable. Note: the ``root`` account in privileged LXC
+# containers can read the file and change its permissions at will.
+proc_hidepid__secure_scheduler_enabled: '{{ True
+                                            if (proc_hidepid__register_sched.stat.exists|bool and
+                                                proc_hidepid__register_sched.stat.uid == 0)
+                                            else False }}'
+
+                                                                   # ]]]
+# .. envvar:: proc_hidepid__secure_scheduler_group [[[
+#
+# Name of the UNIX system group which will be able to read the contents of the
+# :file:`/proc/sched_debug` file.
+proc_hidepid__secure_scheduler_group: '{{ proc_hidepid__group }}'
+                                                                   # ]]]
+                                                                   # ]]]

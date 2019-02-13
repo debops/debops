@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # {{ ansible_managed }}
 #
 # Package manager hook script for auto ownCloud DB upgrades.
@@ -33,27 +34,41 @@ grep -q 'installed.*true' '{{ owncloud__deploy_path }}/config/config.php' || exi
 grep -q 'maintenance.*true' '{{ owncloud__deploy_path }}/config/config.php' || exit 0
 
 ## Check if ownCloud requires an upgrade.
-'{{ owncloud__occ_bin_file_path }}' status | egrep -q 'require upgrade' || exit 0
+'{{ owncloud__occ_bin_file_path }}' status | grep -E -q 'require upgrade' || exit 0
 
 ## The ownCloud system package puts ownCloud into maintenance mode as of ownCloud 9.0. Ensure it anyway.
 '{{ owncloud__occ_bin_file_path }}' maintenance:mode --on
 
 ## Do the upgrade.
-'{{ owncloud__occ_bin_file_path }}' upgrade{{ "" if (owncloud__auto_database_upgrade_migration_test | bool) else " --skip-migration-test" }}{{ "" if (owncloud__auto_database_upgrade_3party_app_disable | bool) else " --no-app-disable" }}
+occ_options=(
+    "{{ '' if (owncloud__variant == 'nextcloud' or owncloud__auto_database_upgrade_migration_test|bool) else '--skip-migration-test' }}"
+    "{{ '' if (owncloud__variant == 'nextcloud' or owncloud__auto_database_upgrade_3party_app_disable|bool) else '--no-app-disable' }}"
+)
+# shellcheck disable=SC2086
+'{{ owncloud__occ_bin_file_path }}' upgrade ${occ_options[*]}
 
 ## Run post update scripts when defined.
+readarray -t post_upgrade_hooks << EOF
 {% for item in (owncloud__post_upgrade_hook_role_list +
                 owncloud__post_upgrade_hook_list +
                 owncloud__post_upgrade_hook_group_list +
                 owncloud__post_upgrade_hook_host_list) %}
 {%   if item is string %}
-{{     item | quote }}
+{{     item }}
 {%   elif item is mapping %}
 {%     if item.path|d() and item.state|d("present") == "present" %}
-{{       item.path | quote }}
+{{       item.path }}
 {%     endif %}
 {%   endif %}
 {% endfor %}
+EOF
+
+if [[ "${post_upgrade_hooks[*]}" ]] ; then
+    for index in "${!post_upgrade_hooks[@]}" ; do
+        # shellcheck disable=SC2086
+        eval ${post_upgrade_hooks[${index}]}
+    done
+fi
 
 ## Turn maintenance mode off.
 '{{ owncloud__occ_bin_file_path }}' maintenance:mode --off

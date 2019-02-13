@@ -1,0 +1,68 @@
+---
+
+- name: Configure Icinga Web service
+  hosts: [ 'debops_service_icinga_web' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::logrotate' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ postgresql__apt_preferences__dependent_list | d([]) }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.php
+      tags: [ 'role::php', 'skip::php' ]
+      php__dependent_packages:
+        - '{{ icinga_web__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ icinga_web__php__dependent_pools }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ icinga_web__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ icinga_web__nginx__dependent_upstreams }}'
+
+    - role: debops.postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ icinga_web__postgresql__dependent_roles }}'
+      postgresql__dependent_groups:
+        - '{{ icinga_web__postgresql__dependent_groups }}'
+      postgresql__dependent_databases:
+        - '{{ icinga_web__postgresql__dependent_databases }}'
+      postgresql__dependent_extensions:
+        - '{{ icinga_web__postgresql__dependent_extensions }}'
+      when: icinga_web__database_type == 'postgresql'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
+      mariadb__dependent_databases:
+        - '{{ icinga_web__mariadb__dependent_databases }}'
+      mariadb__dependent_users:
+        - '{{ icinga_web__mariadb__dependent_users }}'
+      when: icinga_web__database_type == 'mariadb'
+
+    - role: debops.icinga_web
+      tags: [ 'role::icinga_web', 'skip::icinga_web' ]

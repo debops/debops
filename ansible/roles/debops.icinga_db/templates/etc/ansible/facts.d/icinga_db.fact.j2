@@ -1,0 +1,64 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
+
+
+# This is needed because dbconfig configuration files don't contain the
+# [section] header, and ConfigParser doesn't work well in this case.
+class FakeGlobalSectionHead(object):
+
+    def __init__(self, fp):
+        self.fp = fp
+        self.sechead = '[global]\n'
+
+    def readline(self):
+        if self.sechead:
+            try:
+                return self.sechead
+            finally:
+                self.sechead = None
+        else:
+            return self.fp.readline()
+
+
+def get_config(config_file):
+    config_data = []
+    if os.path.isfile(config_file):
+        config = ConfigParser()
+        config.readfp(FakeGlobalSectionHead(open(config_file)))
+
+        for section in config.sections():
+
+            section_options = {}
+            for name, value in config.items(section):
+                section_options[name] = value.strip("'")
+
+    return section_options
+
+
+output = loads('''{{ {"configured": False,
+                      "type": icinga_db__type}
+                     | to_nice_json }}''')
+
+db_config_files = [
+    '/etc/dbconfig-common/icinga2-ido-pgsql.conf',
+    '/etc/dbconfig-common/icinga2-ido-mysql.conf'
+]
+
+for config_file in db_config_files:
+    if os.path.exists(config_file) and os.path.isfile(config_file):
+        output['configured'] = True
+        if os.access(config_file, os.R_OK):
+            output.update(get_config(config_file))
+
+print(dumps(output, sort_keys=True, indent=4))

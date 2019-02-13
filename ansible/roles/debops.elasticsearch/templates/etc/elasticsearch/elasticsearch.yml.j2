@@ -80,7 +80,7 @@
 {#         set _ = elasticsearch__tpl_config.pop(item.name, None) #}
 {%       endif %}
 {%     else %}
-{%       for key, value in item.iteritems() %}
+{%       for key, value in item.items() %}
 {%         set name_exploded = key.split('.') %}
 {%         set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
 {%         set _ = current_dict.update({ name_exploded[1:] | join('.'): value }) %}
@@ -90,7 +90,7 @@
 {%   endif %}
 {% endfor %}
 {% macro print_config(config, key_prefix='') %}
-{%   for key, value in config.iteritems() %}
+{%   for key, value in config.items() %}
 {%     if key|d() %}{# key is not empty #}
 {%       if (key_prefix + '.' + key) in elasticsearch__tpl_comment.keys() %}
 
@@ -129,7 +129,7 @@
 {%           elif value.comment is mapping %}
 {%             if value.options|d() %}
 {%               if value.options is mapping %}
-{%                 for option_key, option_value in value.options.iteritems() %}
+{%                 for option_key, option_value in value.options.items() %}
 {%                   if option_value | bool and option_value is not iterable %}
 {{ '# %s: %s' | format(key_prefix + '.' + option_key, 'true') }}
 {%                   elif not option_value | bool and option_value is not iterable %}
@@ -179,7 +179,7 @@
 {%           endif %}
 {%         elif value.options|d() %}
 {%           if value.options is mapping %}
-{%             for option_key, option_value in value.options.iteritems() %}
+{%             for option_key, option_value in value.options.items() %}
 {%               if option_value | bool and option_value is not iterable %}
 {{ '%s: %s' | format(key_prefix + '.' + option_key, 'true') }}
 {%               elif not option_value | bool and option_value is not iterable %}

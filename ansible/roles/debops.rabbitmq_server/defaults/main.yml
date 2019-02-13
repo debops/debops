@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # APT packages [[[
@@ -109,6 +109,49 @@ rabbitmq_server__amqp_allow: []
 #
 # If this list is empty, anybody can connect over encrypted connection.
 rabbitmq_server__amqps_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# RabbitMQ environment [[[
+# ------------------------
+
+# These variables define contents of the
+# :file:`/etc/rabbitmq/rabbitmq-env.conf` configuration file. This file is
+# sourced by the RabbitMQ init script and should contain shell environment
+# variables that should be defined in the server environment. Each variable is
+# a YAML dictionary, dictionary keys are variable names (they will be written
+# as uppercase automatically), dictionary values are environment values.
+
+# You can find the list of known environment variables in the RabbitMQ
+# documentation: https://www.rabbitmq.com/configure.html#define-environment-variables
+
+# .. envvar:: rabbitmq_server__environment [[[
+#
+# The RabbitMQ environment variables defined on all hosts in the Ansible
+# inventory.
+rabbitmq_server__environment: {}
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__group_environment [[[
+#
+# The RabbitMQ environment variables defined on hosts in a specific Ansible
+# inventory group.
+rabbitmq_server__group_environment: {}
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__host_environment [[[
+#
+# The RabbitMQ environment variables defined on specific hosts in the Ansible
+# inventory.
+rabbitmq_server__host_environment: {}
+
+                                                                   # ]]]
+# .. envvar:: rabbitmq_server__combined_environment [[[
+#
+# The variable which combines all of the environment variables and is used in
+# the configuration template.
+rabbitmq_server__combined_environment: '{{ rabbitmq_server__environment
+                                           | combine(rabbitmq_server__group_environment,
+                                                     rabbitmq_server__host_environment) }}'
                                                                    # ]]]
                                                                    # ]]]
 # RabbitMQ main configuration [[[
@@ -452,7 +495,7 @@ rabbitmq_server__combined_policies: '{{ rabbitmq_server__policies
 # .. envvar:: rabbitmq_server__admin_accounts [[[
 #
 # List of automatically managed administrator accounts, based of the admin
-# users managed by the debops.core_ Ansible role.
+# users managed by the :ref:`debops.core` Ansible role.
 rabbitmq_server__admin_accounts: '{{ lookup("template",
                                      "lookup/rabbitmq_server__admin_accounts.j2") }}'
 
@@ -526,7 +569,7 @@ rabbitmq_server__cluster_allow: []
 # -------------------------------------------
 
 # These variables configure the PKI environment for RabbitMQ service using the
-# debops.pki_ Ansible role. See its documentation for more details.
+# :ref:`debops.pki` Ansible role. See its documentation for more details.
 
 # .. envvar:: rabbitmq_server__pki [[[
 #
@@ -625,7 +668,7 @@ rabbitmq_server__ssl_ciphers: '{{ ansible_local.rabbitmq_server.raw_erlang_ssl_c
 # .. envvar:: rabbitmq_server__ssl_dhparam [[[
 #
 # Path to the file with Diffie-Hellman parameters to use by the RabbitMQ
-# service. See debops.dhparam_ Ansible role for more details.
+# service. See :ref:`debops.dhparam` Ansible role for more details.
 rabbitmq_server__ssl_dhparam: '{{ (ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]
                                    if (ansible_local|d() and ansible_local.dhparam|d() and
                                        ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]|d())
@@ -643,7 +686,7 @@ rabbitmq_server__ssl_dhparam_set: 'default'
 
 # .. envvar:: rabbitmq_server__apt_preferences__dependent_list [[[
 #
-# Configuration for the debops.apt_preferences_ Ansible role.
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
 rabbitmq_server__apt_preferences__dependent_list:
 
   - packages: [ 'erlang', 'erlang-*' ]
@@ -657,7 +700,7 @@ rabbitmq_server__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services` Ansible role.
 rabbitmq_server__etc_services__dependent_list:
 
   - name: 'einc'
@@ -667,7 +710,7 @@ rabbitmq_server__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__ferm__dependent_rules [[[
 #
-# Configuration for the debops.ferm_ Ansible role.
+# Configuration for the :ref:`debops.ferm` Ansible role.
 rabbitmq_server__ferm__dependent_rules:
 
   - name: 'rabbitmq-amqp'

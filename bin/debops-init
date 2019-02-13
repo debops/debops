@@ -1,0 +1,210 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+debops-init: create a new DebOps project directory
+"""
+# Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Part of the DebOps - https://debops.org/
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# https://www.gnu.org/copyleft/gpl.html
+
+from __future__ import print_function
+
+import os
+import codecs
+import subprocess
+import glob
+import argparse
+import socket
+
+from debops import *
+from debops.cmds import *
+
+__author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel " \
+                "<h.goebel@crazy-compilers.com>"
+__licence__ = "GNU General Public License version 3 (GPL v3) or later"
+
+SKEL_DIRS = (
+    os.path.join("ansible", INVENTORY, "group_vars", "all"),
+    os.path.join("ansible", INVENTORY, "host_vars"),
+    os.path.join("ansible", "playbooks"),
+    os.path.join("ansible", "roles"),
+)
+
+DEFAULT_DEBOPS_CONFIG = """
+# -*- conf -*-
+
+[paths]
+;data-home: /opt/debops
+
+[ansible defaults]
+display_skipped_hosts = False
+retry_files_enabled = False
+;callback_plugins = /my/plugins/callback
+;roles_path = /my/roles
+
+[ansible paramiko]
+;record_host_keys=True
+
+[ansible ssh_connection]
+;ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+"""
+
+DEFAULT_GITIGNORE = r"""\
+ansible/{SECRET_NAME}
+{SECRET_NAME}
+{ENCFS_PREFIX}{SECRET_NAME}
+ansible.cfg
+
+#-- python
+*.py[co]
+
+#-- vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+#-- Emacs
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+#-- SublimeText
+*.sublime-workspace
+#*.sublime-project
+
+#-- sftp configuration file
+sftp-config.json
+"""
+
+HOSTS_FILE_HEADER = """\
+# This is an Ansible inventory file in INI format. You can define a list of
+# hosts and groups to be managed by this particular inventory.
+
+# Hosts listed under [debops_all_hosts] will have common DebOps plays
+# ran against them. It will include services such as iptables, DNS, Postfix,
+# sshd configuration and more.
+#
+# View the list here:
+# https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+#
+# You should check Getting Started guide for useful suggestions:
+# https://docs.debops.org/en/latest/debops-playbooks/guides/getting-started.html
+"""
+
+HOSTS_FILE_CONTENT_CONTROLER = """
+# Your host is eligible to be managed by DebOps' common playbook. If you want
+# that functionality and more, then uncomment your hostname below.
+
+[debops_all_hosts]
+#%s ansible_host=%s ansible_connection=local
+""" % (socket.gethostname(), socket.getfqdn())
+
+HOSTS_FILE_CONTENT_NO_CONTROLER = """
+# Your host was not detected as compatible with DebOps playbooks, so you will
+# not be able to leverage the above features on your current operating system.
+# You can however use a virtual machine as the Ansible Controller.
+
+[debops_all_hosts]
+
+"""
+
+
+def write_file(filename, *content):
+    """
+    If file:`filename` does not exist, create it and write
+    var:`content` into it.
+    """
+    if not os.path.exists(filename):
+        with open(filename, "w") as fh:
+            fh.writelines(content)
+
+
+def write_config_files(project_root):
+    """
+    Create the default debops-config files in the dir:`project_root`
+    directory.
+    """
+    # Create .debops.cfg
+    write_file(os.path.join(project_root, DEBOPS_CONFIG),
+               DEFAULT_DEBOPS_CONFIG)
+    # Create .gitignore
+    write_file(os.path.join(project_root, '.gitignore'),
+               DEFAULT_GITIGNORE.format(SECRET_NAME=SECRET_NAME,
+                                        ENCFS_PREFIX=ENCFS_PREFIX))
+
+    hosts_filename = os.path.join(project_root, "ansible", INVENTORY, "hosts")
+    # Swap in different hosts file content depending on the host's OS/distro
+    if (platform.system() == "Linux" and
+            platform.linux_distribution()[0].lower() in ("debian", "ubuntu")):
+        write_file(hosts_filename,
+                   HOSTS_FILE_HEADER, HOSTS_FILE_CONTENT_CONTROLER)
+    else:
+        write_file(hosts_filename,
+                   HOSTS_FILE_HEADER, HOSTS_FILE_CONTENT_NO_CONTROLER)
+
+
+def main(project_root):
+    orig_project_root = project_root
+    project_root = os.path.abspath(project_root)
+
+    # Check for existing debops project directory
+    debops_project_root = find_debops_project(project_root, required=False)
+
+    # Exit if DebOps configuration file has been found in project_dir
+    if os.path.exists(os.path.join(project_root, DEBOPS_CONFIG)):
+        error_msg("%s is already a DebOps project directory" % project_root)
+
+    # Exit if we are in a DebOps project dir and nested project
+    # would be created
+    if debops_project_root:
+        error_msg("You are inside %s project already" % debops_project_root)
+
+    # Main script
+
+    print("Creating new DebOps project directory in", orig_project_root, "...")
+
+    # Create base project directories
+    for skel_dir in SKEL_DIRS:
+        skel_dir = os.path.join(project_root, skel_dir)
+        if not os.path.isdir(skel_dir):
+            os.makedirs(skel_dir)
+    # Write default config files
+    write_config_files(project_root)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('project_dir', default=os.curdir)
+args = parser.parse_args()
+
+try:
+    main(args.project_dir)
+except KeyboardInterrupt:
+    raise SystemExit('... aborted')

@@ -1,0 +1,31 @@
+{% set icinga__tpl_dependent_configuration = {} %}
+{% if icinga__vars_dependent_configuration|d() %}
+{%   set _ = icinga__tpl_dependent_configuration.update(icinga__vars_dependent_configuration) %}
+{% endif %}
+{% if icinga__dependent_configuration %}
+{%   set icinga__tpl_flattened_configuration = lookup('flattened', icinga__dependent_configuration) %}
+{%   for element in ([ icinga__tpl_flattened_configuration ] if icinga__tpl_flattened_configuration is mapping else icinga__tpl_flattened_configuration) %}
+{%     if element.role|d() and element.config|d() %}
+{%       if element.state|d('present') not in [ 'ignore', 'absent' ] %}
+{%         set flattened_config = lookup('flattened', element.config) %}
+{%         set _ = icinga__tpl_dependent_configuration.update({
+  element.role: ([ flattened_config ] if flattened_config is mapping else flattened_config)
+}) %}
+{%       elif element.state|d('present') == 'absent' %}
+{%         set _ = icinga__tpl_dependent_configuration.pop(element.role, None) %}
+{%       endif %}
+{%     elif element is mapping and 'role' not in element.keys() and 'config' not in element.keys() %}
+{%       for role, config in element.items() %}
+{%         set flattened_config = lookup('flattened', config) %}
+{%         set _ = icinga__tpl_dependent_configuration.update({
+  role: ([ flattened_config ] if flattened_config is mapping else flattened_config)
+}) %}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% set icinga__tpl_output_configuration = [] %}
+{% for key, value in icinga__tpl_dependent_configuration.items() %}
+{%   set _ = icinga__tpl_output_configuration.extend(value) %}
+{% endfor %}
+{{ icinga__tpl_output_configuration | to_yaml }}

@@ -1,0 +1,77 @@
+---
+
+- name: Install packages required for System News
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ sysnews__base_packages }}'
+    - '{{ sysnews__packages }}'
+  register: sysnews__register_packages
+  until: sysnews__register_packages is succeeded
+
+- name: Disable System News notification after login
+  file:
+    path: '/etc/profile.d/sysnews.sh'
+    state: 'absent'
+  when: not sysnews__notification|bool
+
+- name: Configure System News notification after login
+  template:
+    src: 'etc/profile.d/sysnews.sh.j2'
+    dest: '/etc/profile.d/sysnews.sh'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: sysnews__notification|bool
+
+- name: Remove persistent news files
+  file:
+    path: '/var/lib/sysnews/{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ sysnews__combined_entries | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Generate persistent news files
+  copy:
+    src: '{{ item.src | d(omit) }}'
+    content: '{{ item.content | d(omit) }}'
+    dest: '/var/lib/sysnews/{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ sysnews__combined_entries | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') != 'absent'
+
+- name: Update list of persistent news files
+  blockinfile:
+    content: |
+      {% for entry in sysnews__combined_entries | parse_kv_items %}
+      {{ entry.name }}
+      {% endfor %}
+    dest: '/var/lib/sysnews/.noexpire'
+    create: True
+    owner: 'root'
+    group: '{{ sysnews__group }}'
+    mode: '0664'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save System News local facts
+  template:
+    src: 'etc/ansible/facts.d/sysnews.fact.j2'
+    dest: '/etc/ansible/facts.d/sysnews.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: sysnews__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: sysnews__register_facts is changed

@@ -2,7 +2,7 @@
 
 ## This file contains all names of the networks to be started on system startup.
 
-{% for key, params in tinc__combined_networks.iteritems() %}
+{% for key, params in tinc__combined_networks.items() %}
 {%   if (params.tinc_options|d() and params.state|d('present') != 'absent' and params.boot|d(True)|bool) %}
 {{ params.name | d(key) }}
 {%   endif %}

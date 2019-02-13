@@ -6,7 +6,7 @@
 <service-group>
 
   <name replace-wildcards="yes">{{ mosquitto__avahi_name }}</name>
-{% for listener_key, listener_args in mosquitto__combined_listeners.iteritems() %}
+{% for listener_key, listener_args in mosquitto__combined_listeners.items() %}
 {%   if listener_args.avahi_state|d("present") != "absent" and listener_args.avahi_type|d() and listener_args.avahi_port|d() %}
 
   <service>

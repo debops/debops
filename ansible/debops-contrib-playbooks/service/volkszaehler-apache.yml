@@ -17,7 +17,7 @@
       tags: [ 'role::apache', 'role::apache:env' ]
 
     - role: debops.php/env
-      tags: [ 'role::php', 'role::php:env','role::apt_preferences', 'role::logrotate' ]
+      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
 
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences' ]
@@ -25,7 +25,7 @@
         - '{{ php__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ apache__ferm__dependent_rules }}'
 

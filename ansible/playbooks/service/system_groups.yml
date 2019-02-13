@@ -1,0 +1,17 @@
+---
+
+- name: Configure UNIX system groups
+  hosts: [ 'debops_all_hosts', 'debops_service_system_groups' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.sudo
+      tags: [ 'role::sudo', 'skip::sudo' ]
+
+    - role: debops.system_groups
+      tags: [ 'role::system_groups', 'skip::system_groups' ]

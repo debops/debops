@@ -1,0 +1,301 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+
+import os
+import subprocess
+import argparse
+
+from debops import *
+from debops.cmds import *
+
+__author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel " \
+                "<h.goebel@crazy-compilers.com>"
+__licence__ = "GNU General Public License version 3 (GPL v3) or later"
+
+"""
+debops-update: install or update DebOps playbooks and roles
+"""
+# Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Part of the DebOps - https://debops.org/
+
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# https://www.gnu.org/copyleft/gpl.html
+
+"""
+This script can be used to install or update installed DebOps playbooks and
+roles to current or specified version. By default it works on the installed
+playbook in users $HOME/.local/share/debops directory, but it can also be
+used on locally installed playbooks and roles in current directory.
+
+Short usage guide:
+
+- 'debops-update' will check if we are in DebOps project directory
+  ('.debops.cfg' exists)
+    * if yes, it will check if 'debops-playbooks/playbooks/site.yml' exists
+      * if yes, update playbooks and roles in $PWD
+    * if no, check if DebOps playbooks are installed in known places,
+      like ~/.local/share/debops
+      * if yes, update playbooks in a place that they are installed at
+      * if no, install DebOps playbooks in
+        ~/.local/share/debops/debops-playbooks
+
+- 'debops-update path/to/dir' will check if specified directory exists
+    * if no, create it
+    * if yes, check if DebOps playbooks are installed at $path/debops-playbooks
+      * if yes, update them
+      * if no, install DebOps playbooks at $path/debops-playbooks
+
+"""
+
+
+# ---- Configuration variables ----
+
+# Default URI of DebOps (user https for server authentication)
+GIT_URI = "https://github.com/debops"
+
+# DebOps monorepo git repository
+MONOREPO_GIT_URI = GIT_URI + "/debops"
+
+# Default git sources for debops-playbooks
+PLAYBOOKS_GIT_URI = GIT_URI + "/debops-playbooks"
+
+# Default slug prefix for roles
+GIT_ROLE_PREFIX = "ansible-"
+
+# Ansible Galaxy requirements file to use by default to download or update
+GALAXY_REQUIREMENTS = "galaxy/requirements.txt"
+
+# Default Ansible Galaxy user account name
+GALAXY_ACCOUNT = "debops"
+
+
+# ---- Functions ----
+
+def fetch_or_clone_roles(roles_path, requirements_file, dry_run=False):
+    """
+    Efficiently fetch or clone a role
+    """
+    with open(requirements_file) as fh:
+        requirements = [r.strip().split() for r in fh.readlines()]
+    num_roles = len(requirements)
+
+    for cnt, role_name in enumerate(requirements, 1):
+        # Parse the requirements.txt file to extract the role name and version
+        try:
+            role_name, role_version = role_name[:2]
+        except Exception:
+            role_name = role_name[0]
+            role_version = 'master'
+
+        # :todo: rethink if we really want this
+        if role_name.startswith(GALAXY_ACCOUNT + '.'):
+            galaxy_name = role_name
+            role_name = role_name.split('.', 1)[1]
+        else:
+            galaxy_name = GALAXY_ACCOUNT + '.' + role_name
+
+        remote_uri = GIT_URI + '/' + GIT_ROLE_PREFIX + role_name
+        destination_dir = os.path.join(roles_path, galaxy_name)
+        progress_label = (
+                "[{role_version}] ({cnt}/{num_roles})".format(**locals()))
+
+        # Either update or clone the role
+        if os.path.exists(destination_dir):
+            print("Updating", remote_uri, progress_label)
+            update_git_repository(destination_dir, dry_run, remote_uri)
+        else:
+            print()
+            print("Installing", remote_uri, progress_label)
+            clone_git_repository(remote_uri, role_version,
+                                 destination_dir, dry_run)
+            print()
+
+
+def clone_git_repository(repo_uri, branch, destination, dry_run=False):
+    if dry_run:
+        print("Cloning '%s' to %s..." % (repo_uri, destination))
+    else:
+        subprocess.call(['git', 'clone', '--quiet', '--branch', branch,
+                         repo_uri, destination])
+
+
+def update_git_repository(path, dry_run=False, remote_uri=False):
+    """
+    Update an exiting git repository.
+
+    To get nice output, merge only of origin as updates.
+    """
+    # Move into the role's directory
+    old_pwd = os.getcwd()
+    os.chdir(path)
+
+    if dry_run:
+        subprocess.call(['git', 'fetch'])
+        subprocess.call(['git', 'diff', 'HEAD', 'origin', '--stat'])
+    else:
+        # Get the current sha of the head branch
+        current_sha = subprocess.check_output(
+                ['git', 'rev-parse', 'HEAD']).strip()
+
+        # Fetch it silently and store the new sha
+        subprocess.call(['git', 'fetch', '--quiet'])
+        fetch_sha = subprocess.check_output(
+                ['git', 'rev-parse', 'FETCH_HEAD']).strip()
+
+        if current_sha != fetch_sha:
+            print()
+            print('--')
+            subprocess.call(['git', 'merge', fetch_sha])
+
+            if remote_uri:
+                compare_uri = (remote_uri + '/compare/' + current_sha[:7]
+                               + '...' + fetch_sha[:7])
+                print()
+                print("Compare:", compare_uri)
+
+            print('--')
+            print()
+
+    # Move back to the initial directory
+    os.chdir(old_pwd)
+
+
+# ---- Main script ----
+
+def main(project_dir=None, dry_run=False):
+
+    # Check if user specified a directory as a parameter, if yes, use it as
+    # a project directory and clone DebOps playbooks inside
+    if project_dir:
+        # If it's a new project, create the directory for it
+        if not os.path.exists(project_dir):
+            print("Creating project directory in", project_dir)
+            if not dry_run:
+                os.makedirs(project_dir)
+
+        # Directory with DebOps monorepo
+        monorepo_path = os.path.join(project_dir, "debops")
+
+        # Check if monorepo is cloned
+        if os.path.isfile(os.path.join(monorepo_path, "LICENSE")):
+            monorepo_cloned = True
+        else:
+            monorepo_cloned = False
+
+        # Make sure that playbooks and roles will be installed in project
+        # directory if it's specified
+        install_path = os.path.join(project_dir, "debops-playbooks")
+
+        # If playbooks already are installed in specified location, set them as
+        # currently used for eventual update
+        if os.path.isfile(os.path.join(install_path, DEBOPS_SITE_PLAYBOOK)):
+            playbooks_path = install_path
+        else:
+            playbooks_path = None
+
+    else:
+        # If there's no project specified, look for playbooks
+        # in known locations
+        project_root = find_debops_project(required=False)
+        config = read_config(project_root)
+        monorepo_path = find_monorepopath(config, project_root,
+                                          required=False)
+        playbooks_path = find_playbookpath(config, project_root,
+                                           required=False)
+        if playbooks_path:
+            install_path = os.path.dirname(playbooks_path)
+        else:
+            install_path = config['paths']['install-path']
+
+        # Ensure that monorepo path is set in case no project directory was
+        # specified
+        if monorepo_path is None:
+            monorepo_path = config['paths']['monorepo-path']
+
+        # Check if monorepo is cloned
+        if os.path.isfile(os.path.join(monorepo_path, "LICENSE")):
+            monorepo_cloned = True
+        else:
+            monorepo_cloned = False
+
+    roles_path = os.path.join(install_path, 'roles')
+
+    # ---- Clone or update the monorepo ----
+
+    if not monorepo_cloned:
+        if dry_run:
+            raise SystemExit("The monorepo will be installed in "
+                             + monorepo_path)
+
+        print("DebOps monorepo has not been found, installing into",
+              monorepo_path)
+        clone_git_repository(MONOREPO_GIT_URI, 'master',
+                             monorepo_path, dry_run)
+    else:
+        print("DebOps monorepo has been found in", monorepo_path)
+        update_git_repository(monorepo_path, dry_run)
+
+    # Skip the rest of the script with least amount of changes
+    return
+
+    # ---- Create or update the playbooks and roles  ----
+
+    # Playbooks have not been found, at this point assume playbooks are not
+    # installed. Install them in user home directory
+    if not playbooks_path:
+        if dry_run:
+            raise SystemExit("--dry-run requires DebOps playbooks.\n"
+                             "Run debops-update without --dry-run first.")
+
+        # Download/clone main debops-playbooks repository
+        print("DebOps playbooks have not been found, installing into",
+              install_path)
+        print()
+
+        clone_git_repository(PLAYBOOKS_GIT_URI, 'master',
+                             install_path, dry_run)
+        os.chdir(install_path)
+        os.makedirs(roles_path)
+    else:
+        # Update found debops-playbooks repository
+        print("DebOps playbooks have been found in", install_path)
+        update_git_repository(install_path, dry_run)
+        print()
+        os.chdir(install_path)
+
+    # Now install or update the roles into roles_path
+    fetch_or_clone_roles(roles_path, GALAXY_REQUIREMENTS, dry_run)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--dry-run', action='store_true',
+                    help='perform a trial run with no changes made')
+parser.add_argument('project_dir', nargs='?')
+args = parser.parse_args()
+
+try:
+    main(args.project_dir, args.dry_run)
+except KeyboardInterrupt:
+    raise SystemExit('... aborted')

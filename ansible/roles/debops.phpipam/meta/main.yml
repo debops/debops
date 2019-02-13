@@ -24,7 +24,7 @@ dependencies:
            (phpipam_mode is defined and 'webui' in phpipam_mode))
 
   - role: debops.ferm
-    tags: [ 'role::ferm' ]
+    tags: [ 'role::ferm', 'skip::ferm' ]
     ferm__dependent_rules:
       - '{{ nginx__ferm__dependent_rules }}'
 
@@ -36,24 +36,25 @@ dependencies:
     tags: nginx
 
 galaxy_info:
+
+  role_name: 'phpipam'
   author: 'Maciej Delmanowski'
   description: 'Install phpIPAM, an Open Source IP Address Manager'
   company: 'DebOps'
   license: 'GNU General Public License v3'
   min_ansible_version: '1.7.0'
   platforms:
-  - name: Ubuntu
-    versions:
-    - precise
-    - quantal
-    - raring
-    - saucy
-    - trusty
-  - name: Debian
-    versions:
-    - wheezy
-    - jessie
-  categories:
-  - networking
-  - system
-
+    - name: Ubuntu
+      versions:
+        - precise
+        - quantal
+        - raring
+        - saucy
+        - trusty
+    - name: Debian
+      versions:
+        - wheezy
+        - jessie
+  galaxy_tags:
+    - networking
+    - ipam

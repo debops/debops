@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # Basic configuration [[[
@@ -147,7 +147,7 @@ rabbitmq_management__config: []
 
 # .. envvar:: rabbitmq_management__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services` Ansible role.
 rabbitmq_management__etc_services__dependent_list:
 
   - name: 'rabbitmq-mgmt'
@@ -158,7 +158,7 @@ rabbitmq_management__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: rabbitmq_management__rabbitmq_server__dependent_config [[[
 #
-# Configuration for the ``debops.rabbitmq_server`` Ansible role.
+# Configuration for the :ref:`debops.rabbitmq_server` Ansible role.
 rabbitmq_management__rabbitmq_server__dependent_config:
   - '{{ rabbitmq_management__default_config }}'
   - '{{ rabbitmq_management__config }}'
@@ -166,7 +166,7 @@ rabbitmq_management__rabbitmq_server__dependent_config:
                                                                    # ]]]
 # .. envvar:: rabbitmq_management__nginx__dependent_servers [[[
 #
-# Server configuration for the debops.nginx_ Ansible role.
+# Server configuration for the :ref:`debops.nginx` Ansible role.
 rabbitmq_management__nginx__dependent_servers:
   - name: '{{ rabbitmq_management__fqdn }}'
     by_role: 'debops.rabbitmq_management'
@@ -180,7 +180,7 @@ rabbitmq_management__nginx__dependent_servers:
                                                                    # ]]]
 # .. envvar:: rabbitmq_management__nginx__dependent_upstreams [[[
 #
-# Upstream configuration for the debops.nginx_ Ansible role.
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
 rabbitmq_management__nginx__dependent_upstreams:
   - name: 'rabbitmq_management'
     server: '{{ rabbitmq_management__app_host + ":" + rabbitmq_management__app_port }}'

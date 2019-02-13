@@ -38,7 +38,29 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: avahi__register_divert|changed
+  when: avahi__register_divert is changed
+
+- name: Create avahi-daemon systemd override directory
+  file:
+    path: '/etc/systemd/system/avahi-daemon.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: ansible_service_mgr == 'systemd' and
+        ansible_virtualization_type in [ 'lxc', 'docker' ] and
+        ansible_virtualization_role == 'guest'
+
+- name: Install avahi-daemon exec override on LXC guests
+  template:
+    src: 'etc/systemd/system/avahi-daemon.service.d/exec-override.conf.j2'
+    dest: '/etc/systemd/system/avahi-daemon.service.d/exec-override.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: ansible_service_mgr == 'systemd' and
+        ansible_virtualization_type in [ 'lxc', 'docker' ] and
+        ansible_virtualization_role == 'guest'
 
 # The rest of the role continues as normal.
 
@@ -49,12 +71,16 @@
   with_flattened:
     - '{{ avahi__base_packages }}'
     - '{{ avahi__packages }}'
+  register: avahi__register_packages
+  until: avahi__register_packages is succeeded
 
 - name: Manage advertisement of additional hosts over Avahi
   lineinfile:
     dest: '/etc/avahi/hosts'
     regexp: '{{ "^" + item.key + "\s+" }}'
-    line: '{{ item.key }} {{ (item.value if item.value.endswith("." + avahi__domain) else (item.value + "." + avahi__domain)) }}'
+    line: '{{ item.key }} {{ (item.value
+                              if item.value.endswith("." + avahi__domain)
+                              else (item.value + "." + avahi__domain)) }}'
     state: 'present'
   with_dict: '{{ avahi__hosts | combine(avahi__group_hosts) | combine(avahi__host_hosts) }}'
   when: item.key|d() and item.value|d()
@@ -84,6 +110,12 @@
          (item.value.services|d() or item.value.type|d()))
   tags: [ 'role::avahi:alias', 'role::avahi:services' ]
 
+- name: Ensure that the avahi-daemon service in in the desired state
+  service:
+    name: 'avahi-daemon'
+    enabled: '{{ avahi__enabled|bool }}'
+    state: '{{ "started" if (avahi__enabled|bool) else "stopped" }}'
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -103,4 +135,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: avahi__register_facts|changed
+  when: avahi__register_facts is changed

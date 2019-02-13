@@ -7,8 +7,27 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: users__base_packages [[[
+#
+# List of base packages to install.
+users__base_packages:
+  - '{{ [ "acl" ]
+        if (users__acl_enabled|bool)
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: users__packages [[[
+#
+# List of custom packages to install.
+users__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
 # Global defaults [[[
 # -------------------
 
@@ -24,6 +43,12 @@ users__enabled: True
 # disabled because the variables used to define user accounts can contain
 # passwords. This variable should not be changed apart for debugging.
 users__no_log: True
+
+                                                                   # ]]]
+# .. envvar:: users__acl_enabled [[[
+#
+# Enable or disable support for filesystem ACL management.
+users__acl_enabled: True
 
                                                                    # ]]]
 # .. envvar:: users__default_system [[[
@@ -140,7 +165,7 @@ users__dependent_accounts: []
 # in separate lists. Check the :ref:`users__ref_resources` for more details.
 
 # The support for different parameters here is limited, you might want to check
-# out the debops.resources_ Ansible role for more extensive resource
+# out the :ref:`debops.resources` for more extensive resource
 # management.
 
 # .. envvar:: users__resources [[[

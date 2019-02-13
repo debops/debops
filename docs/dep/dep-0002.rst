@@ -1,0 +1,749 @@
+.. _dep-0002:
+
+DEP 2 - DebOps code standards
+=============================
+
+:DEP:          2
+:Title:        DebOps code standards
+:Author:       Maciej Delmanowski, Robin Schneider, Reto Gantenbein
+:Status:       Accepted
+:Type:         Standards Track
+:Created:      2016-11-05
+:Post-History: none
+
+.. include:: ../includes/global.rst
+
+
+Abstract
+--------
+
+This document defines code guidelines for Ansible roles included in DebOps.
+These guidelines are provided for Ansible role authors to ensure that the roles
+included in the project are interoperable and extensible.
+
+
+Goals of the Policy
+-------------------
+
+The DebOps code is comprised of Ansible roles which define data models and
+specific tasks that should be performed on hosts to achieve desired results
+(installation and configuration of a service or application, interaction with
+third-party software and services, etc.), Ansible playbooks which define what
+roles should be executed on which hosts, and Ansible inventory which defines
+what hosts Ansible should interact with, what playbooks to apply to these hosts
+and what parameters to use in the roles.
+
+This Policy describes how the Ansible roles and playbooks should be written,
+what ways can be used to combine two or more roles together and how the roles
+should be documented.
+
+
+Summary
+-------
+
+Here's a basic set of principles to be aware while writing roles:
+
+- YAML files MUST use 2 space indents and end with ``.yml``.
+
+- Use spaces around Jinja variable syntax as in ``{{ var }}``.
+
+- When possible use 80 characters line width.
+
+- Write everything to be compatible with Python v2 and v3.
+
+
+**Ansible role: defaults**
+
+- Follow the :ref:`variable naming conventions <debops_policy__ref_code_standards_default_variable_naming_convention>`.
+
+- Make :ref:`conditional code configurable <debops_policy__ref_code_standards_task_conditions>`
+  via default variables.
+
+- :ref:`Comment and structure <debops_policy__ref_code_standards_default_variable_documentation>`
+  default variables with reStructuredText.
+
+- Roles providing features for other roles to use MUST do so by offering
+  dedicated :ref:`dependent variables <debops_policy__ref_code_standards_dependent_variables>`.
+
+- Use `inventory level scoped variables <debops_policy__ref_code_standards_inventory_level_scoped_variables>`
+  to offer mergeable configuration keys in multiple inventory scopes.
+
+
+**Ansible role: tasks**
+
+- Make sure the task execution is idempotent.
+
+- :ref:`Describe each task and include <debops_policy__ref_code_standards_task_description>`
+  with the ``name`` option.
+
+- Use native :ref:`YAML syntax <debops_policy__ref_code_standards_task_yaml_syntax>`
+  for task definition formatting.
+
+- If some tasks should only be executed under certain circumstances, group them
+  together and conditionally include the task list.
+
+- Set a minimal Ansible version in :file:`meta/main.yml` according to the
+  modules and task parameters used.
+
+- :ref:`Disable debug mechanisms <debops_policy__ref_code_standards_task_disable_debug>`
+  such as the ``debug`` or ``ignore_errors`` statements in the ``master``
+  branch.
+
+- Use tags to make individually usable tasks better accessible.
+
+
+**Ansible role: templates**
+
+- If possible follow the directory structure of the target file when storing
+  the Jinja2 template.
+
+- Properly indent Jinja2 loop constructs.
+
+
+**Ansible role: dependencies**
+
+- Define role dependencies as :ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_role_dependencies>`
+  via playbook and make them conditional if possible.
+
+- Avoid the use of :ref:`"hard" role dependencies <debops_policy__ref_code_standards_hard_role_dependencies>`
+  specified in :file:`meta/main.yml`.
+
+- Don't directly include variables of other roles. Instead use Ansible facts
+  to :ref:`share configuration state <debops_policy__ref_code_standards_share_state_facts>`
+  between roles.
+
+- Provide dedicated inventory variables if the role configuration is meant to
+  be extended by dependent roles.
+
+
+Ansible role overview
+---------------------
+
+Ansible roles are the basic building block of DebOps infrastructure. Due to the
+constraints put on them by the DebOps project, they need to be written in
+a certain way as to maximize to user's ability to use them through the Ansible
+inventory without a requirement to modify the role's code as well as offer the
+most amount of reusability so that other Ansible roles can utilize them if
+necessary.
+
+Each role SHOULD focus on a specific service or application. Roles can be
+composed together inside playbooks if needed, so there's no need to put
+different services together in the same role.
+An exception here are very similar services like the different NTP daemons.
+This has the advantage to only having one set of default variables regardless
+of the particular chosen service and it makes changing the particular service
+every easy.
+
+
+.. _debops_policy__ref_code_standards_role_default_variables:
+
+Ansible role default variables
+------------------------------
+
+.. _debops_policy__ref_code_standards_default_variable_naming_convention:
+
+Naming convention
+~~~~~~~~~~~~~~~~~
+
+DebOps roles MUST use a special variable naming scheme to indicate
+a "namespace" of a given role default variables. The variable MUST contain
+the role name, followed by two underscore characters, followed by the rest of
+the variable name. For example, the variable which defines the name of the
+:command:`nginx` UNIX user account MUST be defined as (or similar):
+
+.. code-block:: yaml
+
+   nginx__user: 'www-data'
+
+For another example, the list of APT packages to install on a particular host
+using the :ref:`debops.apt_install` role MUST be defined as (or similar):
+
+.. code-block:: yaml
+
+   apt_install__host_packages: [ 'bash' ]
+
+Variables which are meant to be
+:ref:`dependent variables <debops_policy__ref_code_standards_dependent_variables>`
+on a provider role, MUST additionally contain the word ``dependent`` in their
+variable name. E.g.:
+
+.. code-block:: yaml
+
+   apt_preferences__dependent_list: []
+
+Variables which are meant to define dependent variables in the consumer role
+are named after the dependent variable of the provider role prefixed with the
+consume role name. E.g.
+
+.. code-block:: yaml
+
+   nginx__apt_preferences__dependent_list:
+     - package: 'nginx nginx-*'
+       backports: [ 'wheezy', 'precise' ]
+       by_role: 'debops.nginx'
+
+
+.. _debops_policy__ref_code_standards_default_variable_documentation:
+
+Variable documentation
+~~~~~~~~~~~~~~~~~~~~~~
+
+For each role the DebOps documentation will include a page which
+documents the default variables. This page is generated from the role's
+:file:`defaults/main.yml` file with help of ``yaml2rst``. The entire comment of
+the defaults file is thereby interpreted as reStructuredText_ and then rendered
+via Sphinx_.
+
+Each variable comment is started with a ``.. envvar::`` reference anchor
+followed by the name of the variable. This construct allows any documentation
+page to reference the variable via ``:envvar:`varname``` which :program:`Sphinx`
+will translate into a link pointing to the variable description. Below the
+anchor a comment should describe the purpose of the variable, accepted values,
+side effects and so on. Within the comment all reStructuredText constructs
+supported by :program:`Sphinx` can be used. An example variable definition would
+eventually look like this:
+
+.. code-block:: yaml
+
+    # .. envvar:: ferm__flush [[[
+    #
+    # Should ferm-rules be flushed when :program:`ferm` is disabled? The default is true,
+    # but you may need set both :envvar:`ferm__enabled` and this to ``False`` if you are
+    # running in some container and are not allowed to change :command:`iptables`.
+    ferm__flush: '{{ ferm__enabled | bool }}'
+                                                                   # ]]]
+
+Related default variables should be grouped to sections for a better overview
+and easier navigation. For example it makes sense to distinguish packaging and
+network related variables. Of course additional or different section titles
+might be meaningful for the individual role:
+
+.. code-block:: yaml
+
+    # APT packages [[[
+    # ----------------
+
+    [... packaging related variables ...]
+
+                                                                   # ]]]
+    # Network configuration [[[
+    # -------------------------
+
+    [... networking related variables ...]
+                                                                   # ]]]
+
+.. _debops_policy__ref_code_standards_dependent_variables:
+
+Dependent variables
+~~~~~~~~~~~~~~~~~~~
+
+DebOps is designed in a way that there are divided responsibilities between the
+roles. Each role has its clear task to fulfill. For example an application role
+must never care about the firewall configuration by itself. There is a dedicated
+role for firewall configuration. And the application role needs a way to tell
+the firewall role which access rules to configure. This is done via dependent
+variables.
+
+Each role providing a feature which MAY be consumed by other roles MUST provide
+a dedicated dependent variable for the configuration of this feature. As that
+variable is always defined in the context of the consuming role, its value MUST
+NOT modify a shared configuration state (e.g. configuration template). The
+provider role might be executed multiple times depending on the role dependency
+configuration of the consuming roles.
+
+.. caution::
+
+   A role providing dependent variables MUST be able to handle multiple
+   role executions with different values of the dependent variables without
+   mutual interference.
+
+Ideally the dependent variable SHOULD accept a list of YAML dictionaries
+where one property MUST be the state (``present`` or ``absent``) of the
+configuration. The provider role SHOULD then manage an individual configuration
+file per list item which allows it to selectively add or remove configuration
+states.
+
+Additionally, the ``by_role`` property (string) SHOULD be accepted which can be
+used to indicate the role responsible for a given item.
+``by_role`` MUST be given in the form of ``ROLE_OWNER.ROLE_NAME``.
+
+**Example:**
+
+The :ref:`debops.apt_preferences` role implements a feature to set APT package
+pinning configurations. Each role requiring a specific version of a package
+to be available can ask the ``apt_preferences`` to do the corresponding
+configuration. For this, ``apt_preferences`` provides the following dependent
+variable:
+
+.. code-block:: yaml
+
+   # List of :man:`apt_preferences(5)` pins to configure in
+   # :file:`/etc/apt/preferences.d/`.  This variable is meant to be used from a
+   # role dependency in :file:`role/meta/main.yml` or in a playbook.
+   apt_preferences__dependent_list: []
+
+The consumer role, in this case :ref:`debops.nginx`, would then define an own variable
+which defines the necessary pinning information:
+
+.. code-block:: yaml
+
+   nginx__apt_preferences__dependent_list:
+     - package: 'nginx nginx-*'
+       backports: [ 'wheezy', 'precise' ]
+       by_role: 'debops.nginx'
+
+In the playbook a :ref:`soft dependency <debops_policy__ref_code_standards_soft_role_dependencies>`
+can be specified where the dependent variable is passed to the provider:
+
+.. code-block:: yaml
+
+   - name: Manage nginx webserver
+     hosts: 'debops_service_nginx'
+     become: True
+
+     roles:
+
+       - role: debops.apt_preferences
+         apt_preferences__dependent_list:
+           - '{{ nginx__apt_preferences__dependent_list }}'
+
+       - role: debops.nginx
+
+By including the configuration for the :ref:`debops.apt_preferences` role in the
+``nginx`` default variables the user is able to change it through the Ansible
+inventory without the need to modify any of the involved roles or the playbook.
+
+
+.. _debops_policy__ref_code_standards_inventory_level_scoped_variables:
+
+Inventory level scoped variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Ansible inventory allows managing hosts, such as executing playbooks or
+scoping variables, in three different levels:
+
+- All hosts in the inventory
+
+- All hosts which are member of a common user defined group
+
+- One host individually
+
+When evaluating variable values Ansible would override variables when they are
+defined in a more specific level. This easily becomes an issue when dealing
+with lists as variable value.
+
+To mitigate this DebOps role authors SHOULD provide three different variables,
+let's call it inventory level scoped variables, for the same configuration
+property. They are meant to be defined by the user in the respective inventory
+level context. The role then has to make sure that they are merged appropriately
+so that the configuration values of all levels are respected.
+
+**Example:**
+
+The :ref:`debops.users` role allows to define user accounts which should be created
+on a machine. For accounts which should be created on every machine, the user
+can define the following variable in the global level of the inventory (e.g.
+:file:`inventory/groups_vars/all/users.yml`):
+
+.. code-block:: yaml
+
+   # List of user accounts to manage on all hosts in Ansible inventory.
+   users__accounts: []
+
+Users which should only be created on a group of servers are defined in the
+related variable in group level inventory (e.g.
+:file:`inventory/group_vars/group_name/users.yml`):
+
+.. code-block:: yaml
+
+   # List of UNIX user accounts to manage on hosts in specific Ansible inventory
+   # group.
+   users__group_accounts: []
+
+And the same for host-specific users which are defined in the related host
+level inventory variable in (e.g.
+:file:`inventory/host_vars/hostname/users.yml`):
+
+.. code-block:: yaml
+
+   # List of UNIX user accounts to manage on specific hosts in Ansible inventory.
+   users__host_accounts: []
+
+
+.. _debops_policy__ref_code_standards_role_tasks:
+
+Ansible role tasks
+------------------
+
+Ansible tasks are doing the actual work namely querying and modifying the
+target host. Each task defines a `Ansible Module <Ansible Modules>` invocation
+with a number of general and module specific options.
+
+.. _debops_policy__ref_code_standards_task_description:
+
+Description
+~~~~~~~~~~~
+
+Each task MUST have the ``name`` option set with a meaningful description. This
+allows to quickly reason about the change impact when running a playbook and
+classify the progress in case of an abortion.
+
+**Example:**
+
+.. code-block:: yaml
+
+    - name: Check if password history database exists
+      stat:
+        path: '/etc/security/opasswd'
+      register: auth__register_opasswd
+
+The same is true for the ``include`` statement. Especially for conditional
+includes which may be skipped it's helpful for identifying which features of
+the role have been left out.
+
+**Example:**
+
+.. code-block:: yaml
+
+    - name: Configure acme-tiny support
+      include: acme_tiny.yml
+      when: (pki__enabled|bool and
+             (pki__acme|bool or pki__acme_install|bool))
+
+.. _debops_policy__ref_code_standards_task_conditions:
+
+Conditions
+~~~~~~~~~~
+
+It might be often necessary that task execution depends on a certain
+condition using the ``when`` statement. In many cases the condition is simple
+and straight forward, for example when depending on the existence of a file.
+Other times the condition might be more complex, for example when depending
+on a state of other role configurations. In this case the expression SHOULD
+be defined in a default variable. This would give the user the ability to
+override the decision and have better control about the role's behavior.
+
+**Example:**
+
+.. code-block:: yaml
+
+    - name: Add database server user to specified groups
+      user:
+        name: 'mysql'
+        groups: '{{ mariadb_server__append_groups | join(",") | default(omit) }}'
+        append: True
+        createhome: False
+      when: mariadb_server__pki|bool
+
+Here the condition ``mariadb_server__pki`` is a extensive evaluation of the
+current state. The related default variable is defined in
+:file:`defaults/main.yml` as following:
+
+.. code-block:: yaml
+
+    # Enable or disable support for SSL in MariaDB (using ``debops.pki``).
+    mariadb_server__pki: '{{ (True
+                          if (ansible_local|d() and ansible_local.pki|d() and
+                              ansible_local.pki.enabled|d() and
+                              mariadb_server__pki_realm in ansible_local.pki.known_realms)
+                          else False) | bool }}'
+
+If the user doesn't agree with the defined condition, the variable can simply
+be redefined in the Ansible inventory without the need to modify the Ansible
+code of the role.
+
+.. _debops_policy__ref_code_standards_task_yaml_syntax:
+
+YAML syntax
+~~~~~~~~~~~
+
+Task definitions MUST use the native YAML syntax formatting. Ansible accepts
+various ways to define Ansible tasks. However, there are several advantages by
+agreeing on the YAML syntax:
+
+- Unified coding style
+
+- Vertical formatting is easier to read
+
+- Supports complex parameter values (e.g. nested dictionaries)
+
+**Example:**
+
+Instead of ...
+
+.. code-block:: yaml
+
+   - name: Create plugin path
+     file: path={{ elasticsearch__path_plugins }} state=directory
+
+... use the correct YAML syntax:
+
+.. code-block:: yaml
+
+   - name: Create plugin path
+     file:
+       path: '{{ elasticsearch__path_plugins }}'
+       state: 'directory'
+
+.. _debops_policy__ref_code_standards_task_disable_debug:
+
+Disable debug statements
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Role authors MUST NOT unconditionally use Ansible debug mechanisms such as the
+``debug`` module or the ``ignore_errors`` task statement in code which is used
+for normal operations. Released code is expected to be functional under every
+possible circumstance otherwise it is considered to be a bug which must be
+fixed on a best effort basis.
+
+For fragile or complex code paths it might be acceptable to use the
+``debug`` statement with an increased ``verbosity`` level. This will only show
+the message, if :program:`ansible-playbook` is executed with one or more
+``--verbose`` options. For example:
+
+.. code-block:: yaml
+
+   - name: Show intermediate value from a lookup query
+     debug:
+       var: '{{ lookup("template", "lookups/fancy_lookup.j2") }}'
+       verbosity: 1
+
+
+.. _debops_policy__ref_code_standards_role_dependencies:
+
+
+Ansible role dependencies
+-------------------------
+
+.. _debops_policy__ref_code_standards_soft_role_dependencies:
+
+Soft role dependencies
+~~~~~~~~~~~~~~~~~~~~~~
+
+Role dependencies are considered "soft" if they are defined in the ``roles``
+list of a playbook. This approach offers a higher flexibility as the user can
+choose which roles to run and which features to include.
+
+Whenever possible DebOps role authors MUST specify role dependencies via
+playbook instead of
+:ref:`"hard" dependencies <debops_policy__ref_code_standards_hard_role_dependencies>`
+in the :file:`meta/main.yml`.
+
+It's also possible to pass configuration values to a dependent role if the
+involved role is offering dedicated
+:ref:`dependent variables <debops_policy__ref_code_standards_dependent_variables>`
+for this purpose. With soft dependencies custom playbook authors are therefore
+free to pass values from arbitrary sources according to their requirements.
+
+When a role that is used as a soft dependency already contains its own
+dependencies, all of them SHOULD be included in the playbook to ensure that the
+required functionality (firewall access, APT preferences, etc.) is provided and
+configured as needed by the dependent role.
+
+**Example:**
+
+This is an example playbook for :ref:`debops.slapd` defining soft dependencies:
+
+.. code-block:: yaml
+
+    ---
+
+    - name: Manage OpenLDAP service
+      hosts: [ 'debops_service_slapd' ]
+      become: True
+
+      roles:
+
+        - role: debops.ferm
+          tags: [ 'role::ferm', 'skip::ferm' ]
+          ferm__dependent_rules:
+            - '{{ slapd__ferm__dependent_rules }}'
+
+        - role: debops.tcpwrappers
+          tags: [ 'role::tcpwrappers' ]
+          tcpwrappers__dependent_allow:
+            - '{{ slapd__tcpwrappers__dependent_allow }}'
+
+        - role: debops.slapd
+          tags: [ 'role::slapd' ]
+
+
+.. _debops_policy__ref_code_standards_hard_role_dependencies:
+
+Hard role dependencies
+~~~~~~~~~~~~~~~~~~~~~~
+
+Role dependencies are considered "hard" if they are defined in the
+``dependencies`` list in :file:`meta/main.yml`.  DebOps role authors MUST
+avoid the use of hard role dependencies for the following reasons:
+
+- Hard role dependencies must always be installed on the Ansible controller
+  even when their execution is conditionally triggered via ``when`` statement.
+
+- It hinders the independent use of the role in a custom playbook or outside
+  of DebOps where playbook authors might rely on a different role for a certain
+  feature or decide not to use a certain feature at all.
+
+- The playbook execution flow is more difficult to reason about as hard
+  dependencies are defined outside of the playbook.
+
+Generally role dependencies MUST be defined as
+:ref:`"soft" dependencies <debops_policy__ref_code_standards_soft_role_dependencies>`
+via playbook unless the tight coupling to another role is unavoidable for
+implementing the required functionality. A reasonable exception is for example
+the :ref:`debops.secret` role which defines a common path for the
+``lookup("password")`` plugin.
+
+
+.. _debops_policy__ref_code_standards_role_facts:
+
+Ansible role facts
+------------------
+
+Ansible facts are small things that are automatically discovered by the
+`Ansible setup module`_ on a target host when a playbook is executed. They can
+be used by Ansible role and playbook authors through normal variables. The
+default facts provided are indicated by the ``ansible_`` namespace. It's
+possible to define custom facts through JSON or INI files or scripts returning
+such output in the :file:`/etc/ansible/facts.d` directory of a host. These
+facts are then available as key/value pairs under the ``ansible_local``
+variable.
+
+.. _debops_policy__ref_code_standards_share_state_facts:
+
+Share configuration state with other roles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a role needs to know a configuration state of another role it MUST NOT access
+inventory variables of the source role. This impedes the portability of a role
+and effectively makes the source role its hard dependency. Instead, roles SHOULD
+expose public data structures as needed for other roles to use as Ansible local
+facts. This ensures that the data used by other roles is available at all times,
+and therefore idempotent.
+
+To set a local fact the role must define a template or copy task which writes
+a facts file :file:`/etc/ansible/facts.d/rolename.fact`.
+
+
+**Example:**
+
+If a role needs to make a decision based on the fact if the firewall managed by
+:ref:`debops.ferm` is enabled or not, it mustn't check the value of ``ferm__enabled``
+but query the local fact of the ferm role:
+
+.. code-block:: yaml
+
+   is_firewall_enabled: '{{ ansible_local.ferm.enabled
+                            if (ansible_local|d() and ansible_local.ferm|d() and
+                                ansible_local.ferm.enabled|d())
+                            else "unknown" }}'
+
+To successfully read the local fact of another role the latter obviously must
+have run before. Always consider the case that the fact may be undefined and
+fallback to a meaningful default value.
+
+The :ref:`debops.ferm` role itself defines the facts via a Jinja2 template such as:
+
+.. code-block:: jinja
+
+   [...]
+   {
+   "enabled": "{{ ferm__enabled     | bool | lower }}",
+   "forward": "{{ ferm__tpl_forward | bool | lower }}",
+   "ansible_controllers": {{ ferm__tpl_ansible_controllers_result | to_nice_json }}
+   }
+
+
+Python compatibility
+--------------------
+
+The Python language is used on several levels in a direct and indirect fashion:
+
+- debops-tools on the controller (direct)
+- saved facts on the target hosts (direct)
+- jinja templates (indirect)
+- jinja within yaml (indirect)
+
+In all incarnations the sytax MUST be written to be compatible with both Python
+Version 2 and 3.
+Additionally code MUST comply to the PEP8 coding style guide.
+
+Some useful hints
+~~~~~~~~~~~~~~~~~
+
+- Always use unicode strings explicitly:
+
+**Example:**
+
+Instead of ...
+
+.. code-block:: python
+
+   foo = ''
+
+... use the unicode literal
+
+.. code-block:: python
+
+   foo = u''
+
+- Always use brackets for "print()"ing.
+
+- Always use "dict.items()" in favor of "dict.iteritems()" which is deprecated.
+
+- Be aware that "dict.keys()" behaves differently in Python 3. Especially with
+  Jinja-filters.
+
+**Example:**
+
+Instead of ...
+
+.. code-block:: python
+
+   foo = bar.keys()
+
+... or ...
+
+.. code-block:: yaml
+
+   foo: {{ bar.keys() | to_nice_json }}
+
+... use the list filter/method
+
+.. code-block:: python
+
+   foo = list(bar)
+
+... or ...
+
+.. code-block:: yaml
+
+   foo: {{ bar | list | to_nice_json }}
+
+
+Copyright
+---------
+
+.. code-block:: none
+
+   Copyright (C) 2016-2018 Maciej Delmanowski <drybjed@gmail.com>
+   Copyright (C) 2016,2018 Robin Schneider <ypid@riseup.net>
+   Copyright (C) 2016      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+   Copyright (C) 2016-2018 DebOps https://debops.org/
+
+   This document is part of DebOps.
+
+   DebOps is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License version 3, as
+   published by the Free Software Foundation.
+
+   DebOps is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with DebOps. If not, see https://www.gnu.org/licenses/.
+
+..
+   vim: tw=72:

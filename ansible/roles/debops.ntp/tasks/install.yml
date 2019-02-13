@@ -2,13 +2,11 @@
 
 - name: Install required packages
   apt:
-    name: '{{ item }}'
+    name: '{{ (ntp__base_packages + ntp__packages) | flatten }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - [ '{{ "ntpdate" if (ntp__daemon == "ntpdate") else [] }}' ]
-    - [ '{{ "ntp" if (ntp__daemon == "ntpd") else [] }}' ]
-    - [ '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}' ]
+  register: ntp__register_apt_install
+  until: ntp__register_apt_install is succeeded
 
 - name: Manage systemd-timesyncd state
   service:
@@ -19,6 +17,10 @@
 
 # NTPdate does not need to be configured separately as the script `/usr/sbin/ntpdate-debian`
 # will pick up the configuration from `/etc/ntp.conf` when it exists.
+
+# Install chrony on all hosts except inside containers
+- include: chrony.yml
+  when: ntp__daemon == 'chrony'
 
   # Install NTPd on all hosts except inside containers
 - include: ntpd.yml

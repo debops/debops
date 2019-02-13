@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+{% for element in netbase__combined_hosts | parse_kv_config %}
+{%   if element.name|d() and element.value|d() %}
+{%     if (element.separator|d())|bool %}
+
+{%     endif %}
+{{ '{}\t{}{}'.format(element.name, ('\t' if element.name | length < 8 else ''), (element.value if element.value is string else (element.value | selectattr('name', 'defined') | map(attribute='name') | list) | join(' '))) }}
+{%   endif %}
+{% endfor %}

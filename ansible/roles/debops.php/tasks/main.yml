@@ -19,6 +19,8 @@
     install_recommends: False
   with_flattened:
     - '{{ php__register_filtered_packages.stdout.strip().splitlines() }}'
+  register: php__register_packages
+  until: php__register_packages is succeeded
   notify: [ 'Restart php-fpm' ]
 
 - name: Ensure older PHP packages are absent on reset
@@ -48,13 +50,15 @@
     - '{{ php__etc_base }}/ansible'
     - '{{ php__etc_base }}/fpm/pool.d'
 
-- name: Allow webadmins to reload php-fpm using sudo
+- name: Allow webadmins to control PHP-FPM system service using sudo
   template:
     src: 'etc/sudoers.d/php-fpm_webadmins.j2'
     dest: '/etc/sudoers.d/php-fpm_webadmins'
     owner: 'root'
     group: 'root'
     mode: '0440'
+  when: (ansible_local|d() and ansible_local.sudo|d() and
+         (ansible_local.sudo.installed|d())|bool)
 
                                                                    # ]]]
 # php.ini management [[[
@@ -95,7 +99,8 @@
     LC_ALL: 'C'
   script: script/php-synchronize-config.sh {{ php__version }}
   register: php__register_synchronize_config
-  changed_when: php__register_synchronize_config.stdout != ''
+  changed_when: php__register_synchronize_config.stdout is defined and
+                php__register_synchronize_config.stdout|d()
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
 
@@ -105,10 +110,14 @@
 - name: Check current PHP-FPM diversions
   environment:
     LC_ALL: 'C'
-  shell: dpkg-divert --list '{{ php__etc_base + "/fpm/*" }}' | awk '{print $NF}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '{{ php__etc_base + "/fpm/*" }}' | awk '{print $NF}' || true
+  args:
+    executable: '/bin/bash'
   register: php__register_diversions
   check_mode: False
   changed_when: False
+  tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Divert default PHP-FPM configuration and pool
   command: dpkg-divert --quiet --local --divert {{ item + ".dpkg-divert" }}
@@ -216,5 +225,5 @@
 
 - name: Gather facts if they were modified
   action: setup
-  when: php__register_local_facts|changed
+  when: php__register_local_facts is changed
                                                                    # ]]]

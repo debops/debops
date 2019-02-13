@@ -1,25 +1,29 @@
 ---
 
 - name: Install SMS Tools packages
-  apt: name={{ item }} state=latest install_recommends=no
+  apt: name={{ item }} state=present install_recommends=no
   with_items: [ 'smstools', 'xinetd', 'libconfig-tiny-perl' ]
+  register: smstools__register_packages
+  until: smstools__register_packages is succeeded
 
 - name: Check current smsd home directory
-  shell: getent passwd smsd | grep "/home/smsd" || true
+  shell: set -o nounset -o pipefail -o errexit && getent passwd smsd | grep "/home/smsd" || true
+  args:
+    executable: '/bin/bash'
   register: smstools_register_home
   changed_when: False
 
 - name: Stop smsd for home directory change
   service: name=smstools state=stopped
-  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+  when: smstools_register_home is defined and smstools_register_home.stdout|d()
 
 - name: Fix smsd home directory
   user: name=smsd home=/var/spool/sms
-  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+  when: smstools_register_home is defined and smstools_register_home.stdout|d()
 
 - name: Start smsd with new home directory
   service: name=smstools state=started
-  when: smstools_register_home is defined and smstools_register_home.stdout != ""
+  when: smstools_register_home is defined and smstools_register_home.stdout|d()
 
 - name: Configure smsd
   template: src=etc/smsd.conf.j2 dest=/etc/smsd.conf
@@ -61,6 +65,8 @@
 - name: Configure access to sendsms via sudo
   template: src=etc/sudoers.d/smstools.j2 dest=/etc/sudoers.d/smstools
             owner=root group=root mode=0440
+  when: (ansible_local|d() and ansible_local.sudo|d() and
+         (ansible_local.sudo.installed|d())|bool)
 
 - name: Configure xinetd SMS service
   template: src=etc/xinetd.d/sms.j2 dest=/etc/xinetd.d/sms
@@ -81,7 +87,7 @@
 
 - name: Fix permissions manually if installed
   command: /usr/local/lib/smstools/fix-device-permissions
-  when: smstools_register_fixpermissions is defined and smstools_register_fixpermissions.changed
+  when: smstools_register_fixpermissions is defined and smstools_register_fixpermissions is changed
 
 - name: Configure SMS gateway test on reboot
   cron: name="SMS gateway test on reboot" user={{ smstools_service_user }}
@@ -105,4 +111,3 @@
             owner=root group=root mode=0644
   when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
         smstools_register_rsyslog.stat.exists
-

@@ -1,0 +1,22 @@
+---
+
+# Modify the configuration of a generated Sentinel instance
+redis_sentinel__configuration:
+
+  - name: 'main'
+    options:
+
+      # Allow modification of the reconfigure and notify script paths at
+      # runtime. Warning, this might result in a security issue.
+      - 'deny-scripts-reconfig': False
+
+      # Change the syslog identifier of a particular Sentinel instance. This
+      # parameter needs to be specified with an empty prefix to not prepend the
+      # 'sentinel ' string.
+      - name: 'syslog-ident'
+        value: 'sentinel-main-instance'
+        prefix: ''
+
+      # Change the reconfiguration script of the default monitor
+      - name: 'client-reconfig-script redis-ha'
+        value: '/tmp/sentinel-reconfig.sh'

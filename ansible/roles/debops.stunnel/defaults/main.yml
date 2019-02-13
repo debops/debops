@@ -1,29 +1,33 @@
 ---
-# Default variables
-# =================
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.stunnel default variables
+# ================================
 
 # .. contents:: Sections
-#   :local:
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
 
-# ----------------------
-#   Tunnel connections
+
+# Tunnel connections [[[
 # ----------------------
 
-# .. envvar:: stunnel_services
+# .. envvar:: stunnel_services [[[
 #
 # List of client-server tunnels configurd by ``debops.stunnel``
 # See :ref:`stunnel_services` for more details.
 stunnel_services: []
 
-
-# .. envvar:: stunnel_server
+                                                                   # ]]]
+# .. envvar:: stunnel_server [[[
 #
 # List of hostnames, CNAMEs or service names which indicate that this host
 # should be configured as a stunnel server.
 stunnel_server: []
 
-
-# .. envvar:: stunnel_server_addresses
+                                                                   # ]]]
+# .. envvar:: stunnel_server_addresses [[[
 #
 # List of hostnames, IP addresses and FQDN domains configured on a given
 # server. If any entries here are included in ``item.client_connect``, a given
@@ -33,99 +37,98 @@ stunnel_server_addresses: '{{ [ ansible_hostname, ansible_fqdn ] +
                                 ansible_all_ipv4_addresses|d([]) +
                                 ansible_all_ipv6_addresses|d([]) +
                                 stunnel_server }}'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL, PKI and encryption [[[
 # ---------------------------
-#   SSL, PKI and encryption
-# ---------------------------
 
-# .. envvar:: stunnel_ssl_ciphers
+# .. envvar:: stunnel_ssl_ciphers [[[
 #
 # List of SSL ciphers used by stunnel
 stunnel_ssl_ciphers: 'ALL:ECDHE:!SSLv3:!SSLv2:!kEDH:!aNULL:!ADH:!eNULL:!MEDIUM:!LOW:!EXP:!RC4:RSA:HIGH'
 
-
-# .. envvar:: stunnel_ssl_curve
+                                                                   # ]]]
+# .. envvar:: stunnel_ssl_curve [[[
 #
 # Elliptic Curve used by stunnel
 stunnel_ssl_curve: 'prime256v1'
 
-
-# .. envvar:: stunnel_ssl_verify
+                                                                   # ]]]
+# .. envvar:: stunnel_ssl_verify [[[
 #
 # What level of scrutiny should stunnel use to check validity of
 # a client/server certificate. See stunnel4(8) for more details.
 stunnel_ssl_verify: '2'
 
-
-# .. envvar:: stunnel_ssl_check_crl
+                                                                   # ]]]
+# .. envvar:: stunnel_ssl_check_crl [[[
 #
 # Should stunnel use CRL to check validity of the certificate?
 stunnel_ssl_check_crl: False
 
-
-# .. envvar:: stunnel_pki
+                                                                   # ]]]
+# .. envvar:: stunnel_pki [[[
 #
 # Enable or disable support for PKI/SSL/TLS in stunnel, managed by
 # ``debops.pki`` role
 stunnel_pki: '{{ (True if (ansible_local|d() and ansible_local.pki|d() and
                            ansible_local.pki.enabled|d()) else False) | bool }}'
 
-
-# .. envvar:: stunnel_pki_path
+                                                                   # ]]]
+# .. envvar:: stunnel_pki_path [[[
 #
 # PKI base directory
 stunnel_pki_path: '{{ ansible_local.pki.base_path
                       if (ansible_local|d() and ansible_local.pki|d())
                       else "/etc/pki" }}'
 
-
-# .. envvar:: stunnel_pki_realm
+                                                                   # ]]]
+# .. envvar:: stunnel_pki_realm [[[
 #
 # PKI realm to use for stunnel
 stunnel_pki_realm: '{{ ansible_local.pki.realm
                        if (ansible_local|d() and ansible_local.pki|d())
                        else "system" }}'
 
-
-# .. envvar:: stunnel_pki_ca
+                                                                   # ]]]
+# .. envvar:: stunnel_pki_ca [[[
 #
 # CA certificate to use, relative to ``stunnel_pki_realm`` variable
 stunnel_pki_ca: 'CA.crt'
 
-
-# .. envvar:: stunnel_pki_crl
+                                                                   # ]]]
+# .. envvar:: stunnel_pki_crl [[[
 #
 # Certificate Revocation List file to use, relative to ``stunnel_pki_realm``
 # variable
 stunnel_pki_crl: 'default.crl'
 
-
-# .. envvar:: stunnel_pki_crt
+                                                                   # ]]]
+# .. envvar:: stunnel_pki_crt [[[
 #
 # Certificate file to use, relative to ``stunnel_pki_crt`` variable
 stunnel_pki_crt: 'default.crt'
 
-
-# .. envvar:: stunnel_pki_key
+                                                                   # ]]]
+# .. envvar:: stunnel_pki_key [[[
 #
 # Private key file to use, relative to ``stunnel_pki_key`` variable
 stunnel_pki_key: 'default.key'
-
-
+                                                                   # ]]]
+                                                                   # ]]]
+# Other options [[[
 # -----------------
-#   Other options
-# -----------------
 
-# .. envvar:: stunnel_options
+# .. envvar:: stunnel_options [[[
 #
 # Additional options added to all tunnel configuration files, specified as
 # a YAML text block
 stunnel_options: ''
 
-
-# .. envvar:: stunnel_debug
+                                                                   # ]]]
+# .. envvar:: stunnel_debug [[[
 #
 # Debug level, determines log verbosity
 stunnel_debug: '4'
-
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,59 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import os
+
+output = {}
+
+# Get the primary resolver configuration
+try:
+    with open('/etc/resolv.conf', 'r') as f:
+        nameservers = []
+        domain = ''
+        search = []
+        for line in f:
+            if line.startswith('nameserver'):
+                nameservers.append(line.strip().split()[1])
+            elif line.startswith('domain'):
+                domain = line.strip().split()[1]
+            elif line.startswith('search'):
+                for element in line.strip().split()[1:]:
+                    search.append(element.rstrip('.'))
+
+        if nameservers:
+            output['nameservers'] = nameservers
+        if domain:
+            output['domain'] = domain
+        if search:
+            output['search'] = search
+
+except Exception:
+    pass
+
+# Get the upstream resolver configuration
+resolvconf_path = '/run/resolvconf/interface'
+if os.path.isdir(resolvconf_path):
+    resolvconf_files = ([f for f in os.listdir(resolvconf_path)
+                         if os.path.isfile(os.path.join(resolvconf_path, f))])
+
+    upstream_nameservers = []
+
+    for element in resolvconf_files:
+        try:
+            with open(os.path.join(resolvconf_path, element), 'r') as f:
+                for line in f:
+                    if line.startswith('nameserver'):
+                        server = line.strip().split()[1]
+                        if not server.startswith('127.'):
+                            upstream_nameservers.append(server)
+
+        except Exception:
+            pass
+
+    if '127.0.0.1' in output['nameservers'] and upstream_nameservers:
+        output['upstream_nameservers'] = upstream_nameservers
+
+print(dumps(output, sort_keys=True, indent=4))

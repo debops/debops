@@ -1,0 +1,104 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.apt_mark default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: apt_mark__enabled [[[
+#
+# Enable or disable support for marking APT package state.
+apt_mark__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__autoremove_recommends_important [[[
+#
+# If ``True`` (default), APT will consider packages installed via
+# ``Recommends:`` dependencies as important and not remove them automatically.
+#
+# Any entries in the ``apt_mark__*_packages`` lists will enable autoremoval of
+# APT packages installed via ``Recommends:`` dependencies, which you can then
+# control by marking them as installed manually or automatically.
+apt_mark__autoremove_recommends_important: '{{ False
+                                               if (apt_mark__default_packages|d()
+                                                   or apt_mark__packages|d()
+                                                   or apt_mark__group_packages|d()
+                                                   or apt_mark__host_packages|d())
+                                               else True }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__autoremove_suggests_important [[[
+#
+# If ``True`` (default), APT will consider packages installed via ``Suggests:``
+# dependencies as important and not remove them automatically.
+#
+# Any entries in the ``apt_mark__*_packages`` lists will enable autoremoval of
+# APT packages installed via ``Suggests:`` dependencies, which you can then
+# control by marking them as installed manually or automatically.
+apt_mark__autoremove_suggests_important: '{{ False
+                                             if (apt_mark__default_packages|d()
+                                                 or apt_mark__packages|d()
+                                                 or apt_mark__group_packages|d()
+                                                 or apt_mark__host_packages|d())
+                                             else True }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT package state configuration [[[
+# -----------------------------------
+
+# These lists define the APT packages which the role will operate on, and their
+# desired state. See :ref:`apt_mark__ref_packages` for more details.
+
+# .. envvar:: apt_mark__default_packages [[[
+#
+# List of APT package states defined by the role
+apt_mark__default_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__packages [[[
+#
+# List of APT package states which should be applied on all hosts in the
+# Ansible inventory.
+apt_mark__packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__group_packages [[[
+#
+# List of APT package states which should be applied on hosts in a specific
+# Ansible inventory group.
+apt_mark__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__host_packages [[[
+#
+# List of APT package states which should be applied on specific hosts in the
+# Ansible inventory.
+apt_mark__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__dependent_packages [[[
+#
+# List of APT package states defined by other Ansible roles via role dependent
+# variables.
+apt_mark__dependent_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mark__combined_packages [[[
+#
+# Variable which combines all of the APT state lists and is passed to the role
+# tasks.
+apt_mark__combined_packages: '{{ apt_mark__default_packages
+                                 + apt_mark__dependent_packages
+                                 + apt_mark__packages
+                                 + apt_mark__group_packages
+                                 + apt_mark__host_packages }}'
+                                                                   # ]]]
+                                                                   # ]]]

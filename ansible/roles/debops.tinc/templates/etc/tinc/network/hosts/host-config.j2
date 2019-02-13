@@ -4,7 +4,7 @@
 {% set network_name = item.value.name | d(item.key) %}
 {% set tinc__tpl_host_keys_seen = [] %}
 {% if network.tinc_host_options|d() %}
-{%   for key, value in network.tinc_host_options.iteritems() %}
+{%   for key, value in network.tinc_host_options.items() %}
 {%     if key | lower not in [ '{{ (network.hostname | d(tinc__hostname)) | replace("-","_") }}-up', '{{ (network.hostname | d(tinc__hostname)) | replace("-","_") }}-down', 'host-up', 'host-down' ] %}
 {%       if key not in tinc__tpl_host_keys_seen %}
 {%         if value is string %}

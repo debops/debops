@@ -1,0 +1,167 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.dhcp_probe default variables
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: dhcp_probe__base_packages [[[
+#
+# List of APT packages required for DHCP Probe service.
+dhcp_probe__base_packages: [ 'dhcp-probe' ]
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__packages [[[
+#
+# List of additional APT packages to install with DHCP Probe.
+dhcp_probe__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom directories, scripts [[[
+# -------------------------------
+
+# .. envvar:: dhcp_probe__cache [[[
+#
+# Absolute path of the cache directory where :command:`mail-throttled` script
+# state is stored.
+dhcp_probe__cache: '{{ (ansible_local.root.cache
+                        if (ansible_local|d() and ansible_local.root|d() and
+                            ansible_local.root.cache|d())
+                        else "/var/cache") + "/dhcp-probe" }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__lib [[[
+#
+# Absolute path where the custom scripts used by the DHCP Probe service are
+# stored.
+dhcp_probe__lib: '{{ (ansible_local.root.lib
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.lib|d())
+                      else "/usr/local/lib") + "/dhcp-probe" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Monitored network interfaces [[[
+# --------------------------------
+
+# These variables define on which network interfaces DHCP Probe will listen for
+# rogue DHCP servers. By default Ethernet interfaces, bridges, VLAN interfaces,
+# bonds and various uplink interfaces with IPv4 addresses will be monitored.
+# See :ref:`dhcp_probe__ref_interfaces` for more details.
+
+# .. envvar:: dhcp_probe__default_interfaces [[[
+#
+# List of default network interfaces to listen on for rogue DHCP servers.
+dhcp_probe__default_interfaces: '{{ lookup("template", "lookup/dhcp_probe__default_interfaces.j2",
+                                    convert_data=False) | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__interfaces [[[
+#
+# Additional list of network interfaces to listen on for rogue DHCP servers.
+dhcp_probe__interfaces: []
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__combined_interfaces [[[
+#
+# The variable that combines the interface lists and is used in the role tasks.
+dhcp_probe__combined_interfaces: '{{ dhcp_probe__default_interfaces
+                                     + dhcp_probe__interfaces }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DHCP Probe configuration [[[
+# ----------------------------
+
+# .. envvar:: dhcp_probe__alert_program [[[
+#
+# Absolute path of the script executed by DHCP Probe when new rogue DHCP server
+# is detected. By default an e-mail message will be generated and sent to the
+# system administrator. Set to an empty string to disable.
+dhcp_probe__alert_program: '{{ dhcp_probe__lib + "/dhcp_probe_notify2" }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__legal_servers [[[
+#
+# List of IPv4 addresses of the DHCP servers that are allowed on the network.
+# If both an IP address list and a hardware address list are specified, both
+# elements must match.
+dhcp_probe__legal_servers: []
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__legal_servers_ethersrc [[[
+#
+# List of hardware (MAC) addresses of the DHCP servers that are allowed on the
+# network. If both an IP address list and a hardware address list are
+# specified, both elements must match.
+dhcp_probe__legal_servers_ethersrc: []
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__options [[[
+#
+# A string or YAML text block with custom :command:`dhcp_probe` options.
+# See :man:`dhcp_probe.cf(5)` for more details about available options.
+dhcp_probe__options: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Mail and pager notification [[[
+# -------------------------------
+
+# These variables are used to configure the custom mail notification script
+# used by DHCP Probe to notify the system administrator about rogue DHCP
+# servers found on the network.
+
+# .. envvar:: dhcp_probe__domain [[[
+#
+# The DNS domain used to send e-mail notifications about rogue DHCP servers.
+dhcp_probe__domain: '{{ ansible_local.core.domain
+                        if (ansible_local|d() and ansible_local.core|d() and
+                            ansible_local.core.domain|d())
+                        else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__mail_from [[[
+#
+# The sender of the notification mail. The default ``root`` will be expanded to
+# a full e-mail address by the SMTP server.
+dhcp_probe__mail_from: 'root'
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__mail_to [[[
+#
+# The list of the e-mail addresses of recipients which should get the
+# notification mail.
+dhcp_probe__mail_to: [ 'root@{{ dhcp_probe__domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__mail_subject [[[
+#
+# The prefix of the notification mail subject.
+dhcp_probe__mail_subject: 'Unexpected BOOTP/DHCP server'
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__mail_timeout [[[
+#
+# Time in seconds between successive notification mail messages.
+dhcp_probe__mail_timeout: '{{ 20 * 60 }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__page_to [[[
+#
+# The list of e-mail addresses of recipients which will receive short e-mail
+# messages, suitable for pagers.
+dhcp_probe__page_to: []
+
+                                                                   # ]]]
+# .. envvar:: dhcp_probe__page_timeout [[[
+#
+# Time in seconds between successive notification pager messages.
+dhcp_probe__page_timeout: '{{ 20 * 60 }}'
+                                                                   # ]]]
+                                                                   # ]]]

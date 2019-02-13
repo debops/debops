@@ -1,0 +1,28 @@
+#!/bin/bash
+##
+## Copyright (C) 2015-2018 Robin Schneider <ypid@riseup.net>
+## Copyright (C) 2017-2018 DebOps https://debops.org/
+## @license GPLv3 <https://www.gnu.org/licenses/gpl-3.0.html>
+
+set -o nounset -o pipefail -o errexit
+
+## TODO: Migrate more parts from ./debops-optimize-old
+
+## Script is expected to be run from the root of the DebOps monorepo.
+cd "$(git rev-parse --show-toplevel)" || exit
+
+
+for role_dir in ./ansible/roles/*; do
+    role_full_name="$(basename "$role_dir")"
+    # role_name="${role_full_name#*.}"
+    # role_owner="${role_full_name%.*}"
+    # is_ansible_role=true
+
+    echo "Role: ${role_full_name}"
+    echo "Defaults file: ${role_dir}/defaults/main.yml"
+
+    if command -v yaml4rst
+    then
+        test -e "${role_dir}/defaults/main.yml" && yaml4rst --config-kv "ansible_full_role_name=${role_full_name}" "${role_dir}/defaults/main.yml" -i
+    fi
+done

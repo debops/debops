@@ -14,23 +14,23 @@ if [ -z "${schema_file}" ] ; then
   echo "Error: You need to specify schema file to load" && exit 1
 fi
 
-if [ ! -e ${schema_file} ] ; then
+if [ ! -e "${schema_file}" ] ; then
   echo "Error: ${schema_file} does not exist" && exit 1
 fi
 
-if [ ! -r ${schema_file} ] ; then
+if [ ! -r "${schema_file}" ] ; then
   echo "Error: ${schema_file} cannot be read" && exit 1
 fi
 
 # Get the DN of the schema
-schema_dn="$(grep -E '^^dn:\s' ${schema_file})"
+schema_dn="$(grep -E '^^dn:\s' "${schema_file}")"
 
 # Get list of already installed schema's from local LDAP server
 schema_list() {
   ldapsearch -Y EXTERNAL -H ldapi:/// -LLLQ -b 'cn=schema,cn=config' dn | sed -e '/^$/d' -e 's/{[0-9]\+}//'
 }
 
-if $(schema_list | grep -q "${schema_dn}") ; then
+if schema_list | grep -q "${schema_dn}" ; then
 
   # Schema is already installed, do nothing
   exit 0
@@ -38,7 +38,6 @@ if $(schema_list | grep -q "${schema_dn}") ; then
 else
 
   # Try installing the schema in the database
-  ldapadd -Y EXTERNAL -H ldapi:/// -f ${schema_file}
+  ldapadd -Y EXTERNAL -H ldapi:/// -f "${schema_file}"
 
 fi
-

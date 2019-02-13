@@ -3,12 +3,14 @@
 - name: Install required packages
   apt:
     name: '{{ item }}'
-    state: 'latest'
+    state: 'present'
     install_recommends: False
   with_flattened:
     - '{{ gitlab__base_packages }}'
     - '{{ gitlab__release_packages[gitlab__distribution_release] | d([]) }}'
     - '{{ gitlab__database_packages[gitlab__distribution_release][gitlab__database] | d([]) }}'
+  register: gitlab__register_packages
+  until: gitlab__register_packages is succeeded
 
 - name: Create GitLab system group
   group:
@@ -45,6 +47,14 @@
     state: 'present'
   when: gitlab_support_filesystem_acl|bool
 
+- name: Allow GitLab user to the ~/.ssh directory
+  file:
+    path: '{{ gitlab_home + "/.ssh" }}'
+    state: 'directory'
+    owner: '{{ gitlab_user }}'
+    group: '{{ gitlab_group }}'
+    mode: '0700'
+
 - name: Configure ~/.gitconfig
   template:
     src: 'var/local/git/gitconfig.j2'
@@ -52,6 +62,24 @@
     owner: '{{ gitlab_user }}'
     group: '{{ gitlab_group }}'
     mode: '0644'
+
+- include: download_gitlab_ce.yml
+
+- name: Check GitLab version numbers
+  script: 'script/gitlab-version{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}
+           {{ gitlab_ce_git_checkout }}'
+  register: gitlab__register_version
+  changed_when: False
+  check_mode: False
+
+- name: Set facts about GitLab version numbers
+  set_fact:
+    gitlab__fact_version:
+      gitaly:    '{{ (gitlab__register_version.stdout | from_json)["gitaly_server_version"]    | d("") }}'
+      pages:     '{{ (gitlab__register_version.stdout | from_json)["gitlab_pages_version"]     | d("") }}'
+      shell:     '{{ (gitlab__register_version.stdout | from_json)["gitlab_shell_version"]     | d("") }}'
+      workhorse: '{{ (gitlab__register_version.stdout | from_json)["gitlab_workhorse_version"] | d("") }}'
+      ce:        '{{ (gitlab__register_version.stdout | from_json)["version"]                  | d("") }}'
 
 - include: configure_gitlab-shell.yml
 
@@ -63,7 +91,7 @@
 - include: configure_gitlab_ce.yml
 
 - include: configure_gitaly.yml
-  when: gitlab_version | version_compare("9.0", operator="gt", strict=True)
+  when: gitlab_version is version_compare("9.0", operator="gt", strict=True)
 
 - include: start_gitlab_ce.yml
 
@@ -84,4 +112,4 @@
     mode: '0644'
 
 - include: ldap_account.yml
-  when: gitlab_ldap_enable|bool
+  when: gitlab_ldap_enable|bool and gitlab_ldap_manage|bool

@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # APT packages, version [[[
@@ -76,8 +76,8 @@ kibana__domain: '{{ ansible_local.core.domain
                                                                    # ]]]
 # .. envvar:: kibana__webserver_access_policy [[[
 #
-# Name o the debops.nginx_ access policy for the Kibana webservice.
-# See the debops.nginx_ role documentation for more details.
+# Name of the :ref:`debops.nginx` access policy for the Kibana webservice.
+# See the :ref:`debops.nginx` role documentation for more details.
 kibana__webserver_access_policy: ''
 
                                                                    # ]]]
@@ -489,7 +489,7 @@ kibana__combined_plugins: '{{ lookup("flattened", (kibana__plugins
 
 # .. envvar:: kibana__etc_services__dependent_list [[[
 #
-# Configuration for the debops.etc_services_ Ansible role.
+# Configuration for the :ref:`debops.etc_services` Ansible role.
 kibana__etc_services__dependent_list:
   - name: 'kibana'
     port: '{{ kibana__server_port }}'
@@ -497,7 +497,7 @@ kibana__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: kibana__elastic_co__dependent_packages [[[
 #
-# Configuration for the ``debops.elastic_co`` Ansible role.
+# Configuration for the :ref:`debops.elastic_co` Ansible role.
 kibana__elastic_co__dependent_packages:
   - '{{ kibana__base_packages }}'
   - '{{ kibana__packages }}'
@@ -505,7 +505,7 @@ kibana__elastic_co__dependent_packages:
                                                                    # ]]]
 # .. envvar:: kibana__nginx__dependent_servers [[[
 #
-# Server configuration for the debops.nginx_ Ansible role.
+# Server configuration for the :ref:`debops.nginx` Ansible role.
 kibana__nginx__dependent_servers:
   - name: '{{ kibana__fqdn }}'
     by_role: 'debops.kibana'
@@ -528,7 +528,7 @@ kibana__nginx__dependent_servers:
                                                                    # ]]]
 # .. envvar:: kibana__nginx__dependent_upstreams [[[
 #
-# Upstream configuration for the debops.nginx_ Ansible role.
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
 kibana__nginx__dependent_upstreams:
   - name: 'kibana'
     server: '{{ kibana__server_host + ":" + kibana__server_port }}'

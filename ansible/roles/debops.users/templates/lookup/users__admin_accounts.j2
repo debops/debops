@@ -1,5 +1,7 @@
+{% set output = [] %}
 {% if ansible_local|d() and ansible_local.core|d() and ansible_local.core.admin_users|d() %}
 {%   for account in ansible_local.core.admin_users %}
-- name: '{{ account }}'
+{%     set _ = output.append({'name': account}) %}
 {%   endfor %}
 {% endif %}
+{{ output | to_yaml }}

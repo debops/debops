@@ -1,0 +1,467 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.roundcube default variables [[[
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: roundcube__required_php_packages [[[
+#
+# List of PHP packages required by Roundcube.
+# Refer to the `official Roundcube documentation <https://github.com/roundcube/roundcubemail/wiki/Install-Requirements>`__ for details.
+roundcube__required_php_packages:
+  - 'iconv'
+  - 'openssl'
+  - 'session'
+  - 'sockets'
+  - 'xml'
+  # Included in the xml package
+  #- 'dom'
+  - 'mbstring'
+  - 'json'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__optional_php_packages [[[
+#
+# List of recommended/optional PHP packages for Roundcube.
+# Refer to the `official Roundcube documentation <https://github.com/roundcube/roundcubemail/wiki/Install-Requirements>`__ for details.
+roundcube__optional_php_packages:
+  - 'fileinfo'
+  - 'pspell'
+  - 'zip'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__custom_php_packages [[[
+#
+# List of user defined PHP packages for Roundcube.
+roundcube__custom_php_packages: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__base_php_packages [[[
+#
+# List of base PHP packages required by Roundcube.
+roundcube__base_php_packages:
+  - '{{ roundcube__required_php_packages }}'
+  - '{{ roundcube__apt_php_packages }}'
+  - '{{ roundcube__optional_php_packages }}'
+  - '{{ [ "mysql" ] if (roundcube__database_map[roundcube__database].dbtype == "mysql") else [] }}'
+  - '{{ [ "sqlite3" ] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__apt_php_packages [[[
+#
+# PHP packages which are installed via APT repository if they are available
+# in a sufficiently new version in the current distribution. The required
+# minimal versions are taken from the file:`composer.json.dist` of the Roundcube
+# 1.3.0 release. If you install an older version of Roundcube you may want
+# to adjust this list.
+roundcube__apt_php_packages: '{{ [ "mail-mime", "net-smtp", "pear" ]
+                                 if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
+                                 else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__packages [[[
+#
+# List of additional APT packages (e. g. language dictionaries) that should
+# be installed with Roundcube.
+roundcube__packages: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__base_packages [[[
+#
+# APT packages required for the Roundcube installation.
+roundcube__base_packages: [ 'curl', 'file', 'unzip' ]
+
+                                                                   # ]]]
+# .. envvar:: roundcube__composer_packages [[[
+#
+# APT packages required to install PHP composer.
+roundcube__composer_packages: [ 'composer ']
+
+                                                                   # ]]]
+# .. envvar:: roundcube__composer_phar [[[
+#
+# If this is set to ``True`` the ``composer.phar`` script will be downloaded
+# from the :envvar:`roundcube__composer_phar_url` and used to install the
+# missing PHP packages. If this is set to ``False`` the system-wide
+# :command:`composer` is used.
+# WARNING: Setting this variable to ``True`` has some security implications as
+# the download is not cryptographically verified. This is only meant to be a
+# work-around for old distribution releases not supporting the downstream
+# packaged :command:`composer`.
+roundcube__composer_phar: '{{ True
+                              if ansible_distribution_release in [ "jessie", "trusty" ]
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__composer_phar_url [[[
+#
+# URL to the file:`composer.phar` script which will be used to install PHP
+# packages not available in the APT repository on distribution releases which
+# don't package PHP composer. If this is set to ``False``, :command:`composer`
+# will be installed via APT package manager.
+roundcube__composer_phar_url: 'https://getcomposer.org/composer.phar'
+                                                                   # ]]]
+                                                                   # ]]]
+# Roundcube user account [[[
+# --------------------------
+
+# .. envvar:: roundcube__user [[[
+#
+# Roundcube system user account.
+roundcube__user: 'roundcube'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__group [[[
+#
+# Roundcube system user group.
+roundcube__group: 'roundcube'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__home [[[
+#
+# Path to the home directory of the Roundcube system account.
+roundcube__home: '{{ (ansible_local.root.home
+                       if (ansible_local|d() and ansible_local.root|d() and
+                           ansible_local.root.home|d())
+                       else "/var/local") + "/" + roundcube__user }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__comment [[[
+#
+# The GECOS string set for the Roundcube account.
+roundcube__comment: 'Roundcube Webmail'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__shell [[[
+#
+# The default shell of the Roundcube account.
+roundcube__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Roundcube source and deployment [[[
+# -----------------------------------
+
+# .. envvar:: roundcube__git_repo [[[
+#
+# Roundcube source repository.
+roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__git_dest [[[
+#
+# Roundcube source directory on the host.
+roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__git_version [[[
+#
+# Roundcube release tag to deploy.
+roundcube__git_version: '1.3.0'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__git_checkout [[[
+#
+# Default path where Roundcube source files will be deployed.
+roundcube__git_checkout: '{{ roundcube__www + "/sites/" +
+                             (roundcube__domain if roundcube__domain is string else roundcube__domain[0]) +
+                             "/public" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__src [[[
+#
+# Base path for git bare repository with Roundcube source.
+roundcube__src: '{{ (ansible_local.root.src
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.src|d())
+                      else "/usr/local/src") + "/" + roundcube__user }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__www [[[
+#
+# Base web root directory for Roundcube website.
+roundcube__www: '{{ ansible_local.nginx.www
+                    if (ansible_local|d() and ansible_local.nginx|d())
+                    else "/srv/www" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__webserver_user [[[
+#
+# Roundcube webserver user (needs read-only access to the website code).
+roundcube__webserver_user: '{{ ansible_local.nginx.user
+                              if (ansible_local|d() and
+                                  ansible_local.nginx|d() and
+                                  ansible_local.nginx.user|d())
+                              else "www-data" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database configuration [[[
+# --------------------------
+
+# .. envvar:: roundcube__database [[[
+#
+# Database definition to use from the :envvar:`roundcube__database_map`.
+roundcube__database: 'sqlite-default'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_user [[[
+#
+# Database user account to use for Roundcube.
+roundcube__database_user: 'roundcube'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_password_path [[[
+#
+# Path to the database password file.
+roundcube__database_password_path: '{{ secret + "/credentials/" + ansible_fqdn
+                                       + "/roundcube/" + roundcube__database
+                                       + "/" + roundcube__database_user + "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_password [[[
+#
+# Database password for the account given in :envvar:`roundcube__database_user`.
+roundcube__database_password: '{{ lookup("password", roundcube__database_password_path + " length=30") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_name [[[
+#
+# Name of the database to use for Roundcube.
+roundcube__database_name: 'roundcubemail'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_map [[[
+#
+# Database connection definitions. Selet the database connection to use in
+# :envvar:`roundcube__database`.
+roundcube__database_map:
+
+  sqlite-default:
+    dbtype: 'sqlite'
+    dbname: 'db/roundcube.db'
+
+  mysql-default:
+    dbtype: 'mysql'
+    dbname: '{{ roundcube__database_name }}'
+    dbuser: '{{ roundcube__database_user }}'
+    dbpass: '{{ roundcube__database_password }}'
+    dbhost: 'localhost'
+    dbtableprefix: ''
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_schema [[[
+#
+# Initial Roundcube database schema loaded by Ansible.
+roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sql"
+    if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""}}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Roundcube application options [[[
+# ---------------------------------
+
+# .. envvar:: roundcube__domain [[[
+#
+# String or List of domains which will be used to access the roundcube instance.
+roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: roundcube__default_host [[[
+#
+# Mail host chosen to perform the log-in.
+roundcube__default_host: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_server [[[
+#
+# SMTP server host (for sending mails).
+roundcube__smtp_server: ''
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_port [[[
+#
+# SMTP port.
+roundcube__smtp_port: '25'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_user [[[
+#
+# SMTP username (if required) if you use %u as the username Roundcube will
+# use the current username for login.
+roundcube__smtp_user: ''
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_pass [[[
+#
+# SMTP password (if required) if you use %p as the password Roundcube will
+# use the current user's password for login.
+roundcube__smtp_pass: ''
+
+                                                                   # ]]]
+# .. envvar:: roundcube__des_key [[[
+#
+# Encryption key for the users imap password which is stored in the session
+# record (and the client cookie if remember password is enabled).
+roundcube__des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/des_key chars=hexdigits length=24") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__local_config_map [[[
+#
+# Custom configuration values for the Roundcube config.inc.php.
+roundcube__local_config_map: {}
+
+                                                                   # ]]]
+# .. envvar:: roundcube__group_local_config_map [[[
+#
+# Custom configuration values which can be defined on a group level and
+# eventually are merged with :envvar:`roundcube__local_config_map`.
+roundcube__group_local_config_map: {}
+
+                                                                   # ]]]
+# .. envvar:: roundcube__host_local_config_map [[[
+#
+# Custom configuration values which can be defined ona host level and
+# eventually are merged with :envvar:`roundcube__local_config_map`.
+roundcube__host_local_config_map: {}
+
+                                                                   # ]]]
+# .. envvar:: roundcube__default_plugins [[[
+#
+# List of plugins shipped and enabled by default with Roundcube.
+roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', 'zipdownload' ]
+
+                                                                   # ]]]
+# .. envvar:: roundcube__plugins [[[
+#
+# Additional Roundcube plugins to enable. Check the :file:`plugins/` folder for
+# the plugins shipped by default.
+roundcube__plugins: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Other variables [[[
+# -------------------
+
+# .. envvar:: roundcube__max_file_size [[[
+#
+# Maximum upload size, in MB.
+roundcube__max_file_size: '30'
+                                                                   # ]]]
+                                                                   # ]]]
+# Role-dependent configuration [[[
+# --------------------------------
+
+# .. envvar:: roundcube__nginx__dependent_servers [[[
+#
+# :program:`nginx` server configuration managed by the debops.nginx_ role.
+roundcube__nginx__dependent_servers:
+
+  - name: '{{ roundcube__domain }}'
+    filename: 'debops.roundcube'
+    by_role: 'debops.roundcube'
+    type: 'php'
+    root: '{{ roundcube__git_checkout }}'
+    access_policy: '{{ roundcube__nginx_access_policy }}'
+    index: 'index.php'
+
+    options: |
+      autoindex off;
+      client_max_body_size {{ roundcube__max_file_size }}M;
+      client_body_buffer_size 128k;
+
+    location_list:
+      - pattern: '/'
+        options: |
+          try_files $uri $uri/ @roundcube;
+
+      - pattern: '@roundcube'
+        options: |
+          rewrite ^/favicon\.ico$ skins/larry/images/favicon.ico last;
+
+      - pattern: '~ ^/?(installer|[A-Z0-9]+$)'
+        options: |
+          deny all;
+
+      - pattern: '~ ^/?(\.git|\.tx|SQL|bin|config|logs|temp|tests|program\/(include|lib|localization|steps))'
+        options: |
+          deny all;
+
+      - pattern: '~ /(README\.md|composer\.json-dist|composer\.json|package\.xml|Dockerfile)$'
+        options: |
+          deny all;
+
+    php_options: |
+      fastcgi_intercept_errors        on;
+      fastcgi_ignore_client_abort     off;
+      fastcgi_connect_timeout         60;
+      fastcgi_send_timeout            180;
+      fastcgi_read_timeout            180;
+      fastcgi_buffer_size             128k;
+      fastcgi_buffers               4 256k;
+      fastcgi_busy_buffers_size       256k;
+      fastcgi_temp_file_write_size    256k;
+
+    php_upstream: 'php_roundcube'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__nginx_access_policy [[[
+#
+# Name of the "nginx access policy" for Roundcube webpage. See debops.nginx_
+# Ansible role for more details.
+roundcube__nginx_access_policy: ''
+
+                                                                   # ]]]
+# .. envvar:: roundcube__nginx__dependent_upstreams [[[
+#
+# PHP upstream server configuration managed by the debops.nginx_ role.
+roundcube__nginx__dependent_upstreams:
+
+  - name: 'php_roundcube'
+    by_role: 'debops.roundcube'
+    enabled: True
+    type: 'php'
+    php_pool: 'roundcube'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__php__dependent_packages [[[
+#
+# List of PHP packages to install using the debops.php_ role.
+roundcube__php__dependent_packages:
+  - '{{ roundcube__base_php_packages }}'
+  - '{{ roundcube__optional_php_packages }}'
+  - '{{ roundcube__custom_php_packages }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__php__dependent_pools [[[
+#
+# PHP pools managed by the debops.php_ role.
+roundcube__php__dependent_pools:
+  name: 'roundcube'
+  by_role: 'debops.roundcube'
+  user: '{{ roundcube__user }}'
+  group: '{{ roundcube__group }}'
+
+  php_values:
+    ## https://secure.php.net/manual/en/info.configuration.php#ini.upload-max-filesize
+    upload_max_filesize:        '{{ roundcube__max_file_size }}M'
+
+    ## https://secure.php.net/manual/en/ini.core.php#ini.post-max-size
+    post_max_size:              '{{ roundcube__max_file_size }}M'
+
+    ## https://github.com/roundcube/roundcubemail/wiki/Install-Requirements
+    file_uploads:               'on'
+    mbstring.func_overload:     'off'
+    memory_limit:               '64M'
+    magic_quotes_runtime:       'off'
+    magic_quotes_sybase:        'off'
+    session.auto_start:         'off'
+    suhosin.session.encrypt:    'off'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

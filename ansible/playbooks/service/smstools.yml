@@ -19,26 +19,26 @@
         - '{{ postfix__secret__directories }}'
 
     - role: debops.etc_services
-      tags: [ 'role::etc_services' ]
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ smstools__etc_services__dependent_list }}'
 
     - role: debops.rsyslog
-      tags: [ 'role::syslog' ]
+      tags: [ 'role::syslog', 'skip::rsyslog' ]
 
     - role: debops.tcpwrappers
-      tags: [ 'role::tcpwrappers' ]
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ smstools__tcpwrappers__dependent_allow }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ postfix__ferm__dependent_rules }}'
         - '{{ smstools__ferm__dependent_rules }}'
 
     - role: debops.postfix
-      tags: [ 'role::postfix' ]
+      tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'smstools'
           config: '{{ smstools__postfix__dependent_maincf }}'
@@ -47,4 +47,4 @@
           config: '{{ smstools__postfix__dependent_mastercf }}'
 
     - role: debops.smstools
-      tags: [ 'role::smstools' ]
+      tags: [ 'role::smstools', 'skip::smstools' ]

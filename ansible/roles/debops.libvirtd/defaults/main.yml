@@ -7,9 +7,22 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
+# libvirt features [[[
+# --------------------
+
+# .. envvar:: libvirtd__kvm_support [[[
+#
+# Enable or disable support for KVM-based virtual machines.
+libvirtd__kvm_support: '{{ True
+                           if (ansible_virtualization_type == "kvm" and
+                               (ansible_virtualization_role == "host" or
+                                libvirtd__register_hw_virt.stdout != ""))
+                           else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # libvirtd packages [[[
 # ---------------------
 
@@ -148,7 +161,7 @@ libvirtd__default_uri: 'localhost'
 # installed software package.
 libvirtd__original_configuration:
 
-  - name: 'listen_tls' # [[[
+  - name: 'listen_tls'  # [[[
     comment: |
       Flag listening for secure TLS connections on the public TCP/IP port.
       NB, must pass the --listen flag to the libvirtd process for this to
@@ -161,9 +174,9 @@ libvirtd__original_configuration:
     value: False
     section: 'network'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'listen_tcp' # [[[
+  - name: 'listen_tcp'  # [[[
     comment: |
       Listen for unencrypted TCP connections on the public TCP/IP port.
       NB, must pass the --listen flag to the libvirtd process for this to
@@ -177,40 +190,40 @@ libvirtd__original_configuration:
     value: True
     section: 'network'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'tls_port' # [[[
+  - name: 'tls_port'  # [[[
     comment: |
       Override the port for accepting secure TLS connections
       This can be a port number, or service name
     value: '16514'
     section: 'network'
     state: 'comment'
-    weight: 3 # ]]]
+    weight: 3  # ]]]
 
-  - name: 'tcp_port' # [[[
+  - name: 'tcp_port'  # [[[
     comment: |
       Override the port for accepting insecure TCP connections
       This can be a port number, or service name
     value: '16509'
     section: 'network'
     state: 'comment'
-    weight: 4 # ]]]
+    weight: 4  # ]]]
 
-  - name: 'listen_addr' # [[[
+  - name: 'listen_addr'  # [[[
     comment: |
       Override the default configuration which binds to all network
       interfaces. This can be a numeric IPv4/6 address, or hostname
 
       If the libvirtd service is started in parallel with network
-      startup (e. g. with systemd), binding to addresses other than
+      startup (e. g. with systemd), binding to addresses other than
       the wildcards (0.0.0.0/::) might not be available yet.
     value: '192.168.0.1'
     section: 'network'
     state: 'comment'
-    weight: 5 # ]]]
+    weight: 5  # ]]]
 
-  - name: 'mdns_adv' # [[[
+  - name: 'mdns_adv'  # [[[
     comment: |
       Flag toggling mDNS advertisement of the libvirt service.
 
@@ -221,9 +234,9 @@ libvirtd__original_configuration:
     value: True
     section: 'network'
     state: 'comment'
-    weight: 6 # ]]]
+    weight: 6  # ]]]
 
-  - name: 'mdns_name' # [[[
+  - name: 'mdns_name'  # [[[
     comment: |
       Override the default mDNS advertisement name. This must be
       unique on the immediate broadcast network.
@@ -233,9 +246,9 @@ libvirtd__original_configuration:
     value: 'Virtualization Host Joe Demo'
     section: 'network'
     state: 'comment'
-    weight: 7 # ]]]
+    weight: 7  # ]]]
 
-  - name: 'unix_sock_group' # [[[
+  - name: 'unix_sock_group'  # [[[
     comment: |
       Set the UNIX domain socket group ownership. This can be used to
       allow a 'trusted' set of users access to management capabilities
@@ -245,9 +258,9 @@ libvirtd__original_configuration:
     value: 'libvirt'
     section: 'unix-socket'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'unix_sock_ro_perms' # [[[
+  - name: 'unix_sock_ro_perms'  # [[[
     comment: |
       Set the UNIX socket permissions for the R/O socket. This is used
       for monitoring VM status only
@@ -257,9 +270,9 @@ libvirtd__original_configuration:
     value: '0777'
     section: 'unix-socket'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'unix_sock_rw_perms' # [[[
+  - name: 'unix_sock_rw_perms'  # [[[
     comment: |
       Set the UNIX socket permissions for the R/W socket. This is used
       for full management of VMs
@@ -272,9 +285,9 @@ libvirtd__original_configuration:
     value: '0770'
     section: 'unix-socket'
     state: 'comment'
-    weight: 3 # ]]]
+    weight: 3  # ]]]
 
-  - name: 'unix_sock_admin_perms' # [[[
+  - name: 'unix_sock_admin_perms'  # [[[
     comment: |
       Set the UNIX socket permissions for the admin interface socket.
 
@@ -283,17 +296,17 @@ libvirtd__original_configuration:
     value: '0700'
     section: 'unix-socket'
     state: 'comment'
-    weight: 4 # ]]]
+    weight: 4  # ]]]
 
-  - name: 'unix_sock_dir' # [[[
+  - name: 'unix_sock_dir'  # [[[
     comment: |
       Set the name of the directory in which sockets will be found/created.
     value: '/var/run/libvirt'
     section: 'unix-socket'
     state: 'comment'
-    weight: 5 # ]]]
+    weight: 5  # ]]]
 
-  - name: 'auth_unix_ro' # [[[
+  - name: 'auth_unix_ro'  # [[[
     comment: |
       Set an authentication scheme for UNIX read-only sockets
       By default socket permissions allow anyone to connect
@@ -303,9 +316,9 @@ libvirtd__original_configuration:
     value: 'none'
     section: 'authn'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'auth_unix_rw' # [[[
+  - name: 'auth_unix_rw'  # [[[
     comment: |
       Set an authentication scheme for UNIX read-write sockets
       By default socket permissions only allow root. If PolicyKit
@@ -317,9 +330,9 @@ libvirtd__original_configuration:
     value: 'none'
     section: 'authn'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'auth_tcp' # [[[
+  - name: 'auth_tcp'  # [[[
     comment: |
       Change the authentication scheme for TCP sockets.
 
@@ -330,9 +343,9 @@ libvirtd__original_configuration:
     value: 'sasl'
     section: 'authn'
     state: 'comment'
-    weight: 3 # ]]]
+    weight: 3  # ]]]
 
-  - name: 'auth_tls' # [[[
+  - name: 'auth_tls'  # [[[
     comment: |
       Change the authentication scheme for TLS sockets.
 
@@ -344,9 +357,9 @@ libvirtd__original_configuration:
     value: 'none'
     section: 'authn'
     state: 'comment'
-    weight: 4 # ]]]
+    weight: 4  # ]]]
 
-  - name: 'access_drivers' # [[[
+  - name: 'access_drivers'  # [[[
     comment: |
       Change the API access control scheme
 
@@ -358,42 +371,42 @@ libvirtd__original_configuration:
     value: [ 'polkit' ]
     section: 'authn'
     state: 'comment'
-    weight: 5 # ]]]
+    weight: 5  # ]]]
 
-  - name: 'key_file' # [[[
+  - name: 'key_file'  # [[[
     comment: |
       Override the default server key file path
     value: '/etc/pki/libvirt/private/serverkey.pem'
     section: 'tls-cert'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'cert_file' # [[[
+  - name: 'cert_file'  # [[[
     comment: |
       Override the default server certificate file path
     value: '/etc/pki/libvirt/servercert.pem'
     section: 'tls-cert'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'ca_file' # [[[
+  - name: 'ca_file'  # [[[
     comment: |
       Override the default CA certificate path
     value: '/etc/pki/CA/cacert.pem'
     section: 'tls-cert'
     state: 'comment'
-    weight: 3 # ]]]
+    weight: 3  # ]]]
 
-  - name: 'crl_file' # [[[
+  - name: 'crl_file'  # [[[
     comment: |
       Specify a certificate revocation list.
       Defaults to not using a CRL, uncomment to enable it
     value: '/etc/pki/CA/crl.pem'
     section: 'tls-cert'
     state: 'comment'
-    weight: 4 # ]]]
+    weight: 4  # ]]]
 
-  - name: 'tls_no_sanity_certificate' # [[[
+  - name: 'tls_no_sanity_certificate'  # [[[
     comment: |
       Flag to disable verification of our own server certificates
 
@@ -405,9 +418,9 @@ libvirtd__original_configuration:
     value: True
     section: 'authz'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'tls_no_verify_certificate' # [[[
+  - name: 'tls_no_verify_certificate'  # [[[
     comment: |
       Flag to disable verification of client certificates
 
@@ -420,9 +433,9 @@ libvirtd__original_configuration:
     value: True
     section: 'authz'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'tls_allowed_dn_list' # [[[
+  - name: 'tls_allowed_dn_list'  # [[[
     comment: |
       A whitelist of allowed x509 Distinguished Names
       This list may contain wildcards such as
@@ -438,9 +451,9 @@ libvirtd__original_configuration:
     value: [ 'DN1', 'DN2' ]
     section: 'authz'
     state: 'comment'
-    weight: 3 # ]]]
+    weight: 3  # ]]]
 
-  - name: 'sasl_allowed_username_list' # [[[
+  - name: 'sasl_allowed_username_list'  # [[[
     comment: |
       A whitelist of allowed SASL usernames. The format for username
       depends on the SASL authentication mechanism. Kerberos usernames
@@ -459,9 +472,9 @@ libvirtd__original_configuration:
     value: [ 'joe@EXAMPLE.COM', 'fred@EXAMPLE.COM' ]
     section: 'authz'
     state: 'comment'
-    weight: 4 # ]]]
+    weight: 4  # ]]]
 
-  - name: 'tls_priority' # [[[
+  - name: 'tls_priority'  # [[[
     comment: |
       Override the compile time default TLS priority string. The
       default is usually "NORMAL" unless overridden at build time.
@@ -470,18 +483,18 @@ libvirtd__original_configuration:
     value: 'NORMAL'
     section: 'authz'
     state: 'comment'
-    weight: 5 # ]]]
+    weight: 5  # ]]]
 
-  - name: 'max_clients' # [[[
+  - name: 'max_clients'  # [[[
     comment: |
       The maximum number of concurrent client connections to allow
       over all sockets combined.
     value: 5000
     section: 'proc'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'max_queued_clients' # [[[
+  - name: 'max_queued_clients'  # [[[
     comment: |
       The maximum length of queue of connections waiting to be
       accepted by the daemon. Note, that some protocols supporting
@@ -490,9 +503,9 @@ libvirtd__original_configuration:
     value: 1000
     section: 'proc'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'max_anonymous_clients' # [[[
+  - name: 'max_anonymous_clients'  # [[[
     comment: |
       The maximum length of queue of accepted but not yet
       authenticated clients. The default value is 20. Set this to
@@ -500,9 +513,9 @@ libvirtd__original_configuration:
     value: 20
     section: 'proc'
     state: 'comment'
-    weight: 3 # ]]]
+    weight: 3  # ]]]
 
-  - name: 'min_workers' # [[[
+  - name: 'min_workers'  # [[[
     comment: |
       The minimum limit sets the number of workers to start up
       initially. If the number of active clients exceeds this,
@@ -512,15 +525,15 @@ libvirtd__original_configuration:
     value: 5
     section: 'proc'
     state: 'comment'
-    weight: 4 # ]]]
+    weight: 4  # ]]]
 
-  - name: 'max_workers' # [[[
+  - name: 'max_workers'  # [[[
     value: 20
     section: 'proc'
     state: 'comment'
-    weight: 5 # ]]]
+    weight: 5  # ]]]
 
-  - name: 'prio_workers' # [[[
+  - name: 'prio_workers'  # [[[
     comment: |
       The number of priority workers. If all workers from above
       pool are stuck, some calls marked as high priority
@@ -528,9 +541,9 @@ libvirtd__original_configuration:
     value: 5
     section: 'proc'
     state: 'comment'
-    weight: 6 # ]]]
+    weight: 6  # ]]]
 
-  - name: 'max_requests' # [[[
+  - name: 'max_requests'  # [[[
     comment: |
       Total global limit on concurrent RPC calls. Should be
       at least as large as max_workers. Beyond this, RPC requests
@@ -543,9 +556,9 @@ libvirtd__original_configuration:
     value: 20
     section: 'proc'
     state: 'comment'
-    weight: 7 # ]]]
+    weight: 7  # ]]]
 
-  - name: 'max_client_requests' # [[[
+  - name: 'max_client_requests'  # [[[
     comment: |
       Limit on concurrent requests from a single client
       connection. To avoid one client monopolizing the server
@@ -554,9 +567,9 @@ libvirtd__original_configuration:
     value: 5
     section: 'proc'
     state: 'comment'
-    weight: 8 # ]]]
+    weight: 8  # ]]]
 
-  - name: 'admin_min_workers' # [[[
+  - name: 'admin_min_workers'  # [[[
     comment: |
       Same processing controls, but this time for the admin interface.
       For description of each option, be so kind to scroll few lines
@@ -564,33 +577,33 @@ libvirtd__original_configuration:
     value: 1
     section: 'proc'
     state: 'comment'
-    weight: 9 # ]]]
+    weight: 9  # ]]]
 
-  - name: 'admin_max_workers' # [[[
+  - name: 'admin_max_workers'  # [[[
     value: 5
     section: 'proc'
     state: 'comment'
-    weight: 10 # ]]]
+    weight: 10  # ]]]
 
-  - name: 'admin_max_clients' # [[[
+  - name: 'admin_max_clients'  # [[[
     value: 5
     section: 'proc'
     state: 'comment'
-    weight: 11 # ]]]
+    weight: 11  # ]]]
 
-  - name: 'admin_max_queued_clients' # [[[
+  - name: 'admin_max_queued_clients'  # [[[
     value: 5
     section: 'proc'
     state: 'comment'
-    weight: 12 # ]]]
+    weight: 12  # ]]]
 
-  - name: 'admin_max_client_requests' # [[[
+  - name: 'admin_max_client_requests'  # [[[
     value: 5
     section: 'proc'
     state: 'comment'
-    weight: 13 # ]]]
+    weight: 13  # ]]]
 
-  - name: 'log_level' # [[[
+  - name: 'log_level'  # [[[
     comment: |
       Logging level: 4 errors, 3 warnings, 2 information, 1 debug
       basically 1 will log everything possible
@@ -601,9 +614,9 @@ libvirtd__original_configuration:
     value: 3
     section: 'log'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'log_filters' # [[[
+  - name: 'log_filters'  # [[[
     comment: |
       Logging filters:
       A filter allows to select a different logging level for a given category
@@ -614,7 +627,7 @@ libvirtd__original_configuration:
 
           where name is a string which is matched against the category
           given in the VIR_LOG_INIT() at the top of each libvirt source
-          file, e. g., "remote", "qemu", or "util.json" (the name in the
+          file, e. g., "remote", "qemu", or "util.json" (the name in the
           filter can be a substring of the full category name, in order
           to match multiple similar categories), the optional "+" prefix
           tells libvirt to log stack trace for each message matching
@@ -629,14 +642,14 @@ libvirtd__original_configuration:
       Multiple filters can be defined in a single @filters, they just need to be
       separated by spaces.
 
-      e. g. to only get warning or errors from the remote layer and only errors
+      e. g. to only get warning or errors from the remote layer and only errors
       from the event layer:
     value: '3:remote 4:event'
     section: 'log'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'log_outputs' # [[[
+  - name: 'log_outputs'  # [[[
     comment: |
       Logging outputs:
       An output is one of the places to save logging information
@@ -656,13 +669,13 @@ libvirtd__original_configuration:
         4: ERROR
 
       Multiple outputs can be defined, they just need to be separated by spaces.
-      e. g. to log all warnings and errors to syslog under the libvirtd ident:
+      e. g. to log all warnings and errors to syslog under the libvirtd ident:
     value: '3:syslog:libvirtd'
     section: 'log'
     state: 'comment'
-    weight: 3 # ]]]
+    weight: 3  # ]]]
 
-  - name: 'log_buffer_size' # [[[
+  - name: 'log_buffer_size'  # [[[
     comment: |
       Log debug buffer size:
 
@@ -672,9 +685,9 @@ libvirtd__original_configuration:
     value: 64
     section: 'log'
     state: 'comment'
-    weight: 4 # ]]]
+    weight: 4  # ]]]
 
-  - name: 'audit_level' # [[[
+  - name: 'audit_level'  # [[[
     comment: |
       This setting allows usage of the auditing subsystem to be altered:
 
@@ -684,18 +697,18 @@ libvirtd__original_configuration:
     value: 2
     section: 'audit'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'audit_logging' # [[[
+  - name: 'audit_logging'  # [[[
     comment: |
       If set to 1, then audit messages will also be sent
       via libvirt logging infrastructure. Defaults to 0
     value: True
     section: 'audit'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'host_uuid' # [[[
+  - name: 'host_uuid'  # [[[
     comment: |
       Host UUID is read from one of the sources specified in host_uuid_source.
 
@@ -716,15 +729,15 @@ libvirtd__original_configuration:
     value: '00000000-0000-0000-0000-000000000000'
     section: 'uuid'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'host_uuid_source' # [[[
+  - name: 'host_uuid_source'  # [[[
     value: 'smbios'
     section: 'uuid'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'keepalive_interval' # [[[
+  - name: 'keepalive_interval'  # [[[
     comment: |
       This allows libvirtd to detect broken client connections or even
       dead clients.  A keepalive message is sent to a client after
@@ -743,15 +756,15 @@ libvirtd__original_configuration:
     value: 5
     section: 'keepalive'
     state: 'comment'
-    weight: 1 # ]]]
+    weight: 1  # ]]]
 
-  - name: 'keepalive_count' # [[[
+  - name: 'keepalive_count'  # [[[
     value: 5
     section: 'keepalive'
     state: 'comment'
-    weight: 2 # ]]]
+    weight: 2  # ]]]
 
-  - name: 'keepalive_required' # [[[
+  - name: 'keepalive_required'  # [[[
     comment: |
       These configuration options are no longer used.  There is no way to
       restrict such clients from connecting since they first need to
@@ -759,27 +772,27 @@ libvirtd__original_configuration:
     value: True
     section: 'keepalive'
     state: 'comment'
-    weight: 3 # ]]]
+    weight: 3  # ]]]
 
-  - name: 'admin_keepalive_required' # [[[
+  - name: 'admin_keepalive_required'  # [[[
     value: True
     section: 'keepalive'
     state: 'comment'
-    weight: 4 # ]]]
+    weight: 4  # ]]]
 
-  - name: 'admin_keepalive_interval' # [[[
+  - name: 'admin_keepalive_interval'  # [[[
     comment: |
       Keepalive settings for the admin interface
     value: 5
     section: 'keepalive'
     state: 'comment'
-    weight: 5 # ]]]
+    weight: 5  # ]]]
 
-  - name: 'admin_keepalive_count' # [[[
+  - name: 'admin_keepalive_count'  # [[[
     value: 5
     section: 'keepalive'
     state: 'comment'
-    weight: 6 # ]]]
+    weight: 6  # ]]]
 
                                                                    # ]]]
 # .. envvar:: libvirtd__default_configuration [[[
@@ -919,12 +932,24 @@ libvirtd__ksm_sleep_milisecs: 20
 libvirtd__ksm_pages_to_scan: 100
                                                                    # ]]]
                                                                    # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: libvirtd__ferm_post_hook [[[
+#
+# Enable or disable installation of the :program:`ferm` post hook.
+libvirtd__ferm_post_hook: '{{ True
+                              if (ansible_local|d() and ansible_local.ferm|d() and
+                                  (ansible_local.ferm.enabled|d())|bool)
+                              else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Role-dependent configuration [[[
 # --------------------------------
 
 # .. envvar:: libvirtd__apt_preferences__dependent_list [[[
 #
-# Configuration for the debops.apt_preferences_ role.
+# Configuration for the :ref:`debops.apt_preferences` role.
 libvirtd__apt_preferences__dependent_list:
 
   - packages: [ 'libvirt0', 'libvirt0-dbg', 'libvirt-*',
@@ -937,7 +962,7 @@ libvirtd__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: libvirtd__ferm__dependent_rules [[[
 #
-# Configuration for debops.ferm_ firewall.
+# Configuration for ``debops.ferm`` firewall.
 libvirtd__ferm__dependent_rules:
 
   - type: 'custom'
@@ -952,12 +977,8 @@ libvirtd__ferm__dependent_rules:
     filename: 'reload_libvirt'
     weight: 'zz'
     rules: '@hook post "type libvirtd > /dev/null && (systemctl reload libvirtd || true)";'
+    state: 'absent'
 
-                                                                   # ]]]
-# .. envvar:: libvirtd__ferm__forward [[[
-#
-# Enable/disable IP forwarding on the host.
-libvirtd__ferm__forward: True
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

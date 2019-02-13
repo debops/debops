@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # MariaDB Server APT packages [[[
@@ -29,7 +29,9 @@
 # - ``mysql-5.7_galera-3``: use MySQL 5.7 engine with Galera from Codership
 #   repository
 #
-# - ``percona``: use Percona XtraDB engine from upstream repository
+# - ``percona``: use Percona default version XtraDB engine from upstream repository
+#
+# - ``percona-5.7``: use Percona 5.7 XtraDB engine from upstream repository
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
@@ -66,6 +68,7 @@ mariadb_server__apt_key_map:
   'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
   'mysql-5.7_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
   'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+  'percona-5.7':        '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__upstream_version [[[
@@ -94,6 +97,7 @@ mariadb_server__apt_repository_map:
     - 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
     - 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
   'percona':            'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+  'percona-5.7':        'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__base_packages [[[
@@ -120,6 +124,7 @@ mariadb_server__packages_map:
   'mysql-5.6_galera-3': [ 'mysql-wsrep-server-5.6', 'galera-3', 'galera-arbitrator-3' ]
   'mysql-5.7_galera-3': [ 'mysql-wsrep-server-5.7', 'galera-3', 'galera-arbitrator-3' ]
   'percona': [ 'percona-server-server' ]
+  'percona-5.7': [ 'percona-server-server-5.7' ]
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[
@@ -157,10 +162,16 @@ mariadb_server__allow: []
 mariadb_server__max_connections: '100'
 
                                                                    # ]]]
+# .. envvar:: mariadb_server__default_datadir [[[
+#
+# Default directory to store data
+mariadb_server__default_datadir: '/var/lib/mysql'
+
+                                                                   # ]]]
 # .. envvar:: mariadb_server__datadir [[[
 #
 # Directory to store data
-mariadb_server__datadir: '/var/lib/mysql'
+mariadb_server__datadir: '{{ mariadb_server__default_datadir }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__delegate_to [[[
@@ -205,9 +216,9 @@ mariadb_server__mysqld_security_options:
 #
 # Configuration options related to charset and string encoding on the server.
 mariadb_server__mysqld_charset_options:
-  'character_set_server': 'utf8'
-  'collation_server':     'utf8_general_ci'
-  'init_connect':         'SET NAMES utf8'
+  'character_set_server': 'utf8mb4'
+  'collation_server':     'utf8mb4_general_ci'
+  'init_connect':         'SET NAMES utf8mb4'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__mysqld_network_options [[[
@@ -221,7 +232,7 @@ mariadb_server__mysqld_network_options:
                                                                    # ]]]
 # .. envvar:: mariadb_server__mysqld_pki_options [[[
 #
-# Configuration of SSL support in :program:`mysqld`, managed by debops.pki_ role.
+# Configuration of SSL support in :program:`mysqld`, managed by :ref:`debops.pki` role.
 mariadb_server__mysqld_pki_options:
   name: 'pki-options'
   comment: 'Support for SSL connections'
@@ -241,7 +252,7 @@ mariadb_server__mysqld_pki_options:
 mariadb_server__mysqld_cluster_options:
   name: 'cluster-options'
   comment: 'Required for cluster operation'
-  state: '{{ "present" if mariadb_server__flavor in [ "mysql-5.6_galera-3", "percona" ] else "absent" }}'
+  state: '{{ "present" if mariadb_server__flavor in [ "mysql-5.6_galera-3", "percona", "percona-5.7" ] else "absent" }}'
   options:
     'binlog_format': 'ROW'
     'default_storage_engine': 'InnoDB'
@@ -275,11 +286,11 @@ mariadb_server__mysqld_options:
 # .. envvar:: mariadb_server__client_options [[[
 #
 # Configuration set in :file:`/etc/mysql/conf.d/client.cnf` at the installation
-# time. Afterwards you should use the debops.mariadb_ role to manage it.
+# time. Afterwards you should use the :ref:`debops.mariadb` role to manage it.
 mariadb_server__client_options:
   - section: 'client'
     options:
-      'default_character_set': 'utf8'
+      'default_character_set': 'utf8mb4'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__options [[[
@@ -318,7 +329,7 @@ mariadb_server__append_groups: [ 'ssl-cert' ]
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki [[[
 #
-# Enable or disable support for SSL in MariaDB (using debops.pki_).
+# Enable or disable support for SSL in MariaDB (using :ref:`debops.pki`).
 mariadb_server__pki: '{{ (True
                       if (ansible_local|d() and ansible_local.pki|d() and
                           ansible_local.pki.enabled|d() and
@@ -417,6 +428,7 @@ mariadb_server__backup_directory: '/var/lib/automysqlbackup'
 mariadb_server__backup_max_allowed_packet: ''
                                                                    # ]]]
                                                                    # ]]]
+                                                                   # ]]]
 # MariaDB root account [[[
 # ------------------------
 
@@ -440,7 +452,7 @@ mariadb_server__root_password: '{{ lookup("password", secret +
 
 # .. envvar:: mariadb_server__ferm__dependent_rules [[[
 #
-# Configuration for debops.ferm_ Ansible role.
+# Configuration for :ref:`debops.ferm` Ansible role.
 mariadb_server__ferm__dependent_rules:
 
   - type: 'accept'
@@ -453,7 +465,7 @@ mariadb_server__ferm__dependent_rules:
                                                                    # ]]]
 # .. envvar:: mariadb_server__tcpwrappers__dependent_allow [[[
 #
-# Configuration for debops.tcpwrappers_ Ansible role.
+# Configuration for :ref:`debops.tcpwrappers` Ansible role.
 mariadb_server__tcpwrappers__dependent_allow:
 
   - daemon: 'mysqld'

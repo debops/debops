@@ -1,0 +1,24 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = loads('''{{ {"installed": False,
+                      "database_type": icinga_web__database_type}
+                     | to_nice_json }}''')
+
+output['installed'] = cmd_exists('icingacli')
+
+print(dumps(output, sort_keys=True, indent=4))

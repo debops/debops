@@ -1,7 +1,9 @@
 ---
 
 - name: Check systemd version
-  shell: systemd --version | head -n 1 | awk '{print $2}'
+  shell: set -o nounset -o pipefail -o errexit && systemd --version | head -n 1 | awk '{print $2}'
+  args:
+    executable: '/bin/bash'
   register: ifupdown__register_systemd_version
   check_mode: False
   changed_when: False
@@ -20,8 +22,9 @@
   register: ifupdown__register_systemd_services
 
 - name: Reload systemd services
-  command: systemctl daemon-reload
-  when: ansible_service_mgr == 'systemd' and ifupdown__register_systemd_services|changed
+  systemd:
+    daemon_reload: True
+  when: ansible_service_mgr == 'systemd' and ifupdown__register_systemd_services is changed
 
   ## https://stackoverflow.com/a/28888474
 - name: Test if Ansible is running in check mode
@@ -34,4 +37,4 @@
     name: '{{ item }}'
     enabled: True
   with_items: [ 'ifup-wait-all-auto', 'ifup-allow-boot' ]
-  when: (ansible_service_mgr == 'systemd' and not ifupdown__register_check_mode|skipped)
+  when: (ansible_service_mgr == 'systemd' and ifupdown__register_check_mode is not skipped)

@@ -1,0 +1,217 @@
+---
+
+- name: Install required Icinga Web packages
+  package:
+    name: '{{ lookup("flattened",
+                     (icinga_web__base_packages + icinga_web__packages),
+                     wantlist=True) }}'
+    state: 'present'
+  register: icinga_web__register_packages
+  until: icinga_web__register_packages is succeeded
+
+- name: Get current Icinga Web configuration
+  script: 'script/icingaweb-config{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}'
+  register: icinga_web__register_config
+  changed_when: False
+  check_mode: False
+
+- name: Ensure that configuration directories exist
+  file:
+    path: '/etc/icingaweb2/{{ item.name }}'
+    state: 'directory'
+    owner: '{{ icinga_web__user }}'
+    group: '{{ icinga_web__group }}'
+    mode: '{{ item.mode | d("02770") }}'
+  with_items:
+
+    - name: 'enabledModules'
+      mode: '02750'
+
+    - name: 'modules/monitoring'
+
+    - name: 'modules/director'
+
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+
+- name: Download and install Icinga upstream modules
+  git:
+    repo: '{{ item.git_repo }}'
+    dest: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
+    version: '{{ item.git_version }}'
+  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
+  when: item.name|d() and item.git_repo|d() and
+        item.git_version|d() and item.state|d('present') != 'absent'
+
+- name: Symlink Icinga upstream modules to Icinga Web application
+  file:
+    path: '{{ "/usr/share/icingaweb2/modules/" + item.name }}'
+    src: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
+    state: 'link'
+    force: '{{ True if ansible_check_mode|bool else omit }}'
+  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
+  when: item.name|d() and item.git_repo|d() and
+        item.git_version|d() and item.state|d('present') != 'absent'
+
+- name: Manage Icinga Web modules
+  file:
+    path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
+    src: '{{ (item.path | d("/usr/share/icingaweb2/modules/" + item.name))
+             if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else omit }}'
+    state: '{{ "link" if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else "absent" }}'
+    force: '{{ True if ansible_check_mode|bool else omit }}'
+  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
+  when: item.name|d()
+
+- name: Generate Icinga Web configuration
+  template:
+    src: 'etc/icingaweb2/template.ini.j2'
+    dest: '/etc/icingaweb2/{{ item.filename }}'
+    owner: '{{ icinga_web__user }}'
+    group: '{{ icinga_web__group }}'
+    mode: '0660'
+  no_log: '{{ item.no_log | d(omit) }}'
+  with_items:
+
+    - filename: 'authentication.ini'
+      config: '{{ icinga_web__combined_authentication }}'
+
+    - filename: 'config.ini'
+      config: '{{ icinga_web__combined_config }}'
+
+    - filename: 'groups.ini'
+      config: '{{ icinga_web__combined_groups }}'
+
+    - filename: 'resources.ini'
+      config: '{{ icinga_web__combined_resources }}'
+      no_log: True
+
+    - filename: 'roles.ini'
+      config: '{{ icinga_web__combined_roles }}'
+
+    - filename: 'modules/monitoring/backends.ini'
+      config: '{{ icinga_web__combined_backends }}'
+
+    - filename: 'modules/monitoring/commandtransports.ini'
+      config: '{{ icinga_web__combined_commandtransports }}'
+
+    - filename: 'modules/director/config.ini'
+      config: '{{ icinga_web__combined_director_cfg }}'
+
+    - filename: 'modules/director/kickstart.ini'
+      config: '{{ icinga_web__combined_director_kickstart_cfg }}'
+
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+
+- name: Generate initial data file
+  template:
+    src: 'tmp/icingaweb-initial-data.sql.j2'
+    dest: '/tmp/icingaweb-initial-data.sql'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  when: icinga_web__database_host == 'localhost' and
+      icinga_web__database_init|bool
+  no_log: True
+
+- name: Import Icinga Web database on installation into PostgreSQL
+  postgresql_db:
+    name: '{{ icinga_web__database_name }}'
+    state: 'restore'
+    target: '{{ item }}'
+  with_items:
+    - '{{ icinga_web__database_schema }}'
+    - '/tmp/icingaweb-initial-data.sql'
+  delegate_to: '{{ icinga_web__database_delegate_to }}'
+  when: icinga_web__database_type == 'postgresql' and
+        icinga_web__database_host == 'localhost' and
+        icinga_web__database_init|bool
+
+  # Without this, Icinga Web cannot access the database, with error:
+  # permission denied for relation icingaweb_user
+- name: Ensure that PostgreSQL database tables are accessible
+  postgresql_privs:
+    db: '{{ icinga_web__database_name }}'
+    role: '{{ icinga_web__database_user }}'
+    objs: 'ALL_IN_SCHEMA'
+    privs: 'SELECT,INSERT,UPDATE,DELETE'
+  delegate_to: '{{ icinga_web__database_delegate_to }}'
+  when: icinga_web__database_type == 'postgresql' and
+        icinga_web__database_host == 'localhost' and
+        icinga_web__database_init|bool
+
+- name: Import Icinga Web database on installation into MariaDB
+  mysql_db:
+    name: '{{ icinga_web__database_name }}'
+    state: 'import'
+    target: '{{ item }}'
+  with_items:
+    - '{{ icinga_web__database_schema }}'
+    - '/tmp/icingaweb-initial-data.sql'
+  delegate_to: '{{ icinga_web__database_delegate_to }}'
+  when: icinga_web__database_type == 'mariadb' and
+        icinga_web__database_host == 'localhost' and
+        icinga_web__database_init|bool
+
+- name: Ensure that initial data schema is removed
+  file:
+    path: '/tmp/icingaweb-initial-data.sql'
+    state: 'absent'
+
+- name: Create or migrate Icinga Director database
+  command: 'icingacli director migration run'
+  when: icinga_web__director_enabled|bool and
+        icinga_web__director_database_init|bool
+
+- name: Kickstart Icinga Director configuration
+  command: 'icingacli director kickstart run'
+  when: icinga_web__director_enabled|bool and
+        icinga_web__director_database_init|bool and
+        icinga_web__director_kickstart_enabled|bool
+
+- name: Deploy Icinga Director configuration
+  command: 'icingacli director config deploy'
+  when: icinga_web__director_enabled|bool and
+        icinga_web__director_database_init|bool and
+        icinga_web__director_kickstart_enabled|bool
+
+- name: Configure Director job runner service
+  template:
+    src: 'etc/systemd/system/icinga2-director-jobs.service.j2'
+    dest: '/etc/systemd/system/icinga2-director-jobs.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: icinga_web__register_systemd
+  when: icinga_web__director_enabled|bool and ansible_service_mgr == 'systemd'
+
+- name: Enable Director job runner service
+  systemd:
+    daemon_reload: True
+    name: 'icinga2-director-jobs.service'
+    enabled: True
+    state: '{{ "restarted"
+               if (ansible_local|d() and ansible_local.icinga_web|d() and
+                   (ansible_local.icinga_web.installed|d())|bool)
+               else "started" }}'
+  when: icinga_web__register_systemd is changed
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Icinga Web local facts
+  template:
+    src: 'etc/ansible/facts.d/icinga_web.fact.j2'
+    dest: '/etc/ansible/facts.d/icinga_web.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: icinga_web__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: icinga_web__register_facts is changed

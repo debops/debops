@@ -1,0 +1,103 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ dhcp_probe__base_packages + dhcp_probe__packages }}'
+    state: 'present'
+  register: dhcp_probe__register_packages
+  until: dhcp_probe__register_packages is succeeded
+
+- name: Ensure that sysvinit dhcp-probe service is stopped on install
+  systemd:
+    name: 'dhcp-probe.service'
+    state: 'stopped'
+  when: ((ansible_local is undefined or
+          ansible_local.dhcp_probe is undefined) and
+         ansible_service_mgr == 'systemd')
+
+- name: Install custom systemd unit files
+  template:
+    src: 'etc/systemd/system/{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  loop: [ 'dhcp-probe@.service', 'dhcp-probe.service' ]
+  register: dhcp_probe__register_systemd
+  when: ansible_service_mgr == 'systemd'
+
+- name: Reload systemd configuration when needed
+  systemd:
+    daemon_reload: True
+  when: ansible_service_mgr == 'systemd' and
+        dhcp_probe__register_systemd is changed
+
+- name: Disable DHCP Probe instances if requested
+  systemd:
+    name: 'dhcp-probe@{{ item.name }}.service'
+    state: 'stopped'
+    enabled: False
+  loop: '{{ dhcp_probe__combined_interfaces | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state} }}'
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') == 'absent'
+
+- name: Enable DHCP Probe instances if requested
+  systemd:
+    name: 'dhcp-probe@{{ item.name }}.service'
+    enabled: True
+  loop: '{{ dhcp_probe__combined_interfaces | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state} }}'
+  when: ansible_service_mgr == 'systemd' and item.name|d() and
+        item.state|d('present') != 'absent'
+  notify: [ 'Restart dhcp-probe' ]
+
+- name: Ensure that required directories exist
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  loop: [ '{{ dhcp_probe__cache }}', '{{ dhcp_probe__lib }}' ]
+
+- name: Install custom notification scripts
+  template:
+    src: 'usr/local/lib/dhcp-probe/{{ item }}.j2'
+    dest: '{{ dhcp_probe__lib + "/" + item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  loop: [ 'dhcp_probe_notify2', 'mail-throttled' ]
+
+- name: Generate dhcp_probe.cf configuration file
+  template:
+    src: 'etc/dhcp_probe.cf.j2'
+    dest: '/etc/dhcp_probe.cf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart dhcp-probe' ]
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Setup DHCP Probe local facts
+  template:
+    src: 'etc/ansible/facts.d/dhcp_probe.fact.j2'
+    dest: '/etc/ansible/facts.d/dhcp_probe.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: dhcp_probe__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: dhcp_probe__register_facts is changed

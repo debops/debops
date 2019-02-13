@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+debops-defaults: aggregate all defaults from Ansible roles into one stream
+"""
+# Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Part of the DebOps - https://debops.org/
+
+# This program is free software; you can redistribute
+# it and/or modify it under the terms of the
+# GNU General Public License as published by the Free
+# Software Foundation; either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
+# Public License along with this program; if not,
+# write to the Free Software Foundation, Inc., 59
+# Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# An on-line copy of the GNU General Public License can
+# be downloaded from the FSF web page at:
+# https://www.gnu.org/copyleft/gpl.html
+
+from __future__ import print_function
+
+import os
+import sys
+import io
+import subprocess
+import glob
+import argparse
+import errno
+
+from debops import ROLE_PREFIX, read_config
+from debops.cmds import find_debops_project, require_commands
+from debops.cmds import find_playbookpath
+
+__author__ = "Hartmut Goebel <h.goebel@crazy-compilers.com>"
+__copyright__ = "Copyright 2014-2015 by Hartmut Goebel "\
+                "<h.goebel@crazy-compilers.com>"
+__licence__ = "GNU General Public License version 3 (GPL v3) or later"
+
+
+def cat(filename, outstream):
+    try:
+        fh = io.open(filename, encoding="utf-8")
+    except IOError as e:
+        # This should only happen if the user listed a unknown role.
+        message = u'%s: %s\n' % (e.strerror, e.filename)
+        outstream.write(message.encode())
+        return
+    try:
+        # Read input file as Unicode object and pass it to outstream.
+        outstream.write(fh.read().encode('utf-8'))
+    finally:
+        fh.close()
+
+
+def aggregate_defaults(playbooks_path, role_list, outstream):
+    # Aggregate role/defaults/main.yml files from all roles into one stream
+    roles_path = os.path.normpath(os.path.join(playbooks_path, '..', 'roles'))
+    if role_list:
+        for role in role_list:
+            if '.' not in role:
+                role = ROLE_PREFIX + '.' + role
+            fn = os.path.join(roles_path, role, 'defaults', 'main.yml')
+            cat(fn, outstream=outstream)
+    else:
+        for fn in glob.glob(os.path.join(roles_path,
+                                         '*', 'defaults', 'main.yml')):
+            cat(fn, outstream=outstream)
+
+# ---- DebOps environment setup ----
+
+
+def main(role_list):
+    project_root = find_debops_project(required=False)
+    config = read_config(project_root)
+    playbooks_path = find_playbookpath(config, project_root, required=True)
+
+    # Make sure required commands are present
+    require_commands('view')
+
+    if sys.stdout.isatty():
+        # if script is run as standalone, redirect to view
+        view = subprocess.Popen(['view', '+set ft=yaml', '-'],
+                                stdin=subprocess.PIPE)
+        try:
+            aggregate_defaults(playbooks_path, role_list, view.stdin)
+        except IOError as e:
+            if e.errno not in (errno.EPIPE, errno.EINVAL):
+                # "Invalid pipe" or "Invalid argument"
+                raise
+        finally:
+            view.communicate()
+    else:
+        # else, send everything to stdout
+        aggregate_defaults(playbooks_path, role_list, sys.stdout)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('role', nargs='*')
+args = parser.parse_args()
+
+try:
+    main(args.role)
+except KeyboardInterrupt:
+    raise SystemExit('... aborted')

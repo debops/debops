@@ -1,0 +1,184 @@
+---
+
+# ---- System Account ----
+
+- name: Create Roundcube group
+  group:
+    name: '{{ roundcube__group }}'
+    system: True
+    state: 'present'
+
+- name: Create Roundcube user
+  user:
+    name: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    home: '{{ roundcube__home }}'
+    shell: '{{ roundcube__shell }}'
+    comment: '{{ roundcube__comment }}'
+    system: True
+    state: 'present'
+
+
+# ---- Deployment ----
+
+# roundcube is checked out based on tags instead of branches, and since we
+# cannot work with tags from a bare repository, we need to work around it
+# a little.
+
+- name: Check if bare repository is cloned
+  stat:
+    path: '{{ roundcube__git_dest }}'
+  register: roundcube__register_cloned
+
+- name: Save current checkout hash for update
+  command: git rev-parse HEAD
+  args:
+    chdir: '{{ roundcube__git_dest }}'
+    warn: False
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_current_head
+  changed_when: False
+  when: roundcube__register_cloned.stat.exists
+
+- name: Change current HEAD to master in bare repository for update
+  command: git symbolic-ref HEAD refs/heads/master
+  args:
+    chdir: '{{ roundcube__git_dest }}'
+    warn: False
+  become: True
+  become_user: '{{ roundcube__user }}'
+  changed_when: False
+  when: roundcube__register_cloned.stat.exists
+
+- name: Create Roundcube source directory
+  file:
+    path: '{{ roundcube__src }}'
+    state: 'directory'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    mode: '0750'
+
+- name: Clone Roundcube source from upstream repository
+  git:
+    repo: '{{ roundcube__git_repo }}'
+    dest: '{{ roundcube__git_dest }}'
+    version: 'master'
+    bare: True
+    update: True
+  become: True
+  become_user: '{{ roundcube__user }}'
+
+- name: Restore HEAD to previous checkout
+  copy:
+    content: '{{ roundcube__register_current_head.stdout }}'
+    dest: '{{ roundcube__git_dest + "/HEAD" }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    mode: '0644'
+  changed_when: False
+  when: roundcube__register_cloned.stat.exists
+
+- name: Create Roundcube checkout directory
+  file:
+    path: '{{ roundcube__git_checkout }}'
+    state: 'directory'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__webserver_user }}'
+    mode: '0750'
+
+- name: Prepare Roundcube worktree
+  copy:
+    content: 'gitdir: {{ roundcube__git_dest }}'
+    dest: '{{ roundcube__git_checkout + "/.git" }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    mode: '0644'
+
+- name: Get currently checked out git tag
+  command: git describe --tags
+  environment:
+    GIT_WORK_TREE: '{{ roundcube__git_checkout }}'
+  args:
+    chdir: '{{ roundcube__git_dest }}'
+    warn: False
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_target_tag
+  changed_when: roundcube__register_target_tag.stdout != roundcube__git_version
+
+- name: Checkout Roundcube
+  command: git checkout --force {{ roundcube__git_version }}
+  environment:
+    GIT_WORK_TREE: '{{ roundcube__git_checkout }}'
+  args:
+    chdir: '{{ roundcube__git_dest }}'
+    warn: False
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_checkout
+  changed_when: roundcube__register_target_tag.stdout != roundcube__git_version
+
+- name: Read PHP composer template
+  command: cat {{ roundcube__git_checkout }}/composer.json-dist
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_composer_json
+  changed_when: False
+
+
+# ---- Post deployment ----
+
+- name: Generate PHP composer.json
+  template:
+    src: 'srv/www/sites/composer.json.j2'
+    dest: '{{ roundcube__git_checkout }}/composer.json'
+    owner: 'root'
+    group: '{{ roundcube__group }}'
+    mode: '0640'
+
+- name: Download composer.phar if requested
+  get_url:
+    url: '{{ roundcube__composer_phar_url }}'
+    dest: '{{ roundcube__git_checkout }}'
+    mode: '0640'
+  become: True
+  become_user: '{{ roundcube__user }}'
+  when: roundcube__composer_phar|bool
+
+- name: Install missing PHP packages via composer.phar
+  command: php composer.phar install
+  args:
+    chdir: '{{ roundcube__git_checkout }}'
+  become: True
+  become_user: '{{ roundcube__user }}'
+  when: roundcube__composer_phar|bool
+  register: roundcube__register_composer_phar
+  changed_when: not "Nothing to install or update" in roundcube__register_composer_phar.stderr|d('')
+
+- name: Install missing PHP packages via system-wide composer
+  composer:
+    command: install
+    working_dir: '{{ roundcube__git_checkout }}'
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_composer
+  until: roundcube__register_composer is succeeded
+  when: not roundcube__composer_phar|bool
+
+- name: Install Javascript packages
+  command: bin/install-jsdeps.sh
+  args:
+    chdir: '{{ roundcube__git_checkout }}'
+    creates: 'program/js/jquery.min.js'
+  become: True
+  become_user: '{{ roundcube__user }}'
+
+- name: Enable cleandb.sh Cron job
+  cron:
+    name: Roundcube daily database housekeeping
+    user: '{{ roundcube__user }}'
+    job: '{{ roundcube__git_checkout }}/bin/cleandb.sh'
+    cron_file: 'roundcube'
+    hour: '22'
+    minute: '0'

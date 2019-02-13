@@ -24,12 +24,29 @@
   getent:
     database: 'group'
 
+- name: Check if defined shells exist
+  stat:
+    path: "{{ item }}"
+  loop: '{{ ((users__default_accounts + users__admin_accounts + users__root_accounts
+              + users__accounts + users__group_accounts + users__host_accounts
+              + users__dependent_accounts) | selectattr("shell", "defined")
+              | map(attribute="shell") | unique | list)
+            + ([ users__default_shell ] if users__default_shell|d() else []) }}'
+  register: users__register_shell_stats
+
+- name: Fail if a defined shell does not exist
+  fail:
+    msg: "Trying to set a shell that does not exist, this can lock you out!"
+  loop: '{{ users__register_shell_stats.results }}'
+  when: not item.stat.exists
+
 - name: Manage user accounts
   user:
     name:               '{{ item.name }}'
     uid:                '{{ item.uid                | d(omit) }}'
     group:              '{{ item.group              | d(omit) }}'
-    groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups) | intersect(getent_group.keys())) | join(",") ) if item.groups is defined else omit }}'
+    groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups)
+                               | intersect(getent_group.keys())) | join(",") ) if item.groups is defined else omit }}'
     append:             '{{ item.append             | d(True) }}'
     state:              '{{ item.state              | d("present") }}'
     comment:            '{{ item.comment            | d(omit) }}'
@@ -77,6 +94,66 @@
     - '{{ users__dependent_accounts }}'
   when: (item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and item.createhome|d(True) and
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Manage home directory ACLs
+  acl:
+    path:        '{{ item.0.home        | d("~" + item.0.name) }}'
+    default:     '{{ item.1.default     | d(omit) }}'
+    entity:      '{{ item.1.entity      | d(omit) }}'
+    entry:       '{{ item.1.entry       | d(omit) }}'
+    etype:       '{{ item.1.etype       | d(omit) }}'
+    permissions: '{{ item.1.permissions | d(omit) }}'
+    follow:      '{{ item.1.follow      | d(omit) }}'
+    recursive:   '{{ item.1.recursive   | d(omit) }}'
+    state:       '{{ item.1.state       | d("present") }}'
+  loop: '{{ (lookup("flattened",
+                    users__default_accounts
+                    + users__admin_accounts
+                    + users__accounts
+                    + users__group_accounts
+                    + users__host_accounts
+                    + users__dependent_accounts,
+                    wantlist=True))
+             | selectattr("home_acl", "defined") | list
+             | subelements("home_acl") }}'
+  loop_control:
+    label: '{{ {"name": item.0.name, "home_acl": item.1} }}'
+  when: (users__acl_enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and item.0.state|d('present') != 'absent' and
+         item.0.createhome|d(True) and item.0.home_acl|d())
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Allow specified UNIX accounts to linger when not logged in
+  command: loginctl enable-linger {{ item.name }}
+  args:
+    creates: '/var/lib/systemd/linger/{{ item.name }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (ansible_service_mgr == 'systemd' and
+         item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.linger is defined and item.linger|bool)
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Disllow specified UNIX accounts to linger when not logged in
+  command: loginctl disable-linger {{ item.name }}
+  args:
+    removes: '/var/lib/systemd/linger/{{ item.name }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (ansible_service_mgr == 'systemd' and
+         item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.linger is defined and not item.linger|bool)
   no_log: '{{ users__no_log | bool }}'
 
 - name: Remove user groups if requested

@@ -1,0 +1,68 @@
+# {{ ansible_managed }}
+
+{% macro print_value(value) %}
+{%   if value | bool and value is not iterable %}
+{{ '{}'.format('1') }}
+{%   elif not value | bool and value is not iterable %}
+{%     if value is not none %}
+{%       if value | int or value | string == '0' %}
+{{ '{}'.format(value) }}
+{%       else %}
+{{ '{}'.format('0') }}
+{%       endif %}
+{%     endif %}
+{%   elif value is string %}
+{{ '{}'.format(value) }}
+{%   elif value is number %}
+{{ '{}'.format(value) }}
+{%   endif %}
+{% endmacro %}
+{% if module.comment|d() %}
+{{ module.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if module.alias|d() %}
+{%   for element in ([ module.alias ] if module.alias is string else module.alias) %}
+{{ 'alias {} {}'.format(element, module.name) }}
+{%   endfor %}
+{% endif %}
+{% if module.aliases|d() %}
+{%   for element in ([ module.aliases ] if module.aliases is string else module.aliases) %}
+{{ 'alias {} {}'.format(element, module.name) }}
+{%   endfor %}
+{% endif %}
+{% if module.blacklist|d() %}
+{%   for element in ([ module.blacklist ] if module.blacklist is string else module.blacklist) %}
+{{ 'blacklist {}'.format(element) }}
+{%   endfor %}
+{% endif %}
+{% if module.state|d('present') == 'blacklist' %}
+{{ 'blacklist {}'.format(module.name) }}
+{% endif %}
+{% if module.options|d() %}
+{%   for element in ([ module.options ] if module.options is string else module.options) %}
+{%     if element.name|d() and element.value|d() %}
+{%       if element.state|d('present') != 'absent' %}
+{%         if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%         endif %}
+{{ 'options {} {}={}'.format(module.name, element.name, print_value(element.value)) -}}
+{%       endif %}
+{%     else %}
+{%       for key, value in element.items() %}
+{{ 'options {} {}={}'.format(module.name, key, print_value(value)) -}}
+{%       endfor %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if module.install|d() %}
+{{ 'install {} {}'.format(module.name, module.install) }}
+{% endif %}
+{% if module.remove|d() %}
+{{ 'remove {} {}'.format(module.name, module.softdep) }}
+{% endif %}
+{% if module.softdep|d() %}
+{{ 'softdep {} {}'.format(module.name, module.softdep) }}
+{% endif %}
+{% if module.raw|d() %}
+{{ module.raw }}
+{% endif %}

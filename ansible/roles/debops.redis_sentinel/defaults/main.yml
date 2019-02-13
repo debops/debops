@@ -1,0 +1,380 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.redis_sentinel default variables
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# APT packages, Redis Sentinel version [[[
+# ----------------------------------------
+
+# .. envvar:: redis_sentinel__base_packages [[[
+#
+# List of the default APT packages to install for Redis Sentinel support.
+redis_sentinel__base_packages: [ 'redis-sentinel', 'redis-tools' ]
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__packages [[[
+#
+# List of additional APT packages to install with Redis Sentinel.
+redis_sentinel__packages: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__version [[[
+#
+# The version of the installed Redis Sentinel. It will be detected via Ansible
+# local facts, installed by the role.
+redis_sentinel__version: '{{ ansible_local.redis_sentinel.version
+                             if (ansible_local|d() and ansible_local.redis_sentinel|d() and
+                                 ansible_local.redis_sentinel.version|d())
+                             else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: redis_sentinel__user [[[
+#
+# Name of the UNIX system account which is used to run Redis Sentinel service.
+redis_sentinel__user: 'redis'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__group [[[
+#
+# Name of the UNIX system group which is used to run Redis Sentinel service.
+redis_sentinel__group: 'redis'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__auth_group [[[
+#
+# Name of the UNIX system group which has read-only access to the Redis
+# configuration and can be used to retrieve the authentication password by
+# running the :command:`redis-password` script.
+redis_sentinel__auth_group: 'redis-auth'
+                                                                   # ]]]
+                                                                   # ]]]
+# Domain, password authentication [[[
+# -----------------------------------
+
+# .. envvar:: redis_sentinel__domain [[[
+#
+# The DNS domain used in the role to configure Redis and Sentinel parameters,
+# primarly to retrieve the shared password.
+redis_sentinel__domain: '{{ ansible_local.core.domain
+                            if (ansible_local|d() and ansible_local.core|d() and
+                                ansible_local.core.domain|d())
+                            else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__auth_password [[[
+#
+# The password used for authentication in Redis. The same password is used on
+# all nodes in the Redis/Sentinel cluster to simplify authentication.
+redis_sentinel__auth_password: '{{ ansible_local.redis_sentinel.password
+                                   if (ansible_local|d() and ansible_local.redis_sentinel|d() and
+                                       ansible_local.redis_sentinel.password|d())
+                                   else (lookup("password", secret +
+                                         "/redis/clusters/" + redis_sentinel__domain +
+                                         "/password length=" + redis_sentinel__password_length +
+                                         " chars=ascii_letters,digits,-_.")) }}'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__password_length [[[
+#
+# Length of the generated random passwords. Redis documentation suggests to use
+# long passwords due to speed of the engine making it easy to test short
+# passwords. See: https://redis.io/topics/security
+redis_sentinel__password_length: '256'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__no_log [[[
+#
+# Enable or disable logging of the Ansible tasks that may contain passwords.
+redis_sentinel__no_log: '{{ secret__no_log | d(True) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
+# -------------------------
+
+# .. envvar:: redis_sentinel__bind [[[
+#
+# A string or a list of IP addresses on which Redis Sentinel instances should
+# listen for connections. It can be overridden per instance, see
+# :ref:`redis_sentinel__ref_instances` for more details.
+#
+# By default Redis Sentinel instances will listen only on the loopback network
+# interface. To listen for IPv4 and IPv6 connections you can set this variable
+# to ``[ '0.0.0.0', '::' ]``. Ensure that the firewall access is configured
+# properly to avoid security issues.
+redis_sentinel__bind: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Redis Sentinel instances over the network, on all hosts in the Ansible
+# inventory. This variable configures the firewall for all instances at the
+# same time, for individual instance configuration you should modify the
+# :envvar:`redis_sentinel__ferm__dependent_rules` variable directly.
+redis_sentinel__allow: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Redis Sentinel instances over the network, on hosts in the specific Ansible
+# inventory group. This variable configures the firewall for all instances at
+# the same time, for individual instance configuration you should modify the
+# :envvar:`redis_sentinel__ferm__dependent_rules` variable directly.
+redis_sentinel__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Redis Sentinel instances over the network, on specific hosts in the Ansible
+# inventory. This variable configures the firewall for all instances at the
+# same time, for individual instance configuration you should modify the
+# :envvar:`redis_sentinel__ferm__dependent_rules` variable directly.
+redis_sentinel__host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis Sentinel base options [[[
+# -------------------------------
+
+# .. envvar:: redis_sentinel__default_base_options [[[
+#
+# The default set of configuration options, applied to all Redis Sentinel
+# instances. See :ref:`redis_sentinel__ref_configuration` for more details.
+redis_sentinel__default_base_options:
+
+  - name: 'syslog-enabled'
+    value: True
+
+  - name: 'syslog-facility'
+    value: 'local0'
+
+  - name: 'loglevel'
+    value: 'notice'
+
+  - name: 'daemonize'
+    value: True
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__base_options [[[
+#
+# An additional set of configuration options, applied to all Redis Sentinel
+# instances. See :ref:`redis_sentinel__ref_configuration` for more details.
+redis_sentinel__base_options: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis Sentinel instances [[[
+# ----------------------------
+
+# These variables define what Redis Sentinel instances are present on the host.
+# See :ref:`redis_sentinel__ref_instances` for more details.
+
+# .. envvar:: redis_sentinel__default_instances [[[
+#
+# The list of the Redis Sentinel instances defined by default by the role.
+redis_sentinel__default_instances:
+
+  - name: 'main'
+    port: '26379'
+    pidfile: '/var/run/sentinel/redis-sentinel.pid'
+    unixsocket: '/var/run/sentinel/redis-sentinel.sock'
+    systemd_override: |
+      [Service]
+      PIDFile=/var/run/sentinel/redis-sentinel.pid
+      RuntimeDirectory=sentinel
+      ReadWriteDirectories=-/var/run/sentinel
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__instances [[[
+#
+# List of the Redis Sentinel instances defined on all hosts in the Ansible
+# inventory.
+redis_sentinel__instances: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__group_instances [[[
+#
+# List of the Redis Sentinel instances defined on hosts in a specific Ansible
+# inventory group.
+redis_sentinel__group_instances: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__host_instances [[[
+#
+# List of the Redis Sentinel instances defined on specific hosts in the Ansible
+# inventory.
+redis_sentinel__host_instances: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__combined_instances [[[
+#
+# Variable which combines all of the defined Redis Sentinel instance lists and
+# is used in the role tasks and templates.
+redis_sentinel__combined_instances: '{{ redis_sentinel__default_instances
+                                        + redis_sentinel__instances
+                                        + redis_sentinel__group_instances
+                                        + redis_sentinel__host_instances }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis Sentinel monitors [[[
+# ---------------------------
+
+# These variables define the monitoring configuration for Redis Sentinel
+# instances. By default each configured monitor will be defined in all Sentinel
+# instances, but this can be restricted to a specific instance.
+# See :ref:`redis_sentinel__ref_monitors` for more details.
+
+# .. envvar:: redis_sentinel__default_monitors [[[
+#
+# List of the default Redis Sentinel monitors defined by the role.
+redis_sentinel__default_monitors:
+
+  - name: 'redis-ha'
+    host: 'localhost'
+    port: '6379'
+    quorum: '2'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__monitors [[[
+#
+# List of the Redis Sentinel monitors defined on all hosts in the Ansible
+# inventory.
+redis_sentinel__monitors: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__group_monitors [[[
+#
+# List of the Redis Sentinel monitors defined on hosts in a specific Ansible
+# inventory group.
+redis_sentinel__group_monitors: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__host_monitors [[[
+#
+# List of the Redis Sentinel monitors defined on specific hosts in the Ansible
+# inventory.
+redis_sentinel__host_monitors: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__combined_monitors [[[
+#
+# The variable that combines all of the Redis Sentinel monitor lists and is
+# used in the role tasks and templates.
+redis_sentinel__combined_monitors: '{{ redis_sentinel__default_monitors
+                                       + redis_sentinel__monitors
+                                       + redis_sentinel__group_monitors
+                                       + redis_sentinel__host_monitors }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis Sentinel configuration options [[[
+# ----------------------------------------
+
+# These variables define the configuration used by the
+# :ref:`debops.redis_sentinel` Ansible role to manage the Redis Sentinel
+# instances. See :ref:`redis_sentinel__ref_configuration` for more details.
+
+# .. envvar:: redis_sentinel__default_configuration [[[
+#
+# The default Redis Sentinel configuration, generated automatically, based on the
+# defined Redis Sentinel instances.
+redis_sentinel__default_configuration: '{{ lookup("template", "lookup/redis_sentinel__filtered_instances.j2")
+                                           | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__configuration [[[
+#
+# The Redis Sentinel configuration options defined for all hosts in the Ansible
+# inventory.
+redis_sentinel__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__group_configuration [[[
+#
+# The Redis Sentinel configuration options defined for hosts in a specific
+# Ansible inventory group.
+redis_sentinel__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__host_configuration [[[
+#
+# The Redis Sentinel configuration options defined for specific hosts in the
+# Ansible inventory.
+redis_sentinel__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__combined_configuration [[[
+#
+# The variable which combines lists with Redis Sentinel configuration options
+# and is used in the role tasks and templates.
+redis_sentinel__combined_configuration: '{{ redis_sentinel__default_configuration
+                                            + redis_sentinel__configuration
+                                            + redis_sentinel__group_configuration
+                                            + redis_sentinel__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: redis_sentinel__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+redis_sentinel__apt_preferences__dependent_list:
+
+  - packages: [ 'redis', 'redis-*' ]
+    backports: [ 'stretch' ]
+    by_role: 'debops.redis_sentinel'
+    reason: 'Support for multiple Redis instances, compatibility with newer Debian releases'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+redis_sentinel__etc_services__dependent_list:
+
+  - name: 'redis-sentinel'
+    port: '26379'
+    comment: 'Redis Sentinel'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+redis_sentinel__python__dependent_packages3:
+
+  - 'python3-redis'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+redis_sentinel__python__dependent_packages2:
+
+  - 'python-redis'
+
+                                                                   # ]]]
+# .. envvar:: redis_sentinel__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+redis_sentinel__ferm__dependent_rules:
+
+  - name: 'redis_sentinel'
+    type: 'accept'
+    dport: '{{ redis_sentinel__env_ports }}'
+    saddr: '{{ redis_sentinel__allow + redis_sentinel__group_allow + redis_sentinel__host_allow }}'
+    weight: '40'
+    accept_any: False
+    multiport: True
+    by_role: 'debops.redis_sentinel'
+                                                                   # ]]]
+                                                                   # ]]]

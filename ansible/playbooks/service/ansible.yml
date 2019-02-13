@@ -1,0 +1,19 @@
+---
+
+- name: Install and configure Ansible
+  hosts: [ 'debops_service_ansible' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ ansible__apt_preferences__dependent_list }}'
+
+    - role: debops.ansible
+      tags: [ 'role::ansible', 'skip::ansible' ]

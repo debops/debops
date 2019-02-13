@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # Domain name configuration [[[
@@ -36,21 +36,16 @@ netbox__domain: '{{ ansible_local.core.domain
 
 # .. envvar:: netbox__base_packages [[[
 #
-# List of APT packages which are requied by the NetBox application.
+# List of APT packages which are required by the NetBox application.
 netbox__base_packages:
   - 'git'
   - 'build-essential'
-  - 'python-dev'
-  - 'python-pip'
   - 'libxml2-dev'
   - 'libxslt1-dev'
   - 'libffi-dev'
   - 'graphviz'
   - 'libpq-dev'
   - 'libssl-dev'
-  - '{{ "python-virtualenv"
-        if (ansible_distribution_release in [ "wheezy", "precise" ])
-        else "virtualenv" }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__packages [[[
@@ -114,6 +109,16 @@ netbox__lib: '{{ (ansible_local.root.lib
                   if (ansible_local|d() and ansible_local.root|d() and
                       ansible_local.root.lib|d())
                   else "/usr/local/lib") + "/" + netbox__user }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__data [[[
+#
+# Directory where custom Netbox data (images, scripts) outside of the database
+# is stored.
+netbox__data: '{{ (ansible_local.root.data
+                   if (ansible_local|d() and ansible_local.root|d() and
+                       ansible_local.root.data|d())
+                   else "/srv") + "/" + netbox__user }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application sources and deployment [[[
@@ -146,6 +151,18 @@ netbox__git_checkout: '{{ netbox__virtualenv + "/app" }}'
 # Python virtualenv configuration [[[
 # -----------------------------------
 
+# .. envvar:: netbox__virtualenv_version [[[
+#
+# Beginning with v2.5, NetBox will no longer support Python 2.
+# When this is set to `3` a **new** Python 3 `virtualenv` environment will be
+# created next to the old one.
+# Valid values are `3` or an empty string.
+netbox__virtualenv_version: '{{ ""
+                                 if ( netbox__git_version | regex_search("^v?[0-9\.]+")
+                                   and netbox__git_version|replace("v", "") is version("2.5", "<") )
+                                 else "3" }}'
+
+                                                                   # ]]]
 # .. envvar:: netbox__virtualenv [[[
 #
 # Path where the NetBox ``virtualenv`` directory will be stored.
@@ -171,12 +188,16 @@ netbox__virtualenv_pip_packages:
                      ansible_local.gunicorn.version|d())
                  else omit }}'
   - 'setproctitle'
+  - name: 'napalm'
+    state: '{{ "present"
+               if (netbox__config_napalm_password != "")
+               else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]
 # PostgreSQL database configuration [[[
 # -------------------------------------
 
-# The NetBox database configuration is managed by the debops.postgresql_
+# The NetBox database configuration is managed by the :ref:`debops.postgresql`
 # Ansible role. See its documentation for details about the default variable
 # values used in the NetBox role.
 
@@ -259,8 +280,27 @@ netbox__config_secret_key: '{{ lookup("password", secret + "/netbox/" +
 # They will receive e-mail messages about NetBox application errors.
 #
 # By default the role uses the list of private admin e-mails from the
-# debops.core_ Ansible role.
+# :ref:`debops.core` Ansible role.
 netbox__config_admins: '{{ lookup("template", "lookup/netbox__config_admins.j2") | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_cors_origin_allow_all [[[
+#
+# API Cross-Origin Resource Sharing configuration. If ``True``, all origins are
+# allowed. See https://github.com/ottoyiu/django-cors-headers for more details.
+netbox__config_cors_origin_allow_all: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_cors_origin_whitelist [[[
+#
+# List of allowed OCRS origin hostnames.
+netbox__config_cors_origin_whitelist: []
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_cors_origin_regex_whitelist [[[
+#
+# List of allowed OCRS origin regex hostnames.
+netbox__config_cors_origin_regex_whitelist: []
 
                                                                    # ]]]
 # .. envvar:: netbox__config_email_server [[[
@@ -303,6 +343,13 @@ netbox__config_email_from: '{{ netbox__user }}@{{ netbox__fqdn
                                                   else netbox__fqdn[0] }}'
 
                                                                    # ]]]
+# .. envvar:: netbox__config_logging [[[
+#
+# Optional, custom logging configuration specified as YAML dictionary.
+# See https://docs.djangoproject.com/en/1.11/topics/logging for more details.
+netbox__config_logging: {}
+
+                                                                   # ]]]
 # .. envvar:: netbox__config_login_required [[[
 #
 # If ``True``, access to NetBox is only allowed for logged-in users. If
@@ -324,22 +371,42 @@ netbox__config_base_path: ''
 netbox__config_maintenance_mode: False
 
                                                                    # ]]]
-# .. envvar:: netbox__config_netbox_username [[[
+# .. envvar:: netbox__config_napalm_username [[[
 #
-# Specify the username which should be used by NetBox to access live devices.
-netbox__config_netbox_username: ''
+# Specify the username which should be used by NetBox to access live devices
+# using the NAPALM library.
+netbox__config_napalm_username: ''
 
                                                                    # ]]]
-# .. envvar:: netbox__config_netbox_password [[[
+# .. envvar:: netbox__config_napalm_password [[[
 #
-# Specify the password which should be used by NetBox to access live devices.
-netbox__config_netbox_password: ''
+# Specify the password which should be used by NetBox to access live devices
+# using the NAPALM library.
+netbox__config_napalm_password: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_napalm_timeout [[[
+#
+# NAPALM request timeout, in seconds.
+netbox__config_napalm_timeout: '30'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_napalm_args [[[
+#
+# Optional NAPALM arguments, specified as a YAML dictionary.
+netbox__config_napalm_args: {}
 
                                                                    # ]]]
 # .. envvar:: netbox__config_paginate_count [[[
 #
 # Specify maximum number of list items per page.
 netbox__config_paginate_count: '64'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_max_page_size [[[
+#
+# Maximum number of objects returned in an API call.
+netbox__config_max_page_size: '1000'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_time_zone [[[
@@ -401,6 +468,12 @@ netbox__config_banner_top: ''
 netbox__config_banner_bottom: ''
 
                                                                    # ]]]
+# .. envvar:: netbox__config_banner_login [[[
+#
+# Specify a custom message displayed on the login page above the login from.
+netbox__config_banner_login: ''
+
+                                                                   # ]]]
 # .. envvar:: netbox__config_prefer_ipv4 [[[
 #
 # By default NetBox prefers to use IPv6 addresses as primary device addresses.
@@ -413,6 +486,18 @@ netbox__config_prefer_ipv4: False
 # If enabled, NetBox will enforce unique IP space in the "global" table (all
 # prefixes and IP addresses not included in a VRF).
 netbox__config_enforce_global_unique: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_media_root [[[
+#
+# Absolute path where Nebox stores upladed media files.
+netbox__config_media_root: '{{ netbox__data + "/media" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_reports_root [[[
+#
+# Absolute path where Netbox reports (Python modules) are stored.
+netbox__config_reports_root: '{{ netbox__data + "/reports" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Initial superuser account [[[
@@ -489,8 +574,9 @@ netbox__app_workers: '{{ ansible_processor_vcpus|int + 1 }}'
 # .. envvar:: netbox__app_timeout [[[
 #
 # Number of seconds after which non-responsive worker threads will be killed
-# and restarted.
-netbox__app_timeout: '10'
+# and restarted. Netbox installations with lots of objects might require longer
+# timeouts for API access.
+netbox__app_timeout: '900'
 
                                                                    # ]]]
 # .. envvar:: netbox__app_params [[[
@@ -507,9 +593,25 @@ netbox__app_params:
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
 
+# .. envvar:: netbox__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+netbox__python__dependent_packages3:
+
+  - 'python3-dev'
+
+                                                                   # ]]]
+# .. envvar:: netbox__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+netbox__python__dependent_packages2:
+
+  - 'python-dev'
+
+                                                                   # ]]]
 # .. envvar:: netbox__gunicorn__dependent_applications [[[
 #
-# Configuration for the ``debops.gunicorn`` Ansible role.
+# Configuration for the :ref:`debops.gunicorn` Ansible role.
 netbox__gunicorn__dependent_applications:
   - name: 'netbox'
     mode: 'wsgi'
@@ -519,12 +621,14 @@ netbox__gunicorn__dependent_applications:
     group: '{{ netbox__group }}'
     home: '{{ netbox__home }}'
     system: True
+    timeout: '{{ netbox__app_timeout }}'
+    workers: '{{ netbox__app_workers }}'
     args: '{{ netbox__app_params }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_roles [[[
 #
-# Role configuration for the debops.postgresql_ Ansible role.
+# Role configuration for the :ref:`debops.postgresql` Ansible role.
 netbox__postgresql__dependent_roles:
   - name: '{{ netbox__database_user }}'
   - name: '{{ netbox__database_name }}'
@@ -533,7 +637,7 @@ netbox__postgresql__dependent_roles:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_groups [[[
 #
-# Group configuration for the debops.postgresql_ Ansible role.
+# Group configuration for the :ref:`debops.postgresql` Ansible role.
 netbox__postgresql__dependent_groups:
   - roles: [ '{{ netbox__database_user }}' ]
     groups: [ '{{ netbox__database_name }}' ]
@@ -542,7 +646,7 @@ netbox__postgresql__dependent_groups:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_databases [[[
 #
-# Database configuration for the debops.postgresql_ Ansible role.
+# Database configuration for the :ref:`debops.postgresql` Ansible role.
 netbox__postgresql__dependent_databases:
   - name: '{{ netbox__database_name }}'
     owner: '{{ netbox__database_name }}'
@@ -550,7 +654,7 @@ netbox__postgresql__dependent_databases:
                                                                    # ]]]
 # .. envvar:: netbox__postgresql__dependent_pgpass [[[
 #
-# ``~/.pgpass`` configuration for the debops.postgresql_ Ansible role.
+# ``~/.pgpass`` configuration for the :ref:`debops.postgresql` Ansible role.
 netbox__postgresql__dependent_pgpass:
   - owner: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
@@ -560,7 +664,7 @@ netbox__postgresql__dependent_pgpass:
                                                                    # ]]]
 # .. envvar:: netbox__nginx__dependent_upstreams [[[
 #
-# Upstream configuration for the debops.nginx_ Ansible role.
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
 netbox__nginx__dependent_upstreams:
   - name: 'netbox'
     server: '{{ netbox__app_bind }}'
@@ -568,7 +672,7 @@ netbox__nginx__dependent_upstreams:
                                                                    # ]]]
 # .. envvar:: netbox__nginx__dependent_servers [[[
 #
-# Server configuration for the debops.nginx_ Ansible role.
+# Server configuration for the :ref:`debops.nginx` Ansible role.
 netbox__nginx__dependent_servers:
   - name: '{{ netbox__fqdn }}'
     by_role: 'debops.netbox'
@@ -582,6 +686,9 @@ netbox__nginx__dependent_servers:
         proxy_set_header X-Forwarded-Host $server_name;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout {{ netbox__app_timeout }};
+        proxy_send_timeout {{ netbox__app_timeout }};
+        proxy_read_timeout {{ netbox__app_timeout }};
         add_header P3P 'CP="ALL DSP COR PSAa PSDa OUR NOR ONL UNI COM NAV"';
 # ]]]
 # ]]]

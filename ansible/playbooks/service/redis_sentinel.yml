@@ -1,0 +1,39 @@
+---
+
+- name: Manage Redis Sentinel service
+  hosts: [ 'debops_service_redis_sentinel' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.redis_sentinel/env
+      tags: [ 'role::redis_sentinel', 'role::ferm' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ redis_sentinel__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ redis_sentinel__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ redis_sentinel__ferm__dependent_rules }}'
+
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::redis_sentinel' ]
+      python__dependent_packages3:
+        - '{{ redis_sentinel__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ redis_sentinel__python__dependent_packages2 }}'
+
+    - role: debops.redis_sentinel
+      tags: [ 'role::redis_sentinel', 'skip::redis_sentinel' ]

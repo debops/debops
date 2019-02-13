@@ -30,7 +30,7 @@
 {%         set _ = parameters.update({ 'comment': element.comment }) %}
 {%       endif %}
 {%     elif not element.name|d() %}
-{%       for key, value in element.iteritems() %}
+{%       for key, value in element.items() %}
 {%         set loop_parameters = (libvirtd__tpl_configuration[key].copy() if libvirtd__tpl_configuration[key] is defined else {}) %}
 {%         set _ = loop_parameters.update({ 'name': key, 'value': value, 'state': 'present', 'section': loop_parameters.section|d('unknown'), 'weight': loop_parameters.weight|d(0)|int }) %}
 {%         set _ = libvirtd__tpl_configuration.update({ loop_parameters.name: loop_parameters }) %}
@@ -44,7 +44,7 @@
 {#
 #  --- Transform the YAML dictionary structure into a list ---
 #}
-{% for key, value in libvirtd__tpl_configuration.iteritems() %}
+{% for key, value in libvirtd__tpl_configuration.items() %}
 {%   set _ = libvirtd__tpl_configuration_list.append(value) %}
 {%   if value.state|d('present') != 'absent' %}
 {%     set _ = libvirtd__tpl_known_sections.append(value.section) %}

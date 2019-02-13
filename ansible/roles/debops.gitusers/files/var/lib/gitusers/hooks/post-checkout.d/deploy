@@ -4,20 +4,19 @@
 
 oldrev="${1}"
 newrev="${2}"
-flag="${3}"
 
 system_functions="$(git config --global --get gitusers.system.functions)"
-test -x ${system_functions} && source ${system_functions}
+# shellcheck disable=SC1090
+test -x "${system_functions}" && source "${system_functions}"
 
 permissions=( $(git config --global --get gitusers.permissions) )
 worktree="$(git config --get deploy.worktree)"
-branch="$(git config --get deploy.branch)"
 public="$(git config --get deploy.public)"
 setup="$(git config --get deploy.setup)"
 
-test -d ${worktree} || mkdir -p ${worktree}
+test -d "${worktree}" || mkdir -p "${worktree}"
 
-cd ${worktree}
+cd "${worktree}" || exit 1
 
 if [ -n "${public}" ] ; then
   export DEPLOY_PUBLIC="${public}"
@@ -26,7 +25,7 @@ fi
 logfile="log/deploy.log"
 restartfile="tmp/restart.txt"
 
-if [ -n "${permissions}" ] && in_array permissions deploy ; then
+if [ -n "${permissions[*]}" ] && in_array permissions deploy ; then
 
   if [ -z "${setup}" ]; then
 
@@ -39,7 +38,7 @@ if [ -n "${permissions}" ] && in_array permissions deploy ; then
     # execute the one-time setup hook
     if [ -x deploy/setup ] ; then
       echo "DEPLOY_PUBLIC=\"${DEPLOY_PUBLIC}\""
-      deploy/setup $oldrev $newrev 2>&1 | tee -a $logfile
+      deploy/setup "${oldrev}" "${newrev}" 2>&1 | tee -a "${logfile}"
     fi
     git config deploy.setup true
 
@@ -51,21 +50,20 @@ if [ -n "${permissions}" ] && in_array permissions deploy ; then
     chmod 0664 $logfile $restartfile
 
     # log timestamp
-    echo ==== $(date) ==== >> $logfile
+    echo "==== $(date) ====" >> "${logfile}"
 
     # execute the main deploy hook
     if [ -x deploy/after_push ] ; then
       echo "DEPLOY_PUBLIC=\"${DEPLOY_PUBLIC}\""
-      deploy/after_push $oldrev $newrev 2>&1 | tee -a $logfile
+      deploy/after_push "${oldrev}" "${newrev}" 2>&1 | tee -a "${logfile}"
     fi
 
   fi
 
 else
 
-  if test -x ${worktree}/deploy/setup ; then
+  if test -x "${worktree}/deploy/setup" ; then
     echo "No permission to run deploy script"
   fi
 
 fi
-

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+BLACK='\033[49;30m'   # shellcheck disable=SC2034
+BLACKB='\033[49;90m'  # shellcheck disable=SC2034
+RED='\033[0;31m'      # shellcheck disable=SC2034
+GREEN='\033[0;32m'    # shellcheck disable=SC2034
+YELLOW='\033[0;33m'   # shellcheck disable=SC2034
+BLUE='\033[94;49m'    # shellcheck disable=SC2034
+MAGENTA='\033[0;35m'  # shellcheck disable=SC2034
+CYAN='\033[36;49m'    # shellcheck disable=SC2034
+WHITE='\033[0;37m'    # shellcheck disable=SC2034
+BOLD='\033[1m'        # shellcheck disable=SC2034
+RESET='\033[0m'       # shellcheck disable=SC2034
+
+if [ -d "/etc/ansible/facts.d" ] ; then
+    printf "${BLACKB}%70s${RESET}\n" | tr ' ' -
+    # shellcheck disable=SC2059
+    printf "    ${CYAN}This system is managed by ${BOLD}Ansible${RESET}${CYAN}, manual changes will be lost${RESET}\n"
+    printf "${BLACKB}%70s${RESET}\n" | tr ' ' -
+fi

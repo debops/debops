@@ -1,4 +1,14 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Install required packages
+  apt:
+    name: '{{ (apt__base_packages + apt__packages) | flatten }}'
+    state: 'present'
+    install_recommends: False
+  register: apt__register_packages
+  until: apt__register_packages
+  when: apt__enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -19,17 +29,7 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: (apt__enabled|bool and apt__register_facts|changed)
-
-- name: Install required packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ apt__base_packages }}'
-    - '{{ apt__packages }}'
-  when: apt__enabled|bool
+  when: (apt__enabled|bool and apt__register_facts is changed)
 
 - name: Ensure that APT default configuration is absent
   file:
@@ -44,14 +44,17 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
+  with_items:
     - 'etc/apt/apt.conf.d/25no-recommends.conf'
   when: apt__enabled|bool
 
 - name: Check current APT diversions
   environment:
     LC_ALL: 'C'
-  shell: dpkg-divert --list '/etc/apt/*.dpkg-divert' | awk '{print $NF}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '/etc/apt/*.dpkg-divert' | awk '{print $NF}' || true
+  args:
+    executable: '/bin/bash'
   register: apt__register_diversions
   when: apt__enabled|bool
   check_mode: False
@@ -91,12 +94,15 @@
     state:     '{{ item.state     | d("present"
                                       if (item.architecture|d(apt__architecture) == apt__architecture and
                                           item.distribution|d(apt__distribution) == apt__distribution and
-                                          item.distribution_release|d(apt__distribution_release) == apt__distribution_release)
+                                          item.distribution_release|d(apt__distribution_release)
+                                          == apt__distribution_release)
                                       else omit) }}'
   with_flattened:
     - '{{ apt__keys }}'
     - '{{ apt__group_keys }}'
     - '{{ apt__host_keys }}'
+  register: apt__register_apt_key
+  until: apt__register_apt_key is succeeded
   # `item.state`, `item.architecture`, `item.distribution` and `item.distribution_release` need to be checked here.
   # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
   when: (apt__enabled|bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
@@ -114,7 +120,8 @@
     state:    '{{ item.state    | d("present"
                                     if (item.architecture|d(apt__architecture) == apt__architecture and
                                         item.distribution|d(apt__distribution) == apt__distribution and
-                                        item.distribution_release|d(apt__distribution_release) == apt__distribution_release)
+                                        item.distribution_release|d(apt__distribution_release)
+                                        == apt__distribution_release)
                                     else "absent") }}'
   with_flattened:
     - '{{ apt__repositories }}'
@@ -123,23 +130,47 @@
   register: apt__register_repositories
   when: (apt__enabled|bool and item.repo|d())
 
-- name: Remove old unattended-upgrades configuration
+# Manage configuration files [[[
+- name: Generate additionnal APT configuration files
+  copy:
+    dest:     "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
+    src:      '{{ item.src       | d(omit) }}'
+    content:  '{{ item.content   | d(omit) }}'
+    owner:    'root'
+    group:    'root'
+    mode:     '0644'
+  with_flattened:
+    - '{{ apt__conf }}'
+    - '{{ apt__group_conf }}'
+    - '{{ apt__host_conf }}'
+  when: (apt__enabled|bool  and
+         (item.src|d() or item.content|d()) and
+         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.state|d('present') != 'absent'))
+
+- name: Delete APT configuration files on remote hosts
   file:
-    path: '/etc/apt/apt.conf.d/{{ item }}'
+    path:  "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
     state: 'absent'
-  with_items:
-    - '25auto-upgrades.conf'
-    - '55unattended-upgrades.conf'
-  when: apt__enabled|bool
+  with_flattened:
+    - '{{ apt__conf }}'
+    - '{{ apt__group_conf }}'
+    - '{{ apt__host_conf }}'
+  when: (apt__enabled|bool  and
+         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.state|d('present') == 'absent'))
+                                                                   # ]]]
 
 - name: Update APT cache
   apt:
     update_cache: True
     cache_valid_time: '{{ omit
-                         if (apt__register_sources_template|changed or
-                             apt__register_sources_diversion|changed or
-                             apt__register_repositories|changed)
+                         if (apt__register_sources_template is changed or
+                             apt__register_sources_diversion is changed or
+                             apt__register_repositories is changed)
                          else apt__cache_valid_time }}'
+  register: apt__register_apt_update
+  until: apt__register_apt_update is succeeded
   when: apt__enabled|bool
 
 - name: Update the role status in local facts
@@ -154,4 +185,4 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: (apt__enabled|bool and apt__register_facts_status|changed)
+  when: (apt__enabled|bool and apt__register_facts_status is changed)

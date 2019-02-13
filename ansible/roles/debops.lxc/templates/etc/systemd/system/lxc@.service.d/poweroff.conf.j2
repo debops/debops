@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+# The Debian Stretch LXC containers use 'systemd' as the init and service
+# manager. Unfortunately, this causes issues during container poweroff, when
+# initiated from the LXC host itself. This modification causes the container
+# poweroff to be initiated from the inside of the container, where its systemd
+# instance can correctly shut down its own container.
+#
+# References:
+# https://bugs.debian.org/831691
+# https://lists.linuxcontainers.org/pipermail/lxc-users/2017-February/012827.html
+# https://github.com/lxc/lxc/issues/1085
+# https://github.com/lxc/lxd/issues/2947
+# https://forum.turris.cz/t/lxc-stop-n-container-takes-too-long/6358
+
+[Service]
+ExecStop=
+ExecStop=/bin/sh -ec '\
+  if /usr/bin/lxc-ls | grep %i > /dev/null ; then \
+    /usr/bin/lxc-attach -n %i -- /bin/systemctl --no-block poweroff ; \
+  fi'

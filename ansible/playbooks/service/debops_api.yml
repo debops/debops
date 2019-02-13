@@ -11,19 +11,19 @@
   roles:
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx_apt_preferences_dependent_list }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx_ferm_dependent_rules }}'
 
     - role: debops.nginx
-      tags: [ 'role::nginx' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ debops_api__nginx__servers }}'
 
     - role: debops.debops_api
-      tags: [ 'role::debops_api' ]
+      tags: [ 'role::debops_api', 'skip::debops_api' ]

@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # PostgreSQL installation, packages [[[
@@ -74,7 +74,7 @@ postgresql_server__group: 'postgres'
                                                                    # ]]]
 # .. envvar:: postgresql_server__delegate_to [[[
 #
-# This is a counterpart variable to the one in debops.postgresql_ role, it
+# This is a counterpart variable to the one in :ref:`debops.postgresql` role, it
 # should point to the FQDN hostname of the server so that other role can
 # correctly delegate Ansible tasks.
 postgresql_server__delegate_to: '{{ inventory_hostname }}'
@@ -199,7 +199,7 @@ postgresql_server__start_conf: 'auto'
 
 # .. envvar:: postgresql_server__pki [[[
 #
-# Enable or disable support for PKI infrastructure managed by debops.pki_.
+# Enable or disable support for PKI infrastructure managed by :ref:`debops.pki`.
 postgresql_server__pki: '{{ (True
                              if (ansible_local|d() and ansible_local.pki|d() and
                                  ansible_local.pki.enabled|d() | bool)
@@ -208,7 +208,7 @@ postgresql_server__pki: '{{ (True
                                                                    # ]]]
 # .. envvar:: postgresql_server__pki_path [[[
 #
-# Base path of PKI infrastructure, managed by debops.pki_ role.
+# Base path of PKI infrastructure, managed by :ref:`debops.pki` role.
 postgresql_server__pki_path: '{{ ansible_local.pki.path
                                  if (ansible_local|d() and ansible_local.pki|d() and
                                      ansible_local.pki.path|d())
@@ -576,7 +576,7 @@ postgresql_server__auto_backup_post_script: ''
 
 # .. envvar:: postgresql_server__apt_preferences__dependent_list [[[
 #
-# Configuration for debops.apt_preferences_ role. PostgreSQL from backports
+# Configuration for :ref:`debops.apt_preferences` role. PostgreSQL from backports
 # will be preferred on specified Debian releases.
 postgresql_server__apt_preferences__dependent_list:
 
@@ -588,7 +588,7 @@ postgresql_server__apt_preferences__dependent_list:
                                                                    # ]]]
 # .. envvar:: postgresql_server__etc_services__dependent_list [[[
 #
-# Configuration for debops.etc_services_ role. It will set up custom
+# Configuration for :ref:`debops.etc_services` role. It will set up custom
 # :file:`/etc/services` entries for additional PostgreSQL clusters.
 postgresql_server__etc_services__dependent_list:
   name: 'postgresql'
@@ -600,10 +600,18 @@ postgresql_server__etc_services__dependent_list:
     {% endfor %}
 
 # ]]]
+# .. envvar:: postgresql_server__locales__dependent_list [[[
+#
+# Configuration for the :ref:`debops.locales` Ansible role.
+postgresql_server__locales__dependent_list:
+  - name: '{{ postgresql_server__locale }}'
+    state: 'present'
+
+                                                                   # ]]]
 # .. envvar:: postgresql_server__ferm__dependent_rules [[[
 #
-# Configuration for debops.ferm_ firewall. It should be added when
-# debops.ferm_ role is used to configure PostgreSQL firewall rules.
+# Configuration for :command:`ferm` firewall. It should be added when
+# :ref:`debops.ferm` role is used to configure PostgreSQL firewall rules.
 postgresql_server__ferm__dependent_rules:
   type: 'custom'
   by_role: 'debops.postgresql_server'

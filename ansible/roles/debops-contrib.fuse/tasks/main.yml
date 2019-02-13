@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_flattened: '{{ fuse_base_packages }}'
+  register: fuse__register_packages
+  until: fuse__register_packages is succeeded
 
 - name: Divert original /etc/fuse.conf
   command: dpkg-divert --quiet --local --divert /etc/fuse.conf.dpkg-divert --rename /etc/fuse.conf

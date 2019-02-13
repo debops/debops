@@ -7,7 +7,7 @@
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # ferm configuration [[[
@@ -15,17 +15,12 @@
 
 # .. envvar:: ferm__enabled [[[
 #
-# Enable or disable :command:`iptables` management by checking if ``cap_sys_admin``
+# Enable or disable :command:`iptables` management by checking if ``cap_net_admin``
 # POSIX capability is set on the host.
 ferm__enabled: '{{ True
-                   if (ansible_local is undefined or
-                        (ansible_local.cap12s|d() and ansible_local.cap12s.enabled|d() and
-                          (
-                            (ansible_local.cap12s.enabled | bool and "cap_net_admin" in ansible_local.cap12s.list) or
-                            not ansible_local.cap12s.enabled | bool
-                          )
-                        )
-                      )
+                   if (((ansible_system_capabilities_enforced|d())|bool and
+                        "cap_net_admin" in ansible_system_capabilities) or
+                       not (ansible_system_capabilities_enforced|d(True))|bool)
                    else False }}'
 
                                                                    # ]]]
@@ -60,7 +55,10 @@ ferm__packages: []
 # ``ip6``
 #   Enables IPv6 support (:command:`ip6tables`).
 #
-ferm__domains: [ 'ip', 'ip6' ]
+ferm__domains: '{{ lookup("flattened",
+                   ( ([ "ip"  ] if (ansible_all_ipv4_addresses|d()) else [])
+                   + ([ "ip6" ] if (ansible_all_ipv6_addresses|d()) else []) )
+                   , wantlist=True ) }}'
 
                                                                    # ]]]
 # .. envvar:: ferm__ansible_controllers [[[
@@ -71,9 +69,9 @@ ferm__domains: [ 'ip', 'ip6' ]
 # Remember to specify IP address from the remote host point of view.
 # Format: "IP address/netmask", for example: '192.168.1.1/32'.
 #
-# .. note:: If you are using debops.tcpwrappers_ too (or the DebOps playbook),
+# .. note:: If you are using :ref:`debops.tcpwrappers` too (or the DebOps playbook),
 #    mind setting its own Ansible Controllers variable as well. An easier
-#    way would be to use the debops.sshd_ role to configure ssh service.
+#    way would be to use the :ref:`debops.sshd` role to configure ssh service.
 #
 ferm__ansible_controllers: []
 
@@ -506,6 +504,7 @@ ferm__default_rules:
     protocol: [ 'udp' ]
     sport: [ 'dhcpv6-server' ]
     dport: [ 'dhcpv6-client' ]
+    rule_state: '{{ "present" if ("ip6" in ferm__domains) else "absent" }}'
 
   - name: 'jump_to_legacy_input_rules'
     type: 'accept'
@@ -542,39 +541,29 @@ ferm__default_rules:
       @hook flush "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true";
     weight_class: 'post-hook'
 
+    # Remove obsolete forwarding rules
   - name: 'forward_external_in'
-    chain: 'FORWARD'
-    type: 'accept'
+    rule_state: 'absent'
     weight: '1'
     weight_class: 'any-forward'
-    interface_present: '{{ ferm__external_interfaces | unique }}'
-    comment: 'Forward incoming traffic to other hosts'
-    rule_state: '{{ "present"
-                    if (ferm__forward_accept|bool and ferm__forward | bool)
-                    else "ignore" }}'
-
-  - name: 'forward_external_out'
-    chain: 'FORWARD'
     type: 'accept'
+    chain: 'FORWARD'
+
+    # Remove obsolete forwarding rules
+  - name: 'forward_external_out'
+    rule_state: 'absent'
     weight: '2'
     weight_class: 'any-forward'
-    outerface_present: '{{ ferm__external_interfaces | unique }}'
-    comment: 'Forward outgoing traffic to other hosts'
-    rule_state: '{{ "present"
-                    if (ferm__forward_accept|bool and ferm__forward | bool)
-                    else "ignore" }}'
-
-  - name: 'forward_internal'
-    chain: 'FORWARD'
     type: 'accept'
-    interface_present: '{{ ferm__internal_interfaces }}'
-    outerface_present: '{{ ferm__internal_interfaces }}'
+    chain: 'FORWARD'
+
+    # Remove obsolete forwarding rules
+  - name: 'forward_internal'
+    rule_state: 'absent'
     weight: '3'
     weight_class: 'any-forward'
-    comment: 'Forward internal traffic between hosts'
-    rule_state: '{{ "present"
-                    if (ferm__forward_accept|bool and ferm__forward | bool)
-                    else "ignore" }}'
+    type: 'accept'
+    chain: 'FORWARD'
 
   - name: 'fix_bootpc_checksum'
     type: 'custom'
@@ -611,43 +600,6 @@ ferm__host_custom_files: []
 # command after its own configuration is reloaded. If :program:`fail2ban` is not present
 # or turned off, nothing will happen.
 ferm__fail2ban: True
-
-                                                                   # ]]]
-# .. envvar:: ferm__forward [[[
-#
-# Enable forwarding in :command:`ip(6)tables`. This option can be used by other
-# roles and it's status is saved in Ansible local facts, which will override
-# variable status from role defaults or inventory.
-ferm__forward: '{{ ansible_local.ferm.forward
-                   if (ansible_local|d() and ansible_local.ferm|d() and
-                       ansible_local.ferm.forward|d())
-                   else "False" }}'
-
-                                                                   # ]]]
-# .. envvar:: ferm__forward_accept [[[
-#
-# Should traffic be forwarded between the other hosts/containers if
-# :envvar:`ferm__forward` is ``True``?
-ferm__forward_accept: '{{ ansible_local.ferm.forward
-                          if (ansible_local|d() and ansible_local.ferm|d() and
-                              ansible_local.ferm.forward|d())
-                          else "False" }}'
-
-                                                                   # ]]]
-# .. envvar:: ferm__external_interfaces [[[
-#
-# List of interfaces that are connected to external network, traffic on these
-# interfaces will be forwarded to all hosts.
-ferm__external_interfaces:
-  - '{{ ansible_default_ipv4.interface | default("") }}'
-  - '{{ ansible_default_ipv6.interface | default("") }}'
-
-                                                                   # ]]]
-# .. envvar:: ferm__internal_interfaces [[[
-#
-# List of interfaces that are connected to internal network, traffic on these
-# interfaces will be forwarded only between hosts on that network.
-ferm__internal_interfaces: [ 'br1' ]
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

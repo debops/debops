@@ -6,7 +6,7 @@
 {{ (bridge.comment if bridge.comment is string else bridge.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {% endif %}
 connection {{ bridge_name }}
-{% for config_key, config_value in bridge.iteritems() %}
+{% for config_key, config_value in bridge.items() %}
 {%   if config_key not in [ 'connection', 'state', 'comment' ] %}
 {%     if config_value is string and config_value != '' %}
 {{ "%s %s" | format(config_key, config_value) }}

@@ -20,6 +20,12 @@
 from __future__ import (absolute_import, division, print_function)
 from operator import itemgetter
 
+try:
+    unicode = unicode
+except NameError:
+    # py3
+    unicode = str
+
 __metaclass__ = type
 
 
@@ -129,8 +135,8 @@ def etc_aliases__parse_recipients(*args, **kwargs):
 
                 if 'real_name' in element or 'real_alias' in element:
                     current_alias['real_name'] = (
-                            element.get('real_name',
-                                        element.get('real_alias')))
+                        element.get('real_name',
+                                    element.get('real_alias')))
 
                 if 'comment' in element:
                     current_alias['comment'] = element.get('comment')
@@ -147,7 +153,7 @@ def etc_aliases__parse_recipients(*args, **kwargs):
                                'add_dest', 'add_to', 'cc', 'bcc',
                                'del_dest', 'del_to']
                          for x in element):
-                for key, value in element.iteritems():
+                for key, value in element.items():
                     current_alias = parsed_aliases.get(key, {}).copy()
                     current_alias.update({
                         'name': key,

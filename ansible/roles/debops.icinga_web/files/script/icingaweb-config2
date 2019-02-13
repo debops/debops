@@ -1,0 +1,52 @@
+#!/usr/bin/python2
+
+# Get current Icinga Web configuration values
+
+from __future__ import print_function
+from json import dumps
+from os import path
+from os import listdir
+from os import walk
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
+
+
+def get_config(config_file):
+    config_data = []
+    if path.isfile(config_file):
+        config = ConfigParser()
+        config.read(config_file)
+
+        for section in config.sections():
+
+            section_options = []
+            for name, value in config.items(section):
+                section_options.append({"name": name,
+                                        "value": value.strip('"')})
+
+            config_data.append({"name": section, "options": section_options})
+    return config_data
+
+
+output = {}
+
+root_config_dir = '/etc/icingaweb2'
+
+ini_directories = [x[0] for x in walk(root_config_dir)]
+
+for dir_path in ini_directories:
+    if path.exists(dir_path):
+
+        ini_prefix = dir_path.lstrip(root_config_dir)
+        ini_files = ([f for f in listdir(dir_path)
+                      if (path.isfile(path.join(dir_path, f))
+                      and f.endswith('.ini'))])
+
+        for ini_file in ini_files:
+            output.update({path.join(ini_prefix, ini_file).lstrip('/'):
+                           get_config(path.join(dir_path, ini_file))})
+
+print(dumps(output, sort_keys=True, indent=4))

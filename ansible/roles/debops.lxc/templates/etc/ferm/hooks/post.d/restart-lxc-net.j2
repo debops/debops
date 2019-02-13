@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# After ferm is restarted, lxc-net needs to be restarted so that it adds its
+# own iptables rules where needed
+
+set -o nounset -o pipefail -o errexit
+
+# Check if we are running under systemd
+if pidof systemd > /dev/null 2>&1 ; then
+
+    if [ "$(systemctl is-active lxc-net.service)" == "active" ] ; then
+        logger -t "ferm-post-hook" "Restarting lxc-net via ferm post hook..."
+        systemctl restart lxc-net.service
+    fi
+
+fi

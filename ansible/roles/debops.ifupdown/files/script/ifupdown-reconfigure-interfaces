@@ -371,6 +371,16 @@ if [ -d "${interface_request_path}" ] ; then
             done
         fi
 
+        # Stop and disable systemd-networkd service
+        if is_systemd ; then
+            if systemctl is-active systemd-networkd.service > /dev/null 2>&1 ; then
+               log_message -m "Disabling systemd-networkd service"
+               systemctl stop systemd-networkd
+               systemctl disable systemd-networkd.service
+               systemctl disable systemd-networkd.socket
+            fi
+        fi
+
         log_message -m "Interface configuration finished, have a nice day"
 
     else

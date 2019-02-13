@@ -1,0 +1,76 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ sudo__base_packages }}'
+    - '{{ sudo__packages }}'
+  register: sudo__register_packages
+  until: sudo__register_packages is succeeded
+  when: sudo__enabled|bool
+
+- name: Ensure that '/etc/sudoers' includes '/etc/sudoers.d'
+  lineinfile:
+    dest: '/etc/sudoers'
+    regexp: '^#includedir\s+/etc/sudoers.d$'
+    line: '#includedir /etc/sudoers.d'
+    insertafter: 'EOF'
+    state: 'present'
+    validate: 'visudo -cf "%s"'
+  when: sudo__enabled|bool
+
+- name: Remove sudoers configuration if requested
+  file:
+    path: '/etc/sudoers.d/{{ item.filename | d(item.name) }}'
+    state: 'absent'
+  with_items: '{{ sudo__combined_sudoers | parse_kv_items }}'
+  register: sudo__register_sudoers_removed
+  when: sudo__enabled|bool and
+        item.name|d() and item.state|d('present') == 'absent'
+
+- name: Configure sudoers
+  template:
+    src: 'etc/sudoers.d/config.j2'
+    dest: '/etc/sudoers.d/{{ item.filename | d(item.name) }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  with_items: '{{ sudo__combined_sudoers | parse_kv_items }}'
+  register: sudo__register_sudoers_created
+  when: sudo__enabled|bool and
+        item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ]
+
+- name: Configure workaround for logind sessions via sudo
+  template:
+    src: 'etc/profile.d/sudo_logind_session.sh.j2'
+    dest: '/etc/profile.d/sudo_logind_session.sh'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: sudo__enabled|bool and sudo__logind_session|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save sudo local facts
+  template:
+    src: 'etc/ansible/facts.d/sudo.fact.j2'
+    dest: '/etc/ansible/facts.d/sudo.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: sudo__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: sudo__register_facts is changed or
+        sudo__register_sudoers_removed is changed or
+        sudo__register_sudoers_created is changed

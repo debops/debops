@@ -1,5 +1,13 @@
 ---
 
+- name: Ensure that webpage directory exists
+  file:
+    path: '/srv/www/sites/{{ sks_domain[0] }}/public'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
 - name: Check if index.html page exists
   stat:
     path: '/srv/www/sites/{{ sks_domain[0] }}/public/index.html'
@@ -14,4 +22,3 @@
     mode: '0644'
   with_items: [ 'index.html', 'robots.txt' ]
   when: sks_register_index_html is defined and not sks_register_index_html.stat.exists
-

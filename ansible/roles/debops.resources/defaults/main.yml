@@ -1,13 +1,13 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
-#
+
 # debops.resources default variables [[[
 # ======================================
 
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../includes/global.rst
 
 
 # Role configuration [[[
@@ -84,6 +84,39 @@ resources__parent_dirs_group: '{{ omit }}'
 # The global setting can be overwritten for individual items using
 # ``item.parent_dirs_mode``.
 resources__parent_dirs_mode: '{{ omit }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage custom templates [[[
+# ---------------------------
+
+# These variables define how the role will manage custom templates on remote
+# hosts. See :ref:`resources__ref_templates` for more details.
+
+# .. envvar:: resources__templates [[[
+#
+# Directory which contains templates that should be generated on all hosts in
+# the Ansible inventory.
+resources__templates: [ '{{ resources__src + "templates/by-group/all" }}' ]
+
+                                                                   # ]]]
+# .. envvar:: resources__group_templates [[[
+#
+# List of paths containing the directories of all the groups the current host is in, based on the content of ``group_names``.
+# See `Ansible - Playbooks Varibles <https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#accessing-information-about-other-hosts-with-magic-variables>`_.
+#
+# For example if the host ``debian1`` is member of ``group-name1`` and ``group-name2``
+# `debops.resources` will then search all template files inside the directories placed here: :file:`ansible/resources/templates/by-group/`.
+# Resulting in: ``[ "ansible/resources/templates/by-group/group-name1", "ansible/resources/templates/by-group/group-name2" ]``.
+#
+# Read the documentation about :ref:`resources__ref_templates` for more details on templating with `debops.resources`.
+resources__group_templates: '{{ group_names | map("regex_replace", "^(.*)$", resources__src + "templates/by-group/\1") | list }}'
+
+                                                                   # ]]]
+# .. envvar:: resources__host_templates [[[
+#
+# Directory which contains templates that should be generated on specific hosts
+# in the Ansible inventory.
+resources__host_templates: [ '{{ resources__src + "templates/by-host/" + inventory_hostname }}' ]
                                                                    # ]]]
                                                                    # ]]]
 # Manage custom paths [[[

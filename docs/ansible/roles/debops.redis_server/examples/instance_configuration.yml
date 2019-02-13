@@ -1,0 +1,32 @@
+---
+
+# Disable certain Redis commands in a specific Redis Server instance. This
+# cannot be done in the instance parameters and needs to be done on the
+# configuration level.
+redis_server__configuration:
+
+  - name: 'main'
+    options:
+
+      - appendonly: False
+
+      - 'auto-aof-rewrite-percentage': 100
+      - 'auto-aof-rewrite-min-size': '64mb'
+
+      - name: 'rename-command'
+        value:
+          - 'FLUSHDB ""'
+          - 'FLUSHALL ""'
+          - 'KEYS ""'
+          - 'CONFIG ""'
+          - 'PEXPIRE ""'
+          - 'DEL ""'
+          - 'CONFIG ""'
+          - 'SHUTDOWN ""'
+          - 'BGREWRITEAOF ""'
+          - 'BGSAVE ""'
+          - 'SAVE ""'
+          - 'SPOP ""'
+          - 'SREM ""'
+          - 'RENAME ""'
+          - 'DEBUG ""'

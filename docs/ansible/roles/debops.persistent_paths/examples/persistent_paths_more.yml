@@ -1,0 +1,20 @@
+---
+
+## Used for integration testing.
+
+persistent_paths__paths:
+
+  '50_debops_persistent_paths_present':
+    by_role: 'debops.persistent_paths'
+    paths:
+      - '/var/lib/man-db'
+
+      ## Already persistent on Qubes OS, gets filtered out:
+      - '/usr/local'
+      - '/usr/local/bin'
+
+  '50_debops_persistent_paths_absent':
+    by_role: 'debops.persistent_paths'
+    state: 'absent'
+    paths:
+      - '/tmp/absent'

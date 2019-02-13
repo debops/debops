@@ -6,6 +6,8 @@
     state: 'present'
     install_recommends: False
   with_items: '{{ lvm__packages }}'
+  register: lvm__register_packages
+  until: lvm__register_packages is succeeded
 
 - name: Divert original lvm.conf
   command: dpkg-divert --quiet --local --divert /etc/lvm/lvm.conf.dpkg-divert --rename /etc/lvm/lvm.conf
@@ -15,7 +17,10 @@
 - name: Check LVM version
   environment:
     LC_MESSAGES: 'C'
-  shell: dpkg-query -W -f='${Version}\n' 'lvm2' | grep -v '^$' | cut -d- -f1
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-query -W -f='${Version}\n' 'lvm2' | grep -v '^$' | cut -d- -f1
+  args:
+    executable: '/bin/bash'
   register: lvm__register_version
   changed_when: False
   check_mode: False
@@ -39,7 +44,6 @@
 
 - name: Manage LVM
   include: manage_lvm.yml
-  when: (ansible_local|d() and ((ansible_local.root and 'ignore-cap12s' in ansible_local.root.flags) or
+  when: (ansible_local|d() and ((ansible_local.tags|d() and 'ignore-cap12s' in ansible_local.tags) or
          (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
-

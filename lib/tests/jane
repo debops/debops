@@ -1,0 +1,998 @@
+#!/usr/bin/env bash
+
+# jane: Just ANother Executor
+# Perform Ansible role tests using GitLab CI and Vagrant
+
+# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017 DebOps project https://debops.org/
+
+
+# This file is part of DebOps.
+#
+# DebOps is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3, as
+# published by the Free Software Foundation.
+#
+# DebOps is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with DebOps. If not, see https://www.gnu.org/licenses/.
+
+
+set -o nounset -o pipefail -o errexit
+
+
+require_bash_4 () {
+    if (( BASH_VERSINFO[0] < 4 )) ; then
+        printf "Error: This script requires Bash 4.x\n"
+        exit 1
+    fi
+}
+
+require_bash_4
+
+
+readonly SCRIPTNAME="$( basename "${0}" )"
+readonly SCRIPTDIR="$( readlink -m "$( dirname "${0}" )" )"
+readonly SCRIPTPID="$$"
+readonly ARGS=( "${@:-}" )
+readonly PATH="${PATH}:${HOME}/.local/lib/${SCRIPTNAME}:/vagrant/lib/tests:/usr/local/lib/${SCRIPTNAME}:/usr/lib/${SCRIPTNAME}"
+readonly INVENTORY_PATH="${INVENTORY_PATH:-/vagrant/lib/tests/inventory}"
+
+readonly GLOBAL_LOCK_FILE="/var/tmp/${SCRIPTNAME}/global.lock"
+readonly GLOBAL_LOCK_FD="200"
+
+# Name of the Vagrant box which will be used as a base for the CI box
+readonly BASE_VAGRANT_BOX="${BASE_VAGRANT_BOX:-debian/stretch64}"
+
+# Name of the Vagrant box used for CI testing. This variable is used in
+# filenames, use only alphanumeric characters, and dashes
+readonly JANE_VAGRANT_BOX="${JANE_VAGRANT_BOX:-${SCRIPTNAME}-debops-stretch}"
+
+readonly JANE_KEEP_BOX="${JANE_KEEP_BOX:-}"
+
+readonly CI_JOB_ID="${CI_JOB_ID:-0}"
+readonly CI_JOB_NAME="${CI_JOB_NAME:-}"
+readonly CI_JOB_STAGE="${CI_JOB_STAGE:-}"
+readonly VAGRANT_DOTFILE_PATH="${VAGRANT_DOTFILE_PATH:-/var/tmp/vagrant-dotfile-${CI_JOB_ID}}"
+
+readonly JANE_DIFF_BASE_BRANCH="${JANE_DIFF_BASE_BRANCH:-master}"
+readonly JANE_DIFF_PATTERN="${JANE_DIFF_PATTERN:-.*}"
+readonly JANE_LOG_PATTERN="${JANE_LOG_PATTERN:-}"
+readonly JANE_FORCE_TESTS="${JANE_FORCE_TESTS:-}"
+readonly JANE_TEST_PLAY="${JANE_TEST_PLAY:-}"
+readonly JANE_ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG:-/vagrant/lib/tests/ansible.cfg}"
+readonly JANE_ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY:-/vagrant/lib/tests/jane}"
+readonly JANE_INVENTORY_DIRS="${JANE_INVENTORY_DIRS:-common}"
+readonly JANE_INVENTORY_GROUPS="${JANE_INVENTORY_GROUPS:-debops_all_hosts}"
+readonly JANE_INVENTORY_HOSTVARS="${JANE_INVENTORY_HOSTVARS:-}"
+
+declare -rA colors=(
+    ["black"]="$( tput setaf 0 )"
+    ["b_black"]="$( tput bold ; tput setaf 0 )"
+    ["red"]="$( tput setaf 1 )"
+    ["b_red"]="$( tput bold ; tput setaf 1 )"
+    ["green"]="$( tput setaf 2 )"
+    ["b_green"]="$( tput bold ; tput setaf 2 )"
+    ["yellow"]="$( tput setaf 3 )"
+    ["b_yellow"]="$( tput bold ; tput setaf 3 )"
+    ["lime_yellow"]="$( tput setaf 190 )"
+    ["b_lime_yellow"]="$( tput bold ; tput setaf 190 )"
+    ["powder_blue"]="$( tput setaf 153 )"
+    ["b_powder_blue"]="$( tput bold ; tput setaf 153 )"
+    ["blue"]="$( tput setaf 4 )"
+    ["b_blue"]="$( tput bold ; tput setaf 4 )"
+    ["magenta"]="$( tput setaf 5 )"
+    ["b_magenta"]="$( tput bold ; tput setaf 5 )"
+    ["cyan"]="$( tput setaf 6 )"
+    ["orange"]="$( tput setaf 172 )"
+    ["b_orange"]="$( tput bold ; tput setaf 172 )"
+    ["b_cyan"]="$( tput bold ; tput setaf 6 )"
+    ["white"]="$( tput setaf 7 )"
+    ["b_white"]="$( tput bold ; tput setaf 7 )"
+    ["bright"]="$( tput bold )"
+    ["blink"]="$( tput blink )"
+    ["reverse"]="$( tput smso )"
+    ["underline"]="$( tput smul )"
+    ["reset"]="\e[m"
+)
+
+
+sub__help () {
+    help_msg "${SCRIPTNAME} <command> [<args>]" \
+        "Manage Continuous Integration using GitLab CI and Vagrant"
+
+    local subcommand_list=( $( declare -F \
+                               | cut -d" " -f3 \
+                               | grep -E '^sub__' \
+                               | awk -F '__' '{print $2}' \
+                               | uniq ) )
+
+    if [ ${#subcommand_list[@]} -gt 1 ] ; then
+        printf "\nAvailable commands:\n"
+        for help_cmd in "${subcommand_list[@]}" ; do
+            if declare -f "sub__help__${help_cmd}" > /dev/null ; then
+                printf "    %-10s %s\n" \
+                    "${help_cmd}" "$("sub__help__${help_cmd}" brief)"
+            fi
+        done
+        printf "\nSee '%s help <command>' to read about a given command\n" \
+            "${SCRIPTNAME}"
+    fi
+}
+
+
+sub__help__colors () {
+    local help_mode="${1:-}"
+
+    case "${help_mode}" in
+        brief)
+            cat <<-EOF
+Display available colors and their names
+EOF
+            ;;
+        *)
+            help_msg "${SCRIPTNAME} colors" "$(sub__help__colors brief)"
+            cat <<-EOF
+
+You can use this command to check out available terminal colors. Set the TERM
+variable to different names (dumb, vt100, xterm, xterm-256color, etc.) to see
+different results.
+EOF
+            ;;
+    esac
+}
+
+sub__colors () {
+    for color_name in "${!colors[@]}" ; do
+        printf "%-16s \"${colors[${color_name}]}%s${colors["reset"]}\"\n" \
+            "${color_name}" "Quick brown fox jumps over the lazy dog"
+    done
+}
+
+
+sub__help__env () {
+    local help_mode="${1:-}"
+
+    case "${help_mode}" in
+        brief)
+            cat <<-EOF
+Display the environment variables
+EOF
+            ;;
+        *)
+            help_msg "${SCRIPTNAME} env [${SCRIPTNAME}|script]" \
+                "$(sub__help__env brief)"
+            ;;
+    esac
+}
+
+# Strip all ANSI control codes from environment variables and print them line
+# by line
+sub__env () {
+    local env_mode="${1:-}"
+
+    case "${env_mode}" in
+
+        ${SCRIPTNAME}|ci|script)
+            ( set -o posix ; set \
+              | while read -r line ; do
+                    printf "%s\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
+                done
+            )
+            ;;
+        *)
+            env \
+              | while read -r line ; do
+                    printf "%s\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
+                done
+            ;;
+    esac
+}
+
+
+sub__pip__install () {
+    status_msg info "pip install \"${*}\""
+}
+
+
+sub__help__notify () {
+    local help_mode="${1:-}"
+
+    case "${help_mode}" in
+        brief)
+            cat <<-EOF
+Print a short message with a severity level
+EOF
+            ;;
+        *)
+            help_msg "${SCRIPTNAME} notify <severity> <message>" \
+                "$(sub__help__notify brief)"
+            cat <<-EOF
+
+You can use this command to check out available terminal colors. Set the TERM
+variable to different names (dumb, vt100, xterm, xterm-256color, etc.) to see
+different results.
+EOF
+            ;;
+    esac
+}
+
+sub__notify () {
+    local notify_level="${1}" ; shift
+    local notify_message="${*}"
+
+    status_msg "${notify_level}" "${notify_message}"
+}
+
+
+sub__gitlab__before_script () {
+    local jane_diff_base_branch="${JANE_DIFF_BASE_BRANCH}"
+    local jane_diff_pattern="${JANE_DIFF_PATTERN}"
+    local jane_log_pattern="${JANE_LOG_PATTERN}"
+    local jane_force_tests="${JANE_FORCE_TESTS}"
+
+    status_msg trigger "Checking commits: $(git_rev_oldest_ancestor)~1..HEAD"
+
+    if [ -n "${jane_diff_pattern}" ] ; then
+        status_msg trigger "Changed file patterns: '${jane_diff_pattern}'"
+    fi
+
+    if [ -n "${jane_log_pattern}" ] ; then
+        status_msg trigger "Changed log patterns: '${jane_log_pattern}'"
+    fi
+
+    if [ -n "${jane_force_tests}" ] ; then
+        status_msg trigger "Forced tests: '${jane_force_tests}'"
+    fi
+
+    case "$(interesting_changes "${jane_force_tests}")" in
+
+        "file patterns found")
+            status_msg info "Found interesting file patterns, activating tests"
+            require_vagrant
+            require_vagrant_box
+            ;;
+
+        "log patterns found")
+            status_msg info "Found interesting log patterns, activating tests"
+            require_vagrant
+            require_vagrant_box
+            ;;
+
+        "nothing found")
+            status_msg ok "No interesting changes found, skipping tests"
+            ;;
+
+        "no base branch")
+            status_msg warning "Base branch '${jane_diff_base_branch}' not found, activating normal tests"
+            require_vagrant
+            require_vagrant_box
+            ;;
+
+        "forced tests")
+            status_msg info "Tests are forced by a variable, activating normal tests"
+            require_vagrant
+            require_vagrant_box
+            ;;
+
+        *)
+            status_msg error "Unknown error occured. Stop"
+            exit 1
+            ;;
+    esac
+}
+
+
+sub__gitlab__script () {
+    local jane_force_tests="${JANE_FORCE_TESTS}"
+
+    case "$(interesting_changes "${jane_force_tests}")" in
+
+        "file patterns found"|"log patterns found"|"no base branch"|"forced tests")
+            require_vagrant
+            execute_tests
+            ;;
+
+        "nothing found")
+            ;;
+
+        *)
+            status_msg error "Unknown error occured. Stop"
+            exit 1
+            ;;
+    esac
+}
+
+
+sub__gitlab__after_script () {
+    local jane_force_tests="${JANE_FORCE_TESTS}"
+
+    case "$(interesting_changes "${jane_force_tests}")" in
+
+        "file patterns found"|"log patterns found"|"no base branch"|"forced tests")
+            require_vagrant
+            cleanup_vagrant_box
+            ;;
+
+        "nothing found")
+            ;;
+
+        *)
+            status_msg error "Unknown error occured. Stop"
+            exit 1
+            ;;
+    esac
+}
+
+
+sub__box__create () {
+    require_vagrant
+    require_vagrant_box
+}
+
+
+sub__box__destroy () {
+    require_vagrant
+    destroy_vagrant_box
+}
+
+
+sub__ansible__playbook () {
+    local ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG}"
+    local ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY}"
+    local jane_test_play="${JANE_TEST_PLAY}"
+    local inventory_path
+    IFS=':' read -r -a inventory_path <<< "${INVENTORY_PATH}"
+    local jane_inventory_dirs
+    read -r -a jane_inventory_dirs <<< "${JANE_INVENTORY_DIRS}"
+    local jane_inventory_groups="${JANE_INVENTORY_GROUPS}"
+    local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
+    local -a test_playbooks
+
+    IFS=" " read -r -a test_playbooks <<< "${jane_test_play}"
+
+    export ANSIBLE_CONFIG
+    export ANSIBLE_INVENTORY
+
+    status_msg config "Ansible inventory: '${ANSIBLE_INVENTORY}'"
+    status_msg config "Ansible configuration file: '${ANSIBLE_CONFIG}'"
+
+    if type jo > /dev/null 2>&1 ; then
+        if [ -n "${jane_inventory_hostvars[*]}" ] ; then
+            if [ -r "${jane_inventory_hostvars[*]}" ] ; then
+                local parsed_hostvars
+                parsed_hostvars="$(<"${jane_inventory_hostvars[@]}")"
+            else
+                local parsed_hostvars
+                parsed_hostvars="$(jo -p "${jane_inventory_hostvars[@]}")"
+            fi
+        else
+            local parsed_hostvars=""
+        fi
+    else
+        local parsed_hostvars=""
+    fi
+
+    if [ -n "${jane_inventory_groups}" ] && [ "${jane_inventory_groups}" != "debops_all_hosts" ] ; then
+        status_msg config "Custom inventory Ansible groups:"
+        list_inventory_groups
+    fi
+
+    if [ -n "${parsed_hostvars}" ] ; then
+        status_msg config "Custom Ansible inventory variables:"
+        printf "%s\n" "${parsed_hostvars}"
+    fi
+
+    if [ -n "${jane_inventory_dirs[*]}" ] && [ "${jane_inventory_dirs[*]}" != "common" ] ; then
+        status_msg config "Custom inventory directories: ${jane_inventory_dirs[*]}"
+    fi
+
+    status_msg info "Performing Ansible syntax check..."
+    ansible-playbook "${test_playbooks[@]}" --syntax-check
+
+    status_msg info "First Ansible playbook run..."
+    ansible-playbook "${test_playbooks[@]}" --diff
+
+    status_msg info "Second Ansible playbook run to test idempotency..."
+    ansible-playbook "${test_playbooks[@]}" --diff | tee /tmp/ansible_idempotent.txt
+
+    # Extract all of the Ansible status lines from the output file and check if
+    # any of them are not idempotent
+    if grep -E -e 'ok=.*changed=.*unreachable=.*failed=.*' /tmp/ansible_idempotent.txt \
+        | grep -v -qE -e 'changed=0.*unreachable=0.*failed=0' ; then
+        status_msg error "The playbook is NOT IDEMPOTENT"
+        return 1
+    else
+        status_msg ok "The playbook is idempotent"
+    fi
+}
+
+
+interesting_changes () {
+    local jane_diff_base_branch="${JANE_DIFF_BASE_BRANCH}"
+    local ci_job_name="${CI_JOB_NAME}"
+    local ci_job_stage="${CI_JOB_STAGE}"
+    local forced_tests="${*:-}"
+
+    if [ "$(git cat-file -t "${jane_diff_base_branch}" 2>/dev/null)" == "commit" ] ; then
+        local file_patterns
+        local log_patterns
+        file_patterns="$(git_diff_file_pattern)"
+        log_patterns="$(git_log_pattern)"
+
+        if [ -n "${file_patterns}" ] ; then
+            local output="file patterns found"
+        elif [ -n "${log_patterns}" ] ; then
+            local output="log patterns found"
+        else
+            local output="nothing found"
+        fi
+
+    else
+        local output="no base branch"
+    fi
+
+    if [ -n "${forced_tests}" ] ; then
+        if [ "${forced_tests}" == "true" ] ; then
+            local output="forced tests"
+        elif [ "${forced_tests}" == "${ci_job_stage}" ] ; then
+            local output="forced tests"
+        elif [ "${forced_tests}" == "${ci_job_name}" ] ; then
+            local output="forced tests"
+        fi
+    fi
+
+    printf "%s\n" "${output}"
+}
+
+
+git_log_pattern () {
+    local jane_log_pattern="${JANE_LOG_PATTERN}"
+
+    if [ -n "${jane_log_pattern}" ] ; then
+        local log_patterns_found
+        log_patterns_found="$(git log --format="%B" "$(git_rev_oldest_ancestor)~1..HEAD" \
+            | grep -E "${jane_log_pattern}" || true)"
+        printf "%s\n" "${log_patterns_found}"
+    fi
+}
+
+
+git_diff_file_pattern () {
+    local jane_diff_pattern="${JANE_DIFF_PATTERN}"
+
+    local changed_files
+    changed_files="$(git diff --name-only "$(git_rev_oldest_ancestor)~1..HEAD" \
+        | grep -E "${jane_diff_pattern}" || true)"
+    printf "%s\n" "${changed_files}"
+}
+
+
+git_rev_oldest_ancestor () {
+    local jane_diff_base_branch="${JANE_DIFF_BASE_BRANCH}"
+
+    local oldest_ancestor
+    oldest_ancestor="$(diff --old-line-format='' --new-line-format='' \
+        <(git rev-list --first-parent "${jane_diff_base_branch}") \
+        <(git rev-list --first-parent "HEAD") | head -1)"
+
+    printf "%s\n" "${oldest_ancestor}"
+}
+
+
+execute_tests () {
+    local jane_vagrant_box="${JANE_VAGRANT_BOX}"
+    local jane_test_play="${JANE_TEST_PLAY}"
+
+    local VAGRANT_BOX="${jane_vagrant_box}"
+    export VAGRANT_BOX
+
+    status_msg info "Starting Vagrant box '${jane_vagrant_box}'..."
+    vagrant up
+
+    if [ -n "${jane_test_play}" ] ; then
+        status_msg info "Executing Ansible tests inside Vagrant box..."
+        vagrant ssh -c "${SCRIPTNAME} ansible playbook"
+    fi
+}
+
+
+require_vagrant () {
+    if ! type vagrant > /dev/null 2>&1 ; then
+        error_exit "Vagrant not found"
+    fi
+}
+
+
+require_vagrant_box () {
+    local jane_vagrant_box="${JANE_VAGRANT_BOX}"
+
+    if [ -n "${jane_vagrant_box}" ] ; then
+        if ! vagrant box list | grep -q "${jane_vagrant_box}" ; then
+
+            status_msg warning "Vagrant box '${jane_vagrant_box}' not found"
+
+            if ! acquire_global_lock ; then
+
+                status_msg info \
+                    "Vagrant box is being built by another instance, waiting..."
+                until acquire_global_lock ; do
+                    sleep 5
+                done
+
+                if ! vagrant box list | grep -q "${jane_vagrant_box}" ; then
+                    prepare_vagrant_box
+                else
+                    status_msg ok "Found new Vagrant box '${jane_vagrant_box}'"
+                fi
+                release_global_lock
+
+            else
+                prepare_vagrant_box
+                release_global_lock
+            fi
+        else
+            status_msg ok "Found existing Vagrant box '${jane_vagrant_box}'"
+        fi
+    fi
+}
+
+
+prepare_vagrant_box () {
+    local vagrant_dotfile_path="${VAGRANT_DOTFILE_PATH}"
+    local jane_vagrant_box="${JANE_VAGRANT_BOX}"
+    local base_vagrant_box="${BASE_VAGRANT_BOX}"
+
+    local VAGRANT_BOX="${base_vagrant_box}"
+    export VAGRANT_DOTFILE_PATH
+
+    # The box is prepared for CI environment
+    local VAGRANT_PREPARE_BOX="true"
+    export VAGRANT_PREPARE_BOX
+
+    status_msg info "Preparing Vagrant box using '${base_vagrant_box}'..."
+    vagrant up
+
+    # The current user needs to have access to the libvirt image to be able to
+    # package a Vagrant box out of it.
+    if vagrant_master_is_libvirt ; then
+        fix_libvirt_image_permissions
+    fi
+
+    status_msg info "Packaging modified Vagrant box as '${jane_vagrant_box}'..."
+    vagrant package --output="${jane_vagrant_box}.box"
+
+    status_msg info "Registering Vagrant box '${jane_vagrant_box}'..."
+    vagrant box add --name "${jane_vagrant_box}" "${jane_vagrant_box}.box"
+
+    status_msg info "Cleaning up Vagrant box..."
+    vagrant halt && vagrant destroy -f
+
+    if [ -n "${vagrant_dotfile_path}" ] ; then
+        rm --preserve-root -rf "${vagrant_dotfile_path}"
+    fi
+
+    status_msg success "Vagrant box '${jane_vagrant_box}' created"
+}
+
+
+vagrant_master_is_libvirt () {
+    if vagrant status master \
+        | grep '^master' \
+        | grep '(libvirt)$' \
+        | grep -q 'running' ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+
+fix_libvirt_image_permissions () {
+    local vagrant_dotfile_path="${VAGRANT_DOTFILE_PATH}"
+    local domain_id_file="${vagrant_dotfile_path}/machines/master/libvirt/id"
+
+    if [ -r "${domain_id_file}" ] ; then
+        local libvirt_domain_uuid
+        local libvirt_domain_name
+        libvirt_domain_uuid="$(<"${domain_id_file}")"
+        libvirt_domain_name="$(virsh -c qemu:///system domname "${libvirt_domain_uuid}")"
+
+        sudo /usr/bin/env chmod a+r "/var/lib/libvirt/images/${libvirt_domain_name}.img"
+    fi
+}
+
+
+cleanup_vagrant_box () {
+    local vagrant_dotfile_path="${VAGRANT_DOTFILE_PATH}"
+    local jane_vagrant_box="${JANE_VAGRANT_BOX}"
+    local jane_keep_box="${JANE_KEEP_BOX}"
+    local ci_job_name="${CI_JOB_NAME}"
+
+    local VAGRANT_BOX="${jane_vagrant_box}"
+    export VAGRANT_BOX
+
+    status_msg info "Shutting down Vagrant box..."
+    vagrant halt
+
+    if [ -n "${jane_keep_box}" ] ; then
+
+        if [ "${jane_keep_box}" == "${ci_job_name}" ] ; then
+            status_msg info "Preserving Vagrant box of '${ci_job_name}' job for investigation"
+        else
+            status_msg info "Destroying Vagrant box..."
+            vagrant destroy -f
+
+            if [ -n "${vagrant_dotfile_path}" ] ; then
+                rm --preserve-root -rf "${vagrant_dotfile_path}"
+            fi
+        fi
+
+    else
+
+        status_msg info "Destroying Vagrant box..."
+        vagrant destroy -f
+
+        if [ -n "${vagrant_dotfile_path}" ] ; then
+            rm --preserve-root -rf "${vagrant_dotfile_path}"
+        fi
+
+    fi
+}
+
+
+destroy_vagrant_box () {
+    local vagrant_dotfile_path="${VAGRANT_DOTFILE_PATH}"
+    local jane_vagrant_box="${JANE_VAGRANT_BOX}"
+
+    if [ -n "${jane_vagrant_box}" ] ; then
+        if vagrant box list | grep -q "${jane_vagrant_box}" ; then
+
+            status_msg info "Vagrant box '${jane_vagrant_box}' found"
+
+            if ! acquire_global_lock ; then
+
+                status_msg info \
+                    "Vagrant box is being removed by another instance, waiting..."
+                until acquire_global_lock ; do
+                    sleep 5
+                done
+
+                if vagrant box list | grep -q "${jane_vagrant_box}" ; then
+
+                    status_msg info "Removing Vagrant box '${jane_vagrant_box}'..."
+                    vagrant box remove "${jane_vagrant_box}"
+
+                    if [ -n "${vagrant_dotfile_path}" ] ; then
+                        rm --preserve-root -rf "${vagrant_dotfile_path}"
+                    fi
+
+                else
+                    status_msg ok "Vagrant box '${jane_vagrant_box}' already removed"
+                fi
+                release_global_lock
+
+            else
+
+                status_msg info "Removing Vagrant box '${jane_vagrant_box}'..."
+                vagrant box remove "${jane_vagrant_box}"
+
+                if [ -n "${vagrant_dotfile_path}" ] ; then
+                    rm --preserve-root -rf "${vagrant_dotfile_path}"
+                fi
+
+                release_global_lock
+            fi
+        else
+            status_msg ok "Vagrant box '${jane_vagrant_box}' not found"
+        fi
+    fi
+}
+
+
+acquire_global_lock () {
+    local lock_fd="${GLOBAL_LOCK_FD}"
+    local lock_file="${GLOBAL_LOCK_FILE}"
+    local lock_dir
+    lock_dir="$( dirname "${lock_file}" )"
+
+    # Create lock file
+    mkdir -p "${lock_dir}"
+    eval "exec ${lock_fd}>${lock_file}"
+
+    # Acquire lock
+    if flock -n "${lock_fd}" ; then
+        trap "clean_up" EXIT
+        status_msg info "Global lock acquired"
+        return 0
+    else
+        return 1
+    fi
+}
+
+
+release_global_lock () {
+    local lock_fd="${GLOBAL_LOCK_FD}"
+    local lock_file="${GLOBAL_LOCK_FILE}"
+    local lock_dir
+    lock_dir="$( dirname "${lock_file}" )"
+
+    status_msg info "Releasing global lock"
+    flock -u "${lock_fd}"
+}
+
+
+clean_up () {
+    local lock_file="${GLOBAL_LOCK_FILE}"
+    local lock_dir
+    lock_dir="$( dirname "${lock_file}" )"
+
+    if [ -n "${lock_dir}" ] && [ -d "${lock_dir}" ] ; then
+        rm -rf "${lock_dir}"
+    fi
+}
+
+
+error_exit () {
+    local message="${*}"
+    local script="${SCRIPTNAME}"
+    local pid="${SCRIPTPID}"
+
+    if tty -s > /dev/null 2>&1 ; then
+        status_msg error "${message}"
+    elif type logger > /dev/null 2>&1 ; then
+        logger -t "${script}[${pid}]" "Error: ${message}"
+    fi
+
+    exit 1
+}
+
+
+status_msg () {
+    local msg_type="${1}" ; shift
+    local message="${*}"
+    local script="${SCRIPTNAME}"
+    local pid="${SCRIPTPID}"
+    local msg_color=""
+    local type_color=""
+    local prompt=""
+    local inception=""
+
+    prompt="${colors["green"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["yellow"]}R${colors["b_black"]}:${colors["reset"]}"
+    inception="R"
+    if [ -n "${JANE_VAGRANT_INCEPTION:-}" ] ; then
+        prompt="${colors["magenta"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["b_green"]}V${colors["b_black"]}:${colors["reset"]}"
+        inception="V"
+    elif [ -n "${JANE_INCEPTION:-}" ] ; then
+        prompt="${colors["magenta"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["b_blue"]}B${colors["b_black"]}:${colors["reset"]}"
+        inception="B"
+    fi
+
+    case "${msg_type,,}" in
+
+        ok|good|success)
+            type_color="${colors["b_green"]}"
+            msg_color="${colors["reset"]}${colors["green"]}"
+            ;;
+
+        info|status|state)
+            type_color="${colors["b_cyan"]}"
+            msg_color="${colors["reset"]}${colors["cyan"]}"
+            ;;
+
+        trigger)
+            type_color="${colors["b_blue"]}"
+            msg_color="${colors["reset"]}${colors["b_blue"]}"
+            ;;
+
+        config)
+            type_color="${colors["b_magenta"]}"
+            msg_color="${colors["reset"]}${colors["magenta"]}"
+            ;;
+
+        warning)
+            type_color="${colors["b_yellow"]}"
+            msg_color="${colors["reset"]}${colors["yellow"]}"
+            ;;
+
+        error|fatal)
+            type_color="${colors["b_red"]}"
+            msg_color="${colors["reset"]}${colors["red"]}"
+            ;;
+
+        *)
+            type_color="${colors["b_white"]}"
+            msg_color="${colors["reset"]}"
+            ;;
+
+    esac
+
+    if [ -n "${message}" ] ; then
+        printf "${prompt}${type_color}%s${colors["reset"]}${colors["b_black"]}: ${msg_color}%s${colors["reset"]}\n" \
+            "${msg_type^^}" "${message}"
+        if type logger > /dev/null 2>&1 ; then
+            logger -t "${script}[${pid}]" "${inception}:${msg_type^^}: ${message}"
+        fi
+    fi
+}
+
+
+help_msg () {
+    local subcommand="${1}"
+    local help_text="${2}"
+
+    printf "${colors["reverse"]}%s${colors["reset"]}\n\n${colors["b_white"]}Usage: ${colors["b_blue"]}%s${colors["b_black"]}${colors["reset"]}\n" \
+           "${help_text}" "${subcommand}"
+}
+
+
+list_inventory_groups () {
+    local jane_inventory_groups="${JANE_INVENTORY_GROUPS}"
+    local -a inventory_groups
+
+    IFS="," read -r -a inventory_groups <<< "${jane_inventory_groups}"
+
+    for element in "${inventory_groups[@]}" ; do
+        printf "[%s]\n" "${element}"
+    done
+}
+
+generate_dynamic_inventory_groups () {
+    local jane_inventory_groups="${JANE_INVENTORY_GROUPS}"
+    local -a inventory_groups
+    local host_fqdn
+    host_fqdn="$(hostname --fqdn)"
+    local ssh_client_ip
+    ssh_client_ip="$(echo "${SSH_CLIENT:-}" | awk '{print $1}')"
+
+    IFS="," read -r -a inventory_groups <<< "${jane_inventory_groups}"
+
+    for element in "${inventory_groups[@]}" ; do
+        # jo needs to parse arguments as-is
+        # shellcheck disable=SC2046
+        printf "%s\n" "${element}=$(jo hosts=$(jo -a "${host_fqdn}") \
+            vars=$(jo ansible_connection="local" dhparam__bits='["1024"]' \
+                      core__ansible_controllers="${ssh_client_ip}" \
+            secret="/tmp/secret" tcpwrappers__deny_all=false))"
+    done
+}
+
+dynamic_inventory_list () {
+    local inventory_path
+    IFS=':' read -r -a inventory_path <<< "${INVENTORY_PATH}"
+    local jane_inventory_dirs
+    local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
+    read -r -a jane_inventory_dirs <<< "${JANE_INVENTORY_DIRS}"
+    local host_fqdn
+    host_fqdn="$(hostname --fqdn)"
+
+    # Jan-Piet Mens is awesome
+    # http://jpmens.net/2016/03/05/a-shell-command-to-create-json-jo/
+    if type jo > /dev/null 2>&1 ; then
+        if [ -n "${jane_inventory_hostvars[*]}" ] ; then
+            if [ -r "${jane_inventory_hostvars[*]}" ] ; then
+                local parsed_hostvars
+                parsed_hostvars="$(<"${jane_inventory_hostvars[@]}")"
+            else
+                local parsed_hostvars
+                # shellcheck disable=SC2086
+                parsed_hostvars="$(jo ${jane_inventory_hostvars[*]})"
+            fi
+        else
+            local parsed_hostvars="{}"
+        fi
+
+        if [ -n "${jane_inventory_dirs[*]}" ] ; then
+            local -a expanded_dirs
+            for directory in "${jane_inventory_dirs[@]}" ; do
+                for path_dir in "${inventory_path[@]}" ; do
+                    if [ -d "${path_dir}/${directory}" ] ; then
+                        expanded_dirs+=( "${inventory_path}/${directory}/*.json" )
+                    fi
+                done
+            done
+            # shellcheck disable=SC2068
+            parsed_hostvars="$(jq -s 'reduce .[] as $item ({}; . * $item)' ${expanded_dirs[@]} <(echo "${parsed_hostvars}"))"
+        fi
+
+        # jo needs to parse arguments as-is
+        # shellcheck disable=SC2046 disable=SC2086
+        jo -p $(generate_dynamic_inventory_groups) \
+            _meta=$(jo hostvars=$(jo "${host_fqdn}"="${parsed_hostvars}"))
+    else
+        # Reasons for specific variables:
+        # 'ansible_connection'    - run Ansible locally, not remotely
+        # 'dhparam__bits'         - bigger DH parameters generate very slowly
+        # 'nginx_http_server_names_hash_bucket_size' - hostnames based on UUIDs are long
+        # 'secret'                - move 'secret/' directory outside the git checkout
+        # 'tcpwrappers__deny_all' - otherwise Vagrant cannot access host via SSH to turn it off
+        #                           (needs better implementation in the 'debops.tcpwrappers' role)
+        cat<<EOF
+{
+  "debops_all_hosts": {
+    "hosts": [ "${host_fqdn}" ],
+    "vars": {
+      "ansible_connection": "local",
+      "dhparam__bits": [ "1024" ],
+      "nginx_http_server_names_hash_bucket_size": "128",
+      "secret": "/tmp/secret",
+      "tcpwrappers__deny_all": false
+    }
+  },
+  "_meta": {
+    "hostvars": {
+      "${host_fqdn}": {}
+    }
+  }
+}
+EOF
+    fi
+}
+
+
+dynamic_inventory_host () {
+    printf "%s\n" '{"_meta": {"hostvars": {}}}'
+}
+
+
+parse_subcommands () {
+    local main_command="${1:-}"
+    local main_subcommand="${2:-}"
+
+    if [ "${main_command}" == "--list" ] ; then
+
+        dynamic_inventory_list
+
+    elif [ "${main_command}" == "--host" ] ; then
+
+        dynamic_inventory_host
+
+    elif type "${SCRIPTNAME}-${main_command}" > /dev/null 2>&1 ; then
+
+        # Execute external subcommand
+        local func="${SCRIPTNAME}-${main_command}" ; shift
+        "${func}" "$@"
+
+    elif declare -f "sub__${main_command}__${main_subcommand}" > /dev/null ; then
+
+        # Execute command subcommand
+        func="sub__${main_command}__${main_subcommand}" ; shift ; shift
+        "${func}" "$@"
+
+    elif declare -f "sub__${main_command}" > /dev/null 2>&1; then
+
+        # Execute command
+        func="sub__${main_command}" ; shift
+        "${func}" "$@"
+
+    else
+      error_exit "'${main_command}' is not a ${SCRIPTNAME} command. See '${SCRIPTNAME} help'."
+    fi
+}
+
+
+jane_main () {
+    local args=( "${@}" )
+    local i
+
+    # Remove empty elements
+    for i in "${!args[@]}"; do
+        [ -n "${args[$i]}" ] || unset "args[$i]"
+    done
+
+    if [ ${#args[@]} -lt 1 ] ; then
+        sub__help
+        exit 1
+    fi
+
+    parse_subcommands "${args[@]}"
+}
+
+
+if [ "${1}" != "functions" ] ; then
+    jane_main "${ARGS[@]}"
+fi

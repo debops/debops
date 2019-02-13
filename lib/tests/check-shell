@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# Find all shell scripts and check their compliance using shellcheck
+
+# Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2018 DebOps https://debops.org/
+
+
+set -o nounset -o pipefail -o errexit
+
+declare -a file_list
+
+if ! type shellcheck > /dev/null 2>&1 ; then
+    printf "%s\n" "Error: shellcheck not found"
+    exit 1
+fi
+
+printf "%s " "Searching for shell scripts"
+
+counter=0
+
+while read -r in ; do
+    if file "${in}" | grep -q -E 'Bourne-Again shell script|bash script|POSIX shell script' ; then
+        file_list+=("${in}")
+        counter=$(( counter + 1 ))
+        counter_state=$(( counter % 5 ))
+        if [ ${counter_state} -eq 0 ] ; then
+            printf "%s" "."
+        fi
+    fi
+done < <(find . -type f -not -iwholename "./.git/*" \
+    -not -wholename "./ansible/roles/debops.grub/templates/etc/grub.d/01_users.j2" \
+    -not -wholename "./ansible/roles/debops-contrib.dropbear_initramfs/templates/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs.j2")
+
+printf " %s\n" "found ${#file_list[@]} shell scripts"
+
+shellcheck "${file_list[@]}"

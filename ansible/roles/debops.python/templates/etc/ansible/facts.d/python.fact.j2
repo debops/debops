@@ -1,0 +1,27 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = loads("""{{ ({'configured': True,
+                       'enabled':  python__enabled | bool,
+                       'enabled2': python__v2      | bool,
+                       'enabled3': python__v3      | bool
+                     }) | to_nice_json }}""")
+
+output['installed2'] = cmd_exists('python2')
+output['installed3'] = cmd_exists('python3')
+
+print(dumps(output, sort_keys=True, indent=4))

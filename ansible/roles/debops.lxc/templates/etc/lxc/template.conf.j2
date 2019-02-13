@@ -1,0 +1,19 @@
+{% if item.comment|d() %}
+{{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if item.options|d() %}
+{%   for element in item.options %}
+{%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%       if element.comment|d() %}
+{%         if not loop.first %}
+
+{%         endif %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%       endif %}
+{{ '{} = {}'.format(('\n' if (element.separator|d())|bool else '') + ('#' if (element.state == 'comment') else '') + element.alias | d(element.name), element.value) }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if item.raw|d() %}
+{{ item.raw }}
+{% endif %}

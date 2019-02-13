@@ -1,0 +1,80 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.sudo default variables
+# =============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: sudo__enabled [[[
+#
+# Enable or disable support for :command:`sudo` management on a host.
+sudo__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: sudo__base_packages [[[
+#
+# List of base APT packages to install for :command:`sudo` support.
+sudo__base_packages: '{{ [ "sudo-ldap" ]
+                         if (ansible_local|d() and ansible_local.ldap|d() and
+                             (ansible_local.ldap.enabled|d())|bool)
+                         else [ "sudo" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: sudo__packages [[[
+#
+# List of additional APT packages to install with :command:`sudo` command.
+sudo__packages: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__logind_session [[[
+#
+# Enable or disable a workaround for :command:`sudo` login session not having
+# a ``$XDG_RUNTIME_DIR`` environment variable set. This allows control over
+# another user's :command:`systemd` instance.
+sudo__logind_session: '{{ True if (ansible_service_mgr == "systemd") else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Sudoers configuration [[[
+# -------------------------
+
+# These lists define what :command:`sudo` configuration will be present in the
+# :file:`/etc/sudoers.d/` directory. See :ref:`sudo__ref_sudoers` for more
+# details.
+
+# .. envvar:: sudo__sudoers [[[
+#
+# Configuration which should be present on all hosts in the Ansible inventory.
+sudo__sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__group_sudoers [[[
+#
+# Configuration which should be present on hosts in a specific Ansible
+# inventory group.
+sudo__group_sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__host_sudoers [[[
+#
+# Configuration which should be present on specific hosts in the Ansible
+# inventory.
+sudo__host_sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__combined_sudoers [[[
+#
+# The variable which combines all other ``sudoers`` configuration variables and
+# is used in the role tasks.
+sudo__combined_sudoers: '{{ sudo__sudoers
+                            + sudo__group_sudoers
+                            + sudo__host_sudoers }}'
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,30 @@
+---
+# Manage Green Unicorn applications
+gunicorn__applications:
+
+  # Deploy a system-wide WSGI application with Python 3
+  - name: 'system-app'
+    working_dir: '/path/to/deploy/dir'
+    binary: 'gunicorn3'
+    user: 'worker-user'
+    group: 'worker-group'
+    args: [ '--bind=0.0.0.0:8000',
+            '--workers={{ ansible_processor_vcpus|int + 1 }}',
+            '--timeout=10', 'system-app.wsgi' ]
+
+  # Deploy a virtualenv WSGI application (requires gunicorn of the same version
+  # to be installed inside the virtualenv)
+  - name: 'virtualenv-app'
+    comment: 'This application is deployed in a virtualenv'
+    working_dir: '/path/to/virtualenv/app/src'
+    python: '/path/to/virtualenv/bin/python'
+    mode: 'wsgi'
+    user: 'custom-user'
+    group: 'custom-group'
+    args: [ '--bind=unix:/run/gunicorn/virtualenv-app.sock',
+            '--workers={{ ansible_processor_vcpus|int + 1 }}',
+            '--timeout=10', 'virtualenv-app.wsgi' ]
+
+  # Remove an old application configuration
+  - name: 'old-app'
+    state: 'absent'

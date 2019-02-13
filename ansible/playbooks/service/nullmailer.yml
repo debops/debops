@@ -14,14 +14,14 @@
       tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nullmailer__ferm__dependent_rules }}'
 
     - role: debops.tcpwrappers
-      tags: [ 'role::tcpwrappers' ]
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ nullmailer__tcpwrappers__dependent_allow }}'
 
     - role: debops.nullmailer
-      tags: [ 'role::nullmailer' ]
+      tags: [ 'role::nullmailer', 'skip::nullmailer' ]

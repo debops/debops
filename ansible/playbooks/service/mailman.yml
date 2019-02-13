@@ -19,35 +19,35 @@
         - '{{ postfix__secret__directories }}'
 
     - role: debops.fcgiwrap
-      tags: [ 'role::fcgiwrap' ]
+      tags: [ 'role::fcgiwrap', 'skip::fcgiwrap' ]
       fcgiwrap__instances:
         - '{{ mailman__fcgiwrap__instance }}'
 
     - role: debops.unattended_upgrades
-      tags: [ 'role::unattended_upgrades' ]
+      tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
       unattended_upgrades__dependent_blacklist: '{{ mailman__unattended_upgrades__dependent_blacklist }}'
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ mailman__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ postfix__ferm__dependent_rules }}'
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.postfix
-      tags: [ 'role::postfix' ]
+      tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'mailman'
           config: '{{ mailman__postfix__dependent_maincf }}'
 
     - role: debops.nginx
-      tags: [ 'role::nginx' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__servers: '{{ mailman__nginx__servers }}'
 
     - role: debops.mailman
-      tags: [ 'role::mailman' ]
+      tags: [ 'role::mailman', 'skip::mailman' ]

@@ -11,17 +11,16 @@
   roles:
 
     - role: debops.etc_services
-      tags: [ 'role::etc_services' ]
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services_dependent_list: '{{ stunnel_services }}'
 
     - role: debops.ferm
-      tags: [ 'role::ferm' ]
+      tags: [ 'role::ferm', 'skip::ferm' ]
       ferm_input_dependent_list: '{{ stunnel_services }}'
 
     - role: debops.tcpwrappers
-      tags: [ 'role::tcpwrappers' ]
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers_dependent_allow: '{{ stunnel_services }}'
 
     - role: debops.stunnel
-      tags: [ 'role::stunnel' ]
-
+      tags: [ 'role::stunnel', 'skip::stunnel' ]

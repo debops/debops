@@ -1,0 +1,137 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+from operator import itemgetter
+import subprocess
+import signal
+import os
+import redis
+
+output = {'installed': False}
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+def unwrap_quotes(input_line):
+    out = input_line.split(' ')[1].rstrip('\n')
+    if out.startswith('"') and out.endswith('"'):
+        out = out[1:-1]
+    return out
+
+
+def get_immediate_subdirectories(a_dir):
+    return [name for name in os.listdir(a_dir)
+            if os.path.isdir(os.path.join(a_dir, name))]
+
+
+output['installed'] = cmd_exists('redis-sentinel')
+
+if output['installed']:
+    try:
+        redis_sentinel_version_stdout = subprocess.check_output(
+                ["dpkg-query", "-W", "-f=${Version}\n'",
+                 "redis-sentinel"]).split('-')[0]
+        output['version'] = redis_sentinel_version_stdout.split(':')[1]
+
+    except Exception:
+        pass
+
+    sentinel_instances = []
+
+    for directory in get_immediate_subdirectories('/etc/redis'):
+        if directory.startswith('sentinel-'):
+            instance = {'name': directory.split('-')[1]}
+            if os.path.isfile('/etc/redis/' + directory + '/sentinel.conf'):
+                try:
+                    for config_file in ['/etc/redis/' + directory
+                                        + '/sentinel.conf']:
+                        try:
+                            pass_map = {}
+                            with open(config_file) as fh:
+                                for line in fh:
+                                    if line.startswith('bind'):
+                                        instance['bind'] = unwrap_quotes(line)
+
+                                    if line.startswith('port'):
+                                        instance['port'] = unwrap_quotes(line)
+
+                                    elif line.startswith('unixsocket'):
+                                        instance['socket'] = (
+                                                unwrap_quotes(line))
+
+                                    elif line.startswith('sentinel auth-pass'):
+                                        monitor = line.split(' ')[2]
+                                        pass_map[monitor] = (
+                                            line.split(' ')[3].rstrip('\n'))
+
+                            try:
+                                r = redis.StrictRedis(
+                                        host=instance['bind'],
+                                        port=instance['port'])
+                                instance['redis_mode'] = (
+                                        str(r.info()['redis_mode']))
+                                monitors = []
+                                for monitor in r.sentinel_masters().keys():
+                                    master_ip_port = (
+                                            r.sentinel_get_master_addr_by_name(
+                                                monitor))
+                                    sentinels = []
+                                    for entry in r.sentinel_sentinels(monitor):
+                                        sentinels.append(
+                                                {'ip': entry['ip'],
+                                                 'port': entry['port']})
+                                    monitor_entry = (
+                                            {'name': monitor,
+                                             'master_host': master_ip_port[0],
+                                             'master_port': master_ip_port[1],
+                                             'other_sentinels': sentinels})
+                                    if monitor in pass_map.keys():
+                                        monitor_entry['master_password'] = (
+                                                pass_map[monitor])
+
+                                    monitors.append(monitor_entry)
+
+                                instance['monitors'] = monitors
+
+                            except Exception:
+                                pass
+
+                        except Exception:
+                            pass
+
+                    sentinel_instances.append(instance)
+                    if instance['name'] == 'main':
+                        output['bind'] = instance['bind']
+                        output['port'] = instance['port']
+                        output['socket'] = instance['socket']
+                        output['monitor_name'] = (
+                                instance['monitors'][0]['name'])
+                        output['master_host'] = (
+                                instance['monitors'][0]['master_host'])
+                        output['master_port'] = (
+                                instance['monitors'][0]['master_port'])
+
+                        if 'master_password' in instance['monitors'][0].keys():
+                            output['master_password'] = (
+                                    instance['monitors'][0]['master_password'])
+                        output['other_sentinels'] = (
+                                instance['monitors'][0]['other_sentinels'])
+                except Exception:
+                    pass
+
+    try:
+        output['instances'] = sorted(sentinel_instances,
+                                     key=itemgetter('port'))
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=2))

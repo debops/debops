@@ -1,0 +1,198 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.machine default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: machine__enabled [[[
+#
+# Enable or disable support for managing static machine information and MOTD.
+machine__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: machine__packages [[[
+#
+# List of APT packages to install with the ``debops.machine`` role enabled.
+machine__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Machine information [[[
+# -----------------------
+
+# These variables manage contents of the :file:`/etc/machine-info`
+# configuration file. See :manpage:`machine-info(5)` and
+# :manpage:`hostnamectl(1)` for more details.
+
+# .. envvar:: machine__organization [[[
+#
+# Human-readable name of the organization that's responsible for this machine.
+machine__organization: '{{ ansible_domain.split(".")[0] | capitalize }}'
+
+                                                                   # ]]]
+# .. envvar:: machine__contact [[[
+#
+# Human-readable contact information for this machine - e-mail, phone number or
+# an URL to a web page about a person or team responsible for this host.
+machine__contact: ''
+
+                                                                   # ]]]
+# .. envvar:: machine__pretty_hostname [[[
+#
+# Human-readable hostname for this machine.
+machine__pretty_hostname: ''
+
+                                                                   # ]]]
+# .. envvar:: machine__icon_name [[[
+#
+# Name of the icon to use for this machine.
+machine__icon_name: ''
+
+                                                                   # ]]]
+# .. envvar:: machine__chassis [[[
+#
+# Specify the machine type to override the autodetected value. Currently
+# recognized chassis types: 'desktop', 'laptop', 'server', 'tablet', 'handset',
+# 'watch', 'vm', 'container'.
+machine__chassis: ''
+
+                                                                   # ]]]
+# .. envvar:: machine__deployment [[[
+#
+# Define the system deployment environment. Suggested values:
+# 'development', 'integration', 'staging', 'production'.
+machine__deployment: 'production'
+
+                                                                   # ]]]
+# .. envvar:: machine__location [[[
+#
+# Describe the physical location where a given system can be found, for example
+# a city, or a rack in which the machine is located.
+machine__location: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration of the :file:`/etc/motd` file [[[
+# -----------------------------------------------
+
+# .. envvar:: machine__motd [[[
+#
+# String or YAML text block with the welcome message stored in the
+# :file:`/etc/motd` configuration file.
+machine__motd: ''
+
+                                                                   # ]]]
+# .. envvar:: machine__etc_motd_state [[[
+#
+# Specify the state of the :file:`/etc/motd` file, either ``present`` (the file
+# exists) or ``absent`` (the file will be removed).
+machine__etc_motd_state: '{{ "present" if machine__motd|d() else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: machine__motd_update_dir [[[
+#
+# Directory which contains scripts that generate the dynamic MOTD.
+machine__motd_update_dir: '/etc/update-motd.d'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration of the :file:`/etc/issue` file [[[
+# ------------------------------------------------
+
+# .. envvar:: machine__etc_issue_state [[[
+#
+# This variable controls if the role should manage the :file:`/etc/issue`
+# configuration file. If ``present``, the role will divert the distribution file
+# and generate a custom one; if ``absent``, the role will revert the diverted
+# version and will not modify it.
+machine__etc_issue_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: machine__etc_issue_template [[[
+#
+# Path to the Jinja2 template used to generate the :file:`/etc/issue`
+# configuration file, relative to the :file:`templates/` directory of this role.
+machine__etc_issue_template: 'etc/issue.j2'
+                                                                   # ]]]
+                                                                   # ]]]
+# Dynamic Message Of The Day [[[
+# ------------------------------
+
+# These variables control the shell scripts that generate the dynamic MOTD.
+# See :ref:`machine__ref_motd_scripts` for more details.
+
+# .. envvar:: machine__motd_default_scripts [[[
+#
+# The list of the default MOTD scripts managed by the role.
+machine__motd_default_scripts:
+
+  # This file comes with the 'base-files' APT package on Debian
+  - name: 'uname'
+    filename: '10-uname'
+    divert: '{{ False
+                if (ansible_distribution_release in [ "wheezy", "jessie" ])
+                else True }}'
+    content: |
+      #!/bin/sh
+      uname -snrvm
+    state: '{{ "present"
+               if (ansible_distribution_release in [ "wheezy", "jessie" ])
+               else "init" }}'
+
+  - name: 'ansible'
+    weight: 50
+    src: 'etc/update-motd.d/ansible'
+    state: 'present'
+
+  - name: 'tail'
+    weight: 90
+    content: |
+      #!/bin/sh
+      if [ -f /etc/motd.tail ] ; then
+          cat /etc/motd.tail
+      fi
+    state: 'present'
+
+  - name: 'fortune'
+    weight: 95
+    src: 'etc/update-motd.d/fortune'
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: machine__motd_scripts [[[
+#
+# The list of the MOTD scripts which should be present on all hosts in the
+# Ansible inventory.
+machine__motd_scripts: []
+
+                                                                   # ]]]
+# .. envvar:: machine__motd_group_scripts [[[
+#
+# The list of the MOTD scripts which should be present on hosts in a specific
+# Ansible inventory group.
+machine__motd_group_scripts: []
+
+                                                                   # ]]]
+# .. envvar:: machine__motd_host_scripts [[[
+#
+# The list of the MOTD scripts which should be present on specific hosts in the
+# Ansible inventory.
+machine__motd_host_scripts: []
+
+                                                                   # ]]]
+# .. envvar:: machine__motd_combined_scripts [[[
+#
+# The list which combines configuration of the MOTD scripts which is passed to
+# the Ansible tasks.
+machine__motd_combined_scripts: '{{ machine__motd_default_scripts
+                                    + machine__motd_scripts
+                                    + machine__motd_group_scripts
+                                    + machine__motd_host_scripts }}'
+                                                                   # ]]]
+                                                                   # ]]]
