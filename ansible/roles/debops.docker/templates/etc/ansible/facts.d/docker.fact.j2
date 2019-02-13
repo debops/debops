@@ -3,10 +3,13 @@
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import dumps
+from json import loads, dumps
 from sys import exit
 import subprocess
 import os
+import re
+
+docker_pkg = loads('''{{ docker__packagename | to_nice_json }}''')
 
 
 def cmd_exists(cmd):
@@ -19,9 +22,13 @@ def cmd_exists(cmd):
 output = {'installed': cmd_exists('docker')}
 
 try:
-    output['version'] = subprocess.check_output(
-            ['docker', 'version', '--format',
-             '{{ "{{" }}.Server.Version{{ "}}" }}']).strip('\n')
+    version_stdout = subprocess.check_output(
+        ["dpkg-query", "-W", "-f=${Version}\n'", docker_pkg]
+    ).split('+')[0]
+
+    match = re.search(r'^(?:[^:]:)?(?P<docker_version>[^~]+)', version_stdout)
+    if match:
+        output['version'] = match.group('docker_version')
 
 except Exception:
     pass
