@@ -99,15 +99,6 @@
     path: '/var/lib/mysql'
   register: phpipam__register_mysql
 
-- name: Create phpIPAM database user in local MySQL instance
-  mysql_user:
-    name: '{{ phpipam__database_user }}'
-    state: 'present'
-    password: '{{ phpipam__database_password }}'
-    priv: '{{ phpipam__database_name }}.*:ALL'
-    host: 'localhost'
-  when: phpipam__database_host == 'localhost' and phpipam__register_mysql.stat.exists
-
 - name: Create phpIPAM database in local MySQL instance
   mysql_db:
     name: '{{ phpipam__database_name }}'

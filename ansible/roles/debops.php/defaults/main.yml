@@ -16,8 +16,8 @@
 # .. envvar:: php__version_preference [[[
 #
 # List of APT package names which are scanned to check available PHP versions.
-# The first found package wins.
-php__version_preference: [ 'php7.2', 'php7.1', 'php7.0', 'php5' ]
+# The first found package wins. The ``php5`` packages are not supported.
+php__version_preference: [ 'php', 'php5.6' ]
 
                                                                    # ]]]
 # .. envvar:: php__sury [[[
@@ -28,7 +28,10 @@ php__version_preference: [ 'php7.2', 'php7.1', 'php7.0', 'php5' ]
 php__sury: '{{ (ansible_local.php.sury
                 if (ansible_local|d() and ansible_local.php|d() and
                     ansible_local.php.sury|d())
-                else False) | bool }}'
+                 else (True
+                       if (ansible_distribution_release in
+                           [ "jessie", "stretch", "trusty", "xenial" ])
+                       else False)) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
@@ -690,7 +693,7 @@ php__apt_preferences__dependent_list:
     suffix: '_packages_sury_org'
     state: '{{ "present" if php__sury|bool else "absent" }}'
 
-  - packages: [ 'php5', 'php5-*', 'php7.0', 'php7.0-*', 'dh-php', 'php-*' ]
+  - packages: [ 'php', 'php5', 'php5*', 'php7*', 'dh-php', 'php-*', 'libpcre3', 'libzip4' ]
     pin: 'origin "packages.sury.org"'
     priority: '500'
     reason: 'Prefer PHP packages from the same repository for consistency'

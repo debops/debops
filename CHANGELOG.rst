@@ -45,6 +45,20 @@ Changed
   - [debops.gitlab] The role will install GitLab 11.7 on supported platforms
     (Debian Buster, Ubuntu Bionic), existing installations will be upgraded.
 
+  - [debops.phpipam] The relevant inventory variables have been renamed, check
+    the :ref:`upgrade_notes` for details. The role now uses the upstream
+    phpIPAM repository and it installs version 1.3.2.
+
+  - [debops.php] Because of the PHP 7.0 release status changed to `End of life`__
+    at the beginning of 2019, Ondřej Surý APT repository with PHP 7.2 packages
+    will be enabled by default on Debian Jessie and Stretch as well as Ubuntu
+    Trusty and Xenial. Existing :ref:`debops.php` installations shouldn't be
+    affected, but the role will not try to upgrade the PHP version either.
+    Users should consider upgrading the packages manually or reinstalling
+    services from scratch with the newer version used by default.
+
+    .. __: https://secure.php.net/supported-versions.php
+
 - [debops.lxc] The :command:`lxc-prepare-ssh` script will read the public SSH
   keys from specific files (``root`` key file, and the ``$SUDO_USER`` key file)
   and will not accept any custom files to read from, to avoid possible security
@@ -56,9 +70,12 @@ Changed
   to Docker Registry defined in the GitLab service is properly applied during
   installation/management.
 
-- [debops.phpipam] The relevant inventory variables have been renamed, check the
-  :ref:`upgrade_notes` for details. The role now uses the upstream phpIPAM
-  repository and it installs version 1.3.2.
+- [debops.php] The PHP version detection has been redesigned to use the
+  :command:`apt-cache madison` command to find the available versions. The role
+  will now check the current version of the ``php`` APT package to select the
+  available stable PHP version. This unfortunately breaks support for the
+  ``php5`` packages, but the ``php5.6`` packages from Ondřej Surý APT
+  repository work fine.
 
 Fixed
 ~~~~~
