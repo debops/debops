@@ -10,5 +10,45 @@
 
   roles:
 
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: debops.php
+      tags: [ 'role::php', 'skip::php' ]
+      php__dependent_packages:
+        - '{{ phpipam__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ phpipam__php__dependent_pools }}'
+      when: (phpipam__mode is defined and 'webui' in phpipam__mode)
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ phpipam__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ phpipam__nginx__dependent_upstreams }}'
+      when: (phpipam__mode is defined and 'webui' in phpipam__mode)
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
+      mariadb__dependent_users:
+        - '{{ phpipam__mariadb__dependent_users }}'
+
     - role: debops.phpipam
       tags: [ 'role::phpipam', 'skip::phpipam' ]

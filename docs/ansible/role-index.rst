@@ -32,7 +32,7 @@ etc.
 - :ref:`debops.owncloud`
 - :ref:`debops.prosody`
 - :ref:`debops.rstudio_server`
-- ``debops.phpipam``
+- :ref:`debops.phpipam`
 - ``debops.phpmyadmin``
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
