@@ -45,6 +45,16 @@ Changed
   - [debops.gitlab] The role will install GitLab 11.7 on supported platforms
     (Debian Buster, Ubuntu Bionic), existing installations will be upgraded.
 
+  - [debops.php] Because of the PHP 7.0 release status changed to `End of life`__
+    at the beginning of 2019, Ondřej Surý APT repository with PHP 7.2 packages
+    will be enabled by default on Debian Jessie and Stretch as well as Ubuntu
+    Trusty and Xenial. Existing :ref:`debops.php` installations shouldn't be
+    affected, but the role will not try to upgrade the PHP version either.
+    Users should consider upgrading the packages manually or reinstalling
+    services from scratch with the newer version used by default.
+
+    .. __: https://secure.php.net/supported-versions.php
+
 - [debops.lxc] The :command:`lxc-prepare-ssh` script will read the public SSH
   keys from specific files (``root`` key file, and the ``$SUDO_USER`` key file)
   and will not accept any custom files to read from, to avoid possible security
