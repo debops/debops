@@ -33,6 +33,10 @@ Added
   suffixes from :file:`/etc/resolv.conf` file, or using ``*.local`` domain
   names managed by Avahi/mDNS to redirect HTTP clients to the correct FQDNs.
 
+- [debops.resources] Some lists can now configure ACL entries on the destination
+  files or directories using the ``item.acl`` parameter. Take a look to
+  :ref:`resources__ref_acl` section to have the list of compatibles variables.
+
 Changed
 ~~~~~~~
 
