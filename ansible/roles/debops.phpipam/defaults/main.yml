@@ -149,9 +149,9 @@ phpipam__database_user: 'phpipam'
                                                                    # ]]]
 # .. envvar:: phpipam__database_host [[[
 #
-# The hostname or IP address of the database server to use for the
-# phpIPAM database.
-phpipam__database_host: 'localhost'
+# FQDN of the MariaDB database host. It will be configured by
+# the ``debops.mariadb`` role.
+phpipam__database_host: '{{ ansible_local.mariadb.server }}'
 
                                                                    # ]]]
 # .. envvar:: phpipam__database_name [[[
@@ -163,8 +163,10 @@ phpipam__database_name: 'phpipam'
 # .. envvar:: phpipam__database_password [[[
 #
 # The database password used by the phpIPAM
-phpipam__database_password: "{{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/phpipam/mysql/' + phpipam__database_user + '/password length=30') }}"
-
+phpipam__database_password: "{{ lookup('password', secret + '/mariadb/' +
+                                ansible_local.mariadb.delegate_to +
+                                '/credentials/' + phpipam__database_user +
+                                '/password length=48') }}"
                                                                    # ]]]
                                                                    # ]]]
 # Base application directories [[[
