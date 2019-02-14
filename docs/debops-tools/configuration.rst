@@ -61,6 +61,12 @@ The ``[paths]`` section
 
   Default value: ``%(install-path)s/playbooks``
 
+``task-paths``
+  List of comma-separated paths where ``task_src`` lookup plugin will look
+  for customized tasks triggered by the "task hooks" provided by some roles.
+
+  Default value: none
+
 ``template-paths``
   List of comma-separated paths where ``template_src`` lookup plugin will look
   for custom templates (alternative :file:`templates/` directories). You can use
