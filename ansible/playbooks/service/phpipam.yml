@@ -11,7 +11,7 @@
   roles:
 
     - role: debops.php/env
-      tags: [ 'role::php', 'role::apt_preferences', 'role::logrotate' ]
+      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
 
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
@@ -20,11 +20,12 @@
         - '{{ nginx__apt_preferences__dependent_list }}'
 
     - role: debops.logrotate
-      tags: [ 'role::logrotate' ]
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
     - role: debops.php
+      tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ phpipam__php__dependent_packages }}'
       php__dependent_pools:
@@ -37,10 +38,12 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.nginx
-      nginx__dependent_servers: [ '{{ phpipam__nginx_server }}' ]
-      nginx__dependent_upstreams: [ '{{ phpipam__nginx_upstream_php5 }}' ]
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ phpipam__nginx_server }}'
+      nginx__dependent_upstreams:
+        - '{{ phpipam__nginx_upstream_php5 }}'
       when: (phpipam__mode is defined and 'webui' in phpipam__mode)
-      tags: nginx
 
     - role: debops.phpipam
       tags: [ 'role::phpipam', 'skip::phpipam' ]
