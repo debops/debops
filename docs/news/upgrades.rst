@@ -11,6 +11,8 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+- The :ref:`debops.phpipam` has been refactored. Now the variables have been
+  renamed from ``phpipam_*`` to ``phpipam__*``
 
 v0.8.1 (2019-02-02)
 -------------------

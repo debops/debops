@@ -11,18 +11,18 @@
 
 - name: Clone phpipam-scripts
   git:
-    repo: '{{ phpipam_scripts_git_repo }}'
-    dest: '{{ phpipam_scripts_git_dest }}'
-    version: '{{ phpipam_scripts_git_version }}'
+    repo: '{{ phpipam__scripts_git_repo }}'
+    dest: '{{ phpipam__scripts_git_dest }}'
+    version: '{{ phpipam__scripts_git_version }}'
     update: True
-  register: phpipam_register_scripts_src
+  register: phpipam__register_scripts_src
 
 - name: Install phpipam-scripts
   command: make install
   args:
-    chdir: '{{ phpipam_scripts_git_dest }}'
-  when: phpipam_register_scripts_src is defined and
-        phpipam_register_scripts_src is changed
+    chdir: '{{ phpipam__scripts_git_dest }}'
+  when: phpipam__register_scripts_src is defined and
+        phpipam__register_scripts_src is changed
 
 - name: Configure phpipam-scripts
   template:
@@ -39,13 +39,13 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: phpipam_register_hosts_wrapper
+  register: phpipam__register_hosts_wrapper
 
 - name: Create wrapper script entry in cron
   cron:
     name: 'Regenerate DHCP hosts files'
     cron_file: 'phpipam-scripts'
-    minute: '{{ phpipam_scripts_cron_period }}'
+    minute: '{{ phpipam__scripts_cron_period }}'
     job: '/usr/local/sbin/phpipam-hosts-wrapper'
     user: 'root'
     state: 'present'

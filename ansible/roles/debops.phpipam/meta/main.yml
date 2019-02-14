@@ -4,37 +4,6 @@ dependencies:
 
   - role: debops.secret
 
-  - role: debops.php/env
-    tags: [ 'role::php', 'role::apt_preferences', 'role::logrotate' ]
-
-  - role: debops.apt_preferences
-    apt_preferences__dependent_list:
-      - '{{ nginx__apt_preferences__dependent_list }}'
-      - '{{ php__apt_preferences__dependent_list }}'
-
-  - role: debops.logrotate
-    tags: [ 'role::logrotate' ]
-    logrotate__dependent_config:
-      - '{{ php__logrotate__dependent_config }}'
-
-  - role: debops.php
-    php__dependent_packages: [ 'mysql', 'gmp', 'gd', 'curl', 'mcrypt', 'ldap', 'php-pear' ]
-    php__dependent_pools: [ '{{ phpipam_php5_pool }}' ]
-    when: ((phpipam_dependencies is defined and phpipam_dependencies) and
-           (phpipam_mode is defined and 'webui' in phpipam_mode))
-
-  - role: debops.ferm
-    tags: [ 'role::ferm', 'skip::ferm' ]
-    ferm__dependent_rules:
-      - '{{ nginx__ferm__dependent_rules }}'
-
-  - role: debops.nginx
-    nginx_servers: [ '{{ phpipam_nginx_server }}' ]
-    nginx_upstreams: [ '{{ phpipam_nginx_upstream_php5 }}' ]
-    when: ((phpipam_dependencies is defined and phpipam_dependencies) and
-           (phpipam_mode is defined and 'webui' in phpipam_mode))
-    tags: nginx
-
 galaxy_info:
 
   role_name: 'phpipam'
@@ -42,7 +11,7 @@ galaxy_info:
   description: 'Install phpIPAM, an Open Source IP Address Manager'
   company: 'DebOps'
   license: 'GNU General Public License v3'
-  min_ansible_version: '1.7.0'
+  min_ansible_version: '2.4.0`'
   platforms:
     - name: Ubuntu
       versions:
@@ -51,6 +20,8 @@ galaxy_info:
         - raring
         - saucy
         - trusty
+        - xenial
+        - bionic
     - name: Debian
       versions:
         - wheezy
