@@ -101,7 +101,7 @@ details for certain parameters:
   treated as a directory which will be created if it doesn't exist.
 
 ``item.acl``
-  Optional. Please take look :ref:`resources__ref_acl` section.
+  Optional. Please take a look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -174,7 +174,7 @@ parameters:
   using the :ref:`resources__ref_paths` variables.
 
 ``item.acl``
-  Optional. Please take look :ref:`resources__ref_acl` section.
+  Optional. Please take a look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -212,7 +212,7 @@ Here are some important parameters used by the role:
   Required. Path where downloaded resource should be stored.
 
 ``item.acl``
-  Optional. Please take look :ref:`resources__ref_acl` section.
+  Optional. Please take a look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -247,7 +247,7 @@ Here are some more important parameters:
   Required. Path on the remote host where the archive should be unpacked.
 
 ``item.acl``
-  Optional. Please take look :ref:`resources__ref_acl` section.
+  Optional. Please take a look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -296,7 +296,7 @@ Here are some more important parameters:
   be created. If specified and ``absent``, file will be removed.
 
 ``item.acl``
-  Optional. Please take look :ref:`resources__ref_acl` section.
+  Optional. Please take a look :ref:`resources__ref_acl` section.
 
 Examples
 ~~~~~~~~
@@ -334,8 +334,8 @@ the ACLs (:ref:`resources__ref_paths`, :ref:`resources__ref_repositories`,
 Examples
 ~~~~~~~~
 
-Create a directory on all hosts and allow ``adm`` group and ``joe`` user
-to access to any new content:
+Create a directory on all hosts and allow ``adm`` group to access to any
+new content:
 
 .. code-block:: yaml
 
