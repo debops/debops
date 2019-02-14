@@ -36,10 +36,10 @@ phpipam__php__dependent_packages:
   - 'ldap'
   - 'php-pear'
                                                                    # ]]]
-# .. envvar:: phpipam__domain [[[
+# .. envvar:: phpipam__fqdn [[[
 #
-# Domain on which phpIPAM is configured in nginx
-phpipam__domain: [ 'ipam.{{ ansible_domain }}' ]
+# FQDN on which phpIPAM is configured in nginx
+phpipam__fqdn: 'ipam.{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: phpipam__nginx_auth_realm [[[
@@ -63,7 +63,7 @@ phpipam__database_schema: '{{ phpipam__git_checkout + "/db/SCHEMA.sql" }}'
 
 # .. envvar:: phpipam__php__dependent_pools [[[
 #
-# Configuration for php5-fpm pool
+# PHP pools managed by the debops.php_ role.
 phpipam__php__dependent_pools:
 
   - name: 'phpipam'
@@ -72,50 +72,54 @@ phpipam__php__dependent_pools:
     group: '{{ phpipam__group }}'
                                                                    # ]]]
 
-# .. envvar:: phpipam__nginx_upstream_php5 [[[
+# .. envvar:: phpipam__nginx__dependent_upstreams [[[
 #
-# nginx configuration - PHP5 upstream
-phpipam__nginx_upstream_php5:
-  enabled: True
-  name: 'php5_phpipam'
-  type: 'php5'
-  php5: 'phpipam'
+# PHP upstream server configuration managed by the debops.nginx_ role.
+phpipam__nginx__dependent_upstreams:
+
+  - name: 'php_phpipam'
+    by_role: 'debops.phpipam'
+    enabled: True
+    type: 'php'
+    php_pool: 'phpipam'
+
                                                                    # ]]]
 
-# .. envvar:: phpipam__nginx_server [[[
+# .. envvar:: phpipam__nginx_dependent_servers [[[
 #
 # nginx configuration - phpIPAM server
-phpipam__nginx_server:
-  by_role: 'debops.phpipam'
-  enabled: True
-  type: 'php5'
-  name: '{{ phpipam__domain }}'
-  root: '{{ phpipam__git_checkout }}'
-  access_policy: '{{ phpipam__nginx_access_policy }}'
-  auth_basic_realm: '{{ phpipam__nginx_auth_realm }}'
-  php5: 'php5_phpipam'
+phpipam__nginx__dependent_servers:
 
-  error_pages:
-    '400': '/index.php?page=error&section=400'
-    '401': '/index.php?page=error&section=401'
-    '403': '/index.php?page=error&section=403'
-    '404': '/index.php?page=error&section=404'
-    '500': '/index.php?page=error&section=500'
+  - name: '{{ phpipam__fqdn }}'
+    by_role: 'debops.phpipam'
+    enabled: True
+    type: 'php'
+    root: '{{ phpipam__git_checkout }}'
+    access_policy: '{{ phpipam__nginx_access_policy }}'
+    auth_basic_realm: '{{ phpipam__nginx_auth_realm }}'
+    php_upstream: 'php_phpipam'
 
-  location:
-    '/api': |
-      try_files $uri $uri/ /api/index.php?$args =404;
+    error_pages:
+      '400': '/index.php?page=error&section=400'
+      '401': '/index.php?page=error&section=401'
+      '403': '/index.php?page=error&section=403'
+      '404': '/index.php?page=error&section=404'
+      '500': '/index.php?page=error&section=500'
 
-    '/': |
-      rewrite ^/login/dashboard/$                 /dashboard/ redirect;
-      rewrite ^/logout/dashboard/$                /dashboard/ redirect;
-      rewrite ^/tools/search/(.*)/(.*)/(.*)/(.*)$ /index.php?page=tools&section=search&addresses=$1&subnets=$2&vlans=$3&ip=$4 last;
-      rewrite ^/(.*)/(.*)/(.*)/(.*)/(.*)/$        /index.php?page=$1&section=$2&subnetId=$3&sPage=$4&ipaddrid=$5 last;
-      rewrite ^/(.*)/(.*)/(.*)/(.*)/$             /index.php?page=$1&section=$2&subnetId=$3&sPage=$4 last;
-      rewrite ^/(.*)/(.*)/(.*)/$                  /index.php?page=$1&section=$2&subnetId=$3 last;
-      rewrite ^/(.*)/(.*)/$                       /index.php?page=$1&section=$2 last;
-      rewrite ^/(.*)/$                            /index.php?page=$1 last;
-      try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
+    location:
+      '/api': |
+        try_files $uri $uri/ /api/index.php?$args =404;
+
+      '/': |
+        rewrite ^/login/dashboard/$                 /dashboard/ redirect;
+        rewrite ^/logout/dashboard/$                /dashboard/ redirect;
+        rewrite ^/tools/search/(.*)/(.*)/(.*)/(.*)$ /index.php?page=tools&section=search&addresses=$1&subnets=$2&vlans=$3&ip=$4 last;
+        rewrite ^/(.*)/(.*)/(.*)/(.*)/(.*)/$        /index.php?page=$1&section=$2&subnetId=$3&sPage=$4&ipaddrid=$5 last;
+        rewrite ^/(.*)/(.*)/(.*)/(.*)/$             /index.php?page=$1&section=$2&subnetId=$3&sPage=$4 last;
+        rewrite ^/(.*)/(.*)/(.*)/$                  /index.php?page=$1&section=$2&subnetId=$3 last;
+        rewrite ^/(.*)/(.*)/$                       /index.php?page=$1&section=$2 last;
+        rewrite ^/(.*)/$                            /index.php?page=$1 last;
+        try_files $uri $uri/ $uri.html $uri.htm /index.html /index.htm =404;
 # ]]]
 
 # User, group, database configuration [[[
@@ -219,7 +223,7 @@ phpipam__git_version: '1.3.2'
 # .. envvar:: phpipam__git_checkout [[[
 #
 # Default path where phpIPAM source files will be deployed
-phpipam__git_checkout: '{{ phpipam__www + "/sites/" + phpipam__domain[0] + "/public" }}'
+phpipam__git_checkout: '{{ phpipam__www + "/sites/" + phpipam__fqdn + "/public" }}'
 
                                                                    # ]]]
                                                                    # ]]]
