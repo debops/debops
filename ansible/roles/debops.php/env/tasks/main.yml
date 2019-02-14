@@ -40,8 +40,11 @@
   environment:
     LC_ALL: 'C'
   shell: set -o nounset -o pipefail -o errexit &&
-         apt-cache show {{ php__version_preference | join(' ') }}
-         | grep -E '^Package:\s+php[0-9.]+$' | head -n 1 | awk '{print $2}' | sed -e 's/^php//'
+         apt-cache madison {{ php__version_preference | join(' ') }} \
+           | awk '{print $3}' \
+           | sed -e 's/^.*://' -e 's/\+.*$//' -e 's/\d+\.\d+//' \
+           | awk -F'.' '{print $1"."$2}' \
+           | head -n 1
   args:
     executable: '/bin/bash'
   register: php__register_version
@@ -53,9 +56,9 @@
   environment:
     LC_ALL: 'C'
   shell: set -o nounset -o pipefail -o errexit &&
-         apt-cache policy {{ php__version_preference | join(' ') }}
-         | grep -E '^\s+Candidate:\s+' | grep --invert-match 'none' | head -n 1
-         | sed --regexp-extended 's/\s*[[:alnum:]]+:\s* ([^+-]+).*/\1/g;'
+         apt-cache madison {{ 'php' + php__register_version.stdout }} \
+           | awk '{print $3}' | sed -e 's/^.*://' -e 's/\+.*$//' -e 's/\-.*$//' \
+           | head -n 1
   args:
     executable: '/bin/bash'
   register: php__register_long_version

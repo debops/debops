@@ -60,6 +60,12 @@ Changed
   :ref:`upgrade_notes` for details. The role now uses the upstream phpIPAM
   repository and it installs version 1.3.2.
 
+- [debops.php] The PHP version detection has been redesigned to use the
+  :command:`apt-cache madison` command to find the available versions. The role
+  will now check the current version of the ``php`` APT package to select the
+  available stable PHP version. This unfortunately breaks with the ``php5``
+  packages, but works with ``php5.6`` packages from Ondřej Surý APT repository.
+
 Fixed
 ~~~~~
 
