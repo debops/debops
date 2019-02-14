@@ -53,7 +53,8 @@ Changed
   installation/management.
 
 - [debops.phpipam] The relevant inventory variables have been renamed, check the
-  :ref:`upgrade_notes` for details.
+  :ref:`upgrade_notes` for details. The role now uses the upstream phpIPAM
+  repository and it installs version 1.3.2.
 
 Fixed
 ~~~~~
