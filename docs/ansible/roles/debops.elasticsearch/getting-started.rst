@@ -63,8 +63,8 @@ one or multiple Ansible inventory groups to design your cluster architecture.
 The role currently does not support deployment of multiple Elasticsearch
 instances on one host. As an alternative, consider setting up an internal
 container environment with each Elasticsearch instance in a separate container
-with its own IP address or use `Elastic Cloud Enterprise
-<https://www.elastic.co/cloud/enterprise>`_ which does this for you and more.
+with its own IP address or use `Elastic Cloud Elasticsearch Service
+<https://www.elastic.co/cloud/elasticsearch-service>`_ which does this for you and more.
 
 See the :ref:`elasticsearch__ref_clustering` for more details.
 

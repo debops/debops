@@ -29,7 +29,7 @@ to do so will be automatically generated for you in the
    use the configuration located in :file:`~/src/controller/` directory against
    production hosts, you should review it before doing so.
 
-.. __: https://security.stackexchange.com/questions/94390/
+.. __: https://security.stackexchange.com/questions/94390/whats-the-purpose-of-dh-parameters
 
 .. _quick_start__docker:
 

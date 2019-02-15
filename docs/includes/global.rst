@@ -921,7 +921,7 @@
 .. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
 .. _DebOps Documentation: https://docs.debops.org/en/latest/
 .. _DebOps Examples: https://github.com/debops/examples/
-.. _Getting Started with DebOps: https://docs.debops.org/en/latest/debops-playbooks/docs/guides/getting-started.html
+.. _Getting Started with DebOps: https://docs.debops.org/en/latest/debops-playbooks/guides/getting-started.html
 .. _DebOps Contrib: https://github.com/debops-contrib/debops-contrib
 .. _DebOps Contrib playbooks: https://github.com/debops-contrib/debops-contrib-playbooks
 .. _DebOps Policy: https://docs.debops.org/en/latest/debops-policy/docs/index.html
@@ -1086,7 +1086,7 @@
 .. _PKI: https://en.wikipedia.org/wiki/Public_key_infrastructure
 .. _HSTS: https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
 .. _HTTP Strict Transport Security: https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
-.. _HSTS Preload List Submission: https://hstspreload.appspot.com/
+.. _HSTS Preload List Submission: https://hstspreload.org/
 .. _HPKP: https://en.wikipedia.org/wiki/HTTP_Public_Key_Pinning
 .. _HTTP Public Key Pinning: https://en.wikipedia.org/wiki/HTTP_Public_Key_Pinning
 .. _TOFU: https://en.wikipedia.org/wiki/Trust_on_first_use
@@ -1129,7 +1129,7 @@
 .. _SKS OpenPGP keyserver pool: https://sks-keyservers.net/
 .. Prefer the last one.
 
-.. _Elastic: https://elastic.co/
+.. _Elastic: https://www.elastic.co/
 .. _OpenPGP Best Practices: https://help.riseup.net/en/security/message-security/openpgp/best-practices
 .. _HashiCorp: https://en.wikipedia.org/wiki/HashiCorp
 .. _HashiCorp Security Policy: https://www.hashicorp.com/security.html

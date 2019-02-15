@@ -98,7 +98,7 @@ You can compare this directory structure with `Ansible Best Practices directory
 organization`__ documentation to see where the solutions proposed by Ansible
 and those implemented in DebOps overlap.
 
-.. __: https://docs.ansible.com/ansible/latest/playbooks_best_practices.html#content-organization
+.. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html#content-organization
 
 Usually the :command:`debops` or :command:`ansible` commands are executed from
 the root of the project directory. At the moment there are no safeguards

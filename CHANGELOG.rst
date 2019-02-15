@@ -3,8 +3,8 @@
 Changelog
 =========
 
-This project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`__
-and `human-readable changelog <http://keepachangelog.com/en/1.0.0/>`__.
+This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`__
+and `human-readable changelog <https://keepachangelog.com/en/1.0.0/>`__.
 
 This file contains only general overview of the changes in the DebOps project.
 The detailed changelog can be seen using :command:`git log` command.

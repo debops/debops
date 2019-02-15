@@ -20,7 +20,7 @@ for development and pull requests.
 
 .. __: https://github.com/debops/debops/
 .. __: https://gitlab.com/debops/debops/
-.. __: https://about.gitlab.com/features/gitlab-ci-cd/
+.. __: https://about.gitlab.com/product/continuous-integration/
 .. __: https://github.com/debops/debops/network/members
 
 

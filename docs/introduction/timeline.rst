@@ -59,11 +59,9 @@ May 2013
 September 2013
 ~~~~~~~~~~~~~~
 
-- `Ansible 1.3 ("Top of the World")`__ is released. This version introduced the
+- Ansible 1.3 ("Top of the World") is released. This version introduced the
   role default variables, local facts and role dependencies, which became an
   integral part of DebOps later on.
-
-.. __: https://github.com/ansible/ansible/blob/devel/CHANGELOG.md#13-top-of-the-world---september-13th-2013
 
 October 2013
 ~~~~~~~~~~~~
@@ -173,7 +171,7 @@ November 2014
   with :ref:`debops.ifupdown` role and others that require IP address
   manipulation. `The plugin is later merged into Ansible Core`__.
 
-.. __: https://docs.ansible.com/ansible/latest/playbooks_filters_ipaddr.html
+.. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters_ipaddr.html
 .. __: https://github.com/ansible/ansible/commit/7e46554160
 
 December 2014
@@ -183,7 +181,7 @@ December 2014
   later `published on PyPI`__ which will become main installation method.
 
 .. __: https://github.com/debops/debops/commit/88e3a8e
-.. __: https://pypi.python.org/pypi/debops
+.. __: https://pypi.org/project/debops/
 
 - `debops-tools v0.1.0`__ is released. This repository contains various scripts
   that can be used to install or update DebOps roles and playbooks
@@ -259,7 +257,7 @@ January 2016
 
 - `Ansible 2.0 ("Over the Hills and Far Away")`__ is released.
 
-.. __: https://github.com/ansible/ansible/blob/devel/CHANGELOG.md#20-over-the-hills-and-far-away---jan-12-2016
+.. __: https://github.com/ansible/ansible/blob/stable-2.0/CHANGELOG.md
 
 March 2016
 ~~~~~~~~~~
@@ -277,8 +275,8 @@ April 2016
   Unfortunately, problems with `debops-doc package`__ prevent full inclusion of
   the project in Debian.
 
-.. __: https://bugs.debian.org/819816
-.. __: https://bugs.debian.org/820367
+.. __: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=819816
+.. __: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=820367
 
 July 2016
 ~~~~~~~~~
@@ -286,8 +284,8 @@ July 2016
 - Robin Schneider `creates DebOps entry`__ in the
   `Core Infrastructure Initiative Best Practices`__ program.
 
-.. __: https://bestpractices.coreinfrastructure.org/projects/237
-.. __: https://bestpractices.coreinfrastructure.org/
+.. __: https://bestpractices.coreinfrastructure.org/en/projects/237
+.. __: https://bestpractices.coreinfrastructure.org/en
 
 
 2017
