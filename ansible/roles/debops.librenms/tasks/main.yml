@@ -153,6 +153,7 @@
   become_user: '{{ librenms__user }}'
   register: librenms__register_users
   changed_when: False
+  check_mode: False
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
 
 - name: Create admin accounts
@@ -160,6 +161,7 @@
                                                              + "/librenms/admin/" + item + "/password") }} 10'
   args:
     chdir: '{{ librenms__install_path }}'
+  check_mode: False
   become: True
   become_user: '{{ librenms__user }}'
   with_items: '{{ librenms__admin_accounts }}'
@@ -183,6 +185,7 @@
     executable: '/bin/bash'
   register: librenms__register_passwd
   changed_when: False
+  check_mode: False
   when: librenms__home_snmp_conf|d() and librenms__home_snmp_conf
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
 
@@ -194,6 +197,7 @@
     group: '{{ item }}'
     mode: '0700'
   with_items: '{{ librenms__home_snmp_conf }}'
+  check_mode: False
   when: ((librenms__home_snmp_conf|d() and librenms__home_snmp_conf) and
          (librenms__register_passwd|d() and item in librenms__register_passwd.stdout_lines))
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
