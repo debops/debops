@@ -158,8 +158,8 @@
 
 - name: Initialize RSA key pairs
   shell: set -o nounset -o pipefail -o errexit &&
-         yes | tincd -n {{ item.value.name | d(item.key) }}
-                     -K {{ item.value.rsa_key_length | d(tinc__rsa_key_length) }}
+         sh -c 'yes || true' | tincd -n {{ item.value.name | d(item.key) }}
+                                     -K {{ item.value.rsa_key_length | d(tinc__rsa_key_length) }}
   args:
     executable: '/bin/bash'
     creates: '/etc/tinc/{{ item.value.name | d(item.key) }}/rsa_key.priv'
