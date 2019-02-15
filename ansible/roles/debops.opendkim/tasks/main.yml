@@ -57,7 +57,7 @@
     mode: '0755'
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ])
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ])
 
 - name: Fix OpenDKIM issues with systemd
   template:
@@ -70,14 +70,14 @@
   notify: [ 'Check opendkim and reload' ]
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ])
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ])
 
 - name: Update systemd runtime configuration
   systemd:
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] and
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ] and
          opendkim__register_pid_socket is changed)
 
 - name: Ensure that DomainKey directory exists
