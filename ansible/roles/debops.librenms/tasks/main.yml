@@ -62,7 +62,16 @@
     group: '{{ librenms__webserver_user }}'
     mode: '0750'
 
-- name: Make sure required directories exist
+- name: Make sure log directory exists
+  file:
+    dest: '{{ librenms__log_dir }}'
+    state: 'directory'
+    owner: '{{ librenms__user }}'
+    group: '{{ librenms__group }}'
+    mode: '0750'
+  tags: [ 'role::librenms:config' ]
+
+- name: Make sure data directories exist
   file:
     dest: '{{ item }}'
     state: 'directory'
@@ -72,7 +81,6 @@
   with_items:
     - '{{ librenms__data_path }}'
     - '{{ librenms__rrd_dir }}'
-    - '{{ librenms__log_dir }}'
   tags: [ 'role::librenms:config' ]
 
 
