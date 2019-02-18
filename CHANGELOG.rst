@@ -65,6 +65,12 @@ Changed
   issues. Each public SSH key listed in the key files is validated before being
   added to the container's ``root`` account.
 
+  The :command:`lxc-new-unprivileged` script will similarly not accept any
+  custom files as initial LXC container configuration to fix any potential
+  security holes when used via :command:`sudo`. The default LXC configuration
+  file used by the script can be configured in :file:`/etc/lxc/lxc.conf`
+  configuration file.
+
 - [debops.gitlab] The GitLab playbook will import the
   :ref:`debops.docker_registry` playbook to ensure that configuration related
   to Docker Registry defined in the GitLab service is properly applied during
