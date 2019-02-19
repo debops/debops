@@ -37,6 +37,11 @@ Added
   files or directories using the ``item.acl`` parameter. Take a look to
   :ref:`resources__ref_acl` section to have the list of compatibles variables.
 
+- [debops.lxc] Users can now disable default route advertisement in the
+  ``lxc-net`` DHCP service. This is useful in cases where LXC containers have
+  multiple network interfaces and the default route should go through
+  a different gateway than the LXC host.
+
 Changed
 ~~~~~~~
 
