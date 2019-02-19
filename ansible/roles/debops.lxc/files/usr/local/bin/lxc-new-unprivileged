@@ -69,6 +69,22 @@ main () {
                           --release "${release}" \
                           --arch "${architecture}"
 
+            iface_count="$(grep -cE '^lxc\.network\.type\s+=' "${config_file}")"
+            iface_count="$(( iface_count - 1 ))"
+
+            if [ -f "/var/lib/lxc/${container}/rootfs/etc/network/interfaces" ] ; then
+                if [ "${iface_count}" -gt 0 ] ; then
+                    for (( i=1 ; i<=iface_count ; i++ )) ; do
+                        printf "Adding eth%s interface to network configuration\n" "${i}"
+                        cat <<EOF >> "/var/lib/lxc/${container}/rootfs/etc/network/interfaces"
+
+auto eth${i}
+iface eth${i} inet dhcp
+EOF
+                    done
+                fi
+            fi
+
             lxc-hwaddr-static "${container}"
 
             if pidof systemd > /dev/null 2>&1 ; then

@@ -42,6 +42,12 @@ Added
   multiple network interfaces and the default route should go through
   a different gateway than the LXC host.
 
+- [debops.lxc] The :command:`lxc-new-unprivileged` script will add missing
+  network interface stanzas in the container's :file:`/etc/network/interfaces`
+  file, by default with DHCP configuration. This will happen only on the
+  initialization of the new container, when a given LXC container has multiple
+  network interfaces defined in its configuration file.
+
 Changed
 ~~~~~~~
 
