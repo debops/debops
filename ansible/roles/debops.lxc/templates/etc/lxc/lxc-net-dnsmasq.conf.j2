@@ -20,6 +20,11 @@ interface-name = {{ lxc__net_interface_fqdn }},{{ lxc__net_bridge }}
 dhcp-option = tag:{{ lxc__net_bridge }},option:domain-search,{{ lxc__net_domain }},{{ lxc__net_domain.split('.')[1:] | join('.') }}
 dhcp-option = tag:{{ lxc__net_bridge }},option6:domain-search,{{ lxc__net_domain }},{{ lxc__net_domain.split('.')[1:] | join('.') }}
 {% endif %}
+{% if not lxc__net_router|bool %}
+
+# Disable default route advertisement via the {{ lxc__net_bridge }} interface
+dhcp-option = tag:{{ lxc__net_bridge }},option:router
+{% endif %}
 {% if lxc__net_dnsmasq_options|d() %}
 
 # Additional dnsmasq options

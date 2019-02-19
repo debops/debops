@@ -37,6 +37,17 @@ Added
   files or directories using the ``item.acl`` parameter. Take a look to
   :ref:`resources__ref_acl` section to have the list of compatibles variables.
 
+- [debops.lxc] Users can now disable default route advertisement in the
+  ``lxc-net`` DHCP service. This is useful in cases where LXC containers have
+  multiple network interfaces and the default route should go through
+  a different gateway than the LXC host.
+
+- [debops.lxc] The :command:`lxc-new-unprivileged` script will add missing
+  network interface stanzas in the container's :file:`/etc/network/interfaces`
+  file, by default with DHCP configuration. This will happen only on the
+  initialization of the new container, when a given LXC container has multiple
+  network interfaces defined in its configuration file.
+
 Changed
 ~~~~~~~
 
@@ -64,6 +75,12 @@ Changed
   and will not accept any custom files to read from, to avoid possible security
   issues. Each public SSH key listed in the key files is validated before being
   added to the container's ``root`` account.
+
+  The :command:`lxc-new-unprivileged` script will similarly not accept any
+  custom files as initial LXC container configuration to fix any potential
+  security holes when used via :command:`sudo`. The default LXC configuration
+  file used by the script can be configured in :file:`/etc/lxc/lxc.conf`
+  configuration file.
 
 - [debops.gitlab] The GitLab playbook will import the
   :ref:`debops.docker_registry` playbook to ensure that configuration related

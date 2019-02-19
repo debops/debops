@@ -12,7 +12,7 @@ set -o nounset -o pipefail -o errexit
 
 readonly SCRIPT="$(basename "${0}")"
 readonly CONTAINER="${1:-}"
-readonly CONFIG_FILE="${2:-/etc/lxc/unprivileged.conf}"
+readonly CONFIG_FILE="$(grep 'lxc.default_unprivileged_config' /etc/lxc/lxc.conf | awk '{print $3}')"
 
 readonly DISTRIBUTION="$(lsb_release -i | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
 readonly RELEASE="$(lsb_release -c | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
@@ -33,7 +33,7 @@ print_usage () {
     cat <<EOF
 ${SCRIPT}: create new unprivileged LXC container based on LXC host
 
-Usage: ${SCRIPT} <container-name> [config-file]
+Usage: ${SCRIPT} <container-name>
 EOF
 }
 
@@ -68,6 +68,22 @@ main () {
                        -- --dist "${distribution}" \
                           --release "${release}" \
                           --arch "${architecture}"
+
+            iface_count="$(grep -cE '^lxc\.network\.type\s+=' "${config_file}")"
+            iface_count="$(( iface_count - 1 ))"
+
+            if [ -f "/var/lib/lxc/${container}/rootfs/etc/network/interfaces" ] ; then
+                if [ "${iface_count}" -gt 0 ] ; then
+                    for (( i=1 ; i<=iface_count ; i++ )) ; do
+                        printf "Adding eth%s interface to network configuration\n" "${i}"
+                        cat <<EOF >> "/var/lib/lxc/${container}/rootfs/etc/network/interfaces"
+
+auto eth${i}
+iface eth${i} inet dhcp
+EOF
+                    done
+                fi
+            fi
 
             lxc-hwaddr-static "${container}"
 

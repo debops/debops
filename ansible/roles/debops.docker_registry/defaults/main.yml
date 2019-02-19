@@ -196,6 +196,13 @@ docker_registry__backend_port: '5070'
 docker_registry__allow: []
 
                                                                    # ]]]
+# .. envvar:: docker_registry__max_upload_size [[[
+#
+# Specify maximum size of an upload allowed by the webserver. If set to ``0``,
+# the maximum limit is disabled.
+docker_registry__max_upload_size: '4G'
+
+                                                                   # ]]]
 # .. envvar:: docker_registry__basic_auth [[[
 #
 # Enable or disable HTTP Basic Authentication in the webserver frontend. if the
@@ -604,7 +611,7 @@ docker_registry__nginx__dependent_servers:
     auth_basic_name: '{{ docker_registry__basic_auth_name }}'
 
     options: |
-      client_max_body_size 0;
+      client_max_body_size {{ docker_registry__max_upload_size }};
 
       # required to avoid error HTTP 411: see Issue #1486 (https://github.com/moby/moby/issues/1486)
       chunked_transfer_encoding on;
