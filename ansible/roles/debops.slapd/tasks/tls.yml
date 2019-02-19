@@ -42,4 +42,3 @@
   command: 'ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.path|d() + "/configure_tlscerts.ldif" }}'
   when: slapd_pki|d() and slapd_pki | bool and
         not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
-
