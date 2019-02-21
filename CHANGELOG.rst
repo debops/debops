@@ -94,6 +94,11 @@ Changed
   ``php5`` packages, but the ``php5.6`` packages from Ondřej Surý APT
   repository work fine.
 
+- [debops.mariadb_server] The mysql user 'root' is no longer dropped.
+  This user is used for database maintenance and authenticates using the
+  unix_auth plugin. However, debops still maintains and sets a password for
+  'root'.
+
 Fixed
 ~~~~~
 
