@@ -1,15 +1,5 @@
 ---
 
-- name: Drop unnecessary root accounts
-  mysql_user:
-    name: 'root'
-    host: '{{ item }}'
-    state: 'absent'
-  with_flattened:
-    - [ '127.0.0.1', '::1' ]
-    - [ '{{ ansible_hostname if (ansible_hostname != "localhost") else [] }}' ]
-  when: item|d()
-
 - name: Update database root password
   mysql_user:
     name: 'root'
