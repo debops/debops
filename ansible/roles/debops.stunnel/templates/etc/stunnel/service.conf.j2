@@ -37,8 +37,15 @@ ciphers		= {{ item.ssl_ciphers | default(stunnel_ssl_ciphers) }}
 curve		= {{ item.ssl_curve   | default(stunnel_ssl_curve) }}
 
 sslVersion	= all
-options		= NO_SSLv2
-options		= NO_SSLv3
+{% if item.ssl_opts is defined and item.ssl_opts %}
+{%   for opt in item.ssl_opts %}
+options         = {{ opt }}
+{%   endfor %}
+{% else %}
+{%   for opt in stunnel_ssl_opts %}
+options         = {{ opt }}
+{%   endfor %}
+{% endif %}
 verify		= {{ item.ssl_verify | default(stunnel_ssl_verify) }}
 
 {% if stunnel_pki is defined and stunnel_pki %}

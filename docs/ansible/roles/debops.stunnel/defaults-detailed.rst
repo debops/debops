@@ -123,6 +123,10 @@ These parameters are related to ``stunnel`` itself.
   Text block, optional. Add other options on the server side of the ``stunnel``
   configuration, in the form of a YAML text block.
 
+``ssl_opts``
+  List, optional. SSL options for ``stunnel`` configuration. Will override the
+  defaults.
+
 /etc/services parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
