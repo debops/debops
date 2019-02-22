@@ -14,23 +14,6 @@
   register: slapd_register_tls_cert_search
   changed_when: False
 
-- name: Create random temporary directory for ldif file
-  tempfile:
-    state: 'directory'
-  register: slapd_register_tempdir
-  when: slapd_pki|d() and slapd_pki | bool and
-        not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
-
-- name: Prepare temporary ldif file
-  template:
-    src: 'tmp/configure_tlscerts.ldif.j2'
-    dest: '{{ slapd_register_tempdir.path|d() + "/configure_tlscerts.ldif" }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  when: slapd_pki|d() and slapd_pki | bool and
-        not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
-
 - name: Restart slapd (first time only)
   service:
     name: 'slapd'
@@ -42,7 +25,19 @@
   # time, otherwise the LDAP server errors out during configuration reload
   # performed on each OCI change. Ref: https://github.com/ansible/ansible/issues/25665
 - name: Configure TLS certificates (first time only)
-  command: 'ldapmodify -v -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.path|d() + "/configure_tlscerts.ldif" }}'
+  command: 'ldapmodify -v -Y EXTERNAL -H ldapi:///'
+  args:
+    stdin: |
+      dn: cn=config
+      changetype: modify
+      replace: olcTLSCertificateFile
+      olcTLSCertificateFile: {{ slapd_pki_path + "/" + slapd_pki_realm + "/" + slapd_pki_crt }}
+      -
+      replace: olcTLSCertificateKeyFile
+      olcTLSCertificateKeyFile: {{ slapd_pki_path + "/" + slapd_pki_realm + "/" + slapd_pki_key }}
+      -
+      replace: olcTLSCACertificateFile
+      olcTLSCACertificateFile:  {{ slapd_pki_path + "/" + slapd_pki_realm + "/" + slapd_pki_ca }}
   register: slapd__register_tls_init
   when: slapd_pki|d() and slapd_pki | bool and
         not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
