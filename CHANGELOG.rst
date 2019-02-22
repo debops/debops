@@ -103,6 +103,10 @@ Changed
   ``common.yml`` playbook because the :ref:`debops.pki` role depends on
   presence of the :command:`cron` daemon on the host.
 
+- [debops.netbase] The role will be disabled by default in Docker containers.
+  In this environment, the :file:`/etc/hosts` file is managed by Docker and
+  cannot be modified from inside of the container.
+
 Fixed
 ~~~~~
 
