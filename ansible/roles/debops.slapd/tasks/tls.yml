@@ -38,10 +38,17 @@
   when: slapd_pki|d() and slapd_pki | bool and
         not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
+  # The private key and X.509 certificate entries need to be added at the same
+  # time, otherwise the LDAP server errors out during configuration reload
+  # performed on each OCI change. Ref: https://github.com/ansible/ansible/issues/25665
 - name: Configure TLS certificates (first time only)
-  command: 'ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.path|d() + "/configure_tlscerts.ldif" }}'
+  command: 'ldapmodify -v -Y EXTERNAL -H ldapi:/// -f {{ slapd_register_tempdir.path|d() + "/configure_tlscerts.ldif" }}'
+  register: slapd__register_tls_init
   when: slapd_pki|d() and slapd_pki | bool and
         not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
+  failed_when: (("replace olcTLSCertificateFile:" not in slapd__register_tls_init.stdout_lines and
+                 "replace olcTLSCertificateKeyFile:" not in slapd__register_tls_init.stdout_lines) or
+                slapd__register_tls_init.rc != 0)
 
 - name: Configure TLS ciphers and Diffie-Hellman params
   ldap_attr:

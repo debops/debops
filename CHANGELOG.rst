@@ -111,6 +111,12 @@ Fixed
   group and any accounts in this group should now be able to look up the Redis
   passwords correctly.
 
+- [debops.slapd] The role will check if the X.509 certificate and the private
+  key used for TLS communication were correctly configured in the OpenLDAP
+  server. This fixes an issue where configuration of the private key and
+  certificate was not performed at all, without any actual changes in the
+  service, with subsequent task exiting with an error due to misconfiguration.
+
 
 `debops v0.8.1`_ - 2019-02-02
 -----------------------------
