@@ -99,6 +99,10 @@ Changed
   ``unix_auth`` plugin. However, DebOps still maintains and sets a password for
   the ``root`` UNIX account, stored in the :file:`/root/.my.cnf` config file.
 
+- The :ref:`debops.cron` role will be applied much earlier in the
+  ``common.yml`` playbook because the :ref:`debops.pki` role depends on
+  presence of the :command:`cron` daemon on the host.
+
 Fixed
 ~~~~~
 
