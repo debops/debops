@@ -43,16 +43,13 @@
   when: slapd_pki|d() and slapd_pki | bool and
         not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
-- name: Configure TLS certificates
+- name: Configure TLS ciphers and Diffie-Hellman params
   ldap_attr:
     dn: 'cn=config'
     name: '{{ item.key }}'
     values: '{{ item.value }}'
     state: 'exact'
   with_dict:
-    olcTLSCACertificateFile:  '{{ slapd_pki_path + "/" + slapd_pki_realm + "/" + slapd_pki_ca }}'
-    olcTLSCertificateFile:    '{{ slapd_pki_path + "/" + slapd_pki_realm + "/" + slapd_pki_crt }}'
-    olcTLSCertificateKeyFile: '{{ slapd_pki_path + "/" + slapd_pki_realm + "/" + slapd_pki_key }}'
     olcTLSDHParamFile:        '{{ slapd_dhparam_file }}'
     olcTLSCipherSuite:        '{{ slapd_pki_ciphers }}'
   when: slapd_pki|d() and slapd_pki | bool and item.value|d()
