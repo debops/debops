@@ -99,6 +99,10 @@ Changed
   ``unix_auth`` plugin. However, DebOps still maintains and sets a password for
   the ``root`` UNIX account, stored in the :file:`/root/.my.cnf` config file.
 
+- The :ref:`debops.cron` role will be applied much earlier in the
+  ``common.yml`` playbook because the :ref:`debops.pki` role depends on
+  presence of the :command:`cron` daemon on the host.
+
 Fixed
 ~~~~~
 
@@ -106,6 +110,12 @@ Fixed
   the :command:`redis-password` script. This file has the ``redis-auth`` UNIX
   group and any accounts in this group should now be able to look up the Redis
   passwords correctly.
+
+- [debops.slapd] The role will check if the X.509 certificate and the private
+  key used for TLS communication were correctly configured in the OpenLDAP
+  server. This fixes an issue where configuration of the private key and
+  certificate was not performed at all, without any actual changes in the
+  service, with subsequent task exiting with an error due to misconfiguration.
 
 
 `debops v0.8.1`_ - 2019-02-02
