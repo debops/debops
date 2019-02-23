@@ -16,13 +16,34 @@
 # .. envvar:: slapd__base_packages [[[
 #
 # List of required APT packages for OpenLDAP service.
-slapd__base_packages: [ 'slapd', 'ldap-utils' ]
+slapd__base_packages: [ 'slapd', 'ldap-utils', 'ssl-cert' ]
 
                                                                    # ]]]
 # .. envvar:: slapd__packages [[[
 #
 # List of additional APT packages to install with OpenLDAP service.
 slapd__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenLDAP UNIX environment [[[
+# -----------------------------
+
+# .. envvar:: slapd__user [[[
+#
+# Name of the UNIX account used by the OpenLDAP service.
+slapd__user: 'openldap'
+
+                                                                   # ]]]
+# .. envvar:: slapd__group [[[
+#
+# Name of the UNIX group used by the OpenLDAP service.
+slapd__group: 'openldap'
+
+                                                                   # ]]]
+# .. envvar:: slapd__additional_groups [[[
+#
+# List of additional UNIX groups the OpenLDAP account should have access to.
+slapd__additional_groups: [ 'ssl-cert' ]
                                                                    # ]]]
                                                                    # ]]]
 # Configuration of the ``cn=config`` database [[[
@@ -122,12 +143,6 @@ slapd_anonymous_bind: False
 # ------------------------------
 #   slapd system configuration
 # ------------------------------
-
-# .. envvar:: slapd_append_groups
-#
-# List of system groups to grant to 'openldap' user. 'ssl-cert' group is
-# required for access to private keys.
-slapd_append_groups: [ 'ssl-cert' ]
 
 # .. envvar:: slapd_snapshot
 #

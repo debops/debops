@@ -7,6 +7,20 @@
   register: slapd__register_packages
   until: slapd__register_packages is succeeded
 
+- name: Allow access to additional UNIX groups by the OpenLDAP service
+  user:
+    name: '{{ slapd__user }}'
+    groups: '{{ slapd__additional_groups }}'
+    append: True
+    state: 'present'
+  register: slapd__register_unix_groups
+
+- name: Restart slapd if UNIX groups were modified
+  service:
+    name: 'slapd'
+    state: 'restarted'
+  when: slapd__register_unix_groups is changed
+
 - name: Set cn=config database root password
   ldap_attr:
     dn: 'olcDatabase={0}config,cn=config'

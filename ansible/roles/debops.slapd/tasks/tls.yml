@@ -1,25 +1,9 @@
 ---
 
-- name: Add OpenLDAP system user to additional groups
-  user:
-    name: 'openldap'
-    groups: '{{ slapd_append_groups | join(",") | default(omit) }}'
-    append: True
-    state: 'present'
-  notify: [ 'Restart slapd' ]
-  when: slapd_pki|d() and slapd_pki | bool
-
 - name: Check if TLS certificate is configured
   shell: ldapsearch -LLL -Y EXTERNAL -H ldapi:/// -b cn=config -s base 'olcTLSCertificateFile=*' olcTLSCertificateFile
   register: slapd_register_tls_cert_search
   changed_when: False
-
-- name: Restart slapd (first time only)
-  service:
-    name: 'slapd'
-    state: 'restarted'
-  when: slapd_pki|d() and slapd_pki | bool and
-        not (slapd_register_tls_cert_search.stdout is search("olcTLSCertificateFile:"))
 
   # The private key and X.509 certificate entries need to be added at the same
   # time, otherwise the LDAP server errors out during configuration reload
