@@ -1,92 +1,92 @@
 ---
 
-- name: Pre hooks
-  include: '{{ lookup("task_src", "slapd/pre_main.yml") }}'
-
-- name: Configure domain for OpenLDAP in debconf
-  debconf:
-    name: 'slapd'
-    question: '{{ item }}'
-    vtype: 'string'
-    value: '{{ slapd_domain }}'
-  with_items: [ 'slapd/domain', 'shared/organization' ]
-
-- name: Configure database backend for OpenLDAP in debconf
-  debconf:
-    name: 'slapd'
-    question: 'slapd/backend'
-    vtype: 'string'
-    value: '{{ slapd_backend | upper }}'
-
-- name: Install OpenLDAP packages
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-    install_recommends: False
-  with_items: [ 'slapd', 'ldap-utils', 'python-ldap' ]
-  register: slapd__register_packages
-  until: slapd__register_packages is succeeded
-
-- name: Install helper scripts
-  copy:
-    src: 'usr/local/sbin/'
-    dest: '/usr/local/sbin/'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Copy custom LDAP schema files
-  copy:
-    src: 'usr/local/etc/ldap/schema/'
-    dest: '/usr/local/etc/ldap/schema/'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
-- name: Load custom LDAP schema files
-  command: load-ldap-schema {{ item }}
-  with_items: '{{ slapd_ldap_schema }}'
-  register: slapd_register_load_schema
-  when: slapd_ldap_schema is defined and slapd_ldap_schema
-  changed_when: slapd_register_load_schema.stdout|d()
-
-- include: password_config_admin.yml
-- include: password_basedn_admin.yml
-- include: tls.yml
-- include: anonymous_bind.yml
-
-- include: ldap_configuration.yml
-  tags: slapd-config
-
-- name: Set slapd log level
-  ldap_attr:
-    dn: 'cn=config'
-    name: '{{ item.key }}'
-    values: '{{ item.value }}'
-    state: 'exact'
-  with_dict:
-    olcLogLevel: '{{ slapd_log_level }}'
-
-- name: Configure enabled services
-  lineinfile:
-    dest: '/etc/default/slapd'
-    regexp: '^SLAPD_SERVICES='
-    line: 'SLAPD_SERVICES="{{ slapd_default_services | join(" ") }}"'
-    state: 'present'
-  notify: [ 'Restart slapd' ]
-
-- include: ldapscripts.yml
-  when: slapd_ldapscripts|bool
-
-- name: Create snapshot task in cron
-  cron:
-    name: 'Create snapshots of OpenLDAP database'
-    special_time: '{{ slapd_snapshot_period }}'
-    cron_file: 'ansible_slapd-snapshot'
-    user: 'root'
-    state: 'present'
-    job: '/usr/local/sbin/slapd-snapshot {{ slapd_snapshot_period }} 30'
-  when: slapd_snapshot|bool
-
-- name: Post hooks
-  include: '{{ lookup("task_src", "slapd/post_main.yml") }}'
+#- name: Pre hooks
+#  include: '{{ lookup("task_src", "slapd/pre_main.yml") }}'
+#
+#- name: Configure domain for OpenLDAP in debconf
+#  debconf:
+#    name: 'slapd'
+#    question: '{{ item }}'
+#    vtype: 'string'
+#    value: '{{ slapd_domain }}'
+#  with_items: [ 'slapd/domain', 'shared/organization' ]
+#
+#- name: Configure database backend for OpenLDAP in debconf
+#  debconf:
+#    name: 'slapd'
+#    question: 'slapd/backend'
+#    vtype: 'string'
+#    value: '{{ slapd_backend | upper }}'
+#
+#- name: Install OpenLDAP packages
+#  apt:
+#    name: '{{ item }}'
+#    state: 'present'
+#    install_recommends: False
+#  with_items: [ 'slapd', 'ldap-utils', 'python-ldap' ]
+#  register: slapd__register_packages
+#  until: slapd__register_packages is succeeded
+#
+#- name: Install helper scripts
+#  copy:
+#    src: 'usr/local/sbin/'
+#    dest: '/usr/local/sbin/'
+#    owner: 'root'
+#    group: 'root'
+#    mode: '0755'
+#
+#- name: Copy custom LDAP schema files
+#  copy:
+#    src: 'usr/local/etc/ldap/schema/'
+#    dest: '/usr/local/etc/ldap/schema/'
+#    owner: 'root'
+#    group: 'root'
+#    mode: '0644'
+#
+#- name: Load custom LDAP schema files
+#  command: load-ldap-schema {{ item }}
+#  with_items: '{{ slapd_ldap_schema }}'
+#  register: slapd_register_load_schema
+#  when: slapd_ldap_schema is defined and slapd_ldap_schema
+#  changed_when: slapd_register_load_schema.stdout|d()
+#
+#- include: password_config_admin.yml
+#- include: password_basedn_admin.yml
+#- include: tls.yml
+#- include: anonymous_bind.yml
+#
+#- include: ldap_configuration.yml
+#  tags: slapd-config
+#
+#- name: Set slapd log level
+#  ldap_attr:
+#    dn: 'cn=config'
+#    name: '{{ item.key }}'
+#    values: '{{ item.value }}'
+#    state: 'exact'
+#  with_dict:
+#    olcLogLevel: '{{ slapd_log_level }}'
+#
+#- name: Configure enabled services
+#  lineinfile:
+#    dest: '/etc/default/slapd'
+#    regexp: '^SLAPD_SERVICES='
+#    line: 'SLAPD_SERVICES="{{ slapd_default_services | join(" ") }}"'
+#    state: 'present'
+#  notify: [ 'Restart slapd' ]
+#
+#- include: ldapscripts.yml
+#  when: slapd_ldapscripts|bool
+#
+#- name: Create snapshot task in cron
+#  cron:
+#    name: 'Create snapshots of OpenLDAP database'
+#    special_time: '{{ slapd_snapshot_period }}'
+#    cron_file: 'ansible_slapd-snapshot'
+#    user: 'root'
+#    state: 'present'
+#    job: '/usr/local/sbin/slapd-snapshot {{ slapd_snapshot_period }} 30'
+#  when: slapd_snapshot|bool
+#
+#- name: Post hooks
+#  include: '{{ lookup("task_src", "slapd/post_main.yml") }}'
