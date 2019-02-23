@@ -490,6 +490,29 @@ slapd_ldap_access_control_list_default:
     by * none
 
 
+# Configuration variables for other Ansible roles [[[
+# ---------------------------------------------------
+
+# .. envvar:: slapd__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+slapd__python__dependent_packages3:
+
+  - '{{ []
+        if (ansible_distribution_release in
+            ([ "wheezy", "jessie", "stretch",
+               "precise", "trusty", "xenial" ]))
+        else "python3-ldap" }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+slapd__python__dependent_packages2:
+
+  - 'python-ldap'
+
+                                                                   # ]]]
 # .. envvar:: slapd_ferm_weight
 #
 # A prefix number added to the filename which helps order the firewall rules.

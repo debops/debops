@@ -20,5 +20,12 @@
     #  tcpwrappers_dependent_allow:
     #    - '{{ slapd_tcpwrappers_dependent_allow }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::slapd' ]
+      python__dependent_packages3:
+        - '{{ slapd__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ slapd__python__dependent_packages2 }}'
+
     - role: debops.slapd
       tags: [ 'role::slapd', 'skip::slapd' ]
