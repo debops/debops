@@ -46,22 +46,50 @@ slapd__group: 'openldap'
 slapd__additional_groups: [ 'ssl-cert' ]
                                                                    # ]]]
                                                                    # ]]]
-# Configuration of the ``cn=config`` database [[[
-# -----------------------------------------------
+# OpenLDAP databases [[[
+# ----------------------
 
-# .. envvar:: slapd__olc_config_root_password [[[
+# .. envvar:: slapd__default_databases [[[
 #
-# The password of the ``cn=admin,cn=config`` account.
-slapd__olc_config_root_password: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
-                                                                    + "/slapd/cn=config/cn=admin,cn=config.password"
-                                                                    + " encrypt=sha512_crypt"
-                                                                    + " length=" + slapd__olc_config_password_length) }}'
+# List of the default database configuration options defined by the role.
+slapd__default_databases:
+
+  - name: 'cn=config'
+    dn: 'olcDatabase={0}config,cn=config'
+    root_password: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
+                                                      + "/slapd/cn=config/cn=admin,cn=config.password"
+                                                      + " encrypt=sha512_crypt length=32") }}'
 
                                                                    # ]]]
-# .. envvar:: slapd__olc_config_password_length [[[
+# .. envvar:: slapd__databases [[[
 #
-# The default length of the ``cn=admin,cn=config`` password.
-slapd__olc_config_password_length: '32'
+# List of the database configuration options defined on all hosts in the
+# Ansible inventory.
+slapd__databases: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_databases [[[
+#
+# List of the database configuration options defined on hosts in a specific
+# Ansible inventory group.
+slapd__group_databases: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_databases [[[
+#
+# List of the database configuration options defined on specific hosts in the
+# Ansible inventory.
+slapd__host_databases: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__combined_databases [[[
+#
+# Variable which combines all of the database configuration variables and is
+# used in the role tasks and templates.
+slapd__combined_databases: '{{ slapd__default_databases
+                               + slapd__databases
+                               + slapd__group_databases
+                               + slapd__host_databases}}'
                                                                    # ]]]
                                                                    # ]]]
 # .. OpenLDAP BaseDN configuration [[[1

@@ -21,13 +21,13 @@
     state: 'restarted'
   when: slapd__register_unix_groups is changed
 
-- name: Set cn=config database root password
-  ldap_attr:
-    dn: 'olcDatabase={0}config,cn=config'
-    name: 'olcRootPW'
-    values: '{{ slapd__olc_config_root_password }}'
-    state: 'exact'
-  no_log: True
+- name: Confgure OpenLDAP databases
+  include_tasks: 'configure_databases.yml'
+  loop_control:
+    loop_var: 'database'
+  loop: '{{ q("flattened", slapd__combined_databases) | parse_kv_items }}'
+  when: database.name|d() and database.dn|d() and
+        database.state|d('present') not in [ 'absent', 'ignore' ]
 
 #- name: Pre hooks
 #  include: '{{ lookup("task_src", "slapd/pre_main.yml") }}'

@@ -1,0 +1,10 @@
+---
+
+- name: Set {{ database.name }} root credentials
+  ldap_attr:
+    dn: '{{ database.dn }}'
+    name: 'olcRootPW'
+    values: '{{ database.root_password }}'
+    state: 'exact'
+  when: database.root_password|d()
+  no_log: True
