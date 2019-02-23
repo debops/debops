@@ -10,15 +10,15 @@
 
   roles:
 
-    #- role: debops.ferm
-    #  tags: [ 'role::ferm', 'skip::ferm' ]
-    #  ferm__dependent_rules:
-    #    - '{{ slapd_ferm_dependent_rules }}'
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ slapd__ferm__dependent_rules }}'
 
-    #- role: debops.tcpwrappers
-    #  tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
-    #  tcpwrappers_dependent_allow:
-    #    - '{{ slapd_tcpwrappers_dependent_allow }}'
+    - role: debops.tcpwrappers
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
+      tcpwrappers__dependent_allow:
+        - '{{ slapd__tcpwrappers__dependent_allow }}'
 
     - role: debops.python
       tags: [ 'role::python', 'skip::python', 'role::slapd' ]

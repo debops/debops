@@ -86,44 +86,28 @@ slapd_log_level: 'none'
 slapd_default_services: [ 'ldap:///', 'ldaps:///', 'ldapi:///' ]
 
 
-# .. Network access to OpenLDAP server [[[1
-#
-# -------------------------------------
-#   Network access to OpenLDAP server
+# Network access to OpenLDAP server [[[
 # -------------------------------------
 
-# .. envvar:: slapd_allow
+# .. envvar:: slapd__allow [[[
 #
-# Lists of hosts or CIDR networks which are allowed to access slapd service. If
-# none are specified, any host can connect to OpenLDAP server. This access list
-# will be be configured on all hosts, if configured in
-# :file:`inventory/group_vars/all/`.
-slapd_allow: []
+# List of IP addresses or CIDR subnets which should have access to the OpenLDAP
+# server, defined on all hosts in the Ansible inventory.
+slapd__allow: []
 
 
-# .. envvar:: slapd_group_allow
+# .. envvar:: slapd__group_allow [[[
 #
-# Lists of hosts or CIDR networks which are allowed to access slapd service. If
-# none are specified, any host can connect to OpenLDAP server. This access list
-# will be be configured on all hosts in a specific group, if configured in
-# :file:`inventory/group_vars/group_name/`.
-slapd_group_allow: []
+# List of IP addresses or CIDR subnets which should have access to the OpenLDAP
+# server, defined on hosts in a specific Ansible inventory group.
+slapd__group_allow: []
 
 
-# .. envvar:: slapd_host_allow
+# .. envvar:: slapd__host_allow
 #
-# Lists of hosts or CIDR networks which are allowed to access slapd service. If
-# none are specified, any host can connect to OpenLDAP server. This access list
-# will be be configured on a specific host, if configured in
-# :file:`inventory/host_vars/host_name/`.
-slapd_host_allow: []
-
-
-# .. envvar:: slapd_tcpwrappers_default
-#
-# Default setting in :file:`/etc/hosts.allow` if no hosts are specified in
-# above lists.
-slapd_tcpwrappers_default: 'ALL'
+# List of IP addresses or CIDR subnets which should have access to the OpenLDAP
+# server, defined on specific hosts in the Ansible inventory.
+slapd__host_allow: []
 
 
 # .. envvar:: slapd_anonymous_bind
@@ -528,34 +512,33 @@ slapd__python__dependent_packages2:
   - 'python-ldap'
 
                                                                    # ]]]
-# .. envvar:: slapd_ferm_weight
+# .. envvar:: slapd__ferm__dependent_rules [[[
 #
-# A prefix number added to the filename which helps order the firewall rules.
-slapd_ferm_weight: '40'
+# Firewall configuration managed by the :ref:`debops.ferm` Ansible role.
+slapd__ferm__dependent_rules:
 
-
-# .. envvar:: slapd_ferm_dependent_rules
-#
-# Firewall configuration managed by the ``debops.ferm`` role.
-slapd_ferm_dependent_rules:
-
-  - type: 'accept'
+  - name: 'accept_slapd'
+    type: 'accept'
     protocol: [ 'tcp', 'udp' ]
-    dport: [ 'ldap', 'ldaps' ]
-    saddr: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
+    dport: [ 'ldap' ]
+    multiport: True
+    saddr: '{{ slapd__allow + slapd__group_allow + slapd__host_allow }}'
     accept_any: True
-    weight: '{{ slapd_ferm_weight }}'
-    role: 'slapd'
+    weight: '50'
+    by_role: 'debops.slapd'
 
-
-# .. envvar:: slapd_tcpwrappers_dependent_allow
+                                                                   # ]]]
+# .. envvar:: slapd__tcpwrappers__dependent_allow [[[
 #
-# Configuration of TCP Wrappers through the ``debops.tcpwrappers`` role.
-slapd_tcpwrappers_dependent_allow:
+# Configuration of TCP Wrappers through the :ref:`debops.tcpwrappers` Ansible
+# role.
+slapd__tcpwrappers__dependent_allow:
 
   - daemon: 'slapd'
-    client: '{{ slapd_allow + slapd_group_allow + slapd_host_allow }}'
-    default: '{{ slapd_tcpwrappers_default }}'
+    client: '{{ slapd__allow + slapd__group_allow + slapd__host_allow }}'
+    default: 'ALL'
     weight: '50'
     filename: 'slapd_dependent_allow'
-    comment: 'Allow connections to OpenLDAP'
+    comment: 'Allow connections to OpenLDAP service'
+                                                                   # ]]]
+                                                                   # ]]]
