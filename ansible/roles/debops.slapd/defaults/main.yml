@@ -25,6 +25,24 @@ slapd__base_packages: [ 'slapd', 'ldap-utils' ]
 slapd__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# Configuration of the ``cn=config`` database [[[
+# -----------------------------------------------
+
+# .. envvar:: slapd__olc_config_root_password [[[
+#
+# The password of the ``cn=admin,cn=config`` account.
+slapd__olc_config_root_password: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
+                                                                    + "/slapd/cn=config/cn=admin,cn=config.password"
+                                                                    + " encrypt=sha512_crypt"
+                                                                    + " length=" + slapd__olc_config_password_length) }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__olc_config_password_length [[[
+#
+# The default length of the ``cn=admin,cn=config`` password.
+slapd__olc_config_password_length: '32'
+                                                                   # ]]]
+                                                                   # ]]]
 # .. OpenLDAP BaseDN configuration [[[1
 #
 # ---------------------------------
@@ -222,25 +240,6 @@ slapd_pki_ciphers: 'SECURE256:-VERS-SSL3.0'
 # separate tasks during runtime. Here you can change the location of passwords
 # in ``debops.secret`` storage if needed, for example to point several slapd
 # servers to the same set of passwords.
-
-
-# .. envvar:: slapd_config_admin_basepw
-#
-# Base path to BaseDN administrator (``cn=admin,cn=config``) password.
-slapd_config_admin_basepw: '{{ secret + "/credentials/" + ansible_fqdn + "/slapd/cn=config/cn=admin,cn=config" }}'
-
-
-# .. envvar:: slapd_config_admin_password
-#
-# Path for the plaintext password of BaseDN administrator
-# (``cn=admin,cn=config``).
-slapd_config_admin_password: '{{ slapd_config_admin_basepw + ".password" }}'
-
-
-# .. envvar:: slapd_config_admin_hash
-#
-# Path for the hash of BaseDN administrator (``cn=admin,cn=config``) password.
-slapd_config_admin_hash: '{{ slapd_config_admin_basepw + ".hash" }}'
 
 
 # .. envvar:: slapd_basedn_admin

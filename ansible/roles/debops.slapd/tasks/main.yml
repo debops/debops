@@ -7,6 +7,14 @@
   register: slapd__register_packages
   until: slapd__register_packages is succeeded
 
+- name: Set cn=config database root password
+  ldap_attr:
+    dn: 'olcDatabase={0}config,cn=config'
+    name: 'olcRootPW'
+    values: '{{ slapd__olc_config_root_password }}'
+    state: 'exact'
+  no_log: True
+
 #- name: Pre hooks
 #  include: '{{ lookup("task_src", "slapd/pre_main.yml") }}'
 #
@@ -48,7 +56,6 @@
 #  when: slapd_ldap_schema is defined and slapd_ldap_schema
 #  changed_when: slapd_register_load_schema.stdout|d()
 #
-#- include: password_config_admin.yml
 #- include: password_basedn_admin.yml
 #- include: tls.yml
 #- include: anonymous_bind.yml
