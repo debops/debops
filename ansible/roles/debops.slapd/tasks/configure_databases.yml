@@ -1,10 +1,13 @@
 ---
 
-- name: Set {{ database.name }} root credentials
+- name: Set attributes in the {{ database.name }} database
   ldap_attr:
     dn: '{{ database.dn }}'
-    name: 'olcRootPW'
-    values: '{{ database.root_password }}'
-    state: 'exact'
-  when: database.root_password|d()
-  no_log: True
+    name: '{{ item.name }}'
+    values: '{{ item.value }}'
+    state: '{{ item.state }}'
+  loop: '{{ database.attributes }}'
+  loop_control:
+    label: '{{ {"name": item.name, "value": item.value, "state": item.state} }}'
+  when: database.attributes|d() and item.state not in [ 'ignore' ]
+  no_log: '{{ item.no_log | d(False) }}'

@@ -56,9 +56,17 @@ slapd__default_databases:
 
   - name: 'cn=config'
     dn: 'olcDatabase={0}config,cn=config'
-    root_password: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
-                                                      + "/slapd/cn=config/cn=admin,cn=config.password"
-                                                      + " encrypt=sha512_crypt length=32") }}'
+    attributes:
+
+      - name: 'olcRootDN'
+        value: 'cn=admin,cn=config'
+
+      - name: 'olcRootPW'
+        value: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
+                                                         + "/slapd/cn=config/cn=admin,cn=config.password"
+                                                         + " encrypt=sha512_crypt length=32") }}'
+        state: 'exact'
+        no_log: True
 
                                                                    # ]]]
 # .. envvar:: slapd__databases [[[

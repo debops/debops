@@ -25,7 +25,7 @@
   include_tasks: 'configure_databases.yml'
   loop_control:
     loop_var: 'database'
-  loop: '{{ q("flattened", slapd__combined_databases) | parse_kv_items }}'
+  loop: '{{ q("flattened", slapd__combined_databases) | parse_kv_items(merge_keys=["attributes"]) }}'
   when: database.name|d() and database.dn|d() and
         database.state|d('present') not in [ 'absent', 'ignore' ]
 
