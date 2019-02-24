@@ -46,6 +46,51 @@ slapd__group: 'openldap'
 slapd__additional_groups: [ 'ssl-cert' ]
                                                                    # ]]]
                                                                    # ]]]
+# OpenLDAP global configuration [[[
+# ---------------------------------
+
+# .. envvar:: slapd__default_attributes [[[
+#
+# List of the ``cn=config`` attributes to set in the OpenLDAP server, defined
+# by the role.
+slapd__default_attributes:
+
+  - name: 'olcServerID'
+    value: '000'
+    state: 'exact'
+
+                                                                   # ]]]
+# .. envvar:: slapd__attributes [[[
+#
+# List of the ``cn=config`` attributes to set in the OpenLDAP server, defined
+# on all hosts in the Ansible inventory.
+slapd__attributes: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_attributes [[[
+#
+# List of the ``cn=config`` attributes to set in the OpenLDAP server, defined
+# on hosts in a specific Ansible inventory group.
+slapd__group_attributes: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_attributes [[[
+#
+# List of the ``cn=config`` attributes to set in the OpenLDAP server, defined
+# on specific hosts in the Ansible inventory.
+slapd__host_attributes: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__combined_attributes [[[
+#
+# Variable which combines all other attribute lists and is used in the role
+# tasks and templates.
+slapd__combined_attributes: '{{ slapd__default_attributes
+                                + slapd__attributes
+                                + slapd__group_attributes
+                                + slapd__host_attributes }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # OpenLDAP databases [[[
 # ----------------------
 
