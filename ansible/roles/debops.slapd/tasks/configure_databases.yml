@@ -3,7 +3,7 @@
 - name: Set attributes in the {{ database.name }} database
   ldap_attr:
     dn: '{{ database.dn }}'
-    name: '{{ item.name }}'
+    name: '{{ item.attribute | d(item.attr | d(item.name)) }}'
     values: '{{ item.value
                 if (item.value is string)
                 else (item.value
@@ -12,7 +12,8 @@
     state: '{{ item.state }}'
   loop: '{{ database.attributes }}'
   loop_control:
-    label: '{{ {"state": item.state, "name": item.name,
+    label: '{{ {"state": item.state,
+                "attribute": (item.attribute | d(item.attr | d(item.name))),
                 "value": (item.value
                           if (item.value is string)
                           else (item.value

@@ -24,7 +24,7 @@
 - name: Configure OpenLDAP global attributes
   ldap_attr:
     dn: 'cn=config'
-    name: '{{ item.name }}'
+    name: '{{ item.attribute | d(item.attr | d(item.name)) }}'
     values: '{{ item.value
                 if (item.value is string)
                 else (item.value
@@ -33,7 +33,8 @@
     state: '{{ item.state }}'
   loop: '{{ slapd__combined_attributes | parse_kv_config }}'
   loop_control:
-    label: '{{ {"state": item.state, "name": item.name,
+    label: '{{ {"state": item.state,
+                "attribute": (item.attribute | d(item.attr | d(item.name))),
                 "value": (item.value
                           if (item.value is string)
                           else (item.value
