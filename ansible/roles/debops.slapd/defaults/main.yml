@@ -81,6 +81,105 @@ slapd__superuser_data_password: '{{ "{CRYPT}" + lookup("password", secret
                                                        + " encrypt=sha512_crypt length=32") }}'
                                                                    # ]]]
                                                                    # ]]]
+# Support for DebOps PKI and TLS [[[
+# ----------------------------------
+
+# .. envvar::: slapd__pki [[[
+#
+# Enable or disable support for X.509 certificates using the :ref:`debops.pki`
+# Ansible role.
+slapd__pki: '{{ (ansible_local.pki.enabled
+                 if (ansible_local|d() and ansible_local.pki|d() and
+                     ansible_local.pki.enabled|d())
+                 else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_path [[[
+#
+# Absolute path to the directory that contains PKI realms.
+slapd__pki_path: '{{ (ansible_local.pki.base_path
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.base_path|d())
+                      else "/etc/pki/realms") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_realm [[[
+#
+# Default PKI realm used by the OpenLDAP server. In a multi-master clustered
+# setup the configuration is shared, therefore all cluster nodes should use the
+# same PKI realm name.
+slapd__pki_realm: '{{ (ansible_local.pki.realm
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.realm|d())
+                       else "domain") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_ca [[[
+#
+# Name of the Root CA certificate file used by the OpenLDAP server, relative to
+# the PKI realm directory.
+slapd__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_crt [[[
+#
+# Name of the X.509 certificate file used by the OpenLDAP server, relative to
+# the PKI realm directory.
+slapd__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_key [[[
+#
+# Name of the private key used by the OpenLDAP server, relative to the PKI
+# realm directory.
+slapd__pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: slapd__dhparam_set [[[
+#
+# Specify the Diffie-Hellman parameter set to use by the OpenLDAP server.
+# See :ref:`debops.dhparam` Ansible role for more details.
+slapd__dhparam_set: 'default'
+
+                                                                   # ]]]
+# .. envvar:: slapd__dhparam_file [[[
+#
+# Absolute path to the file with Diffie-Hellman parameters used by the OpenLDAP
+# server. If it's empty, the custom Diffie-Hellman parameters will not be
+# configured.
+slapd__dhparam_file: '{{ (ansible_local.dhparam[slapd__dhparam_set]
+                          if (ansible_local|d() and ansible_local.dhparam|d() and
+                              ansible_local.dhparam[slapd__dhparam_set]|d())
+                          else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tls_ca_certificate [[[
+#
+# Absolute path to the Root CA certificate used by the OpenLDAP server to
+# authenticate TLS client certificates.
+slapd__tls_ca_certificate: '{{ slapd__pki_path + "/" + slapd__pki_realm + "/" + slapd__pki_ca }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tls_certificate [[[
+#
+# Absolute path to the X.509 certificate used by the OpenLDAP server.
+slapd__tls_certificate: '{{ slapd__pki_path + "/" + slapd__pki_realm + "/" + slapd__pki_crt }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tls_private_key [[[
+#
+# Absolute path to the private key used by the OpenLDAP server.
+slapd__tls_private_key: '{{ slapd__pki_path + "/" + slapd__pki_realm + "/" + slapd__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tls_cipher_suite [[[
+#
+# TLS cipher suite required by the server. On Debian, you need to use the
+# GnuTLS cipher suite names, because :command:`slapd` daemon is compiled
+# against GnuTLS instead of OpenSSL.
+slapd__tls_cipher_suite: 'SECURE256:PFS:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.2:-SHA1:-ARCFOUR-128'
+                                                                   # ]]]
+                                                                   # ]]]
 # OpenLDAP configuration tasks [[[
 # --------------------------------
 
@@ -105,6 +204,26 @@ slapd__default_tasks:
       olcRootPW: '{{ slapd__superuser_data_password }}'
     state: 'exact'
     no_log: True
+
+  - name: 'cn=config TLS certificates'
+    dn: 'cn=config'
+    attributes:
+      olcTLSCACertificateFile:  '{{ slapd__tls_ca_certificate }}'
+      olcTLSCertificateFile:    '{{ slapd__tls_certificate }}'
+      olcTLSCertificateKeyFile: '{{ slapd__tls_private_key }}'
+    state: '{{ "exact" if slapd__pki|bool else "init" }}'
+
+  - name: 'cn=config DH parameters'
+    dn: 'cn=config'
+    attributes:
+      olcTLSDHParamFile: '{{ slapd__dhparam_file }}'
+    state: '{{ "exact" if slapd__dhparam_file|d() else "init" }}'
+
+  - name: 'cn=config TLS ciphers'
+    dn: 'cn=config'
+    attributes:
+      olcTLSCipherSuite: '{{ slapd__tls_cipher_suite }}'
+    state: '{{ "exact" if slapd__pki|bool else "init" }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__tasks [[[
@@ -208,79 +327,6 @@ slapd_snapshot: True
 #
 # Snapshot period: ``daily``, ``weekly``.
 slapd_snapshot_period: 'weekly'
-
-
-# .. PKI / TSL and certificates [[[1
-#
-# ------------------------------
-#   PKI / TLS and certificates
-# ------------------------------
-
-# .. envvar::: slapd_pki
-#
-# Enable or disable support for certificates using the ``debops.pki`` role.
-slapd_pki: '{{ (ansible_local.pki.enabled
-                if (ansible_local|d() and ansible_local.pki|d() and
-                    ansible_local.pki.enabled|d())
-                else True) | bool }}'
-
-
-# .. envvar:: slapd_pki_path
-#
-# Base PKI directory.
-slapd_pki_path: '{{ (ansible_local.pki.base_path
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.base_path|d())
-                     else "/etc/pki") }}'
-
-
-# .. envvar:: slapd_pki_realm
-#
-# Default PKI realm used by OpenLDAP.
-slapd_pki_realm: '{{ (ansible_local.pki.realm
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.realm|d())
-                      else "system") }}'
-
-
-# .. envvar:: slapd_pki_ca
-#
-# Root CA certificate, relative to :envvar:`slapd_pki_realm`.
-slapd_pki_ca: 'CA.crt'
-
-
-# .. envvar:: slapd_pki_crt
-#
-# Host certificate, relative to :envvar:`slapd_pki_realm`.
-slapd_pki_crt: 'default.crt'
-
-
-# .. envvar:: slapd_pki_key
-#
-# Host private key, relative to :envvar:`slapd_pki_realm`.
-slapd_pki_key: 'default.key'
-
-
-# .. envvar:: slapd_dhparam_set
-#
-# Specify the Diffie-Hellman parameter set to use. See ``debops.dhparam`` role
-# for more details.
-slapd_dhparam_set: 'default'
-
-
-# .. envvar:: slapd_dhparam_file
-#
-# Absolute path to file with Diffie-Hellman parameters.
-slapd_dhparam_file: '{{ (ansible_local.dhparam[slapd_dhparam_set]
-                         if (ansible_local|d() and ansible_local.dhparam|d() and
-                             ansible_local.dhparam[slapd_dhparam_set]|d())
-                         else "") }}'
-
-
-# .. envvar:: slapd_pki_ciphers
-#
-# TLS cipher suite required by the server.
-slapd_pki_ciphers: 'SECURE256:-VERS-SSL3.0'
 
 
 # .. ldapscripts configuration [[[1
