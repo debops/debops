@@ -12,6 +12,11 @@
     state: '{{ item.state }}'
   loop: '{{ database.attributes }}'
   loop_control:
-    label: '{{ {"name": item.name, "value": item.value, "state": item.state} }}'
+    label: '{{ {"state": item.state, "name": item.name,
+                "value": (item.value
+                          if (item.value is string)
+                          else (item.value
+                                | selectattr("state", "equalto", "present")
+                                | map(attribute="name") | list))} }}'
   when: database.attributes|d() and item.state not in [ 'ignore' ]
   no_log: '{{ item.no_log | d(False) }}'
