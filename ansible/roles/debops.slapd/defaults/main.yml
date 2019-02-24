@@ -60,6 +60,7 @@ slapd__default_databases:
 
       - name: 'olcRootDN'
         value: 'cn=admin,cn=config'
+        state: 'exact'
 
       - name: 'olcRootPW'
         value: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
@@ -74,6 +75,7 @@ slapd__default_databases:
 
       - name: 'olcRootDN'
         value: '{{ "cn=admin," + slapd__basedn }}'
+        state: 'exact'
 
       - name: 'olcRootPW'
         value: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
