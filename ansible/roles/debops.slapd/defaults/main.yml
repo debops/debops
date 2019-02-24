@@ -46,6 +46,51 @@ slapd__group: 'openldap'
 slapd__additional_groups: [ 'ssl-cert' ]
                                                                    # ]]]
                                                                    # ]]]
+# OpenLDAP module configuration [[[
+# ---------------------------------
+
+# .. envvar:: slapd__default_modules [[[
+#
+# List of the ``cn=module{0},cn=cofig`` attributes to set in the OpenLDAP
+# server, defined by the role.
+slapd__default_modules:
+
+  - name: 'olcModuleLoad_syncprov'
+    attr: 'olcModuleLoad'
+    value: '{1}syncprov.la'
+
+                                                                   # ]]]
+# .. envvar:: slapd__modules [[[
+#
+# List of the ``cn=module{0},cn=config`` attributes to set in the OpenLDAP
+# server, defined on all hosts in the Ansible inventory.
+slapd__modules: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_attributes [[[
+#
+# List of the ``cn=module{0},cn=config`` attributes to set in the OpenLDAP
+# server, defined on hosts in a specific Ansible inventory group.
+slapd__group_modules: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_attributes [[[
+#
+# List of the ``cn=module{0},cn=config`` attributes to set in the OpenLDAP
+# server, defined on specific hosts in the Ansible inventory.
+slapd__host_modules: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__combined_attributes [[[
+#
+# Variable which combines all other module lists and is used in the role tasks
+# and templates.
+slapd__combined_modules: '{{ slapd__default_modules
+                             + slapd__modules
+                             + slapd__group_modules
+                             + slapd__host_modules }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # OpenLDAP global configuration [[[
 # ---------------------------------
 
