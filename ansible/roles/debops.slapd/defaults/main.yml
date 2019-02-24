@@ -46,6 +46,41 @@ slapd__group: 'openldap'
 slapd__additional_groups: [ 'ssl-cert' ]
                                                                    # ]]]
                                                                    # ]]]
+# LDAP database environment [[[
+# -----------------------------
+
+# .. envvar:: slapd__domain [[[
+#
+# DNS domain name which will be used for OpenLDAP BaseDN.
+slapd__domain: '{{ ansible_local.core.domain
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.domain|d())
+                   else (ansible_domain if ansible_domain else ansible_hostname) }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__basedn [[[
+#
+# BaseDN value of the main OpenLDAP server that contains the LDAP data.
+slapd__basedn: '{{ "dc=" + slapd__domain.split(".") | join(",dc=") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__superuser_config_password [[[
+#
+# The password defined for the superuser of the ``cn=config`` LDAP database.
+slapd__superuser_config_password: '{{ "{CRYPT}" + lookup("password", secret
+                                                         + "/slapd/cn=config/cn=admin,cn=config.password"
+                                                         + " encrypt=sha512_crypt length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__superuser_data_password [[[
+#
+# The password defined for the superuser of the main LDAP database.
+slapd__superuser_data_password: '{{ "{CRYPT}" + lookup("password", secret
+                                                       + "/slapd/" + slapd__basedn
+                                                       + "/cn=admin," + slapd__basedn + ".password"
+                                                       + " encrypt=sha512_crypt length=32") }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # OpenLDAP configuration tasks [[[
 # --------------------------------
 
@@ -59,19 +94,15 @@ slapd__default_tasks:
     dn: 'olcDatabase={0}config,cn=config'
     attributes:
       olcRootDN: 'cn=admin,cn=config'
-      olcRootPW: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
-                                                           + "/slapd/cn=config/cn=admin,cn=config.password"
-                                                           + " encrypt=sha512_crypt length=32") }}'
+      olcRootPW: '{{ slapd__superuser_config_password }}'
     state: 'exact'
     no_log: True
 
-  - name: 'main root credentials'
+  - name: 'data root credentials'
     dn: 'olcDatabase={1}mdb,cn=config'
     attributes:
       olcRootDN: '{{ "cn=admin," + slapd__basedn }}'
-      olcRootPW: '{{ "{CRYPT}" + lookup("password", secret + "/credentials/" + inventory_hostname
-                                                           + "/slapd/main/cn=admin.password"
-                                                           + " encrypt=sha512_crypt length=32") }}'
+      olcRootPW: '{{ slapd__superuser_data_password }}'
     state: 'exact'
     no_log: True
 
@@ -109,21 +140,6 @@ slapd__combined_tasks: '{{ slapd__default_tasks
                                                                    # ]]]
 # OpenLDAP BaseDN configuration [[[
 # ---------------------------------
-
-# .. envvar:: slapd__domain [[[
-#
-# DNS domain name which will be used for OpenLDAP BaseDN.
-slapd__domain: '{{ ansible_local.core.domain
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.domain|d())
-                   else (ansible_domain if ansible_domain else ansible_hostname) }}'
-
-
-# .. envvar:: slapd__basedn [[[
-#
-# BaseDN value of the OpenLDAP server.
-slapd__basedn: '{{ "dc=" + slapd__domain.split(".") | join(",dc=") }}'
-
 
 # .. envvar:: slapd_backend
 #
