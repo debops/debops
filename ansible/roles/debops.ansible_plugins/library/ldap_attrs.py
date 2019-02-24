@@ -212,7 +212,7 @@ class LdapAttr(object):
         norm_values = []
 
         if isinstance(values, list):
-            norm_values = map(str, values)
+            norm_values = list(map(str, values))
         elif values != "":
             norm_values = [str(values)]
 
