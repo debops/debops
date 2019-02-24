@@ -4,7 +4,11 @@
   ldap_attr:
     dn: '{{ database.dn }}'
     name: '{{ item.name }}'
-    values: '{{ item.value }}'
+    values: '{{ item.value
+                if (item.value is string)
+                else (item.value
+                      | selectattr("state", "equalto", "present")
+                      | map(attribute="name") | list) }}'
     state: '{{ item.state }}'
   loop: '{{ database.attributes }}'
   loop_control:
