@@ -5,11 +5,24 @@
 # (c) 2016, Jiri Tyr <jiri.tyr@gmail.com>
 # (c) 2017, Alexander Korinek <noles@a3k.net>
 #
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils._text import to_native
+
+import traceback
+
+try:
+    import ldap
+    import ldap.sasl
+
+    HAS_LDAP = True
+except ImportError:
+    HAS_LDAP = False
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -87,8 +100,8 @@ options:
   attributes:
     required: true
     description:
-      - The attribute(s) and value(s) to add or remove. The complex argument format is required in order to pass
-        a list of strings (see examples).
+      - The attribute(s) and value(s) to add or remove. The complex argument
+        format is required in order to pass a list of strings (see examples).
   validate_certs:
     required: false
     choices: ['yes', 'no']
@@ -176,19 +189,6 @@ modlist:
   type: list
   sample: '[[2, "olcRootDN", ["cn=root,dc=example,dc=com"]]]'
 """
-
-import traceback
-
-try:
-    import ldap
-    import ldap.sasl
-
-    HAS_LDAP = True
-except ImportError:
-    HAS_LDAP = False
-
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_native
 
 
 class LdapAttr(object):
@@ -286,7 +286,8 @@ class LdapAttr(object):
             try:
                 connection.start_tls_s()
             except ldap.LDAPError as e:
-                self.module.fail_json(msg="Cannot start TLS.", details=to_native(e))
+                self.module.fail_json(msg="Cannot start TLS.",
+                                      details=to_native(e))
 
         try:
             if self.bind_dn is not None:
@@ -350,7 +351,8 @@ def main():
             try:
                 ldap.connection.modify_s(ldap.dn, modlist)
             except Exception as e:
-                module.fail_json(msg="Attribute action failed.", details=to_native(e),
+                module.fail_json(msg="Attribute action failed.",
+                                 details=to_native(e),
                                  exception=traceback.format_exc())
 
     module.exit_json(changed=changed, modlist=modlist)
