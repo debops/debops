@@ -232,6 +232,18 @@ slapd__default_tasks:
       olcSecurity: 'ssf=128 update_ssf=128 simple_bind=128'
     state: '{{ "exact" if slapd__pki|bool else "init" }}'
 
+  - name: 'data olcDbIndex'
+    dn: 'olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcDbIndex:
+        - 'cn,uid eq'
+        - 'member,memberUid eq'
+        - 'objectClass eq'
+        - 'sn eq,pres'
+        - 'gn eq,pres'
+        - 'uidNumber,gidNumber eq'
+        - 'entryCSN,entryUUID eq'
+
                                                                    # ]]]
 # .. envvar:: slapd__tasks [[[
 #
@@ -454,37 +466,6 @@ slapd_ldap_schema:
 
     # Support for SSH Public Key lookup in LDAP
   - '/usr/local/etc/ldap/schema/openssh-lpk.ldif'
-
-
-# .. LDAP index configuration [[[1
-#
-# ----------------------------
-#   LDAP index configuration
-# ----------------------------
-
-# .. envvar:: slapd_ldap_index
-#
-# List of index entries configured on the server.
-slapd_ldap_index: '{{ slapd_ldap_index_default }}'
-
-
-# .. envvar:: slapd_ldap_index_default
-#
-# Default list of LDAP indices.
-slapd_ldap_index_default:
-
-  - 'objectClass eq'
-  - 'cn eq,pres'
-  - 'gn eq,pres'
-  - 'sn eq,pres'
-  - 'uid eq'
-  - 'uidNumber eq'
-  - 'gidNumber eq'
-  - 'memberUid eq'
-  - 'authorizedService eq'
-  - 'host eq'
-  - 'entryCSN eq'
-  - 'entryUUID eq'
 
 
 # .. LDAP Access Control List [[[1
