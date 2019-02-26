@@ -225,6 +225,13 @@ slapd__default_tasks:
       olcTLSCipherSuite: '{{ slapd__tls_cipher_suite }}'
     state: '{{ "exact" if slapd__pki|bool else "init" }}'
 
+  - name: 'cn=config SSF'
+    dn: 'cn=config'
+    attributes:
+      olcLocalSSF: '128'
+      olcSecurity: 'ssf=128 update_ssf=128 simple_bind=128'
+    state: '{{ "exact" if slapd__pki|bool else "init" }}'
+
                                                                    # ]]]
 # .. envvar:: slapd__tasks [[[
 #
@@ -478,37 +485,6 @@ slapd_ldap_index_default:
   - 'host eq'
   - 'entryCSN eq'
   - 'entryUUID eq'
-
-
-# .. LDAP connection security [[[1
-#
-# ----------------------------
-#   LDAP connection security
-# ----------------------------
-
-# .. envvar:: slapd_ldap_security
-#
-# List of security rules enabled on the OpenLDAP server.
-slapd_ldap_security: '{{ slapd_ldap_security_tls
-                         if slapd_pki | bool
-                         else slapd_ldap_security_default }}'
-
-
-# .. envvar:: slapd_ldap_security_default
-#
-# Don't require encryption for all connections.
-slapd_ldap_security_default: []
-
-
-# .. envvar:: slapd_ldap_security_tls
-#
-# Require encryption for all connections.
-slapd_ldap_security_tls:
-
-  - 'simple_bind=128'
-  - 'update_ssf=128'
-  - 'ssf=128'
-  - 'tls=128'
 
 
 # .. LDAP Access Control List [[[1
