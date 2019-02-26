@@ -195,6 +195,18 @@ slapd__default_tasks:
       olcLogLevel: 'stats'
     state: 'exact'
 
+  - name: 'cn=config password hash'
+    dn: 'olcDatabase={-1}frontend,cn=config'
+    attributes:
+      olcPasswordHash: '{CRYPT}'
+    state: 'exact'
+
+  - name: 'cn=config crypt salt format'
+    dn: 'cn=config'
+    attributes:
+      olcPasswordCryptSaltFormat: '$6$%.16s'
+    state: 'exact'
+
   - name: 'cn=config root credentials'
     dn: 'olcDatabase={0}config,cn=config'
     attributes:
