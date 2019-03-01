@@ -4,7 +4,7 @@
   ldap_entry:
     dn: '{{ item.dn }}'
     objectClass: '{{ item.objectClass }}'
-    attributes: '{{ item.attributes | d(omit) }}'
+    attributes: '{{ item.attributes }}'
     state: '{{ item.state }}'
   when: item.objectClass|d() and item.state not in [ 'init', 'ignore' ]
   no_log: '{{ item.no_log | d(False) }}'
