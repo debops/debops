@@ -1,5 +1,9 @@
 ---
 
+- name: DebOps pre_tasks hook
+  include: '{{ lookup("task_src", "nginx/pre_main.yml") }}'
+  when: (nginx__deploy_state in [ 'present' ])
+
 - name: Assert that no legacy options are used
   assert:
     that:
@@ -16,10 +20,6 @@
     - '{{ nginx_default_servers | d([]) }}'
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
-
-- name: DebOps pre_tasks hook
-  include: '{{ lookup("task_src", "nginx/pre_main.yml") }}'
-  when: (nginx__deploy_state in [ 'present' ])
 
 - name: Check if nginx is installed
   stat:
