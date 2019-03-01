@@ -2,7 +2,7 @@
 
 - name: '{{ item.name }}'
   ldap_entry:
-    dn: '{{ item.dn }}'
+    dn: '{{ item.dn if (item.dn is string) else item.dn | join(",") }}'
     objectClass: '{{ item.objectClass }}'
     attributes: '{{ item.attributes }}'
     state: '{{ item.state }}'
@@ -11,7 +11,7 @@
 
 - name: '{{ item.name }}'
   ldap_attrs:
-    dn: '{{ item.dn }}'
+    dn: '{{ item.dn if (item.dn is string) else item.dn | join(",") }}'
     attributes: '{{ item.attributes }}'
     state: '{{ item.state }}'
   when: not item.objectClass|d() and item.state not in [ 'init', 'ignore' ]
