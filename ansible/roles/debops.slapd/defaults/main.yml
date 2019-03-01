@@ -189,25 +189,25 @@ slapd__tls_cipher_suite: 'SECURE256:PFS:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.2:
 # role.
 slapd__default_tasks:
 
-  - name: 'cn=config log level'
+  - name: 'Configure the OpenLDAP server log level'
     dn: 'cn=config'
     attributes:
       olcLogLevel: 'stats'
     state: 'exact'
 
-  - name: 'cn=config password hash'
+  - name: 'Define the default password hashing method'
     dn: 'olcDatabase={-1}frontend,cn=config'
     attributes:
       olcPasswordHash: '{CRYPT}'
     state: 'exact'
 
-  - name: 'cn=config crypt salt format'
+  - name: 'Configure password salt format used by the crypt(3) hash function'
     dn: 'cn=config'
     attributes:
       olcPasswordCryptSaltFormat: '$6$%.16s'
     state: 'exact'
 
-  - name: 'cn=config root credentials'
+  - name: 'Set the cn=config database root credentials'
     dn: 'olcDatabase={0}config,cn=config'
     attributes:
       olcRootDN: 'cn=admin,cn=config'
@@ -215,7 +215,7 @@ slapd__default_tasks:
     state: 'exact'
     no_log: True
 
-  - name: 'data root credentials'
+  - name: 'Set the main database root credentials'
     dn: 'olcDatabase={1}mdb,cn=config'
     attributes:
       olcRootDN: '{{ "cn=admin," + slapd__basedn }}'
@@ -223,7 +223,7 @@ slapd__default_tasks:
     state: 'exact'
     no_log: True
 
-  - name: 'cn=config TLS certificates'
+  - name: 'Configure TLS certificates'
     dn: 'cn=config'
     attributes:
       olcTLSCACertificateFile:  '{{ slapd__tls_ca_certificate }}'
@@ -231,26 +231,26 @@ slapd__default_tasks:
       olcTLSCertificateKeyFile: '{{ slapd__tls_private_key }}'
     state: '{{ "exact" if slapd__pki|bool else "init" }}'
 
-  - name: 'cn=config DH parameters'
+  - name: 'Configure Diffie-Hellman parameters'
     dn: 'cn=config'
     attributes:
       olcTLSDHParamFile: '{{ slapd__dhparam_file }}'
     state: '{{ "exact" if slapd__dhparam_file|d() else "init" }}'
 
-  - name: 'cn=config TLS ciphers'
+  - name: 'Configure TLS cipher suites'
     dn: 'cn=config'
     attributes:
       olcTLSCipherSuite: '{{ slapd__tls_cipher_suite }}'
     state: '{{ "exact" if slapd__pki|bool else "init" }}'
 
-  - name: 'cn=config SSF'
+  - name: 'Set default Security Strength Factors enforced by the server'
     dn: 'cn=config'
     attributes:
       olcLocalSSF: '128'
       olcSecurity: 'ssf=128 update_ssf=128 simple_bind=128'
     state: '{{ "exact" if slapd__pki|bool else "init" }}'
 
-  - name: 'data olcDbIndex'
+  - name: 'Define indexes present in the main database'
     dn: 'olcDatabase={1}mdb,cn=config'
     attributes:
       olcDbIndex:

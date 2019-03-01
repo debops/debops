@@ -1,6 +1,6 @@
 ---
 
-- name: Manage OpenLDAP entries
+- name: '{{ item.name }}'
   ldap_entry:
     dn: '{{ item.dn }}'
     objectClass: '{{ item.objectClass }}'
@@ -9,7 +9,7 @@
   when: item.objectClass|d() and item.state not in [ 'init', 'ignore' ]
   no_log: '{{ item.no_log | d(False) }}'
 
-- name: Manage OpenLDAP attributes
+- name: '{{ item.name }}'
   ldap_attrs:
     dn: '{{ item.dn }}'
     attributes: '{{ item.attributes }}'
