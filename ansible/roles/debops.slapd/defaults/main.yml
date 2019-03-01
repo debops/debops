@@ -10,6 +10,23 @@
 # .. include:: ../../../includes/global.rst
 
 
+# LDAP schemas [[[
+# ----------------
+
+# .. envvar:: slapd__rfc2307bis_enabled [[[
+#
+# Enable or disable support for an upgraded ``nis`` schema defined as
+# ``rfc2307bis``, that changes the ``posixGroup`` object type from
+# ``STRUCTURAL`` to ``AUXILIARY``. This allows better management of UNIX groups
+# in the LDAP directory, but may require additional changes in existing
+# databases. See :ref:`the rfc2307bis schema <slapd__ref_rfc2307bis>` for more
+# details.
+slapd__rfc2307bis_enabled: '{{ ansible_local.slapd.rfc2307bis
+                               if (ansible_local|d() and ansible_local.slapd|d() and
+                                   (ansible_local.slapd.rfc2307bis|d())|bool)
+                               else True }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # APT packages [[[
 # ----------------
 
@@ -17,6 +34,13 @@
 #
 # List of required APT packages for OpenLDAP service.
 slapd__base_packages: [ 'slapd', 'ldap-utils', 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: slapd__rfc2307bis_packages [[[
+#
+# List of APT packages to install in preparation to use ``rfc2307bis`` schema
+# instead of the ``nis`` schema.
+slapd__rfc2307bis_packages: [ 'fusiondirectory-schema' ]
 
                                                                    # ]]]
 # .. envvar:: slapd__packages [[[

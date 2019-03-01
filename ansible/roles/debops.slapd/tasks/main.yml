@@ -1,5 +1,10 @@
 ---
 
+- name: Prepare OpenLDAP installation to use the rfc2307bis schema
+  include_tasks: 'prepare_rfc2307bis.yml'
+  when: (slapd__rfc2307bis_enabled|bool and
+         (ansible_local is undefined or ansible_local.slapd is undefined))
+
 - name: Install OpenLDAP packages
   package:
     name: '{{ q("flattened", (slapd__base_packages + slapd__packages)) }}'
