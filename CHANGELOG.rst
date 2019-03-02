@@ -121,6 +121,9 @@ Fixed
   certificate was not performed at all, without any actual changes in the
   service, with subsequent task exiting with an error due to misconfiguration.
 
+- [debops.lvm] Make sure a file system is created by default when the ``mount``
+  parameter is defined in the :envvar:`lvm__logical_volumes`.
+
 
 `debops v0.8.1`_ - 2019-02-02
 -----------------------------
