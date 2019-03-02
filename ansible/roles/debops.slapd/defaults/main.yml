@@ -92,7 +92,8 @@ slapd__basedn: '{{ "dc=" + slapd__domain.split(".") | join(",dc=") }}'
 #
 # The password defined for the superuser of the ``cn=config`` LDAP database.
 slapd__superuser_config_password: '{{ "{CRYPT}" + lookup("password", secret
-                                                         + "/slapd/cn=config/cn=admin,cn=config.password"
+                                                         + "/slapd/credentials/"
+                                                         + "cn=admin,cn=config" | to_uuid + ".password"
                                                          + " encrypt=sha512_crypt length=32") }}'
 
                                                                    # ]]]
@@ -100,8 +101,8 @@ slapd__superuser_config_password: '{{ "{CRYPT}" + lookup("password", secret
 #
 # The password defined for the superuser of the main LDAP database.
 slapd__superuser_data_password: '{{ "{CRYPT}" + lookup("password", secret
-                                                       + "/slapd/" + slapd__basedn
-                                                       + "/cn=admin," + slapd__basedn + ".password"
+                                                       + "/slapd/credentials/"
+                                                       + ("/cn=admin," + slapd__basedn) | to_uuid + ".password"
                                                        + " encrypt=sha512_crypt length=32") }}'
                                                                    # ]]]
                                                                    # ]]]
