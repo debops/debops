@@ -82,10 +82,20 @@ slapd__domain: '{{ ansible_local.core.domain
                    else (ansible_domain if ansible_domain else ansible_hostname) }}'
 
                                                                    # ]]]
+# .. envvar:: slapd__base_dn [[[
+#
+# BaseDN value of the main OpenLDAP server that contains the LDAP data, defined
+# as a YAML list.
+slapd__base_dn: '{{ slapd__domain.split(".")
+                    | map("regex_replace", "(.*)", "dc=\1")
+                    | list }}'
+
+                                                                   # ]]]
 # .. envvar:: slapd__basedn [[[
 #
-# BaseDN value of the main OpenLDAP server that contains the LDAP data.
-slapd__basedn: '{{ "dc=" + slapd__domain.split(".") | join(",dc=") }}'
+# BaseDN value of the main OpenLDAP server that contains the LDAP data, defined
+# as a string.
+slapd__basedn: '{{ slapd__base_dn | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__superuser_config_password [[[
