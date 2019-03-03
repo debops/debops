@@ -100,11 +100,26 @@ slapd__basedn: '{{ slapd__base_dn | join(",") }}'
                                                                    # ]]]
 # .. envvar:: slapd__superuser_config_password [[[
 #
-# The password defined for the superuser of the ``cn=config`` LDAP database.
+# The hashed password defined for the superuser of the ``cn=config`` LDAP database.
 slapd__superuser_config_password: '{{ "{CRYPT}" + lookup("password", secret
                                                          + "/slapd/credentials/"
-                                                         + "cn=admin,cn=config" | to_uuid + ".password"
+                                                         + slapd__config_rootdn | to_uuid + ".password"
                                                          + " encrypt=sha512_crypt length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__config_rootdn [[[
+#
+# The Distinguished Name of the ``cn=config`` database root account.
+slapd__config_rootdn: 'cn=admin,cn=config'
+
+                                                                   # ]]]
+# .. envvar:: slapd__config_rootpw [[[
+#
+# The plaintext password of the ``cn=config`` database root account, useful for
+# Sync Replication authentication.
+slapd__config_rootpw: '{{ lookup("file", secret + "/slapd/credentials/"
+                                         + slapd__config_rootdn | to_uuid
+                                         + ".password").split()[0] }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__superuser_data_password [[[
@@ -112,8 +127,23 @@ slapd__superuser_config_password: '{{ "{CRYPT}" + lookup("password", secret
 # The password defined for the superuser of the main LDAP database.
 slapd__superuser_data_password: '{{ "{CRYPT}" + lookup("password", secret
                                                        + "/slapd/credentials/"
-                                                       + ("/cn=admin," + slapd__basedn) | to_uuid + ".password"
+                                                       + slapd__data_rootdn | to_uuid + ".password"
                                                        + " encrypt=sha512_crypt length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__data_rootdn [[[
+#
+# The Distinguished Name of the main database root account.
+slapd__data_rootdn: '{{ ([ "cn=admin" ] + slapd__base_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__data_rootpw [[[
+#
+# The plaintext password of the ``cn=config`` database root account, useful for
+# Sync Replication authentication.
+slapd__data_rootpw: '{{ lookup("file", secret + "/slapd/credentials/"
+                                       + slapd__data_rootdn | to_uuid
+                                       + ".password").split()[0] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Support for DebOps PKI and TLS [[[
@@ -248,7 +278,7 @@ slapd__default_tasks:
   - name: 'Set the cn=config database root credentials'
     dn: [ 'olcDatabase={0}config', 'cn=config' ]
     attributes:
-      olcRootDN: 'cn=admin,cn=config'
+      olcRootDN: '{{ slapd__config_rootdn }}'
       olcRootPW: '{{ slapd__superuser_config_password }}'
     state: 'exact'
     no_log: True
@@ -256,7 +286,7 @@ slapd__default_tasks:
   - name: 'Set the main database root credentials'
     dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
     attributes:
-      olcRootDN: '{{ "cn=admin," + slapd__basedn }}'
+      olcRootDN: '{{ slapd__data_rootdn }}'
       olcRootPW: '{{ slapd__superuser_data_password }}'
     state: 'exact'
     no_log: True
