@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+# CopyRight (C) 2015-2019 DebOps https://debops.org/
+
+# Check if specified LDAP schema file is loaded in the local slapd cn=config
+# database. If not, try loading it in the server.
+
+
+set -o nounset -o pipefail -o errexit
+
+schema_file="${1}"
+
+if [ -z "${schema_file}" ] ; then
+    printf "Error: You need to specify schema file to load\n" && exit 1
+fi
+
+if [ ! -e "${schema_file}" ] ; then
+    printf "Error: %s does not exist\n" "${schema_file}" && exit 1
+fi
+
+if [ ! -r "${schema_file}" ] ; then
+    printf "Error: %s is unreadable\n" "${schema_file}" && exit 1
+fi
+
+# The schema file is already converted, we can deal with them directly
+if [[ "${schema_file}" == *.ldif ]] ; then
+
+    # Get the DN of the schema
+    schema_dn="$(grep -E '^^dn:\s' "${schema_file}")"
+
+    # Get list of already installed schemas from local LDAP server
+    schema_list() {
+        ldapsearch -Y EXTERNAL -H ldapi:/// -LLLQ -b 'cn=schema,cn=config' dn \
+        | sed -e '/^$/d' -e 's/{[0-9]\+}//'
+    }
+
+    if schema_list | grep -q "${schema_dn}" ; then
+
+        # Schema is already installed, do nothing
+        exit 0
+
+    else
+
+        # Try installing the schema in the database
+        ldapadd -Y EXTERNAL -H ldapi:/// -f "${schema_file}"
+
+    fi
+
+# The schema is not converted to ldif, defer to a helper script
+elif [[ "${schema_file}" == *.schema ]] ; then
+
+    if type fusiondirectory-insert-schema > /dev/null ; then
+        fusiondirectory-insert-schema -i "${schema_file}"
+    else
+        printf "Error: %s needs to be in the .ldif format\n" "${schema_file}" && exit 1
+    fi
+fi

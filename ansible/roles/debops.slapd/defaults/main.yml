@@ -13,6 +13,10 @@
 # LDAP schemas [[[
 # ----------------
 
+# These variables define what additional LDAP schemas will be imported by
+# the :ref:`debops.slapd` role to the managed OpenLDAP server.
+# See :ref:`custom LDAP schemas <slapd__ref_ldap_schemas>` for more details.
+
 # .. envvar:: slapd__rfc2307bis_enabled [[[
 #
 # Enable or disable support for an upgraded ``nis`` schema defined as
@@ -25,6 +29,47 @@ slapd__rfc2307bis_enabled: '{{ ansible_local.slapd.rfc2307bis
                                if (ansible_local|d() and ansible_local.slapd|d() and
                                    (ansible_local.slapd.rfc2307bis|d())|bool)
                                else True }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__default_schemas [[[
+#
+# List of the default LDAP schemas imported into the OpenLDAP server, defined
+# by the role.
+slapd__default_schemas:
+
+  # Support for SSH public keys in LDAP directory
+  - '/etc/ldap/schema/fusiondirectory/openssh-lpk.schema'
+
+                                                                   # ]]]
+# .. envvar:: slapd__schemas [[[
+#
+# Lisf of LDAP schemas imported into the OpenLDAP server on all hosts in the
+# Ansible inventory.
+slapd__schemas: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_schemas [[[
+#
+# List of LDAP schemas imported into the OpenLDAP server on hosts in a specific
+# Ansible inventory group.
+slapd__group_schemas: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_schemas [[[
+#
+# List of LDAP schemas imported into the OpenLDAP server on specific hosts in
+# the Ansible inventory.
+slapd__host_schemas: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__combined_schemas [[[
+#
+# Variable which combines all of the schema lists together and is used in the
+# role tasks. The list is not merged intelligently and is only additive.
+slapd__combined_schemas: '{{ slapd__default_schemas
+                             + slapd__schemas
+                             + slapd__group_schemas
+                             + slapd__host_schemas }}'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -41,6 +86,18 @@ slapd__base_packages: [ 'slapd', 'ldap-utils', 'ssl-cert' ]
 # List of APT packages to install in preparation to use ``rfc2307bis`` schema
 # instead of the ``nis`` schema.
 slapd__rfc2307bis_packages: [ 'fusiondirectory-schema' ]
+
+                                                                   # ]]]
+# .. envvar:: slapd__schema_packages [[[
+#
+# List of APT packages that contain LDAP schemas loaded into the directory by
+# the server. Debian has multiple ``fusiondirectory-*-schema`` and
+# ``gosa-*-schema`` packages that conflict with each other, therefore the list
+# of packages should be synchronized.
+slapd__schema_packages:
+
+  # Support for 'openssh-lpk' (SSH public keys in LDAP)
+  - 'fusiondirectory-plugin-ssh-schema'
 
                                                                    # ]]]
 # .. envvar:: slapd__packages [[[

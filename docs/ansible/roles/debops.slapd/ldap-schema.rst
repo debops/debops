@@ -1,3 +1,5 @@
+.. _slapd__ref_ldap_schemas:
+
 Custom LDAP schemas
 ===================
 
@@ -14,6 +16,40 @@ configuration `in the Zytrax LDAP guide`__.
 
 .. contents::
    :local:
+
+
+General notes
+-------------
+
+The ``slapd__*_schemas`` variables define a list of LDAP schemas to import by
+the role. The list is not merged via custom Ansible filter plugins and is only
+additive. You can define different sets of schemas on different Ansible
+inventory levels.
+
+The schema files need to already be present on the remote host to be imported
+by the role. The default schemas included by the role are installed via APT
+packages, you can see the available set of schemas by running the command:
+
+.. code-block:: console
+
+   apt-cache search fusiondirectory plugin schema
+
+The Debian/Ubuntu archive also contains a smaller set of APT packages for the
+GOsa² application which contain LDAP schemas, however the ``gosa-*`` and
+``fusiondirectory-*`` packages conflict with each other.
+
+You can use the :ref:`debops.resources` role to copy custom ``*.schema`` or
+``*.ldif`` files to the remote host before importing them. The ``*.ldif`` files
+can be imported automatically, but the ``*.schema`` import relies on the
+:command:`fusiondirectory-insert-schema` command which is available in the
+``fusiondirectory-schema`` APT package.
+
+If you are using clustered OpenLDAP, for example in N-Way Multi Master
+replication mode, you should import the schemas only on one node at a time.
+Execution of the import command on multiple remote hosts at once will result in
+an error when one replication host already has a schema defined with a specific
+``X-ORDERED`` index number, but the other nodes don't. The schema will be
+replicated automatically between all of the OpenLDAP masters.
 
 
 .. _slapd__ref_rfc2307bis:
@@ -83,3 +119,18 @@ The automatic installation of the ``rfc2307bis`` schema can be disabled by
 setting the :envvar:`slapd__rfc2307bis_enabled` boolean variable to ``False``.
 This allows usage of the LDAP directories that use the old ``nis`` schema
 without modifications to the directory contents.
+
+
+The ``openssh-lpk`` schema
+--------------------------
+
+The ``openssh-lpk`` schema allows the LDAP directory to hold SSH public keys,
+which combined with OpenSSH ``AuthorizedKeysCommand`` configuration can allow
+SSH authentication via LDAP directory. An `example openssh-ldap-publickey`__
+script shows how this can be configured with OpenSSH and OpenLDAP.
+
+.. __: https://github.com/AndriiGrytsenko/openssh-ldap-publickey
+
+The :ref:`debops.sshd` Ansible role already contains support for SSH public key
+lookup in OpenLDAP, see its documentation for more details about enabling the
+support.
