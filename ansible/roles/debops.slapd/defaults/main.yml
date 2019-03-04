@@ -429,12 +429,6 @@ slapd_backend: '{{ "hdb" if (ansible_distribution_release in [ "wheezy", "precis
                          else "mdb" }}'
 
 
-# .. envvar:: slapd_log_level
-#
-# Log level (see :manpage:`slapd-config(5)` for details).
-slapd_log_level: 'none'
-
-
 # .. envvar:: slapd_default_services
 #
 # Default services enabled in :file:`/etc/default/slapd` (change requires
@@ -589,26 +583,6 @@ slapd_ldapscripts_gdummymember: 'uid=dummy,$USUFFIX,$SUFFIX'
 #
 # User password generation.
 slapd_ldapscripts_passwordgen: 'pwgen'
-
-
-# .. Custom LDAP schema [[[1
-#
-# ----------------------
-#   Custom LDAP schema
-# ----------------------
-
-# .. envvar:: slapd_ldap_schema
-#
-# These files will be automatically loaded into ``cn=config`` configuration
-# database by a helper script. You need to specify absolute paths to
-# :file:`*.ldif` files. Default set can be found in :file:`/etc/ldap/schema/`.
-slapd_ldap_schema:
-
-    # Additional attributes and classes for LDAP Name Service
-  - '/usr/local/etc/ldap/schema/ldapns.ldif'
-
-    # Support for SSH Public Key lookup in LDAP
-  - '/usr/local/etc/ldap/schema/openssh-lpk.ldif'
 
 
 # .. LDAP Access Control List [[[1
