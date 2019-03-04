@@ -46,7 +46,10 @@
                 "attributes": item.attributes|d({})} }}'
   when: item.name|d() and item.dn|d() and
         item.state|d('present') not in [ 'init', 'ignore' ]
-  no_log: '{{ item.no_log | d(False) }}'
+  no_log: '{{ item.no_log | d(True
+                              if ("userPassword" in item.attributes.keys()|d([]) or
+                                  "olcRootPW"    in item.attributes.keys()|d([]))
+                              else False) }}'
 
 #- name: Pre hooks
 #  include: '{{ lookup("task_src", "slapd/pre_main.yml") }}'
