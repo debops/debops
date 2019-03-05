@@ -15,6 +15,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_native
 
 import traceback
+import re
 
 try:
     import ldap
@@ -102,6 +103,14 @@ options:
     description:
       - The attribute(s) and value(s) to add or remove. The complex argument
         format is required in order to pass a list of strings (see examples).
+  ordered:
+    required: false
+    choices: ['yes', 'no']
+    default: 'no'
+    description:
+      - If C(yes), prepend list values with X-ORDERED index numbers in all
+        attributes specified in the current task. This is useful mostly with
+        I(olcAccess) attribute to easily manage LDAP Access Control Lists.
   validate_certs:
     required: false
     choices: ['yes', 'no']
@@ -136,6 +145,25 @@ EXAMPLES = """
             {1}to dn.base="dc=example,dc=com"
             by dn="cn=admin,dc=example,dc=com" write
             by * read
+    state: exact
+
+# An alternative approach with automatic X-ORDERED numbering
+- name: Set up the ACL
+  ldap_attrs:
+    dn: olcDatabase={1}hdb,cn=config
+    attributes:
+        olcAccess:
+          - >-
+            to attrs=userPassword,shadowLastChange
+            by self write
+            by anonymous auth
+            by dn="cn=admin,dc=example,dc=com" write
+            by * none'
+          - >-
+            to dn.base="dc=example,dc=com"
+            by dn="cn=admin,dc=example,dc=com" write
+            by * read
+    ordered: yes
     state: exact
 
 - name: Declare some indexes
@@ -203,16 +231,31 @@ class LdapAttr(object):
         self.state = self.module.params['state']
         self.verify_cert = self.module.params['validate_certs']
         self.attrs = self.module.params['attributes']
+        self.ordered = self.module.params['ordered']
 
         # Establish connection
         self.connection = self._connect_to_ldap()
+
+    def _order_values(self, values):
+        """ Preprend X-ORDERED index numbers to attribute's values. """
+        ordered_values = []
+
+        if isinstance(values, list):
+            for index, value in enumerate(values):
+                cleaned_value = re.sub(r'^\{\d+\}', '', value)
+                ordered_values.append('{' + str(index) + '}' + cleaned_value)
+
+        return ordered_values
 
     def _normalize_values(self, values):
         """ Normalize attribute's values. """
         norm_values = []
 
         if isinstance(values, list):
-            norm_values = list(map(str, values))
+            if self.ordered:
+                norm_values = self._order_values(list(map(str, values)))
+            else:
+                norm_values = list(map(str, values))
         elif values != "":
             norm_values = [str(values)]
 
@@ -314,6 +357,7 @@ def main():
                 default='present',
                 choices=['present', 'absent', 'exact']),
             'attributes': dict(required=True, type='dict'),
+            'ordered': dict(default=False, type='bool'),
             'validate_certs': dict(default=True, type='bool'),
         },
         supports_check_mode=True,
