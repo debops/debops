@@ -62,7 +62,7 @@ Ansible role:
 
 - `Docker Registry configuration`__ documentation
 
-.. __: https://docs.docker.com/registry/co
+.. __: https://docs.docker.com/registry/configuration/
 
 - `GitLab Container Registry`__ documentation
 

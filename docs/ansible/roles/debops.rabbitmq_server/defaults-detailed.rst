@@ -123,7 +123,7 @@ will switch to a more verbose option interpretation, using known parameters:
   - ``boolean``: a boolean ``true``/``false`` value, selected automatically if
     a YAML boolean is used as the value;
 
-  - ``bit-string``: a `bit string <http://erlang.org/doc/reference_manual/data_types.html#id70212>`_
+  - ``bit-string``: a `bit string <http://erlang.org/doc/reference_manual/data_types.html#bit-strings-and-binaries>`_
     value with special quotation marks. Only YAML strings are supported at this
     time;
 

@@ -38,7 +38,7 @@ The operating system itself might be different, however many software packages
 are present both in Debian as well as Arch, and solutions found on the wiki are
 usually easily applicable to Debian hosts.
 
-.. __: https://archlinux.org/
+.. __: https://www.archlinux.org/
 
 
 `The Twelve-Factor App`__
@@ -91,7 +91,7 @@ This is a website with description of the build process of an Internet Cluster.
 The `original website`__ seems to be gone, however the `Web Archive`__ version is
 available.
 
-.. __: http://planetlarg.net/
+.. __: http://www.planetlarg.net/
 .. __: https://web.archive.org/
 
 

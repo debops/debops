@@ -23,6 +23,6 @@ spell checking library:
      spellcheck_languages: "array('en', 'fr')"
 
 Of course, many more languages are supported. You can find more information
-about the required packages and configuration in the Roundcube `Aspell-Howto`_.
+about the required packages and configuration in the Roundcube `defaults.inc.php`_.
 
-.. _Aspell-Howto: http://trac.roundcube.net/wiki/Howto_Config/Aspell
+.. _defaults.inc.php: https://github.com/roundcube/roundcubemail/blob/master/config/defaults.inc.php

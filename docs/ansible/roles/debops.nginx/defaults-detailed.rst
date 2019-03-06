@@ -692,7 +692,7 @@ User directories
 
 ``userdir``
   Optional, boolean. Enable UserDir support.
-  Web pages on https://host/~<user>/ will be read from
+  Web pages on :file:`https://host/~<user>/` will be read from
   :file:`/srv/www/<user>/userdir/public` directories.
 
 ``userdir_regexp``

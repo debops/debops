@@ -41,7 +41,7 @@ tedious after the third host you manage. You can still do this if you want,
 passwords used by DebOps roles are stored in variables which can be redefined
 in the Ansible inventory.
 
-.. __: https://docs.ansible.com/ansible/devel/vault.html
+.. __: https://docs.ansible.com/ansible/latest/user_guide/vault.html
 
 The :file:`secret/` directory is used for much more - Certificate Authority
 management via :ref:`debops.pki`, passing secure data between hosts, for
@@ -59,7 +59,7 @@ developed which allows to "inject" custom changes in the roles without
 modifying the main files. These custom lookup plugins are not part of the
 official Ansible distribution, and are `provided with the DebOps playbooks`__.
 
-.. __: https://github.com/debops/debops/tree/master/ansible/playbooks/lookup_plugins
+.. __: https://github.com/debops/debops/tree/master/ansible/roles/debops.ansible_plugins/lookup_plugins
 
 The error about lookup plugins not being present might show up if you use
 DebOps roles separately from the main playbook, for example downloaded through

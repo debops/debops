@@ -8,7 +8,7 @@ Initial configuration
 ---------------------
 
 The ``debops.docker_gen`` role generates by default :program:`nginx` configuration,
-based on `Romke van der Meulen blog entry <http://blog.romkevandermeulen.nl/2015/02/19/docker-gen-automatic-nginx-config-with-a-human-touch/>`_
+based on `Romke van der Meulen blog entry <https://romkevandermeulen.nl/2015/02/19/docker-gen-automatic-nginx-config-with-a-human-touch.html>`_
 Nginx upstreams defined this way can then be used in ``debops.nginx`` role to
 automatically enable or disable upstream Docker containers in a given
 configuration.

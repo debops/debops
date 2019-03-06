@@ -25,7 +25,7 @@ specific SSH public keys, but they cannot be modified by their respective
 users.
 
 Unfortunately, it seems that the Ansible ``authorized_key`` module
-`enforces the "600" file permissions <https://github.com/ansible/ansible-modules-core/blob/devel/system/authorized_key.py#L231-L235>`_
+`enforces the "600" file permissions <https://github.com/ansible/ansible-modules-core/blob/devel/system/authorized_key.py#L298-L302>`_
 on any file change, therefore there exists a window of opportunity between the
 given user file being updated by the ``authorized_key`` module and permissions
 being enforced again by the ``file`` Ansible module. At the moment there's no

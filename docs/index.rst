@@ -17,7 +17,7 @@ DebOps
    :target: https://gitlab.com/debops/debops/pipelines
 
 .. |CII Best Practices| image:: https://bestpractices.coreinfrastructure.org/projects/237/badge
-   :target: https://bestpractices.coreinfrastructure.org/projects/237
+   :target: https://bestpractices.coreinfrastructure.org/en/projects/237
 
 .. include:: includes/global.rst
 
@@ -50,8 +50,8 @@ Some of the applications and services supported in DebOps are:
 .. __: https://www.letsencrypt.org/
 .. __: https://about.gitlab.com/
 .. __: https://www.librenms.org/
-.. __: https://www.nextcloud.com/
-.. __: https://www.owncloud.org/
+.. __: https://nextcloud.com/
+.. __: https://owncloud.org/
 
 You can :ref:`try out DebOps <quick_start>` without installing it on your
 computer, using Docker or Vagrant. Alternatively, a set of scripts can be

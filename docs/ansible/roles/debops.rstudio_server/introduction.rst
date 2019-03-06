@@ -1,7 +1,7 @@
 Introduction
 ============
 
-`RStudio <https://rstudio.com/>`_ is an Integrated Development Environment for
+`RStudio <https://www.rstudio.com/>`_ is an Integrated Development Environment for
 the R programming language.
 
 This Ansible role can be used to deploy RStudio Server, which is RStudio

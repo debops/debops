@@ -79,8 +79,8 @@ Ansible:
   via PyPI.
 
 .. __: https://www.python-ldap.org/en/latest/
-.. __: https://docs.ansible.com/ansible/latest/ldap_attr_module.html
-.. __: https://docs.ansible.com/ansible/latest/ldap_entry_module.html
+.. __: https://docs.ansible.com/ansible/latest/modules/ldap_attr_module.html
+.. __: https://docs.ansible.com/ansible/latest/modules/ldap_entry_module.html
 
 `future`__
   This module provides a compatibility layer between Python 2.7 and Python 3.x
@@ -169,7 +169,7 @@ Ansible can be `installed in a variety of methods`__, you can choose your
 preferred one depending on the platform you use for the Ansible Controller.
 There are some caveats on specific platforms, described below.
 
-.. __: https://docs.ansible.com/ansible/latest/intro_installation.html
+.. __: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
 
 Debian
   On the current Debian Stable release, you might need to install the

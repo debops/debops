@@ -4,7 +4,7 @@
 
 [![Travis CI][travis-ci]](https://travis-ci.org/debops/debops)
 [![GitLab CI][gitlab-ci]](https://gitlab.com/debops/debops/pipelines)
-[![CII Best Practices][cii-best-practices]](https://bestpractices.coreinfrastructure.org/projects/237)
+[![CII Best Practices][cii-best-practices]](https://bestpractices.coreinfrastructure.org/en/projects/237)
 [![RSS commits][rss-commits]](https://github.com/debops/debops/commits/master.atom)
 
 [debops-logo]: https://raw.githubusercontent.com/debops/debops/master/lib/images/debops-small.png

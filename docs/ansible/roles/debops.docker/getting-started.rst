@@ -49,7 +49,7 @@ However, it is recommended to start with a clean machine if possible.
 ``debops.docker`` relies on configuration managed by :ref:`debops.core`,
 :ref:`debops.ferm`, and :ref:`debops.pki` Ansible roles.
 
-.. _Docker variants: https://docs.docker.com/engine/installation/#docker-variants
+.. _Docker variants: https://docs.docker.com/install/overview/
 
 Useful variables
 ----------------
