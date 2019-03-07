@@ -314,7 +314,19 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%       if runner.docker_pull_policy|d() %}
     pull_policy = "{{ runner.docker_pull_policy }}"
 {%       endif %}
-{%     endif %}
+{%       if runner.docker_tmpfs|d() %}
+    [runners.docker_tmpfs]
+{%         for directory, options in runner.docker_tmpfs.items() %}
+      "{{ directory }}": "{{ options }}"
+{%         endfor %}
+{%       endif %}
+{%       if runner.docker_services_tmpfs|d() %}
+    [runners.docker.services_tmpfs]
+{%         for directory, options in runner.docker_services_tmpfs.items() %}
+      "{{ directory }}": "{{ options }}"
+{%         endfor %}
+{%       endif %}
+{%    endif %}
 {%     if ((runner.executor|d() and runner.executor in [ 'parallels' ]) or
            (gitlab_runner__executor in [ 'parallels' ])) %}
   [runners.parallels]
