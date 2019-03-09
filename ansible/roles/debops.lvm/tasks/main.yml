@@ -42,6 +42,12 @@
     group: 'root'
     mode: '0644'
 
+- name: Enable/disable lvm2-lvmetad socket
+  systemd:
+    name: 'lvm2-lvmetad.socket'
+    state: '{{ "started" if lvm__global_use_lvmetad else "stopped" }}'
+    enabled: '{{ lvm__global_use_lvmetad }}'
+
 - name: Manage LVM
   include: manage_lvm.yml
   when: (ansible_local|d() and ((ansible_local.tags|d() and 'ignore-cap12s' in ansible_local.tags) or
