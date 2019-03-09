@@ -151,8 +151,8 @@
 - name: Reload systemd configuration when needed
   systemd:
     daemon_reload: True
-  when: (ansible_service_mgr == 'systemd' and (
-          redis_sentinel__register_systemd is changed or
+  when: (ansible_service_mgr == 'systemd' and
+         (redis_sentinel__register_systemd is changed or
           redis_sentinel__register_systemd_remove is changed or
           redis_sentinel__register_systemd_override is changed))
 
