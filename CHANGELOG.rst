@@ -124,6 +124,10 @@ Fixed
 - [debops.lvm] Make sure a file system is created by default when the ``mount``
   parameter is defined in the :envvar:`lvm__logical_volumes`.
 
+- [debops.lvm] Stop and disable ``lvm2-lvmetad.socket`` systemd unit when
+  disabling :envvar:`lvm__global_use_lvmetad` to avoid warning message when
+  invoking LVM commands.
+
 
 `debops v0.8.1`_ - 2019-02-02
 -----------------------------
