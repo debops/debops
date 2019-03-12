@@ -322,7 +322,20 @@ slapd__default_tasks:
     attributes:
       olcModuleLoad:
         - '{0}back_mdb'
+        - '{1}syncprov'
     ordered: True
+
+  - name: 'Enable Sync Provider overlay in the cn=config database'
+    dn: 'olcOverlay={0}syncprov,olcDatabase={0}config,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcSyncProvConfig' ]
+    attributes:
+      olcOverlay: '{0}syncprov'
+
+  - name: 'Enable Sync Provider overlay in the main database'
+    dn: 'olcOverlay={0}syncprov,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcSyncProvConfig' ]
+    attributes:
+      olcOverlay: '{0}syncprov'
 
   - name: 'Configure the OpenLDAP server log level'
     dn: 'cn=config'

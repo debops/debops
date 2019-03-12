@@ -5,6 +5,35 @@ Getting started
    :local:
 
 
+OpenLDAP features enabled by default
+------------------------------------
+
+The ``debops.slapd`` role enables and configures some of the OpenLDAP features
+that otherwise are enabled dynamically and could have different names in the
+LDAP directory on different installations due to the order in which they were
+enabled. If you are planning to apply the role on an existing installation, you
+should review the configuration before doing so - the OpenLDAP server usually
+refuses the incorrect configuration outright, which should not affect the
+existing installation, but that's not a 100% guarantee.
+
+Sync Provider overlay
+~~~~~~~~~~~~~~~~~~~~~
+
+The role will by default enable the `Sync Provider`__ (``syncprov``) dynamic
+module and overlay, in both the ``cn=config`` configuration database, and the
+main OpenLDAP database.
+
+The Sync Provider functionality is used in different `data replication`__
+strategies. Enabling it by default, even on a standalone OpenLDAP server,
+should be harmless - the replication requires additional configuration defined
+in each OpenLDAP database. The overlay is enabled first to keep the
+``X-ORDERED`` index number consistent between the ``cn=config`` database and
+the main database.
+
+.. __: http://www.zytrax.com/books/ldap/ch6/syncprov.html
+.. __: https://www.openldap.org/doc/admin24/replication.html
+
+
 Example inventory
 -----------------
 
