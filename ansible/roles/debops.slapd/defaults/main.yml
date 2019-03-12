@@ -317,6 +317,13 @@ slapd__tls_cipher_suite: 'SECURE256:PFS:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.2:
 # role.
 slapd__default_tasks:
 
+  - name: 'Load dynamic OpenLDAP modules'
+    dn: 'cn=module{0},cn=config'
+    attributes:
+      olcModuleLoad:
+        - '{0}back_mdb'
+    ordered: True
+
   - name: 'Configure the OpenLDAP server log level'
     dn: 'cn=config'
     attributes:
