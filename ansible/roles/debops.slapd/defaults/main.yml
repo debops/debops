@@ -230,10 +230,13 @@ slapd__pki_path: '{{ (ansible_local.pki.base_path
 # Default PKI realm used by the OpenLDAP server. In a multi-master clustered
 # setup the configuration is shared, therefore all cluster nodes should use the
 # same PKI realm name.
-slapd__pki_realm: '{{ (ansible_local.pki.realm
-                       if (ansible_local|d() and ansible_local.pki|d() and
-                           ansible_local.pki.realm|d())
-                       else "domain") }}'
+slapd__pki_realm: '{{ slapd__domain
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          slapd__domain in ansible_local.pki.known_realms|d([]))
+                      else (ansible_local.pki.realm
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.realm|d())
+                            else "domain") }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__pki_ca [[[
