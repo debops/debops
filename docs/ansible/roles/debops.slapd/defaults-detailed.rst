@@ -69,7 +69,8 @@ its attributes.
          olcOverlay: '{0}syncprov'
 
 Define a basic Access Control List, based on the `example security policy`__.
-This is an example of an object with `X-ORDERED`__ type attributes.
+This is an example of an object with `X-ORDERED`__ type attributes, which will
+be added automatically by the ``ldap_attrs`` module included in DebOps.
 
 .. __: http://www.zytrax.com/books/ldap/ch5/step2.html#step2
 .. __: https://tools.ietf.org/html/draft-chu-ldap-xordered-00
@@ -84,28 +85,29 @@ This is an example of an object with `X-ORDERED`__ type attributes.
          olcAccess:
 
            - |-
-             {0}to attrs="userPassword"
-                by self      write
-                by anonymous auth
-                by group.exact="cn=IT People,ou=Groups,dc=example,dc=com"
-                             write
-                by *         none
+             to attrs="userPassword"
+             by self      write
+             by anonymous auth
+             by group.exact="cn=IT People,ou=Groups,dc=example,dc=com"
+                          write
+             by *         none
 
            - |-
-             {1}to attrs="carLicense,homePostalAddress,homePhone"
-                by self       write
-                by group.exact="cn=HR People,ou=Groups,dc=example,dc=com"
-                              write
-                by *          none
+             to attrs="carLicense,homePostalAddress,homePhone"
+             by self       write
+             by group.exact="cn=HR People,ou=Groups,dc=example,dc=com"
+                           write
+             by *          none
 
            - |-
-             {2}to *
-                by self       write
-                by group.exact="cn=HR People,ou=Groups,dc=example,dc=com"
-                              write
-                by users      read
-                by *          none
+             to *
+             by self       write
+             by group.exact="cn=HR People,ou=Groups,dc=example,dc=com"
+                           write
+             by users      read
+             by *          none
 
+       ordered: True
        state: 'exact'
 
 Syntax
@@ -190,6 +192,19 @@ The list of task parameters supported by the role:
   database can modify the ``X-ORDERED`` prefix number on any modification of
   the list of attributes; you should verify the current prefix numbering before
   applying any changes.
+
+``ordered``
+  Optional, boolean. If defined and ``True``, the ``ldap_attrs`` Ansible module
+  will automatically add the ``X-ORDERED`` index numbers to lists of values in
+  all attributes of a current task. This extension is used in the OpenLDAP
+  ``cn=config`` configuration database to define order of object attributes
+  which are normally unordered.
+
+  The most prominent use of the ``X-ORDERED`` extension is in the ``olcAccess``
+  attribute, which defines the LDAP Access Control List. This attribute should
+  be defined in a separate LDAP task, so that only its values will have the
+  ``X-ORDERED`` index numbers inserted. Existing index values will be removed
+  and replaced with the correct ordering defined by the YAML list.
 
 ``state``
   Optional. Possible values:
