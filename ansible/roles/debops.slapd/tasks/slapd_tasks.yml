@@ -6,6 +6,7 @@
     objectClass: '{{ item.objectClass }}'
     attributes:  '{{ item.attributes | d(omit) }}'
     state:       '{{ item.state }}'
+  run_once:      '{{ item.run_once | d(False) }}'
   when: item.objectClass|d() and item.state not in [ 'init', 'ignore' ]
   no_log: '{{ item.no_log | d(True
                               if ("userPassword" in (item.attributes|d({})).keys() or
@@ -18,6 +19,7 @@
     attributes: '{{ item.attributes | d({}) }}'
     ordered:    '{{ item.ordered | d(False) }}'
     state:      '{{ item.state }}'
+  run_once:     '{{ item.run_once | d(False) }}'
   when: not item.objectClass|d() and item.state not in [ 'init', 'ignore' ]
   no_log: '{{ item.no_log | d(True
                               if ("userPassword" in (item.attributes|d({})).keys() or

@@ -239,3 +239,10 @@ The list of task parameters supported by the role:
   Optional, boolean. If ``True``, a given task output will not be recorded to
   avoid emiting sensitive information like passwords. If not specified or
   ``False``, the task will be recorded and logged.
+
+``run_once``
+  Optional, boolean. If defined and ``True``, a given LDAP task will be
+  executed only one time when the role is applied on multiple remote hosts at
+  once. This might be important in cases where the LDAP directory is
+  replicated, or values from different remote hosts can result in the same LDAP
+  objects, e.g. objects with ``X-ORDERED`` index numbers, like LDAP schemas.
