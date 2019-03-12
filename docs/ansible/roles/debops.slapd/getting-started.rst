@@ -33,6 +33,26 @@ the main database.
 .. __: http://www.zytrax.com/books/ldap/ch6/syncprov.html
 .. __: https://www.openldap.org/doc/admin24/replication.html
 
+Password Policy overlay
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The :ref:`debops.slapd` role will by default import the ``ppolicy`` LDAP
+schema, load the ``ppolicy`` dynamic module and enable the Password Policy
+overlay in the main OpenLDAP database.
+
+The `Password Policy`__ overlay is used to maintain the security and quality of
+various passwords stored in the LDAP database. By default the overlay will
+ensure that the cleartext passwords passed to the OpenLDAP server are hashed
+using the algorithms specified in the ``olcPasswordHash`` parameter (salted
+SHA-512 via :man:`crypt(3)` function is set by default by the
+:ref:`debops.slapd` role).
+
+The LDAP administrators can define default and custom Password Policies in the
+main database, which can enforce additional password requirements, like minimum
+password length, different types of characters used, lockout policy, etc.
+
+.. __: http://www.zytrax.com/books/ldap/ch6/ppolicy.html
+
 
 Example inventory
 -----------------
