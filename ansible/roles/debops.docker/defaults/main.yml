@@ -110,10 +110,6 @@ docker__mandatory_packages:
 # List of base packages to install with Docker.
 docker__base_packages:
   - "aufs-tools"
-  - "python-pip"
-  - "python-setuptools"
-  - "python-virtualenv"
-  - 'python-dev'
   - '{{ [ "virtualenv" ] if (ansible_distribution_release not in ["trusty", "wheezy"]) else [] }}'
   - "bridge-utils"
   - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
@@ -497,6 +493,28 @@ docker__ferment_wrapper: '{{ (ansible_local.root.lib
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: docker__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+docker__python__dependent_packages3:
+
+  - 'python3-pip'
+  - 'python3-setuptools'
+  - 'python3-virtualenv'
+  - 'python3-dev'
+
+                                                                   # ]]]
+# .. envvar:: docker__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+docker__python__dependent_packages2:
+
+  - 'python-pip'
+  - 'python-setuptools'
+  - 'python-virtualenv'
+  - 'python-dev'
+
+                                                                   # ]]]
 # .. envvar:: docker__etc_services__dependent_list [[[
 #
 # Configuration for :ref:`debops.etc_services` role which registers port numbers
