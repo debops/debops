@@ -151,12 +151,28 @@ unbound__parsed_zones: '{{ unbound__combined_zones
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: unbound__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+unbound__python__dependent_packages3:
+
+  - 'python3-unbound'
+
+                                                                   # ]]]
+# .. envvar:: unbound__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+unbound__python__dependent_packages2:
+
+  - 'python-unbound'
+
+                                                                   # ]]]
 # .. envvar:: unbound__apt_preferences__dependent_list [[[
 #
 # Configuration for the :ref:`debops.apt_preferences`.
 unbound__apt_preferences__dependent_list:
 
-  - packages:  [ 'unbound', 'unbound-*', 'python-unbound', 'python3-unbound', 'libunbound*' ]
+  - packages:  [ 'unbound', 'unbound-*', 'libunbound*' ]
     backports: [ 'wheezy', 'jessie' ]
     reason:    'Feature parity with the next Debian release'
     by_role:   'debops.unbound'
