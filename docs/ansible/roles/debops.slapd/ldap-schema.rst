@@ -121,6 +121,52 @@ This allows usage of the LDAP directories that use the old ``nis`` schema
 without modifications to the directory contents.
 
 
+.. _slapd__ref_posixgroupid:
+
+The ``posixgroupid`` schema
+---------------------------
+
+This is a custom LDAP schema maintained by DebOps. It can be found in the
+:file:`ansible/roles/debops.slapd/files/etc/ldap/schema/debops/` directory of
+the DebOps monorepo.
+
+The ``rfc2307bis`` schema fixes one issue with POSIX groups in LDAP - the
+``posixGroup`` object attributes can be added to any object type. But there's
+one other problem not fixed by this schema - the name of the group is taken
+from the ``cn`` attribute. This causes an issue when LDAP group names are in
+a human-readable form, instead of a short string form preferred in POSIX
+environments, for example: ``UNIX Administrators`` vs ``admins``.
+
+Another issue shows up with different `User Private Group`__ implementations in
+LDAP - because the ``cn`` attribute in the LDAP objects that define people is
+used for the person's full name, for example "John Smith", personal UNIX groups
+cannot be defined in the same LDAP object, even though the ``gidNumber``
+attribute is required by the ``posixAccount`` object type.
+
+.. __: https://wiki.debian.org/UserPrivateGroups
+
+There are different solutions to this problem - create a separate
+``posixGroup`` object for each person and put it either in a separate directory
+subtree, or as a child entry of the person's object, but these solutions are
+cumbersome and require hard to implement ACL rules. A different solution is
+adding a new attribute that would define the UNIX group name separate from the
+common name.
+
+This is what the :file:`posixgroupid.schema` LDAP schema does - it adds the
+``gid`` or ``groupid`` attribute, either in a separate ``gidObject`` object
+type, or in the ``posixGroupId`` object which is a subclass of the
+``posixGroup`` object. With the ``gid`` attribute, LDAP clients that are
+configured to use it, can use a different LDAP attribute as the UNIX group name
+instead of the human-readable ``cn`` name. Similarly, LDAP objects that
+represent people can have a ``gid`` attribute that contains the name of the
+Private User Group, usually the same as the ``uid`` attribute. This requires
+that the LDAP clients look for the ``gid`` attribute instead of the ``cn``
+attribute as the UNIX group name, but it's usually a simple configuration
+change.
+
+
+.. _slapd__ref_openssh_lpk:
+
 The ``openssh-lpk`` schema
 --------------------------
 

@@ -31,11 +31,21 @@ slapd__rfc2307bis_enabled: '{{ ansible_local.slapd.rfc2307bis
                                else True }}'
 
                                                                    # ]]]
+# .. envvar:: slapd__debops_schema_path [[[
+#
+# Absolute path to the directory that contains custom DebOps schema definitions
+# on the remote host.
+slapd__debops_schema_path: '/etc/ldap/schema/debops'
+
+                                                                   # ]]]
 # .. envvar:: slapd__default_schemas [[[
 #
 # List of the default LDAP schemas imported into the OpenLDAP server, defined
 # by the role.
 slapd__default_schemas:
+
+  # Custom DebOps schema that defines the missing 'gid' posixGroup attribute
+  - '{{ slapd__debops_schema_path + "/posixgroupid.schema" }}'
 
   # Password Policy schema, included in the 'slapd' APT package
   - '/etc/ldap/schema/ppolicy.schema'

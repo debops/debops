@@ -28,6 +28,18 @@
     state: 'restarted'
   when: slapd__register_unix_groups is changed
 
+- name: Ensure that DebOps schema directory exists
+  file:
+    path: '{{ slapd__debops_schema_path }}'
+    state: 'directory'
+    mode: '0755'
+
+- name: Copy custom DebOps schemas to the OpenLDAP host
+  copy:
+    src: 'etc/ldap/schema/debops/'
+    dest: '{{ slapd__debops_schema_path + "/" }}'
+    mode: '0644'
+
 - name: Load custom LDAP schemas
   script: 'script/ldap-load-schema {{ item }}'
   loop: '{{ q("flattened", slapd__combined_schemas) }}'

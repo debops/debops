@@ -48,6 +48,11 @@ enterprise.DebOps.LDAP / 1.3.6.1.4.1.53622.42
 The Object identifiers for LDAP objects managed by DebOps are defined in the
 ``42`` namespace.
 
+===== ==================================================== ====================
+ OID   LDAP schema                                          Ansible role
+----- ---------------------------------------------------- --------------------
+1     :ref:`posixgroupid.schema <slapd__ref_posixgroupid>`  :ref:`debops.slapd`
+===== ==================================================== ====================
 
 References
 ----------
