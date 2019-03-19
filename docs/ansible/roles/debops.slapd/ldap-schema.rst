@@ -165,6 +165,20 @@ attribute as the UNIX group name, but it's usually a simple configuration
 change.
 
 
+.. _slapd__ref_ldapns:
+
+The ``ldapns`` schema
+---------------------
+
+The ``ldapns`` schema provides a set of LDAP objects and attributes that can be
+used for graular access control to services and hosts that use the LDAP
+directory. The ``host`` attribute can be used to define a list of FQDN names,
+or hostnames to which a given user or application has access. The
+``authorizedService`` attribute can contain a list of services accessible to an
+user or application. LDAP clients can use these attributes in LDAP filters to
+grant access only to specific people or applications.
+
+
 .. _slapd__ref_openssh_lpk:
 
 The ``openssh-lpk`` schema
