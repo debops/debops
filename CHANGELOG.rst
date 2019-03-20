@@ -128,6 +128,15 @@ Fixed
   disabling :envvar:`lvm__global_use_lvmetad` to avoid warning message when
   invoking LVM commands.
 
+Security
+~~~~~~~~
+
+- [debops.php] Ondřej Surý `created new APT signing keys`__ for his Debian APT
+  repository with PHP packages, due to security concerns. The :ref:`debops.php`
+  role will remove the old APT GPG key and add the new one automatically.
+
+  .. __: https://www.patreon.com/posts/dpa-new-signing-25451165
+
 
 `debops v0.8.1`_ - 2019-02-02
 -----------------------------

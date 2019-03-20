@@ -53,8 +53,16 @@ php__sury_apt_repo: '{{ php__sury_apt_repo_map[ansible_distribution] }}'
 # YAML dictionary map of OpenPGP key ids used to sign APT repository information,
 # dependent on the OS distribution.
 php__sury_apt_key_id_map:
-  'Debian': 'DF3D585DB8F0EB658690A554AC0E47584A7A714D'
-  'Ubuntu': '14AA40EC0831756756D7F66C4F4EA0AAE5267A6C'
+  'Debian':
+    - id: '1505 8500 A023 5D97 F5D1  0063 B188 E2B6 95BD 4743'
+
+    # Key replaced due to security concerns
+    # Ref: https://www.patreon.com/posts/dpa-new-signing-25451165
+    - id: 'DF3D 585D B8F0 EB65 8690  A554 AC0E 4758 4A7A 714D'
+      state: 'absent'
+
+  'Ubuntu':
+    - id: '14AA 40EC 0831 7567 56D7  F66C 4F4E A0AA E526 7A6C'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_repo_map [[[
