@@ -107,6 +107,13 @@ Changed
   In this environment, the :file:`/etc/hosts` file is managed by Docker and
   cannot be modified from inside of the container.
 
+- [debops.owncloud] The role will not perform any tasks related to
+  :command:`occ` command if the automatic setup is disabled in the
+  :envvar:`owncloud__autosetup` variable. In this mode, the :command:`occ`
+  tasks cannot be performed by the role because the ownCloud/Nextcloud
+  installation is not finished. The users are expected to perform necessary
+  tasks themselves if they decide to opt-out from the automatic configuration.
+
 Fixed
 ~~~~~
 
@@ -127,6 +134,15 @@ Fixed
 - [debops.lvm] Stop and disable ``lvm2-lvmetad.socket`` systemd unit when
   disabling :envvar:`lvm__global_use_lvmetad` to avoid warning message when
   invoking LVM commands.
+
+Security
+~~~~~~~~
+
+- [debops.php] Ondřej Surý `created new APT signing keys`__ for his Debian APT
+  repository with PHP packages, due to security concerns. The :ref:`debops.php`
+  role will remove the old APT GPG key and add the new one automatically.
+
+  .. __: https://www.patreon.com/posts/dpa-new-signing-25451165
 
 
 `debops v0.8.1`_ - 2019-02-02

@@ -135,7 +135,7 @@
 - name: Capture occ output in variable
   set_fact:
     owncloud__occ_config_current: '{{ owncloud__occ_run_output }}'
-  when: (owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and
+  when: (owncloud__do_autosetup|bool and owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and
          (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]
 
@@ -144,7 +144,7 @@
   loop_control:
     loop_var: 'owncloud__apps_item'
   with_dict: '{{ owncloud__apps_config_combined|d({}) }}'
-  when: (not ansible_check_mode)
+  when: (owncloud__do_autosetup|bool and not ansible_check_mode)
   tags: [ 'role::owncloud:occ_config' ]
 
 # .. ]]]
@@ -161,6 +161,7 @@
     - '{{ owncloud__group_occ_cmd_list }}'
     - '{{ owncloud__host_occ_cmd_list }}'
     - '{{ owncloud__dependent_occ_cmd_list }}'
+  when: owncloud__do_autosetup|bool
 # .. ]]]
 
 # Configure cron job for background tasks [[[
@@ -204,6 +205,6 @@
   failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or
                 owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
   changed_when: False
-  when: (owncloud__release is version_compare("9.0.8", ">="))
+  when: (owncloud__do_autosetup|bool and owncloud__release is version_compare("9.0.8", ">="))
 
 # ]]]
