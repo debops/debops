@@ -407,8 +407,10 @@
                    'failed, not found in crypttab' in cryptsetup__register_cryptdisks_stop.stdout)
                    and cryptsetup__register_cryptdisks_stop.rc == 1)
                )
-  when: (item.0.state|d(cryptsetup__state) in [ 'unmounted', 'absent' ] or
-          (item.0.state|d(cryptsetup__state) in [ 'present' ] and item.1 is changed)
+  when: (item.0.state|d(cryptsetup__state) in [ 'unmounted', 'absent' ]) or
+        (
+          item.0.manage_filesystem|d(True) and
+          item.0.state|d(cryptsetup__state) in [ 'present' ] and item.1 is changed
         )
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
