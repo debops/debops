@@ -107,6 +107,13 @@ Changed
   In this environment, the :file:`/etc/hosts` file is managed by Docker and
   cannot be modified from inside of the container.
 
+- [debops.owncloud] The role will not perform any tasks related to
+  :command:`occ` command if the automatic setup is disabled in the
+  :envvar:`owncloud__autosetup` variable. In this mode, the :command:`occ`
+  tasks cannot be performed by the role because the ownCloud/Nextcloud
+  installation is not finished. The users are expected to perform necessary
+  tasks themselves if they decide to opt-out from the automatic configuration.
+
 Fixed
 ~~~~~
 
