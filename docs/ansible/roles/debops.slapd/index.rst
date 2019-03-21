@@ -22,6 +22,7 @@ instances and integrates with other DebOps roles like :ref:`debops.pki` and
    defaults
    defaults-detailed
    ldap-schema
+   ldap-acl
 
 Copyright
 ---------

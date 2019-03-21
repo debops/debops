@@ -444,6 +444,91 @@ slapd__default_tasks:
         - 'entryCSN,entryUUID eq'
 
                                                                    # ]]]
+# .. envvar:: slapd__acl_tasks [[[
+#
+# Separate list of tasks performed on the OpenLDAP server, defined by the role,
+# meant for the Access Control List configuration. Check the
+# :ref:`slapd__ref_acl` documentation for more details.
+slapd__acl_tasks:
+
+  - name: 'Configure Access Control List'
+    dn: 'olcDatabase={1}mdb,cn=config'
+    ordered: True
+    attributes:
+      olcAccess:
+
+        - |-
+          to dn.subtree="{{ slapd__basedn }}"
+          by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" manage
+          by group/groupOfNames/member.exact="cn=LDAP Replicators,    ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
+          to filter="(| (objectClass=posixAccount) (objectClass=posixGroup) (objectClass=posixGroupId) )"
+             attrs="uid,uidNumber,gid,gidNumber,homeDirectory"
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by users read
+
+        - |-
+          to dn.subtree="ou=People,{{ slapd__basedn }}"
+             attrs="shadowLastChange"
+          by self write
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" write
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
+          by users read
+
+        - |-
+          to dn.subtree="ou=People,{{ slapd__basedn }}"
+             attrs="userPassword"
+          by self =w
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" =w
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" =w
+          by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
+          by anonymous auth
+          by * none
+
+        - |-
+          to attrs="userPassword"
+          by self      =w
+          by anonymous auth
+          by *         none
+
+        - |-
+          to dn.subtree="ou=System Groups,{{ slapd__basedn }}"
+          by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
+          to dn.subtree="{{ slapd__basedn }}"
+          by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" write
+          by * break
+
+        - |-
+          to dn.regex="^cn=[^,]+,ou=(System Groups|Groups),{{ slapd__basedn }}$"
+             attrs="member"
+          by dnattr="owner" write
+          by * break
+
+        - |-
+          to dn.regex="^([^,]+,)?ou=(People|Groups|Machines),{{ slapd__basedn }}$"
+             attrs="children,entry"
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by * break
+
+        - |-
+          to dn.regex="^[^,]+,ou=(People|Groups|Machines),{{ slapd__basedn }}$"
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by * break
+
+        - |-
+          to *
+          by users read
+          by * none
+
+    state: 'exact'
+
+                                                                   # ]]]
 # .. envvar:: slapd__tasks [[[
 #
 # List of the tasks performed on the OpenLDAP server, defined on all hosts in
@@ -470,6 +555,7 @@ slapd__host_tasks: []
 # Variable which combines all of the OpenLDAP task variables and is used in the
 # role tasks and templates.
 slapd__combined_tasks: '{{ slapd__default_tasks
+                           + slapd__acl_tasks
                            + slapd__tasks
                            + slapd__group_tasks
                            + slapd__host_tasks }}'
@@ -639,56 +725,6 @@ slapd_ldapscripts_gdummymember: 'uid=dummy,$USUFFIX,$SUFFIX'
 #
 # User password generation.
 slapd_ldapscripts_passwordgen: 'pwgen'
-
-
-# .. LDAP Access Control List [[[1
-#
-# ----------------------------
-#   LDAP Access Control List
-# ----------------------------
-
-# .. envvar:: slapd_ldap_access_control_list
-#
-# List of olcAccess attributes configured on the server.
-slapd_ldap_access_control_list: '{{ slapd_ldap_access_control_list_default }}'
-
-
-# .. envvar:: slapd_acl_tls_ssf
-#
-# Security Strength Factor used in ACL entries.
-slapd_acl_tls_ssf: '{{ "tls_ssf=128 ssf=128"
-                       if slapd_pki | bool else "" }}'
-
-
-# .. envvar:: slapd_ldap_access_control_list_default
-#
-# Default LDAP ACL. Order of entries is important!
-slapd_ldap_access_control_list_default:
-
-  - |
-    to attrs=userPassword,shadowLastChange
-    by {{ slapd_acl_tls_ssf }} self write
-    by {{ slapd_acl_tls_ssf }} anonymous auth
-    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
-    by * none
-
-  - |
-    to attrs=uid,uidNumber,gidNumber,homeDirectory,loginShell
-    by {{ slapd_acl_tls_ssf }} self read
-    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
-    by {{ slapd_acl_tls_ssf }} users read
-
-  - |
-    to dn.base=""
-    by {{ slapd_acl_tls_ssf }} * read
-
-  - |
-    to *
-    by {{ slapd_acl_tls_ssf }} self read
-    by {{ slapd_acl_tls_ssf }} dn.subtree="ou=Machines,{{ slapd_basedn }}" read
-    by {{ slapd_acl_tls_ssf }} dn.subtree="ou=Services,{{ slapd_basedn }}" read
-    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
-    by * none
 
 
 # Configuration variables for other Ansible roles [[[
