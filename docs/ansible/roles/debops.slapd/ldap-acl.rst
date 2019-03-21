@@ -9,11 +9,11 @@ Ansible inventory by copying its contents there. This should keep the existing
 ACL rules intact in case of any updates to the :ref:`debops.slapd` role.
 
 The default ACL will be updated over time when new DebOps roles are integrated
-with the LDAP directory. The DebOps documentation will contain a browseable
-representation of the LDAP Directory Information Tree that represents how
-various DebOps roles interact with the directory; this should enable easier
-redesign of the Access Control List according to the needs of one's
-organization.
+with the LDAP directory. The DebOps documentation contains a :ref:`browseable
+representation of the LDAP Directory Information Tree <slapd__ref_ldap_dit>`
+that maps how various DebOps roles interact with the directory; this should
+enable easier redesign of the Access Control List according to the needs of
+one's organization.
 
 .. contents::
    :local:
