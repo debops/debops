@@ -28,6 +28,13 @@
     state: 'restarted'
   when: slapd__register_unix_groups is changed
 
+- name: Install helper scripts
+  copy:
+    src: 'usr/local/sbin/'
+    dest: '/usr/local/sbin/'
+    mode: '0755'
+  tags: [ 'role::slapd:scripts' ]
+
 - name: Ensure that DebOps schema directory exists
   file:
     path: '{{ slapd__debops_schema_path }}'
@@ -63,6 +70,23 @@
                                   "olcRootPW"    in (item.attributes|d({})).keys())
                               else False) }}'
 
+- name: Configure backup snapshots as cron jobs
+  cron:
+    name: 'Create {{ item }} backup snapshots of OpenLDAP databases'
+    special_time: '{{ item }}'
+    cron_file: 'slapd-snapshot'
+    user: 'root'
+    state: '{{ slapd__snapshot_deploy_state
+               if (item in slapd__snapshot_cron_jobs)
+               else "absent" }}'
+    job: '/usr/local/sbin/slapd-snapshot {{ item }}'
+  loop: [ 'daily', 'weekly', 'monthly' ]
+  loop_control:
+    label: '{{ {"state": (slapd__snapshot_deploy_state
+                          if (item in slapd__snapshot_cron_jobs)
+                          else "absent"),
+                "cron_job": item} }}'
+
 #- name: Pre hooks
 #  include: '{{ lookup("task_src", "slapd/pre_main.yml") }}'
 #
@@ -81,14 +105,6 @@
 #    vtype: 'string'
 #    value: '{{ slapd_backend | upper }}'
 #
-#- name: Install helper scripts
-#  copy:
-#    src: 'usr/local/sbin/'
-#    dest: '/usr/local/sbin/'
-#    owner: 'root'
-#    group: 'root'
-#    mode: '0755'
-#
 #- include: anonymous_bind.yml
 #
 #- name: Configure enabled services
@@ -98,16 +114,6 @@
 #    line: 'SLAPD_SERVICES="{{ slapd_default_services | join(" ") }}"'
 #    state: 'present'
 #  notify: [ 'Restart slapd' ]
-#
-#- name: Create snapshot task in cron
-#  cron:
-#    name: 'Create snapshots of OpenLDAP database'
-#    special_time: '{{ slapd_snapshot_period }}'
-#    cron_file: 'ansible_slapd-snapshot'
-#    user: 'root'
-#    state: 'present'
-#    job: '/usr/local/sbin/slapd-snapshot {{ slapd_snapshot_period }} 30'
-#  when: slapd_snapshot|bool
 #
 #- name: Post hooks
 #  include: '{{ lookup("task_src", "slapd/post_main.yml") }}'

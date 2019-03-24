@@ -24,6 +24,7 @@ instances and integrates with other DebOps roles like :ref:`debops.pki` and
    ldap-schema
    ldap-acl
    ldap-dit
+   backup-restore
 
 Copyright
 ---------

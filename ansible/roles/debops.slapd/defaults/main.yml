@@ -561,6 +561,28 @@ slapd__combined_tasks: '{{ slapd__default_tasks
                            + slapd__host_tasks }}'
                                                                    # ]]]
                                                                    # ]]]
+# Backup snapshots [[[
+# --------------------
+
+# These variables configure periodic backup snapshots of the OpenLDAP
+# databases. See :ref:`slapd__ref_backup_restore` for more details.
+
+# .. envvar:: slapd__snapshot_deploy_state [[[
+#
+# If ``present``, the snapshot :command:`cron` jobs will be configured to run
+# the :command:`slapd-snapshot` script periodically to create snapshots of
+# known OpenLDAP databases. If ``absent``, the :command:`cron` jobs will be
+# removed.
+slapd__snapshot_deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: slapd__snapshot_cron_jobs [[[
+#
+# List of :command:`cron` periods during which the :command:`slapd-snapshot`
+# script should be executed to create OpenLDAP snapshots.
+slapd__snapshot_cron_jobs: [ 'daily', 'weekly', 'monthly' ]
+                                                                   # ]]]
+                                                                   # ]]]
 # OpenLDAP BaseDN configuration [[[
 # ---------------------------------
 
@@ -607,24 +629,6 @@ slapd__host_allow: []
 # Deny anonymous bind to the server by default and require authentication.
 # Set to ``True`` to allow anonymous bind.
 slapd_anonymous_bind: False
-
-
-# .. slapd system configuration [[[1
-#
-# ------------------------------
-#   slapd system configuration
-# ------------------------------
-
-# .. envvar:: slapd_snapshot
-#
-# Create snapshots of LDAP database periodically.
-slapd_snapshot: True
-
-
-# .. envvar:: slapd_snapshot_period
-#
-# Snapshot period: ``daily``, ``weekly``.
-slapd_snapshot_period: 'weekly'
 
 
 # Configuration variables for other Ansible roles [[[
