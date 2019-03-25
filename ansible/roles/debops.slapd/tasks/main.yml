@@ -56,6 +56,15 @@
                  not in slapd__register_load_schemas.stdout_lines)
   tags: [ 'role::slapd:schema' ]
 
+- name: Ensure that additional database directories exist
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ slapd__user }}'
+    group: '{{ slapd__group }}'
+    mode: '0755'
+  loop: '{{ slapd__additional_database_dirs }}'
+
 - name: Perform OpenLDAP tasks
   include_tasks: 'slapd_tasks.yml'
   loop: '{{ q("flattened", slapd__combined_tasks) | parse_kv_items }}'
