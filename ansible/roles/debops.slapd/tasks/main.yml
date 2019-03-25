@@ -114,13 +114,5 @@
 #    vtype: 'string'
 #    value: '{{ slapd_backend | upper }}'
 #
-#- name: Configure enabled services
-#  lineinfile:
-#    dest: '/etc/default/slapd'
-#    regexp: '^SLAPD_SERVICES='
-#    line: 'SLAPD_SERVICES="{{ slapd_default_services | join(" ") }}"'
-#    state: 'present'
-#  notify: [ 'Restart slapd' ]
-#
 #- name: Post hooks
 #  include: '{{ lookup("task_src", "slapd/post_main.yml") }}'
