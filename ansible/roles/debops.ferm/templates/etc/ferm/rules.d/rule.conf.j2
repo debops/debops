@@ -468,7 +468,27 @@
 
 {%       endif %}
 {%     endif %}
-{%     if ferm__tpl_config['saddr']|d() %}
+{%     if ferm__tpl_config['saddr']|d() and ferm__tpl_config['daddr']|d() %}
+        @def $SITEMS = ( @ipfilter( ({{ ferm__tpl_config['saddr'] | unique | join(" ") }}) ) );
+        @def $DITEMS = ( @ipfilter( ({{ ferm__tpl_config['daddr'] | unique | join(" ") }}) ) );
+        @if @ne($SITEMS,"") {
+            @if  @ne($DITEMS,"") {
+{%       if ferm__tpl_config['target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%         if config.include|d() %}
+                @include "{{ config.include }}";
+{%         elif config.realgoto is undefined or not config.realgoto | bool %}
+                saddr $SITEMS daddr $DITEMS jump "{{ ferm__tpl_config['target'] }}";
+{%         elif config.realgoto|d() and config.realgoto | bool %}
+                saddr $SITEMS daddr $DITEMS realgoto "{{ ferm__tpl_config['target'] }}";
+{%         endif %}
+{%       elif ferm__tpl_config['target'] in [ 'REJECT' ] %}
+                saddr $SITEMS daddr $DITEMS REJECT reject-with {{ ferm__tpl_config['reject_with'] }};
+{%       else %}
+                saddr $SITEMS daddr $DITEMS {{ ferm__tpl_config['target'] }};
+{%       endif %}
+            }
+        }
+{%     elif ferm__tpl_config['saddr']|d() %}
         @def $SITEMS = ( @ipfilter( ({{ ferm__tpl_config['saddr'] | unique | join(" ") }}) ) );
         @if @ne($SITEMS,"") {
 {%       if ferm__tpl_config['target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
