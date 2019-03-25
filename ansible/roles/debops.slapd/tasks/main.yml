@@ -99,20 +99,5 @@
 #- name: Pre hooks
 #  include: '{{ lookup("task_src", "slapd/pre_main.yml") }}'
 #
-#- name: Configure domain for OpenLDAP in debconf
-#  debconf:
-#    name: 'slapd'
-#    question: '{{ item }}'
-#    vtype: 'string'
-#    value: '{{ slapd_domain }}'
-#  with_items: [ 'slapd/domain', 'shared/organization' ]
-#
-#- name: Configure database backend for OpenLDAP in debconf
-#  debconf:
-#    name: 'slapd'
-#    question: 'slapd/backend'
-#    vtype: 'string'
-#    value: '{{ slapd_backend | upper }}'
-#
 #- name: Post hooks
 #  include: '{{ lookup("task_src", "slapd/post_main.yml") }}'
