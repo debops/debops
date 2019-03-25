@@ -1,3 +1,5 @@
+.. _slapd__ref_syncrepl_multi_master:
+
 Guide: N-Way Multi-Master replication
 =====================================
 

@@ -20,19 +20,19 @@ Directory structure
 
         - ``{0}back_mdb``
 
-        - ``{1}syncprov``
+        - ``{1}syncprov`` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
 
         - ``{2}ppolicy``
 
       - :ref:`cn=schema <slapd__ref_ldap_schemas>`
 
-        - ``core.schema``
+        - :ref:`core.schema <slapd__ref_initial_schemas>`
 
-        - ``cosine.schema``
+        - :ref:`cosine.schema <slapd__ref_initial_schemas>`
 
         - :ref:`rfc2307bis.schema <slapd__ref_rfc2307bis>`
 
-        - ``inetorgperson.schema``
+        - :ref:`inetorgperson.schema <slapd__ref_initial_schemas>`
 
         - :ref:`posixgroupid.schema <slapd__ref_posixgroupid>`
 
@@ -42,11 +42,11 @@ Directory structure
 
       - ``olcDatabase={0}config``
 
-        - ``olcOverlay={0}syncprov``
+        - ``olcOverlay={0}syncprov`` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
 
       - ``olcDatabase={1}mdb``
 
-        - ``olcOverlay={0}syncprov``
+        - ``olcOverlay={0}syncprov`` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
 
         - ``olcOverlay={1}ppolicy``
 

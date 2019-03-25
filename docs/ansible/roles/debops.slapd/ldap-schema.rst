@@ -121,6 +121,25 @@ This allows usage of the LDAP directories that use the old ``nis`` schema
 without modifications to the directory contents.
 
 
+.. _slapd__ref_initial_schemas:
+
+The initial LDAP schemas
+------------------------
+
+During installation of the ``slapd`` Debian package, the postinstall script
+creates a new OpenLDAP configuration using the
+:file:`/usr/share/slapd/slapd.init.ldif` LDIF configuration file. The default
+LDAP schemas imported at that time are:
+
+- ``core.schema``
+- ``cosine.schema``
+- ``nis.schema`` (replaced by the ``rfc2307bis.schema`` before installation)
+- ``inetorgperson.schema``
+
+You can find the schema files in the :file:`/etc/ldap/schema/` directory on the
+OpenLDAP server host.
+
+
 .. _slapd__ref_posixgroupid:
 
 The ``posixgroupid`` schema
