@@ -615,6 +615,18 @@ slapd_default_services: [ 'ldap:///', 'ldaps:///', 'ldapi:///' ]
 # Network access to OpenLDAP server [[[
 # -------------------------------------
 
+# .. envvar:: slapd__accept_any [[[
+#
+# If ``True``, the role will configure the firewall and TCP Wrappers to accept
+# connections to the OpenLDAP service from any network, which can be limited
+# using the ``slapd__*_allow`` variables.
+#
+# If ``False``, the role will block connections to the OpenLDAP via the system
+# firwall and TCP Wrappers from any host; hosts that can connect must be
+# specified via the ``slapd__*_allow`` variables.
+slapd__accept_any: True
+
+
 # .. envvar:: slapd__allow [[[
 #
 # List of IP addresses or CIDR subnets which should have access to the OpenLDAP
@@ -670,7 +682,7 @@ slapd__ferm__dependent_rules:
     dport: [ 'ldap' ]
     multiport: True
     saddr: '{{ slapd__allow + slapd__group_allow + slapd__host_allow }}'
-    accept_any: True
+    accept_any: '{{ slapd__accept_any }}'
     weight: '50'
     by_role: 'debops.slapd'
 
@@ -684,6 +696,7 @@ slapd__tcpwrappers__dependent_allow:
   - daemon: 'slapd'
     client: '{{ slapd__allow + slapd__group_allow + slapd__host_allow }}'
     default: 'ALL'
+    accept_any: '{{ slapd__accept_any }}'
     weight: '50'
     filename: 'slapd_dependent_allow'
     comment: 'Allow connections to OpenLDAP service'

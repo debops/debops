@@ -54,6 +54,17 @@ password length, different types of characters used, lockout policy, etc.
 .. __: http://www.zytrax.com/books/ldap/ch6/ppolicy.html
 
 
+Access to service allowed by default
+------------------------------------
+
+The default configuration allows access to the OpenLDAP service from anywhere
+through the firewall and TCP Wrappers. Keep that in mind while designing the
+LDAP Access Control List and password policies. You can control the default
+behaviour using the :envvar:`slapd__accept_any` boolean variable. Another
+option is to use an external firewall with IDS/IPS systems that can analyze
+LDAP traffic.
+
+
 Example inventory
 -----------------
 
