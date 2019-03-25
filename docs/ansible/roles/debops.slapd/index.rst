@@ -19,12 +19,13 @@ instances and integrates with other DebOps roles like :ref:`debops.pki` and
    :maxdepth: 2
 
    getting-started
-   defaults
-   defaults-detailed
    ldap-schema
    ldap-acl
-   ldap-dit
    backup-restore
+   guide-multi-master-replication
+   defaults
+   defaults-detailed
+   ldap-dit
 
 Copyright
 ---------
