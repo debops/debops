@@ -65,20 +65,6 @@
     mode: '0755'
   loop: '{{ slapd__additional_database_dirs }}'
 
-- name: Perform OpenLDAP tasks
-  include_tasks: 'slapd_tasks.yml'
-  loop: '{{ q("flattened", slapd__combined_tasks) | parse_kv_items }}'
-  loop_control:
-    label: '{{ {"state": item.state,
-                "dn": item.dn,
-                "attributes": item.attributes|d({})} }}'
-  when: item.name|d() and item.dn|d() and
-        item.state|d('present') not in [ 'init', 'ignore' ]
-  no_log: '{{ item.no_log | d(True
-                              if ("userPassword" in (item.attributes|d({})).keys() or
-                                  "olcRootPW"    in (item.attributes|d({})).keys())
-                              else False) }}'
-
 - name: Configure backup snapshots as cron jobs
   cron:
     name: 'Create {{ item }} backup snapshots of OpenLDAP databases'
@@ -95,3 +81,17 @@
                           if (item in slapd__snapshot_cron_jobs)
                           else "absent"),
                 "cron_job": item} }}'
+
+- name: Perform OpenLDAP tasks
+  include_tasks: 'slapd_tasks.yml'
+  loop: '{{ q("flattened", slapd__combined_tasks) | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"state": item.state,
+                "dn": item.dn,
+                "attributes": item.attributes|d({})} }}'
+  when: item.name|d() and item.dn|d() and
+        item.state|d('present') not in [ 'init', 'ignore' ]
+  no_log: '{{ item.no_log | d(True
+                              if ("userPassword" in (item.attributes|d({})).keys() or
+                                  "olcRootPW"    in (item.attributes|d({})).keys())
+                              else False) }}'
