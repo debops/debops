@@ -230,6 +230,17 @@ slapd__data_rootpw: '{{ lookup("file", secret + "/slapd/credentials/"
                                        + ".password").split()[0] }}'
                                                                    # ]]]
                                                                    # ]]]
+# LDAP database tuning [[[
+# ------------------------
+
+# .. envvar:: slapd__data_max_size [[[
+#
+# Specify the maximum size of the main database, in bytes, default is 10 GB.
+# The value shouldn't be smaller than the size of the existing data; increasing
+# the existing size should be safe.
+slapd__data_max_size: '{{ (1024 * 1024 * 1024) * 10 }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Support for DebOps PKI and TLS [[[
 # ----------------------------------
 
@@ -440,6 +451,12 @@ slapd__default_tasks:
       olcLocalSSF: '128'
       olcSecurity: 'ssf=128 update_ssf=128 simple_bind=128'
     state: '{{ "exact" if slapd__pki|bool else "init" }}'
+
+  - name: 'Define the maximum size of the main database'
+    dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
+    attributes:
+      olcDbMaxSize: '{{ slapd__data_max_size }}'
+    state: 'exact'
 
   - name: 'Define indexes present in the main database'
     dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
