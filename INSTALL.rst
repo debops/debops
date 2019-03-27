@@ -126,6 +126,12 @@ packages by running the command:
    sudo apt install build-essential python-dev libffi-dev libssl-dev \
                     libsasl2-dev libldap2-dev
 
+Install ``pip`` package
+
+.. code-block:: console
+
+   sudo apt install python-pip
+
 Installation of DebOps with Ansible included
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -243,6 +249,12 @@ development packages:
 
    sudo apt install build-essential python-virtualenv virtualenv python-dev \
                     libffi-dev libssl-dev libsasl2-dev libldap2-dev
+
+Install ``pip`` package
+
+.. code-block:: console
+
+   sudo apt install python-pip
 
 After that, you can create a new Python :command:`virtualenv` environment in
 a selected directory and "enter" it by executing the commands:
