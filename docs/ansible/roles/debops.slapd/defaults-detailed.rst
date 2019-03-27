@@ -235,6 +235,10 @@ The list of task parameters supported by the role:
                This can be used to conditionally enable or disable entries.
   ============ ================================================================
 
+``entry_state``
+  Optional. This parameter should be present only if the entire LDAP object
+  entry is to be removed. Set the entry state to ``absent`` to remove it.
+
 ``no_log``
   Optional, boolean. If ``True``, a given task output will not be recorded to
   avoid emiting sensitive information like passwords. If not specified or
