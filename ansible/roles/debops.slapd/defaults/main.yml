@@ -618,13 +618,34 @@ slapd__snapshot_cron_jobs: [ 'daily', 'weekly', 'monthly' ]
 # .. envvar:: slapd__accept_any [[[
 #
 # If ``True``, the role will configure the firewall and TCP Wrappers to accept
-# connections to the OpenLDAP service from any network, which can be limited
-# using the ``slapd__*_allow`` variables.
+# connections to the OpenLDAP service from any network, specific IP addresses
+# or subnets can be blocked using the ``slapd__*_deny`` variables.
 #
 # If ``False``, the role will block connections to the OpenLDAP via the system
 # firwall and TCP Wrappers from any host; hosts that can connect must be
 # specified via the ``slapd__*_allow`` variables.
 slapd__accept_any: True
+
+                                                                   # ]]]
+# .. envvar:: slapd__deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the OpenLDAP server, defined on all hosts in the Ansible inventory.
+slapd__deny: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the OpenLDAP server, defined on hosts in a specific Ansible inventory group.
+slapd__group_deny: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the OpenLDAP server, defined on specific hosts in the Ansible inventory.
+slapd__host_deny: []
 
                                                                    # ]]]
 # .. envvar:: slapd__allow [[[
@@ -676,9 +697,22 @@ slapd__python__dependent_packages2:
 # Firewall configuration managed by the :ref:`debops.ferm` Ansible role.
 slapd__ferm__dependent_rules:
 
+  - name: 'reject_slapd'
+    type: 'accept'
+    protocol: 'tcp'
+    dport: [ 'ldap' ]
+    multiport: True
+    saddr: '{{ slapd__deny + slapd__group_deny + slapd__host_deny }}'
+    weight: '45'
+    by_role: 'debops.slapd'
+    target: 'REJECT'
+    rule_state: '{{ "present"
+                    if (slapd__deny + slapd__group_deny + slapd__host_deny)
+                    else "absent" }}'
+
   - name: 'accept_slapd'
     type: 'accept'
-    protocol: [ 'tcp', 'udp' ]
+    protocol: 'tcp'
     dport: [ 'ldap' ]
     multiport: True
     saddr: '{{ slapd__allow + slapd__group_allow + slapd__host_allow }}'
