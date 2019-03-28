@@ -259,9 +259,16 @@ List of supported parameters (incomplete):
   The X.509 Name Constraints certificate extension to include in certificates
   which will be used during certificate verification to ensure that the CA is
   authorized to issue a certificate for the name in question.
-  The extension is set to critical which REQUIRES X.509 libraries to support it or to return an error.
-  This is done following common recommendations
-  (ref: `Which properties of a X.509 certificate should be critical and which not? <https://security.stackexchange.com/questions/30974/which-properties-of-a-x-509-certificate-should-be-critical-and-which-not>`_).
-  The default is ``True`` which will result in ``critical, permitted;DNS:${config_domain}``.
-  It can be set to ``False`` to not include X.509 Name Constraints in certificates.
-  Any other value (not matching :regexp:`^(?:[Tt]rue|[Ff]alse)$`) will be included as is as X.509 Name Constraint.
+  The default is ``True`` which will result in ``critical, permitted;DNS:${config_domain}``
+  (the 'critical, ' part is omitted when ``item.name_constraints_critical`` is
+  set to ``False``). It can be set to ``False`` to not include X.509 Name
+  Constraints in certificates. Any other value (not matching :regexp:`^(?:[Tt]rue|[Ff]alse)$`)
+  will be included as is as X.509 Name Constraint.
+
+``name_constraints_critical``
+  Boolean, for specifying whether to mark the default Name Constraints
+  extension as critical or not. The default is ``True``. The CA/Browser forum
+  recommends this to be enabled (REQUIRING X.509 libraries to support it or to
+  return an error), but mentions that the extension may be disabled for
+  compatibility reasons
+  (ref: `Baseline Requirements for the Issuance and Management of Publicly-Trusted Certificates (v1.6.4) <https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.6.4.pdf>`_).

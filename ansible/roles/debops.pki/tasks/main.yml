@@ -351,6 +351,7 @@
            --crl "{{ item.crl | d(True) }}"
            --ocsp "{{ item.ocsp | d(True) }}"
            --name-constraints "{{ item.name_constraints | d(pki_ca_name_constraints) }}"
+           --name-constraints-critical "{{ item.name_constraints_critical | d(pki_ca_name_constraints_critical) }}"
   args:
     chdir: '{{ secret + "/pki" }}'
     creates: '{{ secret + "/pki/authorities/" + item.name + "/subject/cert.pem" }}'
