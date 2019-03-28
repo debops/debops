@@ -271,4 +271,4 @@ List of supported parameters (incomplete):
   recommends this to be enabled (REQUIRING X.509 libraries to support it or to
   return an error), but mentions that the extension may be disabled for
   compatibility reasons
-  (ref: `Baseline Requirements for the Issuance and Management of Publicly-Trusted Certificates (v1.6.4)<https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.6.4.pdf>`_).
+  (ref: `Baseline Requirements for the Issuance and Management of Publicly-Trusted Certificates (v1.6.4) <https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.6.4.pdf>`_).
