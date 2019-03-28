@@ -2,56 +2,342 @@
 
 # This file is managed remotely, all changes will be lost
 
-# Copyright (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
-# Homepage: http://debops.org/
+# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2019 DebOps https://debops.org/
 
-# Create snapshots of OpenLDAP database
+# Create LDIF backup snapshots of the OpenLDAP databases. The "frontend"
+# database, as well as any databases in the read-only mode are not backed up.
+# The script will automatically enable and disable read-only mode for each
+# backed up database, apart from tne cn=config database.
 
-SLAPCAT="/usr/sbin/slapcat"
-BACKUP_PATH="/var/backups/slapd"
 
-if [ -n "${1}" ] ; then
-    period="${1}" ; shift
+set -o nounset -o pipefail -o errexit
+
+umask 027
+
+readonly SCRIPT="$(basename "${0}")"
+readonly PID="$$"
+readonly PIDFILE="/run/${SCRIPT}.pid"
+readonly SUBCOMMAND="${1:-}"
+
+readonly SLAPCAT="/usr/sbin/slapcat"
+
+BACKUP_USER="backup"
+BACKUP_GROUP="backup"
+BACKUP_ROOT="$(getent passwd "${BACKUP_USER}" | cut -f6 -d:)/slapd"
+
+# Find all OpenLDAP databases, but skip the frontend database, and don't
+# include databases that have "olcReadOnly" attribute set.
+BACKUP_LDAP_SEARCH_FILTER="(&(olcDatabase=*)(!(objectClass=olcFrontendConfig))(!(olcReadOnly=*)))"
+
+if [ -f "/etc/default/slapd-snapshot" ] ; then
+    # shellcheck disable=SC1091
+    . "/etc/default/slapd-snapshot"
 fi
 
-if [ -n "${1}" ] ; then
-    sleeptime="${1}"
-fi
+print_usage () {
+    cat <<EOF
+Usage: ${SCRIPT} <daily|weekly|monthly|latest|now>
 
-if [ "${period}" == "daily" ] ; then
-    counter="$(date +%w)"
+Create periodic backup snapshots of the OpenLDAP databases
+EOF
+}
 
-    CNCONFIG="${BACKUP_PATH}/config-${period}-${counter}.ldif"
-    DATABASE="${BACKUP_PATH}/database-${period}-${counter}.ldif"
 
-elif [ "${period}" == "weekly" ] ; then
-    counter="$((($(date +%_d)-1)/7+1))"
+get_databases () {
+    ldapsearch -QALLL -Y EXTERNAL -H ldapi:/// -b cn=config -s one \
+    "${BACKUP_LDAP_SEARCH_FILTER}" dn \
+    | sed -e '/./!d' -e 's/^dn: //'
+}
+mapfile -t SLAPD_DATABASES < <(get_databases)
 
-    CNCONFIG="${BACKUP_PATH}/config-${period}-${counter}.ldif"
-    DATABASE="${BACKUP_PATH}/database-${period}-${counter}.ldif"
+log_message () {
+    # Display a message if script is used interactively, otherwise send it to syslog
+    local msg="${1:-}"
 
-elif [ "${period}" == "now" ] ; then
-    now="$(date +%s)"
+    if [ -n "${msg}" ] ; then
+        if tty -s > /dev/null 2>&1 ; then
+            echo "${SCRIPT}: ${msg}" 1>&2
+        elif type logger > /dev/null 2>&1 ; then
+            logger -t "${SCRIPT}[${PID}]" "${msg}"
+        fi
+    fi
+}
 
-    CNCONFIG="${BACKUP_PATH}/config-${now}.ldif"
-    DATABASE="${BACKUP_PATH}/database-${now}.ldif"
-fi
 
-test -n "${CNCONFIG}" || CNCONFIG="${BACKUP_PATH}/config.ldif"
-test -n "${DATABASE}" || DATABASE="${BACKUP_PATH}/database.ldif"
+clean_up () {
+    # Clean up pidfile
+    local pidfile="${1}"
 
-if [ -n "${sleeptime}" ] ; then
-    sleep $(( ( RANDOM % sleeptime ) + 1 ))m
-fi
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        rm -f "${pidfile}"
+    fi
+    exit 0
+}
 
-# shellcheck disable=SC2174
-mkdir -m 700 -p ${BACKUP_PATH}
 
-nice ${SLAPCAT} -n 0 > ${CNCONFIG}
-nice ${SLAPCAT} -n 1 > ${DATABASE}
+wait_for_pid () {
+    # Wait for the specified process to exit
+    local pidfile="${1}"
 
-nice gzip -f -c ${CNCONFIG} > ${CNCONFIG}.gz && rm -f ${CNCONFIG}
-nice gzip -f -c ${DATABASE} > ${DATABASE}.gz && rm -f ${DATABASE}
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        local wait_pid
+        wait_pid="$(< "${pidfile}")"
+        while kill -0 "${wait_pid}" > /dev/null 2>&1 ; do
+            log_message "Waiting for PID ${wait_pid} to finish"
+            sleep $(( ( RANDOM % 30 ) + 5 ))
+        done
+        if [ -f "${pidfile}" ] ; then
+            rm -f "${pidfile}"
+        fi
+    fi
+}
 
-chown root:root ${BACKUP_PATH}/*
-chmod 600 ${BACKUP_PATH}/*
+
+create_lock () {
+    local pidfile="${1}"
+    local pid="${PID}"
+
+    # Try and lock the script operation
+    echo "${pid}" > "${pidfile}"
+    sleep 0.5
+
+    # Exclusive lock failed
+    if [ "x$(cat "${pidfile}")" != "x${pid}" ] ; then
+        log_message "OpenLDAP snapshot procedure started by $(< "${pidfile}")"
+        exit 0
+    fi
+
+    # Exclusive lock succeeded
+    # shellcheck disable=SC2064
+    trap "clean_up ${pidfile}" EXIT
+}
+
+
+enable_read_only_mode () {
+    local -a slapd_databases
+    local db
+    local db_id
+
+    slapd_databases=( "${SLAPD_DATABASES[@]}" )
+    db="${1}"
+    db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+             | awk -F '[{}]' '{print $2}')"
+
+    if [ "${db_id}" -ne 0 ] ; then
+
+        log_message "Enabling read-only mode in the slapd:${db_id} database"
+        ldapmodify -Q -Y EXTERNAL -H ldapi:/// >/dev/null <<EOF
+dn: ${slapd_databases[${db}]}
+changeType: modify
+replace: olcReadOnly
+olcReadOnly: TRUE
+EOF
+    fi
+}
+
+
+disable_read_only_mode () {
+    local -a slapd_databases
+    local db
+    local db_id
+
+    slapd_databases=( "${SLAPD_DATABASES[@]}" )
+    db="${1}"
+    db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+             | awk -F '[{}]' '{print $2}')"
+
+    if [ "${db_id}" -ne 0 ] ; then
+
+        log_message "Disabling read-only mode in the slapd:${db_id} database"
+        ldapmodify -Q -Y EXTERNAL -H ldapi:/// >/dev/null <<EOF
+dn: ${slapd_databases[${db}]}
+changeType: modify
+replace: olcReadOnly
+olcReadOnly: FALSE
+
+dn: ${slapd_databases[${db}]}
+changeType: modify
+delete: olcReadOnly
+EOF
+    fi
+}
+
+
+create_snapshot () {
+    local -a slapd_databases
+
+    local backup_user
+    local backup_group
+    local backup_root
+    local slapcat
+
+    local db
+    local db_id
+    local backup_file
+    local backup_dir
+
+    slapd_databases=( "${SLAPD_DATABASES[@]}" )
+
+    backup_user="${BACKUP_USER}"
+    backup_group="${BACKUP_GROUP}"
+    backup_root="${BACKUP_ROOT}"
+    slapcat="${SLAPCAT}"
+
+    db="${1}"
+    backup_file="${2}"
+    backup_dir="$(dirname "${backup_file}")"
+
+    db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+             | awk -F '[{}]' '{print $2}')"
+
+    if [ ! -d "${backup_dir}" ] ; then
+        mkdir -p "${backup_dir}"
+        chown -R "${backup_user}:${backup_group}" "${backup_root}"
+    fi
+
+    enable_read_only_mode "${db}"
+    log_message "Dumping the slapd:${db_id} database"
+    "${slapcat}" -n "${db_id}" -l "${backup_file}"
+    disable_read_only_mode "${db}"
+
+    if [ -f "${backup_file}.gz.gpg" ] ; then
+        rm -f "${backup_file}.gz.gpg"
+    fi
+
+    if [ -f "${backup_file}.gz.asc" ] ; then
+        rm -f "${backup_file}.gz.asc"
+    fi
+
+    nice gzip -f "${backup_file}"
+    chown "${backup_user}:${backup_group}" "${backup_file}.gz"
+}
+
+
+snapshot_daily () {
+    local -a slapd_databases
+    local backup_root
+
+    local day
+    local weekday
+    local backup_file
+
+    slapd_databases=( "${SLAPD_DATABASES[@]}" )
+    backup_root="${BACKUP_ROOT}"
+
+    day="$(date +%w)"
+    weekday="$(date +%A)"
+
+    for db in "${!slapd_databases[@]}" ; do
+        db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+                 | awk -F '[{}]' '{print $2}')"
+
+        backup_file="${backup_root}/daily/slapd_day${day}_${weekday}_db${db_id}.ldif"
+
+        log_message "Creating daily snapshot of the slapd:${db_id} database"
+        create_snapshot "${db}" "${backup_file}"
+        log_message "Daily snapshot of the slapd:${db_id} database created successfully"
+    done
+}
+
+
+snapshot_weekly () {
+    local -a slapd_databases
+    local backup_root
+
+    local week
+    local backup_file
+
+    slapd_databases=( "${SLAPD_DATABASES[@]}" )
+    backup_root="${BACKUP_ROOT}"
+
+    # Find out the week number in the current month
+    week="$(( ( $(date +%_d) - 1 ) / 7 + 1 ))"
+
+    for db in "${!slapd_databases[@]}" ; do
+        db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+                 | awk -F '[{}]' '{print $2}')"
+
+        backup_file="${backup_root}/weekly/slapd_week${week}_db${db_id}.ldif"
+
+        log_message "Creating weekly snapshot of the slapd:${db_id} database"
+        create_snapshot "${db}" "${backup_file}"
+        log_message "Weekly snapshot of the slapd:${db_id} database created successfully"
+    done
+}
+
+
+snapshot_monthly () {
+    local -a slapd_databases
+    local backup_root
+
+    local month
+    local month_name
+    local backup_file
+
+    slapd_databases=( "${SLAPD_DATABASES[@]}" )
+    backup_root="${BACKUP_ROOT}"
+
+    month="$(date +%m)"
+    month_name="$(date +%B)"
+
+    for db in "${!slapd_databases[@]}" ; do
+        db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+                 | awk -F '[{}]' '{print $2}')"
+
+        backup_file="${backup_root}/monthly/slapd_month${month}_${month_name}_db${db_id}.ldif"
+
+        log_message "Creating monthly snapshot of the slapd:${db_id} database"
+        create_snapshot "${db}" "${backup_file}"
+        log_message "Monthly snapshot of the slapd:${db_id} database created successfully"
+    done
+}
+
+
+snapshot_latest () {
+    local -a slapd_databases
+    local backup_root
+
+    local current_date
+    local backup_file
+
+    slapd_databases=( "${SLAPD_DATABASES[@]}" )
+    backup_root="${BACKUP_ROOT}"
+
+    current_date="$(date +%F_%R)"
+
+    if [ -d "${backup_root}/latest" ] ; then
+        # Remove old set of database backups
+        find "${backup_root}/latest" -type f -name "slapd_*_db*" -delete
+    fi
+
+    for db in "${!slapd_databases[@]}" ; do
+        db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+                 | awk -F '[{}]' '{print $2}')"
+
+        backup_file="${backup_root}/latest/slapd_${current_date}_db${db_id}.ldif"
+
+        log_message "Creating a snapshot of the slapd:${db_id} database"
+        create_snapshot "${db}" "${backup_file}"
+        log_message "Snapshot of the slapd:${db_id} database created successfully"
+    done
+}
+
+
+main () {
+    local pidfile="${PIDFILE}"
+    local subcommand="${SUBCOMMAND}"
+
+    wait_for_pid "${pidfile}"
+    create_lock "${pidfile}"
+
+    case "${subcommand}" in
+        daily)      snapshot_daily  ;;
+        weekly)     snapshot_weekly ;;
+        monthly)    snapshot_monthly ;;
+        now|latest) snapshot_latest ;;
+        *)          print_usage && exit 1 ;;
+    esac
+}
+
+main

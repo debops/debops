@@ -1,0 +1,8 @@
+{% set ldap__tpl_device_mac_addresses = [] %}
+{% for item in ansible_interfaces %}
+{%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
+{%   if iface.startswith(('ansible_en', 'ansible_eth')) %}
+{%     set _ = ldap__tpl_device_mac_addresses.append(hostvars[inventory_hostname][iface].macaddress) %}
+{%   endif %}
+{% endfor %}
+{{ ldap__tpl_device_mac_addresses }}

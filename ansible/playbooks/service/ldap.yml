@@ -1,0 +1,21 @@
+---
+
+- name: Manage LDAP basic configuration
+  hosts: [ 'debops_all_hosts', 'debops_service_ldap' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
+
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]

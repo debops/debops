@@ -27,6 +27,11 @@ Added
     The role can be used as standalone or as a backend for the GitLab Container
     Registry service, with :ref:`debops.gitlab` role.
 
+  - :ref:`debops.ldap` role sets up the system-wide LDAP configuration on
+    a host, and is used as the API to the LDAP directory by other Ansible
+    roles, playbooks, and users via Ansible inventory. The role is included in
+    the ``common.yml`` playbook, but is disabled by default.
+
 - [debops.nginx] The role will automatically generate configuration which
   redirects short hostnames or subdomains to their FQDN equivalents. This
   allows HTTP clients to reach websites by specifying their short names via DNS
@@ -47,6 +52,19 @@ Added
   file, by default with DHCP configuration. This will happen only on the
   initialization of the new container, when a given LXC container has multiple
   network interfaces defined in its configuration file.
+
+- [debops.ansible_plugins] A new ``ldap_attrs`` Ansible module has been added
+  to the role. It's a replacement for the ``ldap_attr`` core Ansible module,
+  that's more in line with the ``ldap_entry`` module. Used by the
+  :ref:`debops.slapd` and :ref:`debops.ldap` roles to manage the LDAP directory
+  contents.
+
+- The DebOps project has been registered `in the IANA Private Enterprise
+  Numbers`__ registry, with PEN number ``53622``. The project documentation
+  contains :ref:`an OID registry <debops_oid_registry>` to track custom LDAP
+  schemas, among other things.
+
+  .. __: https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
 
 Changed
 ~~~~~~~
@@ -113,6 +131,16 @@ Changed
   tasks cannot be performed by the role because the ownCloud/Nextcloud
   installation is not finished. The users are expected to perform necessary
   tasks themselves if they decide to opt-out from the automatic configuration.
+
+- [debops.slapd] The role has been redesigned from the ground up, with support
+  for N-Way Multi-Master replication, custom LDAP schemas, Password Policy and
+  other functionality. The role uses custom ``ldap_attrs`` Ansible module
+  included in the :ref:`debops.ansible_plugins` role for OpenLDAP management.
+
+  The OpenLDAP configuration will definitely break on existing installations.
+  It's best to set up a new OpenLDAP server (or replicated cluster) and import
+  the LDAP directory to it afterwards. See :ref:`role documentation
+  <debops.slapd>` for more details.
 
 Fixed
 ~~~~~
