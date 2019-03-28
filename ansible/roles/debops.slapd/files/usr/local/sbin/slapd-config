@@ -1,6 +1,8 @@
 #!/bin/bash
 #
 # This file is managed by Ansible, all changes will be lost
+# Script updated up to commit 56bec75c0989ca54eb61ed21cdc95ccc38a655b8
+# TODO: Switch to uscan to track upstream changes via git HEAAD tracking
 #
 # slapd runtime configuration management tool
 # Homepage: https://github.com/cepharum/slapd-config
@@ -423,7 +425,7 @@ writeSslCertificate()
 	then
 		[ -f "$caFilename" ] || { echo "missing CA certificate file: $caFilename" >&2; exit 1; }
 
-		echo "setting up CA certificate file" >&2
+		echo "setting up certificate file (incl. CA certificate)" >&2
 		# shellcheck disable=SC2086
 		ldapmodify $AUTHENTICATION <<-EOT
 dn: cn=config
@@ -431,12 +433,17 @@ changetype: modify
 replace: olcTLSCACertificateFile
 $(values2LDIF olcTLSCACertificateFile <<<"$caFilename")
 -
+replace: olcTLSCertificateFile
+$(values2LDIF olcTLSCertificateFile <<<"$certFilename")
+-
+replace: olcTLSCertificateKeyFile
+$(values2LDIF olcTLSCertificateKeyFile <<<"$keyFilename")
+-
 		EOT
-	fi
-
-	echo "setting up certificate/key files" >&2
-	# shellcheck disable=SC2086
-	ldapmodify $AUTHENTICATION <<-EOT
+	else
+		echo "setting up certificate/key files" >&2
+		# shellcheck disable=SC2086
+		ldapmodify $AUTHENTICATION <<-EOT
 dn: cn=config
 changetype: modify
 replace: olcTLSCertificateFile
@@ -445,7 +452,8 @@ $(values2LDIF olcTLSCertificateFile <<<"$certFilename")
 replace: olcTLSCertificateKeyFile
 $(values2LDIF olcTLSCertificateKeyFile <<<"$keyFilename")
 -
-	EOT
+		EOT
+	fi
 }
 
 deleteSslCertificate()
@@ -712,7 +720,7 @@ actions are:
 				EOT
 				;;
 			write)
-				[ $# -lt 2 ] && usage <<<"usage: $APPNAME ssl write <cert-filename> <key-filename>\n"
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME ssl write <cert-filename> <key-filename> [ <ca-cert-filename> ]\n"
 				writeSslCertificate "$@"
 				;;
 			delete)

@@ -114,6 +114,7 @@ infrastructue environments.
    admin-guide/dev-network.rst
    admin-guide/basic-virtualization.rst
    admin-guide/basic-mailserver.rst
+   admin-guide/debops-oid-registry.rst
 
 .. toctree::
    :caption: Developer Guide
