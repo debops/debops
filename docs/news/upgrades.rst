@@ -17,6 +17,15 @@ Unreleased
 v0.8.1 (2019-02-02)
 -------------------
 
+Redesigned OpenLDAP support
+---------------------------
+
+- The :ref:`debops.slapd` role has been redesigned from the ground up,
+  everything is new. Existing OpenLDAP servers/clusters will break if the new
+  role is applied on them, don't do it. Set up a new OpenLDAP server/cluster
+  and import the LDAP directory afterwards. See the role documentation for more
+  details.
+
 Subordinate UID/GID ranges for root
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

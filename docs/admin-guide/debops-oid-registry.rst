@@ -1,3 +1,5 @@
+.. _debops_oid_registry:
+
 DebOps OID Registry
 ===================
 
