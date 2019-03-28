@@ -1,0 +1,58 @@
+{% set ldap__tpl_device_interfaces = [] %}
+{% set ldap__tpl_device_masters = [] %}
+{% set ldap__tpl_device_ip_addresses = [] %}
+{% for item in ansible_interfaces %}
+{%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
+{%   if iface.startswith(('ansible_en', 'ansible_eth', 'ansible_vlan')) %}
+{%     set _ = ldap__tpl_device_interfaces.append(item) %}
+{%   elif hostvars[inventory_hostname][iface].type|d('ether') == 'bridge' %}
+{%     set _ = ldap__tpl_device_masters.append(item) %}
+{%   endif %}
+{% endfor %}
+{% for item in ldap__tpl_device_interfaces %}
+{%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
+{%   if hostvars[inventory_hostname][iface].ipv6|d() %}
+{%     for element in hostvars[inventory_hostname][iface].ipv6 %}
+{%       set address = ((element.address + '/' + element.prefix) | ipaddr('host/prefix')) %}
+{%       if not address | ipv6('link-local') %}
+{%         set _ = ldap__tpl_device_ip_addresses.append(element.address) %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{%   if hostvars[inventory_hostname][iface].ipv4|d() %}
+{%     if hostvars[inventory_hostname][iface].ipv4.address|d() %}
+{%       set _ = ldap__tpl_device_ip_addresses.append(hostvars[inventory_hostname][iface].ipv4.address) %}
+{%     endif %}
+{%     if hostvars[inventory_hostname][iface].ipv4_secondaries|d() %}
+{%       for element in hostvars[inventory_hostname][iface].ipv4_secondaries %}
+{%         set _ = ldap__tpl_device_ip_addresses.append(element.address) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{% for item in ldap__tpl_device_masters %}
+{%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
+{%   if hostvars[inventory_hostname][iface].interfaces|d() %}
+{%     if hostvars[inventory_hostname][iface].interfaces | intersect(ldap__tpl_device_interfaces) %}
+{%       if hostvars[inventory_hostname][iface].ipv6|d() %}
+{%         for element in hostvars[inventory_hostname][iface].ipv6 %}
+{%           set address = ((element.address + '/' + element.prefix) | ipaddr('host/prefix')) %}
+{%           if not address | ipv6('link-local') %}
+{%             set _ = ldap__tpl_device_ip_addresses.append(element.address) %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%       if hostvars[inventory_hostname][iface].ipv4|d() %}
+{%         if hostvars[inventory_hostname][iface].ipv4.address|d() %}
+{%           set _ = ldap__tpl_device_ip_addresses.append(hostvars[inventory_hostname][iface].ipv4.address) %}
+{%         endif %}
+{%       endif %}
+{%       if hostvars[inventory_hostname][iface].ipv4_secondaries|d() %}
+{%         for element in hostvars[inventory_hostname][iface].ipv4_secondaries %}
+{%           set _ = ldap__tpl_device_ip_addresses.append(element.address) %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{{ ldap__tpl_device_ip_addresses | unique }}

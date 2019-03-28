@@ -76,6 +76,7 @@ are not accessed directly by end users.
 - :ref:`debops.fcgiwrap`
 - :ref:`debops.freeradius`
 - :ref:`debops.gunicorn`
+- :ref:`debops.ldap`
 - :ref:`debops.memcached`
 - :ref:`debops.mosquitto`
 - :ref:`debops.rabbitmq_management`
@@ -100,6 +101,7 @@ Databases
 ---------
 
 - :ref:`debops.elasticsearch`
+- :ref:`debops.ldap`
 - :ref:`debops.mariadb`
 - :ref:`debops.mariadb_server`
 - :ref:`debops.postgresql`
@@ -260,6 +262,7 @@ System configuration
 - :ref:`debops.etc_services`
 - :ref:`debops.etckeeper`
 - :ref:`debops.ferm`
+- :ref:`debops.ldap`
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
 - :ref:`debops.machine`

@@ -1,0 +1,78 @@
+---
+
+- name: Take note of the current LDAP configuration
+  set_fact:
+
+    # Track the changes in the configuration state
+    # between role executions in the same play.
+    ldap__fact_configured: '{{ ldap__configured }}'
+
+    # Re-instantiate dependent variables to evaluate variables that use them.
+    # Without this, dependent variables may contain outdated configuration.
+    ldap__fact_dependent_tasks: '{{ ldap__dependent_tasks }}'
+
+- name: Install packages required for LDAP support
+  package:
+    name: '{{ q("flattened", ldap__base_packages + ldap__packages) }}'
+    state: 'present'
+  register: ldap__register_packages
+  until: ldap__register_packages is succeeded
+  when: ldap__enabled|bool and not ldap__dependent_play|bool
+
+- name: Divert original LDAP client configuration
+  command: dpkg-divert --quiet --local
+           --divert /etc/ldap/ldap.conf.dpkg-divert
+           --rename /etc/ldap/ldap.conf
+  args:
+    creates: '/etc/ldap/ldap.conf.dpkg-divert'
+  when: ldap__enabled|bool and not ldap__dependent_play|bool
+
+- name: Generate system-wide LDAP configuration
+  template:
+    src: 'etc/ldap/ldap.conf.j2'
+    dest: '/etc/ldap/ldap.conf'
+    mode: '0644'
+  when: ldap__enabled|bool and not ldap__dependent_play|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+  when: ldap__enabled|bool and not ldap__dependent_play|bool
+
+- name: Save LDAP client local facts
+  template:
+    src: 'etc/ansible/facts.d/ldap.fact.j2'
+    dest: '/etc/ansible/facts.d/ldap.fact'
+    mode: '0755'
+  register: ldap__register_facts
+  when: ldap__enabled|bool and not ldap__dependent_play|bool
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: ldap__enabled|bool and not ldap__dependent_play|bool and
+        ldap__register_facts is changed
+
+- name: Check if LDAP admin password is available
+  set_fact:
+    ldap__fact_admin_bindpw: '{{ ldap__admin_bindpw }}'
+  become: '{{ ldap__admin_become }}'
+  become_user: '{{ ldap__admin_become_user }}'
+  delegate_to: '{{ ldap__admin_delegate_to }}'
+  run_once: True
+
+- name: Perform LDAP tasks
+  include_tasks: 'ldap_tasks.yml'
+  loop: '{{ q("flattened", ldap__combined_tasks) | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"state": item.state,
+                "dn": item.dn,
+                "attributes": item.attributes|d({})} }}'
+  when: ldap__enabled|bool and ldap__admin_enabled|bool and
+        item.name|d() and item.dn|d() and
+        item.state|d('present') not in [ 'init', 'ignore' ]
+  no_log: '{{ item.no_log | d(True
+                              if ("userPassword" in (item.attributes|d({})).keys() or
+                                  "olcRootPW"    in (item.attributes|d({})).keys())
+                              else False) }}'

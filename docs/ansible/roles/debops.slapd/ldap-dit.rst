@@ -4,7 +4,7 @@ LDAP Directory Information Tree
 ===============================
 
 This document describes how the :ref:`debops.slapd` Ansible role fits in the
-LDAP directory structure organized by DebOps.
+:ref:`ldap__ref_dit`.
 
 
 Directory structure
@@ -12,7 +12,7 @@ Directory structure
 
 - :envvar:`DNS (example.org) <slapd__domain>`
 
-  - ``rootDSE``
+  - :ref:`rootDSE <ldap__ref_ldap_dit>` -> :ref:`debops.ldap`
 
     - :envvar:`cn=config <slapd__default_tasks>`
 

@@ -15,6 +15,10 @@ that maps how various DebOps roles interact with the directory; this should
 enable easier redesign of the Access Control List according to the needs of
 one's organization.
 
+You can use the :file:`ansible/playbooks/ldap/init-directory.yml` Ansible
+playbook to initialize the new LDAP directory with the objects designed with
+the default ACL in mind. See :ref:`ldap__ref_ldap_init` for more details.
+
 .. contents::
    :local:
 
