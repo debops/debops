@@ -72,8 +72,8 @@ ones you will likely want to change are:
 
   ``debops.pki`` now supports the X.509 Name Constraints certificate extension by
   default. This may break software using old version of OpenSSL and multi-domain
-  environments. Please see ``name_constraints`` under :ref:`pki__ref_authorities`
-  for more information.
+  environments. Please see ``name_constraints`` and ``name_constraints_critical``
+  under :ref:`pki__ref_authorities` for more information.
 
 Example inventory
 -----------------
