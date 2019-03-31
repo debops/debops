@@ -149,6 +149,13 @@ Changed
   Agent. This configuration should work better in clustered environments, where
   there is a central mail hub/MX that receives the mail and redirects it.
 
+- [debops.root_account] If the :ref:`debops.ldap` Ansible role has been applied
+  on a host, the :ref:`debops.root_account` role will use the UID/GID ranges
+  defined by it, which include UIDs/GIDs used in the LDAP directory, to define
+  subUID/subGID range of the ``root`` account. This allows usage of the LDAP
+  directory as a source of UNIX accounts and groups in unprivileged containers.
+  Existing systems will not be changed.
+
 Fixed
 ~~~~~
 

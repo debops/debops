@@ -173,7 +173,14 @@ root_account__subuid_enabled: True
 # reasons. Check the contents of the :file:`/etc/subuid` and
 # :file:`/etc/subgid` files to verify what UID/GID ranges are used on a given
 # host.
-root_account__subuid_start: [ '100000' ]
+#
+# If the :ref:`debops.ldap` role was applied on the host, the default UID/GID
+# ranges will change to include the ranges used :ref:`in the LDAP directory
+# <ldap__ref_posix>`.
+root_account__subuid_start: [ '{{ (ansible_local.ldap.uid_gid_max|int + 1)
+                                  if (ansible_local|d() and ansible_local.ldap|d() and
+                                      (ansible_local.ldap.uid_gid_max|int > 100000))
+                                  else "100000" }}' ]
 
                                                                    # ]]]
 # .. envvar:: root_account__subuid_count [[[
@@ -182,7 +189,14 @@ root_account__subuid_start: [ '100000' ]
 # range. Remember that using lower UID/GID number than 65535 may cause issues
 # due to some system accounts like ``nobody`` and groups like ``nogroup``
 # having UID and GID numbers at the end of the normal 0-65535 range.
-root_account__subuid_count: '65535'
+#
+# If the :ref:`debops.ldap` role was applied on the host, the default UID/GID
+# ranges will change to include the ranges used :ref:`in the LDAP directory
+# <ldap__ref_posix>`.
+root_account__subuid_count: '{{ ansible_local.ldap.uid_gid_max
+                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                    (ansible_local.ldap.uid_gid_max|int > 65536))
+                                else "65535" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
