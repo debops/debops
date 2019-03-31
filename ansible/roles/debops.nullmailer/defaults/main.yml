@@ -52,7 +52,7 @@ nullmailer__purge_mta_packages: [ 'exim4-base', 'exim4-config', 'exim4-daemon-li
 #
 # List of APT packages which will be installed to configure ``nullmailer``
 # service.
-nullmailer__base_packages: [ 'nullmailer' ]
+nullmailer__base_packages: [ 'nullmailer', 'bsd-mailx' ]
 
                                                                    # ]]]
 # .. envvar:: nullmailer__smtpd_packages [[[
@@ -73,9 +73,16 @@ nullmailer__packages: []
 
 # .. envvar:: nullmailer__mailname [[[
 #
-# The FQDN name of the host, stored in the :file:`/etc/mailname` configuration
-# file. See https://wiki.debian.org/EtcMailName for more details.
-nullmailer__mailname: '{{ ansible_fqdn }}'
+# The domain name of the host, stored in the :file:`/etc/mailname`
+# configuration file. See https://wiki.debian.org/EtcMailName for more details.
+nullmailer__mailname: '{{ nullmailer__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__fqdn [[[
+#
+# The FQDN name of the :command:`nullmailer` host, used in different
+# configuration variables of the role.
+nullmailer__fqdn: '{{ ansible_fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__domain [[[
@@ -95,13 +102,13 @@ nullmailer__adminaddr: [ 'root@{{ nullmailer__domain }}' ]
 # .. envvar:: nullmailer__idhost [[[
 #
 # The string used to generate the ``Message-Id:`` header of sent messages.
-nullmailer__idhost: '{{ nullmailer__domain }}'
+nullmailer__idhost: '{{ nullmailer__fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__helohost [[[
 #
 # The string sent to the remote SMTP servers in the ``HELO`` command.
-nullmailer__helohost: '{{ nullmailer__mailname }}'
+nullmailer__helohost: '{{ nullmailer__fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__defaulthost [[[
@@ -114,8 +121,8 @@ nullmailer__defaulthost: '{{ nullmailer__mailname }}'
 #
 # The string appended to the host part of the e-mail addresses without a dot.
 nullmailer__defaultdomain: '{{ nullmailer__domain }}'
-                                                                   # ]]]
 
+                                                                   # ]]]
 # .. envvar:: nullmailer__allmailfrom [[[
 #
 # Force envelope sender. Needed for some mail relays with authentication if
