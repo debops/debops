@@ -78,6 +78,13 @@ nullmailer__packages: []
 nullmailer__mailname: '{{ nullmailer__domain }}'
 
                                                                    # ]]]
+# .. envvar:: nullmailer__fqdn [[[
+#
+# The FQDN name of the :command:`nullmailer` host, used in different
+# configuration variables of the role.
+nullmailer__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
 # .. envvar:: nullmailer__domain [[[
 #
 # The default DNS domain used in different configuration variables of the role.
@@ -95,13 +102,13 @@ nullmailer__adminaddr: [ 'root@{{ nullmailer__domain }}' ]
 # .. envvar:: nullmailer__idhost [[[
 #
 # The string used to generate the ``Message-Id:`` header of sent messages.
-nullmailer__idhost: '{{ nullmailer__domain }}'
+nullmailer__idhost: '{{ nullmailer__fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__helohost [[[
 #
 # The string sent to the remote SMTP servers in the ``HELO`` command.
-nullmailer__helohost: '{{ nullmailer__mailname }}'
+nullmailer__helohost: '{{ nullmailer__fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__defaulthost [[[
@@ -114,8 +121,8 @@ nullmailer__defaulthost: '{{ nullmailer__mailname }}'
 #
 # The string appended to the host part of the e-mail addresses without a dot.
 nullmailer__defaultdomain: '{{ nullmailer__domain }}'
-                                                                   # ]]]
 
+                                                                   # ]]]
 # .. envvar:: nullmailer__allmailfrom [[[
 #
 # Force envelope sender. Needed for some mail relays with authentication if
