@@ -452,7 +452,7 @@ ferm__default_rules:
     type: 'hashlimit'
     weight_class: 'filter-icmp'
     protocol: 'icmp'
-    enabled: '{{ ferm__filter_icmp | bool }}'
+    rule_state: '{{ "present" if (ferm__filter_icmp | bool) else "absent" }}'
     hashlimit: '{{ ferm__filter_icmp_limit }}'
     hashlimit_burst: '{{ ferm__filter_icmp_burst }}'
     hashlimit_expire: '{{ ferm__filter_icmp_expire }}'
