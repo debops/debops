@@ -156,6 +156,14 @@ Changed
   directory as a source of UNIX accounts and groups in unprivileged containers.
   Existing systems will not be changed.
 
+- [debops.system_groups] If the LDAP support is enabled on a host via the
+  :ref:`debops.ldap` role, the UNIX system groups created by the
+  :ref:`debops.system_groups` role by default will use a ``_`` prefix to make
+  them separate from any LDAP-based groups of the same name. Existing
+  installations should be unaffected, as long as the updated
+  :ref:`debops.system_groups` role was applied before the :ref:`debops.ldap`
+  role.
+
 Fixed
 ~~~~~
 
