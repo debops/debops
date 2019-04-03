@@ -30,6 +30,9 @@ list element is a YAML dictionary with specific parameters:
 
   You can use either DNS names or IP addresses.
 
+  NOTE: If you want to use NFSv4 mount points, you need to specify share paths
+  relative to the NFS ``root`` directory configured on the nfs server.
+
 ``state``
   Optional. If not specified or ``mounted``, the given NFS share will be added
   to the :file:`/etc/fstab` configuration file and automatically mounted. If
