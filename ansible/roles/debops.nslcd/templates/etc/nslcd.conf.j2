@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+
+# /etc/nslcd.conf
+# nslcd configuration file. See nslcd.conf(5)
+# for details.
+{% for option in nslcd__combined_configuration | parse_kv_config %}
+{%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if option.separator|bool and not option.comment|d() and not loop.first %}
+
+{%     endif %}
+{%     if option.comment|d() %}
+
+{{ option.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     set option_map = '' %}
+{%     if option.map|d() %}
+{%       set option_map = (' ' + option.map) %}
+{%     endif %}
+{%     if option.raw|d() %}
+{%       if option.state|d('present') == 'comment' %}
+{{ option.raw | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%       else %}
+{{ option.raw | regex_replace('\n$','') }}
+{%       endif %}
+{%     else %}
+{{ '{}{}{} {}'.format(('#' if (option.state|d('present') == 'comment') else ''), (option.option | d(option.name)), option_map, (option.value if option.value is string else (option.value | selectattr("name", "defined") | map(attribute="name") | list | join(' ')))) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}

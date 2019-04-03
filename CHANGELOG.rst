@@ -32,6 +32,9 @@ Added
     roles, playbooks, and users via Ansible inventory. The role is included in
     the ``common.yml`` playbook, but is disabled by default.
 
+  - :ref:`debops.nslcd` role can be used to configure LDAP lookups for NSS and
+    PAM services on a Linux host.
+
 - [debops.nginx] The role will automatically generate configuration which
   redirects short hostnames or subdomains to their FQDN equivalents. This
   allows HTTP clients to reach websites by specifying their short names via DNS

@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+
+# Enable support for libpam-mkhomedir in PAM
+
+Name: activate mkhomedir
+Default: yes
+Priority: 900
+Session-Type: Additional
+Session:
+        required                        pam_mkhomedir.so umask={{ nslcd__mkhomedir_umask }} skel=/etc/skel
