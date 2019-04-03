@@ -170,10 +170,11 @@ Changed
 Removed
 ~~~~~~~
 
-- [debops.auth] The :file:`/etc/ldap/ldap.conf` file configuration and related
-  variables have been removed from the :ref:`debops.auth` role. This
-  functionality is now available in the :ref:`debops.ldap` role, which manages
-  the client-side LDAP support.
+- [debops.auth] The :file:`/etc/ldap/ldap.conf` file configuration,
+  :command:`nslcd` service configuration and related variables have been
+  removed from the :ref:`debops.auth` role. This functionality is now available
+  in the :ref:`debops.ldap` and :ref:`debops.nslcd` roles, which manage the
+  client-side LDAP support.
 
 Fixed
 ~~~~~
