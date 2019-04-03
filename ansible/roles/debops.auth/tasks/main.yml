@@ -30,11 +30,6 @@
     path: '/etc/ldap'
   register: auth_register_etc_ldap
 
-- include: etc_ldap_conf.yml
-  when: ((auth_ldap_conf|bool) and
-         ((auth_register_etc_ldap.stat.exists) or
-          ('ldap' in auth_nsswitch)))
-
 - include: nss_pam_ldap.yml
   when: (('ldap' in auth_nsswitch) and (auth_nslcd_conf|bool))
 

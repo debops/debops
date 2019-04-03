@@ -11,20 +11,46 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
-- The :ref:`debops.phpipam` has been refactored. Now the variables have been
-  renamed from ``phpipam_*`` to ``phpipam__*``
-
-v0.8.1 (2019-02-02)
--------------------
-
 Redesigned OpenLDAP support
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - The :ref:`debops.slapd` role has been redesigned from the ground up,
   everything is new. Existing OpenLDAP servers/clusters will break if the new
   role is applied on them, don't do it. Set up a new OpenLDAP server/cluster
   and import the LDAP directory afterwards. See the role documentation for more
   details.
+
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.phpipam` has been refactored. Now the variables have been
+  renamed from ``phpipam_*`` to ``phpipam__*``
+
+- The :ref:`debops.auth` default variables related to LDAP client configuration
+  have been removed; the functionality is now managed by the :ref:`debops.ldap`
+  role. The table below shows the old variable names and their new equivalents:
+
+  +--------------------------------+-----------------------------+------------------------------------------+
+  | Old variable name              | New variable name           | Changed value                            |
+  +================================+=============================+==========================================+
+  | ``auth_ldap_conf``             | :envvar:`ldap__enabled`     | ``False`` by default                     |
+  +--------------------------------+-----------------------------+------------------------------------------+
+  | ``auth_ldap_conf_domain``      | :envvar:`ldap__domain`      | No                                       |
+  +--------------------------------+-----------------------------+------------------------------------------+
+  | ``auth_ldap_conf_hostdn``      | Removed                     | No                                       |
+  +--------------------------------+-----------------------------+------------------------------------------+
+  | ``auth_ldap_conf_uri``         | :envvar:`ldap__servers_uri` | Based on DNS SRV records                 |
+  +--------------------------------+-----------------------------+------------------------------------------+
+  | ``auth_ldap_conf_tls_cacert``  | Removed                     | In :envvar:`ldap__default_configuration` |
+  +--------------------------------+-----------------------------+------------------------------------------+
+  | ``auth_ldap_conf_tls_reqcert`` | Removed                     | In :envvar:`ldap__default_configuration` |
+  +--------------------------------+-----------------------------+------------------------------------------+
+  | ``auth_ldap_conf_options``     | Removed                     | In :envvar:`ldap__default_configuration` |
+  +--------------------------------+-----------------------------+------------------------------------------+
+
+
+v0.8.1 (2019-02-02)
+-------------------
 
 Subordinate UID/GID ranges for root
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

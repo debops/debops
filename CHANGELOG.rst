@@ -164,6 +164,14 @@ Changed
   :ref:`debops.system_groups` role was applied before the :ref:`debops.ldap`
   role.
 
+Removed
+~~~~~~~
+
+- [debops.auth] The :file:`/etc/ldap/ldap.conf` file configuration and related
+  variables have been removed from the :ref:`debops.auth` role. This
+  functionality is now available in the :ref:`debops.ldap` role, which manages
+  the client-side LDAP support.
+
 Fixed
 ~~~~~
 
