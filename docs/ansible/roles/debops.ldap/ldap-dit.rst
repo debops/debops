@@ -22,6 +22,8 @@ Directory structure
 
           - :envvar:`cn=host.example.org <ldap__device_self_rdn>` (:envvar:`conditional <ldap__device_enabled>`)
 
+            - :ref:`uid=nslcd <nslcd__ref_ldap_dit>` -> :ref:`debops.nslcd`
+
       - :envvar:`ou=People <ldap__people_rdn>`
       - :envvar:`ou=Groups <ldap__groups_rdn>`
       - :envvar:`ou=Machines <ldap__machines_rdn>`
@@ -40,10 +42,10 @@ Object Classes and Attributes
   - :ref:`debops.ldap`: :envvar:`Object Classes <ldap__device_object_classes>`, :envvar:`Attributes <ldap__device_attributes>`
 
 
-Parent node
------------
+Parent nodes
+------------
 
-There's no parent node defined for the :ref:`debops.ldap` Ansible role.
+There are no parent nodes defined for the :ref:`debops.ldap` Ansible role.
 
 
 Child nodes

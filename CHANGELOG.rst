@@ -32,6 +32,9 @@ Added
     roles, playbooks, and users via Ansible inventory. The role is included in
     the ``common.yml`` playbook, but is disabled by default.
 
+  - :ref:`debops.nslcd` role can be used to configure LDAP lookups for NSS and
+    PAM services on a Linux host.
+
 - [debops.nginx] The role will automatically generate configuration which
   redirects short hostnames or subdomains to their FQDN equivalents. This
   allows HTTP clients to reach websites by specifying their short names via DNS
@@ -148,6 +151,30 @@ Changed
   the DNS domain, instad of the full host address, added by the Mail Transport
   Agent. This configuration should work better in clustered environments, where
   there is a central mail hub/MX that receives the mail and redirects it.
+
+- [debops.root_account] If the :ref:`debops.ldap` Ansible role has been applied
+  on a host, the :ref:`debops.root_account` role will use the UID/GID ranges
+  defined by it, which include UIDs/GIDs used in the LDAP directory, to define
+  subUID/subGID range of the ``root`` account. This allows usage of the LDAP
+  directory as a source of UNIX accounts and groups in unprivileged containers.
+  Existing systems will not be changed.
+
+- [debops.system_groups] If the LDAP support is enabled on a host via the
+  :ref:`debops.ldap` role, the UNIX system groups created by the
+  :ref:`debops.system_groups` role by default will use a ``_`` prefix to make
+  them separate from any LDAP-based groups of the same name. Existing
+  installations should be unaffected, as long as the updated
+  :ref:`debops.system_groups` role was applied before the :ref:`debops.ldap`
+  role.
+
+Removed
+~~~~~~~
+
+- [debops.auth] The :file:`/etc/ldap/ldap.conf` file configuration,
+  :command:`nslcd` service configuration and related variables have been
+  removed from the :ref:`debops.auth` role. This functionality is now available
+  in the :ref:`debops.ldap` and :ref:`debops.nslcd` roles, which manage the
+  client-side LDAP support.
 
 Fixed
 ~~~~~
