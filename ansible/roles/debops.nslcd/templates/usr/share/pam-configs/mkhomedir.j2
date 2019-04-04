@@ -2,11 +2,9 @@
 
 # Enable support for libpam-mkhomedir in PAM
 
-{% if 'ldap' in auth_nsswitch %}
 Name: activate mkhomedir
 Default: yes
 Priority: 900
 Session-Type: Additional
 Session:
-        required                        pam_mkhomedir.so umask={{ auth_pam_mkhomedir_umask }} skel=/etc/skel
-{% endif %}
+        required                        pam_mkhomedir.so umask={{ nslcd__mkhomedir_umask }} skel=/etc/skel

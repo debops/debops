@@ -42,6 +42,27 @@ system_groups__sudo_enabled: '{{ True
 # directory and use the ``lookup('file')`` module to retrieve it.
 # See :ref:`debops.secret` documentation for details.
 system_groups__admins_sudo_nopasswd: True
+
+                                                                   # ]]]
+# .. envvar:: system_groups__prefix [[[
+#
+# Add a prefix to the custom UNIX system group names created by DebOps.
+# By default, no prefix is added.
+#
+# If the role detects that the LDAP support has been enabled on a host by the
+# :ref:`debops.ldap` Ansible role, custom UNIX group names created locally on
+# the host will have the ``_`` prefix to indicate that they are local to
+# a given host and not create conflicts with any UNIX groups defined in LDAP.
+#
+# If the LDAP support was enabled after the system groups have been created,
+# the role will keep the current prefix value to not duplicate the UNIX groups.
+system_groups__prefix: '{{ ansible_local.system_groups.local_prefix
+                           if (ansible_local|d() and ansible_local.system_groups|d() and
+                               ansible_local.system_groups.local_prefix is defined)
+                           else ("_"
+                                 if (ansible_local|d() and ansible_local.ldap|d() and
+                                     (ansible_local.ldap.enabled|d())|bool)
+                                 else "") }}'
                                                                    # ]]]
                                                                    # ]]]
 # UNIX system groups [[[
@@ -63,17 +84,20 @@ system_groups__default_list:
   # service and gain shell access on the host. They can also use the `sudo`
   # command to execute commands as any UNIX account or gain superuser ('root')
   # access.
-  - name: 'admins'
+  - name: '{{ system_groups__prefix }}admins'
+    sudoers_filename: 'system_groups-admins'
     sudoers: |
       # This might be required to allow Ansible pipelining connections
-      Defaults: %admins !requiretty
+      Defaults: %{{ system_groups__prefix }}admins !requiretty
 
       # This variable is used to configure access by Ansible Controller hosts
-      Defaults: %admins env_check += "SSH_CLIENT"
+      Defaults: %{{ system_groups__prefix }}admins env_check += "SSH_CLIENT"
 
       # Allow execution of any command as any user on the system.
       # This is required for Ansible operation.
-      %admins ALL = (ALL:ALL) {{ 'NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '' }}ALL
+      {{ ('%' + system_groups__prefix + 'admins ALL = (ALL:ALL) '
+          + ('NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '')
+          + 'ALL') }}
     members: '{{ ansible_local.core.admin_users
                  if (ansible_local|d() and ansible_local.core|d() and
                      ansible_local.core.admin_users|d())
@@ -89,17 +113,20 @@ system_groups__default_list:
   # service and gain shell access on the host. They can also use the `sudo`
   # command to execute commands as any UNIX account or gain superuser ('root')
   # access.
-  - name: 'wheel'
+  - name: '{{ system_groups__prefix }}wheel'
+    sudoers_filename: 'system_groups-wheel'
     sudoers: |
       # This might be required to allow Ansible pipelining connections
-      Defaults: %wheel !requiretty
+      Defaults: %{{ system_groups__prefix }}wheel !requiretty
 
       # This variable is used to configure access by Ansible Controller hosts
-      Defaults: %wheel env_check += "SSH_CLIENT"
+      Defaults: %{{ system_groups__prefix }}wheel env_check += "SSH_CLIENT"
 
       # Allow execution of any command as any user on the system.
       # This is required for Ansible operation.
-      %wheel ALL = (ALL:ALL) {{ 'NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '' }}ALL
+      {{ ('%' + system_groups__prefix + 'wheel ALL = (ALL:ALL) '
+          + ('NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '')
+          + 'ALL') }}
     members: '{{ ansible_local.core.admin_users
                  if (ansible_local|d() and ansible_local.core|d() and
                      ansible_local.core.admin_users|d())
@@ -134,7 +161,7 @@ system_groups__default_list:
   # Users in the 'sshusers' UNIX group are allowed to connect to the host via
   # SSH service and gain shell access on the host.  See the 'debops.sshd' role
   # for more details.
-  - name: 'sshusers'
+  - name: '{{ system_groups__prefix }}sshusers'
     access: [ 'sshd' ]
 
 
@@ -143,7 +170,7 @@ system_groups__default_list:
   # '~/.ssh/authorized_keys' file, only keys in the
   # '/etc/ssh/authorized_keys.d/<user>' file are allowed.
   # See the 'debops.sshd' and 'debops.authorized_keys' roles for more details.
-  - name: 'sftponly'
+  - name: '{{ system_groups__prefix }}sftponly'
     access: [ 'sshd' ]
 
 
@@ -154,7 +181,7 @@ system_groups__default_list:
   # Users in the 'webadmins' UNIX group can reload webserver services using
   # specific `sudo` commands. See the 'debops.nginx' or 'debops.php' roles for
   # more details.
-  - name: 'webadmins'
+  - name: '{{ system_groups__prefix }}webadmins'
     access: [ 'webserver' ]
 
                                                                    # ]]]

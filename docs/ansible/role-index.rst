@@ -112,6 +112,15 @@ Databases
 - ``debops.phpmyadmin``
 
 
+Directory services
+------------------
+
+- :ref:`debops.ldap`
+- :ref:`debops.nslcd`
+- :ref:`debops.nsswitch`
+- :ref:`debops.slapd`
+
+
 Encryption
 ----------
 
@@ -268,6 +277,7 @@ System configuration
 - :ref:`debops.machine`
 - :ref:`debops.mount`
 - :ref:`debops.netbase`
+- :ref:`debops.nslcd`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
 - :ref:`debops.resources`
