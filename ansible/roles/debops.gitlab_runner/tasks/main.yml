@@ -50,7 +50,7 @@
 
 - name: Make sure APT can access HTTPS repositories
   apt:
-    name: '{{ item }}'
+    name: [ 'apt-transport-https', 'openssl', 'ca-certificates' ]
     state: 'present'
     install_recommends: False
     update_cache: True
@@ -58,7 +58,6 @@
                           if (ansible_local|d() and ansible_local.core|d() and
                               ansible_local.core.cache_valid_time|d())
                            else "86400" }}'
-  with_items: [ 'apt-transport-https', 'openssl', 'ca-certificates' ]
   register: gitlab_runner__register_apt_https
   until: gitlab_runner__register_apt_https is succeeded
 
@@ -83,12 +82,10 @@
 
 - name: Install gitlab-runner packages
   apt:
-    name: '{{ item }}'
+    name: "{{ query('flattened', ['{{ gitlab_runner__base_packages }}',
+                                  '{{ gitlab_runner__packages }}']) }}"
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - '{{ gitlab_runner__base_packages }}'
-    - '{{ gitlab_runner__packages }}'
   register: gitlab_runner__register_packages
   until: gitlab_runner__register_packages is succeeded
 
