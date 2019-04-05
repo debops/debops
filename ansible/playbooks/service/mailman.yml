@@ -39,6 +39,13 @@
         - '{{ postfix__ferm__dependent_rules }}'
         - '{{ nginx__ferm__dependent_rules }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ nginx__python__dependent_packages2 }}'
+
     - role: debops.postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:

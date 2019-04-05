@@ -24,13 +24,6 @@
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
-      python__dependent_packages3:
-        - '{{ dokuwiki__python__dependent_packages3 }}'
-      python__dependent_packages2:
-        - '{{ dokuwiki__python__dependent_packages2 }}'
-
     - role: debops.php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
@@ -42,6 +35,13 @@
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ nginx__python__dependent_packages2 }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
