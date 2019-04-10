@@ -60,7 +60,8 @@ nslcd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask
 # .. envvar:: nslcd__ldap_base_dn [[[
 #
 # The base Distinguished Name which should be used to create Distinguished
-# Names of the LDAP directory objects, defined as a YAML list.
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, :file:`/etc/nslcd.conf` configuration file will not be generated.
 nslcd__ldap_base_dn: '{{ ansible_local.ldap.base_dn
                          if (ansible_local|d() and ansible_local.ldap|d() and
                              ansible_local.ldap.base_dn|d())

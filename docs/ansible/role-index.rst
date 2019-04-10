@@ -252,6 +252,7 @@ Security
 - :ref:`debops.fail2ban`
 - :ref:`debops.ferm`
 - :ref:`debops.freeradius`
+- :ref:`debops.pam_access`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`
 - :ref:`debops.sudo`
@@ -280,6 +281,7 @@ System configuration
 - :ref:`debops.nslcd`
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
+- :ref:`debops.pam_access`
 - :ref:`debops.resources`
 - :ref:`debops.root_account`
 - :ref:`debops.swapfile`

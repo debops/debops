@@ -1,0 +1,22 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+import os
+
+
+output = loads('''{{ {"configured": True,
+                      "enabled": pam_access__enabled|bool
+                     } | to_nice_json }}''')
+
+access_rules = []
+
+for filename in os.listdir('/etc/security'):
+    if (filename.startswith('access-') and filename.endswith('.conf')):
+        access_rules.append(filename[7:-5])
+
+output['rules'] = access_rules
+
+print(dumps(output, sort_keys=True, indent=4))

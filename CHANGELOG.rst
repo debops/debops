@@ -35,6 +35,10 @@ Added
   - :ref:`debops.nslcd` role can be used to configure LDAP lookups for NSS and
     PAM services on a Linux host.
 
+  - :ref:`debops.pam_access` role manages PAM access control files located in
+    the :file:`/etc/security/` directory. The role is designed to allow other
+    Ansible roles to easily manage their own PAM access rules.
+
 - [debops.nginx] The role will automatically generate configuration which
   redirects short hostnames or subdomains to their FQDN equivalents. This
   allows HTTP clients to reach websites by specifying their short names via DNS
