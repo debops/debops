@@ -167,7 +167,8 @@
 
       - name: 'Create cn=UNIX Administrators group'
         dn: '{{ [ "cn=UNIX Administrators", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId' ]
+        objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',
+                       'authorizedServiceObject', 'hostObject' ]
         attributes:
           cn: 'UNIX Administrators'
           gid: 'admins'
@@ -175,6 +176,8 @@
           member: '{{ admin_dn }}'
           owner: '{{ admin_dn }}'
           description: 'People responsible for UNIX-like infrastructure'
+          authorizedService: '*'
+          host: '*'
 
       - name: 'Create cn=Account Administrators group'
         dn: '{{ [ "CN=Account Administrators", ldap__system_groups_rdn ] + ldap__base_dn }}'
