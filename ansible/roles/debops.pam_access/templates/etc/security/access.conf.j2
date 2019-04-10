@@ -1,0 +1,43 @@
+# {{ ansible_managed }}
+
+{% set fieldsep = item.fieldsep | d(':') %}
+{% set listsep =  item.listsep  | d(' ') %}
+{% for element in item.options %}
+{%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if element.permission | lower in [ 'allow', '+', 'accept' ] %}
+{%       set element_permission = '+' %}
+{%     elif element.permission | lower in [ 'deny', '-', 'decline' ] %}
+{%       set element_permission = '-' %}
+{%     endif %}
+{%     set element_users = [] %}
+{%     if element.users_except|d() or element.groups_except|d() %}
+{%       set _ = element_users.append('ALL EXCEPT') %}
+{%     endif %}
+{%     if element.groups_except|d() %}
+{%       set _ = element_users.extend(([ element.groups_except ] if (element.groups_except is string) else element.groups_except) | map("regex_replace", "(.*)", "(\\1)") | list) %}
+{%     elif element.groups|d() %}
+{%       set _ = element_users.extend(([ element.groups ] if (element.groups is string) else element.groups) | map("regex_replace", "(.*)", "(\\1)") | list) %}
+{%     endif %}
+{%     if element.users_except|d() %}
+{%       set _ = element_users.extend([ element.users_except ] if (element.users_except is string) else element.users_except) %}
+{%     elif element.users|d() %}
+{%       set _ = element_users.extend([ element.users ] if (element.users is string) else element.users) %}
+{%     endif %}
+{%     if element.origins_except|d() %}
+{%       set element_origins = ([ 'ALL EXCEPT' ] + ([ element.origins_except ] if (element.origins_except is string) else element.origins_except)) %}
+{%     elif element.origins|d() %}
+{%       set element_origins = ([ element.origins ] if (element.origins is string) else element.origins) %}
+{%     endif %}
+{%     set element_comment = ('#' if (element.state|d('present') == 'comment') else '') %}
+{%     if element.separator|bool and not element.comment|d() and not loop.first %}
+
+{%     endif %}
+{%     if element.comment|d() %}
+{%       if not loop.first %}
+
+{%       endif %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{{ '{}{}{}{}{}{}'.format(element_comment, element_permission, fieldsep, element_users | join(listsep), fieldsep, element_origins | join(listsep)) }}
+{%   endif %}
+{% endfor %}
