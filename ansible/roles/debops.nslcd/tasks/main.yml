@@ -25,6 +25,7 @@
     group: '{{ nslcd__group }}'
     mode: '0640'
   register: nslcd__register_config
+  when: nslcd__ldap_base_dn|d()
 
 - name: Restart nslcd if its configuration was modified
   service:
