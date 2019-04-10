@@ -1,0 +1,78 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.pam_access default variables
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: pam_access__enabled [[[
+#
+# Enable or disable support for PAM Access Control files management.
+pam_access__enabled: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Access Control configuration [[[
+# --------------------------------
+
+# These variables define the contents of PAM Access Control files, located in
+# the :file:`/etc/security/` directory. See :ref:pam_access__ref_rules` for
+# more details.
+
+# .. envvar:: pam_access__default_rules [[[
+#
+# List of PAM Access Control rules defined by the role.
+pam_access__default_rules:
+
+  - name: 'global'
+    filename: 'access.conf'
+    divert: True
+    state: 'init'
+    options: []
+
+                                                                   # ]]]
+# .. envvar:: pam_access__rules [[[
+#
+# List of PAM Access Control rules defined on all hosts in the Ansible
+# inventory.
+pam_access__rules: []
+
+                                                                   # ]]]
+# .. envvar:: pam_access__group_rules [[[
+#
+# List of PAM Access Control rules defined on hosts in a specific Ansible
+# inventory group.
+pam_access__group_rules: []
+
+                                                                   # ]]]
+# .. envvar:: pam_access__host_rules [[[
+#
+# List of PAM Access Control rules defined on specific hosts in the Ansible
+# inventory.
+pam_access__host_rules: []
+
+                                                                   # ]]]
+# .. envvar:: pam_access__dependent_rules [[[
+#
+# List of the PAM Access Control rules defined via dependent role variables.
+pam_access__dependent_rules: []
+
+                                                                   # ]]]
+# .. envvar:: pam_access__combined_rules [[[
+#
+# The variable that combines all other PAM Access Control rules variables and
+# is used in the role tasks and templates.
+pam_access__combined_rules: '{{ q("flattened", (pam_access__default_rules
+                                                + pam_access__dependent_rules
+                                                + pam_access__rules
+                                                + pam_access__group_rules
+                                                + pam_access__host_rules)) }}'
+                                                                   # ]]]
+                                                                   # ]]]

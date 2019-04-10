@@ -1,0 +1,14 @@
+---
+
+- name: Manage PAM Access Control Lists
+  hosts: [ 'debops_all_hosts', 'debops_service_pam_access' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.pam_access
+      tags: [ 'role::pam_access', 'skip::pam_access' ]
