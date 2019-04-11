@@ -73,6 +73,11 @@ Added
 
   .. __: https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
 
+- A new ``bootstrap-ldap.yml`` Ansible playbook can be used to bootstrap
+  Debian/Ubuntu hosts with LDAP support enabled by default. The playbook will
+  configure only the services required for secure LDAP access (PKI, SSH,
+  PAM/NSS), the rest should be configured using the common playbook.
+
 Changed
 ~~~~~~~
 
