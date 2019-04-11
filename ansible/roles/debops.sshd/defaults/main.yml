@@ -511,92 +511,88 @@ sshd__paranoid: False
 #
 # Enable support for looking up authorized public keys in external data sources
 # (currently LDAP is supported). This function works only with OpenSSH 6.2+.
-sshd__authorized_keys_lookup: False
+sshd__authorized_keys_lookup: '{{ ansible_local.ldap.enabled
+                                  if (ansible_local|d() and ansible_local.ldap|d() and
+                                      (ansible_local.ldap.enabled|d())|bool)
+                                  else False }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__authorized_keys_lookup_user [[[
 #
-# System user account which will be used to look up authorized keys.
-sshd__authorized_keys_lookup_user: 'sshd-lookup'
-
-                                                                   # ]]]
-# .. envvar:: sshd__authorized_keys_lookup_group [[[
-#
-# System group which will be used to look up authorized keys.
-sshd__authorized_keys_lookup_group: 'sshd-lookup'
-
-                                                                   # ]]]
-# .. envvar:: sshd__authorized_keys_lookup_home [[[
-#
-# Home directory used by authorized key lookup user.
-sshd__authorized_keys_lookup_home: '/var/run/{{ sshd__authorized_keys_lookup_user }}'
+# Name of the UNIX account which will be used to look up authorized keys.
+sshd__authorized_keys_lookup_user: 'sshd'
 
                                                                    # ]]]
 # .. envvar:: sshd__authorized_keys_lookup_type [[[
 #
 # List of lookup scripts that should be enabled on a host.
-sshd__authorized_keys_lookup_type: [ 'ldap' ]
+sshd__authorized_keys_lookup_type: [ 'ldap', 'sss' ]
                                                                    # ]]]
                                                                    # ]]]
 # LDAP lookup configuration [[[
 # -----------------------------
 
-# .. envvar:: sshd__ldap_domain [[[
+# .. envvar:: sshd__ldap_base_dn [[[
 #
-# Base DNS domain to use for LDAP BaseDN generation.
-sshd__ldap_domain: '{{ ansible_domain }}'
+# The base LDAP Distinguished Name used for SSH public key lookups.
+sshd__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.base_dn|d())
+                        else [] }}'
 
                                                                    # ]]]
-# .. envvar:: sshd__ldap_base [[[
+# .. envvar:: sshd__ldap_device_dn [[[
 #
-# LDAP base used for BaseDN generation.
-sshd__ldap_base: '{{ "dc=" + sshd__ldap_domain.split(".") | join(",dc=") }}'
+# The Distinguished Name of the device LDAP object that represents current
+# host. It will be used as a base DN for the ``sshd`` LDAP account object.
+sshd__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              ansible_local.ldap.device_dn|d())
+                          else [] }}'
+
+# .. envvar:: sshd__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the ``sshd`` LDAP account object.
+sshd__ldap_self_rdn: 'uid={{ sshd__authorized_keys_lookup_user }}'
 
                                                                    # ]]]
-# .. envvar:: sshd__ldap_bind_basedn [[[
+# .. envvar:: sshd__ldap_self_object_classes [[[
 #
-# LDAP BaseDN of the host account used to bind to the server.
-sshd__ldap_bind_basedn: '{{ "ou=Machines," + sshd__ldap_base }}'
+# The LDAP Object Classes used to create the ``sshd`` LDAP account object.
+sshd__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 
                                                                    # ]]]
-# .. envvar:: sshd__ldap_bind_cn [[[
+# .. envvar:: sshd__ldap_self_attributes [[[
 #
-# Host account name in LDAP.
-sshd__ldap_bind_cn: 'cn={{ ansible_hostname }}'
+# YAML dictionary that contains the attributes of the ``sshd`` LDAP account
+# object.
+sshd__ldap_self_attributes:
+  uid: '{{ sshd__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ sshd__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "sshd" service to access the LDAP directory'
 
                                                                    # ]]]
-# .. envvar:: sshd__ldap_bind_dn [[[
+# .. envvar:: sshd__ldap_binddn [[[
 #
-# Machine entry used to bind to the LDAP server.
-sshd__ldap_bind_dn: '{{ sshd__ldap_bind_cn + "," + sshd__ldap_bind_basedn }}'
+# The Distinguished Name of the ``sshd`` LDAP account object used to
+# authenticate to the LDAP directory, defined as a string.
+sshd__ldap_binddn: '{{ ([ sshd__ldap_self_rdn ] + sshd__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
-# .. envvar:: sshd__ldap_bind_basepw [[[
+# .. envvar:: sshd__ldap_bindpw [[[
 #
-# Base path to file with host LDAP password in ``secret/`` directory. See
-# :ref:`debops.secret` for more details.
-sshd__ldap_bind_basepw: '{{ secret + "/credentials/" +
-                            ansible_fqdn + "/ldap/host/binddn/" +
-                            sshd__ldap_bind_dn + ".password" }}'
-
-                                                                   # ]]]
-# .. envvar:: sshd__ldap_bind_pw [[[
-#
-# Machine password used for binding to LDAP database.
-sshd__ldap_bind_pw: '{{ lookup("password", sshd__ldap_bind_basepw +
-                        " length=" + sshd__ldap_password_length) }}'
+# The password defined in the ``sshd`` LDAP account object used to authenticate
+# to the LDAP directory.
+sshd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                              + sshd__ldap_binddn | to_uuid + ".password length=32") }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_bind_pw_file [[[
 #
-# Path to file which stores machine bind password on remote host.
+# Absolute path to the file on the remote host that stores the password to the
+# ``sshd`` LDAP account object..
 sshd__ldap_bind_pw_file: '/etc/ssh/ldap_authorized_keys_bindpw'
-
-                                                                   # ]]]
-# .. envvar:: sshd__ldap_password_length [[[
-#
-# Length of generated LDAP machine password.
-sshd__ldap_password_length: '48'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_filter [[[
@@ -791,6 +787,19 @@ sshd__tcpwrappers__dependent_allow:
     weight: '30'
     filename: 'sshd_dependent_allow'
     comment: 'List of hosts allowed to connect to ssh'
+
+                                                                   # ]]]
+# .. envvar:: sshd__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+sshd__ldap__dependent_tasks:
+
+  - name: 'Create sshd account for {{ sshd__ldap_device_dn | join(",") }}'
+    dn: '{{ sshd__ldap_binddn }}'
+    objectClass: '{{ sshd__ldap_self_object_classes }}'
+    attributes: '{{ sshd__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present" if sshd__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__pam_access__dependent_rules [[[

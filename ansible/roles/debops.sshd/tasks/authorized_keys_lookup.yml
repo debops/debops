@@ -1,29 +1,11 @@
 ---
 
-- name: Create OpenSSH lookup system group
-  group:
-    name: '{{ sshd__authorized_keys_lookup_group }}'
-    state: 'present'
-    system: True
-
-- name: Create OpenSSH lookup system user
-  user:
-    name: '{{ sshd__authorized_keys_lookup_user }}'
-    group: '{{ sshd__authorized_keys_lookup_group }}'
-    home: '{{ sshd__authorized_keys_lookup_home }}'
-    comment: 'OpenSSH Authorized Keys lookup'
-    shell: '/bin/false'
-    state: 'present'
-    createhome: False
-    append: False
-    system: True
-
 - name: Create OpenSSH LDAP bind password file
   environment:
-    ANSIBLE_SSHD_LDAP_BINDPW: '{{ sshd__ldap_bind_pw }}'
+    ANSIBLE_SSHD_LDAP_BINDPW: '{{ sshd__ldap_bindpw }}'
   shell: echo -n ${ANSIBLE_SSHD_LDAP_BINDPW} > {{ sshd__ldap_bind_pw_file }} ;
-         chmod 0640 {{ sshd__ldap_bind_pw_file }} ;
-         chown root.{{ sshd__authorized_keys_lookup_group }} {{ sshd__ldap_bind_pw_file }}
+         chmod 0600 {{ sshd__ldap_bind_pw_file }} ;
+         chown {{ sshd__authorized_keys_lookup_user }}:root {{ sshd__ldap_bind_pw_file }}
   args:
     creates: '{{ sshd__ldap_bind_pw_file }}'
   when: sshd__authorized_keys_lookup_type|d() and

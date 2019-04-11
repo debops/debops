@@ -48,7 +48,7 @@ Ansible inventory to customize OpenSSH server:
 
   LDAP key lookup depends on system-wide LDAP configuration in
   :file:`/etc/ldap/ldap.conf`, which can be performed (at the moment) using
-  :ref:`debops.auth` role.
+  :ref:`debops.ldap` role.
 
 Example inventory
 -----------------

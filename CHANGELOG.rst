@@ -183,6 +183,17 @@ Changed
   parameter is disabled by default in Debian and upstream, however it is
   required for the domain-based access control rules to work as expected.
 
+- [debops.sshd] When the LDAP support is configured on a host by the
+  :ref:`debops.ldap` role, the :ref:`debops.sshd` role will use the resulting
+  infrastructure to connect to the LDAP directory and create the ``sshd`` LDAP
+  account object for each host, used for lookups of the SSH keys in the
+  directory.
+
+  The role will no longer create a separate ``sshd-lookup`` UNIX account to
+  perform LDAP lookups; the existing ``sshd`` UNIX account will be used
+  instead. The :command:`ldapsearch` command used for lookups will default to
+  LDAP over TLS connections instead of LDAPS.
+
 Removed
 ~~~~~~~
 

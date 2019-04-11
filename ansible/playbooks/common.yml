@@ -99,6 +99,11 @@
     - role: debops.ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
 
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ sshd__ldap__dependent_tasks }}'
+
     - role: debops.apt_listchanges
       tags: [ 'role::apt_listchanges', 'skip::apt_listchanges' ]
 
