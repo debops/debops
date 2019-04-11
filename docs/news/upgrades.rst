@@ -94,6 +94,19 @@ Inventory variable changes
   | ``auth_nslcd_pam_authz_search_host_and_service`` | Removed                          | No                                               |
   +--------------------------------------------------+----------------------------------+--------------------------------------------------+
 
+- The :envvar:`sshd__default_allow_groups` default variable has been changed to
+  an empty list. The group-based access control has been moved to a PAM access
+  control rules defined in the :envvar:`sshd__pam_access__dependent_rules`
+  variable.
+
+  Access to the OpenSSH service by the ``admins``, ``sshusers`` and
+  ``sftponly`` UNIX groups members should work the same as before. Access to
+  the ``root`` account has been limited to hosts in the same DNS domain. UNIX
+  accounts not in the aforementioned UNIX groups can access the OpenSSH service
+  from hosts in the same DNS domain (other restrictions like public key
+  presence still apply). See :ref:`debops.pam_access` documentation for more
+  details about defining the PAM access rules.
+
 
 v0.8.1 (2019-02-02)
 -------------------

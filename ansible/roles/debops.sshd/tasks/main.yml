@@ -184,6 +184,30 @@
     state: 'absent'
   notify: [ 'Test sshd configuration and restart' ]
 
+- name: Divert PAM configuration for sshd
+  command: dpkg-divert --quiet --local
+           --divert "/etc/pam.d/sshd.dpkg-divert"
+           --rename "/etc/pam.d/sshd"
+  args:
+    creates: '/etc/pam.d/sshd.dpkg-divert'
+  when: sshd__pam_deploy_state == 'present'
+
+- name: Generate PAM configuration for sshd
+  template:
+    src: 'etc/pam.d/sshd.j2'
+    dest: '/etc/pam.d/sshd'
+    mode: '0644'
+  when: sshd__pam_deploy_state == 'present'
+
+- name: Revert default sshd PAM configuration if requested
+  shell: set -o nounset -o pipefail -o errexit &&
+         rm -f /etc/pam.d/sshd &&
+         dpkg-divert --quiet --local --rename --remove /etc/pam.d/sshd
+  args:
+    executable: '/bin/bash'
+    removes: '/etc/pam.d/sshd.dpkg-divert'
+  when: sshd__pam_deploy_state != 'present'
+
 - name: Make sure that Ansible local fact directory exists
   file:
     path: '/etc/ansible/facts.d'

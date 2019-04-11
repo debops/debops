@@ -171,6 +171,18 @@ Changed
   :ref:`debops.system_groups` role was applied before the :ref:`debops.ldap`
   role.
 
+- [debops.sshd] The access control based on UNIX groups defined in the
+  :file:`/etc/ssh/sshd_config` file has been removed. Instead, the OpenSSH
+  server uses the PAM access control configuration, managed by the
+  :ref:`debops.pam_access` Ansible role, to control access by
+  users/groups/origins. OpenSSH service uses its own access control file,
+  separate from the global :file:`/etc/security/access.conf` file.
+
+- [debops.sshd] The role will enable client address resolving using DNS by
+  setting the ``UseDNS yes`` option in OpenSSH server configuration. This
+  parameter is disabled by default in Debian and upstream, however it is
+  required for the domain-based access control rules to work as expected.
+
 Removed
 ~~~~~~~
 
