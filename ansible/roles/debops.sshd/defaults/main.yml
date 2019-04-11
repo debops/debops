@@ -609,13 +609,13 @@ sshd__ldap_filter: '{{ sshd__ldap_filter_map["service+host"] }}'
 sshd__ldap_filter_map:
 
   # User account needs 'authorizedService' attribute
-  'service': '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service))'
+  'service': '(&(objectClass=posixAccount)(uid=$username)(|(authorizedService=$service)(authorizedService=\\*)))'
 
   # User account needs 'host' attribute
   'host': '(&(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*.$domain)(host=\\*)))'
 
   # User account needs both 'authorizedService' and 'host' attributes.
-  'service+host': '(&(objectClass=posixAccount)(uid=$username)(authorizedService=$service)(|(host=$hostname)(host=$fqdn)(host=\\*.$domain)(host=\\*)))'
+  'service+host': '(&(objectClass=posixAccount)(uid=$username)(|(authorizedService=$service)(authorizedService=\\*))(|(host=$hostname)(host=$fqdn)(host=\\*.$domain)(host=\\*)))'
                                                                    # ]]]
                                                                    # ]]]
 # PAM configuration [[[
