@@ -187,7 +187,9 @@ Changed
   :ref:`debops.ldap` role, the :ref:`debops.sshd` role will use the resulting
   infrastructure to connect to the LDAP directory and create the ``sshd`` LDAP
   account object for each host, used for lookups of the SSH keys in the
-  directory.
+  directory. The SSH host public keys will be automatically added or updated in
+  the LDAP device object to allow for centralized generation of the
+  ``~/.ssh/known_hosts`` files based on the data stored in LDAP.
 
   The role will no longer create a separate ``sshd-lookup`` UNIX account to
   perform LDAP lookups; the existing ``sshd`` UNIX account will be used

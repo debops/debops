@@ -551,6 +551,20 @@ sshd__ldap_device_dn: '{{ ansible_local.ldap.device_dn
                           else [] }}'
 
                                                                    # ]]]
+# .. envvar:: sshd__ldap_device_object_classes [[[
+#
+# List of additional LDAP Object Classes to add to the device LDAP object.
+sshd__ldap_device_object_classes: [ 'ldapPublicKey' ]
+
+                                                                   # ]]]
+# .. envvar:: sshd__ldap_device_attributes [[[
+#
+# YAML dictionary with additional LDAP attributes which will be added to the
+# device LDAP object.
+sshd__ldap_device_attributes:
+  sshPublicKey: '{{ sshd__env_register_host_public_keys.stdout_lines }}'
+
+                                                                   # ]]]
 # .. envvar:: sshd__ldap_self_rdn [[[
 #
 # The Relative Distinguished Name of the ``sshd`` LDAP account object.
@@ -794,6 +808,17 @@ sshd__tcpwrappers__dependent_allow:
 #
 # Configuration for the :ref:`debops.ldap` Ansible role.
 sshd__ldap__dependent_tasks:
+
+  - name: 'Add missing LDAP object classes to {{ sshd__ldap_device_dn | join(",") }}'
+    dn: '{{ sshd__ldap_device_dn }}'
+    attributes:
+      objectClass: '{{ sshd__ldap_device_object_classes }}'
+    state: '{{ "present" if sshd__ldap_device_dn|d() else "ignore" }}'
+
+  - name: 'Update SSH host public keys in {{ sshd__ldap_device_dn | join(",") }}'
+    dn: '{{ sshd__ldap_device_dn }}'
+    attributes: '{{ sshd__ldap_device_attributes }}'
+    state: '{{ "exact" if sshd__ldap_device_dn|d() else "ignore" }}'
 
   - name: 'Create sshd account for {{ sshd__ldap_device_dn | join(",") }}'
     dn: '{{ sshd__ldap_binddn }}'

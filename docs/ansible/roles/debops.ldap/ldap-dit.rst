@@ -41,6 +41,7 @@ Object Classes and Attributes
 - :envvar:`cn=host.example.org <ldap__device_self_rdn>`
 
   - :ref:`debops.ldap`: :envvar:`Object Classes <ldap__device_object_classes>`, :envvar:`Attributes <ldap__device_attributes>`
+  - :ref:`debops.sshd`: :envvar:`Object Classes <sshd__ldap_device_object_classes>`, :envvar:`Attributes <sshd__ldap_device_attributes>` (SSH host public keys)
 
 
 Parent nodes
