@@ -73,6 +73,11 @@ Added
 
   .. __: https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
 
+- A new ``bootstrap-ldap.yml`` Ansible playbook can be used to bootstrap
+  Debian/Ubuntu hosts with LDAP support enabled by default. The playbook will
+  configure only the services required for secure LDAP access (PKI, SSH,
+  PAM/NSS), the rest should be configured using the common playbook.
+
 Changed
 ~~~~~~~
 
@@ -170,6 +175,31 @@ Changed
   installations should be unaffected, as long as the updated
   :ref:`debops.system_groups` role was applied before the :ref:`debops.ldap`
   role.
+
+- [debops.sshd] The access control based on UNIX groups defined in the
+  :file:`/etc/ssh/sshd_config` file has been removed. Instead, the OpenSSH
+  server uses the PAM access control configuration, managed by the
+  :ref:`debops.pam_access` Ansible role, to control access by
+  users/groups/origins. OpenSSH service uses its own access control file,
+  separate from the global :file:`/etc/security/access.conf` file.
+
+- [debops.sshd] The role will enable client address resolving using DNS by
+  setting the ``UseDNS yes`` option in OpenSSH server configuration. This
+  parameter is disabled by default in Debian and upstream, however it is
+  required for the domain-based access control rules to work as expected.
+
+- [debops.sshd] When the LDAP support is configured on a host by the
+  :ref:`debops.ldap` role, the :ref:`debops.sshd` role will use the resulting
+  infrastructure to connect to the LDAP directory and create the ``sshd`` LDAP
+  account object for each host, used for lookups of the SSH keys in the
+  directory. The SSH host public keys will be automatically added or updated in
+  the LDAP device object to allow for centralized generation of the
+  ``~/.ssh/known_hosts`` files based on the data stored in LDAP.
+
+  The role will no longer create a separate ``sshd-lookup`` UNIX account to
+  perform LDAP lookups; the existing ``sshd`` UNIX account will be used
+  instead. The :command:`ldapsearch` command used for lookups will default to
+  LDAP over TLS connections instead of LDAPS.
 
 Removed
 ~~~~~~~

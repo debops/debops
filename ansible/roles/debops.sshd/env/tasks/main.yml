@@ -1,0 +1,12 @@
+---
+
+# The SSH host keys gathered by Ansible facts don't contain the full
+# information, therefore we should grab them by ourselves
+- name: Gather SSH host public keys
+  shell: 'set -o nounset -o pipefail -o errexit &&
+          cat /etc/ssh/ssh_host_*_key.pub'
+  args:
+    executable: '/bin/bash'
+  register: sshd__env_register_host_public_keys
+  changed_when: False
+  check_mode: False

@@ -4,6 +4,21 @@ Getting started
 .. contents::
    :local:
 
+Changes from Debian defaults
+----------------------------
+
+The ``debops.sshd`` role will configure the OpenSSH server to lookup the client
+hostnames in DNS by setting the ``UseDNS`` option to ``yes`` (the Debian and
+upstream default is ``no``). This allows use of the DNS hostnames and domains
+in the authorized keys files and PAM access control rules. DNS lookup can be
+controlled using the :envvar:`sshd__use_dns` variable.
+
+The role will divert the original :file:`/etc/pam.d/sshd` configuration file
+and generate a new one, with PAM access control enabled and using the separate
+:file:`/etc/security/access-sshd.conf` configuration file. The ACL rules are
+defined in the :envvar:`sshd__pam_access__dependent_rules` variable and are
+managed by the :ref:`debops.pam_access` Ansible role.
+
 Useful variables
 ----------------
 
@@ -33,7 +48,7 @@ Ansible inventory to customize OpenSSH server:
 
   LDAP key lookup depends on system-wide LDAP configuration in
   :file:`/etc/ldap/ldap.conf`, which can be performed (at the moment) using
-  :ref:`debops.auth` role.
+  :ref:`debops.ldap` role.
 
 Example inventory
 -----------------

@@ -23,6 +23,7 @@ Directory structure
           - :envvar:`cn=host.example.org <ldap__device_self_rdn>` (:envvar:`conditional <ldap__device_enabled>`)
 
             - :ref:`uid=nslcd <nslcd__ref_ldap_dit>` -> :ref:`debops.nslcd`
+            - :ref:`uid=sshd <sshd__ref_ldap_dit>` -> :ref:`debops.sshd`
 
       - :envvar:`ou=People <ldap__people_rdn>`
       - :envvar:`ou=Groups <ldap__groups_rdn>`
@@ -40,6 +41,7 @@ Object Classes and Attributes
 - :envvar:`cn=host.example.org <ldap__device_self_rdn>`
 
   - :ref:`debops.ldap`: :envvar:`Object Classes <ldap__device_object_classes>`, :envvar:`Attributes <ldap__device_attributes>`
+  - :ref:`debops.sshd`: :envvar:`Object Classes <sshd__ldap_device_object_classes>`, :envvar:`Attributes <sshd__ldap_device_attributes>` (SSH host public keys)
 
 
 Parent nodes
