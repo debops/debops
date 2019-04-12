@@ -48,6 +48,7 @@ output = loads('''{{ ({
                    else False),
     "default_mirrors": apt__tpl_default_sources,
     "default_sources_map": apt__tpl_default_sources_map,
+    "suite": apt__distribution_suite
     }) | to_nice_json | regex_replace("[ \\t\\r\\f\\v]+(\\n|$)", "\\1") }}''')
 
 apt_sources_list = ['/etc/apt/sources.list.dpkg-divert',
@@ -69,19 +70,21 @@ try:
     for line in fh:
         if line.startswith('deb'):
             source = line.split()
-            if (source[1] not in source_deb
-                    and source[1] not in security_sources):
+            source_url = source[1].rstrip('/')
+            if (source_url not in source_deb
+                    and source_url not in security_sources):
                 for prefix in apt_uri_types:
-                    if source[1].startswith(prefix):
-                        source_deb.append(source[1])
+                    if source_url.startswith(prefix):
+                        source_deb.append(source_url)
 
         elif line.startswith('deb-src'):
             source = line.split()
-            if (source[1] not in source_deb_src
-                    and source[1] not in security_sources):
+            source_url = source[1].rstrip('/')
+            if (source_url not in source_deb_src
+                    and source_url not in security_sources):
                 for prefix in apt_uri_types:
-                    if source[1].startswith(prefix):
-                        source_deb_src.append(source[1])
+                    if source_url.startswith(prefix):
+                        source_deb_src.append(source_url)
 
     fh.close()
 

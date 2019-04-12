@@ -227,9 +227,9 @@ apt__distribution_release: '{{ ansible_local.core.distribution_release
 # map is used to configure security repositories only on the OS releases that
 # have them available.
 apt__distribution_release_map:
-  'Debian': [ 'wheezy', 'jessie', 'stretch', 'buster' ]
-  'Ubuntu': [ 'precise', 'trusty', 'xenial' ]
-  'Devuan': [ 'jessie' ]
+  'Debian': [ 'wheezy', 'jessie', 'stretch', 'buster', 'bullseye' ]
+  'Ubuntu': [ 'precise', 'trusty', 'xenial', 'bionic' ]
+  'Devuan': [ 'jessie', 'ascii', 'beowulf' ]
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suite_map [[[
@@ -239,18 +239,28 @@ apt__distribution_release_map:
 # repository suffixes should be configured on the current host in case the role
 # is used on a Debian Testing system.
 apt__distribution_suite_map:
-  'Debian_wheezy':    'oldoldstable'
-  'Debian_jessie':    'oldstable'
+  'Debian_wheezy':    'archive'
+  'Debian_jessie':    'lts'
   'Debian_stretch':   'stable'
   'Debian_buster':    'testing'
   'Debian_sid':       'unstable'
-  'Raspbian_wheezy':  'oldstable'
-  'Raspbian_jessie':  'stable'
-  'Raspbian_stretch': 'testing'
+  'Raspbian_wheezy':  'archive'
+  'Raspbian_jessie':  'oldstable'
+  'Raspbian_stretch': 'stable'
+  'Raspbian_buster':  'testing'
   'Raspbian_sid':     'unstable'
-  'Devuan_jessie':    'stable'
-  'Devuan_ascii':     'testing'
+  'Devuan_jessie':    'oldstable'
+  'Devuan_ascii':     'stable'
+  'Devuan_beowulf':   'testing'
   'Devuan_ceres':     'unstable'
+
+                                                                   # ]]]
+# .. envvar:: apt__distribution_suite [[[
+#
+# The variable that specifies the "suite" or an alias of the current
+# distribution release.
+apt__distribution_suite: '{{ apt__distribution_suite_map[apt__distribution + "_" +
+                                                         apt__distribution_release]|d() }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suffix_map [[[
@@ -262,6 +272,8 @@ apt__distribution_suite_map:
 # If the combination of OS distribution and release is not found, the default
 # list of suffixes will be used automatically.
 apt__distribution_suffix_map:
+  'Debian_archive':  [ '' ]
+  'Debian_lts':      [ '' ]
   'Debian_stable':   [ '', '-updates', '-backports' ]
   'Debian_testing':  [ '', '-updates' ]
   'Debian_unstable': [ '' ]
@@ -316,6 +328,28 @@ apt__distribution_components: '{{ apt__distribution_components_free[apt__distrib
                                    if apt__nonfree|bool else []) }}'
                                                                    # ]]]
                                                                    # ]]]
+# Archived distribution releases [[[
+# ----------------------------------
+
+# .. envvar:: apt__archive_source_map [[[
+#
+# The YAML dictionary that contains the map of the archive repositories for
+# different OS distributions. The archive repositories are usually not part of
+# the repository mirrors, but are mirrored separately. See the documentation
+# pages for alternative mirrors.
+apt__archive_source_map:
+
+  # Debian archive repositories: https://www.debian.org/distrib/archive
+  'Debian': 'http://archive.debian.org/debian/'
+
+                                                                   # ]]]
+# .. envvar:: apt__archive_source [[[
+#
+# The URL of the archive APT repository configured by default when the current
+# OS release is migrated to the archive.
+apt__archive_source: '{{ apt__archive_source_map[apt__distribution]|d() }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Default APT package sources [[[
 # -------------------------------
 
@@ -352,7 +386,8 @@ apt__original_sources:
                   ansible_local.apt.original_mirrors_deb|d())
               else [] }}'
     state: '{{ "present" if (ansible_local|d() and ansible_local.apt|d() and
-                             ansible_local.apt.original_mirrors_deb|d())
+                             ansible_local.apt.original_mirrors_deb|d() and
+                             apt__distribution_suite != "archive")
                          else "absent" }}'
 
                                                                    # ]]]
@@ -362,7 +397,9 @@ apt__original_sources:
 # package sources for specific distributions.
 # If package sources are defined in specific group, host or on all hosts in
 # Ansible inventory, it may be desirable not to include the default sources.
-apt__default_sources_state: 'present'
+apt__default_sources_state: '{{ "absent"
+                                if (apt__distribution_suite == "archive")
+                                else "present" }}'
 
                                                                    # ]]]
 # .. envvar:: apt__default_sources [[[
@@ -417,6 +454,13 @@ apt__default_sources:
     distribution: 'Devuan'
     state:        '{{ apt__default_sources_state }}'
 
+  - uri:          '{{ apt__archive_source }}'
+    comment:      '{{ "Official " + apt__distribution + " archive repository" }}'
+    distribution: 'Debian'
+    state:        '{{ "present"
+                      if (apt__distribution_suite == "archive")
+                      else "absent" }}'
+
                                                                    # ]]]
 # .. envvar:: apt__security_sources_state [[[
 #
@@ -424,7 +468,9 @@ apt__default_sources:
 # repositories proving security updates.
 # If a local security mirror is defined in Ansible inventory group or host,
 # it may be desirable not to include the default security sources.
-apt__security_sources_state: 'present'
+apt__security_sources_state: '{{ "absent"
+                                 if (apt__distribution_suite == "archive")
+                                 else "present" }}'
 
                                                                    # ]]]
 # .. envvar:: apt__group_security_sources [[[
@@ -517,13 +563,14 @@ apt__security_sources:
 # Final list of APT sources to configure. This variable defines an order in
 # which various package sources are written in the :file:`/etc/apt/sources.list` as
 # well as what sources will be present there.
-apt__combined_sources: '{{ apt__sources +
-                           apt__group_sources +
-                           apt__host_sources +
+apt__combined_sources: '{{ ([]
+                            if (apt__distribution_suite == "archive")
+                            else (apt__sources + apt__group_sources + apt__host_sources)) +
                            apt__original_sources +
                            apt__default_sources +
-                           apt__host_security_sources +
-                           apt__group_security_sources +
+                           ([]
+                            if (apt__distribution_suite == "archive")
+                            else (apt__host_security_sources + apt__group_security_sources)) +
                            apt__security_sources }}'
                                                                    # ]]]
                                                                    # ]]]

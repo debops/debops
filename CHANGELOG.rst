@@ -78,6 +78,20 @@ Added
   configure only the services required for secure LDAP access (PKI, SSH,
   PAM/NSS), the rest should be configured using the common playbook.
 
+- [debops.apt][debops.unattended_upgrades] Systems with the End of Life Debian
+  releases (``wheezy``) installed will be configured to use the Debian Archive
+  repository as the main APT sources instead of the normal Debian repository
+  mirrors. These releases have been moved out of the main repositories and are
+  not fully available through normal means. The periodic updates of the APT
+  archive repositories on these systems will be disabled since the EOL releases
+  no longer receive updates.
+
+  The Debian LTS release (``jessie``) APT repository sources will use only the
+  main and security repositories, without updates or backports. See the
+  `information about the Debian LTS support`__ for more details.
+
+  .. __: https://wiki.debian.org/LTS
+
 Changed
 ~~~~~~~
 
@@ -200,6 +214,12 @@ Changed
   perform LDAP lookups; the existing ``sshd`` UNIX account will be used
   instead. The :command:`ldapsearch` command used for lookups will default to
   LDAP over TLS connections instead of LDAPS.
+
+- [deops.unattended_upgrades] The packages from the ``stable-updates`` APT
+  repository section will be automatically upgraded by default, the same as the
+  packages from Debian Security repository. This should cover important
+  non-security related upgrades, such as timezone changes, antivirus database
+  changes, and similar.
 
 Removed
 ~~~~~~~

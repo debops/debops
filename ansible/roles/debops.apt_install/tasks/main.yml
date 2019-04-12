@@ -66,6 +66,13 @@
   when: item.name|d() and not item.path|d()
   changed_when: apt_install__register_alternatives.stdout|d()
 
+- name: Disable kernel hints about pending upgrades
+  template:
+    src: 'etc/needrestart/conf.d/no-kernel-hints.conf.j2'
+    dest: '/etc/needrestart/conf.d/no-kernel-hints.conf'
+    mode: '0644'
+  when: apt_install__enabled|bool
+
 - name: Make sure that Ansible fact directory exists
   file:
     path: '/etc/ansible/facts.d'
