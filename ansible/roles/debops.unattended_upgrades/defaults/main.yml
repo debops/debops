@@ -50,7 +50,10 @@ unattended_upgrades__packages: []
 # script runs :program:`unattended-upgrade`, but also performs some other actions
 # which can be useful on their own. Enabling periodic APT runs automatically
 # enables repository updates, but not upgrades.
-unattended_upgrades__periodic: '{{ unattended_upgrades__enabled }}'
+unattended_upgrades__periodic: '{{ False
+                                   if (ansible_local|d() and ansible_local.apt|d() and
+                                       (ansible_local.apt.suite|d()) == "archive")
+                                   else unattended_upgrades__enabled }}'
 
                                                                    # ]]]
 # .. envvar:: unattended_upgrades__periodic_download [[[
