@@ -215,6 +215,12 @@ Changed
   instead. The :command:`ldapsearch` command used for lookups will default to
   LDAP over TLS connections instead of LDAPS.
 
+- [deops.unattended_upgrades] The packages from the ``stable-updates`` APT
+  repository section will be automatically upgraded by default, the same as the
+  packages from Debian Security repository. This should cover important
+  non-security related upgrades, such as timezone changes, antivirus database
+  changes, and similar.
+
 Removed
 ~~~~~~~
 
