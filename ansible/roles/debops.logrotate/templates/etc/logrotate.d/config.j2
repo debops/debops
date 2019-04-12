@@ -4,7 +4,7 @@
 {%   if section.state is undefined or section.state != 'absent' %}
 {%     if section.comment|d() %}
 
-{{ section.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{{ section.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
 {%     endif %}
 {%     if section.log|d() %}
 {%       if section.log is string %}
@@ -35,9 +35,9 @@
 {%     endif %}
 {%     if section.options|d() %}
 {%       if section.log|d() or section.logs|d() %}
-{{ section.options | indent(4, true) -}}
+{{ section.options | indent(4, true) }}
 {%       else %}
-{{ section.options -}}
+{{ section.options }}
 {%       endif %}
 {%     endif %}
 {%     if section.log|d() or section.logs|d() %}
@@ -48,23 +48,23 @@
 {%       endif %}
 {%       if section.prerotate|d() %}
     prerotate
-{{ section.prerotate | indent(8, true) -}}
+{{ section.prerotate | indent(8, true) }}
 {{ '    endscript' }}
 {%       endif %}
 {%       if section.postrotate|d() %}
 
     postrotate
-{{ section.postrotate | indent(8, true) -}}
+{{ section.postrotate | indent(8, true) }}
 {{ '    endscript' }}
 {%       endif %}
 {%       if section.preremove|d() %}
     preremove
-{{ section.preremove | indent(8, true) -}}
+{{ section.preremove | indent(8, true) }}
 {{ '    endscript' }}
 {%       endif %}
 {%       if section.lastaction|d() %}
     lastaction
-{{ section.lastaction | indent(8, true) -}}
+{{ section.lastaction | indent(8, true) }}
 {{ '    endscript' }}
 {%       endif %}
 }
@@ -74,7 +74,7 @@
 {% if item.sections|d() %}
 {%   for section in item.sections %}
 {%     if (section.log|d() or section.logs|d() or section.filename|d()) and section.state|d('present') != 'absent' %}
-{{ print_config(section) -}}
+{{ print_config(section) }}
 {%       if not loop.last %}
 
 {%       endif %}
@@ -82,6 +82,6 @@
 {%   endfor %}
 {% else %}
 {%   if (item.log|d() or item.logs|d() or item.filename|d()) and item.state|d('present') != 'absent' %}
-{{ print_config(item) -}}
+{{ print_config(item) }}
 {%   endif %}
 {% endif %}
