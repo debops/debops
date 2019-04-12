@@ -1,22 +1,22 @@
 # {{ ansible_managed }}
 
 {% if logrotate__options %}
-{{ logrotate__options -}}
+{{ logrotate__options | regex_replace('\n$','') }}
 {% endif %}
 {% if logrotate__group_options %}
-{{ logrotate__group_options -}}
+{{ logrotate__group_options | regex_replace('\n$','') }}
 {% endif %}
 {% if logrotate__host_options %}
-{{ logrotate__host_options -}}
+{{ logrotate__host_options | regex_replace('\n$','') }}
 {% endif %}
 {% if logrotate__default_options %}
-{{ logrotate__default_options -}}
+{{ logrotate__default_options | regex_replace('\n$','') }}
 {% endif %}
+
 {% macro print_config(section) %}
 {%   if section.state is undefined or section.state != 'absent' %}
 {%     if section.comment|d() %}
-
-# {{ section.comment }}
+{{ section.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%     endif %}
 {%     if section.log|d() %}
 {%       if section.log is string %}
@@ -46,32 +46,32 @@
 {%       endif %}
 {%     endif %}
 {%     if section.options|d() %}
-{{ section.options | indent(4, true) -}}
+{{ section.options | regex_replace('\n$','') | indent(4, true) }}
 {%     endif %}
 {%     if section.firstaction|d() %}
     firstaction
-{{ section.firstaction | indent(8, true) -}}
-{{ '    endscript' }}
+{{ section.firstaction | regex_replace('\n$','') | indent(8, true) }}
+    endscript
 {%     endif %}
 {%     if section.prerotate|d() %}
     prerotate
-{{ section.prerotate | indent(8, true) -}}
-{{ '    endscript' }}
+{{ section.prerotate | regex_replace('\n$','') | indent(8, true) }}
+    endscript
 {%     endif %}
 {%     if section.postrotate|d() %}
     postrotate
-{{ section.postrotate | indent(8, true) -}}
-{{ '    endscript' }}
+{{ section.postrotate | regex_replace('\n$','') | indent(8, true) }}
+    endscript
 {%     endif %}
 {%     if section.preremove|d() %}
     preremove
-{{ section.preremove | indent(8, true) -}}
-{{ '    endscript' }}
+{{ section.preremove | regex_replace('\n$','') | indent(8, true) }}
+    endscript
 {%     endif %}
 {%     if section.lastaction|d() %}
     lastaction
-{{ section.lastaction | indent(8, true) -}}
-{{ '    endscript' }}
+{{ section.lastaction | regex_replace('\n$','') | indent(8, true) }}
+    endscript
 {%     endif %}
 }
 {%   endif %}
@@ -80,7 +80,7 @@
 {%   if item.sections|d() %}
 {%     for section in item.sections %}
 {%       if (section.log|d() or section.logs|d() or section.filename|d()) and section.state|d('present') != 'absent' %}
-{{ print_config(section) -}}
+{{ print_config(section) | regex_replace('\n$','') }}
 {%         if not loop.last %}
 
 {%         endif %}
@@ -88,7 +88,7 @@
 {%     endfor %}
 {%   else %}
 {%     if (item.log|d() or item.logs|d() or item.filename|d()) and item.state|d('present') != 'absent' %}
-{{ print_config(item) -}}
+{{ print_config(item) | regex_replace('\n$','') }}
 {%       if not loop.last %}
 
 {%       endif %}
