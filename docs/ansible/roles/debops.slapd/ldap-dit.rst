@@ -26,6 +26,10 @@ Directory structure
 
         - ``{3}unique``
 
+        - ``{4}memberof``
+
+        - ``{5}refint``
+
       - :ref:`cn=schema <slapd__ref_ldap_schemas>`
 
         - :ref:`core.schema <slapd__ref_initial_schemas>`
@@ -53,6 +57,10 @@ Directory structure
         - :ref:`olcOverlay={1}ppolicy <slapd__ref_ppolicy_overlay>`
 
         - :ref:`olcOverlay={2}unique <slapd__ref_unique_overlay>`
+
+        - :ref:`olcOverlay={3}memberof <slapd__ref_memberof_overlay>`
+
+        - :ref:`olcOverlay={4}refint <slapd__ref_refint_overlay>`
 
         - :envvar:`olcAccess <slapd__acl_tasks>` (:ref:`documentation <slapd__ref_acl>`)
 

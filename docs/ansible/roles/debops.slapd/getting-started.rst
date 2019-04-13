@@ -16,59 +16,10 @@ should review the configuration before doing so - the OpenLDAP server usually
 refuses the incorrect configuration outright, which should not affect the
 existing installation, but that's not a 100% guarantee.
 
-.. _slapd__ref_syncprov_overlay:
+- :ref:`slapd__ref_overlays`
+- :ref:`slapd__ref_ldap_schemas`
+- :ref:`slapd__ref_acl`
 
-Sync Provider overlay
-~~~~~~~~~~~~~~~~~~~~~
-
-The role will by default enable the `Sync Provider`__ (``syncprov``) dynamic
-module and overlay, in both the ``cn=config`` configuration database, and the
-main OpenLDAP database.
-
-The Sync Provider functionality is used in different `data replication`__
-strategies. Enabling it by default, even on a standalone OpenLDAP server,
-should be harmless - the replication requires additional configuration defined
-in each OpenLDAP database. The overlay is enabled first to keep the
-``X-ORDERED`` index number consistent between the ``cn=config`` database and
-the main database.
-
-.. __: http://www.zytrax.com/books/ldap/ch6/syncprov.html
-.. __: https://www.openldap.org/doc/admin24/replication.html
-
-.. _slapd__ref_ppolicy_overlay:
-
-Password Policy overlay
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The :ref:`debops.slapd` role will by default import the ``ppolicy`` LDAP
-schema, load the ``ppolicy`` dynamic module and enable the Password Policy
-overlay in the main OpenLDAP database.
-
-The `Password Policy`__ overlay is used to maintain the security and quality of
-various passwords stored in the LDAP database. By default the overlay will
-ensure that the cleartext passwords passed to the OpenLDAP server are hashed
-using the algorithms specified in the ``olcPasswordHash`` parameter (salted
-SHA-512 via :man:`crypt(3)` function is set by default by the
-:ref:`debops.slapd` role).
-
-The LDAP administrators can define default and custom Password Policies in the
-main database, which can enforce additional password requirements, like minimum
-password length, different types of characters used, lockout policy, etc.
-
-.. __: https://www.zytrax.com/books/ldap/ch6/ppolicy.html
-
-.. _slapd__ref_unique_overlay:
-
-Attribute Uniqueness overlay
-----------------------------
-
-The `Attribute Uniqueness overlay`__ is used to enforce that specific LDAP
-attributes are unique acrosse the LDAP directory. The default configuration
-enforces the uniqueness of the ``uidNumber`` and ``gidNumber`` attributes in
-the entire LDAP directory, and the ``uid``, ``gid`` and ``mail`` attributes in
-the ``ou=People,dc=example,dc=org`` subtree of the directory.
-
-.. __: https://www.openldap.org/doc/admin24/overlays.html#Attribute%20Uniqueness
 
 Access to service allowed by default
 ------------------------------------

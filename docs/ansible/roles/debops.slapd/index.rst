@@ -19,6 +19,7 @@ instances and integrates with other DebOps roles like :ref:`debops.pki` and
    :maxdepth: 2
 
    getting-started
+   slapd-overlays
    ldap-schema
    ldap-acl
    backup-restore

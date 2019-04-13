@@ -363,6 +363,8 @@ slapd__default_tasks:
         - '{1}syncprov'
         - '{2}ppolicy'
         - '{3}unique'
+        - '{4}memberof'
+        - '{5}refint'
     ordered: True
 
   - name: 'Enable Sync Provider overlay in the cn=config database'
@@ -389,6 +391,18 @@ slapd__default_tasks:
     attributes:
       olcOverlay: '{2}unique'
 
+  - name: 'Enable memberOf overlay in the main database'
+    dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
+    attributes:
+      olcOverlay: '{3}memberof'
+
+  - name: 'Enable Referential Integrity overlay in the main database'
+    dn: 'olcOverlay={4}refint,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcRefintConfig' ]
+    attributes:
+      olcOverlay: '{4}refint'
+
   - name: 'Configure Password Policy overlay in the main database'
     dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
     attributes:
@@ -407,6 +421,27 @@ slapd__default_tasks:
         - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?mail?sub'
+    state: 'exact'
+
+  - name: 'Configure memberOf overlay in the main database'
+    dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcMemberOfDangling: 'ignore'
+      olcMemberOfRefInt: 'TRUE'
+      olcMemberOfGroupOC: 'groupOfNames'
+      olcMemberOfMemberAD: 'member'
+      olcMemberOfMemberOfAD: 'memberOf'
+    state: 'exact'
+
+  - name: 'Configure Referential Integrity overlay in the main database'
+    dn: 'olcOverlay={4}refint,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcRefintAttribute:
+        - 'member'
+        - 'memberOf'
+        - 'uniqueMember'
+        - 'manager'
+        - 'owner'
     state: 'exact'
 
   - name: 'Configure the OpenLDAP server log level'
