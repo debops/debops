@@ -152,6 +152,12 @@ slapd__additional_groups: [ 'ssl-cert' ]
 # directories will be owned by the OpenLDAP UNIX account and can be used to
 # store additional OpenLDAP databases.
 slapd__additional_database_dirs: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__log_dir [[[
+#
+# Absolute path to the directory which contains OpenLDAP logs.
+slapd__log_dir: '/var/log/slapd'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP database environment [[[
@@ -365,6 +371,7 @@ slapd__default_tasks:
         - '{3}unique'
         - '{4}memberof'
         - '{5}refint'
+        - '{6}auditlog'
     ordered: True
 
   - name: 'Enable Sync Provider overlay in the cn=config database'
@@ -402,6 +409,12 @@ slapd__default_tasks:
     objectClass: [ 'olcOverlayConfig', 'olcRefintConfig' ]
     attributes:
       olcOverlay: '{4}refint'
+
+  - name: 'Enable Audit Logging overlay in the main database'
+    dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcAuditLogConfig' ]
+    attributes:
+      olcOverlay: '{5}auditlog'
 
   - name: 'Configure Password Policy overlay in the main database'
     dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
@@ -442,6 +455,12 @@ slapd__default_tasks:
         - 'uniqueMember'
         - 'manager'
         - 'owner'
+    state: 'exact'
+
+  - name: 'Configure Audit Logging overlay in the main database'
+    dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcAuditlogFile: '{{ slapd__log_dir + "/slapd-auditlog-main.ldif" }}'
     state: 'exact'
 
   - name: 'Configure the OpenLDAP server log level'
@@ -724,6 +743,34 @@ slapd__host_allow: []
                                                                    # ]]]
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
+
+# .. envvar:: slapd__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+slapd__logrotate__dependent_config:
+
+  - filename: 'slapd'
+    sections:
+
+      - logs: '{{ slapd__log_dir + "/*.log" }}'
+        options: |
+          notifempty
+          missingok
+          weekly
+          maxsize 256M
+          rotate 120
+          compress
+        comment: 'OpenLDAP server logs'
+
+      - logs: '{{ slapd__log_dir + "/*.ldif" }}'
+        options: |
+          notifempty
+          missingok
+          monthly
+          maxsize 256M
+          rotate 120
+          compress
+        comment: 'OpenLDAP audit logs'
 
 # .. envvar:: slapd__python__dependent_packages3 [[[
 #

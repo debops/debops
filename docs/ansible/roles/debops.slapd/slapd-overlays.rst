@@ -94,3 +94,17 @@ LDAP objects when a particular object is renamed or removed. This ensures that
 the references between objects in the LDAP database are consistent.
 
 .. __: https://www.openldap.org/doc/admin24/overlays.html#Referential%20Integrity
+
+
+.. _slapd__ref_auditlog_overlay:
+
+Audit Logging overlay
+---------------------
+
+The `auditlog overlay`__ records all changes performed in the LDAP database
+using an external log file. Changes are stored in the LDIF format, that
+includes a timestamp and the identity of the modifier. The role will
+automatically ensure that the audit log files are rotated periodically using
+the :command:`logrotate` service to keep the disk usage under control.
+
+.. __: https://www.openldap.org/doc/admin24/overlays.html#Audit%20Logging

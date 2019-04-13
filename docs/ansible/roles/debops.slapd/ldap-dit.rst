@@ -30,6 +30,8 @@ Directory structure
 
         - ``{5}refint``
 
+        - ``{6}auditlog``
+
       - :ref:`cn=schema <slapd__ref_ldap_schemas>`
 
         - :ref:`core.schema <slapd__ref_initial_schemas>`
@@ -61,6 +63,8 @@ Directory structure
         - :ref:`olcOverlay={3}memberof <slapd__ref_memberof_overlay>`
 
         - :ref:`olcOverlay={4}refint <slapd__ref_refint_overlay>`
+
+        - :ref:`olcOverlay={5}auditlog <slapd__ref_auditlog_overlay>`
 
         - :envvar:`olcAccess <slapd__acl_tasks>` (:ref:`documentation <slapd__ref_acl>`)
 
