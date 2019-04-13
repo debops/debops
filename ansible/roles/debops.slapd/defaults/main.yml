@@ -362,6 +362,7 @@ slapd__default_tasks:
         - '{0}back_mdb'
         - '{1}syncprov'
         - '{2}ppolicy'
+        - '{3}unique'
     ordered: True
 
   - name: 'Enable Sync Provider overlay in the cn=config database'
@@ -382,6 +383,12 @@ slapd__default_tasks:
     attributes:
       olcOverlay: '{1}ppolicy'
 
+  - name: 'Enable Unique overlay in the main database'
+    dn: 'olcOverlay={2}unique,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcUniqueConfig' ]
+    attributes:
+      olcOverlay: '{2}unique'
+
   - name: 'Configure Password Policy overlay in the main database'
     dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
     attributes:
@@ -389,6 +396,17 @@ slapd__default_tasks:
       olcPPolicyHashCleartext: 'TRUE'
       olcPPolicyUseLockout: 'FALSE'
       olcPPolicyForwardUpdates: 'FALSE'
+    state: 'exact'
+
+  - name: 'Configure Unique overlay in the main database'
+    dn: 'olcOverlay={2}unique,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcUniqueURI:
+        - 'ldap:///{{ slapd__basedn }}?uidNumber?sub'
+        - 'ldap:///{{ slapd__basedn }}?gidNumber?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?mail?sub'
     state: 'exact'
 
   - name: 'Configure the OpenLDAP server log level'
