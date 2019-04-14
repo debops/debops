@@ -372,6 +372,7 @@ slapd__default_tasks:
         - '{4}memberof'
         - '{5}refint'
         - '{6}auditlog'
+        - '{7}constraint'
     ordered: True
 
   - name: 'Enable Sync Provider overlay in the cn=config database'
@@ -415,6 +416,12 @@ slapd__default_tasks:
     objectClass: [ 'olcOverlayConfig', 'olcAuditLogConfig' ]
     attributes:
       olcOverlay: '{5}auditlog'
+
+  - name: 'Enable Constraint overlay in the main database'
+    dn: 'olcOverlay={6}constraint,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcConstraintConfig' ]
+    attributes:
+      olcOverlay: '{6}constraint'
 
   - name: 'Configure Password Policy overlay in the main database'
     dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
@@ -461,6 +468,17 @@ slapd__default_tasks:
     dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
     attributes:
       olcAuditlogFile: '{{ slapd__log_dir + "/slapd-auditlog-main.ldif" }}'
+    state: 'exact'
+
+  - name: 'Configure Constraint overlay in the main database'
+    dn: 'olcOverlay={6}constraint,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcConstraintAttribute:
+        - 'jpegPhoto size 524288'  # 512 KiB
+        - 'userPassword count 5'
+        - 'uidNumber regex ^[[:digit:]]+$'
+        - 'gidNumber regex ^[[:digit:]]+$'
+        - 'macAddress regex ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
     state: 'exact'
 
   - name: 'Configure the OpenLDAP server log level'

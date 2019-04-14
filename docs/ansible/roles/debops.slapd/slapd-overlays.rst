@@ -32,6 +32,8 @@ the main database.
 .. __: http://www.zytrax.com/books/ldap/ch6/syncprov.html
 .. __: https://www.openldap.org/doc/admin24/replication.html
 
+Manual page: :man:`slapo-syncprov(5)`
+
 
 .. _slapd__ref_ppolicy_overlay:
 
@@ -55,6 +57,8 @@ password length, different types of characters used, lockout policy, etc.
 
 .. __: https://www.zytrax.com/books/ldap/ch6/ppolicy.html
 
+Manual page: :man:`slapo-ppolicy(5)`
+
 
 .. _slapd__ref_unique_overlay:
 
@@ -68,6 +72,8 @@ the entire LDAP directory, and the ``uid``, ``gid`` and ``mail`` attributes in
 the ``ou=People,dc=example,dc=org`` subtree of the directory.
 
 .. __: https://www.openldap.org/doc/admin24/overlays.html#Attribute%20Uniqueness
+
+Manual page: :man:`slapo-unique(5)`
 
 
 .. _slapd__ref_memberof_overlay:
@@ -83,6 +89,8 @@ to.
 
 .. __: https://www.openldap.org/doc/admin24/overlays.html#Reverse%20Group%20Membership%20Maintenance
 
+Manual page: :man:`slapo-memberof(5)`
+
 
 .. _slapd__ref_refint_overlay:
 
@@ -94,6 +102,8 @@ LDAP objects when a particular object is renamed or removed. This ensures that
 the references between objects in the LDAP database are consistent.
 
 .. __: https://www.openldap.org/doc/admin24/overlays.html#Referential%20Integrity
+
+Manual page: :man:`slapo-refint(5)`
 
 
 .. _slapd__ref_auditlog_overlay:
@@ -108,3 +118,18 @@ automatically ensure that the audit log files are rotated periodically using
 the :command:`logrotate` service to keep the disk usage under control.
 
 .. __: https://www.openldap.org/doc/admin24/overlays.html#Audit%20Logging
+
+Manual page: :man:`slapo-auditlog(5)`
+
+
+.. _slapd__ref_constraint_overlay:
+
+Attribute Constraints overlay
+-----------------------------
+
+The `constraint overlay`__ can be used to place constraints on specific LDAP
+attributes, for example number of possible values, size or format.
+
+.. __: https://www.openldap.org/doc/admin24/overlays.html#Constraints
+
+Manual page: :man:`slapo-constraint(5)`
