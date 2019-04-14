@@ -28,7 +28,7 @@ BACKUP_ROOT="$(getent passwd "${BACKUP_USER}" | cut -f6 -d:)/slapd"
 
 # Find all OpenLDAP databases, but skip the frontend database, and don't
 # include databases that have "olcReadOnly" attribute set.
-BACKUP_LDAP_SEARCH_FILTER="(&(olcDatabase=*)(!(objectClass=olcFrontendConfig))(!(olcReadOnly=*)))"
+BACKUP_LDAP_SEARCH_FILTER="(&(olcDatabase=*)(!(objectClass=olcFrontendConfig))(!(objectClass=olcMonitorConfig))(!(olcReadOnly=*)))"
 
 if [ -f "/etc/default/slapd-snapshot" ] ; then
     # shellcheck disable=SC1091

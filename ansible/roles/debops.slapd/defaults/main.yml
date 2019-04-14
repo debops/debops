@@ -373,6 +373,7 @@ slapd__default_tasks:
         - '{5}refint'
         - '{6}auditlog'
         - '{7}constraint'
+        - '{8}back_monitor'
     ordered: True
 
   - name: 'Enable Sync Provider overlay in the cn=config database'
@@ -561,6 +562,19 @@ slapd__default_tasks:
         - 'homeDirectory,loginShell eq'
         - 'uidNumber,gidNumber eq'
         - 'entryCSN,entryUUID eq'
+
+  - name: 'Enable the monitor database'
+    dn: 'olcDatabase={2}monitor,cn=config'
+    objectClass: [ 'olcDatabaseConfig', 'olcMonitorConfig' ]
+    attributes:
+      olcDatabase: '{2}monitor'
+      olcAccess:
+        - |-
+          {0}to dn.subtree="cn=Monitor"
+             by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" read
+             by group/groupOfNames/member.exact="cn=LDAP Monitors,       ou=System Groups,{{ slapd__basedn }}" read
+             by * none
+    state: 'present'
 
                                                                    # ]]]
 # .. envvar:: slapd__acl_tasks [[[
