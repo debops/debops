@@ -28,6 +28,14 @@
     state: 'restarted'
   when: slapd__register_unix_groups is changed
 
+- name: Ensure that the log directory exists
+  file:
+    path: '{{ slapd__log_dir }}'
+    state: 'directory'
+    owner: '{{ slapd__user }}'
+    group: '{{ slapd__group }}'
+    mode: '0750'
+
 - name: Install helper scripts
   copy:
     src: 'usr/local/sbin/'

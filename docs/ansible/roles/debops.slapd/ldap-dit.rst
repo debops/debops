@@ -24,6 +24,18 @@ Directory structure
 
         - ``{2}ppolicy``
 
+        - ``{3}unique``
+
+        - ``{4}memberof``
+
+        - ``{5}refint``
+
+        - ``{6}auditlog``
+
+        - ``{7}constraint``
+
+        - ``{8}back_monitor``
+
       - :ref:`cn=schema <slapd__ref_ldap_schemas>`
 
         - :ref:`core.schema <slapd__ref_initial_schemas>`
@@ -42,25 +54,37 @@ Directory structure
 
       - ``olcDatabase={0}config``
 
-        - ``olcOverlay={0}syncprov`` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
+        - :ref:`olcOverlay={0}syncprov <slapd__ref_syncprov_overlay>` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
 
       - ``olcDatabase={1}mdb``
 
-        - ``olcOverlay={0}syncprov`` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
+        - :ref:`olcOverlay={0}syncprov <slapd__ref_syncprov_overlay>` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
 
-        - ``olcOverlay={1}ppolicy``
+        - :ref:`olcOverlay={1}ppolicy <slapd__ref_ppolicy_overlay>`
+
+        - :ref:`olcOverlay={2}unique <slapd__ref_unique_overlay>`
+
+        - :ref:`olcOverlay={3}memberof <slapd__ref_memberof_overlay>`
+
+        - :ref:`olcOverlay={4}refint <slapd__ref_refint_overlay>`
+
+        - :ref:`olcOverlay={5}auditlog <slapd__ref_auditlog_overlay>`
+
+        - :ref:`olcOverlay={6}constraint <slapd__ref_constraint_overlay>`
 
         - :envvar:`olcAccess <slapd__acl_tasks>` (:ref:`documentation <slapd__ref_acl>`)
+
+      - ``olcDatabase={2}monitor``
 
     - :envvar:`dc=example,dc=org <slapd__base_dn>`
 
 
-Parent node
------------
+Parent nodes
+------------
 
-There's no parent node defined for the OpenLDAP server.
+There are no parent nodes defined for the OpenLDAP server.
 
 Child nodes
 -----------
 
-There's no child nodes defined for the OpenLDAP server.
+There are no child nodes defined for the OpenLDAP server.

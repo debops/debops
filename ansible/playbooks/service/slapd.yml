@@ -20,6 +20,11 @@
       tcpwrappers__dependent_allow:
         - '{{ slapd__tcpwrappers__dependent_allow }}'
 
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ slapd__logrotate__dependent_config }}'
+
     - role: debops.python
       tags: [ 'role::python', 'skip::python', 'role::slapd' ]
       python__dependent_packages3:

@@ -152,6 +152,12 @@ slapd__additional_groups: [ 'ssl-cert' ]
 # directories will be owned by the OpenLDAP UNIX account and can be used to
 # store additional OpenLDAP databases.
 slapd__additional_database_dirs: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__log_dir [[[
+#
+# Absolute path to the directory which contains OpenLDAP logs.
+slapd__log_dir: '/var/log/slapd'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP database environment [[[
@@ -362,6 +368,12 @@ slapd__default_tasks:
         - '{0}back_mdb'
         - '{1}syncprov'
         - '{2}ppolicy'
+        - '{3}unique'
+        - '{4}memberof'
+        - '{5}refint'
+        - '{6}auditlog'
+        - '{7}constraint'
+        - '{8}back_monitor'
     ordered: True
 
   - name: 'Enable Sync Provider overlay in the cn=config database'
@@ -382,6 +394,36 @@ slapd__default_tasks:
     attributes:
       olcOverlay: '{1}ppolicy'
 
+  - name: 'Enable Unique overlay in the main database'
+    dn: 'olcOverlay={2}unique,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcUniqueConfig' ]
+    attributes:
+      olcOverlay: '{2}unique'
+
+  - name: 'Enable memberOf overlay in the main database'
+    dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
+    attributes:
+      olcOverlay: '{3}memberof'
+
+  - name: 'Enable Referential Integrity overlay in the main database'
+    dn: 'olcOverlay={4}refint,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcRefintConfig' ]
+    attributes:
+      olcOverlay: '{4}refint'
+
+  - name: 'Enable Audit Logging overlay in the main database'
+    dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcAuditLogConfig' ]
+    attributes:
+      olcOverlay: '{5}auditlog'
+
+  - name: 'Enable Constraint overlay in the main database'
+    dn: 'olcOverlay={6}constraint,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcConstraintConfig' ]
+    attributes:
+      olcOverlay: '{6}constraint'
+
   - name: 'Configure Password Policy overlay in the main database'
     dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
     attributes:
@@ -389,6 +431,55 @@ slapd__default_tasks:
       olcPPolicyHashCleartext: 'TRUE'
       olcPPolicyUseLockout: 'FALSE'
       olcPPolicyForwardUpdates: 'FALSE'
+    state: 'exact'
+
+  - name: 'Configure Unique overlay in the main database'
+    dn: 'olcOverlay={2}unique,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcUniqueURI:
+        - 'ldap:///{{ slapd__basedn }}?uidNumber?sub'
+        - 'ldap:///{{ slapd__basedn }}?gidNumber?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?mail?sub'
+    state: 'exact'
+
+  - name: 'Configure memberOf overlay in the main database'
+    dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcMemberOfDangling: 'ignore'
+      olcMemberOfRefInt: 'TRUE'
+      olcMemberOfGroupOC: 'groupOfNames'
+      olcMemberOfMemberAD: 'member'
+      olcMemberOfMemberOfAD: 'memberOf'
+    state: 'exact'
+
+  - name: 'Configure Referential Integrity overlay in the main database'
+    dn: 'olcOverlay={4}refint,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcRefintAttribute:
+        - 'member'
+        - 'memberOf'
+        - 'uniqueMember'
+        - 'manager'
+        - 'owner'
+    state: 'exact'
+
+  - name: 'Configure Audit Logging overlay in the main database'
+    dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcAuditlogFile: '{{ slapd__log_dir + "/slapd-auditlog-main.ldif" }}'
+    state: 'exact'
+
+  - name: 'Configure Constraint overlay in the main database'
+    dn: 'olcOverlay={6}constraint,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcConstraintAttribute:
+        - 'jpegPhoto size 524288'  # 512 KiB
+        - 'userPassword count 5'
+        - 'uidNumber regex ^[[:digit:]]+$'
+        - 'gidNumber regex ^[[:digit:]]+$'
+        - 'macAddress regex ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
     state: 'exact'
 
   - name: 'Configure the OpenLDAP server log level'
@@ -424,6 +515,13 @@ slapd__default_tasks:
       olcRootPW: '{{ slapd__superuser_data_password }}'
     state: 'exact'
     no_log: True
+
+  - name: 'Configure idle and write timeouts'
+    dn: 'cn=config'
+    attributes:
+      olcIdleTimeout: '900'
+      olcWriteTimeout: '900'
+    state: 'exact'
 
   - name: 'Configure TLS certificates'
     dn: 'cn=config'
@@ -471,6 +569,19 @@ slapd__default_tasks:
         - 'homeDirectory,loginShell eq'
         - 'uidNumber,gidNumber eq'
         - 'entryCSN,entryUUID eq'
+
+  - name: 'Enable the monitor database'
+    dn: 'olcDatabase={2}monitor,cn=config'
+    objectClass: [ 'olcDatabaseConfig', 'olcMonitorConfig' ]
+    attributes:
+      olcDatabase: '{2}monitor'
+      olcAccess:
+        - |-
+          {0}to dn.subtree="cn=Monitor"
+             by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" read
+             by group/groupOfNames/member.exact="cn=LDAP Monitors,       ou=System Groups,{{ slapd__basedn }}" read
+             by * none
+    state: 'present'
 
                                                                    # ]]]
 # .. envvar:: slapd__acl_tasks [[[
@@ -671,6 +782,34 @@ slapd__host_allow: []
                                                                    # ]]]
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
+
+# .. envvar:: slapd__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+slapd__logrotate__dependent_config:
+
+  - filename: 'slapd'
+    sections:
+
+      - logs: '{{ slapd__log_dir + "/*.log" }}'
+        options: |
+          notifempty
+          missingok
+          weekly
+          maxsize 256M
+          rotate 120
+          compress
+        comment: 'OpenLDAP server logs'
+
+      - logs: '{{ slapd__log_dir + "/*.ldif" }}'
+        options: |
+          notifempty
+          missingok
+          monthly
+          maxsize 256M
+          rotate 120
+          compress
+        comment: 'OpenLDAP audit logs'
 
 # .. envvar:: slapd__python__dependent_packages3 [[[
 #
