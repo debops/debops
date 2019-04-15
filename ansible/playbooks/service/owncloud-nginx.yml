@@ -31,8 +31,20 @@
     - role: debops.python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
+        - '{{ mariadb__python__dependent_packages3
+              if (owncloud__database == "mariadb")
+              else [] }}'
+        - '{{ postgresql__python__dependent_packages3
+              if (owncloud__database == "postgresql")
+              else [] }}'
         - '{{ nginx__python__dependent_packages3 }}'
       python__dependent_packages2:
+        - '{{ mariadb__python__dependent_packages2
+              if (owncloud__database == "mariadb")
+              else [] }}'
+        - '{{ postgresql__python__dependent_packages2
+              if (owncloud__database == "postgresql")
+              else [] }}'
         - '{{ nginx__python__dependent_packages2 }}'
 
     - role: debops.mariadb

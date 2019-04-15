@@ -30,6 +30,23 @@
       ferm__dependent_rules:
         - '{{ apache__ferm__dependent_rules }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ mariadb__python__dependent_packages3
+              if (owncloud__database == "mariadb")
+              else [] }}'
+        - '{{ postgresql__python__dependent_packages3
+              if (owncloud__database == "postgresql")
+              else [] }}'
+      python__dependent_packages2:
+        - '{{ mariadb__python__dependent_packages2
+              if (owncloud__database == "mariadb")
+              else [] }}'
+        - '{{ postgresql__python__dependent_packages2
+              if (owncloud__database == "postgresql")
+              else [] }}'
+
     - role: debops.mariadb
       tags: [ 'role::mariadb', 'skip::mariadb' ]
       mariadb__dependent_users: '{{ owncloud__mariadb__dependent_users }}'
