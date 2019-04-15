@@ -213,3 +213,22 @@ script shows how this can be configured with OpenSSH and OpenLDAP.
 The :ref:`debops.sshd` Ansible role already contains support for SSH public key
 lookup in OpenLDAP, see its documentation for more details about enabling the
 support.
+
+.. _slapd__ref_sudo:
+
+The ``sudo`` schema
+-------------------
+
+The `sudo`__ service can be configured to `use LDAP directory as a backend`__
+for its rules. The :ref:`debops.sudo` Ansible role will enable the LDAP support
+when the :ref:`debops.ldap` configuration is detected (not implemented yet).
+
+.. __: https://en.wikipedia.org/wiki/Sudo
+.. __: https://www.sudo.ws/man/1.8.17/sudoers.ldap.man.html
+
+The rules in the LDAP directory are meant to be used with LDAP-based users and
+groups; local accounts should still rely on local :file:`/etc/sudoers` contents
+to ensure service availability in case of an issue with connection to the LDAP
+service.
+
+Manual pages: :man:`sudoers.ldap(5)`
