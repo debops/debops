@@ -14,9 +14,9 @@
 {%       set _ = element_users.append('ALL EXCEPT') %}
 {%     endif %}
 {%     if element.groups_except|d() %}
-{%       set _ = element_users.extend(([ element.groups_except ] if (element.groups_except is string) else element.groups_except) | map("regex_replace", "(.*)", "(\\1)") | list) %}
+{%       set _ = element_users.extend(([ element.groups_except ] if (element.groups_except is string) else element.groups_except) | map("regex_replace", "(.+)$", "(\\1)") | list) %}
 {%     elif element.groups|d() %}
-{%       set _ = element_users.extend(([ element.groups ] if (element.groups is string) else element.groups) | map("regex_replace", "(.*)", "(\\1)") | list) %}
+{%       set _ = element_users.extend(([ element.groups ] if (element.groups is string) else element.groups) | map("regex_replace", "^(.+)$", "(\\1)") | list) %}
 {%     endif %}
 {%     if element.users_except|d() %}
 {%       set _ = element_users.extend([ element.users_except ] if (element.users_except is string) else element.users_except) %}
