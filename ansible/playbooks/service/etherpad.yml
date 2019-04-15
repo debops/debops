@@ -34,6 +34,17 @@
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ postgresql__python__dependent_packages3 if etherpad__database == "postgres" else [] }}'
+        - '{{ mariadb__python__dependent_packages3 if etherpad__database == "mysql" else [] }}'
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ postgresql__python__dependent_packages2 if etherpad__database == "postgres" else [] }}'
+        - '{{ mariadb__python__dependent_packages2 if etherpad__database == "mysql" else [] }}'
+        - '{{ nginx__python__dependent_packages2 }}'
+
     - role: debops.mariadb
       tags: [ 'role::mariadb', 'skip::mariadb' ]
       mariadb__dependent_users:

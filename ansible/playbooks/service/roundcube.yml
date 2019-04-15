@@ -29,6 +29,15 @@
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ mariadb__python__dependent_packages3 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ mariadb__python__dependent_packages2 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
+        - '{{ nginx__python__dependent_packages2 }}'
+
     - role: debops.php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:

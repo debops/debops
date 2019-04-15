@@ -25,6 +25,17 @@
         - '{{ php__logrotate__dependent_config }}'
         - '{{ librenms__logrotate__dependent_config }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ librenms__python__dependent_packages3 }}'
+        - '{{ mariadb__python__dependent_packages3 }}'
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ librenms__python__dependent_packages2 }}'
+        - '{{ mariadb__python__dependent_packages2 }}'
+        - '{{ nginx__python__dependent_packages2 }}'
+
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
