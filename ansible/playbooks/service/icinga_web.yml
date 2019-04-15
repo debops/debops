@@ -30,6 +30,15 @@
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ postgresql__python__dependent_packages3 if icinga_web__database_type == "postgresql" else [] }}'
+        - '{{ mariadb__python__dependent_packages3 if icinga_web__database_type == "mariadb" else [] }}'
+      python__dependent_packages2:
+        - '{{ postgresql__python__dependent_packages2 if icinga_web__database_type == "postgresql" else [] }}'
+        - '{{ mariadb__python__dependent_packages2 if icinga_web__database_type == "mariadb" else [] }}'
+
     - role: debops.php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
