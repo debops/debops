@@ -57,6 +57,9 @@ slapd__default_schemas:
   # Support for SSH public keys in LDAP directory
   - '/etc/ldap/schema/fusiondirectory/openssh-lpk.schema'
 
+  # Support for 'sudo' rules in LDAP directory
+  - '/etc/ldap/schema/fusiondirectory/sudo.schema'
+
                                                                    # ]]]
 # .. envvar:: slapd__schemas [[[
 #
@@ -116,6 +119,9 @@ slapd__schema_packages:
   # Support for 'openssh-lpk' (SSH public keys in LDAP)
   - 'fusiondirectory-plugin-ssh-schema'
 
+  # Support for 'sudo' rules in LDAP
+  - 'fusiondirectory-plugin-sudo-schema'
+
                                                                    # ]]]
 # .. envvar:: slapd__packages [[[
 #
@@ -165,7 +171,9 @@ slapd__log_dir: '/var/log/slapd'
 
 # .. envvar:: slapd__domain [[[
 #
-# DNS domain name which will be used for OpenLDAP BaseDN.
+# DNS domain name which will be used for OpenLDAP BaseDN. This value is also
+# defined in the :command:`debconf` database before OpenLDAP installation to
+# create the BaseDN LDAP object in the initialized database.
 slapd__domain: '{{ ansible_local.core.domain
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.domain|d())
