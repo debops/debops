@@ -5,6 +5,14 @@
   when: (slapd__rfc2307bis_enabled|bool and
          (ansible_local is undefined or ansible_local.slapd is undefined))
 
+- name: Initialize BaseDN value in debconf using a DNS domain
+  debconf:
+    name: 'slapd'
+    question: '{{ item }}'
+    vtype: 'string'
+    value: '{{ slapd__domain }}'
+  loop: [ 'slapd/domain', 'shared/organization' ]
+
 - name: Install OpenLDAP packages
   package:
     name: '{{ q("flattened", (slapd__base_packages
