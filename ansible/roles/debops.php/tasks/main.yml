@@ -23,6 +23,14 @@
   until: php__register_packages is succeeded
   notify: [ 'Restart php-fpm' ]
 
+- name: Install PHP Composer from upstream
+  get_url:
+    url: '{{ php__composer_upstream_url }}'
+    dest: '{{ php__composer_upstream_dest }}'
+    checksum: '{{ php__composer_upstream_checksum }}'
+    mode: '0755'
+  when: php__composer_upstream_enabled|bool
+
 - name: Ensure older PHP packages are absent on reset
   include: 'packages_absent_for_version.yml'
   loop_control:

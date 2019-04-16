@@ -221,6 +221,15 @@ Changed
   non-security related upgrades, such as timezone changes, antivirus database
   changes, and similar.
 
+- [debops.php] The role will install the :command:`composer` command from the
+  upstream GitHub repository on older OS releases, including Debian Stretch
+  (current Stable release). This is due to incompatibility of the ``composer``
+  APT package included in Debian Stretch and PHP 7.3.
+
+  The custom ``composer`` command installation tasks have been removed from the
+  :ref:`debops.roundcube` and :ref:`debops.librenms` roles, since
+  :ref:`debops.php` will take care of the installation.
+
 Removed
 ~~~~~~~
 

@@ -100,10 +100,7 @@ php__base_packages:
   - '{{ "php" + php__version }}'
   - 'curl'
   - 'gd'
-  - '{{ []
-        if (ansible_distribution_release in
-            [ "wheezy", "jessie", "precise", "trusty"])
-        else "composer" }}'
+  - '{{ [] if php__composer_upstream_enabled|bool else "composer" }}'
   - '{{ "mcrypt"
         if (php__version is version_compare("7.2","<"))
         else [] }}'
@@ -230,6 +227,48 @@ php__common_included_packages:
   - 'sysvmsg'
   - 'tokenizer'
   - 'zlib'
+                                                                   # ]]]
+                                                                   # ]]]
+# PHP Composer support [[[
+# ------------------------
+
+# .. envvar:: php__composer_upstream_enabled [[[
+#
+# Enable or disable installation of the :command:`composer` command from
+# upstream. The ``composer`` package in older OS releases might not work as
+# expected. If upstream installation is disabled, the ``composer`` APT package
+# will be installed instead.
+php__composer_upstream_enabled: '{{ True
+                                    if (ansible_distribution_release in
+                                        [ "wheezy", "jessie", "stretch",
+                                          "precise", "trusty", "xenial", "bionic" ])
+                                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: php__composer_upstream_version [[[
+#
+# The version of the PHP Composer release to install from upstream.
+# Remember to update the watch file and the SHA256 checksum on changes.
+php__composer_upstream_version: '1.8.5'
+
+                                                                   # ]]]
+# .. envvar:: php__composer_upstream_checksum [[[
+#
+# The SHA256 checksum of the PHP Composer release selected for installation.
+php__composer_upstream_checksum: 'sha256:23b29b1a921b56db3c12ba531752dffcfaa3de0fcece3e54974e06990e46bbf9'
+
+                                                                   # ]]]
+# .. envvar:: php__composer_upstream_url [[[
+#
+# The URL to the PHP Composer binary which should be installed.
+php__composer_upstream_url: '{{ "https://github.com/composer/composer/releases/download/"
+                                + php__composer_upstream_version + "/composer.phar" }}'
+
+                                                                   # ]]]
+# .. envvar:: php__composer_upstream_dest [[[
+#
+# The absolute path of the PHP Composer binary destination file.
+php__composer_upstream_dest: '/usr/local/bin/composer'
                                                                    # ]]]
                                                                    # ]]]
 # Global php.ini configuration [[[
