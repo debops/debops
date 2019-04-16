@@ -137,34 +137,14 @@
     group: '{{ roundcube__group }}'
     mode: '0640'
 
-- name: Download composer.phar if requested
-  get_url:
-    url: '{{ roundcube__composer_phar_url }}'
-    dest: '{{ roundcube__git_checkout }}'
-    mode: '0640'
-  become: True
-  become_user: '{{ roundcube__user }}'
-  when: roundcube__composer_phar|bool
-
-- name: Install missing PHP packages via composer.phar
-  command: php composer.phar install
-  args:
-    chdir: '{{ roundcube__git_checkout }}'
-  become: True
-  become_user: '{{ roundcube__user }}'
-  when: roundcube__composer_phar|bool
-  register: roundcube__register_composer_phar
-  changed_when: not "Nothing to install or update" in roundcube__register_composer_phar.stderr|d('')
-
-- name: Install missing PHP packages via system-wide composer
+- name: Install missing PHP packages via Composer
   composer:
-    command: install
+    command: 'install'
     working_dir: '{{ roundcube__git_checkout }}'
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_composer
   until: roundcube__register_composer is succeeded
-  when: not roundcube__composer_phar|bool
 
 - name: Install Javascript packages
   command: bin/install-jsdeps.sh

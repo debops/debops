@@ -117,34 +117,14 @@
     mode: '{{ librenms__config_mode }}'
   tags: [ 'role::librenms:config', 'role::librenms:database' ]
 
-- name: Download composer.phar if requested
-  get_url:
-    url: '{{ librenms__composer_phar_url }}'
-    dest: '{{ librenms__install_path }}'
-    mode: '0640'
-  become: True
-  become_user: '{{ librenms__user }}'
-  when: librenms__composer_phar|bool
-
-- name: Install missing PHP packages via composer.phar
-  command: php composer.phar install
-  args:
-    chdir: '{{ librenms__install_path }}'
-  become: True
-  become_user: '{{ librenms__user }}'
-  when: librenms__composer_phar|bool
-  register: librenms__register_composer_phar
-  changed_when: not "Nothing to install or update" in librenms__register_composer_phar.stderr|d('')
-
-- name: Install missing PHP packages via system-wide composer
+- name: Install missing PHP packages via Composer
   composer:
-    command: install
+    command: 'install'
     working_dir: '{{ librenms__install_path }}'
   register: librenms__register_composer
   until: librenms__register_composer is succeeded
   become: True
   become_user: '{{ librenms__user }}'
-  when: not librenms__composer_phar|bool
 
 - name: Initialize database
   command: php build-base.php

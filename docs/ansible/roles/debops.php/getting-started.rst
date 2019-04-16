@@ -61,6 +61,17 @@ to function correctly. See the :ref:`provided playbook <php__ref_example_playboo
 to see an example usage.
 
 
+PHP Composer installation
+-------------------------
+
+The :ref:`debops.php` role wil install the `PHP Composer`__, a dependency
+manager for PHP. The version from the OS repositories will be preferred. On
+older OS releases (including Debian Stretch), a known upstream binary will be
+downloaded and installed instead.
+
+.. __: https://getcomposer.org/
+
+
 Layout of the php.ini configuration
 -----------------------------------
 
