@@ -186,6 +186,9 @@ Common webserver options
   List of files that will be included at the end of the server
   configuration using `include`.
 
+``options``
+  Optional, String or YAML text block with options for this server configuration.
+  Semicolons at the end of each line are required.
 
 Redirects
 ~~~~~~~~~
