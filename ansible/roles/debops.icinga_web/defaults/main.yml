@@ -1116,6 +1116,17 @@ icinga_web__combined_director_kickstart_cfg: '{{ icinga_web__current_director_ki
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: icinga_web__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+icinga_web__apt_preferences__dependent_list:
+
+  - package: [ 'icingaweb2', 'icingaweb2-*', 'icingacli', 'php-icinga' ]
+    backports: [ 'stretch' ]
+    by_role: 'debops.icinga_web'
+    reason: 'Incompatibility with PHP 7.3'
+
+                                                                   # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_roles [[[
 #
 # Configuration of PostgreSQL roles for :ref:`debops.postgresql` Ansible role.
