@@ -396,3 +396,93 @@ Parameters related to ACL
     Optional. If not specified or ``present``, the ACL entry will be created.
     If ``absent``, the ACL entry will be removed. The ``query`` state doesn't
     make sense in this context and shouldn't be used.
+
+
+.. _resources__ref_commands:
+
+resources__commands
+-------------------
+
+The ``resources__*_commands`` variables can be used to define shell commands or
+small scripts which should be executed on the remote hosts. This can be useful
+to, for example, start a :command:`systemd` service created previously using
+the :ref:`resources__ref_files` variables.
+
+This is not a replacement for a fully-fledged Ansible role. The interface is
+extremely limited, and you need to ensure idempotency inside of the script or
+command you are executing. The :ref:`debops.resources` role can be executed at
+different points in the main playbook, which you should also take into account.
+
+Examples
+~~~~~~~~
+
+Set up a simple example :command:`systemd` service and start it:
+
+.. code-block:: yaml
+
+   resources__files:
+     - content: |
+         [Unit]
+         Description=Example Service
+
+         [Service]
+         Type=simple
+         ExecStart=/bin/true
+         RemainAfterExit=yes
+
+         [Install]
+         WantedBy=multi-user.target
+       dest: '/etc/systemd/system/example.service'
+       mode: '0644'
+
+   resources__commands:
+     - name: 'Reload systemd and start example service'
+       shell: |
+         if ! systemctl is-active example.service ; then
+             systemctl daemon-reload
+             systemctl start example.service
+         fi
+
+Syntax
+~~~~~~
+
+Each shell command entry is defined by a YAML dictionary with specific
+parameters:
+
+``name``
+  Required. A name of a given shell command displayed during Ansible execution,
+  not used for anything else in the task. Multiple configuration entries with
+  the same ``name`` parameter are merged together.
+
+``script`` / ``shell`` / ``command``
+  Required. String or YAML text block that contains the command or script to
+  execute on the remote host. The contents will be passed to the ``shell``
+  Ansible module.
+
+``chdir``
+  Optional. Specify the path to the directory on the remote host where the
+  script should be executed.
+
+``creates``
+  Optional. Specify the path of the file on the remote host - if it's present,
+  the ``shell`` module will not execute the script.
+
+``removes``
+  Optional. Specify the path of the file on the remote host - if it's absent,
+  the ``shell`` module will not execute the script.
+
+``executable``
+  Optional. Specify the command interpreter to use. If not specified,
+  ``/bin/bash`` will be used by default.
+
+``state``
+  Optional. If not specified or ``present``, the shell command will be executed
+  as normal by the role. If ``absent``, the shell command will not be executed
+  by the role. If ``ignore``, the configuration entry will not be evaluated by
+  the role during execution. This can be used to conditionally activate and
+  deactivate different shell commands on the Ansible level.
+
+``no_log``
+  Optional, boolean. If ``True``, Ansible will not display the task contents or
+  record them in the log. It's useful to avoid recording sensitive data like
+  passwords.

@@ -287,5 +287,43 @@ resources__group_delayed_paths: []
 # Paths managed on specific hosts in Ansible inventory.
 resources__host_delayed_paths: []
                                                                    # ]]]
+# Custom shell commands [[[
+# -------------------------
+
+# The variables below let you define shell commands (or even small shell
+# scripts) to execute on the remote hosts as the ``root`` UNIX account. You
+# need to ensure idempotency by yourself. This is not a replacement for
+# a normal Ansible role.
+#
+# See :ref:`resources__ref_commands` for more details.
+
+# .. envvar:: resources__commands [[[
+#
+# List of shell commands which should be executed on all hosts in the Ansible
+# inventory.
+resources__commands: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_commands [[[
+#
+# List of shell commands which should be executed on hosts in a specific
+# Ansible inventory group.
+resources__group_commands: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_commands [[[
+#
+# List of shell commands which should be executed on specific hosts in the
+# Ansible inventory.
+resources__host_commands: []
+
+                                                                   # ]]]
+# .. envvar:: resources__combined_commands [[[
+#
+# Variable which combines all other shell command variables and is used in the
+# role tasks.
+resources__combined_commands: '{{ resources__commands
+                                  + resources__group_commands
+                                  + resources__host_commands }}'
                                                                    # ]]]
                                                                    # ]]]
