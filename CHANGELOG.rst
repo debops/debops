@@ -92,6 +92,11 @@ Added
 
   .. __: https://wiki.debian.org/LTS
 
+- [debops.resources] New :ref:`resources__ref_commands` variables can be used
+  to define simple shell commands or scripts that will be executed at the end
+  of the :ref:`debops.resources` role. Useful to start new services, but it
+  shouldn't be used as a replacement for a fully-fledged Ansible roles.
+
 Changed
 ~~~~~~~
 

@@ -276,6 +276,17 @@
          ((item.path|d() or item.dest|d() or item.name|d()) or item))
   tags: [ 'role::resources:paths' ]
 
+# Execute custom shell commands [[[1
+# This is not an alternative to a fully-fledged Ansible role.
+- name: Execute shell commands
+  include_tasks: 'shell_commands.yml'
+  loop: '{{ q("flattened", resources__combined_commands) | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name} }}'
+  when: resources__enabled|bool and
+        item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
+  no_log: '{{ item.no_log | d(False) }}'
+
 # DebOps post-hook [[[1
 - name: Post hooks
   include: '{{ lookup("task_src", "resources/post_main.yml") }}'
