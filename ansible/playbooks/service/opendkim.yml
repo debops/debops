@@ -30,5 +30,12 @@
           config: '{{ opendkim__postfix__dependent_maincf }}'
       when: opendkim__postfix_integration|bool
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ opendkim__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ opendkim__python__dependent_packages2 }}'
+
     - role: debops.opendkim
       tags: [ 'role::opendkim', 'skip::opendkim' ]
