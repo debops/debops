@@ -19,6 +19,44 @@ and generate a new one, with PAM access control enabled and using the separate
 defined in the :envvar:`sshd__pam_access__dependent_rules` variable and are
 managed by the :ref:`debops.pam_access` Ansible role.
 
+Global root access
+------------------
+
+By default the :ref:`debops.pam_access` configuration restricts access to the
+``root`` account to hosts on the same DNS domain, for security. This might
+cause unintended lockouts if your Ansible Controller host is on a completely
+different domain than the remote host.
+
+To disable the restricted access and allow connections to the ``root`` account
+from anywhere on the network, you can set in your Ansible inventory, for
+example in :file:`ansible/inventory/group_vars/all/pam_access.yml` file:
+
+.. code-block:: yaml
+
+   pam_access__rules:
+
+     - name: 'sshd'
+       state: 'append'
+       options:
+
+         - name: 'allow-root'
+           origins: 'ALL'
+
+Then, you need to apply the changes to the configuration using the "context" of
+the :ref:`debops.sshd` role, for example by executing the command:
+
+.. code-block:: console
+
+   debops service/sshd -l <host> --tags role::pam_access --diff
+
+This command will apply the PAM access configuration defined by the
+:ref:`debops.sshd` role with modifications from the inventory; they won't be
+applied in other contexts of the :ref:`debops.pam_access` role is used in and
+shouldn't affect other access lists.
+
+You could also add subnets, domains or other origins instead of allowing access
+from any host; refer to the :ref:`pam_access__ref_rules` for more details.
+
 Useful variables
 ----------------
 
