@@ -19,6 +19,10 @@ and generate a new one, with PAM access control enabled and using the separate
 defined in the :envvar:`sshd__pam_access__dependent_rules` variable and are
 managed by the :ref:`debops.pam_access` Ansible role.
 
+To disable the custom access control configuration, set the
+:envvar:`sshd__pam_deploy_state` variable to ``absent``. The PAM access control
+file will still be generated, but it will not be used by the ``sshd`` service.
+
 Global root access
 ------------------
 
