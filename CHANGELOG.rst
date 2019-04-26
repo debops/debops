@@ -244,6 +244,11 @@ Removed
   in the :ref:`debops.ldap` and :ref:`debops.nslcd` roles, which manage the
   client-side LDAP support.
 
+- [debops.rstudio_server] The role will no longer install the historical
+  ``libssl1.0.0`` APT package on Debian Stretch to support older RStudio Server
+  releases. You should remove it on the existing installations after RStudio
+  Server is upgraded to the newest release.
+
 Fixed
 ~~~~~
 

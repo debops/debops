@@ -17,25 +17,6 @@ package will be downloaded directly from the project's website and installed
 using :command:`dpkg`. The package integrity is checked via SHA256 checksum. The
 package can also be provided via a local APT repository if desired.
 
-At present, the RStudio Server package prepared by upstream is compiled against
-the OpenSSL 1.0.0 library provided by the ``libssl1.0.0`` package. This package
-is included in Debian Jessie release, but it has been removed in Debian
-Stretch; existing ``libssl1.0.2`` version doesn't seem to be correctly
-recognized by RStudio Server. This means that the service can be correctly
-installed on Debian Jessie, but not on Debian Stretch.
-
-To overcome that limitation, on Debian Stretch systems the role downloads the
-``libssl1.0.0`` package from Debian Jessie directly from the Debian Archives
-and installs it using :command:`dpkg`. This allows for the RStudio Server to run
-correctly, however the role's author doesn't guarantee that resulting system is
-secure and without issues.
-
-This arrangement is hopefully temporary, until RStudio releases a new version
-of the package compiled against newer version of OpenSSL. As an alternative,
-the users can compile their own version of RStudio Server ``.deb`` package
-against Debian Stretch and provide it via local APT repositories, in that case
-installation of ``libssl1.0.0`` package can be disabled via a boolean variable.
-
 
 Example inventory
 -----------------

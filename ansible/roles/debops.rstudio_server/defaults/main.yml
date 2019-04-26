@@ -13,17 +13,6 @@
 # Application sources [[[
 # -----------------------
 
-# .. envvar:: rstudio_server__libssl_in_apt [[[
-#
-# Variable which contains the information about presence of the ``libssl1.0.0``
-# package in APT. If it's not available, the ``.deb`` package containing
-# ``libssl`` v1.0.0 from Debian Jessie will be downloaded by the role and
-# installed directly.
-rstudio_server__libssl_in_apt: '{{ True
-                                   if (rstudio_server__register_package_libssl.stdout)
-                                   else False }}'
-
-                                                                   # ]]]
 # .. envvar:: rstudio_server__rstudio_in_apt [[[
 #
 # Variable which contains the information about presence of the
@@ -43,24 +32,7 @@ rstudio_server__src: '{{ (ansible_local.root.src
                           else "/usr/local/src") + "/" + rstudio_server__user }}'
 
                                                                    # ]]]
-# .. envvar:: rstudio_server__libssl_downgrade [[[
 #
-# This variable controls if the role should download and install the
-# ``libssl1.0.0`` package if it's not available through APT.
-# See :ref:`rstudio_server__ref_installation_issues` for more details.
-rstudio_server__libssl_downgrade: True
-
-                                                                   # ]]]
-# .. envvar:: rstudio_server__libssl_deb_url [[[
-#
-# The URL of the ``libssl1.0.0`` ``.deb`` package to download.
-rstudio_server__libssl_deb_url: 'https://deb.debian.org/debian/pool/main/o/openssl/libssl1.0.0_1.0.2l-1~bpo8+1_amd64.deb'
-
-                                                                   # ]]]
-# .. envvar:: rstudio_server__libssl_deb_checksum [[[
-#
-# The SHA256 checksum of the ``libssl1.0.0`` ``.deb`` package.
-rstudio_server__libssl_deb_checksum: 'sha256:6e85968afe1a6643f4e82e1cc168f848c5967a131bb1c7392f11974953db0e67'
 
                                                                    # ]]]
 # .. envvar:: rstudio_server__rstudio_deb_url [[[
@@ -82,10 +54,6 @@ rstudio_server__rstudio_deb_checksum: 'sha256:6f8d7b7d56cdd1618f06fe58f1b5046954
 #
 # List of APT packages required by RStudio Server.
 rstudio_server__base_packages:
-  - '{{ "libssl1.0.0"
-        if (rstudio_server__libssl_downgrade|bool and
-            rstudio_server__libssl_in_apt|bool)
-        else [] }}'
   - '{{ "rstudio-server"
         if rstudio_server__rstudio_in_apt|bool
         else [] }}'
