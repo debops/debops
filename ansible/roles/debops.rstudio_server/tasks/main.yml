@@ -1,13 +1,5 @@
 ---
 
-- name: Check if libssl1.0.0 package is available
-  shell: set -o nounset -o pipefail -o errexit && apt-cache pkgnames | grep libssl1.0.0 || true
-  args:
-    executable: '/bin/bash'
-  register: rstudio_server__register_package_libssl
-  changed_when: False
-  check_mode: False
-
 - name: Check if rstudio-server package is available
   shell: set -o nounset -o pipefail -o errexit && apt-cache pkgnames | grep rstudio-server || true
   args:
@@ -32,9 +24,30 @@
     home: '{{ rstudio_server__home }}'
     shell: '{{ rstudio_server__shell }}'
     comment: '{{ rstudio_server__comment }}'
-    createhome: False
     system: True
     state: 'present'
+
+- name: Ensure that the ~/.gnupg directory exists
+  file:
+    path: '{{ rstudio_server__home + "/.gnupg" }}'
+    state: 'directory'
+    owner: '{{ rstudio_server__user }}'
+    group: '{{ rstudio_server__group }}'
+    mode: '0700'
+
+- name: Import Rstudio package signing key
+  apt_key:
+    keyring: '{{ rstudio_server__home + "/.gnupg/pubring.gpg" }}'
+    id: '{{ rstudio_server__signing_key_id | replace(" ","") }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver|d())
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  become: True
+  become_user: '{{ rstudio_server__user }}'
+  register: rstudio_server__register_signing_key
+  until: rstudio_server__register_signing_key is succeeded
 
 - name: Get the current user accounts
   getent:
@@ -66,39 +79,28 @@
   file:
     path: '{{ rstudio_server__src }}'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
+    owner: '{{ rstudio_server__user }}'
+    group: '{{ rstudio_server__group }}'
     mode: '0755'
-  when: (not rstudio_server__rstudio_in_apt|bool or
-         not rstudio_server__libssl_in_apt|bool)
-
-- name: Download libssl 1.0.0 .deb package
-  get_url:
-    url: '{{ rstudio_server__libssl_deb_url }}'
-    dest: '{{ rstudio_server__src + "/" + rstudio_server__libssl_deb_url | basename }}'
-    checksum: '{{ rstudio_server__libssl_deb_checksum }}'
-  register: rstudio_server__register_libssl_downgrade
-  until: rstudio_server__register_libssl_downgrade is succeeded
-  when: rstudio_server__libssl_downgrade|bool and
-        not rstudio_server__libssl_in_apt|bool
+  when: not rstudio_server__rstudio_in_apt|bool
 
 - name: Download RStudio Server .deb package
   get_url:
     url: '{{ rstudio_server__rstudio_deb_url }}'
     dest: '{{ rstudio_server__src + "/" + rstudio_server__rstudio_deb_url | basename }}'
     checksum: '{{ rstudio_server__rstudio_deb_checksum }}'
+  become: True
+  become_user: '{{ rstudio_server__user }}'
   register: rstudio_server__register_rstudio_package
   until: rstudio_server__register_rstudio_package is succeeded
   when: not rstudio_server__rstudio_in_apt|bool
 
-- name: Install libssl 1.0.0 .deb package
-  apt:
-    deb: '{{ rstudio_server__src + "/" + rstudio_server__libssl_deb_url | basename }}'
-    state: 'present'
-  register: rstudio_server__register_libssl_deb
-  until: rstudio_server__register_libssl_deb is succeeded
-  when: rstudio_server__libssl_downgrade|bool and
-        not rstudio_server__libssl_in_apt|bool
+- name: Verify RStudio Server package signature
+  command: dpkg-sig --verify {{ rstudio_server__src + '/' + (rstudio_server__rstudio_deb_url | basename) }}
+  become: True
+  become_user: '{{ rstudio_server__user }}'
+  changed_when: False
+  check_mode: False
 
 - name: Install RStudio Server .deb package
   apt:
