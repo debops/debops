@@ -61,6 +61,14 @@ rstudio_server__rstudio_deb_url: '{{ rstudio_server__release_deb_map[ansible_dis
 rstudio_server__rstudio_deb_checksum: '{{ rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release].checksum
                                           if (rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release]|d())
                                           else rstudio_server__release_deb_map[ansible_distribution].checksum }}'
+
+                                                                   # ]]]
+# .. envvar:: rstudio_server__signing_key_id [[[
+#
+# The fingerprint of the GPG key used by RStudio Inc. to sign the released
+# ``.deb`` packages, used for verification of the package before installation.
+# See https://www.rstudio.com/code-signing/ for more details.
+rstudio_server__signing_key_id: 'FE85 64CF F1AB 93F1 7286  4519 3F32 EE77 E331 692F'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -70,6 +78,7 @@ rstudio_server__rstudio_deb_checksum: '{{ rstudio_server__release_deb_map[ansibl
 #
 # List of APT packages required by RStudio Server.
 rstudio_server__base_packages:
+  - 'dpkg-sig'
   - '{{ "rstudio-server"
         if rstudio_server__rstudio_in_apt|bool
         else [] }}'
@@ -108,7 +117,7 @@ rstudio_server__home: '{{ (ansible_local.root.home
 # .. envvar:: rstudio_server__shell [[[
 #
 # The UNIX shell used by the RStudio user account.
-rstudio_server__shell: '/bin/false'
+rstudio_server__shell: '/usr/sbin/nologin'
 
                                                                    # ]]]
 # .. envvar:: rstudio_server__comment [[[

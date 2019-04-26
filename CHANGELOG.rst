@@ -122,7 +122,8 @@ Changed
   - [debops.rstudio_server] The supported version has been updated to
     v1.2.1335. The role no longer installs ``libssl1.0.0`` from Debian Jessie
     on Debian Stretch, since the current version of the RStudio Server works in
-    the default Stretch environment.
+    the default Stretch environment. The downloaded ``.deb`` package will be
+    verified using the RStudio Inc. GPG signing key before installation.
 
 - [debops.lxc] The :command:`lxc-prepare-ssh` script will read the public SSH
   keys from specific files (``root`` key file, and the ``$SUDO_USER`` key file)
