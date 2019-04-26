@@ -32,19 +32,35 @@ rstudio_server__src: '{{ (ansible_local.root.src
                           else "/usr/local/src") + "/" + rstudio_server__user }}'
 
                                                                    # ]]]
+# .. envvar:: rstudio_server__release_deb_map [[[
 #
+# The map of the RStudio releases matched to supported OS distributions and releases.
+rstudio_server__release_deb_map:
+  'Ubuntu':
+    package:  'https://download2.rstudio.org/server/trusty/amd64/rstudio-server-1.2.1335-amd64.deb'
+    checksum: 'sha256:a41f16fd7e7e471fca77f081a4b302a1d66d14fb32dffcea1299e0c1dbf30e44'
+  'Debian_jessie':
+    package:  'https://download2.rstudio.org/server/trusty/amd64/rstudio-server-1.2.1335-amd64.deb'
+    checksum: 'sha256:a41f16fd7e7e471fca77f081a4b302a1d66d14fb32dffcea1299e0c1dbf30e44'
+  'Debian':
+    package: 'https://download2.rstudio.org/server/debian9/x86_64/rstudio-server-1.2.1335-amd64.deb'
+    checksum: 'sha256:a95d0b33d1f7d85fbd7403a610aa39b3bb8354e7efdba3e80f4d919d1589ca95'
 
                                                                    # ]]]
 # .. envvar:: rstudio_server__rstudio_deb_url [[[
 #
 # The URL of the ``rstudio-server`` ``.deb`` package to download.
-rstudio_server__rstudio_deb_url: 'https://download2.rstudio.org/rstudio-server-1.1.383-amd64.deb'
+rstudio_server__rstudio_deb_url: '{{ rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release].package
+                                     if (rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release]|d())
+                                     else rstudio_server__release_deb_map[ansible_distribution].package }}'
 
                                                                    # ]]]
 # .. envvar:: rstudio_server__rstudio_deb_checksum [[[
 #
 # The SHA256 checksum of the ``rstudio-server`` ``.deb`` package.
-rstudio_server__rstudio_deb_checksum: 'sha256:6f8d7b7d56cdd1618f06fe58f1b5046954eb60a51b1f956488f4cda56dd80033'
+rstudio_server__rstudio_deb_checksum: '{{ rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release].checksum
+                                          if (rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release]|d())
+                                          else rstudio_server__release_deb_map[ansible_distribution].checksum }}'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
