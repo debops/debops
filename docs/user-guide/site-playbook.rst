@@ -1,7 +1,7 @@
 The Site playbook
 =================
 
-The :file:`/.local/share/debops/debops/ansible/playbooks/site.yml` connects all
+The :file:`~/.local/share/debops/debops/ansible/playbooks/site.yml` connects all
 debops roles.
 
 Include own roles/playbooks
