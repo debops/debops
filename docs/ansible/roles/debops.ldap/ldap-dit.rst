@@ -24,6 +24,7 @@ Directory structure
 
             - :ref:`uid=nslcd <nslcd__ref_ldap_dit>` -> :ref:`debops.nslcd`
             - :ref:`uid=sshd <sshd__ref_ldap_dit>` -> :ref:`debops.sshd`
+            - :ref:`uid=sudo <sudo__ref_ldap_dit>` -> :ref:`debops.sudo`
 
       - :envvar:`ou=People <ldap__people_rdn>`
       - :envvar:`ou=Groups <ldap__groups_rdn>`
