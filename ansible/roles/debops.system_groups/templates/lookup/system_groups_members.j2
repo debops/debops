@@ -3,14 +3,14 @@
 {%   set system_groups__tpl_append_groups = [] %}
 {%   for element in (system_groups__combined_list | parse_kv_items) %}
 {%     if element.name|d() and element.state|d('present') not in [ 'init', 'absent', 'ignore' ] %}
-{%       if (element.members|d() and account in ([ element.members ] if element.members is string else element.members)) %}
+{%       if (element.members|d() and (system_groups__prefix + account) in ([ element.members ] if element.members is string else element.members)) %}
 {%         set _ = system_groups__tpl_append_groups.append(element.name) %}
 {%       endif %}
 {%     endif %}
 {%   endfor %}
 {%   if system_groups__tpl_append_groups %}
 {%     set _ = system_groups__tpl_items.append({
-  "name": account,
+  "name": (system_groups__prefix + account),
   "append": True,
   "groups": (system_groups__tpl_append_groups | join(','))
 }) %}

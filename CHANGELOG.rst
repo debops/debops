@@ -97,6 +97,10 @@ Added
   of the :ref:`debops.resources` role. Useful to start new services, but it
   shouldn't be used as a replacement for a fully-fledged Ansible roles.
 
+- [debops.sudo] The role is now integrated with the :ref:`debops.ldap` Ansible
+  role and can configure the :command:`sudo` service to read ``sudoers``
+  configuration from the LDAP directory.
+
 Changed
 ~~~~~~~
 

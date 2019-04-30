@@ -14,6 +14,7 @@ package will be installed.
    getting-started
    defaults
    defaults-detailed
+   ldap-dit
 
 Copyright
 ---------
