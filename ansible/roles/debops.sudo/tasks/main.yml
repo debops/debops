@@ -52,6 +52,13 @@
     mode: '0644'
   when: sudo__enabled|bool and sudo__logind_session|bool
 
+- name: Configure access to LDAP directory
+  template:
+    src: 'etc/sudo-ldap.conf.j2'
+    dest: '/etc/sudo-ldap.conf'
+    mode: '0440'
+  when: sudo__enabled|bool and sudo__ldap_enabled|bool
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'

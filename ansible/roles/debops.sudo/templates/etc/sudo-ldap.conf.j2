@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+# See sudoers.ldap(5) for details
+# This file shouldn't be world readable
+
+{% for option in sudo__ldap_combined_configuration | parse_kv_config %}
+{%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if ((option.separator|d())|bool or option.comment|d()) and not loop.first %}
+
+{%     endif %}
+{%     if option.comment|d() %}
+{{ option.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{{ '{}{}\t{}{}'.format(('#' if (option.state|d('present') == 'comment') else ''), option.name | upper, ('\t' if (option.name | count < 8) else ''), (option.value if option.value is string else (option.value | selectattr("name", "defined") | map(attribute="name") | list | join(' ')))) }}
+{%   endif %}
+{% endfor %}
