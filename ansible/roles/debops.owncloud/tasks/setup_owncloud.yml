@@ -104,9 +104,7 @@
            '--admin-pass={{ owncloud__admin_password }}'
            {% endif %}
   register: owncloud__register_occ_install
-  when: owncloud__do_autosetup|bool and owncloud__release not in [ '8.0' ]
-  ## Did not work with 8.1.6-2.1 because of https://github.com/owncloud/core/issues/17583
-  ## Falling back to URL auto install method.
+  when: owncloud__do_autosetup|bool
 
 # .. ]]]
 
@@ -204,6 +202,6 @@
   failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or
                 owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
   changed_when: False
-  when: (owncloud__do_autosetup|bool and owncloud__release is version_compare("9.0.8", ">="))
+  when: owncloud__do_autosetup|bool
 
 # ]]]
