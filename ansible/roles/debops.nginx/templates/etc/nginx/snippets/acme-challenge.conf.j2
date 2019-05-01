@@ -17,7 +17,9 @@ location ^~ /.well-known/acme-challenge/ {
 location @well-known-acme-challenge {
         root {{ nginx_acme_root }};
         default_type "text/plain";
+{% if nginx_acme_domain %}
         try_files $uri @redirect-acme-challenge;
+{% endif %}
 }
 
 {% if nginx_acme_domain %}
