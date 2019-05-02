@@ -1,0 +1,49 @@
+---
+
+- name: Install required APT packages
+  package:
+    name: '{{ q("flattened", yadm__base_packages
+                             + yadm__packages
+                             + yadm__group_packages
+                             + yadm__host_packages) }}'
+    state: 'present'
+  register: yadm__register_packages
+  until: yadm__register_packages is succeeded
+  when: yadm__enabled|bool
+
+- name: Install yadm from upstream
+  include_tasks: 'upstream_yadm.yml'
+  when: yadm__enabled|bool and yadm__upstream_enabled|bool
+
+- name: Ensure that the /root/.gnupg directory exists
+  file:
+    path: '~/.gnupg'
+    state: 'directory'
+    mode: '0700'
+  when: yadm__enabled|bool and yadm__dotfiles_enabled|bool
+
+- name: Download custom dotfile repositories
+  include_tasks: 'manage_dotfiles.yml'
+  loop: '{{ q("flattened", yadm__combined_dotfiles) | parse_kv_items }}'
+  loop_control:
+    loop_var: 'dotfile'
+    label: '{{ dotfile.name }}'
+  when: yadm__enabled|bool and yadm__dotfiles_enabled|bool and
+        dotfile.name|d()
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save yadm local facts
+  template:
+    src: 'etc/ansible/facts.d/yadm.fact.j2'
+    dest: '/etc/ansible/facts.d/yadm.fact'
+    mode: '0755'
+  register: yadm__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: yadm__register_facts is changed

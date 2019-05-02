@@ -1,0 +1,42 @@
+---
+
+- name: 'Import {{ dotfile.name }} GPG keys to root keyring'
+  apt_key:
+    keyring: '~/.gnupg/pubring.gpg'
+    id: '{{ (item_gpg.id | d(item_gpg)) | replace(" ","") }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver|d())
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: '{{ item_gpg.state | d(dotfile.state | d("present")) }}'
+  loop: '{{ q("flattened", dotfile.gpg) }}'
+  loop_control:
+    loop_var: 'item_gpg'
+  register: yadm__register_dotfiles_gpg_ids
+  until: yadm__register_dotfiles_gpg_ids is succeeded
+  when: dotfile.gpg|d() and dotfile.state|d('present') not in [ 'ignore' ]
+
+- name: 'Clone the {{ dotfile.name }} dotfiles'
+  git:
+    repo: '{{ item_git.repo | d(item_git) }}'
+    dest: '{{ yadm__dotfiles_root + "/"
+              + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$","")
+              + ".git" }}'
+    version: '{{ item_git.version | d("master") }}'
+    verify_commit: '{{ True if dotfile.gpg|d() else omit }}'
+    bare: True
+  loop: '{{ q("flattened", dotfile.git) }}'
+  loop_control:
+    loop_var: 'item_git'
+  when: dotfile.git|d() and dotfile.state|d('present') not in [ 'absent', 'ignore' ]
+
+- name: 'Remove the {{ dotfile.name }} dotfiles mirror if requested'
+  file:
+    dest: '{{ (yadm__dotfiles_root + "/"
+               + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$","")
+               + ".git") | dirname }}'
+    state: 'absent'
+  loop: '{{ q("flattened", dotfile.git) }}'
+  loop_control:
+    loop_var: 'item_git'
+  when: dotfile.git|d() and dotfile.state|d('present') == 'absent'

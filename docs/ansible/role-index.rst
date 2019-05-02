@@ -290,6 +290,7 @@ System configuration
 - :ref:`debops.sysnews`
 - :ref:`debops.system_groups`
 - :ref:`debops.users`
+- :ref:`debops.yadm`
 - ``debops.console``
 - ``debops.gitusers``
 - ``debops.sftpusers``
