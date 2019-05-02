@@ -1,0 +1,32 @@
+---
+
+- name: Ensure that the /root/.gnupg directory exists
+  file:
+    path: '~/.gnupg'
+    state: 'directory'
+    mode: '0700'
+
+- name: Import yadm upstream GPG key to root keyring
+  apt_key:
+    keyring: '~/.gnupg/pubring.gpg'
+    id: '{{ yadm__upstream_gpg_id | replace(" ","") }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver|d())
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  register: yadm__register_upstream_gpg_id
+  until: yadm__register_upstream_gpg_id is succeeded
+
+- name: Clone the yadm upstream repository
+  git:
+    repo: '{{ yadm__upstream_repo }}'
+    dest: '{{ yadm__upstream_dest }}'
+    version: '{{ yadm__upstream_version }}'
+    verify_commit: True
+
+- name: Symlink the upstream yadm binary in $PATH
+  file:
+    dest: '{{ yadm__upstream_link }}'
+    src: '{{ yadm__upstream_dest + "/yadm" }}'
+    state: 'link'

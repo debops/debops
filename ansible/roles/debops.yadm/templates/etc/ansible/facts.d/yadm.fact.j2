@@ -1,0 +1,26 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = loads('''{{ {"installed": False,
+                      "dotfiles": yadm__dotfiles_path}
+                     | to_nice_json }}''')
+
+if not os.path.exists(output['dotfiles']):
+    output['dotfiles'] = ''
+
+output['installed'] = cmd_exists('yadm')
+
+print(dumps(output, sort_keys=True, indent=4))

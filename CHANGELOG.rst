@@ -39,6 +39,12 @@ Added
     the :file:`/etc/security/` directory. The role is designed to allow other
     Ansible roles to easily manage their own PAM access rules.
 
+  - :ref:`debops.yadm` role installs the `Yet Another Dotfiles Manager`__
+    script and ensures that additional shells are available. It can also mirror
+    dotfiles locally.
+
+    .. __: https://yadm.io/
+
 - [debops.nginx] The role will automatically generate configuration which
   redirects short hostnames or subdomains to their FQDN equivalents. This
   allows HTTP clients to reach websites by specifying their short names via DNS
