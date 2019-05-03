@@ -7,7 +7,6 @@
     user: '{{ item.name }}'
     exclusive: '{{ item.sshkeys_exclusive | d(omit) }}'
   with_flattened:
-    - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'
     - '{{ users__admin_accounts }}'
     - '{{ users__accounts }}'
@@ -23,7 +22,6 @@
     path: '~{{ item.name }}/.ssh/authorized_keys'
     state: 'absent'
   with_flattened:
-    - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'
     - '{{ users__admin_accounts }}'
     - '{{ users__accounts }}'

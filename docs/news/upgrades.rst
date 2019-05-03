@@ -140,6 +140,12 @@ Inventory variable changes
   | ``sshd__ldap_password_length``              | Removed                        | No                                               |
   +---------------------------------------------+--------------------------------+--------------------------------------------------+
 
+- The management of the ``root`` account dotfiles has been removed from the
+  :ref:`debops.users` role and is now included in the
+  :ref:`debops.root_account` role. The dotfiles are managed using
+  :command:`yadm` script, installed by the :ref:`debops.yadm` role. The
+  ``users__root_accounts`` list has been removed.
+
 
 v0.8.1 (2019-02-02)
 -------------------

@@ -11,7 +11,6 @@
     update: '{{ (item.dotfiles_update | d(users__dotfiles_combined_map[item.dotfiles_name
                                         | d(users__dotfiles_name)].update | d(users__dotfiles_update))) | bool }}'
   with_flattened:
-    - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'
     - '{{ users__admin_accounts }}'
     - '{{ users__accounts }}'
@@ -38,7 +37,6 @@
   changed_when: users__register_dotfiles_command.stdout|d() and
                 not users__register_dotfiles_command.stdout.startswith('skipped, since ')
   with_flattened:
-    - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'
     - '{{ users__admin_accounts }}'
     - '{{ users__accounts }}'
@@ -59,7 +57,6 @@
                      users__dotfiles_combined_map[item.dotfiles_name | d(users__dotfiles_name)].shell|d())
                  else (users__default_shell if users__default_shell else omit)) }}'
   with_flattened:
-    - '{{ users__root_accounts }}'
     - '{{ users__default_accounts }}'
     - '{{ users__admin_accounts }}'
     - '{{ users__accounts }}'

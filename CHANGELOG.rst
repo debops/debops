@@ -251,6 +251,13 @@ Changed
   :ref:`debops.roundcube` and :ref:`debops.librenms` roles, since
   :ref:`debops.php` will take care of the installation.
 
+- [debops.users][debops.root_account] Management of the ``root`` dotfiles has
+  been removed from the :ref:`debops.users` role and is now done in the
+  :ref:`debops.root_account` role, using the :command:`yadm` script. Users
+  might need to clean out the existing dotfiles if they were managed as
+  symlinks, otherwise :command:`yadm` script will not be able to correctly
+  deploy the new dotfiles.
+
 Removed
 ~~~~~~~
 

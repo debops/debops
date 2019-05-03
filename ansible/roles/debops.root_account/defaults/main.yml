@@ -108,6 +108,32 @@ root_account__shell: ''
 root_account__fix_no_tty: True
                                                                    # ]]]
                                                                    # ]]]
+# The root dotfiles [[[
+# ---------------------
+
+# The dotfiles of the ``root`` account are managed using the :command:`yadm`
+# script, installed by the :ref:`debops.yadm` role.
+
+# .. envvar:: root_account__dotfiles_enabled [[[
+#
+# Enable or disable dotfiles management, depending on the availablility of the
+# dotfiles repository installed by the :ref:`debops.yadm` role.
+root_account__dotfiles_enabled: '{{ True
+                                    if (ansible_local|d() and ansible_local.yadm|d() and
+                                        ansible_local.yadm.dotfiles|d())
+                                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: root_account__dotfiles_repo [[[
+#
+# An URL or an absolute directory to the :command:`git` repository that
+# contains dotfiles for the ``root`` account.
+root_account__dotfiles_repo: '{{ ansible_local.yadm.dotfiles
+                                 if (ansible_local|d() and ansible_local.yadm|d() and
+                                     ansible_local.yadm.dotfiles|d())
+                                 else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Authorized SSH keys [[[
 # -----------------------
 
