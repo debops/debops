@@ -39,7 +39,7 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
     """
 
     if 'value' in new_data:
-        old_value = current_data.get('value', None)
+        old_value = current_data.get('value')
         old_state = current_data.get('state', 'present')
         new_value = new_data.get('value')
 
@@ -95,8 +95,7 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
                         })
 
                         if 'copy_id_from' in element:
-                            if (element.get('copy_id_from')
-                                    in dict_value.keys()):
+                            if element.get('copy_id_from') in dict_value:
                                 id_src = element.get('copy_id_from')
                                 dict_element['id'] = (
                                     int(dict_value[id_src].get('id')) +
@@ -144,9 +143,8 @@ def parse_kv_config(*args, **kwargs):
                 if element.get('state', 'present') == 'append':
 
                     # In append mode, don't create new config entries
-                    if (param_name not in parsed_config.keys() or
-                        parsed_config[param_name].get('state',
-                                                      'present') == 'init'):
+                    if (parsed_config.get(param_name, {})
+                            .get('state', 'present') == 'init'):
                         continue
 
                 current_param = (parsed_config[param_name].copy()
@@ -178,7 +176,7 @@ def parse_kv_config(*args, **kwargs):
                 })
 
                 if 'copy_id_from' in element:
-                    if element.get('copy_id_from') in parsed_config.keys():
+                    if element.get('copy_id_from') in parsed_config:
                         id_src = element.get('copy_id_from')
                         current_param['id'] = (
                             int(parsed_config[id_src].get('id')) +
@@ -241,21 +239,16 @@ def parse_kv_config(*args, **kwargs):
                     parsed_config.update({key: current_param})
 
     # Expand the dictionary of configuration options into a list,
-    # and return sorted by weight
+    # and return sorted by weight.
     output = []
     for key, params in parsed_config.items():
         if isinstance(params.get('value'), dict):
-            unsorted_values = []
-            current_value = params.get('value').copy()
+            params['value'] = sorted(
+                params.get('value').values(),
+                key=itemgetter('real_weight')
+            )
 
-            for param_value in current_value.values():
-                unsorted_values.append(param_value)
-                params.update({'value': sorted(unsorted_values,
-                                               key=itemgetter('real_weight'))})
-
-            output.append(params)
-        else:
-            output.append(params)
+        output.append(params)
 
     return sorted(output, key=itemgetter('real_weight'))
 
@@ -302,7 +295,7 @@ def parse_kv_items(*args, **kwargs):
                 if element_state == 'append':
 
                     # In append mode, don't create new config entries
-                    if (param_name not in parsed_config.keys() or
+                    if (param_name not in parsed_config or
                         parsed_config[param_name].get('state',
                                                       'present') == 'init'):
                         continue
@@ -333,7 +326,7 @@ def parse_kv_items(*args, **kwargs):
                 })
 
                 if 'copy_id_from' in element:
-                    if element.get('copy_id_from') in parsed_config.keys():
+                    if element.get('copy_id_from') in parsed_config:
                         id_src = element.get('copy_id_from')
                         current_param['id'] = (
                             int(parsed_config[id_src].get('id')) +
@@ -363,8 +356,7 @@ def parse_kv_items(*args, **kwargs):
                                               defargs.get(key)))
 
                 merge_keys = ['options']
-                if (kwargs.get('merge_keys') and
-                        isinstance(kwargs.get('merge_keys'), list)):
+                if isinstance(kwargs.get('merge_keys'), list):
                     merge_keys.extend(kwargs.get('merge_keys'))
 
                 for key_name in merge_keys:
@@ -378,8 +370,7 @@ def parse_kv_items(*args, **kwargs):
                 known_keys = ['name', 'state', 'id', 'weight',
                               'real_weight', 'separator',
                               'comment', 'options']
-                if (kwargs.get('merge_keys') and
-                        isinstance(kwargs.get('merge_keys'), list)):
+                if isinstance(kwargs.get('merge_keys'), list):
                     known_keys.extend(kwargs.get('merge_keys'))
 
                 # Include any unknown keys
@@ -388,16 +379,14 @@ def parse_kv_items(*args, **kwargs):
                         current_param[unknown_key] = element.get(unknown_key)
 
                 # Fill any empty keys using other keys
-                if (kwargs.get('empty') and
-                        isinstance(kwargs.get('empty'), dict)):
+                if isinstance(kwargs.get('empty'), dict):
                     emptargs = kwargs.get('empty')
 
                     for key in emptargs.keys():
-                        if current_param.get(key, None) is None:
+                        if key not in current_param:
                             for thing in list(emptargs[key]):
-                                current_param[key] = current_param.get(thing,
-                                                                       None)
-                                if current_param.get(key, None) is not None:
+                                current_param[key] = current_param.get(thing)
+                                if key in current_param:
                                     break
 
                 parsed_config.update({param_name: current_param})
