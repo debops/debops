@@ -201,12 +201,24 @@ def parse_kv_config(*args, **kwargs):
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
 
+                merge_keys = ['options']
+                if isinstance(kwargs.get('merge_keys'), list):
+                    merge_keys.extend(kwargs.get('merge_keys'))
+
+                for key_name in merge_keys:
+                    if key_name in element:
+                        current_options = current_param.get(key_name, [])
+                        current_param[key_name] = parse_kv_config(
+                            current_options + element.get(key_name),
+                            merge_keys=merge_keys)
+
                 # Include any unknown keys
                 for unknown_key in element.keys():
-                    if unknown_key not in ['name', 'state', 'id', 'weight',
-                                           'real_weight', 'separator',
-                                           'value', 'comment', 'option',
-                                           'section']:
+                    if (unknown_key not in merge_keys
+                            and unknown_key not in ['name', 'state', 'id', 'weight',
+                                                    'real_weight', 'separator',
+                                                    'value', 'comment', 'option',
+                                                    'section']):
                         current_param[unknown_key] = element.get(unknown_key)
 
                 parsed_config.update({param_name: current_param})
@@ -362,10 +374,10 @@ def parse_kv_items(*args, **kwargs):
                 for key_name in merge_keys:
                     if key_name in element:
                         current_options = current_param.get(key_name, [])
-                        new_options = parse_kv_config(
-                            current_options + element.get(key_name))
+                        current_param[key_name] = parse_kv_config(
+                            current_options + element.get(key_name),
+                            merge_keys=kwargs.get('merge_keys'))
 
-                        current_param[key_name] = new_options
 
                 known_keys = ['name', 'state', 'id', 'weight',
                               'real_weight', 'separator',
