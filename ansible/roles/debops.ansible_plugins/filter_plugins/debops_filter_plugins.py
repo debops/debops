@@ -408,17 +408,12 @@ def parse_kv_items(*args, **kwargs):
     output = []
     for key, params in parsed_config.items():
         if isinstance(params.get('value'), dict):
-            unsorted_values = []
-            current_value = params.get('value').copy()
+            params['value'] = sorted(
+                params.get('value').values(),
+                key=itemgetter('real_weight')
+            )
 
-            for param_value in current_value.values():
-                unsorted_values.append(param_value)
-                params.update({'value': sorted(unsorted_values,
-                                               key=itemgetter('real_weight'))})
-
-            output.append(params)
-        else:
-            output.append(params)
+        output.append(params)
 
     return sorted(output, key=itemgetter('real_weight'))
 
