@@ -33,6 +33,21 @@ except NameError:
 __metaclass__ = type
 
 
+def _check_if_key_in_nested_dict(key, dictionary):
+    for k, v in dictionary.items():
+        if k == key:
+            return True
+        elif isinstance(v, dict):
+            if _check_if_key_in_nested_dict(key, v):
+                return True
+        elif isinstance(v, list):
+            for d in v:
+                if _check_if_key_in_nested_dict(key, d):
+                    return True
+
+    return False
+
+
 def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
     """Parse the parameter values and merge
     with existing ones conditionally.
@@ -160,7 +175,8 @@ def parse_kv_config(*args, **kwargs):
                                                                'present')
 
                 if (current_param['state'] == 'init' and
-                        ('value' in element or 'value' in current_param)):
+                        (_check_if_key_in_nested_dict('value', element) or
+                        _check_if_key_in_nested_dict('value', current_param))):
                     current_param['state'] = 'present'
 
                 current_param.update({
@@ -325,7 +341,8 @@ def parse_kv_items(*args, **kwargs):
                                                                'present')
 
                 if (current_param['state'] == 'init' and
-                        ('value' in element or 'value' in current_param)):
+                        (_check_if_key_in_nested_dict('value', element) or
+                        _check_if_key_in_nested_dict('value', current_param))):
                     current_param['state'] = 'present'
 
                 current_param.update({
