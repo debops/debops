@@ -25,8 +25,6 @@ List of renamed user list variables:
 +----------------------+-----------------------------------+
 | ``users_host_list``  | :envvar:`users__host_accounts`    |
 +----------------------+-----------------------------------+
-| ``users_root``       | :envvar:`users__root_accounts`    |
-+----------------------+-----------------------------------+
 | ``users_admins``     | :envvar:`users__admin_accounts`   |
 +----------------------+-----------------------------------+
 | ``users_default``    | :envvar:`users__default_accounts` |
@@ -37,18 +35,6 @@ List of renamed user list variables:
 +----------------------+-----------------------------------+
 |                      | :envvar:`users__host_groups`      |
 +----------------------+-----------------------------------+
-
-List of other renamed variables:
-
-+--------------------------------+---------------------------------------+
-| Old variable name              | New variable name                     |
-+================================+=======================================+
-| ``users_default_dotfiles``     | :envvar:`users__dotfiles_enabled`     |
-+--------------------------------+---------------------------------------+
-| ``users_default_dotfiles_key`` | :envvar:`users__dotfiles_name`        |
-+--------------------------------+---------------------------------------+
-| ``users_dotfiles``             | :envvar:`users__dotfiles_default_map` |
-+--------------------------------+---------------------------------------+
 
 This script can come in handy to update the inventory variable names, assuming
 that your inventory is stored in a :command:`git` repository:

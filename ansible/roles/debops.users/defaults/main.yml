@@ -66,9 +66,8 @@ users__default_system: '{{ (True
 #
 # Specify absolute path of the shell which should be configured on all user
 # accounts managed by this role, if not overriden by the user configuration. If
-# not specified, the shell won't be changed. The shell can be specified by the
-# user configuration files, see :ref:`users__ref_dotfiles_map` for more
-# details.
+# not specified, the shell won't be changed, but new accounts will not have
+# a defined shell either.
 users__default_shell: ''
                                                                    # ]]]
                                                                    # ]]]
@@ -130,14 +129,6 @@ users__group_accounts: []
 users__host_accounts: []
 
                                                                    # ]]]
-# .. envvar:: users__root_accounts [[[
-#
-# This is only used for configuration files and SSH keys management on the
-# UNIX ``root`` account.
-users__root_accounts:
-  - name: 'root'
-
-                                                                   # ]]]
 # .. envvar:: users__default_accounts [[[
 #
 # List of default UNIX user accounts managed by Ansible.
@@ -193,57 +184,23 @@ users__host_resources: []
 
 # .. envvar:: users__dotfiles_enabled [[[
 #
-# Default state of dotfiles on all accounts managed by Ansible
-# False - dotfiles are not configured by default
-# True - dotfiles will be configured by default
-users__dotfiles_enabled: False
+# Enable or disable management of user dotfiles via :command:`yadm` script. See
+# the :ref:`debops.yadm` role for script installation and dotfile mirroring.
+users__dotfiles_enabled: '{{ True
+                             if (ansible_local|d() and ansible_local.yadm|d() and
+                                 ansible_local.yadm.dotfiles|d())
+                             else False }}'
 
                                                                    # ]]]
-# .. envvar:: users__dotfiles_dest [[[
+# .. envvar:: users__dotfiles_repo [[[
 #
-# Path in the user's $HOME directory where dotfiles should be checked
-# out if not specified otherwise.
-users__dotfiles_dest: '~/.config/dotfiles'
-
-                                                                   # ]]]
-# .. envvar:: users__dotfiles_update [[[
-#
-# If enabled, user configuration files repository will be updated on each
-# Ansible run.
-users__dotfiles_update: True
-
-                                                                   # ]]]
-# .. envvar:: users__dotfiles_name [[[
-#
-# Default user configuration files dictionary to use, if none is specified.
-users__dotfiles_name: 'drybjed'
-
-                                                                   # ]]]
-# .. envvar:: users__dotfiles_default_map [[[
-#
-# A YAML dictionary with default definitions of the user configuration files.
-# See the :ref:`users__ref_dotfiles_map` for more details.
-users__dotfiles_default_map:
-  'drybjed':
-    repo: 'https://github.com/drybjed/dotfiles.git'
-    command: 'make install'
-    creates: '~/.zshrc'
-    shell: '/bin/zsh'
-
-                                                                   # ]]]
-# .. envvar:: users__dotfiles_map [[[
-#
-# A YAML dictionary with definitions of the user configuration files.
-# See the :ref:`users__ref_dotfiles_map` for more details.
-users__dotfiles_map: {}
-
-                                                                   # ]]]
-# .. envvar:: users__dotfiles_combined_map [[[
-#
-# The combined YAML dictionary which holds the information about user
-# configuration files.
-users__dotfiles_combined_map: '{{ users__dotfiles_default_map
-                                  | combine(users__dotfiles_map) }}'
+# An URL or an absolute path on the remote host to the :command:`git` dotfiles
+# repository. The repository will be used by default if the dotfiles management
+# is enabled without specifying a custom repository for the user.
+users__dotfiles_repo: '{{ ansible_local.yadm.dotfiles
+                          if (ansible_local|d() and ansible_local.yadm|d() and
+                              ansible_local.yadm.dotfiles|d())
+                          else "" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

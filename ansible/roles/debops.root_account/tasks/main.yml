@@ -105,6 +105,18 @@
     state: 'present'
   when: root_account__enabled|bool and root_account__fix_no_tty|bool
 
+- name: Manage root dotfiles
+  shell: |
+    if ! [ -e "$HOME/.yadm/repo.git" ] ; then
+        yadm clone --bootstrap "{{ root_account__dotfiles_repo }}"
+    else
+        yadm pull
+    fi
+  register: root_account__register_dotfiles
+  changed_when: ('Already up-to-date.' not in root_account__register_dotfiles.stdout_lines)
+  when: root_account__dotfiles_enabled|bool
+  check_mode: False
+
 - name: Make sure Ansible fact directory exists
   file:
     path: '/etc/ansible/facts.d'

@@ -27,7 +27,7 @@
 - name: Check if defined shells exist
   stat:
     path: "{{ item }}"
-  loop: '{{ ((users__default_accounts + users__admin_accounts + users__root_accounts
+  loop: '{{ ((users__default_accounts + users__admin_accounts
               + users__accounts + users__group_accounts + users__host_accounts
               + users__dependent_accounts) | selectattr("shell", "defined")
               | map(attribute="shell") | unique | list)
@@ -53,7 +53,7 @@
     password:           '{{ item.password           | d("*") }}'
     update_password:    '{{ item.update_password    | d("on_create") }}'
     system:             '{{ item.system             | d(True if (users__default_system | bool) else omit) }}'
-    shell:              '{{ item.shell              | d(omit) }}'
+    shell:              '{{ item.shell              | d(users__default_shell if users__default_shell|d() else omit) }}'
     home:               '{{ item.home               | d(omit) }}'
     createhome:         '{{ item.createhome         | d(omit) }}'
     move_home:          '{{ item.move_home          | d(omit) }}'
