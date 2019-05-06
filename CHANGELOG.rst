@@ -41,7 +41,7 @@ Added
 
   - :ref:`debops.yadm` role installs the `Yet Another Dotfiles Manager`__
     script and ensures that additional shells are available. It can also mirror
-    dotfiles locally.
+    dotfiles locally. The role is included in the common playbook.
 
     .. __: https://yadm.io/
 
@@ -257,6 +257,12 @@ Changed
   might need to clean out the existing dotfiles if they were managed as
   symlinks, otherwise :command:`yadm` script will not be able to correctly
   deploy the new dotfiles.
+
+  The management of the user dotfiles in the :ref:`debops.users` role has been
+  redesigned and now uses the :command:`yadm` script to perform the actual
+  deployment. See :ref:`debops.yadm` for details about installing the script
+  and creating local dotfile mirrors. The :ref:`users__ref_accounts` variable
+  documentation contains examples of new dotfile definitions.
 
 Removed
 ~~~~~~~

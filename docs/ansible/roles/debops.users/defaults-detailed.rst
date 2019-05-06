@@ -264,52 +264,18 @@ Parameters related to mail forwarding
 Parameters related to user configuration files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``dotfiles_enabled``
+``dotfiles_enabled`` / ``dotfiles``
   Optional, boolean. Enable or disable management of the user configuration
   files.
 
-``dotfiles_name``
-  Optional. Name of the key in the :envvar:`users__dotfiles_combined_map` dictionary
-  which corresponds to the user configuration files to use. If not specified,
-  the default from :envvar:`users__dotfiles_name` will be used.
-
-You can also use the parameters below to configure the dotfiles directly for
-a specific account.
-
 ``dotfiles_repo``
-  Optional. URL to the :command:`git` repository with the user configuration files to
-  deploy. If not specified, the default dotfiles repository will be used
-  instead.
+  Optional. An URL or an absolute path on the host to the :command:`git`
+  repository with the user configuration files to deploy. If not specified, the
+  default dotfiles repository, defined in the :envvar:`users__dotfiles_repo`
+  variable, will be used instead. The repository will be dployed or updated
+  using the :command:yadm` script, installed by the :ref:`debops.yadm` Ansible
+  role.
 
-``dotfiles_dest``
-  Optional. Specify the path where the user configuration files should be
-  cloned into. If not specified, :envvar:`users__dotfiles_dest` variable will be used
-  instead, by default cloning the :command:`git` repository to :file:`~/.config/dotfiles/`
-  directory.
-
-``dotfiles_version``
-  Optional. Specify a :command:`git` branch or tag  of the user configuration
-  files which should be downloaded and checked out. If not specified, role will
-  automatically check out the ``master`` branch.
-
-``dotfiles_update``
-  Optional, boolean. Specify if the user configuration files repository should
-  be updated on each Ansible run. If not set, the default from
-  :envvar:`users__dotfiles_update` will be used instead.
-
-``dotfiles_command``
-  Optional. Command to execute to deploy the dotfiles. The command will be
-  executed in the checked out directory (by default :file:`~/.config/dotfiles/`)
-  with the user privileges.
-
-  The task checks the output of the given command; if it's not empty, the task
-  will be marked as changed.
-
-``dotfiles_creates``
-  Optional. Path to a file which indicates that the dotfiles deployment has
-  been completed and the command task will be skipped. If not specified, the
-  command used to deploy the configuration files will be executed on each
-  Ansible run.
 
 Examples
 ~~~~~~~~
@@ -404,38 +370,4 @@ Examples
 ~~~~~~~~
 
 .. literalinclude:: examples/manage-resources.yml
-   :language: yaml
-
-
-.. _users__ref_dotfiles_map:
-
-users__dotfiles_map
--------------------
-
-This is a YAML dictionary which can be used to define sets of user
-configuration files. These sets can then be enabled globally or per user
-account as needed. Each set is a YAML dictionary with specific parameters:
-
-``repo``
-  Required. An URL to the :command:`git` repository which holds the user configuration
-  files.
-
-``command``
-  Optional. A command executed by Ansible used to deploy the dotfiles. The
-  command will be executed with a given user privileges, in the dotfiles
-  directory (by default :file:`~/.config/dotfiles/`).
-
-``creates``
-  Optional. Path to the file which will indicate that the dotfiles have been
-  deployed. If not specified, the command set in the ``command`` parameter will
-  be executed on each Ansible run.
-
-``shell``
-  Optional. Specify the shell which should be enabled for users that use
-  a given set of user configuration files.
-
-Examples
-~~~~~~~~
-
-.. literalinclude:: examples/manage-dotfiles.yml
    :language: yaml
