@@ -34,16 +34,17 @@ __metaclass__ = type
 
 
 def _check_if_key_in_nested_dict(key, dictionary):
-    for k, v in dictionary.items():
-        if k == key:
-            return True
-        elif isinstance(v, dict):
-            if _check_if_key_in_nested_dict(key, v):
+    if isinstance(dictionary, dict):
+        for k, v in dictionary.items():
+            if k == key:
                 return True
-        elif isinstance(v, list):
-            for d in v:
-                if _check_if_key_in_nested_dict(key, d):
+            elif isinstance(v, dict):
+                if _check_if_key_in_nested_dict(key, v):
                     return True
+            elif isinstance(v, list):
+                for d in v:
+                    if _check_if_key_in_nested_dict(key, d):
+                        return True
 
     return False
 
