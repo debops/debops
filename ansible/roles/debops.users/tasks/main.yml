@@ -14,21 +14,322 @@
 - name: DebOps pre_tasks hook
   include: "{{ lookup('task_src', 'users/pre_main.yml') }}"
 
-- include: users.yml
-  when: users__enabled | bool
+- name: Create user groups
+  group:
+    name:   '{{ item.group  | d(item.name) }}'
+    system: '{{ item.system | d(True if (users__default_system | bool) else omit) }}'
+    gid:    '{{ item.gid    | d(omit) }}'
+    state: 'present'
+  with_flattened:
+    - '{{ users__groups }}'
+    - '{{ users__group_groups }}'
+    - '{{ users__host_groups }}'
+    - '{{ users__dependent_groups }}'
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and item.name|d() and item.name != 'root' and item.state|d('present') != 'absent')
+  no_log: '{{ users__no_log | bool }}'
 
-- include: forward.yml
-  when: users__enabled | bool
+- name: Get list of available groups
+  getent:
+    database: 'group'
 
-- include: sshkeys.yml
-  when: users__enabled | bool
+- name: Check if defined shells exist
+  stat:
+    path: "{{ item }}"
+  loop: '{{ ((users__default_accounts + users__admin_accounts
+              + users__accounts + users__group_accounts + users__host_accounts
+              + users__dependent_accounts) | selectattr("shell", "defined")
+              | map(attribute="shell") | unique | list)
+            + ([ users__default_shell ] if users__default_shell|d() else []) }}'
+  register: users__register_shell_stats
 
-- include: resources.yml
-  when: users__enabled | bool
+- name: Fail if a defined shell does not exist
+  fail:
+    msg: "Trying to set a shell that does not exist, this can lock you out!"
+  loop: '{{ users__register_shell_stats.results }}'
+  when: not item.stat.exists
 
-- include: dotfiles.yml
-  when: users__enabled | bool
-  tags: [ 'role::users:dotfiles' ]
+- name: Manage user accounts
+  user:
+    name:               '{{ item.name }}'
+    uid:                '{{ item.uid                | d(omit) }}'
+    group:              '{{ item.group              | d(omit) }}'
+    groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups)
+                               | intersect(getent_group.keys())) | join(",") ) if item.groups is defined else omit }}'
+    append:             '{{ item.append             | d(True) }}'
+    state:              '{{ item.state              | d("present") }}'
+    comment:            '{{ item.comment            | d(omit) }}'
+    password:           '{{ item.password           | d("*") }}'
+    update_password:    '{{ item.update_password    | d("on_create") }}'
+    system:             '{{ item.system             | d(True if (users__default_system | bool) else omit) }}'
+    shell:              '{{ item.shell              | d(users__default_shell if users__default_shell|d() else omit) }}'
+    home:               '{{ item.home               | d(omit) }}'
+    createhome:         '{{ item.createhome         | d(omit) }}'
+    move_home:          '{{ item.move_home          | d(omit) }}'
+    skeleton:           '{{ item.skeleton           | d(omit) }}'
+    expires:            '{{ item.expires            | d(omit) }}'
+    remove:             '{{ item.remove             | d(omit) }}'
+    force:              '{{ item.force              | d(omit) }}'
+    non_unique:         '{{ item.non_unique         | d(omit) }}'
+    generate_ssh_key:   '{{ item.generate_ssh_key   | d(omit) }}'
+    ssh_key_bits:       '{{ item.ssh_key_bits       | d(omit) }}'
+    ssh_key_comment:    '{{ item.ssh_key_comment    | d(omit) }}'
+    ssh_key_file:       '{{ item.ssh_key_file       | d(omit) }}'
+    ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
+    ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and item.name|d() and item.name != 'root')
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Manage user home directories
+  file:
+    path:  '{{ item.home | d("~" + item.name) }}'
+    state: 'directory'
+    owner: '{{ item.home_owner | d(omit) }}'
+    group: '{{ item.home_group | d(omit) }}'
+    mode:  '{{ item.home_mode  | d(omit) }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and item.createhome|d(True) and
+         (item.home_owner|d() or item.home_group|d() or item.home_mode|d()))
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Manage home directory ACLs
+  acl:
+    path:        '{{ item.0.home        | d("~" + item.0.name) }}'
+    default:     '{{ item.1.default     | d(omit) }}'
+    entity:      '{{ item.1.entity      | d(omit) }}'
+    entry:       '{{ item.1.entry       | d(omit) }}'
+    etype:       '{{ item.1.etype       | d(omit) }}'
+    permissions: '{{ item.1.permissions | d(omit) }}'
+    follow:      '{{ item.1.follow      | d(omit) }}'
+    recursive:   '{{ item.1.recursive   | d(omit) }}'
+    state:       '{{ item.1.state       | d("present") }}'
+  loop: '{{ (lookup("flattened",
+                    users__default_accounts
+                    + users__admin_accounts
+                    + users__accounts
+                    + users__group_accounts
+                    + users__host_accounts
+                    + users__dependent_accounts,
+                    wantlist=True))
+             | selectattr("home_acl", "defined") | list
+             | subelements("home_acl") }}'
+  loop_control:
+    label: '{{ {"name": item.0.name, "home_acl": item.1} }}'
+  when: (users__enabled|bool and users__acl_enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and item.0.state|d('present') != 'absent' and
+         item.0.createhome|d(True) and item.0.home_acl|d())
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Allow specified UNIX accounts to linger when not logged in
+  command: loginctl enable-linger {{ item.name }}
+  args:
+    creates: '/var/lib/systemd/linger/{{ item.name }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and ansible_service_mgr == 'systemd' and
+         item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.linger is defined and item.linger|bool)
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Disallow specified UNIX accounts to linger when not logged in
+  command: loginctl disable-linger {{ item.name }}
+  args:
+    removes: '/var/lib/systemd/linger/{{ item.name }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and ansible_service_mgr == 'systemd' and
+         item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.linger is defined and not item.linger|bool)
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Configure ~/.ssh/authorized_keys for users
+  authorized_key:
+    key: "{{ (item.sshkeys if item.sshkeys is string else '\n'.join(item.sshkeys)) | string }}"
+    state: 'present'
+    user: '{{ item.name }}'
+    exclusive: '{{ item.sshkeys_exclusive | d(omit) }}'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
+         item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent')
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Remove ~/.ssh/authorized_keys from user account if disabled
+  file:
+    path: '~{{ item.name }}/.ssh/authorized_keys'
+    state: 'absent'
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
+         item.sshkeys_state|d('present') == 'absent')
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Configure user mail forwarding
+  lineinfile:
+    dest: '~/.forward'
+    regexp: "{{ '^' + (item.forward if item.forward is string else item.forward[0]) }}"
+    line: '{{ item.forward if item.forward is string else item.forward | join(", ") }}'
+    state: '{{ item.forward_state | d("present") }}'
+    create: True
+  become_user: '{{ item.name }}'
+  become: True
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and item.name|d() and item.name != 'root' and item.state|d('present') != 'absent' and
+         item.createhome|d(True) and item.forward|d())
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Manage users dotfiles
+  shell: |
+    if ! [ -e "$HOME/.yadm/repo.git" ] ; then
+        yadm clone --bootstrap "{{ item.dotfiles_repo | d(users__dotfiles_repo) }}"
+    else
+        yadm pull
+    fi
+  with_flattened:
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  become: True
+  become_user: '{{ item.name }}'
+  check_mode: False
+  register: users__register_dotfiles
+  changed_when: ('Already up-to-date.' not in users__register_dotfiles.stdout_lines)
+  when: (users__enabled|bool and item.name|d() and item.state|d('present') != 'absent' and item.createhome|d(True) and
+         (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))) | bool and
+         (item.dotfiles_repo | d(users__dotfiles_repo)))
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Create resource paths
+  file:
+    path:    '{{ item.path    | d(item.dest) }}'
+    state:   '{{ item.state   | d("directory") }}'
+    src:     '{{ item.src     | d(omit) }}'
+    mode:    '{{ item.mode    | d(omit) }}'
+    force:   '{{ item.force   | d(omit) }}'
+    recurse: '{{ item.recurse | d(omit) }}'
+  become_user: '{{ item.name }}'
+  become: True
+  with_flattened:
+    - '{{ users__resources }}'
+    - '{{ users__group_resources }}'
+    - '{{ users__host_resources }}'
+  when: (users__enabled|bool and item.name|d() and item.state|d('directory') in [ 'directory', 'link', 'touch' ] and
+         (item.path|d() or item.dest|d()))
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Create parent resource directories
+  file:
+    dest:    '{{ (item.dest          | d(item.path)) | dirname }}'
+    force:   '{{ item.force          | d(omit) }}'
+    mode:    '{{ item.parent_mode    | d(omit) }}'
+    recurse: '{{ item.parent_recurse | d(omit) }}'
+    state:   'directory'
+  become_user: '{{ item.name }}'
+  become: True
+  with_flattened:
+    - '{{ users__resources }}'
+    - '{{ users__group_resources }}'
+    - '{{ users__host_resources }}'
+  when: (users__enabled|bool and item.name|d() and item.state|d('present') in [ 'present', 'file' ] and item.parent|d(True) and
+         (item.dest|d() or item.path|d()) and (item.src|d() or item.content|d()))
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Manage resource contents
+  copy:
+    dest:    '{{ item.dest    | d(item.path) }}'
+    src:     '{{ item.src     | d(omit) }}'
+    content: '{{ item.content | d(omit) }}'
+    mode:    '{{ item.mode    | d(omit) }}'
+    force:   '{{ item.force   | d(omit) }}'
+  become_user: '{{ item.name }}'
+  become: True
+  with_flattened:
+    - '{{ users__resources }}'
+    - '{{ users__group_resources }}'
+    - '{{ users__host_resources }}'
+  when: (users__enabled|bool and item.name|d() and item.state|d('present') in [ 'present', 'file' ] and
+         (item.dest|d() or item.path|d()) and (item.src|d() or item.content|d()))
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Remove resources if requested
+  file:
+    path: '{{ item.path | d(item.dest) }}'
+    state: 'absent'
+  become_user: '{{ item.name }}'
+  become: True
+  with_flattened:
+    - '{{ users__resources }}'
+    - '{{ users__group_resources }}'
+    - '{{ users__host_resources }}'
+  when: (users__enabled|bool and item.name|d() and item.state|d('present') == 'absent' and
+         (item.path|d() or item.dest|d()))
+  no_log: '{{ users__no_log | bool }}'
+
+- name: Remove user groups if requested
+  group:
+    name: '{{ item.group | d(item.name) }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ users__groups }}'
+    - '{{ users__group_groups }}'
+    - '{{ users__host_groups }}'
+    - '{{ users__dependent_groups }}'
+    - '{{ users__default_accounts }}'
+    - '{{ users__admin_accounts }}'
+    - '{{ users__accounts }}'
+    - '{{ users__group_accounts }}'
+    - '{{ users__host_accounts }}'
+    - '{{ users__dependent_accounts }}'
+  when: (users__enabled|bool and item.name|d() and item.name != 'root' and item.state|d('present') == 'absent' and
+         (item.group is undefined or item.group == item.name))
+  no_log: '{{ users__no_log | bool }}'
 
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'users/post_main.yml') }}"
