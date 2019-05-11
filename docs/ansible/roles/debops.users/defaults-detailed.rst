@@ -110,6 +110,11 @@ General account parameters
   The module default is to always update the password, the ``debops.users``
   default is to only update the password on initial user creation.
 
+``no_log``
+  Optional, boolean. If defined and ``True``, a given entry will not be logged
+  during the Ansible run. If not specified, if the ``password`` parameter is
+  specified, the role will automatically disable logging as well.
+
 ``non_unique``
   Optional, boolean. If ``True``, allows setting the UID to a non-unique value.
 

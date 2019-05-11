@@ -23,7 +23,7 @@
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') != 'absent' and (item.private_group|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Get list of available groups
   getent:
@@ -76,7 +76,7 @@
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'ignore' ] and (item.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Manage user home directories
   file:
@@ -89,7 +89,7 @@
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d()) and (item.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Manage home directory ACLs
   acl:
@@ -111,7 +111,7 @@
          item.0.name|d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
          item.0.createhome|d(True) and item.0.home_acl|d() and (item.0.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Allow specified UNIX accounts to linger when not logged in
   command: loginctl enable-linger {{ item.name }}
@@ -122,7 +122,7 @@
          item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
          item.linger is defined and item.linger|bool and (item.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Disallow specified UNIX accounts to linger when not logged in
   command: loginctl disable-linger {{ item.name }}
@@ -133,7 +133,7 @@
          item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
          item.linger is defined and not item.linger|bool and (item.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Configure ~/.ssh/authorized_keys for users
   authorized_key:
@@ -145,7 +145,7 @@
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
          item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Remove ~/.ssh/authorized_keys from user account if disabled
   file:
@@ -155,7 +155,7 @@
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
          item.sshkeys_state|d('present') == 'absent' and (item.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Configure user mail forwarding
   lineinfile:
@@ -170,7 +170,7 @@
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
          item.createhome|d(True) and item.forward|d() and (item.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Manage users dotfiles
   shell: |
@@ -189,7 +189,7 @@
          item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
          (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))) | bool and
          (item.dotfiles_repo | d(users__dotfiles_repo)) and (item.user|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Create resource paths
   file:
@@ -207,7 +207,7 @@
     - '{{ users__host_resources }}'
   when: (users__enabled|bool and item.name|d() and item.state|d('directory') in [ 'directory', 'link', 'touch' ] and
          (item.path|d() or item.dest|d()))
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Create parent resource directories
   file:
@@ -224,7 +224,7 @@
     - '{{ users__host_resources }}'
   when: (users__enabled|bool and item.name|d() and item.state|d('present') in [ 'present', 'file' ] and item.parent|d(True) and
          (item.dest|d() or item.path|d()) and (item.src|d() or item.content|d()))
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Manage resource contents
   copy:
@@ -241,7 +241,7 @@
     - '{{ users__host_resources }}'
   when: (users__enabled|bool and item.name|d() and item.state|d('present') in [ 'present', 'file' ] and
          (item.dest|d() or item.path|d()) and (item.src|d() or item.content|d()))
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Remove resources if requested
   file:
@@ -255,7 +255,7 @@
     - '{{ users__host_resources }}'
   when: (users__enabled|bool and item.name|d() and item.state|d('present') == 'absent' and
          (item.path|d() or item.dest|d()))
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Remove user groups if requested
   group:
@@ -265,7 +265,7 @@
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') == 'absent' and
          (item.private_group|d(True))|bool)
-  no_log: '{{ users__no_log | bool }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'users/post_main.yml') }}"
