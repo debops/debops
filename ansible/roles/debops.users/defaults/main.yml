@@ -71,11 +71,12 @@ users__default_system: '{{ (True
 users__default_shell: ''
                                                                    # ]]]
                                                                    # ]]]
-# Lists of managed UNIX groups [[[
-# --------------------------------
+# Lists of managed UNIX groups and accounts [[[
+# ---------------------------------------------
 
-# These lists can be used to manage UNIX groups through Ansible inventory. See
-# :ref:`users__ref_groups` for more details.
+# These lists can be used to manage UNIX groups as well as UNIX accounts
+# through the Ansible inventory. See :ref:`users__ref_accounts` for more
+# details.
 
 # .. envvar:: users__groups [[[
 #
@@ -103,13 +104,18 @@ users__host_groups: []
 users__dependent_groups: []
 
                                                                    # ]]]
+# .. envvar:: users__default_accounts [[[
+#
+# List of default UNIX user accounts managed by Ansible.
+users__default_accounts: []
+
                                                                    # ]]]
-# Lists of managed UNIX accounts [[[
-# ----------------------------------
+# .. envvar:: users__admin_accounts [[[
+#
+# List of UNIX administrator accounts managed by Ansible.
+users__admin_accounts: '{{ lookup("template", "lookup/users__admin_accounts.j2") | from_yaml }}'
 
-# These lists can be used to manage UNIX user accounts through Ansible
-# inventory. See :ref:`users__ref_accounts` for more details.
-
+                                                                   # ]]]
 # .. envvar:: users__accounts [[[
 #
 # List of user accounts to manage on all hosts in Ansible inventory.
@@ -129,18 +135,6 @@ users__group_accounts: []
 users__host_accounts: []
 
                                                                    # ]]]
-# .. envvar:: users__default_accounts [[[
-#
-# List of default UNIX user accounts managed by Ansible.
-users__default_accounts: []
-
-                                                                   # ]]]
-# .. envvar:: users__admin_accounts [[[
-#
-# List of UNIX administrator accounts managed by Ansible.
-users__admin_accounts: '{{ lookup("template", "lookup/users__admin_accounts.j2") | from_yaml }}'
-                                                                   # ]]]
-                                                                   # ]]]
 # .. envvar:: users__dependent_accounts [[[
 #
 # List of user accounts to manage on the current playbook host. This variable
@@ -148,6 +142,22 @@ users__admin_accounts: '{{ lookup("template", "lookup/users__admin_accounts.j2")
 # in a playbook.
 users__dependent_accounts: []
 
+                                                                   # ]]]
+# .. envvar:: users__combined_accounts [[[
+#
+# This variable combines other group and account variables together and is used
+# in the role tasks and templates.
+users__combined_accounts: '{{ users__groups
+                              + users__group_groups
+                              + users__host_groups
+                              + users__dependent_groups
+                              + users__default_accounts
+                              + users__admin_accounts
+                              + users__accounts
+                              + users__group_accounts
+                              + users__host_accounts
+                              + users__dependent_accounts }}'
+                                                                   # ]]]
                                                                    # ]]]
 # Management of user resources [[[
 # --------------------------------

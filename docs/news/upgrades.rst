@@ -20,6 +20,22 @@ Redesigned OpenLDAP support
   and import the LDAP directory afterwards. See the role documentation for more
   details.
 
+Changes to the UNIX group and account management
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.users` Ansible role has been modernized and it now uses the
+  custom Ansible filter plugins included in DebOps to manage the UNIX groups
+  and accounts. The group and account management now uses the same merged list
+  of entries, which means that two new parameters have been added to control
+  when groups or accounts are created/removed. You might need to update your
+  inventory configuration if you use the role to create UNIX groups without
+  corresponding accounts, or you put UNIX accounts in shared primary groups.
+
+  The ``user`` parameter can be used to disable the account management, so that
+  only UNIX group is created. The ``private_group`` parameter controls the
+  management of the UNIX group for a given configuration entry. See the role
+  documentation for more details.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -10,37 +10,16 @@ simple strings or lists, here you can find documentation and examples for them.
    :local:
    :depth: 1
 
-.. _users__ref_groups:
 
-users__groups
--------------
+.. _users__ref_accounts:
 
-The :envvar:`users__groups`, :envvar:`users__group_groups` and :envvar:`users__host_groups` lists
-can be used to manage UNIX groups on remote hosts using Ansible inventory. Each
-list entry is a YAML dictionary that describes the state and parameters of
-a given group. The group definition is a subset of the user definition
-described below, and some parameters are shared in both cases.
+users__accounts
+---------------
 
-List of known parameters:
-
-``group`` or ``name``
-  Required. Name of the UNIX group to manage. If ``group`` is not specified,
-  ``name`` will be used automatically.
-
-``system``
-  Optional, boolean. If ``True``, a given group will be a "system" group, with
-  it's GID < 1000. If the value is ``False``, the group will be a "normal"
-  group with GID >= 1000.
-
-  If not specified, the :envvar:`users__default_system` variable will determine the
-  group type.
-
-``gid``
-  Optional. Specify the GID of the managed UNIX group.
-
-``state``
-  Optional. If ``present``, the UNIX group will be created. If ``absent``, the
-  specified group will be removed.
+The ``users__*_groups`` and ``users__*_accounts`` variables define the UNIX
+group and UNIX user accounts which should be managed by Ansible. The
+distinctive names can be used to order the UNIX group creation before the
+account creation; otherwise both variable sets use the same content.
 
 Examples
 ~~~~~~~~
@@ -48,22 +27,31 @@ Examples
 .. literalinclude:: examples/manage-groups.yml
    :language: yaml
 
+.. literalinclude:: examples/manage-accounts.yml
+   :language: yaml
 
-.. _users__ref_accounts:
+Syntax
+~~~~~~
 
-users__accounts
----------------
-
-The :envvar:`users__accounts`, :envvar:`users__group_accounts`, :envvar:`users__host_accounts` as
-well as some additional ``users__*_accounts`` lists are used to manage UNIX
-user accounts. Each list entry is a YAML dictionary with parameters that define
-a particular account.
+The variables are lists of YAML dictionaries, each dictionary defines an UNIX
+group or an UNIX account using specific parameters.
 
 General account parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+''''''''''''''''''''''''''
 
 ``name``
-  Required. Name of the UNIX user account to manage.
+  Required. Name of the UNIX user account to manage. If ``group`` parameter is
+  not specified, this value is also used to create a private UNIX group for
+  a given user. Configuration entries with the same ``name`` parameter are
+  merged in order of appearance, this can be used to modify existing
+  configuration entries conditionally.
+
+``user``
+  Optional, boolean. If not specified or ``True``, a configuration entry will
+  manage both an UNIX account and its primary UNIX group. If ``False``, only
+  the UNIX group is managed; this can be used to define shared system groups.
+  You can also use the :ref:`debops.system_groups` Ansible role to define UNIX
+  groups with additional functionality like :command:`sudo` configuration, etc.
 
 ``system``
   Optional, boolean. If ``True``, a given user account and primary group will
@@ -84,6 +72,12 @@ General account parameters
   Optional. Name of the UNIX group which will be set as the primary group of
   a given account. If ``group`` is not specified, ``name`` will be used
   automatically to create the corresponding UNIX group.
+
+``private_group``
+  Optional, boolean. If specified and ``False``, the role will not try to
+  directly manage the specified UNIX ``group`` used with a given UNIX account.
+  This is useful if you want to set a primary UNIX group that's used in other
+  places and which you might not want to remove with the UNIX account.
 
 ``groups``
   Optional. List of UNIX groups to which a given UNIX account should belong.
@@ -126,7 +120,7 @@ General account parameters
   disabled.
 
 Parameters related to account state
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+'''''''''''''''''''''''''''''''''''
 
 ``state``
   Optional. If ``present``, the UNIX user account and primary group will be
@@ -145,7 +139,7 @@ Parameters related to account state
   user account will be disabled.
 
 Parameters related to home directories
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+''''''''''''''''''''''''''''''''''''''
 
 ``home``
   Optional. Path to the home directory if a given user account.
@@ -205,7 +199,7 @@ Parameters related to home directories
     make sense in this context and shouldn't be used.
 
 Parameters related to the account's private SSH key
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+'''''''''''''''''''''''''''''''''''''''''''''''''''
 
 ``generate_ssh_key``
   Optional, boolean. If ``True``, Ansible will generate a private SSH key for
@@ -230,7 +224,7 @@ Parameters related to the account's private SSH key
   will be generated automatically.
 
 Parameters related to public SSH keys
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+'''''''''''''''''''''''''''''''''''''
 
 ``sshkeys``
   Optional. String or a YAML list of public SSH keys to configure for a given
@@ -248,7 +242,7 @@ Parameters related to public SSH keys
   removed entirely.
 
 Parameters related to mail forwarding
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+'''''''''''''''''''''''''''''''''''''
 
 ``forward``
   Optional. String or YAML list of e-mail addresses which will be used to
@@ -262,7 +256,7 @@ Parameters related to mail forwarding
   file. If ``absent``, the entries will be removed from the configuration file.
 
 Parameters related to user configuration files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+''''''''''''''''''''''''''''''''''''''''''''''
 
 ``dotfiles_enabled`` / ``dotfiles``
   Optional, boolean. Enable or disable management of the user configuration
@@ -275,13 +269,6 @@ Parameters related to user configuration files
   variable, will be used instead. The repository will be dployed or updated
   using the :command:yadm` script, installed by the :ref:`debops.yadm` Ansible
   role.
-
-
-Examples
-~~~~~~~~
-
-.. literalinclude:: examples/manage-accounts.yml
-   :language: yaml
 
 
 .. _users__ref_resources:
