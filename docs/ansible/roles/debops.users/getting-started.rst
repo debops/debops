@@ -5,6 +5,21 @@ Getting started
    :local:
 
 
+LDAP integration
+----------------
+
+The role checks if the LDAP support has been configured on a host, via the
+:ref:`debops.ldap`. If LDAP support is enabled, local UNIX groups, local UNIX
+accounts and their home directory names will have the ``_`` prefix prepended to
+them, to avoid clashes with the LDAP-based groups and accounts. This is
+controlled by the :envvar:`users__prefix` variable.
+
+LDAP support also affects the default home directory paths. By default home
+directories will be put in :file:`/home`; with LDAP support enabled that will
+change to :file:`/var/local`, to avoid clashes with remote filesystems that
+might be mounted at the :file:`/home` path, for example via NFS.
+
+
 Example inventory
 -----------------
 

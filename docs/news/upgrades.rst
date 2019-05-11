@@ -36,6 +36,21 @@ Changes to the UNIX group and account management
   management of the UNIX group for a given configuration entry. See the role
   documentation for more details.
 
+- The :ref:`debops.users` role checks if the LDAP support is configured on the
+  host via the :ref:`debops.ldap` role. If it's detected, UNIX groups, accounts
+  and their home directories will have the ``_`` prefix prepended to them, to
+  differentiate them from their LDAP-based equivalents. This is controlled by
+  the :envvar:`users__prefix` variable. This change might affect the existing
+  environments, run the role with the ``--diff --check`` parameters to see any
+  changes.
+
+  LDAP support status will also affect the home directory paths. Without LDAP
+  enabled, home directories will be put in the :file:`/home` by default; with
+  LDAP enabled local accounts will have their home directories in the
+  :file:`/var/local` directory to avoid clashes with remote filesystems that
+  might be mounted at :file:`/home`, for example via NFS. Specifying the
+  ``item.home`` parameter overrides this behaviour.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

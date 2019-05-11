@@ -46,6 +46,15 @@ General account parameters
   merged in order of appearance, this can be used to modify existing
   configuration entries conditionally.
 
+``prefix``
+  Optional. An additional string prepended to the UNIX group name, UNIX account
+  name, and the home directory name. If not specified, the
+  :envvar:`users__prefix` value is used instead. This functionality is used to
+  separate the local users (with the ``_``) prefix from the LDAP users, when
+  the host is configured with the :ref:`debops.ldap` role. To override the
+  prefix when LDAP support is enabled, set the parameter to an empty string
+  (``''``).
+
 ``user``
   Optional, boolean. If not specified or ``True``, a configuration entry will
   manage both an UNIX account and its primary UNIX group. If ``False``, only
@@ -147,7 +156,11 @@ Parameters related to home directories
 ''''''''''''''''''''''''''''''''''''''
 
 ``home``
-  Optional. Path to the home directory if a given user account.
+  Optional. Path to the home directory of a given user account. If not
+  specified, the role will check the home directory path of an existing account
+  defined on the host, and if the account is new, generate the home path based
+  on the :envvar:`users__home_root` variable and the :envvar:`users__prefix`
+  variable.
 
 ``home_owner``
   Optional. Specify the owner of the home directory of a given UNIX account.
