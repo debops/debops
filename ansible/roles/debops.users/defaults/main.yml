@@ -30,7 +30,7 @@ users__no_log: True
 # .. envvar:: users__acl_enabled [[[
 #
 # Enable or disable support for filesystem ACL management.
-users__acl_enabled: True
+users__acl_enabled: '{{ True if ("acl" in users__base_packages) else False }}'
 
                                                                    # ]]]
 # .. envvar:: users__default_system [[[
@@ -59,10 +59,7 @@ users__default_shell: ''
 # .. envvar:: users__base_packages [[[
 #
 # List of base packages to install.
-users__base_packages:
-  - '{{ [ "acl" ]
-        if (users__acl_enabled|bool)
-        else [] }}'
+users__base_packages: [ 'acl' ]
 
                                                                    # ]]]
 # .. envvar:: users__packages [[[
