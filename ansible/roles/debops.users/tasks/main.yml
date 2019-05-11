@@ -2,11 +2,10 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (users__base_packages
+                              + users__shell_packages
+                              + users__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ users__base_packages }}'
-    - '{{ users__packages }}'
   register: users__register_packages
   until: users__register_packages is succeeded
   when: users__enabled | bool
@@ -30,22 +29,6 @@
 - name: Get list of available groups
   getent:
     database: 'group'
-
-- name: Check if defined shells exist
-  stat:
-    path: "{{ item }}"
-  loop: '{{ ((users__default_accounts + users__admin_accounts
-              + users__accounts + users__group_accounts + users__host_accounts
-              + users__dependent_accounts) | selectattr("shell", "defined")
-              | map(attribute="shell") | unique | list)
-            + ([ users__default_shell ] if users__default_shell|d() else []) }}'
-  register: users__register_shell_stats
-
-- name: Fail if a defined shell does not exist
-  fail:
-    msg: "Trying to set a shell that does not exist, this can lock you out!"
-  loop: '{{ users__register_shell_stats.results }}'
-  when: not item.stat.exists
 
 - name: Manage user accounts
   user:

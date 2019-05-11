@@ -56,10 +56,29 @@ users__default_shell: ''
 # APT packages [[[
 # ----------------
 
+# .. envvar:: users__shell_package_map [[[
+#
+# YAML dictionary that maps known shells used in the :file:`/etc/passwd`
+# database to the APT packages with these shells. The role will install missing
+# shell packages if any users have them as their login shells.
+users__shell_package_map:
+  '/bin/bash':     'bash'
+  '/bin/csh':      'csh'
+  '/usr/bin/fish': 'fish'
+  '/bin/ksh':      'ksh'
+  '/bin/zsh':      'zsh'
+
+                                                                   # ]]]
 # .. envvar:: users__base_packages [[[
 #
 # List of base packages to install.
 users__base_packages: [ 'acl' ]
+
+                                                                   # ]]]
+# .. envvar:: users__shell_packages [[[
+#
+# List of login shell APT packages expected on the host.
+users__shell_packages: '{{ lookup("template", "lookup/users__shell_packages.j2") }}'
 
                                                                    # ]]]
 # .. envvar:: users__packages [[[
