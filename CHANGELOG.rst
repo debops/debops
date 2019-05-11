@@ -299,6 +299,12 @@ Fixed
   disabling :envvar:`lvm__global_use_lvmetad` to avoid warning message when
   invoking LVM commands.
 
+- [debops.authorized_keys] Set the group for authorized_keys files to the
+  primary group of the user instead of the group with the same name as the
+  user. This is important because otherwise the readonly mode of the role does
+  not work when the primary group of a user has a different name then the
+  username.
+
 Security
 ~~~~~~~~
 

@@ -86,10 +86,10 @@
     owner: '{{ item.owner if (item.owner|d() and item.owner in getent_passwd.keys()) else "root" }}'
     group: '{{ (item.group
                 if (item.group|d() and item.group in getent_group.keys())
-                else (item.name if item.name in getent_group.keys() else omit)) }}'
+                else (getent_passwd[item.name][2] if item.name in getent_passwd else omit)) }}'
     mode:  '{{ item.mode | d("640"
                              if ((item.readonly|d() and item.readonly|bool) or
-                                 (item.readonly is undefined and authorized_keys__readonly|bool))
+                                 (item.readonly|d(authorized_keys__readonly|bool)))
                              else "600") }}'
     state: '{{ "absent" if (item.file_state|d() and item.file_state == "absent") else omit }}'
   with_flattened:

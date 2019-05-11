@@ -83,7 +83,7 @@ These parameters are related to the files located in the
 ``readonly``
   Optional, boolean. If defined and ``True``, or if the corresponding
   :envvar:`authorized_keys__readonly` variable is ``True``, the role will set the
-  owner and group of the user file as ``root:<item.group|item.name|root>`` and
+  owner and group of the user file as ``root:<item.group|primary group of user|root>`` and
   its permissions will be set to ``0640``, so that the respective users being
   in their own groups can still access the file and use it for authentication,
   but they cannot change it.
