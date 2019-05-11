@@ -43,7 +43,7 @@
 
 - name: Remove dnsmasq configuration if requested
   file:
-    path: '/etc/dnsmasq.d/{{ item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
+    path: '/etc/dnsmasq.d/{{ item.filename | d(item.name | regex_replace("\.conf$","") + ".conf") }}'
     state: 'absent'
   with_items: '{{ dnsmasq__combined_configuration | parse_kv_items }}'
   notify: [ 'Test and restart dnsmasq' ]
