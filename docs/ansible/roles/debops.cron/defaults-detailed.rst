@@ -32,7 +32,7 @@ Each entry is a YAML dictionary that defines a set of one or more
   be used as the name.
   Notice in order for a :program:`cron` job to actually be executed, the file
   name must be entirely made up of letters, digits and can only contain the
-  special signs underscore ('_') and hypen ('-').
+  special signs underscore ('_') and hyphen ('-').
 
 ``environment``
   Optional. A YAML dictionary which defines what variables should be present in
