@@ -1,8 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# debops.users default variables [[[
-# ==================================
+# debops.users default variables
+# ==============================
 
 # .. contents:: Sections
 #    :local:
@@ -10,24 +10,6 @@
 # .. include:: ../../../includes/global.rst
 
 
-# APT packages [[[
-# ----------------
-
-# .. envvar:: users__base_packages [[[
-#
-# List of base packages to install.
-users__base_packages:
-  - '{{ [ "acl" ]
-        if (users__acl_enabled|bool)
-        else [] }}'
-
-                                                                   # ]]]
-# .. envvar:: users__packages [[[
-#
-# List of custom packages to install.
-users__packages: []
-                                                                   # ]]]
-                                                                   # ]]]
 # Global defaults [[[
 # -------------------
 
@@ -69,6 +51,24 @@ users__default_system: '{{ (True
 # not specified, the shell won't be changed, but new accounts will not have
 # a defined shell either.
 users__default_shell: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: users__base_packages [[[
+#
+# List of base packages to install.
+users__base_packages:
+  - '{{ [ "acl" ]
+        if (users__acl_enabled|bool)
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: users__packages [[[
+#
+# List of custom packages to install.
+users__packages: []
                                                                    # ]]]
                                                                    # ]]]
 # Lists of managed UNIX groups and accounts [[[
@@ -211,6 +211,5 @@ users__dotfiles_repo: '{{ ansible_local.yadm.dotfiles
                           if (ansible_local|d() and ansible_local.yadm|d() and
                               ansible_local.yadm.dotfiles|d())
                           else "" }}'
-                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]

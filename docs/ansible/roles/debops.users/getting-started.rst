@@ -8,8 +8,9 @@ Getting started
 Example inventory
 -----------------
 
-``debops.users`` is included by default in the :file:`common.yml` DebOps playbook;
-you don't need to do anything to have it executed.
+The ``debops.users`` Ansible role is included by default in the
+:file:`common.yml` DebOps playbook; you don't need to do anything to have it
+executed.
 
 If you don’t want to let ``debops.users`` manage user accounts, you can disable
 it with the following setting in your inventory:
