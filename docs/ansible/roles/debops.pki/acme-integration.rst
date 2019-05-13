@@ -159,6 +159,7 @@ automatically.
 Example: Certificate for apex domain and subdomains
 ---------------------------------------------------
 
+The `apex domain` is the "root" level of your domain.
 In this example a X.509 certificate for the apex domain ``example.com`` is
 going to be issued. ``example.com`` will be listed in the certificate
 ``Subject`` DN.
