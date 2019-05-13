@@ -159,6 +159,7 @@ automatically.
 Example: Certificate for apex domain and subdomains
 ---------------------------------------------------
 
+The `apex domain` is the "root" level of your domain.
 In this example a X.509 certificate for the apex domain ``example.com`` is
 going to be issued. ``example.com`` will be listed in the certificate
 ``Subject`` DN.
@@ -186,7 +187,7 @@ Example: Certificate for subdomains excluding the apex domain
 
 In the example we create a certificate for ``logs.example.com`` (certificate
 ``Subject``) and for ``mon.example.com`` (certificate `Subject Alternative
-Names`_), which does not include the ``example.com`` apex domain.
+Names`_), which does not include the ``example.com`` apex (root) domain.
 
 .. code-block:: yaml
 
@@ -197,7 +198,11 @@ Names`_), which does not include the ``example.com`` apex domain.
         # Can also include different domains like 'mail.example.org'
         # in the same realm.
         acme_domains: [ 'mon.example.com' ]
-        # acme_ca: 'le-staging'
+        # acme_ca: 'le-staging-v2'
+
+Again, for testing it's strongly advised to uncomment
+``acme_ca: le-staging-v2``. See above for details.
+
 
 ACME configuration variables
 ----------------------------
@@ -248,7 +253,7 @@ can have several parameters related to the ACME certificates:
   Request. Each domain will have the default or custom subdomains added to it.
 
 ``item.acme_default_subdomains``
-  List of subdomains that should be added to all of the ACME apex/root domains.
+  List of subdomains that should be added to all of the ACME apex (root) domains.
   If you want to create an ACME certificate only with the apex domain, you
   might need to set this parameter to an empty list using ``[]`` to override
   :envvar:`pki_acme_default_subdomains`.
