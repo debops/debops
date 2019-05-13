@@ -198,7 +198,7 @@ Names`_), which does not include the ``example.com`` apex (root) domain.
         # Can also include different domains like 'mail.example.org'
         # in the same realm.
         acme_domains: [ 'mon.example.com' ]
-        # acme_ca: 'le-staging'
+        # acme_ca: 'le-staging-v2'
 
 Again, for testing it's strongly advised to uncomment
 ``acme_ca: le-staging-v2``. See above for details.
