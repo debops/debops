@@ -200,6 +200,10 @@ Names`_), which does not include the ``example.com`` apex (root) domain.
         acme_domains: [ 'mon.example.com' ]
         # acme_ca: 'le-staging'
 
+Again, for testing it's strongly advised to uncomment
+``acme_ca: le-staging-v2``. See above for details.
+
+
 ACME configuration variables
 ----------------------------
 
