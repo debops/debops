@@ -15,13 +15,13 @@
 
 - name: Create user groups
   group:
-    name:   '{{ (item.prefix | d(users__prefix)) + (item.group | d(item.name)) }}'
+    name:   '{{ item.group | d(item.name) }}'
     system: '{{ item.system | d(True if (users__default_system | bool) else omit) }}'
     gid:    '{{ item.gid    | d(omit) }}'
     state: 'present'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name":  (item.group | d(item.name)),
                 "state": item.state|d("present")} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') != 'absent' and (item.private_group|d(True))|bool)
@@ -37,13 +37,11 @@
 
 - name: Manage user accounts
   user:
-    name:               '{{ (item.prefix | d(users__prefix)) + item.name }}'
-    group:              '{{ ((item.prefix | d(users__prefix)) + item.group) if item.group|d() else omit }}'
+    name:               '{{ item.name }}'
+    group:              '{{ item.group              | d(omit) }}'
     home:               '{{ item.home
-                            | d(((getent_passwd[(item.prefix | d(users__prefix)) + item.name][4])
-                                 if (getent_passwd[(item.prefix | d(users__prefix)) + item.name]|d())
-                                 else (users__home_root + "/" + ((item.prefix | d(users__prefix)) + item.name)))
-                                if ((item.createhome|d(True))|bool)
+                            | d((getent_passwd[item.name][4])
+                                if (getent_passwd[item.name]|d())
                                 else omit) }}'
     uid:                '{{ item.uid                | d(omit) }}'
     groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups)
@@ -70,7 +68,7 @@
     ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": item.name,
                 "state": item.state|d("present"), "gecos": item.comment|d()} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'ignore' ] and (item.user|d(True))|bool)
@@ -79,9 +77,9 @@
 - name: Manage user home directories
   file:
     path: '{{ item.home
-              | d(((getent_passwd[(item.prefix | d(users__prefix)) + item.name][4])
-                   if (getent_passwd[(item.prefix | d(users__prefix)) + item.name]|d())
-                   else (users__home_root + "/" + ((item.prefix | d(users__prefix)) + item.name)))
+              | d(((getent_passwd[item.name][4])
+                   if (getent_passwd[item.name]|d())
+                   else ("~" + item.name))
                   if ((item.createhome|d(True))|bool)
                   else omit) }}'
     state: 'directory'
@@ -90,11 +88,11 @@
     mode:  '{{ item.home_mode  | d(omit) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": item.name,
                 "state": item.state|d("present"),
-                "home": (item.home | d(((getent_passwd[(item.prefix | d(users__prefix)) + item.name][4])
-                                        if (getent_passwd[(item.prefix | d(users__prefix)) + item.name]|d())
-                                        else (users__home_root + "/" + ((item.prefix | d(users__prefix)) + item.name)))
+                "home": (item.home | d(((getent_passwd[item.name][4])
+                                        if (getent_passwd[item.name]|d())
+                                        else ("~" + item.name))
                                        if ((item.createhome|d(True))|bool)
                                        else ""))} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
@@ -105,9 +103,9 @@
 - name: Manage home directory ACLs
   acl:
     path:        '{{ item.0.home
-                     | d(((getent_passwd[(item.0.prefix | d(users__prefix)) + item.0.name][4])
-                          if (getent_passwd[(item.0.prefix | d(users__prefix)) + item.0.name]|d())
-                          else (users__home_root + "/" + ((item.0.prefix | d(users__prefix)) + item.0.name)))
+                     | d(((getent_passwd[item.0.name][4])
+                          if (getent_passwd[item.0.name]|d())
+                          else ("~" + item.0.name))
                          if ((item.0.createhome|d(True))|bool)
                          else omit) }}'
     default:     '{{ item.1.default     | d(omit) }}'
@@ -122,7 +120,7 @@
             | selectattr("home_acl", "defined") | list
             | subelements("home_acl") }}'
   loop_control:
-    label: '{{ {"name": (item.0.prefix | d(users__prefix)) + item.0.name,
+    label: '{{ {"name": item.0.name,
                 "state": item.0.state | d("present"), "home_acl": item.1} }}'
   when: (users__enabled|bool and users__acl_enabled|bool and
          item.0.name|d() and item.0.name != 'root' and
@@ -131,12 +129,12 @@
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Allow specified UNIX accounts to linger when not logged in
-  command: loginctl enable-linger {{ (item.prefix | d(users__prefix)) + item.name }}
+  command: loginctl enable-linger {{ item.name }}
   args:
-    creates: '/var/lib/systemd/linger/{{ (item.prefix | d(users__prefix)) + item.name }}'
+    creates: '/var/lib/systemd/linger/{{ item.name }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
   when: (users__enabled|bool and ansible_service_mgr == 'systemd' and
          item.name|d() and item.name != 'root' and
@@ -145,12 +143,12 @@
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Disallow specified UNIX accounts to linger when not logged in
-  command: loginctl disable-linger {{ (item.prefix | d(users__prefix)) + item.name }}
+  command: loginctl disable-linger {{ item.name }}
   args:
-    removes: '/var/lib/systemd/linger/{{ (item.prefix | d(users__prefix)) + item.name }}'
+    removes: '/var/lib/systemd/linger/{{ item.name }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
   when: (users__enabled|bool and ansible_service_mgr == 'systemd' and
          item.name|d() and item.name != 'root' and
@@ -162,11 +160,11 @@
   authorized_key:
     key: "{{ (item.sshkeys if item.sshkeys is string else '\n'.join(item.sshkeys)) | string }}"
     state: 'present'
-    user: '{{ (item.prefix | d(users__prefix)) + item.name }}'
+    user: '{{ item.name }}'
     exclusive: '{{ item.sshkeys_exclusive | d(omit) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "sshkeys": item.sshkeys|d()} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
@@ -175,11 +173,11 @@
 
 - name: Remove ~/.ssh/authorized_keys from user account if disabled
   file:
-    path: '~{{ (item.prefix | d(users__prefix)) + item.name }}/.ssh/authorized_keys'
+    path: '~{{ item.name }}/.ssh/authorized_keys'
     state: 'absent'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": item.name,
                 "state": item.state | d("present"),
                 "sshkeys_state": item.sshkeys_state|d("present")} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
@@ -195,10 +193,10 @@
     state: '{{ item.forward_state | d("present") }}'
     create: True
   become: True
-  become_user: '{{ (item.prefix | d(users__prefix)) + item.name }}'
+  become_user: '{{ item.name }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": item.name,
                 "state": item.state | d("present"),
                 "forward": item.forward|d()} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
@@ -215,14 +213,14 @@
     fi
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": item.name,
                 "state": item.state|d("present"),
                 "dotfiles": (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))),
                 "dotfiles_repo": ((item.dotfiles_repo | d(users__dotfiles_repo))
                                   if ((item.dotfiles|d(item.dotfiles_enabled|d(users__dotfiles_enabled)))|bool)
                                   else "")} }}'
   become: True
-  become_user: '{{ (item.prefix | d(users__prefix)) + item.name }}'
+  become_user: '{{ item.name }}'
   check_mode: False
   register: users__register_dotfiles
   changed_when: ('Already up-to-date.' not in users__register_dotfiles.stdout_lines)
@@ -241,7 +239,7 @@
     force:   '{{ item.force   | d(omit) }}'
     recurse: '{{ item.recurse | d(omit) }}'
   become: True
-  become_user: '{{ (item.prefix | d(users__prefix)) + item.name }}'
+  become_user: '{{ item.name }}'
   with_flattened:
     - '{{ users__resources }}'
     - '{{ users__group_resources }}'
@@ -258,7 +256,7 @@
     recurse: '{{ item.parent_recurse | d(omit) }}'
     state:   'directory'
   become: True
-  become_user: '{{ (item.prefix | d(users__prefix)) + item.name }}'
+  become_user: '{{ item.name }}'
   with_flattened:
     - '{{ users__resources }}'
     - '{{ users__group_resources }}'
@@ -275,7 +273,7 @@
     mode:    '{{ item.mode    | d(omit) }}'
     force:   '{{ item.force   | d(omit) }}'
   become: True
-  become_user: '{{ (item.prefix | d(users__prefix)) + item.name }}'
+  become_user: '{{ item.name }}'
   with_flattened:
     - '{{ users__resources }}'
     - '{{ users__group_resources }}'
@@ -289,7 +287,7 @@
     path: '{{ item.path | d(item.dest) }}'
     state: 'absent'
   become: True
-  become_user: '{{ (item.prefix | d(users__prefix)) + item.name }}'
+  become_user: '{{ item.name }}'
   with_flattened:
     - '{{ users__resources }}'
     - '{{ users__group_resources }}'
@@ -300,11 +298,11 @@
 
 - name: Remove user groups if requested
   group:
-    name: '{{ (item.prefix | d(users__prefix)) + (item.group | d(item.name)) }}'
+    name: '{{ item.group | d(item.name) }}'
     state: 'absent'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": (item.prefix | d(users__prefix)) + item.name,
+    label: '{{ {"name": (item.group | d(item.name)),
                 "state": item.state | d("present")} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') == 'absent' and

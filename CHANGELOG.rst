@@ -264,11 +264,6 @@ Changed
   and creating local dotfile mirrors. The :ref:`users__ref_accounts` variable
   documentation contains examples of new dotfile definitions.
 
-- [debops.users] The role will add an ``_`` prefix to UNIX groups, accounts and
-  their home directories when LDAP support is enabled on a host. The base home
-  directory will also change depending on the LDAP support status. Check the
-  role documentation and :ref:`upgrade_notes` for more details.
-
 Removed
 ~~~~~~~
 
