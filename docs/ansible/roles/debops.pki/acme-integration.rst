@@ -187,7 +187,7 @@ Example: Certificate for subdomains excluding the apex domain
 
 In the example we create a certificate for ``logs.example.com`` (certificate
 ``Subject``) and for ``mon.example.com`` (certificate `Subject Alternative
-Names`_), which does not include the ``example.com`` apex domain.
+Names`_), which does not include the ``example.com`` apex (root) domain.
 
 .. code-block:: yaml
 
@@ -249,7 +249,7 @@ can have several parameters related to the ACME certificates:
   Request. Each domain will have the default or custom subdomains added to it.
 
 ``item.acme_default_subdomains``
-  List of subdomains that should be added to all of the ACME apex/root domains.
+  List of subdomains that should be added to all of the ACME apex (root) domains.
   If you want to create an ACME certificate only with the apex domain, you
   might need to set this parameter to an empty list using ``[]`` to override
   :envvar:`pki_acme_default_subdomains`.
