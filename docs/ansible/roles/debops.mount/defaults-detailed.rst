@@ -148,7 +148,7 @@ mount__directories
 ------------------
 
 The ``mount__*_directories`` variables are list of YAML dictionaries, each
-entry difining a directory in the filesystem, with optional attributes.  These
+entry defining a directory in the filesystem, with optional attributes.  These
 variables can be used to create, modify or remove directories in the
 filesystems after they are mounted.
 
@@ -273,7 +273,7 @@ is mounted at a different place in the filesystem. This can be used to give
 access to parts of the filesystem in a different namespace, for example in
 a LXC container.
 
-The task tha manages the bind mounts are separate from the "normal" mounts to
+The task that manages the bind mounts are separate from the "normal" mounts to
 allow the system to mount devices that could have parts of their filesystem
 bind-mounted later on.
 

@@ -36,9 +36,22 @@ kodi__base_packages:
   ## dbus.exceptions.DBusException: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Accounts was not provided by any .service files
   - 'accountsservice'
 
-
   - 'pulseaudio'
-  - 'libasound2-plugins alsa-utils  libfftw3-bin libfftw3-dev  glew-utils opus-tools pulseaudio speex'
+  - 'libasound2-plugins'
+  - 'alsa-utils'
+  - 'libfftw3-bin'
+  - 'libfftw3-dev'
+  - 'glew-utils'
+  - 'opus-tools'
+  - 'speex'
+
+  ## https://kodi.wiki/view/HOW-TO:Suspend_and_wake_in_Ubuntu#Enabling_Suspend_.2F_Wake_.2F_Shutdown_.2F_Power_off_on_Ubuntu_Linux
+  # - 'upower'
+  # - 'acpi-support'
+
+  - '{{ [ "policykit-1", "consolekit" ]
+        if (kodi__polkit_action != "")
+        else [] }}'
                                                                    # ]]]
 # .. envvar:: kodi__deploy_state [[[
 #
@@ -98,6 +111,18 @@ kodi__gecos: 'kodi.org'
 #
 # The default shell set on the Kodi account.
 kodi__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Kodi permissions [[[
+# --------------------
+
+# .. envvar:: kodi__group [[[
+#
+# What Polkit actions to allow to the Kodi. Set to ``False`` to not grant any
+# Polkit permissions.
+#
+# https://kodi.wiki/view/HOW-TO:Suspend_and_wake_in_Ubuntu#Enabling_Suspend_.2F_Wake_.2F_Shutdown_.2F_Power_off_on_Ubuntu_Linux
+kodi__polkit_action: 'org.freedesktop.login1.*'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

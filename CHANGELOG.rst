@@ -192,7 +192,7 @@ Changed
 - [debops.nullmailer][debops.postfix] The :file:`/etc/mailname` configuration
   file will contain the DNS domain of a host instead of the FQDN address. This
   will result in the mail senders that don't specify the domain part to have
-  the DNS domain, instad of the full host address, added by the Mail Transport
+  the DNS domain, instead of the full host address, added by the Mail Transport
   Agent. This configuration should work better in clustered environments, where
   there is a central mail hub/MX that receives the mail and redirects it.
 
