@@ -269,6 +269,13 @@ Changed
   should avoid issues with groups and accounts created in the LDAP user/group
   ranges.
 
+  The ``libuser`` library by default creates home directories with ``0700``
+  permissions, which is probably too restrictive. Because of that, the role
+  will automatically change the home directory permissions to ``0751`` (defined
+  in the :envvar:`users__default_home_mode` variable). This also affects
+  existing UNIX accounts managed by the role; the mode can be overriden using
+  the ``item.home_mode`` parameter.
+
 Removed
 ~~~~~~~
 

@@ -108,7 +108,7 @@
     state: 'directory'
     owner: '{{ item.home_owner | d(omit) }}'
     group: '{{ item.home_group | d(omit) }}'
-    mode:  '{{ item.home_mode  | d("0755" if (item.local|d(True))|bool else omit) }}'
+    mode:  '{{ item.home_mode  | d(users__default_home_mode if (item.local|d(True))|bool else omit) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,

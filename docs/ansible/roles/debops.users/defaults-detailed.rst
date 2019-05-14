@@ -101,8 +101,7 @@ General account parameters
 ``shell``
   Optional. Specify the default shell to run when a given UNIX account logs in.
   If not specified, the default system shell (usually :file:`/bin/sh` will be used
-  instead. You can also specify shell for all user accounts managed by this
-  role using the :envvar:`users__default_shell` variable.
+  instead.
 
 ``password``
   Optional. Specify the encrypted hash of the user's password which will be set
@@ -165,7 +164,9 @@ Parameters related to home directories
   Optional. Specify the group of the home directory of a given UNIX account.
 
 ``home_mode``
-  Optional. Specify the mode of the home directory of a given UNIX account.
+  Optional. Specify the mode of the home directory of a given UNIX account. If
+  not specified, the value of the :envvar:`users__default_home_mode` will be
+  used instead.
 
 ``create_home``
   Optional, boolean. If ``True``, the role will create the home directory for

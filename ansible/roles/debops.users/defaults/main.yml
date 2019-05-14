@@ -25,13 +25,12 @@ users__enabled: True
 users__acl_enabled: '{{ True if ("acl" in users__base_packages) else False }}'
 
                                                                    # ]]]
-# .. envvar:: users__default_shell [[[
+# .. envvar:: users__default_home_mode [[[
 #
-# Specify absolute path of the shell which should be configured on all user
-# accounts managed by this role, if not overriden by the user configuration. If
-# not specified, the shell won't be changed, but new accounts will not have
-# a defined shell either.
-users__default_shell: ''
+# The default set of permissions for the home directories, specified in octal.
+# It can be overridden on a per-account basis with the ``item.home_mode``
+# parameter.
+users__default_home_mode: '0751'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
