@@ -36,6 +36,12 @@ Changes to the UNIX group and account management
   management of the UNIX group for a given configuration entry. See the role
   documentation for more details.
 
+- The ``users__default_system`` variable has been removed from the
+  :ref:`debops.users` role. The UNIX groups and accounts created by the role on
+  hosts with the LDAP support will be normal accounts, not "system" accounts,
+  and will use UID/GID >= 1000. This can be controlled per-user/per-group using
+  the ``item.system`` parameter.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

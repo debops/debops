@@ -264,6 +264,11 @@ Changed
   and creating local dotfile mirrors. The :ref:`users__ref_accounts` variable
   documentation contains examples of new dotfile definitions.
 
+- [debops.users] The role now uses the ``libuser`` library via the Ansible
+  ``group`` and ``user`` modules to manage local groups and accounts. This
+  should avoid issues with groups and accounts created in the LDAP user/group
+  ranges.
+
 Removed
 ~~~~~~~
 

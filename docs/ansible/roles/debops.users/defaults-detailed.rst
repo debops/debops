@@ -53,14 +53,21 @@ General account parameters
   You can also use the :ref:`debops.system_groups` Ansible role to define UNIX
   groups with additional functionality like :command:`sudo` configuration, etc.
 
+``local``
+  Optional, boolean. If not specified or ``True``, the role will use the
+  ``libuser`` library to manage the UNIX groups and accounts in the local
+  account and group database. If ``False``, the role will use standard UNIX
+  tools to manage accounts, which might have unintended effects. On normal
+  operation you shouldn't need to define this parameter, it's enabled or
+  disabled by the role as needed.
+
+  See :ref:`users__ref_libuser` for more details.
+
 ``system``
   Optional, boolean. If ``True``, a given user account and primary group will
   be a "system" account and group, with it's UID and GID < 1000. If the value
-  is ``False``, the user account and group will be a "normal" account and group
-  with UID and GID >= 1000.
-
-  If not specified, the :envvar:`users__default_system` variable will determine the
-  account and group type.
+  is not specified or ``False``, the user account and group will be a "normal"
+  account and group with UID and GID >= 1000.
 
 ``uid``
   Optional. Specify the UID of the UNIX user account.

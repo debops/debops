@@ -16,9 +16,10 @@
 - name: Create user groups
   group:
     name:   '{{ item.group | d(item.name) }}'
-    system: '{{ item.system | d(True if (users__default_system | bool) else omit) }}'
+    system: '{{ item.system | d(False if (item.user|d(True))|bool else True) }}'
     gid:    '{{ item.gid    | d(omit) }}'
     state: 'present'
+    local: '{{ item.local | d(True if (item.user|d(True))|bool else False) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
     label: '{{ {"name":  (item.group | d(item.name)),
@@ -27,10 +28,6 @@
          item.state|d('present') != 'absent' and (item.private_group|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
-- name: Get list of available groups
-  getent:
-    database: 'group'
-
 - name: Gather information about existing remote users
   getent:
     database: 'passwd'
@@ -38,21 +35,19 @@
 - name: Manage user accounts
   user:
     name:               '{{ item.name }}'
-    group:              '{{ item.group              | d(omit) }}'
+    group:              '{{ item.group              | d(item.name) }}'
     home:               '{{ item.home
                             | d((getent_passwd[item.name][4])
                                 if (getent_passwd[item.name]|d())
                                 else omit) }}'
     uid:                '{{ item.uid                | d(omit) }}'
-    groups:             '{{ ( (([ item.groups ] if item.groups is string else item.groups)
-                               | intersect(getent_group.keys())) | join(",") ) if item.groups is defined else omit }}'
     append:             '{{ item.append             | d(True) }}'
     state:              '{{ item.state              | d("present") }}'
     comment:            '{{ item.comment            | d(omit) }}'
     password:           '{{ item.password           | d("*") }}'
     update_password:    '{{ item.update_password    | d("on_create") }}'
-    system:             '{{ item.system             | d(True if (users__default_system | bool) else omit) }}'
-    shell:              '{{ item.shell              | d(users__default_shell if users__default_shell|d() else omit) }}'
+    system:             '{{ item.system             | d(omit) }}'
+    shell:              '{{ item.shell              | d(omit) }}'
     createhome:         '{{ item.createhome         | d(omit) }}'
     move_home:          '{{ item.move_home          | d(omit) }}'
     skeleton:           '{{ item.skeleton           | d(omit) }}'
@@ -66,6 +61,7 @@
     ssh_key_file:       '{{ item.ssh_key_file       | d(omit) }}'
     ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
     ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
+    local:              '{{ item.local              | d(True) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
@@ -73,6 +69,33 @@
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'ignore' ] and (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Gather information about existing remote groups
+  getent:
+    database: 'group'
+
+  # libuser does not support supplemental groups
+  # Ref: https://github.com/ansible/ansible/issues/48722
+- name: Manage additional UNIX groups for UNIX accounts
+  user:
+    name:               '{{ item.name }}'
+    groups:             '{{ ( ([ item.groups ]
+                               if (item.groups is string)
+                               else item.groups)
+                              | intersect(getent_group.keys()) )
+                            if (item.groups is defined)
+                            else omit }}'
+    append:             '{{ item.append             | d(True) }}'
+    state:              '{{ item.state              | d("present") }}'
+  loop: '{{ users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name,
+                "state": item.state|d("present"), "gecos": item.comment|d(),
+                "groups": item.groups|d()} }}'
+  when: (users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'ignore' ] and item.groups|d() and
+         (item.user|d(True))|bool)
+  no_log: '{{ True if item.password|d() else False }}'
 
 - name: Manage user home directories
   file:
@@ -85,7 +108,7 @@
     state: 'directory'
     owner: '{{ item.home_owner | d(omit) }}'
     group: '{{ item.home_group | d(omit) }}'
-    mode:  '{{ item.home_mode  | d(omit) }}'
+    mode:  '{{ item.home_mode  | d("0755" if (item.local|d(True))|bool else omit) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
@@ -97,7 +120,8 @@
                                        else ""))} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
-         (item.home_owner|d() or item.home_group|d() or item.home_mode|d()) and (item.user|d(True))|bool)
+         (item.home_owner|d() or item.home_group|d() or item.home_mode|d() or (item.local|d(True))|bool) and
+         (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Manage home directory ACLs
@@ -300,6 +324,7 @@
   group:
     name: '{{ item.group | d(item.name) }}'
     state: 'absent'
+    local: '{{ item.local | d(True if (item.user|d(True))|bool else False) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.group | d(item.name)),
