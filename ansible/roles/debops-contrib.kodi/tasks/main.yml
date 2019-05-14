@@ -38,10 +38,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (kodi__polkit_action != "")
+  when: kodi__polkit_action|d()
 
 - name: Remove polkit configuration
   file:
     path: '/etc/polkit-1/localauthority/50-local.d/kodi-actions.pkla'
     state: 'absent'
-  when: (kodi__polkit_action == "")
+  when: not kodi__polkit_action|d()
