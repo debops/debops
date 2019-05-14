@@ -266,7 +266,7 @@ Create an A resource record with a particular IP address:
      - host: 'other.example.org'
        address: '192.0.2.30'
 
-define a TXT resource record with a DomainKeys Identified Mail (DKIM) entry:
+Define a TXT resource record with a DomainKeys Identified Mail (DKIM) entry:
 
 .. code-block:: yaml
 
@@ -504,7 +504,7 @@ Each entry in the list is a YAML dictionary that describes one file in the
 
 ``state``
   Optional. If not specified or ``present``, the given configuration file will
-  be genereated. If ``absent``, the configuration file will not be generated
+  be generated. If ``absent``, the configuration file will not be generated
   and existing configuration file will be removed. If ``ignore``, a given
   configuration entry will not be evaluated by the role; this can be used to
   enable or disable configuration entries conditionally.
