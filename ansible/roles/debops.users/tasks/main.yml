@@ -48,7 +48,7 @@
     update_password:    '{{ item.update_password    | d("on_create") }}'
     system:             '{{ item.system             | d(omit) }}'
     shell:              '{{ item.shell              | d(omit) }}'
-    createhome:         '{{ item.createhome         | d(omit) }}'
+    create_home:        '{{ item.create_home        | d(omit) }}'
     move_home:          '{{ item.move_home          | d(omit) }}'
     skeleton:           '{{ item.skeleton           | d(omit) }}'
     expires:            '{{ item.expires            | d(omit) }}'
@@ -103,7 +103,7 @@
               | d(((getent_passwd[item.name][4])
                    if (getent_passwd[item.name]|d())
                    else ("~" + item.name))
-                  if ((item.createhome|d(True))|bool)
+                  if ((item.create_home|d(True))|bool)
                   else omit) }}'
     state: 'directory'
     owner: '{{ item.home_owner | d(omit) }}'
@@ -116,10 +116,10 @@
                 "home": (item.home | d(((getent_passwd[item.name][4])
                                         if (getent_passwd[item.name]|d())
                                         else ("~" + item.name))
-                                       if ((item.createhome|d(True))|bool)
+                                       if ((item.create_home|d(True))|bool)
                                        else ""))} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and item.create_home|d(True) and
          (item.home_owner|d() or item.home_group|d() or item.home_mode|d() or (item.local|d(True))|bool) and
          (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
@@ -130,7 +130,7 @@
                      | d(((getent_passwd[item.0.name][4])
                           if (getent_passwd[item.0.name]|d())
                           else ("~" + item.0.name))
-                         if ((item.0.createhome|d(True))|bool)
+                         if ((item.0.create_home|d(True))|bool)
                          else omit) }}'
     default:     '{{ item.1.default     | d(omit) }}'
     entity:      '{{ item.1.entity      | d(omit) }}'
@@ -149,8 +149,9 @@
   when: (users__enabled|bool and users__acl_enabled|bool and
          item.0.name|d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.createhome|d(True) and item.0.home_acl|d() and (item.0.user|d(True))|bool)
+         item.0.create_home|d(True) and item.0.home_acl|d() and (item.0.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  tags: [ 'role::users:home_acl', 'skip::users:home_acl' ]
 
 - name: Allow specified UNIX accounts to linger when not logged in
   command: loginctl enable-linger {{ item.name }}
@@ -191,7 +192,7 @@
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "sshkeys": item.sshkeys|d()} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and item.create_home|d(True) and
          item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
@@ -205,7 +206,7 @@
                 "state": item.state | d("present"),
                 "sshkeys_state": item.sshkeys_state|d("present")} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and item.create_home|d(True) and
          item.sshkeys_state|d('present') == 'absent' and (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
@@ -225,7 +226,7 @@
                 "forward": item.forward|d()} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.createhome|d(True) and item.forward|d() and (item.user|d(True))|bool)
+         item.create_home|d(True) and item.forward|d() and (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Manage users dotfiles
@@ -249,7 +250,7 @@
   register: users__register_dotfiles
   changed_when: ('Already up-to-date.' not in users__register_dotfiles.stdout_lines)
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'absent', 'ignore' ] and item.createhome|d(True) and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and item.create_home|d(True) and
          (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))) | bool and
          (item.dotfiles_repo | d(users__dotfiles_repo)) and (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'

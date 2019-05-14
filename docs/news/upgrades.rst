@@ -42,6 +42,9 @@ Changes to the UNIX group and account management
   and will use UID/GID >= 1000. This can be controlled per-user/per-group using
   the ``item.system`` parameter.
 
+- The ``item.createhome`` parameter has been renamed to ``item.create_home`` in
+  accordance with the renamed parameter of the ``user`` Ansible module.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

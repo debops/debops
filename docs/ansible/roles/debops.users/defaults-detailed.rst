@@ -167,7 +167,7 @@ Parameters related to home directories
 ``home_mode``
   Optional. Specify the mode of the home directory of a given UNIX account.
 
-``createhome``
+``create_home``
   Optional, boolean. If ``True``, the role will create the home directory for
   a given user account if it doesn't exist already. If not specified, home
   directory is created by default by the `Ansible user module`_.
