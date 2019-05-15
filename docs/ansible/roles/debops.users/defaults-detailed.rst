@@ -69,6 +69,26 @@ General account parameters
   is not specified or ``False``, the user account and group will be a "normal"
   account and group with UID and GID >= 1000.
 
+``chroot``
+  Optional, boolean. If defined and ``True``, a given user account is
+  configured to support SFTPonly operation, and certain defaults are changed if
+  not overridden by other parameters.
+
+  The owner of the home directory will be the ``root`` account instead of the
+  user, to allow chrooting to that directory, the home directory group will be
+  the primary group of a given user. The default permissions are set to
+  ``0751``.
+
+  The default shell is set based on the :envvar:`users__chroot_shell` variable,
+  by default it will be :file:`/usr/sbin/nologin`. Any dotfiles configured
+  globally or for that UNIX account are not installed due to permission issues
+  in the home directory.
+
+  The account will be added to UNIX groups specified in the
+  :envvar:`users__chroot_groups` variable, by default ``sftponly``. See the
+  :ref:`debops.sshd` role for details about configuring the SFTPonly access in
+  OpenSSH server.
+
 ``uid``
   Optional. Specify the UID of the UNIX user account.
 

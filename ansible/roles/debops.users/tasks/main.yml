@@ -47,7 +47,9 @@
     password:           '{{ item.password           | d("*") }}'
     update_password:    '{{ item.update_password    | d("on_create") }}'
     system:             '{{ item.system             | d(omit) }}'
-    shell:              '{{ item.shell              | d(omit) }}'
+    shell:              '{{ item.shell              | d(users__chroot_shell
+                                                        if (item.chroot|d())|bool
+                                                        else omit) }}'
     create_home:        '{{ item.create_home        | d(omit) }}'
     move_home:          '{{ item.move_home          | d(omit) }}'
     skeleton:           '{{ item.skeleton           | d(omit) }}'
@@ -79,9 +81,12 @@
 - name: Manage additional UNIX groups for UNIX accounts
   user:
     name:               '{{ item.name }}'
-    groups:             '{{ ( ([ item.groups ]
-                               if (item.groups is string)
-                               else item.groups)
+    groups:             '{{ ( (([ item.groups ]
+                                if (item.groups is string)
+                                else item.groups)
+                               + (users__chroot_groups
+                                  if ((item.chroot|d())|bool)
+                                  else []))
                               | intersect(getent_group.keys()) )
                             if (item.groups is defined)
                             else omit }}'
@@ -106,7 +111,7 @@
                   if ((item.create_home|d(True))|bool)
                   else omit) }}'
     state: 'directory'
-    owner: '{{ item.home_owner | d(omit) }}'
+    owner: '{{ item.home_owner | d("root" if ((item.chroot|d())|bool) else omit) }}'
     group: '{{ item.home_group | d(omit) }}'
     mode:  '{{ item.home_mode  | d(users__default_home_mode if (item.local|d(True))|bool else omit) }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
@@ -212,13 +217,15 @@
 
 - name: Configure user mail forwarding
   lineinfile:
-    dest: '~/.forward'
+    dest: '{{ "~" + item.name + "/.forward" }}'
     regexp: "{{ '^' + (item.forward if item.forward is string else item.forward[0]) }}"
     line: '{{ item.forward if item.forward is string else item.forward | join(", ") }}'
     state: '{{ item.forward_state | d("present") }}'
     create: True
+    owner: '{{ item.name if ((item.chroot|d())|bool) else omit }}'
+    group: '{{ (item.group | d(item.name)) if ((item.chroot|d())|bool) else omit }}'
   become: True
-  become_user: '{{ item.name }}'
+  become_user: '{{ "root" if ((item.chroot|d())|bool) else item.name }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
@@ -252,7 +259,7 @@
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and item.create_home|d(True) and
          (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))) | bool and
-         (item.dotfiles_repo | d(users__dotfiles_repo)) and (item.user|d(True))|bool)
+         (item.dotfiles_repo | d(users__dotfiles_repo)) and (item.user|d(True))|bool and not (item.chroot|d())|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Create resource paths

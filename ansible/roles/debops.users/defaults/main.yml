@@ -31,6 +31,20 @@ users__acl_enabled: '{{ True if ("acl" in users__base_packages) else False }}'
 # It can be overridden on a per-account basis with the ``item.home_mode``
 # parameter.
 users__default_home_mode: '0751'
+
+                                                                   # ]]]
+# .. envvar:: users__chroot_groups [[[
+#
+# List of UNIX groups in which a chrooted UNIX account should be included. This
+# depends on the configuration of the OpenSSH service, see :ref:`debops.sshd`
+# for more details.
+users__chroot_groups: [ 'sftponly' ]
+
+                                                                   # ]]]
+# .. envvar:: users__chroot_shell [[[
+#
+# The shell used for chrooted UNIX accounts if none is specified.
+users__chroot_shell: '/usr/sbin/nologin'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[

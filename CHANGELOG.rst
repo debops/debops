@@ -107,6 +107,10 @@ Added
   role and can configure the :command:`sudo` service to read ``sudoers``
   configuration from the LDAP directory.
 
+- [debops.users] The role can now configure UNIX accounts with access
+  restricted to SFTP operations (SFTPonly) with the new ``item.chroot``
+  parameter. This is a replacement for the ``debops.sftpusers`` role.
+
 Changed
 ~~~~~~~
 
