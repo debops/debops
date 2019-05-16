@@ -836,6 +836,15 @@ sshd__pam_access__dependent_rules:
   - name: 'sshd'
     options:
 
+      - name: 'allow-root-ansible-controllers'
+        comment: 'Grant access via SSH to root account from the Ansible Controller hosts'
+        permission: 'allow'
+        users: 'root'
+        origins: '{{ ansible_local.core.ansible_controllers
+                     if (ansible_local|d() and ansible_local.core|d() and
+                         ansible_local.core.ansible_controllers|d())
+                     else [] }}'
+
       - name: 'allow-root'
         comment: 'Grant access via SSH to root account on the same DNS domain'
         permission: 'allow'
