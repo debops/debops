@@ -293,7 +293,6 @@ System configuration
 - :ref:`debops.yadm`
 - ``debops.console``
 - ``debops.gitusers``
-- ``debops.sftpusers``
 
 
 Web services

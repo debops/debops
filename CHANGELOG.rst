@@ -299,6 +299,10 @@ Removed
   releases. You should remove it on the existing installations after RStudio
   Server is upgraded to the newest release.
 
+- The ``debops.sftpusers`` Ansible role has been removed. Its functionality is
+  now implemented by the :ref:`debops.users` role, custom bind mounts can be
+  defined using the :ref:`debops.mount` role.
+
 Fixed
 ~~~~~
 

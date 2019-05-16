@@ -732,7 +732,6 @@
 .. _debops.salt: https://github.com/debops/ansible-salt
 .. _debops.samba: https://github.com/debops/ansible-samba
 .. _debops.secret: https://github.com/debops/ansible-secret
-.. _debops.sftpusers: https://github.com/debops/ansible-sftpusers
 .. _debops.sks: https://github.com/debops/ansible-sks
 .. _debops.slapd: https://github.com/debops/ansible-slapd
 .. _debops.smstools: https://github.com/debops/ansible-smstools
