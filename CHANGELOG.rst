@@ -280,6 +280,11 @@ Changed
   existing UNIX accounts managed by the role; the mode can be overriden using
   the ``item.home_mode`` parameter.
 
+- [debops.users] The ``users__*_resources`` variables have been reimplemented
+  as the ``item.resources`` parameter of the ``users__*_accounts`` variables.
+  This removes the unnecessary split between user account definitions and
+  definitions of their files/directories.
+
 Removed
 ~~~~~~~
 

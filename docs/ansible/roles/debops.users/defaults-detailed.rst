@@ -8,7 +8,7 @@ simple strings or lists, here you can find documentation and examples for them.
 
 .. contents::
    :local:
-   :depth: 1
+   :depth: 3
 
 
 .. _users__ref_accounts:
@@ -28,6 +28,9 @@ Examples
    :language: yaml
 
 .. literalinclude:: examples/manage-accounts.yml
+   :language: yaml
+
+.. literalinclude:: examples/manage-resources.yml
    :language: yaml
 
 Syntax
@@ -305,91 +308,100 @@ Parameters related to user configuration files
   using the :command:yadm` script, installed by the :ref:`debops.yadm` Ansible
   role.
 
+Parameters related to directory and file resources
+''''''''''''''''''''''''''''''''''''''''''''''''''
 
-.. _users__ref_resources:
+``resources``
+  This parameter can be used to manage directories, files and symlinks for
+  specific UNIX accounts using Ansible inventory. This functionality is meant to
+  be used to manage small amounts of data, like custom configuration files,
+  private SSH keys and so on. For more advanced management, you should consider
+  using :ref:`debops.resources` Ansible role, or even writing a custom Ansible
+  role from scratch.
 
-users__resources
-----------------
+  Tasks that manage the resources are executed as the ``root`` account, but the
+  owner and group of the files is automatically set to those used by a given UNIX
+  account. Directory and file paths will be prepended with a path to the
+  ``$HOME`` directory of a given user, and should be defined as relative, without
+  ``/`` at the beginning.
 
-The :envvar:`users__resources`, :envvar:`users__group_resources` and
-:envvar:`users__host_resources` lists can be used to manage directories, files
-and symlinks for specific UNIX accounts using Ansible inventory. This
-functionality is meant to be used to manage small amounts of data, like custom
-configuration files, private SSH keys and so on. For more advanced management,
-you should consider using debops.resources_ Ansible role, or even writing
-a custom Ansible role from scratch.
+  The ``resources`` parameter should contain a list of entries, each entry should
+  be defined as either a path string which denotes a directory relative to the
+  user's ``$HOME`` directory, or a YAML dictionary that describes a given
+  resource using specific parameters:
 
-Tasks that manage the resources are executed with the privileges of a specific
-user account; this account should exist (presumably it was created by the role
-earlier). This allows the usage of ``~/`` in the paths to manage directories
-and files relative to the user's ``$HOME`` directory.
+  ``dest`` or ``path``
+    Required. Path to the resource managed by this entry, relative to the user's
+    ``$HOME`` directory. All subdirectories specified in the path will be created
+    automatically.
 
-Each entry on the list is a YAML dictionary with specific parameters:
+  ``content``
+    If the resource type is a ``file``, this parameter can be used to specify the
+    contents of the file that is managed by this entry, usually in the form of
+    a YAML text block. It shouldn't be specified together with the ``src``
+    parameter.
 
-``name``
-  Required. Name of the user account which will be used to run the Ansible
-  tasks using the "become" method.
+  ``src``
+    If the resource type is a ``link``, this parameter specifies the target of
+    the symlink. In case of symlinks to resources owned by other UNIX accounts
+    than the user, you need to specify the ``owner`` and ``group`` parameters to
+    that of the symlinked file (for example ``root`` for files or directories
+    owned by the ``root`` account), otherwise the role will change them to the
+    owner/group of a given user.
 
-``state``
-  Required. This variable defines the resource state and it's type:
+    If the resource type is a ``file``, this parameter can be used to specify the
+    source file on the Ansible Controller to copy to the remote host. It
+    shouldn't be specified together with the ``content`` parameter.
 
-  - ``absent``: the resource will be removed
-  - ``directory``: the resource is a directory
-  - ``file``: the resource is a file
-  - ``link``: the resource is a symlink
-  - ``touch``: the resource will create an empty file, or "touch" an existing
-    file on each Ansible run
+  ``state``
+    Optional. This variable defines the resource state and it's type:
 
-  If this parameter is not specified, the resource will be treated as
-  a directory.
+    - ``absent``: the resource will be removed
+    - ``directory``: the resource is a directory
+    - ``file``: the resource is a file
+    - ``link``: the resource is a symlink
+    - ``touch``: the resource will create an empty file, or "touch" an existing
+      file on each Ansible run
 
-``dest`` or ``path``
-  Required. Path to the resource managed by this entry. Usually you want to
-  specify it as relative to the user's ``$HOME`` directory.
+    If this parameter is not specified, the resource will be treated as
+    a directory.
 
-``src``
-  If the resource type is a ``link``, this parameter specifies the target of
-  the symlink.
+  ``force``
+    Optional, boolean. If ``True``, the files will be always overwritten, if
+    ``False``, files will be copied only if they don't exist. This parameter can
+    also be used to force creation of symlinks.
 
-  If the resource type is a ``file``, this parameter can be used to specify the
-  source file on the Ansible Controller to copy to the remote host. It
-  shouldn't be specified together with the ``content`` parameter.
+  ``owner``
+    Optional. Specify the UNIX account which should be the owner of a given
+    file/directory. For symlinks, this defines the owner of the link source and
+    might be needed if the owner is different than the current user.
 
-``content``
-  If the resource type is a ``file``, this parameter can be used to specify the
-  contents of the file that is managed by this entry, usually in the form of
-  a YAML text block. It shouldn't be specified together with the ``src``
-  parameter.
+  ``group``
+    Optional. Specify the UNIX group which should be the primary group of
+    a given file/directory. For symlinks, this defines the group of the link
+    source and might be needed if the group is different than the primary group
+    of the current user.
 
-``force``
-  Optional, boolean. If ``True``, the files will be always overwritten, if
-  ``False``, files will be copied only if they don't exist. This parameter can
-  also be used to force creation of symlinks.
+  ``mode``
+    Optional. Set specific permissions for a given file/directory/symlink.
 
-``mode``
-  Optional. Set specific permissions for a given file/directory/symlink.
+  ``recurse``
+    Optional, boolean. Recursively set specified permission for all directories
+    in the directory tree that lead to a given directory/file, depending on user
+    privileges.
 
-``recurse``
-  Optional, boolean. Recursively set specified permission for all directories
-  in the directory tree that lead to a given directory/file, depending on user
-  privileges.
+  ``parent_owner``
+    Optional. Specify the UNIX account that should be the owner of a parent
+    directory of a given resource.
 
-``parent``
-  Optional, boolean. If ``True`` (default), the role will create the parent
-  directories of a given resource as needed, depending on the privileges of
-  a given user account. If ``False``, role will not try to create the missing
-  directories.
+  ``parent_group``
+    Optional. Specify the UNIX group that should be the main group of a parent
+    directory of a given resource.
 
-``parent_mode``
-  Optional. Specify the permissions of the parent directory of a given
-  file resource.
+  ``parent_mode``
+    Optional. Specify the permissions of the parent directory of a given
+    file resource.
 
-``parent_recurse``
-  Optional, boolean. If ``True``, parent permissions will be applied
-  recursively to all parent directories.
-
-Examples
-~~~~~~~~
-
-.. literalinclude:: examples/manage-resources.yml
-   :language: yaml
+  ``parent_recurse``
+    Optional, boolean. If ``True``, parent permissions will be applied
+    recursively to all parent directories.

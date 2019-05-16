@@ -262,71 +262,91 @@
          (item.dotfiles_repo | d(users__dotfiles_repo)) and (item.user|d(True))|bool and not (item.chroot|d())|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
-- name: Create resource paths
+- name: Manage user resource directories
   file:
-    path:    '{{ item.path    | d(item.dest) }}'
-    state:   '{{ item.state   | d("directory") }}'
-    src:     '{{ item.src     | d(omit) }}'
-    mode:    '{{ item.mode    | d(omit) }}'
-    force:   '{{ item.force   | d(omit) }}'
-    recurse: '{{ item.recurse | d(omit) }}'
-  become: True
-  become_user: '{{ item.name }}'
-  with_flattened:
-    - '{{ users__resources }}'
-    - '{{ users__group_resources }}'
-    - '{{ users__host_resources }}'
-  when: (users__enabled|bool and item.name|d() and item.state|d('directory') in [ 'directory', 'link', 'touch' ] and
-         (item.path|d() or item.dest|d()))
-  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+    path:    '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
+    src:     '{{ item.1.src     | d(omit) }}'
+    state:   '{{ item.1.state   | d("directory") }}'
+    owner:   '{{ item.1.owner   | d(item.0.name) }}'
+    group:   '{{ item.1.group   | d(item.0.group | d(item.0.name)) }}'
+    mode:    '{{ item.1.mode    | d(omit) }}'
+    force:   '{{ item.1.force   | d(omit) }}'
+    recurse: '{{ item.1.recurse | d(omit) }}'
+  loop: '{{ users__combined_accounts | parse_kv_items
+            | selectattr("resources", "defined") | list
+            | subelements("resources") }}'
+  loop_control:
+    label: '{{ {"name": item.0.name,
+                "state": item.0.state | d("present"), "resources": item.1} }}'
+  when: (users__enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.1.state|d('directory') in [ 'directory', 'link', 'touch' ] and
+         item.1.content is undefined)
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
 
-- name: Create parent resource directories
+- name: Manage user resource parent directories
   file:
-    dest:    '{{ (item.dest          | d(item.path)) | dirname }}'
-    force:   '{{ item.force          | d(omit) }}'
-    mode:    '{{ item.parent_mode    | d(omit) }}'
-    recurse: '{{ item.parent_recurse | d(omit) }}'
+    path:    '{{ ("~" + item.0.name + "/" + (item.1.path | d(item.1.dest))) | dirname }}'
     state:   'directory'
-  become: True
-  become_user: '{{ item.name }}'
-  with_flattened:
-    - '{{ users__resources }}'
-    - '{{ users__group_resources }}'
-    - '{{ users__host_resources }}'
-  when: (users__enabled|bool and item.name|d() and item.state|d('present') in [ 'present', 'file' ] and item.parent|d(True) and
-         (item.dest|d() or item.path|d()) and (item.src|d() or item.content|d()))
-  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+    owner:   '{{ item.1.parent_owner   | d(item.0.name) }}'
+    group:   '{{ item.1.parent_group   | d(item.0.group | d(item.0.name)) }}'
+    mode:    '{{ item.1.parent_mode    | d(omit) }}'
+    force:   '{{ item.1.force          | d(omit) }}'
+    recurse: '{{ item.1.parent_recurse | d(omit) }}'
+  loop: '{{ users__combined_accounts | parse_kv_items
+            | selectattr("resources", "defined") | list
+            | subelements("resources") }}'
+  loop_control:
+    label: '{{ {"name": item.0.name,
+                "state": item.0.state | d("present"), "resources": item.1} }}'
+  when: (users__enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.1.state|d('directory') in [ 'present', 'file' ])
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
 
-- name: Manage resource contents
+- name: Manage user resource files
   copy:
-    dest:    '{{ item.dest    | d(item.path) }}'
-    src:     '{{ item.src     | d(omit) }}'
-    content: '{{ item.content | d(omit) }}'
-    mode:    '{{ item.mode    | d(omit) }}'
-    force:   '{{ item.force   | d(omit) }}'
-  become: True
-  become_user: '{{ item.name }}'
-  with_flattened:
-    - '{{ users__resources }}'
-    - '{{ users__group_resources }}'
-    - '{{ users__host_resources }}'
-  when: (users__enabled|bool and item.name|d() and item.state|d('present') in [ 'present', 'file' ] and
-         (item.dest|d() or item.path|d()) and (item.src|d() or item.content|d()))
-  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+    dest:    '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest)) }}'
+    src:     '{{ item.1.src     | d(omit) }}'
+    content: '{{ item.1.content | d(omit) }}'
+    owner:   '{{ item.1.owner   | d(item.0.name) }}'
+    group:   '{{ item.1.group   | d(item.0.group | d(item.0.name)) }}'
+    mode:    '{{ item.1.mode    | d(omit) }}'
+    force:   '{{ item.1.force   | d(omit) }}'
+  loop: '{{ users__combined_accounts | parse_kv_items
+            | selectattr("resources", "defined") | list
+            | subelements("resources") }}'
+  loop_control:
+    label: '{{ {"name": item.0.name,
+                "state": item.0.state | d("present"), "resources": item.1} }}'
+  when: (users__enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.1.state|d('directory') in [ 'present', 'file' ] and
+         (item.1.dest|d() or item.1.path|d()) and (item.1.src|d() or item.1.content|d()))
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
 
-- name: Remove resources if requested
+- name: Remove user resources if requested
   file:
-    path: '{{ item.path | d(item.dest) }}'
+    path:  '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
     state: 'absent'
-  become: True
-  become_user: '{{ item.name }}'
-  with_flattened:
-    - '{{ users__resources }}'
-    - '{{ users__group_resources }}'
-    - '{{ users__host_resources }}'
-  when: (users__enabled|bool and item.name|d() and item.state|d('present') == 'absent' and
-         (item.path|d() or item.dest|d()))
-  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  loop: '{{ users__combined_accounts | parse_kv_items
+            | selectattr("resources", "defined") | list
+            | subelements("resources") }}'
+  loop_control:
+    label: '{{ {"name": item.0.name,
+                "state": item.0.state | d("present"), "resources": item.1} }}'
+  when: (users__enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.1.state|d('directory') == 'absent')
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
 
 - name: Remove user groups if requested
   group:

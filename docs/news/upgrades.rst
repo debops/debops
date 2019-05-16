@@ -45,6 +45,11 @@ Changes to the UNIX group and account management
 - The ``item.createhome`` parameter has been renamed to ``item.create_home`` in
   accordance with the renamed parameter of the ``user`` Ansible module.
 
+- The ``users__resources``, ``users__group_resources`` and
+  ``users__host_resources`` variables have been removed. Their functionality
+  has been reimplemented as the ``item.resources`` parameter of the
+  ``users__*_accounts`` variables. See the role documentation for more details.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
