@@ -168,17 +168,14 @@ def parse_kv_config(*args, **kwargs):
                                  if param_name in parsed_config
                                  else {})
 
-                if element.get('state', 'present') != 'append':
-                    current_param['state'] = (element.get('state',
-                                              current_param.get('state',
-                                                                'present')))
-                elif element.get('state', 'present') == 'append':
-                    current_param['state'] = current_param.get('state',
-                                                               'present')
+                if element.get('state', 'present') == 'append':
+                    current_param['state'] = current_param.get('state', 'present')
+                else:
+                    current_param['state'] = (
+                        element.get('state', current_param.get('state', 'present')))
 
                 if (current_param['state'] == 'init' and
-                        (_check_if_key_in_nested_dict('value', element) or
-                        _check_if_key_in_nested_dict('value', current_param))):
+                        (element.get('state', 'present') != 'init' and _check_if_key_in_nested_dict('value', current_param))):
                     current_param['state'] = 'present'
 
                 current_param.update({
@@ -283,7 +280,7 @@ def parse_kv_config(*args, **kwargs):
     return sorted(output, key=itemgetter('real_weight'))
 
 
-def parse_kv_items(*args, **kwargs):
+def parse_kv_items(input_args, empty=None, defaults=None, merge_keys=None):
     """Return a parsed list of with_items elements
     Optional arguments:
 
@@ -303,12 +300,28 @@ def parse_kv_items(*args, **kwargs):
             list of keys in the dictionary that will be merged together. If not
             specified, 'options' key instances will be merged by default.
     """
+    args = {}
+    kwargs = {}
 
-    input_args = []
+    if empty is None:
+        empty = {}
+
+    if defaults is None:
+        defaults = {}
+
+    if merge_keys is None:
+        merge_keys = set()
+    else:
+        merge_keys = set(merge_keys)
+
+    merge_keys.add('options')
+
+
+    #  input_args = []
     parsed_config = {}
 
     # Flatten the input list
-    for sublist in list(args):
+    for sublist in args:
         for item in sublist:
             input_args.append(item)
 
@@ -334,17 +347,14 @@ def parse_kv_items(*args, **kwargs):
                                  if param_name in parsed_config
                                  else {})
 
-                if element_state != 'append':
-                    current_param['state'] = (element.get('state',
-                                              current_param.get('state',
-                                                                'present')))
-                elif element_state == 'append':
-                    current_param['state'] = current_param.get('state',
-                                                               'present')
+                if element_state == 'append':
+                    current_param['state'] = current_param.get('state', 'present')
+                else:
+                    current_param['state'] = (
+                        element.get('state', current_param.get('state', 'present')))
 
                 if (current_param['state'] == 'init' and
-                        (_check_if_key_in_nested_dict('value', element) or
-                        _check_if_key_in_nested_dict('value', current_param))):
+                        (element_state != 'init' and _check_if_key_in_nested_dict('value', current_param))):
                     current_param['state'] = 'present'
 
                 current_param.update({
@@ -377,18 +387,8 @@ def parse_kv_items(*args, **kwargs):
                     current_param['comment'] = element.get('comment')
 
                 # Set any default keys defined for the filter
-                if (kwargs.get('defaults') and
-                        isinstance(kwargs.get('defaults'), dict)):
-                    defargs = kwargs.get('defaults')
-
-                    for key in defargs.keys():
-                        current_param[key] = (
-                            current_param.get(key,
-                                              defargs.get(key)))
-
-                merge_keys = ['options']
-                if isinstance(kwargs.get('merge_keys'), list):
-                    merge_keys.extend(kwargs.get('merge_keys'))
+                for k, v in defaults.items():
+                    current_param[k] = current_param.get(k, v)
 
                 for key_name in merge_keys:
                     if key_name in element:
@@ -409,16 +409,15 @@ def parse_kv_items(*args, **kwargs):
                     if unknown_key not in known_keys:
                         current_param[unknown_key] = element.get(unknown_key)
 
-                # Fill any empty keys using other keys
-                if isinstance(kwargs.get('empty'), dict):
-                    emptargs = kwargs.get('empty')
+                # Fill any empty keys using other keys.
+                for key_to_set, keys_to_check in empty.items():
+                    if key_to_set in current_param:
+                        continue
 
-                    for key in emptargs.keys():
-                        if key not in current_param:
-                            for thing in list(emptargs[key]):
-                                current_param[key] = current_param.get(thing)
-                                if key in current_param:
-                                    break
+                    for key_to_check in keys_to_check:
+                        if key_to_check in current_param:
+                            current_param[key_to_set] = current_param[key_to_check]
+                            break
 
                 parsed_config.update({param_name: current_param})
 
