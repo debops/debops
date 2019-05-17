@@ -1,7 +1,8 @@
 # A set of custom Ansible filter plugins used by DebOps
 
 # Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017 DebOps https://debops.org/
+# Copyright (C) 2019 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2017-2019 DebOps https://debops.org/
 
 
 # This file is part of DebOps.
@@ -444,3 +445,338 @@ class FilterModule(object):
             'parse_kv_config': parse_kv_config,
             'parse_kv_items': parse_kv_items
         }
+
+
+if __name__ == '__main__':
+    import unittest
+    from nose.tools import assert_equal
+    import textwrap
+    import yaml
+
+    class Test(unittest.TestCase):
+
+        def test_parse_kv_config(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test3
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            assert_equal(items, expected_items)
+
+        def test_parse_kv_items_empty(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'name should be used as comment'
+              options:
+
+                - name: 'second level is ignored'
+                  service: 'second level is ignored so service will not become the comment'
+                  value: 'test'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - comment: name should be used as comment
+              id: 0
+              name: name should be used as comment
+              options:
+              - id: 0
+                name: second level is ignored
+                real_weight: 0
+                section: unknown
+                separator: false
+                service: second level is ignored so service will not become the comment
+                state: present
+                value: test
+                weight: 0
+              real_weight: 0
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items, empty={'comment': ['service', 'name']})
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            assert_equal(items, expected_items)
+
+        def test_parse_kv_items_defaults(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'something'
+              key1: 'existing'
+              value: 'something'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              key1: existing
+              key2: value2
+              name: something
+              real_weight: 0
+              separator: false
+              state: present
+              value: something
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items, defaults={'key1': 'value1', 'key2': 'value2'})
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            assert_equal(items, expected_items)
+
+        def test_parse_kv_items_merge_keys(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'something'
+              key1: 'existing'
+              options:
+
+                - name: 'nested1'
+                  value: 'value1'
+
+            - name: 'something'
+              options:
+
+                - name: 'nested2'
+                  value: 'value2'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              key1: existing
+              name: something
+              options:
+              - id: 0
+                name: nested1
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: value1
+                weight: 0
+              - id: 10
+                name: nested2
+                real_weight: 10
+                section: unknown
+                separator: false
+                state: present
+                value: value2
+                weight: 0
+              real_weight: 0
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items, merge_keys=['test'])
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            assert_equal(items, expected_items)
+
+        def test_parse_kv_items(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'should-stay-init'
+              options:
+
+                - name: 'local'
+                  value: 'test'
+
+              state: 'init'
+
+
+            - name: 'should-become-present'
+              options:
+
+                - name: 'local'
+                  value: 'test'
+
+              state: 'init'
+
+            - name: 'should-become-present'
+              options:
+
+                - name: 'local'
+                  value: 'test2'
+
+
+            - name: 'should-become-present2'
+              options:
+
+                - name: 'local'
+                  value: 'test'
+                  state: 'init'
+
+              state: 'init'
+
+            - name: 'should-become-present2'
+              options:
+
+                - name: 'local'
+                  value: 'test2'
+
+
+            - name: 'should-become-present3'
+              options:
+
+                - name: 'local1'
+                  comment: 'This comment should survive.'
+                  options:
+
+                    - name: 'local2'
+                      value: 'test'
+                      state: 'init'
+
+                  state: 'init'
+
+                - name: 'external1'
+                  options:
+
+                    - name: 'external2'
+                      value: 'test'
+                      state: 'init'
+
+                  state: 'init'
+
+
+            - name: 'should-become-present3'
+              options:
+
+                - name: 'local1'
+                  options:
+
+                    - name: 'local2'
+                      value: 'test2'
+
+                - name: 'external1'
+                  options:
+
+                    - name: 'external2'
+                      value: 'test'
+
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: should-stay-init
+              options:
+              - id: 0
+                name: local
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: test
+                weight: 0
+              real_weight: 0
+              separator: false
+              state: init
+              weight: 0
+            - id: 10
+              name: should-become-present
+              options:
+              - id: 0
+                name: local
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: test2
+                weight: 0
+              real_weight: 10
+              separator: false
+              state: present
+              weight: 0
+            - id: 30
+              name: should-become-present2
+              options:
+              - id: 0
+                name: local
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: test2
+                weight: 0
+              real_weight: 30
+              separator: false
+              state: present
+              weight: 0
+            - id: 50
+              name: should-become-present3
+              options:
+              - comment: This comment should survive.
+                id: 0
+                name: local1
+                options:
+                - id: 0
+                  name: local2
+                  real_weight: 0
+                  section: unknown
+                  separator: false
+                  state: present
+                  value: test2
+                  weight: 0
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                weight: 0
+              - id: 10
+                name: external1
+                options:
+                - id: 0
+                  name: external2
+                  real_weight: 0
+                  section: unknown
+                  separator: false
+                  state: present
+                  value: test
+                  weight: 0
+                real_weight: 10
+                section: unknown
+                separator: false
+                state: present
+                weight: 0
+              real_weight: 50
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            #  print("----------------------------")
+            #  print(yaml.dump(parse_kv_items(input_items), default_flow_style=False))
+
+            assert_equal(parse_kv_items(input_items), expected_items)
+
+    unittest.main()
