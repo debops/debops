@@ -62,7 +62,7 @@ The extended YAML dictionary format is detected if a YAML dictionary contains
 a ``name`` key. The dictionaries support specific parameters:
 
 ``name``
-  String. The ame of the Kibana option.
+  String. The name of the Kibana option.
 
 ``value``
   The value of the Kibana option. Can be a string, a number, a boolean or
@@ -192,7 +192,7 @@ Each element of the list is a YAML dictionary with specific parameters:
 ``state``
   Optional. The system user used for plugin management. Defaults to :envvar:`kibana__user`.
   Certain plugins like X-Pack generate files on installation which Kibana needs
-  to have write persmssions to.
+  to have write permissions to.
 
 
 ``configuration`` or ``config``
