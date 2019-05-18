@@ -25,12 +25,6 @@ from __future__ import (absolute_import, division, print_function)
 from past.builtins import basestring
 from operator import itemgetter
 
-try:
-    unicode = unicode
-except NameError:
-    # py3
-    unicode = str
-
 __metaclass__ = type
 
 
@@ -62,7 +56,7 @@ def _parse_kv_value(current_data, new_data, data_index):
 
         if isinstance(new_value, (basestring, int, float, bool)):
             if (old_value is None or isinstance(old_value,
-                                                (str, unicode, int,
+                                                (basestring, int,
                                                  float, bool, dict))):
                 current_data['value'] = new_value
 
@@ -78,7 +72,7 @@ def _parse_kv_value(current_data, new_data, data_index):
                 dict_value = {}
 
             for element_index, element in enumerate(new_value):
-                if isinstance(element, (str, unicode, int)):
+                if isinstance(element, (basestring, int)):
                     dict_element = dict_value.get(element, {}).copy()
                     if not dict_element.get('name'):
                         dict_element.update({
@@ -101,7 +95,7 @@ def _parse_kv_value(current_data, new_data, data_index):
 
                     for cursor in ([element_name]
                                    if isinstance(element_name,
-                                                 (str, unicode, int))
+                                                 (basestring, int))
                                    else element_name):
                         dict_element = dict_value.get(cursor, {}).copy()
                         dict_element.update({
