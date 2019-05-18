@@ -44,6 +44,27 @@ def _check_if_key_in_nested_dict(key, dictionary):
     return False
 
 
+def _handle_copy_id_from(parsed_config, element, current_param):
+    if 'copy_id_from' in element:
+        if element['copy_id_from'] in parsed_config:
+            id_src = element['copy_id_from']
+            current_param['id'] = (
+                int(parsed_config[id_src]['id']) +
+                int(parsed_config[id_src].get('weight', 0)))
+
+
+def _handle_weight(element, current_param):
+    if 'weight' in element:
+        current_param['weight'] = (
+            int(element.get('weight',
+                current_param.get('weight', 0))) +
+            int(current_param.get('weight', 0)))
+
+
+def _get_real_weight(current_param):
+    return int(current_param['id']) + int(current_param['weight'])
+
+
 def _parse_kv_value(current_data, new_data, data_index):
     """Parse the parameter values and merge
     with existing ones conditionally.
@@ -81,12 +102,9 @@ def _parse_kv_value(current_data, new_data, data_index):
                             'weight': dict_element.get('weight', 0),
                             'state': 'present'})
 
-                        dict_element['real_weight'] = (
-                            int(dict_element.get('id')) +
-                            int(dict_element.get('weight')))
-
-                        dict_value.update({element: dict_element})
-                        current_data.update({'value': dict_value})
+                        dict_element['real_weight'] = _get_real_weight(dict_element)
+                        dict_value[element] = dict_element
+                        current_data['value'] = dict_value
 
                 elif (isinstance(element, dict) and
                         element.get('param', element.get('name')) and
@@ -105,12 +123,7 @@ def _parse_kv_value(current_data, new_data, data_index):
                             'state': element.get('state', 'present')
                         })
 
-                        if 'copy_id_from' in element:
-                            if element.get('copy_id_from') in dict_value:
-                                id_src = element.get('copy_id_from')
-                                dict_element['id'] = (
-                                    int(dict_value[id_src].get('id')) +
-                                    int(dict_value[id_src].get('weight', 0)))
+                        _handle_copy_id_from(dict_value, element, dict_element)
 
                         if 'weight' in element:
                             dict_element['weight'] = (
@@ -118,9 +131,7 @@ def _parse_kv_value(current_data, new_data, data_index):
                                     dict_element.get('weight', 0))) +
                                 int(dict_element.get('weight', 0)))
 
-                        dict_element['real_weight'] = (
-                            int(dict_element.get('id')) +
-                            int(dict_element.get('weight')))
+                        dict_element['real_weight'] = _get_real_weight(dict_element)
 
                         # Include any unknown keys.
                         for key in element.keys():
@@ -184,22 +195,10 @@ def parse_kv_config(*args, **kwargs):
                                                              'unknown'))
                 })
 
-                if 'copy_id_from' in element:
-                    if element.get('copy_id_from') in parsed_config:
-                        id_src = element.get('copy_id_from')
-                        current_param['id'] = (
-                            int(parsed_config[id_src].get('id')) +
-                            int(parsed_config[id_src].get('weight', 0)))
+                _handle_copy_id_from(parsed_config, element, current_param)
+                _handle_weight(element, current_param)
 
-                if 'weight' in element:
-                    current_param['weight'] = (
-                        int(element.get('weight',
-                            current_param.get('weight', 0))) +
-                        int(current_param.get('weight', 0)))
-
-                current_param['real_weight'] = (
-                    int(current_param.get('id')) +
-                    int(current_param.get('weight')))
+                current_param['real_weight'] = _get_real_weight(current_param)
 
                 _parse_kv_value(current_param, element,
                                 current_param.get('id'))
@@ -249,9 +248,7 @@ def parse_kv_config(*args, **kwargs):
                         'section': current_param.get('section', 'unknown')
                     })
 
-                    current_param['real_weight'] = (
-                        int(current_param.get('id')) +
-                        int(current_param.get('weight')))
+                    current_param['real_weight'] = _get_real_weight(current_param)
 
                     _parse_kv_value(current_param,
                                     {'value': value},
@@ -348,22 +345,10 @@ def parse_kv_items(*args, **kwargs):
                                                                False))
                 })
 
-                if 'copy_id_from' in element:
-                    if element['copy_id_from'] in parsed_config:
-                        id_src = element['copy_id_from']
-                        current_param['id'] = (
-                            int(parsed_config[id_src]['id']) +
-                            int(parsed_config[id_src].get('weight', 0)))
+                _handle_copy_id_from(parsed_config, element, current_param)
+                _handle_weight(element, current_param)
 
-                if 'weight' in element:
-                    current_param['weight'] = (
-                        int(element.get('weight',
-                            current_param.get('weight', 0))) +
-                        int(current_param.get('weight', 0)))
-
-                current_param['real_weight'] = (
-                    int(current_param['id']) +
-                    int(current_param['weight']))
+                current_param['real_weight'] = _get_real_weight(current_param)
 
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
@@ -452,6 +437,39 @@ if __name__ == '__main__':
             #  print(yaml.dump(expected_items, default_flow_style=False))
 
             assert_equal(current_data, new_data)
+
+        def test_parse_kv_value_mixed(self):
+            current_data = yaml.safe_load(textwrap.dedent('''
+            name: 'local'
+            value:
+              - 'alpha'
+              - 'test'
+            '''))
+
+            new_data = yaml.safe_load(textwrap.dedent('''
+            name: 'local'
+            value:
+              - 'beta'
+            '''))
+
+            # FIXME: Not getting it. Why does the _parse_kv_value behave like this.
+            expected_data = yaml.safe_load(textwrap.dedent('''
+            name: local
+            value:
+              beta:
+                id: 0
+                name: beta
+                real_weight: 0
+                state: present
+                weight: 0
+            '''))
+
+            _parse_kv_value(current_data, new_data, 0)
+
+            #  print(yaml.dump(current_data, default_flow_style=False))
+            #  print(yaml.dump(new_data, default_flow_style=False))
+
+            assert_equal(current_data, expected_data)
 
         def test_parse_kv_config(self):
             input_items = yaml.safe_load(textwrap.dedent('''
@@ -615,21 +633,21 @@ if __name__ == '__main__':
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
-	    - copy_id_from: second
-	      id: 10
-	      name: first
-	      real_weight: 0
-	      separator: false
-	      state: present
-	      value: value2
-	      weight: -10
-	    - id: 0
-	      name: second
-	      real_weight: 10
-	      separator: false
-	      state: present
-	      value: value1
-	      weight: 10
+            - copy_id_from: second
+              id: 10
+              name: first
+              real_weight: 0
+              separator: false
+              state: present
+              value: value2
+              weight: -10
+            - id: 0
+              name: second
+              real_weight: 10
+              separator: false
+              state: present
+              value: value1
+              weight: 10
             '''))
 
             items = parse_kv_items(input_items)
