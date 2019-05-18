@@ -1,6 +1,6 @@
 # A set of custom Ansible filter plugins used by DebOps
 
-# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2018 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2019 Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2017-2019 DebOps https://debops.org/
 
@@ -50,7 +50,7 @@ def _check_if_key_in_nested_dict(key, dictionary):
     return False
 
 
-def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
+def _parse_kv_value(current_data, new_data, data_index):
     """Parse the parameter values and merge
     with existing ones conditionally.
     """
@@ -58,23 +58,23 @@ def _parse_kv_value(current_data, new_data, data_index, *args, **kwargs):
     if 'value' in new_data:
         old_value = current_data.get('value')
         old_state = current_data.get('state', 'present')
-        new_value = new_data.get('value')
+        new_value = new_data['value']
 
         if isinstance(new_value, (basestring, int, float, bool)):
             if (old_value is None or isinstance(old_value,
                                                 (str, unicode, int,
                                                  float, bool, dict))):
-                current_data.update({'value': new_value})
+                current_data['value'] = new_value
 
-            if (old_value is not None and old_state in ['comment'] and
-                    current_data['state'] != 'comment'):
-                current_data.update({'state': 'present'})
+            # TODO(drybjed): This never evaluates to true.
+            #  if (old_value is not None and old_state in ['comment'] and
+            #          current_data['state'] != 'comment'):
+            #      current_data['state'] = 'present'
 
         elif isinstance(new_value, list):
             if (old_value is None or isinstance(old_value, dict)):
                 dict_value = current_data.get('value', {}).copy()
-
-            elif isinstance(old_value, (str, unicode, int, float, bool)):
+            else:
                 dict_value = {}
 
             for element_index, element in enumerate(new_value):
@@ -145,7 +145,7 @@ def parse_kv_config(*args, **kwargs):
     input_args = []
     parsed_config = {}
 
-    # Flatten the input list
+    # Flatten the input list.
     for sublist in list(args):
         for item in sublist:
             input_args.append(item)
@@ -411,6 +411,7 @@ def parse_kv_items(*args, **kwargs):
     # and return sorted by weight.
     output = []
     for key, params in parsed_config.items():
+        # FIXME: Make recursive.
         if isinstance(params.get('value'), dict):
             params['value'] = sorted(
                 params.get('value').values(),
@@ -439,6 +440,24 @@ if __name__ == '__main__':
     import yaml
 
     class Test(unittest.TestCase):
+
+        def test_parse_kv_value_simple(self):
+            current_data = yaml.safe_load(textwrap.dedent('''
+            name: 'local'
+            value: 'test'
+            '''))
+
+            new_data = yaml.safe_load(textwrap.dedent('''
+            name: 'local'
+            value: 'test2'
+            '''))
+
+            _parse_kv_value(current_data, new_data, 0)
+
+            #  print(yaml.dump(current_data, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            assert_equal(current_data, new_data)
 
         def test_parse_kv_config(self):
             input_items = yaml.safe_load(textwrap.dedent('''
