@@ -23,28 +23,6 @@ users__enabled: True
 #
 # Enable or disable support for filesystem ACL management.
 users__acl_enabled: '{{ True if ("acl" in users__base_packages) else False }}'
-
-                                                                   # ]]]
-# .. envvar:: users__default_home_mode [[[
-#
-# The default set of permissions for the home directories, specified in octal.
-# It can be overridden on a per-account basis with the ``item.home_mode``
-# parameter.
-users__default_home_mode: '0751'
-
-                                                                   # ]]]
-# .. envvar:: users__chroot_groups [[[
-#
-# List of UNIX groups in which a chrooted UNIX account should be included. This
-# depends on the configuration of the OpenSSH service, see :ref:`debops.sshd`
-# for more details.
-users__chroot_groups: [ 'sftponly' ]
-
-                                                                   # ]]]
-# .. envvar:: users__chroot_shell [[[
-#
-# The shell used for chrooted UNIX accounts if none is specified.
-users__chroot_shell: '/usr/sbin/nologin'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -65,7 +43,7 @@ users__shell_package_map:
                                                                    # ]]]
 # .. envvar:: users__base_packages [[[
 #
-# List of base packages to install.
+# List of base APT packages to install.
 users__base_packages: [ 'acl', 'libuser' ]
 
                                                                    # ]]]
@@ -79,6 +57,57 @@ users__shell_packages: '{{ lookup("template", "lookup/users__shell_packages.j2")
 #
 # List of custom packages to install.
 users__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Home directories [[[
+# --------------------
+
+# .. envvar:: users__default_home_mode [[[
+#
+# The default set of permissions for the home directories, specified in octal.
+# It can be overridden on a per-account basis with the ``item.home_mode``
+# parameter.
+users__default_home_mode: '0751'
+                                                                   # ]]]
+                                                                   # ]]]
+# Chroot account status [[[
+# -------------------------
+
+# .. envvar:: users__chroot_groups [[[
+#
+# List of UNIX groups in which a chrooted UNIX account should be included. This
+# depends on the configuration of the OpenSSH service, see :ref:`debops.sshd`
+# for more details.
+users__chroot_groups: [ 'sftponly' ]
+
+                                                                   # ]]]
+# .. envvar:: users__chroot_shell [[[
+#
+# The shell used for chrooted UNIX accounts if none is specified.
+users__chroot_shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# User configuration files (dotfiles) [[[
+# ---------------------------------------
+
+# These variables are used to manage the user configuration files (dotfiles).
+
+# .. envvar:: users__dotfiles_enabled [[[
+#
+# Enable or disable management of user dotfiles via :command:`yadm` script. See
+# the :ref:`debops.yadm` role for script installation and dotfile mirroring.
+users__dotfiles_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: users__dotfiles_repo [[[
+#
+# An URL or an absolute path on the remote host to the :command:`git` dotfiles
+# repository. The repository will be used by default if the dotfiles management
+# is enabled without specifying a custom repository for the user.
+users__dotfiles_repo: '{{ ansible_local.yadm.dotfiles
+                          if (ansible_local|d() and ansible_local.yadm|d() and
+                              ansible_local.yadm.dotfiles|d())
+                          else "" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Lists of managed UNIX groups and accounts [[[
@@ -162,36 +191,9 @@ users__combined_accounts: '{{ users__groups
                               + users__host_groups
                               + users__dependent_groups
                               + users__default_accounts
-                              + users__admin_accounts
                               + users__accounts
                               + users__group_accounts
                               + users__host_accounts
                               + users__dependent_accounts }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# User configuration files (dotfiles) [[[
-# ---------------------------------------
-
-# These variables are used to manage the user configuration files (dotfiles).
-
-# .. envvar:: users__dotfiles_enabled [[[
-#
-# Enable or disable management of user dotfiles via :command:`yadm` script. See
-# the :ref:`debops.yadm` role for script installation and dotfile mirroring.
-users__dotfiles_enabled: '{{ True
-                             if (ansible_local|d() and ansible_local.yadm|d() and
-                                 ansible_local.yadm.dotfiles|d())
-                             else False }}'
-
-                                                                   # ]]]
-# .. envvar:: users__dotfiles_repo [[[
-#
-# An URL or an absolute path on the remote host to the :command:`git` dotfiles
-# repository. The repository will be used by default if the dotfiles management
-# is enabled without specifying a custom repository for the user.
-users__dotfiles_repo: '{{ ansible_local.yadm.dotfiles
-                          if (ansible_local|d() and ansible_local.yadm|d() and
-                              ansible_local.yadm.dotfiles|d())
-                          else "" }}'
                                                                    # ]]]
                                                                    # ]]]
