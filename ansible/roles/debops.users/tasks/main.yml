@@ -81,14 +81,16 @@
 - name: Manage additional UNIX groups for UNIX accounts
   user:
     name:               '{{ item.name }}'
-    groups:             '{{ ( (([ item.groups ]
-                                if (item.groups is string)
-                                else item.groups)
-                               + (users__chroot_groups
-                                  if ((item.chroot|d())|bool)
-                                  else []))
-                              | intersect(getent_group.keys()) )
-                            if (item.groups is defined)
+    groups:             '{{ (( (([ item.groups ]
+                                 if (item.groups is string)
+                                 else item.groups)
+                                if (item.groups is defined)
+                                else [])
+                                + (users__chroot_groups
+                                   if ((item.chroot|d())|bool)
+                                   else []) )
+                               | intersect(getent_group.keys()) )
+                            if (item.groups is defined or (item.chroot|d())|bool)
                             else omit }}'
     append:             '{{ item.append             | d(True) }}'
     state:              '{{ item.state              | d("present") }}'
@@ -98,7 +100,8 @@
                 "state": item.state|d("present"), "gecos": item.comment|d(),
                 "groups": item.groups|d()} }}'
   when: (users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'ignore' ] and item.groups|d() and
+         item.state|d('present') not in [ 'ignore' ] and
+         (item.groups|d() or (item.chroot|d())|bool) and
          (item.user|d(True))|bool)
   no_log: '{{ True if item.password|d() else False }}'
 
