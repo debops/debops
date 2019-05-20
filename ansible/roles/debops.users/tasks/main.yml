@@ -159,7 +159,7 @@
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
          item.0.create_home|d(True) and item.0.home_acl|d() and (item.0.user|d(True))|bool)
   no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
-  tags: [ 'role::users:home_acl', 'skip::users:home_acl' ]
+  tags: [ 'role::users:home_acl', 'skip::users:home_acl', 'skip::check' ]
 
 - name: Allow specified UNIX accounts to linger when not logged in
   command: loginctl enable-linger {{ item.name }}
@@ -203,6 +203,7 @@
          item.state|d('present') not in [ 'absent', 'ignore' ] and item.create_home|d(True) and
          item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  tags: [ 'role::users:authorized_keys', 'skip::users:authorized_keys', 'skip::check' ]
 
 - name: Remove ~/.ssh/authorized_keys from user account if disabled
   file:
@@ -238,6 +239,7 @@
          item.state|d('present') not in [ 'absent', 'ignore' ] and
          item.create_home|d(True) and item.forward|d() and (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  tags: [ 'role::users:forward', 'skip::users:forward', 'skip::check' ]
 
 - name: Manage users dotfiles
   shell: |
@@ -264,6 +266,7 @@
          (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))) | bool and
          (item.dotfiles_repo | d(users__dotfiles_repo)) and (item.user|d(True))|bool and not (item.chroot|d())|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  tags: [ 'role::users:dotfiles', 'skip::users:dotfiles', 'skip::check' ]
 
 - name: Manage user resource directories
   file:

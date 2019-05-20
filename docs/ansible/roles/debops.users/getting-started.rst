@@ -60,8 +60,22 @@ tasks are performed during Ansible run. This can be used after host is first
 configured to speed up playbook execution, when you are sure that most of the
 configuration has not been changed.
 
-Available role tags:
+Common role tags:
 
 ``role::users``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
+
+``skip::users``
+  Main role tag, should be used in the playbook to skip all of the role tasks.
+
+``skip::check``
+  Used in specific tasks that might break in the Ansbible ``--check`` mode on
+  first run of the role on a host, but not subsequent runs. It can be used to
+  skip these tasks in such case.
+
+You can see full list of available role tags by executing the command:
+
+.. code-block:: console
+
+   debops service/users --list-tags
