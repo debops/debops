@@ -103,7 +103,7 @@
          item.state|d('present') not in [ 'ignore' ] and
          (item.groups|d() or (item.chroot|d())|bool) and
          (item.user|d(True))|bool)
-  no_log: '{{ True if item.password|d() else False }}'
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
 - name: Manage user home directories
   file:
@@ -158,7 +158,7 @@
          item.0.name|d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
          item.0.create_home|d(True) and item.0.home_acl|d() and (item.0.user|d(True))|bool)
-  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
   tags: [ 'role::users:home_acl', 'skip::users:home_acl' ]
 
 - name: Allow specified UNIX accounts to linger when not logged in
