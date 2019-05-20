@@ -80,20 +80,20 @@
   # Ref: https://github.com/ansible/ansible/issues/48722
 - name: Manage additional UNIX groups for UNIX accounts
   user:
-    name:               '{{ item.name }}'
-    groups:             '{{ (( (([ item.groups ]
-                                 if (item.groups is string)
-                                 else item.groups)
-                                if (item.groups is defined)
-                                else [])
-                                + (users__chroot_groups
-                                   if ((item.chroot|d())|bool)
-                                   else []) )
-                               | intersect(getent_group.keys()) )
-                            if (item.groups is defined or (item.chroot|d())|bool)
-                            else omit }}'
-    append:             '{{ item.append             | d(True) }}'
-    state:              '{{ item.state              | d("present") }}'
+    name:   '{{ item.name }}'
+    groups: '{{ (( (([ item.groups ]
+                     if (item.groups is string)
+                     else item.groups)
+                    if (item.groups is defined)
+                    else [])
+                    + (users__chroot_groups
+                       if ((item.chroot|d())|bool)
+                       else []) )
+                   | intersect(getent_group.keys()) )
+                if (item.groups is defined or (item.chroot|d())|bool)
+                else omit }}'
+    append: '{{ item.append | d(True) }}'
+    state:  '{{ item.state  | d("present") }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
