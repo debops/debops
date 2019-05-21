@@ -87,7 +87,7 @@ Common role tags:
   Main role tag, should be used in the playbook to skip all of the role tasks.
 
 ``skip::check``
-  Used in specific tasks that might break in the Ansbible ``--check`` mode on
+  Used in specific tasks that might break in the Ansible ``--check`` mode on
   first run of the role on a host, but not subsequent runs. It can be used to
   skip these tasks in such case.
 

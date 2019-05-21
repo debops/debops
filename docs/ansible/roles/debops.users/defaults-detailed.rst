@@ -304,8 +304,8 @@ Parameters related to user configuration files
   Optional. An URL or an absolute path on the host to the :command:`git`
   repository with the user configuration files to deploy. If not specified, the
   default dotfiles repository, defined in the :envvar:`users__dotfiles_repo`
-  variable, will be used instead. The repository will be dployed or updated
-  using the :command:yadm` script, installed by the :ref:`debops.yadm` Ansible
+  variable, will be used instead. The repository will be deployed or updated
+  using the :command:`yadm` script, installed by the :ref:`debops.yadm` Ansible
   role.
 
 Parameters related to directory and file resources

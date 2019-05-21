@@ -258,7 +258,7 @@ The list of task parameters supported by the role:
 
 ``no_log``
   Optional, boolean. If ``True``, a given task output will not be recorded to
-  avoid emiting sensitive information like passwords. If not specified or
+  avoid emitting sensitive information like passwords. If not specified or
   ``False``, the task will be recorded and logged.
 
 ``run_once``
