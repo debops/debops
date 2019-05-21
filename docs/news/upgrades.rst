@@ -50,6 +50,11 @@ Changes to the UNIX group and account management
   has been reimplemented as the ``item.resources`` parameter of the
   ``users__*_accounts`` variables. See the role documentation for more details.
 
+- The management of the admin accounts has been removed from the
+  :ref:`debops.users` role and is now done in the :ref:`debops.system_users`
+  role. See the :envvar:`system_users__default_accounts` for a list of the
+  default admin accounts created on the remote hosts.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
