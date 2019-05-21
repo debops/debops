@@ -154,7 +154,6 @@ other hosts.
 Host provisioning
 -----------------
 
-- :ref:`debops.bootstrap`
 - :ref:`debops.grub`
 - :ref:`debops.ipxe`
 - :ref:`debops.preseed`

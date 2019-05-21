@@ -306,7 +306,7 @@ Inventory variable changes
   You can use the :ref:`debops.ifupdown` role to configure packet forwarding
   per network interface, in the firewall as well as via the kernel parameters.
 
-- Host and domain management has been removed from the :ref:`debops.bootstrap`
+- Host and domain management has been removed from the ``debops.bootstrap``
   role. This functionality is now done via the :ref:`debops.netbase` role,
   included in the bootstrap playbook. Some of the old variables have their new
   equivalents:
@@ -466,11 +466,11 @@ Inventory variable changes
   enabled automatically.
 
 - The ``bootstrap__sudo`` and ``bootstrap__sudo_group`` variables have been
-  removed from the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook
+  removed from the ``debops.bootstrap`` role. The ``bootstrap.yml`` playbook
   now uses the :ref:`debops.sudo` role to configure :command:`sudo` service on
   a host, use its variables instead to control the service in question.
 
-- The :envvar:`bootstrap__admin_groups` variable will now use list of UNIX
+- The ``bootstrap__admin_groups`` variable will now use list of UNIX
   groups with ``root`` access defined by the :ref:`debops.system_groups` via
   Ansible local facts.
 

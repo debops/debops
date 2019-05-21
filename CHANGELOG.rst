@@ -307,6 +307,10 @@ Removed
   now implemented by the :ref:`debops.users` role, custom bind mounts can be
   defined using the :ref:`debops.mount` role.
 
+- The ``debops.bootstrap`` Ansible role has been removed. Its replacement is
+  the :ref:`debops.system_users` which is used to manage system administrator
+  accounts, via the ``common.yml`` playbook and the bootstrap playbooks.
+
 Fixed
 ~~~~~
 
@@ -616,7 +620,7 @@ Removed
   ``ansible_local.uuid`` local facts, respectively.
 
 - The hostname and domain configuration has been removed from the
-  :ref:`debops.bootstrap` role. This functionality is now handled by the
+  ``debops.bootstrap`` role. This functionality is now handled by the
   :ref:`debops.netbase` role, which has been included in the bootstrap
   playbook. The relevant inventory variables have been renamed, check the
   :ref:`upgrade_notes` for details.
@@ -828,7 +832,7 @@ Removed
   Ansible role.
 
 - [debops.bootstrap] The :command:`sudo` configuration has been removed from
-  the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook now includes
+  the ``debops.bootstrap`` role. The ``bootstrap.yml`` playbook now includes
   the :ref:`debops.sudo` role which configures :command:`sudo` service.
 
 - [debops.bootstrap] The UNIX system group management has been removed from the

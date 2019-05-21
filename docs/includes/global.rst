@@ -641,7 +641,6 @@
 .. _debops.authorized_keys: https://github.com/debops/ansible-authorized_keys
 .. _debops.avahi: https://github.com/debops/ansible-avahi
 .. _debops.backporter: https://github.com/debops/ansible-backporter
-.. _debops.bootstrap: https://github.com/debops/ansible-bootstrap
 .. _debops.boxbackup: https://github.com/debops/ansible-boxbackup
 .. _debops.console: https://github.com/debops/ansible-console
 .. _debops.core: https://github.com/debops/ansible-core
@@ -758,7 +757,6 @@
 .. _debops.atd documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-atd/docs/index.html
 .. _debops.authorized_keys documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-authorized_keys/docs/index.html
 .. _debops.avahi documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-avahi/docs/index.html
-.. _debops.bootstrap documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/index.html
 .. _debops.core documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-core/docs/index.html
 .. _debops.cron documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-cron/docs/index.html
 .. _debops.cryptsetup documentation: https://docs.debops.org/en/latest/ansible/roles/ansible-cryptsetup/docs/index.html

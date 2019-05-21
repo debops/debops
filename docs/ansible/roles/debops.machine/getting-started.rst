@@ -41,8 +41,6 @@ playbook; you don't need to add hosts to any Ansible groups to enable it.
 Example playbook
 ----------------
 
-Here's an example playbook which uses the ``debops.bootstrap`` role:
-
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.machine`` role:
 
