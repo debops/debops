@@ -62,9 +62,6 @@
       secret_directories:
         - '{{ pki_env_secret_directories }}'
 
-    - role: debops.root_account
-      tags: [ 'role::root_account', 'skip::root_account' ]
-
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
@@ -120,6 +117,9 @@
 
     - role: debops.sudo
       tags: [ 'role::sudo', 'skip::sudo' ]
+
+    - role: debops.root_account
+      tags: [ 'role::root_account', 'skip::root_account' ]
 
     - role: debops.system_groups
       tags: [ 'role::system_groups', 'skip::system_groups' ]
