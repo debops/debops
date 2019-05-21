@@ -143,6 +143,10 @@ Changed
     the default Stretch environment. The downloaded ``.deb`` package will be
     verified using the RStudio Inc. GPG signing key before installation.
 
+  - [debops.docker_gen] The docker-gen version that this role installs by
+    default has been updated to version 0.7.4. This release notably adds IPv6
+    and docker network support.
+
 - [debops.lxc] The :command:`lxc-prepare-ssh` script will read the public SSH
   keys from specific files (``root`` key file, and the ``$SUDO_USER`` key file)
   and will not accept any custom files to read from, to avoid possible security
