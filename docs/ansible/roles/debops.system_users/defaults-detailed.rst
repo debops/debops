@@ -3,23 +3,24 @@ Default variable details
 
 .. include:: ../../../includes/global.rst
 
-Some of ``debops.users`` default variables have more extensive configuration than
-simple strings or lists, here you can find documentation and examples for them.
+Some of ``debops.system_users`` default variables have more extensive
+configuration than simple strings or lists, here you can find documentation and
+examples for them.
 
 .. contents::
    :local:
    :depth: 3
 
 
-.. _users__ref_accounts:
+.. _system_users__ref_accounts:
 
-users__accounts
----------------
+system_users__accounts
+----------------------
 
-The ``users__*_groups`` and ``users__*_accounts`` variables define the UNIX
-group and UNIX user accounts which should be managed by Ansible. The
-distinctive names can be used to order the UNIX group creation before the
-account creation; otherwise both variable sets use the same content.
+The ``system_users__*_groups`` and ``system_users__*_accounts`` variables
+define the UNIX group and UNIX user accounts which should be managed by
+Ansible. The distinctive names can be used to order the UNIX group creation
+before the account creation; otherwise both variable sets use the same content.
 
 Examples
 ~~~~~~~~
@@ -49,6 +50,15 @@ General account parameters
   merged in order of appearance, this can be used to modify existing
   configuration entries conditionally.
 
+``prefix``
+  Optional. An additional string prepended to the UNIX group name, UNIX account
+  name, and the home directory name. If not specified, the
+  :envvar:`system_users__prefix` value is used instead. This functionality is
+  used to separate the local users (with the ``_``) prefix from the LDAP users,
+  when the host is configured with the :ref:`debops.ldap` role. To override the
+  prefix when LDAP support is enabled, set the parameter to an empty string
+  (``''``).
+
 ``user``
   Optional, boolean. If not specified or ``True``, a configuration entry will
   manage both an UNIX account and its primary UNIX group. If ``False``, only
@@ -64,7 +74,7 @@ General account parameters
   operation you shouldn't need to define this parameter, it's enabled or
   disabled by the role as needed.
 
-  See :ref:`users__ref_libuser` for more details.
+  See :ref:`system_users__ref_libuser` for more details.
 
 ``system``
   Optional, boolean. If ``True``, a given user account and primary group will
@@ -72,25 +82,13 @@ General account parameters
   is not specified or ``False``, the user account and group will be a "normal"
   account and group with UID and GID >= 1000.
 
-``chroot``
+``admin``
   Optional, boolean. If defined and ``True``, a given user account is
-  configured to support SFTPonly operation, and certain defaults are changed if
-  not overridden by other parameters.
-
-  The owner of the home directory will be the ``root`` account instead of the
-  user, to allow chrooting to that directory, the home directory group will be
-  the primary group of a given user. The default permissions are set to
-  ``0751``.
-
-  The default shell is set based on the :envvar:`users__chroot_shell` variable,
-  by default it will be :file:`/usr/sbin/nologin`. Any dotfiles configured
-  globally or for that UNIX account are not installed due to permission issues
-  in the home directory.
-
-  The account will be added to UNIX groups specified in the
-  :envvar:`users__chroot_groups` variable, by default ``sftponly``. See the
-  :ref:`debops.sshd` role for details about configuring the SFTPonly access in
-  OpenSSH server.
+  configured as a "system administrator" account. This account will be
+  automatically added to the UNIX groups managed by the
+  :ref:`debops.system_groups` role, usually ``admins``. The UNIX group name may
+  change depending on the presence of the LDAP configuration to include a ``_``
+  prefix do distinguish locally managed UNIX groups to those defined in LDAP.
 
 ``uid``
   Optional. Specify the UID of the UNIX user account.
@@ -178,7 +176,9 @@ Parameters related to home directories
 ``home``
   Optional. Path to the home directory of a given user account. If not
   specified, the role will check the home directory path of an existing account
-  defined on the host.
+  defined on the host, and if the account is new, generate the home path based
+  on the :envvar:`system_users__home_root` variable and the
+  :envvar:`system_users__prefix` variable.
 
 ``home_owner``
   Optional. Specify the owner of the home directory of a given UNIX account.
@@ -188,8 +188,8 @@ Parameters related to home directories
 
 ``home_mode``
   Optional. Specify the mode of the home directory of a given UNIX account. If
-  not specified, the value of the :envvar:`users__default_home_mode` will be
-  used instead.
+  not specified, the value of the :envvar:`system_users__default_home_mode`
+  will be used instead.
 
 ``create_home``
   Optional, boolean. If ``True``, the role will create the home directory for
@@ -303,10 +303,10 @@ Parameters related to user configuration files
 ``dotfiles_repo``
   Optional. An URL or an absolute path on the host to the :command:`git`
   repository with the user configuration files to deploy. If not specified, the
-  default dotfiles repository, defined in the :envvar:`users__dotfiles_repo`
-  variable, will be used instead. The repository will be dployed or updated
-  using the :command:yadm` script, installed by the :ref:`debops.yadm` Ansible
-  role.
+  default dotfiles repository, defined in the
+  :envvar:`system_users__dotfiles_repo` variable, will be used instead. The
+  repository will be dployed or updated using the :command:yadm` script,
+  installed by the :ref:`debops.yadm` Ansible role.
 
 Parameters related to directory and file resources
 ''''''''''''''''''''''''''''''''''''''''''''''''''

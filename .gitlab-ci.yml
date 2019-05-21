@@ -199,14 +199,6 @@ stages:
 
 # --- b --- [[[2
 
-'bootstrap role':
-  <<: *test_role_2nd_deps
-  variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/bootstrap.yml'
-    JANE_INVENTORY_HOSTVARS: 'ansible_become=true'
-    JANE_DIFF_PATTERN: '.*/debops.bootstrap/.*'
-    JANE_LOG_PATTERN: '\[debops\.bootstrap\]'
-
 # At the moment BoxBackup role is broken, needs to be updated.
 #'boxbackup role':
 #  <<: *test_role_1st_deps
@@ -1284,14 +1276,6 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.secret/.*'
     JANE_LOG_PATTERN: '\[debops\.secret\]'
 
-'sftpusers role':
-  <<: *test_role_1st_deps
-  variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sftpusers.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_sftpusers'
-    JANE_DIFF_PATTERN: '.*/debops.sftpusers/.*'
-    JANE_LOG_PATTERN: '\[debops\.sftpusers\]'
-
 'sks role':
   <<: *test_role_2nd_deps
   variables:
@@ -1364,6 +1348,13 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_system_groups'
     JANE_DIFF_PATTERN: '.*/debops.system_groups/.*'
     JANE_LOG_PATTERN: '\[debops\.system_groups\]'
+
+'system_users role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_users.yml'
+    JANE_DIFF_PATTERN: '.*/debops.system_users/.*'
+    JANE_LOG_PATTERN: '\[debops\.system_users\]'
 
 'swapfile role':
   <<: *test_role_no_deps

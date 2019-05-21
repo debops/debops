@@ -154,7 +154,6 @@ other hosts.
 Host provisioning
 -----------------
 
-- :ref:`debops.bootstrap`
 - :ref:`debops.grub`
 - :ref:`debops.ipxe`
 - :ref:`debops.preseed`
@@ -257,6 +256,7 @@ Security
 - :ref:`debops.sshd`
 - :ref:`debops.sudo`
 - :ref:`debops.system_groups`
+- :ref:`debops.system_users`
 - :ref:`debops.tcpwrappers`
 - ``debops-contrib.apparmor``
 - ``debops-contrib.firejail``
@@ -289,11 +289,11 @@ System configuration
 - :ref:`debops.sysfs`
 - :ref:`debops.sysnews`
 - :ref:`debops.system_groups`
+- :ref:`debops.system_users`
 - :ref:`debops.users`
 - :ref:`debops.yadm`
 - ``debops.console``
 - ``debops.gitusers``
-- ``debops.sftpusers``
 
 
 Web services
