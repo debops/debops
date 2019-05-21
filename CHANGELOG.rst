@@ -45,6 +45,10 @@ Added
 
     .. __: https://yadm.io/
 
+  - :ref:`debops.system_users` role replaces the ``debops.bootstrap`` role and
+    is used to manage the local system administrator accounts. It is included
+    in the :file:`common.yml` playbook as well as the bootstrap playbooks.
+
 - [debops.nginx] The role will automatically generate configuration which
   redirects short hostnames or subdomains to their FQDN equivalents. This
   allows HTTP clients to reach websites by specifying their short names via DNS

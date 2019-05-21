@@ -1,0 +1,47 @@
+---
+# Manage user resources
+system_users__accounts:
+
+  - name: 'user1'
+    group: 'user1'
+    resources:
+
+      # Create a directory in user's $HOME
+      - 'Documents'
+
+      # Create a symlink to /tmp directory in user's $HOME. Owner and group
+      # need to be specified for symlinked resources owned by other accounts
+      # (for example ``root``), otherwise the role will change the owner/group
+      # of the link source.
+      - dest: 'tmp'
+        state: 'link'
+        src: '/tmp'
+        owner: 'root'
+        group: 'root'
+
+      # Copy your custom public and private SSH keys to remote user
+      - path: '.ssh/github_id_rsa'
+        src: '~/.ssh/github_id_rsa'
+        state: 'file'
+        mode: '0600'
+        parent_mode: '0700'
+
+      - path: '.ssh/github_id_rsa.pub'
+        src: '~/.ssh/github_id_rsa.pub'
+        state: 'file'
+        mode: '0644'
+        parent_mode: '0700'
+
+      # Add custom SSH configuration on an user account
+      - path: '.ssh/config'
+        state: 'file'
+        mode: '0640'
+        parent_mode: '0700'
+        content: |-
+          Host github.com
+              User git
+              IdentityFile ~/.ssh/github_id_rsa
+
+      # Make sure a file in the user's $HOME directory does not exist
+      - path: 'removed'
+        state: 'absent'

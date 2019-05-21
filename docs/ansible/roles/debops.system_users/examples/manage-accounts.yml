@@ -1,0 +1,27 @@
+---
+# Manage system UNIX user accounts
+system_users__accounts:
+
+  # A basic account
+  - name: 'user1'
+    group: 'user1'
+
+  # More elaborate account with system administrator access and dotfiles
+  - name: 'user2'
+    group: 'user2'
+    admin: True
+    shell: '/bin/zsh'
+    dotfiles_enabled: True
+    dotfiles_repo: 'https://git.example.org/user2/dotfiles'
+
+  # An user account with a random password, stored in 'secret/'. This user
+  # account will be added in the 'users' UNIX group instead of its own group.
+  - name: 'user3'
+    group: 'users'
+    update_password: 'on_create'
+    password: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn
+                  + "/users/user3/password encrypt=sha512_crypt length=30") }}'
+
+  # Remove an user account if it exists
+  - name: 'user_removed'
+    state: 'absent'
