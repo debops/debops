@@ -19,7 +19,11 @@ printf "%s " "Searching for Python scripts"
 
 counter=0
 
+dpkg -l file libmagic1
+
+file --version
 while read -r in ; do
+    file -i "${in}"
     if file -i "${in}" | grep -q x-python ; then
         file_list+=("${in}")
         counter=$(( counter + 1 ))
@@ -33,7 +37,5 @@ done < <(find . -type f -not -iwholename "./.git/*" \
     -not -wholename "./ansible/roles/debops.mailman/templates/etc/mailman/mm_cfg.py.j2")
 
 printf " %s\n" "found ${#file_list[@]} Python scripts"
-
-echo "${file_list[@]}" | tr ' ' '\n'
 
 pycodestyle --count --show-source --statistics "${file_list[@]}"
