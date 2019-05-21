@@ -41,7 +41,7 @@
          ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_hostname }}
          | grep -q '^# Host {{ hostvars[item].ansible_hostname }} found'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   with_items: '{{ openvz_cluster }}'
   when: ((item is defined and item) and item != inventory_hostname and
          hostvars[item].ansible_hostname is defined)
@@ -54,7 +54,7 @@
          ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ hostvars[item].ansible_fqdn }}
          | grep -q '^# Host {{ hostvars[item].ansible_fqdn }} found'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   with_items: '{{ openvz_cluster }}'
   when: ((item is defined and item) and item != inventory_hostname and
          hostvars[item].ansible_fqdn is defined)
@@ -66,7 +66,7 @@
   shell: set -o nounset -o pipefail -o errexit &&
          ssh-keygen -f {{ openvz_root_ssh_known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   with_items: '{{ openvz_root_ssh_known_hosts }}'
   when: item is defined and item
   register: openvz_register_root_ssh_known_hosts_custom
@@ -80,7 +80,7 @@
           {{ openvz_root_ssh_known_hosts_command }} {{ hostvars[item.item].ansible_hostname }}
           {{ hostvars[item.item].ansible_fqdn }} >> {{ openvz_root_ssh_known_hosts_file }}'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   with_flattened:
     - '{{ openvz_register_root_ssh_known_hosts_hostname.results }}'
     - '{{ openvz_register_root_ssh_known_hosts_fqdn.results }}'
@@ -91,6 +91,6 @@
           {{ openvz_root_ssh_known_hosts_command }} {{ item.item.split(".") | first }}
           {{ item.item }} >> {{ openvz_root_ssh_known_hosts_file }}'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   with_items: '{{ openvz_register_root_ssh_known_hosts_custom.results }}'
   when: item is defined and item.rc is defined and item.rc > 0

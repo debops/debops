@@ -13,6 +13,35 @@ directory and file structure, which other applications can access.
 .. contents::
    :local:
 
+PKI realm overview
+------------------
+
+A "PKI realm" is a placeholder name for a bundle of the private key, X.509
+certificate and Root CA certificate. This bundle has a certain directory
+structure, rules for naming files and what symlinks are present. It is designed
+so that from the outside of the :ref:`debops.pki` role other Ansible roles, or
+services they manage, have a standardized, uniform location where they can find
+X.509 certificates and private keys.
+
+In different guides that describe setting up TLS for different services like
+webservers, mail servers, databases, etc.  the private keys and X.509
+certificates are usually put in different directories - for example
+/etc/nginx/ssl/, /etc/postfix/certs/, /etc/ssl/certs/, and so on. The
+:ref:`debops.pki` role turns this around by setting up an uniform set of
+directories split into "PKI realms", so that a host can have multiple sets of
+certificates, each for different purposes. Then, various services can be
+configured to get the private key and certificate files from those specific
+directories, including privileged access to the private keys when needed.
+
+PKI realms have a concept of multiple certificate authorities - there's one set
+of private keys which can be signed by different CAs - internal CA, external
+CA, ACME CA and self-signed when everything else is disabled. There can be an
+"example.org" PKI realm which has certificates signed by both internal CA and
+the Let's Encrypt CA (via ACME), and the :command:`pki-realm` script used to
+manage the realms on the remote hosts will automatically switch between them
+after checking the validity of their X.509 certificates.
+
+
 The application view
 --------------------
 

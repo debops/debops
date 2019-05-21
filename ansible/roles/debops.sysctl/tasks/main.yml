@@ -53,7 +53,7 @@
   shell: set -o nounset -o pipefail -o errexit &&
          sysctl --help | grep -E '^\s+\-\-system\s+' || true
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: sysctl__register_system
   when: sysctl__register_config_created is changed or
         sysctl__register_config_removed is changed
@@ -69,7 +69,7 @@
                  /etc/sysctl.conf
     {% endif %}
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   when: sysctl__register_config_created is changed or
         sysctl__register_config_removed is changed
 

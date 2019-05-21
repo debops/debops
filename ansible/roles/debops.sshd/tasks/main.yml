@@ -79,7 +79,7 @@
   shell: 'set -o nounset -o pipefail -o errexit &&
           dpkg-query -W -f="\${Version}\n" "openssh-server" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: sshd__register_version
   changed_when: False
   check_mode: False
@@ -148,7 +148,7 @@
   shell: set -o nounset -o pipefail -o errexit &&
          ssh-keygen -f {{ sshd__known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   with_flattened:
     - '{{ sshd__known_hosts }}'
     - '{{ sshd__group_known_hosts }}'
@@ -204,7 +204,7 @@
          rm -f /etc/pam.d/sshd &&
          dpkg-divert --quiet --local --rename --remove /etc/pam.d/sshd
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
     removes: '/etc/pam.d/sshd.dpkg-divert'
   when: sshd__pam_deploy_state != 'present'
 
