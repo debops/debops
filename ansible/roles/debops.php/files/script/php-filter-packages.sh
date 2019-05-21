@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Filter specified PHP package names to the corresponding APT package names
 # available on the system.

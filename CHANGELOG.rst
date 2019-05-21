@@ -293,6 +293,12 @@ Changed
   This removes the unnecessary split between user account definitions and
   definitions of their files/directories.
 
+- Bash scripts and ``shell``/``command`` Ansible modules now use relative
+  :command:`bash` interpreter instead of an absolute :file:`/bin/bash`. This
+  should help make the DebOps roles more portable, and prepare the project for
+  the merged :file:`/bin` and :file:`/usr/bin` directories in a future Debian
+  release.
+
 Removed
 ~~~~~~~
 

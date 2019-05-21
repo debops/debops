@@ -96,7 +96,7 @@
   shell: set -o nounset -o pipefail -o errexit &&
          cat {{ (volkszaehler__git_dest + "/misc/sql/demo.sql")|quote }} | mysql {{ volkszaehler__database_name }}
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   become: True
   become_user: '{{ volkszaehler__user }}'
   when: (not (ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"]|bool

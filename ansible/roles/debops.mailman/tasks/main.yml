@@ -96,7 +96,7 @@
             + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
   args:
     creates: '/var/lib/mailman/lists/{{ mailman__site_list }}/config.pck'
-    executable: '/bin/bash'
+    executable: 'bash'
   become: True
   become_user: 'list'
   register: mailman__register_site_list
@@ -121,7 +121,7 @@
            {{ item.name }}
   args:
     removes: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
-    executable: '/bin/sh'
+    executable: 'sh'
   with_items: '{{ mailman__lists }}'
   become: True
   become_user: 'list'
@@ -152,7 +152,7 @@
          {% endif %}
   args:
     creates: '/var/lib/mailman/lists/{{ item.name }}/config.pck'
-    executable: '/bin/bash'
+    executable: 'bash'
   with_items: '{{ mailman__lists }}'
   become: True
   become_user: 'list'
