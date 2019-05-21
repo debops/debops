@@ -28,4 +28,15 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  register: nsswitch__register_config
   when: nsswitch__enabled|bool
+
+  # systemd-logind service needs to be restarted for authentication of users
+  # from remote sources (ldap, sss) to work correctly. The NSS configuration is
+  # not reloaded automatically on changes.
+  # Ref: https://bugzilla.redhat.com/show_bug.cgi?id=132608#c4
+- name: Restart systemd-logind to fix NSS lookups
+  service:
+    name: 'systemd-logind'
+    state: 'restarted'
+  when: ansible_service_mgr == 'systemd' and nsswitch__register_config is changed
