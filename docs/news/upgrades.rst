@@ -31,6 +31,10 @@ Changes to the UNIX group and account management
   inventory configuration if you use the role to create UNIX groups without
   corresponding accounts, or you put UNIX accounts in shared primary groups.
 
+  By default, :ref:`debops.users` will create user private groups if
+  ``item.group`` parameter is not specified; if you want to add accounts to the
+  ``users`` primary group, you need to specify it explicitly.
+
   The ``user`` parameter can be used to disable the account management, so that
   only UNIX group is created. The ``private_group`` parameter controls the
   management of the UNIX group for a given configuration entry. See the role
