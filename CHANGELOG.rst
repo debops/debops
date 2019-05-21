@@ -299,6 +299,14 @@ Changed
   the merged :file:`/bin` and :file:`/usr/bin` directories in a future Debian
   release.
 
+- [debops.unattended_upgrades] If automatic reboots are enabled, VMs will not
+  reboot all at the same time to avoid high load on the hypervisor host.
+  Instead they will reboot at a particular minute in a 15 minute time window.
+  For each host, a random but random-but-idempotent time is chosen.
+  For hypervisor hosts good presets cannot be picked. You should ensure that
+  hosts don’t reboot at the same time by defining different reboot times in
+  inventory groups.
+
 Removed
 ~~~~~~~
 
