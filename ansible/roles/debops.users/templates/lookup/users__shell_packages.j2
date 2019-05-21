@@ -1,0 +1,10 @@
+{% set users__tpl_shells = [] %}
+{% for shell in (users__combined_accounts | parse_kv_items
+                 | selectattr("state", "equalto", "present")
+                 | selectattr("shell", "defined")
+                 | map(attribute="shell") | unique | list) %}
+{%   if shell in users__shell_package_map.keys() %}
+{%     set _ = users__tpl_shells.append(users__shell_package_map[shell]) %}
+{%   endif %}
+{% endfor %}
+{{ users__tpl_shells | to_json }}

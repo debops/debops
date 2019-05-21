@@ -20,6 +20,45 @@ Redesigned OpenLDAP support
   and import the LDAP directory afterwards. See the role documentation for more
   details.
 
+Changes to the UNIX group and account management
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.users` Ansible role has been modernized and it now uses the
+  custom Ansible filter plugins included in DebOps to manage the UNIX groups
+  and accounts. The group and account management now uses the same merged list
+  of entries, which means that two new parameters have been added to control
+  when groups or accounts are created/removed. You might need to update your
+  inventory configuration if you use the role to create UNIX groups without
+  corresponding accounts, or you put UNIX accounts in shared primary groups.
+
+  By default, :ref:`debops.users` will create user private groups if
+  ``item.group`` parameter is not specified; if you want to add accounts to the
+  ``users`` primary group, you need to specify it explicitly.
+
+  The ``user`` parameter can be used to disable the account management, so that
+  only UNIX group is created. The ``private_group`` parameter controls the
+  management of the UNIX group for a given configuration entry. See the role
+  documentation for more details.
+
+- The ``users__default_system`` variable has been removed from the
+  :ref:`debops.users` role. The UNIX groups and accounts created by the role on
+  hosts with the LDAP support will be normal accounts, not "system" accounts,
+  and will use UID/GID >= 1000. This can be controlled per-user/per-group using
+  the ``item.system`` parameter.
+
+- The ``item.createhome`` parameter has been renamed to ``item.create_home`` in
+  accordance with the renamed parameter of the ``user`` Ansible module.
+
+- The ``users__resources``, ``users__group_resources`` and
+  ``users__host_resources`` variables have been removed. Their functionality
+  has been reimplemented as the ``item.resources`` parameter of the
+  ``users__*_accounts`` variables. See the role documentation for more details.
+
+- The management of the admin accounts has been removed from the
+  :ref:`debops.users` role and is now done in the :ref:`debops.system_users`
+  role. See the :envvar:`system_users__default_accounts` for a list of the
+  default admin accounts created on the remote hosts.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -271,7 +310,7 @@ Inventory variable changes
   You can use the :ref:`debops.ifupdown` role to configure packet forwarding
   per network interface, in the firewall as well as via the kernel parameters.
 
-- Host and domain management has been removed from the :ref:`debops.bootstrap`
+- Host and domain management has been removed from the ``debops.bootstrap``
   role. This functionality is now done via the :ref:`debops.netbase` role,
   included in the bootstrap playbook. Some of the old variables have their new
   equivalents:
@@ -431,11 +470,11 @@ Inventory variable changes
   enabled automatically.
 
 - The ``bootstrap__sudo`` and ``bootstrap__sudo_group`` variables have been
-  removed from the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook
+  removed from the ``debops.bootstrap`` role. The ``bootstrap.yml`` playbook
   now uses the :ref:`debops.sudo` role to configure :command:`sudo` service on
   a host, use its variables instead to control the service in question.
 
-- The :envvar:`bootstrap__admin_groups` variable will now use list of UNIX
+- The ``bootstrap__admin_groups`` variable will now use list of UNIX
   groups with ``root`` access defined by the :ref:`debops.system_groups` via
   Ansible local facts.
 

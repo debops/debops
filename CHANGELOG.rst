@@ -45,6 +45,10 @@ Added
 
     .. __: https://yadm.io/
 
+  - :ref:`debops.system_users` role replaces the ``debops.bootstrap`` role and
+    is used to manage the local system administrator accounts. It is included
+    in the :file:`common.yml` playbook as well as the bootstrap playbooks.
+
 - [debops.nginx] The role will automatically generate configuration which
   redirects short hostnames or subdomains to their FQDN equivalents. This
   allows HTTP clients to reach websites by specifying their short names via DNS
@@ -107,12 +111,16 @@ Added
   role and can configure the :command:`sudo` service to read ``sudoers``
   configuration from the LDAP directory.
 
+- [debops.users] The role can now configure UNIX accounts with access
+  restricted to SFTP operations (SFTPonly) with the new ``item.chroot``
+  parameter. This is a replacement for the ``debops.sftpusers`` role.
+
 Changed
 ~~~~~~~
 
 - Updates of upstream application versions:
 
-  - [debops.gitlab] The role will install GitLab 11.7 on supported platforms
+  - [debops.gitlab] The role will install GitLab 11.10 on supported platforms
     (Debian Buster, Ubuntu Bionic), existing installations will be upgraded.
 
   - [debops.phpipam] The relevant inventory variables have been renamed, check
@@ -264,6 +272,23 @@ Changed
   and creating local dotfile mirrors. The :ref:`users__ref_accounts` variable
   documentation contains examples of new dotfile definitions.
 
+- [debops.users] The role now uses the ``libuser`` library via the Ansible
+  ``group`` and ``user`` modules to manage local groups and accounts. This
+  should avoid issues with groups and accounts created in the LDAP user/group
+  ranges.
+
+  The ``libuser`` library by default creates home directories with ``0700``
+  permissions, which is probably too restrictive. Because of that, the role
+  will automatically change the home directory permissions to ``0751`` (defined
+  in the :envvar:`users__default_home_mode` variable). This also affects
+  existing UNIX accounts managed by the role; the mode can be overriden using
+  the ``item.home_mode`` parameter.
+
+- [debops.users] The ``users__*_resources`` variables have been reimplemented
+  as the ``item.resources`` parameter of the ``users__*_accounts`` variables.
+  This removes the unnecessary split between user account definitions and
+  definitions of their files/directories.
+
 Removed
 ~~~~~~~
 
@@ -277,6 +302,14 @@ Removed
   ``libssl1.0.0`` APT package on Debian Stretch to support older RStudio Server
   releases. You should remove it on the existing installations after RStudio
   Server is upgraded to the newest release.
+
+- The ``debops.sftpusers`` Ansible role has been removed. Its functionality is
+  now implemented by the :ref:`debops.users` role, custom bind mounts can be
+  defined using the :ref:`debops.mount` role.
+
+- The ``debops.bootstrap`` Ansible role has been removed. Its replacement is
+  the :ref:`debops.system_users` which is used to manage system administrator
+  accounts, via the ``common.yml`` playbook and the bootstrap playbooks.
 
 Fixed
 ~~~~~
@@ -593,7 +626,7 @@ Removed
   ``ansible_local.uuid`` local facts, respectively.
 
 - The hostname and domain configuration has been removed from the
-  :ref:`debops.bootstrap` role. This functionality is now handled by the
+  ``debops.bootstrap`` role. This functionality is now handled by the
   :ref:`debops.netbase` role, which has been included in the bootstrap
   playbook. The relevant inventory variables have been renamed, check the
   :ref:`upgrade_notes` for details.
@@ -805,7 +838,7 @@ Removed
   Ansible role.
 
 - [debops.bootstrap] The :command:`sudo` configuration has been removed from
-  the :ref:`debops.bootstrap` role. The ``bootstrap.yml`` playbook now includes
+  the ``debops.bootstrap`` role. The ``bootstrap.yml`` playbook now includes
   the :ref:`debops.sudo` role which configures :command:`sudo` service.
 
 - [debops.bootstrap] The UNIX system group management has been removed from the
