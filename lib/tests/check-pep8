@@ -34,4 +34,6 @@ done < <(find . -type f -not -iwholename "./.git/*" \
 
 printf " %s\n" "found ${#file_list[@]} Python scripts"
 
+echo "${file_list[@]}" | tr ' ' '\n'
+
 pycodestyle --count --show-source --statistics "${file_list[@]}"
