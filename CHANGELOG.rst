@@ -120,7 +120,7 @@ Changed
 
 - Updates of upstream application versions:
 
-  - [debops.gitlab] The role will install GitLab 11.7 on supported platforms
+  - [debops.gitlab] The role will install GitLab 11.10 on supported platforms
     (Debian Buster, Ubuntu Bionic), existing installations will be upgraded.
 
   - [debops.phpipam] The relevant inventory variables have been renamed, check
