@@ -11,7 +11,7 @@
   shell: set -o nounset -o pipefail -o errexit &&
          grep -E -e '^[^#].*$' /etc/ca-certificates.conf | sed -e 's/^!//' || true
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: pki_register_ca_certificates_known
   changed_when: False
   check_mode: False
@@ -20,7 +20,7 @@
   shell: set -o nounset -o pipefail -o errexit &&
          grep -E -e '^!+' /etc/ca-certificates.conf | sed -e 's/^!//' || true
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: pki_register_ca_certificates_untrusted
   changed_when: False
   check_mode: False
@@ -29,7 +29,7 @@
   shell: set -o nounset -o pipefail -o errexit &&
          grep -E -e '^[^#!].*$' /etc/ca-certificates.conf | sed -e 's/^!//' || true
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: pki_register_ca_certificates_trusted
   changed_when: False
   check_mode: False
@@ -39,7 +39,7 @@
          grep -E -e '{{ pki_system_ca_certificates_blacklist | join("' -e '") }}'
          /etc/ca-certificates.conf | sed -e 's/^!//' || true
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: pki_register_ca_certificates_blacklist
   changed_when: False
   check_mode: False
@@ -50,7 +50,7 @@
          grep -E -e '{{ pki_system_ca_certificates_whitelist | join("' -e '") }}'
               /etc/ca-certificates.conf | sed -e 's/^!//' || true
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: pki_register_ca_certificates_whitelist
   changed_when: False
   check_mode: False

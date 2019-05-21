@@ -55,7 +55,7 @@
          {{ "" if grub__hash_length|d() == "default" else ("--buflen=" + grub__hash_length) }}
          | perl -ne 's/^(:?Your PBKDF2|PBKDF2 hash of your password) is //ms && print'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: grub__register_pw_hashes
   with_together:
     - '{{ grub__combined_users }}'

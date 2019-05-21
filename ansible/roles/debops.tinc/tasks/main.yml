@@ -161,7 +161,7 @@
          sh -c 'yes || true' | tincd -n {{ item.value.name | d(item.key) }}
                                      -K {{ item.value.rsa_key_length | d(tinc__rsa_key_length) }}
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
     creates: '/etc/tinc/{{ item.value.name | d(item.key) }}/rsa_key.priv'
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent'

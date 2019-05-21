@@ -53,7 +53,7 @@
           {{ item.keyfile_gen_command|d(cryptsetup__keyfile_gen_command) }} \
           | tr -d "\n" > {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
     creates: '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
   become: False
   delegate_to: 'localhost'
@@ -118,7 +118,7 @@
 #     fi
 #   args:
 #     creates: '{{ item.ciphertext_block_device }}{{ item.label_of_first_partition|d("1") }}'
-#     executable: '/bin/bash'
+#     executable: 'bash'
 #   when: (item.state|d(cryptsetup__state) in
 #          [ 'mounted', 'ansible_controller_mounted', 'present' ] and
 #          item.create_partition_on_block_device|d(False))
@@ -193,7 +193,7 @@
                         + "/" + item.0.name + "_keyfile.raw") }}'
          '{{ item.0.ciphertext_block_device }}'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   register: cryptsetup__register_cmd
   changed_when: ("Command successful." == cryptsetup__register_cmd.stdout)
   when: (item.0.state|d(cryptsetup__state) in

@@ -47,7 +47,7 @@
                     -F {{ item.backup_host | default(item.name) }}
          | grep -q '^# Host {{ item.backup_host | default(item.name) }} found'
   args:
-    executable: '/bin/bash'
+    executable: 'bash'
   with_items: '{{ rsnapshot_external_servers }}'
   when: (inventory_hostname in rsnapshot_clients and
          ((item is defined and item) and item != inventory_hostname and

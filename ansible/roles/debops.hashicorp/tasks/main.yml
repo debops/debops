@@ -164,7 +164,7 @@
              | sha256sum --check --status
       args:
         chdir: '{{ hashicorp__src + "/" + item + "/" + hashicorp__combined_version_map[item] }}'
-        executable: '/bin/bash'
+        executable: 'bash'
       with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
       register: hashicorp__register_hash
       changed_when: False
