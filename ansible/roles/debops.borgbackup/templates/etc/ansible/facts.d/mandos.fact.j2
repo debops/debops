@@ -1,0 +1,13 @@
+#!/usr/bin/python{{ '2' if (ansible_python_version is version_compare('3.5', '<')) else '3' }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import load, loads, dumps
+from sys import exit
+
+output = loads('''{{ ({
+    "installed": true
+}) | to_nice_json }}''')
+
+print(dumps(output, sort_keys=True, indent=2))

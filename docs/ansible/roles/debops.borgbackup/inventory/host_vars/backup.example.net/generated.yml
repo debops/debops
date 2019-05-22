@@ -1,0 +1,22 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+## This file is managed by gen_ssh_keys_for_server_backup, all changes will be lost.
+
+users__host_accounts:
+
+  - name: 'borg_db_example_net'
+    group: 'borg_db_example_net'
+    home_group: 'borg_db_example_net'
+    home_mode: '0750'
+    shell: '/bin/sh'
+    groups:
+      - 'sshusers'
+    ## sshkeys are configured individually together with ssh options.
+
+authorized_keys__group_list:
+
+  - name: 'borg_db_example_net'
+    exclusive: True
+    sshkeys:
+      - '{{ hostvars["db.example.net"].ansible_facts.ansible_local.root_account.ssh_public_key }}'

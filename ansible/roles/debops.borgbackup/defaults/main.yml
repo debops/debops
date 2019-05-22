@@ -1,0 +1,762 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.borgbackup default variables [[[
+# ==============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# Software installation [[[
+# ------------------------
+
+# .. envvar:: borgbackup__base_packages [[[
+#
+# List of base APT packages to install.
+borgbackup__base_packages: [ 'borgbackup' ]
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__packages [[[
+#
+# List of additional APT packages to install.
+borgbackup__packages: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__distribution_release [[[
+#
+# The OS distribution release which is used to decide if we should install
+# borgmatic using pip or not.
+borgbackup__distribution_release: '{{ ansible_local.core.distribution_release
+                                  if (ansible_local|d() and ansible_local.core|d() and
+                                      ansible_local.core.distribution_release|d())
+                                  else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__borgmatic_pip_install [[[
+#
+# Whether borgmatic should be installed using pip.
+borgbackup__borgmatic_pip_install: '{{ borgbackup__distribution_release == "stretch" }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__pip_install_dependency_packages [[[
+#
+# This list contains all dependencies of borgbackup as system packages.
+# If we install borgbackup via pip we still want to install as many Python
+# dependency packages using the system package manager.
+# This list will only be installed if
+# :envvar:`borgbackup__borgmatic_pip_install` is ``True``.
+borgbackup__pip_install_dependency_packages:
+  - 'python3-yaml'
+  - 'python3-dateutil'
+  - 'python3-ruamel.yaml'
+  - 'python3-docopt'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__borgbackup_packages [[[
+#
+# List of base APT packages to install.
+borgbackup__borgmatic_packages: '{{ borgbackup__pip_install_dependency_packages
+                                    if (borgbackup__borgmatic_pip_install|bool)
+                                    else ["borgmatic"] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Python virtualenv configuration [[[
+# -----------------------------------
+#
+# This section is only relevant when installing borgmatic with pip.
+
+# .. envvar:: borgbackup__virtualenv [[[
+#
+# Path where the borgmatic ``virtualenv`` directory will be stored.
+borgbackup__virtualenv: '{{ (ansible_local.root.lib
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.lib|d())
+                           else "/usr/local/lib") + "/borgbackup/virtualenv" }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__bin_path [[[
+#
+# Bin path where the borgbackup executables should be symlinked to when
+# installing with pip.
+borgbackup__bin_path: '{{ (ansible_local.root.bin
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.bin|d())
+                         else "/usr/local/bin") }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__virtualenv_executables [[[
+#
+# List of borgmatic executables.
+borgbackup__virtualenv_executables:
+  - 'borgmatic'
+  - 'generate-borgmatic-config'
+  - 'upgrade-borgmatic-config'
+  - 'validate-borgmatic-config'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__virtualenv_pip_packages [[[
+#
+# List of Python modules installed inside of the ``virtualenv`` environment.
+borgbackup__virtualenv_pip_packages:
+  # git commit hash lock to release 1.3.3.
+  # The `version` parameter does not work with commit hashes.
+  - name: 'git+https://github.com/witten/borgmatic.git@8650a15db1d3634cc8047b896efcffff15ee673b'
+                                                                   # ]]]
+                                                                   # ]]]
+# borgbackup configuration [[[
+# --------------------------
+
+# .. envvar:: borgbackup__configuration_base_path [[[
+#
+# Base path for borgmatic configuration file on the remote machine.
+borgbackup__configuration_base_path: '/etc/borgmatic'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__template_comments [[[
+#
+# Should comments be included in generate configuration files?
+borgbackup__template_comments: False
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__repo_servers [[[
+#
+# List of Borgbackup repository servers.
+borgbackup__repo_servers: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__source_directories [[[
+#
+# List of default source directories to backup.
+# Note that we adhere to the Filesystem Hierarchy Standard (FHS) and to DebOps
+# conventions.
+# This is meant as a base to extend on using the
+# :envvar:`borgbackup__configuration` variables or if you have other
+# requirements to overwrite this list completely.
+borgbackup__source_directories:
+  - '/etc'
+  - '/home'
+  - '/opt'
+  - '/root'
+  - '/srv'
+  - '/usr/local'
+  - '/var/backups'
+  - '/var/lib'
+  - '/var/local'
+  - '/var/mail'
+  - '/var/opt'
+  - '/var/spool/cron/crontabs'
+
+  ## According to FHS this is used for removable media so we don’t back it up
+  ## by default. You might still want to include in your global inventory.
+  # - '/media'
+
+    ## debops.core: Ensure directories are included even if the admin is using
+    ## non-default location.
+    ## The default locations are still included (see above) and will be
+    ## deduplicated from this list automatically if ``debops.core`` is
+    ## configured with the same paths.
+  - '{{ ansible_local.root.bin
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.bin|d())
+        else "/usr/local/bin" }}'
+  - '{{ ansible_local.root.etc
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.etc|d())
+        else "/usr/local/etc" }}'
+  - '{{ ansible_local.root.lib
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.lib|d())
+        else "/usr/local/lib" }}'
+  - '{{ ansible_local.root.sbin
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.sbin|d())
+        else "/usr/local/sbin" }}'
+  - '{{ ansible_local.root.share
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.share|d())
+        else "/usr/local/share" }}'
+  - '{{ ansible_local.root.src
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.src|d())
+        else "/usr/local/src" }}'
+  - '{{ ansible_local.root.data
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.data|d())
+        else "/srv" }}'
+  - '{{ ansible_local.root.srv
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.srv|d())
+        else "/srv" }}'
+  - '{{ ansible_local.root.backup
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.backup|d())
+        else "/var/backups" }}'
+  - '{{ ansible_local.root.var
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.var|d())
+        else "/var/local" }}'
+  - '{{ ansible_local.root.home
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.home|d())
+        else "/var/local" }}'
+  - '{{ ansible_local.root.app
+        if (ansible_local|d() and ansible_local.root|d() and
+            ansible_local.root.app|d())
+        else "/var/local" }}'
+
+  ## Not included by default: We assume you run a dedicated, append-only log
+  ## server which already archives your logs.
+  # - '{{ ansible_local.root.log
+  #       if (ansible_local|d() and ansible_local.root|d() and
+  #           ansible_local.root.log|d())
+  #       else "/var/log" }}'
+
+  ## Don’t backup spool data which is waiting to be processed.
+  # - '{{ ansible_local.root.spool
+  #       if (ansible_local|d() and ansible_local.root|d() and
+  #           ansible_local.root.spool|d())
+  #       else "/var/spool" }}'
+
+  ## Don’t backup cache data which application must be able to regenerate or
+  ## restore the data themselves.
+  # - '{{ ansible_local.root.cache
+  #       if (ansible_local|d() and ansible_local.root|d() and
+  #           ansible_local.root.cache|d())
+  #       else "/var/cache" }}'
+                                                                   # ]]]
+# .. envvar:: borgbackup__exclude_patterns [[[
+#
+# List of default exclude patterns for the backup.
+# Note that we adhere to the Filesystem Hierarchy Standard (FHS) and to DebOps
+# conventions.
+# This is meant as a base to extend on using the
+# :envvar:`borgbackup__configuration` variables or if you have other
+# requirements to overwrite this list completely.
+borgbackup__exclude_patterns:
+    ## Ref: debops.etckeeper.
+  - '/etc/ssh/ssh_host_*_key'
+  - '/etc/tor/keys'
+
+    ## No user application caches.
+  - '/home/*/.cache'
+  - '/root/.cache'
+  - '/var/local/*/.cache'
+
+    ## In case you have decided to backup /media, you probably don’t want cdrom
+    ## drives backed up by default.
+  - '/media/cdrom'
+  - '/media/cdrom0'
+
+    ## No Borg secrets or local installation files.
+    ## Insensitive Borg configuration is fine to include.
+  - '/usr/local/lib/borgbackup'
+  - '/etc/borgmatic/passphrases'
+  - '/root/.config/borg'
+
+    ## debops.owncloud: Exclude download cache as it can be easily
+    ## re-downloaded and is only used for application updates (not necessary to
+    ## run the application once it is installed).
+  - '/usr/local/src/nextcloud'
+
+    ## It is assumed that we use configuration management to install/remove
+    ## packages.
+  - '/var/lib/apt'
+  - '/var/lib/aptitude'
+
+    ## Is it safe to exclude this path from backup? Unsure for now so we leave
+    ## it included.
+  # - '/var/lib/nginx'
+
+    ## Use database dumps instead of trying to backup a running database
+    ## server. See below.
+  - '/var/lib/mysql'
+  - '/var/lib/postgresql'
+
+    ## debops.cryptsetup: Managed and backed up by the role.
+  - '/var/local/keyfiles'
+
+    ## debops-contrib.checkmk_server: No caches.
+  - '/opt/omd/sites/*/var/rrdcached'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__skeleton_configuration [[[
+#
+# List of the skeleton configuration borgmatic/borgbackup options.
+# Optional parameters use the ``init`` state to preseed the comment but without
+# activating the option.
+borgbackup__skeleton_configuration:
+
+  - name: 'config'
+    options:
+
+      - name: 'location'
+        comment: |-
+          Where to look for files to backup, and where to store those backups. See
+          https://borgbackup.readthedocs.io/en/stable/quickstart.html and
+          https://borgbackup.readthedocs.io/en/stable/usage.html#borg-create for details.
+        options:
+
+          - name: 'source_directories'
+            comment: |-
+              List of source directories to backup (required). Globs and tildes are expanded.
+            # value:
+            #   - '/home'
+            #   - '/etc'
+            #   - '/var/log/syslog*'
+
+          - name: 'repositories'
+            comment: |-
+              Paths to local or remote repositories (required). Tildes are expanded. Multiple
+              repositories are backed up to in sequence. See ssh_command for SSH options like
+              identity file or port.
+            # value:
+            #   - 'user@backup.example.net:backup'
+
+          - name: 'one_file_system'
+            comment: |-
+              Stay in same file system (do not cross mount points). Defaults to false.
+            state: 'init'
+
+          - name: 'numeric_owner'
+            comment: |-
+              Only store/extract numeric user and group identifiers. Defaults to false.
+            state: 'init'
+
+          - name: 'read_special'
+            comment: |-
+              Use Borg's --read-special flag to allow backup of block and other special
+              devices. Use with caution, as it will lead to problems if used when
+              backing up special devices such as /dev/zero. Defaults to false.
+            state: 'init'
+
+          - name: 'bsd_flags'
+            comment: |-
+              Record bsdflags (e.g. NODUMP, IMMUTABLE) in archive. Defaults to true.
+            state: 'init'
+
+          - name: 'files_cache'
+            comment: |-
+              Mode in which to operate the files cache. See
+              https://borgbackup.readthedocs.io/en/stable/usage/create.html#description for
+              details. Defaults to "ctime,size,inode".
+            state: 'init'
+
+          - name: 'local_path'
+            comment: |-
+              Alternate Borg local executable. Defaults to "borg".
+            state: 'init'
+
+          - name: 'remote_path'
+            comment: |-
+              Alternate Borg remote executable. Defaults to "borg".
+            state: 'init'
+
+          - name: 'patterns'
+            comment: |-
+              Any paths matching these patterns are included/excluded from backups. Globs are
+              expanded. (Tildes are not.) Note that Borg considers this option experimental.
+              See the output of "borg help patterns" for more details. Quote any value if it
+              contains leading punctuation, so it parses correctly.
+            state: 'init'
+            # value:
+            #   - 'R /'
+            #   - '- /home/*/.cache'
+            #   - '+ /home/susan'
+            #   - '- /home/*'
+
+          - name: 'patterns_from'
+            comment: |-
+              Read include/exclude patterns from one or more separate named files, one pattern
+              per line. Note that Borg considers this option experimental. See the output of
+              "borg help patterns" for more details.
+            state: 'init'
+            # value:
+            #   - '/etc/borgmatic/patterns'
+
+          - name: 'exclude_patterns'
+            comment: |-
+              Any paths matching these patterns are excluded from backups. Globs and tildes
+              are expanded. See the output of "borg help patterns" for more details.
+            state: 'init'
+            # value:
+            #   - '*.pyc'
+            #   - '~/*/.cache'
+            #   - '/etc/ssl'
+
+          - name: 'exclude_from'
+            comment: |-
+              Read exclude patterns from one or more separate named files, one pattern per
+              line. See the output of "borg help patterns" for more details.
+            state: 'init'
+            # value:
+            #   - '/etc/borgmatic/excludes'
+
+          - name: 'exclude_caches'
+            comment: |-
+              Exclude directories that contain a CACHEDIR.TAG file. See
+              http://www.brynosaurus.com/cachedir/spec.html for details. Defaults to false.
+            state: 'init'
+
+          - name: 'exclude_if_present'
+            comment: |-
+              Exclude directories that contain a file with the given filename. Defaults to not
+              set.
+            state: 'init'
+
+        state: 'init'
+
+      - name: 'storage'
+        comment: |-
+          Repository storage options. See
+          https://borgbackup.readthedocs.io/en/stable/usage.html#borg-create and
+          https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables for
+          details.
+        options:
+
+          - name: 'encryption_passcommand'
+            comment: |-
+              The standard output of this command is used to unlock the encryption key. Only
+              use on repositories that were initialized with passcommand/repokey encryption.
+              Note that if both encryption_passcommand and encryption_passphrase are set,
+              then encryption_passphrase takes precedence. Defaults to not set.
+            state: 'init'
+
+          - name: 'encryption_passphrase'
+            comment: |-
+              Passphrase to unlock the encryption key with. Only use on repositories that were
+              initialized with passphrase/repokey encryption. Quote the value if it contains
+              punctuation, so it parses correctly. And backslash any quote or backslash
+              literals as well. Defaults to not set.
+            state: 'init'
+
+          - name: 'checkpoint_interval'
+            comment: |-
+              Number of seconds between each checkpoint during a long-running backup. See
+              https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there
+              for details. Defaults to checkpoints every 1800 seconds (30 minutes).
+            state: 'init'
+
+          - name: 'compression'
+            comment: |-
+              Type of compression to use when creating archives. See
+              https://borgbackup.readthedocs.org/en/stable/usage.html#borg-create for details.
+              Defaults to no compression.
+            state: 'init'
+
+          - name: 'remote_rate_limit'
+            comment: |-
+              Remote network upload rate limit in kB/second. Defaults to unlimited.
+            state: 'init'
+
+          - name: 'ssh_command'
+            comment: |-
+              Command to use instead of "ssh". This can be used to specify ssh options.
+              Defaults to not set.
+            state: 'init'
+
+          - name: 'umask'
+            comment: |-
+              Umask to be used for borg create. Defaults to 0077.
+            state: 'init'
+
+          - name: 'lock_wait'
+            comment: |-
+              Maximum seconds to wait for acquiring a repository/cache lock. Defaults to 1.
+            state: 'init'
+
+          - name: 'archive_name_format'
+            comment: |-
+              Name of the archive. Borg placeholders can be used. See the output of
+              "borg help placeholders" for details. Defaults to
+              "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". If you specify this option, you must
+              also specify a prefix in the retention section to avoid accidental pruning of
+              archives with a different archive name format. And you should also specify a
+              prefix in the consistency section as well.
+            state: 'init'
+
+        state: 'init'
+
+      - name: 'retention'
+        comment: |-
+          Retention policy for how many backups to keep in each category. See
+          https://borgbackup.readthedocs.org/en/stable/usage.html#borg-prune for details.
+          At least one of the "keep" options is required for pruning to work.
+        options:
+
+          - name: 'keep_within'
+            comment: |-
+              Keep all archives within this time interval.
+            state: 'init'
+
+          - name: 'keep_secondly'
+            comment: |-
+              Number of secondly archives to keep.
+            state: 'init'
+
+          - name: 'keep_minutely'
+            comment: |-
+              Number of minutely archives to keep.
+            state: 'init'
+
+          - name: 'keep_hourly'
+            comment: |-
+              Number of hourly archives to keep.
+            state: 'init'
+
+          - name: 'keep_daily'
+            comment: |-
+              Number of daily archives to keep.
+            state: 'init'
+
+          - name: 'keep_weekly'
+            comment: |-
+              Number of weekly archives to keep.
+            state: 'init'
+
+          - name: 'keep_monthly'
+            comment: |-
+              Number of monthly archives to keep.
+            state: 'init'
+
+          - name: 'keep_yearly'
+            comment: |-
+              Number of yearly archives to keep.
+            state: 'init'
+
+          - name: 'prefix'
+            comment: |-
+              When pruning, only consider archive names starting with this prefix.
+              Borg placeholders can be used. See the output of "borg help placeholders" for
+              details. Defaults to "{hostname}-".
+            state: 'init'
+
+        state: 'init'
+
+      - name: 'consistency'
+        comment: |-
+          Consistency checks to run after backups. See
+          https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check and
+          https://borgbackup.readthedocs.org/en/stable/usage.html#borg-extract for details.
+        options:
+
+          - name: 'checks'
+            comment: |-
+              List of one or more consistency checks to run: "repository", "archives", and/or
+              "extract". Defaults to "repository" and "archives". Set to "disabled" to disable
+              all consistency checks. "repository" checks the consistency of the repository,
+              "archive" checks all of the archives, and "extract" does an extraction dry-run
+              of the most recent archive.
+            state: 'init'
+            # value:
+            #   - 'repository'
+            #   - 'archives'
+
+          - name: 'check_repositories'
+            comment: |-
+              Paths to a subset of the repositories in the location section on which to run
+              consistency checks. Handy in case some of your repositories are very large, and
+              so running consistency checks on them would take too long. Defaults to running
+              consistency checks on all repositories configured in the location section.
+            state: 'init'
+
+          - name: 'check_last'
+            comment: |-
+              Restrict the number of checked archives to the last n. Applies only to the "archives" check. Defaults to checking all archives.
+            state: 'init'
+
+          - name: 'prefix'
+            comment: |-
+              When performing the "archives" check, only consider archive names starting with
+              this prefix. Borg placeholders can be used. See the output of
+              "borg help placeholders" for details. Defaults to "{hostname}-".
+            state: 'init'
+
+        state: 'init'
+
+      - name: 'hooks'
+        comment: |-
+          Shell commands or scripts to execute before and after a backup or if an error has occurred.
+          IMPORTANT: All provided commands and scripts are executed with user permissions of borgmatic.
+          Do not forget to set secure permissions on this file as well as on any script listed (chmod 0700) to
+          prevent potential shell injection or privilege escalation.
+        options:
+
+          - name: 'before_backup'
+            comment: |-
+              List of one or more shell commands or scripts to execute before creating a backup.
+            state: 'init'
+            # value:
+            #   - 'echo "Starting a backup job."'
+
+          - name: 'after_backup'
+            comment: |-
+              List of one or more shell commands or scripts to execute after creating a backup (successfully).
+            state: 'init'
+
+          - name: 'on_error'
+            comment: |-
+              List of one or more shell commands or scripts to execute in case an exception has occurred.
+            state: 'init'
+
+        state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__default_configuration [[[
+#
+# List of the default configuration borgmatic/borgbackup options.
+# Optional parameters use the ``init`` state to preseed the comment but without
+# activating the option.
+borgbackup__default_configuration:
+
+  - name: 'config'
+    options:
+
+      - name: 'location'
+        state: 'present'
+        options:
+
+          - name: 'source_directories'
+            value: '{{ borgbackup__source_directories }}'
+
+          - name: 'exclude_patterns'
+            value: '{{ borgbackup__exclude_patterns }}'
+
+      - name: 'storage'
+        state: 'present'
+        options:
+
+            # Don’t expose the passphrase directly in the configuration file to
+            # mitigate shoulder surfing when the admin manually checks the
+            # generated configuration files.
+          - name: 'encryption_passcommand'
+            value: |-
+                cat {{ '"' + borgbackup__passphrase_base_path + "/config_passphrase.txt" + '"' }}
+
+            # Every hosts has it’s own repository to backup to for security reasons
+            # so by default everything is subject to pruning to account for host renaming.
+            # Configure the FQDN instead of the hostname as archive name.
+            # borgmatic requires retention.prefix and consistency.prefix to be
+            # set when archive_name_format is set. It cannot be empty and is
+            # not specified to be a glob. So we need some fixed start.
+            # We use the configuration name for that.
+          - name: 'archive_name_format'
+            value: 'config_{fqdn}_{now:%Y-%m-%dT%H:%M:%S.%f}'
+
+      - name: 'retention'
+        state: 'present'
+        options:
+
+          - name: 'prefix'
+            value: 'config_'
+
+      - name: 'consistency'
+        state: 'present'
+        options:
+
+          - name: 'prefix'
+            value: 'config_'
+
+      - name: 'hooks'
+        state: 'present'
+        options:
+
+            ## Feel free to divert the /etc/cron.daily/automysqlbackup script
+            ## out of /etc/cron.daily.
+          - name: 'before_backup'
+            state: '{{ "present" if ("debops_service_mariadb_server" in group_names) else "ignore" }}'
+            value:
+              - '/usr/sbin/automysqlbackup'
+
+            ## Feel free to divert the /etc/cron.daily/autopostgresqlbackup script
+            ## out of /etc/cron.daily.
+          - name: 'before_backup'
+            state: '{{ "present" if ("debops_service_postgresql_server" in group_names) else "ignore" }}'
+            value:
+              - '/usr/sbin/autopostgresqlbackup'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__configuration [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# all hosts in the Ansible inventory.
+borgbackup__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__group_configuration [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# hosts in a specific Ansible inventory group.
+borgbackup__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__host_configuration [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# specific hosts in the Ansible inventory.
+borgbackup__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__combined_configuration [[[
+#
+# The variable which combines all other system-wide configuration variables and
+# is used in the Ansible tasks and templates.
+borgbackup__combined_configuration: '{{ borgbackup__skeleton_configuration
+                                        + borgbackup__default_configuration
+                                        + borgbackup__configuration
+                                        + borgbackup__group_configuration
+                                        + borgbackup__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# borgbackup repository cryptography [[[
+# --------------------------------------
+
+# .. envvar:: borgbackup__fqdn [[[
+#
+# FQDN to use for together with the :ref:`debops.secret` role.
+borgbackup__fqdn: '{{ ansible_local.core.fqdn
+                      if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.fqdn|d())
+                      else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__secret_base_path [[[
+#
+# Base secret path of this role on the Ansible controller.
+borgbackup__secret_base_path: '{{ secret + "/borgbackup/" + borgbackup__fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__passphrase_base_path [[[
+#
+# Passphrase base path on the remote machine.
+borgbackup__passphrase_base_path: '{{ borgbackup__configuration_base_path + "/passphrases" }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__passphrase_length [[[
+#
+# Length of randomly generated borgbackup repository passphrase.
+borgbackup__passphrase_length: 123
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: borgbackup__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+borgbackup__apt_preferences__dependent_list:
+
+  - package: 'borgbackup'
+    backports: [ 'stretch' ]
+    reason:  'borgmatic requires at least borgbackup 1.1'
+    by_role: 'debops.borgbackup'
+
+  - package: 'python3-ruamel.yaml'
+    backports: [ 'stretch' ]
+    reason:  'Required by borgmatic'
+    by_role: 'debops.borgbackup'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

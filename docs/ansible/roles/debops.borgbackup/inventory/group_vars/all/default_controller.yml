@@ -1,0 +1,86 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+resources__files:
+
+  - dest: '/etc/ssh/ssh_known_hosts'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    content: |
+      {% for host in (hostvars.keys() | sort | unique) %}
+      {% if ((host in groups["debops_service_borgbackup"]|d([]) and inventory_hostname == "controller.example.net" and host in groups["site_a"]|d([])) or
+             (host in groups["backup_server"]|d([]) and host in borgbackup__repo_servers|d([])))
+             and "ansible_ssh_host_key_ed25519_public" in hostvars[host] %}
+      {{ host }} ssh-ed25519 {{ hostvars[host].ansible_ssh_host_key_ed25519_public | trim() }}
+      {% endif %}
+      {% endfor %}
+
+  - path: '/usr/local/bin/backup_controller_nightly'
+    content: |
+      #!/bin/bash
+      # {{ ansible_managed }}
+
+      set -o nounset -o pipefail -o errexit
+
+      {% for host in (borgbackup__repo_servers|d([]) | sort | unique) %}
+      nc -z -v -w5 {{ host }} 22
+      {% endfor %}
+
+      {% for host in (hostvars.keys() | sort | unique) %}
+      {% if (host in groups["debops_service_borgbackup"]|d([]) and host in groups["site_a"]|d([])) and
+            (host not in groups["env_dev"]|d([])) %}
+      echo "Instructing {{ host }} to make a backup."
+      ssh -T backup-mgt@{{ host }} || :
+      {% endif %}
+      {% endfor %}
+    mode: '0755'
+    state: '{{ "present" if ("controller_server" in group_names) else "absent" }}'
+
+# This file needs to be copied once the controller is setup from controller:~backup-controller/.ssh/id_rsa.pub to the Ansible controller.
+# This manual interaction should be avoided somehow, for example by including it in the debops.users Ansible local facts or similar.
+borgbackup__borg_mgt_sshkeys: [ '{{ lookup("file", "/home/user/.ssh/controller.example.net/backup-controller@controller.example.net.pub") }}' ]
+
+
+users__accounts:
+
+  - name: 'backup-mgt'
+    state: '{{ "present" if ("debops_service_borgbackup" in group_names and borgbackup__borg_mgt_sshkeys|length > 0) else "absent" }}'
+    shell: '/bin/bash'
+    system: True
+    group: 'backup-mgt'
+    home_group: 'backup-mgt'
+    home_mode: '0750'
+    move_home: True
+    home: '{{ (ansible_local.root.home
+               if (ansible_local|d() and ansible_local.root|d() and
+                   ansible_local.root.home|d())
+               else "/var/local") + "/backup-mgt" }}'
+    groups:
+      - 'sshusers'
+    sshkeys: '{{ system_users__admin_sshkeys }}'
+    sshkeys_exclusive: True
+
+  - name: 'backup-controller'
+    state: '{{ "present" if ("controller_server" in group_names) else "absent" }}'
+    home_group: 'backup-controller'
+    home_mode: '0750'
+    group: 'backup-controller'
+    groups:
+      - 'sshusers'
+    generate_ssh_key: True
+    ssh_key_comment: 'backup-controller'
+    sshkeys: '{{ system_users__admin_sshkeys }}'
+    sshkeys_exclusive: True
+
+
+authorized_keys__list:
+
+  - name: 'backup-mgt'
+    state: '{{ "present" if ("debops_service_borgbackup" in group_names and borgbackup__borg_mgt_sshkeys|length > 0) else "absent" }}'
+    file_state: '{{ "present" if ("debops_service_borgbackup" in group_names and borgbackup__borg_mgt_sshkeys|length > 0) else "absent" }}'
+    sshkeys: '{{ borgbackup__borg_mgt_sshkeys }}'
+    exclusive: True
+    options:
+      - 'command="sudo borgmatic --create --stats"'
+      - 'restrict'

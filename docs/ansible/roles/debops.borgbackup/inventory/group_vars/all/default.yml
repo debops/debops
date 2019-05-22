@@ -1,0 +1,105 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Backup [[[
+
+borgbackup__configuration:
+
+  - name: 'config'
+    options:
+
+      - name: 'location'
+        options:
+
+          - name: 'repositories'
+            value: |
+              {% set borg_repos = [] %}
+              {% set user = "borg_" + (inventory_hostname | replace(".", "_")) %}
+              {% for repo_server in borgbackup__repo_servers %}
+              {% set _ = borg_repos.append(user + "@" + repo_server + ":~/repo" ) %}
+              {% endfor %}
+              {{ borg_repos | sort | unique }}
+
+          - name: 'source_directories'
+            value:
+              - '/media'
+
+          - name: 'source_directories'
+            value:
+              - '/boot'
+            state: '{{ "present" if (ansible_virtualization_role|d("") not in [ "guest" ]) else "ignore" }}'
+
+
+      - name: 'retention'
+        options:
+
+          - name: 'keep_within'
+            value: '7d'
+
+          - name: 'keep_daily'
+            value: 30
+
+          - name: 'keep_weekly'
+            value: 4
+
+          - name: 'keep_monthly'
+            value: 12
+
+          - name: 'keep_yearly'
+            value: 1
+
+      - name: 'hooks'
+        options:
+
+          - name: 'after_backup'
+            value:
+              ## Used for monitoring the backups.
+              - 'touch /var/tmp/borgbackup_run_ok'
+
+          - name: 'on_error'
+            value:
+              ## Used for monitoring the backups.
+              - 'echo "Errors occurred. This file has content so that it is easier to let Monitoring alert on this." > /var/tmp/borgbackup_run_error'
+
+# ]]]
+
+# SSH client host keys for backup [[[
+
+resources__files:
+
+  - dest: '/etc/ssh/ssh_known_hosts'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    content: |
+      {% for host in (hostvars.keys() | sort | unique) %}
+      {% if (host in groups["backup_server"]|d([]) and host in borgbackup__repo_servers|d([]))
+             and "ansible_ssh_host_key_ed25519_public" in hostvars[host] %}
+      {{ host }} ssh-ed25519 {{ hostvars[host].ansible_ssh_host_key_ed25519_public | trim() }}
+      {% endif %}
+      {% endfor %}
+
+  - dest: '~root/.ssh/config'
+    mode: '0644'
+    content: |
+      ## We only want to use the Ansible managed /etc/ssh/ssh_known_hosts file.
+      CheckHostIP no
+
+      ## Ensure shared connections are disabled for backup.
+      ControlMaster no
+
+  - dest: '~backup-controller/.ssh/host/config'
+    state: '{{ "present" if ("controller_server" in group_names) else "absent" }}'
+    owner: 'backup-controller'
+    group: 'backup-controller'
+    parent_dirs_owner: 'backup-controller'
+    parent_dirs_group: 'backup-controller'
+    mode: '0644'
+    content: |
+      ## We only want to use the Ansible managed /etc/ssh/ssh_known_hosts file.
+      CheckHostIP no
+
+      ## Ensure shared connections are disabled for backup.
+      ControlMaster no
+
+# ]]]

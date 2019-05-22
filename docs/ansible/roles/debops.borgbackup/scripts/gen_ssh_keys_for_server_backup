@@ -1,0 +1,50 @@
+#!/bin/bash
+
+hostnames=(
+db.example.net
+)
+
+
+
+
+(
+
+cat <<EOF
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+## This file is managed by ${0}, all changes will be lost.
+
+users__host_accounts:
+EOF
+
+for hostname in "${hostnames[@]}"
+do
+    username="$(echo "borg_${hostname}" | tr '.' '_')"
+    echo "
+  - name: '$username'
+    group: '$username'
+    home_group: '$username'
+    home_mode: '0750'
+    shell: '/bin/sh'
+    groups:
+      - 'sshusers'
+    ## sshkeys are configured individually together with ssh options."
+done
+
+cat <<EOF
+
+authorized_keys__group_list:
+EOF
+
+for hostname in "${hostnames[@]}"
+do
+    username="$(echo "borg_${hostname}" | tr '.' '_')"
+    echo "
+  - name: '$username'
+    exclusive: True
+    sshkeys:
+      - '{{ hostvars[\"$hostname\"].ansible_facts.ansible_local.root_account.ssh_public_key }}'"
+done
+
+) > ~/configuration_management/ansible/inventory/host_vars/backup.example.net/generated.yml
