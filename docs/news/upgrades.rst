@@ -11,6 +11,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v1.0.0 (2019-05-22)
+-------------------
+
 Redesigned OpenLDAP support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
