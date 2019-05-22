@@ -16,6 +16,10 @@ check: fail-if-git-dirty
 clean:          ## Clean up project directory
 clean: clean-tests clean-sdist clean-wheel
 
+.PHONY: collection
+collection:     ## Build collection of Ansible artifacts with Mazer
+collection: make-collection
+
 .PHONY: versions
 versions:       ## Check versions of upstream software
 versions: check-versions
@@ -69,6 +73,10 @@ sdist-quiet: clean-sdist
 sdist-sign:     ## Create signed Python sdist package
 sdist-sign: sdist
 	@gpg --detach-sign --armor dist/debops-*.tar.gz
+
+.PHONY: make-collection
+make-collection:
+	@lib/mazer/make-collection
 
 .PHONY: clean-sdist
 clean-sdist:
