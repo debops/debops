@@ -115,6 +115,12 @@ Added
   restricted to SFTP operations (SFTPonly) with the new ``item.chroot``
   parameter. This is a replacement for the ``debops.sftpusers`` role.
 
+- Support for Ansible Collections managed by the `Mazer`__ Content Manager has
+  been implemented in the repository. Ansible Collections will be usable after
+  June 2019, when support for them is enabled in the Ansible Galaxy service.
+
+  .. __: https://github.com/ansible/mazer
+
 Changed
 ~~~~~~~
 
