@@ -140,6 +140,17 @@ etckeeper__default_gitignore:
       vulnerability in case the /etc/ repository is pushed to an external remote.
     ignore: 'keys/mandos/seckey.txt'
 
+  - name: 'borgmatic'
+    comment: |
+      The borgmatic configuration directory can contain sensitive credentials
+      allowing access to backups of the system and potentially other systems as
+      well. debops.borgbackup only stores credentials in
+      `/etc/borgmatic/${config_name}_passphrase.txt` so we only exclude the
+      passphrase files here.
+    ignore: |-
+      borgmatic/*passphrase*
+      borgmatic.d/*passphrase*
+
   - name: 'xorg-conf-backup'
     ignore: 'X11/xorg.conf.backup'
 
