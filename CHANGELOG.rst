@@ -4174,6 +4174,9 @@ LDAP
 
 - Read :envvar:`users__default_shell` which was removed in `debops v1.0.0`_.
 
+- [debops.borgbackup] Add ``debops.borgbackup`` which is designed to configure
+  cluster-wide backup for hosts to dedicated backup servers using BorgBackup.
+
 Changed
 ~~~~~~~
 

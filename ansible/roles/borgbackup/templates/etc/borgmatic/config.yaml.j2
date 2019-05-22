@@ -1,0 +1,40 @@
+---
+# {{ ansible_managed }}
+{#
+#}
+{% macro print_item(options, indent=0) %}{# [[[ #}
+{% for option in (options | rejectattr("state", "in", ["absent", "ignore", "init"])) %}
+{%     if loop.first %}
+
+{%     elif options[loop.index0 - 1].value is defined %}
+{%       set last_value = options[loop.index0 - 1].value %}
+{%       if not ((last_value is string) or (last_value is number) or (last_value is sameas True) or (last_value is sameas False)) %}
+
+{%       endif %}
+{%     endif %}
+{%     if 'comment' in option and (borgbackup__template_comments|bool) %}
+{{       option.comment | comment(prefix='', postfix='') | indent(indent, True) -}}
+{%     endif %}
+{%     if 'name' in option %}
+{{       (option.name + ":") | indent(indent, True) -}}
+{%     endif %}
+{%     if 'value' in option %}
+{%       if (option.value is string) %}
+{{-        " '" + (option.value|string) + "'" }}
+{%       elif (option.value is number) or (option.value is sameas True) or (option.value is sameas False) %}
+{{-        " " + (option.value|string) }}
+{%       elif option.value is iterable %}
+{%         for value in (option.value | map(attribute="name") | sort | unique) %}
+{%           if loop.first %}
+
+{%           endif %}
+{{           ("- '" + value + "'") | indent(indent + 2, True) }}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     if 'options' in option and option.options is iterable %}
+{{       print_item(option.options, indent=indent + 2) }}
+{%     endif %}
+{% endfor %}
+{% endmacro %}{# ]]] #}
+{{ print_item(item.options) }}
