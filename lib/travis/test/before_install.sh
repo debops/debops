@@ -8,4 +8,5 @@ pip install \
     cov-core \
     future \
     nose2 \
-    unittest2
+    unittest2 \
+    pyyaml
