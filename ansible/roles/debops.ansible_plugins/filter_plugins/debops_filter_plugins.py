@@ -414,7 +414,6 @@ class FilterModule(object):
 
 if __name__ == '__main__':
     import unittest
-    from nose.tools import assert_equal
     import textwrap
     import yaml
 
@@ -436,7 +435,7 @@ if __name__ == '__main__':
             #  print(yaml.dump(current_data, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
 
-            assert_equal(current_data, new_data)
+            self.assertEqual(current_data, new_data)
 
         def test_parse_kv_value_mixed(self):
             current_data = yaml.safe_load(textwrap.dedent('''
@@ -469,7 +468,7 @@ if __name__ == '__main__':
             #  print(yaml.dump(current_data, default_flow_style=False))
             #  print(yaml.dump(new_data, default_flow_style=False))
 
-            assert_equal(current_data, expected_data)
+            self.assertEqual(current_data, expected_data)
 
         def test_parse_kv_config(self):
             input_items = yaml.safe_load(textwrap.dedent('''
@@ -505,7 +504,7 @@ if __name__ == '__main__':
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
 
-            assert_equal(items, expected_items)
+            self.assertEqual(items, expected_items)
 
         def test_parse_kv_items_empty(self):
             input_items = yaml.safe_load(textwrap.dedent('''
@@ -542,7 +541,7 @@ if __name__ == '__main__':
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
 
-            assert_equal(items, expected_items)
+            self.assertEqual(items, expected_items)
 
         def test_parse_kv_items_defaults(self):
             input_items = yaml.safe_load(textwrap.dedent('''
@@ -568,7 +567,7 @@ if __name__ == '__main__':
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
 
-            assert_equal(items, expected_items)
+            self.assertEqual(items, expected_items)
 
         def test_parse_kv_items_merge_keys(self):
             input_items = yaml.safe_load(textwrap.dedent('''
@@ -618,7 +617,7 @@ if __name__ == '__main__':
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
 
-            assert_equal(items, expected_items)
+            self.assertEqual(items, expected_items)
 
         def test_parse_kv_items_copy_id_from(self):
             input_items = yaml.safe_load(textwrap.dedent('''
@@ -655,7 +654,7 @@ if __name__ == '__main__':
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
 
-            assert_equal(items, expected_items)
+            self.assertEqual(items, expected_items)
 
         def test_parse_kv_items(self):
             input_items1 = yaml.safe_load(textwrap.dedent('''
@@ -832,6 +831,6 @@ if __name__ == '__main__':
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
 
-            assert_equal(items, expected_items)
+            self.assertEqual(items, expected_items)
 
     unittest.main()
