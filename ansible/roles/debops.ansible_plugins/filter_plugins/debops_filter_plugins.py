@@ -102,7 +102,8 @@ def _parse_kv_value(current_data, new_data, data_index):
                             'weight': dict_element.get('weight', 0),
                             'state': 'present'})
 
-                        dict_element['real_weight'] = _get_real_weight(dict_element)
+                        dict_element['real_weight'] = _get_real_weight(
+                                dict_element)
                         dict_value[element] = dict_element
                         current_data['value'] = dict_value
 
@@ -131,7 +132,8 @@ def _parse_kv_value(current_data, new_data, data_index):
                                     dict_element.get('weight', 0))) +
                                 int(dict_element.get('weight', 0)))
 
-                        dict_element['real_weight'] = _get_real_weight(dict_element)
+                        dict_element['real_weight'] = _get_real_weight(
+                                dict_element)
 
                         # Include any unknown keys.
                         for key in element.keys():
@@ -174,13 +176,17 @@ def parse_kv_config(*args, **kwargs):
                                  else {})
 
                 if element.get('state', 'present') == 'append':
-                    current_param['state'] = current_param.get('state', 'present')
+                    current_param['state'] = current_param.get(
+                            'state', 'present')
                 else:
                     current_param['state'] = (
-                        element.get('state', current_param.get('state', 'present')))
+                        element.get('state', current_param.get(
+                            'state', 'present')))
 
                 if (current_param['state'] == 'init' and
-                        (element.get('state', 'present') != 'init' and _check_if_key_in_nested_dict('value', current_param))):
+                    (element.get('state', 'present') != 'init' and
+                        _check_if_key_in_nested_dict(
+                        'value', current_param))):
                     current_param['state'] = 'present'
 
                 current_param.update({
@@ -223,10 +229,11 @@ def parse_kv_config(*args, **kwargs):
                 # Include any unknown keys
                 for unknown_key in element.keys():
                     if (unknown_key not in merge_keys
-                            and unknown_key not in ['name', 'state', 'id', 'weight',
-                                                    'real_weight', 'separator',
-                                                    'value', 'comment', 'option',
-                                                    'section']):
+                        and unknown_key not in ['name', 'state', 'id',
+                                                'weight', 'real_weight',
+                                                'separator', 'value',
+                                                'comment', 'option',
+                                                'section']):
                         current_param[unknown_key] = element.get(unknown_key)
 
                 parsed_config.update({param_name: current_param})
@@ -248,7 +255,8 @@ def parse_kv_config(*args, **kwargs):
                         'section': current_param.get('section', 'unknown')
                     })
 
-                    current_param['real_weight'] = _get_real_weight(current_param)
+                    current_param['real_weight'] = _get_real_weight(
+                            current_param)
 
                     _parse_kv_value(current_param,
                                     {'value': value},
@@ -327,13 +335,17 @@ def parse_kv_items(*args, **kwargs):
                                  else {})
 
                 if element_state == 'append':
-                    current_param['state'] = current_param.get('state', 'present')
+                    current_param['state'] = current_param.get(
+                            'state', 'present')
                 else:
                     current_param['state'] = (
-                        element.get('state', current_param.get('state', 'present')))
+                        element.get('state', current_param.get(
+                            'state', 'present')))
 
                 if (current_param['state'] == 'init' and
-                        (element_state != 'init' and _check_if_key_in_nested_dict('value', current_param))):
+                        (element_state != 'init' and
+                            _check_if_key_in_nested_dict(
+                                'value', current_param))):
                     current_param['state'] = 'present'
 
                 current_param.update({
@@ -364,7 +376,6 @@ def parse_kv_items(*args, **kwargs):
                             current_options + element.get(key_name),
                             merge_keys=merge_keys)
 
-
                 known_keys = ['name', 'state', 'id', 'weight',
                               'real_weight', 'separator',
                               'comment', 'options']
@@ -381,7 +392,8 @@ def parse_kv_items(*args, **kwargs):
 
                     for key_to_check in keys_to_check:
                         if key_to_check in current_param:
-                            current_param[key_to_set] = current_param[key_to_check]
+                            current_param[key_to_set] = \
+                                    current_param[key_to_check]
                             break
 
                 parsed_config[param_name] = current_param
@@ -451,7 +463,8 @@ if __name__ == '__main__':
               - 'beta'
             '''))
 
-            # FIXME: Not getting it. Why does the _parse_kv_value behave like this.
+            # FIXME: Not getting it. Why does the _parse_kv_value behave like
+            # this?
             expected_data = yaml.safe_load(textwrap.dedent('''
             name: local
             value:
@@ -512,7 +525,9 @@ if __name__ == '__main__':
               options:
 
                 - name: 'second level is ignored'
-                  service: 'second level is ignored so service will not become the comment'
+                  service: |-
+                    second level is ignored so service will not become the
+                    comment
                   value: 'test'
             '''))
 
@@ -526,7 +541,9 @@ if __name__ == '__main__':
                 real_weight: 0
                 section: unknown
                 separator: false
-                service: second level is ignored so service will not become the comment
+                service: |-
+                    second level is ignored so service will not become the
+                    comment
                 state: present
                 value: test
                 weight: 0
@@ -536,7 +553,8 @@ if __name__ == '__main__':
               weight: 0
             '''))
 
-            items = parse_kv_items(input_items, empty={'comment': ['service', 'name']})
+            items = parse_kv_items(
+                    input_items, empty={'comment': ['service', 'name']})
 
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
@@ -562,7 +580,8 @@ if __name__ == '__main__':
               weight: 0
             '''))
 
-            items = parse_kv_items(input_items, defaults={'key1': 'value1', 'key2': 'value2'})
+            items = parse_kv_items(
+                    input_items, defaults={'key1': 'value1', 'key2': 'value2'})
 
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
