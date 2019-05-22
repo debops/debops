@@ -25,6 +25,10 @@ DebOps can be installed in different ways depending on your needs:
   are interested only in specific DebOps roles and you don't want to use the
   additional scripts to manage your environments.
 
+  .. warning:: Installation using Mazer collections will be available after
+               June 2019 when new functionality is implemented in the Ansible
+               Galaxy website.
+
 In any case, the installation will be performed on a Linux, macOS or Windows
 (WSL) computer which will be called the "Ansible Controller". This machine will
 be used to execute Ansible commands against other, remote hosts which will be
@@ -291,6 +295,10 @@ you have to use the `Mazer`__ content manager.
 .. __: https://galaxy.ansible.com/
 .. __: https://galaxy.ansible.com/debops/debops
 .. __: https://galaxy.ansible.com/docs/mazer/index.html
+
+.. warning:: Installation using Mazer collections will be available after
+             June 2019 when new functionality is implemented in the Ansible
+             Galaxy website.
 
 After `installing Mazer using your preferred method`__, you can download the
 DebOps repository by issuing the command:
