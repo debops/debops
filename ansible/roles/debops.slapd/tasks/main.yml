@@ -128,3 +128,11 @@
                               if ("userPassword" in (item.attributes|d({})).keys() or
                                   "olcRootPW"    in (item.attributes|d({})).keys())
                               else False) }}'
+
+- name: Configure enabled services
+  lineinfile:
+    dest: '/etc/default/slapd'
+    regexp: '^SLAPD_SERVICES='
+    line: 'SLAPD_SERVICES="{{ slapd__default_services | join(" ") }}"'
+    state: 'present'
+  notify: [ 'Restart slapd' ]

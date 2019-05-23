@@ -884,3 +884,9 @@ slapd__tcpwrappers__dependent_allow:
     comment: 'Allow connections to OpenLDAP service'
                                                                    # ]]]
                                                                    # ]]]
+# .. envvar:: slapd__default_services [[[
+#
+# List of services which slapd should bind to
+slapd__default_services: '{{ [ "ldap:///", "ldapi:///" ] 
+              + ([ "ldaps:///" ] if slapd__pki else []) }}'
+                                                                   # ]]]
