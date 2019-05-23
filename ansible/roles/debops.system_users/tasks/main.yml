@@ -1,17 +1,18 @@
 ---
 
 - name: Gather local Ansible user details
-  getent:
-    database: 'passwd'
-    key: '{{ system_users__self_name }}'
+  script: 'script/getent_passwd.py {{ system_users__self_name }}'
+  register: system_users__register_passwd
   delegate_to: 'localhost'
   become: False
+  changed_when: False
   check_mode: False
+  run_once: True
 
 - name: Remember local Ansible user details
   set_fact:
-    system_users__fact_self_comment: '{{ getent_passwd[system_users__self_name][3] }}'
-    system_users__fact_self_shell: '{{ getent_passwd[system_users__self_name][5] }}'
+    system_users__fact_self_comment: '{{ (system_users__register_passwd.stdout|from_json)[system_users__self_name][3] }}'
+    system_users__fact_self_shell: '{{ (system_users__register_passwd.stdout|from_json)[system_users__self_name][5] }}'
 
 - name: Ensure that reqired packages are installed
   package:
