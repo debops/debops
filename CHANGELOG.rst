@@ -19,6 +19,19 @@ You can read information about required changes between releases in the
 .. _debops master: https://github.com/debops/debops/compare/v1.0.0...master
 
 
+`debops v1.0.1`_ - 2019-05-23
+-----------------------------
+
+.. _debops v1.0.1: https://github.com/debops/debops/compare/v1.0.0...v1.0.1
+
+Changed
+~~~~~~~
+
+- [debops.system_users] Use a custom script to get current Ansible user
+  information because the ``getent`` Ansible module does not work on Apple
+  macOS.
+
+
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
 
