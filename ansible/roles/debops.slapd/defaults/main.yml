@@ -735,6 +735,36 @@ slapd__snapshot_cron_jobs: [ 'daily', 'weekly', 'monthly' ]
 # Network access to OpenLDAP server [[[
 # -------------------------------------
 
+# .. envvar:: slapd__services [[[
+#
+# List of the service URLs on which OpenLDAP should listen for new connections.
+# Network access is controlled using the firewall rules defined below.
+slapd__services:
+
+  # Listen for plaintext and StartTLS connections
+  - 'ldap:///'
+
+  # Listen for encrypted SSL connections (deprecated)
+  - '{{ "ldaps:///" if slapd__pki|bool else [] }}'
+
+  # Listen for connections on local UNIX domain socket
+  - 'ldapi:///'
+
+                                                                   # ]]]
+# .. envvar:: slapd__ports [[[
+#
+# List of TCP service names of the ports on which OpenLDAP listens for network
+# connections. These ports will be opened in the firewall so that other hosts
+# can contact the LDAP service.
+slapd__ports:
+
+  # Plaintext and StartTLS connections on port 389/tcp
+  - 'ldap'
+
+  # Encrypted SSL connections on port 636/tcp (deprecated)
+  - '{{ "ldaps" if slapd__pki|bool else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: slapd__accept_any [[[
 #
 # If ``True``, the role will configure the firewall and TCP Wrappers to accept
@@ -849,7 +879,7 @@ slapd__ferm__dependent_rules:
   - name: 'reject_slapd'
     type: 'accept'
     protocol: 'tcp'
-    dport: [ 'ldap' ]
+    dport: '{{ q("flattened", slapd__ports) }}'
     multiport: True
     saddr: '{{ slapd__deny + slapd__group_deny + slapd__host_deny }}'
     weight: '45'
@@ -862,7 +892,7 @@ slapd__ferm__dependent_rules:
   - name: 'accept_slapd'
     type: 'accept'
     protocol: 'tcp'
-    dport: [ 'ldap' ]
+    dport: '{{ q("flattened", slapd__ports) }}'
     multiport: True
     saddr: '{{ slapd__allow + slapd__group_allow + slapd__host_allow }}'
     accept_any: '{{ slapd__accept_any }}'
