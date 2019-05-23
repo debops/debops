@@ -13,10 +13,17 @@ You can read information about required changes between releases in the
 :ref:`upgrade_notes` documentation.
 
 
-`debops master`_ - unreleased
------------------------------
+`debops stable-1.0`_ - unreleased
+---------------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v1.0.0...master
+.. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
+
+Fixed
+~~~~~
+
+- [debops.nginx] Allow empty ``item.name`` parameter which tells the role to
+  not include a ``server_name`` option in a :command:`nginx` server
+  configuration.
 
 
 `debops v1.0.1`_ - 2019-05-23
