@@ -18,6 +18,13 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v1.0.0...master
 
+Added
+~~~~~
+
+- [debops.slapd] The role can now control on which ports and services OpenLDAP
+  listens for connections. The ``ldaps:///`` service is enabled by default when
+  support for the :ref:`debops.pki` role is enabled on the OpenLDAP host.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------

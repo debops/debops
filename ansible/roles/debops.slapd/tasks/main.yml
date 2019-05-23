@@ -30,11 +30,25 @@
     state: 'present'
   register: slapd__register_unix_groups
 
-- name: Restart slapd if UNIX groups were modified
+- name: Divert the OpenLDAP environment file
+  command: dpkg-divert --quiet --local --divert /etc/default/slapd.dpkg-divert
+                       --rename /etc/default/slapd
+  args:
+    creates: '/etc/default/slapd.dpkg-divert'
+
+- name: Generate the OpenLDAP environment file
+  template:
+    src: 'etc/default/slapd.j2'
+    dest: '/etc/default/slapd'
+    mode: '0644'
+  register: slapd__register_environment
+
+- name: Restart slapd if its configuration was modified
   service:
     name: 'slapd'
     state: 'restarted'
-  when: slapd__register_unix_groups is changed
+  when: slapd__register_unix_groups is changed or
+        slapd__register_environment is changed
 
 - name: Ensure that the log directory exists
   file:
