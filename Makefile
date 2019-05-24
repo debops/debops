@@ -105,7 +105,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-pep8 test-debops-tools test-docs test-playbook-syntax test-yaml test-ansible-lint test-shell test-docker-build
+test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-playbook-syntax test-yaml test-ansible-lint test-shell test-docker-build
 
 .PHONY: test-pep8
 test-pep8:
@@ -161,6 +161,11 @@ test-yaml:
 test-debops-tools:
 	@printf "%s\n" "Testing debops-tools using nose2..."
 	@nose2 --with-coverage
+
+.PHONY: test-debops-ansible_plugins
+test-debops-ansible_plugins:
+	@printf "%s\n" "Testing debops-ansible_plugins using nose2..."
+	@python ansible/roles/debops.ansible_plugins/filter_plugins/debops_filter_plugins.py
 
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:
