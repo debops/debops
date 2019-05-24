@@ -5,6 +5,11 @@ Frequently Asked Questions
 
 Here you can find answers to commonly asked questions about DebOps.
 
+.. contents::
+   :local:
+   :depth: 2
+
+
 Can I use DebOps roles as standalone?
 -------------------------------------
 
@@ -23,6 +28,54 @@ Some dependent roles like :ref:`debops.secret` and
 :ref:`debops.ansible_plugins` are "hard dependencies" and without them roles
 will not work as expected - check the example playbooks provided in the
 documentation to see how the roles are used.
+
+
+I installed one of DebOps roles via Ansible Galaxy but it doesn't work, why?
+----------------------------------------------------------------------------
+
+TL;DR: Install the DebOps monorepo instead of specific roles and configure the
+``roles_path`` parameter in :file:`ansible.cfg` config file. See :ref:`DebOps
+installation instructions <install>` for details.
+
+Long ago, DebOps roles were published in separate :command:`git` repositories
+on Ansible Galaxy, and using for example:
+
+.. code-block:: console
+
+   ansible-galaxy install debops.nginx
+
+worked as you would expect - installed the :ref:`debops.nginx` role in the
+specified directory. Around October 2017, DebOps project was consolidated to
+a single monorepo and separate :command:`git` repositories were deprecated, but
+still available via Ansible Galaxy as before.
+
+About a year later, when Ansible Galaxy team implemented experimental support
+for multi-role repositories and :command:`mazer`, all of the old DebOps roles
+were removed from Ansible Galaxy and the DebOps monorepo was published instead.
+Unfortunately, the old :command:`ansible-galaxy` tool was not updated, and
+using it to install specific DebOps roles resulted in a broken state, where
+a bunch of ``debops.apt*`` roles and the DebOps monorepo in a subdirectory were
+installed. A solution to that was to install the published monorepo with:
+
+.. code-block:: console
+
+   mazer install debops.debops
+
+You would also need to tell Ansible where to look for DebOps roles, by
+configuring the ``roles_path`` parameter in the :file:`ansible.cfg`
+configuration file (normally the :command:`debops` script does that for you).
+
+Another year passed, and in June 2019 Ansible Galaxy team removed support for
+multi-role repositories and implemented Ansible Collections. But before that,
+the Mazer team removed support for multi-role repositories from the
+:command:`mazer` client, and at some point DebOps monorepo is/was uninstallable
+via Ansible Galaxy.
+
+The project now has support for Ansible Collections, and hopefully after June
+2019 the situation will improve. Right now the easiest method of installation
+is using the Python ``debops`` package from PyPI or directly from the GitHub
+repository. You can read the :ref:`DebOps installation instructions <install>`
+to find out more.
 
 
 Why DebOps doesn't use :command:`ansible-vault` to store passwords?
