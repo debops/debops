@@ -11,19 +11,19 @@ set -o nounset -o pipefail -o errexit
 
 # Check if we are in the correct directory
 if ! [ -f ansible/galaxy.yml ] ; then
-    printf "%s\n" "Error: this script needs to be executed in the root of the DebOps repository"
+    printf "%s\\n" "Error: this script needs to be executed in the root of the DebOps repository"
     exit 1
 fi
 
 # Check if mazer is installed
 if ! type mazer > /dev/null 2>&1 ; then
-    printf "%s\n" "Error: mazer not found"
+    printf "%s\\n" "Error: mazer not found"
     exit 1
 fi
 
 # Check if the repository is in a consistent state
 if ! git diff --quiet && git diff --cached --quiet ; then
-    printf "%s\n" "Error: there are uncommitted changes in the repository"
+    printf "%s\\n" "Error: there are uncommitted changes in the repository"
     git status --short
     exit 1
 fi
