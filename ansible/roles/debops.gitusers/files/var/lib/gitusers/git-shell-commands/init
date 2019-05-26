@@ -12,10 +12,10 @@ test -x "${system_functions}" && source "${system_functions}"
 system_git_hooks="$(git config --global --get gitusers.init.hooks)"
 
 # What hook types are known and allowed
-allowed_hooks=( $(git config --global --get gitusers.hooks) )
+read -r -a allowed_hooks <<< "$(git config --global --get gitusers.hooks)"
 
 # Name of default repository type to use if it's not specified by user
-default_repository_type=( $(git config --global --get gitusers.init.type) )
+read -r -a default_repository_type <<< "$(git config --global --get gitusers.init.type)"
 
 # Default directory where repositories are checked out
 checkout_path="$(git config --global --get gitusers.init.path)"
@@ -50,7 +50,7 @@ if [ -n "${repository_type}" ] && ! in_array allowed_hooks "${repository_type}" 
 fi
 
 # List of hooks installed by default
-default_hooks=( $(git config --global --get "gitusers.hookmap.${repository_type}") )
+read -r -a default_hooks <<< "$(git config --global --get "gitusers.hookmap.${repository_type}")"
 
 # Define a worktree outside of the home directory
 worktree="${checkout_path}/${repository}.checkout"

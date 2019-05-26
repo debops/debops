@@ -15,12 +15,12 @@ if [ -n "${php_etc_base}" ] ; then
     if [ -d "${php_etc_base}/conf.d" ] ; then
 
         cd "${php_etc_base}/conf.d" || exit 1
-        for config_file in ${php_etc_base}/ansible/* ; do
+        for config_file in "${php_etc_base}"/ansible/* ; do
             if [[ ! -L "$(basename "${config_file}")" ]] || [[ ! -r "$(basename "${config_file}")" ]] ; then
                 ln -sfv "../ansible/$(basename "${config_file}")" "$(basename "${config_file}")"
             fi
         done
-        for path in ${php_etc_base}/conf.d/* ; do
+        for path in "${php_etc_base}"/conf.d/* ; do
             if [[ -n "${path}" ]] && [[ -L "${path}" ]] ; then
                 if [ ! -r "${path}" ] ; then
                     rm -fv "${path}"
@@ -31,15 +31,15 @@ if [ -n "${php_etc_base}" ] ; then
 
     else
 
-        for sapi in ${php_etc_base}/{cli,cgi,fpm,embed,apache2} ; do
+        for sapi in "${php_etc_base}"/{cli,cgi,fpm,embed,apache2} ; do
             if [[ -n "${sapi}" ]] && [[ -d "${sapi}/conf.d" ]] ; then
                 cd "${sapi}/conf.d" || exit 1
-                for config_file in ${php_etc_base}/ansible/* ; do
+                for config_file in "${php_etc_base}"/ansible/* ; do
                     if [[ ! -L "$(basename "${config_file}")" ]] || [[ ! -r "$(basename "${config_file}")" ]] ; then
                         ln -sfv "../../ansible/$(basename "${config_file}")" "$(basename "${config_file}")"
                     fi
                 done
-                for path in ${sapi}/conf.d/* ; do
+                for path in "${sapi}"/conf.d/* ; do
                     if [[ -n "${path}" ]] && [[ -L "${path}" ]] ; then
                         if [ ! -r "${path}" ] ; then
                             rm -fv "${path}"

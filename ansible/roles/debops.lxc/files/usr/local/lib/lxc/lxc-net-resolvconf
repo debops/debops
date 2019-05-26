@@ -23,7 +23,7 @@ if [ -f "/etc/default/lxc-net" ] ; then
             if [ -f "${RESOLVCONF_FILE}" ] ; then
                 rm -f "${RESOLVCONF_FILE}"
             fi
-            printf "search %s\n" "${LXC_DOMAIN}" > "${RESOLVCONF_FILE}"
+            printf "search %s\\n" "${LXC_DOMAIN}" > "${RESOLVCONF_FILE}"
             resolvconf -u
             ;;
         stop)
@@ -33,7 +33,7 @@ if [ -f "/etc/default/lxc-net" ] ; then
             resolvconf -u
             ;;
         *)
-            printf "This script shouldn't be used as standalone. Exiting\n"
+            printf "This script shouldn't be used as standalone. Exiting\\n"
             exit 1
             ;;
     esac

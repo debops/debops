@@ -21,7 +21,7 @@ php_version="${PHP_VERSION:-5}"
 search_packages=( "$@" )
 
 # List of available PHP packages in APT repositories
-package_list=( $(apt-cache pkgnames php ; apt-cache --no-generate pkgnames libapache2-mod-php ) )
+mapfile -t package_list < <( apt-cache pkgnames php ; apt-cache --no-generate pkgnames libapache2-mod-php )
 
 
 # The fast way to search through the list in Bash is to use an associative

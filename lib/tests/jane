@@ -27,7 +27,7 @@ set -o nounset -o pipefail -o errexit
 
 require_bash_4 () {
     if (( BASH_VERSINFO[0] < 4 )) ; then
-        printf "Error: This script requires Bash 4.x\n"
+        printf "Error: This script requires Bash 4.x\\n"
         exit 1
     fi
 }
@@ -97,7 +97,7 @@ declare -rA colors=(
     ["blink"]="$( tput blink )"
     ["reverse"]="$( tput smso )"
     ["underline"]="$( tput smul )"
-    ["reset"]="\e[m"
+    ["reset"]="\\e[m"
 )
 
 
@@ -105,21 +105,22 @@ sub__help () {
     help_msg "${SCRIPTNAME} <command> [<args>]" \
         "Manage Continuous Integration using GitLab CI and Vagrant"
 
-    local subcommand_list=( $( declare -F \
-                               | cut -d" " -f3 \
-                               | grep -E '^sub__' \
-                               | awk -F '__' '{print $2}' \
-                               | uniq ) )
+    local subcommand_list
+    mapfile -t subcommand_list < <( declare -F \
+                                    | cut -d" " -f3 \
+                                    | grep -E '^sub__' \
+                                    | awk -F '__' '{print $2}' \
+                                    | uniq )
 
     if [ ${#subcommand_list[@]} -gt 1 ] ; then
-        printf "\nAvailable commands:\n"
+        printf "\\nAvailable commands:\\n"
         for help_cmd in "${subcommand_list[@]}" ; do
             if declare -f "sub__help__${help_cmd}" > /dev/null ; then
-                printf "    %-10s %s\n" \
+                printf "    %-10s %s\\n" \
                     "${help_cmd}" "$("sub__help__${help_cmd}" brief)"
             fi
         done
-        printf "\nSee '%s help <command>' to read about a given command\n" \
+        printf "\\nSee '%s help <command>' to read about a given command\\n" \
             "${SCRIPTNAME}"
     fi
 }
@@ -148,7 +149,7 @@ EOF
 
 sub__colors () {
     for color_name in "${!colors[@]}" ; do
-        printf "%-16s \"${colors[${color_name}]}%s${colors["reset"]}\"\n" \
+        printf "%-16s \"${colors[${color_name}]}%s${colors["reset"]}\"\\n" \
             "${color_name}" "Quick brown fox jumps over the lazy dog"
     done
 }
@@ -180,14 +181,14 @@ sub__env () {
         ${SCRIPTNAME}|ci|script)
             ( set -o posix ; set \
               | while read -r line ; do
-                    printf "%s\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
+                    printf "%s\\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
                 done
             )
             ;;
         *)
             env \
               | while read -r line ; do
-                    printf "%s\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
+                    printf "%s\\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
                 done
             ;;
     esac
@@ -384,7 +385,7 @@ sub__ansible__playbook () {
 
     if [ -n "${parsed_hostvars}" ] ; then
         status_msg config "Custom Ansible inventory variables:"
-        printf "%s\n" "${parsed_hostvars}"
+        printf "%s\\n" "${parsed_hostvars}"
     fi
 
     if [ -n "${jane_inventory_dirs[*]}" ] && [ "${jane_inventory_dirs[*]}" != "common" ] ; then
@@ -446,7 +447,7 @@ interesting_changes () {
         fi
     fi
 
-    printf "%s\n" "${output}"
+    printf "%s\\n" "${output}"
 }
 
 
@@ -457,7 +458,7 @@ git_log_pattern () {
         local log_patterns_found
         log_patterns_found="$(git log --format="%B" "$(git_rev_oldest_ancestor)~1..HEAD" \
             | grep -E "${jane_log_pattern}" || true)"
-        printf "%s\n" "${log_patterns_found}"
+        printf "%s\\n" "${log_patterns_found}"
     fi
 }
 
@@ -468,7 +469,7 @@ git_diff_file_pattern () {
     local changed_files
     changed_files="$(git diff --name-only "$(git_rev_oldest_ancestor)~1..HEAD" \
         | grep -E "${jane_diff_pattern}" || true)"
-    printf "%s\n" "${changed_files}"
+    printf "%s\\n" "${changed_files}"
 }
 
 
@@ -480,7 +481,7 @@ git_rev_oldest_ancestor () {
         <(git rev-list --first-parent "${jane_diff_base_branch}") \
         <(git rev-list --first-parent "HEAD") | head -1)"
 
-    printf "%s\n" "${oldest_ancestor}"
+    printf "%s\\n" "${oldest_ancestor}"
 }
 
 
@@ -812,7 +813,7 @@ status_msg () {
     esac
 
     if [ -n "${message}" ] ; then
-        printf "${prompt}${type_color}%s${colors["reset"]}${colors["b_black"]}: ${msg_color}%s${colors["reset"]}\n" \
+        printf "${prompt}${type_color}%s${colors["reset"]}${colors["b_black"]}: ${msg_color}%s${colors["reset"]}\\n" \
             "${msg_type^^}" "${message}"
         if type logger > /dev/null 2>&1 ; then
             logger -t "${script}[${pid}]" "${inception}:${msg_type^^}: ${message}"
@@ -825,7 +826,7 @@ help_msg () {
     local subcommand="${1}"
     local help_text="${2}"
 
-    printf "${colors["reverse"]}%s${colors["reset"]}\n\n${colors["b_white"]}Usage: ${colors["b_blue"]}%s${colors["b_black"]}${colors["reset"]}\n" \
+    printf "${colors["reverse"]}%s${colors["reset"]}\\n\\n${colors["b_white"]}Usage: ${colors["b_blue"]}%s${colors["b_black"]}${colors["reset"]}\\n" \
            "${help_text}" "${subcommand}"
 }
 
@@ -837,7 +838,7 @@ list_inventory_groups () {
     IFS="," read -r -a inventory_groups <<< "${jane_inventory_groups}"
 
     for element in "${inventory_groups[@]}" ; do
-        printf "[%s]\n" "${element}"
+        printf "[%s]\\n" "${element}"
     done
 }
 
@@ -854,7 +855,7 @@ generate_dynamic_inventory_groups () {
     for element in "${inventory_groups[@]}" ; do
         # jo needs to parse arguments as-is
         # shellcheck disable=SC2046
-        printf "%s\n" "${element}=$(jo hosts=$(jo -a "${host_fqdn}") \
+        printf "%s\\n" "${element}=$(jo hosts=$(jo -a "${host_fqdn}") \
             vars=$(jo ansible_connection="local" dhparam__bits='["1024"]' \
                       core__ansible_controllers="${ssh_client_ip}" \
             secret="/tmp/secret" tcpwrappers__deny_all=false))"
@@ -891,7 +892,7 @@ dynamic_inventory_list () {
             for directory in "${jane_inventory_dirs[@]}" ; do
                 for path_dir in "${inventory_path[@]}" ; do
                     if [ -d "${path_dir}/${directory}" ] ; then
-                        expanded_dirs+=( "${inventory_path}/${directory}/*.json" )
+                        expanded_dirs+=( "${path_dir}/${directory}/*.json" )
                     fi
                 done
             done
@@ -935,7 +936,7 @@ EOF
 
 
 dynamic_inventory_host () {
-    printf "%s\n" '{"_meta": {"hostvars": {}}}'
+    printf "%s\\n" '{"_meta": {"hostvars": {}}}'
 }
 
 

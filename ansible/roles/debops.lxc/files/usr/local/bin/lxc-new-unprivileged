@@ -38,7 +38,7 @@ EOF
 }
 
 error_msg () {
-    printf "%s\n" "${*}" >&2
+    printf "%s\\n" "${*}" >&2
 }
 
 main () {
@@ -60,7 +60,7 @@ main () {
     if [ -n "${container}" ] ; then
         if ! container_exists "${container}" ; then
 
-            printf "Container '%s' doesn't exist, creating...\n" "${container}"
+            printf "Container '%s' doesn't exist, creating...\\n" "${container}"
 
             lxc-create --name "${container}" \
                        --config "${config_file}" \
@@ -75,7 +75,7 @@ main () {
             if [ -f "/var/lib/lxc/${container}/rootfs/etc/network/interfaces" ] ; then
                 if [ "${iface_count}" -gt 0 ] ; then
                     for (( i=1 ; i<=iface_count ; i++ )) ; do
-                        printf "Adding eth%s interface to network configuration\n" "${i}"
+                        printf "Adding eth%s interface to network configuration\\n" "${i}"
                         cat <<EOF >> "/var/lib/lxc/${container}/rootfs/etc/network/interfaces"
 
 auto eth${i}
@@ -100,14 +100,14 @@ EOF
             # container. Because we are using DHCP/DNS server to manage
             # containers, remove the static host entry to fix the issue.
             if lxc-attach -n "${container}" -- grep -q '127.0.1.1' /etc/hosts ; then
-                printf "Removing static host entry from /etc/hosts...\n"
-                lxc-attach -n "${container}" -- sed -i "/127\.0\.1\.1/d" /etc/hosts > /dev/null
+                printf "Removing static host entry from /etc/hosts...\\n"
+                lxc-attach -n "${container}" -- sed -i "/127\\.0\\.1\\.1/d" /etc/hosts > /dev/null
             fi
 
             c=0
             until lxc-prepare-ssh "${container}" ; do
                 ((c++)) && ((c==4)) && break
-                printf "Waiting for network inside container to settle...\n"
+                printf "Waiting for network inside container to settle...\\n"
                 sleep 5
             done
 

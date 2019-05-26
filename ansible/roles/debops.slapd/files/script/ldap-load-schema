@@ -12,15 +12,15 @@ set -o nounset -o pipefail -o errexit
 schema_file="${1}"
 
 if [ -z "${schema_file}" ] ; then
-    printf "Error: You need to specify schema file to load\n" && exit 1
+    printf "Error: You need to specify schema file to load\\n" && exit 1
 fi
 
 if [ ! -e "${schema_file}" ] ; then
-    printf "Error: %s does not exist\n" "${schema_file}" && exit 1
+    printf "Error: %s does not exist\\n" "${schema_file}" && exit 1
 fi
 
 if [ ! -r "${schema_file}" ] ; then
-    printf "Error: %s is unreadable\n" "${schema_file}" && exit 1
+    printf "Error: %s is unreadable\\n" "${schema_file}" && exit 1
 fi
 
 # The schema file is already converted, we can deal with them directly
@@ -53,6 +53,6 @@ elif [[ "${schema_file}" == *.schema ]] ; then
     if type fusiondirectory-insert-schema > /dev/null ; then
         fusiondirectory-insert-schema -i "${schema_file}"
     else
-        printf "Error: %s needs to be in the .ldif format\n" "${schema_file}" && exit 1
+        printf "Error: %s needs to be in the .ldif format\\n" "${schema_file}" && exit 1
     fi
 fi

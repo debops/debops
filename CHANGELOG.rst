@@ -25,6 +25,20 @@ Added
   listens for connections. The ``ldaps:///`` service is enabled by default when
   support for the :ref:`debops.pki` role is enabled on the OpenLDAP host.
 
+Changed
+~~~~~~~
+
+- DebOps now uses ``xenial`` as the default OS release used in Travis-CI tests.
+  The ``xenial`` images on Travis use the :command:`shellcheck` v0.6.0 to test
+  shell scripts; if you want to run the :command:`test shell` command locally
+  to check the script syntax, you will need to update your
+  :command:`shellcheck` installation to the v0.6.0 version to match the one on
+  Travis-CI. This version is at present not available in Debian, therefore
+  a custom install will be needed. See the `ShellCheck install instructions`__
+  for your preferred method.
+
+  .. __: https://github.com/koalaman/shellcheck#installing-a-pre-compiled-binary
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------

@@ -11,7 +11,7 @@ set -o nounset -o pipefail -o errexit
 declare -a file_list
 
 if ! type pycodestyle > /dev/null 2>&1 ; then
-    printf "%s\n" "Error: pycodestyle not found"
+    printf "%s\\n" "Error: pycodestyle not found"
     exit 1
 fi
 
@@ -34,6 +34,6 @@ done < <(find . -type f -not -iwholename "./.git/*" \
     -not -wholename "./ansible/roles/debops.gunicorn/templates/etc/gunicorn/application.conf.py.j2" \
     -not -wholename "./ansible/roles/debops.mailman/templates/etc/mailman/mm_cfg.py.j2")
 
-printf " %s\n" "found ${#file_list[@]} Python scripts"
+printf " %s\\n" "found ${#file_list[@]} Python scripts"
 
 pycodestyle --count --show-source --statistics "${file_list[@]}"

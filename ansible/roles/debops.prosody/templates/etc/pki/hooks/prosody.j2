@@ -13,7 +13,7 @@ prosody_action="{{ prosody__pki_hook_action }}"
 certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${prosody_config} || true)
 
 # Get list of current realm states
-states=( $(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ") )
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
 
 if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
 

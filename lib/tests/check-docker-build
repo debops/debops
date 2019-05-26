@@ -15,20 +15,20 @@ set -o nounset -o pipefail -o errexit
 
 if type docker > /dev/null 2>&1 ; then
 
-    printf "%s\n" "Testing Dockerfile syntax with hadolint, ignoring DL3008,DL3013..."
+    printf "%s\\n" "Testing Dockerfile syntax with hadolint, ignoring DL3008,DL3013..."
     docker run --rm -i lukasmartinelli/hadolint hadolint --ignore DL3008 --ignore DL3013 - < Dockerfile
 
     if [ -n "$(docker image ls -q debops/test)" ] ; then
-        printf "%s\n" "Found existing 'debops/test' Docker image, removing..."
+        printf "%s\\n" "Found existing 'debops/test' Docker image, removing..."
         docker image rm debops/test -f
     fi
 
-    printf "%s\n" "Building the 'debops/test' Docker image..."
+    printf "%s\\n" "Building the 'debops/test' Docker image..."
     docker build -t debops/test .
 
-    printf "%s\n" "Testing the viability of 'debops/test' Docker image..."
+    printf "%s\\n" "Testing the viability of 'debops/test' Docker image..."
     docker run -it --rm debops/test bash -c 'cd src/controller && debops service/core --diff'
 
 else
-    printf "%s\n" "Docker is not installed, skipping Docker tests"
+    printf "%s\\n" "Docker is not installed, skipping Docker tests"
 fi

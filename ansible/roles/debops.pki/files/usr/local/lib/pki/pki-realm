@@ -444,7 +444,8 @@ run_external_script () {
             if [ ! -r private/key.pem ] ; then
                 install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
                 if type setfacl > /dev/null 2>&1 ; then
-                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    local private_file_acl_groups_r
+                    read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                     if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                         for acl_group in "${private_file_acl_groups_r[@]}" ; do
                             if getent group "${acl_group}" > /dev/null ; then
@@ -556,7 +557,7 @@ EOF
 [ req_dn ]
 EOF
 
-        echo "${req_dn}" | tr "/" "\n" | grep --invert-match '^\s*$' | sed \
+        echo "${req_dn}" | tr "/" "\\n" | grep --invert-match '^\s*$' | sed \
             -e 's/^[Cc]=/countryName=/' \
             -e 's/^[Ss][Tt]=/stateOrProvinceName=/' \
             -e 's/^[Ll]=/localityName=/' \
@@ -578,15 +579,22 @@ subjectAltName     = @ext_req_san
 [ ext_req_san ]
 EOF
 
-            local domains=( $(echo "${req_domains}" | tr "/" " ") )
-            local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
+            local domains
+            read -r -a domains <<< "$(echo "${req_domains}" | tr "/" " ")"
+            local subdomains
+            read -r -a subdomains <<< "$(echo "${req_subdomains}" | tr "/" " ")"
 
-            local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^ip://pi'    | xargs ) )
-            local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^dns://pi'   | xargs ) )
-            local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^uri://pi'   | xargs ) )
-            local san_email=( $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^email://pi' | xargs ) )
+            local san_ip
+            read -r -a san_ip <<< "$( echo "${req_san}" | tr "|" "\\n" | sed --quiet -e 's/^ip://pi'    | xargs )"
+            local san_dns
+            read -r -a san_dns <<< "$( echo "${req_san}" | tr "|" "\\n" | sed --quiet -e 's/^dns://pi'   | xargs )"
+            local san_uri
+            read -r -a san_uri <<< "$( echo "${req_san}" | tr "|" "\\n" | sed --quiet -e 's/^uri://pi'   | xargs )"
+            local san_email
+            read -r -a san_email <<< "$( echo "${req_san}" | tr "|" "\\n" | sed --quiet -e 's/^email://pi' | xargs )"
 
-            local all_dns=( ${domains[@]:-} )
+            local all_dns
+            read -r -a all_dns <<< "${domains[@]:-}"
 
             if [ ${#subdomains[@]} -gt 0 ] ; then
                 for i in "${!domains[@]}" ; do
@@ -600,22 +608,24 @@ EOF
                 done
             fi
 
+            # FIXME: Not sure how to handle appending to the array in this case
+            # shellcheck disable=SC2206
             all_dns+=( ${san_dns[@]:-} )
 
             for i in "${!all_dns[@]}" ; do
-                printf "%-18s = %s\n" "DNS.${i}" "${all_dns[${i}]}" >> "${config_file}"
+                printf "%-18s = %s\\n" "DNS.${i}" "${all_dns[${i}]}" >> "${config_file}"
             done
 
             for i in "${!san_ip[@]}" ; do
-                printf "%-18s = %s\n" "IP.${i}" "${san_ip[${i}]}" >> "${config_file}"
+                printf "%-18s = %s\\n" "IP.${i}" "${san_ip[${i}]}" >> "${config_file}"
             done
 
             for i in "${!san_uri[@]}" ; do
-                printf "%-18s = %s\n" "URI.${i}" "${san_uri[${i}]}" >> "${config_file}"
+                printf "%-18s = %s\\n" "URI.${i}" "${san_uri[${i}]}" >> "${config_file}"
             done
 
             for i in "${!san_email[@]}" ; do
-                printf "%-18s = %s\n" "email.${i}" "${san_email[${i}]}" >> "${config_file}"
+                printf "%-18s = %s\\n" "email.${i}" "${san_email[${i}]}" >> "${config_file}"
             done
 
         fi
@@ -656,7 +666,7 @@ expiration_days = ${config['selfsigned_sign_days']}
 EOF
         fi
 
-        echo "${req_dn}" | tr "/" "\n" | grep --invert-match '^\s*$' | sed \
+        echo "${req_dn}" | tr "/" "\\n" | grep --invert-match '^\s*$' | sed \
             -e 's/^[Cc]=/country = "/' \
             -e 's/^[Ss][Tt]=/state = "/' \
             -e 's/^[Ll]=/locality = "/' \
@@ -665,15 +675,22 @@ EOF
             -e 's/^[Cc][Nn]=/cn = "/' \
             -e 's/$/"/' >> "${config_file}"
 
-        local domains=( $(echo "${req_domains}" | tr "/" " ") )
-        local subdomains=( $(echo "${req_subdomains}" | tr "/" " ") )
+        local domains
+        read -r -a domains <<< "$(echo "${req_domains}" | tr "/" " ")"
+        local subdomains
+        read -r -a subdomains <<< "$(echo "${req_subdomains}" | tr "/" " ")"
 
-        local san_ip=(    $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^ip://pi'    | xargs ) )
-        local san_dns=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^dns://pi'   | xargs ) )
-        local san_uri=(   $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^uri://pi'   | xargs ) )
-        local san_email=( $( echo "${req_san}" | tr "|" "\n" | sed --quiet -e 's/^email://pi' | xargs ) )
+        local san_ip
+        read -r -a san_ip <<< "$( echo "${req_san}" | tr "|" "\\n" | sed --quiet -e 's/^ip://pi'    | xargs )"
+        local san_dns
+        read -r -a san_dns <<< "$( echo "${req_san}" | tr "|" "\\n" | sed --quiet -e 's/^dns://pi'   | xargs )"
+        local san_uri
+        read -r -a san_uri <<< "$( echo "${req_san}" | tr "|" "\\n" | sed --quiet -e 's/^uri://pi'   | xargs )"
+        local san_email
+        read -r -a san_email <<< "$( echo "${req_san}" | tr "|" "\\n" | sed --quiet -e 's/^email://pi' | xargs )"
 
-        local all_dns=( ${domains[@]:-} )
+        local all_dns
+        read -r -a all_dns <<< "${domains[@]:-}"
 
         if [ ${#subdomains[@]} -gt 0 ] ; then
             for i in "${!domains[@]}" ; do
@@ -687,6 +704,8 @@ EOF
             done
         fi
 
+        # FIXME: Not sure how to handle appending to the array in this case
+        # shellcheck disable=SC2206
         all_dns+=( ${san_dns[@]:-} )
 
         for i in "${!all_dns[@]}" ; do
@@ -715,7 +734,7 @@ save_realm_config () {
     local config_file="${1:-config/realm.conf}"
 
     if [ -r "${config_file}" ] ; then
-        if grep -q -E "^#\s+Configuration\s+file\s+generated\s+by\s+pki-realm$" "${config_file}" ; then
+        if grep -q -E "^#\\s+Configuration\\s+file\\s+generated\\s+by\\s+pki-realm$" "${config_file}" ; then
             rm -f "${config_file}"
         fi
     fi
@@ -878,7 +897,8 @@ generate_openssl_rsa_private_key () {
         chgrp "${key_group}" "${key_file}.tmp"
         if [ "${key_acl}" = "true" ] ; then
             if type setfacl > /dev/null 2>&1 ; then
-                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                local private_file_acl_groups_r
+                read -r private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                     for acl_group in "${private_file_acl_groups_r[@]}" ; do
                         if getent group "${acl_group}" > /dev/null ; then
@@ -917,7 +937,8 @@ generate_gnutls_rsa_private_key () {
         chgrp "${key_group}" "${key_file}.tmp"
         if [ "${key_acl}" = "true" ] ; then
             if type setfacl > /dev/null 2>&1 ; then
-                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                local private_file_acl_groups_r
+                read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                     for acl_group in "${private_file_acl_groups_r[@]}" ; do
                         if getent group "${acl_group}" > /dev/null ; then
@@ -944,7 +965,8 @@ create_public_directories () {
         return 1
     fi
 
-    local directories=( ${@} )
+    local directories
+    read -r -a directories <<< "${@}"
 
     for directory in "${directories[@]}" ; do
         mkdir -p "${directory}"
@@ -963,14 +985,16 @@ create_private_directories () {
         return 1
     fi
 
-    local directories=( ${@} )
+    local directories
+    read -r -a directories <<< "${@}"
 
     for directory in "${directories[@]}" ; do
         mkdir -p "${directory}"
         chmod_idempotent "${config['private_dir_mode']}" "${directory}"
         chgrp_idempotent "${dir_group}" "${directory}"
         if type setfacl > /dev/null 2>&1 ; then
-            local private_dir_acl_groups_x=( $(echo "${config['private_dir_acl_groups_x']}" | tr "/" " ") )
+            local private_dir_acl_groups_x
+            read -r -a private_dir_acl_groups_x <<< "$(echo "${config['private_dir_acl_groups_x']}" | tr "/" " ")"
             if [ ${#private_dir_acl_groups_x[@]} -ne 0 ] ; then
                 for acl_group in "${private_dir_acl_groups_x[@]}" ; do
                     if getent group "${acl_group}" > /dev/null ; then
@@ -992,7 +1016,8 @@ create_private_noacl_directories () {
         return 1
     fi
 
-    local directories=( ${@} )
+    local directories
+    read -r -a directories <<< "${@}"
 
     for directory in "${directories[@]}" ; do
         mkdir -p "${directory}"
@@ -1162,7 +1187,8 @@ check_files () {
             if [ ! -r private/key.pem ] ; then
                 install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
                 if type setfacl > /dev/null 2>&1 ; then
-                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    local private_file_acl_groups_r
+                    read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                     if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                         for acl_group in "${private_file_acl_groups_r[@]}" ; do
                             if getent group "${acl_group}" > /dev/null ; then
@@ -1179,7 +1205,8 @@ check_files () {
 
         if [ -r private/key.pem ] ; then
             if type setfacl > /dev/null 2>&1 ; then
-                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                local private_file_acl_groups_r
+                read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                     if ! getfacl -sc private/key.pem | grep -Eq '^group' ; then
                         for acl_group in "${private_file_acl_groups_r[@]}" ; do
@@ -1237,7 +1264,8 @@ check_files () {
             if [ ! -r private/key.pem ] ; then
                 install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
                 if type setfacl > /dev/null 2>&1 ; then
-                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    local private_file_acl_groups_r
+                    read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                     if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                         for acl_group in "${private_file_acl_groups_r[@]}" ; do
                             if getent group "${acl_group}" > /dev/null ; then
@@ -1254,7 +1282,8 @@ check_files () {
 
         if [ -r private/key.pem ] ; then
             if type setfacl > /dev/null 2>&1 ; then
-                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                local private_file_acl_groups_r
+                read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                     if ! getfacl -sc private/key.pem | grep -Eq '^group' ; then
                         for acl_group in "${private_file_acl_groups_r[@]}" ; do
@@ -1324,7 +1353,8 @@ check_files () {
             if [ ! -r private/key.pem ] ; then
                 install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
                 if type setfacl > /dev/null 2>&1 ; then
-                    local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                    local private_file_acl_groups_r
+                    read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                     if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                         for acl_group in "${private_file_acl_groups_r[@]}" ; do
                             if getent group "${acl_group}" > /dev/null ; then
@@ -1393,7 +1423,8 @@ process_public_files () {
     # Select the preferred authority in a given PKI realm (external, acme,
     # internal) and check all of the files, make sure that everything is in order
 
-    local authority_preference=( $(echo "${config['pki_authority_preference']}" | tr "/" " ") )
+    local authority_preference
+    read -r -a authority_preference <<< "$(echo "${config['pki_authority_preference']}" | tr "/" " ")"
 
     for authority in "${authority_preference[@]}" ; do
 
@@ -1542,7 +1573,8 @@ process_private_files () {
     current_umask="$(umask)"
     umask 027
 
-    local authority_preference=( $(echo "${config['pki_authority_preference']}" | tr "/" " ") )
+    local authority_preference
+    read -r -a authority_preference <<< "$(echo "${config['pki_authority_preference']}" | tr "/" " ")"
 
     for authority in "${authority_preference[@]}" ; do
 
@@ -1557,7 +1589,8 @@ process_private_files () {
                     fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
-                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        local private_file_acl_groups_r
+                        read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                             for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                 if getent group "${acl_group}" > /dev/null ; then
@@ -1582,7 +1615,8 @@ process_private_files () {
                         fi
                         install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
                         if type setfacl > /dev/null 2>&1 ; then
-                            local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                            local private_file_acl_groups_r
+                            read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                             if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                                 for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                     if getent group "${acl_group}" > /dev/null ; then
@@ -1604,7 +1638,8 @@ process_private_files () {
                     fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
-                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        local private_file_acl_groups_r
+                        read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                             for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                 if getent group "${acl_group}" > /dev/null ; then
@@ -1626,7 +1661,8 @@ process_private_files () {
                     fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
-                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        local private_file_acl_groups_r
+                        read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                             for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                 if getent group "${acl_group}" > /dev/null ; then
@@ -1652,7 +1688,8 @@ process_private_files () {
                     fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
-                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        local private_file_acl_groups_r
+                        read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                             for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                 if getent group "${acl_group}" > /dev/null ; then
@@ -1672,7 +1709,8 @@ process_private_files () {
                     fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
-                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        local private_file_acl_groups_r
+                        read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                             for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                 if getent group "${acl_group}" > /dev/null ; then
@@ -1688,7 +1726,8 @@ process_private_files () {
                     fi
                     install -g "${config['private_file_group']}" -m "${config['private_file_mode']}" /dev/null private/key_chain.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
-                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        local private_file_acl_groups_r
+                        read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                             for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                 if getent group "${acl_group}" > /dev/null ; then
@@ -1706,7 +1745,8 @@ process_private_files () {
                 if [ -r private/key_chain.pem.tmp ] ; then
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
-                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        local private_file_acl_groups_r
+                        read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                             for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                 if getent group "${acl_group}" > /dev/null ; then
@@ -1720,7 +1760,8 @@ process_private_files () {
                 elif [ ! -r private/key_chain_dhparam.pem ] && [ -r private/key_chain.pem ] ; then
                     install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
                     if type setfacl > /dev/null 2>&1 ; then
-                        local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                        local private_file_acl_groups_r
+                        read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                         if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                             for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                 if getent group "${acl_group}" > /dev/null ; then
@@ -1735,7 +1776,8 @@ process_private_files () {
                     if ! diff -q -N ${config['dhparam_file']} <( sed -n '/-----BEGIN DH PARAMETERS-----/,/-----END DH PARAMETERS-----/p' private/key_chain_dhparam.pem ) > /dev/null ; then
                         install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key_chain_dhparam.pem.tmp
                         if type setfacl > /dev/null 2>&1 ; then
-                            local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                            local private_file_acl_groups_r
+                            read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                             if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                                 for acl_group in "${private_file_acl_groups_r[@]}" ; do
                                     if getent group "${acl_group}" > /dev/null ; then
@@ -1970,7 +2012,7 @@ sub_new-realm () {
         local config_changed="false"
 
         for key in "${!args[@]}" ; do
-            if [ ! -z "${args[${key}]+x}" ] ; then
+            if [ -n "${args[${key}]+x}" ] ; then
                 if key_exists config "${key}" ; then
                     if [ "${config[${key}]}" != "${args[${key}]}" ] ; then
                         local config_changed="true"
@@ -2004,7 +2046,8 @@ sub_new-realm () {
         if [ ! -r private/key.pem ] ; then
             install -g ${config['private_file_group']} -m ${config['private_file_mode']} /dev/null private/key.pem.tmp
             if type setfacl > /dev/null 2>&1 ; then
-                local private_file_acl_groups_r=( $(echo "${config['private_file_acl_groups_r']}" | tr "/" " ") )
+                local private_file_acl_groups_r
+                read -r -a private_file_acl_groups_r <<< "$(echo "${config['private_file_acl_groups_r']}" | tr "/" " ")"
                 if [ ${#private_file_acl_groups_r[@]} -ne 0 ] ; then
                     for acl_group in "${private_file_acl_groups_r[@]}" ; do
                         if getent group "${acl_group}" > /dev/null ; then
@@ -2279,7 +2322,7 @@ sub_init () {
         local config_changed="false"
 
         for key in "${!args[@]}" ; do
-            if [ ! -z "${args[${key}]+x}" ] ; then
+            if [ -n "${args[${key}]+x}" ] ; then
                 if key_exists config "${key}" ; then
                     if [ "${config[${key}]}" != "${args[${key}]}" ] ; then
                         local config_changed="true"
@@ -2455,12 +2498,12 @@ sub_schedule () {
     if key_exists args "name" ; then
         schedule_job "${args['name']}" "${args['type']:-}" "${args['min_delay']:-}" "${args['max_delay']:-}"
     elif key_exists args "realm_dir" ; then
-        for realm in ${args['realm_dir']}/* ; do
+        for realm in "${args['realm_dir']}"/* ; do
             schedule_job "$(basename "${realm}")" "${args['type']:-}" "${args['min_delay']:-}" "${args['max_delay']:-}"
         done
     else
         if [ -d "${config['pki_realms']}" ] ; then
-            for realm in ${config['pki_realms']}/* ; do
+            for realm in "${config['pki_realms']}"/* ; do
                 schedule_job "$(basename "${realm}")" "${args['type']:-}" "${args['min_delay']:-}" "${args['max_delay']:-}"
             done
         fi

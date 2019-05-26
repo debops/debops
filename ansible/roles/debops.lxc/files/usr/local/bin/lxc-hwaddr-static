@@ -50,23 +50,23 @@ if [ -n "${CONTAINER}" ] ; then
 
                 # Generate random MAC address based on predictable seed
                 static_prefix="${MAC_LAA1[ $RANDOM % ${#MAC_LAA1[@]} ]}${MAC_LAA2[ $RANDOM % ${#MAC_LAA2[@]} ]}"
-                static_hwaddr="$(printf "%s" "${interface_seed}" | md5sum | sed "s/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/${static_prefix}:\1:\2:\3:\4:\5/")"
+                static_hwaddr="$(printf "%s" "${interface_seed}" | md5sum | sed "s/^\\(..\\)\\(..\\)\\(..\\)\\(..\\)\\(..\\).*$/${static_prefix}:\\1:\\2:\\3:\\4:\\5/")"
 
                 # Configure the generated MAC address for each network interface
                 # found in the container configuration file
-                printf "Setting a static MAC address for interface %s: %s\n" "${i}" "${static_hwaddr}"
+                printf "Setting a static MAC address for interface %s: %s\\n" "${i}" "${static_hwaddr}"
                 awk "/^lxc.network.type/{x++} x==${i}{sub(/lxc.network.type.*$/,\"&\\nlxc.network.hwaddr = ${static_hwaddr}\")}1" "${CONFIG}" > "${CONFIG}.tmp"
                 mv "${CONFIG}.tmp" "${CONFIG}"
 
             done
 
         else
-            printf "Configuration file '%s' already contains MAC addresses, skipping\n" "${CONFIG}"
+            printf "Configuration file '%s' already contains MAC addresses, skipping\\n" "${CONFIG}"
             exit 0
         fi
 
     else
-        printf "Warning: '%s' file not found, skipping\n" "${CONFIG}"
+        printf "Warning: '%s' file not found, skipping\\n" "${CONFIG}"
     fi
 else
     cat <<EOF
