@@ -9,7 +9,7 @@ system_functions="$(git config --global --get gitusers.system.functions)"
 # shellcheck disable=SC1090
 test -x "${system_functions}" && source "${system_functions}"
 
-permissions=( $(git config --global --get gitusers.permissions) )
+read -r -a permissions <<< "$(git config --global --get gitusers.permissions)"
 worktree="$(git config --get deploy.worktree)"
 public="$(git config --get deploy.public)"
 setup="$(git config --get deploy.setup)"

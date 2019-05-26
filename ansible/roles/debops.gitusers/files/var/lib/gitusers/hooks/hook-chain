@@ -12,7 +12,7 @@ hooktype=$(basename "$0")
 GIT_DIR="$(git rev-parse --git-dir)"
 
 if [ -e "${GIT_DIR}/hooks/${hooktype}.d" ] ; then
-  for hook in ${GIT_DIR}/hooks/${hooktype}.d/* ; do
+  for hook in "${GIT_DIR}"/hooks/"${hooktype}".d/* ; do
     test -x "${hook}" || continue
     echo "${data}" | "${hook}" "${params}"
     exitcodes+=($?)
