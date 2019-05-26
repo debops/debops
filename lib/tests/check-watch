@@ -11,7 +11,7 @@ set -o nounset -o pipefail -o errexit
 declare -a file_list
 
 if ! type uscan > /dev/null 2>&1 ; then
-    printf "%s\n" "Error: uscan not found. Install the devscripts APT package"
+    printf "%s\\n" "Error: uscan not found. Install the devscripts APT package"
     exit 1
 fi
 
@@ -28,10 +28,10 @@ while read -r in ; do
     fi
 done < <(find ansible/roles -type f -not -iwholename "./.git/*" -name "watch" -or -name "watch-*")
 
-printf " %s\n" "found ${#file_list[@]} watch files"
+printf " %s\\n" "found ${#file_list[@]} watch files"
 
-printf "%-30s %-20s %-15s %-10s\n" "Ansible role" "Package" "Current" "Upstream"
-printf "%$(tput cols)s\n" | tr ' ' '-'
+printf "%-30s %-20s %-15s %-10s\\n" "Ansible role" "Package" "Current" "Upstream"
+printf "%$(tput cols)s\\n" | tr ' ' '-'
 
 for watch_file in "${file_list[@]}" ; do
     watch_role="$(grep -E '^# Role:\s' "${watch_file}" | awk '{print $3}' || true)"
@@ -56,8 +56,8 @@ for watch_file in "${file_list[@]}" ; do
                         | awk '{print $10}' \
                         | sed -e 's/,//' || true)"
     if [ -n "${upstream_version}" ] ; then
-        printf "%-30s %-20s %-15s %-10s\n" "${watch_role}" "${watch_package}" "${role_version}" "${upstream_version}"
+        printf "%-30s %-20s %-15s %-10s\\n" "${watch_role}" "${watch_package}" "${role_version}" "${upstream_version}"
     else
-        printf "%-30s %-20s %-15s\n" "${watch_role}" "${watch_package}" "${role_version}"
+        printf "%-30s %-20s %-15s\\n" "${watch_role}" "${watch_package}" "${role_version}"
     fi
 done
