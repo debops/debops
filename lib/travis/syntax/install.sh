@@ -2,5 +2,6 @@
 
 set -o nounset -o pipefail -o errexit
 
-# Nothing to do
-true
+printf "pycodestyle %s\\n" "$(pycodestyle --version)"
+shellcheck --version
+yamllint --version
