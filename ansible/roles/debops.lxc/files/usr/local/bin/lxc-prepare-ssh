@@ -34,7 +34,7 @@ container_is_running () {
     local container
     container="${1}"
 
-    if [ "$(lxc-info -n "${container}" | grep -E "^State:\s" | awk '{print $2}')" = "RUNNING" ] ; then
+    if [ "$(lxc-info -n "${container}" | grep -E "^State:\\s" | awk '{print $2}')" = "RUNNING" ] ; then
         return 0
     else
         return 1
@@ -47,7 +47,7 @@ prepare_openssh () {
 
     if ! lxc-attach -n "${container}" -- test -x /usr/sbin/sshd ; then
         if lxc-attach -n "${container}" -- test -f /etc/debian_version ; then
-            printf "Installing OpenSSH service...\n"
+            printf "Installing OpenSSH service...\\n"
             lxc-attach -n "${container}" -- apt-get update
             lxc-attach -n "${container}" -- apt-get -y --no-install-recommends install openssh-server
         fi
@@ -68,7 +68,7 @@ prepare_authorized_keys () {
         lxc-attach -n "${container}" -- touch /root/.ssh/authorized_keys
         lxc-attach -n "${container}" -- chmod 0600 /root/.ssh/authorized_keys
     fi
-    printf "Adding authorized SSH keys from '%s'...\n" "${authorized_keys}"
+    printf "Adding authorized SSH keys from '%s'...\\n" "${authorized_keys}"
     for key_line in "${authorized_keys_content[@]}" ; do
         if ssh-keygen -l -f - <<< "${key_line}" > /dev/null ; then
             if ! lxc-attach -n "${container}" -- grep -Fxq "${key_line}" /root/.ssh/authorized_keys ; then
@@ -92,7 +92,7 @@ EOF
 }
 
 error_msg () {
-    printf "%s\n" "${*}" >&2
+    printf "%s\\n" "${*}" >&2
 }
 
 main () {
@@ -104,7 +104,7 @@ main () {
     if [ -n "${container}" ] ; then
         if container_exists "${container}" ; then
             if ! container_is_running "${container}" ; then
-                printf "Container '%s' is not running, starting...\n" "${container}"
+                printf "Container '%s' is not running, starting...\\n" "${container}"
 
                 if pidof systemd > /dev/null 2>&1 ; then
                     systemctl enable "lxc@${container}.service"
