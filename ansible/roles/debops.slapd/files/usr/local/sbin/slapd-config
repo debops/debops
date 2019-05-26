@@ -31,13 +31,13 @@ AUTHENTICATION="${AUTHENTICATION:--Q -H ldapi:/// -Y EXTERNAL}"
 
 
 # detect base64 encoder/decoder
-if which base64 &>/dev/null; then
+if type base64 &>/dev/null; then
 	B64ENC=( base64 )
 	B64DEC=( base64 -d )
-elif which openssl &>/dev/null; then
+elif type openssl &>/dev/null; then
 	B64ENC=( openssl base64 )
 	B64DEC=( openssl base64 -d )
-elif which recode &>/dev/null; then
+elif type recode &>/dev/null; then
 	B64ENC=( recode ..base64 )
 	B64DEC=( recode base64.. )
 else
@@ -90,7 +90,7 @@ values2LDIF()
 
 	while read -r line; do
 		# insert line break
-		[ $i -eq 0 ] || values="$values\n"
+		[ $i -eq 0 ] || values="$values\\n"
 
 		# add numeric indices to lines of values unless disabled
 		[ "${2}" = "nonumbers" ] || line="{$i}${line}"
@@ -203,7 +203,7 @@ schema2CN()
 
 	grep -E '^[1-9][0-9]*$' <<<"$name" &>/dev/null && index="$((name-1))" || index="x"
 
-	cn=$(findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed "/^dn: cn={$index}.\|}$name,cn=schema,cn=config\$/!d;s/^[^{]\+\({[^,]\+\),cn=schema,cn=config\$/\1/")
+	cn=$(findEntries -dn 'cn=schema,cn=config' 'objectClass=*' dn -s one | sed "/^dn: cn={$index}.\\|}$name,cn=schema,cn=config\$/!d;s/^[^{]\\+\\({[^,]\\+\\),cn=schema,cn=config\$/\\1/")
 
 	# shellcheck disable=SC2181
 	if [ $? -ne 0 ] || [ -z "$cn" ]; then
@@ -275,22 +275,22 @@ schemaFileToLDIF()
 			ruletype="${rule%% *}"
 			case "${ruletype,,}" in
 				objectidentifier)
-					[ $iidx -eq 0 ] || iline="${iline}\n"
+					[ $iidx -eq 0 ] || iline="${iline}\\n"
 					iline="${iline}olcObjectIdentifier: {$iidx}${rule#* }"
 					iidx=$((iidx+1))
 					;;
 				attributetype)
-					[ $aidx -eq 0 ] || aline="${aline}\n"
+					[ $aidx -eq 0 ] || aline="${aline}\\n"
 					aline="${aline}olcAttributeTypes: {$aidx}${rule#* }"
 					aidx=$((aidx+1))
 					;;
 				objectclass)
-					[ $oidx -eq 0 ] || cline="${cline}\n"
+					[ $oidx -eq 0 ] || cline="${cline}\\n"
 					cline="${cline}olcObjectClasses: {$oidx}${rule#* }"
 					oidx=$((oidx+1))
 					;;
 				*)
-					echo -e "invalid rule in schema file:\n$rule" >&2
+					echo -e "invalid rule in schema file:\\n$rule" >&2
 					exit 2
 			esac
 		done
@@ -562,27 +562,27 @@ actions are:
 				EOT
 				;;
 			"read")
-				[ $# -lt 2 ] && usage <<<"usage: $APPNAME raw read <DN> <attr>\n"
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME raw read <DN> <attr>\\n"
 				readAttribute "$@"
 				;;
 			write)
-				[ $# -lt 2 ] && usage <<<"usage: $APPNAME raw write <DN> <attr> [ nonumbers ]\n       (providing value lines on stdin)\n"
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME raw write <DN> <attr> [ nonumbers ]\\n       (providing value lines on stdin)\\n"
 				writeAttribute "$@"
 				;;
 			insert)
-				[ $# -lt 4 ] && usage <<<"usage: $APPNAME raw insert <DN> <attr> <linenum> \"<value>\" [ nonumbers ]\n"
+				[ $# -lt 4 ] && usage <<<"usage: $APPNAME raw insert <DN> <attr> <linenum> \"<value>\" [ nonumbers ]\\n"
 				insertAttributeLine "$@"
 				;;
 			delete)
-				[ $# -lt 3 ] && usage <<<"usage: $APPNAME raw delete <DN> <attr> <linenum> [ nonumbers ]\n"
+				[ $# -lt 3 ] && usage <<<"usage: $APPNAME raw delete <DN> <attr> <linenum> [ nonumbers ]\\n"
 				deleteAttributeLine "$@"
 				;;
 			list)
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME raw list <baseDN> [ one | sub ]\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME raw list <baseDN> [ one | sub ]\\n"
 				listEntries "$@"
 				;;
 			show)
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME raw show <DN>\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME raw show <DN>\\n"
 				showEntry "$@"
 				;;
 			*)
@@ -611,19 +611,19 @@ actions are:
 				listSchemata "$@"
 				;;
 			exists)
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema exists <schema>\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema exists <schema>\\n"
 				testSchema "$@"
 				;;
 			"read")
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema read <schema>\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema read <schema>\\n"
 				readSchema "$@"
 				;;
 			write)
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema write <schema> \"<\" <file>\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema write <schema> \"<\" <file>\\n"
 				writeSchema "$@"
 				;;
 			delete)
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema delete <schema>\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME schema delete <schema>\\n"
 				deleteSchema "$@"
 				;;
 			*)
@@ -661,42 +661,42 @@ actions are:
 				listAllDatabases "$@"
 				;;
 			show)
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db show <dbname>\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db show <dbname>\\n"
 				findEntries -dn "$(DBName2DN "${1}")"
 				;;
 			read)
-				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db read <dbname> <attr>\n"
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db read <dbname> <attr>\\n"
 				readAttribute "$(DBName2DN "${1}")" "${2}"
 				;;
 			write)
-				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db write <dbname> <attr> [ nonumbers ]\n       (providing value lines on stdin)\n"
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db write <dbname> <attr> [ nonumbers ]\\n       (providing value lines on stdin)\\n"
 				# shellcheck disable=SC2086
 				writeAttribute "$(DBName2DN "${1}")" "${2}" ${3}
 				;;
 			insert)
-				[ $# -lt 4 ] && usage <<<"usage: $APPNAME db insert <dbname> <attr> <linenum> \"<value>\" [ nonumbers ]\n"
+				[ $# -lt 4 ] && usage <<<"usage: $APPNAME db insert <dbname> <attr> <linenum> \"<value>\" [ nonumbers ]\\n"
 				# shellcheck disable=SC2086
 				insertAttributeLine "$(DBName2DN "${1}")" "${2}" "${3}" "${4}" ${5}
 				;;
 			delete)
-				[ $# -lt 3 ] && usage <<<"usage: $APPNAME db delete <dbname> <attr> <linenum> [ nonumbers ]\n"
+				[ $# -lt 3 ] && usage <<<"usage: $APPNAME db delete <dbname> <attr> <linenum> [ nonumbers ]\\n"
 				# shellcheck disable=SC2086
 				deleteAttributeLine "$(DBName2DN "${1}")" "${2}" "${3}" ${4}
 				;;
 			read-access)
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db read-access <dbname>\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db read-access <dbname>\\n"
 				readAttribute "$(DBName2DN "${1}")" olcAccess
 				;;
 			write-access)
-				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db write-access <dbname>\n"
+				[ $# -lt 1 ] && usage <<<"usage: $APPNAME db write-access <dbname>\\n"
 				writeAttribute "$(DBName2DN "${1}")" olcAccess
 				;;
 			insert-access)
-				[ $# -lt 3 ] && usage <<<"usage: $APPNAME db insert-access <dbname> <ruleindex> \"<rule>\"\n"
+				[ $# -lt 3 ] && usage <<<"usage: $APPNAME db insert-access <dbname> <ruleindex> \"<rule>\"\\n"
 				insertAttributeLine "$(DBName2DN "${1}")" olcAccess "${2}" "${3}"
 				;;
 			delete-access)
-				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db delete-access <dbname> <ruleindex>\n"
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME db delete-access <dbname> <ruleindex>\\n"
 				deleteAttributeLine "$(DBName2DN "${1}")" olcAccess "${2}"
 				;;
 			*)
@@ -720,7 +720,7 @@ actions are:
 				EOT
 				;;
 			write)
-				[ $# -lt 2 ] && usage <<<"usage: $APPNAME ssl write <cert-filename> <key-filename> [ <ca-cert-filename> ]\n"
+				[ $# -lt 2 ] && usage <<<"usage: $APPNAME ssl write <cert-filename> <key-filename> [ <ca-cert-filename> ]\\n"
 				writeSslCertificate "$@"
 				;;
 			delete)

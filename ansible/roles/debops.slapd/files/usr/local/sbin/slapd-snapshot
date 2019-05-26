@@ -121,7 +121,7 @@ enable_read_only_mode () {
 
     slapd_databases=( "${SLAPD_DATABASES[@]}" )
     db="${1}"
-    db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+    db_id="$(printf "%s\\n" "${slapd_databases[${db}]}" \
              | awk -F '[{}]' '{print $2}')"
 
     if [ "${db_id}" -ne 0 ] ; then
@@ -144,7 +144,7 @@ disable_read_only_mode () {
 
     slapd_databases=( "${SLAPD_DATABASES[@]}" )
     db="${1}"
-    db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+    db_id="$(printf "%s\\n" "${slapd_databases[${db}]}" \
              | awk -F '[{}]' '{print $2}')"
 
     if [ "${db_id}" -ne 0 ] ; then
@@ -188,7 +188,7 @@ create_snapshot () {
     backup_file="${2}"
     backup_dir="$(dirname "${backup_file}")"
 
-    db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+    db_id="$(printf "%s\\n" "${slapd_databases[${db}]}" \
              | awk -F '[{}]' '{print $2}')"
 
     if [ ! -d "${backup_dir}" ] ; then
@@ -229,7 +229,7 @@ snapshot_daily () {
     weekday="$(date +%A)"
 
     for db in "${!slapd_databases[@]}" ; do
-        db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+        db_id="$(printf "%s\\n" "${slapd_databases[${db}]}" \
                  | awk -F '[{}]' '{print $2}')"
 
         backup_file="${backup_root}/daily/slapd_day${day}_${weekday}_db${db_id}.ldif"
@@ -255,7 +255,7 @@ snapshot_weekly () {
     week="$(( ( $(date +%_d) - 1 ) / 7 + 1 ))"
 
     for db in "${!slapd_databases[@]}" ; do
-        db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+        db_id="$(printf "%s\\n" "${slapd_databases[${db}]}" \
                  | awk -F '[{}]' '{print $2}')"
 
         backup_file="${backup_root}/weekly/slapd_week${week}_db${db_id}.ldif"
@@ -282,7 +282,7 @@ snapshot_monthly () {
     month_name="$(date +%B)"
 
     for db in "${!slapd_databases[@]}" ; do
-        db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+        db_id="$(printf "%s\\n" "${slapd_databases[${db}]}" \
                  | awk -F '[{}]' '{print $2}')"
 
         backup_file="${backup_root}/monthly/slapd_month${month}_${month_name}_db${db_id}.ldif"
@@ -312,7 +312,7 @@ snapshot_latest () {
     fi
 
     for db in "${!slapd_databases[@]}" ; do
-        db_id="$(printf "%s\n" "${slapd_databases[${db}]}" \
+        db_id="$(printf "%s\\n" "${slapd_databases[${db}]}" \
                  | awk -F '[{}]' '{print $2}')"
 
         backup_file="${backup_root}/latest/slapd_${current_date}_db${db_id}.ldif"
