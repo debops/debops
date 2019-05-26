@@ -73,7 +73,7 @@ else
     if [ -z "${hwaddr}" ] ; then
         # Create random but predictable MAC address
         static_hwaddr="$(echo "$(hostname -f)${INTERFACE}" | md5sum \
-                         | sed "s/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/${hwaddr_prefix}:\1:\2:\3:\4:\5/")"
+                         | sed "s/^\\(..\\)\\(..\\)\\(..\\)\\(.\\)\\(..\\).*$/${hwaddr_prefix}:\\1:\\2:\\3:\\4:\\5/")"
     fi
 
     if [ "${hwaddr}" = "*" ] ; then
@@ -102,7 +102,7 @@ else
         fi
         if [ -n "${resolvconf_config}" ] ; then
             if type resolvconf > /dev/null 2>&1 ; then
-                printf "%s\n" "${resolvconf_config}" | resolvconf -a "${INTERFACE}.inet"
+                printf "%s\\n" "${resolvconf_config}" | resolvconf -a "${INTERFACE}.inet"
             fi
         fi
 
