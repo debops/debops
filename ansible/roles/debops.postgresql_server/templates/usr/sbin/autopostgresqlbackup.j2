@@ -368,7 +368,7 @@ if [ "$DBNAMES" = "all" ]; then
   for exclude in $DBEXCLUDE
   do
     # shellcheck disable=SC2001
-    DBNAMES=$(echo "$DBNAMES" | sed "s/\b$exclude\b//g")
+    DBNAMES=$(echo "$DBNAMES" | sed "s/\\b$exclude\\b//g")
   done
   DBNAMES="$(echo "$DBNAMES" | tr '\n' ' ')"
   MDBNAMES=$DBNAMES
@@ -429,7 +429,7 @@ echo ======================================================================
 
   # Weekly Backup
   if [ "$DNOW" = "$DOWEEKLY" ]; then
-    echo "Weekly Backup of Database \( $DB \)"
+    echo "Weekly Backup of Database \\( $DB \\)"
     echo Rotating 5 weeks Backups...
       if [ "$W" -le 05 ];then
         REMW=$(( 48 + W ))
@@ -448,7 +448,7 @@ echo ======================================================================
 
   # Daily Backup
   else
-    echo "Daily Backup of Database \( $DB \)"
+    echo "Daily Backup of Database \\( $DB \\)"
     echo Rotating last weeks Backup...
     rm -fv "$BACKUPDIR/daily/$DB"/*."$DOW"."$EXT".*
     echo
@@ -467,7 +467,7 @@ echo "Backup Start $(date)"
 echo ======================================================================
   # Monthly Full Backup of all Databases
   if [ "$DOM" = "01" ]; then
-    echo "Monthly full Backup of \( $MDBNAMES \)..."
+    echo "Monthly full Backup of \\( $MDBNAMES \\)..."
       dbdump "$MDBNAMES" "$BACKUPDIR/monthly/$DATE.$M.all-databases.$EXT"
       compression "$BACKUPDIR/monthly/$DATE.$M.all-databases.$EXT"
       BACKUPFILES="$BACKUPFILES $BACKUPDIR/monthly/$DATE.$M.all-databases.$EXT$SUFFIX*"
@@ -476,7 +476,7 @@ echo ======================================================================
 
   # Weekly Backup
   if [ "$DNOW" = "$DOWEEKLY" ]; then
-    echo "Weekly Backup of Databases \( $DBNAMES \)"
+    echo "Weekly Backup of Databases \\( $DBNAMES \\)"
     echo
     echo Rotating 5 weeks Backups...
       if [ "$W" -le 05 ];then
@@ -496,7 +496,7 @@ echo ======================================================================
 
   # Daily Backup
   else
-    echo "Daily Backup of Databases \( $DBNAMES \)"
+    echo "Daily Backup of Databases \\( $DBNAMES \\)"
     echo
     echo Rotating last weeks Backup...
     rm -fv "$BACKUPDIR"/daily/*."$DOW"."$EXT".*
@@ -544,17 +544,17 @@ then
   ATTSIZE=$(du -c $BACKUPFILES | grep "[[:digit:][:space:]]total$" |sed 's/\s*total//')
   if [ "$MAXATTSIZE" -ge "$ATTSIZE" ]
   then
-    if which biabam >/dev/null 2>&1
+    if type biabam >/dev/null 2>&1
     then
       # shellcheck disable=SC2001 disable=SC2086
       BACKUPFILES=$(echo $BACKUPFILES | sed -r -e 's#\s+#,#g')
       biabam -s "PostgreSQL Backup Log and SQL Files for $HOST - $DATE" "$BACKUPFILES" "$MAILADDR" < "$LOGFILE"
-    elif which heirloom-mailx >/dev/null 2>&1
+    elif type heirloom-mailx >/dev/null 2>&1
     then
       # shellcheck disable=SC2001 disable=SC2086
       BACKUPFILES=$(echo $BACKUPFILES | sed -e 's# # -a #g')
       heirloom-mailx -s "PostgreSQL Backup Log and SQL Files for $HOST - $DATE" "$BACKUPFILES" "$MAILADDR" < "$LOGFILE"
-    elif which mutt >/dev/null 2>&1
+    elif type mutt >/dev/null 2>&1
     then
       # shellcheck disable=SC2001 disable=SC2086
       BACKUPFILES=$(echo $BACKUPFILES | sed -e 's# # -a #g')
