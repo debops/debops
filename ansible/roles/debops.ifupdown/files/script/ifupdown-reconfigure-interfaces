@@ -152,9 +152,9 @@ interface_down () {
         local -a if_hotplug_interfaces
         local -a if_boot_interfaces
         local -a systemd_ifup_instances
-        if_hotplug_interfaces=( $(ifquery --list --allow=hotplug) )
-        if_boot_interfaces=( $(ifquery --list --allow=boot) )
-        systemd_ifup_instances=( $(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//') )
+        mapfile -t if_hotplug_interfaces < <(ifquery --list --allow=hotplug)
+        mapfile -t if_boot_interfaces < <(ifquery --list --allow=boot)
+        mapfile -t systemd_ifup_instances < <(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//')
 
         if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
             systemctl stop "ifup@${1}.service"
@@ -176,8 +176,8 @@ interface_up () {
 
     local -a if_hotplug_interfaces
     local -a if_boot_interfaces
-    if_hotplug_interfaces=( $(ifquery --list --allow=hotplug) )
-    if_boot_interfaces=( $(ifquery --list --allow=boot) )
+    mapfile -t if_hotplug_interfaces < <(ifquery --list --allow=hotplug)
+    mapfile -t if_boot_interfaces < <(ifquery --list --allow=boot)
 
     if is_systemd ; then
         if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
@@ -202,8 +202,8 @@ if [ -d "${interface_request_path}" ] ; then
     declare -a created_interfaces
     declare -a removed_interfaces
 
-    changed_interfaces=( $(find "${interface_request_path}" -type f -name "${interface_request_prefix},*" | sed -e "s#^${interface_request_path}/${interface_request_prefix},##" | sort -n)  )
-    changed_interface_names=( $(find "${interface_request_path}" -type f -name "${interface_request_prefix},*" | sed -e "s#^${interface_request_path}/${interface_request_prefix},##" | sort -n | sed -e 's/^.*\,//')  )
+    mapfile -t changed_interfaces < <(find "${interface_request_path}" -type f -name "${interface_request_prefix},*" | sed -e "s#^${interface_request_path}/${interface_request_prefix},##" | sort -n)
+    mapfile -t changed_interface_names < <(find "${interface_request_path}" -type f -name "${interface_request_prefix},*" | sed -e "s#^${interface_request_path}/${interface_request_prefix},##" | sort -n | sed -e 's/^.*\,//')
 
     if [ ${#changed_interfaces[@]} -gt 0 ]; then
 
@@ -223,8 +223,8 @@ if [ -d "${interface_request_path}" ] ; then
         declare -a systemd_iface_instances
         declare -a systemd_interface_instances
         if is_systemd ; then
-            systemd_ifup_instances=( $(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//') )
-            systemd_iface_instances=( $(systemctl list-units --no-legend --state=active 'iface@*.service' | awk '{print $1}' | sed -e 's/^iface\@//' -e 's/\.service$//') )
+            mapfile -t systemd_ifup_instances < <(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//')
+            mapfile -t systemd_iface_instances < <(systemctl list-units --no-legend --state=active 'iface@*.service' | awk '{print $1}' | sed -e 's/^iface\@//' -e 's/\.service$//')
 
             if [ ${#systemd_ifup_instances[@]} -gt 0 ]; then
                 log_message -m "Found active systemd ifup@ instances: $(join_by ',' "${systemd_ifup_instances[@]}")"
