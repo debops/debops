@@ -24,10 +24,10 @@ KEYS=""
 smsd_user="smsd"
 
 # Will need echo which accepts -n argument:
-ECHO=echo
+ECHO="echo"
 case $(uname) in
   SunOS)
-    ECHO=/usr/ucb/echo
+    ECHO="/usr/ucb/echo"
     ;;
 esac
 
@@ -82,7 +82,7 @@ echo "-- "
 echo "Text: $TEXT"
 
 ALPHABET=""
-if which iconv > /dev/null 2>&1; then
+if type iconv > /dev/null 2>&1; then
   if ! $ECHO -n "$TEXT" | iconv -t ISO-8859-15 >/dev/null 2>&1; then
     ALPHABET="Alphabet: UCS"
   fi
