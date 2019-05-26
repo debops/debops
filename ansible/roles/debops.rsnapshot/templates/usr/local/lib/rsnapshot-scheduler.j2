@@ -139,10 +139,10 @@ run_backup () {
 
     if [ -r "${config}" ] ; then
 
-        sync_first=( $(grep -E "^sync_first\s+1" "${config}") )
-        retain_first=( $(grep -E "^retain\s+" "${config}" | awk '{print $2}' | head -n 1) )
-        retain_name=( $(grep -E "^retain\s+${backup_level}\s+" "${config}" | awk '{print $2}' | head -n 1) )
-        lockfile=( $(grep -E "^lockfile\s+" "${config}" | awk '{print $2}' | head -n 1) )
+        read -r -a sync_first <<< "$(grep -E "^sync_first\\s+1" "${config}")"
+        read -r -a retain_first <<< "$(grep -E "^retain\\s+" "${config}" | awk '{print $2}' | head -n 1)"
+        read -r -a retain_name <<< "$(grep -E "^retain\\s+${backup_level}\\s+" "${config}" | awk '{print $2}' | head -n 1)"
+        read -r -a lockfile <<< "$(grep -E "^lockfile\\s+" "${config}" | awk '{print $2}' | head -n 1)"
 
         if [ "${retain_name[*]}" == "${backup_level[*]}" ] ; then
 
@@ -221,7 +221,8 @@ prepare_backup () {
 
     if [ -r "${config}" ] ; then
 
-        local retain_name=( $(grep -E "^retain\s+${backup_level}\s+" "${config}" | awk '{print $2}' | head -n 1) )
+        local retain_name
+        read -r -a retain_name <<< "$(grep -E "^retain\\s+${backup_level}\\s+" "${config}" | awk '{print $2}' | head -n 1)"
 
         if [ "${retain_name[*]}" == "${backup_level}" ] ; then
 
@@ -272,7 +273,8 @@ schedule_backup () {
         prepare_backup "${backup_level}" "${host}"
 
     elif [ "${host}" == "all" ] ; then
-        local random_hosts=( $(find "${scheduler_hosts_dir}" -maxdepth 1 -mindepth 1 -type d -printf "%f\n" | sort -R | xargs) )
+        local random_hosts
+        read -r -a random_hosts <<< "$(find "${scheduler_hosts_dir}" -maxdepth 1 -mindepth 1 -type d -printf "%f\\n" | sort -R | xargs)"
         for name in "${random_hosts[@]}" ; do
             prepare_backup "${backup_level}" "$(basename "${name}")"
         done
