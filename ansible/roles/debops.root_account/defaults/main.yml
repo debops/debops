@@ -19,10 +19,29 @@
 root_account__enabled: True
 
                                                                    # ]]]
+# .. envvar:: root_account__shell_package_map [[[
+#
+# YAML dictionary that maps known shells used in the :file:`/etc/passwd`
+# database to the APT packages with these shells. The role will install missing
+# shell packages if the ``root`` account uses them as their login shell.
+root_account__shell_package_map:
+  '/bin/bash':     'bash'
+  '/bin/csh':      'csh'
+  '/usr/bin/fish': 'fish'
+  '/bin/ksh':      'ksh'
+  '/bin/zsh':      'zsh'
+
+                                                                   # ]]]
 # .. envvar:: root_account__base_packages [[[
 #
 # List of APT packages required by the role.
 root_account__base_packages: [ 'openssh-client' ]
+
+                                                                   # ]]]
+# .. envvar:: root_account__shell_packages [[[
+#
+# List of login shell APT packages expected on the host.
+root_account__shell_packages: '{{ lookup("template", "lookup/root_account__shell_packages.j2") }}'
 
                                                                    # ]]]
 # .. envvar:: root_account__packages [[[
