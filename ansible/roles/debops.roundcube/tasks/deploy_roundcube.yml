@@ -150,9 +150,11 @@
   command: bin/install-jsdeps.sh
   args:
     chdir: '{{ roundcube__git_checkout }}'
-    creates: 'program/js/jquery.min.js'
   become: True
   become_user: '{{ roundcube__user }}'
+  # The script does not have any useful status output
+  # FIXME: Find better way to make this task idempotent
+  changed_when: False
 
 - name: Enable cleandb.sh Cron job
   cron:
