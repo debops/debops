@@ -12,10 +12,16 @@
   notify: [ 'Check opendkim and restart' ]
   when: ansible_pkg_mgr == 'apt'
 
-- name: Divert original OpenDKIM configuration
+- name: Divert original OpenDKIM configuration from /etc
   command: dpkg-divert --quiet --local --divert /etc/opendkim.conf.dpkg-divert --rename /etc/opendkim.conf
   args:
     creates: '/etc/opendkim.conf.dpkg-divert'
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Divert original OpenDKIM configuration from /etc/default
+  command: dpkg-divert --quiet --local --divert /etc/default/opendkim.conf.dpkg-divert --rename /etc/default/opendkim.j2
+  args:
+    creates: '/etc/default/opendkim.conf.dpkg-divert'
   when: ansible_pkg_mgr == 'apt'
 
 - name: Make sure Ansible local facts directory exists
@@ -39,10 +45,19 @@
   action: setup
   when: opendkim__register_facts is changed
 
-- name: Generate OpenDKIM configuration
+- name: Generate OpenDKIM configuration from /etc
   template:
     src: 'etc/opendkim.conf.j2'
     dest: '/etc/opendkim.conf'
+    owner: 'root'
+    group: '{{ opendkim__group }}'
+    mode: '0640'
+  notify: [ 'Check opendkim and reload' ]
+
+- name: Generate OpenDKIM configuration from /etc/default
+  template:
+    src: 'etc/default/opendkim.j2'
+    dest: '/etc/default/opendkim'
     owner: 'root'
     group: '{{ opendkim__group }}'
     mode: '0640'
@@ -57,7 +72,7 @@
     mode: '0755'
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ])
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ])
 
 - name: Fix OpenDKIM issues with systemd
   template:
@@ -70,14 +85,14 @@
   notify: [ 'Check opendkim and reload' ]
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ])
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ])
 
 - name: Update systemd runtime configuration
   systemd:
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] and
+         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ] and
          opendkim__register_pid_socket is changed)
 
 - name: Ensure that DomainKey directory exists
