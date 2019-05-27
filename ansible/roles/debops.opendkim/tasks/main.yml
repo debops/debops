@@ -12,16 +12,11 @@
   notify: [ 'Check opendkim and restart' ]
   when: ansible_pkg_mgr == 'apt'
 
-- name: Divert original OpenDKIM configuration from /etc
-  command: dpkg-divert --quiet --local --divert /etc/opendkim.conf.dpkg-divert --rename /etc/opendkim.conf
+- name: Divert original OpenDKIM configuration
+  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}
   args:
-    creates: '/etc/opendkim.conf.dpkg-divert'
-  when: ansible_pkg_mgr == 'apt'
-
-- name: Divert original OpenDKIM configuration from /etc/default
-  command: dpkg-divert --quiet --local --divert /etc/default/opendkim.conf.dpkg-divert --rename /etc/default/opendkim.j2
-  args:
-    creates: '/etc/default/opendkim.conf.dpkg-divert'
+    creates: '{{ item }}.dpkg-divert'
+  loop: [ '/etc/opendkim.conf', '/etc/default/opendkim' ]
   when: ansible_pkg_mgr == 'apt'
 
 - name: Make sure Ansible local facts directory exists
@@ -58,9 +53,7 @@
   template:
     src: 'etc/default/opendkim.j2'
     dest: '/etc/default/opendkim'
-    owner: 'root'
-    group: '{{ opendkim__group }}'
-    mode: '0640'
+    mode: '0644'
   notify: [ 'Check opendkim and reload' ]
 
 - name: Ensure that opendkim.service.d directory exists
