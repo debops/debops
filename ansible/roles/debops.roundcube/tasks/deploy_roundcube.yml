@@ -152,6 +152,9 @@
     chdir: '{{ roundcube__git_checkout }}'
   become: True
   become_user: '{{ roundcube__user }}'
+  # The script does not have any useful status output
+  # FIXME: Find better way to make this task idempotent
+  changed_when: False
 
 - name: Enable cleandb.sh Cron job
   cron:
