@@ -39,6 +39,11 @@ Changed
 
   .. __: https://github.com/koalaman/shellcheck#installing-a-pre-compiled-binary
 
+- The :command:`zsh` shell APT package will be installed only if the :ref:`root
+  account <debops.root_account>`, :ref:`any system users <debops.system_users>`
+  or :ref:`regular users <debops.users>` managed by Ansible are using it as
+  a login shell.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------

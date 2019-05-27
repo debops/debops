@@ -1,0 +1,7 @@
+{% set root_account__tpl_shells = [] %}
+{% if root_account__shell|d() %}
+{%   if root_account__shell in root_account__shell_package_map.keys() %}
+{%     set _ = root_account__tpl_shells.append(root_account__shell_package_map[root_account__shell]) %}
+{%   endif %}
+{% endif %}
+{{ root_account__tpl_shells | to_json }}
