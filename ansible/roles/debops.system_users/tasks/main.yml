@@ -270,7 +270,7 @@
   become_user: '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
   check_mode: False
   register: system_users__register_dotfiles
-  changed_when: ('Already up-to-date.' not in system_users__register_dotfiles.stdout_lines)
+  changed_when: ('Already up to date.' not in system_users__register_dotfiles.stdout_lines|regex_replace('-', ' '))
   when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
          (item.dotfiles | d(item.dotfiles_enabled | d(system_users__dotfiles_enabled))) | bool and
