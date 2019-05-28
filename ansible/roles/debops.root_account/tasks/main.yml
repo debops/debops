@@ -113,7 +113,7 @@
         yadm pull
     fi
   register: root_account__register_dotfiles
-  changed_when: ('Already up-to-date.' not in root_account__register_dotfiles.stdout_lines)
+  changed_when: ('Already up to date.' not in root_account__register_dotfiles.stdout_lines|regex_replace('-', ' '))
   when: root_account__dotfiles_enabled|bool
   check_mode: False
 

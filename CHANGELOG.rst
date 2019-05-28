@@ -25,6 +25,10 @@ Fixed
   not include a ``server_name`` option in a :command:`nginx` server
   configuration.
 
+- [debops.root_account][debops.system_users][debops.users] Fix idempotency
+  issue with :command:`yadm` updating repositories on newer OS releases with
+  changed :command:`git` output.
+
 
 `debops v1.0.1`_ - 2019-05-23
 -----------------------------
