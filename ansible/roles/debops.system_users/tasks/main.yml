@@ -14,7 +14,7 @@
     system_users__fact_self_comment: '{{ (system_users__register_passwd.stdout|from_json)[system_users__self_name][3] }}'
     system_users__fact_self_shell: '{{ (system_users__register_passwd.stdout|from_json)[system_users__self_name][5] }}'
 
-- name: Ensure that reqired packages are installed
+- name: Ensure that required packages are installed
   package:
     name: '{{ q("flattened", (system_users__base_packages
                               + system_users__shell_packages
