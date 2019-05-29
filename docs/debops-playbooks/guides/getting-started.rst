@@ -265,7 +265,7 @@ Bootstrap a new host
 
 .. warning::
 
-  Bootstrapping a host without a configured ``bootstrap_domain`` will result in
+  Bootstrapping a host without a configured ``netbase__domain`` will result in
   a broken host configuration.
 
 At this point you most likely have to connect to that host using the ``root``
