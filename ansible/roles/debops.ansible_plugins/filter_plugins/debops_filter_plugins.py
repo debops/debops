@@ -215,9 +215,12 @@ def parse_kv_config(*args, **kwargs):
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
 
-                merge_keys = ['options']
+                merge_keys = []
                 if isinstance(kwargs.get('merge_keys'), list):
                     merge_keys.extend(kwargs.get('merge_keys'))
+
+                if 'options' not in merge_keys:
+                    merge_keys.append('options')
 
                 for key_name in merge_keys:
                     if key_name in element:
@@ -301,8 +304,10 @@ def parse_kv_items(*args, **kwargs):
     """
     empty = kwargs.get('empty', {})
     defaults = kwargs.get('defaults', {})
-    merge_keys = set(kwargs.get('merge_keys', set()))
-    merge_keys.add('options')
+    merge_keys = list(set(kwargs.get('merge_keys', set())))
+
+    if 'options' not in merge_keys:
+        merge_keys.append('options')
 
     input_args = []
 
