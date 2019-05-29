@@ -1,7 +1,7 @@
 # A set of custom Ansible filter plugins used by DebOps
 
-# Copyright (C) 2017-2018 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2019 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2017-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019      Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2017-2019 DebOps https://debops.org/
 
 
@@ -314,7 +314,15 @@ def parse_kv_items(*args, **kwargs):
 
     for element_index, element in enumerate(input_args):
 
-        element_state = element.get('state', 'present')
+        if isinstance(element, dict):
+            element_state = element.get('state', 'present')
+        elif isinstance(element, (basestring)):
+
+            # This is a simple string, let's make it a dictionary so that it
+            # can be correctly processed.
+            # We assume that the string should be a 'name' parameter.
+            element = {'name': element}
+            element_state = 'present'
 
         if isinstance(element, dict):
             if (any(x in ['name'] for x in element) and
@@ -513,6 +521,27 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_simple_string(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - 'simple_string'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: simple_string
+              real_weight: 0
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items)
 
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
