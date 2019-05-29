@@ -1,7 +1,7 @@
 # A set of custom Ansible filter plugins used by DebOps
 
-# Copyright (C) 2017-2018 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2019 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2017-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019      Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2017-2019 DebOps https://debops.org/
 
 
@@ -215,9 +215,12 @@ def parse_kv_config(*args, **kwargs):
                 if 'comment' in element:
                     current_param['comment'] = element.get('comment')
 
-                merge_keys = ['options']
+                merge_keys = []
                 if isinstance(kwargs.get('merge_keys'), list):
                     merge_keys.extend(kwargs.get('merge_keys'))
+
+                if 'options' not in merge_keys:
+                    merge_keys.append('options')
 
                 for key_name in merge_keys:
                     if key_name in element:
@@ -301,8 +304,10 @@ def parse_kv_items(*args, **kwargs):
     """
     empty = kwargs.get('empty', {})
     defaults = kwargs.get('defaults', {})
-    merge_keys = set(kwargs.get('merge_keys', set()))
-    merge_keys.add('options')
+    merge_keys = list(set(kwargs.get('merge_keys', set())))
+
+    if 'options' not in merge_keys:
+        merge_keys.append('options')
 
     input_args = []
 
@@ -314,7 +319,15 @@ def parse_kv_items(*args, **kwargs):
 
     for element_index, element in enumerate(input_args):
 
-        element_state = element.get('state', 'present')
+        if isinstance(element, dict):
+            element_state = element.get('state', 'present')
+        elif isinstance(element, (basestring)):
+
+            # This is a simple string, let's make it a dictionary so that it
+            # can be correctly processed.
+            # We assume that the string should be a 'name' parameter.
+            element = {'name': element}
+            element_state = 'present'
 
         if isinstance(element, dict):
             if (any(x in ['name'] for x in element) and
@@ -382,7 +395,8 @@ def parse_kv_items(*args, **kwargs):
 
                 # Include any unknown keys.
                 for unknown_key in element.keys():
-                    if unknown_key not in known_keys:
+                    if (unknown_key not in known_keys and
+                            unknown_key not in merge_keys):
                         current_param[unknown_key] = element.get(unknown_key)
 
                 # Fill any empty keys using other keys.
@@ -519,6 +533,27 @@ if __name__ == '__main__':
 
             self.assertEqual(items, expected_items)
 
+        def test_parse_kv_items_simple_string(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - 'simple_string'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: simple_string
+              real_weight: 0
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
         def test_parse_kv_items_empty(self):
             input_items = yaml.safe_load(textwrap.dedent('''
             - name: 'name should be used as comment'
@@ -597,11 +632,21 @@ if __name__ == '__main__':
                 - name: 'nested1'
                   value: 'value1'
 
+              test:
+
+                - name: 'test_nested1'
+                  value: 'test_value1'
+
             - name: 'something'
               options:
 
                 - name: 'nested2'
                   value: 'value2'
+
+              test:
+
+                - name: 'test_nested2'
+                  value: 'test_value2'
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
@@ -624,6 +669,23 @@ if __name__ == '__main__':
                 separator: false
                 state: present
                 value: value2
+                weight: 0
+              test:
+              - id: 0
+                name: test_nested1
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: test_value1
+                weight: 0
+              - id: 10
+                name: test_nested2
+                real_weight: 10
+                section: unknown
+                separator: false
+                state: present
+                value: test_value2
                 weight: 0
               real_weight: 0
               separator: false
