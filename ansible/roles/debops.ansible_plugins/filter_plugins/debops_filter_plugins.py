@@ -395,7 +395,8 @@ def parse_kv_items(*args, **kwargs):
 
                 # Include any unknown keys.
                 for unknown_key in element.keys():
-                    if unknown_key not in known_keys:
+                    if (unknown_key not in known_keys and
+                            unknown_key not in merge_keys):
                         current_param[unknown_key] = element.get(unknown_key)
 
                 # Fill any empty keys using other keys.
@@ -631,11 +632,21 @@ if __name__ == '__main__':
                 - name: 'nested1'
                   value: 'value1'
 
+              test:
+
+                - name: 'test_nested1'
+                  value: 'test_value1'
+
             - name: 'something'
               options:
 
                 - name: 'nested2'
                   value: 'value2'
+
+              test:
+
+                - name: 'test_nested2'
+                  value: 'test_value2'
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
@@ -658,6 +669,23 @@ if __name__ == '__main__':
                 separator: false
                 state: present
                 value: value2
+                weight: 0
+              test:
+              - id: 0
+                name: test_nested1
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: test_value1
+                weight: 0
+              - id: 10
+                name: test_nested2
+                real_weight: 10
+                section: unknown
+                separator: false
+                state: present
+                value: test_value2
                 weight: 0
               real_weight: 0
               separator: false
