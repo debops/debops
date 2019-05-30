@@ -27,7 +27,9 @@ Fixed
 
 - [debops.root_account][debops.system_users][debops.users] Fix idempotency
   issue with :command:`yadm` updating repositories on newer OS releases with
-  changed :command:`git` output.
+  changed :command:`git` output. The roles will also work without
+  :command:`yadm` installed when user accounts have dotfiles enabled
+  explicitly.
 
 
 `debops v1.0.1`_ - 2019-05-23
