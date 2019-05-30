@@ -147,8 +147,16 @@ def _parse_kv_value(current_data, new_data, data_index):
 
 
 def parse_kv_config(*args, **kwargs):
-    """Return a parsed list of key/value configuration options"""
+    """Return a parsed list of key/value configuration options
 
+    Optional arguments:
+
+        name
+            string, name of the primary dictionary key used as an indicator to
+            merge the related dictionaries together. If not specified, 'name'
+            will be set as default.
+    """
+    name = kwargs.get('name', "name")
     input_args = []
     parsed_config = {}
 
@@ -164,13 +172,13 @@ def parse_kv_config(*args, **kwargs):
             # This is a simple string, let's make it a dictionary so that it
             # can be correctly processed.
             # We assume that the string should be a 'name' parameter.
-            element = {'name': element}
+            element = {name: element}
 
         if isinstance(element, dict):
-            if (any(x in ['name'] for x in element) and
+            if (any(x in [name] for x in element) and
                     element.get('state', 'present') != 'ignore'):
 
-                param_name = element.get('name')
+                param_name = element.get(name)
 
                 if element.get('state', 'present') == 'append':
 
@@ -198,7 +206,7 @@ def parse_kv_config(*args, **kwargs):
                     current_param['state'] = 'present'
 
                 current_param.update({
-                    'name': param_name,  # in case of a new entry
+                    name: param_name,  # in case of a new entry
                     'id': int(current_param.get('id', (element_index * 10))),
                     'weight': int(current_param.get('weight', 0)),
                     'separator': element.get('separator',
@@ -240,7 +248,7 @@ def parse_kv_config(*args, **kwargs):
                 # Include any unknown keys
                 for unknown_key in element.keys():
                     if (unknown_key not in merge_keys
-                        and unknown_key not in ['name', 'state', 'id',
+                        and unknown_key not in [name, 'state', 'id',
                                                 'weight', 'real_weight',
                                                 'separator', 'value',
                                                 'comment', 'option',
@@ -251,14 +259,14 @@ def parse_kv_config(*args, **kwargs):
 
             # These parameters are special and should not be interpreted
             # directly as configuration options
-            elif not all(x in ['name', 'option', 'state', 'comment',
+            elif not all(x in [name, 'option', 'state', 'comment',
                                'section', 'weight', 'value', 'copy_id_from']
                          for x in element):
                 for key, value in element.items():
                     current_param = (parsed_config[key].copy()
                                      if key in parsed_config else {})
                     current_param.update({
-                        'name': key,
+                        name: key,
                         'state': 'present',
                         'id': int(current_param.get('id',
                                                     (element_index * 10))),
@@ -294,6 +302,11 @@ def parse_kv_items(*args, **kwargs):
     """Return a parsed list of with_items elements
     Optional arguments:
 
+        name
+            string, name of the primary dictionary key used as an indicator to
+            merge the related dictionaries together. If not specified, 'name'
+            will be set as default.
+
         empty
             dictionary, keys are parameter names which might be empty, values
             are key name or list of key names, first key with a value other
@@ -310,6 +323,7 @@ def parse_kv_items(*args, **kwargs):
             list of keys in the dictionary that will be merged together. If not
             specified, 'options' key instances will be merged by default.
     """
+    name = kwargs.get('name', "name")
     empty = kwargs.get('empty', {})
     defaults = kwargs.get('defaults', {})
     merge_keys = list(set(kwargs.get('merge_keys', set())))
@@ -334,14 +348,14 @@ def parse_kv_items(*args, **kwargs):
             # This is a simple string, let's make it a dictionary so that it
             # can be correctly processed.
             # We assume that the string should be a 'name' parameter.
-            element = {'name': element}
+            element = {name: element}
             element_state = 'present'
 
         if isinstance(element, dict):
-            if (any(x in ['name'] for x in element) and
+            if (any(x in [name] for x in element) and
                     element_state != 'ignore'):
 
-                param_name = element.get('name')
+                param_name = element.get(name)
 
                 if element_state == 'append':
 
@@ -370,7 +384,7 @@ def parse_kv_items(*args, **kwargs):
                     current_param['state'] = 'present'
 
                 current_param.update({
-                    'name': param_name,  # in case of a new entry
+                    name: param_name,  # in case of a new entry
                     'id': int(current_param.get('id', (element_index * 10))),
                     'weight': int(current_param.get('weight', 0)),
                     'separator': element.get('separator',
@@ -397,7 +411,7 @@ def parse_kv_items(*args, **kwargs):
                             current_options + element.get(key_name),
                             merge_keys=merge_keys)
 
-                known_keys = ['name', 'state', 'id', 'weight',
+                known_keys = [name, 'state', 'id', 'weight',
                               'real_weight', 'separator',
                               'comment', 'options']
 
@@ -557,6 +571,42 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_renamed(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - renamed: 'local'
+              value: 'test'
+            - renamed: 'local2'
+              value: 'test2'
+            - renamed: 'local'
+              value: 'test3'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              renamed: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test3
+              weight: 0
+            - id: 10
+              renamed: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items, name='renamed')
 
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
@@ -938,6 +988,183 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_items(input_items1, input_items2)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_renamed(self):
+            input_items1 = yaml.safe_load(textwrap.dedent('''
+            - renamed: 'should-stay-init'
+              options:
+
+                - name: 'local'
+                  value: 'test'
+
+              state: 'init'
+
+
+            - renamed: 'should-become-present'
+              options:
+
+                - name: 'local'
+                  value: 'test'
+
+              state: 'init'
+
+            - renamed: 'should-become-present'
+              options:
+
+                - name: 'local'
+                  value: 'test2'
+
+
+            - renamed: 'should-become-present2'
+              options:
+
+                - name: 'local'
+                  value: 'test'
+                  state: 'init'
+
+              state: 'init'
+
+            - renamed: 'should-become-present2'
+              options:
+
+                - name: 'local'
+                  value: 'test2'
+
+
+            - renamed: 'should-become-present3'
+              options:
+
+                - name: 'local1'
+                  comment: 'This comment should survive.'
+                  options:
+
+                    - name: 'local2'
+                      value: 'test'
+                      state: 'init'
+
+                  state: 'init'
+
+                - name: 'external1'
+                  options:
+
+                    - name: 'external2'
+                      value: 'test'
+                      state: 'init'
+
+                  state: 'init'
+            '''))
+
+            input_items2 = yaml.safe_load(textwrap.dedent('''
+            - renamed: 'should-become-present3'
+              options:
+
+                - name: 'local1'
+                  options:
+
+                    - name: 'local2'
+                      value: 'test2'
+
+                - name: 'external1'
+                  options:
+
+                    - name: 'external2'
+                      value: 'test'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              renamed: should-stay-init
+              options:
+              - id: 0
+                name: local
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: test
+                weight: 0
+              real_weight: 0
+              separator: false
+              state: init
+              weight: 0
+            - id: 10
+              renamed: should-become-present
+              options:
+              - id: 0
+                name: local
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: test2
+                weight: 0
+              real_weight: 10
+              separator: false
+              state: present
+              weight: 0
+            - id: 30
+              renamed: should-become-present2
+              options:
+              - id: 0
+                name: local
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                value: test2
+                weight: 0
+              real_weight: 30
+              separator: false
+              state: present
+              weight: 0
+            - id: 50
+              renamed: should-become-present3
+              options:
+              - comment: This comment should survive.
+                id: 0
+                name: local1
+                options:
+                - id: 0
+                  name: local2
+                  real_weight: 0
+                  section: unknown
+                  separator: false
+                  state: present
+                  value: test2
+                  weight: 0
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                weight: 0
+              - id: 10
+                name: external1
+                options:
+                - id: 0
+                  name: external2
+                  real_weight: 0
+                  section: unknown
+                  separator: false
+                  state: present
+                  value: test
+                  weight: 0
+                real_weight: 10
+                section: unknown
+                separator: false
+                state: present
+                weight: 0
+              real_weight: 50
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items1, input_items2, name='renamed')
 
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
