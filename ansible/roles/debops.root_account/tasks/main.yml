@@ -115,7 +115,8 @@
     fi
   register: root_account__register_dotfiles
   changed_when: ('Already up to date.' not in root_account__register_dotfiles.stdout_lines|regex_replace('-', ' '))
-  when: root_account__dotfiles_enabled|bool
+  when: ((ansible_local|d() and ansible_local.yadm|d() and (ansible_local.yadm.installed|d())|bool) and
+         root_account__dotfiles_enabled|bool)
   check_mode: False
 
 - name: Make sure Ansible fact directory exists
