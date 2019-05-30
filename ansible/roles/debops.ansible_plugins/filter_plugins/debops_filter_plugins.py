@@ -158,6 +158,14 @@ def parse_kv_config(*args, **kwargs):
             input_args.append(item)
 
     for element_index, element in enumerate(input_args):
+
+        if isinstance(element, (basestring)):
+
+            # This is a simple string, let's make it a dictionary so that it
+            # can be correctly processed.
+            # We assume that the string should be a 'name' parameter.
+            element = {'name': element}
+
         if isinstance(element, dict):
             if (any(x in ['name'] for x in element) and
                     element.get('state', 'present') != 'ignore'):
@@ -523,6 +531,28 @@ if __name__ == '__main__':
               separator: false
               state: present
               value: test2
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_simple_string(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - 'simple_string'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: simple_string
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
               weight: 0
             '''))
 
