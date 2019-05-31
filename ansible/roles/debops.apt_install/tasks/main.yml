@@ -66,6 +66,15 @@
   when: item.name|d() and not item.path|d()
   changed_when: apt_install__register_alternatives.stdout|d()
 
+- name: Make sure that needrestart directory exists
+  file:
+    path: '/etc/needrestart/conf.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: apt_install__enabled|bool
+
 - name: Disable kernel hints about pending upgrades
   template:
     src: 'etc/needrestart/conf.d/no-kernel-hints.conf.j2'
