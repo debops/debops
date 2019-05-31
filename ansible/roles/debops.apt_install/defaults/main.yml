@@ -93,6 +93,17 @@ apt_install__state: '{{ "present"
                         else "latest" }}'
 
                                                                    # ]]]
+# .. envvar:: apt_install__no_kernel_hints [[[
+#
+# Enable or disable configuration of the hints about upgraded kernel requiring
+# a reboot of the host, created by the :command:`needrestart` package.  By
+# default these hints will be disabled, which helps with non-interactive APT
+# package installation done by Ansible.
+apt_install__no_kernel_hints: '{{ True
+                                  if ("needrestart" in apt_install__conditional_whitelist_packages)
+                                  else False }}'
+
+                                                                   # ]]]
 # .. envvar:: apt_install__recommends [[[
 #
 # Boolean variable that controls installation of recommended packages.

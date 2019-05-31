@@ -18,6 +18,14 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Fixed
+~~~~~
+
+- [debops.apt_install] The role will not disable :command:`needrestart` kernel
+  hints if the ``needrestart`` APT package installation is disabled. This fixes
+  an issue with the :file:`/etc/needrestart/conf.d/` directory not being
+  present on the host.
+
 
 `debops v1.0.2`_ - 2019-05-31
 -----------------------------
