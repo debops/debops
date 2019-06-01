@@ -11,7 +11,7 @@
   assert:
     that:
       - item.state|d(cryptsetup__state) in
-        [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present', 'absent' ]
+        [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present', 'absent' ]
       - item.name is defined and item.name is string
       - (item.state|d(cryptsetup__state) == 'ansible_controller_mounted' and 'remote_keyfile' not in item) or
         item.state|d(cryptsetup__state) != 'ansible_controller_mounted'
@@ -27,7 +27,7 @@
     mode:  '{{ cryptsetup__secret_mode }}'
   become: False
   delegate_to: 'localhost'
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ]
          and 'remote_keyfile' not in item)
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 ## ]]]
@@ -44,7 +44,7 @@
   become: False
   delegate_to: 'localhost'
   register: cryptsetup__register_keyfile_gen
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ] and
          ('remote_keyfile' not in item) and (item.keyfile_gen_type|d(cryptsetup__keyfile_gen_type) == 'binary'))
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
@@ -58,7 +58,7 @@
   become: False
   delegate_to: 'localhost'
   register: cryptsetup__register_keyfile_gen
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ] and
          ('remote_keyfile' not in item) and (item.keyfile_gen_type|d(cryptsetup__keyfile_gen_type) == 'text'))
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
@@ -71,7 +71,7 @@
     mode:  '{{ cryptsetup__secret_mode }}'
   become: False
   delegate_to: 'localhost'
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ]
          and not ansible_check_mode and 'remote_keyfile' not in item)
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
@@ -93,7 +93,7 @@
     seuser:   '{{ item.keyfile_seuser         | d(omit) }}'
     src:      '{{ item.keyfile                | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
     validate: '{{ item.keyfile_validate       | d(omit) }}'
-  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
+  when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ]
          and not ansible_check_mode and 'remote_keyfile' not in item)
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
   no_log: True
@@ -129,7 +129,7 @@
     path: '{{ item.ciphertext_block_device }}'
   register: cryptsetup__register_ciphertext_device
   when: (item.state|d(cryptsetup__state) in
-         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ])
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
   tags: [ 'role::cryptsetup:backup' ]
 
@@ -139,7 +139,7 @@
       Ciphertext block device {{ item.0.ciphertext_block_device }} does not
       exist and state was requested to be {{ item.0.state|d(cryptsetup__state) }}!
   when: (item.0.state|d(cryptsetup__state) in
-         [ 'mounted', 'ansible_controller_mounted', 'unmounted' ] and
+         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped' ] and
          not item.1.stat.exists)
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
@@ -156,7 +156,7 @@
       successfully until you make the block device available. See documentation
       for details.
   when: (item.0.state|d(cryptsetup__state) in
-         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ] and
          not item.1.stat.exists and item.2 is changed)
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
@@ -197,7 +197,7 @@
   register: cryptsetup__register_cmd
   changed_when: ("Command successful." == cryptsetup__register_cmd.stdout)
   when: (item.0.state|d(cryptsetup__state) in
-         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
+         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ]
          and item.1.stat.exists and item.0.mode|d("luks") == "luks")
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
@@ -210,7 +210,7 @@
   failed_when: (cryptsetup__register_ciphertext_blkid.rc not in [ 0, 2 ])
   check_mode: False
   when: (item.0.state|d(cryptsetup__state) in
-         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
+         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ]
          and item.1.stat.exists)
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
@@ -235,7 +235,7 @@
     path: '{{ item.0.crypttab_path | d(omit) }}'
     state: 'present'
   no_log: True
-  when: (item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
+  when: (item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ])
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
     - '{{ cryptsetup__register_ciphertext_blkid.results|d([]) }}'
@@ -246,7 +246,7 @@
   register: cryptsetup__register_cryptdisks_start
   changed_when: ("(started)" in cryptsetup__register_cryptdisks_start.stdout)
   when: (item.0.state|d(cryptsetup__state) in
-         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ] and
          item.1.stat.exists)
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
@@ -257,7 +257,7 @@
     path: '/dev/mapper/{{ item.name }}'
   register: cryptsetup__register_plaintext_device
   when: (item.state|d(cryptsetup__state) in
-         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ] and
          (item.manage_filesystem|d(True) | bool))
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
@@ -269,7 +269,8 @@
     opts:   '{{ item.0.format_options | d(omit) }}'
   when: (item.1|d() and item.1.stat|d() and item.1.stat.exists|d() and
          (item.0.create_filesystem|d(item.0.manage_filesystem|d(True)) | bool) and
-         not (item.0.swap|d(False) | bool))
+         not (item.0.swap|d(False) | bool) and
+         not (item.state|d(cryptsetup__state) in ['mapped'])
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
     - '{{ cryptsetup__register_plaintext_device.results|d([]) }}'
@@ -298,7 +299,7 @@
     warn: False
   changed_when: False
   when: ((item.0.backup_header|d(cryptsetup__header_backup) | bool) and
-          item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+          item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ] and
           item.1.stat.exists and item.0.mode|d("luks") == "luks")
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
@@ -312,7 +313,7 @@
     fail_on_missing: True
     flat: True
   when: ((item.0.backup_header|d(cryptsetup__header_backup) | bool) and
-          item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+          item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ] and
           item.1.stat.exists and item.0.mode|d("luks") == "luks")
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
@@ -328,7 +329,7 @@
   become: False
   delegate_to: 'localhost'
   when: ((item.0.backup_header|d(cryptsetup__header_backup) | bool) and
-          item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ] and
+          item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'mapped', 'present' ] and
           item.1.stat.exists and item.0.mode|d("luks") == "luks" and
           not ansible_check_mode)
   with_together:
@@ -408,10 +409,7 @@
                    and cryptsetup__register_cryptdisks_stop.rc == 1)
                )
   when: (item.0.state|d(cryptsetup__state) in [ 'unmounted', 'absent' ]) or
-        (
-          item.0.manage_filesystem|d(True) and
-          item.0.state|d(cryptsetup__state) in [ 'present' ] and item.1 is changed
-        )
+        (item.0.state|d(cryptsetup__state) in [ 'present' ] and item.1 is changed)
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'
     - '{{ cryptsetup__register_cryptdisks_start.results|d([]) }}'
