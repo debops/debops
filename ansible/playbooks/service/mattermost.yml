@@ -1,0 +1,57 @@
+---
+
+- name: Manage Mattermost service
+  hosts: [ 'debops_service_mattermost' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    #- role: debops.mattermost/env
+    #  tags: [ 'role::mattermost', 'role::postgresql' ]
+
+    #- role: debops.system_groups
+    #  tags: [ 'role::system_groups', 'skip::system_groups' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ postgresql__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ mattermost__etc_services__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ mattermost__logrotate__dependent_config }}'
+
+    - role: debops.postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ mattermost__postgresql__dependent_roles }}'
+      postgresql__dependent_groups:
+        - '{{ mattermost__postgresql__dependent_groups }}'
+      postgresql__dependent_databases:
+        - '{{ mattermost__postgresql__dependent_databases }}'
+      postgresql__dependent_extensions:
+        - '{{ mattermost__postgresql__dependent_extensions }}'
+      postgresql__dependent_pgpass:
+        - '{{ mattermost__postgresql__dependent_pgpass }}'
+      when: mattermost__database == 'postgresql'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ mattermost__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ mattermost__nginx__dependent_upstreams }}'
+
+    - role: debops.mattermost
+      tags: [ 'role::mattermost', 'skip::mattermost' ]

@@ -1,0 +1,110 @@
+---
+
+- name: Install required packages for Mattermost service
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  loop: "{{ (mattermost__base_packages + mattermost__packages)|flatten }}"
+  register: mattermost__register_packages
+  until: mattermost__register_packages is succeeded
+
+- name: Create Mattermost system group
+  group:
+    name: '{{ mattermost__group }}'
+    system: True
+    state: 'present'
+
+- name: Create Mattermost user
+  user:
+    name: '{{ mattermost__user }}'
+    group: '{{ mattermost__group }}'
+    home: '{{ mattermost__home }}'
+    shell: '{{ mattermost__shell }}'
+    comment: 'mattermost'
+    system: True
+    state: 'present'
+
+- name: Create Mattermost download directory
+  file:
+    path: '{{ mattermost__src_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Import the PGP key of Mattermost maintainers
+  apt_key:
+    id: "A1B31D46F0F3A10B02CF2D44F8F2C31744774B28"
+    url: '{{ mattermost__sign_key_url }}'
+    state: 'present'
+
+- name: Download the binary archive
+  get_url:
+    url: '{{ mattermost__binary_archive_url }}'
+    dest: '{{ mattermost__binary_archive_path }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Download the binary PGP signature
+  get_url:
+    url: '{{ mattermost__binary_sign_url }}'
+    dest: '{{ mattermost__binary_archive_path }}.sig'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Verify the downloaded archive
+  command: gpg --verify '{{ mattermost__binary_archive_path }}.sig' '{{ mattermost__binary_archive_path }}'
+
+- name: Extract the binary archive
+  unarchive:
+    src: '{{ mattermost__binary_archive_path }}'
+    dest: '{{ mattermost__home }}'
+    owner: '{{ mattermost__user }}'
+    group: '{{ mattermost__group }}'
+    mode: '0755'
+    remote_src: True
+  args:
+    creates: '{{ mattermost__home + "/mattermost" }}'
+
+- name: Creates the local storage directory
+  file:
+    path: '{{ mattermost__storage_local_path }}'
+    state: 'directory'
+    owner: '{{ mattermost__user }}'
+    group: '{{ mattermost__group }}'
+    mode: '0700'
+
+- name: Setup Mattermost configuration
+  template:
+    src: 'templates/var/local/mattermost/config/config.json.j2'
+    dest: '{{ mattermost__home }}/mattermost/config/config.json'
+    owner: '{{ mattermost__user }}'
+    group: '{{ mattermost__group }}'
+    mode: '0644'
+  tags: [ 'role::mattermost::config' ]
+  notify:
+    - 'Restart Mattermost service'
+
+- name: Install systemd service unit
+  template:
+    src: 'templates/etc/systemd/system/mattermost.service.j2'
+    dest: '/etc/systemd/system/mattermost.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: mattermost__register_service_unit
+
+- name: Reload systemd units
+  systemd:
+    daemon_reload: True
+  when: mattermost__register_service_unit.changed
+
+- name: Start Mattermost service
+  service:
+    name: 'mattermost'
+    state: 'started'
+    enabled: True
+

@@ -1,0 +1,19 @@
+[Unit]
+Description=Mattermost
+After=network.target
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=notify
+ExecStart={{ mattermost__home }}/mattermost/bin/mattermost server --config {{ mattermost__home }}/mattermost/config/config.json
+TimeoutStartSec=3600
+Restart=always
+RestartSec=10
+WorkingDirectory={{ mattermost__home }}/mattermost
+User={{ mattermost__user }}
+Group={{ mattermost__group }}
+LimitNOFILE=49152
+
+[Install]
+WantedBy=multi-user.target

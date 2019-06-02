@@ -1,0 +1,624 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Default variables
+# =================
+#
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: mattermost__base_packages [[[
+#
+# List of required APT packages for OpenLDAP service.
+mattermost__base_packages: []
+
+                                                                   # ]]]
+# .. envvar:: mattermost__packages [[[
+#
+# List of additional APT packages to install with OpenLDAP service.
+mattermost__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Mattermost UNIX environment [[[
+# -------------------------------
+
+# .. envvar:: mattermost__user [[[
+#
+# Name of the UNIX account used by the Mattermost service.
+mattermost__user: 'mattermost'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__group [[[
+#
+# Name of the UNIX group used by the Mattermost service.
+mattermost__group: 'mattermost'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__home [[[
+#
+# Path of the home directory associated to the Mattermost service.
+mattermost__home: '{{ (ansible_local.root.home
+                       if (ansible_local|d() and ansible_local.root|d() and
+                           ansible_local.root.home|d())
+                       else "/var/local") + "/" + mattermost__user }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__shell [[[
+#
+# Path of the UNIX shell associated with the Mattermost service.
+mattermost__shell: '/bin/false'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__log_dir [[[
+#
+# Absolute path to the directory which contains OpenLDAP logs.
+mattermost__log_dir: '{{ mattermost__home }}/mattermost/logs'
+                                                                   # ]]]
+                                                                   # ]]]
+# Mattermost configuration [[[
+# ----------------------------
+
+# .. envvar:: mattermost__version [[[
+#
+# Version of Mattermost binary
+mattermost__version: '{{ mattermost__gitlab_version_map[ansible_local.gitlab.version]
+                         if (ansible_local|d() and ansible_local.gitlab|d() and
+                             ansible_local.gitlab.version|d())
+                         else
+                           "5.11.0" }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__binary_archive [[[
+#
+# Name of the Mattermost binary archive.
+mattermost__binary_archive: 'mattermost-{{ mattermost__version }}-linux-amd64.tar.gz'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__binary_archive_url [[[
+#
+# URL to download Mattermost binary archive.
+mattermost__binary_archive_url: 'https://releases.mattermost.com/{{ mattermost__version }}/{{ mattermost__binary_archive }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__binary_archive_path [[[
+#
+# Path where the Mattermost binary archive is saved.
+mattermost__binary_archive_path: '{{ mattermost__src_path }}/{{ mattermost__binary_archive }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__sign_key_url [[[
+#
+# URL to download Mattermost binary PGP signature
+mattermost__sign_key_url: 'https://keybase.io/mattermost/pgp_keys.asc'
+                                                                   # ]]]
+# .. envvar:: mattermost__binary_sign_url [[[
+#
+# URL to download Mattermost binary PGP signature
+mattermost__binary_sign_url: '{{ mattermost__binary_archive_url }}.sig'
+                                                                   # ]]]
+# .. envvar:: mattermost__src_path [[[
+#
+# Directory to download sources.
+mattermost__src_path: '{{ (ansible_local.root.src
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.src|d())
+                           else "/usr/local/src") + "/mattermost/" + mattermost__version }}'
+                                                                   # ]]]
+# .. envvar:: mattermost__domain [[[
+#
+# Domain where the Mattermost instance is hosted.
+mattermost__domain: '{{ ansible_local.core.domain
+                        if (ansible_local|d() and ansible_local.core|d() and
+                            ansible_local.core.domain|d())
+                        else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                                                                   # ]]]
+# .. envvar:: mattermost__fdqn [[[
+#
+# FQDN where the Mattermost instance is hosted.
+mattermost__fqdn: 'team.{{ mattermost__domain }}'
+                                                                   # ]]]
+# .. envvar:: mattermost__listen_address [[[
+#
+# The IP address where the Mattermost service is listening.
+mattermost__listen_address: 'localhost'
+                                                                   # ]]]
+# .. envvar:: mattermost__listen_port [[[
+#
+# The port where the Mattermost service is listening.
+mattermost__listen_port: '8065'
+                                                                   # ]]]
+# .. envvar:: mattermost__listen [[[
+#
+# The endpoint where the Mattermost service is listening.
+mattermost__listen: '{{ mattermost__listen_address }}:{{ mattermost__listen_port }}'
+                                                                   # ]]]
+# .. envvar:: mattermost__site_name [[[
+#
+# The name on site headers
+mattermost__site_name: 'Mattermost'
+                                                                   # ]]]
+# .. envvar:: mattermost__brand_text [[[
+#
+# The text that appears on the login page header.
+mattermost__brand_text: 'Mattermost'
+                                                                   # ]]]
+# .. envvar:: mattermost__brand_description [[[
+#
+# The text that appears on the login page body.
+mattermost__brand_description: 'Mattermost instant messaging for teams.'
+                                                                   # ]]]
+# .. envvar:: mattermost__site_allow_cors [[[
+#
+# The list of allowed CORS domains.
+mattermost__site_allow_cors: '{{ [ mattermost__fqdn ]  + ([ ansible_local.gitlab.fqdn ]
+                                   if (ansible_local|d() and ansible_local.gitlab|d() and
+                                       ansible_local.gitlab.fqdn|d())
+                                   else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__max_users_per_team [[[
+#
+# Maximum users per team room
+mattermost__max_users_per_team: '50'
+                                                                   # ]]]
+# .. envvar:: mattermost__user_creation_enabled [[[
+#
+# Enable user creation inside Mattermost interface.
+mattermost__user_creation_enabled: 'True'
+                                                                   # ]]]
+# .. envvar:: mattermost__email_signup_enabled [[[
+#
+# Enable email sign-up.
+mattermost__email_signup_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_signin_enabled [[[
+#
+# Enable email sign-in.
+mattermost__email_signin_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: mattermost__metrics_enabled [[[
+#
+# Enable Prometheus metrics on mattermost.
+mattermost__metrics_enabled: False
+                                                                   # ]]]
+# .. envvar:: mattermost__metrics_listen_address [[[
+#
+# The IP address for Prometheus metrics.
+mattermost__metrics_listen_address: 'localhost'
+                                                                   # ]]]
+# .. envvar:: mattermost__metrics_listen_port [[[
+#
+# The port for Prometheus metrics.
+mattermost__metrics_listen_port: '8067'
+                                                                   # ]]]
+# .. envvar:: mattermost__metrics_listen [[[
+#
+# The listen endpoint for Prometheus metrics.
+mattermost__metrics_listen: '{{ mattermost__metrics_listen_address }}:{{ mattermost__metrics_listen_port }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab integration [[[
+# ----------------------
+
+# .. envvar:: mattermost__gitlab_version_map [[[
+#
+# Version of Mattermost binary
+mattermost__gitlab_version_map:
+  '10.8':   '4.9.4'
+  '11.0': 	'4.10.9'
+  '11.1': 	'5.0.3'
+  '11.2': 	'5.1.2'
+  '11.3': 	'5.2.2'
+  '11.4': 	'5.3.1'
+  '11.5': 	'5.4.0'
+  '11.6': 	'5.5.3'
+  '11.7': 	'5.6.5'
+  '11.8': 	'5.7.3'
+  '11.9': 	'5.8.2'
+  '11.10': 	'5.9.1'
+  '11.11': 	'5.10.1'
+  '12.0': 	'5.11.0'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# File storage [[[
+# ----------------
+
+# .. envvar:: mattermost__storage_public_link_enabled [[[
+#
+# Enable public link generation.
+mattermost__storage_public_link_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_public_link_salt_file [[[
+#
+# File storage of salt for public link generation.
+mattermost__storage_public_link_salt_file: '{{ secret + "/credentials/mattermost/"
+                                                 + mattermost__fqdn + "/salt" }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_public_link_salt [[[
+#
+# Salt for public link generation.
+mattermost__storage_public_link_salt: '{{ lookup("password", mattermost__storage_public_link_salt_file
+                                            + " length=40 chars=ascii_letters,digits")
+                                          if mattermost__storage_public_link_enabled
+                                          else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_driver [[[
+#
+# File storage driver
+mattermost__storage_driver: 'local'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_local_path [[[
+#
+# Local file storage path
+mattermost__storage_local_path: '{{ (ansible_local.root.data
+                                     if (ansible_local|d() and ansible_local.root|d() and
+                                         ansible_local.root.data|d())
+                                     else "/srv") + "/mattermost/data" }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_s3_endpoint [[[
+#
+# Amazon S3 endpoint
+mattermost__storage_s3_endpoint: ''
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_s3_ssl_enabled [[[
+#
+# Amazon S3 endpoint with SSL secure layer
+mattermost__storage_s3_ssl_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_s3_access_key [[[
+#
+# Amazon S3 access key
+mattermost__storage_s3_access_key: ''
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_s3_secret_key [[[
+#
+# Amazon S3 access key
+mattermost__storage_s3_secret_key: ''
+
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_s3_bucket [[[
+#
+# Amazon S3 bucket name
+mattermost__storage_s3_bucket: ''
+                                                                   # ]]]
+# .. envvar:: mattermost__storage_s3_region [[[
+#
+# Amazon S3 region
+mattermost__storage_s3_region: ''
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Email configuration [[[
+# -----------------------
+
+# .. envvar:: mattermost__email_enabled [[[
+#
+# Enable email notifications.
+mattermost__email_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_verif_enabled [[[
+#
+# Enable email verifications.
+mattermost__email_verif_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_display_name [[[
+#
+# Name that is displayed to the recipients.
+mattermost__email_display_name: 'Mattermost'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_from [[[
+#
+# Email that is displayed to the recipients.
+mattermost__email_from: 'team@{{ mattermost__fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_reply_to [[[
+#
+# Email address to send replies to.
+mattermost__email_reply_to: 'admin+team@{{ mattermost__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_footer [[[
+#
+# Email footer.
+mattermost__email_footer: ''
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_smtp_server [[[
+#
+# Set the SMTP email server endpoint.
+mattermost__email_smtp_server: ''
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_smtp_port [[[
+#
+# Set the SMTP email server port.
+mattermost__email_smtp_port: ''
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_smtp_login_enabled [[[
+#
+# Enable the SMTP email server login.
+mattermost__email_smtp_login_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_smtp_username [[[
+#
+# Set the SMTP email server login username.
+mattermost__email_smtp_username: ''
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_smtp_password [[[
+#
+# Set the SMTP email server login password.
+mattermost__email_smtp_password: ''
+
+                                                                   # ]]]
+# .. envvar:: mattermost__email_smtp_conn_security [[[
+#
+# Set the SMTP email server connection security. Possible values are '', 'TLS',
+# 'STARTTLS'.
+mattermost__email_smtp_conn_security: ''
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Database configuration [[[
+# ----------------
+
+# .. envvar:: mattermost__database [[[
+#
+# Name of the database engine.
+mattermost__database: 'postgresql'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__database_server [[[
+#
+# FQDN of the database server. It will be configured by the :ref:`debops.postgresql`
+# role.
+mattermost__database_server: '{{ ansible_local[mattermost__database].server }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__database_port [[[
+#
+# Port the database is listening on.
+mattermost__database_port: '{{ ansible_local[mattermost__database].port }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__database_user [[[
+#
+# Name of the database account to use for the mattermost application.
+mattermost__database_user: 'mattermost'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__database_name [[[
+#
+# Name of the database to use for the mattermost data.
+mattermost__database_name: 'mattermost_production'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__database_password_path [[[
+#
+# Path to database password file located on the Ansible Controller. See the
+# :ref:`debops.secret` role for more details.
+mattermost__database_password_path: '{{ secret + "/" + mattermost__database + "/" +
+                                          ansible_local[mattermost__database].delegate_to }}{%
+                                            if mattermost__database == "postgresql" %}/{{ ansible_local[mattermost__database].port }}{% endif
+                                          %}{{ "/credentials/" + mattermost__database_user + "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__database_password [[[
+#
+# Database password for mattermost.
+mattermost__database_password: '{{ lookup("password", mattermost__database_password_path
+                                     + " length=48 chars=ascii_letters,digits,_-") }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__postgresql_database_uri [[[
+#
+# Connection type for PostgreSQL database (choices: socket, port)
+# FIXME: not supported yet
+mattermost__postgresql_database_uri: '{{ "postgres://"
+                                           + mattermost__database_user + ":"
+                                           + mattermost__database_password + "@"
+                                           + mattermost__database_server + ":"
+                                           + mattermost__database_port
+                                           + "/" + mattermost__database_name + "?connect_timeout=10" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration variables for other Ansible roles [[[
+# ---------------------------------------------------
+
+# .. envvar:: mattermost__etc_services__dependent_list [[[
+#
+# List of custom :file:`/etc/services` to configure for the :ref:`debops.etc_services`
+# Ansible role.
+mattermost__etc_services__dependent_list:
+
+  - name: 'mattermost'
+    port: '{{ mattermost__listen_port }}'
+    comment: 'mattermost'
+
+  - name: 'mattermost-metrics'
+    port: '{{ mattermost__metrics_listen_port }}'
+    comment: 'mattermost-metrics'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+mattermost__logrotate__dependent_config:
+
+  - filename: 'mattermost'
+    sections:
+
+      - logs: '{{ mattermost__log_dir + "/*.log" }}'
+        options: |
+          notifempty
+          missingok
+          weekly
+          maxsize 256M
+          rotate 120
+          compress
+        comment: 'Mattermost server logs'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__postgresql__dependent_roles [[[
+#
+# Configuration of PostgreSQL roles for :ref:`debops.postgresql` Ansible role.
+mattermost__postgresql__dependent_roles:
+
+  # Owner of the ``mattermost_production`` database
+  - name: '{{ mattermost__database_name }}'
+    flags: [ 'NOLOGIN' ]
+
+  # Mattermost user account role
+  - name: '{{ mattermost__database_user }}'
+    password: '{{ mattermost__database_password }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__postgresql__dependent_databases [[[
+#
+# Configuration of PostgreSQL databases for the :ref:`debops.postgresql` Ansible
+# role.
+mattermost__postgresql__dependent_databases:
+
+  - name:  '{{ mattermost__database_name }}'
+    owner: '{{ mattermost__database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__postgresql__dependent_groups [[[
+#
+# Configuration of PostgreSQL groups for the :ref:`debops.postgresql` Ansible role.
+mattermost__postgresql__dependent_groups:
+
+  - roles:  [ '{{ mattermost__database_user }}' ]
+    groups: [ '{{ mattermost__database_name }}' ]
+    database: '{{ mattermost__database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__postgresql__dependent_extensions [[[
+#
+# Configuration of PostgreSQL extensions for the :ref:`debops.postgresql` Ansible
+# role.
+mattermost__postgresql__dependent_extensions:
+
+  - database: '{{ mattermost__database_name }}'
+    extension: 'pg_trgm'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__postgresql__dependent_pgpass [[[
+#
+# The ``~/.pgpass`` configuration for :ref:`debops.postgresql` Ansible role.
+mattermost__postgresql__dependent_pgpass:
+
+  - owner: '{{ mattermost__user }}'
+    home: '{{ mattermost__home }}'
+    database: '{{ mattermost__database_name }}'
+    role: '{{ mattermost__database_user }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__nginx__dependent_upstreams [[[
+#
+# List of :command:`nginx` upstreams for the :ref:`debops.nginx` Ansible role.
+mattermost__nginx__dependent_upstreams:
+
+  # Upstream configuration for the ``mattermost`` service.
+  - name: 'mattermost'
+    server: '{{ mattermost__listen }}'
+
+  # Upstream configuration for the ``mattermost-metrics`` service.
+  - name: 'mattermost-metrics'
+    server: '{{ mattermost__metrics_listen }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__nginx__dependent_servers [[[
+#
+# List of :command:`nginx` servers for the :ref:`debops.nginx` Ansible role.
+mattermost__nginx__dependent_servers:
+
+  - '{{ mattermost__nginx_server }}'
+
+                                                                   # ]]]
+# .. envvar:: mattermost__nginx_server [[[
+#
+# Configuration of the mattermost :command:`nginx` proxy for the :ref:`debops.nginx`
+# Ansible role.
+mattermost__nginx_server:
+  by_role: 'debops.mattermost'
+  enabled: True
+  type: 'proxy'
+  name: '{{ mattermost__fqdn }}'
+
+  location_list:
+    - pattern: '~ /metrics$'
+      enabled: '{{ mattermost__metrics_enabled }}'
+      options: |
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Frame-Options SAMEORIGIN;
+        proxy_pass http://mattermost-metrics;
+
+  location:
+    '~ /api/v[0-9]+/(users/)?websocket$': |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      client_max_body_size 50M;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Frame-Options SAMEORIGIN;
+      proxy_buffers 256 16k;
+      proxy_buffer_size 16k;
+      client_body_timeout 60;
+      send_timeout 300;
+      lingering_timeout 5;
+      proxy_connect_timeout 90;
+      proxy_send_timeout 300;
+      proxy_read_timeout 90s;
+      proxy_pass http://mattermost;
+
+    '/': |
+      client_max_body_size 50M;
+      proxy_set_header Connection "";
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Frame-Options SAMEORIGIN;
+      proxy_buffers 256 16k;
+      proxy_buffer_size 16k;
+      proxy_read_timeout 600s;
+      #proxy_cache mattermost_cache;
+      #proxy_cache_revalidate on;
+      #proxy_cache_min_uses 2;
+      #proxy_cache_use_stale timeout;
+      #proxy_cache_lock on;
+      proxy_http_version 1.1;
+      proxy_pass http://mattermost;
+
+# ]]]
+# ]]]
