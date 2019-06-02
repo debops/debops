@@ -26,6 +26,8 @@ Fixed
   an issue with the :file:`/etc/needrestart/conf.d/` directory not being
   present on the host.
 
+- [debops.gitlab_runner] Fix typo in the configuration template.
+
 
 `debops v1.0.2`_ - 2019-05-31
 -----------------------------
