@@ -317,13 +317,13 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%       if runner.docker_tmpfs|d() %}
     [runners.docker_tmpfs]
 {%         for directory, options in runner.docker_tmpfs.items() %}
-      "{{ directory }}": "{{ options }}"
+      "{{ directory }}"= "{{ options }}"
 {%         endfor %}
 {%       endif %}
 {%       if runner.docker_services_tmpfs|d() %}
     [runners.docker.services_tmpfs]
 {%         for directory, options in runner.docker_services_tmpfs.items() %}
-      "{{ directory }}": "{{ options }}"
+      "{{ directory }}"= "{{ options }}"
 {%         endfor %}
 {%       endif %}
 {%    endif %}
