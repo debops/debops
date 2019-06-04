@@ -25,6 +25,9 @@ Added
   listens for connections. The ``ldaps:///`` service is enabled by default when
   support for the :ref:`debops.pki` role is enabled on the OpenLDAP host.
 
+- [debops.users] Readd :envvar:`users__default_shell` which was removed in
+  `debops v1.0.0`_.
+
 Changed
 ~~~~~~~
 
