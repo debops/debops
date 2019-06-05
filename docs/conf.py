@@ -102,7 +102,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'DebOps'
 author = u'Maciej Delmanowski, Nick Janetakis, Robin Schneider'
-copyright = u'2014-2018, {}'.format(author)
+copyright = u'2014-2019, {}'.format(author)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
