@@ -49,7 +49,9 @@
     system:             '{{ item.system             | d(omit) }}'
     shell:              '{{ item.shell              | d(users__chroot_shell
                                                         if (item.chroot|d())|bool
-                                                        else omit) }}'
+                                                        else (users__default_shell
+                                                              if users__default_shell|d()
+                                                              else omit)) }}'
     create_home:        '{{ item.create_home        | d(omit) }}'
     move_home:          '{{ item.move_home          | d(omit) }}'
     skeleton:           '{{ item.skeleton           | d(omit) }}'
