@@ -281,6 +281,16 @@ To exit the current Python virtual environment, you can run the command:
 This will change your current shell prompt again, which will indicate that you
 are now beyond the environment.
 
+Upgrading existing :command:`virtualenv` Python environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the :command:`virtualenv` environment, you can upgrade to the latest release using the
+command:
+
+.. code-block:: console
+
+   pip install --upgrade debops
+
 
 Installation from Ansible Galaxy
 --------------------------------
