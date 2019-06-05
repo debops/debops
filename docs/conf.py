@@ -352,7 +352,7 @@ texinfo_documents = [
 epub_title = u'DebOps'
 epub_author = author
 epub_publisher = author
-epub_copyright = u'2014-2018, Maciej Delmanowski'
+epub_copyright = u'2014-2019, Maciej Delmanowski'
 
 # The basename for the epub file. It defaults to the project name.
 # epub_basename = u'DebOps'
