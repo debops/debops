@@ -265,7 +265,7 @@ Bootstrap a new host
 
 .. warning::
 
-  Bootstrapping a host without a configured ``bootstrap_domain`` will result in
+  Bootstrapping a host without a configured ``netbase__domain`` will result in
   a broken host configuration.
 
 At this point you most likely have to connect to that host using the ``root``
@@ -317,7 +317,7 @@ the configuration:
 
    alice@laptop:~/myproject$ debops -l server
 
-This will start the :command:`ansible-playbook` command with the main DebOps playbook. This by default includes the `common playbook <https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml>`_ with a default set of roles, and any additional playbooks, if they have been enabled.
+This will start the :command:`ansible-playbook` command with the main DebOps playbook. This by default includes the `common playbook <https://github.com/debops/debops/blob/master/ansible/playbooks/common.yml>`_ with a default set of roles, and any additional playbooks, if they have been enabled.
 
 The initial configuration might take 5-10 minutes on a reasonably fast machine.
 There are some steps, like Diffie-Hellman parameter generation, which might
