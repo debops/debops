@@ -1,7 +1,7 @@
 ---
 
-- name: Manage Docker service
-  hosts: [ 'debops_service_docker', 'debops_docker' ]
+- name: Manage Docker server
+  hosts: [ 'debops_service_docker_server' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -13,19 +13,19 @@
     - role: debops.etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
-        - '{{ docker__etc_services__dependent_list }}'
+        - '{{ docker_server__etc_services__dependent_list }}'
 
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
-        - '{{ docker__ferm__dependent_rules }}'
+        - '{{ docker_server__ferm__dependent_rules }}'
 
     - role: debops.python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
-        - '{{ docker__python__dependent_packages3 }}'
+        - '{{ docker_server__python__dependent_packages3 }}'
       python__dependent_packages2:
-        - '{{ docker__python__dependent_packages2 }}'
+        - '{{ docker_server__python__dependent_packages2 }}'
 
-    - role: debops.docker
-      tags: [ 'role::docker', 'skip::docker' ]
+    - role: debops.docker_server
+      tags: [ 'role::docker_server', 'skip::docker_server' ]
