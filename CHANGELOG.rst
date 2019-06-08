@@ -28,6 +28,10 @@ Fixed
 
 - [debops.gitlab_runner] Fix typo in the configuration template.
 
+- [debops.postgresql_server] Fix usage of the Ansible ``--check`` mode with the
+  ``role::postgresql_server:config`` tag to allow checking configuration
+  changes before applying them.
+
 
 `debops v1.0.2`_ - 2019-05-31
 -----------------------------
