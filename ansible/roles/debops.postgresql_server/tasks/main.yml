@@ -30,6 +30,7 @@
     executable: 'bash'
   register: postgresql_server__register_version
   changed_when: False
+  check_mode: False
   tags: [ 'role::postgresql_server:packages', 'role::postgresql_server:config',
           'role::postgresql_server:auto_backup' ]
 
@@ -72,6 +73,7 @@
   command: cat /proc/sys/kernel/shmmax
   register: postgresql_server__register_sysctl_shmmax
   changed_when: False
+  check_mode: False
   tags: [ 'role::postgresql_server:config' ]
 
 - include: manage_clusters.yml
