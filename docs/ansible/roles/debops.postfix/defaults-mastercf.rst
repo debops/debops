@@ -10,7 +10,7 @@ lists, concatenated together into :envvar:`postfix__combined_mastercf`
 variable, which is passed to the configuration template.
 
 Each list entry is a YAML dictionary. Entries that control Postfix parameters
-of the same name will be combined together in order of apperance.
+of the same name will be combined together in order of appearance.
 
 .. contents::
    :local:
@@ -57,7 +57,7 @@ parameters:
 ``command``
   Optional. The Postfix command to execute for a given service. If not
   specified, ``service`` and ``name`` parameters are used in that order of
-  apperance.
+  appearance.
 
 ``args``
   Optional. String or an YAML text block with custom arguments to pass to

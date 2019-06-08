@@ -11,7 +11,7 @@ is passed to the configuration template.
 
 Each list entry is a YAML dictionary, which can be written in a simple or
 complex form. Entries that control Postfix parameters of the same name will be
-combined together in order of apperance.
+combined together in order of appearance.
 
 .. contents::
    :local:
