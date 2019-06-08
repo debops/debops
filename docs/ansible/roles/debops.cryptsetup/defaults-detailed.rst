@@ -95,7 +95,7 @@ Each item of those lists is a dictionary with the following documented keys:
   the device in :file:`/etc/crypttab`. See :man:`crypttab(5)` for details.
   Default to :envvar:`cryptsetup__crypttab_options`.
 
-  Note that :command:`cryptsetup` options need to be specified using there corresponding
+  Note that :command:`cryptsetup` options need to be specified using their corresponding
   parameters as documented in this section. If an option is not documented
   here, that is where you can use ``crypttab_options`` for.
   For example :ref:`item.hash <cryptsetup__devices_hash>` could also be
