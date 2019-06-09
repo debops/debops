@@ -4,80 +4,55 @@ Getting started
 .. contents::
    :local:
 
-Required Ansible host groups
-----------------------------
-
-``[debops_service_rsnapshot]`` or ``[debops_service_rsnapshot_clients]``
-  Defines a group of hosts which will be configured as "clients".
-
-  These hosts will have :program:`rsnapshot` installed and will connect to the
-  configured "servers" at specified times through the day, synchronize the
-  files and rotate archived snapshots.
-
-  You want them to have lots of disk space depending on your configuration,
-  preferably encrypted. You can have multiple clients configured in parallel.
-
-  This group can be redefined in :envvar:`rsnapshot_clients` if needed.
-
-
-``[debops_service_rsnapshot_rsync]`` or ``[debops_service_rsnapshot_servers]``
-  Defines a group of hosts which are configured as "servers".
-
-  These hosts will have :command:`rsync` installed, and SSH keys from clients
-  will be configured on the server ``root`` account to allow unrestricted
-  access from the client.
-
-  A ``rrsync`` script provided with the :command:`rsync` package will be
-  installed to permit for restricted, read-only access using an SSH command
-  stored in ``~/.ssh/authorized_keys``.
-
-  This group can be redefined in :envvar:`rsnapshot_servers` if needed.
-
-
-Both host groups can be configured either directly (with hosts), or as a parent
-group for other groups. You probably want a mixed set of
-``[debops_service_rsnapshot]`` as a list of specific hosts and
-``[debops_service_rsnapshot_rsync:children]`` pointing to other groups of hosts
-to be backed up. This way new hosts added to your primary groups can be
-automatically prepared to be backed up.
-
-
-Default directories
--------------------
-
-Configuration files are stored in :file:`/etc/rsnapshot/hosts/` directory.
-
-Backups are stored by default in :file:`/var/cache/rsnapshot/` directory.
-
 
 Example inventory
 -----------------
 
-This inventory will tell Ansible to backup all hosts in ``[all_hosts]`` group
-except the ``archive`` host, to the ``archive`` host::
+To configure :command:`rsnapshot` on a host using the :ref:`debops.rsnapshot`
+role, that host needs to be included in the ``[debops_service_rsnapshot]``
+Ansible inventory group:
 
-    [all_hosts]
-    alpha
-    beta
-    archive
+.. code-block:: none
 
-    [debops_service_rsnapshot]
-    archive
+   [debops_service_rsnapshot]
+   hostname
 
-    [debops_service_rsnapshot_rsync:children]
-    all_hosts
+By default the role will create only the configuration for its own host, but
+with the ``no_create_root`` option enabled - if the snapshot directory is not
+present, the snapshots will not be created. You can either create the host
+subdirectory in :file:`/var/cache/rsnapshot/hosts/` directory to enable the
+snapshots, or change the configuration to point the snapshot directory to
+removable media.
+
 
 Example playbook
 ----------------
 
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.rsnapshot`` role:
+
 .. literalinclude:: ../../../../ansible/playbooks/service/rsnapshot.yml
    :language: yaml
 
-When the inventory is set up, run Ansible on all of the hosts in both groups to
-have them correctly configured::
 
-    debops -t role::rsnapshot
+Ansible tags
+------------
 
-You might want to see :doc:`list of default variables <defaults>` to change how
-`:program:`rsnapshot` is configured, and a separate :doc:`advanced guides
-<guides>` to see how you can use the role in different environments.
+You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
+tasks are performed during Ansible run. This can be used after host is first
+configured to speed up playbook execution, when you are sure that most of the
+configuration has not been changed.
+
+Available role tags:
+
+``role::rsnapshot``
+  Main role tag, should be used in the playbook to execute all of the role
+  tasks as well as role dependencies.
+
+
+Other resources
+---------------
+
+List of other useful resources related to the ``debops.rsnapshot`` Ansible role:
+
+- Manual pages: :man:`rsnapshot(1)`, :man:`rsync(1)`

@@ -47,6 +47,12 @@ Changed
   or :ref:`regular users <debops.users>` managed by Ansible are using it as
   a login shell.
 
+- [debops.rsnapshot] The role has been redesigned from the group up. Instead of
+  using Ansible inventory groups to define hosts to back up, role uses a list
+  of YAML dictionaries with hosts defined explicitly; the old behaviour can be
+  replicated if needed. The backup host itself can also be snapshotted, with
+  support for snapshots on removable media.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------

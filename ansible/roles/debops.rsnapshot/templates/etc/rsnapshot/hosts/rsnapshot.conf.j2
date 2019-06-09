@@ -1,0 +1,110 @@
+# {{ ansible_managed }}
+
+#################################################
+# rsnapshot.conf - rsnapshot configuration file #
+#################################################
+#                                               #
+# PLEASE BE AWARE OF THE FOLLOWING RULES:       #
+#                                               #
+# This file requires tabs between elements      #
+#                                               #
+#################################################
+{% set host = item.0 %}
+{% for section in rsnapshot__configuration_sections %}
+{%   set host_options = host.options | selectattr('section', 'defined') | selectattr('section', 'equalto', section.name) | list %}
+{%   if host_options|d() %}
+
+{%     set section_title = {'width': ((section.value | length)|int + 4)} %}
+{%     if section.comment|d() %}
+{%       for line in (section.comment | regex_replace('\n$', '')).split('\n') %}
+{%         if ((line | length)|int + 4) > section_title.width %}
+{%           set _ = section_title.update({'width': ((line | length)|int + 4)}) %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{{ ('{:#^' + (section_title.width|string) + 's}').format('') }}
+{{ ('# {:^' + ((section_title.width - 4)|string) + '} #').format(section.value | upper) }}
+{%     if section.comment|d() %}
+{%       for line in (section.comment | regex_replace('\n$', '')).split('\n') %}
+{{ ('# {:<' + ((section_title.width - 4)|string) + '} #').format(line) }}
+{%       endfor %}
+{%     endif %}
+{{ ('{:#^' + (section_title.width|string) + 's}').format('') }}
+
+{%     for option in host_options %}
+{%       if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%         if option.comment|d() %}
+{%           if not loop.first %}
+
+{%           endif %}
+{{ option.comment | regex_replace("\n$", "") | comment(prefix='', postfix='#') }}
+{%         endif %}
+{%         if option.raw|d() %}
+{%           if option.state|d('present') == 'comment' %}
+{{ option.raw | regex_replace('\n$', '') | comment(decoration='#', prefix='', postfix='') -}}
+{%           else %}
+{{ option.raw -}}
+{%           endif %}
+{%         elif option.value is defined %}
+{%           set option_alias = ((option.option + '\t') if option.option|d() else '') %}
+{%           set option_comment = ('#' if (option.state|d('present') == 'comment') else '') %}
+{%           set option_name = option.name %}
+{%           set option_tabs = ('\t' if ((option_comment + option_name) | length < 8) else '') %}
+{%           set option_value = option.value %}
+{%           if option.name == 'snapshot_root' and option.value == rsnapshot__snapshot_root %}
+{%             set option_value = (rsnapshot__snapshot_root + '/' + host.name) %}
+{%           endif %}
+{%           if option.name == 'lockfile' and option.value == '/var/run/rsnapshot.pid' %}
+{%             set option_value = ('/var/run/rsnapshot-' + host.name + '.pid') %}
+{%           endif %}
+{%           if option.name == 'include_file' and option.state == 'present' and option.value == '/path/to/include/file' %}
+{%             set option_value = (rsnapshot__config_dir + '/' + host.name + '/include.txt') %}
+{%           endif %}
+{%           if option.name == 'exclude_file' and option.state == 'present' and option.value == '/path/to/exclude/file' %}
+{%             set option_value = (rsnapshot__config_dir + '/' + host.name + '/exclude.txt') %}
+{%           endif %}
+{%           set option_overrides = [] %}
+{%           if option.name == 'root@fqdn:/' %}
+{%             set option_filesystems = {'/': (host.dest_root | d('./'))} %}
+{%             if host.filesystems|d() %}
+{%               if host.filesystems is mapping %}
+{%                 for key, value in host.filesystems.items() %}
+{%                   set _ = option_filesystems.update({key: value}) %}
+{%                 endfor %}
+{%               else %}
+{%                 for source in ([ host.filesystems ] if (host.filesystems is string) else host.filesystems) %}
+{%                   set _ = option_filesystems.update({source: (host.dest_root | d('./'))}) %}
+{%                 endfor %}
+{%               endif %}
+{%             endif %}
+{%             for src, dest in option_filesystems | dictsort %}
+{%               if (host.local|d())|bool %}
+{%                 set option_name = src %}
+{%                 set option_overrides = [] %}
+{%               else %}
+{%                 if hostvars[host.name]|d() %}
+{%                   set option_name = (host.ssh_user | d('root')) + '@' + (host.fqdn | d(hostvars[host.name]['ansible_fqdn'])) + ':' + src %}
+{%                 else %}
+{%                   set option_name = (host.ssh_user | d('root')) + '@' + (host.fqdn | d(host.name)) + ':' + src %}
+{%                 endif %}
+{%                 set override_ssh_args = ([ '-i ~/.ssh/' + (host.ssh_identity | d(rsnapshot__ssh_main_identity)) ]) %}
+{%                 if host.ssh_port|d() %}
+{%                   set _ = override_ssh_args.append('-p ' + host.ssh_port|string) %}
+{%                 endif %}
+{%                 set option_overrides = ([ '+ssh_args=' + (override_ssh_args | join(' ')) ]) %}
+{%               endif %}
+{%               set option_tabs = (('\t' if ((option_comment + option_name) | length < 8) else '') + ('\t' if (((option_comment + option_name) | length) % 8 >= 7) else '') + ('\t' if (((option_comment + option_name) | length) % 8 > 7 and src == '/') else '')) %}
+{%               set option_value = dest %}
+{%               if host.overrides|d() %}
+{%                 set _ = option_overrides.extend([ host.overrides ] if host.overrides is string else host.overrides) %}
+{%               endif %}
+{{ "{}{}{}\t{}{}{}".format(option_comment, option_alias, option_name, option_tabs, option_value, ('\t' if option_overrides|d() else '') + option_overrides | join(',')) }}
+{%             endfor %}
+{%           else %}
+{{ "{}{}{}\t{}{}{}".format(option_comment, option_alias, option_name, option_tabs, option_value, ('\t' if option_overrides|d() else '') + option_overrides | join(',')) }}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}

@@ -11,6 +11,20 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.rsnapshot` role has been redesigned and all of its
+  ``rsnapshot_*`` variables have been renamed to ``rsnapshot__*`` to contain
+  them in their own namespace. You will have to update your inventory.
+
+  The configuration of the hosts to back up has also been redesigned; the role
+  does not use Ansible inventory groups to define the hosts to back up
+  implicitly; you now have to explicitly specify hosts to back up using the
+  :ref:`rsnapshot__ref_hosts` variables. There is a way to replocate the
+  previous usage of inventory groups to define hosts to back up as well, see
+  the provided examples.
+
 
 v1.0.0 (2019-05-22)
 -------------------
