@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# {{ ansible_managed }}
+# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2019 DebOps https://debops.org/
 
-# Manage rsnapshot backups configured in /etc/rsnapshot/
+# Manage rsnapshot backups configured in /etc/rsnapshot/hosts/
 
 
 display_usage () {
@@ -26,8 +27,8 @@ script="${0}"
 
 scheduler_config="/etc/$(basename "${script}").conf"
 
-scheduler_config_dir="/etc/rsnapshot"
-scheduler_hosts_dir="${scheduler_config_dir}/hosts"
+scheduler_config_dir="/etc/rsnapshot/hosts"
+scheduler_snapshot_root="/var/cache/rsnapshot/hosts"
 scheduler_lock_dir="/run/rsnapshot-scheduler"
 scheduler_type="batch"
 scheduler_batch_command="at -q R now"
@@ -53,6 +54,11 @@ log_message () {
 
 if [ -r "${scheduler_config_dir}/stop" ] || [ -r "${scheduler_config_dir}/disable" ] || [ -r "${scheduler_config_dir}/disabled" ] ; then
     log_message "Exit: rsnapshot backups are disabled globally"
+    exit 0
+fi
+
+if [ -r "${scheduler_snapshot_root}/stop" ] || [ -r "${scheduler_snapshot_root}/disable" ] || [ -r "${scheduler_snapshot_root}/disabled" ] ; then
+    log_message "Exit: rsnapshot backups are disabled globally via snapshot root directory"
     exit 0
 fi
 
@@ -125,24 +131,36 @@ run_backup () {
         exit 1
     fi
 
-    if [ -r "${scheduler_hosts_dir}/${host}/rsnapshot.conf" ] ; then
-        local config="${scheduler_hosts_dir}/${host}/rsnapshot.conf"
+    if [ -r "${scheduler_config_dir}/${host}/rsnapshot.conf" ] ; then
+        local config="${scheduler_config_dir}/${host}/rsnapshot.conf"
     else
         log_message "Error: configuration for ${host} not found"
         exit 1
     fi
 
-    if [ -r "${scheduler_hosts_dir}/${host}/stop" ] || [ -r "${scheduler_hosts_dir}/${host}/disable" ] || [ -r "${scheduler_hosts_dir}/${host}/disabled" ] ; then
+    if [ -r "${scheduler_config_dir}/${host}/stop" ] || [ -r "${scheduler_config_dir}/${host}/disable" ] || [ -r "${scheduler_config_dir}/${host}/disabled" ] ; then
         log_message "Exit: backup of ${host} is disabled"
         exit 0
     fi
 
     if [ -r "${config}" ] ; then
 
+        read -r -a snapshot_root <<< "$(grep -E "^snapshot_root\\s+" "${config}" | awk '{print $2}' | head -n 1)"
+        read -r -a no_create_root <<< "$(grep -E "^no_create_root\\s+1" "${config}")"
         read -r -a sync_first <<< "$(grep -E "^sync_first\\s+1" "${config}")"
         read -r -a retain_first <<< "$(grep -E "^retain\\s+" "${config}" | awk '{print $2}' | head -n 1)"
         read -r -a retain_name <<< "$(grep -E "^retain\\s+${backup_level}\\s+" "${config}" | awk '{print $2}' | head -n 1)"
         read -r -a lockfile <<< "$(grep -E "^lockfile\\s+" "${config}" | awk '{print $2}' | head -n 1)"
+
+        # If no_create_root is enabled, check the existence of the root backup
+        # directory early so that we can avoid spamming the system
+        # administrator with e-mails about missing root directory.
+        if [ -n "${no_create_root[*]}" ] ; then
+            if [ -n "${snapshot_root[*]}" ] && [ ! -d "${snapshot_root[*]}" ] ; then
+                log_message "Exit: Backup of ${host} at ${backup_level} level stopped, snapshot directory not found and will not be created automatically"
+                exit 0
+            fi
+        fi
 
         if [ "${retain_name[*]}" == "${backup_level[*]}" ] ; then
 
@@ -207,14 +225,14 @@ prepare_backup () {
     local scheduler_pidfile
     scheduler_pidfile="${scheduler_lock_dir}/$(basename "${script}")-${backup_level}-${host}.pid"
 
-    if [ -r "${scheduler_hosts_dir}/${host}/rsnapshot.conf" ] ; then
-        local config="${scheduler_hosts_dir}/${host}/rsnapshot.conf"
+    if [ -r "${scheduler_config_dir}/${host}/rsnapshot.conf" ] ; then
+        local config="${scheduler_config_dir}/${host}/rsnapshot.conf"
     else
         log_message "Error: configuration for ${host} not found"
         return
     fi
 
-    if [ -r "${scheduler_hosts_dir}/${host}/stop" ] || [ -r "${scheduler_hosts_dir}/${host}/disable" ] || [ -r "${scheduler_hosts_dir}/${host}/disabled" ] ; then
+    if [ -r "${scheduler_config_dir}/${host}/stop" ] || [ -r "${scheduler_config_dir}/${host}/disable" ] || [ -r "${scheduler_config_dir}/${host}/disabled" ] ; then
         log_message "Exit: backup of ${host} is disabled"
         return
     fi
@@ -274,7 +292,7 @@ schedule_backup () {
 
     elif [ "${host}" == "all" ] ; then
         local random_hosts
-        read -r -a random_hosts <<< "$(find "${scheduler_hosts_dir}" -maxdepth 1 -mindepth 1 -type d -printf "%f\\n" | sort -R | xargs)"
+        read -r -a random_hosts <<< "$(find "${scheduler_config_dir}" -maxdepth 1 -mindepth 1 -type d -printf "%f\\n" | sort -R | xargs)"
         for name in "${random_hosts[@]}" ; do
             prepare_backup "${backup_level}" "$(basename "${name}")"
         done

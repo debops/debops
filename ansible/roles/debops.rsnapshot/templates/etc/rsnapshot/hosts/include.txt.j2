@@ -1,0 +1,20 @@
+# {{ ansible_managed }}
+
+{% set host = item.0 %}
+{% set rule_map = {
+  'exclude':   '-',
+  'include':   '+',
+  'merge':     '.',
+  'dir-merge': ':',
+  'hide':      'H',
+  'show':      'S',
+  'protect':   'P',
+  'risk':      'R',
+  'clear':     '!'
+} %}
+{% for option in host.includes %}
+{%   if option.name|d() and option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{{ "{} {}".format(rule_map[option.rule|d('include')], option.name) }}
+{%   endif %}
+{% endfor %}
+
