@@ -318,7 +318,6 @@ EOF
     --no-install-recommends install \
         acl \
         apt-transport-https \
-        encfs \
         git \
         haveged \
         jo \
