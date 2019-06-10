@@ -28,6 +28,12 @@ Added
 - [debops.users] Readd :envvar:`users__default_shell` which was removed in
   `debops v1.0.0`_.
 
+- [ci] The Vagrant test environment will use the `libeatmydata`__ library to
+  make specific commands like :command:`apt-get`, :command:`rsync`,
+  :command:`pip`, etc. faster by avoiding excessive :man:`fsync(2)` operations.
+
+  .. __: https://www.flamingspork.com/projects/libeatmydata/
+
 Changed
 ~~~~~~~
 

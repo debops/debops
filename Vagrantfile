@@ -34,6 +34,37 @@
 #         be required when connectivity on either network is spotty or broken.
 
 
+$setup_eatmydata = <<SCRIPT
+set -o nounset -o pipefail -o errexit
+
+# Avoid fsync in specific tools to make testing faster.
+# We don't care about cleanup, because this is a test VM which will be
+# destroyed anyway.
+# Ref: http://people.skolelinux.org/pere/blog/Speeding_up_the_Debian_installer_using_eatmydata_and_dpkg_divert.html
+
+apt-get update
+apt-get -qy install eatmydata || true
+if [ -x "/usr/bin/eatmydata" ] ; then
+    for binary in dpkg apt-cache apt-get aptitude tasksel pip pip3 bundle bundler gem npm yarn go rsync ; do
+        filename="/usr/bin/${binary}"
+        # Test that the file exists and has not been diverted already.
+        if [ ! -f "${filename}.distrib" ] ; then
+            printf "Diverting %s using eatmydata\n" "${filename}"
+            printf "#!/bin/sh\neatmydata $binary.distrib \\"\\$@\\"\n" \
+                > "${filename}.vagrant"
+            chmod 755 "${filename}.vagrant"
+            dpkg-divert --package vagrant \
+                --rename --quiet --add "${filename}"
+            ln -sf "./${binary}.vagrant" "${filename}"
+        else
+            printf "Notice: %s is already diverted, skipping\n" "${filename}"
+        fi
+    done
+else
+    printf "Error: Unable to find /usr/bin/eatmydata after installing the eatmydata package\n"
+fi
+SCRIPT
+
 $fix_hostname_dns = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
@@ -94,7 +125,6 @@ ExecStart=/usr/sbin/avahi-daemon -s --no-rlimits
 EOF
 systemctl daemon-reload
 if ! type avahi-daemon > /dev/null ; then
-    apt-get -q update
     apt-get -qy install avahi-daemon avahi-utils libnss-mdns
 fi
 
@@ -318,7 +348,6 @@ EOF
     --no-install-recommends install \
         acl \
         apt-transport-https \
-        encfs \
         git \
         haveged \
         jo \
@@ -644,6 +673,7 @@ Vagrant.configure("2") do |config|
 
                 node.vm.box = VAGRANT_NODE_BOX
                 node.vm.hostname = node_fqdn
+                node.vm.provision "shell", inline: $setup_eatmydata,    keep_color: true
                 node.vm.provision "shell", inline: $fix_hostname_dns,   keep_color: true
                 node.vm.provision "shell", inline: $provision_node_box, keep_color: true, run: "always"
 
@@ -672,6 +702,7 @@ Vagrant.configure("2") do |config|
         subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/stretch64'
         subconfig.vm.hostname = master_fqdn
 
+        subconfig.vm.provision "shell", inline: $setup_eatmydata,  keep_color: true
         subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
         subconfig.vm.provision "shell", inline: $provision_box,    keep_color: true, run: "always"
 
