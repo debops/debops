@@ -590,10 +590,18 @@ Logging and monitoring
   Name of the access log file.
   The suffix ``.log`` will be added automatically.
 
+``access_log_enabled``
+  Optional, boolean. Defaults to ``True``.
+  If access logging should be enabled.
+
 ``error_log``
   Optional, string. Defaults to ``<``name[0]>_error``.
   Name of the error log file.
   The suffix ``.log`` will be added automatically.
+
+``error_log_enabled``
+  Optional, boolean. Defaults to ``True``.
+  If error logging should be enabled.
 
 ``access_log_format``
   Optional. Name of the access log format.

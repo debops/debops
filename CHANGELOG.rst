@@ -34,6 +34,8 @@ Added
 
   .. __: https://www.flamingspork.com/projects/libeatmydata/
 
+- [debops.nginx] Support to disable logging per Nginx server.
+
 Changed
 ~~~~~~~
 
