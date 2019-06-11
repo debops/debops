@@ -1,0 +1,73 @@
+{#  docker daemon options for systemd managed systems #}
+{%  set docker_server__tpl_options = {} %}
+{%  if docker_server__bridge|d() -%}
+{%    set _ = docker_server__tpl_options.update({"bridge": docker_server__bridge}) %}
+{%- endif %}
+{%  if docker_server__live_restore|d() and docker_server__version is version_compare('1.12', '>=') -%}
+{%    set lv_value = true if docker_server__live_restore else false %}
+{%    set _  = docker_server__tpl_options.update({"live-restore": lv_value}) %}
+{%- endif %}
+{%  if docker_server__graph|d() -%}
+{%    set _ = docker_server__tpl_options.update({"graph": docker_server__graph}) %}
+{%- endif %}
+{%  if docker_server__fixed_cidr|d() -%}
+{%    set _ = docker_server__tpl_options.update({"fixed-cidr": docker_server__fixed_cidr}) %}
+{%- endif %}
+{%  if docker_server__dns_nameserver|d() -%}
+{%    set docker_server__tpl_dns_nameservers = [] %}
+{%    for element in docker_server__dns_nameserver -%}
+{%      set _ = docker_server__tpl_dns_nameservers.append(element) %}
+{%-   endfor %}
+{%    set _ = docker_server__tpl_options.update({"dns": docker_server__tpl_dns_nameservers}) %}
+{%- endif %}
+{%  if docker_server__dns_search|d() -%}
+{%    set docker_server__tpl_dns_search = [] %}
+{%    for element in docker_server__dns_search -%}
+{%      set _ = docker_server__tpl_dns_search.append(element) %}
+{%-   endfor %}
+{%    set _ = docker_server__tpl_options.update({"dns-search": docker_server__tpl_dns_search}) %}
+{%- endif %}
+{%  if docker_server__listen|d() and docker_server__version is version_compare('1.10', '>=') -%}
+{%    set docker_server__tpl_listen = [] %}
+{%    for element in docker_server__listen -%}
+{%      set _ = docker_server__tpl_listen.append(element) %}
+{%-   endfor %}
+{%    set _ = docker_server__tpl_options.update({"hosts": docker_server__tpl_listen}) %}
+{%- endif %}
+{%  if docker_server__pki|d() | bool -%}
+{%    set _ = docker_server__tpl_options.update({"tlsverify": true}) %}
+{%    set _ = docker_server__tpl_options.update({"tlscacert": (docker_server__pki_path + "/" + docker_server__pki_realm + "/" + docker_server__pki_ca)}) %}
+{%    set _ = docker_server__tpl_options.update({"tlscert": (docker_server__pki_path + "/" + docker_server__pki_realm + "/" + docker_server__pki_crt)}) %}
+{%    set _ = docker_server__tpl_options.update({"tlskey": (docker_server__pki_path + "/" + docker_server__pki_realm + "/" + docker_server__pki_key)}) %}
+{%- endif %}
+{%  if docker_server__debug|d() -%}
+{%    set _ = docker_server__tpl_options.update({"debug": docker_server__debug}) %}
+{%- endif %}
+{%  if docker_server__registry_mirrors|d() -%}
+{%    set docker_server__tpl_registry_mirrors = [] %}
+{%    for element in docker_server__registry_mirrors -%}
+{%      set _ = docker_server__tpl_registry_mirrors.append(element) %}
+{%-   endfor %}
+{%    set _ = docker_server__tpl_options.update({"registry-mirrors": docker_server__tpl_registry_mirrors}) %}
+{%- endif %}
+{%  if docker_server__labels|d() -%}
+{%    set docker_server__tpl_labels = [] %}
+{%    for key, value in docker_server__labels.items() -%}
+{%      set _ = docker_server__tpl_labels.append(key+"="+value) %}
+{%-   endfor %}
+{%    set _ = docker_server__tpl_options.update({"labels": docker_server__tpl_labels}) %}
+{%- endif %}
+{%  if docker_server__storage_driver|d() -%}
+{%    set _ = docker_server__tpl_options.update({"storage-driver": docker_server__storage_driver}) %}
+{%- endif %}
+{%  if docker_server__storage_options|d() -%}
+{%    set docker_server__tpl_storage_options = [] %}
+{%    for key, value in docker_server__storage_options.items() -%}
+{%      set _ = docker_server__tpl_storage_options.append(key+"="+value) %}
+{%-   endfor %}
+{%    set _ = docker_server__tpl_options.update({"storage-opts": docker_server__tpl_storage_options}) %}
+{%- endif %}
+{%  if docker_server__custom_daemon_options|d() -%}
+{%    set _ = docker_server__tpl_options.update(docker_server__custom_daemon_options) %}
+{%- endif %}
+{{ docker_server__tpl_options | to_nice_json }}

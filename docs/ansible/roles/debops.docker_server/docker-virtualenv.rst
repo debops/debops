@@ -1,4 +1,4 @@
-.. _docker__ref_virtualenv:
+.. _docker_server__ref_virtualenv:
 
 Docker virtualenv support
 =========================
@@ -17,7 +17,7 @@ can be used to manage multiple Docker containers at a time. Ansible provides
 a few Docker-related modules as well. Therefore a correctly configured Python
 environment is very useful on a Docker host.
 
-The ``debops.docker`` Ansible role maintains a separate Python
+The ``debops.docker_server`` Ansible role maintains a separate Python
 :command:`virtualenv` environment just for Docker-related Python packages. This
 is done so that Python modules used by upstream Docker, don't affect the host
 Python environment. The Docker :command:`virtualenv` environment is by default

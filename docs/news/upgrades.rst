@@ -25,6 +25,12 @@ Inventory variable changes
   previous usage of inventory groups to define hosts to back up as well, see
   the provided examples.
 
+- The ``debops.docker`` role has been renamed to :ref:`debops.docker_server`.
+  The ``docker__*`` variables have been renamed to ``docker_server__*``. You
+  will have to update your inventory variables and move all hosts to the new
+  inventory group ``[debops_service_docker_server]`` to continue using this
+  role.
+
 
 v1.0.0 (2019-05-22)
 -------------------
