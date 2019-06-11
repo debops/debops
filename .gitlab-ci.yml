@@ -343,15 +343,6 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.dnsmasq\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
-'docker role':
-  <<: *test_role_1st_deps
-  variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_docker'
-    JANE_DIFF_PATTERN: '.*/debops.docker/.*'
-    JANE_LOG_PATTERN: '\[debops\.docker\]'
-  tags: [ 'shell', 'vagrant-vm' ]
-
 'docker_gen role':
   <<: *test_role_no_deps
   variables:
@@ -367,6 +358,15 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_docker_registry'
     JANE_DIFF_PATTERN: '.*/debops.docker_registry/.*'
     JANE_LOG_PATTERN: '\[debops\.docker_registry\]'
+
+'docker_server role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_server.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_docker_server'
+    JANE_DIFF_PATTERN: '.*/debops.docker_server/.*'
+    JANE_LOG_PATTERN: '\[debops\.docker_server\]'
+  tags: [ 'shell', 'vagrant-vm' ]
 
 'dokuwiki role':
   <<: *test_role_2nd_deps
@@ -515,11 +515,11 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.gitlab_runner/.*'
     JANE_LOG_PATTERN: '\[debops\.gitlab_runner\]'
 
-'gitlab_runner/docker role':
+'gitlab_runner/docker_server role':
   <<: *test_role_2nd_deps
   variables:
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_docker,debops_service_gitlab_runner'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_docker_server,debops_service_gitlab_runner'
     JANE_DIFF_PATTERN: '.*/debops.gitlab_runner/.*'
     JANE_LOG_PATTERN: '\[debops\.gitlab_runner\]'
   tags: [ 'shell', 'vagrant-vm' ]

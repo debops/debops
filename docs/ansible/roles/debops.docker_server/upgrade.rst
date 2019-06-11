@@ -11,8 +11,9 @@ From v1.0.x to master
 ---------------------
 
 The role has been renamed from ``debops.docker`` to ``debops.docker_server``.
-The variable prefix has been updated to ``docker_server__``. You will need to
-update your inventory to continue using this role.
+The ``docker__*`` variables have been renamed to ``docker_server__*``. You will
+have to update your inventory variables and move all hosts to the new inventory
+group ``[debops_service_docker_server]`` to continue using this role.
 
 From v0.3.0 to v0.4.0
 ---------------------
