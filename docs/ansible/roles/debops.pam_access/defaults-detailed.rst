@@ -27,78 +27,80 @@ global access list by default:
 
 .. code-block:: yaml
 
-   - name: 'global'
-     state: 'present'
-     options:
+   pam_access__rules:
 
-       - name: 'allow-root-locally'
-         comment: |
-           User root should be allowed to get access via cron, X11 terminal :0, tty1-6
-         permission: 'allow'
-         users: 'root'
-         origins: [ 'crond', ':0', 'tty1', 'tty2', 'tty3', 'tty4', 'tty5', 'tty6' ]
+     - name: 'global'
+       state: 'present'
+       options:
 
-       - name: 'allow-root-loopback'
-         permission: '+'
-         users: 'root'
-         origins: '127.0.0.1'
+         - name: 'allow-root-locally'
+           comment: |
+             User root should be allowed to get access via cron, X11 terminal :0, tty1-6
+           permission: 'allow'
+           users: 'root'
+           origins: [ 'crond', ':0', 'tty1', 'tty2', 'tty3', 'tty4', 'tty5', 'tty6' ]
 
-       - name: 'allow-root-subnet'
-         comment: |
-           User root should get access from network 192.0.2. which can also be
-           specified using a CIDR prefix, 192.0.2.0/24
-         permission: 'allow'
-         users: 'root'
-         origins: [ '192.0.2.', '192.0.2.0/24' ]
+         - name: 'allow-root-loopback'
+           permission: '+'
+           users: 'root'
+           origins: '127.0.0.1'
 
-       - name: 'allow-root-domain'
-         comment: |
-           User root should be able to have access from a specific domain
-         permission: '+'
-         users: 'root'
-         origins: '.example.org'
+         - name: 'allow-root-subnet'
+           comment: |
+             User root should get access from network 192.0.2. which can also be
+             specified using a CIDR prefix, 192.0.2.0/24
+           permission: 'allow'
+           users: 'root'
+           origins: [ '192.0.2.', '192.0.2.0/24' ]
 
-       - name: 'deny-root'
-         comment: |
-           Deny access to the root account from any other sources
-         permission: 'deny'
-         users: 'root'
-         origins: 'ALL'
+         - name: 'allow-root-domain'
+           comment: |
+             User root should be able to have access from a specific domain
+           permission: '+'
+           users: 'root'
+           origins: '.example.org'
 
-       - name: 'allow-foo-admins'
-         comment: |
-           User 'foo' and members of netgroup 'admins' should be allowed to get
-           access from all sources. This will only work if netgroup service is
-           available.
-         permission: '+'
-         users: [ '@admins', 'foo' ]
-         origins: 'ALL'
+         - name: 'deny-root'
+           comment: |
+             Deny access to the root account from any other sources
+           permission: 'deny'
+           users: 'root'
+           origins: 'ALL'
 
-       - name: 'allow-john-ipv6subnet'
-         comment: |
-           User 'john' should get access from IPv6 net/mask.
-         permission: 'allow'
-         users: 'john'
-         origins: '2001:db8:0:101::/64'
+         - name: 'allow-foo-admins'
+           comment: |
+             User 'foo' and members of netgroup 'admins' should be allowed to get
+             access from all sources. This will only work if netgroup service is
+             available.
+           permission: '+'
+           users: [ '@admins', 'foo' ]
+           origins: 'ALL'
 
-       - name: 'allow-local-wheel'
-         comment: |
-           Disallow console logins to all but the 'shutdown', 'sync' and all
-           other accounts, which are a member of the 'wheel' group.
-         permission: '-'
-         groups_except: 'wheel'
-         users_except: [ 'shutdown', 'sync' ]
-         origins: 'LOCAL'
+         - name: 'allow-john-ipv6subnet'
+           comment: |
+             User 'john' should get access from IPv6 net/mask.
+           permission: 'allow'
+           users: 'john'
+           origins: '2001:db8:0:101::/64'
 
-       - name: 'deny-all'
-         comment: |
-           All other users should be denied access from all sources. This rule
-           will be placed at the end of the configuration, to allow easy
-           addition of more rules before it.
-         permission: 'deny'
-         users: 'ALL'
-         origins: 'ALL'
-         weight: 99999
+         - name: 'allow-local-wheel'
+           comment: |
+             Disallow console logins to all but the 'shutdown', 'sync' and all
+             other accounts, which are a member of the 'wheel' group.
+           permission: '-'
+           groups_except: 'wheel'
+           users_except: [ 'shutdown', 'sync' ]
+           origins: 'LOCAL'
+
+         - name: 'deny-all'
+           comment: |
+             All other users should be denied access from all sources. This rule
+             will be placed at the end of the configuration, to allow easy
+             addition of more rules before it.
+           permission: 'deny'
+           users: 'ALL'
+           origins: 'ALL'
+           weight: 99999
 
 Add some of the examples from the default :file:`/etc/security/access.conf`
 file installed by Debian to the :file:`/etc/security/access-sshd.conf`
