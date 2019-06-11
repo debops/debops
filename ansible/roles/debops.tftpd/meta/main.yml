@@ -1,28 +1,6 @@
 ---
 
-dependencies:
-
-  - role: debops.ferm
-    ferm_input_dependent_list:
-
-      - type: 'dport_accept'
-        protocols: [ 'udp' ]
-        dport: [ 'tftp' ]
-        saddr: '{{ tftpd_allow }}'
-        accept_any: True
-        weight: '50'
-        filename: 'tftpd_dependency_accept'
-
-  - role: debops.tcpwrappers
-    tcpwrappers_dependent_allow:
-
-      - daemon: 'in.tftpd'
-        client: '{{ tftpd_allow }}'
-        accept_any: True
-        weight: '50'
-        filename: 'tftpd_dependency_allow'
-        comment: 'Allow remote connections to TFTP server'
-
+dependencies: []
 
 galaxy_info:
 
@@ -30,8 +8,8 @@ galaxy_info:
   author: 'Maciej Delmanowski'
   description: 'Manage standalone TFTP server'
   company: 'DebOps'
-  license: 'GNU General Public License v3'
-  min_ansible_version: '1.7.0'
+  license: 'GPL-3.0'
+  min_ansible_version: '2.7.0'
   platforms:
     - name: Ubuntu
       versions:
@@ -43,3 +21,5 @@ galaxy_info:
     - tftp
     - provisioning
     - networking
+    - pxe
+    - ipxe

@@ -1,22 +1,41 @@
 ---
 
 - name: Install required packages
-  apt:
-    name: 'tftpd-hpa'
+  package:
+    name: '{{ q("flattened", (tftpd__base_packages + tftpd__packages)) }}'
     state: 'present'
-    install_recommends: False
-  register: tftpd_register_install
-  until: tftpd_register_install is succeeded
+  register: tftpd__register_install
+  until: tftpd__register_install is succeeded
 
-- name: Set tftpd-hpa parameters
+- name: Configure tftpd service
   template:
     src: 'etc/default/tftpd-hpa.j2'
     dest: '/etc/default/tftpd-hpa'
-    owner: 'root'
-    group: 'root'
     mode: '0644'
-  register: tftpd_register_template
+  notify: [ 'Restart tftpd-hpa' ]
 
-- name: Reconfigure TFTP server
-  command: dpkg-reconfigure --frontend=noninteractive tftpd-hpa
-  when: tftpd_register_template is defined and tftpd_register_template is changed
+- name: Create the upload directory if enabled
+  file:
+    path:  '{{ tftpd__directory + "/" + tftpd__upload_directory }}'
+    owner: '{{ tftpd__username }}'
+    group: '{{ tftpd__upload_group }}'
+    mode:  '{{ tftpd__upload_mode }}'
+    state: 'directory'
+  when: tftpd__upload_enabled|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save tftpd local facts
+  template:
+    src: 'etc/ansible/facts.d/tftpd.fact.j2'
+    dest: '/etc/ansible/facts.d/tftpd.fact'
+    mode: '0755'
+  register: tftpd__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: tftpd__register_facts is changed

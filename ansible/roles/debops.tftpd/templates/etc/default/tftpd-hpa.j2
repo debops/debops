@@ -2,8 +2,7 @@
 
 # /etc/default/tftpd-hpa
 
-TFTP_USERNAME="{{ tftpd_username }}"
-TFTP_DIRECTORY="{{ tftpd_directory }}"
-TFTP_ADDRESS="{{ tftpd_address }}"
-TFTP_OPTIONS="{{ tftpd_options }}"
-
+TFTP_USERNAME="{{ tftpd__username }}"
+TFTP_DIRECTORY="{{ tftpd__directory }}"
+TFTP_ADDRESS="{{ tftpd__address }}"
+TFTP_OPTIONS="{{ q('flattened', ([ tftpd__options ] if tftpd__options is string else tftpd__options)) | join(' ') }}"
