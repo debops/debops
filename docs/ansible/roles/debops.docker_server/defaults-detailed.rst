@@ -1,25 +1,25 @@
 Default variable details
 ========================
 
-Some of ``debops.docker`` default variables have more extensive configuration
-than simple strings or lists, here you can find documentation and examples for
-them.
+Some of ``debops.docker_server`` default variables have more extensive
+configuration than simple strings or lists, here you can find documentation
+and examples for them.
 
 .. contents::
    :local:
    :depth: 1
 
 
-.. _docker__ref_pip_packages:
+.. _docker_server__ref_pip_packages:
 
-docker__pip_packages
---------------------
+docker_server__pip_packages
+---------------------------
 
-The :envvar:`docker__default_pip_packages` and :envvar:`docker__pip_packages`
-list variables define what PyPI packages will be installed in the Python
-virtualenv environment controlled by the ``debops.docker`` role. You can
-specify either package names as string, or YAML dictionaries with specific
-parameters:
+The :envvar:`docker_server__default_pip_packages` and
+:envvar:`docker_server__pip_packages` list variables define what PyPI packages
+will be installed in the Python virtualenv environment controlled by the
+``debops.docker_server`` role. You can specify either package names as string,
+or YAML dictionaries with specific parameters:
 
 ``name``
   Required. The name of the PyPI package to install.

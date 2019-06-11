@@ -2,23 +2,23 @@
 
 - name: Get upstream APT GPG key
   apt_key:
-    id: '{{ docker__upstream_key }}'
+    id: '{{ docker_server__upstream_key }}'
     keyserver: '{{ ansible_local.core.keyserver
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.keyserver)
                    else "hkp://pool.sks-keyservers.net" }}'
     state: 'present'
-  register: docker__register_apt_key
-  until: docker__register_apt_key is succeeded
-  when: docker__upstream|d() | bool
+  register: docker_server__register_apt_key
+  until: docker_server__register_apt_key is succeeded
+  when: docker_server__upstream|d() | bool
 
 - name: Configure upstream APT repository
   apt_repository:
-    repo: '{{ docker__upstream_repository }}'
+    repo: '{{ docker_server__upstream_repository }}'
     mode: '0644'
     state: 'present'
     update_cache: True
-  when: docker__upstream|d() | bool
+  when: docker_server__upstream|d() | bool
 
 - name: Make sure that docker.service.d override directory exists
   file:
@@ -32,14 +32,14 @@
 
 - name: Remove other version if upstream is modified
   apt:
-    name: '{{ ((["docker.io"] if docker__upstream|d()
-                else [docker__upstream_packagename])
-               + (["docker-engine"] if docker__upstream|d()
+    name: '{{ ((["docker.io"] if docker_server__upstream|d()
+                else [docker_server__upstream_packagename])
+               + (["docker-engine"] if docker_server__upstream|d()
                  else [])) | flatten }}'
     state: 'absent'
     install_recommends: False
-  register: docker__register_other_version_removed
-  until: docker__register_other_version_removed is succeeded
+  register: docker_server__register_other_version_removed
+  until: docker_server__register_other_version_removed is succeeded
 
 - name: Remove startup file(s) if present
   file:
@@ -52,18 +52,18 @@
     - '/etc/default/docker'
     - '/etc/docker/daemon.json'
     - '/etc/systemd/system/docker.service.d/http-proxy.conf'
-  when: (docker__register_other_version_removed is changed)
+  when: (docker_server__register_other_version_removed is changed)
 
 - name: Install required packages
   apt:
-    name: '{{ (docker__mandatory_packages
-               + [ docker__packagename ]
-               + docker__base_packages
-               + docker__packages) | flatten }}'
+    name: '{{ (docker_server__mandatory_packages
+               + [ docker_server__packagename ]
+               + docker_server__base_packages
+               + docker_server__packages) | flatten }}'
     state: 'present'
     install_recommends: False
-  register: docker__register_packages
-  until: docker__register_packages is succeeded
+  register: docker_server__register_packages
+  until: docker_server__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -80,26 +80,26 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: docker__register_facts
+  register: docker_server__register_facts
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: docker__register_facts is changed
+  when: docker_server__register_facts is changed
 
 - name: Install Python packages in virtualenv
   pip:
     name: '{{ item.name | d(item) }}'
     version: '{{ item.version | d(omit) }}'
-    virtualenv: '{{ docker__virtualenv }}'
+    virtualenv: '{{ docker_server__virtualenv }}'
     state: '{{ item.state | d("present") }}'
   with_flattened:
-    - '{{ docker__default_pip_packages }}'
-    - '{{ docker__pip_packages }}'
+    - '{{ docker_server__default_pip_packages }}'
+    - '{{ docker_server__pip_packages }}'
 
 - name: Expose Docker virtualenv for Ansible modules
   file:
-    path: '{{ docker__virtualenv_python_symlink }}'
-    src:  '{{ docker__virtualenv_python_interpreter }}'
+    path: '{{ docker_server__virtualenv_python_symlink }}'
+    src:  '{{ docker_server__virtualenv_python_interpreter }}'
     state: 'link'
 
 - name: Symlink selected Python scripts to /usr/local/bin
@@ -108,19 +108,19 @@
     src: '{{ item.src }}'
     state: 'link'
   with_flattened:
-    - '{{ docker__default_pip_packages }}'
-    - '{{ docker__pip_packages }}'
+    - '{{ docker_server__default_pip_packages }}'
+    - '{{ docker_server__pip_packages }}'
   when: item.path|d() and item.src|d() and
         item.state|d('present') != 'absent'
 
 - name: Install ferment wrapper script
   template:
     src: 'usr/local/lib/docker-ferment-wrapper.j2'
-    dest: '{{ docker__ferment_wrapper }}'
+    dest: '{{ docker_server__ferment_wrapper }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: docker__ferment | bool
+  when: docker_server__ferment | bool
 
 - name: Install ferm post hook
   template:
@@ -129,7 +129,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: docker__ferm_post_hook|bool
+  when: docker_server__ferm_post_hook|bool
 
 - name: Configure Docker options
   template:
@@ -140,7 +140,7 @@
     mode: '0644'
   notify: [ 'Restart docker' ]
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr != 'systemd' or docker__version is version_compare('1.10', '<'))
+  when: (ansible_service_mgr != 'systemd' or docker_server__version is version_compare('1.10', '<'))
 
 - name: Configure Docker systemd options
   template:
@@ -151,7 +151,7 @@
     mode: '0644'
   notify: [ 'Restart docker' ]
   tags: [ 'role::docker:config' ]
-  when: (ansible_service_mgr == 'systemd' and docker__version is version_compare('1.10', '>='))
+  when: (ansible_service_mgr == 'systemd' and docker_server__version is version_compare('1.10', '>='))
 
 - name: Configure Docker systemd overrides
   template:
@@ -161,7 +161,7 @@
     group: 'root'
     mode: '0644'
   loop: [ 'execstart-override.conf', 'http-proxy.conf' ]
-  register: docker__register_systemd_overrides
+  register: docker_server__register_systemd_overrides
   notify: ['Restart docker' ]
   when: ansible_service_mgr == 'systemd'
   tags: [ 'role::docker:config' ]
@@ -170,7 +170,7 @@
   systemd:
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
-         docker__register_systemd_overrides is changed)
+         docker_server__register_systemd_overrides is changed)
   tags: [ 'role::docker:config' ]
 
 - name: Add specified users to 'docker' group
@@ -178,6 +178,6 @@
     name: '{{ item }}'
     groups: 'docker'
     append: True
-  with_items: '{{ docker__admins }}'
+  with_items: '{{ docker_server__admins }}'
   when: item|d()
   tags: [ 'role::docker:config', 'role::docker:admins' ]

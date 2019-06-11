@@ -1,7 +1,7 @@
-.. _debops.docker:
+.. _debops.docker_server:
 
-debops.docker
-=============
+debops.docker_server
+====================
 
 .. toctree::
    :maxdepth: 2

@@ -14,7 +14,7 @@ This role requires at least Ansible ``v1.9.0``. To install it, run:
 
 .. code-block:: console
 
-   user@host:~$ ansible-galaxy install debops.docker
+   user@host:~$ ansible-galaxy install debops.docker_server
 
 ..
  Local Variables:
