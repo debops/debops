@@ -124,7 +124,7 @@ General account parameters
 ``shell``
   Optional. Specify the default shell to run when a given UNIX account logs in.
   If not specified, the default system shell (usually :file:`/bin/sh` will be
-  used instead.
+  used instead).
 
 ``password``
   Optional. Specify the encrypted hash of the user's password which will be set
