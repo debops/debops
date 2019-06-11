@@ -10,34 +10,123 @@
 # .. include:: ../../../includes/global.rst
 
 
-# .. envvar:: tftpd_address [[[
+# APT packages [[[
+# ----------------
+
+# .. envvar:: tftpd__base_packages [[[
 #
-# Address and port on which ``tftpd-hpa`` server is listening
-tftpd_address: '[::]:69'
+# List of base APT packages to install for TFTP server support.
+tftpd__base_packages: [ 'tftpd-hpa' ]
 
                                                                    # ]]]
-# .. envvar:: tftpd_directory [[[
+# .. envvar:: tftpd__packages [[[
 #
-# Root directory with files served over TFTP
-tftpd_directory: '/srv/tftp'
+# List of additional APT packages to install with TFTP server.
+tftpd__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# TFTP server configuration [[[
+# -----------------------------
+
+# .. envvar:: tftpd__address [[[
+#
+# Address and port on which TFTP server is listening for new connections.
+tftpd__address: '[::]:69'
 
                                                                    # ]]]
-# .. envvar:: tftpd_username [[[
+# .. envvar:: tftpd__directory [[[
 #
-# System user account used by ``tftpd-hpa`` daemon
-tftpd_username: 'tftp'
+# Root directory with files served over TFTP.
+tftpd__directory: '/srv/tftp'
 
                                                                    # ]]]
-# .. envvar:: tftpd_options [[[
+# .. envvar:: tftpd__username [[[
 #
-# Additional options passed to ``tftpd-hpa`` daemon
-tftpd_options: '--secure'
+# UNIX system account used by the TFTP server.
+tftpd__username: 'tftp'
 
                                                                    # ]]]
-# .. envvar:: tftpd_allow [[[
+# .. envvar:: tftpd__options [[[
 #
-# List of IP addresses or CIDR networks which are allowed to connect to TFTP
+# Additional options passed to the :command:`tftpd-hpa` daemon, defined as
+# a string or a YAML list (lists will be flattened automatically).
+tftpd__options:
+  - '--secure'
+  - '{{ [ "--permissive", "--create", ("--umask " + tftpd__upload_umask) ]
+        if tftpd__upload_enabled|bool else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Support for file uploads [[[
+# ----------------------------
+
+# .. envvar:: tftpd__upload_enabled [[[
+#
+# Enable or disable support for file uploads over TFTP service.
+tftpd__upload_enabled: '{{ True if tftpd__allow|d() else False }}'
+
+                                                                   # ]]]
+# .. envvar:: tftpd__upload_directory [[[
+#
+# Name of the upload subdirectory located in the TFTP root directory which will
+# be owned by the TFTP user with write access.
+tftpd__upload_directory: 'upload'
+
+                                                                   # ]]]
+# .. envvar:: tftpd__upload_group [[[
+#
+# Specify the primary UNIX group of the upload directory.
+tftpd__upload_group: 'tftp'
+
+                                                                   # ]]]
+# .. envvar:: tftpd__upload_mode [[[
+#
+# Specify the UNIX attributes of the upload directory.
+tftpd__upload_mode: '0751'
+
+                                                                   # ]]]
+# .. envvar:: tftpd__upload_umask [[[
+#
+# Specify the :man:`umask(2)` used during file uploads by the TFTP server.
+tftpd__upload_umask: '0002'
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall and TCP Wrappers configuration [[[
+# -------------------------------------------
+
+# .. envvar:: tftpd__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to TFTP
 # server. If it's empty, anybody can connect to the FTP server.
-tftpd_allow: []
+tftpd__allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
+# .. envvar:: tftpd__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+tftpd__ferm__dependent_rules:
+
+  - type: 'accept'
+    protocols: [ 'udp' ]
+    dport: [ 'tftp' ]
+    saddr: '{{ tftpd__allow }}'
+    accept_any: True
+    weight: '50'
+    filename: 'tftpd_dependency_accept'
+
+                                                                   # ]]]
+# .. envvar:: tftpd__tcpwrappers__dependent_allow [[[
+#
+# Configuration for the :ref:`debops.tcpwrappers` Ansible role.
+tftpd__tcpwrappers__dependent_allow:
+
+  - daemon: 'in.tftpd'
+    client: '{{ tftpd__allow }}'
+    accept_any: True
+    weight: '50'
+    filename: 'tftpd_dependency_allow'
+    comment: 'Allow remote connections to TFTP server'
+                                                                   # ]]]
                                                                    # ]]]

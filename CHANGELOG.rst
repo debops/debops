@@ -61,6 +61,11 @@ Changed
   replicated if needed. The backup host itself can also be snapshotted, with
   support for snapshots on removable media.
 
+- [debops.tftpd] The role has been refreshed in conjunction with the updates to
+  network boot services in preparation for Debian Buster. All of the role
+  variables have been renamed to put them in their own ``tftpd__*`` namespace,
+  and the role dependencies have been moved to the playbook.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
