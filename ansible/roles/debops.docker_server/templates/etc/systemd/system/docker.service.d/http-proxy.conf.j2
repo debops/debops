@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+
+{% if docker_server__env_http_proxy|d() or docker_server__env_https_proxy|d() %}
+[Service]
+Environment={% if docker_server__env_http_proxy|d() %}"HTTP_PROXY={{ docker_server__env_http_proxy }}" {% endif %}{% if docker_server__env_https_proxy|d() %}"HTTPS_PROXY={{ docker_server__env_https_proxy }}"{% endif %} {% if docker_server__env_no_proxy|d() %}"NO_PROXY={{ docker_server__env_no_proxy }}"{% endif %}
+{% endif %}
