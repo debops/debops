@@ -213,8 +213,16 @@
 {%             elif nginx_access_log_format is defined                              %}
 {%                 set nginx_tpl_access_log_format = ' ' +  nginx_access_log_format %}
 {%             endif                                                                %}
+{%             if item.access_log_enabled|d(True) | bool %}
         access_log {{ (item.log_path | d(nginx_log_path)) + '/' + item.access_log | d(item.filename | d(item.name if item.name is string else item.name[0]) + '_access') }}.log{{ nginx_tpl_access_log_format }};
+{%             else %}
+        access_log off;
+{%             endif %}
+{%             if item.error_log_enabled|d(True) | bool %}
         error_log {{ (item.log_path | d(nginx_log_path)) + '/' + item.error_log | d(item.filename | d(item.name if item.name is string else item.name[0]) + '_error') }}.log;
+{%             else %}
+        error_log off;
+{%             endif %}
 {%         endif                                                                    %}
 {%     endblock                                                                     %}
 {%     block nginx_tpl_block_index                                                  %}
