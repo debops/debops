@@ -32,7 +32,7 @@ import git
 from docutils import core
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 
-__license__ = 'AGPL-3.0'
+__license__ = 'AGPL-3.0-only'
 __author__ = 'Robin Schneider <ypid@riseup.net>'
 __version__ = '0.1.0'
 
@@ -349,7 +349,7 @@ class DebOpsAPI:
             return metadata
 
         license_map = {
-            'GNU General Public License v3': 'GPL-3.0',
+            'GNU General Public License v3': 'GPL-3.0-only',
         }
         skip_keys = [
             'company',
