@@ -74,7 +74,7 @@ try:
         author_email="debops-users@lists.debops.org",
         description="Your Debian-based data center in a box",
         long_description=README,
-        license="GPL-3.0",
+        license="GPL-3.0-only",
         keywords="ansible debian sysadmin",
         url="https://debops.org/",
         python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, '
