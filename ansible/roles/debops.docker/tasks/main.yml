@@ -1,0 +1,55 @@
+---
+- name: Get upstream APT GPG key
+  apt_key:
+    id: '{{ docker__upstream_key }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  register: docker__register_apt_key
+  until: docker__register_apt_key is succeeded
+
+- name: Configure upstream APT repository
+  apt_repository:
+    repo: '{{ docker__upstream_repository }}'
+    mode: '0644'
+    state: 'present'
+    update_cache: True
+
+- name: Install required packages
+  apt:
+    name: '{{ (docker__mandatory_packages
+               + docker__base_packages
+               + docker__packages) | flatten }}'
+    state: 'present'
+    install_recommends: False
+  register: docker__register_packages
+  until: docker__register_packages is succeeded
+
+- name: Ensure /root/.docker/ exists
+  file:
+    path: '/root/.docker'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: docker__pki|bool
+
+- name: Symlink certificate files to /root/.docker/
+  file:
+    path: '/root/.docker/{{ item.dest }}'
+    src: '{{ docker__pki_path + "/" + docker__pki_realm + "/" + item.src }}'
+    state: 'link'
+  with_items:
+    - dest: 'ca.pem'
+      src: '{{ docker__pki_ca }}'
+    - dest: 'cert.pem'
+      src: '{{ docker__pki_crt }}'
+    - dest: 'key.pem'
+      src: '{{ docker__pki_key }}'
+  when: docker__pki|bool
+
+- name: Manage Docker components
+  include: 'manage_components.yml'
+  tags: [ 'role::docker:components', 'skip::docker:components' ]

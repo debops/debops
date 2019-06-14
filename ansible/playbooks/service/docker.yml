@@ -1,0 +1,31 @@
+---
+
+- name: Manage Docker client
+  hosts: [ 'debops_service_docker' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ docker__apt_preferences__dependent_list }}'
+
+    - role: debops.environment
+      tags: [ 'role::environment', 'skip::environment' ]
+      environment__dependent_variables:
+        - '{{ docker__environment__dependent_variables }}'
+
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ docker__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ docker__python__dependent_packages2 }}'
+
+    - role: debops.docker
+      tags: [ 'role::docker', 'skip::docker' ]
