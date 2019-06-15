@@ -251,9 +251,10 @@ stages:
 #    JANE_LOG_PATTERN: '\[boxbackup\]'
 
 'borgbackup role':
-  <<: *test_role_no_deps
+  <<: *test_role_1st_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/borgbackup.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_borgbackup'
     JANE_DIFF_PATTERN: '.*/debops.borgbackup/.*'
     JANE_LOG_PATTERN: '\[debops\.borgbackup\]'
 
