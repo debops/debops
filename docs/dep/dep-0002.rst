@@ -198,7 +198,7 @@ Each variable comment is started with a ``.. envvar::`` reference anchor
 followed by the name of the variable. This construct allows any documentation
 page to reference the variable via ``:envvar:`varname``` which :program:`Sphinx`
 will translate into a link pointing to the variable description. Below the
-anchor a comment should describe the purpose of the variable, accepted values,
+anchor comment should describe the purpose of the variable, accepted values,
 side effects and so on. Within the comment all reStructuredText constructs
 supported by :program:`Sphinx` can be used. An example variable definition would
 eventually look like this:
@@ -621,14 +621,14 @@ expose public data structures as needed for other roles to use as Ansible local
 facts. This ensures that the data used by other roles is available at all times,
 and therefore idempotent.
 
-To set a local fact the role must define a template or copy task which writes
+To set a local fact the role MUST define a template or copy task which writes
 a facts file :file:`/etc/ansible/facts.d/rolename.fact`.
 
 
 **Example:**
 
 If a role needs to make a decision based on the fact if the firewall managed by
-:ref:`debops.ferm` is enabled or not, it mustn't check the value of ``ferm__enabled``
+:ref:`debops.ferm` is enabled or not, it MUST NOT check the value of ``ferm__enabled``
 but query the local fact of the ferm role:
 
 .. code-block:: yaml
@@ -661,10 +661,10 @@ The Python language is used on several levels in a direct and indirect fashion:
 
 - debops-tools on the controller (direct)
 - saved facts on the target hosts (direct)
-- jinja templates (indirect)
-- jinja within yaml (indirect)
+- Jinja templates (indirect)
+- Jinja within yaml (indirect)
 
-In all incarnations the sytax MUST be written to be compatible with both Python
+In all incarnations the syntax MUST be written to be compatible with both Python
 Version 2 and 3.
 Additionally code MUST comply to the PEP8 coding style guide.
 
