@@ -32,6 +32,10 @@ Fixed
   ``role::postgresql_server:config`` tag to allow checking configuration
   changes before applying them.
 
+- [debops.lxc] Implement a workaround for the issue of the ``ipaddr`` Ansible
+  filter incorrectly interpreting index numbers specified as strings in Ansible
+  v2.8.x, used in the :file:`/etc/default/lxc-net.j2` template.
+
 
 `debops v1.0.2`_ - 2019-05-31
 -----------------------------
