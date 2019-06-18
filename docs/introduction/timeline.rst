@@ -396,6 +396,17 @@ May 2018
 .. __: https://wiki.debian.org/LTS
 
 
+2019
+----
+
+Mai 2019
+~~~~~~~~
+
+- `First DebOps stable release - v1.0.0`__.
+
+.. __: https://lists.debops.org/pipermail/debops-users/2019-May/000196.html
+
+
 2020
 ----
 
