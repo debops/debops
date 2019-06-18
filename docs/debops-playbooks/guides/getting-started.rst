@@ -90,7 +90,7 @@ host group:
 .. code-block:: none
 
    [debops_all_hosts]
-   server    ansible_ssh_host=server.example.com
+   server    ansible_host=server.example.com
 
 Using a short inventory name allows you to run Ansible commands without
 specifying the fully qualified domain name of the host.
@@ -283,7 +283,7 @@ Or, for short:
 
    alice@laptop:~/myproject$ debops bootstrap -l server -u root -k
 
-This command will execute the [debops.bootstrap](https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/) role and use it to install a base set of packages needed by Ansible like ``python`` and :command:`sudo`, prepare a new administrator account named after your system user (``alice`` in our example) and allow that account full access to the ``root`` account using :command:`sudo`. Your SSH keys will be installed on both the ``root`` and administrator accounts.
+This command will execute the [debops.bootstrap](https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/) playbook and use it to install a base set of packages needed by Ansible like ``python`` and :command:`sudo`, prepare a new administrator account named after your system user (``alice`` in our example) and allow that account full access to the ``root`` account using :command:`sudo`. Your SSH keys will be installed on both the ``root`` and administrator accounts.
 
 .. note::
 
