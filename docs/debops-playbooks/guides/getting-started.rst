@@ -355,7 +355,7 @@ to install and configure software and applications of your choice.
 We will use `DokuWiki <http://dokuwiki.org/>`_ as an example application. The
 role that manages the installation is called :ref:`debops.dokuwiki
 <debops.dokuwiki>` it uses :ref:`debops.nginx <debops.nginx>` and
-:ref:`debops.php5 <debops.php5>` roles to configure a webserver and PHP5
+:ref:`debops.php <debops.php>` roles to configure a webserver and PHP5
 environment. The :ref:`debops.nginx <debops.nginx>` role calls some additional
 roles, such as :ref:`debops.ferm <debops.ferm>` to configure needed services.
 
