@@ -56,6 +56,7 @@
     src: 'etc/borgmatic/config.yaml.j2'
     dest: '{{ borgbackup__configuration_base_path + "/" + item.name + ".yaml" }}'
     mode: '0600'
+    ## FIXME: Reenable.
     # validate: 'validate-borgmatic-config --config "%s"'
   with_items: '{{ borgbackup__combined_configuration | parse_kv_config }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
@@ -106,3 +107,24 @@
     recursive: True
     verify_host: True
   tags: [ 'role::borgbackup:config' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save borgbackup local facts
+  template:
+    src: 'etc/ansible/facts.d/borgbackup.fact.j2'
+    dest: '/etc/ansible/facts.d/borgbackup.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: borgbackup__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: borgbackup__register_facts is changed
