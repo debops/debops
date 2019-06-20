@@ -17,7 +17,7 @@ components required on the server. It manages the configuration of the main
 environment is enabled using the specific Ansible inventory groups and enables
 support for OpenNebula in libvirt.
 
-The `debops.libvirtd_qemu` role manages the configuration of the QEMU/KVM
+The :ref:`debops.libvirtd_qemu <debops.libvirtd_qemu>` role manages the configuration of the QEMU/KVM
 virtualization environment. The role supports custom configuration required by
 OpenNebula nodes, which is enabled automatically when OpenNebula environment is
 detected by the main role.
