@@ -140,7 +140,7 @@
 {%     if not dnsmasq__boot_ipxe_enabled|bool %}
 {%       set _ = interface_options.append({
   "name": "dhcp-boot",
-  "value": ("tag:" + interface.name + "," + interface.boot_filename | d("pxelinux.0") + (("," + interface.boot_server) if interface.boot_server|d() else ""))
+  "value": ("tag:" + interface.name + "," + interface.boot_filename | d("pxelinux.0") + ((",," + interface.boot_server) if interface.boot_server|d() else ""))
 }) %}
 {%     endif %}
 {%   endif %}
