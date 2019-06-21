@@ -399,7 +399,7 @@ May 2018
 2019
 ----
 
-Mai 2019
+May 2019
 ~~~~~~~~
 
 - `First DebOps stable release - v1.0.0`__.
