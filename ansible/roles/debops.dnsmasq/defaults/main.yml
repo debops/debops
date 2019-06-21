@@ -479,14 +479,14 @@ dnsmasq__default_configuration:
         raw: |
           {% if dnsmasq__boot_ipxe_enabled|bool %}
           # Redirect non-iPXE clients to iPXE
-          dhcp-boot = tag:!ipxe,tag:BIOS,undionly.kpxe,{{ dnsmasq__boot_server }}
-          dhcp-boot = tag:!ipxe,tag:UEFI32,i386-efi/ipxe.efi,{{ dnsmasq__boot_server }}
-          dhcp-boot = tag:!ipxe,tag:UEFI,ipxe.efi,{{ dnsmasq__boot_server }}
-          dhcp-boot = tag:!ipxe,tag:UEFI64,ipxe.efi,{{ dnsmasq__boot_server }}
+          dhcp-boot = tag:!ipxe,tag:BIOS,undionly.kpxe,,{{ dnsmasq__boot_server }}
+          dhcp-boot = tag:!ipxe,tag:UEFI32,i386-efi/ipxe.efi,,{{ dnsmasq__boot_server }}
+          dhcp-boot = tag:!ipxe,tag:UEFI,ipxe.efi,,{{ dnsmasq__boot_server }}
+          dhcp-boot = tag:!ipxe,tag:UEFI64,ipxe.efi,,{{ dnsmasq__boot_server }}
 
           # Load the main menu in iPXE clients
           {% endif %}
-          dhcp-boot = {{ dnsmasq__boot_filename }},{{ dnsmasq__boot_server }}
+          dhcp-boot = {{ dnsmasq__boot_filename }},,{{ dnsmasq__boot_server }}
         state: '{{ "present" if dnsmasq__boot_server|d() else "absent" }}'
 
     state: '{{ "present" if dnsmasq__boot_enabled|bool else "init" }}'
