@@ -11,38 +11,59 @@ set -o nounset -o pipefail -o errexit
 
 # Check if we are in the correct directory
 if ! [ -f ansible/galaxy.yml ] ; then
-    printf "%s\\n" "Error: this script needs to be executed in the root of the DebOps repository"
+    printf "%s\n" "Error: this script needs to be executed in the root of the DebOps repository"
     exit 1
 fi
 
 # Check if mazer is installed
 if ! type mazer > /dev/null 2>&1 ; then
-    printf "%s\\n" "Error: mazer not found"
+    printf "%s\n" "Error: mazer not found"
     exit 1
 fi
 
 # Check if the repository is in a consistent state
 if ! git diff --quiet && git diff --cached --quiet ; then
-    printf "%s\\n" "Error: there are uncommitted changes in the repository"
+    printf "%s\n" "Error: there are uncommitted changes in the repository"
     git status --short
     exit 1
 fi
+
+workdir="$(mktemp -d /tmp/debops.XXXXXXXXXX)"
 
 file_list=(
     README.md
     LICENSE
     INSTALL.rst
     CHANGELOG.rst
+    ansible/galaxy.yml
 )
 
-for filename in "${file_list[@]}" ; do
-    cp "${filename}" ansible/
-done
+mkdir -p "${workdir}/roles" \
+         "${workdir}/plugins/callback" \
+         "${workdir}/plugins/connection" \
+         "${workdir}/plugins/filter" \
+         "${workdir}/plugins/lookup" \
+         "${workdir}/plugins/modules"
 
-pushd ansible > /dev/null
-mazer build
+# Drop the 'debops.' prefix from role directories so that Ansible Galaxy
+# accepts them as roles in a collection
+pushd ansible/roles > /dev/null
+for role in debops.* ; do
+    cp -r "${role}" "${workdir}/roles/${role#debops.}"
+done
 popd > /dev/null
 
+# Copy various Ansible plugins to the directories where collection expects them
+cp ansible/plugins/callback_plugins/*.py "${workdir}/plugins/callback"
+cp ansible/plugins/connection_plugins/*.py "${workdir}/plugins/connection"
+cp ansible/roles/debops.ansible_plugins/filter_plugins/*.py "${workdir}/plugins/filter"
+cp ansible/roles/debops.ansible_plugins/lookup_plugins/*.py "${workdir}/plugins/lookup"
+cp ansible/roles/debops.ansible_plugins/library/*.py "${workdir}/plugins/modules"
+
 for filename in "${file_list[@]}" ; do
-    rm -f "ansible/${filename}"
+    cp "${filename}" "${workdir}/"
 done
+
+pushd "${workdir}" > /dev/null
+mazer build
+popd > /dev/null
