@@ -18,6 +18,13 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Fixed
+~~~~~
+
+- [debops.dnsmasq] Fix configuration of external boot servers in the
+  :command:`dnsmasq` service, and work around the issue with ``ipaddr`` filter
+  in Ansible 2.8 in the :ref:`debops.dnsmasq` role.
+
 
 `debops v1.0.3`_ - 2019-06-21
 -----------------------------
