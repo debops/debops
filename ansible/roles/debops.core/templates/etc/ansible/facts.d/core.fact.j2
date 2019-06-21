@@ -4,8 +4,17 @@
 
 from __future__ import print_function
 from json import loads, dumps
-from sys import exit
+from sys import exit, version_info
 from grp import getgrall
+
+
+PY2 = version_info[0] == 2
+PY3 = version_info[0] == 3
+
+if PY3:
+    string_types = str
+else:
+    string_types = basestring
 
 # Workaround to allow Jinja template inside of a Python script
 """
@@ -93,12 +102,12 @@ groups = getgrall()
 admin_users = set()
 
 if output['admin_users']:
-    if isinstance(output['admin_users'], basestring):
+    if isinstance(output['admin_users'], string_types):
         admin_users.add(output['admin_users'])
     elif isinstance(output['admin_users'], list):
         admin_users.update(set(output['admin_users']))
     else:
-        raise RuntimeError("Expected basestring or list, but got %r" % (
+        raise RuntimeError("Expected string or list, but got %r" % (
             output['admin_users']))
 
 if output['admin_groups']:

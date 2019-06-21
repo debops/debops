@@ -25,6 +25,8 @@ Fixed
   :command:`dnsmasq` service, and work around the issue with ``ipaddr`` filter
   in Ansible 2.8 in the :ref:`debops.dnsmasq` role.
 
+- [debops.core] Fix Python 3.x compatibility in the :file:`core.fact` script.
+
 
 `debops v1.0.3`_ - 2019-06-21
 -----------------------------
