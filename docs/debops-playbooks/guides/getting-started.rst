@@ -83,7 +83,7 @@ main project directory, so let's ``cd`` into it:
    alice@laptop:~$ cd ~/myproject
 
 Ansible uses a ``hosts`` file to identify hosts that are under its control. In
-the project directory this file is located in :command:`ansible/inventory/hosts`. Open
+the project directory this file is located in :file:`ansible/inventory/hosts`. Open
 it in your favorite text editor and add the remote host in the main DebOps
 host group:
 
