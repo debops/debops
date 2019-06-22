@@ -172,7 +172,7 @@ are instead configured using Debian preseeding or LXC templates - these hosts
 will presumably get the needed information like hostname and domain from your
 own DHCP server.
 
-You can check `other debops.bootstrap variables <https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/defaults.html>`_ for some more useful configuration, like the name of the administrator account.
+You can check `other debops.bootstrap variables <https://docs.debops.org/en/master/ansible/roles/ansible-bootstrap/docs/defaults.html>`_ for some more useful configuration, like the name of the administrator account.
 
 sshd__whitelist
 ~~~~~~~~~~~~~~~
@@ -198,7 +198,7 @@ This will configure the :ref:`debops.ferm <debops.ferm>` and
 :ref:`debops.tcpwrappers <debops.tcpwrappers>` roles to allow connections to
 the :command:`ssh` service from specified networks.
 
-The :ref:`debops.sshd <debops.sshd>` role has `many more variables <https://docs.debops.org/en/latest/ansible/roles/ansible-sshd/docs/defaults.html>`_, you can checkout to see the default configuration used by DebOps and what can be changed as needed.
+The :ref:`debops.sshd <debops.sshd>` role has `many more variables <https://docs.debops.org/en/master/ansible/roles/ansible-sshd/docs/defaults.html>`_, you can checkout to see the default configuration used by DebOps and what can be changed as needed.
 
 ntp__timezone
 ~~~~~~~~~~~~~
@@ -242,7 +242,7 @@ messages from hosts controlled by Ansible for this to work correctly. The SMTP
 connections will be encrypted using ``STARTTLS`` command, therefore the SMTP
 should use a set of X.509 certificates which are trusted by the host.
 
-The ``nullmailer`` service can be configured to a large extent using `the debops.nullmailer role variables <https://docs.debops.org/en/latest/ansible/roles/ansible-nullmailer/docs/defaults.html>`_ - you can use them to configure SMTP authentication, use multiple relay servers, and so on.
+The ``nullmailer`` service can be configured to a large extent using `the debops.nullmailer role variables <https://docs.debops.org/en/master/ansible/roles/ansible-nullmailer/docs/defaults.html>`_ - you can use them to configure SMTP authentication, use multiple relay servers, and so on.
 
 If you need a more powerful SMTP server, DebOps includes support for Postfix
 as well - check the :ref:`debops.postfix <debops.postfix>` Ansible role.
@@ -292,7 +292,7 @@ Or, for short:
 
    alice@laptop:~/myproject$ debops bootstrap -l server -u root -k
 
-This command will execute the [debops.bootstrap](https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/) playbook and use it to install a base set of packages needed by Ansible like ``python`` and :command:`sudo`, prepare a new administrator account named after your system user (``alice`` in our example) and allow that account full access to the ``root`` account using :command:`sudo`. Your SSH keys will be installed on both the ``root`` and administrator accounts.
+This command will execute the [debops.bootstrap](https://docs.debops.org/en/master/ansible/roles/ansible-bootstrap/docs/) playbook and use it to install a base set of packages needed by Ansible like ``python`` and :command:`sudo`, prepare a new administrator account named after your system user (``alice`` in our example) and allow that account full access to the ``root`` account using :command:`sudo`. Your SSH keys will be installed on both the ``root`` and administrator accounts.
 
 .. note::
 
@@ -375,7 +375,7 @@ hosts to it:
 As you can see, you don't need to copy the whole host entry, only the short
 name is enough.
 
-The :ref:`debops.dokuwiki <debops.dokuwiki>` role has `many default variables <https://docs.debops.org/en/latest/ansible/roles/ansible-dokuwiki/docs/defaults.html>`_
+The :ref:`debops.dokuwiki <debops.dokuwiki>` role has `many default variables <https://docs.debops.org/en/master/ansible/roles/ansible-dokuwiki/docs/defaults.html>`_
 you can use to customize the installation. One of the more useful ones is
 ``dokuwiki_main_domain``; it's a list which specifies what DNS subdomains are
 used to access the wiki (each application in the DebOps set of roles is
