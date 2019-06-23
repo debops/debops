@@ -152,7 +152,7 @@ netbase__domain
 
 If hosts that you want to manage don't have a DNS domain set, or it's incorrect
 (for example your VPS provider's domain instead of your own), the
-:ref:`debops.netbase` role included in the bootstrap playbook can be used to
+:ref:`debops.netbase` role included in the :ref:`DebOps bootstrap playbook` can be used to
 easily fix that and configure your own domain. By setting this variable to, for
 example:
 
@@ -172,7 +172,6 @@ are instead configured using Debian preseeding or LXC templates - these hosts
 will presumably get the needed information like hostname and domain from your
 own DHCP server.
 
-You can check `other debops.bootstrap variables <https://docs.debops.org/en/master/ansible/roles/ansible-bootstrap/docs/defaults.html>`_ for some more useful configuration, like the name of the administrator account.
 
 sshd__whitelist
 ~~~~~~~~~~~~~~~
@@ -292,7 +291,12 @@ Or, for short:
 
    alice@laptop:~/myproject$ debops bootstrap -l server -u root -k
 
-This command will execute the [debops.bootstrap](https://docs.debops.org/en/master/ansible/roles/ansible-bootstrap/docs/) playbook and use it to install a base set of packages needed by Ansible like ``python`` and :command:`sudo`, prepare a new administrator account named after your system user (``alice`` in our example) and allow that account full access to the ``root`` account using :command:`sudo`. Your SSH keys will be installed on both the ``root`` and administrator accounts.
+This command will execute the :ref:`DebOps bootstrap playbook` and use it to
+install a base set of packages needed by Ansible like ``python`` and
+:command:`sudo`, prepare a new administrator account named after your system
+user (``alice`` in our example) and allow that account full access to the
+``root`` account using :command:`sudo`. Your SSH keys will be installed on
+both the ``root`` and administrator accounts.
 
 .. note::
 
@@ -301,7 +305,7 @@ This command will execute the [debops.bootstrap](https://docs.debops.org/en/mast
    includes hosts configured using Debian Preseed provided by DebOps as well as
    OpenVZ/LXC containers configured using provided templates.
 
-When the bootstrap playbook has finished and there are no errors, you can check
+When the :ref:`DebOps bootstrap playbook` has finished and there are no errors, you can check
 if you are able to connect to the server on the administrator account without a
 password:
 
@@ -326,7 +330,9 @@ the configuration:
 
    alice@laptop:~/myproject$ debops -l server
 
-This will start the :command:`ansible-playbook` command with the main DebOps playbook. This by default includes the `common playbook <https://github.com/debops/debops/blob/master/ansible/playbooks/common.yml>`_ with a default set of roles, and any additional playbooks, if they have been enabled.
+This will start the :command:`ansible-playbook` command with the main DebOps
+playbook. This by default includes the :ref:`DebOps common playbook` with a
+default set of roles, and any additional playbooks, if they have been enabled.
 
 The initial configuration might take 5-10 minutes on a reasonably fast machine.
 There are some steps, like Diffie-Hellman parameter generation, which might
@@ -348,7 +354,7 @@ with:
 Example application - DokuWiki
 ------------------------------
 
-Each host configured by common DebOps playbook should have the same set of base
+Each host configured by :ref:`DebOps common playbook` should have the same set of base
 services. After a host is configured, you can enable additional Ansible roles
 to install and configure software and applications of your choice.
 
