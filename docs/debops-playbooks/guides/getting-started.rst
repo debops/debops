@@ -152,7 +152,7 @@ netbase__domain
 
 If hosts that you want to manage don't have a DNS domain set, or it's incorrect
 (for example your VPS provider's domain instead of your own), the
-:ref:`debops.netbase` role included in the :ref:`DebOps bootstrap playbook` can be used to
+:ref:`debops.netbase` role included in the `DebOps bootstrap playbook`_ can be used to
 easily fix that and configure your own domain. By setting this variable to, for
 example:
 
@@ -291,7 +291,7 @@ Or, for short:
 
    alice@laptop:~/myproject$ debops bootstrap -l server -u root -k
 
-This command will execute the :ref:`DebOps bootstrap playbook` and use it to
+This command will execute the `DebOps bootstrap playbook`_ and use it to
 install a base set of packages needed by Ansible like ``python`` and
 :command:`sudo`, prepare a new administrator account named after your system
 user (``alice`` in our example) and allow that account full access to the
@@ -305,7 +305,7 @@ both the ``root`` and administrator accounts.
    includes hosts configured using Debian Preseed provided by DebOps as well as
    OpenVZ/LXC containers configured using provided templates.
 
-When the :ref:`DebOps bootstrap playbook` has finished and there are no errors, you can check
+When the `DebOps bootstrap playbook`_ has finished and there are no errors, you can check
 if you are able to connect to the server on the administrator account without a
 password:
 
@@ -331,7 +331,7 @@ the configuration:
    alice@laptop:~/myproject$ debops -l server
 
 This will start the :command:`ansible-playbook` command with the main DebOps
-playbook. This by default includes the :ref:`DebOps common playbook` with a
+playbook. This by default includes the `DebOps common playbook`_ with a
 default set of roles, and any additional playbooks, if they have been enabled.
 
 The initial configuration might take 5-10 minutes on a reasonably fast machine.
@@ -354,7 +354,7 @@ with:
 Example application - DokuWiki
 ------------------------------
 
-Each host configured by :ref:`DebOps common playbook` should have the same set of base
+Each host configured by `DebOps common playbook`_ should have the same set of base
 services. After a host is configured, you can enable additional Ansible roles
 to install and configure software and applications of your choice.
 
