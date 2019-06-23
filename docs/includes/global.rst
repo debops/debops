@@ -914,7 +914,9 @@
 .. _DebOps API: https://github.com/debops/debops-api
 .. _DebOps mailing list: https://lists.debops.org/
 .. _DebOps Playbooks: https://github.com/debops/debops-playbooks/
-.. _DebOps common playbook: https://github.com/debops/debops-playbooks/blob/master/playbooks/common.yml
+.. _DebOps common playbook: https://github.com/debops/debops/blob/master/ansible/playbooks/common.yml
+.. _DebOps bootstrap playbook: https://github.com/debops/debops/blob/master/ansible/playbooks/bootstrap.yml
+.. _DebOps bootstrap-ldap playbook: https://github.com/debops/debops/blob/master/ansible/playbooks/bootstrap-ldap.yml
 .. _DebOps Documentation: https://docs.debops.org/en/latest/
 .. _DebOps Examples: https://github.com/debops/examples/
 .. _Getting Started with DebOps: https://docs.debops.org/en/latest/debops-playbooks/guides/getting-started.html
