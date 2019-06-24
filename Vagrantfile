@@ -126,8 +126,10 @@ if [ -d /run/systemd/system ] ; then
         printf "%s\n" "Restarting systemd-networkd.service"
         systemctl restart systemd-networkd.service
     else
-        printf "%s\n" "Restarting networking.service"
-        systemctl restart networking.service
+        printf "%s\n" "Detecting primary network interface"
+        primary_interface="$(/sbin/ip -o -0 addr | grep -v LOOPBACK | awk '{print $2}' | sed 's/://')"
+        printf "%s\n" "Restarting ifup@$primary_interface.service"
+        systemctl stop ifup@$primary_interface.service ; systemctl start ifup@$primary_interface.service
     fi
 else
     printf "%s\n" "Restarting networking init script"
