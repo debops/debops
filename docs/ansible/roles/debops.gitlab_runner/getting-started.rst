@@ -56,7 +56,7 @@ describe the host's architecture, OS release, etc.
 If the ``debops.lxc`` role has been used to configure LXC support on a Debian
 Stretch or Ubuntu Xenial host, the ``debops.gitlab_runner`` will install the
 ``vagrant-lxc`` package and configure :command:`sudo` support for it. Using
-a shell executor you cn start and stop Vagrant Boxes using LXC containers and
+a shell executor you can start and stop Vagrant Boxes using LXC containers and
 execute commands inside them.
 
 The Runner instances can be configured with variables specified as the keys of
