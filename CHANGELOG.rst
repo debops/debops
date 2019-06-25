@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Added
+~~~~~
+
+- [LDAP] The :file:`ldap/init-directory.yml` Ansible playbook will create an
+  LDAP group object for SSH users, equivalent to the ``sshusers`` group created
+  by the :ref:`debops.system_groups` role. LDAP accounts in this group will be
+  able to access SSH service from any host. Existing installations might need
+  to be updated manually to fix UID/GID or LDAP DN conflicts.
+
 Fixed
 ~~~~~
 
