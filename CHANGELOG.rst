@@ -36,6 +36,10 @@ Fixed
 
 - [debops.core] Fix Python 3.x compatibility in the :file:`core.fact` script.
 
+- The role dependencies defined in the :file:`meta/main.yml` files in roles
+  published in the Ansible Galaxy Collection will have their ``debops.`` prefix
+  removed to make the roles usable.
+
 
 `debops v1.0.3`_ - 2019-06-21
 -----------------------------
