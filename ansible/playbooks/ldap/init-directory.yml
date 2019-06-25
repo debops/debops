@@ -188,6 +188,20 @@
           owner: '{{ admin_dn }}'
           description: 'People responsible for personal accounts'
 
+      - name: 'Create cn=UNIX SSH users group'
+        dn: '{{ [ "cn=UNIX SSH users", ldap__system_groups_rdn ] + ldap__base_dn }}'
+        objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',
+                       'authorizedServiceObject', 'hostObject' ]
+        attributes:
+          cn: 'UNIX SSH users'
+          gid: 'sshusers'
+          gidNumber: '{{ ldap__groupid_min|int + 1 }}'
+          owner: '{{ admin_dn }}'
+          member: '{{ admin_dn }}'
+          description: 'People who can connect to UNIX-like infrastructure via SSH'
+          authorizedService: '*'
+          host: '*'
+
       - name: 'Create SUDOers container'
         dn: '{{ [ "ou=SUDOers" ] + ldap__base_dn }}'
         objectClass: 'organizationalUnit'
