@@ -36,6 +36,12 @@ Added
 
 - [debops.nginx] Support to disable logging per Nginx server.
 
+- [LDAP] The :file:`ldap/init-directory.yml` Ansible playbook will create an
+  LDAP group object for SSH users, equivalent to the ``sshusers`` group created
+  by the :ref:`debops.system_groups` role. LDAP accounts in this group will be
+  able to access SSH service from any host. Existing installations might need
+  to be updated manually to fix UID/GID or LDAP DN conflicts.
+
 Changed
 ~~~~~~~
 
