@@ -209,6 +209,9 @@ lxc__default_configuration:
 
       - name: 'lxc.cgroup.use'
         value: '@all'
+        state: '{{ "present"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "absent" }}'
 
       - name: 'lxc.default_config'
         comment: |
