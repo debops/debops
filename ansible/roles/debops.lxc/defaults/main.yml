@@ -30,6 +30,16 @@ lxc__base_packages:
 #
 # List of additional APT packages to install with LXC.
 lxc__packages: []
+
+                                                                   # ]]]
+# .. envvar:: lxc__version [[[
+#
+# The variable that exposes the version of the LXC service installed on
+# a host. It will be set automatically using the Ansible local facts.
+lxc__version: '{{ ansible_local.lxc.version
+                  if (ansible_local|d() and ansible_local.lxc|d() and
+                      ansible_local.lxc.version|d())
+                  else "0.0.0" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Unprivileged LXC containers [[[
