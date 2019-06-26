@@ -42,6 +42,9 @@ Added
   able to access SSH service from any host. Existing installations might need
   to be updated manually to fix UID/GID or LDAP DN conflicts.
 
+- [debops.sysctl] The kernel protection for symlinks and hardlinks will be
+  enabled by default on Debian/Ubuntu hosts.
+
 Changed
 ~~~~~~~
 
