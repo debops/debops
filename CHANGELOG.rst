@@ -42,6 +42,13 @@ Added
   able to access SSH service from any host. Existing installations might need
   to be updated manually to fix UID/GID or LDAP DN conflicts.
 
+- [debops.sysctl] The kernel protection for symlinks and hardlinks will be
+  enabled by default on Debian/Ubuntu hosts.
+
+- [debops.lxc] The :command:`lxc-prepare-ssh` script can now look up the SSH
+  keys of the current user in LDAP if support for it is enabled on the LXC
+  host.
+
 Changed
 ~~~~~~~
 
@@ -75,6 +82,45 @@ Changed
 - [debops.docker] The role has been renamed to :ref:`debops.docker_server` in
   preparation of adding a role that will provide client functionality like
   network and container management.
+
+- [debops.netbase] Do not try to manage the hostname in LXC, Docker or OpenVZ
+  containers by default. We assume that these containers are unprivileged and
+  their hostname cannot be changed from the inside of the container.
+
+- [debops.lxc] The role now checks the version of the installed LXC support and
+  uses the old or new configuration keys accordingly. You can review the
+  `changed configuration keys`__ between the old and new LXC version for
+  comparsion.
+
+  .. __: https://discuss.linuxcontainers.org/t/lxc-2-1-has-been-released/487
+
+- [debops.lxc] New LXC containers will have the ``CAP_SYS_TIME`` POSIX
+  capability dropped by default to ensure that time configuration is disabled
+  inside of the container. This should fix an issue on Debian Buster where an
+  unprivileged LXC containers still have this capability enabled.
+
+  On Debian Buster LXC hosts, the ``CAP_SYS_ADMIN`` POSIX capbility will be
+  dropped in new LXC containers by default.
+
+- [debops.lxc] On Debian Buster (specifically on LXC versions below 3.1.0) the
+  AppArmor restrictions on unprivileged LXC containers will be relaxed to allow
+  correct operation of the :command:`systemd` service manager inside of
+  a container. Check the Debian Bugs `#916644`__, `#918839`__ and `#911806`__
+  for reasoning behind this modification.
+
+  .. __: https://bugs.debian.org/916644
+  .. __: https://bugs.debian.org/918839
+  .. __: https://bugs.debian.org/911806
+
+Removed
+~~~~~~~
+
+- [debops.lxc] The :command:`lxc-prepare-ssh` script will no longer install SSH
+  keys from the LXC host ``root`` account on the LXC container ``root``
+  account. This can cause confusion and unintended security breach when other
+  services (for example backup scripts or remote command execution tools)
+  install their own SSH keys on the LXC host and they are subsequently
+  copied inside of the LXC containers created on that host.
 
 
 `debops v1.0.0`_ - 2019-05-22

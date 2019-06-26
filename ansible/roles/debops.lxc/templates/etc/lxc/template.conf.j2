@@ -10,7 +10,7 @@
 {%         endif %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%       endif %}
-{{ '{} = {}'.format(('\n' if (element.separator|d())|bool else '') + ('#' if (element.state == 'comment') else '') + element.alias | d(element.name), element.value) }}
+{{ '{} = {}'.format(('\n' if (element.separator|d())|bool else '') + ('#' if (element.state == 'comment') else '') + element.alias | d(element.name), (element.value if (element.value is string) else (element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' ')))) }}
 {%     endif %}
 {%   endfor %}
 {% endif %}

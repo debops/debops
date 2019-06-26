@@ -18,7 +18,8 @@ def cmd_exists(cmd):
 lxc_net_conf = '/etc/default/lxc-net'
 
 output = {'installed': cmd_exists('/usr/bin/lxc-create'),
-          'containers': list(lxc.list_containers())}
+          'containers': list(lxc.list_containers()),
+          'version': lxc.version}
 
 if os.path.exists(lxc_net_conf) and os.path.isfile(lxc_net_conf):
     try:

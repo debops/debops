@@ -115,7 +115,8 @@ specific parameters:
     same name.
 
   ``value``
-    The value of an LXC configuration option, a string.
+    The value of an LXC configuration option, a string or a YAML list of
+    strings which will joined with spaces.
 
   ``comment``
     Option. a string or a YAML text block with a comment added to a given LXC

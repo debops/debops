@@ -31,6 +31,17 @@ Inventory variable changes
   inventory group ``[debops_service_docker_server]`` to continue using this
   role.
 
+- The :ref:`debops.lxc` role uses different names of the container
+  configuration options depending on the LXC version used on the host. The
+  ``name`` parameters used in the configuration might change unexpectedly
+  between LXC versions, which might lead to wrong configuration entries being
+  merged and broken LXC configuration.
+
+  If you have configured :ref:`lxc__ref_configuration` variables in the Ansible
+  inventory, review them before applying the role configuration on LXC hosts.
+  You can check the :envvar:`lxc__default_configuration` variable to see which
+  ``name`` parameters can change.
+
 
 v1.0.0 (2019-05-22)
 -------------------

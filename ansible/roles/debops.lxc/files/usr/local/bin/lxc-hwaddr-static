@@ -30,39 +30,83 @@ readonly MAC_LAA2=( 2 6 a e )
 if [ -n "${CONTAINER}" ] ; then
     if [ -r "${CONFIG}" ] ; then
 
-        # Don't modify configuration files that already contain hardware addresses
-        if ! grep -qE '^lxc\.network\.hwaddr\s+=' "${CONFIG}" \
-            && ! grep -qE '^# no-static-hwaddr' "${CONFIG}" \
-            && ! grep -qE '^# no-hwaddr-static' "${CONFIG}" ; then
+        # Detect the new LXC configuration, 2.1.x+
+        if grep -qE '^lxc\.uts\.name\s+=' "${CONFIG}" ; then
 
-            # Count number of network interfaces defined for a container
-            iface_count="$(grep -cE '^lxc\.network\.type\s+=' "${CONFIG}")"
+            # Don't modify configuration files that already contain hardware addresses
+            if ! grep -qE '^lxc\.net\.[0-9]+\.hwaddr\s+=' "${CONFIG}" \
+                && ! grep -qE '^# no-static-hwaddr' "${CONFIG}" \
+                && ! grep -qE '^# no-hwaddr-static' "${CONFIG}" ; then
 
-            # Convert the container name into a number usable by RANDOM
-            container_seed="$(printf "%s" "${CONTAINER}" | od -An -vtu1 | tr -d '[:blank:]')"
+                # Count number of network interfaces defined for a container
+                iface_count="$(grep -cE '^lxc\.net\.[0-9]+\.type\s+=' "${CONFIG}")"
 
-            for (( i=1 ; i<=iface_count ; i++ )) ; do
+                # Convert the container name into a number usable by RANDOM
+                container_seed="$(printf "%s" "${CONTAINER}" | od -An -vtu1 | tr -d '[:blank:]')"
 
-                # Seed the randomizer with a predictable string based on container
-                # name and the network interface number
-                RANDOM="${container_seed}${i}"
-                interface_seed="${CONTAINER}${i}"
+                for (( i=0 ; i<iface_count ; i++ )) ; do
 
-                # Generate random MAC address based on predictable seed
-                static_prefix="${MAC_LAA1[ $RANDOM % ${#MAC_LAA1[@]} ]}${MAC_LAA2[ $RANDOM % ${#MAC_LAA2[@]} ]}"
-                static_hwaddr="$(printf "%s" "${interface_seed}" | md5sum | sed "s/^\\(..\\)\\(..\\)\\(..\\)\\(..\\)\\(..\\).*$/${static_prefix}:\\1:\\2:\\3:\\4:\\5/")"
+                    # Seed the randomizer with a predictable string based on container
+                    # name and the network interface number
+                    RANDOM="${container_seed}${i}"
+                    interface_seed="${CONTAINER}${i}"
 
-                # Configure the generated MAC address for each network interface
-                # found in the container configuration file
-                printf "Setting a static MAC address for interface %s: %s\\n" "${i}" "${static_hwaddr}"
-                awk "/^lxc.network.type/{x++} x==${i}{sub(/lxc.network.type.*$/,\"&\\nlxc.network.hwaddr = ${static_hwaddr}\")}1" "${CONFIG}" > "${CONFIG}.tmp"
-                mv "${CONFIG}.tmp" "${CONFIG}"
+                    # Generate random MAC address based on predictable seed
+                    static_prefix="${MAC_LAA1[ $RANDOM % ${#MAC_LAA1[@]} ]}${MAC_LAA2[ $RANDOM % ${#MAC_LAA2[@]} ]}"
+                    static_hwaddr="$(printf "%s" "${interface_seed}" | md5sum | sed "s/^\\(..\\)\\(..\\)\\(..\\)\\(..\\)\\(..\\).*$/${static_prefix}:\\1:\\2:\\3:\\4:\\5/")"
 
-            done
+                    # Configure the generated MAC address for each network interface
+                    # found in the container configuration file
+                    printf "Setting a static MAC address for interface %s: %s\\n" "${i}" "${static_hwaddr}"
+                    awk "/^lxc.net.${i}.type/ {sub(/lxc.net.${i}.type.*$/,\"&\\nlxc.net.${i}.hwaddr = ${static_hwaddr}\")}1" "${CONFIG}" > "${CONFIG}.tmp"
+                    mv "${CONFIG}.tmp" "${CONFIG}"
 
-        else
-            printf "Configuration file '%s' already contains MAC addresses, skipping\\n" "${CONFIG}"
-            exit 0
+                done
+
+            else
+                printf "Configuration file '%s' already contains MAC addresses, skipping\\n" "${CONFIG}"
+                exit 0
+            fi
+
+
+        # Detect the old LXC configuration, pre 2.1.x
+        elif grep -qE '^lxc\.utsname\s+=' "${CONFIG}" ; then
+
+            # Don't modify configuration files that already contain hardware addresses
+            if ! grep -qE '^lxc\.network\.hwaddr\s+=' "${CONFIG}" \
+                && ! grep -qE '^# no-static-hwaddr' "${CONFIG}" \
+                && ! grep -qE '^# no-hwaddr-static' "${CONFIG}" ; then
+
+                # Count number of network interfaces defined for a container
+                iface_count="$(grep -cE '^lxc\.network\.type\s+=' "${CONFIG}")"
+
+                # Convert the container name into a number usable by RANDOM
+                container_seed="$(printf "%s" "${CONTAINER}" | od -An -vtu1 | tr -d '[:blank:]')"
+
+                for (( i=1 ; i<=iface_count ; i++ )) ; do
+
+                    # Seed the randomizer with a predictable string based on container
+                    # name and the network interface number
+                    RANDOM="${container_seed}${i}"
+                    interface_seed="${CONTAINER}${i}"
+
+                    # Generate random MAC address based on predictable seed
+                    static_prefix="${MAC_LAA1[ $RANDOM % ${#MAC_LAA1[@]} ]}${MAC_LAA2[ $RANDOM % ${#MAC_LAA2[@]} ]}"
+                    static_hwaddr="$(printf "%s" "${interface_seed}" | md5sum | sed "s/^\\(..\\)\\(..\\)\\(..\\)\\(..\\)\\(..\\).*$/${static_prefix}:\\1:\\2:\\3:\\4:\\5/")"
+
+                    # Configure the generated MAC address for each network interface
+                    # found in the container configuration file
+                    printf "Setting a static MAC address for interface %s: %s\\n" "${i}" "${static_hwaddr}"
+                    awk "/^lxc.network.type/{x++} x==${i}{sub(/lxc.network.type.*$/,\"&\\nlxc.network.hwaddr = ${static_hwaddr}\")}1" "${CONFIG}" > "${CONFIG}.tmp"
+                    mv "${CONFIG}.tmp" "${CONFIG}"
+
+                done
+
+            else
+                printf "Configuration file '%s' already contains MAC addresses, skipping\\n" "${CONFIG}"
+                exit 0
+            fi
+
         fi
 
     else
