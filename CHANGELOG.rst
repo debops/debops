@@ -25,6 +25,10 @@ Changed
   containers by default. We assume that these containers are unprivileged and
   their hostname cannot be changed from the inside of the container.
 
+- [debops.sudo] Configure the :command:`sudo` LDAP support before installing
+  the ``sudo-ldap`` APT package to ensure that access to the ``root`` account
+  is available.
+
 Fixed
 ~~~~~
 
