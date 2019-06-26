@@ -112,6 +112,16 @@ Changed
   .. __: https://bugs.debian.org/918839
   .. __: https://bugs.debian.org/911806
 
+Removed
+~~~~~~~
+
+- [debops.lxc] The :command:`lxc-prepare-ssh` script will no longer install SSH
+  keys from the LXC host ``root`` account on the LXC container ``root``
+  account. This can cause confusion and unintended security breach when other
+  services (for example backup scripts or remote command execution tools)
+  install their own SSH keys on the LXC host and they are subsequently
+  copied inside of the LXC containers created on that host.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------

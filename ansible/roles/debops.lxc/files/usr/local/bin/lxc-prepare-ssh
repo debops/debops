@@ -21,9 +21,6 @@ else
     readonly SUDO_AUTHORIZED_KEYS=""
 fi
 
-readonly USER_HOME="${HOME}"
-readonly AUTHORIZED_KEYS="${USER_HOME}/.ssh/authorized_keys"
-
 container_exists () {
     local container
     container="${1}"
@@ -99,7 +96,6 @@ ${SCRIPT}: add authorized SSH keys to an LXC container
 Usage: ${SCRIPT} <container-name>
 
 The keys will be taken from files:
-    /root/.ssh/authorized_keys
     \${SUDO_USER}/.ssh/authorized_keys
 If enabled, LDAP directory will be checked for SSH authorized_keys
 EOF
@@ -113,7 +109,7 @@ main () {
     local container
     container="${CONTAINER}"
     local -a authorized_keys
-    authorized_keys=( "${AUTHORIZED_KEYS}" "${SUDO_AUTHORIZED_KEYS}" )
+    authorized_keys=( "${SUDO_AUTHORIZED_KEYS}" )
     local ldap_authorized_keys
     ldap_authorized_keys="${LDAP_AUTHORIZED_KEYS:-}"
 
