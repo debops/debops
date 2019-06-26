@@ -524,6 +524,11 @@ HTTP security headers
 
   Should cross domain policies be permitted?
 
+.. _nginx__ref_frame_options:
+
+``frame_options``
+  Optional, string. Value of the ``X-Frame-Options`` HTTP header field. Set to ``{{ omit }}``
+  to not send the header field. Defaults to ``SAMEORIGIN``.
 
 Search engine optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
