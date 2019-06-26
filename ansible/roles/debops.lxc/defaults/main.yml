@@ -250,12 +250,16 @@ lxc__default_configuration:
         value: 'up'
 
       - name: 'lxc.id_map_user'
-        alias: 'lxc.id_map'
+        alias: '{{ "lxc.id_map"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.idmap" }}'
         value: 'u 0 {{ lxc__root_subuid_start }} {{ lxc__root_subuid_count }}'
         separator: True
 
       - name: 'lxc.id_map_group'
-        alias: 'lxc.id_map'
+        alias: '{{ "lxc.id_map"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.idmap" }}'
         value: 'g 0 {{ lxc__root_subgid_start }} {{ lxc__root_subgid_count }}'
 
       - name: 'lxc.start.auto'
@@ -338,12 +342,16 @@ lxc__default_configuration:
         value: 'up'
 
       - name: 'lxc.id_map_user'
-        alias: 'lxc.id_map'
+        alias: '{{ "lxc.id_map"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.idmap" }}'
         value: 'u 0 {{ lxc__root_subuid_start }} {{ lxc__root_subuid_count }}'
         separator: True
 
       - name: 'lxc.id_map_group'
-        alias: 'lxc.id_map'
+        alias: '{{ "lxc.id_map"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.idmap" }}'
         value: 'g 0 {{ lxc__root_subgid_start }} {{ lxc__root_subgid_count }}'
 
       - name: 'lxc.start.auto'
