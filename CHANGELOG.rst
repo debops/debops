@@ -31,6 +31,10 @@ Fixed
 - [debops.ldap] Avoid gathering MAC addresses from network interfaces that do
   not have them, for example interfaces with multiple IPv4 addresses.
 
+- [debops.sudo] Allow the :command:`dpkg` command to remove the ``sudo`` APT
+  package even if the ``root`` password is not set (required for installing the
+  ``sudo-ldap`` APT package).
+
 
 `debops v1.0.4`_ - 2019-06-25
 -----------------------------
