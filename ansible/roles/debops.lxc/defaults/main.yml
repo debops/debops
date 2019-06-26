@@ -19,12 +19,27 @@
 lxc__base_packages:
   - [ 'lxc', 'lxcfs', 'debootstrap', 'xz-utils' ]
   - '{{ [ "dnsmasq-base", "resolvconf" ] if (lxc__net_deploy_state == "present") else [] }}'
+  - '{{ []
+        if (ansible_distribution_release in
+            [ "wheezy", "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else [ "apparmor" ] }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__packages [[[
 #
 # List of additional APT packages to install with LXC.
 lxc__packages: []
+
+                                                                   # ]]]
+# .. envvar:: lxc__version [[[
+#
+# The variable that exposes the version of the LXC service installed on
+# a host. It will be set automatically using the Ansible local facts.
+lxc__version: '{{ ansible_local.lxc.version
+                  if (ansible_local|d() and ansible_local.lxc|d() and
+                      ansible_local.lxc.version|d())
+                  else "0.0.0" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Unprivileged LXC containers [[[
@@ -194,6 +209,9 @@ lxc__default_configuration:
 
       - name: 'lxc.cgroup.use'
         value: '@all'
+        state: '{{ "present"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "absent" }}'
 
       - name: 'lxc.default_config'
         comment: |
@@ -211,10 +229,14 @@ lxc__default_configuration:
   - name: 'unprivileged'
     options:
 
-      - name: 'lxc.network.type'
+      - name: '{{ "lxc.network.type"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.type" }}'
         value: 'veth'
 
-      - name: 'lxc.network.link'
+      - name: '{{ "lxc.network.link"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
                        (ansible_local.ifupdown.configured|d())|bool)
@@ -222,16 +244,22 @@ lxc__default_configuration:
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
 
-      - name: 'lxc.network.flags'
+      - name: '{{ "lxc.network.flags"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.flags" }}'
         value: 'up'
 
       - name: 'lxc.id_map_user'
-        alias: 'lxc.id_map'
+        alias: '{{ "lxc.id_map"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.idmap" }}'
         value: 'u 0 {{ lxc__root_subuid_start }} {{ lxc__root_subuid_count }}'
         separator: True
 
       - name: 'lxc.id_map_group'
-        alias: 'lxc.id_map'
+        alias: '{{ "lxc.id_map"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.idmap" }}'
         value: 'g 0 {{ lxc__root_subgid_start }} {{ lxc__root_subgid_count }}'
 
       - name: 'lxc.start.auto'
@@ -240,7 +268,8 @@ lxc__default_configuration:
 
       - name: 'lxc.cap.drop_secure'
         alias: 'lxc.cap.drop'
-        value: 'mknod sys_rawio syslog wake_alarm'
+        value: '{{ [ "mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time" ]
+                   + ([] if (lxc__version is version("3.0.0", "<")) else [ "sys_admin" ]) }}'
 
       # Select how many CPUs are available inside of the container
       - name: 'lxc.cgroup.cpuset.cpus'
@@ -260,14 +289,40 @@ lxc__default_configuration:
         value: '{{ ((ansible_memtotal_mb|int + ansible_swaptotal_mb|int) / 1024) | round | int }}G'
         state: 'comment'
 
+      # Required in AppArmor environment to allow systemd services to start
+      # inside of the LXC unprivileged containers.
+      # See also: https://bugs.debian.org/916644,
+      # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      - name: 'lxc.apparmor.profile'
+        value: 'generated'
+        state: '{{ "absent"
+                   if (lxc__version is version("3.0.0", "<") or
+                       lxc__version is version("3.1.0", ">="))
+                   else "present" }}'
+
+      # Required in AppArmor environment to allow systemd services to start
+      # inside of the LXC unprivileged containers.
+      # See also: https://bugs.debian.org/916644,
+      # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      - name: 'lxc.apparmor.allow_nesting'
+        value: '1'
+        state: '{{ "absent"
+                   if (lxc__version is version("3.0.0", "<") or
+                       lxc__version is version("3.1.0", ">="))
+                   else "present" }}'
+
     # Default configuration for privileged LXC containers
   - name: 'privileged'
     options:
 
-      - name: 'lxc.network.type'
+      - name: '{{ "lxc.network.type"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.type" }}'
         value: 'veth'
 
-      - name: 'lxc.network.link'
+      - name: '{{ "lxc.network.link"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
                        (ansible_local.ifupdown.configured|d())|bool)
@@ -275,7 +330,9 @@ lxc__default_configuration:
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
 
-      - name: 'lxc.network.flags'
+      - name: '{{ "lxc.network.flags"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.flags" }}'
         value: 'up'
 
       - name: 'lxc.start.auto'
@@ -284,7 +341,8 @@ lxc__default_configuration:
 
       - name: 'lxc.cap.drop_secure'
         alias: 'lxc.cap.drop'
-        value: 'mknod sys_rawio syslog wake_alarm'
+        value: '{{ [ "mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time" ]
+                   + ([] if (lxc__version is version("3.0.0", "<")) else [ "sys_admin" ]) }}'
 
     # Configuration for unprivileged LXC containers that uses only the internal
     # bridge managed by the 'lxc-net' service
@@ -292,22 +350,32 @@ lxc__default_configuration:
     state: '{{ "present" if (lxc__net_deploy_state == "present") else "absent" }}'
     options:
 
-      - name: 'lxc.network.type'
+      - name: '{{ "lxc.network.type"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.type" }}'
         value: 'veth'
 
-      - name: 'lxc.network.link'
+      - name: '{{ "lxc.network.link"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.link" }}'
         value: '{{ lxc__net_bridge }}'
 
-      - name: 'lxc.network.flags'
+      - name: '{{ "lxc.network.flags"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.flags" }}'
         value: 'up'
 
       - name: 'lxc.id_map_user'
-        alias: 'lxc.id_map'
+        alias: '{{ "lxc.id_map"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.idmap" }}'
         value: 'u 0 {{ lxc__root_subuid_start }} {{ lxc__root_subuid_count }}'
         separator: True
 
       - name: 'lxc.id_map_group'
-        alias: 'lxc.id_map'
+        alias: '{{ "lxc.id_map"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.idmap" }}'
         value: 'g 0 {{ lxc__root_subgid_start }} {{ lxc__root_subgid_count }}'
 
       - name: 'lxc.start.auto'
@@ -316,7 +384,8 @@ lxc__default_configuration:
 
       - name: 'lxc.cap.drop_secure'
         alias: 'lxc.cap.drop'
-        value: 'mknod sys_rawio syslog wake_alarm'
+        value: '{{ [ "mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time" ]
+                   + ([] if (lxc__version is version("3.0.0", "<")) else [ "sys_admin" ]) }}'
 
       # Select how many CPUs are available inside of the container
       - name: 'lxc.cgroup.cpuset.cpus'
@@ -336,17 +405,43 @@ lxc__default_configuration:
         value: '{{ ((ansible_memtotal_mb|int + ansible_swaptotal_mb|int) / 1024) | round | int }}G'
         state: 'comment'
 
+      # Required in AppArmor environment to allow systemd services to start
+      # inside of the LXC unprivileged containers.
+      # See also: https://bugs.debian.org/916644,
+      # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      - name: 'lxc.apparmor.profile'
+        value: 'generated'
+        state: '{{ "absent"
+                   if (lxc__version is version("3.0.0", "<") or
+                       lxc__version is version("3.1.0", ">="))
+                   else "present" }}'
+
+      # Required in AppArmor environment to allow systemd services to start
+      # inside of the LXC unprivileged containers.
+      # See also: https://bugs.debian.org/916644,
+      # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      - name: 'lxc.apparmor.allow_nesting'
+        value: '1'
+        state: '{{ "absent"
+                   if (lxc__version is version("3.0.0", "<") or
+                       lxc__version is version("3.1.0", ">="))
+                   else "present" }}'
+
     # Default configuration for privileged LXC containers with multiple network
     # interfaces
   - name: 'external-internal'
     options:
 
       - name: 'lxc.network.type_net0'
-        alias: 'lxc.network.type'
+        alias: '{{ "lxc.network.type"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.0.type" }}'
         value: 'veth'
 
       - name: 'lxc.network.link_net0'
-        alias: 'lxc.network.link'
+        alias: '{{ "lxc.network.link"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
                        (ansible_local.ifupdown.configured|d())|bool)
@@ -355,20 +450,28 @@ lxc__default_configuration:
                          else "br0") }}'
 
       - name: 'lxc.network.flags_net0'
-        alias: 'lxc.network.flags'
+        alias: '{{ "lxc.network.flags"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.0.flags" }}'
         value: 'up'
 
       - name: 'lxc.network.type_net1'
-        alias: 'lxc.network.type'
+        alias: '{{ "lxc.network.type"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.1.type" }}'
         value: 'veth'
         separator: True
 
       - name: 'lxc.network.link_net1'
-        alias: 'lxc.network.link'
+        alias: '{{ "lxc.network.link"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.1.link" }}'
         value: 'br1'
 
       - name: 'lxc.network.flags_net1'
-        alias: 'lxc.network.flags'
+        alias: '{{ "lxc.network.flags"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.1.flags" }}'
         value: 'up'
 
       - name: 'lxc.start.auto'
@@ -377,7 +480,8 @@ lxc__default_configuration:
 
       - name: 'lxc.cap.drop_secure'
         alias: 'lxc.cap.drop'
-        value: 'mknod sys_rawio syslog wake_alarm'
+        value: '{{ [ "mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time" ]
+                   + ([] if (lxc__version is version("3.0.0", "<")) else [ "sys_admin" ]) }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__configuration [[[

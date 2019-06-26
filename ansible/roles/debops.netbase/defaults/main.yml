@@ -40,12 +40,16 @@ netbase__packages: []
 # .. envvar:: netbase__hostname_config_enabled [[[
 #
 # Enable or disable configuration of the hostname based on presence of the
-# ``cap_sys_admin`` POSIX capability. Hostname will still be defined in
+# ``cap_sys_admin`` POSIX capability. The role will also avoid configuring the
+# hostname in containers, which usually cannot change their own hostname
+# directory due to host restrictions. Hostname will still be defined in
 # :file:`/etc/hosts` if the local domain configuration is enabled.
 netbase__hostname_config_enabled: '{{ True
-                                      if (((ansible_system_capabilities_enforced|d())|bool and
+                                      if ((((ansible_system_capabilities_enforced|d())|bool and
                                            "cap_sys_admin" in ansible_system_capabilities) or
-                                          not (ansible_system_capabilities_enforced|d(True))|bool)
+                                          not (ansible_system_capabilities_enforced|d(True))|bool) and
+                                          (ansible_virtualization_type is undefined or
+                                           ansible_virtualization_type not in [ "lxc", "docker", "openvz" ]))
                                       else False }}'
 
                                                                    # ]]]

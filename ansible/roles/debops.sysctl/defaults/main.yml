@@ -229,6 +229,29 @@ sysctl__default_parameters:
                          ansible_virtualization_type == "openvz"))
                   | ternary("present", "absent") }}'
 
+  # The '/proc/sys/fs/' namespace is usually read-only in unprivileged LXC
+  # containers. The default 'protect-links.conf' file that comes with the
+  # 'procps' APT package has the 'fs.*' parameters uncommented, which breaks
+  # the 'sysctl' configuration via the role. Therefore, let's divert the
+  # original file and regenerate it; the read-only parameters will be
+  # automatically commented out in unprivileged LXC containers.
+  - name: 'protect-links'
+    filename: 'protect-links.conf'
+    divert: True
+    comment: |
+      Protected links
+
+      Protects against creating or following links under certain conditions
+      Debian kernels have both set to 1 (restricted)
+      See https://www.kernel.org/doc/Documentation/sysctl/fs.txt
+    options:
+
+      - name: 'fs.protected_hardlinks'
+        value: 1
+
+      - name: 'fs.protected_symlinks'
+        value: 1
+
                                                                    # ]]]
 # .. envvar:: sysctl__parameters [[[
 #

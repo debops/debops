@@ -12,12 +12,14 @@ readonly CONTAINER="${1:-}"
 if [ -n "${SUDO_USER:-}" ] ; then
     readonly SUDO_USER_HOME="$(getent passwd "${SUDO_USER}" | cut -d: -f6)"
     readonly SUDO_AUTHORIZED_KEYS="${SUDO_USER_HOME}/.ssh/authorized_keys"
+
+    # Support for SSH keys from LDAP directory
+    if [ -x "/etc/ssh/authorized_keys_lookup" ] ; then
+        readonly LDAP_AUTHORIZED_KEYS="$(/etc/ssh/authorized_keys_lookup "${SUDO_USER}")"
+    fi
 else
     readonly SUDO_AUTHORIZED_KEYS=""
 fi
-
-readonly USER_HOME="${HOME}"
-readonly AUTHORIZED_KEYS="${USER_HOME}/.ssh/authorized_keys"
 
 container_exists () {
     local container
@@ -61,14 +63,22 @@ prepare_authorized_keys () {
     authorized_keys="${2}"
 
     local -a authorized_keys_content
-    readarray -t authorized_keys_content <<< "$(< "${authorized_keys}")"
+    if [ -f "${authorized_keys}" ] ; then
+        readarray -t authorized_keys_content <<< "$(< "${authorized_keys}")"
+    else
+        readarray -t authorized_keys_content <<< "${authorized_keys}"
+    fi
 
     if ! lxc-attach -n "${container}" -- test -d /root/.ssh ; then
         lxc-attach -n "${container}" -- mkdir -p -m 0700 /root/.ssh
         lxc-attach -n "${container}" -- touch /root/.ssh/authorized_keys
         lxc-attach -n "${container}" -- chmod 0600 /root/.ssh/authorized_keys
     fi
-    printf "Adding authorized SSH keys from '%s'...\\n" "${authorized_keys}"
+    if [ -f "${authorized_keys}" ] ; then
+        printf "Adding authorized SSH keys from '%s'...\\n" "${authorized_keys}"
+    else
+        printf "Adding authorized SSH key...\\n"
+    fi
     for key_line in "${authorized_keys_content[@]}" ; do
         if ssh-keygen -l -f - <<< "${key_line}" > /dev/null ; then
             if ! lxc-attach -n "${container}" -- grep -Fxq "${key_line}" /root/.ssh/authorized_keys ; then
@@ -86,8 +96,8 @@ ${SCRIPT}: add authorized SSH keys to an LXC container
 Usage: ${SCRIPT} <container-name>
 
 The keys will be taken from files:
-    /root/.ssh/authorized_keys
     \${SUDO_USER}/.ssh/authorized_keys
+If enabled, LDAP directory will be checked for SSH authorized_keys
 EOF
 }
 
@@ -99,7 +109,9 @@ main () {
     local container
     container="${CONTAINER}"
     local -a authorized_keys
-    authorized_keys=( "${AUTHORIZED_KEYS}" "${SUDO_AUTHORIZED_KEYS}" )
+    authorized_keys=( "${SUDO_AUTHORIZED_KEYS}" )
+    local ldap_authorized_keys
+    ldap_authorized_keys="${LDAP_AUTHORIZED_KEYS:-}"
 
     if [ -n "${container}" ] ; then
         if container_exists "${container}" ; then
@@ -120,6 +132,9 @@ main () {
                     prepare_authorized_keys "${container}" "${key_file}"
                 fi
             done
+            if [ -n "${ldap_authorized_keys}" ] ; then
+                prepare_authorized_keys "${container}" "${ldap_authorized_keys}"
+            fi
         else
             error_msg "Error: container '${container}' doesn't exist"
             return 1

@@ -69,7 +69,11 @@ main () {
                           --release "${release}" \
                           --arch "${architecture}"
 
-            iface_count="$(grep -cE '^lxc\.network\.type\s+=' "${config_file}")"
+            if grep -qE '^lxc\.uts\.name\s+=' "/var/lib/lxc/${container}/config" ; then
+                iface_count="$(grep -cE '^lxc\.net\.[0-9]+\.type\s+=' "/var/lib/lxc/${container}/config")"
+            elif grep -qE '^lxc\.utsname\s+=' "/var/lib/lxc/${container}/config" ; then
+                iface_count="$(grep -cE '^lxc\.network\.type\s+=' "/var/lib/lxc/${container}/config")"
+            fi
             iface_count="$(( iface_count - 1 ))"
 
             if [ -f "/var/lib/lxc/${container}/rootfs/etc/network/interfaces" ] ; then
