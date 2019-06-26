@@ -289,6 +289,28 @@ lxc__default_configuration:
         value: '{{ ((ansible_memtotal_mb|int + ansible_swaptotal_mb|int) / 1024) | round | int }}G'
         state: 'comment'
 
+      # Required in AppArmor environment to allow systemd services to start
+      # inside of the LXC unprivileged containers.
+      # See also: https://bugs.debian.org/916644,
+      # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      - name: 'lxc.apparmor.profile'
+        value: 'generated'
+        state: '{{ "absent"
+                   if (lxc__version is version("3.0.0", "<") or
+                       lxc__version is version("3.1.0", ">="))
+                   else "present" }}'
+
+      # Required in AppArmor environment to allow systemd services to start
+      # inside of the LXC unprivileged containers.
+      # See also: https://bugs.debian.org/916644,
+      # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      - name: 'lxc.apparmor.allow_nesting'
+        value: '1'
+        state: '{{ "absent"
+                   if (lxc__version is version("3.0.0", "<") or
+                       lxc__version is version("3.1.0", ">="))
+                   else "present" }}'
+
     # Default configuration for privileged LXC containers
   - name: 'privileged'
     options:
@@ -382,6 +404,28 @@ lxc__default_configuration:
       - name: 'lxc.cgroup.memory.memsw.limit_in_bytes'
         value: '{{ ((ansible_memtotal_mb|int + ansible_swaptotal_mb|int) / 1024) | round | int }}G'
         state: 'comment'
+
+      # Required in AppArmor environment to allow systemd services to start
+      # inside of the LXC unprivileged containers.
+      # See also: https://bugs.debian.org/916644,
+      # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      - name: 'lxc.apparmor.profile'
+        value: 'generated'
+        state: '{{ "absent"
+                   if (lxc__version is version("3.0.0", "<") or
+                       lxc__version is version("3.1.0", ">="))
+                   else "present" }}'
+
+      # Required in AppArmor environment to allow systemd services to start
+      # inside of the LXC unprivileged containers.
+      # See also: https://bugs.debian.org/916644,
+      # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      - name: 'lxc.apparmor.allow_nesting'
+        value: '1'
+        state: '{{ "absent"
+                   if (lxc__version is version("3.0.0", "<") or
+                       lxc__version is version("3.1.0", ">="))
+                   else "present" }}'
 
     # Default configuration for privileged LXC containers with multiple network
     # interfaces

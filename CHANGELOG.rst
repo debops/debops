@@ -98,6 +98,16 @@ Changed
   On Debian Buster LXC hosts, the ``CAP_SYS_ADMIN`` POSIX capbility will be
   dropped in new LXC containers by default.
 
+- [debops.lxc] On Debian Buster (specifically on LXC versions below 3.1.0) the
+  AppArmor restrictions on unprivileged LXC containers will be relaxed to allow
+  correct operation of the :command:`systemd` service manager inside of
+  a container. Check the Debian Bugs `#916644`__, `#918839`__ and `#911806`__
+  for reasoning behind this modification.
+
+  .. __: https://bugs.debian.org/916644
+  .. __: https://bugs.debian.org/918839
+  .. __: https://bugs.debian.org/911806
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
