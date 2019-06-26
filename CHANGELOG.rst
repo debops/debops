@@ -76,6 +76,10 @@ Changed
   preparation of adding a role that will provide client functionality like
   network and container management.
 
+- [debops.netbase] Do not try to manage the hostname in LXC, Docker or OpenVZ
+  containers by default. We assume that these containers are unprivileged and
+  their hostname cannot be changed from the inside of the container.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
