@@ -18,6 +18,13 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Changed
+~~~~~~~
+
+- [debops.netbase] Do not try to manage the hostname in LXC, Docker or OpenVZ
+  containers by default. We assume that these containers are unprivileged and
+  their hostname cannot be changed from the inside of the container.
+
 Fixed
 ~~~~~
 
