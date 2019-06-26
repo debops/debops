@@ -83,6 +83,13 @@ Changed
   containers by default. We assume that these containers are unprivileged and
   their hostname cannot be changed from the inside of the container.
 
+- [debops.lxc] The role now checks the version of the installed LXC support and
+  uses the old or new configuration keys accordingly. You can review the
+  `changed configuration keys`__ between the old and new LXC version for
+  comparsion.
+
+  .. __: https://discuss.linuxcontainers.org/t/lxc-2-1-has-been-released/487
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------

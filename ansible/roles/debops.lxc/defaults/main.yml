@@ -229,10 +229,14 @@ lxc__default_configuration:
   - name: 'unprivileged'
     options:
 
-      - name: 'lxc.network.type'
+      - name: '{{ "lxc.network.type"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.type" }}'
         value: 'veth'
 
-      - name: 'lxc.network.link'
+      - name: '{{ "lxc.network.link"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
                        (ansible_local.ifupdown.configured|d())|bool)
@@ -240,7 +244,9 @@ lxc__default_configuration:
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
 
-      - name: 'lxc.network.flags'
+      - name: '{{ "lxc.network.flags"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.flags" }}'
         value: 'up'
 
       - name: 'lxc.id_map_user'
@@ -282,10 +288,14 @@ lxc__default_configuration:
   - name: 'privileged'
     options:
 
-      - name: 'lxc.network.type'
+      - name: '{{ "lxc.network.type"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.type" }}'
         value: 'veth'
 
-      - name: 'lxc.network.link'
+      - name: '{{ "lxc.network.link"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
                        (ansible_local.ifupdown.configured|d())|bool)
@@ -293,7 +303,9 @@ lxc__default_configuration:
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
 
-      - name: 'lxc.network.flags'
+      - name: '{{ "lxc.network.flags"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.flags" }}'
         value: 'up'
 
       - name: 'lxc.start.auto'
@@ -310,13 +322,19 @@ lxc__default_configuration:
     state: '{{ "present" if (lxc__net_deploy_state == "present") else "absent" }}'
     options:
 
-      - name: 'lxc.network.type'
+      - name: '{{ "lxc.network.type"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.type" }}'
         value: 'veth'
 
-      - name: 'lxc.network.link'
+      - name: '{{ "lxc.network.link"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.link" }}'
         value: '{{ lxc__net_bridge }}'
 
-      - name: 'lxc.network.flags'
+      - name: '{{ "lxc.network.flags"
+                  if (lxc__version is version("2.1.0", "<"))
+                  else "lxc.net.0.flags" }}'
         value: 'up'
 
       - name: 'lxc.id_map_user'
@@ -360,11 +378,15 @@ lxc__default_configuration:
     options:
 
       - name: 'lxc.network.type_net0'
-        alias: 'lxc.network.type'
+        alias: '{{ "lxc.network.type"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.0.type" }}'
         value: 'veth'
 
       - name: 'lxc.network.link_net0'
-        alias: 'lxc.network.link'
+        alias: '{{ "lxc.network.link"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
                        (ansible_local.ifupdown.configured|d())|bool)
@@ -373,20 +395,28 @@ lxc__default_configuration:
                          else "br0") }}'
 
       - name: 'lxc.network.flags_net0'
-        alias: 'lxc.network.flags'
+        alias: '{{ "lxc.network.flags"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.0.flags" }}'
         value: 'up'
 
       - name: 'lxc.network.type_net1'
-        alias: 'lxc.network.type'
+        alias: '{{ "lxc.network.type"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.1.type" }}'
         value: 'veth'
         separator: True
 
       - name: 'lxc.network.link_net1'
-        alias: 'lxc.network.link'
+        alias: '{{ "lxc.network.link"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.1.link" }}'
         value: 'br1'
 
       - name: 'lxc.network.flags_net1'
-        alias: 'lxc.network.flags'
+        alias: '{{ "lxc.network.flags"
+                   if (lxc__version is version("2.1.0", "<"))
+                   else "lxc.net.1.flags" }}'
         value: 'up'
 
       - name: 'lxc.start.auto'
