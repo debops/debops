@@ -90,6 +90,14 @@ Changed
 
   .. __: https://discuss.linuxcontainers.org/t/lxc-2-1-has-been-released/487
 
+- [debops.lxc] New LXC containers will have the ``CAP_SYS_TIME`` POSIX
+  capability dropped by default to ensure that time configuration is disabled
+  inside of the container. This should fix an issue on Debian Buster where an
+  unprivileged LXC containers still have this capability enabled.
+
+  On Debian Buster LXC hosts, the ``CAP_SYS_ADMIN`` POSIX capbility will be
+  dropped in new LXC containers by default.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
