@@ -18,6 +18,12 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Fixed
+~~~~~
+
+- [debops.ldap] Avoid gathering MAC addresses from network interfaces that do
+  not have them, for example interfaces with multiple IPv4 addresses.
+
 
 `debops v1.0.4`_ - 2019-06-25
 -----------------------------
