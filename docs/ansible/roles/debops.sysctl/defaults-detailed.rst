@@ -74,6 +74,11 @@ specific parameters:
 
      /etc/sysctl.d/{{ weight }}-{{ name }}.conf
 
+``divert``
+  Boolean, optional. When specified and ``True``, the original configuration
+  file will be diverted using :man:`dpkg-divert(8)`. If a configuration file is
+  due to be removed, the original file will be reverted back into place.
+
 ``comment``
   Optional. A string or YAML text block with a comment added at the top of the
   generated configuration file.
