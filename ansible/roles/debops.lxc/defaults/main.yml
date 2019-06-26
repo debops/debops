@@ -19,6 +19,11 @@
 lxc__base_packages:
   - [ 'lxc', 'lxcfs', 'debootstrap', 'xz-utils' ]
   - '{{ [ "dnsmasq-base", "resolvconf" ] if (lxc__net_deploy_state == "present") else [] }}'
+  - '{{ []
+        if (ansible_distribution_release in
+            [ "wheezy", "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else [ "apparmor" ] }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__packages [[[
