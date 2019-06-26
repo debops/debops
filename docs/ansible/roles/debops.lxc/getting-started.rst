@@ -176,6 +176,12 @@ source of SSH public keys. Alternatively, you can specify a custom file with
 authorized SSH keys to add in the container's
 :file:`/root/.ssh/authorized_keys` file.
 
+If :ref:`the LDAP support <debops.ldap>` is configured on a host and SSH key
+lookup in LDAP is enabled by the :ref:`debops.sshd` role, the script will look
+up the current user keys in LDAP directory as well - this ensures that the SSH
+access is configured even when the SSH public keys are not explicitly defined
+in the current user's :file:`~/.ssh/authorized_keys` file.
+
 After that, the LXC container should be ready to be used remotely, at which
 point you can use normal DebOps ``bootstrap`` playbook and other playbooks to
 configure it.

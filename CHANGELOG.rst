@@ -45,6 +45,10 @@ Added
 - [debops.sysctl] The kernel protection for symlinks and hardlinks will be
   enabled by default on Debian/Ubuntu hosts.
 
+- [debops.lxc] The :command:`lxc-prepare-ssh` script can now look up the SSH
+  keys of the current user in LDAP if support for it is enabled on the LXC
+  host.
+
 Changed
 ~~~~~~~
 
