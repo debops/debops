@@ -32,7 +32,7 @@
 DBCLUSTER="{{ item.version | d(postgresql_server__version) }}/{{ item.name }}"
 
 # Add the port so it supports pg clusters.
-OPT="-p {{ item.port }}"
+OPT="-p {{ item.port }} {{ postgresql_server__auto_backup_pg_opts | d() }}"
 PSQLOPT="$OPT"
 
 # ===============================
