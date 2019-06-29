@@ -112,6 +112,11 @@ Changed
   .. __: https://bugs.debian.org/918839
   .. __: https://bugs.debian.org/911806
 
+- [debops.ipxe] The role has been redesigned from scratch, and now supports
+  multiple Debian Netboot installers; the iPXE scripts are defined in default
+  variables instead of the file-based templates and can be easily modified via
+  the Ansible inventory.
+
 Removed
 ~~~~~~~
 

@@ -42,6 +42,10 @@ Inventory variable changes
   You can check the :envvar:`lxc__default_configuration` variable to see which
   ``name`` parameters can change.
 
+- The :ref:`debops.ipxe` role default variables have been renamed to move them
+  to their own ``ipxe__*`` namespace; you will have to update the Ansible
+  inventory.
+
 
 v1.0.0 (2019-05-22)
 -------------------

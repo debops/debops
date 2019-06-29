@@ -1,0 +1,30 @@
+#!ipxe
+
+# {{ ansible_managed }}
+
+{% if item.comment|d() %}
+{{ item.comment | regex_replace("\n$", "") | comment(prefix="", postfix="") }}
+{% endif %}
+{% if item.raw|d() %}
+{{ item.raw | regex_replace("\n$", "") }}
+{% elif item.options|d() %}
+{%   for element in item.options %}
+{%     if element.raw|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%       if not loop.first %}
+
+{%       endif %}
+{%       if element.comment|d() %}
+{{ element.comment | regex_replace("\n$", "") | comment(prefix="", postfix="") }}
+{%       endif %}
+{{ element.raw | regex_replace("\n$", "") }}
+{%     elif element.name|d() and element.value is defined and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%       if not loop.first %}
+
+{%       endif %}
+{%       if element.comment|d() %}
+{{ element.comment | regex_replace("\n$", "") | comment(prefix="", postfix="") -}}
+{%       endif %}
+{{ '{} {} {}'.format(element.command | d('set'), element.name, element.value) }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
