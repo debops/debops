@@ -1,63 +1,65 @@
 ---
 
-- name: DebOps pre_tasks hook
-  include: "{{ lookup('task_src', 'ipxe/pre_main.yml') }}"
-
-- name: Install iPXE package
-  apt:
-    name: 'ipxe'
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", (ipxe__base_packages + ipxe__packages)) }}'
     state: 'present'
-    install_recommends: False
   register: ipxe__register_packages
   until: ipxe__register_packages is succeeded
-  when: ipxe_tftp is defined and ipxe_tftp
 
-- name: Make sure that TFTP root directory exists
+- name: Ensure that iPXE script directories exist
   file:
-    path: '{{ ipxe_tftp_root }}'
+    path: '{{ ipxe__tftp_root + "/" + (((item.name | regex_replace("\.ipxe$", "")) + ".ipxe") | dirname) }}'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
-  when: ipxe_tftp is defined and ipxe_tftp
+  loop: '{{ ipxe__combined_scripts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name,
+                "path": (ipxe__tftp_root + "/" + ((item.name | regex_replace("\.ipxe$", "") + ".ipxe") | dirname)),
+                "state": item.state|d("present")} }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
-- name: Copy the iPXE boot binary to TFTP root directory
-  command: cp /usr/lib/ipxe/undionly.kpxe {{ ipxe_tftp_root + "/undionly.kpxe" }}
-  args:
-    creates: '{{ ipxe_tftp_root + "/undionly.kpxe" }}'
-  when: ipxe_tftp is defined and ipxe_tftp
-
-- name: Check if iPXE package contains EFI binary
-  stat:
-    path: '/usr/lib/ipxe/ipxe.efi'
-  register: ipxe_register_efi
-
-- name: Copy the iPXE efi boot binary to TFTP root directory
-  command: cp /usr/lib/ipxe/ipxe.efi {{ ipxe_tftp_root + "/ipxe.efi" }}
-  args:
-    creates: '{{ ipxe_tftp_root + "/ipxe.efi" }}'
-  when: ipxe_tftp is defined and ipxe_register_efi.stat.exists
-
-- name: Create iPXE configuration directory
-  file:
-    path: '{{ ipxe_config_root }}'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Create iPXE configuration
+- name: Generate iPXE scripts
   template:
-    src: '{{ lookup("template_src", "srv/tftp/" + item | basename) }}'
-    dest: '{{ ipxe_config_root + "/" + item | basename | replace(".j2", "") }}'
-    owner: 'root'
-    group: 'root'
+    src: 'srv/tftp/template.ipxe.j2'
+    dest: '{{ ipxe__tftp_root + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
     mode: '0644'
-  with_fileglob: [ '../templates/srv/tftp/*.j2' ]
+  loop: '{{ ipxe__combined_scripts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name,
+                "state": item.state|d("present")} }}'
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
-- name: Configure Debian netboot installer
-  include: debian_pxeboot.yml
-  when: ipxe_tftp|d() and ipxe_debian_pxeboot|d()
+- name: Remove iPXE scripts if requested
+  file:
+    path: '{{ ipxe__tftp_root + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
+    state: 'absent'
+  loop: '{{ ipxe__combined_scripts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name,
+                "state": item.state|d("present")} }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
 
-- name: DebOps post_tasks hook
-  include: "{{ lookup('task_src', 'ipxe/post_main.yml') }}"
+- name: Install bootloader files in the TFTP root directory
+  copy:
+    src: '{{ item }}'
+    dest: '{{ ipxe__tftp_root + "/" + (item | basename) }}'
+    remote_src: True
+    mode: '0644'
+  loop: '{{ ipxe__bootloaders }}'
+
+- name: Configure Debian netboot installers
+  include: debian_netboot.yml
+  when: ipxe__debian_netboot_enabled|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save iPXE local facts
+  template:
+    src: 'etc/ansible/facts.d/ipxe.fact.j2'
+    dest: '/etc/ansible/facts.d/ipxe.fact'
+    mode: '0755'
