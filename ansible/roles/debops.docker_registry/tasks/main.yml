@@ -88,16 +88,12 @@
           mode: '0755'
 
     - name: Import Docker Registry GPG key
-      apt_key:
-        keyring: '{{ docker_registry__home + "/.gnupg/pubring.gpg" }}'
-        id: '{{ docker_registry__git_gpg_key | replace(" ","") }}'
-        keyserver: '{{ ansible_local.core.keyserver
-                       if (ansible_local|d() and ansible_local.core|d() and
-                           ansible_local.core.keyserver|d())
-                       else "hkp://pool.sks-keyservers.net" }}'
-        state: 'present'
+      shell: gpg --list-keys '{{ docker_registry__git_gpg_key.id | replace(" ","") }}'
+             || gpg --no-autostart --import -
+      args:
+        stdin: '{{ docker_registry__git_gpg_key.data }}'
       register: docker_registry__register_gpg_key
-      until: docker_registry__register_gpg_key is succeeded
+      changed_when: '"gpg: error reading key: No public key" in docker_registry__register_gpg_key.stderr_lines'
 
     - name: Clone Docker Registry source code
       git:
