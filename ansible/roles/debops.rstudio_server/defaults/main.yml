@@ -63,12 +63,14 @@ rstudio_server__rstudio_deb_checksum: '{{ rstudio_server__release_deb_map[ansibl
                                           else rstudio_server__release_deb_map[ansible_distribution].checksum }}'
 
                                                                    # ]]]
-# .. envvar:: rstudio_server__signing_key_id [[[
+# .. envvar:: rstudio_server__signing_key [[[
 #
 # The fingerprint of the GPG key used by RStudio Inc. to sign the released
 # ``.deb`` packages, used for verification of the package before installation.
 # See https://www.rstudio.com/code-signing/ for more details.
-rstudio_server__signing_key_id: 'FE85 64CF F1AB 93F1 7286  4519 3F32 EE77 E331 692F'
+rstudio_server__signing_key:
+  id: 'FE85 64CF F1AB 93F1 7286  4519 3F32 EE77 E331 692F'
+  data: '{{ lookup("file", "keyring/0xFE8564CFF1AB93F1728645193F32EE77E331692F.asc") }}'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[

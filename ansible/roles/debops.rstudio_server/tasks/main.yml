@@ -36,18 +36,14 @@
     mode: '0700'
 
 - name: Import Rstudio package signing key
-  apt_key:
-    keyring: '{{ rstudio_server__home + "/.gnupg/pubring.gpg" }}'
-    id: '{{ rstudio_server__signing_key_id | replace(" ","") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
-    state: 'present'
+  shell: gpg --list-keys '{{ rstudio_server__signing_key.id | replace(" ","") }}'
+         || gpg --no-autostart --import -
+  args:
+    stdin: '{{ rstudio_server__signing_key.data }}'
   become: True
   become_user: '{{ rstudio_server__user }}'
   register: rstudio_server__register_signing_key
-  until: rstudio_server__register_signing_key is succeeded
+  changed_when: '"gpg: error reading key: No public key" in rstudio_server__register_signing_key.stderr_lines'
 
 - name: Get the current user accounts
   getent:
