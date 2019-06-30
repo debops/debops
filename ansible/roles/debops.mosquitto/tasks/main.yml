@@ -9,11 +9,9 @@
 
 - name: Get upstream APT GPG key
   apt_key:
-    id: '{{ mosquitto__upstream_key_id | replace(" ","") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
+    id: '{{ mosquitto__upstream_apt_key.id | replace(" ","") }}'
+    data: '{{ mosquitto__upstream_apt_key.data | d(omit) }}'
+    keyserver: '{{ mosquitto__upstream_apt_key.keyserver | d(omit) }}'
     state: 'present'
   register: mosquitto__register_apt_key
   until: mosquitto__register_apt_key is succeeded
