@@ -117,10 +117,12 @@ yadm__upstream_enabled: '{{ True
                             else False }}'
 
                                                                    # ]]]
-# .. envvar:: yadm__upstream_gpg_id [[[
+# .. envvar:: yadm__upstream_gpg_key [[[
 #
 # The GPG fingerprint of the key used to sign the :command:`yadm` releases.
-yadm__upstream_gpg_id: '31B9 62F7 CC57 473B 0329  CB9A 6CBE 24C2 FD8C F76E'
+yadm__upstream_gpg_key:
+  id: '31B9 62F7 CC57 473B 0329  CB9A 6CBE 24C2 FD8C F76E'
+  data: '{{ lookup("file", "keyring/0x31B962F7CC57473B0329CB9A6CBE24C2FD8CF76E.asc") }}'
 
                                                                    # ]]]
 # .. envvar:: yadm__upstream_repo [[[
@@ -166,7 +168,9 @@ yadm__upstream_link: '/usr/local/bin/yadm'
 yadm__default_dotfiles:
 
   - name: 'drybjed'
-    gpg: '2706 7A91 D620 EE91 D503  09D9 2DCC F53E 9BC7 4BEC'
+    gpg:
+      id: '2706 7A91 D620 EE91 D503  09D9 2DCC F53E 9BC7 4BEC'
+      data: '{{ lookup("file", "keyring/0x27067A91D620EE91D50309D92DCCF53E9BC74BEC.asc") }}'
     git: 'https://github.com/drybjed/dotfiles'
 
                                                                    # ]]]

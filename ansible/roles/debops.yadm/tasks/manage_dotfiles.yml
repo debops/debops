@@ -4,14 +4,14 @@
   apt_key:
     keyring: '~/.gnupg/pubring.gpg'
     id: '{{ (item_gpg.id | d(item_gpg)) | replace(" ","") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
+    data: '{{ item_gpg.data | d(omit) }}'
+    keyserver: '{{ item_gpg.keyserver | d(omit) }}'
     state: '{{ item_gpg.state | d(dotfile.state | d("present")) }}'
   loop: '{{ q("flattened", dotfile.gpg) }}'
   loop_control:
     loop_var: 'item_gpg'
+    label: '{{ {"id": (item_gpg.id | d(item_gpg)),
+                "state": (item_gpg.state | d(dotfile.state | d("present")))} }}'
   register: yadm__register_dotfiles_gpg_ids
   until: yadm__register_dotfiles_gpg_ids is succeeded
   when: dotfile.gpg|d() and dotfile.state|d('present') not in [ 'ignore' ]

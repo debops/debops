@@ -9,11 +9,9 @@
 - name: Import yadm upstream GPG key to root keyring
   apt_key:
     keyring: '~/.gnupg/pubring.gpg'
-    id: '{{ yadm__upstream_gpg_id | replace(" ","") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
+    id: '{{ yadm__upstream_gpg_key.id | replace(" ","") }}'
+    data: '{{ yadm__upstream_gpg_key.data | d(omit) }}'
+    keyserver: '{{ yadm__upstream_gpg_key.keyserver | d(omit) }}'
     state: 'present'
   register: yadm__register_upstream_gpg_id
   until: yadm__register_upstream_gpg_id is succeeded

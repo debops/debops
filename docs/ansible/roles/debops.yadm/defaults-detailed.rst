@@ -93,6 +93,14 @@ specific parameters:
   ``id``
     The GPG key fingerprint.
 
+  ``data``
+    Optional. The GPG key data, usually stored in a file and retrieved via
+    a lookup Ansible plugin.
+
+  ``keyserver``
+    Optional. The URI of the OpenPGP keyserver which should be used to retrieve
+    the GPG key.
+
   ``state``
     Optional, either ``present`` (import the GPG key) or ``absent`` (remove the
     GPG key from the keyring).
