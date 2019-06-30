@@ -63,11 +63,9 @@
 
 - name: Add gitlab-runner APT key
   apt_key:
-    id: '{{ gitlab_runner__apt_key }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
+    id: '{{ gitlab_runner__apt_key.id }}'
+    data: '{{ gitlab_runner__apt_key.data | d(omit) }}'
+    keyserver: '{{ gitlab_runner__apt_key.keyserver | d(omit) }}'
     state: 'present'
   register: gitlab_runner__register_apt_key
   until: gitlab_runner__register_apt_key is succeeded
