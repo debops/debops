@@ -6,12 +6,12 @@
 - name: Manage Ondrej Sury APT keys
   apt_key:
     id: '{{ (item.id | d(item)) | replace(" ","") }}'
+    data: '{{ item.data | d(omit) }}'
     state: '{{ item.state | d("present") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
+    keyserver: '{{ item.keyserver | d(omit) }}'
   loop: '{{ php__sury_apt_key_id }}'
+  loop_control:
+    label: '{{ {"id": (item.id | d(item)), "state": (item.state | d("present")) } }}'
   register: php__register_apt_key
   until: php__register_apt_key is succeeded
   when: php__sury|bool
