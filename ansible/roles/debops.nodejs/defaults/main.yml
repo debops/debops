@@ -54,10 +54,12 @@ nodejs__upstream_distribution_release: '{{ ansible_local.core.distribution_relea
                                            else ansible_distribution_release }}'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_key_id [[[
+# .. envvar:: nodejs__upstream_apt_key [[[
 #
 # GPG fingerprint of APT repository signing key.
-nodejs__upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
+nodejs__upstream_apt_key:
+  id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
+  data: '{{ lookup("file", "keyring/0x9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280.asc") }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__upstream_repository [[[
@@ -166,10 +168,12 @@ nodejs__yarn_upstream: '{{ True
                            else False }}'
 
                                                                    # ]]]
-# .. envvar:: nodejs__yarn_upstream_key_id [[[
+# .. envvar:: nodejs__yarn_upstream_apt_key [[[
 #
 # GPG fingerprint of Yarn APT repository signing key.
-nodejs__yarn_upstream_key_id: '72ECF46A56B4AD39C907BBB71646B01B86E50310'
+nodejs__yarn_upstream_apt_key:
+  id: '72ECF46A56B4AD39C907BBB71646B01B86E50310'
+  data: '{{ lookup("file", "keyring/0x72ECF46A56B4AD39C907BBB71646B01B86E50310.asc") }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__yarn_upstream_repository [[[
