@@ -68,9 +68,9 @@ nginx__flavor_distribution_release: '{{ ansible_local.core.distribution_release
                                         else ansible_distribution_release }}'
 
                                                                    # ]]]
-# .. envvar:: nginx__flavor_apt_key_id [[[
+# .. envvar:: nginx__flavor_apt_key [[[
 #
-nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
+nginx__flavor_apt_key: '{{ nginx__flavor_apt_key_map[nginx_flavor]|d() }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_repository [[[
@@ -78,11 +78,17 @@ nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
 nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor]|d() }}'
 
                                                                    # ]]]
-# .. envvar:: nginx__flavor_apt_key_id_map [[[
+# .. envvar:: nginx__flavor_apt_key_map [[[
 #
-nginx__flavor_apt_key_id_map:
-  'nginx.org': '573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62'
-  'passenger': '16378A33A6EF16762922526E561F9B9CAC40B2F7'
+nginx__flavor_apt_key_map:
+
+  'nginx.org':
+    id: '573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62'
+    data: '{{ lookup("file", "keyring/0x573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62.asc") }}'
+
+  'passenger':
+    id: '16378A33A6EF16762922526E561F9B9CAC40B2F7'
+    data: '{{ lookup("file", "keyring/0x16378A33A6EF16762922526E561F9B9CAC40B2F7.asc") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_repository_map [[[
