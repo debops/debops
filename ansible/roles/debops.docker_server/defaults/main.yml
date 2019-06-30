@@ -59,9 +59,13 @@ docker_server__upstream_channel: 'stable'
 # .. envvar:: docker_server__upstream_key [[[
 #
 # APT GPG key id used to sign the upstream Docker packages.
-docker_server__upstream_key: '{{ "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
-                                 if (docker_server__upstream_edition == "ce")
-                                 else "DD911E995A64A202E85907D6BC14F10B6D085F96" }}'
+docker_server__upstream_key:
+  id: '{{ "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+          if (docker_server__upstream_edition == "ce")
+          else "DD911E995A64A202E85907D6BC14F10B6D085F96" }}'
+  data: '{{ lookup("file", ("keyring/0x9DC858229FC7DD38854AE2D88D81803C0EBFCD88.asc"
+                            if (docker_server__upstream_edition == "ce")
+                            else "keyring/0xDD911E995A64A202E85907D6BC14F10B6D085F96.asc")) }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__upstream_packagename [[[
