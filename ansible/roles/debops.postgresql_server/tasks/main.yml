@@ -2,12 +2,10 @@
 
 - name: Add upstream PostgreSQL APT key
   apt_key:
-    id: '{{ postgresql_server__upstream_key_id }}'
+    id: '{{ postgresql_server__upstream_apt_key.id }}'
+    data: '{{ postgresql_server__upstream_apt_key.data | d(omit) }}'
+    keyserver: '{{ postgresql_server__upstream_apt_key.keyserver | d(omit) }}'
     state: 'present'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
   register: postgresql_server__register_apt_key
   until: postgresql_server__register_apt_key is succeeded
   when: postgresql_server__upstream|bool
