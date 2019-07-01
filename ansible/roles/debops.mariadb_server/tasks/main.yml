@@ -21,14 +21,14 @@
 - name: Add custom APT GPG key
   apt_key:
     state: 'present'
-    id: '{{ item }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
+    id: '{{ item.id }}'
+    data: '{{ item.data | d(omit) }}'
+    keyserver: '{{ item.keyserver | d(omit) }}'
   with_flattened: '{{ ([ mariadb_server__apt_key ]
                        if mariadb_server__apt_key is string
                        else mariadb_server__apt_key) }}'
+  loop_control:
+    label: '{{ {"id": item.id} }}'
   register: mariadb_server__register_apt_key
   until: mariadb_server__register_apt_key is succeeded
   when: mariadb_server__flavor in mariadb_server__apt_key_map.keys()

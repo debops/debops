@@ -64,11 +64,29 @@ mariadb_server__apt_key: '{{ mariadb_server__apt_key_map[mariadb_server__flavor]
 # different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
 # downloaded if any of the listed flavors is selected.
 mariadb_server__apt_key_map:
-  'mariadb_upstream':   [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
-  'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
-  'mysql-5.7_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
-  'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
-  'percona-5.7':        '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+
+  'mariadb_upstream':
+    - id: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+      data: '{{ lookup("file", "keyring/0x199369E5404BD5FC7D2FE43BCBCB082A1BB943DB.asc") }}'
+
+    - id: '177F4010FE56CA3336300305F1656F24C74CD1D8'
+      data: '{{ lookup("file", "keyring/0x177F4010FE56CA3336300305F1656F24C74CD1D8.asc") }}'
+
+  'mysql-5.6_galera-3':
+    - id: '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+      data: '{{ lookup("file", "keyring/0x44B7345738EBDE52594DAD80D669017EBC19DDBA.asc") }}'
+
+  'mysql-5.7_galera-3':
+    - id: '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+      data: '{{ lookup("file", "keyring/0x44B7345738EBDE52594DAD80D669017EBC19DDBA.asc") }}'
+
+  'percona':
+    - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+      data: '{{ lookup("file", "keyring/0x4D1BB29D63D98E422B2113B19334A25F8507EFA5.asc") }}'
+
+  'percona-5.7':
+    - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+      data: '{{ lookup("file", "keyring/0x4D1BB29D63D98E422B2113B19334A25F8507EFA5.asc") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__upstream_version [[[
