@@ -77,16 +77,9 @@ hashicorp__shell: '/usr/sbin/nologin'
 # .. envvar:: hashicorp__gpg_key_id [[[
 #
 # The OpenPGP key fingerprint of the HashiCorp_ company.
-hashicorp__gpg_key_id: '91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C'
-
-                                                                   # ]]]
-# .. envvar:: hashicorp__keyserver [[[
-#
-# URL of the OpenPGP keyserver used to obtain the HashiCorp_ OpenPGP key.
-hashicorp__keyserver: '{{ ansible_local.core.keyserver
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.keyserver|d())
-                          else "hkp://pool.sks-keyservers.net" }}'
+hashicorp__gpg_key:
+  id: '91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C'
+  data: '{{ lookup("file", "keyring/0x91A6E7F85D05C65630BEF18951852D87348FFC4C.asc") }}'
                                                                    # ]]]
                                                                    # ]]]
 # HashiCorp Application lists [[[

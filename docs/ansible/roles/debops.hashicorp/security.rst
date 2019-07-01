@@ -96,7 +96,7 @@ another Ansible role:
   installation.
 
 - The ``hashicorp`` user account imports the HashiCorp_ OpenPGP key from the
-  OpenPGP keyserver network, by default using one of the SHS Keyservers.
+  :ref:`debops.hashicorp` role :file:`files/keyring/` directory.
 
 - The ``hashicorp`` user account downloads the necessary files from the
   HashiCorp_ release page over the HTTPS protocol. These files include: binary

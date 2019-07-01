@@ -100,14 +100,12 @@
         mode: '0700'
 
     - name: Import HashiCorp OpenPGP key
-      apt_key:
-        id: '{{ hashicorp__gpg_key_id | replace(" ","") }}'
-        keyring: '{{ hashicorp__home + "/.gnupg/pubring.gpg" }}'
-        keyserver: '{{ hashicorp__keyserver }}'
-        state: 'present'
-      register: hashicorp__register_apt_key
-      until: hashicorp__register_apt_key is succeeded
-
+      shell: gpg --list-keys '{{ hashicorp__gpg_key.id | replace(" ","") }}'
+             || gpg --no-autostart --import -
+      args:
+        stdin: '{{ hashicorp__gpg_key.data }}'
+      register: hashicorp__register_gpg_key
+      changed_when: '"gpg: error reading key: No public key" in hashicorp__register_gpg_key.stderr_lines'
 
     # HashiCorp application archive download [[[2
 
