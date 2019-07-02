@@ -50,13 +50,12 @@
         mode: '0700'
 
     - name: Ensure the Nextcloud OpenPGP key is present
-      apt_key:
-        id: '{{ owncloud__upstream_key_fingerprint | replace(" ","") }}'
-        keyring: '{{ owncloud__system_home + "/.gnupg/pubring.gpg" }}'
-        keyserver: '{{ owncloud__keyserver }}'
-        state: 'present'
-      register: owncloud__register_apt_key_nextcloud
-      until: owncloud__register_apt_key_nextcloud is succeeded
+      shell: gpg --list-keys '{{ owncloud__upstream_key_fingerprint.id | replace(" ","") }}'
+             || gpg --no-autostart --import -
+      args:
+        stdin: '{{ owncloud__upstream_key_fingerprint.data }}'
+      register: owncloud__register_nextcloud_key
+      changed_when: '"gpg: error reading key: No public key" in owncloud__register_nextcloud_key.stderr_lines'
 
     # Get latest patch version for release [[[2
 
@@ -135,7 +134,7 @@
       register: owncloud__register_verify_authenticity
       failed_when: (owncloud__register_verify_authenticity.rc != 0 or
                     (owncloud__register_verify_authenticity.stdout|replace(" ",""))
-                    != (owncloud__upstream_key_fingerprint|replace(" ","")))
+                    != (owncloud__upstream_key_fingerprint.id|replace(" ","")))
       tags: [ 'role::nextcloud:verify' ]
 
 - name: Unpack the application archive
