@@ -19,11 +19,9 @@
 
 - name: Ensure NeuroDebian APT OpenPGP public key is in it's desired state
   apt_key:
-    id: '{{ neurodebian__apt_key_fingerprint }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
+    id: '{{ neurodebian__apt_key.id }}'
+    data: '{{ neurodebian__apt_key.data | d(omit) }}'
+    keyserver: '{{ neurodebian__apt_key.keyserver | d(omit) }}'
     state: '{{ "present" if (neurodebian__deploy_state == "present") else "absent" }}'
   register: neurodebian__register_apt_key
   until: neurodebian__register_apt_key is succeeded
