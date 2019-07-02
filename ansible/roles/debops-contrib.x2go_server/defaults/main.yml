@@ -41,7 +41,7 @@ x2go_server__deploy_state: 'present'
 # --------------------
 #
 
-# .. envvar:: x2go_server__apt_repo_key_fingerprint_map [[[
+# .. envvar:: x2go_server__apt_repo_key [[[
 #
 # APT PGP key fingerprint used to sign the upstream X2Go repository and it’s
 # packages per distributions corresponding to ``ansible_distribution``.
@@ -49,10 +49,9 @@ x2go_server__deploy_state: 'present'
 # example, using PPAs does automatically fetch the correct PGP public key
 # somehow.
 # Refer to the `official X2Go documentation <http://wiki.x2go.org/doku.php/wiki:repositories:debian>`__ for details.
-x2go_server__apt_repo_key_fingerprint_map:
-  'Ubuntu': '{{ omit }}'
-  'Linuxmint': '{{ omit }}'
-  'default': '972FD88FA0BAFB578D0476DFE1F958385BFE2B6E'
+x2go_server__apt_repo_key:
+  id: '972FD88FA0BAFB578D0476DFE1F958385BFE2B6E'
+  data: '{{ lookup("file", "keyring/972FD88FA0BAFB578D0476DFE1F958385BFE2B6E.asc") }}'
 
                                                                    # ]]]
 # .. envvar:: x2go_server__upstream_release_channel [[[

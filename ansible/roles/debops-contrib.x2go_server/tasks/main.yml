@@ -2,16 +2,12 @@
 
 - name: Get X2Go APT PGP key
   apt_key:
-    id: '{{ x2go_server__apt_repo_key_fingerprint_map[ansible_distribution]
-            | d(x2go_server__apt_repo_key_fingerprint_map["default"]) }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
+    id: '{{ x2go_server__apt_repo_key.id }}'
+    data: '{{ x2go_server__apt_repo_key.data | d(omit) }}'
+    keyserver: '{{ x2go_server__apt_repo_key.keyserver | d(omit) }}'
     state: '{{ "present" if (x2go_server__deploy_state == "present") else "absent" }}'
   register: x2go_server__register_apt_key
   until: x2go_server__register_apt_key is succeeded
-  when: (x2go_server__apt_repo_key_fingerprint_map[ansible_distribution]|d("not omit") != omit)
 
 - name: Configure X2Go APT repository
   apt_repository:
