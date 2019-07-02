@@ -2,12 +2,10 @@
 
 - name: Ensure upstream APT OpenPGP public key is in a desired state
   apt_key:
-    id: '{{ bitcoind__upstream_key_fingerprint | replace(" ","") }}'
+    id: '{{ bitcoind__upstream_apt_key.id | replace(" ","") }}'
+    data: '{{ bitcoind__upstream_apt_key.data | d(omit) }}'
+    keyserver: '{{ bitcoind__upstream_apt_key.keyserver | d(omit) }}'
     state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
   register: bitcoind__register_apt_key
   until: bitcoind__register_apt_key is succeeded
 
