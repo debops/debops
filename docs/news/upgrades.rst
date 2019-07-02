@@ -46,6 +46,10 @@ Inventory variable changes
   to their own ``ipxe__*`` namespace; you will have to update the Ansible
   inventory.
 
+- The :envvar:`core__keyserver` variable in the :ref:`debops.core` is now empty
+  by default; users are expected to explicitly enable a keyserver if they want
+  to.
+
 
 v1.0.0 (2019-05-22)
 -------------------
