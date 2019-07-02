@@ -10,7 +10,7 @@ Guides and examples
 Be sure that you :ref:`installed <cryptsetup__ref_installation>` the role and
 setup your Ansible project to use the role
 (:ref:`cryptsetup__ref_getting_started`).
-There is also the `Getting Started with DebOps`_ guide to learn the basics.
+There is also the :ref:`getting-started <Getting Started guide>` to learn the basics.
 
 .. _cryptsetup__ref_guide_setup_loop_device:
 

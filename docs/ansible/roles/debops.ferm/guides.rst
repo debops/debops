@@ -26,8 +26,8 @@ as external untrusted interface and ``eth1`` will be used as internal trusted
 interface.
 
 To follow this guide you should be familiar with DebOps and the way to configure
-related Ansible variables. If you're not, you may first want to read
-`Getting Started with DebOps`_.
+related Ansible variables. If you're not, you may first want to read the
+:ref:`getting-started <Getting Started guide>`.
 
 
 .. _ferm__ref_guide_gateway_packet_forwarding:
