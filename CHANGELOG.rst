@@ -117,6 +117,12 @@ Changed
   variables instead of the file-based templates and can be easily modified via
   the Ansible inventory.
 
+- Due to the risk of a Denial of Service attack on the GnuPG clients via SKS
+  keyservers, the upstream APT and GPG keys have been included in various
+  DebOps roles. Some of the role variables have been slightly renamed to better
+  indicate their purpose, since they now hold both the GPG key id as well as
+  the key itself (data).
+
 Removed
 ~~~~~~~
 
