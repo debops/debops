@@ -33,7 +33,7 @@ configured. Everything else will be installed as needed.
 An important part of the environment is correctly configured DNS. Some of the
 DebOps roles expect a configured domain - it doesn't need to be a real, global
 domain, but it should be resolvable by the host. A good way to check if
-a remote host has a correctly configured domain is to use the ``hostname --fqdn``
+a remote host has a correctly configured domain is to use the :command:`hostname --fqdn`
 command. If the output has at least 1 dot, you should be good to go.
 
 Do not use the domain apex (``example.com``) as the host name - this will
@@ -58,7 +58,7 @@ The ``root`` account requires a password, SSH keys are not installed yet and
 there's no administrator account.
 
 Ansible commands are executed on the Ansible Controller from an unprivileged
-account ``alice``. This user has an SSH key pair stored in ``~/.ssh/id_rsa`` or
+account ``alice``. This user has an SSH key pair stored in :file:`~/.ssh/id_rsa` or
 has its SSH key available in the SSH Agent. An administrator account with the
 same name will be created on the remote host during the bootstrap process.
 
