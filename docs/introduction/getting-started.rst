@@ -3,8 +3,6 @@
 Getting Started with DebOps
 ===========================
 
-.. include:: ../../includes/global.rst
-
 Welcome to DebOps! You have installed `Ansible <https://docs.debops.org/en/master/debops-tools/installation.html#debops-prerequisites>`__ and `DebOps scripts <https://docs.debops.org/en/master/debops-tools/index.html>`_, downloaded the roles and `playbooks <https://docs.debops.org/en/master/debops-playbooks/index.html>`_, and are wondering where to go next? Here you can read
 about creating your first DebOps project, and managing remote hosts.
 
