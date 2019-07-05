@@ -15,14 +15,14 @@ a host in mind. This can be done for example via Debian Preseeding or LXC
 template installing and pre-configuring :command:`etckeeper`; the role will
 keep the already existing configuration without any changes if the variables
 are not overwritten through the Ansible inventory. Any changes in the
-:file:`/etc/`` directory will be automatically committed by Ansible local facts
+:file:`/etc/` directory will be automatically committed by Ansible local facts
 before Ansible role execution.
 
 
 Example inventory
 -----------------
 
-The ``debops.etckeeper`` role is part of the default DebOps playbook an run on
+The ``debops.etckeeper`` role is part of the default DebOps playbook and run on
 all hosts which are part of the ``[debops_all_hosts]`` group. To use this role
 with DebOps it's therefore enough to add your host to the mentioned host group
 (which most likely it is already):

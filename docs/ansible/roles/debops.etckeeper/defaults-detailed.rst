@@ -18,7 +18,7 @@ etckeeper__gitignore
 
 The ``etckeeper__*_gitignore`` variables configure the contents of a section in
 the :file:`/etc/.gitignore` file managed by the ``debops.etckeeper`` role. This
-file specifies what paths (directories, files) should be ignored by
+file specifies which paths (directories, files) should be ignored by
 :program:`etckeeper` and :program:`git`. You can check the :man:`gitignore(5)`
 manual page for the allowed syntax.
 
