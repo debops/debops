@@ -29,6 +29,9 @@ Changed
   the ``sudo-ldap`` APT package to ensure that access to the ``root`` account
   is available.
 
+- [debops.dovecot] Expose the configuration of the Sieve directory and
+  configuration file via role default variables.
+
 Fixed
 ~~~~~
 
