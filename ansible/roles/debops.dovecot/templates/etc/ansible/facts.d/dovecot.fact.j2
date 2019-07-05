@@ -1,0 +1,26 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import load, loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+output = {'installed': True}
+
+try:
+    with open(os.devnull, 'w') as devnull:
+        dovecot_version = subprocess.check_output(
+	    ["dovecot --version 2>&1 | sed -e 's/\s.*//'"],
+            shell=True, stderr=devnull)
+
+except subprocess.CalledProcessError:
+    pass
+
+if dovecot_version:
+    output['version'] = dovecot_version.split('\n')[0]
+
+print(dumps(output, sort_keys=True, indent=2))
