@@ -1,19 +1,11 @@
 ---
-- name: Get full PKI paths
-  set_fact:
-    docker__register_ca_path: '{{ docker__pki_path + "/" + docker__pki_realm
-                                  + "/" + docker__pki_ca }}'
-    docker__register_crt_path: '{{ docker__pki_path + "/" + docker__pki_realm
-                                   + "/" + docker__pki_crt }}'
-    docker__register_key_path: '{{ docker__pki_path + "/" + docker__pki_realm
-                                   + "/" + docker__pki_key }}'
 
 - name: Manage Docker networks
   docker_network:
     api_version:    '{{ item.api_version    |d(docker__api_version) }}'
     appends:        '{{ item.appends        |d(omit) }}'
-    cacert_path:    '{{ item.cacert_path    |d(docker__register_ca_path) }}'
-    cert_path:      '{{ item.cert_path      |d(docker__register_crt_path) }}'
+    cacert_path:    '{{ item.cacert_path    |d(docker__pki_ca_path) }}'
+    cert_path:      '{{ item.cert_path      |d(docker__pki_crt_path) }}'
     connected:      '{{ item.connected      |d(omit) }}'
     debug:          '{{ item.debug          |d(docker__debug) }}'
     docker_host:    '{{ item.docker_host    |d(docker__docker_host) }}'
@@ -22,7 +14,7 @@
     force:          '{{ item.force          |d(omit) }}'
     ipam_driver:    '{{ item.ipam_driver    |d(omit) }}'
     ipam_options:   '{{ item.ipam_options   |d(omit) }}'
-    key_path:       '{{ item.key_path       |d(docker__register_key_path) }}'
+    key_path:       '{{ item.key_path       |d(docker__pki_key_path) }}'
     name:           '{{ item.name }}'
     ssl_version:    '{{ item.ssl_version    |d(docker__ssl_version) }}'
     state:          '{{ item.state          |d(omit) }}'
@@ -35,13 +27,13 @@
 - name: Authenticate to Docker registries
   docker_login:
     api_version:  '{{ item.api_version  |d(docker__api_version) }}'
-    cacert_path:  '{{ item.cacert_path  |d(docker__register_ca_path) }}'
-    cert_path:    '{{ item.cert_path    |d(docker__register_crt_path) }}'
+    cacert_path:  '{{ item.cacert_path  |d(docker__pki_ca_path) }}'
+    cert_path:    '{{ item.cert_path    |d(docker__pki_crt_path) }}'
     config_path:  '{{ item.config_path  |d(omit) }}'
     debug:        '{{ item.debug        |d(docker__debug) }}'
     docker_host:  '{{ item.docker_host  |d(docker__docker_host) }}'
     email:        '{{ item.email        |d(omit) }}'
-    key_path:     '{{ item.key_path     |d(docker__register_key_path) }}'
+    key_path:     '{{ item.key_path     |d(docker__pki_key_path) }}'
     password:     '{{ item.password }}'
     reauthorize:  '{{ item.reauthorize  |d(omit) }}'
     registry_url: '{{ item.registry_url |d(omit) }}'
@@ -60,10 +52,10 @@
     api_version:         '{{ item.api_version         |d(docker__api_version) }}'
     auto_remove:         '{{ item.auto_remove         |d(docker__auto_remove) }}'
     blkio_weight:        '{{ item.blkio_weight        |d(omit) }}'
-    cacert_path:         '{{ item.cacert_path         |d(docker__register_ca_path) }}'
+    cacert_path:         '{{ item.cacert_path         |d(docker__pki_ca_path) }}'
     cap_drop:            '{{ item.cap_drop            |d(omit) }}'
     capabilities:        '{{ item.capabilities        |d(omit) }}'
-    cert_path:           '{{ item.cert_path           |d(docker__register_crt_path) }}'
+    cert_path:           '{{ item.cert_path           |d(docker__pki_crt_path) }}'
     cleanup:             '{{ item.cleanup             |d(omit) }}'
     command:             '{{ item.command             |d(omit) }}'
     cpu_period:          '{{ item.cpu_period          |d(omit) }}'
@@ -94,7 +86,7 @@
     ipc_mode:            '{{ item.ipc_mode            |d(omit) }}'
     keep_volumes:        '{{ item.keep_volumes        |d(omit) }}'
     kernel_memory:       '{{ item.kernel_memory       |d(omit) }}'
-    key_path:            '{{ item.key_path            |d(docker__register_key_path) }}'
+    key_path:            '{{ item.key_path            |d(docker__pki_key_path) }}'
     kill_signal:         '{{ item.kill_signal         |d(omit) }}'
     labels:              '{{ item.labels              |d(omit) }}'
     links:               '{{ item.links               |d(omit) }}'

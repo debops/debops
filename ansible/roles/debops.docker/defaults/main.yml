@@ -1,8 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# debops.docker_client default variables
-# ======================================
+# debops.docker default variables
+# ===============================
 
 # .. contents:: Sections
 #    :local:
@@ -11,7 +11,7 @@
 
 
 # APT packages [[[
-# ------------------------------
+# ----------------
 
 # .. envvar:: docker__distribution [[[
 #
@@ -98,7 +98,7 @@ docker__packages: []
                                                                    # ]]]
                                                                    # ]]]
 # Docker host connection [[[
-# -----------------------------
+# --------------------------
 
 # .. envvar:: docker__docker_host [[[
 #
@@ -165,25 +165,22 @@ docker__pki_realm: '{{ ansible_local.pki.realm
                        else "domain" }}'
 
                                                                    # ]]]
-# .. envvar:: docker__pki_ca [[[
+# .. envvar:: docker__pki_ca_path [[[
 #
-# Default root CA certificate used by the Docker client, relative to
-# :envvar:`docker__pki_realm`.
-docker__pki_ca: 'CA.crt'
+# Absolute path to the root CA certificate used by the Docker client.
+docker__pki_ca_path: '{{ docker__pki_path + "/" + docker__pki_realm + "/CA.crt" }}'
 
                                                                    # ]]]
-# .. envvar:: docker__pki_crt [[[
+# .. envvar:: docker__pki_crt_path [[[
 #
-# Default certificate used by the Docker client, relative to
-# :envvar:`docker__pki_realm`.
-docker__pki_crt: 'default.crt'
+# Absolute path to the certificate used by the Docker client.
+docker__pki_crt_path: '{{ docker__pki_path + "/" + docker__pki_realm + "/default.crt" }}'
 
                                                                    # ]]]
-# .. envvar:: docker__pki_key [[[
+# .. envvar:: docker__pki_key_path [[[
 #
-# Default private key used by the Docker client, relative to
-# :envvar:`docker__pki_realm`.
-docker__pki_key: 'default.key'
+# Absolute path to the private key used by the Docker client.
+docker__pki_key_path: '{{ docker__pki_path + "/" + docker__pki_realm + "/default.key" }}'
 
                                                                    # ]]]
 # .. envvar:: docker__tls_verify [[[
@@ -240,11 +237,14 @@ docker__pull: False
 # - on-failure
 # - always
 # - unless-stopped
-docker__restart_policy: 'no'
+docker__restart_policy: 'unless-stopped'
                                                                    # ]]]
                                                                    # ]]]
-# Docker components [[[
+# Docker containers [[[
 # ---------------------
+
+# These variables define containers to manage on the Docker host. See
+# :ref:`docker__ref_containers` for more details.
 
 # .. envvar:: docker__containers [[[
 #
@@ -272,8 +272,14 @@ docker__host_containers: []
 docker__combined_containers: '{{ docker__containers
                                  + docker__group_containers
                                  + docker__host_containers }}'
-
                                                                    # ]]]
+                                                                   # ]]]
+# Docker networks [[[
+# -------------------
+
+# These variables define networks to manage on the Docker host. See
+# :ref:`docker__ref_networks` for more details.
+
 # .. envvar:: docker__networks [[[
 #
 # List of networks to manage on all hosts in Ansible inventory.
@@ -299,8 +305,14 @@ docker__host_networks: []
 docker__combined_networks: '{{ docker__networks
                                + docker__group_networks
                                + docker__host_networks }}'
-
                                                                    # ]]]
+                                                                   # ]]]
+# Docker registry accounts [[[
+# ----------------------------
+
+# These variables define registry accounts to manage on the Docker host. See
+# :ref:`docker__ref_registry_accounts` for more details.
+
 # .. envvar:: docker__registry_accounts [[[
 #
 # List of registry accounts to manage on all hosts in Ansible inventory.
