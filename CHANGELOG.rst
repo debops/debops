@@ -96,10 +96,10 @@ Changed
 
 - [debops.lxc] New LXC containers will have the ``CAP_SYS_TIME`` POSIX
   capability dropped by default to ensure that time configuration is disabled
-  inside of the container. This should fix an issue on Debian Buster where an
+  inside of the container. This should fix an issue on Debian Buster where
   unprivileged LXC containers still have this capability enabled.
 
-  On Debian Buster LXC hosts, the ``CAP_SYS_ADMIN`` POSIX capbility will be
+  On Debian Buster LXC hosts, the ``CAP_SYS_ADMIN`` POSIX capability will be
   dropped in new LXC containers by default.
 
 - [debops.lxc] On Debian Buster (specifically on LXC versions below 3.1.0) the
@@ -122,7 +122,7 @@ Removed
 
 - [debops.lxc] The :command:`lxc-prepare-ssh` script will no longer install SSH
   keys from the LXC host ``root`` account on the LXC container ``root``
-  account. This can cause confusion and unintended security breach when other
+  account. This can cause confusion and unintended security breaches when other
   services (for example backup scripts or remote command execution tools)
   install their own SSH keys on the LXC host and they are subsequently
   copied inside of the LXC containers created on that host.
