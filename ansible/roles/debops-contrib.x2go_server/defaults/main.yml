@@ -41,18 +41,12 @@ x2go_server__deploy_state: 'present'
 # --------------------
 #
 
-# .. envvar:: x2go_server__apt_repo_key_fingerprint_map [[[
+# .. envvar:: x2go_server__apt_repo_key_fingerprint [[[
 #
 # APT PGP key fingerprint used to sign the upstream X2Go repository and it’s
 # packages per distributions corresponding to ``ansible_distribution``.
-# Use ``{{ omit }}`` to omit the key fingerprint fetch all together. For
-# example, using PPAs does automatically fetch the correct PGP public key
-# somehow.
 # Refer to the `official X2Go documentation <http://wiki.x2go.org/doku.php/wiki:repositories:debian>`__ for details.
-x2go_server__apt_repo_key_fingerprint_map:
-  'Ubuntu': '{{ omit }}'
-  'Linuxmint': '{{ omit }}'
-  'default': '972FD88FA0BAFB578D0476DFE1F958385BFE2B6E'
+x2go_server__apt_repo_key_fingerprint: '972FD88FA0BAFB578D0476DFE1F958385BFE2B6E'
 
                                                                    # ]]]
 # .. envvar:: x2go_server__upstream_release_channel [[[
@@ -90,6 +84,20 @@ x2go_server__upstream_repository_map:
 # in PPAs.
 x2go_server__ppa_release_channel_map:
   'main': 'stable'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: x2go_server__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+x2go_server__keyring__dependent_apt_keys:
+
+  - id: '{{ x2go_server__apt_repo_key_fingerprint }}'
+    repo: '{{ x2go_server__upstream_repository_map[ansible_distribution]
+              | d(x2go_server__upstream_repository_map["default"]) }}'
+    state: '{{ "present" if (x2go_server__deploy_state == "present") else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

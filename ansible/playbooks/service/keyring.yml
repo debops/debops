@@ -1,0 +1,14 @@
+---
+
+- name: Manage APT and GPG keyrings
+  hosts: [ 'debops_all_hosts', 'debops_service_keyring' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring' ]

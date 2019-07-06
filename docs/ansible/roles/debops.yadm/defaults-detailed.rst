@@ -93,6 +93,12 @@ specific parameters:
   ``id``
     The GPG key fingerprint.
 
+  ``keybase``
+    Optional. The name of the `Keybase`__ profile which should be used to
+    lookup the GPG key.
+
+    .. __: https://keybase.io/
+
   ``state``
     Optional, either ``present`` (import the GPG key) or ``absent`` (remove the
     GPG key from the keyring).
@@ -100,6 +106,9 @@ specific parameters:
   The specified GPG keys will be added to the ``root`` GPG keyring in the
   :file:`~/.gnupg/pubring.gpg` file and subsequently used to verify commits in
   cloned or updated :command:`git` repositories.
+
+  The GPG keys are managed via the :ref:`debops.keyring` Ansible role, see its
+  documentation for more details.
 
 ``git``
   Optional. A string containing an URL to the :command:`git` repository with

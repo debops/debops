@@ -1,48 +1,6 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-- name: Ensure the application source directory exists
-  file:
-    dest: '{{ owncloud__src_remote_dir }}/keyring'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: (owncloud__variant in ["owncloud"])
-
-- name: Copy the application keyring to the remote host
-  copy:
-    src: 'usr/local/src/owncloud/keyring/0x47AE7F72479BC94B'
-    dest: '{{ owncloud__src_remote_dir }}/keyring/0x47AE7F72479BC94B'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  when: (owncloud__variant in ["owncloud"])
-
-- name: Add ownCloud APT OpenPGP public key
-  apt_key:
-    ## OpenPGP keys are still tracked in this repository as fallback.
-    ## https://github.com/debops/ansible-owncloud/pull/44#discussion_r73565798
-    file: '{{ owncloud__src_remote_dir }}/keyring/0x47AE7F72479BC94B'
-    # url: '{{ owncloud__apt_repo_key_url }}'
-    id: '{{ owncloud__apt_repo_key_id }}'
-    # Usage of keyserver vulnerable, use file for now.
-    # Refer to: https://github.com/ansible/ansible-modules-core/issues/5237
-    # keyserver: '{{ ansible_local.core.keyserver
-    #                if (ansible_local|d() and ansible_local.core|d() and
-    #                    ansible_local.core.keyserver|d())
-    #                else "hkp://pool.sks-keyservers.net" }}'
-    state: 'present'
-  register: owncloud__register_apt_key
-  until: owncloud__register_apt_key is succeeded
-  when: (owncloud__variant in ["owncloud"])
-
-- name: Ensure old APT OpenPGP public key are absent
-  apt_key:
-    id: '{{ item }}'
-    state: 'absent'
-  with_flattened: '{{ owncloud__old_apt_repo_keys }}'
-
 - name: Configure ownCloud APT repository
   template:
     src: 'etc/apt/sources.list.d/debops_owncloud.list.j2'
@@ -58,7 +16,7 @@
     update_cache: True
   register: owncloud__register_apt_cache
   until: owncloud__register_apt_cache is succeeded
-  when: owncloud__register_apt_key is changed or owncloud__register_apt_repository is changed
+  when: owncloud__register_apt_repository is changed
 
   ## Use filename when available (2.1.0) https://github.com/ansible/ansible-modules-core/pull/2696
   ## To avoid multiple of those source files.

@@ -297,4 +297,21 @@ hashicorp__consul_webui_path: '{{ (ansible_local.nginx.www
                                    else "/srv/www") + "/consul/sites/public" }}'
                                                                    # ]]]
                                                                    # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: hashicorp__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+hashicorp__keyring__dependent_gpg_keys:
+
+  - user: '{{ hashicorp__user }}'
+    group: '{{ hashicorp__group }}'
+    home: '{{ hashicorp__home }}'
+    id: '{{ hashicorp__gpg_key_id }}'
+    state: '{{ "present"
+               if (hashicorp__applications or hashicorp__dependent_applications)
+               else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
                                                                    # ]]]

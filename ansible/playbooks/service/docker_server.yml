@@ -10,6 +10,11 @@
 
   roles:
 
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::docker_server' ]
+      keyring__dependent_apt_keys:
+        - '{{ docker_server__keyring__dependent_apt_keys }}'
+
     - role: debops.etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:

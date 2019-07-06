@@ -284,6 +284,20 @@ nodejs__apt_preferences__dependent_list:
     by_role: 'debops_nodejs'
     filename: 'debops_nodejs.pref'
     state: '{{ "absent" if nodejs__upstream|bool else "present" }}'
+
+                                                                   # ]]]
+# .. envvar:: nodejs__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+nodejs__keyring__dependent_apt_keys:
+
+  - id: '{{ nodejs__upstream_key_id }}'
+    repo: '{{ nodejs__upstream_repository }}'
+    state: '{{ "present" if nodejs__upstream|bool else "absent" }}'
+
+  - id: '{{ nodejs__yarn_upstream_key_id }}'
+    repo: '{{ nodejs__yarn_upstream_repository }}'
+    state: '{{ "present" if nodejs__yarn_upstream|bool else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

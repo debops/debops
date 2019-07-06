@@ -10,6 +10,11 @@
 
   roles:
 
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::nginx' ]
+      keyring__dependent_apt_keys:
+        - '{{ nginx__keyring__dependent_apt_keys }}'
+
     - role: debops.rabbitmq_server/env
       tags: [ 'role::rabbitmq_server', 'role::secret', 'role::rabbitmq_server:config' ]
       when: rabbitmq_management__local|bool

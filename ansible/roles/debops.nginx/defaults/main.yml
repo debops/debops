@@ -1165,6 +1165,19 @@ nginx_ssl_ciphers:
 # Configuration for other Ansible roles [[[
 # ----------------------------------------
 
+# .. envvar:: nginx__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.nginx` Ansible role.
+nginx__keyring__dependent_apt_keys:
+
+  - id: '{{ nginx__flavor_apt_key_id }}'
+    repo: '{{ nginx__flavor_apt_repository }}'
+    state: '{{ "present"
+               if (nginx_flavor in [ "nginx.org", "passenger" ] and
+                   nginx__deploy_state == "present")
+               else "absent" }}'
+
+                                                                   # ]]]
 # .. envvar:: nginx__python__dependent_packages3 [[[
 #
 # Configuration for the :ref:`debops.python` Ansible role.

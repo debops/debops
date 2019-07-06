@@ -212,5 +212,21 @@ yadm__apt_preferences__dependent_list:
     backports: [ 'stretch' ]
     reason:  'Version parity with Debian Buster'
     by_role: 'debops.yadm'
+
+                                                                   # ]]]
+# .. envvar:: yadm__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+yadm__keyring__dependent_gpg_keys:
+
+  - id: '{{ yadm__upstream_gpg_id }}'
+    state: '{{ "present" if yadm__upstream_enabled|bool else "absent" }}'
+
+  # Extract a list of GPG keys from the dotfile configuration; they will be
+  # added to the 'root' GPG keyring.
+  - '{{ (yadm__combined_dotfiles | parse_kv_items
+         | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
+         | map(attribute="gpg") | list)
+        if yadm__dotfiles_enabled|bool else [] }}'
                                                                    # ]]]
                                                                    # ]]]

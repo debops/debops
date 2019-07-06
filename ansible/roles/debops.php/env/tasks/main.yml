@@ -1,31 +1,6 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Ondřej Surý APT repositories [[[
-
-- name: Manage Ondrej Sury APT keys
-  apt_key:
-    id: '{{ (item.id | d(item)) | replace(" ","") }}'
-    state: '{{ item.state | d("present") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-  loop: '{{ php__sury_apt_key_id }}'
-  register: php__register_apt_key
-  until: php__register_apt_key is succeeded
-  when: php__sury|bool
-
-- name: Add Ondrej Sury repository
-  apt_repository:
-    repo: '{{ php__sury_apt_repo }}'
-    state: 'present'
-    update_cache: True
-  when: php__sury|bool
-
-                                                                   # ]]]
-# PHP version and Ansible variables [[[
-
 - name: Reset PHP Ansible local facts
   file:
     path: '/etc/ansible/facts.d/php.fact'
@@ -95,5 +70,3 @@
                                  if (php__version is version_compare("7.0", ">=") or php__sury|bool)
                                  else "/usr/lib/php5" }}'
   tags: [ 'role::php:pools', 'role::php:config' ]
-
-                                                                   # ]]]

@@ -55,6 +55,8 @@ php__sury_apt_repo: '{{ php__sury_apt_repo_map[ansible_distribution] }}'
 php__sury_apt_key_id_map:
   'Debian':
     - id: '1505 8500 A023 5D97 F5D1  0063 B188 E2B6 95BD 4743'
+      repo: 'deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main'
+      state: '{{ "present" if php__sury|bool else "absent" }}'
 
     # Key replaced due to security concerns
     # Ref: https://www.patreon.com/posts/dpa-new-signing-25451165
@@ -63,6 +65,8 @@ php__sury_apt_key_id_map:
 
   'Ubuntu':
     - id: '14AA 40EC 0831 7567 56D7  F66C 4F4E A0AA E526 7A6C'
+      repo: 'ppa:ondrej/php'
+      state: '{{ "present" if php__sury|bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_repo_map [[[
@@ -748,6 +752,14 @@ php__apt_preferences__dependent_list:
     role: 'debops.php'
     suffix: '_packages_sury_org'
     state: '{{ "present" if php__sury|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: php__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+php__keyring__dependent_apt_keys:
+
+  - '{{ php__sury_apt_key_id }}'
 
                                                                    # ]]]
 # .. envvar:: php__logrotate__dependent_config [[[

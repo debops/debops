@@ -105,11 +105,31 @@ mariadb__apt_key: '{{ mariadb__apt_key_map[mariadb__flavor] | d() }}'
 # different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
 # downloaded if any of the listed flavors is selected.
 mariadb__apt_key_map:
-  'mariadb_upstream':   [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
-  'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
-  'mysql-5.7_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
-  'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
-  'percona-5.7':        '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+
+  'mariadb': []
+
+  'mariadb_upstream':
+    - id: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+    - id: '177F4010FE56CA3336300305F1656F24C74CD1D8'
+    - repo: 'deb {{ mariadb__upstream_mirror }} {{ ansible_distribution_release }} main'
+
+  'mysql-5.6_galera-3':
+    - id: '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+    - repo: 'deb http://releases.galeracluster.com/mysql-wsrep-5.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+    - repo: 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+
+  'mysql-5.7_galera-3':
+    - id: '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+    - repo: 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+    - repo: 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+
+  'percona':
+    - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+      repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+
+  'percona-5.7':
+    - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+      repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb__upstream_version [[[
@@ -122,19 +142,6 @@ mariadb__upstream_version: '10.1'
 #
 # URL of the MariaDB upstream mirror.
 mariadb__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb__upstream_version }}/{{ ansible_distribution | lower }}'
-
-                                                                   # ]]]
-# .. envvar:: mariadb__apt_repository_map [[[
-#
-# A YAML dictionary map which keeps APT repository configuration of different
-# MariaDB/MySQL/Percona APT repositories. These repositories will be configured
-# if any of the listed flavors is selected.
-mariadb__apt_repository_map:
-  'mariadb_upstream':   'deb {{ mariadb__upstream_mirror }} {{ ansible_distribution_release }} main'
-  'mysql-5.6_galera-3': 'deb http://releases.galeracluster.com/mysql-wsrep-5.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-  'mysql-5.7_galera-3': 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-  'percona':            'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
-  'percona-5.7':        'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb__base_packages [[[
@@ -375,6 +382,14 @@ mariadb__dependent_users: []
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
 
+# .. envvar:: mariadb__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+mariadb__keyring__dependent_apt_keys:
+
+  - '{{ mariadb__apt_key }}'
+
+                                                                   # ]]]
 # .. envvar:: mariadb__python__dependent_packages3 [[[
 #
 # Configuration for the :ref:`debops.python` Ansible role.
