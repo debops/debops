@@ -10,6 +10,11 @@
 
   roles:
 
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::php' ]
+      keyring__dependent_apt_keys:
+        - '{{ php__keyring__dependent_apt_keys }}'
+
     - role: debops.php/env
       tags: [ 'role::php', 'role::logrotate' ]
 

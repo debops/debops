@@ -24,6 +24,7 @@ List of modified DebOps roles:
 
 - :ref:`debops.ansible`
 - :ref:`debops.cran`
+- :ref:`debops.php'
 - :ref:`debops.salt`
 - :ref:`debops.yadm`
 
