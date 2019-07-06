@@ -644,6 +644,28 @@ elasticsearch__etc_services__dependent_list:
     port: '{{ elasticsearch__transport_tcp_port }}'
 
                                                                    # ]]]
+# .. envvar:: elasticsearch__sysctl__dependent_parameters [[[
+#
+# Configuration for the :ref:`debops.sysctl` Ansible role.
+elasticsearch__sysctl__dependent_parameters:
+
+  - name: 'elasticsearch'
+    weight: 80
+    options:
+
+        # This parameter is set by default by the Elasticsearch .deb package,
+        # but this breaks 'sysctl' usage in containers. The original file will
+        # be diverted, and the role will configure the relevant setting for us,
+        # automatically commenting it out inside of a container.
+      - name: 'vm.max_map_count'
+        comment: |
+          Elasticsearch uses a mmapfs directory by default to store its
+          indices. The default operating system limits on mmap counts is likely
+          to be too low, which may result in out of memory exceptions.
+          Ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
+        value: 262144
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__elastic_co__dependent_packages [[[
 #
 # Configuration for the :ref:`debops.elastic_co` Ansible role.

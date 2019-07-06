@@ -42,6 +42,11 @@ Fixed
   package even if the ``root`` password is not set (required for installing the
   ``sudo-ldap`` APT package).
 
+- [debops.elasticsearch] Divert the sysctl configuration file that comes with
+  the Elasticsearch .deb package to fix use of the :command:`sysctl --system`
+  command inside containers. The configuration will be applied by the
+  :ref:`debops.sysctl` role instead.
+
 
 `debops v1.0.4`_ - 2019-06-25
 -----------------------------
