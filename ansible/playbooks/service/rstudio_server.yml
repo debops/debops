@@ -12,9 +12,11 @@
 
     - role: debops.keyring
       tags: [ 'role::keyring', 'skip::keyring',
-              'role::cran' ]
+              'role::cran', 'role::rstudio_server' ]
       keyring__dependent_apt_keys:
         - '{{ cran__keyring__dependent_apt_keys | d([]) }}'
+      keyring__dependent_gpg_keys:
+        - '{{ rstudio_server__keyring__dependent_gpg_keys | d([]) }}'
 
     - role: debops.etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
