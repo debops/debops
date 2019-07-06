@@ -61,25 +61,6 @@
   register: gitlab_runner__register_apt_https
   until: gitlab_runner__register_apt_https is succeeded
 
-- name: Add gitlab-runner APT key
-  apt_key:
-    id: '{{ gitlab_runner__apt_key }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-    state: 'present'
-  register: gitlab_runner__register_apt_key
-  until: gitlab_runner__register_apt_key is succeeded
-  when: gitlab_runner__apt_upstream|bool
-
-- name: Configure gitlab-runner APT repository
-  apt_repository:
-    repo: '{{ gitlab_runner__apt_repo }}'
-    state: 'present'
-    update_cache: True
-  when: gitlab_runner__apt_upstream|bool
-
 - name: Install gitlab-runner packages
   apt:
     name: "{{ query('flattened', ['{{ gitlab_runner__base_packages }}',

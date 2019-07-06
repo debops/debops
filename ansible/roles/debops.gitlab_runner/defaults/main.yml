@@ -680,4 +680,17 @@ gitlab_runner__cache_shared: False
 gitlab_runner__run_untagged: True
                                                                    # ]]]
                                                                    # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: gitlab_runner__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+gitlab_runner__keyring__dependent_apt_keys:
+
+  - id: '{{ gitlab_runner__apt_key }}'
+    repo: '{{ gitlab_runner__apt_repo }}'
+    state: '{{ "present" if gitlab_runner__apt_upstream|bool else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
                                                                    # ]]]
