@@ -121,9 +121,10 @@
                                  ((item.id | d(item)) | replace(" ","")) in keyring__fact_local_keys)
                              else omit) }}'
   become: True
-  become_user: '{{ item.user | d(keyring__dependent_gpg_user if keyring__dependent_gpg_user|d() else omit) }}'
+  become_user: '{{ item.user | d(keyring__dependent_gpg_user if keyring__dependent_gpg_user|d() else "root") }}'
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
   register: keyring__register_gpg_key
+  until: keyring__register_gpg_key.rc == 0
   when: keyring__enabled|bool and (item.id|d() or item is string)
   changed_when: '("Adding key..." in keyring__register_gpg_key.stdout_lines) or
                  ("Removing key..." in keyring__register_gpg_key.stdout_lines)'
