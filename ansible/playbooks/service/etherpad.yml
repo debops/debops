@@ -12,10 +12,11 @@
 
     - role: debops.keyring
       tags: [ 'role::keyring', 'skip::keyring',
-              'role::nodejs', 'role::mariadb' ]
+              'role::nodejs', 'role::mariadb', 'role::postgresql' ]
       keyring__dependent_apt_keys:
         - '{{ nodejs__keyring__dependent_apt_keys }}'
         - '{{ mariadb__keyring__dependent_apt_keys if (etherpad__database == "mysql") else [] }}'
+        - '{{ postgresql__keyring__dependent_apt_keys if (etherpad__database == "postgresql") else [] }}'
 
     - role: debops.etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]

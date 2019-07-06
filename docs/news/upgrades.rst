@@ -31,6 +31,7 @@ List of modified DebOps roles:
 - :ref:`debops.mosquitto`
 - :ref:`debops.nodejs`
 - :ref:`debops.php`
+- :ref:`debops.postgresql`
 - :ref:`debops.postgresql_server`
 - :ref:`debops.rstudio_server`
 - :ref:`debops.salt`
