@@ -28,10 +28,10 @@ hwraid_release: '{{ ansible_distribution_release }}'
 hwraid_blacklist: []
 
                                                                    # ]]]
-# .. envvar:: hwraid_repository_key_url [[[
+# .. envvar:: hwraid_repository_apt_key_id [[[
 #
 # HWRaid repository GPG key
-hwraid_repository_key_url: 'https://hwraid.le-vert.net/debian/hwraid.le-vert.net.gpg.key'
+hwraid_repository_apt_key_id: '0073 C119 19A6 4146 4163  F711 6005 210E 23B3 D3B4'
 
                                                                    # ]]]
 # .. envvar:: hwraid_distribution_releases [[[
@@ -95,5 +95,16 @@ hwraid_device_database:
   - module:   'cciss'
     packages: [ 'cciss-vol-status' ]
     daemons: [ 'cciss-vol-statusd' ]
+
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: hwraid__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+hwraid__keyring__dependent_apt_keys:
+
+  - id: '{{ hwraid_repository_apt_key_id }}'
 
                                                                    # ]]]

@@ -1,12 +1,5 @@
 ---
 
-- name: Configure HWRaid APT repository key
-  apt_key:
-    url: '{{ hwraid_repository_key_url }}'
-    state: 'present'
-  register: hwraid__register_apt_key
-  until: hwraid__register_apt_key is succeeded
-
 - name: Select supported release for current distribution
   set_fact:
     hwraid_register_release: '{{ hwraid_release }}'
