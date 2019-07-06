@@ -28,6 +28,7 @@ List of modified DebOps roles:
 - :ref:`debops.hashicorp`
 - :ref:`debops.mariadb_server`
 - :ref:`debops.mosquitto`
+- :ref:`debops.nodejs`
 - :ref:`debops.php`
 - :ref:`debops.postgresql_server`
 - :ref:`debops.rstudio_server`
