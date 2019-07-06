@@ -1,25 +1,5 @@
 ---
 
-- name: Get upstream APT GPG key
-  apt_key:
-    id: '{{ docker_server__upstream_key }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-    state: 'present'
-  register: docker_server__register_apt_key
-  until: docker_server__register_apt_key is succeeded
-  when: docker_server__upstream|d() | bool
-
-- name: Configure upstream APT repository
-  apt_repository:
-    repo: '{{ docker_server__upstream_repository }}'
-    mode: '0644'
-    state: 'present'
-    update_cache: True
-  when: docker_server__upstream|d() | bool
-
 - name: Make sure that docker.service.d override directory exists
   file:
     path: '/etc/systemd/system/docker.service.d'

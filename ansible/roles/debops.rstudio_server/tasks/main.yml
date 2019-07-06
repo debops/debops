@@ -27,28 +27,6 @@
     system: True
     state: 'present'
 
-- name: Ensure that the ~/.gnupg directory exists
-  file:
-    path: '{{ rstudio_server__home + "/.gnupg" }}'
-    state: 'directory'
-    owner: '{{ rstudio_server__user }}'
-    group: '{{ rstudio_server__group }}'
-    mode: '0700'
-
-- name: Import Rstudio package signing key
-  apt_key:
-    keyring: '{{ rstudio_server__home + "/.gnupg/pubring.gpg" }}'
-    id: '{{ rstudio_server__signing_key_id | replace(" ","") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
-    state: 'present'
-  become: True
-  become_user: '{{ rstudio_server__user }}'
-  register: rstudio_server__register_signing_key
-  until: rstudio_server__register_signing_key is succeeded
-
 - name: Get the current user accounts
   getent:
     database: 'passwd'

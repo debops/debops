@@ -17,30 +17,6 @@
   failed_when: False
   check_mode: False
 
-- name: Add custom APT GPG key
-  apt_key:
-    state: 'present'
-    id: '{{ item }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
-  with_flattened: '{{ ([ mariadb__apt_key ]
-                       if mariadb__apt_key is string
-                       else mariadb__apt_key) }}'
-  register: mariadb__register_apt_key
-  until: mariadb__register_apt_key is succeeded
-  when: (mariadb__flavor not in [ 'mariadb', 'mysql' ]) and
-        mariadb__apt_key
-
-- name: Add custom APT repository
-  apt_repository:
-    repo: '{{ mariadb__apt_repository_map[mariadb__flavor] }}'
-    state: 'present'
-    update_cache: True
-    mode: '0644'
-  when: mariadb__flavor in mariadb__apt_repository_map.keys()
-
 - name: Check if local database port is open
   command: nc -z localhost {{ mariadb__port }}
   register: mariadb__register_tunnel

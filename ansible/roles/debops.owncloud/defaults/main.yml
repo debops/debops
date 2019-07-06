@@ -1756,6 +1756,37 @@ owncloud__apt_preferences__dependent_list_optional:
                else "absent" }}'
 
 
+# .. envvar:: owncloud__keyring__dependent_apt_keys [[[
+#
+# APT key configuration for the :ref:`debops.keyring` Ansible role.
+owncloud__keyring__dependent_apt_keys:
+
+  - id: '{{ owncloud__apt_repo_key_id }}'
+    state: '{{ "present" if (owncloud__variant in ["owncloud"]) else "absent" }}'
+
+    # Old or unused OpenPGP public keys specified by fingerprint which where
+    # previously used to sign the APT repository.
+    # The keys listed here are ensured to be absent to reduce the risk if one of
+    # the keys gets compromised.
+  - id: 'F9EA4996747310AE79474F44977C43A8BA684223'
+    state: 'absent'
+
+  - id: 'BCECA90325B072AB1245F739AB7C32C35180350A'
+    state: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__keyring__dependent_gpg_keys [[[
+#
+# GPG key configuration for the :ref:`debops.keyring` Ansible role.
+owncloud__keyring__dependent_gpg_keys:
+
+  - user: '{{ owncloud__system_user }}'
+    group: '{{ owncloud__system_group }}'
+    home: '{{ owncloud__system_home }}'
+    id: '{{ owncloud__upstream_key_fingerprint }}'
+    state: '{{ "present" if (owncloud__variant in ["nextcloud"]) else "absent" }}'
+
+                                                                   # ]]]
 # .. envvar:: owncloud__mariadb__dependent_databases [[[
 #
 # Configuration of the database managed by the :ref:`debops.mariadb` role.

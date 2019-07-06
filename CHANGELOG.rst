@@ -21,6 +21,17 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+- New DebOps roles:
+
+  - :ref:`debops.keyring` role is designed to be used by other Ansible roles to
+    manage the GPG keys, either in the APT keyring or the GPG keyrings of
+    specific UNIX accounts. It replaces and centralizes the use of the
+    ``apt_key`` and the ``apt_repository`` Ansible modules in separate roles
+    and provides additional functionality, like GPG key lookup in a local key
+    store on the Ansible Controller, or the `Keybase`__ service.
+
+    .. __: https://keybase.io/
+
 - [debops.slapd] The role can now control on which ports and services OpenLDAP
   listens for connections. The ``ldaps:///`` service is enabled by default when
   support for the :ref:`debops.pki` role is enabled on the OpenLDAP host.
@@ -117,6 +128,11 @@ Changed
   variables instead of the file-based templates and can be easily modified via
   the Ansible inventory.
 
+- Various DebOps roles have been modified to use the :ref:`debops.keyring`
+  Ansible role to manage the APT repository keys, or GPG keys on UNIX accounts.
+  If you are using them in custom playbooks, you might need to update them to
+  include the new dependency.
+
 Removed
 ~~~~~~~
 
@@ -126,6 +142,10 @@ Removed
   services (for example backup scripts or remote command execution tools)
   install their own SSH keys on the LXC host and they are subsequently
   copied inside of the LXC containers created on that host.
+
+- [debops.core] The ``core__keyserver`` variable and its local fact have been
+  removed from the role. They are replaced by the :envvar:`keyring__keyserver`
+  and the corresponding local fact in the :ref:`debops.keyring` role.
 
 
 `debops v1.0.0`_ - 2019-05-22

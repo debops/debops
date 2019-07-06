@@ -20,5 +20,10 @@
       ferm__dependent_rules:
         - '{{ bitcoind__ferm__dependent_rules }}'
 
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::bitcoind' ]
+      keyring__dependent_apt_keys:
+        - '{{ bitcoind__keyring__dependent_apt_keys }}'
+
     - role: debops-contrib.bitcoind
       tags: [ 'role::bitcoind' ]

@@ -18,32 +18,6 @@
   changed_when: False
   failed_when: False
 
-- name: Add custom APT GPG key
-  apt_key:
-    state: 'present'
-    id: '{{ item }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver|d())
-                   else "hkp://pool.sks-keyservers.net" }}'
-  with_flattened: '{{ ([ mariadb_server__apt_key ]
-                       if mariadb_server__apt_key is string
-                       else mariadb_server__apt_key) }}'
-  register: mariadb_server__register_apt_key
-  until: mariadb_server__register_apt_key is succeeded
-  when: mariadb_server__flavor in mariadb_server__apt_key_map.keys()
-
-- name: Add custom APT repository
-  apt_repository:
-    repo: '{{ item }}'
-    state: 'present'
-    update_cache: True
-    mode: '0644'
-  when: mariadb_server__flavor in mariadb_server__apt_repository_map.keys()
-  with_flattened: '{{ ([ mariadb_server__apt_repository_map[mariadb_server__flavor] ]
-                       if mariadb_server__apt_repository_map[mariadb_server__flavor] is string
-                       else mariadb_server__apt_repository_map[mariadb_server__flavor]) }}'
-
 - name: Install database server packages
   apt:
     name: '{{ item }}'

@@ -94,3 +94,13 @@ ansible__apt_preferences__dependent_list:
                else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
+# .. envvar:: ansible__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+ansible__keyring__dependent_apt_keys:
+
+  - id: '{{ ansible__upstream_apt_key }}'
+    repo: '{{ ansible__upstream_apt_repository }}'
+    state: '{{ "present" if (ansible__deploy_type == "upstream") else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
