@@ -64,11 +64,31 @@ mariadb_server__apt_key: '{{ mariadb_server__apt_key_map[mariadb_server__flavor]
 # different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
 # downloaded if any of the listed flavors is selected.
 mariadb_server__apt_key_map:
-  'mariadb_upstream':   [ '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB', '177F4010FE56CA3336300305F1656F24C74CD1D8' ]
-  'mysql-5.6_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
-  'mysql-5.7_galera-3': '44B7345738EBDE52594DAD80D669017EBC19DDBA'
-  'percona':            '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
-  'percona-5.7':        '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+
+  'mariadb': []
+
+  'mariadb_upstream':
+    - id: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
+    - id: '177F4010FE56CA3336300305F1656F24C74CD1D8'
+    - repo: 'deb {{ mariadb_server__upstream_mirror }} {{ ansible_distribution_release }} main'
+
+  'mysql-5.6_galera-3':
+    - id: '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+    - repo: 'deb http://releases.galeracluster.com/mysql-wsrep-5.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+    - repo: 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+
+  'mysql-5.7_galera-3':
+    - id: '44B7345738EBDE52594DAD80D669017EBC19DDBA'
+    - repo: 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+    - repo: 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
+
+  'percona':
+    - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+      repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+
+  'percona-5.7':
+    - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
+      repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__upstream_version [[[
@@ -81,23 +101,6 @@ mariadb_server__upstream_version: '10.1'
 #
 # URL of the MariaDB upstream mirror.
 mariadb_server__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb_server__upstream_version }}/{{ ansible_distribution | lower }}'
-
-                                                                   # ]]]
-# .. envvar:: mariadb_server__apt_repository_map [[[
-#
-# A YAML dictionary map which keeps APT repository configuration of different
-# MariaDB/MySQL/Percona APT repositories. These repositories will be configured
-# if any of the listed flavors is selected.
-mariadb_server__apt_repository_map:
-  'mariadb_upstream':   'deb {{ mariadb_server__upstream_mirror }} {{ ansible_distribution_release }} main'
-  'mysql-5.6_galera-3':
-    - 'deb http://releases.galeracluster.com/mysql-wsrep-5.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-    - 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-  'mysql-5.7_galera-3':
-    - 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-    - 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-  'percona':            'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
-  'percona-5.7':        'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__base_packages [[[
@@ -450,6 +453,14 @@ mariadb_server__root_password: '{{ lookup("password", secret +
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: mariadb_server__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+mariadb_server__keyring__dependent_apt_keys:
+
+  - '{{ mariadb_server__apt_key }}'
+
+                                                                   # ]]]
 # .. envvar:: mariadb_server__ferm__dependent_rules [[[
 #
 # Configuration for :ref:`debops.ferm` Ansible role.
