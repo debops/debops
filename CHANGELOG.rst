@@ -143,6 +143,10 @@ Removed
   install their own SSH keys on the LXC host and they are subsequently
   copied inside of the LXC containers created on that host.
 
+- [debops.core] The ``core__keyserver`` variable and its local fact have been
+  removed from the role. They are replaced by the :envvar:`keyring__keyserver`
+  and the corresponding local fact in the :ref:`debops.keyring` role.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------

@@ -82,6 +82,9 @@ Inventory variable changes
   to their own ``ipxe__*`` namespace; you will have to update the Ansible
   inventory.
 
+- The ``core__keyserver`` variable and its corresponding local fact have been
+  replaced by the :envvar:`keyring__keyserver` with a corresponding local fact.
+
 
 v1.0.0 (2019-05-22)
 -------------------
