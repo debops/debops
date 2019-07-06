@@ -128,6 +128,11 @@ Changed
   variables instead of the file-based templates and can be easily modified via
   the Ansible inventory.
 
+- Various DebOps roles have been modified to use the :ref:`debops.keyring`
+  Ansible role to manage the APT repository keys, or GPG keys on UNIX accounts.
+  If you are using them in custom playbooks, you might need to update them to
+  include the new dependency.
+
 Removed
 ~~~~~~~
 
