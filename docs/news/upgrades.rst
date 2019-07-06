@@ -24,6 +24,7 @@ List of modified DebOps roles:
 
 - :ref:`debops.ansible`
 - :ref:`debops.cran`
+- :ref:`debops.docker_registry`
 - :ref:`debops.elastic_co`
 - :ref:`debops.hashicorp`
 - ``debops.hwraid``
