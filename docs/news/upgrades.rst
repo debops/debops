@@ -44,6 +44,7 @@ List of modified DebOps roles:
 - :ref:`debops.salt`
 - :ref:`debops.yadm`
 - ``debops-contrib.bitcoind``
+- ``debops-contrib.neurodebian``
 
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
