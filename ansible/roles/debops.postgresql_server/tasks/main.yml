@@ -1,26 +1,5 @@
 ---
 
-- name: Add upstream PostgreSQL APT key
-  apt_key:
-    id: '{{ postgresql_server__upstream_key_id }}'
-    state: 'present'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-  register: postgresql_server__register_apt_key
-  until: postgresql_server__register_apt_key is succeeded
-  when: postgresql_server__upstream|bool
-  tags: [ 'role::postgresql_server:packages' ]
-
-- name: Add upstream PostgreSQL APT repository
-  apt_repository:
-    repo: '{{ postgresql_server__upstream_apt_repo }}'
-    state: 'present'
-    update_cache: True
-  when: postgresql_server__upstream|bool
-  tags: [ 'role::postgresql_server:packages' ]
-
 - name: Get default PostgreSQL version
   environment:
     LC_ALL: 'C'
