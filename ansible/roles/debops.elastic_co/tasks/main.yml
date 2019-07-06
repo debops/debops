@@ -1,16 +1,5 @@
 ---
 
-- name: Get Elastic APT GPG key
-  apt_key:
-    id: '{{ elastic_co__key_id | replace(" ","") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-    state: 'present'
-  register: elastic_co__register_apt_key
-  until: elastic_co__register_apt_key is succeeded
-
 - name: Configure Elastic APT repository
   apt_repository:
     update_cache: True

@@ -14,6 +14,11 @@
 
   roles:
 
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::elastic_co' ]
+      keyring__dependent_apt_keys:
+        - '{{ elastic_co__keyring__dependent_apt_keys }}'
+
     - role: debops.elasticsearch/env
       tags: [ 'role::elasticsearch', 'role::secret', 'role::elasticsearch:config' ]
 
