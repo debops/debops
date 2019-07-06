@@ -35,28 +35,11 @@
     group: '{{ owncloud__app_group }}'
     mode: '{{ owncloud__deploy_path_mode }}'
 
-# OpenPGP keys, application download and validation [[[1
+# Application download and validation [[[1
 
 - become: True
   become_user: '{{ owncloud__system_user }}'
   block:
-
-    # OpenPGP key management [[[2
-
-    - name: Ensure user GnuPG directory exists
-      file:
-        path: '{{ owncloud__system_home + "/.gnupg" }}'
-        state: 'directory'
-        mode: '0700'
-
-    - name: Ensure the Nextcloud OpenPGP key is present
-      apt_key:
-        id: '{{ owncloud__upstream_key_fingerprint | replace(" ","") }}'
-        keyring: '{{ owncloud__system_home + "/.gnupg/pubring.gpg" }}'
-        keyserver: '{{ owncloud__keyserver }}'
-        state: 'present'
-      register: owncloud__register_apt_key_nextcloud
-      until: owncloud__register_apt_key_nextcloud is succeeded
 
     # Get latest patch version for release [[[2
 
