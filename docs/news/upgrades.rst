@@ -26,6 +26,7 @@ List of modified DebOps roles:
 - :ref:`debops.cran`
 - :ref:`debops.elastic_co`
 - :ref:`debops.hashicorp`
+- :ref:`debops.mariadb`
 - :ref:`debops.mariadb_server`
 - :ref:`debops.mosquitto`
 - :ref:`debops.nodejs`

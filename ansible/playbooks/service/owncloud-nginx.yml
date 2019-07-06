@@ -11,9 +11,11 @@
   roles:
 
     - role: debops.keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::php' ]
+      tags: [ 'role::keyring', 'skip::keyring', 'role::php',
+              'role::mariadb' ]
       keyring__dependent_apt_keys:
         - '{{ php__keyring__dependent_apt_keys }}'
+        - '{{ mariadb__keyring__dependent_apt_keys if (owncloud__database == "mariadb") else [] }}'
 
     - role: debops.php/env
       tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
