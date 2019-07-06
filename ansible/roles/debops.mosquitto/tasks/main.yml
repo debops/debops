@@ -7,25 +7,6 @@
   changed_when: False
   check_mode: False
 
-- name: Get upstream APT GPG key
-  apt_key:
-    id: '{{ mosquitto__upstream_key_id | replace(" ","") }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-    state: 'present'
-  register: mosquitto__register_apt_key
-  until: mosquitto__register_apt_key is succeeded
-  when: mosquitto__upstream|bool and ansible_distribution in [ 'Debian' ]
-
-- name: Configure upstream APT repository
-  apt_repository:
-    repo: '{{ mosquitto__upstream_repository[ansible_distribution] }}'
-    state: 'present'
-    update_cache: True
-  when: mosquitto__upstream|bool
-
 - name: Install required packages
   package:
     name: '{{ item }}'
