@@ -1,24 +1,5 @@
 ---
 
-- name: Get upstream APT GPG key
-  apt_key:
-    id: '{{ cran__upstream_apt_key }}'
-    keyserver: '{{ ansible_local.core.keyserver
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.keyserver)
-                   else "hkp://pool.sks-keyservers.net" }}'
-    state: 'present'
-  register: cran__register_apt_key
-  until: cran__register_apt_key is succeeded
-  when: cran__upstream|bool and ansible_pkg_mgr == 'apt'
-
-- name: Configure upstream APT repository
-  apt_repository:
-    repo: '{{ cran__upstream_apt_repo }}'
-    state: 'present'
-    update_cache: True
-  when: cran__upstream|bool and ansible_pkg_mgr == 'apt'
-
 - name: Install system packages required for R support
   package:
     name: '{{ item }}'
