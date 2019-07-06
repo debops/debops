@@ -22,6 +22,7 @@ update them to include the :ref:`debops.keyring` role.
 
 List of modified DebOps roles:
 
+- :ref:`debops.ansible`
 - :ref:`debops.cran`
 - :ref:`debops.salt`
 - :ref:`debops.yadm`
