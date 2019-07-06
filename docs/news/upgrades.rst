@@ -30,6 +30,7 @@ List of modified DebOps roles:
 - :ref:`debops.gitlab_runner`
 - :ref:`debops.hashicorp`
 - ``debops.hwraid``
+- :ref:`debops.icinga`
 - :ref:`debops.mariadb`
 - :ref:`debops.mariadb_server`
 - :ref:`debops.mosquitto`
