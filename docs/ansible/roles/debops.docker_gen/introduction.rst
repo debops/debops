@@ -1,7 +1,11 @@
 Introduction
 ============
 
-`docker-gen`_ can be used to generate configuration files for other services
+`docker-gen`_ generates configuration files for host services to make the
+Dockerized services accessible to them.
+For example this role can create the required configuation
+for publishing a Dockerized web-service via the host's web-server.
+The configuration is
 based on available Docker container metadata.
 
 This role creates a service and configuration to generate :program:`nginx` upstream
