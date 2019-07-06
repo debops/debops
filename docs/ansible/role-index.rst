@@ -239,6 +239,7 @@ packages.
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
 - :ref:`debops.debops_legacy`
+- :ref:`debops.keyring`
 - :ref:`debops.unattended_upgrades`
 - ``debops.reprepro``
 
@@ -251,6 +252,7 @@ Security
 - :ref:`debops.fail2ban`
 - :ref:`debops.ferm`
 - :ref:`debops.freeradius`
+- :ref:`debops.keyring`
 - :ref:`debops.pam_access`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`
@@ -272,6 +274,7 @@ System configuration
 - :ref:`debops.etc_services`
 - :ref:`debops.etckeeper`
 - :ref:`debops.ferm`
+- :ref:`debops.keyring`
 - :ref:`debops.ldap`
 - :ref:`debops.locales`
 - :ref:`debops.logrotate`
@@ -329,4 +332,5 @@ additional functions to other roles.
 - :ref:`debops.ansible_plugins`
 - :ref:`debops.core`
 - :ref:`debops.debops_fact`
+- :ref:`debops.keyring`
 - :ref:`debops.secret`

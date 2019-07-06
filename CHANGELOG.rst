@@ -21,6 +21,17 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+- New DebOps roles:
+
+  - :ref:`debops.keyring` role is designed to be used by other Ansible roles to
+    manage the GPG keys, either in the APT keyring or the GPG keyrings of
+    specific UNIX accounts. It replaces and centralizes the use of the
+    ``apt_key`` and the ``apt_repository`` Ansible modules in separate roles
+    and provides additional functionality, like GPG key lookup in a local key
+    store on the Ansible Controller, or the `Keybase`__ service.
+
+    .. __: https://keybase.io/
+
 - [debops.slapd] The role can now control on which ports and services OpenLDAP
   listens for connections. The ``ldaps:///`` service is enabled by default when
   support for the :ref:`debops.pki` role is enabled on the OpenLDAP host.
