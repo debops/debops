@@ -11,6 +11,19 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+GPG key management changes
+--------------------------
+
+The :ref:`debops.keyring` centralizes management of the APT keyring and various
+GPG keyrings in unprivileged UNIX accounts. Various DebOps roles have been
+modified to use this role instead of performing the GPG key management on their
+own. If you use custom Ansible playbooks with these roles, you will need to
+update them to include the :ref:`debops.keyring` role.
+
+List of modified DebOps roles:
+
+- :ref:`debops.yadm`
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
