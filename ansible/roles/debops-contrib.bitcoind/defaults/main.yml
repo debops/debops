@@ -259,6 +259,16 @@ bitcoind__etc_services__dependent_list:
     state: '{{ "present" if (bitcoind__deploy_state != "purged") else "absent" }}'
 
                                                                    # ]]]
+# .. envvar:: bitcoind__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+bitcoind__keyring__dependent_apt_keys:
+
+  - id: '{{ bitcoind__upstream_key_fingerprint }}'
+    repo: '{{ bitcoind__upstream_repository[ansible_distribution] }}'
+    state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
+
+                                                                   # ]]]
 # .. envvar:: bitcoind__ferm__dependent_rules [[[
 #
 # Configuration for debops.ferm_ firewall. It should be added when

@@ -43,6 +43,7 @@ List of modified DebOps roles:
 - :ref:`debops.rstudio_server`
 - :ref:`debops.salt`
 - :ref:`debops.yadm`
+- ``debops-contrib.bitcoind``
 
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
