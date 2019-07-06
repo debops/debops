@@ -3,14 +3,15 @@
 debops.docker_registry
 ======================
 
-`Docker Registry`__ is a service which allows you to publish and distribute
+The ``debops.docker_registry`` Ansible role can be used to install and manage
+a Docker Registry instance.
+A `Docker Registry`__ is a service which allows you to publish and distribute
 Docker container images. It can be used to create a private, local alternative
 to a Docker Hub.
 
 .. __: https://docs.docker.com/registry/
 
-The ``debops.docker_registry`` Ansible role can be used to install and manage
-a Docker Registry instance. By default the role installs the Registry using an
+By default the role installs the Registry using an
 OS package on supported OS releases; on older OS releases without the Registry
 packaged in the repositories the role can download the official upstream
 release from GitHub and build a Go :command:`docker-registry` binary
