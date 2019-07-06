@@ -12,10 +12,11 @@
 
     - role: debops.keyring
       tags: [ 'role::keyring', 'skip::keyring',
-              'role::nodejs', 'role::postgresql' ]
+              'role::nodejs', 'role::postgresql', 'role::nginx' ]
       keyring__dependent_apt_keys:
         - '{{ nodejs__keyring__dependent_apt_keys }}'
         - '{{ postgresql__keyring__dependent_apt_keys }}'
+        - '{{ nginx__keyring__dependent_apt_keys }}'
 
     - role: debops.gitlab/env
       tags: [ 'role::gitlab', 'role::postgresql' ]

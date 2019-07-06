@@ -11,7 +11,10 @@
   roles:
 
     - role: debops.keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::docker_registry' ]
+      tags: [ 'role::keyring', 'skip::keyring',
+              'role::nginx', 'role::docker_registry' ]
+      keyring__dependent_apt_keys:
+        - '{{ nginx__keyring__dependent_apt_keys }}'
       keyring__dependent_gpg_keys:
         - '{{ docker_registry__keyring__dependent_gpg_keys }}'
 

@@ -31,6 +31,7 @@ List of modified DebOps roles:
 - :ref:`debops.mariadb`
 - :ref:`debops.mariadb_server`
 - :ref:`debops.mosquitto`
+- :ref:`debops.nginx`
 - :ref:`debops.nodejs`
 - :ref:`debops.php`
 - :ref:`debops.postgresql`

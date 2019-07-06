@@ -12,9 +12,10 @@
 
     - role: debops.keyring
       tags: [ 'role::keyring', 'skip::keyring',
-              'role::php', 'role::postgresql', 'role::mariadb' ]
+              'role::php', 'role::nginx', 'role::postgresql', 'role::mariadb' ]
       keyring__dependent_apt_keys:
         - '{{ php__keyring__dependent_apt_keys }}'
+        - '{{ nginx__keyring__dependent_apt_keys }}'
         - '{{ postgresql__keyring__dependent_apt_keys if (icinga_web__database_type == "postgresql") else [] }}'
         - '{{ mariadb__keyring__dependent_apt_keys if (icinga_web__database_type == "mariadb") else [] }}'
 

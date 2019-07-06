@@ -11,9 +11,10 @@
   roles:
 
     - role: debops.keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::postgresql' ]
+      tags: [ 'role::keyring', 'skip::keyring', 'role::postgresql', 'role::nginx' ]
       keyring__dependent_apt_keys:
         - '{{ postgresql__keyring__dependent_apt_keys }}'
+        - '{{ nginx__keyring__dependent_apt_keys }}'
 
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
