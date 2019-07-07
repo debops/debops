@@ -32,6 +32,9 @@ Changed
 - [debops.dovecot] Expose the configuration of the Sieve directory and
   configuration file via role default variables.
 
+- [debops.apt] The Debian and Raspbian suites have been updated to reflect the
+  release of Debian Buuster. Congratulations!
+
 Fixed
 ~~~~~
 
