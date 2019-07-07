@@ -100,7 +100,11 @@ docker_server__packagename: '{{ docker_server__upstream_packagename
 #
 # List of mandatory packages to install with Docker.
 docker_server__mandatory_packages:
-  - 'apt-transport-https'
+  - '{{ "apt-transport-https"
+        if (ansible_distribution_release in
+            [ "wheezy", "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else [] }}'
   - 'ca-certificates'
   - 'curl'
   - 'gnupg2'
