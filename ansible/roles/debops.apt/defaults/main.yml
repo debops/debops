@@ -92,7 +92,14 @@ apt__install_suggests: False
 # .. envvar:: apt__base_packages [[[
 #
 # Default base packages to install.
-apt__base_packages: [ 'lsb-release', 'apt-transport-https', 'ca-certificates' ]
+apt__base_packages:
+  - 'lsb-release'
+  - 'ca-certificates'
+  - '{{ "apt-transport-https"
+        if (ansible_distribution_release in
+            [ "wheezy", "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else [] }}'
 
                                                                    # ]]]
 # .. envvar:: apt__packages [[[
