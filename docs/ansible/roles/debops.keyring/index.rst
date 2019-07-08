@@ -26,7 +26,7 @@ then retrieves the GPG keys either from:
    the APT or GPG keys; users can use the :ref:`debops.apt` role to manage the
    APT keyring via the inventory.
 
-   At the moment there is no solution for unrpvileged UNIX account keyrings
+   At the moment there is no solution for unprivileged UNIX account keyrings
    manageable via the inventory. This functionality will be implemented later
    via other DebOps roles that manage UNIX accounts.
 
