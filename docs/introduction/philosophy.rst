@@ -141,7 +141,7 @@ Robin `ypid` Schneider
 I made the switch to GNU/Linux as my main OS in August 2009 and self-taught
 myself most of it‘s internals when I was in the last years of secondary school.
 Since 2012 I'm primarily using `Debian GNU/Linux <https://www.debian.org/>`__
-be it on private and work computers and servers alike.
+on private and work computers and servers alike.
 I really like Debian and would like to become a Debian Developer some day.
 
 Starting in 2012, I worked 5 years as a IT Consultant until 2017, mainly
@@ -161,7 +161,7 @@ most comprehensive approach to CM for Debian GNU/Linux I could find. Since
 2015-02 I am using it for most of my machines and various projects at work and
 I'm quite happy with it. I did not lose much time as a user of DebOps and
 started contributing to it and helping DebOps evolve. In 2016-07, I officially
-became the second DebOps Developer when Maciej and me set up the debops-keyring.
+became the second DebOps Developer when Maciej and me set up the :ref:`debops-keyring`.
 
 One of my big interests is IT security, so together with Maciej I put a lot of
 effort into DebOps to create something worthwhile, that can be relied upon to a
