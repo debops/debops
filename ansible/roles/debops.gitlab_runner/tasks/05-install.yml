@@ -1,0 +1,50 @@
+- apt_key:
+    id: "{{ item }}"
+    keyserver: hkps://keys.openpgp.org
+    state: present
+  with_items:
+    # gitlab-runner
+    - 1A4C919DB987D435939638B914219A96E15E78F4
+    # docker-ce
+    - 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+- name: Configure gitlab-runner APT repository
+  apt_repository:
+    repo: 'deb https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main'
+    filename: gitlab-runner
+    state: present
+    update_cache: "{{ (not with_docker) | default(False) | bool }}"
+
+- name: Configure docker-ce APT repository
+  apt_repository:
+    repo: 'deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable'
+    state: present
+    filename: docker
+    update_cache: yes
+  tags: docker
+  when: with_docker | default(True) | bool
+
+- name: apt-install gitlab-runner and dependent packages
+  apt:
+    name: [apt-transport-https, openssl, ca-certificates, dirmngr, gitlab-runner, gnupg2]
+
+- name: apt-install docker-ce packages
+  apt:
+    name: [docker-ce, cgroupfs-mount, docker-compose, python3-docker]
+  tags: docker
+  when: with_docker | default(True) | bool
+
+- name: Create required groups
+  group: name=gitlab-runner system=true state=present
+
+- name: Create gitlab-runner user
+  user:
+    name: gitlab-runner
+    home: /var/local/gitlab-runner
+    group: gitlab-runner
+    groups: "{{ ['docker'] if with_docker | default(True) | bool else [] }}"
+    system: yes
+    comment: GitLab Runner
+    shell: /bin/sh
+    state: present
+    generate_ssh_key: no

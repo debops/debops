@@ -1,0 +1,43 @@
+# Get a runner-specific authentication token from (project/group) a registration token
+- name: Get authentication tokens from project/group token
+  gitlab_runner:
+    url: "{{ item.url }}"
+    api_token: "{{ lookup('env', 'GITLAB_TOKEN') }}"
+    registration_token: "{{ item._registration_token }}"
+    # "name" means runner "description"
+    name: "{{ item.name }}"
+    state: present
+    access_level: "{{ item._access_level | default(omit) }}"
+    run_untagged: "{{ item._run_untagged | default(omit) }}"
+    locked: "{{ item._locked | default(omit) }}"
+    active: "{{ item._active | default(omit) }}"
+    tag_list: "{{ item._tag_list | default(omit) }}"
+    project:  "{{ item._project | default(omit) }}"
+  with_items: "{{ gitlab_runner__configuration.runners }}"
+  register: registered_runner
+  when: lookup('env', 'GITLAB_TOKEN')
+  delegate_to: localhost
+  become: no
+
+- name: Extract runners obtained from GitLab registration
+  set_fact:
+    rr: "{{ registered_runner.results | map(attribute='runner') | select('defined') | list }}"
+  when: registered_runner is defined and registered_runner is succeeded
+
+## Fallback on existing (remote) configuration to fetch token, so that for any reason, we can't
+## re-registers runners, at least we can still update config.toml
+- name: Get existing tokens in the installation
+  slurp: src=/etc/gitlab-runner/config.toml
+  register: gitlab_runner_remote_config
+  when: rr is not defined or rr | count == 0
+  ignore_errors: yes
+
+- name: Extract runners obtained from remote gitlab-runner config.toml
+  set_fact:
+    rr: "{{ (gitlab_runner_remote_config.content | b64decode | from_toml).runners | select('defined') | list }}" 
+  when: rr is not defined or rr | count == 0 and gitlab_runner_remote_config is succeeded
+
+- name: replace runner token by authenticaftion tokens within gitlab-runner YAML configuration
+  set_fact:
+    gitlab_runner__configuration: "{{ gitlab_runner__configuration | replace_gitlab_token(rr) | rejectattr_deep }}"
+  when: rr is defined and rr | count > 0

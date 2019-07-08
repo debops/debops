@@ -1,0 +1,34 @@
+- name: Generate an OpenSSL private key for CA
+  openssl_privatekey:
+    path: /etc/ssl/private/gitlab-runner_CA.key
+
+- name: Generate an OpenSSL Certificate Signing Request
+  openssl_csr:
+    path: /etc/ssl/gitlab-runner_CA.csr
+    privatekey_path: /etc/ssl/private/gitlab-runner_CA.key
+    common_name: ae.vg
+
+- name: Generate CA
+  openssl_certificate:
+    path: /etc/ssl/gitlab-runner_CA.crt
+    privatekey_path: /etc/ssl/private/gitlab-runner_CA.key
+    csr_path: /etc/ssl/gitlab-runner_CA.csr
+    provider: selfsigned
+
+- name: Generate an OpenSSL private key for gitlab-runner
+  openssl_privatekey:
+    path: /etc/ssl/private/gitlab-runner.key
+
+- name: Generate an OpenSSL Certificate Signing Request
+  openssl_csr:
+    path: /etc/ssl/gitlab-runner.csr
+    privatekey_path: /etc/ssl/private/gitlab-runner.key
+    common_name: runner.ae.vg
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: /etc/ssl/certs/gitlab-runner.crt
+    csr_path: /etc/ssl/gitlab-runner.csr
+    ownca_path: /etc/ssl/gitlab-runner_CA.crt
+    ownca_privatekey_path: /etc/ssl/private/gitlab-runner_CA.key
+    provider: ownca
