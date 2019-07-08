@@ -407,7 +407,7 @@ May 2019
 .. __: https://lists.debops.org/pipermail/debops-users/2019-May/000196.html
 
 July 2019
-~~~~~~~~
+~~~~~~~~~
 
 - `Debian 10.0 (buster)`__ becomes a Debian Stable release.
 
