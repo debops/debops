@@ -147,6 +147,12 @@ Removed
   removed from the role. They are replaced by the :envvar:`keyring__keyserver`
   and the corresponding local fact in the :ref:`debops.keyring` role.
 
+- The ``debops.openvz`` role has been removed. OpenVZ is not supported in
+  Debian natively `since Wheezy`__; a good replacement for it is LXC which can
+  be managed using the :ref:`debops.lxc` role.
+
+  .. __: https://wiki.debian.org/OpenVz
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
