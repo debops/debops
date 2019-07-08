@@ -161,7 +161,7 @@ most comprehensive approach to CM for Debian GNU/Linux I could find. Since
 2015-02 I am using it for most of my machines and various projects at work and
 I'm quite happy with it. I did not lose much time as a user of DebOps and
 started contributing to it and helping DebOps evolve. In 2016-07, I officially
-became the second DebOps Developer when Maciej and me set up the :ref:`debops-keyring`.
+became the second DebOps Developer when Maciej and me set up the :ref:`debops.keyring`.
 
 One of my big interests is IT security, so together with Maciej I put a lot of
 effort into DebOps to create something worthwhile, that can be relied upon to a
