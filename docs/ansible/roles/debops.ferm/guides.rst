@@ -27,7 +27,7 @@ interface.
 
 To follow this guide you should be familiar with DebOps and the way to configure
 related Ansible variables. If you're not, you may first want to read the
-:ref:`getting-started <Getting Started guide>`.
+:ref:`Getting Started guide <getting-started>`.
 
 
 .. _ferm__ref_guide_gateway_packet_forwarding:
