@@ -2,11 +2,9 @@
 
 - name: Install cron packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (cron__base_packages
+                              + cron__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ cron__base_packages }}'
-    - '{{ cron__packages }}'
   register: cron__register_packages
   until: cron__register_packages is succeeded
   when: cron__enabled|bool

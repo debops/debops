@@ -4,10 +4,8 @@
 # System packages [[[
 - name: Ensure specified packages are in there desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", foodsoft__base_packages) }}'
     state: '{{ "present" if (foodsoft__deploy_state == "present") else "absent" }}'
-  with_flattened:
-    - '{{ foodsoft__base_packages }}'
   register: foodsoft__register_packages
   until: foodsoft__register_packages is succeeded
   tags: [ 'role::foodsoft:pkgs' ]

@@ -2,11 +2,9 @@
 
 - name: Install locale packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (locales__base_packages
+                              + locales__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ locales__base_packages }}'
-    - '{{ locales__packages }}'
   register: locales__register_packages
   until: locales__register_packages is succeeded
 

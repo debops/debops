@@ -3,11 +3,9 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (prosody__base_packages
+                              + prosody__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ prosody__base_packages }}'
-    - '{{ prosody__packages }}'
   register: prosody__register_packages
   until: prosody__register_packages is succeeded
 

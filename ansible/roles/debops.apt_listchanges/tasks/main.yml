@@ -2,12 +2,10 @@
 
 - name: Manage APT packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (apt_listchanges__base_packages
+                              + apt_listchanges__packages)) }}'
     state: '{{ apt_listchanges__deploy_state }}'
     purge: True
-  with_flattened:
-    - '{{ apt_listchanges__base_packages }}'
-    - '{{ apt_listchanges__packages }}'
   register: apt_listchanges__register_packages
   until: apt_listchanges__register_packages is succeeded
 

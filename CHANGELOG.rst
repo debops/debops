@@ -133,6 +133,11 @@ Changed
   If you are using them in custom playbooks, you might need to update them to
   include the new dependency.
 
+- The installation of APT and other packages in DebOps roles has been
+  refactored to remove the use of the ``with_items``/``with_flattened``
+  lookups. Support for package installation via task loops will be removed in
+  Ansible 2.11.
+
 Removed
 ~~~~~~~
 

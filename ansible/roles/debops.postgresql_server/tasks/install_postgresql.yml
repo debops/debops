@@ -12,21 +12,17 @@
   failed_when: False
 
 - name: Install PostgreSQL packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (postgresql_server__base_packages
+                              + postgresql_server__python_packages
+                              + postgresql_server__packages
+                              + ([ "ptop" ]
+                                 if (ansible_distribution_release in [ "wheezy", "precise" ])
+                                 else [ "pgtop" ])
+                              + ([ "autopostgresqlbackup" ]
+                                 if (postgresql_server__autopostgresqlbackup|d())|bool
+                                 else []))) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ postgresql_server__base_packages }}'
-    - '{{ postgresql_server__python_packages }}'
-    - '{{ postgresql_server__packages }}'
-    - [ '{{ "ptop"
-            if ansible_distribution_release in [ "wheezy", "precise" ]
-            else "pgtop" }}' ]
-    - [ '{{ "autopostgresqlbackup"
-            if (postgresql_server__autopostgresqlbackup|d() and
-                postgresql_server__autopostgresqlbackup | bool)
-            else [] }}' ]
   register: postgresql_server__register_packages
   until: postgresql_server__register_packages is succeeded
 

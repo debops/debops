@@ -2,11 +2,9 @@
 
 - name: Install OpenDKIM support
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (opendkim__base_packages
+                              + opendkim__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ opendkim__base_packages }}'
-    - '{{ opendkim__packages }}'
   register: opendkim__register_packages
   until: opendkim__register_packages is succeeded
   notify: [ 'Check opendkim and restart' ]

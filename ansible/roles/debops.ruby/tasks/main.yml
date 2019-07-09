@@ -2,15 +2,13 @@
 
 - name: Install Ruby packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (ruby__base_packages
+                              + ruby__dev_packages
+                              + ruby__packages
+                              + ruby__group_packages
+                              + ruby__host_packages
+                              + ruby__dependent_packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ ruby__base_packages }}'
-    - '{{ ruby__dev_packages }}'
-    - '{{ ruby__packages }}'
-    - '{{ ruby__group_packages }}'
-    - '{{ ruby__host_packages }}'
-    - '{{ ruby__dependent_packages }}'
   register: ruby__register_packages
   until: ruby__register_packages is succeeded
 

@@ -9,11 +9,9 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (mosquitto__base_packages
+                              + mosquitto__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ mosquitto__base_packages }}'
-    - '{{ mosquitto__packages }}'
   register: mosquitto__register_packages
   until: mosquitto__register_packages is succeeded
 

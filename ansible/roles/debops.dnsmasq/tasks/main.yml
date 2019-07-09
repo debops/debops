@@ -2,7 +2,7 @@
 
 - name: Install required packages
   package:
-    name: '{{ dnsmasq__base_packages + dnsmasq__packages }}'
+    name: '{{ q("flattened", (dnsmasq__base_packages + dnsmasq__packages)) }}'
     state: 'present'
   register: dnsmasq__register_packages
   until: dnsmasq__register_packages is succeeded

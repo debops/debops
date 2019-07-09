@@ -3,12 +3,10 @@
 # System packages [[[
 - name: Ensure specified packages are in there desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (volkszaehler__base_packages
+                              + volkszaehler__optional_packages
+                              + volkszaehler__packages)) }}'
     state: '{{ "present" if (volkszaehler__deploy_state in ["present"]) else "absent" }}'
-  with_flattened:
-    - '{{ volkszaehler__base_packages }}'
-    - '{{ volkszaehler__optional_packages }}'
-    - '{{ volkszaehler__packages }}'
   register: volkszaehler__register_packages
   until: volkszaehler__register_packages is succeeded
   tags: [ 'role::volkszaehler:pkgs' ]

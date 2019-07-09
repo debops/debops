@@ -2,11 +2,9 @@
 
 - name: Ensure specified packages are in there desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (dropbear_initramfs__base_packages
+                              + dropbear_initramfs__packages)) }}'
     state: '{{ "present" if (dropbear_initramfs__deploy_state == "present") else "absent" }}'
-  with_flattened:
-    - '{{ dropbear_initramfs__base_packages }}'
-    - '{{ dropbear_initramfs__packages }}'
   register: dropbear_initramfs__register_packages
   until: dropbear_initramfs__register_packages is succeeded
   tags: [ 'role::dropbear_initramfs:pkgs' ]

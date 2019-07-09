@@ -13,18 +13,18 @@
   changed_when: False
 
 - name: Install libvirtd support
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (libvirtd__network_packages
+                              + libvirtd__misc_packages
+                              + libvirtd__packages
+                              + (libvirtd__base_packages_map[ansible_distribution_release]
+                                 if (ansible_distribution_release in libvirtd__base_packages_map.keys())
+                                 else libvirtd__base_packages)
+                              + (libvirtd__kvm_packages
+                                 if libvirtd__kvm_support|bool
+                                 else []))) }}'
     state: 'present'
     install_recommends: False
-  with_flattened:
-    - '{{ libvirtd__network_packages }}'
-    - '{{ libvirtd__misc_packages }}'
-    - '{{ libvirtd__packages }}'
-    - [ '{{ libvirtd__base_packages_map[ansible_distribution_release]
-            if (ansible_distribution_release in libvirtd__base_packages_map.keys())
-            else libvirtd__base_packages }}' ]
-    - '{{ libvirtd__kvm_packages if libvirtd__kvm_support|bool else [] }}'
   register: libvirtd__register_packages
   until: libvirtd__register_packages is succeeded
 

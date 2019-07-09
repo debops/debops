@@ -54,14 +54,10 @@
   tags: [ 'meta::provision' ]
 
 - name: Install encryption software
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (dhparam__base_packages + dhparam__packages)) }}'
     state: 'present'
-    install_recommends: False
   when: dhparam__deploy_state in ['present']
-  with_flattened:
-    - '{{ dhparam__base_packages }}'
-    - '{{ dhparam__packages }}'
   register: dhparam__register_packages
   until: dhparam__register_packages is succeeded
   tags: [ 'meta::provision' ]

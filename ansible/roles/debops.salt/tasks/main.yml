@@ -2,11 +2,9 @@
 
 - name: Install Salt Master packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (salt__base_packages
+                              + salt__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ salt__base_packages }}'
-    - '{{ salt__packages }}'
   register: salt__register_packages
   until: salt__register_packages is succeeded
 

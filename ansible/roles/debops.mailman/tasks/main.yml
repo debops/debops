@@ -1,11 +1,9 @@
 ---
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", mailman__packages) }}'
     state: 'present'
-    install_recommends: False
-  with_items: '{{ mailman__packages }}'
   register: mailman__register_packages
   until: mailman__register_packages is succeeded
 

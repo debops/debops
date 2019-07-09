@@ -31,14 +31,13 @@
 
 - name: Install requested APT packages
   apt:
-    name: '{{ item }}'
+    name: '{{ q("flattened", lookup("template",
+                             "lookup/apt_install__all_packages.j2",
+                             convert_data=False) | from_json) }}'
     state: '{{ apt_install__state }}'
     install_recommends: '{{ apt_install__recommends|bool }}'
     update_cache: '{{ apt_install__update_cache|bool }}'
     cache_valid_time: '{{ apt_install__cache_valid_time }}'
-  with_flattened: '{{ lookup("template",
-                      "lookup/apt_install__all_packages.j2",
-                      convert_data=False) | from_json }}'
   register: apt_install__register_packages
   until: apt_install__register_packages is succeeded
   when: apt_install__enabled|bool

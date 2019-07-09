@@ -2,11 +2,9 @@
 
 - name: Install Redis Server packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (redis_server__base_packages
+                              + redis_server__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ redis_server__base_packages }}'
-    - '{{ redis_server__packages }}'
   register: redis_server__register_packages
   until: redis_server__register_packages is succeeded
 

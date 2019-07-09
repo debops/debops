@@ -11,13 +11,11 @@
 
 - name: Install Elastic packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (elastic_co__packages
+                              + elastic_co__group_packages
+                              + elastic_co__host_packages
+                              + elastic_co__dependent_packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ elastic_co__packages }}'
-    - '{{ elastic_co__group_packages }}'
-    - '{{ elastic_co__host_packages }}'
-    - '{{ elastic_co__dependent_packages }}'
   register: elastic_co__register_install
   until: elastic_co__register_install is succeeded
 

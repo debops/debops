@@ -19,15 +19,14 @@
   failed_when: False
 
 - name: Install database server packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (mariadb_server__base_packages
+                              + mariadb_server__packages_map[mariadb_server__flavor]
+                              + mariadb_server__packages
+                              + ([ "automysqlbackup" ]
+                                 if mariadb_server__backup|bool
+                                 else []))) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ mariadb_server__base_packages }}'
-    - '{{ mariadb_server__packages_map[mariadb_server__flavor] }}'
-    - '{{ mariadb_server__packages }}'
-    - '{{ "automysqlbackup" if mariadb_server__backup|bool else [] }}'
   register: mariadb_server__register_install_status
   until: mariadb_server__register_install_status is succeeded
 

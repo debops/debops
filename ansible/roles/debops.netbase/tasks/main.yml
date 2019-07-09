@@ -2,11 +2,9 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (netbase__base_packages
+                              + netbase__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ netbase__base_packages }}'
-    - '{{ netbase__packages }}'
   register: netbase__register_packages
   until: netbase__register_packages is succeeded
   when: netbase__enabled|bool

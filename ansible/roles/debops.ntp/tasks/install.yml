@@ -1,10 +1,9 @@
 ---
 
 - name: Install required packages
-  apt:
+  package:
     name: '{{ (ntp__base_packages + ntp__packages) | flatten }}'
     state: 'present'
-    install_recommends: False
   register: ntp__register_apt_install
   until: ntp__register_apt_install is succeeded
 
