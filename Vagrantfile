@@ -745,6 +745,8 @@ Vagrant.configure("2") do |config|
         elsif ENV['GITLAB_CI'] == "true"
             # We are running in a GitLab CI environment
             subconfig.vm.synced_folder ENV['CI_PROJECT_DIR'] || ".", "/vagrant"
+        else
+            subconfig.vm.synced_folder ENV['PROJECT_DIR'] || ".", "/vagrant"
         end
 
         if ENV['GITLAB_CI'] != "true"
