@@ -157,7 +157,7 @@ if [ -d /run/systemd/system ] ; then
         systemctl restart systemd-networkd.service
     else
         printf "%s\n" "Detecting primary network interface"
-        primary_interface="$(/sbin/ip -o -0 addr | grep -v LOOPBACK | awk '{print $2}' | sed 's/://')"
+        primary_interface="$(/sbin/ip -o -0 addr | grep -v LOOPBACK | head -n1 | awk '{print $2}' | sed 's/://')"
         printf "%s\n" "Restarting ifup@${primary_interface}.service"
         systemctl stop "ifup@${primary_interface}.service" ; systemctl start "ifup@${primary_interface}.service"
     fi
