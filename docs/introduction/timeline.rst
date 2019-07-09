@@ -4,7 +4,7 @@ Timeline
 This document is a summary of the DebOps development over time. You can see
 most of the project's history in :command:`git` logs, however tracing it might
 be confusing due to the split and subsequent merge of the code back together.
-Here, we try to explain why that happended.
+Here, we try to explain why that happened.
 
 
 Summary of the events
@@ -20,7 +20,7 @@ the codebase.
 .. __: https://github.com/debops/
 .. __: https://galaxy.ansible.com/debops/
 
-The decision to move the project coodebase to the separate :command:`git`
+The decision to move the project codebase to the separate :command:`git`
 repositories shaped the DebOps project in multiple ways. It enforced the code
 separation between different Ansible roles that required development of proper
 ways to make them interact with each other and pass the data around. New open
@@ -41,8 +41,8 @@ to make the DebOps development easier.
 
 The process was completed over a period of a few months. As the result, the
 development model also changed into a more distributed way with multiple forks
-of the main repository. At present, the DebOps codebase is being prepared for
-its first official stable release.
+of the main repository. First official stable release was published in
+May 2019.
 
 
 2013
@@ -406,6 +406,12 @@ May 2019
 
 .. __: https://lists.debops.org/pipermail/debops-users/2019-May/000196.html
 
+July 2019
+~~~~~~~~~
+
+- `Debian 10.0 (buster)`__ becomes a Debian Stable release.
+
+.. __: https://www.debian.org/releases/buster/
 
 2020
 ----
