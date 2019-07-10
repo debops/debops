@@ -35,6 +35,9 @@ Changed
 - [debops.apt] The Debian and Raspbian suites have been updated to reflect the
   release of Debian Buuster. Congratulations!
 
+- [debops.nslcd] Remove comments from the PAM configuration file to stop the
+  :command:`pam-auth-update` script from complaining about them.
+
 Fixed
 ~~~~~
 
