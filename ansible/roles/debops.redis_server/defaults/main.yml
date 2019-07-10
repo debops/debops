@@ -193,9 +193,11 @@ redis_server__default_base_options:
 
   - name: 'masterauth'
     value: '{{ redis_server__auth_password }}'
+    state: '{{ "present" if redis_server__auth_password|d() else "ignore" }}'
 
   - name: 'requirepass'
     value: '{{ redis_server__auth_password }}'
+    state: '{{ "present" if redis_server__auth_password|d() else "ignore" }}'
 
   - name: 'always-show-logo'
     value: False

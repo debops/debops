@@ -50,6 +50,8 @@ Fixed
   command inside containers. The configuration will be applied by the
   :ref:`debops.sysctl` role instead.
 
+- [debops.redis_server] Fix deployment of Redis Server without a password set.
+
 
 `debops v1.0.4`_ - 2019-06-25
 -----------------------------
