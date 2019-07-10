@@ -682,6 +682,10 @@ Vagrant.configure("2") do |config|
                 # Don't populate '/vagrant' directory on other nodes
                 node.vm.synced_folder ".", "/vagrant", disabled: true
 
+                if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
+                    node.ssh.insert_key = false
+                end
+
                 node.vm.provider "libvirt" do |libvirt, override|
                     libvirt.random_hostname = true
                     libvirt.memory = ENV['VAGRANT_NODE_MEMORY'] || '512'
@@ -689,10 +693,6 @@ Vagrant.configure("2") do |config|
 
                     if ENV['GITLAB_CI'] != "true"
                         libvirt.memory = ENV['VAGRANT_NODE_MEMORY'] || '1024'
-                    end
-
-                    if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
-                        override.ssh.insert_key = false
                     end
                 end
 
@@ -719,6 +719,10 @@ Vagrant.configure("2") do |config|
             SHELL
         end
 
+        if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
+            subconfig.ssh.insert_key = false
+        end
+
         subconfig.vm.provider "libvirt" do |libvirt, override|
             # On a libvirt provider, default sync method is NFS. If we switch
             # it to 'rsync', this will drop the dependency on NFS on the host.
@@ -731,10 +735,6 @@ Vagrant.configure("2") do |config|
             if ENV['GITLAB_CI'] != "true"
                 libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '2048'
                 libvirt.cpus =   ENV['VAGRANT_MASTER_CPUS']   || '4'
-            end
-
-            if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
-                override.ssh.insert_key = false
             end
         end
 
