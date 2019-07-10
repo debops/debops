@@ -686,7 +686,7 @@ Vagrant.configure("2") do |config|
                     node.ssh.insert_key = false
                 end
 
-                node.vm.provider "libvirt" do |libvirt, override|
+                node.vm.provider "libvirt" do |libvirt|
                     libvirt.random_hostname = true
                     libvirt.memory = ENV['VAGRANT_NODE_MEMORY'] || '512'
                     libvirt.cpus   = ENV['VAGRANT_NODE_CPUS']   || '2'
@@ -696,6 +696,9 @@ Vagrant.configure("2") do |config|
                     end
                 end
 
+                node.vm.provider "virtualbox" do |virtualbox, override|
+                    override.vm.network "private_network", type: "dhcp"
+                end
             end
         end
     end
@@ -736,6 +739,10 @@ Vagrant.configure("2") do |config|
                 libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '2048'
                 libvirt.cpus =   ENV['VAGRANT_MASTER_CPUS']   || '4'
             end
+        end
+
+        subconfig.vm.provider "virtualbox" do |virtualbox, override|
+            override.vm.network "private_network", type: "dhcp"
         end
 
         if Vagrant::Util::Platform.windows? then
