@@ -157,7 +157,7 @@ if [ -d /run/systemd/system ] ; then
         systemctl restart systemd-networkd.service
     else
         printf "%s\n" "Detecting primary network interface"
-        primary_interface="$(/sbin/ip -o -0 addr | grep -v LOOPBACK | awk '{print $2}' | sed 's/://')"
+        primary_interface="$(/sbin/ip -o -0 addr | grep -v LOOPBACK | head -n1 | awk '{print $2}' | sed 's/://')"
         printf "%s\n" "Restarting ifup@${primary_interface}.service"
         systemctl stop "ifup@${primary_interface}.service" ; systemctl start "ifup@${primary_interface}.service"
     fi
@@ -682,7 +682,11 @@ Vagrant.configure("2") do |config|
                 # Don't populate '/vagrant' directory on other nodes
                 node.vm.synced_folder ".", "/vagrant", disabled: true
 
-                node.vm.provider "libvirt" do |libvirt, override|
+                if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
+                    node.ssh.insert_key = false
+                end
+
+                node.vm.provider "libvirt" do |libvirt|
                     libvirt.random_hostname = true
                     libvirt.memory = ENV['VAGRANT_NODE_MEMORY'] || '512'
                     libvirt.cpus   = ENV['VAGRANT_NODE_CPUS']   || '2'
@@ -690,12 +694,11 @@ Vagrant.configure("2") do |config|
                     if ENV['GITLAB_CI'] != "true"
                         libvirt.memory = ENV['VAGRANT_NODE_MEMORY'] || '1024'
                     end
-
-                    if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
-                        override.ssh.insert_key = false
-                    end
                 end
 
+                node.vm.provider "virtualbox" do |virtualbox, override|
+                    override.vm.network "private_network", type: "dhcp"
+                end
             end
         end
     end
@@ -719,6 +722,10 @@ Vagrant.configure("2") do |config|
             SHELL
         end
 
+        if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
+            subconfig.ssh.insert_key = false
+        end
+
         subconfig.vm.provider "libvirt" do |libvirt, override|
             # On a libvirt provider, default sync method is NFS. If we switch
             # it to 'rsync', this will drop the dependency on NFS on the host.
@@ -732,10 +739,10 @@ Vagrant.configure("2") do |config|
                 libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '2048'
                 libvirt.cpus =   ENV['VAGRANT_MASTER_CPUS']   || '4'
             end
+        end
 
-            if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
-                override.ssh.insert_key = false
-            end
+        subconfig.vm.provider "virtualbox" do |virtualbox, override|
+            override.vm.network "private_network", type: "dhcp"
         end
 
         if Vagrant::Util::Platform.windows? then
@@ -745,6 +752,8 @@ Vagrant.configure("2") do |config|
         elsif ENV['GITLAB_CI'] == "true"
             # We are running in a GitLab CI environment
             subconfig.vm.synced_folder ENV['CI_PROJECT_DIR'] || ".", "/vagrant"
+        else
+            subconfig.vm.synced_folder ENV['PROJECT_DIR'] || ".", "/vagrant"
         end
 
         if ENV['GITLAB_CI'] != "true"
