@@ -138,6 +138,10 @@ Changed
   lookups. Support for package installation via task loops will be removed in
   Ansible 2.11.
 
+- [debops.netbox] The role has been updated to NetBox version ``v2.6.1``. Redis
+  service is now required for NetBox; it can be installed separately via the
+  :ref:`debops.redis_server` Ansible role.
+
 Removed
 ~~~~~~~
 
