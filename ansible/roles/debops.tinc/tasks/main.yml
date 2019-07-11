@@ -4,11 +4,9 @@
 # Package installation [[[1
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (tinc__base_packages
+                              + tinc__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ tinc__base_packages }}'
-    - '{{ tinc__packages }}'
   register: tinc__register_install
   until: tinc__register_install is succeeded
 

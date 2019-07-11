@@ -38,14 +38,11 @@
          (mariadb__register_tunnel|d() and mariadb__register_tunnel.rc == 0))
 
 - name: Install database client packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (mariadb__base_packages
+                              + mariadb__packages_map[mariadb__flavor]
+                              + mariadb__packages)) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ mariadb__base_packages }}'
-    - '{{ mariadb__packages_map[mariadb__flavor] }}'
-    - '{{ mariadb__packages }}'
   register: mariadb__register_packages
   until: mariadb__register_packages is succeeded
 

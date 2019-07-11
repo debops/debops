@@ -2,11 +2,9 @@
 
 - name: Install packages required for System News
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (sysnews__base_packages
+                              + sysnews__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ sysnews__base_packages }}'
-    - '{{ sysnews__packages }}'
   register: sysnews__register_packages
   until: sysnews__register_packages is succeeded
 

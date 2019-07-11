@@ -1,28 +1,22 @@
 ---
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", ([ "git", "python-pip" ]
+                              + debops__base_packages
+                              + debops__packages)) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - [ 'git', 'python-pip' ]
-    - '{{ debops__base_packages }}'
-    - '{{ debops__packages }}'
   register: debops__register_packages
   until: debops__register_packages is succeeded
-  when: item|d()
 
 - name: Install DebOps from PyPI
   pip:
-    name: '{{ item }}'
+    name: '{{ q("flattened", debops__pip_packages) }}'
     state: 'present'
-  with_items: '{{ debops__pip_packages }}'
   register: debops__register_pip_install
   until: debops__register_pip_install is succeeded
   notify: '{{ [ "Update DebOps in the background with " + debops__update_method ]
               if not debops__update_method == "sync" else omit }}'
-  when: item|d()
 
 - name: Configure system-wide DebOps scripts
   template:

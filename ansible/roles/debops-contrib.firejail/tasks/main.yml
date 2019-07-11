@@ -4,14 +4,12 @@
 # Ensure specified packages are present [[[
 - name: Ensure specified packages are present
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (firejail__base_packages
+                              + firejail__packages
+                              + firejail__group_packages
+                              + firejail__host_packages)) }}'
     state: 'present'
   when: firejail__deploy_state in ["present"]
-  with_flattened:
-    - '{{ firejail__base_packages }}'
-    - '{{ firejail__packages }}'
-    - '{{ firejail__group_packages }}'
-    - '{{ firejail__host_packages }}'
   register: firejail__register_packages
   until: firejail__register_packages is succeeded
   tags: [ 'role::firejail:pkgs' ]

@@ -63,6 +63,17 @@ Added
 Changed
 ~~~~~~~
 
+- Updates of upstream application versions:
+
+  - [debops.netbox] The role has been updated to NetBox version ``v2.6.1``. Redis
+    service is now required for NetBox; it can be installed separately via the
+    :ref:`debops.redis_server` Ansible role.
+
+    The NetBox version installed by DebOps has been changed from using the
+    ``master`` branch, to specific tags, with the latest release (``v2.6.1``) set
+    by default. The :command:`git` commit signature in the NetBox repository is
+    also verified using the GitHub GPG key when the repository is cloned.
+
 - DebOps now uses ``xenial`` as the default OS release used in Travis-CI tests.
   The ``xenial`` images on Travis use the :command:`shellcheck` v0.6.0 to test
   shell scripts; if you want to run the :command:`test shell` command locally
@@ -133,6 +144,11 @@ Changed
   If you are using them in custom playbooks, you might need to update them to
   include the new dependency.
 
+- The installation of APT and other packages in DebOps roles has been
+  refactored to remove the use of the ``with_items``/``with_flattened``
+  lookups. Support for package installation via task loops will be removed in
+  Ansible 2.11.
+
 Removed
 ~~~~~~~
 
@@ -146,6 +162,12 @@ Removed
 - [debops.core] The ``core__keyserver`` variable and its local fact have been
   removed from the role. They are replaced by the :envvar:`keyring__keyserver`
   and the corresponding local fact in the :ref:`debops.keyring` role.
+
+- The ``debops.openvz`` role has been removed. OpenVZ is not supported in
+  Debian natively `since Wheezy`__; a good replacement for it is LXC which can
+  be managed using the :ref:`debops.lxc` role.
+
+  .. __: https://wiki.debian.org/OpenVz
 
 
 `debops v1.0.0`_ - 2019-05-22

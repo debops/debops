@@ -1,11 +1,9 @@
 ---
 
 - name: Install packages for Debian repository management
-  apt:
-    name: '{{ item }}'
+  package:
+    name: [ 'reprepro', 'dpkg-dev' ]
     state: 'present'
-    install_recommends: False
-  with_items: [ 'reprepro', 'dpkg-dev' ]
   register: reprepro__register_packages
   until: reprepro__register_packages is succeeded
 

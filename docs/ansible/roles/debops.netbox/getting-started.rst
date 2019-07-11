@@ -60,6 +60,13 @@ configure one on the same host as NetBox, add that host to the
 :ref:`debops.postgresql_server` role documentation to see how to use the database
 server remotely.
 
+The Redis service is used for caching and is now required by NetBox as well.
+The ``netbox__redis_*`` variables in the :ref:`debops.netbox` role can be used
+to point NetBox to a remote Redis service; by default the role expects Redis to
+be installed locally. You can deploy a Redis Server or cluster using the
+:ref:`debops.redis_server` (and optionally :ref:`debops.redis_sentinel`)
+Ansible roles. See their documentation for more details.
+
 To deploy NetBox on a given host, you need to add that host to the
 ``[debops_service_netbox]`` Ansible inventory group. Complete, example
 inventory:
@@ -67,6 +74,9 @@ inventory:
 .. code-block:: none
 
    [debops_all_hosts]
+   hostname
+
+   [debops_service_redis_server]
    hostname
 
    [debops_service_postgresql_server]

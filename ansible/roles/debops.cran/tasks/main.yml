@@ -2,14 +2,12 @@
 
 - name: Install system packages required for R support
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (cran__base_packages
+                              + cran__packages
+                              + cran__group_packages
+                              + cran__host_packages
+                              + cran__dependent_packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ cran__base_packages }}'
-    - '{{ cran__packages }}'
-    - '{{ cran__group_packages }}'
-    - '{{ cran__host_packages }}'
-    - '{{ cran__dependent_packages }}'
   register: cran__register_packages
   until: cran__register_packages is succeeded
 

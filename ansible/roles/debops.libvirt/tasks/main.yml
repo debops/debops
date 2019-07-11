@@ -1,13 +1,11 @@
 ---
 
 - name: Install libvirt support
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (libvirt__base_packages
+                              + (libvirt__packages_map[ansible_distribution_release]
+                                 | d(libvirt__packages)))) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ libvirt__base_packages }}'
-    - [ '{{ libvirt__packages_map[ansible_distribution_release]|d(libvirt__packages) }}' ]
   register: libvirt__register_packages
   until: libvirt__register_packages is succeeded
 

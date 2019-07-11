@@ -33,7 +33,11 @@
 
 - name: Ensure specified packages are in there desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (owncloud__base_packages
+                              + owncloud__packages
+                              + owncloud__group_packages
+                              + owncloud__host_packages
+                              + owncloud__dependent_packages)) }}'
     state: '{{ "absent" if (owncloud__deploy_state in [ "absent" ]) else (
                  "latest"
                  if (ansible_local|d() and ansible_local.owncloud|d() and (
@@ -43,12 +47,6 @@
                  else "present") }}'
   register: owncloud__register_apt_install
   until: owncloud__register_apt_install is succeeded
-  with_flattened:
-    - '{{ owncloud__base_packages }}'
-    - '{{ owncloud__packages }}'
-    - '{{ owncloud__group_packages }}'
-    - '{{ owncloud__host_packages }}'
-    - '{{ owncloud__dependent_packages }}'
 
 - name: Install the package manager hook script for ownCloud
   template:

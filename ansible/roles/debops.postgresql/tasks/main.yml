@@ -20,14 +20,11 @@
                                        else postgresql__register_version.stdout)) }}'
 
 - name: Install PostgreSQL packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (postgresql__base_packages
+                              + postgresql__python_packages
+                              + postgresql__packages)) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ postgresql__base_packages }}'
-    - '{{ postgresql__python_packages }}'
-    - '{{ postgresql__packages }}'
   register: postgresql__register_packages
   until: postgresql__register_packages is succeeded
 

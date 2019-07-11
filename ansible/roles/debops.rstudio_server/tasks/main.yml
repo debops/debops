@@ -45,11 +45,9 @@
 
 - name: Install RStudio Server packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (rstudio_server__base_packages
+                              + rstudio_server__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ rstudio_server__base_packages }}'
-    - '{{ rstudio_server__packages }}'
   register: rstudio_server__register_packages
   until: rstudio_server__register_packages is succeeded
 

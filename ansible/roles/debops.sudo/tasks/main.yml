@@ -11,11 +11,9 @@
   environment:
     SUDO_FORCE_REMOVE: 'yes'
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (sudo__base_packages
+                              + sudo__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ sudo__base_packages }}'
-    - '{{ sudo__packages }}'
   register: sudo__register_packages
   until: sudo__register_packages is succeeded
   when: sudo__enabled|bool

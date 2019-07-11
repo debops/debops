@@ -10,11 +10,9 @@
 
 - name: Ensure ferm is installed
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (ferm__base_packages
+                              + ferm__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ ferm__base_packages }}'
-    - '{{ ferm__packages }}'
   register: ferm__register_packages
   until: ferm__register_packages is succeeded
   when: ferm__enabled | bool

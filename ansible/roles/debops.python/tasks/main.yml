@@ -1,22 +1,12 @@
 ---
 
-- name: Install requested APT packages
-  apt:
-    name: '{{ python__combined_packages | flatten }}'
-    state: 'present'
-    install_recommends: False
-  register: python__register_apt_packages
-  until: python__register_apt_packages is succeeded
-  when: python__enabled|bool and ansible_pkg_mgr == 'apt'
-
 - name: Install requested packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", python__combined_packages) }}'
     state: 'present'
-  with_flattened: '{{ python__combined_packages }}'
   register: python__register_packages
   until: python__register_packages is succeeded
-  when: python__enabled|bool and ansible_pkg_mgr != 'apt'
+  when: python__enabled|bool
 
 - name: Make sure that Ansible local fact directory exists
   file:

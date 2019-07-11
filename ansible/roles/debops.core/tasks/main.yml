@@ -11,13 +11,11 @@
 
 - name: Install required core packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (core__base_packages
+                              + core__packages
+                              + core__group_packages
+                              + core__host_packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ core__base_packages }}'
-    - '{{ core__packages }}'
-    - '{{ core__group_packages }}'
-    - '{{ core__host_packages }}'
   register: core__register_packages
   until: core__register_packages is succeeded
   tags: [ 'meta::provision' ]

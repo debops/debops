@@ -17,10 +17,8 @@
 
 - name: Install DHCP packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", dhcpd_base_packages_map[dhcpd_mode]) }}'
     state: 'present'
-  with_flattened:
-    - '{{ dhcpd_base_packages_map[dhcpd_mode] }}'
   register: dhcpd__register_packages
   until: dhcpd__register_packages is succeeded
 

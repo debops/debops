@@ -18,13 +18,10 @@
       (apparmor__host_tunables      | d([]) | list) }}'
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (apparmor__base_packages
+                              + apparmor__packages)) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ apparmor__base_packages }}'
-    - '{{ apparmor__packages }}'
   register: apparmor__register_packages
   until: apparmor__register_packages is succeeded
 

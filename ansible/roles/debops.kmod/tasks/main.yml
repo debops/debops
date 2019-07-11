@@ -7,11 +7,9 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (kmod__base_packages
+                              + kmod__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ kmod__base_packages }}'
-    - '{{ kmod__packages }}'
   register: kmod__register_packages
   until: kmod__register_packages is succeeded
 

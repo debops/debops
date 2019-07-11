@@ -16,13 +16,11 @@
 # Manage optional system packages [[[1
 - name: Ensure optional packages are in there desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (apache__packages
+                              + apache__group_packages
+                              + apache__host_packages
+                              + apache__dependent_packages)) }}'
     state: '{{ "present" if (apache__deploy_state == "present") else "absent" }}'
-  with_flattened:
-    - '{{ apache__packages }}'
-    - '{{ apache__group_packages }}'
-    - '{{ apache__host_packages }}'
-    - '{{ apache__dependent_packages }}'
   register: apache__register_packages
   until: apache__register_packages is succeeded
 

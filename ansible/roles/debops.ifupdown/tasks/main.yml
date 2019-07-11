@@ -2,22 +2,18 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (ifupdown__base_packages
+                              + ifupdown__dynamic_packages
+                              + ifupdown__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ ifupdown__base_packages }}'
-    - '{{ ifupdown__dynamic_packages }}'
-    - '{{ ifupdown__packages }}'
   register: ifupdown__register_packages
   until: ifupdown__register_packages is succeeded
 
 - name: Purge conflicting packages
   apt:
-    name: '{{ item }}'
+    name: '{{ q("flattened", ifupdown__purge_packages) }}'
     state: 'absent'
     purge: True
-  with_flattened:
-    - '{{ ifupdown__purge_packages }}'
 
 - name: Create custom ifupdown systemd services
   include: ifup_systemd.yml

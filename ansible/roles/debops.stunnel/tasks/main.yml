@@ -4,11 +4,9 @@
   include: '{{ lookup("task_src", "stunnel/pre_main.yml") }}'
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", ([ "stunnel4", "openssl", "ssl-cert" ])) }}'
     state: 'present'
-    install_recommends: False
-  with_items: [ 'stunnel4', 'openssl', 'ssl-cert' ]
   register: stunnel__register_packages
   until: stunnel__register_packages is succeeded
 

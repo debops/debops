@@ -1,14 +1,13 @@
 ---
 
 - name: Install required Etherpad packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (etherpad__base_packages
+                              + (etherpad__document_packages
+                                 if etherpad_abiword|bool
+                                 else [])
+                              + etherpad__packages)) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ etherpad__base_packages }}'
-    - '{{ etherpad__document_packages if etherpad_abiword|bool else [] }}'
-    - '{{ etherpad__packages }}'
   register: etherpad__register_packages
   until: etherpad__register_packages is succeeded
 

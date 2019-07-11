@@ -36,9 +36,8 @@
 
 - name: Ensure specified packages are in there desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", cryptsetup__base_packages) }}'
     state: 'present'
-  with_flattened: '{{ cryptsetup__base_packages }}'
   register: cryptsetup__register_packages
   until: cryptsetup__register_packages is succeeded
 

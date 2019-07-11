@@ -1,11 +1,9 @@
 ---
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", fuse_base_packages) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened: '{{ fuse_base_packages }}'
   register: fuse__register_packages
   until: fuse__register_packages is succeeded
 
