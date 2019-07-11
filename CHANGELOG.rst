@@ -33,8 +33,9 @@ Added
     .. __: https://keybase.io/
 
   - The ``debops-contrib.neurodebian`` Ansible role has been migrated to the
-    main DebOps role namespace. This role can be used to configure the
-    `NeuroDebian`__ APT repository on Debian/Ubuntu hosts.
+    main DebOps role namespace as the :ref:`debops.neurodebian` role. This role
+    can be used to configure the `NeuroDebian`__ APT repository on
+    Debian/Ubuntu hosts.
 
     .. __: http://neuro.debian.net/
 

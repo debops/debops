@@ -53,13 +53,13 @@ methods.
 - :ref:`debops.golang`
 - :ref:`debops.hashicorp` - `HashiCorp`_ applications
 - :ref:`debops.java`
+- :ref:`debops.neurodebian`
 - :ref:`debops.nodejs`
 - :ref:`debops.php`
 - :ref:`debops.python`
 - :ref:`debops.ruby`
 - ``debops.hwraid``
 - ``debops.rails_deploy``
-- ``debops-contrib.neurodebian``
 
 
 Application services

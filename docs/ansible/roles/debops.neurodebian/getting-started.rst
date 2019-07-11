@@ -3,8 +3,6 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
 .. contents::
    :local:
 
@@ -12,28 +10,25 @@ Getting started
 Example inventory
 -----------------
 
-To install packages from NeuroDebian on a given host or set of hosts, they need to
-be added to the ``[debops_service_neurodebian]`` Ansible group in the inventory:
+To install packages from NeuroDebian on a given host or set of hosts, they need
+to be added to the ``[debops_service_neurodebian]`` Ansible group in the
+inventory:
 
 .. code:: ini
 
    [debops_service_neurodebian]
    hostname
 
+
 Example playbook
 ----------------
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses the ``debops-contrib.neurodebian`` role:
+that uses the ``debops.neurodebian`` role:
 
-.. literalinclude:: playbooks/neurodebian.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/neurodebian.yml
    :language: yaml
 
-The playbook is shipped with this role under
-:file:`./docs/playbooks/neurodebian.yml` from which you can symlink it to your
-playbook directory.
-In case you use multiple `DebOps Contrib`_ roles, consider using the
-`DebOps Contrib playbooks`_.
 
 Ansible tags
 ------------
