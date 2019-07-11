@@ -51,6 +51,13 @@ Changed
 
   .. __: https://pythonclock.org/
 
+- [debops.netbox] The role has been updated to NetBox version ``v2.6.1``. Redis
+  service is now required for NetBox; it can be installed separately via the
+  :ref:`debops.redis_server` Ansible role.
+
+  This change was backported because without it, the NetBox installation using
+  DebOps ``stable-1.0`` branch is broken.
+
 Fixed
 ~~~~~
 
