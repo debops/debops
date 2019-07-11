@@ -63,6 +63,17 @@ Added
 Changed
 ~~~~~~~
 
+- Updates of upstream application versions:
+
+  - [debops.netbox] The role has been updated to NetBox version ``v2.6.1``. Redis
+    service is now required for NetBox; it can be installed separately via the
+    :ref:`debops.redis_server` Ansible role.
+
+    The NetBox version installed by DebOps has been changed from using the
+    ``master`` branch, to specific tags, with the latest release (``v2.6.1``) set
+    by default. The :command:`git` commit signature in the NetBox repository is
+    also verified using the GitHub GPG key when the repository is cloned.
+
 - DebOps now uses ``xenial`` as the default OS release used in Travis-CI tests.
   The ``xenial`` images on Travis use the :command:`shellcheck` v0.6.0 to test
   shell scripts; if you want to run the :command:`test shell` command locally
@@ -137,15 +148,6 @@ Changed
   refactored to remove the use of the ``with_items``/``with_flattened``
   lookups. Support for package installation via task loops will be removed in
   Ansible 2.11.
-
-- [debops.netbox] The role has been updated to NetBox version ``v2.6.1``. Redis
-  service is now required for NetBox; it can be installed separately via the
-  :ref:`debops.redis_server` Ansible role.
-
-  The NetBox version installed by DebOps has been changed from using the
-  ``master`` branch, to specific tags, with the latest release (``v2.6.1``) set
-  by default. The :command:`git` commit signature in the NetBox repository is
-  also verified using the GitHub GPG key when the repository is cloned.
 
 Removed
 ~~~~~~~
