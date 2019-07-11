@@ -124,16 +124,23 @@ netbox__data: '{{ (ansible_local.root.data
 # Application sources and deployment [[[
 # --------------------------------------
 
+# .. envvar:: netbox__git_gpg_key_id [[[
+#
+# The GPG ID of the key used for signing NetBox releases. At the moment the
+# releases are signed using GitHub GPG key.
+netbox__git_gpg_key_id: '5DE3 E050 9C47 EA3C F04A  42D3 4AEE 18F8 3AFD EB23'
+
+                                                                   # ]]]
 # .. envvar:: netbox__git_repo [[[
 #
 # The URI of the NetBox :command:`git` source repository.
-netbox__git_repo: 'https://github.com/digitalocean/netbox.git'
+netbox__git_repo: 'https://github.com/netbox-community/netbox.git'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_version [[[
 #
 # The :command:`git` branch or tag which will be installed.
-netbox__git_version: 'master'
+netbox__git_version: 'v2.6.1'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_dest [[[
@@ -698,6 +705,17 @@ netbox__app_params:
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
 
+# .. envvar:: netbox__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+netbox__keyring__dependent_gpg_keys:
+
+  - user: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    home: '{{ netbox__home }}'
+    id: '{{ netbox__git_gpg_key_id }}'
+
+                                                                   # ]]]
 # .. envvar:: netbox__python__dependent_packages3 [[[
 #
 # Configuration for the :ref:`debops.python` Ansible role.

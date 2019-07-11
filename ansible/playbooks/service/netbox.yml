@@ -11,10 +11,13 @@
   roles:
 
     - role: debops.keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::postgresql', 'role::nginx' ]
+      tags: [ 'role::keyring', 'skip::keyring',
+              'role::postgresql', 'role::nginx', 'role::netbox' ]
       keyring__dependent_apt_keys:
         - '{{ postgresql__keyring__dependent_apt_keys }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
+      keyring__dependent_gpg_keys:
+        - '{{ netbox__keyring__dependent_gpg_keys }}'
 
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]

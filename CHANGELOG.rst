@@ -142,6 +142,11 @@ Changed
   service is now required for NetBox; it can be installed separately via the
   :ref:`debops.redis_server` Ansible role.
 
+  The NetBox version installed by DebOps has been changed from using the
+  ``master`` branch, to specific tags, with the latest release (``v2.6.1``) set
+  by default. The :command:`git` commit signature in the NetBox repository is
+  also verified using the GitHub GPG key when the repository is cloned.
+
 Removed
 ~~~~~~~
 
