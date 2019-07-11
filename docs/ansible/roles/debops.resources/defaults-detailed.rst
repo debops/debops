@@ -187,6 +187,21 @@ Clone the Ansible repository to the host:
      - repo: 'https://github.com/ansible/ansible'
        dest: '/usr/local/src/github.com/ansible/ansible'
 
+Clone a private repository, accessible using a SSH key. The UNIX account
+specified as the owner, or ``root`` account when otherwise, needs to have the
+SSH key accepted by the repository. This example uses `Gitea`__ instance as the
+source of the :command:`git` repository:
+
+.. __: https://gitea.io/
+
+.. code-block:: yaml
+
+   resources__repositories:
+     - repo: 'ssh://git@git.example.org:29418/namespace/repository.git'
+       owner: 'username'
+       dest: '~username/src/git.example.org/namespace/repository'
+       accept_hostkey: True
+
 
 .. _resources__ref_urls:
 
