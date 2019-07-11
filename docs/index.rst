@@ -75,6 +75,7 @@ infrastructure environments.
 
    overview
    introduction/quick-start
+   introduction/getting-started
    introduction/faq
    introduction/community
    introduction/philosophy

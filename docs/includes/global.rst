@@ -919,7 +919,6 @@
 .. _DebOps bootstrap-ldap playbook: https://github.com/debops/debops/blob/master/ansible/playbooks/bootstrap-ldap.yml
 .. _DebOps Documentation: https://docs.debops.org/en/latest/
 .. _DebOps Examples: https://github.com/debops/examples/
-.. _Getting Started with DebOps: https://docs.debops.org/en/latest/debops-playbooks/guides/getting-started.html
 .. _DebOps Contrib: https://github.com/debops-contrib/debops-contrib
 .. _DebOps Contrib playbooks: https://github.com/debops-contrib/debops-contrib-playbooks
 .. _DebOps Policy: https://docs.debops.org/en/latest/debops-policy/docs/index.html
