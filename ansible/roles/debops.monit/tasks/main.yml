@@ -2,11 +2,9 @@
 
 - name: Install Monit packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (monit__base_packages
+                              + monit__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ monit__base_packages }}'
-    - '{{ monit__packages }}'
   register: monit__register_packages
   until: monit__register_packages is succeeded
 

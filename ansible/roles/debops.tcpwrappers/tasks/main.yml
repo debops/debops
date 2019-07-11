@@ -2,11 +2,9 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (tcpwrappers__base_packages
+                              + tcpwrappers__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ tcpwrappers__base_packages }}'
-    - '{{ tcpwrappers__packages }}'
   register: tcpwrappers__register_packages
   until: tcpwrappers__register_packages is succeeded
   when: tcpwrappers__enabled | bool

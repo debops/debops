@@ -4,11 +4,9 @@
   include: '{{ lookup("task_src", "tgt/pre_main.yml") }}'
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", tgt_packages) }}'
     state: 'present'
-    install_recommends: False
-  with_items: '{{ tgt_packages }}'
   register: tgt__register_packages
   until: tgt__register_packages is succeeded
 

@@ -2,13 +2,11 @@
 
 - name: Install Go packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (golang__base_packages
+                              + golang__packages
+                              + golang__group_packages
+                              + golang__host_packages
+                              + golang__dependent_packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ golang__base_packages }}'
-    - '{{ golang__packages }}'
-    - '{{ golang__group_packages }}'
-    - '{{ golang__host_packages }}'
-    - '{{ golang__dependent_packages }}'
   register: golang__register_packages
   until: golang__register_packages is succeeded

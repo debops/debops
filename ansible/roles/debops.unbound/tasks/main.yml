@@ -65,11 +65,9 @@
 
 - name: Install unbound APT packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (unbound__base_packages
+                              + unbound__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ unbound__base_packages }}'
-    - '{{ unbound__packages }}'
   register: unbound__register_packages
   until: unbound__register_packages is succeeded
 

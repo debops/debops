@@ -1,15 +1,14 @@
 ---
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (([ "php5-memcached" ]
+                               if librenms__memcached|d()
+                               else [])
+                              + librenms__base_packages
+                              + librenms__monitoring_packages
+                              + librenms__packages)) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - [ '{{ "php5-memcached" if librenms__memcached|d() else [] }}' ]
-    - '{{ librenms__base_packages }}'
-    - '{{ librenms__monitoring_packages }}'
-    - '{{ librenms__packages }}'
   register: librenms__register_packages
   until: librenms__register_packages is succeeded
 

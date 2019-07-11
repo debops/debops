@@ -1,13 +1,11 @@
 ---
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", fcgiwrap__packages) }}'
     state: 'present'
-    install_recommends: False
   register: fcgiwrap__register_install
   until: fcgiwrap__register_install is succeeded
-  with_items: '{{ fcgiwrap__packages }}'
 
 - name: Check the fcgiwrap version
   environment:

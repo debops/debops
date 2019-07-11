@@ -4,11 +4,9 @@
   include: "{{ lookup('task_src', 'iscsi/pre_main.yml') }}"
 
 - name: Install required iSCSI packages
-  apt:
-    name:  '{{ item }}'
+  package:
+    name:  '{{ q("flattened", iscsi__packages) }}'
     state: 'present'
-    install_recommends: False
-  with_items: '{{ iscsi__packages }}'
   register: iscsi__register_packages
   until: iscsi__register_packages is succeeded
 

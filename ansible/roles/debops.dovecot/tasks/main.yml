@@ -4,18 +4,29 @@
   include: "{{ lookup('task_src', 'dovecot/pre_main.yml') }}"
 
 - name: Install Dovecot packages
-  apt:
-    pkg: '{{ item }}'
+  package:
+    name: '{{ q("flattened", ([ "dovecot-core" ]
+                              + ([ "dovecot-imapd" ]
+                                 if "imap" in dovecot_protocols
+                                 else [])
+                              + ([ "dovecot-pop3d" ]
+                                 if "pop3" in dovecot_protocols
+                                 else [])
+                              + ([ "dovecot-lmtpd" ]
+                                 if "lmtp" in dovecot_protocols
+                                 else [])
+                              + ([ "dovecot-mysql" ]
+                                 if (("sql" in dovecot_user_accounts) and
+                                     ("mysql" in dovecot_sql_driver))
+                                 else [])
+                              + ([ "dovecot-pgsql" ]
+                                 if (("sql" in dovecot_user_accounts) and
+                                     ("pgsql" in dovecot_sql_driver))
+                                 else [])
+                              + ([ "dovecot-managesieved" ]
+                                 if "managesieve" in dovecot_protocols
+                                 else []))) }}'
     state: 'present'
-    install_recommends: 'no'
-  with_flattened:
-    - [ 'dovecot-core' ]
-    - [ '{{ "dovecot-imapd" if "imap" in dovecot_protocols else [] }}' ]
-    - [ '{{ "dovecot-pop3d" if "pop3" in dovecot_protocols else [] }}' ]
-    - [ '{{ "dovecot-lmtpd" if "lmtp" in dovecot_protocols else [] }}' ]
-    - [ '{{ "dovecot-mysql" if (("sql" in dovecot_user_accounts) and ("mysql" in dovecot_sql_driver)) else [] }}' ]
-    - [ '{{ "dovecot-pgsql" if (("sql" in dovecot_user_accounts) and ("pgsql" in dovecot_sql_driver)) else [] }}' ]
-    - [ '{{ "dovecot-managesieved" if "managesieve" in dovecot_protocols else [] }}' ]
   register: dovecot__register_packages
   until: dovecot__register_packages is succeeded
 
@@ -59,18 +70,28 @@
             if "managesieve" not in dovecot_protocols else [] }}' ]
 
 - name: Uninstall disabled Dovecot protocols
-  apt:
-    pkg: '{{ item }}'
+  package:
+    pkg: '{{ q("flattened", (([ "dovecot-imapd" ]
+                              if "imap" not in dovecot_protocols
+                              else [])
+                             + ([ "dovecot-pop3d" ]
+                                if "pop3" not in dovecot_protocols
+                                else [])
+                             + ([ "dovecot-lmtpd" ]
+                                if "lmtp" not in dovecot_protocols
+                                else [])
+                             + ([ "dovecot-mysql" ]
+                                 if (("sql" not in dovecot_user_accounts) or
+                                     ("mysql" not in dovecot_sql_driver))
+                                 else [])
+                             + ([ "dovecot-pgsql" ]
+                                if (("sql" not in dovecot_user_accounts) or
+                                    ("pgsql" not in dovecot_sql_driver))
+                                else [])
+                             + ([ "dovecot-managesieved" ]
+                                if "managesieve" not in dovecot_protocols
+                                else []))) }}'
     state: 'absent'
-  with_flattened:
-    - [ '{{ "dovecot-imapd" if "imap" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "dovecot-pop3d" if "pop3" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "dovecot-lmtpd" if "lmtp" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "dovecot-mysql"
-        if (("sql" not in dovecot_user_accounts) or ("mysql" not in dovecot_sql_driver)) else [] }}' ]
-    - [ '{{ "dovecot-pgsql"
-            if (("sql" not in dovecot_user_accounts) or ("pgsql" not in dovecot_sql_driver)) else [] }}' ]
-    - [ '{{ "dovecot-managesieved" if "managesieve" not in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
 - name: Generate Dovecot configuration

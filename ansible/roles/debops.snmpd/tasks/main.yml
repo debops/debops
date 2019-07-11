@@ -10,27 +10,30 @@
   check_mode: False
 
 - name: Install required packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", ([ "snmp", "snmpd" ]
+                              + ([ "snmp-mibs-downloader" ]
+                                 if snmpd_download_mibs
+                                 else [])
+                              + ([ "lldpd" ]
+                                 if snmpd_lldpd
+                                 else [])
+                              + ([ "lm-sensors" ]
+                                 if (ansible_virtualization_role is undefined or
+                                     ansible_virtualization_role not in [ "guest" ])
+                                 else [] )
+                              + snmpd_packages)) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - [ 'snmp', 'snmpd' ]
-    - [ '{{ "snmp-mibs-downloader" if snmpd_download_mibs else [] }}' ]
-    - [ '{{ "lldpd" if snmpd_lldpd else [] }}' ]
-    - [ '{{ "lm-sensors" if (ansible_virtualization_role is undefined or
-                             ansible_virtualization_role not in [ "guest" ]) else [] }}' ]
-    - '{{ snmpd_packages }}'
   register: snmpd__register_packages
   until: snmpd__register_packages is succeeded
 
 - name: Uninstall packages if requested
   apt:
-    name: '{{ item }}'
+    name: '{{ q("flattened", ([ "lldpd" ]
+                              if (not snmpd_lldpd)
+                              else [])) }}'
     state: 'absent'
     purge: True
-  with_flattened:
-    - [ '{{ "lldpd" if not snmpd_lldpd else [] }}' ]
 
 - name: Install custom snmpd.service unit file
   copy:

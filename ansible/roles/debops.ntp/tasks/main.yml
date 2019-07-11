@@ -5,10 +5,9 @@
     that: not ntp__daemon or ntp__daemon in [ 'chrony', 'ntpd', 'ntpdate', 'openntpd', 'systemd-timesyncd' ]
 
 - name: Install required packages
-  apt:
+  package:
     name: [ 'tzdata' ]
     state: '{{ "present" if (ansible_local|d() and ansible_local.ntp|d()) else "latest" }}'
-    install_recommends: False
   register: ntp__register_apt_tzdata
   until: ntp__register_apt_tzdata is succeeded
 

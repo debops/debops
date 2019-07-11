@@ -124,16 +124,23 @@ netbox__data: '{{ (ansible_local.root.data
 # Application sources and deployment [[[
 # --------------------------------------
 
+# .. envvar:: netbox__git_gpg_key_id [[[
+#
+# The GPG ID of the key used for signing NetBox releases. At the moment the
+# releases are signed using GitHub GPG key.
+netbox__git_gpg_key_id: '5DE3 E050 9C47 EA3C F04A  42D3 4AEE 18F8 3AFD EB23'
+
+                                                                   # ]]]
 # .. envvar:: netbox__git_repo [[[
 #
 # The URI of the NetBox :command:`git` source repository.
-netbox__git_repo: 'https://github.com/digitalocean/netbox.git'
+netbox__git_repo: 'https://github.com/netbox-community/netbox.git'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_version [[[
 #
 # The :command:`git` branch or tag which will be installed.
-netbox__git_version: 'master'
+netbox__git_version: 'v2.6.1'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_dest [[[
@@ -256,6 +263,59 @@ netbox__database_password: '{{ lookup("password", secret + "/postgresql/" +
 netbox__load_initial_data: True
                                                                    # ]]]
                                                                    # ]]]
+# Redis database configuration [[[
+# --------------------------------
+
+# The Redis database configuration is managed by the :ref:`debops.redis_server`
+# Ansible role. See its documentation for details about the default variable
+# values used in the NetBox role.
+
+# .. envvar:: netbox__redis_host [[[
+#
+# Define hostname of the Redis server to use.
+netbox__redis_host: '{{ ansible_local.redis_server.host
+                         if (ansible_local|d() and ansible_local.redis_server|d() and
+                             ansible_local.redis_server.host|d())
+                         else "localhost" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__redis_port [[[
+#
+# Define port of Redis server to use.
+netbox__redis_port: '{{ ansible_local.redis_server.port
+                        if (ansible_local|d() and ansible_local.redis_server|d() and
+                            ansible_local.redis_server.port|d())
+                        else "6379" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__redis_password [[[
+#
+# Define the Redis authentication password to use.
+netbox__redis_password: '{{ ansible_local.redis_server.password
+                            if (ansible_local|d() and ansible_local.redis_server|d() and
+                                ansible_local.redis_server.password|d())
+                            else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__redis_database [[[
+#
+# Specify which Redis database to use for NetBox.
+netbox__redis_database: '0'
+
+                                                                   # ]]]
+# .. envvar:: netbox__redis_cache_database [[[
+#
+# Specify which Redis database to use for NetBox chache.
+netbox__redis_cache_database: '{{ (netbox__redis_database|int + 1) }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__redis_ssl [[[
+#
+# Enable or disable support for encrypted connections to Redis. Currently this
+# option has no support in DebOps.
+netbox__redis_ssl: False
+                                                                   # ]]]
+                                                                   # ]]]
 # NetBox configuration options [[[
 # --------------------------------
 
@@ -282,6 +342,19 @@ netbox__config_secret_key: '{{ lookup("password", secret + "/netbox/" +
 # By default the role uses the list of private admin e-mails from the
 # :ref:`debops.core` Ansible role.
 netbox__config_admins: '{{ lookup("template", "lookup/netbox__config_admins.j2") | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_cache_timeout [[[
+#
+# Cache timeout in seconds. Set to 0 to disable caching.
+netbox__config_cache_timeout: 3600
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_changelog_retention [[[
+#
+# Maximum number of days to retain logged changes. Set to 0 to retain changes
+# indefinitely.
+netbox__config_changelog_retention: 90
 
                                                                    # ]]]
 # .. envvar:: netbox__config_cors_origin_allow_all [[[
@@ -356,6 +429,13 @@ netbox__config_logging: {}
 # ``False``, some information stored in the NetBox database is accessible in
 # the read-only mode for anonymous users.
 netbox__config_login_required: True
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_login_timeout [[[
+#
+# The length of time (in seconds) for which a user will remain logged into the web UI before being prompted to
+# re-authenticate. (Default: 14 days)
+netbox__config_login_timeout: '{{ (60 * 60 * 24 * 14) }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_base_path [[[
@@ -488,6 +568,38 @@ netbox__config_prefer_ipv4: False
 netbox__config_enforce_global_unique: False
 
                                                                    # ]]]
+# .. envvar:: netbox__config_exempt_view_permissions [[[
+#
+# Exempt certain models from the enforcement of view permissions. Models listed
+# here will be viewable by all users and by anonymous users. List models in the
+# form `<app>.<model>`. Add '*' to this list to exempt all models.
+netbox__config_exempt_view_permissions: []
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_metrics_enabled [[[
+#
+# When enabled, expose Prometheus monitoring metrics at the HTTP endpoint
+# '/metrics'.
+netbox__config_metrics_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_webhooks_enabled [[[
+#
+# The webhooks backend is disabled by default. Set this to True to enable it. Note that this requires a Redis
+# # database be configured and accessible by NetBox.
+netbox__config_webhooks_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_session_file_path [[[
+#
+# By default, NetBox will store session data in the database. Alternatively,
+# a file path can be specified here to use local file storage instead. (This
+# can be useful for enabling authentication on a standby instance with
+# read-only database access.) Note that the user as which NetBox runs must have
+# read and write permissions to this path.
+netbox__config_session_file_path: False
+
+                                                                   # ]]]
 # .. envvar:: netbox__config_media_root [[[
 #
 # Absolute path where Nebox stores upladed media files.
@@ -593,6 +705,17 @@ netbox__app_params:
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
 
+# .. envvar:: netbox__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+netbox__keyring__dependent_gpg_keys:
+
+  - user: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    home: '{{ netbox__home }}'
+    id: '{{ netbox__git_gpg_key_id }}'
+
+                                                                   # ]]]
 # .. envvar:: netbox__python__dependent_packages3 [[[
 #
 # Configuration for the :ref:`debops.python` Ansible role.

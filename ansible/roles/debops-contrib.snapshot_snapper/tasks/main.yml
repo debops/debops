@@ -23,9 +23,8 @@
 
 - name: Ensure specified packages are in there desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", snapshot_snapper__combined_packages) }}'
     state: 'present'
-  with_flattened: '{{ snapshot_snapper__combined_packages }}'
   register: snapshot_snapper__register_packages
   until: snapshot_snapper__register_packages is succeeded
 

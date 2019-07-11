@@ -2,11 +2,10 @@
 
 - name: Ensure specified packages are in there desired state
   apt:
-    name: '{{ item }}'
+    name: '{{ q("flattened", x2go_server__base_packages) }}'
     state: '{{ "latest" if (x2go_server__deploy_state == "present") else "absent" }}'
     install_recommends: False
     purge: True
-  with_flattened: '{{ x2go_server__base_packages }}'
   register: x2go_server__register_packages
   until: x2go_server__register_packages is succeeded
   when: (not ansible_check_mode)

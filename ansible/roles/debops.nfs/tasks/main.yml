@@ -2,11 +2,9 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (nfs__base_packages
+                              + nfs__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ nfs__base_packages }}'
-    - '{{ nfs__packages }}'
   register: nfs__register_packages
   until: nfs__register_packages is succeeded
 

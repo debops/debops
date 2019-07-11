@@ -5,12 +5,10 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (hashicorp__base_packages
+                              + hashicorp__packages
+                              + hashicorp__dependent_packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ hashicorp__base_packages }}'
-    - '{{ hashicorp__packages }}'
-    - '{{ hashicorp__dependent_packages }}'
   register: hashicorp__register_packages
   until: hashicorp__register_packages is succeeded
   when: (hashicorp__applications or hashicorp__dependent_applications)

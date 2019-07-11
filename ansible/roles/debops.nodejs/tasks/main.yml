@@ -10,7 +10,12 @@
 
 - name: Install APT packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (nodejs__base_packages
+                              + nodejs__distribution_packages
+                              + nodejs__packages
+                              + nodejs__group_packages
+                              + nodejs__host_packages
+                              + nodejs__dependent_packages)) }}'
     state: '{{ "latest"
                if (nodejs__upstream | bool and
                    (ansible_local|d() and ansible_local.nodejs|d() and
@@ -23,13 +28,6 @@
                          ansible_local.nodejs.upstream is defined and
                          not ansible_local.nodejs.upstream|bool))
                     else omit }}'
-  with_flattened:
-    - '{{ nodejs__base_packages }}'
-    - '{{ nodejs__distribution_packages }}'
-    - '{{ nodejs__packages }}'
-    - '{{ nodejs__group_packages }}'
-    - '{{ nodejs__host_packages }}'
-    - '{{ nodejs__dependent_packages }}'
   register: nodejs__register_packages
   until: nodejs__register_packages is succeeded
 

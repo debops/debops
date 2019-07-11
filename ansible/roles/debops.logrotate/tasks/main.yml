@@ -1,10 +1,9 @@
 ---
 
 - name: Install required packages
-  apt:
+  package:
     name: '{{ (logrotate__base_packages + logrotate__packages) | flatten }}'
     state: 'present'
-    install_recommends: False
   register: logrotate__register_packages
   until: logrotate__register_packages is succeeded
   when: logrotate__enabled|bool

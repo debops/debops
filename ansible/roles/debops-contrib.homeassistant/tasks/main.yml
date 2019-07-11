@@ -3,9 +3,8 @@
 
 - name: Ensure specified packages are in there desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", homeassistant__combined_packages) }}'
   when: (homeassistant__deploy_state == "present")
-  with_flattened: '{{ homeassistant__combined_packages }}'
   register: homeassistant__register_packages
   until: homeassistant__register_packages is succeeded
   tags: [ 'role::homeassistant:pkgs' ]

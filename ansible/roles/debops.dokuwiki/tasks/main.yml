@@ -1,13 +1,10 @@
 ---
 
 - name: Install requested packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", (dokuwiki__base_packages
+                              + dokuwiki__packages)) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ dokuwiki__base_packages }}'
-    - '{{ dokuwiki__packages }}'
   register: dokuwiki__register_packages
   until: dokuwiki__register_packages is succeeded
 

@@ -1,11 +1,9 @@
 ---
 
 - name: Install LVM support
-  apt:
-    name:  '{{ item }}'
+  package:
+    name:  '{{ q("flattened", lvm__packages) }}'
     state: 'present'
-    install_recommends: False
-  with_items: '{{ lvm__packages }}'
   register: lvm__register_packages
   until: lvm__register_packages is succeeded
 

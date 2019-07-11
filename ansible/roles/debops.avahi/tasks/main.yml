@@ -66,11 +66,9 @@
 
 - name: Install required packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (avahi__base_packages
+                              + avahi__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ avahi__base_packages }}'
-    - '{{ avahi__packages }}'
   register: avahi__register_packages
   until: avahi__register_packages is succeeded
 

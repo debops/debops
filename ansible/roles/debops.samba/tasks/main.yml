@@ -2,12 +2,9 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 - name: Install Samba packages
-  apt:
-    pkg: '{{ item }}'
+  package:
+    name: '{{ q("flattened", samba__base_packages) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ samba__base_packages }}'
   register: samba__register_packages
   until: samba__register_packages is succeeded
 

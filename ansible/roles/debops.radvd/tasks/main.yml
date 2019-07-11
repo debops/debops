@@ -2,11 +2,9 @@
 
 - name: Install radvd support
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", (radvd__base_packages
+                              + radvd__packages)) }}'
     state: 'present'
-  with_flattened:
-    - '{{ radvd__base_packages }}'
-    - '{{ radvd__packages }}'
   register: radvd__register_packages
   until: radvd__register_packages is succeeded
 

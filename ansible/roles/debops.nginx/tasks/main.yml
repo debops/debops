@@ -28,20 +28,16 @@
 
 - name: Ensure base packages are installed
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", nginx_base_packages) }}'
     state: 'present'
   when: (nginx__deploy_state in [ 'present' ])
-  with_flattened:
-    - '{{ nginx_base_packages }}'
   register: nginx__register_packages_present
   until: nginx__register_packages_present is succeeded
 
 - name: Ensure Nginx packages are in their desired state
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", nginx__flavor_packages) }}'
     state: '{{ "present" if (nginx__deploy_state == "present") else "absent" }}'
-  with_flattened:
-    - '{{ nginx__flavor_packages }}'
   register: nginx__register_packages_flavor
   until: nginx__register_packages_flavor is succeeded
 

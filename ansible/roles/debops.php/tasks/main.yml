@@ -13,12 +13,9 @@
   check_mode: False
 
 - name: Install PHP packages
-  apt:
-    name: '{{ item }}'
+  package:
+    name: '{{ q("flattened", php__register_filtered_packages.stdout.strip().splitlines()) }}'
     state: 'present'
-    install_recommends: False
-  with_flattened:
-    - '{{ php__register_filtered_packages.stdout.strip().splitlines() }}'
   register: php__register_packages
   until: php__register_packages is succeeded
   notify: [ 'Restart php-fpm' ]
