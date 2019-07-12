@@ -100,6 +100,12 @@ docker__packages: []
 # Docker host connection [[[
 # --------------------------
 
+# .. envvar:: docker__docker_host_fqdn [[[
+#
+# FQDN of the Docker host, needed when connecting over TCP.
+docker__docker_host_fqdn: 'docker.{{ ansible_domain }}'
+
+                                                                   # ]]]
 # .. envvar:: docker__docker_host [[[
 #
 # The default URL or Unix socket path used to connect to the Docker host.
@@ -112,7 +118,7 @@ docker__docker_host: '{{ "unix:///var/run/docker.sock"
                          if (ansible_local|d() and
                              ansible_local.docker_server|d() and
                              ansible_local.docker_server.installed|d())
-                         else "tcp://docker." + ansible_domain + ":2376" }}'
+                         else "tcp://" + docker__docker_host_fqdn + ":2376" }}'
 
                                                                    # ]]]
 # .. envvar:: docker__api_version [[[
@@ -200,7 +206,7 @@ docker__tls_hostname: '{{ ""
                           if (ansible_local|d() and
                               ansible_local.docker_server|d() and
                               ansible_local.docker_server.installed|d())
-                          else "docker." + ansible_domain }}'
+                          else docker__docker_host_fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: docker__ssl_version [[[
