@@ -20,15 +20,15 @@
 - name: Symlink certificate files to /root/.docker/
   file:
     path: '/root/.docker/{{ item.dest }}'
-    src: '{{ docker__pki_path + "/" + docker__pki_realm + "/" + item.src }}'
+    src: '{{ item.src }}'
     state: 'link'
   with_items:
     - dest: 'ca.pem'
-      src: '{{ docker__pki_ca }}'
+      src: '{{ docker__pki_ca_path }}'
     - dest: 'cert.pem'
-      src: '{{ docker__pki_crt }}'
+      src: '{{ docker__pki_crt_path }}'
     - dest: 'key.pem'
-      src: '{{ docker__pki_key }}'
+      src: '{{ docker__pki_key_path }}'
   when: docker__pki|bool
 
 - name: Manage Docker components
