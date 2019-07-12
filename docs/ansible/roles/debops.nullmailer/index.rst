@@ -8,7 +8,7 @@ debops.nullmailer
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    copyright
 

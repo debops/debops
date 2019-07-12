@@ -9,7 +9,7 @@ debops.cryptsetup
    introduction
    getting-started
    guides
-   defaults
+   defaults/main
    defaults-detailed
    copyright
    upgrade

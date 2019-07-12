@@ -15,7 +15,7 @@ multiple Redis Sentinel instances on Debian/Ubuntu hosts.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    config-pipeline
 

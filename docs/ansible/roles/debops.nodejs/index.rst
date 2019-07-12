@@ -8,7 +8,7 @@ debops.nodejs
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

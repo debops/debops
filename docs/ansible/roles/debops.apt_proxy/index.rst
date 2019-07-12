@@ -8,7 +8,7 @@ debops.apt_proxy
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

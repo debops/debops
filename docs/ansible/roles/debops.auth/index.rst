@@ -8,7 +8,7 @@ debops.auth
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

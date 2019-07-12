@@ -13,7 +13,7 @@ processes that don't belong to a particular user account.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
 
 Copyright
 ---------

@@ -8,7 +8,7 @@ debops.mariadb_server
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    copyright
 

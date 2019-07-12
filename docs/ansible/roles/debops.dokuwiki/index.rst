@@ -8,7 +8,7 @@ debops.dokuwiki
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

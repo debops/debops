@@ -8,7 +8,7 @@ debops.debops_api
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

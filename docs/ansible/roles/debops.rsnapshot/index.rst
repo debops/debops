@@ -21,7 +21,7 @@ remote hosts over SSH.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    guides
 

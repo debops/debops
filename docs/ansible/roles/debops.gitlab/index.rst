@@ -8,7 +8,7 @@ debops.gitlab
 
    introduction
    getting-started
-   defaults
+   defaults/main
    remote_db
    copyright
 

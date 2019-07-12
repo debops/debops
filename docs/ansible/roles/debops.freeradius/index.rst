@@ -14,7 +14,7 @@ FreeRADIUS server on a Debian/Ubuntu hosts.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    example-eduroam
 

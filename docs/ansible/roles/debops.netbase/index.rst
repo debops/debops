@@ -13,7 +13,7 @@ network or larger clusters usage of a real DNS server is preferred.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

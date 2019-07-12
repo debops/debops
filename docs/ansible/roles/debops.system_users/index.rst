@@ -18,7 +18,7 @@ without special modifications related to LDAP support.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

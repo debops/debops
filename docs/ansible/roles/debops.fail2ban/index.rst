@@ -8,7 +8,7 @@ debops.fail2ban
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    copyright
 

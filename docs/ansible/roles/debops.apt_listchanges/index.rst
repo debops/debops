@@ -8,7 +8,7 @@ debops.apt_listchanges
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

@@ -24,7 +24,7 @@ UNIX groups to the services managed by these roles.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

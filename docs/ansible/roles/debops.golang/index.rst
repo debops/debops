@@ -8,7 +8,7 @@ debops.golang
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

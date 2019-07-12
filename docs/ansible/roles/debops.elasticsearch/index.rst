@@ -8,7 +8,7 @@ debops.elasticsearch
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    clustering
    dependency

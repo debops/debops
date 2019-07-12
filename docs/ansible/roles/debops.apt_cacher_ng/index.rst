@@ -8,7 +8,7 @@ debops.apt_cacher_ng
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
    upgrade
 

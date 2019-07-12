@@ -21,7 +21,7 @@ packages and operate normally.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
 
 Copyright
 ---------

@@ -8,7 +8,7 @@ debops.apache
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    ansible-integration
    copyright

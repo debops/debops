@@ -12,7 +12,7 @@ debops.pki
    internal-ca
    acme-integration
    external-certificates
-   defaults
+   defaults/main
    defaults-detailed
    system-ca-certificates
    custom-files

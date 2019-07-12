@@ -8,7 +8,7 @@ debops.postconf
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

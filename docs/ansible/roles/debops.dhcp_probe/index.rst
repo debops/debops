@@ -18,7 +18,7 @@ system administrator with notification on newly detected rogue DHCP servers.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

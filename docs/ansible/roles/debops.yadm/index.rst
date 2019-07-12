@@ -27,7 +27,7 @@ Ansible roles to deploy dotfiles locally.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

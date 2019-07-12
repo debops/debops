@@ -8,7 +8,7 @@ debops.postfix
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    defaults-maincf
    defaults-mastercf

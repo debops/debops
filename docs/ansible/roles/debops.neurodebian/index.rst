@@ -16,7 +16,7 @@ derivatives.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
 
 Copyright
 ---------

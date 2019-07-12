@@ -8,7 +8,7 @@ debops.libvirtd_qemu
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    copyright
 

@@ -8,7 +8,7 @@ debops.persistent_paths
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    guides
    copyright

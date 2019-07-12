@@ -8,7 +8,7 @@ debops.snmpd
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

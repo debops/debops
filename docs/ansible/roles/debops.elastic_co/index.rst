@@ -8,7 +8,7 @@ debops.elastic_co
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

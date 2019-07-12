@@ -16,7 +16,7 @@ options on their behalf.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

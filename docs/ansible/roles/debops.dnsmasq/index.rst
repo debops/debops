@@ -21,7 +21,7 @@ the :ref:`debops.ifupdown`, and adjusts the configuration automatically.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

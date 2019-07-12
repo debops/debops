@@ -8,7 +8,7 @@ debops.apt_install
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    copyright
 

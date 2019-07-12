@@ -8,7 +8,7 @@ debops.ntp
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

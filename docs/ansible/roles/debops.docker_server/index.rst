@@ -8,7 +8,7 @@ debops.docker_server
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    docker-virtualenv
    copyright

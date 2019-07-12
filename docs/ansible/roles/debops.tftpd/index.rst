@@ -12,7 +12,7 @@ hosts on the network, allowing for network boot and OS installation.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
 
 Copyright
 ---------
