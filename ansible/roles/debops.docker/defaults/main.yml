@@ -168,19 +168,22 @@ docker__pki_realm: '{{ ansible_local.pki.realm
 # .. envvar:: docker__pki_ca_path [[[
 #
 # Absolute path to the root CA certificate used by the Docker client.
-docker__pki_ca_path: '{{ docker__pki_path + "/" + docker__pki_realm + "/CA.crt" }}'
+docker__pki_ca_path: '{{ docker__pki_path + "/" + docker__pki_realm
+                         + "/CA.crt" }}'
 
                                                                    # ]]]
 # .. envvar:: docker__pki_crt_path [[[
 #
 # Absolute path to the certificate used by the Docker client.
-docker__pki_crt_path: '{{ docker__pki_path + "/" + docker__pki_realm + "/default.crt" }}'
+docker__pki_crt_path: '{{ docker__pki_path + "/" + docker__pki_realm
+                          + "/default.crt" }}'
 
                                                                    # ]]]
 # .. envvar:: docker__pki_key_path [[[
 #
 # Absolute path to the private key used by the Docker client.
-docker__pki_key_path: '{{ docker__pki_path + "/" + docker__pki_realm + "/default.key" }}'
+docker__pki_key_path: '{{ docker__pki_path + "/" + docker__pki_realm
+                          + "/default.key" }}'
 
                                                                    # ]]]
 # .. envvar:: docker__tls_verify [[[
@@ -265,13 +268,20 @@ docker__group_containers: []
 docker__host_containers: []
 
                                                                    # ]]]
+# .. envvar:: docker__dependent_containers [[[
+#
+# List of containers managed by another Ansible role.
+docker__dependent_containers: []
+
+                                                                   # ]]]
 # .. envvar:: docker__combined_containers [[[
 #
 # List of containers selected by the role for configuration. This variable is
 # used in the role tasks.
 docker__combined_containers: '{{ docker__containers
                                  + docker__group_containers
-                                 + docker__host_containers }}'
+                                 + docker__host_containers
+                                 + docker__dependent_containers }}'
                                                                    # ]]]
                                                                    # ]]]
 # Docker networks [[[
@@ -298,13 +308,20 @@ docker__group_networks: []
 docker__host_networks: []
 
                                                                    # ]]]
+# .. envvar:: docker__dependent_networks [[[
+#
+# List of networks managed by another Ansible role.
+docker__dependent_networks: []
+
+                                                                   # ]]]
 # .. envvar:: docker__combined_networks [[[
 #
 # List of networks selected by the role for configuration. This variable is
 # used in the role tasks.
 docker__combined_networks: '{{ docker__networks
                                + docker__group_networks
-                               + docker__host_networks }}'
+                               + docker__host_networks
+                               + docker__dependent_networks }}'
                                                                    # ]]]
                                                                    # ]]]
 # Docker registry accounts [[[
@@ -332,13 +349,20 @@ docker__group_registry_accounts: []
 docker__host_registry_accounts: []
 
                                                                    # ]]]
+# .. envvar:: docker__dependent_registry_accounts [[[
+#
+# List of registry accounts managed by another Ansible role.
+docker__dependent_registry_accounts: []
+
+                                                                   # ]]]
 # .. envvar:: docker__combined_registry_accounts [[[
 #
 # List of registry accounts selected by the role for configuration. This
 # variable is used in the role tasks.
 docker__combined_registry_accounts: '{{ docker__registry_accounts
                                         + docker__group_registry_accounts
-                                        + docker__host_registry_accounts }}'
+                                        + docker__host_registry_accounts
+                                        + docker__dependent_registry_accounts }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
