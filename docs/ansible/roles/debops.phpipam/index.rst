@@ -18,7 +18,7 @@ nginx as a webserver (using :ref:`debops.nginx`).
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
 
 Copyright
 ---------

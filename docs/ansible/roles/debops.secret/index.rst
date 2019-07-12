@@ -8,7 +8,7 @@ debops.secret
 
    introduction
    getting-started
-   defaults
+   defaults/main
    guides
    copyright
 

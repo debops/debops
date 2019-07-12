@@ -19,7 +19,7 @@ the LDAP directory used by :command:`nslcd` to perform LDAP lookups.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    ldap-dit
 

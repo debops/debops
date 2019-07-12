@@ -8,7 +8,7 @@ debops.etherpad
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

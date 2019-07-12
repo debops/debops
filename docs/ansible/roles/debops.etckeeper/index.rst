@@ -20,7 +20,7 @@ Ansible facts are gathered.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 

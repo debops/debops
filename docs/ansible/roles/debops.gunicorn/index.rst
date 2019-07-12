@@ -8,7 +8,7 @@ debops.gunicorn
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    virtualenv-support
    copyright

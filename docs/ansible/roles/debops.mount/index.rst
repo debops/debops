@@ -16,7 +16,7 @@ configure the NFS client service.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

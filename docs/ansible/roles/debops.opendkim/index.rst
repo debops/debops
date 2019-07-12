@@ -8,7 +8,7 @@ debops.opendkim
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    defaults-config
    copyright

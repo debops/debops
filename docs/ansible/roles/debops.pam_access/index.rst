@@ -14,7 +14,7 @@ revoke access to services based on users, groups and origins.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

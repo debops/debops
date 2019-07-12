@@ -8,7 +8,7 @@ debops.dhparam
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

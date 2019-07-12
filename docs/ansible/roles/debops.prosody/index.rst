@@ -8,7 +8,7 @@ debops.prosody
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

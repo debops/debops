@@ -35,7 +35,7 @@ then retrieves the GPG keys either from:
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

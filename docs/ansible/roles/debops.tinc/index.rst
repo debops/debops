@@ -8,7 +8,7 @@ debops.tinc
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    examples
    copyright

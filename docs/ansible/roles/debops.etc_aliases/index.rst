@@ -8,7 +8,7 @@ debops.etc_aliases
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    dependency
    copyright

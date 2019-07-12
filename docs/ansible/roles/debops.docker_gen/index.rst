@@ -8,7 +8,7 @@ debops.docker_gen
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
    upgrade
 

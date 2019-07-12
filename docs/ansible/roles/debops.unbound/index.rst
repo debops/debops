@@ -8,7 +8,7 @@ debops.unbound
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    defaults-server
    copyright

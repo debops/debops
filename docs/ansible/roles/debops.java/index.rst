@@ -8,7 +8,7 @@ debops.java
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

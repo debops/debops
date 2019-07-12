@@ -28,7 +28,7 @@ If you are looking for a LDAP server management solution, check out the
    ldap-posix
    ldap-admin
    dependency
-   defaults
+   defaults/main
    defaults-detailed
    ldap-dit
 

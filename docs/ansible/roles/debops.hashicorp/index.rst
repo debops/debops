@@ -8,7 +8,7 @@ debops.hashicorp
 
    introduction
    getting-started
-   defaults
+   defaults/main
    security
    ansible-integration
    copyright

@@ -8,7 +8,7 @@ debops.owncloud
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    external-users
    external-storage

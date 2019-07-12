@@ -124,7 +124,7 @@ test-docker-build:
 
 .PHONY: clean-tests
 clean-tests:
-	@rm -vrf .coverage docs/_build/* docs/ansible/roles/*/defaults.rst
+	@rm -vrf .coverage docs/_build/* docs/ansible/roles/*/defaults.rst docs/ansible/roles/*/defaults
 
 .PHONY: check-versions
 check-versions:

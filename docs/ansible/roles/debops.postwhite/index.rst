@@ -8,7 +8,7 @@ debops.postwhite
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

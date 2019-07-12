@@ -29,7 +29,7 @@ Authentication provided by the :ref:`debops.nginx` role.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

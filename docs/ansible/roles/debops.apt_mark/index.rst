@@ -13,7 +13,7 @@ current state. The role operates only on packages that are already installed.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

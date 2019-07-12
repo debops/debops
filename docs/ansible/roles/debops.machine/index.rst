@@ -14,7 +14,7 @@ contents of the :file:`/etc/issue` file displayed on the `system console`__.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

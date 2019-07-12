@@ -156,6 +156,9 @@ Changed
   lookups. Support for package installation via task loops will be removed in
   Ansible 2.11.
 
+- The DebOps documentation generator now supports Ansible roles with multiple
+  :file:`defaults/main/*.yml` files.
+
 Removed
 ~~~~~~~
 

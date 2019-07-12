@@ -8,7 +8,7 @@ debops.rabbitmq_management
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

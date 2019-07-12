@@ -8,7 +8,7 @@ debops.gitlab_runner
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

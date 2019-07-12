@@ -8,7 +8,7 @@ debops.rabbitmq_server
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    dependency
    copyright

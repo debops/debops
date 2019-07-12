@@ -27,7 +27,7 @@ DebOps provides support for Icinga 2, split into several roles:
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
 
 
 Copyright

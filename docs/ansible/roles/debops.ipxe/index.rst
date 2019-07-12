@@ -18,7 +18,7 @@ the network, or switch to another publicly available network boot menu.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

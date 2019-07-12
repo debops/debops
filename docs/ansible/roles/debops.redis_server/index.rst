@@ -15,7 +15,7 @@ Redis configuration files at runtime.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    config-pipeline
 

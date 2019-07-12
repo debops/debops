@@ -8,7 +8,7 @@ debops.ifupdown
 
    introduction
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
    ifupdown-systemd
    custom-hooks

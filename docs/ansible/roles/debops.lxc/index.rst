@@ -20,7 +20,7 @@ can be managed remotely with Ansible.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

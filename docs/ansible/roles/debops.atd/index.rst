@@ -8,7 +8,7 @@ debops.atd
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

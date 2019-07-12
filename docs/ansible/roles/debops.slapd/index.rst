@@ -24,7 +24,7 @@ instances and integrates with other DebOps roles like :ref:`debops.pki` and
    ldap-acl
    backup-restore
    guide-multi-master-replication
-   defaults
+   defaults/main
    defaults-detailed
    ldap-dit
 

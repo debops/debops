@@ -8,7 +8,7 @@ debops.salt
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

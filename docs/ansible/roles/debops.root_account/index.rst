@@ -8,7 +8,7 @@ debops.root_account
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..

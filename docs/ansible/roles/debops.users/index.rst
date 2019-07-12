@@ -17,7 +17,7 @@ directory, and manage local system administrator accounts using the
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright

@@ -8,7 +8,7 @@ debops.locales
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
 
 ..
