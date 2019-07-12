@@ -10,9 +10,44 @@
 # .. include:: ../../../includes/global.rst
 
 
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: neurodebian__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that repositories and packages provided by NeuroDebian are
+#   installed and configured as requested.
+#
+# ``absent``
+#   Ensure that repositories and packages provided by NeuroDebian are absent.
+#
+neurodebian__deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: neurodebian__upstream [[[
+#
+# When the upstream support is enabled, Ansible will configure NeuroDebian APT
+# repositories directly. When it's disabled, the role will install the
+# ``neurodebian`` APT package included in Debian and let it configure the
+# repositories. The package is included since Debian Stretch.
+neurodebian__upstream: '{{ True
+                           if (ansible_distribution_release in
+                               [ "wheezy", "jessie", "trusty" ])
+                           else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # NeuroDebian packages and installation [[[
 # -----------------------------------------
 
+# .. envvar:: neurodebian__support_packages [[[
+#
+# The APT packages to install for NeuroDebian support.
+neurodebian__support_packages: [ 'neurodebian', 'netselect' ]
+
+                                                                   # ]]]
 # .. envvar:: neurodebian__packages [[[
 #
 # List of global packages for NeuroDebian.
@@ -40,33 +75,30 @@ neurodebian__host_packages: []
 # List of APT packages to install for other Ansible roles, for usage as
 # a dependent role.
 neurodebian__dependent_packages: []
-
-                                                                   # ]]]
-# .. envvar:: neurodebian__deploy_state [[[
-#
-# What is the desired state which this role should achieve? Possible options:
-#
-# ``present``
-#   Default. Ensure that repositories and packages provided by NeuroDebian are
-#   installed and configured as requested.
-#
-# ``absent``
-#   Ensure that repositories and packages provided by NeuroDebian are absent.
-#
-neurodebian__deploy_state: 'present'
                                                                    # ]]]
                                                                    # ]]]
-# APT repository configuration [[[
-# --------------------------------
+# Upstream APT repository configuration [[[
+# -----------------------------------------
 
 # Refer to http://neuro.debian.net/ for details.
 
+# .. envvar:: neurodebian__apt_key_fingerprint [[[
+#
+# The OpenPGP key fingerprint for the key by which the NeuroDebian APT
+# repository is signed.
+neurodebian__apt_key_fingerprint: 'DD95 CC43 0502 E37E F840  ACEE A5D3 2F01 2649 A5A9'
+
+                                                                   # ]]]
 # .. envvar:: neurodebian__apt_components [[[
 #
 # The NeuroDebian repository component/flavor to enable.
 # Supported choices: ``main``, ``contrib``, ``non-free``.
 neurodebian__apt_components:
   - 'main'
+  - '{{ [ "contrib", "non-free" ]
+        if (ansible_local|d() and ansible_local.apt|d() and
+            (ansible_local.apt.nonfree|d())|bool)
+        else [] }}'
 
                                                                    # ]]]
 # .. envvar:: neurodebian__apt_source_types [[[
@@ -76,22 +108,94 @@ neurodebian__apt_components:
 neurodebian__apt_source_types: [ 'deb' ]
 
                                                                    # ]]]
+# .. envvar:: neurodebian__region [[[
+#
+# A rough estimate of the region (country) a given host resides in, based on
+# the system locale settings. This variable is used to select a mirror near the
+# host, and might be inaccurate.
+neurodebian__region: '{{ ansible_local.locales.system_region
+                         if (ansible_local|d() and ansible_local.locales|d() and
+                             ansible_local.locales.system_region|d())
+                         else "US" }}'
+
+                                                                   # ]]]
+# .. envvar:: neurodebian__region_mirror_map [[[
+#
+# YAML dictionary that maps country codes (taken from the locale) to
+# NeuroDebian mirrors.
+neurodebian__region_mirror_map:
+  'AU': 'au'
+  'CA': 'us-nh'
+  'CN': 'cn-hf'
+  'DE': 'de-m'
+  'ES': 'de-m'
+  'FR': 'de-md'
+  'GB': 'de-m'
+  'GR': 'gr'
+  'IT': 'de-m'
+  'JP': 'jp'
+  'NZ': 'au'
+  'PL': 'de-md'
+  'RU': 'de-md'
+  'US': 'us-nh'
+
+                                                                   # ]]]
+# .. envvar:: neurodebian__apt_mirror_map [[[
+#
+# YAML dictionary that contains a list of NeuroDebian mirrors, taken from
+# the http://neuro.debian.net/mirrors_status.html page.
+neurodebian__apt_mirror_map:
+
+  # Australia (AARNET)
+  'au':     'http://mirror.aarnet.edu.au/pub/neurodebian'
+
+  # China (Tsinghua University)
+  'cn-bj1': 'http://mirrors.tuna.tsinghua.edu.cn/neurodebian'
+
+  # China (University of Science and Technology of China)
+  'cn-hf':  'http://mirrors.ustc.edu.cn/neurodebian'
+
+  # China (Zhejiang University)
+  'cn-zj':  'http://mirrors.zju.edu.cn/neurodebian'
+
+  # Germany (G-Node, LMU Munich)
+  'de-m':   'http://neurodebian.g-node.org/'
+
+  # Germany (University of Magdeburg)
+  'de-md':  'http://neurodebian.ovgu.de/debian'
+
+  # Greece (Aristotle University of Thessaloniki)
+  'gr':     'http://neurobot.bio.auth.gr/neurodebian'
+
+  # Japan (Kiyotaka Nemoto)
+  'jp':     'http://neuroimaging.sakura.ne.jp/neurodebian'
+
+  # USA-CA (Paul Ivanov, California)
+  'us-ca':  'http://neurodeb.pirsquared.org/'
+
+  # USA-NH (Dartmouth College)
+  'us-nh':  'http://neuro.debian.net/debian'
+
+  # USA-TN (Vanderbilt)
+  'us-tn':  'http://masi.vuse.vanderbilt.edu/neurodebian'
+
+                                                                   # ]]]
+# .. envvar:: neurodebian__apt_mirror [[[
+#
+# The variable that specifies the NeuroDebian mirror to use, selected via the
+# host's region taken from the system locale settings.
+neurodebian__apt_mirror: '{{ neurodebian__region_mirror_map[neurodebian__region]
+                             | d("us-nh") }}'
+
+                                                                   # ]]]
 # .. envvar:: neurodebian__apt_mirror_uri [[[
 #
 # The NeuroDebian APT repository mirror URI to use.
-# Refer to http://neuro.debian.net/ for the full list.
-neurodebian__apt_mirror_uri: 'http://neurodebian.g-node.org'
-
-                                                                   # ]]]
-# .. envvar:: neurodebian__apt_key_fingerprint [[[
-#
-# The OpenPGP key fingerprint for the key by which the NeuroDebian APT
-# repository is signed.
-neurodebian__apt_key_fingerprint: 'DD95CC430502E37EF840ACEEA5D32F012649A5A9'
+neurodebian__apt_mirror_uri: '{{ neurodebian__apt_mirror_map[neurodebian__apt_mirror] }}'
                                                                    # ]]]
                                                                    # ]]]
-# APT pinning configuration [[[
-# -----------------------------
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
 # .. envvar:: neurodebian__apt_preferences__dependent_list [[[
 #
@@ -99,12 +203,14 @@ neurodebian__apt_key_fingerprint: 'DD95CC430502E37EF840ACEEA5D32F012649A5A9'
 # this pinning), both the official Debian repositories and NeuroDebian have the
 # same preference which would lead to APT picking the package with the highest
 # version regardless from which repository it comes from.
+#
 # As NeuroDebian provides many additional packages along with more recent
 # versions of packages already available in official Debian releases, APT
 # pinning is used to ensure that package versions available in official Debian
 # releases are preferred even if NeuroDebian provides newer versions.
+#
 # The job of setting up the APT pinning is offloaded to the
-# debops.apt_preferences_ role which is instructed using this variable.
+# :ref:`debops.apt_preferences` role which is instructed using this variable.
 neurodebian__apt_preferences__dependent_list:
 
   - package: '*'
@@ -116,17 +222,19 @@ neurodebian__apt_preferences__dependent_list:
     pin: 'release o=NeuroDebian'
     priority: '80'
     state: '{{ "present" if (neurodebian__deploy_state == "present") else "absent" }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# -----------------------------------------
 
+                                                                   # ]]]
 # .. envvar:: neurodebian__keyring__dependent_apt_keys [[[
 #
 # Configuration for the :ref:`debops.keyring` Ansible role.
 neurodebian__keyring__dependent_apt_keys:
 
-  - id: '{{ neurodebian__apt_key_fingerprint }}'
-    state: '{{ "present" if (neurodebian__deploy_state == "present") else "absent" }}'
+  # This is needed to avoid apt_key removing the GPG key from the
+  # 'neurodebian-archive-keyring' APT package
+  - id: '{{ neurodebian__apt_key_fingerprint if neurodebian__upstream|bool else "" }}'
+    state: '{{ "present"
+               if (neurodebian__deploy_state == "present" and
+                   neurodebian__upstream|bool)
+               else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

@@ -44,6 +44,6 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``role::neurodebian:pkgs``
+``role::neurodebian:package``
   Tasks related to system package management like installing or
   removing packages.
