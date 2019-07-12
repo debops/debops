@@ -1,0 +1,75 @@
+---
+
+- name: Configure NeuroDebian APT repository
+  template:
+    src: 'etc/apt/sources.list.d/neurodebian.sources.list.j2'
+    dest: '/etc/apt/sources.list.d/neurodebian.sources.list'
+    mode: '0644'
+  register: neurodebian__register_apt_repository
+  when: (neurodebian__deploy_state == "present" and
+         neurodebian__upstream|bool)
+
+- name: Ensure the NeuroDebian APT repository is disabled
+  file:
+    path: '/etc/apt/sources.list.d/neurodebian.sources.list'
+    state: 'absent'
+  register: neurodebian__register_apt_repository_absent
+  when: (neurodebian__deploy_state == "absent" and
+         neurodebian__upstream|bool)
+
+- name: Configure NeuroDebian support in debconf
+  debconf:
+    name: 'neurodebian'
+    question: 'neurodebian/enable'
+    vtype: 'boolean'
+    value: '{{ "true" if (neurodebian__deploy_state == "present") else "false" }}'
+  when: not neurodebian__upstream|bool
+
+- name: Install packages required for NeuroDebian support
+  package:
+    name: '{{ q("flattened", neurodebian__support_packages) }}'
+    state: 'present'
+  register: neurodebian__register_support_packages
+  until: neurodebian__register_support_packages is succeeded
+  when: (neurodebian__deploy_state == "present" and
+         not neurodebian__upstream|bool)
+
+- name: Update APT repository cache
+  apt:
+    update_cache: True
+  # Not using a handler here as the handler would need to be flushed at this
+  # point which is discouraged in DebOps because that would also flush all
+  # other handlers notified up to this point.
+  register: neurodebian__register_apt_update
+  until: neurodebian__register_apt_update is succeeded
+  when: neurodebian__register_apt_repository is changed or
+        neurodebian__register_apt_repository_absent is changed or
+        neurodebian__register_support_packages is changed
+
+- name: Ensure specified packages are in their desired state
+  package:
+    name: '{{ q("flattened", (neurodebian__packages
+                              + neurodebian__group_packages
+                              + neurodebian__host_packages
+                              + neurodebian__dependent_packages)) }}'
+    state: '{{ "present" if (neurodebian__deploy_state == "present") else "absent" }}'
+  register: neurodebian__register_packages
+  until: neurodebian__register_packages is succeeded
+  tags: [ 'role::neurodebian:package' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save NeuroDebian local facts
+  template:
+    src: 'etc/ansible/facts.d/neurodebian.fact.j2'
+    dest: '/etc/ansible/facts.d/neurodebian.fact'
+    mode: '0755'
+  register: neurodebian__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: neurodebian__register_facts is changed

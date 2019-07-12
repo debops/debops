@@ -6,6 +6,6 @@
 #}
 
 {% for source_type in neurodebian__apt_source_types %}
-{{ source_type }} {{ neurodebian__apt_mirror_uri }} data {{ neurodebian__apt_components | join(" ") }}
-{{ source_type }} {{ neurodebian__apt_mirror_uri }} {{ ansible_distribution_release | lower }} {{ neurodebian__apt_components | join(" ") }}
+{{ source_type }} {{ neurodebian__apt_mirror_uri }} data {{ q("flattened", neurodebian__apt_components) | join(" ") }}
+{{ source_type }} {{ neurodebian__apt_mirror_uri }} {{ ansible_distribution_release | lower }} {{ q("flattened", neurodebian__apt_components) | join(" ") }}
 {% endfor %}

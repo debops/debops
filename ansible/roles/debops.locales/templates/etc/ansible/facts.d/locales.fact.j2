@@ -5,7 +5,28 @@
 from __future__ import print_function
 from json import dumps
 from sys import exit
+import os
 
-output = {'installed': True, 'configured': True}
+config_files = ['/etc/locale.conf', '/etc/default/locale']
+system_locale = 'C.UTF-8'
+output = {'configured': True}
 
-print(dumps(output, sort_keys=True, indent=2))
+for conffile in config_files:
+    if os.path.exists(conffile) and os.path.isfile(conffile):
+        try:
+            with open(conffile, 'r') as f:
+                for line in f:
+                    if line.startswith('LANG='):
+                        line = line.strip().split('=')
+                        output['system_encoding'] = line[1].split('.')[1]
+                        output['system_language'] = (
+                                line[1].split('.')[0].split('_')[0])
+                        output['system_locale'] = line[1]
+                        output['system_region'] = (
+                                line[1].split('.')[0].split('_')[1])
+
+        except Exception:
+            pass
+        break
+
+print(dumps(output, sort_keys=True, indent=4))

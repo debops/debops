@@ -24,8 +24,20 @@ Local key store on the Ansible Controller
 
 The role supports usage of a local key store on the Ansible Controller, by
 setting the absolute path to a directory with the GPG key files in the
-:envvar:`keyring__local_path` variable. Each key file in the directory should
-be an ASCII-armored file, named using a specific format:
+:envvar:`keyring__local_path` variable. For example, to store the GPG keys
+inside of the DebOps project directory, :file:`ansible/keyring/` subdirectory,
+users can define in the :file:`ansible/inventory/group_vars/all/keyring.yml`
+file:
+
+.. code-block:: yaml
+
+   keyring__local_path: '{{ inventory_dir | realpath + "/../keyring" }}'
+
+This will tell the role to look for the key files in a :file:`ansible/keyring/`
+directory, relative to the Ansible inventory.
+
+Each key file in the directory should be an ASCII-armored file, named using
+a specific format:
 
 .. code-block:: none
 
