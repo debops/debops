@@ -18,7 +18,7 @@ role to manage the Docker host itself.
    :maxdepth: 2
 
    getting-started
-   defaults
+   defaults/main
    defaults-detailed
 
 Copyright
