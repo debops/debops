@@ -165,6 +165,10 @@ Changed
   local fact script will use the :command:`lsmod` command to list the kernel
   modules in this case.
 
+- [debops.etckeeper] The installation of :command:`etckeeper` will be disabled
+  by default in Python 3.x-only environments. See :ref:`role documentation
+  <etckeeper__ref_python3only>` for more details.
+
 Removed
 ~~~~~~~
 
