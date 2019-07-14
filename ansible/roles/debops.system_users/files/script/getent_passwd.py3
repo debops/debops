@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Get the specified user information from the system password database.
 # This solution should work on all platforms; Ansible 'getent' module does not

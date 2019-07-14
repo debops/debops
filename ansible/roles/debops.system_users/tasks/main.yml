@@ -1,7 +1,8 @@
 ---
 
 - name: Gather local Ansible user details
-  script: 'script/getent_passwd.py {{ system_users__self_name }}'
+  script: 'script/getent_passwd.py{{ "2" if (ansible_python_version is version_compare("3.5", "<"))
+                                     else "3" }} {{ system_users__self_name }}'
   register: system_users__register_passwd
   delegate_to: 'localhost'
   become: False
