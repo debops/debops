@@ -169,6 +169,9 @@ Changed
   by default in Python 3.x-only environments. See :ref:`role documentation
   <etckeeper__ref_python3only>` for more details.
 
+- [debops.libvirt] The ``virt-goodies`` package will be installed only if the
+  Python 2.7 environment is already present on the host.
+
 Removed
 ~~~~~~~
 
