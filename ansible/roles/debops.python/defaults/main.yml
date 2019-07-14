@@ -110,7 +110,8 @@ python__dependent_packages3: []
 # :envvar:`python__raw_purge_v2` variable.
 python__v2: '{{ True
                 if ((ansible_python_interpreter|d("")).endswith("python") or
-                    (discovered_interpreter_python|d("")).endswith("python"))
+                    (discovered_interpreter_python|d("")).endswith("python") or
+                    discovered_interpreter_python is undefined)
                 else False }}'
 
                                                                    # ]]]
