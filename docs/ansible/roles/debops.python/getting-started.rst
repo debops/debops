@@ -16,7 +16,8 @@ Python 2.x and Python 3.x series. The different Python versions can then be
 enabled or disabled independently - role automatically disables Python
 3 support on older OS releases without adequate versions available, and
 disables Python 2 support if Ansible is configured to use Python 3 interpreter
-on a given host.
+on a given host, or Python 3.x is autodetected as the Python interpreter on
+Ansible Controller.
 
 
 Python environment bootstrapping

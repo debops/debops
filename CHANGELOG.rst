@@ -179,6 +179,13 @@ Removed
 
   .. __: https://wiki.debian.org/OpenVz
 
+Fixed
+~~~~~
+
+- [debops.python] The role should now correctly detect Python 3.x interpreter
+  on the Ansible Controller and disable usage of Python 2.7 on the managed
+  hosts.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
