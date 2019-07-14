@@ -177,6 +177,15 @@ Changed
   role. This should avoid issues when Ansible users use non-standard shells on
   Ansible Controller.
 
+- [debops.ifupdown] The role will not install the ``rdnssd`` APT package if
+  NetworkManager service is detected on the host, to avoid removing the NM
+  service due to `package conflict`__. NetworkManager should gracefully handle
+  ading IPv6 nameservers to :file:`/etc/resolv.conf` file, and on systems
+  without NM installed the :command:`rdnssd` script will perform this task as
+  before.
+
+  .. __: https://bugs.debian.org/740998
+
 Removed
 ~~~~~~~
 
