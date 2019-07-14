@@ -186,6 +186,11 @@ Changed
 
   .. __: https://bugs.debian.org/740998
 
+- [debops.system_groups] Don't configure the ``NOPASSWD:`` tag for the
+  ``%admins`` and ``%wheel`` UNIX groups in :command:`sudo` by default when
+  Ansible manages the local host. This allows local admin accounts to control
+  ``root`` access using a password.
+
 Removed
 ~~~~~~~
 

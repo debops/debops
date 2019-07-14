@@ -41,7 +41,13 @@ system_groups__sudo_enabled: '{{ True
 # password in inventory variables, or store the password in the :file:`secret/`
 # directory and use the ``lookup('file')`` module to retrieve it.
 # See :ref:`debops.secret` documentation for details.
-system_groups__admins_sudo_nopasswd: True
+#
+# The ``NOPASSWD:`` tag is disabled by default if Ansible manages the local
+# host so that local users can still control access to ``root`` account using
+# a password.
+system_groups__admins_sudo_nopasswd: '{{ False
+                                         if (ansible_connection == "local")
+                                         else True }}'
 
                                                                    # ]]]
 # .. envvar:: system_groups__prefix [[[
