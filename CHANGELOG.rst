@@ -159,6 +159,12 @@ Changed
 - The DebOps documentation generator now supports Ansible roles with multiple
   :file:`defaults/main/*.yml` files.
 
+- [debops.kmod] The role will use the :ref:`debops.python` Ansible role to
+  install the ``kmodpy`` Python package in Python 2.7 environments. Because the
+  package is not available in Debian as Python 3.x module, the ``kmod.fact``
+  local fact script will use the :command:`lsmod` command to list the kernel
+  modules in this case.
+
 Removed
 ~~~~~~~
 

@@ -9,7 +9,17 @@ try:
     import kmodpy
     kernel_modules = [x[0] for x in kmodpy.Kmod().list()]
 except ImportError:
+    import subprocess
     kernel_modules = []
+
+    try:
+        lsmod_output = subprocess.check_output(['lsmod'])
+        for line in lsmod_output.splitlines():
+            if not line.decode('utf-8').startswith('Module '):
+                kernel_modules.append(line.decode('utf-8').split()[0])
+    except subprocess.CalledProcessError:
+        pass
+
 
 output = loads('''{{ {"configured": True,
                       "enabled": kmod__enabled|bool} | to_nice_json }}''')
