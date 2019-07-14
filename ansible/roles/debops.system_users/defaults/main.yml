@@ -23,6 +23,15 @@ system_users__enabled: True
 #
 # Enable or disable support for filesystem ACL management.
 system_users__acl_enabled: '{{ True if ("acl" in system_users__base_packages) else False }}'
+
+                                                                   # ]]]
+# .. envvar:: system_users__default_shell [[[
+#
+# Specify absolute path of the shell which should be configured on all user
+# accounts managed by this role, if not overriden by the user configuration. If
+# not specified, the shell won't be changed, but new accounts will not have
+# a defined shell either.
+system_users__default_shell: ''
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -204,7 +213,9 @@ system_users__default_accounts:
     group: '{{ system_users__self_name }}'
     comment: '{{ system_users__fact_self_comment | regex_replace(",,,$","") }}'
     # home path is generated automatically
-    shell: '{{ system_users__fact_self_shell }}'
+    shell: '{{ system_users__fact_self_shell
+               if (system_users__fact_self_shell in system_users__shell_package_map.keys())
+               else omit }}'
     admin: True
     sshkeys: '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true") }}'
     state: '{{ "present"

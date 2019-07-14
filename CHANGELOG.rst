@@ -172,6 +172,11 @@ Changed
 - [debops.libvirt] The ``virt-goodies`` package will be installed only if the
   Python 2.7 environment is already present on the host.
 
+- [debops.system_users] The role will set a custom shell based on the users'
+  own shell for the dynamic UNIX account only if the shell is known by the
+  role. This should avoid issues when Ansible users use non-standard shells on
+  Ansible Controller.
+
 Removed
 ~~~~~~~
 
