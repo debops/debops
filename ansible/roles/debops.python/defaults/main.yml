@@ -102,15 +102,16 @@ python__dependent_packages3: []
 #
 # Enable or disable support for Python 2.7 management. Python 2.7 support will
 # be automatically disabled if the ``ansible_python_interpreter`` inventory
-# variable is set to ``/usr/bin/python3``, otherwise it will be enabled by
-# default.
+# variable is set to ``/usr/bin/python3``, or Ansible detects the Python 3.x
+# interpreter dynamically, otherwise it will be enabled by default.
 #
 # If Python 2.7 support is disabled, using the role in the "raw" mode will
 # purge Python 2.7 packages automatically. This can be controlled by the
 # :envvar:`python__raw_purge_v2` variable.
-python__v2: '{{ False
-                if ((ansible_python_interpreter|d("python")).endswith("python3"))
-                else True }}'
+python__v2: '{{ True
+                if ((ansible_python_interpreter|d("")).endswith("python") or
+                    (discovered_interpreter_python|d("")).endswith("python"))
+                else False }}'
 
                                                                    # ]]]
 # .. envvar:: python__core_packages2 [[[

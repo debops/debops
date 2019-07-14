@@ -159,6 +159,38 @@ Changed
 - The DebOps documentation generator now supports Ansible roles with multiple
   :file:`defaults/main/*.yml` files.
 
+- [debops.kmod] The role will use the :ref:`debops.python` Ansible role to
+  install the ``kmodpy`` Python package in Python 2.7 environments. Because the
+  package is not available in Debian as Python 3.x module, the ``kmod.fact``
+  local fact script will use the :command:`lsmod` command to list the kernel
+  modules in this case.
+
+- [debops.etckeeper] The installation of :command:`etckeeper` will be disabled
+  by default in Python 3.x-only environments. See :ref:`role documentation
+  <etckeeper__ref_python3only>` for more details.
+
+- [debops.libvirt] The ``virt-goodies`` package will be installed only if the
+  Python 2.7 environment is already present on the host.
+
+- [debops.system_users] The role will set a custom shell based on the users'
+  own shell for the dynamic UNIX account only if the shell is known by the
+  role. This should avoid issues when Ansible users use non-standard shells on
+  Ansible Controller.
+
+- [debops.ifupdown] The role will not install the ``rdnssd`` APT package if
+  NetworkManager service is detected on the host, to avoid removing the NM
+  service due to `package conflict`__. NetworkManager should gracefully handle
+  ading IPv6 nameservers to :file:`/etc/resolv.conf` file, and on systems
+  without NM installed the :command:`rdnssd` script will perform this task as
+  before.
+
+  .. __: https://bugs.debian.org/740998
+
+- [debops.system_groups] Don't configure the ``NOPASSWD:`` tag for the
+  ``%admins`` and ``%wheel`` UNIX groups in :command:`sudo` by default when
+  Ansible manages the local host. This allows local admin accounts to control
+  ``root`` access using a password.
+
 Removed
 ~~~~~~~
 
@@ -178,6 +210,13 @@ Removed
   be managed using the :ref:`debops.lxc` role.
 
   .. __: https://wiki.debian.org/OpenVz
+
+Fixed
+~~~~~
+
+- [debops.python] The role should now correctly detect Python 3.x interpreter
+  on the Ansible Controller and disable usage of Python 2.7 on the managed
+  hosts.
 
 
 `debops v1.0.0`_ - 2019-05-22

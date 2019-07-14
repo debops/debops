@@ -16,7 +16,12 @@
 # .. envvar:: ifupdown__base_packages [[[
 #
 # List of base APT packages to install.
-ifupdown__base_packages: [ 'ifupdown', 'resolvconf', 'rdnssd', 'bsdutils', 'rsync' ]
+ifupdown__base_packages:
+  - [ 'ifupdown', 'resolvconf', 'bsdutils', 'rsync' ]
+  - '{{ []
+        if (ansible_local|d() and ansible_local.ifupdown|d() and
+            "/usr/sbin/NetworkManager" in ansible_local.ifupdown.known_managers|d([]))
+        else "rdnssd" }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__dynamic_packages [[[

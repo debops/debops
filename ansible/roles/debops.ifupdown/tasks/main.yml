@@ -1,5 +1,22 @@
 ---
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save ifupdown local facts
+  template:
+    src: 'etc/ansible/facts.d/ifupdown.fact.j2'
+    dest: '/etc/ansible/facts.d/ifupdown.fact'
+    mode: '0755'
+  register: ifupdown__register_facts
+
+- name: Update Ansible facts if they have been modified
+  action: setup
+  when: ifupdown__register_facts is changed
+
 - name: Install required packages
   package:
     name: '{{ q("flattened", (ifupdown__base_packages
@@ -165,22 +182,6 @@
     group: 'root'
     mode: '0755'
   when: not ifupdown__reconfigure_auto | bool
-
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save ifupdown local facts
-  template:
-    src: 'etc/ansible/facts.d/ifupdown.fact.j2'
-    dest: '/etc/ansible/facts.d/ifupdown.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
 
 - name: Save role version information
   ini_file:

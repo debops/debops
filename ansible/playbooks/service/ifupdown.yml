@@ -13,6 +13,13 @@
     - role: debops.ifupdown/env
       tags: [ 'role::ifupdown', 'role::kmod', 'role::ferm', 'role::sysctl' ]
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::kmod' ]
+      python__dependent_packages3:
+        - '{{ kmod__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ kmod__python__dependent_packages2 }}'
+
     - role: debops.kmod
       tags: [ 'role::kmod', 'skip::kmod' ]
       kmod__dependent_load:

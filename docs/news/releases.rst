@@ -15,7 +15,7 @@ a rapid pace of development, it might not be ideal where more conservative
 approach is needed. In that case, DebOps project offers stable releases using
 the ``stable-x.y`` :command:`git` branches, as well as tagged releases.
 
-The project uses `Semanting Versioning`__ for tags and stable releases. The
+The project uses `Semantic Versioning`__ for tags and stable releases. The
 definition of the *major*, *minror* and *patch* version numbers used in DebOps
 versions is:
 

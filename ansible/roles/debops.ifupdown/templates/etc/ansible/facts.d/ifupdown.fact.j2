@@ -50,4 +50,17 @@ output = loads('''{
                            else ifupdown__internal_interface }}"
 }''')
 
-print(dumps(output, sort_keys=True, indent=2))
+network_commands = ['/lib/systemd/systemd-networkd',
+                    '/usr/sbin/NetworkManager',
+                    '/sbin/ifup',
+                    '/usr/sbin/netplan']
+
+known_managers = []
+
+for command in network_commands:
+    if os.path.exists(command) and os.access(command, os.X_OK):
+        known_managers.append(command)
+
+output['known_managers'] = known_managers
+
+print(dumps(output, sort_keys=True, indent=4))

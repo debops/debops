@@ -16,7 +16,12 @@
 # .. envvar:: libvirt__base_packages [[[
 #
 # List of base packages to install with Libvirt.
-libvirt__base_packages: [ 'gawk', 'netcat-openbsd', 'virt-top', 'virtinst', 'virt-goodies' ]
+libvirt__base_packages:
+  - [ 'gawk', 'netcat-openbsd', 'virt-top', 'virtinst' ]
+  - '{{ "virt-goodies"
+        if (ansible_local|d() and ansible_local.python|d() and
+            (ansible_local.python.installed2|d())|bool)
+        else [] }}'
 
                                                                    # ]]]
 # .. envvar:: libvirt__packages [[[

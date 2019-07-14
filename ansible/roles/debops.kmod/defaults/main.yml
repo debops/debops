@@ -30,8 +30,7 @@ kmod__enabled: '{{ True
 # .. envvar:: kmod__base_packages [[[
 #
 # List of APT packages to install. They are used by the role internally.
-kmod__base_packages:
-  - '{{ "python-kmodpy" if (kmod__enabled|bool) else [] }}'
+kmod__base_packages: []
 
                                                                    # ]]]
 # .. envvar:: kmod__packages [[[
@@ -145,5 +144,26 @@ kmod__combined_load: '{{ lookup("flattened", kmod__dependent_load, wantlist=True
                          + kmod__load
                          + kmod__group_load
                          + kmod__host_load }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: kmod__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+kmod__python__dependent_packages3: []
+
+  # Currently there's no kmodpy for Python 3.x in Debian, but hopefully it will
+  # be available at some point in the future.
+  #- 'python3-kmodpy'
+
+                                                                   # ]]]
+# .. envvar:: kmod__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+kmod__python__dependent_packages2:
+
+  - 'python-kmodpy'
                                                                    # ]]]
                                                                    # ]]]
