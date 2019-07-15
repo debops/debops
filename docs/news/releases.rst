@@ -16,7 +16,7 @@ approach is needed. In that case, DebOps project offers stable releases using
 the ``stable-x.y`` :command:`git` branches, as well as tagged releases.
 
 The project uses `Semantic Versioning`__ for tags and stable releases. The
-definition of the *major*, *minror* and *patch* version numbers used in DebOps
+definition of the *major*, *minor* and *patch* version numbers used in DebOps
 versions is:
 
 - *Major* releases are considered "epochs", they happen when a significant
