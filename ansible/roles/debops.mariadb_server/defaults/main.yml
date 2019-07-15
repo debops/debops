@@ -432,24 +432,6 @@ mariadb_server__backup_max_allowed_packet: ''
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
-# MariaDB root account [[[
-# ------------------------
-
-# .. envvar:: mariadb_server__password_length [[[
-#
-# Length of randomly generated passwords.
-mariadb_server__password_length: '48'
-
-                                                                   # ]]]
-# .. envvar:: mariadb_server__root_password [[[
-#
-# Randomized password for MariaDB ``root`` account.
-mariadb_server__root_password: '{{ lookup("password", secret +
-                                   "/credentials/" + ansible_fqdn +
-                                   "/mariadb/localhost/root/password " +
-                                   "length=" + mariadb_server__password_length) }}'
-                                                                   # ]]]
-                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
@@ -485,12 +467,8 @@ mariadb_server__tcpwrappers__dependent_allow:
     weight: '50'
     filename: 'mariadb_server_allow'
     comment: 'Allow remote connections to MariaDB / MySQL server'
-                                                                   # ]]]
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# ----------------------------------------
 
+                                                                   # ]]]
 # .. envvar:: mariadb_server__python__dependent_packages3 [[[
 #
 # Configuration for the :ref:`debops.python` Ansible role.
@@ -505,6 +483,5 @@ mariadb_server__python__dependent_packages3:
 mariadb_server__python__dependent_packages2:
 
   - 'python-mysqldb'
-
                                                                    # ]]]
                                                                    # ]]]
