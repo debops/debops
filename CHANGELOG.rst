@@ -191,6 +191,19 @@ Changed
   Ansible manages the local host. This allows local admin accounts to control
   ``root`` access using a password.
 
+- [debops.mariadb_server] The role will no longer set a custom MariaDB ``root``
+  password, because the ``mysql_user`` Ansible 2.8 module breaks access to the
+  MariaDB database via the UNIX ``root`` account by removing the
+  ``unix_socket`` plugin access and not setting the ``mysql_native_password``
+  plugin. A password for the UNIX ``root`` account is not needed in the recent
+  MariaDB releases in Debian, therefore this shouldn't impact the usage.
+
+  The ``mysql_user`` Ansible module `lacks a way to control the authentication
+  plugin for a given MariaDB account`__, therefore it's not advisable to mess
+  with the ``root`` access to the database.
+
+  .. __: https://github.com/ansible/ansible/issues/26581
+
 Removed
 ~~~~~~~
 

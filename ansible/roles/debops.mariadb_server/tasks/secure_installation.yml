@@ -1,19 +1,5 @@
 ---
 
-- name: Update database root password
-  mysql_user:
-    name: 'root'
-    host: 'localhost'
-    password: '{{ mariadb_server__root_password }}'
-
-- name: Create /root/.my.cnf file with root credentials
-  template:
-    src: 'root/my.cnf.j2'
-    dest: '/root/.my.cnf'
-    owner: 'root'
-    group: 'root'
-    mode: '0600'
-
 - name: Delete anonymous database user
   mysql_user:
     user: ""
