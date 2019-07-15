@@ -92,3 +92,16 @@ special ``debops.pki/env`` role provided within the main role.
 
 .. literalinclude:: ../../../../ansible/playbooks/service/pki.yml
    :language: yaml
+   
+Renewing Certificates
+------------------------
+
+For renewing certificates, just
+
+1. remove file:`/etc/pki/realms/<realm>/` from the remote host and
+2. re-run debops.pki against it, e.g. this::
+
+     debops service/pki  --limit=$REMOTE_HOST
+
+This will create a new key for the remote host.
+If you use external keys, they will be preserved
