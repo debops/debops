@@ -96,13 +96,22 @@
       stat:
         path: '{{ dist_upgrade_lockfile }}'
       register: dist_upgrade_register_lockfile
+      
+    - name: Find all apt sources.list files
+      find:
+        paths: "/etc/apt/"
+        patterns: "*.list"
+        recurse: yes
+      register: repos
 
     - name: Change current release in APT sources
       replace:
-        dest: '/etc/apt/sources.list'
+        dest: "{{ item.path }}"
         regexp: '{{ dist_upgrade_current_release }}'
         replace: '{{ dist_upgrade_new_release }}'
       register: dist_upgrade_register_replace
+      with_items:
+        - "{{ repos.files }}"
       when: dist_upgrade_current_release in dist_upgrade_version_map.keys() and
             dist_upgrade_new_release is defined and dist_upgrade_new_release
 
