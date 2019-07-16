@@ -1,0 +1,14 @@
+---
+# don't create my current account on hosts
+system_users__self: False
+
+# dedicated admin account to manage servers
+system_users__accounts:
+
+  - name: 'ansible-admin'
+    group: 'ansible-admin'
+    comment: '{{ system_users__fact_self_comment | regex_replace(",,,$","") }}'
+    # home path is generated automatically
+    shell: '{{ system_users__fact_self_shell }}'
+    admin: True
+    state: 'present'

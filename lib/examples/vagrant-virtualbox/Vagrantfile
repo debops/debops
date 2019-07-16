@@ -1,0 +1,51 @@
+# Didn't work
+# VAGRANT_NODES = ENV['VAGRANT_NODES'] || 0
+# Vagrant.configure("2") do |config|
+#   if VAGRANT_NODES != 0
+#     (1..VAGRANT_NODES.to_i).each do |i|
+#       config.vm.define "node#{i}", autostart: true do |node|
+#         node.vm.network "private_network", ip: "10.10.10.1#{i}"
+#       end
+#     end
+#   end
+# end
+
+# Didn't work
+# Vagrant.configure("2") do |config|
+#   config.vm.network "private_network"
+# end
+
+# Didn't work
+# Vagrant.configure("2") do |config|
+#   config.vm.define "node1" do |node1|
+    # node1.vm.box = "base"
+#   end
+# end
+
+# Didn't work
+# Vagrant.configure("2") do |config|
+#   config.vm.provider "virtualbox" do |vb, override|
+#     override.vm.network "private_network"
+#   end
+# end
+
+# Didn't work
+# Vagrant.configure("2") do |config, override|
+#   override.vm.network "private_network"
+# end
+# EXTRA_NODESx=1
+
+# # It work !
+Vagrant.configure("2") do |config|
+  config.vm.network "private_network", type: "dhcp"
+#   config.vbguest.no_install = true
+#   config.vm.synced_folder ".", "/vagrant", disabled: true
+end
+
+master_vagrantfile = File.expand_path('/home/nqb/git/nqb-debops/Vagrantfile', __FILE__)
+# didn't work
+# master_vagrantfile = File.expand_path('../../../Vagrantfile', __FILE__)
+load master_vagrantfile if File.exists?(master_vagrantfile)
+
+# Only virtualbox provider should have an additional network
+
