@@ -696,6 +696,16 @@ fi
 jane notify info "Ansible Controller provisioning complete"
 SCRIPT
 
+$setup_examples = <<SCRIPT
+set -o nounset -o pipefail -o errexit
+
+debops_projects_dir=/home/vagrant/src
+
+jane notify info "Syncing ${debops_projects_dir}/controller with ${debops_projects_dir}/bootstrap"
+cp -av /vagrant/lib/examples/bootstrap ${debops_projects_dir}
+rsync -av ${debops_projects_dir}/controller/ ${debops_projects_dir}/bootstrap/
+SCRIPT
+
 require 'securerandom'
 
 VAGRANT_DOMAIN = ENV['VAGRANT_DOMAIN'] || 'vagrant.test'
@@ -777,6 +787,7 @@ Vagrant.configure("2") do |config|
         subconfig.vm.provision "shell", inline: $setup_eatmydata,  keep_color: true
         subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
         subconfig.vm.provision "shell", inline: $provision_box,    keep_color: true, run: "always"
+        subconfig.vm.provision "shell", inline: $setup_examples,   keep_color: true
 
         # Inject the insecure Vagrant SSH key into the master node so it can be
         # used by Ansible and cluster detection to connect to the other nodes.
