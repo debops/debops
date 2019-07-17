@@ -58,6 +58,7 @@ methods.
 - :ref:`debops.php`
 - :ref:`debops.python`
 - :ref:`debops.ruby`
+- :ref:`debops.wpcli`
 - ``debops.hwraid``
 - ``debops.rails_deploy``
 

@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+# Run wp-cron using WP-CLI.
+
+# Copyright (C) 2017 Carl Alexander <carlalexander@gmail.com>
+# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019 DebOps project (https://debops.org/)
+#
+# License: GPLv3
+
+# Usage:
+#     cd path/to/wordpress ; run-wp-cron
+#     run-wp-cron path/to/wordpress
+
+
+set -o nounset -o pipefail -o errexit
+
+pid="$$"
+script="$(basename "${0}")"
+wp="/usr/local/bin/wp"
+wp_path="${1:-"$(pwd)"}"
+
+log_message () {
+    # Display a message if script is used interactively, otherwise send it to syslog
+    local msg="${1:-}"
+
+    if [ -n "${msg}" ] ; then
+        if tty -s > /dev/null 2>&1 ; then
+            printf "%s: %s\n" "${script}" "${msg}" 1>&2
+        elif type logger > /dev/null 2>&1 ; then
+            logger -t "${script}[${pid}]" "${msg}"
+        fi
+    fi
+}
+
+# Check if WP-CLI is installed.
+if ! [ -f "${wp}" ] ; then
+    log_message "Error: WP-CLI is not available"
+    exit 1
+fi
+
+if [ -n "${wp_path}" ] ; then
+    cd "${wp_path}"
+fi
+
+# Check if WordPress is installed at the given path.
+if ! "${wp}" core is-installed --quiet 2>/dev/null ; then
+    log_message "Error: WordPress is not installed in ${wp_path}"
+    exit 1
+fi
+
+# Get all the site urls of the WordPress installation.
+if "${wp}" core is-installed --quiet --network 2>/dev/null ; then
+    site_urls="$( "${wp}" site list --fields=url --archived=0 --deleted=0 --format=csv --path="${wp_path}" | sed 1d )"
+else
+    site_urls=( "$("${wp}" option get siteurl)" )
+fi
+
+# Check if we can use "batch" on this account to use it as a scheduler
+if type batch > /dev/null 2>&1 && atq > /dev/null 2>&1 ; then
+
+    # Loop through all the sites urls and call wp-cron for each.
+    for site_url in "${site_urls[@]}" ; do
+        log_message "Running wp-cron for ${site_url} in ${wp_path} via batch"
+        printf "\"%s\" cron event run --due-now --url=\"%s\" --quiet\n" "${wp}" "${site_url}" \
+            | batch > /dev/null 2>&1
+    done
+
+else
+
+    # Loop through all the sites urls and call wp-cron for each.
+    for site_url in "${site_urls[@]}" ; do
+        log_message "Running wp-cron for ${site_url} in ${wp_path}"
+        ("${wp}" cron event run --due-now --url="${site_url}" --quiet) &
+    done
+
+fi

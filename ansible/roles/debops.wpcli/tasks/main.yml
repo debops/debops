@@ -1,0 +1,69 @@
+---
+
+- name: Install required APT packages
+  package:
+    name: '{{ q("flattened", (wpcli__base_packages + wpcli__packages)) }}'
+    state: 'present'
+  register: wpcli__register_packages
+  until: wpcli__register_packages is succeeded
+
+- name: Create wp-cli source directory
+  file:
+    path: '{{ wpcli__src }}'
+    state: 'directory'
+    mode: '0755'
+
+- name: Download wp-cli release files
+  get_url:
+    url: '{{ item.url }}'
+    dest: '{{ item.dest }}'
+    checksum: '{{ item.checksum }}'
+  loop: '{{ wpcli__release_files }}'
+  register: wpcli__register_release_files
+  until: wpcli__register_release_files is succeeded
+  when: item.version == wpcli__version
+
+- name: Verify and install wp-cli binary
+  shell: set -o nounset -o pipefail -o errexit
+         && gpg --batch --decrypt --output {{ wpcli__src + "/wp-cli-" + wpcli__version + ".phar" }} \
+                                           {{ wpcli__src + "/wp-cli-" + wpcli__version + ".phar.gpg" }}
+         && ( install --mode 755 --owner root --group root \
+              {{ wpcli__src + "/wp-cli-" + wpcli__version + ".phar" }} {{ wpcli__binary }}
+              && install --mode 644 --owner root --group root \
+                 {{ wpcli__src + "/wp-cli-" + wpcli__version + ".completion.bash" }} {{ wpcli__bash_completion }} )
+         || ( rm -f {{ wpcli__src + "/wp-cli-" + wpcli__version + ".phar" }} && exit 2 )
+  args:
+    executable: 'bash'
+  when: wpcli__register_release_files is changed
+
+- name: Install additional wp-cli scripts
+  copy:
+    src: 'usr/local/bin/'
+    dest: '/usr/local/bin/'
+    mode: '0755'
+
+- name: Manage wp-config.php security via cron
+  cron:
+    name: 'Secure wp-config.php files on the server'
+    user: 'root'
+    cron_file: 'wpcli-secure-wpconfig'
+    job: '{{ wpcli__secure_wpconfig_command }}'
+    special_time: '{{ wpcli__secure_wpconfig_interval }}'
+    state: '{{ "present" if wpcli__secure_wpconfig_enabled|bool else "absent" }}'
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save wpcli local facts
+  template:
+    src: 'etc/ansible/facts.d/wpcli.fact.j2'
+    dest: '/etc/ansible/facts.d/wpcli.fact'
+    mode: '0755'
+  register: wpcli__register_facts
+
+- name: Reload facts if they were modified
+  action: setup
+  when: wpcli__register_facts is changed
