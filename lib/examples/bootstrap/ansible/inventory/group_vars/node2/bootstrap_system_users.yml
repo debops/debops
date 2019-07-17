@@ -11,4 +11,5 @@ system_users__accounts:
     # home path is generated automatically
     shell: '{{ system_users__fact_self_shell }}'
     admin: True
+    sshkeys: '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true") }}'
     state: 'present'
