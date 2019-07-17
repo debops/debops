@@ -1,0 +1,39 @@
+---
+
+- name: Install WP-CLI framework
+  hosts: [ 'debops_service_wpcli' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::php', 'role::wpcli' ]
+      keyring__dependent_apt_keys:
+        - '{{ php__keyring__dependent_apt_keys }}'
+      keyring__dependent_gpg_keys:
+        - '{{ wpcli__keyring__dependent_gpg_keys }}'
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::logrotate' ]
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ php__apt_preferences__dependent_list }}'
+
+    - role: debops.logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ php__logrotate__dependent_config }}'
+
+    - role: debops.php
+      tags: [ 'role::php', 'skip::php' ]
+      php__dependent_packages:
+        - '{{ wpcli__php__dependent_packages }}'
+
+    - role: debops.wpcli
+      tags: [ 'role::wpcli' ]

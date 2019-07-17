@@ -1,0 +1,141 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.wpcli default variables
+# ==============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: wpcli__base_packages [[[
+#
+# List of useful APT packages to install with WP-CLI.
+wpcli__base_packages: [ 'bash-completion' ]
+
+                                                                   # ]]]
+# .. envvar:: wpcli__packages [[[
+#
+# List of additional APT packages to install with WP-CLI.
+wpcli__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# WP-CLI installation from upstream [[[
+# -------------------------------------
+
+# .. envvar:: wpcli__gpg_key_id [[[
+#
+# The fingerprint of the GPG key used to sign the WP-CLI releases.
+wpcli__gpg_key_id: '63AF 7AA1 5067 C056 16FD  DD88 A3A2 E8F2 26F0 BC06'
+
+                                                                   # ]]]
+# .. envvar:: wpcli__version [[[
+#
+# The version of the WP-CLI framework to install. On changes, remember to
+# update the :file:`meta/watch-wp-cli` file as well.
+wpcli__version: '2.2.0'
+
+                                                                   # ]]]
+# .. envvar:: wpcli__release_files [[[
+#
+# List of files corresponding to a given WP-CLI version which should be
+# downloaded to the source directory. The parameters have the same meaning as
+# the ``get_url`` Ansible module parameters. The ``*.phar.gpg`` file will be
+# decrypted and verified via the :command:`gpg` command before installation.
+wpcli__release_files:
+
+  - url: 'https://github.com/wp-cli/wp-cli/releases/download/v2.2.0/wp-cli-2.2.0.phar.gpg'
+    dest: '{{ wpcli__src }}/wp-cli-2.2.0.phar.gpg'
+    checksum: 'sha256:6ed3c78adea2801ce900f3dc8f09ce799958955cc842b5f8d17d8ffb74eca7a2'
+    version: '2.2.0'
+
+  - url: 'https://raw.githubusercontent.com/wp-cli/wp-cli/v2.2.0/utils/wp-completion.bash'
+    dest: '{{ wpcli__src }}/wp-cli-2.2.0.completion.bash'
+    checksum: 'sha256:443ca0610ccae8d2d6aceba0ec4aa7929b87ed6cf54f666afed18d663a18a395'
+    version: '2.2.0'
+
+                                                                   # ]]]
+# .. envvar:: wpcli__src [[[
+#
+# Absolute path to the directory on the remote host, where the WP-CLI source
+# files will be stored.
+wpcli__src: '{{ (ansible_local.root.src
+                 if (ansible_local|d() and ansible_local.root|d() and
+                     ansible_local.root.src|d())
+                 else "/usr/local/src") + "/wpcli" }}'
+
+                                                                   # ]]]
+# .. envvar:: wpcli__binary [[[
+#
+# Absolute path where the WP-CLI script will be installed. The :command:`wp`
+# command is hardcoded all over the place, therefore changing the name could
+# result in issues during usage.
+wpcli__binary: '/usr/local/bin/wp'
+
+                                                                   # ]]]
+# .. envvar:: wpcli__bash_completion [[[
+#
+# Absolute path where the :command:`bash` completion functions for WP-CLI
+# script will be installed.
+wpcli__bash_completion: '/etc/bash_completion.d/wp-completion'
+                                                                   # ]]]
+                                                                   # ]]]
+# Security of the :file:`wp-config.php` files [[[
+# -----------------------------------------------
+
+# WordPress installer creates the :file:`wp-config.php` configuration files
+# with insecure, world-writeable permissions (``0666``, the mode of the Beast).
+# The :ref:`debops.wpcli` role by default creates a :command:`cron` job that
+# looks for such files once a day and changes their permission to ``0600`` to
+# improve security in shared environments.
+#
+# See also: https://core.trac.wordpress.org/ticket/37264
+
+# .. envvar:: wpcli__secure_wpconfig_enabled [[[
+#
+# Enable or disable a :command:`cron` job which will secure all
+# :file:`wp-config.php` files found on the server.
+wpcli__secure_wpconfig_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: wpcli__secure_wpconfig_command [[[
+#
+# The command that will be executed by :command:`cron` as ``root`` to find all
+# :file:`wp-config.php` files and secure them. System administrators will
+# receive e-mail messages when permissions of found files are changed.
+wpcli__secure_wpconfig_command: 'find /home /srv -type f -iname "wp-config.php" -perm /o+r -exec chmod -v 600 "{}" \;'
+
+                                                                   # ]]]
+# .. envvar:: wpcli__secure_wpconfig_interval [[[
+#
+# The :command:`cron` interval to use to look for insecure
+# :file:`wp-config.php` files on the server. Supported intervals: ``hourly``,
+# ``daily``, ``weekly``, ``monthly``.
+wpcli__secure_wpconfig_interval: 'daily'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: wpcli__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+wpcli__keyring__dependent_gpg_keys:
+
+  # This key will be installed in the 'root' GPG keyring
+  - '{{ wpcli__gpg_key_id }}'
+
+                                                                   # ]]]
+# .. envvar:: wpcli__php__dependent_packages [[[
+#
+# List of PHP packages to install by ``debops.php`` role.
+wpcli__php__dependent_packages:
+
+  - 'mysql'
+                                                                   # ]]]
+                                                                   # ]]]

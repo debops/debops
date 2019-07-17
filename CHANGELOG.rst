@@ -39,6 +39,9 @@ Added
 
     .. __: http://neuro.debian.net/
 
+  - :ref:`debops.wpcli` role can be used to install the WP-CLI framework to
+    allow management of WordPress websites in a shared hosting environment.
+
 - [debops.slapd] The role can now control on which ports and services OpenLDAP
   listens for connections. The ``ldaps:///`` service is enabled by default when
   support for the :ref:`debops.pki` role is enabled on the OpenLDAP host.
