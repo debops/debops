@@ -22,6 +22,7 @@
 - name: Bootstrap Python support on a host
   hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
   gather_facts: False
+  become: True
 
   roles:
 
@@ -33,6 +34,7 @@
 
 - name: Bootstrap host for Ansible management with LDAP
   hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
+  become: True
 
   environment: '{{ inventory__environment | d({})
                    | combine(inventory__group_environment | d({}))

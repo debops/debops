@@ -37,6 +37,9 @@ Changed
 
   .. __: https://github.com/ansible/ansible/issues/26581
 
+- [bootstrap] Add the ``become: True`` parameter to the bootstrap playbooks to
+  improve usability.
+
 
 `debops v1.0.5`_ - 2019-07-12
 -----------------------------
