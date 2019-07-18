@@ -40,6 +40,9 @@ Changed
 - [bootstrap] Add the ``become: True`` parameter to the bootstrap playbooks to
   improve usability.
 
+- [debops.php] Expand the list of APT packages preferred from the Sury
+  repository when it is enabled.
+
 
 `debops v1.0.5`_ - 2019-07-12
 -----------------------------
