@@ -272,5 +272,9 @@
     state: 'present'
     user: '{{ gitlab_user }}'
     job: 'cd {{ gitlab_ce_git_checkout }} \
-          ; PATH=/usr/local/bin:/usr/bin:/bin bundle exec rake gitlab:backup:create RAILS_ENV=production CRON=1'
+          ; PATH=/usr/local/bin:/usr/bin:/bin bundle exec rake gitlab:backup:create
+          RAILS_ENV=production CRON=1
+          {{ "SKIP=" + ([ gitlab_backup_exclude ]
+            if (gitlab_backup_exclude is string) else gitlab_backup_exclude) | join(",")
+              if gitlab_backup_exclude | length > 0 else "" }}'
     cron_file: 'gitlab-backup'
