@@ -20,7 +20,11 @@
   when: gitlab_use_systemd | bool
 
 - name: Create backup of GitLab instance
-  command: bundle exec rake gitlab:backup:create RAILS_ENV=production
+  command: |
+    bundle exec rake gitlab:backup:create RAILS_ENV=production
+    {{ "SKIP=" + ([ gitlab_backup_exclude ]
+            if (gitlab_backup_exclude is string) else gitlab_backup_exclude) | join(",")
+              if gitlab_backup_exclude | length > 0 else "" }}
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   register: gitlab__register_backup
