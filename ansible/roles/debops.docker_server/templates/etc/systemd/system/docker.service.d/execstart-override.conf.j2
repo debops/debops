@@ -5,6 +5,8 @@
 # configuration file.
 [Service]
 ExecStart=
-ExecStart={{ "/usr/sbin/dockerd"
-             if ansible_distribution_release == "buster"
-             else "/usr/bin/dockerd" }}
+ExecStart={{ "/usr/bin/dockerd"
+             if (ansible_distribution_release in
+                 ([ "wheezy", "jessie", "stretch",
+                    "trusty", "xenial", "bionic" ]))
+             else "/usr/sbin/dockerd" }}
