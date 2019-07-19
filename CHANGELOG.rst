@@ -207,6 +207,10 @@ Changed
 
   .. __: https://github.com/ansible/ansible/issues/26581
 
+- [debops.unbound] The role will enable remote control management of the
+  :command:`unbound` daemon via the ``loopback`` network interface using the
+  :command:`unbound-control` command.
+
 Removed
 ~~~~~~~
 
