@@ -83,6 +83,11 @@ Each list entry is a YAML dictionary with specific parameters:
   supported options, see the stub zone and forward zone sections of the
   :man:`unbound.conf(5)` manual page.
 
+``server_options``
+  Optional. List of ``server:`` configuration options associated with
+  a particular zone. The format is the same as :ref:`unbound__ref_server`
+  configuration options.
+
 Examples
 ~~~~~~~~
 

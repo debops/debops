@@ -15,7 +15,11 @@ The role will configure an internal ``lxcbr0`` bridge for the local Linux
 Containers, using the ``lxc-net`` service. The internal network will have its
 own DHCP/DNS server with ``lxc.{{ ansible_domain }}`` DNS domain by default.
 You can configure a DNS proxy on the LXC host to be able to access the LXC
-containers by their DNS names instead of their IP addresses.
+containers by their DNS names instead of their IP addresses. The
+:ref:`debops.dnsmasq` and :ref:`debops.unbound` Ansiible roles will
+automatically integrate with the LXC host configuration using Ansible local
+facts and will generate the configuration necessary to access the
+``lxc.{{ ansible_domain }}`` DNS domain.
 
 Additional bridge network interfaces can be maintained using the
 :ref:`debops.ifupdown` role. By default the :command:`ifupdown` role creates
