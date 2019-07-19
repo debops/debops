@@ -43,6 +43,13 @@ Changed
 - [debops.php] Expand the list of APT packages preferred from the Sury
   repository when it is enabled.
 
+Fixed
+~~~~~
+
+- [debops.ldap] Ensure that when LDAP SRV record lookup returns ``NODATA``,
+  role falls back to the static FQDN. This might happen when wildcard DNS
+  records are configured on a given domain.
+
 
 `debops v1.0.5`_ - 2019-07-12
 -----------------------------

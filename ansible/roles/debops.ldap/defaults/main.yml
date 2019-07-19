@@ -100,7 +100,8 @@ ldap__servers_srv_rr: '{{ q("dig", "_ldap._tcp." + ldap__domain + "./SRV", "flat
 # Fully Qualified Domain Name.
 ldap__servers: '{{ (ldap__servers_srv_rr | selectattr("target", "defined")
                     | map(attribute="target") | map("regex_replace", "\.$","") | list)
-                   if ("NXDOMAIN" not in ldap__servers_srv_rr)
+                   if ("NXDOMAIN" not in ldap__servers_srv_rr and
+                       ldap__servers_srv_rr[0])
                    else [ "ldap." + ldap__domain ] }}'
 
                                                                    # ]]]
