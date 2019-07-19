@@ -787,7 +787,6 @@ Vagrant.configure("2") do |config|
         subconfig.vm.provision "shell", inline: $setup_eatmydata,  keep_color: true
         subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
         subconfig.vm.provision "shell", inline: $provision_box,    keep_color: true, run: "always"
-        subconfig.vm.provision "shell", inline: $setup_examples,   keep_color: true
 
         # Inject the insecure Vagrant SSH key into the master node so it can be
         # used by Ansible and cluster detection to connect to the other nodes.
@@ -837,6 +836,7 @@ Vagrant.configure("2") do |config|
 
         if ENV['GITLAB_CI'] != "true"
             subconfig.vm.provision "shell", inline: $provision_controller, keep_color: true, privileged: false
+            subconfig.vm.provision "shell", inline: $setup_examples, keep_color: true
         end
 
         if ENV['CI'] != "true"
