@@ -5,4 +5,6 @@
 # configuration file.
 [Service]
 ExecStart=
-ExecStart=/usr/bin/dockerd
+ExecStart={{ "/usr/sbin/dockerd"
+             if ansible_distribution_release == "buster"
+             else "/usr/bin/dockerd" }}
