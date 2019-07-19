@@ -43,6 +43,9 @@ Changed
 - [debops.php] Expand the list of APT packages preferred from the Sury
   repository when it is enabled.
 
+- [debops.docker_server] Use correct :command:`dockerd` path in the
+  :command:`systemd` service unit on Debian Buster.
+
 Fixed
 ~~~~~
 
