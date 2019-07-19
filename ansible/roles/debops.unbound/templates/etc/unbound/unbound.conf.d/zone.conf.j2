@@ -100,6 +100,51 @@
 {%       endif %}
 {%     endfor %}
 {%   endif %}
+{%   if config.server_options|d() %}
+
+server:
+{%     for element in config.server_options %}
+{%       set element_name = (element.option | d(element.name)) %}
+{%       set element_state = (element.state | d('present')) %}
+{%       if element.value is defined %}
+{%         if element.value | bool and element.value is not iterable %}
+{%           if element.value | int and element.value | string != 'True' %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             set element_value = 'yes' %}
+{%           endif %}
+{%         elif not element.value | bool and element.value is not iterable %}
+{%           if element.value is not none %}
+{%             if element.value | int or element.value | string == '0' %}
+{%               set element_value = element.value %}
+{%             else %}
+{%               set element_value = 'no' %}
+{%             endif %}
+{%           endif %}
+{%         elif element.value is not string and element.value is not mapping and element.value is iterable %}
+{%           set element_value = [] %}
+{%           for option in element.value %}
+{%             if option.state|d('present') != 'absent' %}
+{%               set _ = element_value.append(option.name) %}
+{%             endif %}
+{%           endfor %}
+{%         else %}
+{%           set element_value = element.value %}
+{%         endif %}
+{%       else %}
+{%         set element_value = [] %}
+{%       endif %}
+{%       if element_state != 'absent' %}
+{%         if element_value is not string and element_value is not mapping and element_value is iterable %}
+{%           for thing in element_value %}
+{{ '    {} {}'.format(element_name + ':', thing) }}
+{%           endfor %}
+{%         else %}
+{{ '    {} {}'.format(element_name + ':', element_value) }}
+{%         endif %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
 {% endmacro %}
 {% if item.comment|d() %}
 {{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
