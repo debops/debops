@@ -5,11 +5,11 @@ Getting started
 Default configuration
 ---------------------
 
-At the moment the role does not configure Unbound after installation and relies
-on the OS distribution package to provide sensible defaults (custom
-configuration can still be set using provided variables). The focus of this
-role is to provide a local, secure DNSSEC validation; more advanced DNS
-features should be served by a dedicated DNS authoritative service.
+If the :ref:`debops.lxc` role has set up a LXC environment on the host, the
+:ref:`debops.unbound` will configure an internal DNS zone based on the
+configuration provided by the :ref:`debops.lxc` Ansible local facts. This can
+be used to access the LXC containers via their DNS names instead of IP
+addresses.
 
 
 Usage with internal RFC 1918 private networks

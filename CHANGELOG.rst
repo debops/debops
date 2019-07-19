@@ -70,6 +70,11 @@ Added
   keys of the current user in LDAP if support for it is enabled on the LXC
   host.
 
+- [debops.unbound] The :command:`unbound` service will be configured to forward
+  ``*.lxc.{{ ansible_domain }}`` DNS queries to the :command:`dnsmasq` service
+  managed by the :ref:`debops.lxc` role (``lxc-net``), if LXC configuration is
+  detected via local Ansible facts.
+
 Changed
 ~~~~~~~
 

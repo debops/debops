@@ -125,6 +125,33 @@ unbound__combined_remote_control: '{{ unbound__default_remote_control
 # These variables configure custom 'forward' or 'stub' DNS zones served by
 # Unbound. See :ref:`unbound__ref_zones` for more details.
 
+# .. envvar:; unbound__default_zones [[[
+#
+# List of forward or stub DNS zones defined by the role.
+unbound__default_zones:
+
+  - name: 'lxc-net'
+    comment: |
+      Support for resolving LXC container hosts that use the 'lxc-net' bridge
+      configuration
+    zone: '{{ (ansible_local.lxc.net_domain + ".")
+              if (ansible_local|d() and ansible_local.lxc|d() and
+                  ansible_local.lxc.net_domain|d())
+              else "" }}'
+    revdns: '{{ ansible_local.lxc.net_subnet
+                if (ansible_local|d() and ansible_local.lxc|d() and
+                    ansible_local.lxc.net_subnet|d())
+                else "" }}'
+    nameserver: '{{ ansible_local.lxc.net_address
+                    if (ansible_local|d() and ansible_local.lxc|d() and
+                        ansible_local.lxc.net_address|d())
+                    else "" }}'
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.lxc|d() and
+                   ansible_local.lxc.net_domain|d())
+               else "absent" }}'
+
+                                                                   # ]]]
 # .. envvar:: unbound__zones [[[
 #
 # List of forward or stub DNS zones which should be defined on all hosts in the
@@ -149,7 +176,8 @@ unbound__host_zones: []
 # .. envvar:: unbound__combined_zones [[[
 #
 # The variable that combines the zone configuration from other variables.
-unbound__combined_zones: '{{ unbound__zones
+unbound__combined_zones: '{{ unbound__default_zones
+                             + unbound__zones
                              + unbound__group_zones
                              + unbound__host_zones }}'
 
