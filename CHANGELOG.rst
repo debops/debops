@@ -73,7 +73,9 @@ Added
 - [debops.unbound] The :command:`unbound` service will be configured to forward
   ``*.lxc.{{ ansible_domain }}`` DNS queries to the :command:`dnsmasq` service
   managed by the :ref:`debops.lxc` role (``lxc-net``), if LXC configuration is
-  detected via local Ansible facts.
+  detected via local Ansible facts. The ``*.consul`` DNS queries will be
+  forwarded to the :command:`consul` service, if its Ansible facts are
+  detected.
 
 Changed
 ~~~~~~~

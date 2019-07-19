@@ -151,6 +151,23 @@ unbound__default_zones:
                    ansible_local.lxc.net_domain|d())
                else "absent" }}'
 
+  # Ref: https://learn.hashicorp.com/consul/security-networking/forwarding#unbound-setup
+  - name: 'consul'
+    comment: |
+      Support for Consul Agent DNS service on localhost
+      Ref: https://www.consul.io/docs/agent/dns.html
+    zone: 'consul.'
+    type: 'stub'
+    options:
+      - 'stub-addr': '127.0.0.1@8600'
+    server_options:
+      - 'do-not-query-localhost': False
+      - 'domain-insecure': 'consul.'
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.consul|d() and
+                   (ansible_local.consul.installed|d())|bool)
+               else "absent" }}'
+
                                                                    # ]]]
 # .. envvar:: unbound__zones [[[
 #
@@ -187,7 +204,7 @@ unbound__combined_zones: '{{ unbound__default_zones
 # The variable that parses the combined zone configuration and is used in the
 # Ansible tasks to manage the DNS zone files.
 unbound__parsed_zones: '{{ unbound__combined_zones
-                                | parse_kv_items }}'
+                                | parse_kv_items(merge_keys=["server_options"]) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
