@@ -16,7 +16,10 @@
 # Configuration variables:
 #
 #     VAGRANT_BOX="debian/stretch64"
-#         Specify the box to use.
+#         Specify the box to use for controller.
+#
+#     VAGRANT_NODE_BOX="debian/stretch64"
+#         Specify the box to use for nodes.
 #
 #     VAGRANT_HOSTNAME="stretch"
 #         Set a custom hostname after the box boots up.
