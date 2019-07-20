@@ -73,17 +73,20 @@ Ansible lookups don't work too well with filenames that contain spaces.
 You can store new credentials in the :command:`pass` password manager using the
 :file:`ansible/playbooks/ldap/save-credential.yml` Ansible playbook included
 in the DebOps monorepo. All you need to do is run this playbook against one of
-the LDAP servers:
+the LDAP servers by following this steps:
 
-.. code-block:: console
-
-   debops ldap/save-credential -l <host>
+1. Make sure you have `GPGv2` and `pass` installed, ie. ``apt-get install gpgv2 pass``
+2. Make sure you have a `GPG keypair <https://alexcabal.com/creating-the-perfect-gpg-keypair/>`_
+3. Initialize the password store: ``pass init <your-gpg-id>``. Example: ``pass init admin@example.com``
+4. Run the playbook ``debops ldap/save-credential -l <host>``
+5. Repeat for each user you need a password.
 
 The playbook will ask interactively for the ``uid=`` username, and if not
 provided, for the full LDAP Distinguished Name, and after that, for a password
 to store encrypted using your GPG key. If you don't specify one, a random
 password will be automatically generated, saved in the password store, and
-displayed for you to use in the LDAP directory.
+displayed for you to use in the LDAP directory. The encrypted passwords will be stored
+by default under ``~/.password-store``.
 
 
 Different modes of operation
