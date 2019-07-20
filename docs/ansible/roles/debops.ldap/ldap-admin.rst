@@ -79,7 +79,7 @@ the LDAP servers by following this steps:
 2. Make sure you have a `GPG keypair <https://alexcabal.com/creating-the-perfect-gpg-keypair/>`_
 3. Initialize the password store: ``pass init <your-gpg-id>``. Example: ``pass init admin@example.com``
 4. Run the playbook ``debops ldap/save-credential -l <host>``
-5. Repeat for each user you need a password.
+5. Re-Run the playbook for each user you need a password.
 
 The playbook will ask interactively for the ``uid=`` username, and if not
 provided, for the full LDAP Distinguished Name, and after that, for a password
