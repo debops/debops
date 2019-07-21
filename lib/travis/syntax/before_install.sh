@@ -3,7 +3,7 @@
 set -o nounset -o pipefail -o errexit
 
 sudo apt-get -qq update
-pip install --upgrade pip wheel setuptools
-pip install \
-    pycodestyle \
-    yamllint
+pip3 install --upgrade pip wheel setuptools
+pip3 install \
+     pycodestyle \
+     yamllint

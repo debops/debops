@@ -218,6 +218,11 @@ Changed
   :command:`unbound` daemon via the ``loopback`` network interface using the
   :command:`unbound-control` command.
 
+- [ci] The Travis-CI tests will be done using Python 3.7 only. Python 2.7
+  support `will be dropped in 2020`__, it's time to prepare.
+
+  .. __: https://pythonclock.org/
+
 Removed
 ~~~~~~~
 
