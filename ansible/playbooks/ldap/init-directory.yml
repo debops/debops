@@ -130,8 +130,8 @@
 
           # inetOrgPerson attributes
           commonName:   '{{ admin_gecos.split(",")[0] }}'
-          givenName:    '{{ admin_gecos.split(",")[0].split()[0] if (" " in admin_gecos) else "" }}'
-          surname:      '{{ admin_gecos.split(",")[0].split()[1] if (" " in admin_gecos) else admin_gecos }}'
+          givenName:    '{{ (admin_gecos.split(",")[0].split()[0]) if (admin_gecos|d() and " " in admin_gecos) else "" }}'
+          surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos|d() and " " in admin_gecos) else admin_gecos }}'
           userPassword: '{{ admin_plaintext_password }}'
 
           # POSIX attributes
