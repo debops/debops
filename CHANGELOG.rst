@@ -46,6 +46,11 @@ Changed
 - [debops.docker_server] Use correct :command:`dockerd` path in the
   :command:`systemd` service unit on Debian Buster.
 
+- [ci] The Travis-CI tests will be done using Python 3.7 only. Python 2.7
+  support `will be dropped in 2020`__, it's time to prepare.
+
+  .. __: https://pythonclock.org/
+
 Fixed
 ~~~~~
 
@@ -145,6 +150,9 @@ Fixed
 - [debops.postgresql_server] Fix usage of the Ansible ``--check`` mode with the
   ``role::postgresql_server:config`` tag to allow checking configuration
   changes before applying them.
+
+Removed
+~~~~~~~
 
 - [debops.lxc] Implement a workaround for the issue of the ``ipaddr`` Ansible
   filter incorrectly interpreting index numbers specified as strings in Ansible
