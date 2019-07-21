@@ -23,7 +23,16 @@ if [ -f "/etc/default/lxc-net" ] ; then
             if [ -f "${RESOLVCONF_FILE}" ] ; then
                 rm -f "${RESOLVCONF_FILE}"
             fi
-            printf "search %s\\n" "${LXC_DOMAIN}" > "${RESOLVCONF_FILE}"
+
+            if [ -n "${LXC_DOMAIN}" ] ; then
+                printf "search %s\\n" "${LXC_DOMAIN}" > "${RESOLVCONF_FILE}"
+
+                # Support "container" and "container.lxc" DNS queries
+                if [ "${LXC_DOMAIN}" != "lxc" ] && [[ "${LXC_DOMAIN}" == lxc.* ]] ; then
+                    printf "search %s\\n" "${LXC_DOMAIN/#lxc.}" >> "${RESOLVCONF_FILE}"
+                fi
+            fi
+
             resolvconf -u
             ;;
         stop)

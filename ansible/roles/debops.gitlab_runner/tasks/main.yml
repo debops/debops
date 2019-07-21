@@ -215,13 +215,16 @@
   when: gitlab_runner__vagrant_libvirt_patch|bool
   changed_when: False
   check_mode: False
+  tags: [ 'role::gitlab_runner:patch' ]
 
 - name: Patch 'vagrant-libvirt' source code
   patch:
-    src: 'patches/package_domain-keep-ssh-host-keys.patch'
+    src: '{{ "patches/package_domain-keep-ssh-host-keys-"
+             + (item | basename | replace("vagrant-libvirt-","")) + ".patch" }}'
     basedir: '{{ item }}'
   with_items: '{{ gitlab_runner__register_libvirt_source.stdout_lines }}'
   when: gitlab_runner__vagrant_libvirt_patch|bool
+  tags: [ 'role::gitlab_runner:patch' ]
 
 - name: Configure Vagrant LXC sudo access
   template:
