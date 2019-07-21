@@ -377,6 +377,10 @@ EOF
         python-unittest2 \
         python-wheel \
         python-yaml \
+        python3 \
+        python3-apt \
+        python3-pip \
+        python3-setuptools \
         rsync \
         shellcheck \
         yamllint ${ansible_from_debian}
