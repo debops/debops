@@ -121,7 +121,7 @@
           pwdAllowUserChange: 'TRUE'
           pwdSafeModify: 'FALSE'
 
-      - name: 'Create personal account for {{ admin_gecos.split(",")[0] }}'
+      - name: 'Create personal account for {{ admin_gecos.split(",")[0]|d(admin_user) }}'
         dn: '{{ [ admin_rdn, ldap__people_rdn ] + ldap__base_dn }}'
         objectClass: [ 'inetOrgPerson', 'posixAccount', 'shadowAccount',
                        'posixGroup', 'posixGroupId', 'ldapPublicKey',
@@ -129,7 +129,7 @@
         attributes:
 
           # inetOrgPerson attributes
-          commonName:   '{{ admin_gecos.split(",")[0] }}'
+          commonName:   '{{ admin_gecos.split(",")[0]|d(admin_user) }}'
           givenName:    '{{ (admin_gecos.split(",")[0].split()[0]) if (admin_gecos|d() and " " in admin_gecos) else "" }}'
           surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos|d() and " " in admin_gecos) else admin_gecos }}'
           userPassword: '{{ admin_plaintext_password }}'
