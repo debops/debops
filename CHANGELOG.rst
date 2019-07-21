@@ -53,6 +53,8 @@ Fixed
   role falls back to the static FQDN. This might happen when wildcard DNS
   records are configured on a given domain.
 
+- [debops.libvirtd] Fix Ansible local fact script execution on Python 3.
+
 
 `debops v1.0.5`_ - 2019-07-12
 -----------------------------
