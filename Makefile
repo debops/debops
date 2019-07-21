@@ -63,11 +63,11 @@ yaml: test-yaml
 .PHONY: sdist
 sdist:          ## Create Python sdist package
 sdist: clean-sdist
-	@python setup.py sdist
+	@python3 setup.py sdist
 
 .PHONY: sdist-quiet
 sdist-quiet: clean-sdist
-	@python setup.py --quiet sdist
+	@python3 setup.py --quiet sdist
 
 .PHONY: sdist-sign
 sdist-sign:     ## Create signed Python sdist package
@@ -85,11 +85,11 @@ clean-sdist:
 .PHONY: wheel
 wheel:          ## Create Python wheel package
 wheel: clean-wheel
-	@python setup.py bdist_wheel
+	@python3 setup.py bdist_wheel
 
 .PHONY: wheel-quiet
 wheel-quiet: clean-wheel
-	@python setup.py --quiet bdist_wheel
+	@python3 setup.py --quiet bdist_wheel
 
 .PHONY: wheel-sign
 wheel-sign:     ## Create signed Python wheel package
@@ -160,12 +160,12 @@ test-yaml:
 .PHONY: test-debops-tools
 test-debops-tools:
 	@printf "%s\n" "Testing debops-tools using nose2..."
-	@nose2 --with-coverage
+	@type nose2-3 > /dev/null && ( nose2-3 --with-coverage ) || nose2 --with-coverage
 
 .PHONY: test-debops-ansible_plugins
 test-debops-ansible_plugins:
 	@printf "%s\n" "Testing debops-ansible_plugins using nose2..."
-	@python ansible/roles/debops.ansible_plugins/filter_plugins/debops_filter_plugins.py
+	@python3 ansible/roles/debops.ansible_plugins/filter_plugins/debops_filter_plugins.py
 
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:
