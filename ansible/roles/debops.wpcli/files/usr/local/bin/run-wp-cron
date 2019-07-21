@@ -26,7 +26,7 @@ log_message () {
 
     if [ -n "${msg}" ] ; then
         if tty -s > /dev/null 2>&1 ; then
-            printf "%s: %s\n" "${script}" "${msg}" 1>&2
+            printf "%s: %s\\n" "${script}" "${msg}" 1>&2
         elif type logger > /dev/null 2>&1 ; then
             logger -t "${script}[${pid}]" "${msg}"
         fi
@@ -62,7 +62,7 @@ if type batch > /dev/null 2>&1 && atq > /dev/null 2>&1 ; then
     # Loop through all the sites urls and call wp-cron for each.
     for site_url in "${site_urls[@]}" ; do
         log_message "Running wp-cron for ${site_url} in ${wp_path} via batch"
-        printf "\"%s\" cron event run --due-now --url=\"%s\" --quiet\n" "${wp}" "${site_url}" \
+        printf "\"%s\" cron event run --due-now --url=\"%s\" --quiet\\n" "${wp}" "${site_url}" \
             | batch > /dev/null 2>&1
     done
 
