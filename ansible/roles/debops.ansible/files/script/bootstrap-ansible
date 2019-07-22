@@ -77,9 +77,11 @@ build_ansible_deb () {
 
     # Build Debian package
     if [ -n "$(grep 'local_deb' Makefile || true)" ] ; then
-        LANG=C make local_deb
+        LANG=C make local_deb > /tmp/ansible-deb-build.log \
+            || tail -n 50 /tmp/ansible-deb-build.log
     else
-        LANG=C make deb
+        LANG=C make deb > /tmp/ansible-deb-build.log \
+            || tail -n 50 /tmp/ansible-deb-build.log
     fi
 
     # Check if .deb package with new method is present
