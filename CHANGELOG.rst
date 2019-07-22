@@ -230,6 +230,8 @@ Changed
 
   .. __: https://pythonclock.org/
 
+- [ci] The GitLab CI tests are done using a ``debian/buster64`` Vagrant Box.
+
 Removed
 ~~~~~~~
 
