@@ -700,10 +700,19 @@ $setup_examples = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
 debops_projects_dir=/home/vagrant/src
+debops_examples_dir=/vagrant/lib/examples
+
+cp -a ${debops_examples_dir}/bootstrap ${debops_projects_dir}
 
 jane notify info "Syncing ${debops_projects_dir}/controller with ${debops_projects_dir}/bootstrap"
-cp -av /vagrant/lib/examples/bootstrap ${debops_projects_dir}
-rsync -av ${debops_projects_dir}/controller/ ${debops_projects_dir}/bootstrap/
+
+rsync -a ${debops_projects_dir}/controller/ ${debops_projects_dir}/bootstrap/
+
+examples_dir=$(find ${debops_examples_dir}/* -maxdepth 0 -type d -not -path "${debops_examples_dir}bootstrap")
+
+for example_dir in ${examples_dir}; do
+
+done
 SCRIPT
 
 require 'securerandom'
