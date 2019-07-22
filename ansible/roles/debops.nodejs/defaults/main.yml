@@ -21,7 +21,7 @@
 nodejs__upstream: '{{ ansible_local.nodejs.upstream|bool
                       if (ansible_local|d() and ansible_local.nodejs|d() and
                           ansible_local.nodejs.upstream is defined)
-                      else True }}'
+                      else ansible_distribution_release in ["jessie", "stretch"] }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__upstream_release [[[
@@ -284,6 +284,22 @@ nodejs__apt_preferences__dependent_list:
     by_role: 'debops_nodejs'
     filename: 'debops_nodejs.pref'
     state: '{{ "absent" if nodejs__upstream|bool else "present" }}'
+
+  - package: '*'
+    pin: 'origin "deb.nodesource.com"'
+    priority: '100'
+    reason: "Don't upgrade software automatically using packages from external repository"
+    role: 'debops.nodejs'
+    suffix: '_deb_nodesource_com'
+    state: '{{ "present" if nodejs__upstream|bool else "absent" }}'
+
+  - packages: [ 'nodejs', 'nodejs-*' ]
+    pin: 'origin "deb.nodesource.com"'
+    priority: '501'
+    reason: 'Prefer nodejs packages from the same repository for consistency'
+    role: 'debops.nodejs'
+    suffix: '_deb_nodesource_com'
+    state: '{{ "present" if nodejs__upstream|bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__keyring__dependent_apt_keys [[[
