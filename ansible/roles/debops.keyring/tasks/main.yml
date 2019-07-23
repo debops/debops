@@ -77,7 +77,7 @@
     system: '{{ item.system | d(True) }}'
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
   when: keyring__enabled|bool and (item.create_user|d(True))|bool and
-        item.user|d() and item.state|d('present') not in [ 'absent' ]
+        item.user|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Ensure that required UNIX accounts exist
   user:
@@ -88,7 +88,7 @@
     state: 'present'
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
   when: keyring__enabled|bool and (item.create_user|d(True))|bool and
-        item.user|d() and item.state|d('present') not in [ 'absent' ]
+        item.user|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
   # In some cases 'apt-key' command refuses to work complaining that it has to
   # be run by root. This task should handle these cases gracefully.

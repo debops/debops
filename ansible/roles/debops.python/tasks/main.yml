@@ -1,5 +1,22 @@
 ---
 
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Python local facts
+  template:
+    src: 'etc/ansible/facts.d/python.fact.j2'
+    dest: '/etc/ansible/facts.d/python.fact'
+    mode: '0755'
+  register: python__register_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: python__register_facts is changed
+
 - name: Install requested packages
   package:
     name: '{{ q("flattened", python__combined_packages) }}'
@@ -8,23 +25,16 @@
   until: python__register_packages is succeeded
   when: python__enabled|bool
 
-- name: Make sure that Ansible local fact directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save Python local facts
+- name: Update the role status in local facts
   template:
     src: 'etc/ansible/facts.d/python.fact.j2'
     dest: '/etc/ansible/facts.d/python.fact'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
-  register: python__register_facts
+  register: python__register_facts_update
+  when: (python__enabled|bool and ansible_local|d() and
+         ansible_local.python|d() and
+         not ansible_local.python.configured|bool)
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: python__register_facts is changed
+  when: python__register_facts_update is changed

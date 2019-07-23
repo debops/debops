@@ -287,7 +287,8 @@ The YAML dictionaries are defined using specific parameters:
 ``state``
   Optional. If not specified or ``present``, the GPG key will be added to the
   GPG keyring of a specified UNIX account, or the ``root`` account. If
-  ``absent``, the key will be removed from the GPG keyring.
+  ``absent``, the key will be removed from the GPG keyring. If ``ignore``,
+  a given configuration entry will not be evaluated by the role.
 
 ``create_user``
   Optional, boolean. If not specified or ``True``, and the ``user`` parameter

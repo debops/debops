@@ -491,9 +491,7 @@ docker_server__ferm_post_hook: '{{ True
 # Enable or disable support for :program:`ferment` script, which can generate :program:`ferm`
 # configuration with the current Docker state.
 docker_server__ferment: '{{ True
-                            if (ansible_local|d() and
-                                ansible_local.ferm|d() and
-                                not docker_server__upstream|bool)
+                            if (not docker_server__upstream|bool)
                             else False }}'
 
                                                                    # ]]]
