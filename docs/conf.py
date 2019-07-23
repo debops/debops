@@ -44,8 +44,8 @@ for element in os.listdir(rst_ansible_roles):
                         try:
                             os.makedirs(defaults_dir)
                         except OSError:
-                            print ("Creation of the directory %s failed"
-                                   % defaults_dir)
+                            print("Creation of the directory %s failed"
+                                  % defaults_dir)
 
                     yaml2rst.convert_file(
                         defaults_file,

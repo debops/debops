@@ -49,7 +49,7 @@ install_ansible_requirements () {
     local -a apt_packages
 
     apt_packages=( git devscripts cdbs debhelper dpkg-dev fakeroot sshpass \
-                   asciidoc xmlto build-essential lsb-release )
+                   asciidoc xmlto build-essential lsb-release dh-python )
 
     apt_packages+=(
         python-crypto \
@@ -77,9 +77,11 @@ build_ansible_deb () {
 
     # Build Debian package
     if [ -n "$(grep 'local_deb' Makefile || true)" ] ; then
-        LANG=C make local_deb
+        LANG=C make local_deb > /tmp/ansible-deb-build.log \
+            || tail -n 50 /tmp/ansible-deb-build.log
     else
-        LANG=C make deb
+        LANG=C make deb > /tmp/ansible-deb-build.log \
+            || tail -n 50 /tmp/ansible-deb-build.log
     fi
 
     # Check if .deb package with new method is present

@@ -24,7 +24,7 @@
     admin_gecos: '{{ getent_passwd[admin_user][3] }}'
 
     # SSH public keys in the 'ssh-agent'
-    admin_sshkeys: "{{ lookup('pipe', 'ssh-add -L').split('\n') }}"
+    admin_sshkeys: "{{ lookup('pipe','ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true').split('\n') }}"
 
     # Password of the administrator account, stored in the Password Store on
     # the Ansible Controller
@@ -121,7 +121,7 @@
           pwdAllowUserChange: 'TRUE'
           pwdSafeModify: 'FALSE'
 
-      - name: 'Create personal account for {{ admin_gecos.split(",")[0] }}'
+      - name: 'Create personal account for {{ admin_gecos.split(",")[0]|d(admin_user) }}'
         dn: '{{ [ admin_rdn, ldap__people_rdn ] + ldap__base_dn }}'
         objectClass: [ 'inetOrgPerson', 'posixAccount', 'shadowAccount',
                        'posixGroup', 'posixGroupId', 'ldapPublicKey',
@@ -129,9 +129,9 @@
         attributes:
 
           # inetOrgPerson attributes
-          commonName:   '{{ admin_gecos.split(",")[0] }}'
-          givenName:    '{{ admin_gecos.split(",")[0].split()[0] if (" " in admin_gecos) else "" }}'
-          surname:      '{{ admin_gecos.split(",")[0].split()[1] if (" " in admin_gecos) else admin_gecos }}'
+          commonName:   '{{ admin_gecos.split(",")[0]|d(admin_user) }}'
+          givenName:    '{{ (admin_gecos.split(",")[0].split()[0]) if (admin_gecos|d() and " " in admin_gecos) else "" }}'
+          surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos|d() and " " in admin_gecos) else admin_gecos }}'
           userPassword: '{{ admin_plaintext_password }}'
 
           # POSIX attributes

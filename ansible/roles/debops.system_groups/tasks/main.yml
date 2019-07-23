@@ -1,5 +1,9 @@
 ---
 
+- name: Create a fact that knows the Ansible connection type
+  set_fact:
+    system_groups__fact_ansible_connection: '{{ ansible_connection }}'
+
 - name: Ensure that requested UNIX system groups exist
   group:
     name: '{{ item.name }}'

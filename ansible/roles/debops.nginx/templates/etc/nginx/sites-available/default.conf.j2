@@ -490,6 +490,23 @@ server {
         return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} $scheme://$host.{{ nginx__tpl_hostname_domain }}$request_uri;
 }
 
+{%   if nginx__tpl_hostname_domain.startswith('lxc.') %}
+# Support for redirection to an internal LXC subdomain
+server {
+{%     if item.listen|d(True)                          %}
+{%       for port in nginx_tpl_listen                  %}
+        listen {{ port }};
+{%       endfor                                        %}
+
+{%       for address in nginx__tpl_hostnames | unique %}
+        server_name {{ address + '.lxc' }};
+{%       endfor                                        %}
+
+{%     endif                                           %}
+        return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} $scheme://$host.{{ nginx__tpl_hostname_domain | regex_replace('^lxc\.','') }}$request_uri;
+}
+
+{%   endif                                             %}
 # Support for redirection via Avahi/mDNS '*.local' domain
 server {
 {%   if item.listen|d(True)                            %}
