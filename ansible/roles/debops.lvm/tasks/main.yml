@@ -45,6 +45,9 @@
     name: 'lvm2-lvmetad.socket'
     state: '{{ "started" if lvm__global_use_lvmetad else "stopped" }}'
     enabled: '{{ lvm__global_use_lvmetad }}'
+  when: (ansible_distribution_release in [ 'wheezy', 'jessie', 'stretch',
+                                           'precise', 'trusty', 'xenial',
+                                           'bionic' ])
 
 - name: Manage LVM
   include: manage_lvm.yml
