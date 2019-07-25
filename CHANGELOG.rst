@@ -51,6 +51,17 @@ Changed
 
   .. __: https://pythonclock.org/
 
+- [debops.netbox] The role has been updated to NetBox version ``v2.6.1``. Redis
+  service is now required for NetBox; it can be installed separately via the
+  :ref:`debops.redis_server` Ansible role.
+
+  This change was backported because without it, the NetBox installation using
+  DebOps ``stable-1.0`` branch is broken.
+
+- [debops.php][debops.nginx] Change the default names of the PHP status and
+  ping pages to :file:`/status.php` and :file:`/ping.php` to make them
+  compatible with the default PHP ``security.limit_extensions`` configuration.
+
 Fixed
 ~~~~~
 
