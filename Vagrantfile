@@ -327,16 +327,27 @@ fi
 if ! type ansible > /dev/null 2>&1 ; then
     jane notify warning "Ansible not found"
 
+    os_release="$(grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d' ' -f2 | tr -d '\n')"
+
     tee "/etc/apt/sources.list" > "/dev/null" <<EOF
-deb http://deb.debian.org/debian buster main
-deb http://deb.debian.org/debian buster-updates main
-deb http://deb.debian.org/debian buster-backports main
-deb http://security.debian.org/ buster/updates main
+deb http://deb.debian.org/debian ${os_release} main
+deb http://deb.debian.org/debian ${os_release}-updates main
+deb http://deb.debian.org/debian ${os_release}-backports main
 EOF
+
+    if [ "${os_release}" == "wheezy" ] || [ "${os_release}" == "jessie" ] || [ "${os_release}" == "stretch" ] || [ "${os_release}" == "buster" ] ; then
+        tee -a "/etc/apt/sources.list" > "/dev/null" <<EOF
+deb http://security.debian.org/ ${os_release}/updates main
+EOF
+    else
+        tee -a "/etc/apt/sources.list" > "/dev/null" <<EOF
+deb http://security.debian.org/ ${os_release}-security main
+EOF
+    fi
 
     tee "/etc/apt/preferences.d/provision_ansible.pref" > "/dev/null" <<EOF
 Package: ansible
-Pin: release a=buster-backports
+Pin: release a=${os_release}-backports
 Pin-Priority: 500
 EOF
 
@@ -379,11 +390,36 @@ EOF
         python-yaml \
         python3 \
         python3-apt \
+        python3-dnspython \
+        python3-future \
+        python3-jinja2 \
+        python3-nose2 \
+        python3-nose2-cov \
+        python3-openssl \
+        python3-passlib \
         python3-pip \
+        python3-pycodestyle \
+        python3-pytest \
+        python3-pytest-cov \
         python3-setuptools \
+        python3-sphinx \
+        python3-sphinx-rtd-theme \
+        python3-unittest2 \
+        python3-wheel \
+        python3-yaml \
         rsync \
         shellcheck \
-        yamllint ${ansible_from_debian}
+        yamllint
+
+    if [ ! "${os_release}" == "wheezy" ] && [ ! "${os_release}" == "jessie" ] && [ ! "${os_release}" == "stretch" ] ; then
+
+        DEBIAN_FRONTEND=noninteractive apt-get -y \
+        --no-install-recommends install \
+            python3-ldap
+        fi
+
+    DEBIAN_FRONTEND=noninteractive apt-get -y \
+    --no-install-recommends install ${ansible_from_debian}
 
     jane notify cache "Cleaning up cache directories..."
     find /var/lib/apt/lists -maxdepth 1 -type f ! -name 'lock' -delete
