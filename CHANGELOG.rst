@@ -60,6 +60,9 @@ Fixed
 
 - [debops.libvirtd] Fix Ansible local fact script execution on Python 3.
 
+- [debops.icinga] Don't include the :file:`/etc/icinga2/repository.d/`
+  directory in Icinga 2.8.0+ configuration.
+
 
 `debops v1.0.5`_ - 2019-07-12
 -----------------------------
