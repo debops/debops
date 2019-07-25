@@ -699,20 +699,19 @@ SCRIPT
 $setup_examples = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
-debops_projects_dir=/home/vagrant/src
-debops_examples_dir=/vagrant/lib/examples
+projects_dir=~/src
+controller_dir=${projects_dir}/controller
+examples_dir=/vagrant/lib/examples
+examples=$(find /vagrant/lib/examples/* -maxdepth 0 -type d)
 
-cp -a ${debops_examples_dir}/bootstrap ${debops_projects_dir}
+rsync -av ${examples_dir}/bootstrap/ansible ${controller_dir}/ansible
+jane notify info "Merging ${examples_dir}/bootstrap with ${controller_dir}"
 
-jane notify info "Syncing ${debops_projects_dir}/controller with ${debops_projects_dir}/bootstrap"
-
-rsync -a ${debops_projects_dir}/controller/ ${debops_projects_dir}/bootstrap/
-
-examples_dir=$(find ${debops_examples_dir}/* -maxdepth 0 -type d -not -path "${debops_examples_dir}bootstrap")
-
-for example_dir in ${examples_dir}; do
-
+for example_dir in ${examples}; do
+    rsync -av ${example_dir}/ansible ${projects_dir}
+    rsync -av ${controller_dir}/ansible/ ${example_dir}/ansible
 done
+jane notify success "All examples installed and synchronized in ${projects_dir}"
 SCRIPT
 
 require 'securerandom'
@@ -845,7 +844,7 @@ Vagrant.configure("2") do |config|
 
         if ENV['GITLAB_CI'] != "true"
             subconfig.vm.provision "shell", inline: $provision_controller, keep_color: true, privileged: false
-            subconfig.vm.provision "shell", inline: $setup_examples, keep_color: true
+            subconfig.vm.provision "setup_examples", type: "shell", inline: $setup_examples, privileged: false, keep_color: true
         end
 
         if ENV['CI'] != "true"
