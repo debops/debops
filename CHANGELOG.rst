@@ -259,6 +259,9 @@ Fixed
   on the Ansible Controller and disable usage of Python 2.7 on the managed
   hosts.
 
+- [debops.apache] Refactor the role to not use Jinja 'import' statements in
+  looped tasks - this does not work on newer Jinja versions.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
