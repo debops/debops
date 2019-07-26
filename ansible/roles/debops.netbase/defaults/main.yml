@@ -87,9 +87,11 @@ netbase__hostname: '{{ (inventory_hostname_short | d(inventory_hostname.split(".
 #
 # If the host has been installed without a domain specified, a domain will be
 # generated based on the ``ansible_host`` variable (if it's set to a FQDN
-# address) or ``inventory_hostname`` variable, and saved in the
-# :file:`/etc/hosts` database. The host's FQDN and hostname will point to the
-# default IPv4 and IPv6 addresses of the host.
+# address) and saved in the :file:`/etc/hosts` database. The host's FQDN and
+# hostname will point to the default IPv4 and IPv6 addresses of the host.
+# If the Ansible inventory does not have a FQDN defined for a given host in the
+# ``ansible_host`` variable, the host is assumed to be standalone and a domain
+# will not be generated for it.
 netbase__domain: '{{ ""
                      if (ansible_local|d() and ansible_local.netbase|d() and
                          (((ansible_local.netbase.self_address|d()) != "127.0.1.1" and
@@ -105,7 +107,7 @@ netbase__domain: '{{ ""
                                  if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ipaddr)
                                  else (inventory_hostname.split(".")[1:] | join(".")
                                        if (inventory_hostname.split(".") | count > 1)
-                                       else inventory_hostname))) }}'
+                                       else ""))) }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__aliases [[[
@@ -128,7 +130,8 @@ netbase__aliases: '{{ ([ netbase__hostname ]
 # :file:`/etc/hosts` database with the FQDN and the hostname. If the host does
 # not have a proper IPv4 address associated with it and you want to use IPv4
 # networking, you can use ``127.0.1.1`` to set the hostname.
-netbase__host_ipv4_address: '{{ ansible_default_ipv4.address | d() }}'
+netbase__host_ipv4_address: '{{ (ansible_default_ipv4.address | d())
+                                if ansible_domain|d() else "127.0.1.1" }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__host_ipv6_address [[[
@@ -143,7 +146,10 @@ netbase__host_ipv6_address: '{{ ansible_default_ipv6.address | d() }}'
 # The actual :file:`/etc/hosts` entry with the local domain definition. It will
 # be set as the IPv4 and/or IPv6 addresses defined in above variables.
 netbase__domain_host_entry: '{{ ([ netbase__hostname + "." + netbase__domain ] + netbase__aliases)
-                                if netbase__domain|d() else [] }}'
+                                if netbase__domain|d()
+                                else (netbase__hostname
+                                      if (not ansible_domain|d())
+                                      else []) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Host database in :file:`/etc/hosts` [[[
