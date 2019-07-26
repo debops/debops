@@ -232,6 +232,19 @@ Changed
 
 - [ci] The GitLab CI tests are done using a ``debian/buster64`` Vagrant Box.
 
+- [debops.netbase] If a host does not have a proper domain, either defined
+  locally or set via the DNS, don't generate a faux "domain" based on its
+  hostname and assume that this is a standalone host. This might affect
+  availability of some services, for example X.509 certificates managed by
+  :ref:`debops.pki` or reachability of websites created on that host. In this
+  case the host cannot have a FQDN defined in the Ansible inventory as the
+  label or ``ansible_host`` variable, only a hostname.
+
+- [debops.netbase] Role will check if the configured FQDN of a host exists in
+  the DNS database. If it does, the entry in the :file:`/etc/hosts` file will
+  be removed to allow the DNS to take over. If it doesn't, the configuration
+  will be left intact with assumtion that the domain is configured locally.
+
 Removed
 ~~~~~~~
 
