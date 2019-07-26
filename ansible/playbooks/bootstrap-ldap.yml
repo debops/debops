@@ -59,6 +59,9 @@
       secret_directories:
         - '{{ pki_env_secret_directories }}'
 
+    - role: debops.netbase
+      tags: [ 'role::netbase', 'skip::netbase' ]
+
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
@@ -71,9 +74,6 @@
     - role: debops.apt
       tags: [ 'role::apt', 'skip::apt' ]
 
-    - role: debops.etckeeper
-      tags: [ 'role::etckeeper', 'skip::etckeeper' ]
-
     - role: debops.python
       tags: [ 'role::python', 'skip::python', 'role::ldap' ]
       python__dependent_packages3:
@@ -81,8 +81,8 @@
       python__dependent_packages2:
         - '{{ ldap__python__dependent_packages2 }}'
 
-    - role: debops.netbase
-      tags: [ 'role::netbase', 'skip::netbase' ]
+    - role: debops.etckeeper
+      tags: [ 'role::etckeeper', 'skip::etckeeper' ]
 
     - role: debops.cron
       tags: [ 'role::cron', 'skip::cron' ]

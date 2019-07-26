@@ -36,12 +36,6 @@
 
   roles:
 
-    - role: debops.netbase
-      tags: [ 'role::netbase', 'skip::netbase' ]
-
-    - role: debops.etckeeper
-      tags: [ 'role::etckeeper', 'skip::etckeeper' ]
-
     - role: debops.debops_fact
       tags: [ 'role::debops_fact', 'skip::debops_fact' ]
 
@@ -61,6 +55,9 @@
       tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]
       secret_directories:
         - '{{ pki_env_secret_directories }}'
+
+    - role: debops.netbase
+      tags: [ 'role::netbase', 'skip::netbase' ]
 
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
@@ -94,6 +91,9 @@
         - '{{ ldap__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ ldap__python__dependent_packages2 }}'
+
+    - role: debops.etckeeper
+      tags: [ 'role::etckeeper', 'skip::etckeeper' ]
 
     # LDAP client initialization should be done separately to prepare local
     # facts for other roles to use in configuration.
