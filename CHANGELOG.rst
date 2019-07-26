@@ -18,6 +18,13 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Fixed
+~~~~~
+
+- [debops.nsswitch] Don't restart :command:`systemd-logind` service when the
+  playbook is run against ``localhost``, to avoid breaking existing user
+  sessions, which might require a reboot to fix.
+
 
 `debops v1.0.6`_ - 2019-07-26
 -----------------------------
@@ -209,6 +216,10 @@ Changed
 - [debops.system_users] Use a custom script to get current Ansible user
   information because the ``getent`` Ansible module does not work on Apple
   macOS.
+
+- [debops.nsswitch] Don't restart the :command:`systemd-logind` service on
+  :file:`/etc/nsswitch.conf` file changes if DebOps is running against
+  ``localhost``, to avoid breaking the existing user session.
 
 
 `debops v1.0.0`_ - 2019-05-22
