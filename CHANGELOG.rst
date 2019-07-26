@@ -25,6 +25,9 @@ Fixed
   playbook is run against ``localhost``, to avoid breaking existing user
   sessions, which might require a reboot to fix.
 
+- [debops.system_users][debops.users] Remove the ``append`` parameter from
+  tasks that don't use it to avoid clashes with the ``local`` parameter.
+
 
 `debops v1.0.6`_ - 2019-07-26
 -----------------------------
