@@ -262,6 +262,10 @@ Fixed
 - [debops.apache] Refactor the role to not use Jinja 'import' statements in
   looped tasks - this does not work on newer Jinja versions.
 
+- [debops.nsswitch] Don't restart the :command:`systemd-logind` service on
+  :file:`/etc/nsswitch.conf` file changes if DebOps is running against
+  ``localhost``, to avoid breaking the existing user session.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
