@@ -53,14 +53,18 @@
 
   roles:
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::netbase' ]
+      python__dependent_packages3:
+        - '{{ netbase__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ netbase__python__dependent_packages2 }}'
+
     - role: debops.netbase
       tags: [ 'role::netbase', 'skip::netbase' ]
 
     - role: debops.apt
       tags: [ 'role::apt', 'skip::apt' ]
-
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
 
     - role: debops.sudo
       tags: [ 'role::sudo', 'skip::sudo', 'role::system_groups' ]

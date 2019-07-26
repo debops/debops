@@ -240,6 +240,11 @@ Changed
   case the host cannot have a FQDN defined in the Ansible inventory as the
   label or ``ansible_host`` variable, only a hostname.
 
+- [debops.netbase] Role will check if the configured FQDN of a host exists in
+  the DNS database. If it does, the entry in the :file:`/etc/hosts` file will
+  be removed to allow the DNS to take over. If it doesn't, the configuration
+  will be left intact with assumtion that the domain is configured locally.
+
 Removed
 ~~~~~~~
 
