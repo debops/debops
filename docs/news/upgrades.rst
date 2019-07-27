@@ -85,6 +85,11 @@ Inventory variable changes
 - The ``core__keyserver`` variable and its corresponding local fact have been
   replaced by the :envvar:`keyring__keyserver` with a corresponding local fact.
 
+- The :ref:`debops.nginx` role no longer defaults to limiting the allowed HTTP
+  request methods to GET, HEAD and POST on PHP-enabled websites. Use the
+  ``item.php_limit_except`` parameter if you want to keep limiting the request
+  methods.
+
 
 v1.0.0 (2019-05-22)
 -------------------

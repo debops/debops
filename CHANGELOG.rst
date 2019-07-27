@@ -245,6 +245,9 @@ Changed
   be removed to allow the DNS to take over. If it doesn't, the configuration
   will be left intact with assumtion that the domain is configured locally.
 
+- [debops.nginx] The role will no longer default to limiting the allowed HTTP
+  request methods to GET, HEAD and POST on PHP-enabled websites.
+
 Removed
 ~~~~~~~
 
