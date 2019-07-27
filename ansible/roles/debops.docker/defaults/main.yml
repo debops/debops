@@ -13,6 +13,18 @@
 # APT packages [[[
 # ----------------
 
+# .. envvar:: docker__server_installed [[[
+#
+# Whether the Docker server is installed. If it is, this role won't touch APT
+# sources and keys. It also won't install the CLI package as it already comes
+# with the Docker server packages in both Debian and upstream repositories.
+docker__server_installed: '{{ True
+                              if (ansible_local|d() and
+                                  ansible_local.docker_server|d() and
+                                  ansible_local.docker_server.installed|d())
+                              else False }}'
+
+                                                                   # ]]]
 # .. envvar:: docker__distribution [[[
 #
 # The OS distribution which is used to select upstream APT repository.
@@ -87,7 +99,9 @@ docker__mandatory_packages:
 # List of base packages to install with the Docker CLI.
 docker__base_packages:
 
-  - '{{ "docker-" + docker__upstream_edition + "-cli" }}'
+  - '{{ []
+        if (docker__server_installed)
+        else "docker-" + docker__upstream_edition + "-cli" }}'
   - 'docker-compose'
 
                                                                    # ]]]
@@ -190,13 +204,6 @@ docker__pki_crt_path: '{{ docker__pki_path + "/" + docker__pki_realm
 # Absolute path to the private key used by the Docker client.
 docker__pki_key_path: '{{ docker__pki_path + "/" + docker__pki_realm
                           + "/default.key" }}'
-
-                                                                   # ]]]
-# .. envvar:: docker__tls_verify [[[
-#
-# Whether the Docker client should verify the authenticity of the Docker host
-# by default.
-docker__tls_verify: '{{ docker__pki }}'
 
                                                                    # ]]]
 # .. envvar:: docker__tls_hostname [[[
@@ -379,8 +386,10 @@ docker__combined_registry_accounts: '{{ docker__registry_accounts
 # Configuration for the :ref:`debops.keyring` role.
 docker__keyring__dependent_apt_keys:
 
-  - id: '{{ docker__upstream_key }}'
-    repo: '{{ docker__upstream_repository }}'
+  - '{{ []
+        if docker__server_installed
+        else [ {"id": docker__upstream_key},
+               {"repo": docker__upstream_repository} ] }}'
 
                                                                    # ]]]
 # .. envvar:: docker__apt_preferences__dependent_list [[[
@@ -410,15 +419,12 @@ docker__environment__dependent_variables:
     value: '{{ docker__ssl_version }}'
   - name: 'DOCKER_TIMEOUT'
     value: '{{ docker__timeout }}'
-  - name: 'DOCKER_TLS'
-    value: 1
-    state: '{{ "present" if docker__pki else "absent" }}'
   - name: 'DOCKER_TLS_HOSTNAME'
     value: '{{ docker__tls_hostname }}'
     state: '{{ "present" if docker__tls_hostname else "absent" }}'
   - name: 'DOCKER_TLS_VERIFY'
     value: 1
-    state: '{{ "present" if docker__tls_verify else "absent"}}'
+    state: '{{ "present" if docker__pki else "absent"}}'
 
                                                                    # ]]]
 # .. envvar:: docker__python__dependent_packages3 [[[

@@ -19,9 +19,9 @@
     ssl_version:    '{{ item.ssl_version    |d(docker__ssl_version) }}'
     state:          '{{ item.state          |d(omit) }}'
     timeout:        '{{ item.timeout        |d(docker__timeout) }}'
-    tls:            '{{ item.tls            |d(docker__pki) }}'
+    tls:            '{{ item.tls            |d(omit) }}'
     tls_hostname:   '{{ item.tls_hostname   |d(docker__tls_hostname) }}'
-    tls_verify:     '{{ item.tls_verify     |d(docker__tls_verify) }}'
+    tls_verify:     '{{ item.tls_verify     |d(docker__pki) }}'
   with_items: '{{ docker__combined_networks }}'
 
 - name: Authenticate to Docker registries
@@ -40,12 +40,12 @@
     ssl_version:  '{{ item.ssl_version  |d(docker__ssl_version) }}'
     state:        '{{ item.state        |d(omit) }}'
     timeout:      '{{ item.timeout      |d(docker__timeout) }}'
-    tls:          '{{ item.tls          |d(docker__pki) }}'
+    tls:          '{{ item.tls          |d(omit) }}'
     tls_hostname: '{{ item.tls_hostname |d(docker__tls_hostname) }}'
-    tls_verify:   '{{ item.tls_verify   |d(docker__tls_verify) }}'
+    tls_verify:   '{{ item.tls_verify   |d(docker__pki) }}'
     username:     '{{ item.username }}'
   with_items: '{{ docker__combined_registry_accounts }}'
-  no_log: secret__no_log|d(True)
+  no_log: '{{ secret__no_log|d(True) }}'
 
 - name: Manage Docker containers
   docker_container:
@@ -122,9 +122,9 @@
     stop_timeout:        '{{ item.stop_timeout        |d(omit) }}'
     sysctls:             '{{ item.sysctls             |d(omit) }}'
     timeout:             '{{ item.timeout             |d(docker__timeout) }}'
-    tls:                 '{{ item.tls                 |d(docker__pki) }}'
+    tls:                 '{{ item.tls                 |d(omit) }}'
     tls_hostname:        '{{ item.tls_hostname        |d(docker__tls_hostname) }}'
-    tls_verify:          '{{ item.tls_verify          |d(docker__tls_verify) }}'
+    tls_verify:          '{{ item.tls_verify          |d(docker__pki) }}'
     tmpfs:               '{{ item.tmpfs               |d(omit) }}'
     trust_image_content: '{{ item.trust_image_content |d(omit) }}'
     tty:                 '{{ item.tty                 |d(omit) }}'
@@ -137,4 +137,4 @@
     volumes_from:        '{{ item.volumes_from        |d(omit) }}'
     working_dir:         '{{ item.working_dir         |d(omit) }}'
   with_items: '{{ docker__combined_containers }}'
-  no_log: secret__no_log|d(True)
+  no_log: '{{ secret__no_log|d(True) }}'
