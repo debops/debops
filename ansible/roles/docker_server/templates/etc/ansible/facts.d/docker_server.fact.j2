@@ -41,7 +41,8 @@ output = loads('''{{
                   else docker_server__upstream) | bool
     } | to_json }}''')
 
-output['installed'] = cmd_exists('docker')
+output['installed'] = cmd_exists('docker-init')
+
 try:
     version_stdout = subprocess.check_output(
         ["dpkg-query", "-W", "-f=${Version}\n'", docker_pkg]
