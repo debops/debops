@@ -53,6 +53,9 @@ Fixed
 - [debops.root_account] Include missing "group' and "host" authorized keys
   variables in the ``authorized_key`` task.
 
+- [debops.lvm] Make sure logical volumes will only be shrinked when
+  volume item defines ``force: yes``.
+
 
 `debops v1.0.6`_ - 2019-07-26
 -----------------------------
