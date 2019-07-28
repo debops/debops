@@ -7,14 +7,19 @@ involved in the DebOps development to get to a stable release. It is meant to
 aid the project users in picking the preferred release schedule for their
 needs.
 
+.. contents::
+   :local:
+   :depth: 2
 
-The ``master`` branch
+
+The "rolling" release
 ---------------------
 
 DebOps project is developed in a :command:`git` repository, with the ``master``
 branch as the main development branch. The project's repository is `hosted on
 GitHub`__, with a `mirror on GitLab`__ used for testing the Ansible roles via
-a GitLab CI pipeline.
+a GitLab CI pipeline. This release is meant for those that prefer to get the
+latest updates in the codebase, bugfixes and improvelements.
 
 .. __: https://github.com/debops/debops/
 .. __: https://gitlab.com/debops/debops/
@@ -25,115 +30,88 @@ or more :command:`git` commits. The ``master`` branch is designed to be usable
 at all times in the production environment, but uncatched bugs might occur;
 they are usually quickly fixed if found.
 
-The :command:`debops.update` script included in the ``debops`` Python package
-by default clones the project's :command:`git` repository to a central location
-and checks out the ``master`` branch.
+How to use the rolling release
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can install or update the rolling release of DebOps after installing the
+``debops`` Python package by executing the :command:`debops-update` script. It
+will install the DebOps repository in the :file:`~/.local/share/debops/debops/`
+directory and perform the :command:`git pull` command if it already exists. The
+default branch is set to ``master``, but can be changed using the :command:`git
+checkout` command if desired. The :command:`debops` script knows about this
+central repository location and will use it, if found.
+
+Alternatively, you can clone or symlink the DebOps repository into the
+:file:`debops/` subdirectory inside of a given DebOps project directory
+containing the Ansible inventory and other related files. This repository will
+take precedence over the centralized repository described above. You can
+maintain this repository by hand, or attach it as a :command:`git submodule` on
+a branch, tag or specific commit.
+
+If you plan to use the rolling release, keep an eye for changes in the project
+described in the :ref:`changelog` and the :ref:`upgrade_notes`.
 
 
-The versioned :command:`git` tags
----------------------------------
+The "stable" releases
+---------------------
 
-Starting from ``v1.1.0`` release, each significant change in the codebase is
-tagged using `Semantic Versioning`__ scheme. Each part of the version (*major*,
-*minor*, *patch*) has a specific meaning designed to let users quickly estimate
-the amount of changes between releases. Below you can find examples of changes
-that modify each part of the version number.
+Around every three months, a new stable, long term support (LTS) release is
+created from the current ``master`` branch. Stable DebOps releases have their
+own ``stable-x.y`` branches and are supported for about a year after their
+first release.
+
+Versioning scheme
+~~~~~~~~~~~~~~~~~
+
+The stable DebOps releases utilize the `Semantic Versioning`__ scheme in the
+:command:`git` tags, with some changes from the standard scheme:
 
 .. __: https://semver.org/
 
-Patch releases
-~~~~~~~~~~~~~~
+- The **major** number in the version string is considered an "epoch" and is
+  incremented after a significant number of stable *minor* releases has been
+  created. A new "epoch" might signify that enough changes have happened that
+  a complete rebuild of the environment managed by DebOps might be necessary.
 
-- Changes in the Ansible roles or playbooks that do not touch the existing
-  infrastructure managed by DebOps, for example `code refactoring`__, updates
-  to the documentation.
+- The **minor** number in the version string defines a stable DebOps release
+  with its own ``stable-x.y`` branch.
 
-  .. __: https://en.wikipedia.org/wiki/Code_refactoring
+  Only bugfixes and non-invasive changes, that don't require modification in
+  the Ansible inventory or managed environment, are backported from the
+  ``master`` branch to a ``stable-x.y`` branch during its lifetime, as long as
+  they are compatible. Changes in external resources (for example new operating
+  system releases) might also be backported to the stable releases to ensure
+  correct operation of the roles.
 
-- New Ansible roles or playbooks which are not included in the
-  :file:`common.yml` playbook and require explicit activation via Ansible
-  inventory.
+  At the moment there are no plans to ensure that an automatic migration from
+  one stable release to the next is possible. This might change in the future,
+  when all of the old code is cleaned up and refactored. Changes between stable
+  releases are described in the :ref:`changelog` and the :ref:`upgrade_notes`.
 
-- Changes in role default variables that do not modify the default conditions
-  in a significant way, for example addition or removal of software packages to
-  install on a host.
+- The **patch** number in the version string denotes the next "patch" release in
+  a given ``stable-x.y`` :command:`git` branch. Each *patch* release is created
+  if there are any unreleased changes in a given ``stable-x.y`` branch, and no
+  new changes were made for about a week. Changes in the *patch* release
+  usually don't get a mention in the ``master`` branch Changelog, but get
+  mentioned in the Changelog of a given ``stable-x.y`` branch.
 
-Minor releases
-~~~~~~~~~~~~~~
 
-- New Ansible roles or playbooks included in the :file:`common.yml` playbook.
-
-- Changes to role dependencies in Ansible playbooks (soft dependencies) or in
-  the :file:`meta/main.yml` file of a role (hard dependencies).
-
-- Removal or existing Ansible roles of playbooks.
-
-- Modifications in Ansible roles that require manual intervention in the
-  managed infrastructure; changes needed are described in the
-  :ref:`upgrade_notes` documentation. Some modifications might require
-  a rebuild of a part of the infrastructure, for example a LDAP database with
-  incompatible schema changes.
-
-- Changes to role default variables that require modification of the Ansible
-  inventory, for example variable renames, changed value types.
-
-- Changes in external resources - new software versions, operating system
-  releases, updated GPG keys.
-
-Major releases
-~~~~~~~~~~~~~~
-
-- Major releases are considered "epochs", they happen when a significant
-  portion of the project has changed sufficiently that a rebuild of the entire
-  environments might be needed. The major release can also happen periodically,
-  when sufficient number of minor releases was created.
-
-New *minor* release resets the *patch* release to ``0``. New *major* release
-resets the *minor* and *patch* releases to ``0.0``.
+How to use the stable releases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Tagged DebOps releases are published to the `Python Package Index`__ (the
 ``debops`` Python package includes the Ansible roles and playbooks), and to the
 `Ansible Galaxy`__ as an exported Ansible Collection. The releases are also
-`tagged on GitHub`__, however non-LTS tarballs are not signed.
+`tagged on GitHub`__. See the :ref:`install` documentation to learn how you can
+install DebOps in various ways.
 
 .. __: https://pypi.org/project/debops/
 .. __: https://galaxy.ansible.com/debops/debops
 .. __: https://github.com/debops/debops/releases
 
 
-Long Term Support (LTS) releases
---------------------------------
-
-Around every three months, a new stable (LTS) release is created from the
-current ``master`` branch. Stable DebOps releases have their own ``stable-x.y``
-branches and are supported for about a year after their first release. Each new
-LTS release is at least a *minor* release, which resets its *patch* release
-number to ``0``.
-
-Only bugfixes and non-invasive changes are backported from the ``master``
-branch to a ``stable-x.y`` branch during its lifetime, as long as they are
-compatible. Changes in external resources (for example new operating system
-releases) might also be backported to the stable releases to ensure correct
-operation of the roles.
-
-The ``stable-x.y`` DebOps releases are published on GitHub with signed
-tarballs, as well as in Python Package Index and Ansible Galaxy. A good
-solution for multiple environments with different stable DebOps releases is to
-add the DebOps monorepo as a `git submodule`__ in the project repository
-:file:`debops/` subdirectory. The included scripts will prefer this repository
-over the centrally deployed one. Pinning either a specific :command:`git` tag,
-or the ``stable-x.y`` branch should be possible.
-
-.. __: https://git-scm.com/book/en/v2/Git-Tools-Submodules
-
-At the moment there are no plans to ensure that an automatic migration from one
-stable release to the next is possible. This might change in the future, when
-all of the old code is cleaned up and refactored. Changes between stable
-releases are described in the :ref:`changelog` and the :ref:`upgrade_notes`.
-
-
-Current stable releases
------------------------
+Current stable (LTS) releases
+-----------------------------
 
 - Latest release: ``stable-1.0`` (`GitHub`__, `differences from master`__,
   `Changelog`__)
