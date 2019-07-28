@@ -279,6 +279,9 @@ Fixed
   :file:`/etc/nsswitch.conf` file changes if DebOps is running against
   ``localhost``, to avoid breaking the existing user session.
 
+- [debops.lvm] Make sure logical volumes will only be shrinked when
+  volume item defines ``force: yes``.
+
 
 `debops v1.0.0`_ - 2019-05-22
 -----------------------------
