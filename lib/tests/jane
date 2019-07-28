@@ -50,7 +50,7 @@ readonly BASE_VAGRANT_BOX="${BASE_VAGRANT_BOX:-debian/buster64}"
 
 # Name of the Vagrant box used for CI testing. This variable is used in
 # filenames, use only alphanumeric characters, and dashes
-readonly JANE_VAGRANT_BOX="${JANE_VAGRANT_BOX:-${SCRIPTNAME}-debops-buster}"
+readonly JANE_VAGRANT_BOX="${JANE_VAGRANT_BOX:-${SCRIPTNAME}-debops-${BASE_VAGRANT_BOX##debian/}}"
 
 readonly JANE_KEEP_BOX="${JANE_KEEP_BOX:-}"
 
@@ -549,6 +549,7 @@ prepare_vagrant_box () {
     local base_vagrant_box="${BASE_VAGRANT_BOX}"
 
     local VAGRANT_BOX="${base_vagrant_box}"
+    export VAGRANT_BOX
     export VAGRANT_DOTFILE_PATH
 
     # The box is prepared for CI environment
