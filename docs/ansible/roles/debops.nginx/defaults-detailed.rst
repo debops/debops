@@ -750,12 +750,9 @@ Available when ``item.type`` is set to ``php`` for a server.
 
 ``php_limit_except`` or False
   Optional, string or list of strings or boolean (``False``).
-  Methods to allow for all hosts.
+  Whitelist of allowed HTTP request methods.
 
-  If undefined, default limits will be applied (block all requests except GET,
-  HEAD and POST).
-
-  If set to ``False``, limits are disabled.
+  If absent or ``False``, limits are disabled.
 
   Refer to the `Nginx limit_except directive documentation`_ for details.
 
