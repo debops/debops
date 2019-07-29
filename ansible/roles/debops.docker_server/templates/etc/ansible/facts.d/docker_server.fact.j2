@@ -19,6 +19,14 @@ def cmd_exists(cmd):
     )
 
 
+def cmd_abspath(cmd):
+    binaries = (os.path.abspath(os.path.join(path, cmd))
+                for path in os.environ["PATH"].split(os.pathsep))
+    for binary in binaries:
+        if os.access(binary, os.X_OK):
+            return binary
+
+
 output = {'installed': cmd_exists('docker')}
 
 try:
@@ -30,6 +38,11 @@ try:
     if match:
         output['version'] = match.group('docker_version')
 
+except Exception:
+    pass
+
+try:
+    output['dockerd_binary'] = cmd_abspath('dockerd')
 except Exception:
     pass
 
