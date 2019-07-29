@@ -31,6 +31,9 @@ Fixed
 - [debops.sshd] Don't stop the playbook if the host SSH keys don't exist yet
   (OpenSSH service was not installed on ``localhost`` before).
 
+- [debops.sshd] Make sure that the :file:`/run/sshd` directory exists on first
+  install, otherwise the configuration test breaks.
+
 
 `debops v1.0.6`_ - 2019-07-26
 -----------------------------
