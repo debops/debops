@@ -18,11 +18,12 @@ version of Docker by setting the ``docker_server__upstream: True`` variable in
 Ansible’s inventory. Upstream Docker is installed on Debian Stretch by default,
 since this release does not provide included Docker packages.
 
-If :ref:`debops.pki` was configured on the host, Docker will automatically
-listen on its TCP port for incoming TLS connections, which is by default
-blocked by the :program:`ferm` firewall. If you don't use a firewall or have it
-disabled, you might want to set :envvar:`docker_server__tcp` to ``False`` to
-disable this behavior.
+A Docker server managed by DebOps does not listen on any TCP ports by default.
+You can set :envvar:`docker_server__tcp` to ``True`` if you need remote access
+to the Docker server. You will also need to tweak your firewall in this case,
+which is easily done with :envvar:`docker_server__tcp_allow`. It is recommended
+to use the :ref:`debops.pki` role to secure the connection between the client
+and the Docker server.
 
 Docker manages its own network bridge and :command:`iptables` entries. On hosts
 that don't use upstream Docker packages, the :program:`ferment` Python script
@@ -58,6 +59,9 @@ Useful variables
 
 This is a list of role variables which you most likely want to define in
 Ansible inventory to customize Docker:
+
+:envvar:`docker_server__tcp`
+  Enable or disable listening for TLS connections on the Docker TCP port.
 
 :envvar:`docker_server__tcp_allow`
   List of IP addresses or subnets that can connect to Docker daemon remotely

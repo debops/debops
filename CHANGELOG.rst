@@ -129,6 +129,9 @@ Changed
   preparation of adding a role that will provide client functionality like
   network and container management.
 
+- [debops.docker_server] The Docker server no longer listens on a TCP port by
+  default, even if :ref:`debops.pki` is enabled.
+
 - [debops.netbase] Do not try to manage the hostname in LXC, Docker or OpenVZ
   containers by default. We assume that these containers are unprivileged and
   their hostname cannot be changed from the inside of the container.
