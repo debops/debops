@@ -260,10 +260,8 @@ docker_server__dns_search: '{{ ansible_local.resolver.search
 
 # .. envvar:: docker_server__tcp [[[
 #
-# Enable or disable listening for TLS connections on the TCP docker port. By
-# default remote connections are enabled if the :ref:`debops.pki` role has been
-# configured on remote host (access is controlled by the firewall).
-docker_server__tcp: '{{ docker_server__pki | bool }}'
+# Enable or disable listening for incoming TCP connections.
+docker_server__tcp: False
 
                                                                    # ]]]
 # .. envvar:: docker_server__tcp_bind [[[
@@ -287,7 +285,7 @@ docker_server__tls_tcp_port: '2376'
                                                                    # ]]]
 # .. envvar:: docker_server__tcp_port [[[
 #
-# Port on which to listen for incoming TLS connections.
+# Port on which to listen for incoming TCP connections.
 docker_server__tcp_port: '{{ docker_server__tls_tcp_port
                              if (docker_server__pki|d() | bool)
                              else docker_server__unencrypted_tcp_port }}'
@@ -296,16 +294,16 @@ docker_server__tcp_port: '{{ docker_server__tls_tcp_port
 # .. envvar:: docker_server__tcp_allow [[[
 #
 # List of IP addresses or subnets in CIDR format which are allowed to connect
-# to the Docker daemon over TLS. If it's not specified, remote connections are
+# to the Docker daemon over TCP. If it's not specified, remote connections are
 # denied by the firewall.
 docker_server__tcp_allow: []
 
                                                                    # ]]]
 # .. envvar:: docker_server__tcp_listen [[[
 #
-# Default connection configured in addition to local socket connection, using
-# TCP over TLS.
-docker_server__tcp_listen: '{{ ("tcp://" + docker_server__tcp_bind + ":" + docker_server__tcp_port)
+# Default TCP connection configured in addition to local socket connection.
+docker_server__tcp_listen: '{{ ("tcp://" + docker_server__tcp_bind + ":" +
+                                docker_server__tcp_port)
                                if (docker_server__tcp|d() | bool) else "" }}'
 
                                                                    # ]]]
