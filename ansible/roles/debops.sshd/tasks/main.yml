@@ -179,13 +179,13 @@
   tags: [ 'role::sshd:known_hosts' ]
 
 - name: Check if /etc/ssh/moduli contains weak DH parameters
-  shell: awk '$5 < {{ sshd__moduli_minimum }}' /etc/ssh/moduli
+  shell: awk '$5 < {{ (sshd__moduli_minimum|int -1) }}' /etc/ssh/moduli
   register: sshd__register_moduli
   changed_when: sshd__register_moduli.stdout
   check_mode: False
 
 - name: Remove DH parameters smaller than the requested size
-  shell: awk '$5 >= {{ sshd__moduli_minimum }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
+  shell: awk '$5 >= {{ (sshd__moduli_minimum|int - 1) }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
          [ -r /etc/ssh/moduli.new -a -s /etc/ssh/moduli.new ] && mv /etc/ssh/moduli.new /etc/ssh/moduli || true
   notify: [ 'Test sshd configuration and restart' ]
   when: sshd__register_moduli.stdout
