@@ -248,6 +248,12 @@ Changed
 - [debops.nginx] The role will no longer default to limiting the allowed HTTP
   request methods to GET, HEAD and POST on PHP-enabled websites.
 
+- [debops.pki] If there is no domain set on the remote host, don't fallback to
+  the hostname in the :envvar:`pki_ca_domain` variable because the generated CA
+  certificates don't make any sense. With this setup the :ref:`debops.pki` role
+  requires to be run against a host with a valid DNS domain for the internal CA
+  to be created.
+
 Removed
 ~~~~~~~
 

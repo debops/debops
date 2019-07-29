@@ -4,7 +4,7 @@
 # information, therefore we should grab them by ourselves
 - name: Gather SSH host public keys
   shell: 'set -o nounset -o pipefail -o errexit &&
-          cat /etc/ssh/ssh_host_*_key.pub'
+          cat /etc/ssh/ssh_host_*_key.pub || true'
   args:
     executable: '/bin/bash'
   register: sshd__env_register_host_public_keys
