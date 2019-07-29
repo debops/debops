@@ -5,6 +5,7 @@
 # configuration file.
 [Service]
 ExecStart=
-ExecStart={{ "/usr/sbin/dockerd"
-             if ansible_distribution_release == "buster"
-             else "/usr/bin/dockerd" }}
+ExecStart={{ ansible_local.docker_server.dockerd_binary
+             if (ansible_local|d() and ansible_local.docker_server|d() and
+                 ansible_local.docker_server.dockerd_binary|d())
+             else "/usr/sbin/dockerd" }}
