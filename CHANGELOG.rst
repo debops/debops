@@ -34,6 +34,9 @@ Fixed
 - [debops.sshd] Make sure that the :file:`/run/sshd` directory exists on first
   install, otherwise the configuration test breaks.
 
+- [debops.sshd] Fix off-by-one error in role tasks that manage the
+  :file:`/etc/ssh/moduli` file contents.
+
 
 `debops v1.0.6`_ - 2019-07-26
 -----------------------------
