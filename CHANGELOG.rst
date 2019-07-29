@@ -18,6 +18,13 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Changed
+-------
+
+- [debops.samba] Change the default value of the ``map to guest`` option from
+  ``bad user`` to ``never`` which should help resolve issues when users connect
+  to the Samba server with incorrect credentials.
+
 Fixed
 ~~~~~
 
