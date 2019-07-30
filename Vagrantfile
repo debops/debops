@@ -699,19 +699,27 @@ SCRIPT
 $setup_examples = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
-projects_dir=~/src
+projects_dir=$HOME/src
 controller_dir=${projects_dir}/controller
-examples_dir=/vagrant/lib/examples
-examples=$(find /vagrant/lib/examples/* -maxdepth 0 -type d)
+upstream_dir=/vagrant/lib/examples
+examples=$(find /vagrant/lib/examples/* -maxdepth 0 -type d -printf "%f\n")
 
-rsync -av ${examples_dir}/bootstrap/ansible ${controller_dir}/ansible
-jane notify info "Merging ${examples_dir}/bootstrap with ${controller_dir}"
+# controller_dir will be our source of truth
+rsync -a ${upstream_dir}/bootstrap/ansible/ ${controller_dir}/ansible/
+jane notify info "${upstream_dir}/bootstrap merged into ${controller_dir}"
 
-for example_dir in ${examples}; do
-    rsync -av ${example_dir}/ansible ${projects_dir}
-    rsync -av ${controller_dir}/ansible/ ${example_dir}/ansible
+# bootstrap_dir is resynchronized with controller one time just to get
+# auto-generated inventory
+for example in ${examples}; do
+    rsync -a ${upstream_dir}/${example} ${projects_dir}
+    jane notify info "${upstream_dir}/${example} installed in ${projects_dir}"
+    rsync -a ${controller_dir}/ ${projects_dir}/${example}/
+    jane notify info "${projects_dir}/${example}/ synchronized with ${controller_dir}/"
 done
 jane notify success "All examples installed and synchronized in ${projects_dir}"
+
+wget -q -O $HOME/.ssh/id_rsa.pub https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub
+jane notify info "Insecure vagrant **public** key installed in $HOME/.ssh for bootstrap example"
 SCRIPT
 
 require 'securerandom'
