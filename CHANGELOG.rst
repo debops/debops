@@ -25,6 +25,9 @@ Changed
   ``bad user`` to ``never`` which should help resolve issues when users connect
   to the Samba server with incorrect credentials.
 
+- [debops.reprepro] Don't set ``Components`` or ``UDebComponents`` options if
+  they are not explicitly defined in the configuration.
+
 Fixed
 ~~~~~
 
