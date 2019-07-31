@@ -852,7 +852,7 @@ Vagrant.configure("2") do |config|
 
         if ENV['GITLAB_CI'] != "true"
             subconfig.vm.provision "shell", inline: $provision_controller, keep_color: true, privileged: false
-            subconfig.vm.provision "setup_examples", type: "shell", inline: $setup_examples, privileged: false, keep_color: true
+            subconfig.vm.provision "setup_examples", type: "shell", run: "never", inline: $setup_examples, privileged: false, keep_color: true
         end
 
         if ENV['CI'] != "true"
