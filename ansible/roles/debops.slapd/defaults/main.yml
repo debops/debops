@@ -185,7 +185,7 @@ slapd__domain: '{{ ansible_local.core.domain
 # BaseDN value of the main OpenLDAP server that contains the LDAP data, defined
 # as a YAML list.
 slapd__base_dn: '{{ slapd__domain.split(".")
-                    | map("regex_replace", "(.*)", "dc=\1")
+                    | map("regex_replace", "^(.*)$", "dc=\1")
                     | list }}'
 
                                                                    # ]]]
