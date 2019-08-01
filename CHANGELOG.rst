@@ -98,6 +98,12 @@ Changed
     by default. The :command:`git` commit signature in the NetBox repository is
     also verified using the GitHub GPG key when the repository is cloned.
 
+  - [debops.cran] The upstream APT repository suite for CRAN has been updated
+    to ``<release>-cran35/`` due to changes in APT repository structure.
+    Existing APT repository URLs might need to be removed manually from
+    :file:`/etc/apt/sources.lists.d/` directory to make the APT service work as
+    expected.
+
 - DebOps now uses ``xenial`` as the default OS release used in Travis-CI tests.
   The ``xenial`` images on Travis use the :command:`shellcheck` v0.6.0 to test
   shell scripts; if you want to run the :command:`test shell` command locally
