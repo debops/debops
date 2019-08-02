@@ -758,6 +758,9 @@ end
 
 Vagrant.configure("2") do |config|
 
+    # add insecure public SSH key in authorized_keys on master and nodes
+    config.ssh.insert_key = false
+
     # Create and provision additional nodes first, so that the master node has
     # time to do provisioning and cluster detection using Avahi later.
     if VAGRANT_NODES != 0
@@ -774,10 +777,6 @@ Vagrant.configure("2") do |config|
 
                 # Don't populate '/vagrant' directory on other nodes
                 node.vm.synced_folder ".", "/vagrant", disabled: true
-
-                if ENV['VAGRANT_BOX'] || 'debian/buster64' == 'debian/buster64'
-                    node.ssh.insert_key = false
-                end
 
                 node.vm.provider "libvirt" do |libvirt|
                     libvirt.random_hostname = true
@@ -813,10 +812,6 @@ Vagrant.configure("2") do |config|
                 chown vagrant:vagrant /home/vagrant/.ssh/id_rsa
                 chmod 600 /home/vagrant/.ssh/id_rsa
             SHELL
-        end
-
-        if ENV['VAGRANT_BOX'] || 'debian/buster64' == 'debian/buster64'
-            subconfig.ssh.insert_key = false
         end
 
         subconfig.vm.provider "libvirt" do |libvirt, override|
