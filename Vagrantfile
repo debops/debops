@@ -718,8 +718,8 @@ for example in ${examples}; do
 done
 jane notify success "All examples installed and synchronized in ${projects_dir}"
 
-wget -q -O $HOME/.ssh/id_rsa.pub https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub
-jane notify info "Insecure vagrant **public** key installed in $HOME/.ssh for bootstrap example"
+cp $HOME/.ssh/authorized_keys $HOME/.ssh/id_rsa.pub
+jane notify info "Insecure vagrant **public** key copied to $HOME/.ssh/id_rsa.pub for bootstrap example"
 SCRIPT
 
 require 'securerandom'
