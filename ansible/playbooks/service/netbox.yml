@@ -27,17 +27,6 @@
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.postgresql
-      tags: [ 'role::postgresql', 'skip::postgresql' ]
-      postgresql__dependent_roles:
-        - '{{ netbox__postgresql__dependent_roles }}'
-      postgresql__dependent_groups:
-        - '{{ netbox__postgresql__dependent_groups }}'
-      postgresql__dependent_databases:
-        - '{{ netbox__postgresql__dependent_databases }}'
-      postgresql__dependent_pgpass:
-        - '{{ netbox__postgresql__dependent_pgpass }}'
-
     - role: debops.python
       tags: [ 'role::python', 'skip::python', 'role::gunicorn', 'role::netbox' ]
       python__dependent_packages3:
@@ -50,6 +39,17 @@
         - '{{ netbox__python__dependent_packages2 }}'
         - '{{ nginx__python__dependent_packages2 }}'
         - '{{ postgresql__python__dependent_packages2 }}'
+
+    - role: debops.postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ netbox__postgresql__dependent_roles }}'
+      postgresql__dependent_groups:
+        - '{{ netbox__postgresql__dependent_groups }}'
+      postgresql__dependent_databases:
+        - '{{ netbox__postgresql__dependent_databases }}'
+      postgresql__dependent_pgpass:
+        - '{{ netbox__postgresql__dependent_pgpass }}'
 
     - role: debops.gunicorn
       tags: [ 'role::gunicorn', 'skip::gunicorn' ]
