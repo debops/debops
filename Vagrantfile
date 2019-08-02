@@ -758,7 +758,7 @@ end
 
 Vagrant.configure("2") do |config|
 
-    # add insecure public SSH key in authorized_keys on master and nodes
+    # add insecure public key in authorized_keys on master and nodes
     config.ssh.insert_key = false
 
     # Create and provision additional nodes first, so that the master node has
