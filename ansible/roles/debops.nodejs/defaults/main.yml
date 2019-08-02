@@ -30,19 +30,17 @@ nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream|bool
 # See https://github.com/nodejs/Release for the current release and maintenance
 # shedule. Available releases:
 #
-# - ``node_6.x``
-#
 # - ``node_8.x``
 #
 # - ``node_10.x``
 #
-# - ``iojs_1.x``
+# - ``node_12.x``
 #
-# - ``iojs_2.x``
-#
-# If you switch to the ``iojs`` release, you need to update the list of
-# installed APT packages manually.
-nodejs__node_upstream_release: 'node_8.x'
+nodejs__node_upstream_release: '{{ "node_8.x"
+                                   if (nodejs__node_upstream_distribution_release in
+                                       [ "wheezy", "jessie", "stretch",
+                                         "trusty", "xenial", "bionic" ])
+                                   else "node_10.x" }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__node_upstream_distribution_release [[[

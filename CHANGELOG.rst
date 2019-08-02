@@ -110,6 +110,12 @@ Changed
     Installation of upstream NodeJS and NPM can be enabled using the
     :envvar:`nodejs__node_upstream` variable.
 
+    If the NodeJS upstream support is enabled, the NodeJS 8.x version will be
+    installed on older Debian/Ubuntu releases, for exaple Debian Stretch and
+    Ubuntu Bionic. Debian Buster and newer releases will use NodeJS 10.x
+    version, to keep the Node version from upstream in sync with the one
+    available in the OS repositories.
+
 - DebOps now uses ``xenial`` as the default OS release used in Travis-CI tests.
   The ``xenial`` images on Travis use the :command:`shellcheck` v0.6.0 to test
   shell scripts; if you want to run the :command:`test shell` command locally
