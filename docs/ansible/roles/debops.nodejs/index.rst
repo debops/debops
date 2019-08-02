@@ -3,13 +3,20 @@
 debops.nodejs
 =============
 
+The ``debops.nodejs`` role will install NodeJS packages, either from the
+current OS release, or from NodeSource.com which provides upstream packages.
+It can be used to install system-wide NPM packages as well.
+
 .. toctree::
    :maxdepth: 2
 
-   introduction
    getting-started
    defaults/main
-   copyright
+
+Copyright
+---------
+
+.. literalinclude:: ../../../../ansible/roles/debops.nodejs/COPYRIGHT
 
 ..
  Local Variables:
