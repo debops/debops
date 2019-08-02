@@ -96,6 +96,10 @@ Inventory variable changes
   ``item.php_limit_except`` parameter if you want to keep limiting the request
   methods.
 
+- The ``nodejs__upstream*`` variables in the :ref:`debops.nodejs` role have
+  been renamed to ``nodejs__node_upstream*`` to better indicate their purpose
+  and differentiate them from the ``nodejs__yarn_upstream*`` variables.
+
 
 v1.0.0 (2019-05-22)
 -------------------
@@ -580,8 +584,8 @@ Inventory variable changes
   install Python packages.
 
 - The ``nodejs__upstream_version`` variable has been renamed to
-  :envvar:`nodejs__upstream_release` to better represent the contents, which is
-  not a specific NodeJS version, but a specific major release.
+  :envvar:`nodejs__node_upstream_release` to better represent the contents,
+  which is not a specific NodeJS version, but a specific major release.
 
 - The ``gitlab_domain`` variable, previously used to set the FQDN of the GitLab
   installation, now only sets the domain part; it's value is also changed from

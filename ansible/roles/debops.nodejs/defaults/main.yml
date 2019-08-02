@@ -10,21 +10,21 @@
 # .. include:: ../../../../includes/global.rst
 
 
-# Upstream configuration [[[
-# --------------------------
+# Node upstream configuration [[[
+# -------------------------------
 
-# .. envvar:: nodejs__upstream [[[
+# .. envvar:: nodejs__node_upstream [[[
 #
 # Enable or disable support for NodeSource APT repositories. By default the
 # upstream package will be installed due to no security support in Debian
 # Stable release.
-nodejs__upstream: '{{ ansible_local.nodejs.upstream|bool
-                      if (ansible_local|d() and ansible_local.nodejs|d() and
-                          ansible_local.nodejs.upstream is defined)
-                      else ansible_distribution_release in ["jessie", "stretch"] }}'
+nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream|bool
+                           if (ansible_local|d() and ansible_local.nodejs|d() and
+                               ansible_local.nodejs.node_upstream is defined)
+                           else ansible_distribution_release in ["jessie", "stretch"] }}'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_release [[[
+# .. envvar:: nodejs__node_upstream_release [[[
 #
 # Specify the NodeJS release to install from the NodeSource APT repository.
 # See https://github.com/nodejs/Release for the current release and maintenance
@@ -42,28 +42,28 @@ nodejs__upstream: '{{ ansible_local.nodejs.upstream|bool
 #
 # If you switch to the ``iojs`` release, you need to update the list of
 # installed APT packages manually.
-nodejs__upstream_release: 'node_8.x'
+nodejs__node_upstream_release: 'node_8.x'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_distribution_release [[[
+# .. envvar:: nodejs__node_upstream_distribution_release [[[
 #
 # Specify the OS distribution release to use for the upstream APT repository.
-nodejs__upstream_distribution_release: '{{ ansible_local.core.distribution_release
-                                           if (ansible_local|d() and ansible_local.core|d() and
-                                               ansible_local.core.distribution_release|d())
-                                           else ansible_distribution_release }}'
+nodejs__node_upstream_distribution_release: '{{ ansible_local.core.distribution_release
+                                                if (ansible_local|d() and ansible_local.core|d() and
+                                                    ansible_local.core.distribution_release|d())
+                                                else ansible_distribution_release }}'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_key_id [[[
+# .. envvar:: nodejs__node_upstream_key_id [[[
 #
 # GPG fingerprint of APT repository signing key.
-nodejs__upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
+nodejs__node_upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_repository [[[
+# .. envvar:: nodejs__node_upstream_repository [[[
 #
 # URL of the NodeSource APT repository in ``sources.list`` format.
-nodejs__upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__upstream_release }} {{ nodejs__upstream_distribution_release }} main'
+nodejs__node_upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__node_upstream_release }} {{ nodejs__node_upstream_distribution_release }} main'
                                                                    # ]]]
                                                                    # ]]]
 # NPM installation via git [[[
@@ -84,7 +84,7 @@ nodejs__upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__upstream
 # Enable or disable NPM installation via the GitHub repository. This should be
 # disabled if upstream NodeJS APT package is installed.
 nodejs__npm_git_enabled: '{{ False
-                             if (nodejs__upstream|bool or
+                             if (nodejs__node_upstream|bool or
                                  (ansible_local|d() and ansible_local.nodejs|d() and
                                   (ansible_local.nodejs.configured|d())|bool))
                              else True }}'
@@ -194,7 +194,7 @@ nodejs__base_packages:
 # List of APT packages which are only needed when NodeJS is installed from
 # current OS release repositories.
 nodejs__distribution_packages:
-  - '{{ [ "nodejs-legacy" ] if (not nodejs__upstream|bool) else [] }}'
+  - '{{ [ "nodejs-legacy" ] if (not nodejs__node_upstream|bool) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__packages [[[
@@ -283,7 +283,7 @@ nodejs__apt_preferences__dependent_list:
     reason: 'Unsupported NodeJS version, parity with next Debian release'
     by_role: 'debops_nodejs'
     filename: 'debops_nodejs.pref'
-    state: '{{ "absent" if nodejs__upstream|bool else "present" }}'
+    state: '{{ "absent" if nodejs__node_upstream|bool else "present" }}'
 
   - package: '*'
     pin: 'origin "deb.nodesource.com"'
@@ -291,7 +291,7 @@ nodejs__apt_preferences__dependent_list:
     reason: "Don't upgrade software automatically using packages from external repository"
     role: 'debops.nodejs'
     suffix: '_deb_nodesource_com'
-    state: '{{ "present" if nodejs__upstream|bool else "absent" }}'
+    state: '{{ "present" if nodejs__node_upstream|bool else "absent" }}'
 
   - packages: [ 'nodejs', 'nodejs-*' ]
     pin: 'origin "deb.nodesource.com"'
@@ -299,7 +299,7 @@ nodejs__apt_preferences__dependent_list:
     reason: 'Prefer nodejs packages from the same repository for consistency'
     role: 'debops.nodejs'
     suffix: '_deb_nodesource_com'
-    state: '{{ "present" if nodejs__upstream|bool else "absent" }}'
+    state: '{{ "present" if nodejs__node_upstream|bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__keyring__dependent_apt_keys [[[
@@ -307,9 +307,9 @@ nodejs__apt_preferences__dependent_list:
 # Configuration for the :ref:`debops.keyring` Ansible role.
 nodejs__keyring__dependent_apt_keys:
 
-  - id: '{{ nodejs__upstream_key_id }}'
-    repo: '{{ nodejs__upstream_repository }}'
-    state: '{{ "present" if nodejs__upstream|bool else "absent" }}'
+  - id: '{{ nodejs__node_upstream_key_id }}'
+    repo: '{{ nodejs__node_upstream_repository }}'
+    state: '{{ "present" if nodejs__node_upstream|bool else "absent" }}'
 
   - id: '{{ nodejs__yarn_upstream_key_id }}'
     repo: '{{ nodejs__yarn_upstream_repository }}'

@@ -17,16 +17,16 @@
                               + nodejs__host_packages
                               + nodejs__dependent_packages)) }}'
     state: '{{ "latest"
-               if (nodejs__upstream | bool and
+               if (nodejs__node_upstream | bool and
                    (ansible_local|d() and ansible_local.nodejs|d() and
-                    ansible_local.nodejs.upstream is defined and
-                    not ansible_local.nodejs.upstream|bool))
+                    ansible_local.nodejs.node_upstream is defined and
+                    not ansible_local.nodejs.node_upstream|bool))
                else "present" }}'
     autoremove: '{{ True
-                    if (nodejs__upstream | bool and
+                    if (nodejs__node_upstream | bool and
                         (ansible_local|d() and ansible_local.nodejs|d() and
-                         ansible_local.nodejs.upstream is defined and
-                         not ansible_local.nodejs.upstream|bool))
+                         ansible_local.nodejs.node_upstream is defined and
+                         not ansible_local.nodejs.node_upstream|bool))
                     else omit }}'
   register: nodejs__register_packages
   until: nodejs__register_packages is succeeded
@@ -62,7 +62,7 @@
     - '{{ nodejs__npm_group_packages }}'
     - '{{ nodejs__npm_host_packages }}'
     - '{{ nodejs__npm_dependent_packages }}'
-  when: nodejs__upstream|bool or nodejs__npm_git_enabled|bool
+  when: nodejs__node_upstream|bool or nodejs__npm_git_enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
   file:
