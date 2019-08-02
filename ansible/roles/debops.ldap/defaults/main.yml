@@ -151,7 +151,7 @@ ldap__start_tls: '{{ True
 # This variable can be used in Ansible playbooks that include the
 # :ref:`debops.ldap` role to join other YAML list-based RDNs together.
 ldap__base_dn: '{{ ldap__domain.split(".")
-                   | map("regex_replace", "(.*)", "dc=\1")
+                   | map("regex_replace", "^(.*)$", "dc=\1")
                    | list }}'
 
                                                                    # ]]]

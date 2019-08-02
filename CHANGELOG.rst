@@ -28,8 +28,8 @@ Changed
 - [debops.reprepro] Don't set ``Components`` or ``UDebComponents`` options if
   they are not explicitly defined in the configuration.
 
-- [debops.slapd] Change the regexp pattern used to create the LDAP BaseDN
-  value.
+- [debops.slapd][debops.ldap] Change the regexp pattern used to create the LDAP
+  BaseDN value.
 
 Fixed
 ~~~~~
