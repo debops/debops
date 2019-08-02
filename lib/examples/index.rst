@@ -33,7 +33,7 @@ examples with following command:
 
 ..  code-block:: console
 
-    vagrant provision --provision-with=setup_examples
+    vagrant provision --provision-with=examples
 
 If you modified your examples directory in your git repo and want to get
 latest examples in your vagrant environment, you willl need to run:
@@ -41,7 +41,7 @@ latest examples in your vagrant environment, you willl need to run:
 .. code-block:: console
 
    vagrant rsync
-   vagrant provision --provision-with=setup_examples
+   vagrant provision --provision-with=examples
 
 .. toctree::
    :maxdepth: 1
