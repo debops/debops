@@ -289,6 +289,11 @@ Removed
 
   .. __: https://wiki.debian.org/OpenVz
 
+- [debops.nodejs] Support for installing NPM from its :command:`git` repository
+  has been removed. NPM is included in the NodeSource upstream ``nodejs``
+  package, as well as the Debian archive since Debian Buster release in the
+  ``npm`` package.
+
 Fixed
 ~~~~~
 

@@ -1,13 +1,5 @@
 ---
 
-- name: Ensure that the distribution 'npm' package is uninstalled
-  package:
-    name: 'npm'
-    state: 'absent'
-  register: nodejs__register_purge_npm
-  until: nodejs__register_purge_npm is succeeded
-  when: nodejs__npm_git_enabled|bool
-
 - name: Install APT packages
   package:
     name: '{{ q("flattened", (nodejs__base_packages
@@ -30,21 +22,6 @@
   register: nodejs__register_packages
   until: nodejs__register_packages is succeeded
 
-- name: Clone NPM repository
-  git:
-    repo: '{{ nodejs__npm_git_repo }}'
-    dest: '{{ nodejs__npm_git_dest }}'
-    version: '{{ nodejs__npm_git_version }}'
-    update: '{{ nodejs__npm_git_update|bool }}'
-  register: nodejs__register_npm_git
-  when: nodejs__npm_git_enabled|bool
-
-- name: Install NPM from source
-  command: '{{ nodejs__npm_git_install_command }}'
-  args:
-    chdir: '{{ nodejs__npm_git_dest }}'
-  when: nodejs__npm_git_enabled|bool and nodejs__register_npm_git is changed
-
 - name: Install NPM packages
   npm:
     name:           '{{ item.name           | d(item) }}'
@@ -61,7 +38,6 @@
     - '{{ nodejs__npm_group_packages }}'
     - '{{ nodejs__npm_host_packages }}'
     - '{{ nodejs__npm_dependent_packages }}'
-  when: nodejs__node_upstream|bool or nodejs__npm_git_enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
   file:
