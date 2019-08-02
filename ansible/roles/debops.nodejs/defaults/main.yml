@@ -21,7 +21,7 @@
 nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream|bool
                            if (ansible_local|d() and ansible_local.nodejs|d() and
                                ansible_local.nodejs.node_upstream is defined)
-                           else ansible_distribution_release in ["jessie", "stretch"] }}'
+                           else ansible_distribution_release in [ "jessie", "xenial" ] }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__node_upstream_release [[[
@@ -186,6 +186,7 @@ nodejs__yarn_upstream_repository: 'deb https://dl.yarnpkg.com/debian/ stable mai
 # List of base APT packages to install.
 nodejs__base_packages:
   - 'nodejs'
+  - '{{ []     if nodejs__node_upstream|bool else "npm" }}'
   - '{{ "yarn" if nodejs__yarn_upstream|bool else [] }}'
 
                                                                    # ]]]
@@ -270,8 +271,8 @@ nodejs__npm_production_mode: True
 # Configuration for the :ref:`debops.apt_preferences` Ansible role.
 nodejs__apt_preferences__dependent_list:
 
-  - packages: [ 'nodejs', 'nodejs-*', 'node-*', 'libssl1.0.0', 'libssl-dev' ]
-    backports: [ 'jessie' ]
+  - packages: [ 'nodejs', 'nodejs-*', 'node-*', 'libssl1.0.0', 'libssl-dev', 'npm', 'libuv1', 'libuv1-dev' ]
+    backports: [ 'jessie', 'stretch' ]
     reason: 'Unsupported NodeJS version, parity with next Debian release'
     by_role: 'debops_nodejs'
     filename: 'debops_nodejs.pref'

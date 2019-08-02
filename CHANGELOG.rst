@@ -104,6 +104,12 @@ Changed
     :file:`/etc/apt/sources.lists.d/` directory to make the APT service work as
     expected.
 
+  - [debops.nodejs] The role will now install NodeJS and NPM packages from the
+    OS release repository by default. On the Debian Oldstable release, the
+    packages backported from the Debian Stable release will be used by default.
+    Installation of upstream NodeJS and NPM can be enabled using the
+    :envvar:`nodejs__node_upstream` variable.
+
 - DebOps now uses ``xenial`` as the default OS release used in Travis-CI tests.
   The ``xenial`` images on Travis use the :command:`shellcheck` v0.6.0 to test
   shell scripts; if you want to run the :command:`test shell` command locally

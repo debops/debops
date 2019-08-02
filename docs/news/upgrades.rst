@@ -47,6 +47,22 @@ List of modified DebOps roles:
 - ``debops-contrib.neurodebian``
 - ``debops-contrib.x2go_server``
 
+NodeJS and NPM changes
+----------------------
+
+- By default, the :ref:`debops.nodejs` role will install the NodeJS and NPM
+  packages from the OS (Debian or Ubuntu) repositories. On the Debian Oldstable
+  release (currently Stretch), the packages backported from the Stable release
+  will be used. The role supports an automatic upgrade to the upstrean NodeJS
+  package when the support for NodeSource repositories is enabled using the
+  :envvar:`nodejs__node_upstream` variable.
+
+  On existing installations, status of the upstream APT repositorie should be
+  preserved, however note that the Ansible local fact name that tracks this has
+  been changed to ``ansible_local.nodejs.node_upstream``, along with the
+  default variable name. You might want to update the Ansible inventory to
+  reflect the desired status of the NodeJS and NPM upstream support.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

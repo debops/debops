@@ -1,24 +1,19 @@
 Getting started
 ===============
 
-NPM is installed from source
-----------------------------
 
-The ``npm`` package has been removed from Debian Stable (currently Stretch).
-The :command:`npm` command is supported natively by the upstream ``.deb``
-packages, however when upstream is not enabled, role will now by default
-install the NPM support using the project's :command:`git` repository.
+NodeJS and NPM from Debian Backports
+------------------------------------
 
-You can read more details about the NPM removal from Debian here:
-http://www.grulic.org.ar/~mdione/glob/posts/installing-npm-on-debian-testing/
+On a given Debian Oldstable release, the role will install the ``nodejs`` and
+``npm`` packages from the backports repository of the same OS release to ensure
+feature parity between the Oldstable and Stable Debian releases. This means
+that, for example, on Debian Stretch the role will use the NodeJS and NPM
+packages from the ``stretch-backports`` repository instead of the OS release
+repository.
 
-
-NodeJS from ``jessie-backports`` repository
--------------------------------------------
-
-On Debian Jessie, role will install the ``nodejs`` package from the
-``jessie-backports`` repository to ensure feature parity between the Oldstable
-and Stable Debian releases.
+Newer NodeJS and NPM packages can be installed using the NodeSource repository,
+which can be enabled using the :envvar:`nodejs__node_upstream` variable.
 
 
 Support for Yarn package manager
