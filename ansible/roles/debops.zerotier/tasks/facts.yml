@@ -1,0 +1,22 @@
+---
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save ZeroTier local facts
+  template:
+    src: 'etc/ansible/facts.d/zerotier.fact.j2'
+    dest: '/etc/ansible/facts.d/zerotier.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: zerotier__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: zerotier__register_facts is changed

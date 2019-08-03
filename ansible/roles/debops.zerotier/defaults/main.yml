@@ -1,0 +1,102 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.zerotier default variables [[[
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../includes/global.rst
+
+
+# zerotier installation, packages [[[
+# -------------------------------------
+
+# .. envvar:: zerotier__upstream [[[
+#
+# Enable zerotier Global Developmet Group APT repository?
+# More information: https://wiki.zerotier.org/wiki/Apt
+zerotier__upstream: True
+
+                                                                   # ]]]
+# .. envvar:: zerotier__upstream_key_id [[[
+#
+# The GPG fingerprint of the upstream APT repository key.
+zerotier__upstream_key_id: '74A5E9C458E1A431F1DA57A71657198823E52A61'
+
+                                                                   # ]]]
+# .. envvar:: zerotier__upstream_apt_repo [[[
+#
+# The upstream APT repository URL in the ``sources.list`` format.
+zerotier__upstream_apt_repo: 'deb http://download.zerotier.com/debian/{{ ansible_distribution_release }} {{ ansible_distribution_release }} main'
+                                                                   # ]]]
+# .. envvar:: zerotier__base_packages [[[
+#
+# List of base zerotier packages to install.
+zerotier__base_packages: [ 'zerotier-one' ]
+
+                                                                   # ]]]
+# .. envvar:: zerotier__packages [[[
+#
+# Install additional packages with zerotier.
+zerotier__packages: []
+
+                                                                   # ]]]
+# .. envvar:: zerotier__api_accesstoken [[[
+#
+# Zerotier api access token.
+zerotier__api_accesstoken: "{{ lookup('env','zerotier_accesstoken') | default() }}"
+
+                                                                   # ]]]
+# .. envvar:: zerotier__api_delegate [[[
+#
+# Zerotier api delegate
+zerotier__api_delegate: localhost
+
+                                                                   # ]]]
+# .. envvar:: zerotier__api_url [[[
+#
+# Zerotier api url
+zerotier__api_url: https://my.zerotier.com
+
+                                                                   # ]]]
+# .. envvar:: zerotier__apt_state [[[
+#
+# Zerotier zerotier__network_ids to join.
+zerotier__network_ids: []
+
+                                                                   # ]]]
+#
+# Zerotier member description.
+zerotier__member_description: ""
+
+                                                                   # ]]]
+# .. envvar:: zerotiezerotier__member_register_short_hostnamer__network [[[
+                                                                   # .. envvar:: zerotier__apt_state [[[
+#
+# Zerotier network id to join.
+zerotier__apt_state: present
+
+                                                                   # ]]]
+# .. envvar:: zerotiezerotier__member_register_short_hostnamer__network [[[
+#
+# Zerotier register to network using short hostname
+zerotier__member_register_short_hostname:  "{{ zerotier_register_short_hostname | default(false) }}"
+
+                                                                   # ]]]
+# .. envvar:: zerotier__network_authorize [[[
+#
+# Zerotier network join status
+zerotier__network_state: present
+
+                                                                   # ]]]
+# .. envvar:: zerotier__network_authorize [[[
+#
+# Zerotier authorize network access
+zerotier__network_authorize: True
+
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
+

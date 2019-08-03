@@ -1,0 +1,44 @@
+---
+# tasks file for zerotier
+
+- name: Get ZeroTier APT GPG key
+  apt_key:
+    id: '{{ zerotier__upstream_key_id }}'
+    keyserver: '{{ ansible_local.core.keyserver
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.keyserver)
+                   else "hkp://pool.sks-keyservers.net" }}'
+    state: 'present'
+  register: zerotier__register_apt_key
+  until: zerotier__register_apt_key is succeeded
+  when: zerotier__upstream|bool
+
+- name: Configure ZeroTier APT repository
+  apt_repository:
+    repo: '{{ zerotier__upstream_apt_repo }}'
+    state: 'present'
+    update_cache: True
+  when: zerotier__upstream|bool
+
+- name: Install ZeroTier packages
+  apt:
+    name: "{{ query('flattened', ['{{ zerotier__base_packages }}', '{{ zerotier__packages }}']) }}"
+    state: "{{ zerotier__apt_state }}"
+    install_recommends: False
+  register: zerotier__register_packages
+  until: zerotier__register_packages is succeeded
+
+- name: zerotier-one.service
+  service:
+    name: zerotier-one.service
+    enabled: yes
+    state: started
+
+- import_tasks: facts.yml
+
+- import_tasks: network.yml
+
+- import_tasks: node.yml
+  when:
+  - zerotier__api_accesstoken | length > 0
+  - ansible_local.zerotier.node_id is defined

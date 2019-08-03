@@ -1,0 +1,37 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import load, loads, dumps
+from sys import exit
+import subprocess
+
+output = loads('''{{ ({
+    "installed": true,
+    "networks": {}
+}) | to_nice_json }}''')
+
+statusRes = subprocess.check_output(["sudo", "zerotier-cli", "status"])
+
+output['node_id'] = statusRes.split()[2]
+output['node_description'] = "{{ zerotier__member_description }}"
+output['status'] = statusRes
+
+{% if zerotier__network_ids|length %}
+networkRes = subprocess.check_output(["sudo", "zerotier-cli", "listnetworks"]).replace("  ", " unnamed ")
+for network in networkRes.split("\n")[1:-1]:
+  output['networks'][network.split()[2]] = {
+    "nwid": network.split()[2],
+    "name": network.split()[3],
+    "mac": network.split()[4],
+    "status": network.split()[5],
+    "type": network.split()[6],
+    "device": network.split()[7],
+    "ip": network.split()[8],
+  }
+{% endif %}
+
+print(dumps(output, sort_keys=True, indent=2))
+
+print()

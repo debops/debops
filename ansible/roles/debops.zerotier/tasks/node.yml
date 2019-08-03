@@ -1,0 +1,69 @@
+---
+
+- block:
+
+  - name: Authorize member to network
+    uri:
+      url: "{{ zerotier__api_url }}/api/network/{{ item }}/member/{{ ansible_local.zerotier.node_id }}"
+      method: POST
+      headers:
+        Authorization: bearer {{ zerotier__api_accesstoken }}
+      body:
+        hidden: false
+        config:
+          authorized: "{{ zerotier__network_authorize }}"
+      body_format: json
+      register: zerotier__auth_apiresult
+    delegate_to: "{{ zerotier__api_delegate }}"
+    when:
+      - (ansible_local.zerotier.networks[item] is not defined or ansible_local.zerotier.networks[item].status != 'OK')
+    loop: "{{ lookup('list', zerotier__network_ids) }}"
+
+  - name: Configure member in network
+    uri:
+      url: "{{ zerotier__api_url }}/api/network/{{ item }}/member/{{ ansible_local.zerotier.node_id }}"
+      method: POST
+      headers:
+        Authorization: bearer {{ zerotier__api_accesstoken }}
+      body:
+        name: "{{ zerotier__member_register_short_hostname | ternary(inventory_hostname_short, inventory_hostname) }}"
+        description: "{{ zerotier__member_description | default() }}"
+        config:
+          ipAssignments: "{{ zerotier__member_ip_assignments | default([]) | list }}"
+      body_format: json
+      register: zerotier__conf_apiresult
+    delegate_to: "{{ zerotier__api_delegate }}"
+    when:
+      - zerotier__network_state == 'present'
+    #   - ansible_local.zerotier.networks[item] is not defined
+    loop: "{{ lookup('list', zerotier__network_ids) }}"
+
+  when:
+  - not ansible_check_mode
+  - zerotier__network_state == 'present'
+
+- block:
+
+  - name: Remove member from network
+    uri:
+      url: "{{ zerotier__api_url }}/api/network/{{ item }}/member/{{ ansible_local.zerotier.node_id }}"
+      method: DELETE
+      headers:
+        Authorization: bearer {{ zerotier__api_accesstoken }}
+      body:
+        hidden: false
+        config:
+          authorized: false
+      body_format: json
+      register: zerotier__auth_apiresult
+    delegate_to: "{{ zerotier__api_delegate }}"
+    when:
+      - ansible_local.zerotier.networks[item] is defined and ansible_local.zerotier.networks[item].status == 'OK'
+    loop: "{{ lookup('list', zerotier__network_ids) }}"
+
+  when:
+  - not ansible_check_mode
+  - zerotier__network_state == 'absent'
+
+  become: false
+

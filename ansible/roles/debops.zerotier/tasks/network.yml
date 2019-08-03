@@ -1,0 +1,31 @@
+---
+
+- block:
+
+  - name: Join Zerotier Network
+    command: zerotier-cli join {{ item }}
+    args:
+      creates: /var/lib/zerotier-one/networks.d/{{ item }}.conf
+    # when:
+    #   - ansible_local.zerotier.networks[item] is not defined or ansible_local.zerotier.networks[item].status != 'OK'
+    loop: "{{ lookup('list', zerotier__network_ids) }}"
+
+  when:
+  - not ansible_check_mode
+  - zerotier__network_state == 'present'
+
+- block:
+
+  - name: Leave Zerotier Network
+    command: zerotier-cli leave {{ item }}
+    args:
+      removes: /var/lib/zerotier-one/networks.d/{{ item }}.conf
+    # when:
+    #   - (nsible_local.zerotier.networks[item] is defined and ansible_local.zerotier.networks[item].status == 'OK'
+    loop: "{{ lookup('list', zerotier__network_ids) }}"
+
+  when:
+  - not ansible_check_mode
+  - zerotier__network_state == 'absent'
+
+  become: false
