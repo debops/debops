@@ -19,7 +19,7 @@ DebOps project is developed in a :command:`git` repository, with the ``master``
 branch as the main development branch. The project's repository is `hosted on
 GitHub`__, with a `mirror on GitLab`__ used for testing the Ansible roles via
 a GitLab CI pipeline. This release is meant for those that prefer to get the
-latest updates in the codebase, bugfixes and improvelements.
+latest updates in the codebase, bugfixes and improvements.
 
 .. __: https://github.com/debops/debops/
 .. __: https://gitlab.com/debops/debops/
@@ -30,8 +30,8 @@ or more :command:`git` commits. The ``master`` branch is designed to be usable
 at all times in the production environment, but uncatched bugs might occur;
 they are usually quickly fixed if found.
 
-How to use the rolling release
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How to use the rolling release ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can install or update the rolling release of DebOps after installing the
 ``debops`` Python package by executing the :command:`debops-update` script. It
@@ -64,7 +64,8 @@ Versioning scheme
 ~~~~~~~~~~~~~~~~~
 
 The stable DebOps releases utilize the `Semantic Versioning`__ scheme in the
-:command:`git` tags, with some changes from the standard scheme:
+:command:`git` tags, with some changes from the standard scheme
+(MAJOR.MINOR.PATCH):
 
 .. __: https://semver.org/
 
@@ -96,10 +97,10 @@ The stable DebOps releases utilize the `Semantic Versioning`__ scheme in the
   mentioned in the Changelog of a given ``stable-x.y`` branch.
 
 
-How to use the stable releases
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How to use the stable releases ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Tagged DebOps releases are published to the `Python Package Index`__ (the
+Stable DebOps releases are published to the `Python Package Index`__ (the
 ``debops`` Python package includes the Ansible roles and playbooks), and to the
 `Ansible Galaxy`__ as an exported Ansible Collection. The releases are also
 `tagged on GitHub`__. See the :ref:`install` documentation to learn how you can
@@ -113,7 +114,7 @@ install DebOps in various ways.
 Current stable (LTS) releases
 -----------------------------
 
-- Latest release: ``stable-1.0`` (`GitHub`__, `differences from master`__,
+- Latest release: ``stable-1.0`` (`GitHub branch`__, `differences from master`__,
   `Changelog`__)
 
 .. __: https://github.com/debops/debops/tree/stable-1.0
