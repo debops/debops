@@ -50,6 +50,9 @@ Fixed
 - [debops.sshd] Fix off-by-one error in role tasks that manage the
   :file:`/etc/ssh/moduli` file contents.
 
+- [debops.root_account] Include missing "group' and "host" authorized keys
+  variables in the ``authorized_key`` task.
+
 
 `debops v1.0.6`_ - 2019-07-26
 -----------------------------
