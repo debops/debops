@@ -190,6 +190,15 @@ root_account__group_authorized_keys: []
 root_account__host_authorized_keys: []
 
                                                                    # ]]]
+# .. envvar:: root_account__combined_authorized_keys [[[
+#
+# This variable combines all root_account__*authorized_keys variables 
+# together and is used in the role tasks and templates.
+root_account__combined_authorized_keys: '{{ root_account__authorized_keys
+                                            + root_account__group_authorized_keys
+                                            + root_account__host_authorized_keys }}'
+
+                                                                   # ]]]
 # .. envvar:: root_account__authorized_keys_exclusive [[[
 #
 # If ``True``, only the public SSH keys defined in the above variable will be
