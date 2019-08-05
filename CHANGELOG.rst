@@ -104,6 +104,24 @@ Changed
     :file:`/etc/apt/sources.lists.d/` directory to make the APT service work as
     expected.
 
+  - [debops.nodejs] The role will now install NodeJS, NPM and Yarn packages
+    from the OS release repository by default. On the Debian Oldstable release,
+    the packages backported from the Debian Stable release will be used by
+    default.  Installation of upstream NodeJS and NPM can be enabled using the
+    :envvar:`nodejs__node_upstream` variable. Upstream Yarn can be enabled
+    using the :envvar:`nodejs__yarn_upstream` variable.
+
+    If the NodeJS upstream support is enabled, the NodeJS 8.x version will be
+    installed on older Debian/Ubuntu releases, for exaple Debian Stretch and
+    Ubuntu Bionic. Debian Buster and newer releases will use NodeJS 10.x
+    version, to keep the Node version from upstream in sync with the one
+    available in the OS repositories.
+
+  - [debops.etherpad] The default version installed by the role is changed from
+    the ``develop`` branch to the ``v1.7.0`` version on older OS releases, and
+    the ``v1.7.5`` version on Debian Buster and newer, to not force
+    installation of the upstream NPM package by default.
+
 - DebOps now uses ``xenial`` as the default OS release used in Travis-CI tests.
   The ``xenial`` images on Travis use the :command:`shellcheck` v0.6.0 to test
   shell scripts; if you want to run the :command:`test shell` command locally
@@ -263,6 +281,10 @@ Changed
   requires to be run against a host with a valid DNS domain for the internal CA
   to be created.
 
+- [debops.gitlab] The playbook will no longer force the installation of the
+  upstream Node.js and Yarn packages via the :ref:`debops.nodejs` role. The
+  upstream versions are currently not required on Debian Buster.
+
 Removed
 ~~~~~~~
 
@@ -282,6 +304,11 @@ Removed
   be managed using the :ref:`debops.lxc` role.
 
   .. __: https://wiki.debian.org/OpenVz
+
+- [debops.nodejs] Support for installing NPM from its :command:`git` repository
+  has been removed. NPM is included in the NodeSource upstream ``nodejs``
+  package, as well as the Debian archive since Debian Buster release in the
+  ``npm`` package.
 
 Fixed
 ~~~~~
