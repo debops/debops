@@ -104,11 +104,12 @@ Changed
     :file:`/etc/apt/sources.lists.d/` directory to make the APT service work as
     expected.
 
-  - [debops.nodejs] The role will now install NodeJS and NPM packages from the
-    OS release repository by default. On the Debian Oldstable release, the
-    packages backported from the Debian Stable release will be used by default.
-    Installation of upstream NodeJS and NPM can be enabled using the
-    :envvar:`nodejs__node_upstream` variable.
+  - [debops.nodejs] The role will now install NodeJS, NPM and Yarn packages
+    from the OS release repository by default. On the Debian Oldstable release,
+    the packages backported from the Debian Stable release will be used by
+    default.  Installation of upstream NodeJS and NPM can be enabled using the
+    :envvar:`nodejs__node_upstream` variable. Upstream Yarn can be enabled
+    using the :envvar:`nodejs__yarn_upstream` variable.
 
     If the NodeJS upstream support is enabled, the NodeJS 8.x version will be
     installed on older Debian/Ubuntu releases, for exaple Debian Stretch and

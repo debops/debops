@@ -1,5 +1,12 @@
 ---
 
+- name: Remove conflicting APT packages
+  apt:
+    name: '{{ q("flattened", nodejs__remove_packages) }}'
+    state: 'absent'
+    purge: True
+  when: ansible_pkg_mgr == 'apt'
+
 - name: Install APT packages
   package:
     name: '{{ q("flattened", (nodejs__base_packages
@@ -21,6 +28,15 @@
                     else omit }}'
   register: nodejs__register_packages
   until: nodejs__register_packages is succeeded
+
+  # The 'yarnpkg' package in Debian does not provide a 'yarn' binary which
+  # might be expected by other tools/scripts.
+  # Ref: https://bugs.debian.org/843021
+- name: Maintain 'yarn' symlink for the 'yarnpkg' package
+  file:
+    path: '/usr/local/bin/yarn'
+    src: '{{ omit if nodejs__yarn_upstream|bool else "/usr/bin/yarnpkg" }}'
+    state: '{{ "absent" if nodejs__yarn_upstream|bool else "link" }}'
 
 - name: Install NPM packages
   npm:

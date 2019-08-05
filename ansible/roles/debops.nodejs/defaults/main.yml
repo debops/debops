@@ -39,7 +39,7 @@ nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream|bool
                                                                    # ]]]
 # .. envvar:: nodejs__node_upstream_release [[[
 #
-# Specify the NodeJS release to install from the NodeSource APT repository.
+# Specify the Node.js release to install from the NodeSource APT repository.
 # See https://github.com/nodejs/Release for the current release and maintenance
 # shedule. Available releases:
 #
@@ -74,11 +74,19 @@ nodejs__node_upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__nod
 # .. envvar:: nodejs__yarn_upstream [[[
 #
 # Enable or disable support for Yarn upstream APT repository.
+#
+# At the moment the ``yarnpkg`` package in Debian Buster is broken if Node.js
+# from NodeSource is installed, therfore in that case installation from
+# upstream will be enabled automatically. Ref: https://bugs.debian.org/933229
 nodejs__yarn_upstream: '{{ True
-                           if (ansible_local|d() and ansible_local.nodejs|d() and
-                               ansible_local.nodejs.yarn_upstream is defined and
-                               ansible_local.nodejs.yarn_upstream|bool)
-                           else False }}'
+                           if nodejs__node_upstream|bool
+                           else (ansible_local.nodejs.yarn_upstream|bool
+                                 if (ansible_local|d() and ansible_local.nodejs|d() and
+                                     ansible_local.nodejs.yarn_upstream is defined)
+                                 else (True
+                                       if (nodejs__distribution_release in
+                                           [ "jessie", "stretch", "xenial", "bionic" ])
+                                       else False)) }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__yarn_upstream_key_id [[[
@@ -96,13 +104,32 @@ nodejs__yarn_upstream_repository: 'deb https://dl.yarnpkg.com/debian/ stable mai
 # APT packages [[[
 # ----------------
 
+# .. envvar:: nodejs__remove_packages [[[
+#
+# List of APT packages to remove before installation of Node.js support.
+nodejs__remove_packages:
+
+  # This package collides with the 'yarn' upstream package
+  # Ref: https://bugs.debian.org/913997
+  - 'cmdtest'
+
+  # Remove the OS release package if Yarn from upstream should be installed
+  - '{{ "yarnpkg" if nodejs__yarn_upstream|bool else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: nodejs__base_packages [[[
 #
 # List of base APT packages to install.
 nodejs__base_packages:
   - 'nodejs'
-  - '{{ []     if nodejs__node_upstream|bool else "npm" }}'
-  - '{{ "yarn" if nodejs__yarn_upstream|bool else [] }}'
+  - '{{ [] if nodejs__node_upstream|bool else "npm" }}'
+  - '{{ "yarn"
+        if nodejs__yarn_upstream|bool
+        else ([]
+              if (nodejs__distribution_release in
+                  [ "wheezy", "jessie", "stretch",
+                    "trusty", "xenial", "bionic" ])
+              else "yarnpkg") }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__packages [[[
