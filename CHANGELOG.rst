@@ -276,6 +276,10 @@ Changed
   requires to be run against a host with a valid DNS domain for the internal CA
   to be created.
 
+- [debops.gitlab] The playbook will no longer force the installation of the
+  upstream Node.js and Yarn packages via the :ref:`debops.nodejs` role. The
+  upstream versions are currently not required on Debian Buster.
+
 Removed
 ~~~~~~~
 
