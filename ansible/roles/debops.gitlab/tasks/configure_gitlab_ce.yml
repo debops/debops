@@ -195,11 +195,13 @@
   # The RubyGems.org website has frequent timeouts, so we will try and install
   # everything again as long as there are errors.
 - name: Update Ruby gems
-  shell: bundle install --deployment
+  shell: set -o nounset -o pipefail -o errexit &&
+         bundle install --deployment
                         --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
-                        --retry 9999 >> /tmp/gitlab-bundle-install.log 2>&1 ;
+                        --retry 9999 >> /tmp/gitlab-bundle-install.log 2>&1 &&
          rm -f /tmp/gitlab-bundle-install.log
   args:
+    executable: 'bash'
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
