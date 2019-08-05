@@ -117,6 +117,11 @@ Changed
     version, to keep the Node version from upstream in sync with the one
     available in the OS repositories.
 
+  - [debops.etherpad] The default version installed by the role is changed from
+    the ``develop`` branch to the ``v1.7.0`` version on older OS releases, and
+    the ``v1.7.5`` version on Debian Buster and newer, to not force
+    installation of the upstream NPM package by default.
+
 - DebOps now uses ``xenial`` as the default OS release used in Travis-CI tests.
   The ``xenial`` images on Travis use the :command:`shellcheck` v0.6.0 to test
   shell scripts; if you want to run the :command:`test shell` command locally
