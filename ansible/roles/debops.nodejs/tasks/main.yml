@@ -59,19 +59,16 @@
   file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
 
-- name: Save NodeJS local facts
+- name: Save Node.js local facts
   template:
     src: 'etc/ansible/facts.d/nodejs.fact.j2'
     dest: '/etc/ansible/facts.d/nodejs.fact'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
   register: nodejs__register_facts
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: nodejs__register_facts is changed
+  when: nodejs__register_packages is changed or
+        nodejs__register_facts is changed

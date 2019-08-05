@@ -9,19 +9,84 @@ import subprocess
 import signal
 import os
 
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
 output = loads('''{{
-    {
-        "installed": True,
-        "node_upstream": (ansible_local.nodejs.node_upstream
-                          if (ansible_local|d() and
-                              ansible_local.nodejs|d() and
-                              ansible_local.nodejs.node_upstream|d())
-                          else nodejs__node_upstream),
-        "yarn_upstream": (ansible_local.nodejs.yarn_upstream
-                         if (ansible_local|d() and
-                             ansible_local.nodejs|d() and
-                             ansible_local.nodejs.yarn_upstream|d())
-                         else nodejs__yarn_upstream)
+    {"configured": True,
+     "node_upstream": (ansible_local.nodejs.node_upstream
+                       if (ansible_local|d() and
+                           ansible_local.nodejs|d() and
+                           ansible_local.nodejs.node_upstream|d())
+                       else nodejs__node_upstream),
+     "yarn_upstream": (ansible_local.nodejs.yarn_upstream
+                      if (ansible_local|d() and
+                          ansible_local.nodejs|d() and
+                          ansible_local.nodejs.yarn_upstream|d())
+                      else nodejs__yarn_upstream)
     } | to_json }}''')
 
-print(dumps(output, sort_keys=True, indent=2))
+output['node_installed'] = cmd_exists('node')
+output['npm_installed'] = cmd_exists('npm')
+output['yarn_installed'] = cmd_exists('yarn')
+
+
+if output['node_installed']:
+    try:
+        version_stdout = subprocess.check_output(
+                ["dpkg-query", "-W", "-f=${Version}",
+                 "nodejs"]).decode('utf-8').split('~')[0].split('-')[0]
+        output['node_version'] = version_stdout
+
+    except Exception:
+        pass
+
+
+if output['npm_installed']:
+    try:
+        version_stdout = subprocess.check_output(
+                ["dpkg-query", "-W", "-f=${Version}",
+                 "npm"]).decode('utf-8').split('+')[0]
+        output['npm_version'] = version_stdout
+        output['npm_upstream'] = False
+
+        # The NodeJS from upstream includes its own 'npm' release, separate
+        # 'npm' .deb package is not provided.
+        if not output['npm_version']:
+            try:
+                version_stdout = subprocess.check_output(
+                        ["npm", "--version"]).decode('utf-8').strip()
+                output['npm_version'] = version_stdout
+                output['npm_upstream'] = True
+
+            except Exception:
+                pass
+
+    except Exception:
+        pass
+
+
+if output['yarn_installed']:
+    try:
+        with open(os.devnull, 'w') as devnull:
+            version_stdout = subprocess.check_output(
+                    ["dpkg-query", "-W", "-f=${Version}", "yarnpkg"],
+                    stderr=devnull).decode('utf-8').split('-')[0]
+            output['yarn_version'] = version_stdout
+
+    except Exception:
+        try:
+            version_stdout = subprocess.check_output(
+                    ["dpkg-query", "-W", "-f=${Version}",
+                     "yarn"]).decode('utf-8').split('-')[0]
+            output['yarn_version'] = version_stdout
+
+        except Exception:
+            pass
+
+print(dumps(output, sort_keys=True, indent=4))
