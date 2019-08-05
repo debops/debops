@@ -33,7 +33,7 @@ try:
                 ['git describe'], shell=True, stderr=devnull
                 ).strip(b'\n').lstrip(b'v')
     with open('VERSION', 'w') as version_file:
-        version_file.write('{}\n'.format(RELEASE))
+        version_file.write('{}\n'.format(RELEASE.decode('utf-8')))
 except subprocess.CalledProcessError:
     try:
         RELEASE = open('VERSION').read().strip()
@@ -45,7 +45,7 @@ except subprocess.CalledProcessError:
                         RELEASE = line.split()[1].rstrip(b'`_').lstrip(b'v')
                         break
             with open('VERSION', 'w') as version_file:
-                version_file.write('{}\n'.format(RELEASE))
+                version_file.write('{}\n'.format(RELEASE.decode('utf-8')))
         except Exception:
             RELEASE = '0.0.0'
 
