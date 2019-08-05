@@ -1,0 +1,76 @@
+---
+
+# ---- git clone && git checkout ----
+
+- name: Create Discourse source directory
+  file:
+    path: '{{ discourse_src_path }}'
+    state: 'directory'
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0750'
+
+- name: Clone Discourse source code
+  git:
+    repo: '{{ discourse_git_repo }}'
+    dest: '{{ discourse_git_dest }}'
+    version: '{{ discourse_release }}'
+    bare: True
+    update: True
+  become: True
+  become_user: '{{ discourse_user }}'
+  register: discourse_register_source
+
+- name: Check if Discourse is checked out
+  stat:
+    path: '{{ discourse_git_checkout }}'
+  register: discourse_register_directory
+
+- name: Create Discourse checkout directory
+  file:
+    path: '{{ discourse_git_checkout }}'
+    state: 'directory'
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0755'
+
+- name: Prepare Discourse worktree
+  copy:
+    content: 'gitdir: {{ discourse_git_dest }}'
+    dest: '{{ discourse_git_checkout + "/.git" }}'
+    owner: '{{ discourse_user }}'
+    group: '{{ discourse_group }}'
+    mode: '0644'
+
+- name: Get commit hash of target checkout
+  command: git rev-parse {{ discourse_release }}
+  environment:
+    GIT_WORK_TREE: '{{ discourse_git_checkout }}'
+  args:
+    chdir: '{{ discourse_git_dest }}'
+    warn: False
+  become: True
+  become_user: '{{ discourse_user }}'
+  register: discourse_register_target_branch
+  changed_when: discourse_register_target_branch.stdout != discourse_register_source.before
+
+- include: discourse_pre_upgrade.yml
+  when: ansible_local|d() and
+        ansible_local.discourse|d() and
+        ansible_local.discourse.installed|d() and
+        ((discourse_register_target_branch.stdout != discourse_register_source.before) or
+        (ansible_local.discourse.release|d() != discourse_release))
+
+- name: Checkout Discourse
+  command: git checkout -f {{ discourse_release }}
+  environment:
+    GIT_WORK_TREE: '{{ discourse_git_checkout }}'
+  args:
+    chdir: '{{ discourse_git_dest }}'
+    warn: False
+  become: True
+  become_user: '{{ discourse_user }}'
+  register: discourse_register_checkout
+  when: (discourse_register_source.before is undefined or
+         (discourse_register_target_branch.stdout is defined and
+          discourse_register_source.before != discourse_register_target_branch.stdout))
