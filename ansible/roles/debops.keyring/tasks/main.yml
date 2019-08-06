@@ -90,6 +90,10 @@
   when: keyring__enabled|bool and (item.create_user|d(True))|bool and
         item.user|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
+- name: Gather information about existing UNIX accounts
+  getent:
+    database: 'passwd'
+
   # In some cases 'apt-key' command refuses to work complaining that it has to
   # be run by root. This task should handle these cases gracefully.
 - name: Import specified GPG keys to account keyring
@@ -125,6 +129,7 @@
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
   register: keyring__register_gpg_key
   until: keyring__register_gpg_key.rc == 0
-  when: keyring__enabled|bool and (item.id|d() or item is string)
+  when: (keyring__enabled|bool and (item.id|d() or item is string) and
+         (item.user | d(keyring__dependent_gpg_user if keyring__dependent_gpg_user|d() else "root")) in getent_passwd.keys())
   changed_when: '("Adding key..." in keyring__register_gpg_key.stdout_lines) or
                  ("Removing key..." in keyring__register_gpg_key.stdout_lines)'
