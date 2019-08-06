@@ -1,20 +1,37 @@
-The ``debops-update`` command
-=============================
+.. _cmd_debops-update:
 
-Updates the playbooks and roles relative to ``$PWD``, if none are found
-then it will update them at their default location.
+The :command:`debops-update` command
+====================================
 
-When passing the ``--dry-run`` argument, ``debops-update`` will just print
-a summary of the actions that would be performed without actually executing
-them.
-This is useful to further inspect what and which role the update will change,
-in order to adapt, if necessary, the local inventory and variables before applying
-it.
+The :command:`debops-update` script clones the DebOps monorepo from GitHub, or
+updates an existing DebOps repository. If a custom directory is not specified
+as the first argument, the script will operate on the
 
-Example commands:
+.. code-block:: none
 
-.. code:: shell
+   ~/.local/share/debops/debops/
 
-    debops-update ~/my-debops-roles-dir
+directory. By default the ``master`` branch is cloned and checked out;
+afterwards the user can use the :command:`git checkout` command to switch to
+a different branch.
 
-    debops-update --dry-run
+If a relative or absolute directory is specified as an argument, the
+:command:`debops-update` script will clone the DebOps monorepo to the
+:file:`debops/` subdirectory of that directory. This can be used to create
+a local copy of the repository in a "project directory" which contains the
+Ansible inventory and other files:
+
+.. code-block:: none
+
+   debops-init ~/src/projects/example.org
+   cd ~/src/projects/example.org
+   debops-update ./
+
+The :command:`debops` script knows how to use both the contents of the
+:file:`debops/` subdirectory in a project directory, or the central location,
+and will switch between them automatically.
+
+The script can also be executed with the ``--dry-run`` parameter. In that case,
+no changes will be made to the existing repository; instead the script will
+show the changes between current :command:`git` checkout and the remote
+repository. This can be used to review any changes before applying them.
