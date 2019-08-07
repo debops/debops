@@ -12,6 +12,35 @@ needs.
    :depth: 2
 
 
+Versioning scheme
+-----------------
+
+The stable and LTS DebOps releases utilize the `Semantic Versioning`__ scheme
+in the :command:`git` tags, with some changes from the standard scheme
+(MAJOR.MINOR.PATCH):
+
+.. __: https://semver.org/
+
+- The **major** number in the version string is considered an "epoch" and is
+  incremented after a significant number of stable *minor* releases has been
+  created. A new "epoch" might signify that enough changes have happened that
+  a complete rebuild of the environment managed by DebOps might be necessary.
+
+  New DebOps LTS releases increase the *major* version number and reset the
+  *minor* version number to ``0``.
+
+- The **minor** number in the version string defines a stable DebOps release
+  with its own ``stable-x.y`` branch.
+
+- The **patch** number in the version string denotes the next "patch" release
+  in a given ``stable-x.y`` :command:`git` branch. Each *patch* release is
+  created if there are any unreleased changes in a given ``stable-x.y`` branch,
+  and no new changes were made for about a week in a normal "stable" release,
+  or immediately in a "LTS" release. Changes in the *patch* release usually
+  don't get a mention in the ``master`` branch Changelog, but get mentioned in
+  the Changelog of a given ``stable-x.y`` branch.
+
+
 The "rolling" release
 ---------------------
 
@@ -29,16 +58,6 @@ from forked :command:`git` repositories, usually on separate branches with one
 or more :command:`git` commits. The ``master`` branch is designed to be usable
 at all times in the production environment, but uncatched bugs might occur;
 they are usually quickly fixed if found.
-
-How to use the rolling release ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can use the :ref:`debops-update <cmd_debops-update>` script after
-:ref:`installing the "debops" Python package <install>` to clone the DebOps
-monorepo to a central location. See its documentation for more details.
-
-If you plan to use the rolling release, keep an eye for changes in the project
-described in the :ref:`changelog` and the :ref:`upgrade_notes`.
 
 
 The "stable" releases
@@ -61,19 +80,6 @@ one stable release to the next is possible. This might change in the future,
 when all of the old code is cleaned up and refactored. Changes between stable
 releases are described in the :ref:`changelog` and the :ref:`upgrade_notes`.
 
-How to use the stable releases?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Stable DebOps releases are published to the `Python Package Index`__ (the
-``debops`` Python package includes the Ansible roles and playbooks), and to the
-`Ansible Galaxy`__ as an exported Ansible Collection. The releases are also
-`tagged on GitHub`__. See the :ref:`install` documentation to learn how you can
-install DebOps in various ways.
-
-.. __: https://pypi.org/project/debops/
-.. __: https://galaxy.ansible.com/debops/debops
-.. __: https://github.com/debops/debops/releases
-
 
 The "LTS" releases
 ------------------
@@ -86,41 +92,40 @@ support of a given OS release (additional year to account for the freeze time).
 
 .. __: https://wiki.debian.org/LTS
 
-The DebOps LTS releases will be created before the current Debian Testing
+The DebOps LTS releases will be created just before the current Debian Testing
 release enters the "freeze" period, which is usually in November (subject to
 change if the Testing freeze timeline changes). The next DebOps LTS release
-will be created in October 2020 - it will be a ``v3.0.0`` release (the
+will be created in October 2021 - it will be a ``v3.0.0`` release (the
 ``v2.0.0`` release will be created in January 2020 to re-align the DebOps
 release schedule to the Debian Testing freeze schedule).
 
 
-Versioning scheme
------------------
+How to use different releases?
+------------------------------
 
-The stable and LTS DebOps releases utilize the `Semantic Versioning`__ scheme
-in the :command:`git` tags, with some changes from the standard scheme
-(MAJOR.MINOR.PATCH):
+The "rolling" release
+~~~~~~~~~~~~~~~~~~~~~
 
-.. __: https://semver.org/
+You can use the :ref:`debops-update <cmd_debops-update>` script after
+:ref:`installing the "debops" Python package <install>` to clone the DebOps
+monorepo to a central location. See its documentation for more details.
 
-- The **major** number in the version string is considered an "epoch" and is
-  incremented after a significant number of stable *minor* releases has been
-  created. A new "epoch" might signify that enough changes have happened that
-  a complete rebuild of the environment managed by DebOps might be necessary.
+If you plan to use the rolling release, keep an eye for changes in the project
+described in the :ref:`changelog` and the :ref:`upgrade_notes`.
 
-  New DebOps LTS releases increase the *major* version number and reset the
-  *minor* version number to ``0``.
 
-- The **minor** number in the version string defines a stable DebOps release
-  with its own ``stable-x.y`` branch.
+The "stable" / "LTS" releases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- The **patch** number in the version string denotes the next "patch" release in
-  a given ``stable-x.y`` :command:`git` branch. Each *patch* release is created
-  if there are any unreleased changes in a given ``stable-x.y`` branch, and no
-  new changes were made for about a week in a normal "stable" release, or
-  immediately in a "LTS" release. Changes in the *patch* release usually don't
-  get a mention in the ``master`` branch Changelog, but get mentioned in the
-  Changelog of a given ``stable-x.y`` branch.
+Stable and LTS DebOps releases are published to the `Python Package Index`__
+(the ``debops`` Python package includes the Ansible roles and playbooks), and
+to the `Ansible Galaxy`__ as an exported Ansible Collection. The releases are
+also `tagged on GitHub`__. See the :ref:`install` documentation to learn how
+you can install DebOps in various ways.
+
+.. __: https://pypi.org/project/debops/
+.. __: https://galaxy.ansible.com/debops/debops
+.. __: https://github.com/debops/debops/releases
 
 
 Current release schedule
@@ -136,9 +141,11 @@ Current release schedule
 =============== ============ =============== ================
  Branch/Tag      Status       First release   End of support
 --------------- ------------ --------------- ----------------
-``stable-3.1``  Planned      2021-01-xx      2022-01-xx
+``stable-3.0``  Planned LTS  2021-10-xx      2027-10-xx
 --------------- ------------ --------------- ----------------
-``stable-3.0``  Planned LTS  2020-10-xx      2026-10-xx
+...             ...          ...             ...
+--------------- ------------ --------------- ----------------
+``stable-2.3``  Planned      2020-10-xx      2021-10-xx
 --------------- ------------ --------------- ----------------
 ``stable-2.2``  Planned      2020-07-xx      2021-07-xx
 --------------- ------------ --------------- ----------------
