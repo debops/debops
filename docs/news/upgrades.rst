@@ -116,6 +116,9 @@ Inventory variable changes
   been renamed to ``nodejs__node_upstream*`` to better indicate their purpose
   and differentiate them from the ``nodejs__yarn_upstream*`` variables.
 
+- The ``dokuwiki__main_domain`` variable has been renamed to
+  :envvar:`dokuwiki__fqdn` to fit the naming scheme in other DebOps roles.
+
 
 v1.0.0 (2019-05-22)
 -------------------
