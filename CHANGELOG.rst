@@ -26,6 +26,12 @@ LDAP
 
 - Change the regexp pattern used to create the LDAP BaseDN value.
 
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- Make :command:`git`-based installation steps resilient by retrying failed
+  repository clones in case of timeouts.
+
 ``debops.reprepro`` role
 ''''''''''''''''''''''''
 
