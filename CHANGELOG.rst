@@ -190,6 +190,18 @@ User management
   or :ref:`regular users <debops.users>` managed by Ansible are using it as
   a login shell.
 
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- The `patchpanel DokuWiki plugin`__ has been deprecated in favor of the
+  `switchpanel`__ plugin. The role will remove the ``patchpanel`` plugin
+  automatically on existing installations. You might need to update the wiki
+  contents to render the patch panels correctly, see the plugin documentation
+  for more details.
+
+  .. __: https://github.com/grantemsley/dokuwiki-plugin-patchpanel
+  .. __: https://github.com/GreenItSolutions/dokuwiki-plugin-switchpanel
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 

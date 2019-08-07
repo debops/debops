@@ -46,6 +46,7 @@
   become: True
   become_user: '{{ dokuwiki__user }}'
   register: dokuwiki__register_source
+  until: dokuwiki__register_source is succeeded
 
 - name: Create DokuWiki checkout directory
   file:
@@ -115,6 +116,8 @@
   with_flattened:
     - '{{ dokuwiki__default_plugins }}'
     - '{{ dokuwiki__plugins }}'
+  register: dokuwiki__register_git_plugins
+  until: dokuwiki__register_git_plugins is succeeded
   when: (dokuwiki__plugins_enabled|bool and
          (item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
@@ -140,6 +143,8 @@
   with_flattened:
     - '{{ dokuwiki__default_templates }}'
     - '{{ dokuwiki__templates }}'
+  register: dokuwiki__register_git_templates
+  until: dokuwiki__register_git_templates is succeeded
   when: (dokuwiki__plugins_enabled|bool and
          (item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
