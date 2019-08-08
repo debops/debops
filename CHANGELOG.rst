@@ -38,6 +38,13 @@ LDAP
 - Make :command:`git`-based installation steps resilient by retrying failed
   repository clones in case of timeouts.
 
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- Change the default mode of runtime directories from ``2755`` to ``755`` to
+  avoid warning messages from :command:`systemd` about mismatched directory
+  mode.
+
 ``debops.reprepro`` role
 ''''''''''''''''''''''''
 
