@@ -49,6 +49,10 @@ RUN groupadd --system admins \
 USER ansible
 WORKDIR /home/ansible
 
+# Docker does not set expected environment variables by default
+# Ref: https://stackoverflow.com/questions/54411218/
+ENV USER ansible
+
 # Add contents of the DebOps monorepo to the container
 COPY . .local/share/debops/debops
 
