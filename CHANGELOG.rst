@@ -92,6 +92,10 @@ LDAP
 - The kernel protection for symlinks and hardlinks will be enabled by default
   on Debian/Ubuntu hosts.
 
+- Don't use special configuration for containers to determine what kernel
+  parameters can be modified. The role will rely on its own Ansible local facts
+  for that.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
