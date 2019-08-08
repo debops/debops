@@ -30,7 +30,7 @@ SCRIPTS = [os.path.join('bin', n) for n in [
 try:
     with open(os.devnull, 'w') as devnull:
         RELEASE = subprocess.check_output(
-                ['git describe'], shell=True, stderr=devnull
+                ['git', 'describe'], stderr=devnull
                 ).strip(b'\n').lstrip(b'v')
     with open('VERSION', 'w') as version_file:
         version_file.write('{}\n'.format(RELEASE.decode('utf-8')))
