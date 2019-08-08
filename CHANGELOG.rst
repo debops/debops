@@ -52,6 +52,14 @@ Continuous Integration
 
   .. __: https://www.flamingspork.com/projects/libeatmydata/
 
+Docker
+''''''
+
+- Switch the base Docker image to `debian:buster-slim`__ and install Python 3.x
+  environment instead of Python 2.7 in the DebOps Docker image.
+
+  .. __: https://hub.docker.com/_/debian
+
 LDAP
 ''''
 
