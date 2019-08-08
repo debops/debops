@@ -43,14 +43,16 @@ page][debops-docs].
 ## Quick start
 
 Start a Docker container which acts as an Ansible Controller host with DebOps
-support, based on Debian Stretch:
+support, based on Debian Buster:
 
     docker run -it --rm debops/debops
+    cd src/controller ; debops common --diff
 
 Or, create a Vagrant VM which acts as an Ansible Controller host:
 
     git clone https://github.com/debops/debops
     cd debops && vagrant up && vagrant ssh
+    cd src/controller ; debops common --diff
 
 You can use configuration in the `src/controller` subdirectory to try out
 DebOps against the container/VM, or create your own DebOps project directory

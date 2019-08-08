@@ -92,6 +92,10 @@ LDAP
 - The kernel protection for symlinks and hardlinks will be enabled by default
   on Debian/Ubuntu hosts.
 
+- Don't use special configuration for containers to determine what kernel
+  parameters can be modified. The role will rely on its own Ansible local facts
+  for that.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
@@ -165,6 +169,19 @@ Continuous Integration
   .. __: https://pythonclock.org/
 
 - The GitLab CI tests are done using a ``debian/buster64`` Vagrant Box.
+
+Docker
+''''''
+
+- Switch the base Docker image to `debian:buster-slim`__ and install Python 3.x
+  environment instead of Python 2.7 in the DebOps Docker image.
+
+  .. __: https://hub.docker.com/_/debian
+
+- The :command:`docker-entrypoint` script has been refreshed to account for the
+  changes in DebOps roles. The :ref:`debops.sshd` role takes care of the
+  :file:`/run/sshd/` directory by itself, and running DebOps against the
+  container requires :command:`sudo` access without password.
 
 General
 '''''''

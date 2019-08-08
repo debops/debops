@@ -1,7 +1,7 @@
 # Set up an Ansible Controller with DebOps support as a Docker container
 #
-# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017 DebOps project https://debops.org/
+# Copyright (C) 2017-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2019 DebOps project https://debops.org/
 
 
 # Basic usage:
@@ -10,22 +10,13 @@
 #     docker run --name <container> -h controller.example.org -i -t debops
 #
 #     cd src/controller
-#     debops --skip-tags role::ferm,role::sysctl,role::sshd,role::root_account,role::etc_services
-#
-# These roles currently have issues when executed against a Docker container:
-# - debops.etc_services   - destroys '/etc/services' file
-# - debops.ferm           - cannot configure sysctl
-# - debops.sshd           - daemon cannot be restarted
-# - debops.sysctl         - cannot configure sysctl
-# - debops.root_account   - cannot reconfigure root account
+#     debops common --diff
 
 
-FROM debian:stretch-slim
+FROM debian:buster-slim
 
 LABEL maintainer="Maciej Delmanowski <drybjed@gmail.com>" \
       project="DebOps" homepage="https://debops.org/"
-
-ENV DOCKER_ENVIRONMENT true
 
 RUN apt-get -q update \
     && DEBIAN_FRONTEND=noninteractive apt-get \
@@ -33,17 +24,17 @@ RUN apt-get -q update \
        iproute2 \
        levee \
        openssh-client \
-       python-apt \
-       python-dnspython \
-       python-future \
-       python-ldap \
-       python-pip \
-       python-wheel \
-       python-setuptools \
+       python3-apt \
+       python3-dnspython \
+       python3-future \
+       python3-ldap \
+       python3-pip \
+       python3-wheel \
+       python3-setuptools \
        procps \
        sudo \
        tree \
-    && pip install \
+    && pip3 install \
        debops[ansible] \
     && echo "Cleaning up cache directories..." \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb /root/.cache/*
@@ -57,6 +48,10 @@ RUN groupadd --system admins \
 # Switch to the unprivileged user
 USER ansible
 WORKDIR /home/ansible
+
+# Docker does not set expected environment variables by default
+# Ref: https://stackoverflow.com/questions/54411218/
+ENV USER ansible
 
 # Add contents of the DebOps monorepo to the container
 COPY . .local/share/debops/debops
