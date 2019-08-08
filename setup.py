@@ -31,7 +31,7 @@ try:
     with open(os.devnull, 'w') as devnull:
         RELEASE = subprocess.check_output(
                 ['git', 'describe'], stderr=devnull
-                ).strip(b'\n').lstrip(b'v')
+                ).strip().lstrip(b'v')
     with open('VERSION', 'w') as version_file:
         version_file.write('{}\n'.format(RELEASE.decode('utf-8')))
 except subprocess.CalledProcessError:
