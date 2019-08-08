@@ -55,6 +55,10 @@ SCRIPT_NAME = os.path.basename(sys.argv[0])
 # command line)
 INSECURE = bool(os.environ.get('INSECURE', False))
 
+# External programms used. List here for easy substitution for
+# hard-coded paths.
+WHICH = 'which'
+
 
 def error_msg(message, severity="Error"):
     """
@@ -70,7 +74,7 @@ def require_commands(*cmd_names):
     Check if required commands exist.
     """
     def command_exists(cmd_name):
-        which = "where" if platform.system() == "Windows" else "which"
+        which = "where" if platform.system() == "Windows" else WHICH
         return not subprocess.call([which, cmd_name],
                                    stdout=DEVNULL, stderr=subprocess.STDOUT)
 

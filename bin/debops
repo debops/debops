@@ -59,6 +59,10 @@ ConfigFileHeader = """\
 # You can manipulate the contents of this file via `.debops.cfg`.
 """
 
+# External programms used. List here for easy substitution for
+# hard-coded paths.
+ANSIBLE_PLAYBOOK = 'ansible-playbook'
+
 
 def write_config(filename, config):
     cfgparser = configparser.ConfigParser()
@@ -131,7 +135,7 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
             os.path.join(playbooks_path, "roles"),
             "/etc/ansible/roles")))
 
-    ansible_version_out = subprocess.check_output(["ansible-playbook",
+    ansible_version_out = subprocess.check_output([ANSIBLE_PLAYBOOK,
                                                    "--version"]).decode()
 
     # Get first line and split by spaces to get second 'word'.
@@ -256,7 +260,7 @@ def main(cmd_args):
         print("Running Ansible playbooks:")
         for element in play_list:
             print(element)
-        return subprocess.call(['ansible-playbook'] + play_list + arg_list)
+        return subprocess.call([ANSIBLE_PLAYBOOK] + play_list + arg_list)
     finally:
         if revert_unlock:
             padlock_lock(encfs_encrypted)

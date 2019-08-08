@@ -93,6 +93,13 @@ ENCFS_KEYFILE = ".encfs6.keyfile"
 # Length of the random EncFS password stored in encrypted keyfile
 ENCFS_KEYFILE_LENGTH = 256
 
+# External programms used. List here for easy substitution for
+# hard-coded paths.
+ENCFS = 'encfs'
+FUSERMOUNT = 'fusermount'
+UMOUNT = 'umount'
+GPG = 'gpg'
+
 
 # ---- Functions ----
 
@@ -180,9 +187,9 @@ def padlock_lock(encrypted_path):
         return False
     # OS X compatibility
     if sys.platform == 'darwin':
-        subprocess.call(['umount', decrypted_path])
+        subprocess.call([UMOUNT, decrypted_path])
     else:
-        subprocess.call(['fusermount', '-u', decrypted_path])
+        subprocess.call([FUSERMOUNT, '-u', decrypted_path])
     return True
 
 
@@ -237,14 +244,14 @@ def padlock_unlock(encrypted_path):
     # Start encfs. It will wait for input on the `configfile` named
     # pipe.
     encfs = subprocess.Popen([
-        'encfs', encrypted_path, decrypted_path,
+        ENCFS, encrypted_path, decrypted_path,
         '--extpass',
-        'gpg --decrypt --no-mdc-warning --output - %s' % shquote(keyfile)])
+        GPG + ' --decrypt --no-mdc-warning --output - %s' % shquote(keyfile)])
     # now decrypt the config and write it into the named pipe
     with open(configfile, 'w') as fh:
         # NB: gpg must write to stdout to avoid it is asking whether
         # the file should be overwritten
-        subprocess.Popen(['gpg',
+        subprocess.Popen([GPG,
                           '--decrypt', '--no-mdc-warning', '--output', '-',
                           crypted_configfile], stdout=fh).wait()
     encfs.wait()
