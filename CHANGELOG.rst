@@ -48,6 +48,12 @@ LDAP
 Fixed
 ~~~~~
 
+Docker
+''''''
+
+- Set the ``$USER`` variable in Docker container environment. This variable is
+  required by some DebOps roles but is not set by default by Docker.
+
 User management
 '''''''''''''''
 
