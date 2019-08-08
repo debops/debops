@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+General
+'''''''
+
+- Small code cleanup in the :command:`debops-init` and :command:`setup.py`
+  scripts.
+
 LDAP
 ''''
 
