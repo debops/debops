@@ -86,6 +86,13 @@ User management
 - Fix off-by-one error in role tasks that manage the :file:`/etc/ssh/moduli`
   file contents.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- Don't use special configuration for containers to determine what kernel
+  parameters can be modified. The role will rely on its own Ansible local facts
+  for that.
+
 
 `debops v1.0.6`_ - 2019-07-26
 -----------------------------
