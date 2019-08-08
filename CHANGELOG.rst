@@ -304,6 +304,10 @@ User management
   .. __: https://bugs.debian.org/918839
   .. __: https://bugs.debian.org/911806
 
+- Restrict configuration of the :file:`poweroff.conf` :command:`systemd`
+  override to Debian Stretch and Ubuntu Xenial only. The containers correctly
+  shut down using ``SIGRTMIN+3`` signal on Debian Buster and beyond.
+
 :ref:`debops.mariadb_server` role
 '''''''''''''''''''''''''''''''''
 
