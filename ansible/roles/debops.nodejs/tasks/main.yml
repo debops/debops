@@ -1,50 +1,42 @@
 ---
 
-- name: Ensure that the distribution 'npm' package is uninstalled
-  package:
-    name: 'npm'
+- name: Remove conflicting APT packages
+  apt:
+    name: '{{ q("flattened", nodejs__remove_packages) }}'
     state: 'absent'
-  register: nodejs__register_purge_npm
-  until: nodejs__register_purge_npm is succeeded
-  when: nodejs__npm_git_enabled|bool
+    purge: True
+  when: ansible_pkg_mgr == 'apt'
 
 - name: Install APT packages
   package:
     name: '{{ q("flattened", (nodejs__base_packages
-                              + nodejs__distribution_packages
                               + nodejs__packages
                               + nodejs__group_packages
                               + nodejs__host_packages
                               + nodejs__dependent_packages)) }}'
     state: '{{ "latest"
-               if (nodejs__upstream | bool and
+               if (nodejs__node_upstream | bool and
                    (ansible_local|d() and ansible_local.nodejs|d() and
-                    ansible_local.nodejs.upstream is defined and
-                    not ansible_local.nodejs.upstream|bool))
+                    ansible_local.nodejs.node_upstream is defined and
+                    not ansible_local.nodejs.node_upstream|bool))
                else "present" }}'
     autoremove: '{{ True
-                    if (nodejs__upstream | bool and
+                    if (nodejs__node_upstream | bool and
                         (ansible_local|d() and ansible_local.nodejs|d() and
-                         ansible_local.nodejs.upstream is defined and
-                         not ansible_local.nodejs.upstream|bool))
+                         ansible_local.nodejs.node_upstream is defined and
+                         not ansible_local.nodejs.node_upstream|bool))
                     else omit }}'
   register: nodejs__register_packages
   until: nodejs__register_packages is succeeded
 
-- name: Clone NPM repository
-  git:
-    repo: '{{ nodejs__npm_git_repo }}'
-    dest: '{{ nodejs__npm_git_dest }}'
-    version: '{{ nodejs__npm_git_version }}'
-    update: '{{ nodejs__npm_git_update|bool }}'
-  register: nodejs__register_npm_git
-  when: nodejs__npm_git_enabled|bool
-
-- name: Install NPM from source
-  command: '{{ nodejs__npm_git_install_command }}'
-  args:
-    chdir: '{{ nodejs__npm_git_dest }}'
-  when: nodejs__npm_git_enabled|bool and nodejs__register_npm_git is changed
+  # The 'yarnpkg' package in Debian does not provide a 'yarn' binary which
+  # might be expected by other tools/scripts.
+  # Ref: https://bugs.debian.org/843021
+- name: Maintain 'yarn' symlink for the 'yarnpkg' package
+  file:
+    path: '/usr/local/bin/yarn'
+    src: '{{ omit if nodejs__yarn_upstream|bool else "/usr/bin/yarnpkg" }}'
+    state: '{{ "absent" if nodejs__yarn_upstream|bool else "link" }}'
 
 - name: Install NPM packages
   npm:
@@ -62,25 +54,21 @@
     - '{{ nodejs__npm_group_packages }}'
     - '{{ nodejs__npm_host_packages }}'
     - '{{ nodejs__npm_dependent_packages }}'
-  when: nodejs__upstream|bool or nodejs__npm_git_enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
 
-- name: Save NodeJS local facts
+- name: Save Node.js local facts
   template:
     src: 'etc/ansible/facts.d/nodejs.fact.j2'
     dest: '/etc/ansible/facts.d/nodejs.fact'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
   register: nodejs__register_facts
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: nodejs__register_facts is changed
+  when: nodejs__register_packages is changed or
+        nodejs__register_facts is changed

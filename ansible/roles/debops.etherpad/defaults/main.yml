@@ -92,7 +92,10 @@ etherpad_log_dir: '{{ (ansible_local.root.log
 # .. envvar:: etherpad_version [[[
 #
 # Etherpad git version to install.
-etherpad_version: 'develop'
+etherpad_version: '{{ "1.7.0"
+                      if (ansible_local|d() and ansible_local.nodejs|d() and
+                          (ansible_local.nodejs.npm_version|d()) is version("6.4.0", "<"))
+                      else "1.7.5" }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_source_address [[[

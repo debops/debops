@@ -60,18 +60,34 @@
     group: 'root'
     mode: '0755'
 
+- name: Remove systemd service overrides
+  file:
+    path: '{{ item.name | d(item) }}'
+    state: 'absent'
+  loop:
+    - name: '/etc/systemd/system/lxc@.service.d/poweroff.conf'
+      state: '{{ "present"
+                 if (lxc__version is version("2.1.0", "<"))
+                 else "absent" }}'
+  register: lxc__register_systemd_overrides_remove
+  when: item.state|d('present') == 'absent'
+
 - name: Install systemd service overrides
   template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
+    src: '{{ item.name | d(item) }}.j2'
+    dest: '/{{ item.name | d(item) }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
   loop:
     - 'etc/systemd/system/lxc.service.d/exec-override.conf'
-    - 'etc/systemd/system/lxc@.service.d/poweroff.conf'
     - 'etc/systemd/system/lxc@.service.d/partof.conf'
-  register: lxc__register_systemd_overrides
+    - name: 'etc/systemd/system/lxc@.service.d/poweroff.conf'
+      state: '{{ "present"
+                 if (lxc__version is version("2.1.0", "<"))
+                 else "absent" }}'
+  register: lxc__register_systemd_overrides_create
+  when: item.state|d('present') != 'absent'
 
 - name: Disable internal network when requested
   systemd:
@@ -157,7 +173,8 @@
           lxc__register_net_config|d({}) is changed or
           lxc__register_net_dnsmasq|d({}) is changed or
           lxc__register_net_systemd|d({}) is changed or
-          lxc__register_systemd_overrides|d({}) is changed))
+          lxc__register_systemd_overrides_create|d({}) is changed or
+          lxc__register_systemd_overrides_remove|d({}) is changed))
   tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
 
 - name: Remove LXC configuration if requested
