@@ -19,6 +19,23 @@ You can read information about required changes between releases in the
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
 
+Added
+-----
+
+:ref:`debops.unattended_upgrades` role
+''''''''''''''''''''''''''''''''''''''
+
+- Devuan-based hosts will automatically install security updates by default.
+
+Changed
+~~~~~~~
+
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The APT source URLs for Devuan distribution have been updated.
+
+
 `debops v1.0.7`_ - 2019-08-09
 -----------------------------
 
