@@ -199,6 +199,12 @@ General
 - The DebOps documentation generator now supports Ansible roles with multiple
   :file:`defaults/main/*.yml` files.
 
+- Various DebOps roles will no longer use the hostname as a stand-in for an
+  empty DNS domain when no DNS domain is detected - this resulted in the
+  "standalone" hosts without a DNS domain to be misconfigured. Existing setups
+  with a DNS domain shouldn't be affected, but configuration of standalone
+  hosts that deploy webservices might require modifications.
+
 User management
 '''''''''''''''
 
