@@ -62,7 +62,7 @@ try:
         install_requires=['argparse', 'future'],
         extras_require={
             'ansible': ['ansible', 'netaddr', 'passlib',
-                        'python-ldap', 'dnspython']
+                        'python-ldap', 'dnspython', 'pyopenssl']
             },
 
         scripts=SCRIPTS,

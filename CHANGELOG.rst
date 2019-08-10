@@ -52,6 +52,14 @@ Continuous Integration
 
   .. __: https://www.flamingspork.com/projects/libeatmydata/
 
+General
+'''''''
+
+- The ``pyopenssl`` Python package has been added as a dependency of DebOps
+  when the project is installed with Ansible included. This package is required
+  by the ``openssl_*`` modules in Ansible 2.7; some of the DebOps roles like
+  :ref:`debops.opendkim` use these modules on the Ansible Controller.
+
 LDAP
 ''''
 
