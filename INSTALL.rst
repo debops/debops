@@ -124,19 +124,19 @@ Ubuntu by running the command:
 
 .. code-block:: console
 
-   sudo apt install python-future python-ldap python-netaddr \
-                    python-dnspython python-passlib python-openssl
+   sudo apt install python3-future python3-ldap python3-netaddr \
+                    python3-dnspython python3-passlib python3-openssl
 
 The missing Python dependencies will be automatically installed with the
 ``ansible`` and ``debops`` Python packages, however some of them, like the
-``python-ldap`` package, are distributed only as sources and require the build
+``python3-ldap`` package, are distributed only as sources and require the build
 environment to be available. On Debian or Ubuntu you can install the required
 packages by running the command:
 
 .. code-block:: console
 
-   sudo apt install build-essential python-dev libffi-dev libssl-dev \
-                    libsasl2-dev libldap2-dev python-pip
+   sudo apt install build-essential python3-dev libffi-dev libssl-dev \
+                    libsasl2-dev libldap2-dev python3-pip
 
 Installation of DebOps with Ansible included
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,11 +145,11 @@ To install DebOps and Ansible on your user account, execute the command:
 
 .. code-block:: console
 
-   pip install --user debops[ansible]
+   pip3 install --user debops[ansible]
 
 The above command will install the ``debops`` Python package, as well as
 ``ansible`` Python package with optional dependencies used by DebOps roles.
-They will be installed in the :file:`~/.local/lib/python2.7/site-packages/`
+They will be installed in the :file:`~/.local/lib/python3.x/site-packages/`
 directory, the scripts and other binaries will be installed in
 :file:`~/.local/bin` directory which should be included in your ``$PATH``.
 
@@ -165,7 +165,7 @@ you can use the command:
 
 .. code-block:: console
 
-   pip install --user debops
+   pip3 install --user debops
 
 In this case you will have to install Ansible and other optional dependencies
 required by DebOps separately.
@@ -239,7 +239,7 @@ command:
 
 .. code-block:: console
 
-   pip install --user --upgrade debops
+   pip3 install --user --upgrade debops
 
 
 Installation in a :command:`virtualenv` Python environment
@@ -253,8 +253,8 @@ development packages:
 
 .. code-block:: console
 
-   sudo apt install build-essential python-virtualenv virtualenv python-dev \
-                    libffi-dev libssl-dev libsasl2-dev libldap2-dev python-pip
+   sudo apt install build-essential python3-virtualenv virtualenv python3-dev \
+                    libffi-dev libssl-dev libsasl2-dev libldap2-dev python3-pip
 
 After that, you can create a new Python :command:`virtualenv` environment in
 a selected directory and "enter" it by executing the commands:
@@ -271,14 +271,14 @@ environment, you can run the command:
 
 .. code-block:: console
 
-   pip install debops[ansible]
+   pip3 install debops[ansible]
 
 Or, to install only DebOps without Ansible (for example, you want to use the
 Ansible from outside of the environment), you can execute the command:
 
 .. code-block:: console
 
-   pip install debops
+   pip3 install debops
 
 To exit the current Python virtual environment, you can run the command:
 
@@ -297,7 +297,7 @@ command:
 
 .. code-block:: console
 
-   pip install --upgrade debops
+   pip3 install --upgrade debops
 
 
 Installation from Ansible Galaxy
