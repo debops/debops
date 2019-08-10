@@ -352,7 +352,10 @@ dnsmasq__default_configuration:
           maintaining the leases.
         option: 'rebind-domain-ok'
         value: '{{ dnsmasq__base_domain }}'
-        state: '{{ "present" if dnsmasq__base_domain_rebind_ok|bool else "init" }}'
+        state: '{{ "present"
+                   if (dnsmasq__base_domain_rebind_ok|bool and
+                       dnsmasq__base_domain|d())
+                   else "absent" }}'
 
       - name: 'rebind-parent-domain-ok'
         comment: |
@@ -363,6 +366,7 @@ dnsmasq__default_configuration:
         value: '{{ dnsmasq__base_domain.split(".")[1:] | join(".") }}'
         state: '{{ "present"
                    if (dnsmasq__base_domain_rebind_ok|bool and
+                        dnsmasq__base_domain|d() and
                        (dnsmasq__base_domain.split(".") | length >= 4))
                    else "absent" }}'
 
