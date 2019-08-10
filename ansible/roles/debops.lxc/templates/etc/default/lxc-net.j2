@@ -13,5 +13,5 @@ LXC_NETWORK="{{ lxc__net_address | ipaddr('subnet') }}"
 LXC_DHCP_RANGE="{{ lxc__net_address | ipaddr(lxc__net_dhcp_start|int) | ipaddr('address') + ',' + lxc__net_address | ipaddr(lxc__net_dhcp_end|int) | ipaddr('address') }}"
 LXC_DHCP_MAX="{{ (lxc__net_address | ipaddr('size'))|int - ((lxc__net_dhcp_start|int|abs) + (lxc__net_dhcp_end|int|abs)) }}"
 LXC_DHCP_CONFILE="{{ lxc__net_dnsmasq_conf }}"
-LXC_DOMAIN="{{ lxc__net_domain }}"
+LXC_DOMAIN="{{ lxc__net_fqdn }}"
 {% endif %}
