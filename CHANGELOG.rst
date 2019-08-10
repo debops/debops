@@ -20,7 +20,7 @@ You can read information about required changes between releases in the
 
 
 Added
------
+~~~~~
 
 :ref:`debops.unattended_upgrades` role
 ''''''''''''''''''''''''''''''''''''''
