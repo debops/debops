@@ -314,6 +314,11 @@ User management
   override to Debian Stretch and Ubuntu Xenial only. The containers correctly
   shut down using ``SIGRTMIN+3`` signal on Debian Buster and beyond.
 
+- The :envvar:`lxc__net_fqdn` variable will now define both the DNS domain for
+  the LXC containers as well as the DNS name of the ``lxcbr0`` interface. This
+  should ensure that both the LXC host and the containers see the same DNS
+  name for the same resource.
+
 :ref:`debops.mariadb_server` role
 '''''''''''''''''''''''''''''''''
 
