@@ -199,6 +199,12 @@ General
 - The DebOps documentation generator now supports Ansible roles with multiple
   :file:`defaults/main/*.yml` files.
 
+- Various DebOps roles will no longer use the hostname as a stand-in for an
+  empty DNS domain when no DNS domain is detected - this resulted in the
+  "standalone" hosts without a DNS domain to be misconfigured. Existing setups
+  with a DNS domain shouldn't be affected, but configuration of standalone
+  hosts that deploy webservices might require modifications.
+
 User management
 '''''''''''''''
 
@@ -307,6 +313,11 @@ User management
 - Restrict configuration of the :file:`poweroff.conf` :command:`systemd`
   override to Debian Stretch and Ubuntu Xenial only. The containers correctly
   shut down using ``SIGRTMIN+3`` signal on Debian Buster and beyond.
+
+- The :envvar:`lxc__net_fqdn` variable will now define both the DNS domain for
+  the LXC containers as well as the DNS name of the ``lxcbr0`` interface. This
+  should ensure that both the LXC host and the containers see the same DNS
+  name for the same resource.
 
 :ref:`debops.mariadb_server` role
 '''''''''''''''''''''''''''''''''
