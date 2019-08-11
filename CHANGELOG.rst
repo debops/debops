@@ -69,6 +69,15 @@ LDAP
   able to access SSH service from any host. Existing installations might need
   to be updated manually to fix UID/GID or LDAP DN conflicts.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- If Avahi/mDNS support is present on a host, the :ref:`debops.ferm` role will
+  allow access through the ``mdns`` UDP port by default. This will most likely
+  happen on workstations and laptops with full desktop environments installed,
+  but not on servers with minimal install. To configure Avahi service or enable
+  it on servers, you can use the :ref:`debops.avahi` Ansible role.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
