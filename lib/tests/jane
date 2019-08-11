@@ -64,6 +64,8 @@ readonly JANE_DIFF_PATTERN="${JANE_DIFF_PATTERN:-.*}"
 readonly JANE_LOG_PATTERN="${JANE_LOG_PATTERN:-}"
 readonly JANE_FORCE_TESTS="${JANE_FORCE_TESTS:-}"
 readonly JANE_TEST_PLAY="${JANE_TEST_PLAY:-}"
+readonly JANE_TEST_FACT="${JANE_TEST_FACT:-}"
+readonly JANE_TEST_SCRIPT="${JANE_TEST_SCRIPT:-}"
 readonly JANE_ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG:-/vagrant/lib/tests/ansible.cfg}"
 readonly JANE_ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY:-/vagrant/lib/tests/jane}"
 readonly JANE_INVENTORY_DIRS="${JANE_INVENTORY_DIRS:-common}"
@@ -346,6 +348,8 @@ sub__ansible__playbook () {
     local ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG}"
     local ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY}"
     local jane_test_play="${JANE_TEST_PLAY}"
+    local jane_test_fact="${JANE_TEST_FACT}"
+    local jane_test_script="${JANE_TEST_SCRIPT}"
     local inventory_path
     IFS=':' read -r -a inventory_path <<< "${INVENTORY_PATH}"
     local jane_inventory_dirs
@@ -353,8 +357,12 @@ sub__ansible__playbook () {
     local jane_inventory_groups="${JANE_INVENTORY_GROUPS}"
     local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
     local -a test_playbooks
+    local -a test_facts
+    local -a test_scripts
 
     IFS=" " read -r -a test_playbooks <<< "${jane_test_play}"
+    IFS=" " read -r -a test_facts <<< "${jane_test_fact}"
+    IFS=" " read -r -a test_scripts <<< "${jane_test_script}"
 
     export ANSIBLE_CONFIG
     export ANSIBLE_INVENTORY
@@ -409,6 +417,38 @@ sub__ansible__playbook () {
         return 1
     else
         status_msg ok "The playbook is idempotent"
+    fi
+
+    if [ -n "${test_facts[*]}" ] ; then
+        for element in "${test_facts[@]}" ; do
+            local fact_script="/etc/ansible/facts.d/${element%.fact}.fact"
+            if [ -f "${fact_script}" ] ; then
+                if [ -x "${fact_script}" ] ; then
+                    status_msg info "Executing the '${element%.fact}' Ansible local fact script..."
+                    "${fact_script}"
+                else
+                    status_msg info "Contents of the '${element%.fact}' local fact:"
+                    cat "${fact_script}"
+                fi
+                status_msg ok "Ansible local fact script succeeded"
+            else
+                status_msg warning "The '${element%.fact}' Ansible local fact doesn't exist"
+            fi
+        done
+    fi
+
+    if [ -n "${test_scripts[*]}" ] ; then
+        for element in "${test_scripts[@]}" ; do
+            if [ -f "${element}" ] ; then
+                if [ -x "${element}" ] ; then
+                    status_msg info "Executing the '$(basename "${element}")' test script..."
+                    "${element}"
+                    status_msg ok "The '$(basename "${element}")' test script completed successfully"
+                fi
+            else
+                status_msg warning "The '${element}' test script doesn't exist"
+            fi
+        done
     fi
 }
 
@@ -765,14 +805,14 @@ status_msg () {
     local prompt=""
     local inception=""
 
-    prompt="${colors["green"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["yellow"]}R${colors["b_black"]}:${colors["reset"]}"
-    inception="R"
+    prompt="${colors["green"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["yellow"]}RUNNER${colors["b_black"]}:${colors["reset"]}"
+    inception="RUNNER"
     if [ -n "${JANE_VAGRANT_INCEPTION:-}" ] ; then
-        prompt="${colors["magenta"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["b_green"]}V${colors["b_black"]}:${colors["reset"]}"
-        inception="V"
+        prompt="${colors["magenta"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["b_green"]}PROVISION${colors["b_black"]}:${colors["reset"]}"
+        inception="PROVISION"
     elif [ -n "${JANE_INCEPTION:-}" ] ; then
-        prompt="${colors["magenta"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["b_blue"]}B${colors["b_black"]}:${colors["reset"]}"
-        inception="B"
+        prompt="${colors["magenta"]}${SCRIPTNAME^^}${colors["b_black"]}:${colors["reset"]}${colors["b_blue"]}VM${colors["b_black"]}:${colors["reset"]}"
+        inception="VM"
     fi
 
     case "${msg_type,,}" in

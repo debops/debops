@@ -284,6 +284,8 @@ export CI_JOB_ID="#{ENV['CI_JOB_ID']}"
 export CI_JOB_NAME="#{ENV['CI_JOB_NAME']}"
 export CI_JOB_STAGE="#{ENV['CI_JOB_STAGE']}"
 export JANE_TEST_PLAY="#{ENV['JANE_TEST_PLAY']}"
+export JANE_TEST_FACT="#{ENV['JANE_TEST_FACT']}"
+export JANE_TEST_SCRIPT="#{ENV['JANE_TEST_SCRIPT']}"
 export JANE_FORCE_TESTS="#{ENV['JANE_FORCE_TESTS']}"
 export JANE_INVENTORY_DIRS="#{ENV['JANE_INVENTORY_DIRS']}"
 export JANE_INVENTORY_GROUPS="#{ENV['JANE_INVENTORY_GROUPS']}"
@@ -441,12 +443,12 @@ if [ -z "${JANE_BOX_INIT:-}" ] ; then
     # So we need to install PyPI packages on the real box, not the template.
     jane notify install "Installing test requirements via PyPI..."
 
-    pip install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
+    pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
     mkdir /tmp/build
     rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
     cd /tmp/build
     make sdist > /dev/null
-    pip install dist/*
+    pip3 install dist/*
     cd - > /dev/null
 
     jane notify cache "Cleaning up cache directories..."
@@ -547,12 +549,12 @@ fi
 
 jane notify install "Installing test requirements via PyPI..."
 
-sudo pip install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
+sudo pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
 mkdir /tmp/build
 rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
 cd /tmp/build
 make sdist > /dev/null
-sudo pip install dist/*
+sudo pip3 install dist/*
 cd - > /dev/null
 
 jane notify cache "Cleaning up cache directories..."
