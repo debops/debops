@@ -376,6 +376,7 @@ EOF
         python-future \
         python-jinja2 \
         python-ldap \
+        python-netaddr \
         python-nose2 \
         python-nose2-cov \
         python-openssl \
@@ -395,6 +396,7 @@ EOF
         python3-dnspython \
         python3-future \
         python3-jinja2 \
+        python3-netaddr \
         python3-nose2 \
         python3-nose2-cov \
         python3-openssl \
