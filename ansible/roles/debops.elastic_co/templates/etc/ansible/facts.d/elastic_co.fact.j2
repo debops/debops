@@ -46,7 +46,7 @@ def dpkg_query(packages):
     (stdoutdata, _) = proc.communicate()
 
     stdout_clean = stdoutdata.strip()
-    stdout_last = stdout_clean.rstrip(',')
+    stdout_last = stdout_clean.decode('utf-8').rstrip(',')
     stdout_wrap = '{\n' + stdout_last + '\n}'
 
     proc_output = loads(str(stdout_wrap))
