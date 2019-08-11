@@ -64,6 +64,7 @@ readonly JANE_DIFF_PATTERN="${JANE_DIFF_PATTERN:-.*}"
 readonly JANE_LOG_PATTERN="${JANE_LOG_PATTERN:-}"
 readonly JANE_FORCE_TESTS="${JANE_FORCE_TESTS:-}"
 readonly JANE_TEST_PLAY="${JANE_TEST_PLAY:-}"
+readonly JANE_TEST_FACT="${JANE_TEST_FACT:-}"
 readonly JANE_ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG:-/vagrant/lib/tests/ansible.cfg}"
 readonly JANE_ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY:-/vagrant/lib/tests/jane}"
 readonly JANE_INVENTORY_DIRS="${JANE_INVENTORY_DIRS:-common}"
@@ -346,6 +347,7 @@ sub__ansible__playbook () {
     local ANSIBLE_CONFIG="${JANE_ANSIBLE_CONFIG}"
     local ANSIBLE_INVENTORY="${JANE_ANSIBLE_INVENTORY}"
     local jane_test_play="${JANE_TEST_PLAY}"
+    local jane_test_fact="${JANE_TEST_FACT}"
     local inventory_path
     IFS=':' read -r -a inventory_path <<< "${INVENTORY_PATH}"
     local jane_inventory_dirs
@@ -409,6 +411,19 @@ sub__ansible__playbook () {
         return 1
     else
         status_msg ok "The playbook is idempotent"
+    fi
+
+    if [ -n "${jane_test_fact}" ] ; then
+        local fact_script="/etc/ansible/facts.d/${jane_test_fact%.fact}.fact"
+        if [ -f "${fact_script}" ] ; then
+            if [ -x "${fact_script}" ] ; then
+                status_msg info "Executing the '${jane_test_fact%.fact}' Ansible local fact script..."
+                "${fact_script}"
+            else
+                status_msg info "Contents of the '${jane_test_fact}' local fact:"
+                cat "${fact_script}"
+            fi
+        fi
     fi
 }
 
