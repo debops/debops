@@ -15,15 +15,20 @@ output = loads('''{{ ({
     }) | to_nice_json }}''')
 
 try:
-    for line in subprocess.check_output(['apache2', '-v']).split('\n'):
+    apache_v = subprocess.check_output(
+            ['apache2', '-v']).decode('utf-8').split('\n')
+
+    for line in apache_v:
         _re = re.match(r'Server version: Apache/(?P<version>[^ ]+)', line)
         if _re:
             output['version'] = _re.group('version')
+
+    if output['use_if_version']:
+        if output['min_version'] == 'current_major_minor':
+            output['min_version'] = '.'.join(
+                    output['version'].split('.')[:2])
+
 except Exception:
     pass
-
-if output['use_if_version']:
-    if output['min_version'] == 'current_major_minor':
-        output['min_version'] = '.'.join(output['version'].split('.')[:2])
 
 print(dumps(output, sort_keys=True, indent=2))
