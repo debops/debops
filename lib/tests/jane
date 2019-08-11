@@ -355,8 +355,10 @@ sub__ansible__playbook () {
     local jane_inventory_groups="${JANE_INVENTORY_GROUPS}"
     local jane_inventory_hostvars=( "${JANE_INVENTORY_HOSTVARS}" )
     local -a test_playbooks
+    local -a test_facts
 
     IFS=" " read -r -a test_playbooks <<< "${jane_test_play}"
+    IFS=" " read -r -a test_facts <<< "${jane_test_fact}"
 
     export ANSIBLE_CONFIG
     export ANSIBLE_INVENTORY
@@ -413,17 +415,21 @@ sub__ansible__playbook () {
         status_msg ok "The playbook is idempotent"
     fi
 
-    if [ -n "${jane_test_fact}" ] ; then
-        local fact_script="/etc/ansible/facts.d/${jane_test_fact%.fact}.fact"
-        if [ -f "${fact_script}" ] ; then
-            if [ -x "${fact_script}" ] ; then
-                status_msg info "Executing the '${jane_test_fact%.fact}' Ansible local fact script..."
-                "${fact_script}"
+    if [ -n "${test_facts[*]}" ] ; then
+        for element in "${test_facts[@]}" ; do
+            local fact_script="/etc/ansible/facts.d/${element%.fact}.fact"
+            if [ -f "${fact_script}" ] ; then
+                if [ -x "${fact_script}" ] ; then
+                    status_msg info "Executing the '${element%.fact}' Ansible local fact script..."
+                    "${fact_script}"
+                else
+                    status_msg info "Contents of the '${element%.fact}' local fact:"
+                    cat "${fact_script}"
+                fi
             else
-                status_msg info "Contents of the '${jane_test_fact}' local fact:"
-                cat "${fact_script}"
+                status_msg warning "The '${element%.fact}' Ansible local fact doesn't exist"
             fi
-        fi
+        done
     fi
 }
 
