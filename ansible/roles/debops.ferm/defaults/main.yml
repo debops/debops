@@ -507,6 +507,24 @@ ferm__default_rules:
     dport: [ 'dhcpv6-client' ]
     rule_state: '{{ "present" if ("ip6" in ferm__domains) else "absent" }}'
 
+    # Avahi is usually installed by default on workstations and laptops where
+    # it is useful. To manage Avahi on servers, you should enable the
+    # 'debops.avahi' Ansible role which will set up the same firewall rule.
+  - name: 'avahi'
+    type: 'accept'
+    dport: 'mdns'
+    saddr: '{{ avahi__allow | d([]) }}'
+    protocol: 'udp'
+    accept_any: True
+    rule_state: '{{ "present"
+                    if ((ansible_local|d() and ansible_local.nsswitch|d() and
+                         ansible_local.nsswitch.conf|d() and
+                         "mdns4_minimal" in q("flattened",
+                                              ansible_local.nsswitch.conf.hosts|d([]))) and
+                        (ansible_local|d(True) and ansible_local.avahi|d(True) and
+                         (ansible_local.avahi.enabled|d(True))|bool))
+                    else "absent" }}'
+
   - name: 'jump_to_legacy_input_rules'
     type: 'accept'
     weight: '-10'
