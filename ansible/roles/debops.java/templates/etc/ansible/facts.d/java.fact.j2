@@ -11,13 +11,13 @@ output = {"installed": True}
 try:
     java_version_output = subprocess.check_output(
         ['java', '-version'],
-        stderr=subprocess.STDOUT)
+        stderr=subprocess.STDOUT).decode('utf-8').split('\n')
 
 except subprocess.CalledProcessError:
     pass
 
 if java_version_output:
-    for line in java_version_output.split('\n'):
+    for line in java_version_output:
         if 'version' in line:
             output['version'] = line.split()[2].strip('"').split('_')[0]
 
