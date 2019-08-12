@@ -522,7 +522,7 @@ ferm__default_rules:
                          "mdns4_minimal" in q("flattened",
                                               ansible_local.nsswitch.conf.hosts|d([]))) and
                         (ansible_local|d(True) and ansible_local.avahi|d(True) and
-                         (ansible_local.avahi.enabled|d(True))|bool))
+                         ((ansible_local["avahi"]|d({})).enabled|d(True))|bool))
                     else "absent" }}'
 
   - name: 'jump_to_legacy_input_rules'
