@@ -396,6 +396,14 @@ User management
   replicated if needed. The backup host itself can also be snapshotted, with
   support for snapshots on removable media.
 
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- The local SNMPv3 username and password will be stored in a separate file and
+  retrieved via Ansible local facts, to not break Ansible fact gathering on
+  unprivileged accounts. The password file is protected by strict read
+  permission and accessible only by the ``root`` UNIX account.
+
 :ref:`debops.system_groups` role
 ''''''''''''''''''''''''''''''''
 
