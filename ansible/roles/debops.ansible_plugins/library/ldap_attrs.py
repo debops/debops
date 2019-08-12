@@ -254,11 +254,13 @@ class LdapAttr(object):
 
         if isinstance(values, list):
             if self.ordered:
-                norm_values = self._order_values(list(map(to_bytes, values)))
+                norm_values = list(map(to_bytes,
+                                   self._order_values(list(map(str,
+                                                               values)))))
             else:
                 norm_values = list(map(to_bytes, values))
         elif values != "":
-            norm_values = [str(values)]
+            norm_values = [to_bytes(str(values))]
 
         return norm_values
 
