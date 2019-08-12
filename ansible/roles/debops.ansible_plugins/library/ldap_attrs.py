@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_native
+from ansible.module_utils._text import to_native, to_bytes
 
 import traceback
 import re
@@ -253,9 +253,9 @@ class LdapAttr(object):
 
         if isinstance(values, list):
             if self.ordered:
-                norm_values = self._order_values(list(map(str, values)))
+                norm_values = self._order_values(list(map(to_bytes, values)))
             else:
-                norm_values = list(map(str, values))
+                norm_values = list(map(to_bytes, values))
         elif values != "":
             norm_values = [str(values)]
 
