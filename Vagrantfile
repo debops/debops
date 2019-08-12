@@ -415,12 +415,26 @@ EOF
         shellcheck \
         yamllint
 
+    # Install packages needed to build missing Python modules
+    if [ "${os_release}" == "wheezy" ] || [ "${os_release}" == "jessie" ] || [ "${os_release}" == "stretch" ] ; then
+
+        DEBIAN_FRONTEND=noninteractive apt-get -y \
+        --no-install-recommends install \
+            build-essential \
+            libffi-dev \
+            libldap2-dev \
+            libsasl2-dev \
+            libssl-dev \
+            python-dev \
+            python3-dev
+    fi
+
     if [ ! "${os_release}" == "wheezy" ] && [ ! "${os_release}" == "jessie" ] && [ ! "${os_release}" == "stretch" ] ; then
 
         DEBIAN_FRONTEND=noninteractive apt-get -y \
         --no-install-recommends install \
             python3-ldap
-        fi
+    fi
 
     DEBIAN_FRONTEND=noninteractive apt-get -y \
     --no-install-recommends install ${ansible_from_debian}
