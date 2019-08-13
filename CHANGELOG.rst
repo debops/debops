@@ -44,6 +44,12 @@ General
 - Ansible local fact scripts in multiple roles have been updated to work
   correctly in a Python 3.x environment.
 
+:ref:`debops.ansible_plugins` role
+''''''''''''''''''''''''''''''''''
+
+- The ``ldap_attrs`` Ansible module has been fixed to work correctly in
+  a Python 3.x environment.
+
 
 `debops v1.0.7`_ - 2019-08-09
 -----------------------------
