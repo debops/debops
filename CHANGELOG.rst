@@ -461,6 +461,17 @@ Roles removed from DebOps
   the role. They are replaced by the :envvar:`keyring__keyserver` and the
   corresponding local fact in the :ref:`debops.keyring` role.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- Support for `ferment`__ has been removed from DebOps due to the upstream not
+  being up to date anymore, both with Docker as well as with Python 3.x
+  support. The :command:`dockerd` daemon will be restarted on any
+  :command:`ferm` restarts to update the firewall configuration with Docker
+  rules.
+
+  .. __: https://github.com/diefans/ferment
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 

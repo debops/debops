@@ -25,17 +25,9 @@ which is easily done with :envvar:`docker_server__tcp_allow`. It is recommended
 to use the :ref:`debops.pki` role to secure the connection between the client
 and the Docker server.
 
-Docker manages its own network bridge and :command:`iptables` entries. On hosts
-that don't use upstream Docker packages, the :program:`ferment` Python script
-will be installed in a Python virtualenv to allow :program:`ferm` firewall to
-reload Docker firewall rules automatically, however it does not fully support
-Docker yet, so be aware of this when you modify the firewall configuration. You
-can restart :command:`docker` daemon to make sure that all firewall rules are
-set up correctly.
-
-On hosts with upstream Docker enabled and :command:`ferm`, a special post-hook
+On hosts with :command:`ferm` firewall support enabled, a special post-hook
 script will be installed that restarts the Docker daemon after :command:`ferm`
-is restarted. In this case, :command:`ferment` will not be installed.
+is restarted.
 
 The :command:`docker-compose` script will be installed on hosts with upstream
 Docker, in a Python virtualenv. It will be automatically available system-wide
