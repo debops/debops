@@ -252,6 +252,14 @@ User management
 - The Docker server no longer listens on a TCP port by default, even if
   :ref:`debops.pki` is enabled.
 
+- The default storage driver used by the :ref:`debops.docker_server` has been
+  changed to ``overlay2`` which is the default in upstream. The role checks the
+  currently enabled storage driver via Ansible local facts, and should preserve
+  the current configuration on existing installations.
+
+  If needed, the storage driver in use can be overridden via the
+  :envvar:`docker_server__storage_driver` variable.
+
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''
 
@@ -452,6 +460,17 @@ Roles removed from DebOps
 - The ``core__keyserver`` variable and its local fact have been removed from
   the role. They are replaced by the :envvar:`keyring__keyserver` and the
   corresponding local fact in the :ref:`debops.keyring` role.
+
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- Support for `ferment`__ has been removed from DebOps due to the upstream not
+  being up to date anymore, both with Docker as well as with Python 3.x
+  support. The :command:`dockerd` daemon will be restarted on any
+  :command:`ferm` restarts to update the firewall configuration with Docker
+  rules.
+
+  .. __: https://github.com/diefans/ferment
 
 :ref:`debops.lxc` role
 ''''''''''''''''''''''

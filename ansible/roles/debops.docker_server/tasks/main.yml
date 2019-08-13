@@ -93,15 +93,6 @@
   when: item.path|d() and item.src|d() and
         item.state|d('present') != 'absent'
 
-- name: Install ferment wrapper script
-  template:
-    src: 'usr/local/lib/docker-ferment-wrapper.j2'
-    dest: '{{ docker_server__ferment_wrapper }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: docker_server__ferment | bool
-
 - name: Install ferm post hook
   template:
     src: 'etc/ferm/hooks/post.d/restart-docker.j2'

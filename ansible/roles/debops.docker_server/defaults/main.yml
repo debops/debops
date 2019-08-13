@@ -179,15 +179,6 @@ docker_server__default_pip_packages:
     src:  '{{ docker_server__virtualenv + "/bin/docker-compose" }}'
     state: '{{ "present" if docker_server__upstream|bool else "absent" }}'
 
-  - name: 'docker-py'
-    version: '0.5.3'
-    state: '{{ "present" if docker_server__ferment|bool else "absent" }}'
-
-  - name: 'ferment'
-    path: '/usr/local/bin/ferment'
-    src:  '{{ docker_server__virtualenv + "/bin/ferment" }}'
-    state: '{{ "present" if docker_server__ferment|bool else "absent" }}'
-
                                                                    # ]]]
 # .. envvar:: docker_server__pip_packages [[[
 #
@@ -386,9 +377,12 @@ docker_server__registry_mirrors: []
 # .. envvar:: docker_server__storage_driver [[[
 #
 # Storage driver for docker volumes.
-docker_server__storage_driver: '{{ "aufs"
-                                   if (ansible_distribution_release in ["wheezy", "jessie" ])
-                                   else "overlay" }}'
+docker_server__storage_driver: '{{ ansible_local.docker_server.storage_driver
+                                   if (ansible_local|d() and ansible_local.docker_server|d() and
+                                       ansible_local.docker_server.storage_driver|d())
+                                   else ("aufs"
+                                         if (ansible_distribution_release in ["wheezy", "jessie" ])
+                                         else "overlay2") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__storage_options [[[
@@ -475,32 +469,11 @@ docker_server__pki_key: 'default.key'
 
 # .. envvar:: docker_server__ferm_post_hook [[[
 #
-# Enable or disable installation for the :program:`ferm` post hook when :program:`ferment`
-# is disabled.
+# Enable or disable installation for the :program:`ferm` post hook.
 docker_server__ferm_post_hook: '{{ True
-                                   if (ansible_local|d() and
-                                       ansible_local.ferm|d() and
-                                       not docker_server__ferment|bool)
+                                   if (ansible_local|d() and ansible_local.ferm|d() and
+                                       (ansible_local.ferm.enabled|d())|bool)
                                    else False }}'
-
-                                                                   # ]]]
-# .. envvar:: docker_server__ferment [[[
-#
-# Enable or disable support for :program:`ferment` script, which can generate :program:`ferm`
-# configuration with the current Docker state.
-docker_server__ferment: '{{ True
-                            if (not docker_server__upstream|bool)
-                            else False }}'
-
-                                                                   # ]]]
-# .. envvar:: docker_server__ferment_wrapper [[[
-#
-# Path to the :program:`ferment` wrapper script used to generate :program:`ferm` configuration.
-docker_server__ferment_wrapper: '{{ (ansible_local.root.lib
-                                     if (ansible_local|d() and
-                                         ansible_local.root|d() and
-                                         ansible_local.root.lib|d())
-                                     else "/usr/local/lib") + "/docker-ferment-wrapper" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -555,20 +528,16 @@ docker_server__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: docker_server__ferm__dependent_rules [[[
 #
-# Configuration for :ref:`debops.ferm` role which enables support for :program:`ferment`
-# script and opens access to the Docker REST API in the firewall.
+# Configuration for :ref:`debops.ferm` role which opens access to the Docker
+# REST API in the firewall.
 docker_server__ferm__dependent_rules:
 
+  # Support for ferment has been dropped from DebOps
   - type: 'custom'
     weight: '99'
     role: 'docker'
     name: 'ferment_rules'
-    rules: |
-      @def $DOCKER_FERMENT = `test -x {{ docker_server__ferment_wrapper }} && echo 1 || echo 0`;
-      @if $DOCKER_FERMENT {
-          @include '{{ docker_server__ferment_wrapper + (" " + docker_server__bridge if docker_server__bridge else "") }}|';
-      }
-    state: '{{ "present" if docker_server__ferment|bool else "absent" }}'
+    rule_state: 'absent'
 
   - type: 'accept'
     dport: '{{ [ docker_server__tcp_port ] + docker_server__custom_ports }}'
