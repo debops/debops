@@ -252,6 +252,14 @@ User management
 - The Docker server no longer listens on a TCP port by default, even if
   :ref:`debops.pki` is enabled.
 
+- The default storage driver used by the :ref:`debops.docker_server` has been
+  changed to ``overlay2`` which is the default in upstream. The role checks the
+  currently enabled storage driver via Ansible local facts, and should preserve
+  the current configuration on existing installations.
+
+  If needed, the storage driver in use can be overridden via the
+  :envvar:`docker_server__storage_driver` variable.
+
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''
 
