@@ -35,6 +35,15 @@ Changed
 
 - The APT source URLs for Devuan distribution have been updated.
 
+Fixed
+~~~~~
+
+General
+'''''''
+
+- Ansible local fact scripts in multiple roles have been updated to work
+  correctly in a Python 3.x environment.
+
 
 `debops v1.0.7`_ - 2019-08-09
 -----------------------------
