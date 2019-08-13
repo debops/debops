@@ -41,10 +41,11 @@ This role does not support switching from Docker CE to Docker EE on an already
 installed machine. It does support switching from distribution repository to
 upstream. However, it is recommended to start with a clean machine if possible.
 
-``debops.docker_server`` relies on configuration managed by :ref:`debops.core`,
-:ref:`debops.ferm`, and :ref:`debops.pki` Ansible roles.
+The :ref:`debops.docker_server` role relies on configuration managed by
+:ref:`debops.core`, :ref:`debops.ferm`, and :ref:`debops.pki` Ansible roles.
 
 .. _Docker variants: https://docs.docker.com/install/overview/
+
 
 Useful variables
 ----------------
@@ -62,6 +63,7 @@ Ansible inventory to customize Docker:
 :envvar:`docker_server__admins`
   List of UNIX accounts that have access to Docker daemon socket.
 
+
 Example inventory
 -----------------
 
@@ -73,6 +75,7 @@ To configure Docker on a given remote host, it needs to be added to the
    [debops_service_docker_server]
    hostname
 
+
 Example playbook
 ----------------
 
@@ -80,6 +83,7 @@ Here's an example playbook that can be used to manage Docker:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/docker_server.yml
    :language: yaml
+
 
 Ansible tags
 ------------
@@ -100,3 +104,34 @@ Available role tags:
 
 ``role::docker_server:admins``
   Manage access to Docker daemon by UNIX accounts.
+
+
+Other resources
+---------------
+
+List of other useful resources related to the ``debops.docker_server`` Ansible
+role:
+
+- Manual pages: :man:`docker(1)`, :man:`docker-run(1)`, :man:`Dockerfile(5)`,
+  :man:`docker-compose(1)`
+
+- `Docker`__ page on Debian Wiki
+
+  .. __: https://wiki.debian.org/Docker
+
+- `Docker`__ page on Arch Linux Wiki
+
+  .. __: https://wiki.archlinux.org/index.php/Docker
+
+- `Docker documentation page`__
+
+  .. __: https://docs.docker.com/
+
+- `Docker guide for Ansible`__
+
+  .. __: https://docs.ansible.com/ansible/latest/scenario_guides/guide_docker.html
+
+- Official DebOps image in the Docker Hub: `debops/debops`__ (see also
+  :ref:`quick_start__docker`)
+
+  .. __: https://hub.docker.com/r/debops/debops
