@@ -386,9 +386,12 @@ docker_server__registry_mirrors: []
 # .. envvar:: docker_server__storage_driver [[[
 #
 # Storage driver for docker volumes.
-docker_server__storage_driver: '{{ "aufs"
-                                   if (ansible_distribution_release in ["wheezy", "jessie" ])
-                                   else "overlay" }}'
+docker_server__storage_driver: '{{ ansible_local.docker_server.storage_driver
+                                   if (ansible_local|d() and ansible_local.docker_server|d() and
+                                       ansible_local.docker_server.storage_driver|d())
+                                   else ("aufs"
+                                         if (ansible_distribution_release in ["wheezy", "jessie" ])
+                                         else "overlay") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__storage_options [[[

@@ -3,13 +3,14 @@
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import loads, dumps
+from json import load, loads, dumps
 from sys import exit
 import subprocess
 import os
 import re
 
 docker_pkg = loads('''{{ docker_server__packagename | to_nice_json }}''')
+daemon_json = '/etc/docker/daemon.json'
 
 
 def cmd_exists(cmd):
@@ -46,4 +47,13 @@ try:
 except Exception:
     pass
 
-print(dumps(output, sort_keys=True, indent=2))
+if os.path.exists(daemon_json) and os.path.isfile(daemon_json):
+    try:
+        with open(daemon_json, 'r') as f:
+            daemon_config = load(f)
+            output['storage_driver'] = daemon_config['storage-driver']
+
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=4))
