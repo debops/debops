@@ -32,7 +32,7 @@ output = {'installed': cmd_exists('docker')}
 try:
     version_stdout = subprocess.check_output(
         ["dpkg-query", "-W", "-f=${Version}\n'", docker_pkg]
-    ).split('+')[0]
+    ).decode('utf-8').split('+')[0]
 
     match = re.search(r'^(?:[^:]:)?(?P<docker_version>[^~]+)', version_stdout)
     if match:
