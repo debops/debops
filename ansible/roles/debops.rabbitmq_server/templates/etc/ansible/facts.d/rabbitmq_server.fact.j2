@@ -23,7 +23,7 @@ try:
     FNULL = open('/dev/null', 'w')
     raw_erlang_stdout = subprocess.check_output(
             ["/usr/sbin/rabbitmqctl -q eval 'ssl:cipher_suites().'"],
-            shell=True, stderr=FNULL)
+            shell=True, stderr=FNULL).decode('utf-8')
 
 except subprocess.CalledProcessError:
     pass
