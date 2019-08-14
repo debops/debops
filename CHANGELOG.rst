@@ -50,6 +50,12 @@ General
 - The ``ldap_attrs`` Ansible module has been fixed to work correctly in
   a Python 3.x environment.
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- Don't open the ``67/tcp`` port for BOOTP protocol, its definition has been
+  removed from the :file:`/etc/services` file in Debian Buster.
+
 
 `debops v1.0.7`_ - 2019-08-09
 -----------------------------
