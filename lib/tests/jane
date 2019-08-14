@@ -430,8 +430,10 @@ sub__ansible__playbook () {
             local fact_script="/etc/ansible/facts.d/${element%.fact}.fact"
             if [ -f "${fact_script}" ] ; then
                 if [ -x "${fact_script}" ] ; then
-                    status_msg info "Executing the '${element%.fact}' Ansible local fact script..."
-                    "${fact_script}"
+                    status_msg info "Executing the '${element%.fact}' Ansible local fact script as root..."
+                    sudo "${fact_script}"
+                    status_msg info "Executing the '${element%.fact}' Ansible local fact script as unprivileged user..."
+                    "${fact_script}" > /dev/null
                 else
                     status_msg info "Contents of the '${element%.fact}' local fact:"
                     cat "${fact_script}"
