@@ -357,8 +357,8 @@ Ansible Galaxy, you can run the command:
    mazer install --force debops.debops
 
 
-Installation of the DebOps development release
-----------------------------------------------
+Installation of the DebOps rolling release
+------------------------------------------
 
 The ``debops`` Python package includes a :command:`debops-update` script which
 can be used to install the DebOps monorepo directly from GitHub, with the
