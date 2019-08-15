@@ -32,7 +32,15 @@
     - '/etc/default/docker'
     - '/etc/docker/daemon.json'
     - '/etc/systemd/system/docker.service.d/http-proxy.conf'
+    - '/etc/systemd/system/docker.service.d/execstart-override.conf'
   when: (docker_server__register_other_version_removed is changed)
+
+- name: Reload systemd daemons
+  systemd:
+    daemon_reload: True
+  when: (ansible_service_mgr == 'systemd' and
+         docker_server__register_other_version_removed is changed)
+  tags: [ 'role::docker:config' ]
 
 - name: Install required packages
   apt:
@@ -64,7 +72,8 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: docker_server__register_facts is changed
+  when: (docker_server__register_packages is changed or
+         docker_server__register_facts is changed)
 
 - name: Install Python packages in virtualenv
   pip:
