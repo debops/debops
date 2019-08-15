@@ -44,6 +44,9 @@ General
 - Ansible local fact scripts in multiple roles have been updated to work
   correctly in a Python 3.x environment.
 
+- Fixed deprecation warning on Ansible 2.8 in the :command:`debops-task`
+  script.
+
 :ref:`debops.ansible_plugins` role
 ''''''''''''''''''''''''''''''''''
 
