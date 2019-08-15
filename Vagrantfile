@@ -21,6 +21,9 @@
 #     VAGRANT_NODE_BOX="debian/buster64"
 #         Specify the box to use for nodes.
 #
+#     ANSIBLE_FROM="debian" / ANSIBLE_FROM="pypi" / ANSIBLE_FROM="devel"
+#         Specify the way to install ansible.
+#
 #     VAGRANT_HOSTNAME="buster"
 #         Set a custom hostname after the box boots up.
 #
