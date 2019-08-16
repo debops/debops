@@ -192,6 +192,7 @@ Mail services
 - :ref:`debops.postfix`
 - :ref:`debops.postscreen`
 - :ref:`debops.postwhite`
+- :ref:`debops.roundcube`
 - :ref:`debops.saslauthd`
 - ``debops.smstools``
 
