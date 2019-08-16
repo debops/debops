@@ -32,7 +32,7 @@ Note that the role and cryptsetup can also use a regular file as `ciphertext blo
 directly.
 
 Now you can use one of the :ref:`cryptsetup__devices` variables as listed in
-the :ref:`cryptsetup__ref_default_variables` documentation.
+the :ref:`cryptsetup__ref_defaults` documentation.
 We are going to use :envvar:`cryptsetup__host_devices` which is intended to go
 into the Ansible inventory file of a host (:file:`./ansible/inventory/host_vars/$hostname`).
 You can use an entry like this:
