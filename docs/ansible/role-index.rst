@@ -31,6 +31,7 @@ etc.
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
 - :ref:`debops.prosody`
+- :ref:`debops.roundcube`
 - :ref:`debops.rstudio_server`
 - :ref:`debops.phpipam`
 - ``debops.phpmyadmin``
