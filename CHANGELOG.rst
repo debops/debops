@@ -22,6 +22,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.dhparam` role
+''''''''''''''''''''''''''
+
+- Add a way to specify additional parameters for the :command:`openssl dhparam`
+  command via the :envvar:`dhparam__openssl_options` variable.
+
 :ref:`debops.unattended_upgrades` role
 ''''''''''''''''''''''''''''''''''''''
 
