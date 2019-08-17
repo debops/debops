@@ -1,0 +1,189 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _nscd__ref_defaults:
+
+# debops.nscd default variables
+# =============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Global options, APT packages [[[
+# --------------------------------
+
+# .. envvar:: nscd__flavor [[[
+#
+# Select the "flavor" of the Name Service Cache Daemon to use. Available
+# flavors are: ``nscd``, ``unscd``. The ``unscd`` flavor is simpler, but more
+# resilient.
+nscd__flavor: 'unscd'
+
+                                                                   # ]]]
+# .. envvar:: nscd__base_packages [[[
+#
+# List of the base APT packages to install for Name Service Cache support.
+nscd__base_packages: [ '{{ nscd__flavor }}' ]
+
+                                                                   # ]]]
+# .. envvar:: nscd__packages [[[
+#
+# List of additional APT packages to install with :command:`nscd`.
+nscd__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Service configuration [[[
+# -------------------------
+
+# These variables define the contents of the :file:`/etc/nscd.conf`
+# configuration file. See :ref:`nscd__ref_configuration` for more details.
+
+# .. envvar:: nscd__default_configuration [[[
+#
+# The default configuration options for the :command:`nscd` service defined by
+# the role.
+nscd__default_configuration:
+
+  - name: 'global'
+    options:
+
+      - name: 'logfile'
+        value: '/var/log/nscd.log'
+        state: 'comment'
+
+      - name: 'threads'
+        value: 4
+        state: 'comment'
+
+      - name: 'max_threads'
+        value: 32
+        state: 'comment'
+
+      - name: 'server_user'
+        value: '{{ "unscd"
+                   if (nscd__flavor == "unscd")
+                   else "nobody" }}'
+        state: '{{ "present"
+                   if (nscd__flavor == "unscd")
+                   else "comment" }}'
+
+      - name: 'stat_user'
+        value: 'somebody'
+        state: 'comment'
+
+      - name: 'debug_level'
+        value: 0
+
+      - name: 'reload_count'
+        value: 5
+        state: 'comment'
+
+      - name: 'paranoia'
+        value: False
+
+      - name: 'restart_interval'
+        value: 3600
+        state: 'comment'
+
+  - name: 'passwd'
+    enable_cache: True
+    positive_time_to_live: 600
+    negative_time_to_live: 20
+    suggested_size: 1001
+    check_files: True
+    persistent: True
+    shared: True
+    max_db_size: 33554432
+    auto_propagate: True
+
+  - name: 'group'
+    enable_cache: True
+    positive_time_to_live: 3600
+    negative_time_to_live: 60
+    suggested_size: 1001
+    check_files: True
+    persistent: True
+    shared: True
+    max_db_size: 33554432
+    auto_propagate: True
+
+  - name: 'hosts'
+    comment: |
+      hosts caching is broken with gethostby* calls, hence is now disabled
+      by default. Specifically, the caching does not obey DNS TTLs, and
+      thus could lead to problems if the positive-time-to-live is
+      significantly larger than the actual TTL.
+
+      You should really use a caching nameserver instead of nscd for this
+      sort of request. However, you can easily re-enable this by default.
+    enable_cache: False
+    positive_time_to_live: 3600
+    negative_time_to_live: 20
+    suggested_size: 1001
+    check_files: True
+    persistent: True
+    shared: True
+    max_db_size: 33554432
+    state: 'comment'
+
+  - name: 'services'
+    enable_cache: True
+    positive_time_to_live: 28800
+    negative_time_to_live: 20
+    suggested_size: 1001
+    check_files: True
+    persistent: True
+    shared: True
+    max_db_size: 33554432
+    state: '{{ "absent"
+               if (nscd__flavor == "unscd")
+               else "present" }}'
+
+  - name: 'netgroup'
+    enable_cache: True
+    positive_time_to_live: 28800
+    negative_time_to_live: 20
+    suggested_size: 1001
+    check_files: True
+    persistent: True
+    shared: True
+    max_db_size: 33554432
+    state: '{{ "absent"
+               if (nscd__flavor == "unscd")
+               else "present" }}'
+
+                                                                   # ]]]
+# .. envvar:: nscd__configuration [[[
+#
+# The configuration options for the :command:`nscd` service defined on all
+# hosts in the Ansible inventory.
+nscd__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nscd__group_configuration [[[
+#
+# The configuration options for the :command:`nscd` service defined on hosts in
+# a specific Ansible inventory group.
+nscd__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nscd__host_configuration [[[
+#
+# The configuration options for the :command:`nscd` service defined on specific
+# hosts in the Ansible inventory.
+nscd__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nscd__combined_configuration [[[
+#
+# The variable that combines all other configuration variables and is used in
+# role tasks and templates.
+nscd__combined_configuration: '{{ nscd__default_configuration
+                                  + nscd__configuration
+                                  + nscd__group_configuration
+                                  + nscd__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
