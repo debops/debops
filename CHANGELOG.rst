@@ -43,6 +43,10 @@ New DebOps roles
 - The :ref:`debops.wpcli` role can be used to install the WP-CLI framework to
   allow management of WordPress websites in a shared hosting environment.
 
+- The :ref:`debops.nscd` role configures the Name Service Cache Daemon, used to
+  cache NSS entries from remote databases, for example LDAP, Active Directory
+  or NIS. The role is included in the :file:`bootstrap-ldap.yml` playbook.
+
 Continuous Integration
 ''''''''''''''''''''''
 
