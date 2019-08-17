@@ -35,6 +35,7 @@ libvirtd__kvm_support: '{{ True
 libvirtd__base_packages:
   - 'libvirt-daemon-system'
   - 'libvirt-clients'
+  - 'libnss-libvirt'
 
                                                                    # ]]]
 # .. envvar:: libvirtd__base_packages_map [[[
@@ -946,8 +947,8 @@ libvirtd__ferm_post_hook: '{{ True
                               else False }}'
                                                                    # ]]]
                                                                    # ]]]
-# Role-dependent configuration [[[
-# --------------------------------
+# Configuration for other Ansible roles [[[
+# ----------------------------------------
 
 # .. envvar:: libvirtd__apt_preferences__dependent_list [[[
 #
@@ -982,11 +983,6 @@ libvirtd__ferm__dependent_rules:
     state: 'absent'
 
                                                                    # ]]]
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# ----------------------------------------
-
 # .. envvar:: libvirtd__python__dependent_packages3 [[[
 #
 # Configuration for the :ref:`debops.python` Ansible role.
@@ -1002,5 +998,10 @@ libvirtd__python__dependent_packages2:
 
   - 'python-libvirt'
 
+                                                                   # ]]]
+# .. envvar:: libvirtd__nsswitch__dependent_services [[[
+#
+# Configuration for the :ref:`debops.nsswitch` Ansible role.
+libvirtd__nsswitch__dependent_services: [ 'libvirt', 'libvirt_guest' ]
                                                                    # ]]]
                                                                    # ]]]
