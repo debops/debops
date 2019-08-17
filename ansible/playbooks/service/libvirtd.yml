@@ -33,3 +33,8 @@
 
     - role: debops.libvirtd_qemu
       tags: [ 'role::libvirtd_qemu', 'skip::libvirtd_qemu', 'role::libvirtd', 'skip::libvirtd' ]
+
+    - role: debops.nsswitch
+      tags: [ 'role::nsswitch', 'skip::nsswitch' ]
+      nsswitch__dependent_services:
+        - '{{ libvirtd__nsswitch__dependent_services }}'

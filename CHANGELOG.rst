@@ -78,6 +78,14 @@ LDAP
   but not on servers with minimal install. To configure Avahi service or enable
   it on servers, you can use the :ref:`debops.avahi` Ansible role.
 
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- The role will configure the ``libvirt`` and ``libvirt_guest`` NSS modules in
+  :file:`/etc/nsswitch.conf` database using the :ref:`debops.nsswitch` role to
+  allow accessing the virtual machines or containers via their hostnames on the
+  virtual machine host.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
