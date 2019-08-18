@@ -273,6 +273,7 @@ System configuration
 --------------------
 
 - :ref:`debops.atd`
+- :ref:`debops.console`
 - :ref:`debops.cron`
 - :ref:`debops.debops_legacy`
 - :ref:`debops.environment`
@@ -300,7 +301,6 @@ System configuration
 - :ref:`debops.system_users`
 - :ref:`debops.users`
 - :ref:`debops.yadm`
-- ``debops.console``
 - ``debops.gitusers``
 
 
