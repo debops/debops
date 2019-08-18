@@ -1,16 +1,15 @@
 .. _debops.console:
 
-Ansible role: debops.console
-============================
+debops.console
+==============
 
 .. toctree::
    :maxdepth: 2
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
-   changelog
 
 ..
  Local Variables:
