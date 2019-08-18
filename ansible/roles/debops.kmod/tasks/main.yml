@@ -46,7 +46,8 @@
     dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
     state: 'absent'
   with_items: '{{ kmod__combined_load | parse_kv_items }}'
-  when: kmod__enabled|bool and item.name|d() and item.state|d('present') == 'absent'
+  when: kmod__enabled|bool and ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') == 'absent'
 
 - name: Configure module loading at boot
   template:
@@ -56,7 +57,20 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ kmod__combined_load | parse_kv_items }}'
-  when: kmod__enabled|bool and item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
+  when: kmod__enabled|bool and ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
+
+- name: Manage module loading in /etc/modules
+  lineinfile:
+    dest: '/etc/modules'
+    regexp: '^{{ item.name }}'
+    line: '{{ item.name }}'
+    state: '{{ item.state }}'
+  loop: '{{ kmod__combined_load | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: kmod__enabled|bool and ansible_service_mgr != 'systemd' and
+        item.name|d() and item.state|d('present') in [ 'present', 'absent' ]
 
 - name: Load missing kernel modules enabled at boot
   modprobe:

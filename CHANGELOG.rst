@@ -314,6 +314,10 @@ User management
   script will use the :command:`lsmod` command to list the kernel modules in
   this case.
 
+- The role gained basic support for defining what kernel modules should be
+  loaded on non-systemd hosts by adding them in the :file:`/etc/modules`
+  configuration file.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
