@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _dnsmasq__ref_defaults:
+
 # debops.dnsmasq default variables
 # ================================
 
@@ -584,7 +586,7 @@ dnsmasq__ferm__dependent_rules:
     by_role: 'debops.dnsmasq'
     name: 'dhcpv4'
     weight: '40'
-    protocol: [ 'udp', 'tcp' ]
+    protocol: [ 'udp' ]
     dport: [ 'bootps' ]
     interface: '{{ dnsmasq__combined_interfaces | flatten | parse_kv_items
                    | selectattr("state", "equalto", "present")

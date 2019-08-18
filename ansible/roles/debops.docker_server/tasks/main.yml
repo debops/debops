@@ -8,7 +8,7 @@
     group: 'root'
     mode: '0755'
   when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker:config' ]
+  tags: [ 'role::docker_server:config' ]
 
 - name: Remove other version if upstream is modified
   apt:
@@ -25,14 +25,22 @@
   file:
     path: '{{ item }}'
     state: 'absent'
-  tags: [ 'role::docker:config' ]
+  tags: [ 'role::docker_server:config' ]
   with_items:
     - '/etc/systemd/system/docker.service'
     - '/lib/systemd/system/docker.service'
     - '/etc/default/docker'
     - '/etc/docker/daemon.json'
     - '/etc/systemd/system/docker.service.d/http-proxy.conf'
+    - '/etc/systemd/system/docker.service.d/execstart-override.conf'
   when: (docker_server__register_other_version_removed is changed)
+
+- name: Reload systemd daemons
+  systemd:
+    daemon_reload: True
+  when: (ansible_service_mgr == 'systemd' and
+         docker_server__register_other_version_removed is changed)
+  tags: [ 'role::docker_server:config' ]
 
 - name: Install required packages
   apt:
@@ -64,7 +72,8 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: docker_server__register_facts is changed
+  when: (docker_server__register_packages is changed or
+         docker_server__register_facts is changed)
 
 - name: Install Python packages in virtualenv
   pip:
@@ -93,15 +102,6 @@
   when: item.path|d() and item.src|d() and
         item.state|d('present') != 'absent'
 
-- name: Install ferment wrapper script
-  template:
-    src: 'usr/local/lib/docker-ferment-wrapper.j2'
-    dest: '{{ docker_server__ferment_wrapper }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: docker_server__ferment | bool
-
 - name: Install ferm post hook
   template:
     src: 'etc/ferm/hooks/post.d/restart-docker.j2'
@@ -119,7 +119,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart docker' ]
-  tags: [ 'role::docker:config' ]
+  tags: [ 'role::docker_server:config' ]
   when: (ansible_service_mgr != 'systemd' or docker_server__version is version_compare('1.10', '<'))
 
 - name: Configure Docker systemd options
@@ -130,7 +130,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart docker' ]
-  tags: [ 'role::docker:config' ]
+  tags: [ 'role::docker_server:config' ]
   when: (ansible_service_mgr == 'systemd' and docker_server__version is version_compare('1.10', '>='))
 
 - name: Configure Docker systemd overrides
@@ -144,14 +144,14 @@
   register: docker_server__register_systemd_overrides
   notify: ['Restart docker' ]
   when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker:config' ]
+  tags: [ 'role::docker_server:config' ]
 
 - name: Reload systemd daemons
   systemd:
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
          docker_server__register_systemd_overrides is changed)
-  tags: [ 'role::docker:config' ]
+  tags: [ 'role::docker_server:config' ]
 
 - name: Add specified users to 'docker' group
   user:
@@ -160,4 +160,4 @@
     append: True
   with_items: '{{ docker_server__admins }}'
   when: item|d()
-  tags: [ 'role::docker:config', 'role::docker:admins' ]
+  tags: [ 'role::docker_server:config', 'role::docker_server:admins' ]

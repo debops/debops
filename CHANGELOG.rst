@@ -43,6 +43,10 @@ New DebOps roles
 - The :ref:`debops.wpcli` role can be used to install the WP-CLI framework to
   allow management of WordPress websites in a shared hosting environment.
 
+- The :ref:`debops.nscd` role configures the Name Service Cache Daemon, used to
+  cache NSS entries from remote databases, for example LDAP, Active Directory
+  or NIS. The role is included in the :file:`bootstrap-ldap.yml` playbook.
+
 Continuous Integration
 ''''''''''''''''''''''
 
@@ -77,6 +81,14 @@ LDAP
   happen on workstations and laptops with full desktop environments installed,
   but not on servers with minimal install. To configure Avahi service or enable
   it on servers, you can use the :ref:`debops.avahi` Ansible role.
+
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- The role will configure the ``libvirt`` and ``libvirt_guest`` NSS modules in
+  :file:`/etc/nsswitch.conf` database using the :ref:`debops.nsswitch` role to
+  allow accessing the virtual machines or containers via their hostnames on the
+  virtual machine host.
 
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
@@ -252,6 +264,14 @@ User management
 - The Docker server no longer listens on a TCP port by default, even if
   :ref:`debops.pki` is enabled.
 
+- The default storage driver used by the :ref:`debops.docker_server` has been
+  changed to ``overlay2`` which is the default in upstream. The role checks the
+  currently enabled storage driver via Ansible local facts, and should preserve
+  the current configuration on existing installations.
+
+  If needed, the storage driver in use can be overridden via the
+  :envvar:`docker_server__storage_driver` variable.
+
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''
 
@@ -396,6 +416,14 @@ User management
   replicated if needed. The backup host itself can also be snapshotted, with
   support for snapshots on removable media.
 
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- The local SNMPv3 username and password will be stored in a separate file and
+  retrieved via Ansible local facts, to not break Ansible fact gathering on
+  unprivileged accounts. The password file is protected by strict read
+  permission and accessible only by the ``root`` UNIX account.
+
 :ref:`debops.system_groups` role
 ''''''''''''''''''''''''''''''''
 
@@ -444,6 +472,17 @@ Roles removed from DebOps
 - The ``core__keyserver`` variable and its local fact have been removed from
   the role. They are replaced by the :envvar:`keyring__keyserver` and the
   corresponding local fact in the :ref:`debops.keyring` role.
+
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- Support for `ferment`__ has been removed from DebOps due to the upstream not
+  being up to date anymore, both with Docker as well as with Python 3.x
+  support. The :command:`dockerd` daemon will be restarted on any
+  :command:`ferm` restarts to update the firewall configuration with Docker
+  rules.
+
+  .. __: https://github.com/diefans/ferment
 
 :ref:`debops.lxc` role
 ''''''''''''''''''''''

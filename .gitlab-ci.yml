@@ -490,6 +490,7 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_etherpad'
     JANE_DIFF_PATTERN: '.*/debops.etherpad/.*'
     JANE_LOG_PATTERN: '\[debops\.etherpad\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'etherpad/postgresql role':
   <<: *test_role_2nd_deps
@@ -789,6 +790,7 @@ stages:
     JANE_INVENTORY_HOSTVARS: 'apt__nonfree=true librenms__devices=[]'
     JANE_DIFF_PATTERN: '.*/debops.librenms/.*'
     JANE_LOG_PATTERN: '\[debops\.librenms\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'libvirt role':
   <<: *test_role_1st_deps
@@ -904,6 +906,7 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_mariadb'
     JANE_DIFF_PATTERN: '.*/debops.mariadb/.*'
     JANE_LOG_PATTERN: '\[debops\.mariadb\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'memcached role':
   <<: *test_role_no_deps
@@ -1028,6 +1031,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/debops.nodejs/.*'
     JANE_LOG_PATTERN: '\[debops\.nodejs\]'
 
+'nscd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'nscd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nscd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_nscd'
+    JANE_DIFF_PATTERN: '.*/debops.nscd/.*'
+    JANE_LOG_PATTERN: '\[debops\.nscd\]'
+
 'nslcd role':
   <<: *test_role_2nd_deps
   variables:
@@ -1082,6 +1094,7 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_owncloud_apache'
     JANE_DIFF_PATTERN: '.*/debops.owncloud/.*'
     JANE_LOG_PATTERN: '\[debops\.owncloud\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'owncloud/nginx role':
   <<: *test_role_3rd_deps
@@ -1091,6 +1104,7 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_owncloud'
     JANE_DIFF_PATTERN: '.*/debops.owncloud/.*'
     JANE_LOG_PATTERN: '\[debops\.owncloud\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 
 # --- p --- [[[2
@@ -1130,6 +1144,7 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_phpipam'
     JANE_DIFF_PATTERN: '.*/debops.phpipam/.*'
     JANE_LOG_PATTERN: '\[debops\.phpipam\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'phpmyadmin role':
   <<: *test_role_2nd_deps
@@ -1356,6 +1371,7 @@ stages:
     JANE_INVENTORY_HOSTVARS: 'roundcube__database=mysql-default'
     JANE_DIFF_PATTERN: '.*/debops.roundcube/.*'
     JANE_LOG_PATTERN: '\[debops\.roundcube\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
     VAGRANT_MASTER_MEMORY: '4096'
   tags: [ 'mem-6GB' ]
 

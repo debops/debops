@@ -31,6 +31,7 @@ etc.
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
 - :ref:`debops.prosody`
+- :ref:`debops.roundcube`
 - :ref:`debops.rstudio_server`
 - :ref:`debops.phpipam`
 - ``debops.phpmyadmin``
@@ -80,6 +81,7 @@ are not accessed directly by end users.
 - :ref:`debops.ldap`
 - :ref:`debops.memcached`
 - :ref:`debops.mosquitto`
+- :ref:`debops.nscd`
 - :ref:`debops.rabbitmq_management`
 - :ref:`debops.rabbitmq_server`
 - :ref:`debops.salt`
@@ -117,6 +119,7 @@ Directory services
 ------------------
 
 - :ref:`debops.ldap`
+- :ref:`debops.nscd`
 - :ref:`debops.nslcd`
 - :ref:`debops.nsswitch`
 - :ref:`debops.slapd`
@@ -191,6 +194,7 @@ Mail services
 - :ref:`debops.postfix`
 - :ref:`debops.postscreen`
 - :ref:`debops.postwhite`
+- :ref:`debops.roundcube`
 - :ref:`debops.saslauthd`
 - ``debops.smstools``
 

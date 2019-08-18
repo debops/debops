@@ -1,0 +1,44 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", nscd__base_packages + nscd__packages) }}'
+    state: 'present'
+  register: nscd__register_packages
+  until: nscd__register_packages is succeeded
+
+- name: Divert the nscd configuration file
+  command: dpkg-divert --quiet --local --divert /etc/nscd.conf.dpkg-divert
+                       --rename /etc/nscd.conf
+  args:
+    creates: '/etc/nscd.conf.dpkg-divert'
+
+- name: Generate nscd configuration
+  template:
+    src: 'etc/nscd.conf.j2'
+    dest: '/etc/nscd.conf'
+    mode: '0644'
+  register: nscd__register_config
+
+- name: Restart nscd if its configuration was modified
+  service:
+    name: '{{ nscd__flavor }}'
+    state: 'restarted'
+  when: nscd__register_config is changed
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save nscd local facts
+  template:
+    src: 'etc/ansible/facts.d/nscd.fact.j2'
+    dest: '/etc/ansible/facts.d/nscd.fact'
+    mode: '0755'
+  register: nscd__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: nscd__register_facts is changed

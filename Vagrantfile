@@ -21,6 +21,9 @@
 #     VAGRANT_NODE_BOX="debian/buster64"
 #         Specify the box to use for nodes.
 #
+#     ANSIBLE_FROM="debian" / ANSIBLE_FROM="pypi" / ANSIBLE_FROM="devel"
+#         Specify the way to install ansible.
+#
 #     VAGRANT_HOSTNAME="buster"
 #         Set a custom hostname after the box boots up.
 #
@@ -286,6 +289,7 @@ export CI_JOB_STAGE="#{ENV['CI_JOB_STAGE']}"
 export JANE_TEST_PLAY="#{ENV['JANE_TEST_PLAY']}"
 export JANE_TEST_FACT="#{ENV['JANE_TEST_FACT']}"
 export JANE_TEST_SCRIPT="#{ENV['JANE_TEST_SCRIPT']}"
+export JANE_IGNORE_IDEMPOTENCY="#{ENV['JANE_IGNORE_IDEMPOTENCY']}"
 export JANE_FORCE_TESTS="#{ENV['JANE_FORCE_TESTS']}"
 export JANE_INVENTORY_DIRS="#{ENV['JANE_INVENTORY_DIRS']}"
 export JANE_INVENTORY_GROUPS="#{ENV['JANE_INVENTORY_GROUPS']}"
@@ -415,12 +419,26 @@ EOF
         shellcheck \
         yamllint
 
+    # Install packages needed to build missing Python modules
+    if [ "${os_release}" == "wheezy" ] || [ "${os_release}" == "jessie" ] || [ "${os_release}" == "stretch" ] ; then
+
+        DEBIAN_FRONTEND=noninteractive apt-get -y \
+        --no-install-recommends install \
+            build-essential \
+            libffi-dev \
+            libldap2-dev \
+            libsasl2-dev \
+            libssl-dev \
+            python-dev \
+            python3-dev
+    fi
+
     if [ ! "${os_release}" == "wheezy" ] && [ ! "${os_release}" == "jessie" ] && [ ! "${os_release}" == "stretch" ] ; then
 
         DEBIAN_FRONTEND=noninteractive apt-get -y \
         --no-install-recommends install \
             python3-ldap
-        fi
+    fi
 
     DEBIAN_FRONTEND=noninteractive apt-get -y \
     --no-install-recommends install ${ansible_from_debian}

@@ -1,0 +1,14 @@
+---
+
+- name: Manage Name Service Cache Daemon
+  hosts: [ 'debops_service_nscd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.nscd
+      tags: [ 'role::nscd', 'skip::nscd' ]
