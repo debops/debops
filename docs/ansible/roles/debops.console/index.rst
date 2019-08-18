@@ -8,9 +8,8 @@ Ansible role: debops.console
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
-   changelog
 
 ..
  Local Variables:

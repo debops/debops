@@ -1,4 +1,4 @@
 Copyright
 =========
 
-.. literalinclude:: ../COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/debops.console/COPYRIGHT
