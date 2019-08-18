@@ -1,7 +1,7 @@
 .. _debops.console:
 
-Ansible role: debops.console
-============================
+debops.console
+==============
 
 .. toctree::
    :maxdepth: 2
