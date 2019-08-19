@@ -64,6 +64,11 @@ General
   by the ``openssl_*`` modules in Ansible 2.7; some of the DebOps roles like
   :ref:`debops.opendkim` use these modules on the Ansible Controller.
 
+- The ``distro`` Python package has been added as the DebOps dependency. The
+  package is used by the :command:`debops-init` script to detect the operating
+  system used on the Ansible Controller, and is a replacement for the
+  deprecated ``platform.linux_distribution()`` function.
+
 LDAP
 ''''
 

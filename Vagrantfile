@@ -376,6 +376,7 @@ EOF
         jq \
         make \
         python-apt \
+        python-distro \
         python-dnspython \
         python-future \
         python-jinja2 \
@@ -397,6 +398,7 @@ EOF
         python-yaml \
         python3 \
         python3-apt \
+        python3-distro \
         python3-dnspython \
         python3-future \
         python3-jinja2 \

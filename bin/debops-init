@@ -30,6 +30,7 @@ debops-init: create a new DebOps project directory
 from __future__ import print_function
 
 import os
+import distro
 import codecs
 import glob
 import argparse
@@ -162,7 +163,8 @@ def write_config_files(project_root):
     hosts_filename = os.path.join(project_root, "ansible", INVENTORY, "hosts")
     # Swap in different hosts file content depending on the host's OS/distro
     if (platform.system() == "Linux" and
-            platform.linux_distribution()[0].lower() in ("debian", "ubuntu")):
+            (distro.linux_distribution(full_distribution_name=False)[0]
+             ).lower() in ("debian", "ubuntu")):
         write_file(hosts_filename,
                    HOSTS_FILE_HEADER, HOSTS_FILE_CONTENT_CONTROLER)
     else:
