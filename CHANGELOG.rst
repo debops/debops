@@ -22,6 +22,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- The ``distro`` Python package has been added as the DebOps dependency. The
+  package is used by the :command:`debops-init` script to detect the operating
+  system used on the Ansible Controller, and is a replacement for the
+  deprecated ``platform.linux_distribution()`` function.
+
 :ref:`debops.dhparam` role
 ''''''''''''''''''''''''''
 
@@ -52,6 +60,7 @@ General
 
 - Fixed deprecation warning on Ansible 2.8 in the :command:`debops-task`
   script.
+
 
 :ref:`debops.ansible_plugins` role
 ''''''''''''''''''''''''''''''''''

@@ -327,6 +327,7 @@ EOF
         jq \
         make \
         python-apt \
+        python-distro \
         python-dnspython \
         python-future \
         python-jinja2 \

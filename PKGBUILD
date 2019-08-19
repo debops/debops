@@ -24,7 +24,7 @@ pkgdesc="Your Debian-based data center in a box"
 arch=('any')
 url="https://github.com/debops/debops/"
 license=('GPL3')
-depends=('python' 'python-future' 'util-linux' 'encfs' 'gnupg')
+depends=('python' 'python-distro' 'python-future' 'util-linux' 'encfs' 'gnupg')
 optdepends=(
     'ansible: required to run playbooks and roles'
     'python-dnspython: required by Ansible "dig" module'

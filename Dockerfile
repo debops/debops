@@ -34,6 +34,7 @@ RUN apt-get -q update \
        levee \
        openssh-client \
        python-apt \
+       python-distro \
        python-dnspython \
        python-future \
        python-ldap \
