@@ -56,7 +56,7 @@ latest updates in the codebase, bugfixes and improvements.
 The changes in the ``master`` branch are performed in the form of pull requests
 from forked :command:`git` repositories, usually on separate branches with one
 or more :command:`git` commits. The ``master`` branch is designed to be usable
-at all times in the production environment, but uncatched bugs might occur;
+at all times in the production environment, but uncaught bugs might occur;
 they are usually quickly fixed if found.
 
 
