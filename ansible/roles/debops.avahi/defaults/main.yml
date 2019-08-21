@@ -24,8 +24,7 @@ avahi__enabled: True
 # .. envvar:: avahi__base_packages [[[
 #
 # List of APT packages to install for Avahi support.
-avahi__base_packages: [ 'avahi-daemon', 'avahi-utils',
-                        'python-avahi', 'libnss-mdns' ]
+avahi__base_packages: [ 'avahi-daemon', 'avahi-utils', 'libnss-mdns' ]
 
                                                                    # ]]]
 # .. envvar:: avahi__packages [[[
@@ -411,6 +410,22 @@ avahi__combined_services: '{{ lookup("template",
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: avahi__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+# Currently there is no python3-avahi package available in Debian.
+# Ref: https://bugs.debian.org/853239
+avahi__python__dependent_packages3: []
+
+                                                                   # ]]]
+# .. envvar:: avahi__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+avahi__python__dependent_packages2:
+
+  - 'python-avahi'
+
+                                                                   # ]]]
 # .. envvar:: avahi__ferm__dependent_rules [[[
 #
 # Configuration for the :ref:`debops.ferm`.
