@@ -259,6 +259,12 @@ General
   :ref:`debops.unbound`. The installation of the ``resolvconf`` APT package has
   been removed from the roles that contained it.
 
+- Run :ref:`debops.apt_proxy` from the :file:`bootstrap.yml` Ansible playbook
+  to ensure that if a proxy is used, it is used all the time without disabling
+  the proxy for a short while during bootstrapping.
+  The :file:`bootstrap-ldap.yml` Ansible playbook already included
+  :ref:`debops.apt_proxy`.
+
 User management
 '''''''''''''''
 
@@ -624,7 +630,7 @@ General
 LDAP
 ''''
 
-- A new ``bootstrap-ldap.yml`` Ansible playbook can be used to bootstrap
+- A new :file:`bootstrap-ldap.yml` Ansible playbook can be used to bootstrap
   Debian/Ubuntu hosts with LDAP support enabled by default. The playbook will
   configure only the services required for secure LDAP access (PKI, SSH,
   PAM/NSS), the rest should be configured using the common playbook.
