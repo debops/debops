@@ -120,7 +120,7 @@ ldap__servers_protocol: '{{ "ldap" if ldap__start_tls|bool else "ldaps" }}'
 # The list of LDAP URIs to configure in the :file:`/etc/ldap/ldap.conf`
 # configuration file which will be used as a default configuration system-wide.
 ldap__servers_uri: '{{ ldap__servers
-                       | map("regex_replace", "(.*)",
+                       | map("regex_replace", "^(.*)$",
                              ldap__servers_protocol + "://\1/")
                        | list }}'
 
