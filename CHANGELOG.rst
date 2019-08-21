@@ -247,6 +247,15 @@ User management
   or :ref:`regular users <debops.users>` managed by Ansible are using it as
   a login shell.
 
+:ref:`debops.avahi` role
+''''''''''''''''''''''''
+
+- The :command:`avahi-alias` script has been imported into the role itself and
+  will no longer be installed by cloning the upstream :command:`git`
+  repository. Consequently, support for mDNS ``*.local`` CNAME resource records
+  will be enabled by default on hosts with Python 2.7 installed (support for
+  Python 3.x is currently not available).
+
 :ref:`debops.dokuwiki` role
 '''''''''''''''''''''''''''
 
