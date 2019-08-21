@@ -26,17 +26,15 @@ subdomains that point to a given host. To support these records,
 `avahi-alias <https://github.com/george-hawkins/avahi-aliases-notes>`_
 maintained by `George Hawkins <https://github.com/george-hawkins>`_.
 
-To enable this functionality, set in the Ansible inventory:
+The script will be installed by default if the Python 2.7 support is enabled on
+the host. At present (2019), Debian does not include the ``python3-avahi``
+package, therefore Python 2.7 is required for this functionality to work.
 
-.. code-block:: yaml
-
-   avahi__alias_enabled: True
-
-The role will download the script source code, install it in the
-:file:`/usr/local/sbin/` directory and prepare a :command:`systemd` service
-(SysVinit is not supported at this time). The script needs to be restarted to
-register any changed CNAME records and this is not automatic unlike Avahi
-daemon itself (role restarts the service on any changes).
+The role will install the script in the :file:`/usr/local/sbin/` directory and
+prepare a :command:`systemd` service (SysVinit is not supported at this time).
+The script needs to be restarted to register any changed CNAME records and this
+is not automatic unlike Avahi daemon itself (role restarts the service on any
+changes).
 
 The list of CNAME records is stored in the :file:`/etc/avahi/aliases` file and
 can be modified by other roles or manually. The file should contain only CNAME

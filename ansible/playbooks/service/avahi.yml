@@ -10,6 +10,13 @@
 
   roles:
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::avahi' ]
+      python__dependent_packages3:
+        - '{{ avahi__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ avahi__python__dependent_packages2 }}'
+
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
