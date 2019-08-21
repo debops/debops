@@ -74,6 +74,11 @@ General
 - Don't open the ``67/tcp`` port for BOOTP protocol, its definition has been
   removed from the :file:`/etc/services` file in Debian Buster.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Fix faulty regex pattern in the :envvar:`ldap__servers_uri` variable.
+
 
 `debops v1.0.7`_ - 2019-08-09
 -----------------------------
