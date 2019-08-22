@@ -1,0 +1,253 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.backup2l default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: backup2l__base_packages [[[
+#
+# List of required APT packages to install.
+backup2l__base_packages: [ 'backup2l' ]
+
+                                                                   # ]]]
+# .. envvar:: backup2l__packages [[[
+#
+# List of additional APT packages to install with :command:`backup2l`.
+backup2l__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory and file paths [[[
+# ----------------------------
+
+# .. envvar:: backup2l__backup_dev [[[
+#
+# Optional, absolute path of a mount point which will be automatically mounted
+# and unmounted by the :command:`backup2l` script. This needs to be configured
+# beforehand in the :file:`/etc/fstab` file.
+backup2l__backup_dev: ''
+
+                                                                   # ]]]
+# .. envvar:: backup2l__backup_dir [[[
+#
+# Absolute path to the directory where :command:`backup2l` script maintains
+# backups. This path will be excluded from the backups.
+backup2l__backup_dir: '{{ (ansible_local.root.backup
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.backup|d())
+                           else "/var/backups") + "/backup2l" }}'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__pre_hook_dir [[[
+#
+# Absolute path to a directory with scripts executed by the
+# :command:`run-parts` command before backups are performed.
+backup2l__pre_hook_dir: '{{ (ansible_local.root.etc
+                             if (ansible_local|d() and ansible_local.root|d() and
+                                 ansible_local.root.etc|d())
+                             else "/usr/local/etc") + "/backup/pre-hook.d" }}'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__post_hook_dir [[[
+#
+# Absolute path to a directory with scripts executed by the
+# :command:`run-parts` command after backups are finished.
+backup2l__post_hook_dir: '{{ (ansible_local.root.etc
+                              if (ansible_local|d() and ansible_local.root|d() and
+                                  ansible_local.root.etc|d())
+                              else "/usr/local/etc") + "/backup/post-hook.d" }}'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__include_file [[[
+#
+# Absolute path to a text file which contains a list of paths to include in
+# a backup, one per line. This file can be modified by other software to
+# include additional paths.
+backup2l__include_file: '{{ (ansible_local.root.etc
+                             if (ansible_local|d() and ansible_local.root|d() and
+                                 ansible_local.root.etc|d())
+                             else "/usr/local/etc") + "/backup/include" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Directories and files to archive [[[
+# ------------------------------------
+
+# These lists define absolute paths of directories and files to include in the
+# :command:`backup2l` archive.
+
+# .. envvar:: backup2l__default_include [[[
+#
+# Default list of directories to backup, defined by the role.
+backup2l__default_include:
+  - '/etc'
+  - '/home'
+  - '/opt'
+  - '/root'
+  - '/srv'
+  - '/usr/local'
+  - '/var/backups'
+  - '/var/local'
+  - '/var/mail'
+  - '/var/spool/cron'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__include [[[
+#
+# List of directories to backup defined on all hosts in the Ansible inventory.
+backup2l__include: []
+
+                                                                   # ]]]
+# .. envvar:: backup2l__group_include [[[
+#
+# List of directories to backup defined on hosts in a specific Ansible
+# inventory group.
+backup2l__group_include: []
+
+                                                                   # ]]]
+# .. envvar:: backup2l__host_include [[[
+#
+# List of directories to backup defined on specific hosts in the Ansible
+# inventory.
+backup2l__host_include: []
+
+                                                                   # ]]]
+# .. envvar:: backup2l__srclist_from_file [[[
+#
+# Boolean. If ``True``, the :command:`backup2l` script will read the list of
+# paths to archive from an external file. If ``False``, the script will use
+# a static list of paths defined in its configuration file.
+backup2l__srclist_from_file: True
+
+                                                                   # ]]]
+# .. envvar:: backup2l__srclist [[[
+#
+# List of paths to archive saved in the configuration file.
+backup2l__srclist: '{{ (backup2l__default_include
+                        + backup2l__include
+                        + backup2l__group_include
+                        + backup2l__host_include)
+                       | join(" ") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Exclude patterns [[[
+# --------------------
+
+# These lists define the arguments passed to the :command:`find` command, which
+# can be used to exclude certain files or directories from the archive.
+# See :man:`find(1)` for specific details about available patterns.
+
+# .. envvar:: backup2l__default_exclude [[[
+#
+# List of default exclusion patterns defined by the role.
+backup2l__default_exclude:
+  - '-wholename "{{ backup2l__backup_dir }}" -prune'
+  - '-path "*.ansible/tmp*"'
+  - '-path "*.cache*"'
+  - '-path "*.nobackup*"'
+  - '-name "*.o"'
+  - '-name "*.pyc"'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__exclude [[[
+#
+# List of exclusion patterns defined on all hosts in the Ansible inventory.
+backup2l__exclude: []
+
+                                                                   # ]]]
+# .. envvar:: backup2l__group_exclude [[[
+#
+# List of exclusion patterns defined on hosts in a specific Ansible inventory
+# group.
+backup2l__group_exclude: []
+
+                                                                   # ]]]
+# .. envvar:: backup2l__host_exclude [[[
+#
+# List of exclusion patterns defined on specific hosts in the Ansible
+# inventory.
+backup2l__host_exclude: []
+
+                                                                   # ]]]
+# .. envvar:: backup2l__skipcond [[[
+#
+# List of exclude patterns saved in the configuration file.
+backup2l__skipcond: '{{ (backup2l__default_exclude
+                         + backup2l__exclude
+                         + backup2l__group_exclude
+                         + backup2l__host_exclude)
+                        | join(" -o ") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Other configuration options [[[
+# -------------------------------
+
+# .. envvar:: backup2l__volname [[[
+#
+# Prefix used by all files managed by this :command:`backup2l` script instance.
+backup2l__volname: 'all'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__max_level [[[
+#
+# Number of levels of differential backups (1..9).
+backup2l__max_level: '3'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__max_per_level [[[
+#
+# Maximum number of differential backups per level (1..9).
+backup2l__max_per_level: '8'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__max_full [[[
+#
+# Maximum number of full backups (1..8).
+backup2l__max_full: '2'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__generations [[[
+#
+# For differential backups: number of generations to keep per level;
+# old backups are removed such that at least GENERATIONS * MAX_PER_LEVEL
+# recent versions are still available for the respective level.
+backup2l__generations: '1'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__create_check_file [[[
+#
+# When enabled, a check file is automatically generated.
+backup2l__create_check_file: True
+
+                                                                   # ]]]
+# .. envvar:: backup2l__autorun [[[
+#
+# When enabled, :command:`backup2l` script will create a backup automatically
+# without any arguments needed.
+backup2l__autorun: False
+
+                                                                   # ]]]
+# .. envvar:: backup2l__size_units [[[
+#
+# Size units used in the :command:`backup2l` script output. Set to ``B``,
+# ``K``, ``M`` or ``G`` to have unified units in the generated summary.
+backup2l__size_units: ''
+
+                                                                   # ]]]
+# .. envvar:: backup2l__timezone [[[
+#
+# Specfy the timezone used for metadata. The default value is recommended.
+backup2l__timezone: 'UTC'
+
+                                                                   # ]]]
+# .. envvar:: backup2l__create_driver [[[
+#
+# Archive driver for new backups.
+backup2l__create_driver: 'DRIVER_TAR_GZ_RSYNCABLE'
+                                                                   # ]]]
+                                                                   # ]]]

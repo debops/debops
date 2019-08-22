@@ -47,6 +47,12 @@ New DebOps roles
   cache NSS entries from remote databases, for example LDAP, Active Directory
   or NIS. The role is included in the :file:`bootstrap-ldap.yml` playbook.
 
+- The :ref:`debops.backup2l` role configures the `backup2l`__ script which can
+  create differential backups of a given host and store them on an external
+  hard drive connected to that host.
+
+  .. __: https://gkiefer.github.io/backup2l/
+
 Continuous Integration
 ''''''''''''''''''''''
 

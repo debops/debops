@@ -1,0 +1,463 @@
+# {{ ansible_managed }}
+
+##################################################
+# Configuration file for backup2l                #
+##################################################
+
+
+# Define the backup2l version for which the configuration file is written.
+# This way, future versions can automatically warn if the syntax has changed.
+FOR_VERSION=1.5
+
+
+##################################################
+# Volume identification
+
+# This is the prefix for all output files;
+# multiple volumes can be handled by using different configuration files
+VOLNAME="{{ backup2l__volname }}"
+
+
+
+##################################################
+# Source files
+
+# List of directories to make backups of.
+# All paths MUST be absolute and start with a '/'!
+{% if backup2l__srclist_from_file|bool %}
+readarray -t SRCLIST < {{ backup2l__include_file }}
+{% else %}
+SRCLIST=( {{ backup2l__srclist }} )
+{% endif %}
+
+# The following expression specifies the files not to be archived.
+# See the find(1) man page for further info. It is discouraged to
+# use anything different from conditions (e. g. actions) as it may have
+# unforeseeable side effects.
+
+# This example skips all files and directories with a path name containing
+# '.nobackup' and all .o files:
+SKIPCOND=( {{ backup2l__skipcond }} )
+
+# Some background on 'SKIPCOND': The method of using a find(1) expression to determine
+# files to backup or to skip is very powerful. Some of the following examples result from feature
+# requests by various users who were not always aware that their "feature" was already implemented. ;-)
+#
+# If you want to exclude several directories use the following expression:
+#   SKIPCOND=(-path '/path1' -o -path '/path1/*' -o -path '/path2' -o -path '/path2/*')
+#
+# If you do not have anything to skip, use:
+#   SKIPCOND=(-false)     # "SKIPCOND=()" does not work
+#
+# To skip directory trees (for performance reasons) you can add the '-prune' action to your SKIPCOND setting, e.g.:
+#   SKIPCOND=( -name "unimportant_dir" -prune )
+#
+# To prevent backup2l from crossing filesystem boundaries you can add '-xdev' or '-mount' to your SKIPCOND setting.
+
+
+
+
+##################################################
+# Destination
+
+# Mount point of backup device (optional)
+BACKUP_DEV="{{ backup2l__backup_dev }}"
+
+# Destination directory for backups;
+# it must exist and must not be the top-level of BACKUP_DEV
+BACKUP_DIR="{{ backup2l__backup_dir }}"
+
+
+
+##################################################
+# Backup parameters
+
+# Number of levels of differential backups (1..9)
+MAX_LEVEL="{{ backup2l__max_level }}"
+
+# Maximum number of differential backups per level (1..9)
+MAX_PER_LEVEL="{{ backup2l__max_per_level }}"
+
+# Maximum number of full backups (1..8)
+MAX_FULL="{{ backup2l__max_full }}"
+
+# For differential backups: number of generations to keep per level;
+# old backups are removed such that at least GENERATIONS * MAX_PER_LEVEL
+# recent versions are still available for the respective level
+GENERATIONS="{{ backup2l__generations }}"
+
+# If the following variable is 1, a check file is automatically generated
+CREATE_CHECK_FILE="{{ '1' if backup2l__create_check_file|bool else '0' }}"
+
+
+
+##################################################
+# Pre-/Post-backup functions
+
+# This user-defined bash function is executed before a backup is made
+PRE_BACKUP ()
+{
+    #echo "  pre-backup: nothing to do"
+
+    # e. g., shut down some mail/db servers if their files are to be backup'ed
+
+    # On a Debian system, the following statements dump a machine-readable list of
+    # all installed packages to a file.
+    #echo "  writing dpkg selections to /root/dpkg-selections.log..."
+    #dpkg --get-selections | diff - /root/dpkg-selections.log > /dev/null || dpkg --get-selections > /root/dpkg-selections.log
+    run-parts {{ backup2l__pre_hook_dir }}
+}
+
+# This user-defined bash function is executed after a backup is made
+POST_BACKUP ()
+{
+    # e. g., restart some mail/db server if its files are to be backup'ed
+    #echo "  post-backup: nothing to do"
+    run-parts {{ backup2l__post_hook_dir }}
+}
+
+
+
+##################################################
+# Misc.
+
+# Create a backup when invoked without arguments?
+AUTORUN="{{ '1' if (backup2l__autorun|bool) else '0' }}"
+
+# Size units
+SIZE_UNITS="{{ backup2l__size_units }}"   # set to "B", "K", "M" or "G" to obtain unified units in summary list
+
+# Time zone for meta data
+TIME_ZONE="{{ backup2l__timezone }}" # if unset (= ""), the local time zone is used for backup meta data;
+                # For new archives, the value "UTC" is recommended. However, older versions (<= 1.5) used local time,
+                # and changing the value causes backup2l to consider ALL files as new. So, change this value with care!
+
+# Remove this line after the setup is finished.
+#UNCONFIGURED=1
+
+# Archive driver for new backups (default = "DRIVER_TAR_GZ")
+CREATE_DRIVER="{{ backup2l__create_driver }}"
+
+# Usable built-in drivers for CREATE_DRIVER:
+# DRIVER_TAR, DRIVER_TAR_GZ, DRIVER_TAR_BZ2, DRIVER_AFIOZ
+
+
+
+##################################################
+# User-defined archive drivers (optional)
+
+# This section demonstrates how user-defined archive drivers can be added.
+# The example shows a modified version of the "afioz" driver with some additional parameters
+# one may want to pass to afio in order to tune the speed, archive size etc. .
+# An archive driver consists of a bash function named
+# "DRIVER_<your-driver-name>" implementing the (sometimes simple) operations "-test", "-suffix",
+# "-create", "-toc", and "-extract".
+
+# If you do not want to write your own archive driver, you can remove the remainder of this file.
+
+# registering custom drivers below for use as CREATE_DRIVER (optional)
+#USER_DRIVER_LIST="DRIVER_MY_AFIOZ DRIVER_MY_AFIOBZ2 DRIVER_GZ_SPLIT DRIVER_ZIP"
+
+DRIVER_MY_AFIOZ ()
+{
+    case $1 in
+        -test)
+            # This function should check whether all prerequisites are met, especially if all
+            # required tools are installed. This prevents backup2l to fail in inconvenient
+            # situations, e. g. during a backup or restore operation. If everything is ok, the
+            # string "ok" should be returned. Everything else is interpreted as a failure.
+            require_tools afio
+                # The function 'require_tools' checks for the existence of all tools passed as
+                # arguments. If one of the tools is not found by which(1), an error message is
+                # displayed and the function does not return.
+            echo "ok"
+            ;;
+        -suffix)
+            # This function should return the suffix of backup archive files. If the driver
+            # does not create a file (e. g. transfers the backup data immediately to a tape
+            # or network device), an empty string has to be returned. backup2l uses this suffix
+            # to select a driver for unpacking. If a user-configured driver supports the same
+            # suffix as a built-in driver, the user driver is preferred (as in this case).
+            echo "afioz"
+            ;;
+        -create)        # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            # This function is called to create a backup file. The argument $3 is the full file
+            # name of the archive file including path and suffix. $4 contains an alphabetically
+            # sorted  list of files (full pathname) to be backed up. Directories are not contained,
+            # they are handled by backup2l directly without using the driver.
+            # All output to stderr should be directed to stdout ("2>&1").
+            afio -Zo -G 9 -M 30m -T 2k $3 < $4 2>&1
+                # This line passes some additional options to afio (see afio(1)):
+                # '-G 9' maximizes the compression by gzip.
+                # '-M 30m' increases the size of the internal file buffer. Larger files have to
+                #     be compressed twice.
+                # '-T 2k' prevents the compression of files smaller than 2k in order to save time.
+            ;;
+        -toc)           # Arguments: $2 = BID, $3 = archive file name
+            # This function is used to validate the correct generation of an archive file.
+            # The output is compared to the list file passed to the '-create' function.
+            # Any difference is reported as an error.
+            afio -Zt $3 | sed 's#^#/#'
+                # The sed command adds a leading slash to each entry.
+            ;;
+        -extract)       # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            # This function is called by backup2l's restore procedure for each archive.
+            # It is extremely important that only those files contained in $4 are restored.
+            # Otherwise it may happen that files are overwritten by incorrect (e. g. older)
+            # versions of the same file.
+            afio -Zinw $4 $3 2>&1
+            ;;
+    esac
+}
+
+
+
+##################################################
+# More sample archive drivers (optional)
+
+# This is an unordered collection of drivers that may be useful for you,
+# either to use them directly or to derive own drivers.
+
+
+
+# Here's a version of the standard DRIVER_TAR_GZ driver,
+# modified to split the output archive file into multiple sections.
+# (donated by Michael Moedt)
+DRIVER_TAR_GZ_SPLIT ()
+{
+    case $1 in
+        -test)
+            require_tools tar split cat
+            echo "ok"
+            ;;
+        -suffix)
+            echo "tgz_split"
+            ;;
+        -create)        # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            mkdir -p ${3}
+            tar cz -T $4 --no-recursion | split --bytes=725100100 - ${3}/part_
+            ;;
+        -toc)           # Arguments: $2 = BID, $3 = archive file name
+            cat ${3}/part_* | tar tz | sed 's#^#/#'
+            ;;
+        -extract)       # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            cat ${3}/part_* | tar xz --same-permission --same-owner -T $4 2>&1
+            ;;
+    esac
+}
+
+
+
+# The following driver is equivalent to the built-in DRIVER_TAR_GZ driver, but
+# does not change the access times of the original files during backup
+# (Adrian Bunk, Gundolf Kiefer)
+DRIVER_TAR_GZ ()
+{
+    case $1 in
+        -test)
+            require_tools tar
+            echo "ok"
+            ;;
+        -suffix)
+            echo "tar.gz"
+            ;;
+        -create)        # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            tar czf $3 -T $4 --no-recursion --atime-preserve 2>&1 \
+                | grep -v 'tar: Removing leading .* from .* names'
+            ;;
+        -toc)           # Arguments: $2 = BID, $3 = archive file name
+            tar tzf $3 | sed 's#^#/#'
+            ;;
+        -extract)       # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            tar zx --same-permission --same-owner -f $3 -T $4 2>&1
+            ;;
+    esac
+}
+
+
+# Submitted by: Jason D. Hildebrand  (2011-01-06 20:24)
+# When the initial backup (all.1.tar.gz) is re-created (for me about
+# 20G) the transfer takes several days. If backup2l could create the
+# tar.gz files using gzip's --rsyncable option, then this would speed
+# things up substantially.
+# simple wrapper around the existing DRIVER_TAR_GZ using --rsyncable
+DRIVER_TAR_GZ_RSYNCABLE ()
+{
+    export GZIP="--rsyncable"
+    DRIVER_TAR_GZ "$@"
+}
+
+
+# This driver uses afio and bzip2, where bzip2 is invoked by afio.
+# (donated by Carl Staelin)
+DRIVER_MY_AFIOBZ2 ()
+{
+    case $1 in
+        -test)
+            require_tools afio bzip2
+            echo "ok"
+            ;;
+        -suffix)
+            echo "afio-bz2"
+            ;;
+        -create)        # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            afio -z -1 m -P bzip2 -Q -9 -Z -M 50m -T 1k -o $3 <$4 2>&1
+                # This line passes some additional options to afio (see afio(1)):
+                # '-P bzip2' utilizes bzip2 as an external compressor
+                # '-Q 9' maximizes the compression by bzip2.
+                # '-M 50m' increases the size of the internal file buffer. Larger files have to
+                #     be compressed twice.
+                # '-T 1k' prevents the compression of files smaller than 1k in order to save time.
+            ;;
+        -toc)           # Arguments: $2 = BID, $3 = archive file name
+            afio -t -Z -P bzip2 -Q -d - <$3 | sed 's#^#/#'
+                # The sed command adds a leading slash to each entry.
+            ;;
+        -extract)       # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            afio -Zinw $4 -P bzip2 -Q -d - <$3 2>&1
+            ;;
+    esac
+}
+
+
+# This driver uses afio and bzip2, such that the I/O stream is piped through bzip2.
+# (donated by Carl Staelin)
+DRIVER_MY_AFIO_BZ2 ()
+{
+    case $1 in
+        -test)
+            require_tools afio bzip2
+            echo "ok"
+            ;;
+        -suffix)
+            echo "afio.bz2"
+            ;;
+        -create)        # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            afio -o - < $4 | bzip2 --best > $3 2>&1
+            ;;
+        -toc)           # Arguments: $2 = BID, $3 = archive file name
+            bzip2 -d < $3 | afio -t - | sed 's#^#/#'
+                # The sed command adds a leading slash to each entry.
+            ;;
+        -extract)       # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            bzip2 -d < $3 | afio -inw $4 - 2>&1
+            ;;
+    esac
+}
+
+
+
+# This driver uses the Info-ZIP tools to generate zip files. Unfourtunately unzip
+# expects all file names to be on the command line. So unless there is a work-
+# around it's not possible to use the "-extract" command.
+# (donated by Georg Lutz)
+DRIVER_ZIP ()
+{
+    case $1 in
+        test)
+            require_tools zip
+            echo "ok"
+           ;;
+        -suffix)
+            echo "zip"
+            ;;
+        -create)        # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            cat $4| zip -qy $3 -@
+            ;;
+        -toc)           # Arguments: $2 = BID, $3 = archive file name
+            zipinfo -1 $3| sed 's#^#/#'
+            ;;
+        -extract)       # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+           echo "Not implemented yet! Sorry."
+           #unzip $3
+            ;;
+    esac
+}
+
+
+
+# This driver uses tar and pipes the output through gnupg. You can specifiy
+# the passphrase in a file (/etc/backup2l.pass in the example). You have to
+# invoke gpg at least one time before backup because gnupg has to initiate
+# first thing in the home directory.
+DRIVER_TAR_GPG ()
+{
+    case $1 in
+        test)
+            require_tools tar gpg
+            echo "ok"
+            ;;
+        -suffix)
+            echo "tar.pgp"
+            ;;
+        -create)        # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            tar -c -T $4 --no-recursion | /usr/bin/gpg --batch --no-tty -q --passphrase-fd 3 3</etc/backup2l.pass -c -  > $3
+            ;;
+        -toc)           # Arguments: $2 = BID, $3 = archive file name
+            /usr/bin/gpg --batch --no-tty -q --passphrase-fd 3 3</etc/backup2l.pass -d $3 2>/dev/null | tar t | sed 's#^#/#'
+            ;;
+        -extract)       # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+             /usr/bin/gpg --batch --no-tty -q --passphrase-fd 3 3</etc/backup2l.pass -d $3 2>/dev/null | tar -x --same-permission --same-owner -T $4 2>&1
+            ;;
+    esac
+}
+
+
+
+# PIGZ driver (donated by Thomas R. Bailey <siggma@trbailey.net>)
+#
+# NOTES: USE ONLY WITH MULTI CORE CPU
+# REQUIRES YOU TO DOWNLOAD AND COMPILE PIGZ
+# OR INSTALL IT FROM YOUR DISTRO REPOSITORY
+# http://www.zlib.net/pigz/
+#
+DRIVER_TAR_GZ_PIGZ () {
+    case $1 in
+        -test)
+            require_tools tar gzip pigz cat
+            echo "ok"
+            ;;
+        -suffix)
+            echo "tar.gz"
+            ;;
+        -create) # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            tar cf - --files-from=$4 | pigz --best > $3 2>&1
+            ;;
+#         Using tar tz  for the toc verifies the PIGZ archive is usable 
+        -toc) # Arguments: $2 = BID, $3 = archive file name
+            cat $3 | tar tz | sed 's#^#/#'
+            ;;
+        -extract) # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+#     Uncomment the next line and comment the line below it to uncompress using tar instead of pigz
+#        cat $3 | tar xz --same-permission --same-owner -T $4 2>&1
+         cat $3 | pigz -d | tar x --same-permission --same-owner --files-from=$4 2>&1
+            ;;
+    esac
+}
+
+
+
+# This driver uses tar and LZMA (lzip) compression. LZMA compresses better than
+# bzip2, but at the expense of more memory usage. (donated by Amedee Van Gasse)
+DRIVER_TAR_LZ ()
+{
+    case $1 in
+        -test)
+            require_tools tar lzip
+            echo "ok"
+            ;;
+        -suffix)
+            echo "tar.lz"
+            ;;
+        -create)        # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            tar -c -T $4 --no-recursion | lzip --best -c > $3 2>&1 \
+                | grep -v 'tar: Removing leading .* from .*'
+            ;;
+        -toc)           # Arguments: $2 = BID, $3 = archive file name
+            lzip -d $3 -c | tar t | sed 's#^#/#'
+            ;;
+        -extract)       # Arguments: $2 = BID, $3 = archive file name, $4 = file list file
+            lzip -d $3 -c | tar -x --same-permission --same-owner -T $4 2>&1
+            ;;
+    esac
+}
