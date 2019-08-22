@@ -1,0 +1,66 @@
+---
+
+- name: Install required APT packages
+  package:
+    name: '{{ q("flattened", (backup2l__base_packages
+                              + backup2l__packages)) }}'
+    state: 'present'
+
+- name: Divert the original backup2l config file
+  command: dpkg-divert --quiet --local --divert /etc/backup2l.conf.dpkg-divert --rename /etc/backup2l.conf
+  args:
+    creates: '/etc/backup2l.conf.dpkg-divert'
+
+- name: Create required directories
+  file:
+    path: '{{ item.path }}'
+    state: 'directory'
+    mode: '{{ item.mode | d("0755") }}'
+  with_items:
+    - { path: '{{ backup2l__backup_dir }}', mode: '0750' }
+    - { path: '{{ backup2l__pre_hook_dir }}' }
+    - { path: '{{ backup2l__post_hook_dir }}' }
+
+- name: Install pre-hook scripts
+  copy:
+    src: 'usr/local/etc/backup/pre-hook.d/'
+    dest: '{{ backup2l__pre_hook_dir }}/'
+    mode: '0755'
+
+- name: Add paths to backup in an include file
+  lineinfile:
+    dest: '{{ backup2l__include_file }}'
+    regexp: "^{{ item.path | d(item) }}$"
+    line: '{{ item.path | d(item) }}'
+    state: '{{ item.state | d("present") }}'
+    create: True
+    mode: '0644'
+  with_flattened:
+    - '{{ backup2l__default_include }}'
+    - '{{ backup2l__include }}'
+    - '{{ backup2l__group_include }}'
+    - '{{ backup2l__host_include }}'
+  when: backup2l__srclist_from_file|bool
+
+- name: Generate backup2l configuration
+  template:
+    src: 'etc/backup2l.conf.j2'
+    dest: '/etc/backup2l.conf'
+    mode: '0644'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save backup2l local facts
+  template:
+    src: 'etc/ansible/facts.d/backup2l.fact.j2'
+    dest: '/etc/ansible/facts.d/backup2l.fact'
+    mode: '0755'
+  register: backup2l__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: backup2l__register_facts is changed
