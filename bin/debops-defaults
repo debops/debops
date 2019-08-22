@@ -57,7 +57,10 @@ def cat(filename, outstream):
         return
     try:
         # Read input file as Unicode object and pass it to outstream.
-        outstream.write(fh.read().encode('utf-8'))
+        if sys.stdout.isatty():
+            outstream.write(fh.read().encode('utf-8'))
+        else:
+            outstream.write((fh.read().encode('utf-8')).decode('utf-8'))
     finally:
         fh.close()
 
@@ -65,16 +68,25 @@ def cat(filename, outstream):
 def aggregate_defaults(playbooks_path, role_list, outstream):
     # Aggregate role/defaults/main.yml files from all roles into one stream
     roles_path = os.path.normpath(os.path.join(playbooks_path, '..', 'roles'))
-    if role_list:
-        for role in role_list:
-            if '.' not in role:
-                role = ROLE_PREFIX + '.' + role
+
+    if not role_list:
+        for role_path in glob.glob(os.path.join(roles_path, '*')):
+            role_list.append(os.path.basename(role_path))
+
+    for role in role_list:
+        if '.' not in role:
+            role = ROLE_PREFIX + '.' + role
+        if os.path.exists(os.path.join(
+                          roles_path, role, 'defaults', 'main.yml')):
             fn = os.path.join(roles_path, role, 'defaults', 'main.yml')
             cat(fn, outstream=outstream)
-    else:
-        for fn in glob.glob(os.path.join(roles_path,
-                                         '*', 'defaults', 'main.yml')):
-            cat(fn, outstream=outstream)
+        elif os.path.isdir(os.path.join(roles_path, role, 'defaults', 'main')):
+            for path, subdirs, files in os.walk(
+                    os.path.join(roles_path, role, 'defaults', 'main')):
+                for filename in files:
+                    if not filename.startswith('.'):
+                        fn = os.path.join(path, filename)
+                        cat(fn, outstream=outstream)
 
 # ---- DebOps environment setup ----
 
