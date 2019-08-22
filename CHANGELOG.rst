@@ -44,6 +44,12 @@ General
 Changed
 ~~~~~~~
 
+General
+'''''''
+
+- The :command:`debops-defaults` script now supports Ansible roles with
+  multiple :file:`defaults/main/*.yml` files.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
