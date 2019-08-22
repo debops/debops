@@ -61,6 +61,8 @@ General
 - Fixed deprecation warning on Ansible 2.8 in the :command:`debops-task`
   script.
 
+- Fixed issues with :command:`debops-defaults` script encoding output to
+  ``stdin`` of a different process vs output to a pipe.
 
 :ref:`debops.ansible_plugins` role
 ''''''''''''''''''''''''''''''''''
