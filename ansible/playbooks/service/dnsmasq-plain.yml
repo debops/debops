@@ -13,6 +13,11 @@
     - role: debops.dnsmasq/env
       tags: [ 'role::dnsmasq', 'role::ferm', 'role::tcpwrappers' ]
 
+    - role: debops.resolvconf
+      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
+      resolvconf__dependent_services:
+        - 'dnsmasq'
+
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
