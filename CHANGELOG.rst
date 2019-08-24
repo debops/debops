@@ -53,6 +53,12 @@ New DebOps roles
 
   .. __: https://gkiefer.github.io/backup2l/
 
+- The :ref:`debops.resolvconf` role fixes a few issues in the ``resolvconf``
+  Debian package and modifies the interface order in the generated
+  :file:`/etc/resolv.conf` configuration file depending on presence of a local
+  DNS resolver like ``dnsmasq`` or ``unbound``. The role is included in the
+  bootstrap and common playbooks.
+
 Continuous Integration
 ''''''''''''''''''''''
 

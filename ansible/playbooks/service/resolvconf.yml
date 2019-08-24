@@ -1,0 +1,14 @@
+---
+
+- name: Manage system-wide DNS resolver configuration
+  hosts: [ 'debops_all_hosts', 'debops_service_resolvconf' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.resolvconf
+      tags: [ 'role::resolvconf', 'skip::resolvconf' ]

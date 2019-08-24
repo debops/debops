@@ -225,6 +225,7 @@ Networking
 - :ref:`debops.ifupdown`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`
+- :ref:`debops.resolvconf`
 - :ref:`debops.stunnel`
 - :ref:`debops.tinc`
 - :ref:`debops.unbound`
