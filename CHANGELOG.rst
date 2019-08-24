@@ -53,6 +53,12 @@ New DebOps roles
 
   .. __: https://gkiefer.github.io/backup2l/
 
+- The :ref:`debops.resolvconf` role fixes a few issues in the ``resolvconf``
+  Debian package and modifies the interface order in the generated
+  :file:`/etc/resolv.conf` configuration file depending on presence of a local
+  DNS resolver like ``dnsmasq`` or ``unbound``. The role is included in the
+  bootstrap and common playbooks.
+
 Continuous Integration
 ''''''''''''''''''''''
 
@@ -246,6 +252,13 @@ General
   with a DNS domain shouldn't be affected, but configuration of standalone
   hosts that deploy webservices might require modifications.
 
+- The :ref:`debops.resolvconf` role has been added as a dpendency in the
+  Ansible playbooks of the roles that interact with the ``resolvconf`` service
+  in some way. The modified roles are: :ref:`debops.dnsmasq`,
+  :ref:`debops.docker_server`, :ref:`debops.ifupdown`, :ref:`debops.lxc`,
+  :ref:`debops.unbound`. The installation of the ``resolvconf`` APT package has
+  been removed from the roles that contained it.
+
 User management
 '''''''''''''''
 
@@ -376,11 +389,6 @@ User management
   override to Debian Stretch and Ubuntu Xenial only. The containers correctly
   shut down using ``SIGRTMIN+3`` signal on Debian Buster and beyond.
 
-- The :envvar:`lxc__net_fqdn` variable will now define both the DNS domain for
-  the LXC containers as well as the DNS name of the ``lxcbr0`` interface. This
-  should ensure that both the LXC host and the containers see the same DNS
-  name for the same resource.
-
 :ref:`debops.mariadb_server` role
 '''''''''''''''''''''''''''''''''
 
@@ -497,6 +505,10 @@ Roles removed from DebOps
 - The ``core__keyserver`` variable and its local fact have been removed from
   the role. They are replaced by the :envvar:`keyring__keyserver` and the
   corresponding local fact in the :ref:`debops.keyring` role.
+
+- The :command:`resolver.fact` script has been removed from the role. Its
+  functionality is provided by the :command:`resolvconf.fact` script included
+  in the :ref:`debops.resolvconf` role.
 
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''

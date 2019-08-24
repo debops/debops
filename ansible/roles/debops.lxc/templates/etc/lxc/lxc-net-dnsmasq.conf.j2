@@ -7,15 +7,15 @@
 dns-loop-detect
 
 # Mark the LXC domain as local and generate PTR resource records automatically
-domain = {{ lxc__net_fqdn + ',' + (lxc__net_address | ipaddr('subnet')) + (',local' if (lxc__net_address | ipaddr('prefix') in [ 8, 16, 24 ]) else '') }}
+domain = {{ lxc__net_domain + ',' + (lxc__net_address | ipaddr('subnet')) + (',local' if (lxc__net_address | ipaddr('prefix') in [ 8, 16, 24 ]) else '') }}
 
 # Set the FQDN name of the bridge interface in the DNS
 interface-name = {{ lxc__net_fqdn }},{{ lxc__net_bridge }}
-{% if (lxc__net_fqdn.split('.') | length >= 3 and lxc__net_fqdn.split('.')[1:] | length >= 2) %}
+{% if (lxc__net_domain.split('.') | length >= 3 and lxc__net_domain.split('.')[1:] | length >= 2) %}
 
 # Include the parent domain as searchable via resolvconf
-dhcp-option = tag:{{ lxc__net_bridge }},option:domain-search,{{ lxc__net_fqdn }},{{ lxc__net_fqdn.split('.')[1:] | join('.') }}
-dhcp-option = tag:{{ lxc__net_bridge }},option6:domain-search,{{ lxc__net_fqdn }},{{ lxc__net_fqdn.split('.')[1:] | join('.') }}
+dhcp-option = tag:{{ lxc__net_bridge }},option:domain-search,{{ lxc__net_domain }},{{ lxc__net_domain.split('.')[1:] | join('.') }}
+dhcp-option = tag:{{ lxc__net_bridge }},option6:domain-search,{{ lxc__net_domain }},{{ lxc__net_domain.split('.')[1:] | join('.') }}
 {% endif %}
 {% if not lxc__net_router|bool %}
 

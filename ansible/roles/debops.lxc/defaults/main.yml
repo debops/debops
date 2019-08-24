@@ -20,7 +20,7 @@
 # List of base APT packages to install for LXC support.
 lxc__base_packages:
   - [ 'lxc', 'lxcfs', 'debootstrap', 'xz-utils' ]
-  - '{{ [ "dnsmasq-base", "resolvconf" ] if (lxc__net_deploy_state == "present") else [] }}'
+  - '{{ [ "dnsmasq-base" ] if (lxc__net_deploy_state == "present") else [] }}'
   - '{{ []
         if (ansible_distribution_release in
             [ "wheezy", "jessie", "stretch",
@@ -147,32 +147,38 @@ lxc__net_dhcp_start: '2'
 lxc__net_dhcp_end: '-2'
 
                                                                    # ]]]
+# .. envvar:: lxc__net_base_domain [[[
+#
+# The DNS domain used as a base for the internal LXC domain. By default it is
+# based on the LXC host domain.
+lxc__net_base_domain: '{{ ansible_local.core.domain
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.domain|d())
+                          else ansible_domain }}'
+
+                                                                   # ]]]
 # .. envvar:: lxc__net_domain [[[
 #
-# The DNS domain used as a base for the internal LXC network. By default it is
-# based on the LXC host domain.
-lxc__net_domain: '{{ ansible_local.core.domain
-                     if (ansible_local|d() and ansible_local.core|d() and
-                         ansible_local.core.domain|d())
-                     else ansible_domain }}'
+# The DNS domain used in the internal LXC network.
+lxc__net_domain: '{{ "lxc" + (("." + lxc__net_base_domain)
+                              if lxc__net_base_domain|d()
+                              else "") }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__net_fqdn [[[
 #
 # The FQDN of the internal LXC bridge / internal LXC gateway registered in the
-# :command:`dnsmasq` service, as well as the DNS domain advertised to the LXC
-# containers via DHCP. It can be seen for example in traceroutes.
+# :command:`dnsmasq` service. It can be seen, for example, in traceroutes.
 #
 # The :command:`resolvconf` service will be used to add or remove the LXC
 # domain in the :file:`/etc/resolv.conf`; with local DNS resolver, for example
 # :command:`dnsmasq`, configured on the LXC host the containers can then be
 # accessed by their hostnames instead of the IP addresses.
-lxc__net_fqdn: '{{ ansible_local.lxc.net_domain
-                   if (ansible_local|d() and ansible_local.lxc|d() and
-                       ansible_local.lxc.net_domain|d())
-                   else ("lxc" + (("." + lxc__net_domain)
-                                  if lxc__net_domain|d()
-                                  else "")) }}'
+lxc__net_fqdn: '{{ ansible_hostname + "."
+                   + (ansible_local.lxc.net_domain
+                      if (ansible_local|d() and ansible_local.lxc|d() and
+                          ansible_local.lxc.net_domain|d())
+                      else lxc__net_domain) }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__net_dnsmasq_conf [[[

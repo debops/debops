@@ -126,6 +126,18 @@ Directory services
 - :ref:`debops.slapd`
 
 
+Domain Name System
+------------------
+
+It's always DNS.
+
+- :ref:`debops.avahi`
+- :ref:`debops.dnsmasq`
+- :ref:`debops.netbase`
+- :ref:`debops.resolvconf`
+- :ref:`debops.unbound`
+
+
 Encryption
 ----------
 
@@ -225,6 +237,7 @@ Networking
 - :ref:`debops.ifupdown`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`
+- :ref:`debops.resolvconf`
 - :ref:`debops.stunnel`
 - :ref:`debops.tinc`
 - :ref:`debops.unbound`

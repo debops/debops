@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+# interface-order(5)
+{% for element in resolvconf__combined_interface_order | parse_kv_config %}
+{%   if element.name|d() and element.value|d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if element.comment|d() %}
+
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{{ '{}'.format(element.value | regex_replace('\n$','')) }}
+{%   endif %}
+{% endfor %}

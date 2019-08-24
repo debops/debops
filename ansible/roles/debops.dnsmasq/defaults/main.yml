@@ -18,7 +18,7 @@
 # .. envvar:: dnsmasq__base_packages [[[
 #
 # List of APT packages to install for :command:`dnsmasq` support.
-dnsmasq__base_packages: [ 'dnsmasq', 'resolvconf' ]
+dnsmasq__base_packages: [ 'dnsmasq' ]
 
                                                                    # ]]]
 # .. envvar:: dnsmasq__packages [[[
@@ -385,9 +385,9 @@ dnsmasq__default_configuration:
         state: '{{ "comment"
                    if (ansible_local|d() and
                        (ansible_local.lxc|d() and ansible_local.lxc.net_domain|d()) or
-                       (ansible_local.resolver|d() and
-                        ((ansible_local.resolver.upstream_nameservers
-                          | d(ansible_local.resolver.nameservers)) | ipaddr("private"))))
+                       (ansible_local.resolvconf|d() and
+                        ((ansible_local.resolvconf.upstream_nameservers
+                          | d(ansible_local.resolvconf.nameservers)) | ipaddr("private"))))
                    else "present" }}'
 
       - name: 'resolv-file'
