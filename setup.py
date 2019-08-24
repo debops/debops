@@ -7,9 +7,11 @@ import subprocess
 
 try:
     import pypandoc
-    README = pypandoc.convert('README.md', 'rst')
+    README = pypandoc.convert_file('README.md', 'rst')
 except(IOError, ImportError):
-    README = open('README.md').read()
+    print('Error: The "pandoc" support is required to convert '
+          'the README.md to reStructuredText format')
+    raise
 
 try:
     unicode
