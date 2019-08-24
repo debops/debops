@@ -511,6 +511,10 @@ Roles removed from DebOps
   the role. They are replaced by the :envvar:`keyring__keyserver` and the
   corresponding local fact in the :ref:`debops.keyring` role.
 
+- The :command:`resolver.fact` script has been removed from the role. Its
+  functionality is provided by the :command:`resolvconf.fact` script included
+  in the :ref:`debops.resolvconf` role.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
