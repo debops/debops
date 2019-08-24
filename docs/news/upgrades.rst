@@ -103,10 +103,10 @@ Inventory variable changes
 - The ``lxc__net_interface_fqdn`` variable has been renamed to
   :envvar:`lxc__net_fqdn` to conform to the variable naming scheme for domain
   and FQDN names used in different DebOps roles. The new variable defines the
-  final DNS domain for the LXC containers, as well as the DNS name of the
-  ``lxcbr0`` interface; the :envvar:`lxc__net_domain` variable which has done
-  that previously is now used to define the base DNS domain for the ``lxc.``
-  subdomain.
+  FQDN name of the ``lxcbr0`` interface. The :envvar:`lxc__net_domain` variable
+  which has done that previously is now used to define the DNS domain for the
+  internal LXC subnet, and the new :envvar:`lxc__net_base_domain` variable
+  defines the base DNS domain for the ``lxc.`` subdomain.
 
 - The :ref:`debops.ipxe` role default variables have been renamed to move them
   to their own ``ipxe__*`` namespace; you will have to update the Ansible
