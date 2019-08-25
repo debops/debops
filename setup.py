@@ -9,9 +9,9 @@ try:
     import pypandoc
     README = pypandoc.convert_file('README.md', 'rst')
 except(IOError, ImportError):
-    print('Error: The "pandoc" support is required to convert '
+    print('Warning: The "pandoc" support is required to convert '
           'the README.md to reStructuredText format')
-    raise
+    README = open('README.md').read()
 
 try:
     unicode
