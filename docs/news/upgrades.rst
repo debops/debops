@@ -11,6 +11,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v1.1.0 (2019-08-25)
+-------------------
+
 GPG key management changes
 --------------------------
 
