@@ -34,6 +34,9 @@ General
   :file:`bootstrap.yml` and the :file:`bootstrap-ldap.yml` playbooks to
   configure the ``root`` account early during deployment.
 
+- The roles in the :file:`common.yml` playbook are reordered to match those in
+  the :file:`bootstrap-ldap.yml` playbook.
+
 
 `debops v1.1.0`_ - 2019-08-25
 -----------------------------

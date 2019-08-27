@@ -56,6 +56,15 @@
       secret_directories:
         - '{{ pki_env_secret_directories }}'
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::netbase', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ netbase__python__dependent_packages3 }}'
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ netbase__python__dependent_packages2 }}'
+        - '{{ ldap__python__dependent_packages2 }}'
+
     - role: debops.resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
 
@@ -73,6 +82,12 @@
     - role: debops.apt_proxy
       tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
 
+    - role: debops.apt
+      tags: [ 'role::apt', 'skip::apt' ]
+
+    - role: debops.etckeeper
+      tags: [ 'role::etckeeper', 'skip::etckeeper' ]
+
     - role: debops.cron
       tags: [ 'role::cron', 'skip::cron' ]
 
@@ -85,19 +100,6 @@
     - role: debops.pki
       tags: [ 'role::pki', 'skip::pki' ]
 
-    - role: debops.apt
-      tags: [ 'role::apt', 'skip::apt' ]
-
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
-      python__dependent_packages3:
-        - '{{ ldap__python__dependent_packages3 }}'
-      python__dependent_packages2:
-        - '{{ ldap__python__dependent_packages2 }}'
-
-    - role: debops.etckeeper
-      tags: [ 'role::etckeeper', 'skip::etckeeper' ]
-
     # LDAP client initialization should be done separately to prepare local
     # facts for other roles to use in configuration.
     - role: debops.ldap
@@ -109,12 +111,6 @@
         - '{{ sudo__ldap__dependent_tasks }}'
         - '{{ sshd__ldap__dependent_tasks }}'
 
-    - role: debops.apt_listchanges
-      tags: [ 'role::apt_listchanges', 'skip::apt_listchanges' ]
-
-    - role: debops.apt_install
-      tags: [ 'role::apt_install', 'skip::apt_install' ]
-
     - role: debops.keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::yadm' ]
       keyring__dependent_gpg_keys:
@@ -125,6 +121,12 @@
 
     - role: debops.sudo
       tags: [ 'role::sudo', 'skip::sudo' ]
+
+    # The 'sudo' APT package modifies '/etc/nsswitch.conf' by itself, running
+    # this role after 'debops.sudo' role skips additional changes done in the
+    # configuration later on.
+    - role: debops.nsswitch
+      tags: [ 'role::nsswitch', 'skip::nsswitch' ]
 
     - role: debops.root_account
       tags: [ 'role::root_account', 'skip::root_account' ]
@@ -140,6 +142,12 @@
       pam_access__dependent_rules:
         - '{{ sshd__pam_access__dependent_rules }}'
 
+    - role: debops.apt_listchanges
+      tags: [ 'role::apt_listchanges', 'skip::apt_listchanges' ]
+
+    - role: debops.apt_install
+      tags: [ 'role::apt_install', 'skip::apt_install' ]
+
     - role: debops.etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
@@ -152,9 +160,6 @@
 
     - role: debops.auth
       tags: [ 'role::auth', 'skip::auth' ]
-
-    - role: debops.nsswitch
-      tags: [ 'role::nsswitch', 'skip::nsswitch' ]
 
     - role: debops.machine
       tags: [ 'role::machine', 'skip::machine' ]
