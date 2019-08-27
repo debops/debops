@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Changed
+~~~~~~~
+
+Continuous Integration
+''''''''''''''''''''''
+
+- The ``$VAGRANT_HOSTNAME`` variable can be used to override the dynamically
+  generated hostname of the Vagrant ``master`` virtual machine.
+
 
 `debops v1.0.8`_ - 2019-08-24
 -----------------------------

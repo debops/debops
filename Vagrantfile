@@ -608,7 +608,7 @@ VAGRANT_HOSTNAME_MASTER = (ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant') + '/vagran
 if File.exist? VAGRANT_HOSTNAME_MASTER
       master_hostname = IO.read( VAGRANT_HOSTNAME_MASTER ).strip
 else
-      master_hostname = "debops-#{SecureRandom.hex(3)}"
+      master_hostname = ENV['VAGRANT_HOSTNAME'] || "debops-#{SecureRandom.hex(3)}"
       IO.write( VAGRANT_HOSTNAME_MASTER, master_hostname )
 end
 master_fqdn = master_hostname + '.' + VAGRANT_DOMAIN
