@@ -18,6 +18,22 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v1.1.0...master
 
+Added
+~~~~~
+
+General
+'''''''
+
+- Add more entries to be ignored by default by the :command:`git` command in
+  the DebOps project directories:
+
+  - :file:`debops`: ignore DebOps monorepo cloned or symlinked into the project
+    directory.
+
+  - :file:`roles` and :file:`playbooks`: ignore roles and playbooks in
+    development; production code should be put in the :file:`ansible/roles/`
+    and the :file:`ansible/playbooks/` directories respectively.
+
 Fixed
 ~~~~~
 
