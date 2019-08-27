@@ -13,10 +13,19 @@ You can read information about required changes between releases in the
 :ref:`upgrade_notes` documentation.
 
 
-`debops master`_ - unreleased
------------------------------
+`debops stable-1.1`_ - unreleased
+---------------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v1.1.0...master
+.. _debops stable-1.1: https://github.com/debops/debops/compare/v1.1.0...stable-1.1
+
+Changed
+~~~~~~~
+
+Continuous Integration
+''''''''''''''''''''''
+
+- The ``$VAGRANT_HOSTNAME`` variable can be used to override the dynamically
+  generated hostname of the Vagrant ``master`` virtual machine.
 
 
 `debops v1.1.0`_ - 2019-08-25
