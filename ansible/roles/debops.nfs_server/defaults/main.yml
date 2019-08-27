@@ -74,7 +74,7 @@ nfs_server__service_ports:
 # .. envvar:: nfs_server__firewall_ports [[[
 #
 # List of TCP/UDP ports which should be opened in the firewall for NFS access.
-nfs_server__firewall_ports: '{{ ([ "nfs", "sunrpc" ] + nfs_server__service_ports.keys())
+nfs_server__firewall_ports: '{{ ([ "nfs", "sunrpc" ] + (nfs_server__service_ports.keys() | list))
                                 if nfs_server__v3|bool else [ "nfs" ] }}'
                                                                    # ]]]
                                                                    # ]]]
