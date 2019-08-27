@@ -37,6 +37,18 @@ General
 - The roles in the :file:`common.yml` playbook are reordered to match those in
   the :file:`bootstrap-ldap.yml` playbook.
 
+Fixed
+~~~~~
+
+:ref:`debops.nfs_server` role
+'''''''''''''''''''''''''''''
+
+- In the :envvar:`nfs_server__firewall_ports` variable, convert the
+  ``dict_keys`` view into a list due to `change in Python 3 implementation`__
+  of dictionaries.
+
+  .. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_python_version.html#dictionary-views
+
 
 `debops v1.1.0`_ - 2019-08-25
 -----------------------------
