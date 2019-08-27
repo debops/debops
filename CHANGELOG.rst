@@ -18,6 +18,34 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v1.1.0...master
 
+Added
+~~~~~
+
+General
+'''''''
+
+- Add more entries to be ignored by default by the :command:`git` command in
+  the DebOps project directories:
+
+  - :file:`debops`: ignore DebOps monorepo cloned or symlinked into the project
+    directory.
+
+  - :file:`roles` and :file:`playbooks`: ignore roles and playbooks in
+    development; production code should be put in the :file:`ansible/roles/`
+    and the :file:`ansible/playbooks/` directories respectively.
+
+Fixed
+~~~~~
+
+:ref:`debops.nfs_server` role
+'''''''''''''''''''''''''''''
+
+- In the :envvar:`nfs_server__firewall_ports` variable, convert the
+  ``dict_keys`` view into a list due to `change in Python 3 implementation`__
+  of dictionaries.
+
+  .. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_python_version.html#dictionary-views
+
 
 `debops v1.1.0`_ - 2019-08-25
 -----------------------------
