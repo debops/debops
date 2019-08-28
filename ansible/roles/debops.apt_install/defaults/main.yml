@@ -245,6 +245,7 @@ apt_install__conditional_whitelist_packages:
   - 'gnupg-curl'
   - 'needrestart'
   - 'ranger'
+  - 'open-vm-tools'
 
                                                                    # ]]]
 # .. envvar:: apt_install__conditional_packages [[[
@@ -305,6 +306,13 @@ apt_install__conditional_packages:
                    (ansible_python_version|d() is version_compare("3.5",">=") and
                     ansible_distribution_release not in [ "stretch" ]))
                else "ignore" }}'
+
+  - name: 'open-vm-tools'
+    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
+    state: '{{ "present"
+               if (ansible_virtualization_role|d("guest") in [ "guest" ] and
+                   ansible_virtualization_type|d("unknown") in [ "VMware" ])
+               else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__firmware_packages [[[
