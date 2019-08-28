@@ -224,10 +224,14 @@ sshd__log_level: 'INFO'
 # Specify if access to ``root`` account should be granted. By default, if the
 # :ref:`debops.root_account` role has been applied on the host, the ``root``
 # can be accessed only using SSH public keys since the role is expected to set
-# them up. Otherwise, access via password is allowed.
+# them up. Otherwise, access via password is allowed. Alternatively, configured
+# sysadmin accounts via the :ref:`debops.system_users` disable password-based
+# access.
 sshd__permit_root_login: '{{ "without-password"
-                             if (ansible_local|d() and ansible_local.root_account|d() and
-                                 (ansible_local.root_account.ssh_authorized_keys|d())|bool)
+                             if ((ansible_local|d() and ansible_local.root_account|d() and
+                                  (ansible_local.root_account.ssh_authorized_keys|d())|bool) or
+                                 (ansible_local|d() and ansible_local.system_users|d() and
+                                  (ansible_local.system_users.configured|d())|bool))
                              else "yes" }}'
 
                                                                    # ]]]
@@ -235,10 +239,14 @@ sshd__permit_root_login: '{{ "without-password"
 #
 # Enable or disable password authentication. This option will be enabled if the
 # ``root`` acount does not have SSH authorized keys present, to allow the
-# ``root`` account to login to the host.
+# ``root`` account to login to the host. Alternatively, sysadmin access
+# configured by the :ref:`debops.system_users` role disables password
+# authentication.
 sshd__password_authentication: '{{ "no"
-                                   if (ansible_local|d() and ansible_local.root_account|d() and
-                                       (ansible_local.root_account.ssh_authorized_keys|d())|bool)
+                                   if ((ansible_local|d() and ansible_local.root_account|d() and
+                                        (ansible_local.root_account.ssh_authorized_keys|d())|bool) or
+                                       (ansible_local|d() and ansible_local.system_users|d() and
+                                        (ansible_local.system_users.configured|d())|bool))
                                    else "yes" }}'
 
                                                                    # ]]]

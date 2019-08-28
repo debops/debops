@@ -80,6 +80,10 @@ the ``root`` account via SSH. Note that the default PAM access policy set in
 the :envvar:`sshd__pam_access__dependent_rules` variable still applies and
 access to the ``root`` account will be limited to hosts on the same DNS domain.
 
+Alternatively, if the sysadmin accounts are configured using the
+:ref:`debops.system_users` Ansible role, access to the ``root`` account via
+password and password authentication will also be disabled.
+
 Useful variables
 ----------------
 
