@@ -46,10 +46,6 @@ Continuous Integration
 General
 '''''''
 
-- The :ref:`debops.root_account` role is now included in the
-  :file:`bootstrap.yml` and the :file:`bootstrap-ldap.yml` playbooks to
-  configure the ``root`` account early during deployment.
-
 - The roles in the :file:`common.yml` playbook are reordered to match those in
   the :file:`bootstrap-ldap.yml` playbook.
 
