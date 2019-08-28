@@ -34,6 +34,14 @@ General
     development; production code should be put in the :file:`ansible/roles/`
     and the :file:`ansible/playbooks/` directories respectively.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The `open-vm-tools`__ APT package will be installed by default in VMware
+  virtual machines.
+
+  .. __: https://github.com/vmware/open-vm-tools
+
 :ref:`debops.root_account` role
 '''''''''''''''''''''''''''''''
 
