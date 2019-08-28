@@ -34,6 +34,28 @@ General
     development; production code should be put in the :file:`ansible/roles/`
     and the :file:`ansible/playbooks/` directories respectively.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The `open-vm-tools`__ APT package will be installed by default in VMware
+  virtual machines.
+
+  .. __: https://github.com/vmware/open-vm-tools
+
+Changed
+~~~~~~~
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The role will allow or deny access to the ``root`` account via password
+  depending on the presence of the :file:`/root/.ssh/authorized_keys` file. See
+  :ref:`sshd__ref_root_password` for more details. This requires updated
+  :file:`root_account.fact` script from the :ref:`debops.root_account` role.
+
+- The role will use Ansible local facts to check if OpenSSH server package is
+  installed to conditionally enable/disable its start on first install.
+
 Fixed
 ~~~~~
 

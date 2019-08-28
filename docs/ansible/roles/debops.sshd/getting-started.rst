@@ -61,6 +61,29 @@ shouldn't affect other access lists.
 You could also add subnets, domains or other origins instead of allowing access
 from any host; refer to the :ref:`pam_access__ref_rules` for more details.
 
+.. _sshd__ref_root_password:
+
+Access to the ``root`` account via password
+-------------------------------------------
+
+The :ref:`debops.sshd` role checks if the :file:`/root/.ssh/authorized_keys`
+file is present on the host, using Ansible local facts defined by the
+:ref:`debops.root_account` role. If the file is present, we assume that the
+sysadmin SSH keys are on the host, and password-based access to the ``root``
+account is disabled by setting the ``PermitRootLogin`` option to
+``without-password`` and the ``PasswordAuthentication`` option to ``no``.
+
+If the SSH authorized keys file is not present, the host is assumed to not be
+fully provisioned yet. The ``PermitRootLogin`` option as well as the
+``PasswordAuthentication`` option will be set to ``yes`` to permit access to
+the ``root`` account via SSH. Note that the default PAM access policy set in
+the :envvar:`sshd__pam_access__dependent_rules` variable still applies and
+access to the ``root`` account will be limited to hosts on the same DNS domain.
+
+Alternatively, if the sysadmin accounts are configured using the
+:ref:`debops.system_users` Ansible role, access to the ``root`` account via
+password and password authentication will also be disabled.
+
 Useful variables
 ----------------
 
