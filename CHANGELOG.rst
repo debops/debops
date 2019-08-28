@@ -34,6 +34,12 @@ General
     development; production code should be put in the :file:`ansible/roles/`
     and the :file:`ansible/playbooks/` directories respectively.
 
+:ref:`debops.root_account` role
+'''''''''''''''''''''''''''''''
+
+- The :file:`root_account.fact` script now checks if the ``root`` account has
+  the :file:`~/.ssh/authorized_keys` file present and not empty.
+
 Changed
 ~~~~~~~
 

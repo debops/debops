@@ -21,7 +21,8 @@ import os
 
 output = loads('''{{ root_account__tpl_facts | to_nice_json }}''')
 
-if os.path.isfile('/root/.ssh/authorized_keys'):
+if (os.path.isfile('/root/.ssh/authorized_keys')
+        and os.stat('/root/.ssh/authorized_keys').st_size > 0):
     output['ssh_authorized_keys'] = True
 
 if output['ssh_key']:
