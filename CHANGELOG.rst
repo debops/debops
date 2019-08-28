@@ -45,6 +45,9 @@ Changed
   :ref:`sshd__ref_root_password` for more details. This requires updated
   :file:`root_account.fact` script from the :ref:`debops.root_account` role.
 
+- The role will use Ansible local facts to check if OpenSSH server package is
+  installed to conditionally enable/disable its start on first install.
+
 Fixed
 ~~~~~
 

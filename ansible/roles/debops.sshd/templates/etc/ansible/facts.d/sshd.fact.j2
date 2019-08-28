@@ -6,6 +6,14 @@ from __future__ import print_function
 from json import dumps
 from re import match, IGNORECASE
 from sys import exit
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
 
 
 sshd_facts = [
@@ -17,7 +25,9 @@ sshd_facts = [
      'default': []}
 ]
 
-output = {'configured': 'true'}
+output = {'configured': True,
+          'installed': cmd_exists('sshd')}
+
 for item in sshd_facts:
     output.update({item['fact']: item['default']})
 
