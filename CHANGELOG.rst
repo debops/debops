@@ -34,6 +34,17 @@ General
     development; production code should be put in the :file:`ansible/roles/`
     and the :file:`ansible/playbooks/` directories respectively.
 
+Changed
+~~~~~~~
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The role will allow or deny access to the ``root`` account via password
+  depending on the presence of the :file:`/root/.ssh/authorized_keys` file. See
+  :ref:`sshd__ref_root_password` for more details. This requires updated
+  :file:`root_account.fact` script from the :ref:`debops.root_account` role.
+
 Fixed
 ~~~~~
 
