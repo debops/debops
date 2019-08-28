@@ -43,13 +43,6 @@ Continuous Integration
 - The ``$VAGRANT_HOSTNAME`` variable can be used to override the dynamically
   generated hostname of the Vagrant ``master`` virtual machine.
 
-General
-'''''''
-
-- The :ref:`debops.root_account` role is now included in the
-  :file:`bootstrap.yml` and the :file:`bootstrap-ldap.yml` playbooks to
-  configure the ``root`` account early during deployment.
-
 Fixed
 ~~~~~
 
