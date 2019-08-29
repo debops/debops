@@ -131,10 +131,12 @@ specific parameters:
   more details. If not specified, the value is defined as:
   ``ra-names,ra-stateless,slaac``.
 
-``router_enabled``
-  Optional, boolean. If not specified or ``True``, the router will be
-  advertised for the DHCP clients on a given network interface. To disable, set
-  this parameter to ``False``.
+``router_state``
+  Optional. If not specified or ``present`` or ``enabled``, the router will be
+  advertised for the DHCP clients on a given network interface.
+  If ``disabled``, the router advertisements will be disabled on a given network
+  interface. If ``absent``, the router configuration option will not be
+  included in the generated configuration file.
 
 ``router_gateway``
   Optional. Specify the IP address of the default router advertised by

@@ -81,7 +81,7 @@
   "value": ("set:" + interface_tag + "," + host_address | ipv6(interface.dhcp_range_start | d(10) | int) | ipv6('address') + ',' + host_address | ipv6(interface.dhcp_range_end | d(-10) | int) | ipv6('address') + ',' + interface.dhcp_ipv6_mode | d("ra-names,ra-stateless,slaac") + "," + host_address | ipv6('prefix')|string + ',' + interface.dhcp_lease | d('24h'))
 }) %}
 {%     endfor %}
-{%     if (interface.router_enabled|d(True))|bool %}
+{%     if (interface.router_state|d('present')) in [ 'present', 'enabled' ] %}
 {%       if interface.router_gateway|d() %}
 {%         set _ = interface_options.append({
   "name": "dhcp_option_ipv4_router",
@@ -95,7 +95,7 @@
   "value": ("tag:" + interface_tag + ",option:router,0.0.0.0")
 }) %}
 {%       endif %}
-{%     elif not (interface.router_enabled|d(True))|bool %}
+{%     elif (interface.router_state|d('present')) in [ 'disabled' ] %}
 {%       set _ = interface_options.append({
   "name": "dhcp_option_ipv4_router",
   "option": "dhcp-option",

@@ -11,6 +11,13 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Role configuration changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- In the :ref:`debops.dnsmasq` role, :ref:`dnsmasq__ref_interfaces` variable
+  configuration, the ``router_enabled`` parameter has been renamed to the
+  ``router_state`` parameter, with changed value type.
+
 
 v1.1.0 (2019-08-25)
 -------------------
