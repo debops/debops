@@ -23,7 +23,7 @@ v1.1.0 (2019-08-25)
 -------------------
 
 GPG key management changes
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The :ref:`debops.keyring` centralizes management of the APT keyring and various
 GPG keyrings in unprivileged UNIX accounts. Various DebOps roles have been
@@ -59,7 +59,7 @@ List of modified DebOps roles:
 - ``debops-contrib.x2go_server``
 
 NodeJS and NPM changes
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 - By default, the :ref:`debops.nodejs` role will install the NodeJS and NPM
   packages from the OS (Debian or Ubuntu) repositories. On the Debian Oldstable
