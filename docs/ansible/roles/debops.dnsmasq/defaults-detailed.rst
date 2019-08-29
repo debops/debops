@@ -73,6 +73,11 @@ specific parameters:
   This parameter can be used to conditionally enable or disable interface
   configuration, for example when a given interface is present on a host.
 
+``tag``
+  Optional. A string that defines a "tag" for a given network which can be used
+  to define DHCP options for that specific network. If not specified, the
+  interface name will be used by default.
+
 ``address`` / ``addressess``
   Optional. List of IPv4 or IPv6 addresses in the "host/prefix" format which
   should be used in the interface configuration.
@@ -107,6 +112,12 @@ specific parameters:
   configured on a specific network interface. To disable, set this parameter to
   ``False``.
 
+``dhcp_range_state``
+  Optional. If not specified or ``present``, the role will configure a range of
+  dynamic IP addresses in the DHCP server for a given network. If ``absent``,
+  the DHCP range configuration will not be included in the generated
+  configuration file.
+
 ``dhcp_range_start``
   Optional. Specify a positive number of IP addresses to reserve at the start
   of the subnet for static DHCP entries. If not specified, 10 IP addresses will
@@ -126,10 +137,12 @@ specific parameters:
   more details. If not specified, the value is defined as:
   ``ra-names,ra-stateless,slaac``.
 
-``router_enabled``
-  Optional, boolean. If not specified or ``True``, the router will be
-  advertised for the DHCP clients on a given network interface. To disable, set
-  this parameter to ``False``.
+``router_state``
+  Optional. If not specified or ``present`` or ``enabled``, the router will be
+  advertised for the DHCP clients on a given network interface.
+  If ``disabled``, the router advertisements will be disabled on a given network
+  interface. If ``absent``, the router configuration option will not be
+  included in the generated configuration file.
 
 ``router_gateway``
   Optional. Specify the IP address of the default router advertised by
@@ -156,6 +169,10 @@ specific parameters:
   contact for the TFTP service. If not specified, the :command:`dnsmasq` will
   direct them to its own host automatically.
 
+``raw``
+  Optional. String or YAML text block with raw :man:`dnsmasq(8)` configuration
+  options, added at the end of a given interface configuration file. This can
+  be used to add configuration not covered by the above parameters.
 
 
 .. _dnsmasq__ref_dhcp_dns_entries:

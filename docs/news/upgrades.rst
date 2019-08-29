@@ -11,12 +11,19 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Role configuration changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- In the :ref:`debops.dnsmasq` role, :ref:`dnsmasq__ref_interfaces` variable
+  configuration, the ``router_enabled`` parameter has been renamed to the
+  ``router_state`` parameter, with changed value type.
+
 
 v1.1.0 (2019-08-25)
 -------------------
 
 GPG key management changes
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The :ref:`debops.keyring` centralizes management of the APT keyring and various
 GPG keyrings in unprivileged UNIX accounts. Various DebOps roles have been
@@ -52,7 +59,7 @@ List of modified DebOps roles:
 - ``debops-contrib.x2go_server``
 
 NodeJS and NPM changes
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 - By default, the :ref:`debops.nodejs` role will install the NodeJS and NPM
   packages from the OS (Debian or Ubuntu) repositories. On the Debian Oldstable
