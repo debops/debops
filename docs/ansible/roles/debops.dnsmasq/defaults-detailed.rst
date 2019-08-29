@@ -73,6 +73,11 @@ specific parameters:
   This parameter can be used to conditionally enable or disable interface
   configuration, for example when a given interface is present on a host.
 
+``tag``
+  Optional. A string that defines a "tag" for a given network which can be used
+  to define DHCP options for that specific network. If not specified, the
+  interface name will be used by default.
+
 ``address`` / ``addressess``
   Optional. List of IPv4 or IPv6 addresses in the "host/prefix" format which
   should be used in the interface configuration.
