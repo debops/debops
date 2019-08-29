@@ -144,6 +144,13 @@
 }) %}
 {%     endif %}
 {%   endif %}
+{%   if interface.raw|d() %}
+{%     set _ = interface_options.append({
+  "name": "interface_raw",
+  "comment": "Additional interface options",
+  "raw": interface.raw
+}) %}
+{%   endif %}
 {%   set _ = interface_base.update({"options": interface_options}) %}
 {%   set _ = dnsmasq__tpl_interface_configuration.append(interface_base) %}
 {% endfor %}

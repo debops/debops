@@ -156,6 +156,10 @@ specific parameters:
   contact for the TFTP service. If not specified, the :command:`dnsmasq` will
   direct them to its own host automatically.
 
+``raw``
+  Optional. String or YAML text block with raw :man:`dnsmasq(8)` configuration
+  options, added at the end of a given interface configuration file. This can
+  be used to add configuration not covered by the above parameters.
 
 
 .. _dnsmasq__ref_dhcp_dns_entries:
