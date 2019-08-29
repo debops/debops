@@ -112,6 +112,12 @@ specific parameters:
   configured on a specific network interface. To disable, set this parameter to
   ``False``.
 
+``dhcp_range_state``
+  Optional. If not specified or ``present``, the role will configure a range of
+  dynamic IP addresses in the DHCP server for a given network. If ``absent``,
+  the DHCP range configuration will not be included in the generated
+  configuration file.
+
 ``dhcp_range_start``
   Optional. Specify a positive number of IP addresses to reserve at the start
   of the subnet for static DHCP entries. If not specified, 10 IP addresses will
