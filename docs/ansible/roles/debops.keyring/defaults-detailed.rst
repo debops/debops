@@ -101,7 +101,9 @@ The YAML dictionaries are defined using specific parameters:
   ``keybase`` parameters are specified.
 
 ``url``
-  Optional. The URL where a given GPG key can be found.
+  Optional. The URL where a given GPG key can be found. The ``id`` parameter
+  still needs to be specified for the ``apt_key`` Ansible module to work as
+  expected.
 
 ``keybase``
   Optional. The name of the `Keybase`__ profile which should be used to lookup
