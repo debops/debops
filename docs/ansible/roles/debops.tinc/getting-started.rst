@@ -9,8 +9,8 @@ Getting started
 The ``debops.tinc`` role by itself only defines the connections between hosts,
 posing as Ethernet tunnels. To make a proper network, you need a defined
 subnet and a way to assign IP addresses to hosts in the network. You can use
-the debops.ifupdown_ role to define an internal subnet for the hosts in
-the VPN, and debops.dnsmasq_ to provide DHCP and DNS services inside the
+the :ref:`debops.ifupdown` role to define an internal subnet for the hosts in
+the VPN, and :ref:`debops.dnsmasq` to provide DHCP and DNS services inside the
 network.
 
 Example inventory
