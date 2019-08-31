@@ -63,6 +63,13 @@ General
 - The roles in the :file:`common.yml` playbook are reordered to match those in
   the :file:`bootstrap-ldap.yml` playbook.
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- The role will install and configure :command:`resolvconf` APT package only on
+  hosts with more than one network interface (not counting ``lo``), or if local
+  DNS services are also present on the host.
+
 Fixed
 ~~~~~
 
