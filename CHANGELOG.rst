@@ -45,6 +45,13 @@ General
 Changed
 ~~~~~~~
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- The role will install and configure :command:`resolvconf` APT package only on
+  hosts with more than one network interface (not counting ``lo``), or if local
+  DNS services are also present on the host.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
