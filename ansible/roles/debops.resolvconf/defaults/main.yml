@@ -20,7 +20,13 @@
 # Enable or disable the :ref:`debops.resolvconf` Ansible role configuration.
 # This can be used to disable the role without removing it from the
 # :file:`common.yml` playbook.
-resolvconf__enabled: True
+resolvconf__enabled: '{{ ansible_local.resolvconf.installed
+                         if (ansible_local|d() and ansible_local.resolvconf|d() and
+                             ansible_local.resolvconf.installed is defined)
+                         else (True
+                               if (ansible_interfaces | count > 2 or
+                                   resolvconf__combined_services|d())
+                               else False) }}'
 
                                                                    # ]]]
 # .. envvar:: resolvconf__deploy_state [[[
