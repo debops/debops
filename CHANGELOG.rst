@@ -57,6 +57,14 @@ Continuous Integration
 - The ``$VAGRANT_HOSTNAME`` variable can be used to override the dynamically
   generated hostname of the Vagrant ``master`` virtual machine.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Updates in the dependent configuration for the :ref:`debops.nginx` role - use
+  of internal Nextcloud maintenance page and updated location regex patterns,
+  as well as configuration of the memory limit for PHP processes via the
+  :ref:`debops.php` role.
+
 Fixed
 ~~~~~
 
