@@ -63,6 +63,14 @@ General
 - The roles in the :file:`common.yml` playbook are reordered to match those in
   the :file:`bootstrap-ldap.yml` playbook.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Updates in the dependent configuration for the :ref:`debops.nginx` role - use
+  of internal Nextcloud maintenance page and updated location regex patterns,
+  as well as configuration of the memory limit for PHP processes via the
+  :ref:`debops.php` role.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
