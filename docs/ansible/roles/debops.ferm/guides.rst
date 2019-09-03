@@ -99,7 +99,7 @@ address of a network packet is rewritten to the internal host address.
 
 .. topic:: Note
 
-    The :ref:`ferm__ref_type_dmz` rule template won't modify the source address of a
+    :ref:`ferm__ref_type_dmz` rule template won't modify the source address of a
     forwarded packet by default. This means that the original source address can
     still be identified at the internal receiver, however the route leading back to
     the source address must traverse the gateway again in order to successfully
@@ -227,7 +227,7 @@ any other purpose.
         name: 'reject_out'
         comment: 'Reject remaining outgoing traffic'
 
-  The last rule is using the :ref:`ferm__ref_type_reject` which will reject
+  The last rule is using :ref:`ferm__ref_type_reject` which will reject
   every packet not explicitly allowed. This will make it easier to figure out
   missing rules than if the packets would simply be dropped.
 
