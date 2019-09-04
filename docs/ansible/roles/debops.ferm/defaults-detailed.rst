@@ -69,7 +69,7 @@ documentation.
 
      ferm__rules:
        - name: 'restart_nginx':
-         type: 'post-hook'
+         type: 'custom'
          rules: '@hook post "type nginx > /dev/null && systemctl restart nginx || true";'
 
   Example list of rule definitions which will open access to different service
