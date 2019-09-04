@@ -70,6 +70,11 @@ Updates of upstream application versions
   manually via the LDAP client, by setting the value of the ``sudoUser`` index
   to ``eq,sub``.
 
+- Add indexes for the ``authorizedService`` and ``host`` attributes from the
+  :ref:`ldapns LDAP schema <slapd__ref_ldapns>` and the ``gid`` attribute from
+  the :ref:`posixGroupId LDAP schema <slapd__ref_posixgroupid>`. This should
+  improve performance in UNIX environments connected to the LDAP directory.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
