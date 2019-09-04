@@ -62,6 +62,14 @@ Updates of upstream application versions
   hosts with more than one network interface (not counting ``lo``), or if local
   DNS services are also present on the host.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Enable substring index for the ``sudoUser`` attribute from the :ref:`sudo
+  LDAP schema <slapd__ref_sudo>`. Existing installations should be updated
+  manually via the LDAP client, by setting the value of the ``sudoUser`` index
+  to ``eq,sub``.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
