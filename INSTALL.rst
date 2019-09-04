@@ -226,6 +226,16 @@ Additional, useful software
 
 .. __: https://en.wikipedia.org/wiki/EncFS
 
+`git-crypt`__
+  You can use :command:`git-crypt` to transparently encrypt files in the
+  :file:`secret/` directory when committing to a Git repository. Unlike
+  ``EncFS``, the files are not encrypted on your local hard disk, and the path
+  names are not encrypted at all. The excellent 'Using git-crypt' section on
+  the website or in the `man page`__ will get you started.
+
+.. __: https://www.agwa.name/projects/git-crypt/
+.. __: https://manpages.debian.org/git-crypt.1
+
 ``uuidgen``
   This command is used to generate unique UUID strings for hosts which are then
   stored as Ansible facts. On Debian, it's available in the ``uuid-runtime``
