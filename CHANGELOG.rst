@@ -34,6 +34,9 @@ General
     development; production code should be put in the :file:`ansible/roles/`
     and the :file:`ansible/playbooks/` directories respectively.
 
+- The :command:`debops-init` script now also creates the .gitattributes file
+  for use with :command:`git-crypt`. It is commented out by default.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
