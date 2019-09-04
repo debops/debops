@@ -45,6 +45,13 @@ General
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.gitlab` role, GitLab version has been updated to
+  ``12.1``. This is the last release that supports Ruby 2.5 which is included
+  in Debian Buster.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
