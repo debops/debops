@@ -70,6 +70,11 @@ retry_files_enabled = False
 ;ssh_args = -o ControlMaster=auto -o ControlPersist=60s
 """
 
+DEFAULT_GITATTRIBUTES = """# Uncomment the lines below to encrypt your secrets with git-crypt
+#ansible/{SECRET_NAME}/** filter=git-crypt diff=git-crypt
+#{SECRET_NAME}/** filter=git-crypt diff=git-crypt
+"""
+
 DEFAULT_GITIGNORE = r"""\
 debops
 ansible.cfg
@@ -162,6 +167,9 @@ def write_config_files(project_root):
     # Create .debops.cfg
     write_file(os.path.join(project_root, DEBOPS_CONFIG),
                DEFAULT_DEBOPS_CONFIG)
+    # Create .gitattributes
+    write_file(os.path.join(project_root, '.gitattributes'),
+               DEFAULT_GITATTRIBUTES.format(SECRET_NAME=SECRET_NAME))
     # Create .gitignore
     write_file(os.path.join(project_root, '.gitignore'),
                DEFAULT_GITIGNORE.format(SECRET_NAME=SECRET_NAME,
