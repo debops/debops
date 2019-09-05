@@ -66,6 +66,11 @@ General
 - The roles in the :file:`common.yml` playbook are reordered to match those in
   the :file:`bootstrap-ldap.yml` playbook.
 
+:ref:`debops.apt_preferences` role
+''''''''''''''''''''''''''''''''''
+
+- Support Debian Buster in :ref:`apt_preferences__list`.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
