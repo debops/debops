@@ -60,6 +60,11 @@ Continuous Integration
 - The ``$VAGRANT_HOSTNAME`` variable can be used to override the dynamically
   generated hostname of the Vagrant ``master`` virtual machine.
 
+:ref:`debops.apt_preferences` role
+''''''''''''''''''''''''''''''''''
+
+- Support Debian Buster in :ref:`apt_preferences__list`.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
