@@ -64,7 +64,7 @@ to see an example usage.
 PHP Composer installation
 -------------------------
 
-The :ref:`debops.php` role wil install the `PHP Composer`__, a dependency
+The :ref:`debops.php` role will install the `PHP Composer`__, a dependency
 manager for PHP. The version from the OS repositories will be preferred. On
 older OS releases (including Debian Stretch), a known upstream binary will be
 downloaded and installed instead.

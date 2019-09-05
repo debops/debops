@@ -284,7 +284,7 @@ Updates of upstream application versions
   the :envvar:`nodejs__yarn_upstream` variable.
 
   If the NodeJS upstream support is enabled, the NodeJS 8.x version will be
-  installed on older Debian/Ubuntu releases, for exaple Debian Stretch and
+  installed on older Debian/Ubuntu releases, for example Debian Stretch and
   Ubuntu Bionic. Debian Buster and newer releases will use NodeJS 10.x
   version, to keep the Node version from upstream in sync with the one
   available in the OS repositories.
@@ -1009,7 +1009,7 @@ Mail Transport Agents
 
 - If automatic reboots are enabled, VMs will not reboot all at the same time to
   avoid high load on the hypervisor host.  Instead they will reboot at
-  a particular minute in a 15 minute time window.  For each host, a random but
+  a particular minute in a 15 minute time window.  For each host, a
   random-but-idempotent time is chosen.  For hypervisor hosts good presets
   cannot be picked. You should ensure that hosts don’t reboot at the same time
   by defining different reboot times in inventory groups.
