@@ -276,6 +276,16 @@ dnsmasq__default_configuration:
                    (ansible_local.consul.installed|d())|bool)
                else "init" }}'
 
+  - name: 'lxd-override'
+    filename: 'lxd'
+    comment: |
+      Tell any system-wide dnsmasq instance to make sure to bind to interfaces
+      instead of listening on 0.0.0.0
+    raw: |
+      bind-dynamic
+      except-interface = lxdbr0
+    state: '{{ "present" if (ansible_distribution == "Ubuntu") else "ignore" }}'
+
   - name: 'reserved-domains.conf'
     options:
 
