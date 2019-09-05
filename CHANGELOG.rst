@@ -89,6 +89,14 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- On Ubuntu hosts, the role will fix the configuration installed by the
+  :command:`lxd` package to use ``bind-dynamic`` option instead of
+  ``bind-interfaces``. This allows the :command:`dnsmasq` service to start
+  correctly.
+
 :ref:`debops.nfs_server` role
 '''''''''''''''''''''''''''''
 
