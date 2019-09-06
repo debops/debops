@@ -71,6 +71,12 @@ General
 
 - Support Debian Buster in :ref:`apt_preferences__list`.
 
+:ref:`debops.dhcpd` role
+''''''''''''''''''''''''
+
+- The mode of the :command:`dhcpd` configuration files is changed from ``0644``
+  to ``0640`` to ensure that the DNS update keys are not world-readable.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
