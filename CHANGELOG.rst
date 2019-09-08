@@ -37,6 +37,10 @@ General
 - The :command:`debops-init` script now also creates the .gitattributes file
   for use with :command:`git-crypt`. It is commented out by default.
 
+- The :command:`debops-defaults` command will check what pagers
+  (:command:`view`, :command:`less`, :command:`more`) are available and use the
+  best one automatically.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
