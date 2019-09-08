@@ -66,6 +66,10 @@ General
 - The roles in the :file:`common.yml` playbook are reordered to match those in
   the :file:`bootstrap-ldap.yml` playbook.
 
+- External commands used in the DebOps scripts have been defined as constants
+  to allow easier changes of the command location in various operating systems,
+  for example Guix.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
