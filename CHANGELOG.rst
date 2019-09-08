@@ -60,6 +60,13 @@ Continuous Integration
 - The ``$VAGRANT_HOSTNAME`` variable can be used to override the dynamically
   generated hostname of the Vagrant ``master`` virtual machine.
 
+General
+'''''''
+
+- External commands used in the DebOps scripts have been defined as constants
+  to allow easier changes of the command location in various operating systems,
+  for example Guix.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
