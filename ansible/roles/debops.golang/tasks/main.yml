@@ -1,12 +1,25 @@
 ---
 
-- name: Install Go packages
-  package:
-    name: '{{ q("flattened", (golang__base_packages
-                              + golang__packages
-                              + golang__group_packages
-                              + golang__host_packages
-                              + golang__dependent_packages)) }}'
-    state: 'present'
-  register: golang__register_packages
-  until: golang__register_packages is succeeded
+- name: Build and install Go packages
+  include_tasks: 'golang_build_install.yml'
+  loop_control:
+    loop_var: 'build'
+  loop: '{{ q("flattened", golang__combined_packages) | parse_kv_items }}'
+  when: build.name|d() and build.state|d('present') not in [ 'absent', 'ignore' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Go local facts
+  template:
+    src: 'etc/ansible/facts.d/golang.fact.j2'
+    dest: '/etc/ansible/facts.d/golang.fact'
+    mode: '0755'
+  register: golang__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: golang__register_facts is changed

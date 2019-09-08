@@ -1,0 +1,67 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _golang__ref_packages:
+
+# Go packages
+# ===========
+
+# The ``golang__*_packages`` default variables define what Go packages should
+# be installed by the :ref:`debops.golang` role.
+
+# .. Check the role documentation for examples and configuration syntax.
+
+# .. contents::
+#    :local:
+#
+# .. include:: ../../../../../includes/global.rst
+
+# .. include:: ../../includes/defaults-packages.rst
+
+
+# .. envvar:: golang__default_packages [[[
+#
+# List of default Go packages to install, defined by the role.
+golang__default_packages:
+
+  # The Go environment will be installed if no dependent Go packages are defined
+  - name: 'golang-go'
+    apt_packages: 'golang-go'
+    state: '{{ "ignore" if golang__dependent_packages|d() else "present" }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__packages [[[
+#
+# List of Go packages to install on all hosts in Ansible inventory.
+golang__packages: []
+
+                                                                   # ]]]
+# .. envvar:: golang__group_packages [[[
+#
+# List of Go packages to install on a group of hosts in Ansible inventory.
+golang__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: golang__host_packages [[[
+#
+# List of Go packages to install on specific hosts in Ansible inventory.
+golang__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: golang__dependent_packages [[[
+#
+# List of Go packages to install specified by other Ansible roles.
+golang__dependent_packages: []
+
+                                                                   # ]]]
+# .. envvar:: golang__combined_packages [[[
+#
+# List of Go packages which combines all other lists and is used in the role
+# tasks.
+golang__combined_packages: '{{ golang__default_packages
+                               + golang__dependent_packages
+                               + golang__packages
+                               + golang__group_packages
+                               + golang__host_packages }}'
+
+                                                                   # ]]]
