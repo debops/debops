@@ -59,6 +59,10 @@ Updates of upstream application versions
   ``12.1``. This is the last release that supports Ruby 2.5 which is included
   in Debian Buster.
 
+- In the :ref:`debops.ipxe` role, the Debian Stretch and Debian Buster netboot
+  installer versions have been updated to their next point releases, 9.10 and
+  10.1 respectively.
+
 General
 '''''''
 
