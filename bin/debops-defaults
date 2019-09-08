@@ -96,13 +96,22 @@ def main(role_list):
     config = read_config(project_root)
     playbooks_path = find_playbookpath(config, project_root, required=True)
 
-    # Make sure required commands are present
-    require_commands('view')
+    # Check if one of the output commands is present
+    sys.stdout = io.BytesIO()  # suppress error message, if any
+    for cmd_args in (('view', '+set ft=yaml', '-'),
+                     ('less', '-'),
+                     ('more', '-')):
+        try:
+            require_commands(cmd_args[0])
+            break
+        except SystemExit:
+            # this command was not found
+            cmd_args = None
+    sys.stdout = sys.__stdout__
 
-    if sys.stdout.isatty():
+    if cmd_args and sys.stdout.isatty():
         # if script is run as standalone, redirect to view
-        view = subprocess.Popen(['view', '+set ft=yaml', '-'],
-                                stdin=subprocess.PIPE)
+        view = subprocess.Popen(cmd_args, stdin=subprocess.PIPE)
         try:
             aggregate_defaults(playbooks_path, role_list, view.stdin)
         except IOError as e:
