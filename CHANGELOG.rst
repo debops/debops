@@ -58,6 +58,13 @@ General
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Stretch and Debian Buster netboot
+  installer versions have been updated to their next point releases, 9.10 and
+  10.1 respectively.
+
 Continuous Integration
 ''''''''''''''''''''''
 
