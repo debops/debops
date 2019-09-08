@@ -67,6 +67,14 @@ devrandom = os.environ.get('DEVRANDOM', "/dev/urandom")
 
 SCRIPT_FILENAME = 'padlock-script'
 
+# External programms used. List here for easy substitution for
+# hard-coded paths.
+ENCFS = 'encfs'
+FIND = 'find'
+FUSERMOUNT = 'fusermount'
+UMOUNT = 'umount'
+GPG = 'gpg'
+
 # ---- DebOps environment setup ----
 
 
@@ -80,9 +88,9 @@ def main(subcommand_func, **kwargs):
     # Make sure required commands are present
     # OS X compatibility
     if sys.platform == 'darwin':
-        require_commands('encfs', 'find', 'umount', 'gpg')
+        require_commands(ENCFS, FIND, UMOUNT, GPG)
     else:
-        require_commands('encfs', 'find', 'fusermount', 'gpg')
+        require_commands(ENCFS, FIND, FUSERMOUNT, GPG)
 
     inventory_path = find_inventorypath(project_root, required=False)
     # If inventory hasn't been found automatically, assume it's the default
@@ -121,7 +129,7 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     # Generate a random password and encrypt it with GPG keys of recipients.
     print("Generating a random", ENCFS_KEYFILE_LENGTH, "char password")
     pwd = gen_pwd()
-    gpg = subprocess.Popen(['gpg', '--encrypt', '--armor',
+    gpg = subprocess.Popen([GPG, '--encrypt', '--armor',
                             '--output', encfs_keyfile] + recipients,
                            stdin=subprocess.PIPE)
     gpg.communicate(pwd.encode('utf-8'))
@@ -133,9 +141,10 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
     # NB2: We can not use padlock_unlock here, because the config file
     # does not yet exist.
     encfs = subprocess.Popen([
-        'encfs', encfs_encrypted, encfs_decrypted,
+        ENCFS, encfs_encrypted, encfs_decrypted,
         '--extpass',
-        'gpg --decrypt --no-mdc-warning --output - '+shquote(encfs_keyfile)],
+        GPG + ' --decrypt --no-mdc-warning --output - '
+        + shquote(encfs_keyfile)],
         stdin=subprocess.PIPE)
     encfs.communicate(('p\n'+pwd).encode('utf-8'))
 
@@ -154,7 +163,7 @@ def init(encfs_decrypted, encfs_encrypted, recipients):
 
     # Protect the EncFS configuration file by also encrypting it with
     # the GPG keys of recipients.
-    subprocess.call(['gpg', '--encrypt', '--armor',
+    subprocess.call([GPG, '--encrypt', '--armor',
                      '--output', encfs_configfile+'.asc']
                     + recipients + [encfs_configfile])
     os.remove(encfs_configfile)

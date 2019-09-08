@@ -90,6 +90,10 @@ GALAXY_REQUIREMENTS = "galaxy/requirements.txt"
 # Default Ansible Galaxy user account name
 GALAXY_ACCOUNT = "debops"
 
+# External programms used. List here for easy substitution for
+# hard-coded paths.
+GIT = 'git'
+
 
 # ---- Functions ----
 
@@ -137,7 +141,7 @@ def clone_git_repository(repo_uri, branch, destination, dry_run=False):
     if dry_run:
         print("Cloning '%s' to %s..." % (repo_uri, destination))
     else:
-        subprocess.call(['git', 'clone', '--quiet', '--branch', branch,
+        subprocess.call([GIT, 'clone', '--quiet', '--branch', branch,
                          repo_uri, destination])
 
 
@@ -152,22 +156,22 @@ def update_git_repository(path, dry_run=False, remote_uri=False):
     os.chdir(path)
 
     if dry_run:
-        subprocess.call(['git', 'fetch'])
-        subprocess.call(['git', 'diff', 'HEAD', 'origin', '--stat'])
+        subprocess.call([GIT, 'fetch'])
+        subprocess.call([GIT, 'diff', 'HEAD', 'origin', '--stat'])
     else:
         # Get the current sha of the head branch
         current_sha = subprocess.check_output(
-                ['git', 'rev-parse', 'HEAD']).strip()
+                [GIT, 'rev-parse', 'HEAD']).strip()
 
         # Fetch it silently and store the new sha
-        subprocess.call(['git', 'fetch', '--quiet'])
+        subprocess.call([GIT, 'fetch', '--quiet'])
         fetch_sha = subprocess.check_output(
-                ['git', 'rev-parse', 'FETCH_HEAD']).strip()
+                [GIT, 'rev-parse', 'FETCH_HEAD']).strip()
 
         if current_sha != fetch_sha:
             print()
             print('--')
-            subprocess.call(['git', 'merge', fetch_sha])
+            subprocess.call([GIT, 'merge', fetch_sha])
 
             if remote_uri:
                 compare_uri = (remote_uri + '/compare/' + current_sha[:7]

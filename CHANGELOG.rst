@@ -55,6 +55,13 @@ Updates of upstream application versions
   ``12.1``. This is the last release that supports Ruby 2.5 which is included
   in Debian Buster.
 
+General
+'''''''
+
+- External commands used in the DebOps scripts have been defined as constants
+  to allow easier changes of the command location in various operating systems,
+  for example Guix.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
