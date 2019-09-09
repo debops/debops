@@ -241,11 +241,13 @@ dovecot_ssl_required: True
                                                                    # ]]]
 # .. envvar:: dovecot_ssl_protocols [[[
 #
-# SSL ciphers to use
+# SSL ciphers to use. On new distros you only specify the minimum ssl
+# protocol version Dovecot accepts, defaulting to TLSv1.
+# On old distros disable SSLv2,3 and allow TLSv1.0 or better.
 dovecot_ssl_protocols: '{{ "!SSLv2 !SSLv3"
                            if (ansible_distribution_release in
                                [ "wheezy", "jessie", "precise", "trusty" ])
-                           else "!SSLv3" }}'
+                           else "TLSv1" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_ssl_cipher_list [[[
