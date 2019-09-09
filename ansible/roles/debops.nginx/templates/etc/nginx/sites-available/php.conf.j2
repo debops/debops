@@ -15,7 +15,7 @@
 {% endblock %}
 {% block nginx_tpl_block_custom_status_locations %}
 {%   if item.php_status|d()|bool %}
-        location ~ ^/({{ item.php_status_name | d('php_status') }}|{{ item.php_ping_name | d('php_ping') }})$ {
+        location ~ ^/({{ item.php_status_name | d('status.php') }}|{{ item.php_ping_name | d('ping.php') }})$ {
                 access_log off;
 {%     set nginx__tpl_status_allow = [] %}
 {%     if nginx_status_localhost %}
@@ -49,10 +49,7 @@
 {%   if item.php_upstream|d() %}
 
         location ~ ^(?!.+\.php/)(?<script_name>.+\.php)$ {
-{%     if item.php_limit_except is undefined %}
-                limit_except GET HEAD POST { deny all; }
-
-{%     elif item.php_limit_except|d() %}
+{%      if item.php_limit_except|d() %}
                 limit_except {{ item.php_limit_except if item.php_limit_except is string else item.php_limit_except | join(' ') }} { deny all; }
 
 {%     endif %}
@@ -83,10 +80,7 @@
         }
 
         location ~ ^(?<script_name>.+\.php)(?<path_info>/.*)$ {
-{%     if item.php_limit_except is undefined %}
-                limit_except GET HEAD POST { deny all; }
-
-{%     elif item.php_limit_except|d() %}
+{%     if item.php_limit_except|d() %}
                 limit_except {{ item.php_limit_except if item.php_limit_except is string else item.php_limit_except | join(' ') }} { deny all; }
 
 {%     endif %}

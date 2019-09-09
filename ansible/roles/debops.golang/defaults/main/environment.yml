@@ -1,0 +1,105 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# UNIX and build environment
+# ==========================
+
+# .. contents::
+#    :local:
+#
+# .. include:: ../../../../../includes/global.rst
+
+
+# Go UNIX environment [[[
+# -----------------------
+
+# .. envvar:: golang__user [[[
+#
+# Name of an unprivileged UNIX system account which will host the Go build
+# environment.
+golang__user: '_golang'
+
+                                                                   # ]]]
+# .. envvar:: golang__group [[[
+#
+# Name of the primary UNIX group of the Go UNIX account.
+golang__group: '_golang'
+
+                                                                   # ]]]
+# .. envvar:: golang__home [[[
+#
+# Absolute path to the home directory of the Go UNIX account.
+golang__home: '{{ (ansible_local.root.home
+                   if (ansible_local|d() and ansible_local.root|d() and
+                       ansible_local.root.home|d())
+                   else "/var/local") + "/" + golang__user }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__shell [[[
+#
+# The default shell used by the Go UNIX account.
+golang__shell: '/usr/sbin/nologin'
+
+                                                                   # ]]]
+# .. envvar:: golang__comment [[[
+#
+# The value of the GECOS field of the Go UNIX account.
+golang__comment: 'Go build environment'
+                                                                   # ]]]
+                                                                   # ]]]
+# Go source builds and binaries [[[
+# ---------------------------------
+
+# .. envvar:: golang__apt_dev_packages [[[
+#
+# List of base APT packages installed when a source build is required.
+golang__apt_dev_packages: [ 'golang-go', 'make' ]
+
+                                                                   # ]]]
+# .. envvar:: golang__env_gopath [[[
+#
+# The value of the ``$GOPATH`` environment variable, which defines a list of
+# directories outside of the current Go environment that contain Go sources and
+# packages, separated by colons.
+golang__env_gopath: '{{ golang__home + "/go" }}:/usr/share/gocode'
+
+                                                                   # ]]]
+# .. envvar:: golang__env_gocache [[[
+#
+# The value of the ``$GOCACHE`` environment variable used during Go builds.
+# This variable specifies the directory which holds the Go build cache.
+golang__env_gocache: '{{ golang__home + "/.cache/go" }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__env_path [[[
+#
+# The value of the ``$PATH`` environment variable used during Go builds. This
+# value allows access to the binaries on the Go UNIX account installed by the
+# :command:`go install` command, which are usually not needed in the normal
+# host environment.
+golang__env_path: '{{ golang__home + "/go/bin:" + ansible_env.PATH }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__gosrc [[[
+#
+# Absolute path to the directory where Go application sources will be cloned
+# using the :command:`git` command, as the unprivileged Go UNIX account.
+golang__gosrc: '{{ golang__home + "/go/src" }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__git_depth [[[
+#
+# The default depth used to create a "shallow clone" of the :command:`git`
+# repositories if not specified otherwise, minimum 1. If not specified, entire
+# :command:`git` repository is cloned.
+golang__git_depth: '0'
+
+                                                                   # ]]]
+# .. envvar:: golang__bin_database [[[
+#
+# Absolute path to a file which tracks what Go binaries have been installed by
+# the :ref:`debops.golang` role and is used by the Ansible local fact to
+# resolve the paths to preferred binaries.
+golang__bin_database: '/usr/local/etc/golang-binaries'
+                                                                   # ]]]
+                                                                   # ]]]

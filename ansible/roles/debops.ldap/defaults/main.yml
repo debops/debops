@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _ldap__ref_defaults:
+
 # debops.ldap default variables
 # =============================
 
@@ -79,7 +81,7 @@ ldap__packages: []
 ldap__domain: '{{ ansible_local.core.domain
                   if (ansible_local|d() and ansible_local.core|d() and
                       ansible_local.core.domain|d())
-                  else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                  else ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__servers_srv_rr [[[
@@ -118,7 +120,7 @@ ldap__servers_protocol: '{{ "ldap" if ldap__start_tls|bool else "ldaps" }}'
 # The list of LDAP URIs to configure in the :file:`/etc/ldap/ldap.conf`
 # configuration file which will be used as a default configuration system-wide.
 ldap__servers_uri: '{{ ldap__servers
-                       | map("regex_replace", "(.*)",
+                       | map("regex_replace", "^(.*)$",
                              ldap__servers_protocol + "://\1/")
                        | list }}'
 
@@ -151,7 +153,7 @@ ldap__start_tls: '{{ True
 # This variable can be used in Ansible playbooks that include the
 # :ref:`debops.ldap` role to join other YAML list-based RDNs together.
 ldap__base_dn: '{{ ldap__domain.split(".")
-                   | map("regex_replace", "(.*)", "dc=\1")
+                   | map("regex_replace", "^(.*)$", "dc=\1")
                    | list }}'
 
                                                                    # ]]]

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if ! dpkg --get-selections | diff - /var/backups/dpkg-selections.log > /dev/null 2>&1 ; then
+    printf "  %s\\n" "Writing dpkg selections to /var/backups/dpkg-selections.log..."
+    dpkg --get-selections > /var/backups/dpkg-selections.log
+fi

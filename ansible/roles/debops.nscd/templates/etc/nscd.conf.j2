@@ -1,0 +1,123 @@
+# {{ ansible_managed }}
+
+#
+# /etc/nscd.conf
+#
+# A Name Service Cache config file.  This file is needed by nscd.
+#
+# Legal entries are:
+#
+#	logfile			<file>
+#	debug-level		<level>
+#	threads			<initial #threads to use>
+#	max-threads		<maximum #threads to use>
+#	server-user             <user to run server as instead of root>
+#		server-user is ignored if nscd is started with -S parameters
+#       stat-user               <user who is allowed to request statistics>
+#	reload-count		unlimited|<number>
+#	paranoia		<yes|no>
+#	restart-interval	<time in seconds>
+#
+#       enable-cache		<service> <yes|no>
+#	positive-time-to-live	<service> <time in seconds>
+#	negative-time-to-live   <service> <time in seconds>
+#       suggested-size		<service> <prime number>
+#	check-files		<service> <yes|no>
+#	persistent		<service> <yes|no>
+#	shared			<service> <yes|no>
+#	max-db-size		<service> <number bytes>
+#	auto-propagate		<service> <yes|no>
+#
+# Currently supported cache names (services): passwd, group, hosts, services
+#
+
+
+{% macro print_global(option) %}
+{%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if option.value is defined %}
+{%       set option_comment = ('#\t' if (option.state|d('present') == 'comment') else '\t') %}
+{%       set option_name = (option.name | replace('_','-')) %}
+{%       set option_tab = ('\t' + ('\t' if (option.name | length < 16) else '') + ('\t' if (option.name | length < 8) else '')) %}
+{%       if option.value is string and not option.value|bool %}
+{{ '{}{}{}{}'.format(option_comment, option_name, option_tab, option.value) }}
+{%       elif option.value | bool and option.value is not iterable %}
+{%         if option.value | string == '1' %}
+{{ '{}{}{}{}'.format(option_comment, option_name, option_tab, option.value) }}
+{%         else %}
+{{ '{}{}{}{}'.format(option_comment, option_name, option_tab, 'yes') }}
+{%         endif %}
+{%       elif not option.value | bool and option.value is not iterable %}
+{%         if option.value is not none %}
+{%           if option.value | int %}
+{{ '{}{}{}{}'.format(option_comment, option_name, option_tab, option.value) }}
+{%           else %}
+{%             if option.value | string == '0' %}
+{{ '{}{}{}{}'.format(option_comment, option_name, option_tab, option.value) }}
+{%             else %}
+{{ '{}{}{}{}'.format(option_comment, option_name, option_tab, 'no') }}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
+{% macro print_section(section, option) %}
+{%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if option.value is defined %}
+{%       set option_comment = ('#\t' if (option.state|d('present') == 'comment') else '\t') %}
+{%       set option_name = (option.name | replace('_','-')) %}
+{%       set option_tab = ('\t' + ('\t' if (option.name | length < 16) else '') + ('\t' if (option.name | length < 8) else '')) %}
+{%       set option_section = (section + ('\t' + ('\t' if (section | length < 8) else ''))) %}
+{%       if option.value is string and not option.value|bool %}
+{{ '{}{}{}{}{}'.format(option_comment, option_name, option_tab, option_section, option.value) }}
+{%       elif option.value | bool and option.value is not iterable %}
+{%         if option.value | string == '1' %}
+{{ '{}{}{}{}{}'.format(option_comment, option_name, option_tab, option_section, option.value) }}
+{%         else %}
+{{ '{}{}{}{}{}'.format(option_comment, option_name, option_tab, option_section, 'yes') }}
+{%         endif %}
+{%       elif not option.value | bool and option.value is not iterable %}
+{%         if option.value is not none %}
+{%           if option.value | int %}
+{{ '{}{}{}{}{}'.format(option_comment, option_name, option_tab, option_section, option.value) }}
+{%           else %}
+{%             if option.value | string == '0' %}
+{{ '{}{}{}{}{}'.format(option_comment, option_name, option_tab, option_section, option.value) }}
+{%             else %}
+{{ '{}{}{}{}{}'.format(option_comment, option_name, option_tab, option_section, 'no') }}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
+{% for element in nscd__combined_configuration | parse_kv_items %}
+{%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if element.name == 'global' and element.options|d() %}
+{%       for entry in element.options %}
+{{ print_global(entry) -}}
+{%       endfor %}
+{%     else %}
+{%       set entry_list = [] %}
+{%       if nscd__flavor == 'unscd' %}
+{%         set entry_names = [ 'enable_cache', 'positive_time_to_live', 'negative_time_to_live', 'suggested_size', 'check_files' ] %}
+{%       elif nscd__flavor == 'nscd' %}
+{%         set entry_names = [ 'enable_cache', 'positive_time_to_live', 'negative_time_to_live', 'suggested_size', 'check_files', 'persistent', 'shared', 'max_db_size', 'auto_propagate' ] %}
+{%       endif %}
+{%       for entry_name in entry_names %}
+{%         if entry_name in element.keys() %}
+{%             set _ = entry_list.append({'name': entry_name, 'value': element[entry_name], 'state': element.state|d('present')}) %}
+{%         endif %}
+{%       endfor %}
+
+{%       if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%       endif %}
+{%       for entry in entry_list %}
+{{ print_section(element.name, entry) -}}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

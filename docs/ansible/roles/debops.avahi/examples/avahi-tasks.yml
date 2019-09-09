@@ -4,14 +4,19 @@
   file:
     path: '/etc/avahi/services'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
 
 - name: Generate Avahi service configuration
   template:
     src: 'etc/avahi/services/application.xml.j2'
     dest: '/etc/avahi/services/application.xml'
-    owner: 'root'
-    group: 'root'
+    mode: '0644'
+
+- name: Add mDNS CNAME resource record for the application
+  lineinfile:
+    path: '/etc/avahi/aliases'
+    regexp: '^application\.local$'
+    line: 'application.local'
+    state: 'present'
+    create: True
     mode: '0644'

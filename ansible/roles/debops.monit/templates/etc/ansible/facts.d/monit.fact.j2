@@ -27,11 +27,11 @@ except subprocess.CalledProcessError:
     pass
 
 if monit_stdout:
-    for line in monit_stdout.split('\n'):
+    for line in monit_stdout.decode('utf-8').split('\n'):
         if 'This is Monit version' in line:
             output['version'] = line.split()[4]
 
 if monit_services:
-    output['services'] = monit_services.strip().split('\n')
+    output['services'] = monit_services.decode('utf-8').strip().split('\n')
 
-print(dumps(output, sort_keys=True, indent=2))
+print(dumps(output, sort_keys=True, indent=4))

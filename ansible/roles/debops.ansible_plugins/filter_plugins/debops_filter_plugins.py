@@ -22,10 +22,24 @@
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
-from past.builtins import basestring
 from operator import itemgetter
 
 __metaclass__ = type
+
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str, bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
 
 
 def _check_if_key_in_nested_dict(key, dictionary):

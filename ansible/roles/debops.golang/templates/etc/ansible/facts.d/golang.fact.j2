@@ -1,0 +1,59 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+def cmd_abspath(cmd):
+    binaries = (os.path.abspath(os.path.join(path, cmd))
+                for path in os.environ["PATH"].split(os.pathsep))
+    for binary in binaries:
+        if os.access(binary, os.X_OK):
+            return binary
+
+
+bin_database = loads('''{{ golang__bin_database | to_nice_json }}''')
+binaries = {}
+
+output = loads('''{{ {"configured": True,
+                      "gosrc": golang__gosrc
+                     } | to_nice_json }}''')
+
+output['installed'] = cmd_exists('go')
+
+try:
+    output['version'] = subprocess.check_output(
+            ['go', 'version']).strip('\n') \
+                                      .split()[2] \
+                                      .lstrip('go')
+
+except Exception:
+    pass
+
+try:
+    with open(bin_database, 'r') as f:
+        for line in f:
+            if line.strip('\n') and not line.startswith('#'):
+                binary = line.strip('\n')
+                if cmd_exists(binary):
+                    binaries[binary] = cmd_abspath(binary)
+
+except Exception:
+    pass
+
+if binaries:
+    output['binaries'] = binaries
+
+print(dumps(output, sort_keys=True, indent=4))

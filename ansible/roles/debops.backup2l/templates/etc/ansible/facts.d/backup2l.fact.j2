@@ -1,0 +1,27 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = loads('''{{ {"backup_dev": backup2l__backup_dev,
+                      "backup_dir": backup2l__backup_dir,
+                      "include_file": backup2l__include_file,
+                      "pre_hook_dir": backup2l__pre_hook_dir,
+                      "post_hook_dir": backup2l__post_hook_dir,
+                      "srclist_from_file": backup2l__srclist_from_file|bool
+                     } | to_nice_json }}''')
+
+output['installed'] = cmd_exists('backup2l')
+
+print(dumps(output, sort_keys=True, indent=4))

@@ -18,23 +18,16 @@ version of Docker by setting the ``docker_server__upstream: True`` variable in
 Ansible’s inventory. Upstream Docker is installed on Debian Stretch by default,
 since this release does not provide included Docker packages.
 
-If :ref:`debops.pki` was configured on the host, Docker will automatically
-listen on its TCP port for incoming TLS connections, which is by default
-blocked by the :program:`ferm` firewall. If you don't use a firewall or have it
-disabled, you might want to set :envvar:`docker_server__tcp` to ``False`` to
-disable this behavior.
+A Docker server managed by DebOps does not listen on any TCP ports by default.
+You can set :envvar:`docker_server__tcp` to ``True`` if you need remote access
+to the Docker server. You will also need to tweak your firewall in this case,
+which is easily done with :envvar:`docker_server__tcp_allow`. It is recommended
+to use the :ref:`debops.pki` role to secure the connection between the client
+and the Docker server.
 
-Docker manages its own network bridge and :command:`iptables` entries. On hosts
-that don't use upstream Docker packages, the :program:`ferment` Python script
-will be installed in a Python virtualenv to allow :program:`ferm` firewall to
-reload Docker firewall rules automatically, however it does not fully support
-Docker yet, so be aware of this when you modify the firewall configuration. You
-can restart :command:`docker` daemon to make sure that all firewall rules are
-set up correctly.
-
-On hosts with upstream Docker enabled and :command:`ferm`, a special post-hook
+On hosts with :command:`ferm` firewall support enabled, a special post-hook
 script will be installed that restarts the Docker daemon after :command:`ferm`
-is restarted. In this case, :command:`ferment` will not be installed.
+is restarted.
 
 The :command:`docker-compose` script will be installed on hosts with upstream
 Docker, in a Python virtualenv. It will be automatically available system-wide
@@ -48,10 +41,11 @@ This role does not support switching from Docker CE to Docker EE on an already
 installed machine. It does support switching from distribution repository to
 upstream. However, it is recommended to start with a clean machine if possible.
 
-``debops.docker_server`` relies on configuration managed by :ref:`debops.core`,
-:ref:`debops.ferm`, and :ref:`debops.pki` Ansible roles.
+The :ref:`debops.docker_server` role relies on configuration managed by
+:ref:`debops.core`, :ref:`debops.ferm`, and :ref:`debops.pki` Ansible roles.
 
 .. _Docker variants: https://docs.docker.com/install/overview/
+
 
 Useful variables
 ----------------
@@ -59,12 +53,16 @@ Useful variables
 This is a list of role variables which you most likely want to define in
 Ansible inventory to customize Docker:
 
+:envvar:`docker_server__tcp`
+  Enable or disable listening for TLS connections on the Docker TCP port.
+
 :envvar:`docker_server__tcp_allow`
   List of IP addresses or subnets that can connect to Docker daemon remotely
   over TLS.
 
 :envvar:`docker_server__admins`
   List of UNIX accounts that have access to Docker daemon socket.
+
 
 Example inventory
 -----------------
@@ -77,6 +75,7 @@ To configure Docker on a given remote host, it needs to be added to the
    [debops_service_docker_server]
    hostname
 
+
 Example playbook
 ----------------
 
@@ -84,6 +83,7 @@ Here's an example playbook that can be used to manage Docker:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/docker_server.yml
    :language: yaml
+
 
 Ansible tags
 ------------
@@ -104,3 +104,34 @@ Available role tags:
 
 ``role::docker_server:admins``
   Manage access to Docker daemon by UNIX accounts.
+
+
+Other resources
+---------------
+
+List of other useful resources related to the ``debops.docker_server`` Ansible
+role:
+
+- Manual pages: :man:`docker(1)`, :man:`docker-run(1)`, :man:`Dockerfile(5)`,
+  :man:`docker-compose(1)`
+
+- `Docker`__ page on Debian Wiki
+
+  .. __: https://wiki.debian.org/Docker
+
+- `Docker`__ page on Arch Linux Wiki
+
+  .. __: https://wiki.archlinux.org/index.php/Docker
+
+- `Docker documentation page`__
+
+  .. __: https://docs.docker.com/
+
+- `Docker guide for Ansible`__
+
+  .. __: https://docs.ansible.com/ansible/latest/scenario_guides/guide_docker.html
+
+- Official DebOps image in the Docker Hub: `debops/debops`__ (see also
+  :ref:`quick_start__docker`)
+
+  .. __: https://hub.docker.com/r/debops/debops

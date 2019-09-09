@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _avahi__ref_defaults:
+
 # debops.avahi default variables [[[
 # ==================================
 
@@ -22,8 +24,7 @@ avahi__enabled: True
 # .. envvar:: avahi__base_packages [[[
 #
 # List of APT packages to install for Avahi support.
-avahi__base_packages: [ 'avahi-daemon', 'avahi-utils',
-                        'python-avahi', 'libnss-mdns' ]
+avahi__base_packages: [ 'avahi-daemon', 'avahi-utils', 'libnss-mdns' ]
 
                                                                    # ]]]
 # .. envvar:: avahi__packages [[[
@@ -247,35 +248,10 @@ avahi__allow: []
 # .. envvar:: avahi__alias_enabled [[[
 #
 # Enable CNAME mDNS support via custom Python script.
-avahi__alias_enabled: False
-
-                                                                   # ]]]
-# .. envvar:: avahi__alias_git_repo [[[
-#
-# URL of the :command:`git` repository with :command:`avahi-alias` script.
-avahi__alias_git_repo: 'https://github.com/george-hawkins/avahi-aliases-notes'
-
-                                                                   # ]]]
-# .. envvar:: avahi__alias_git_version [[[
-#
-# Specify the :command:`git` branch to use during `avahi-alias` cloning.
-avahi__alias_git_version: 'master'
-
-                                                                   # ]]]
-# .. envvar:: avahi__alias_git_src [[[
-#
-# Absolute path to the directory where source files are cloned.
-avahi__alias_git_src: '{{ (ansible_local.root.src
-                           if (ansible_local|d() and ansible_local.root|d() and
-                               ansible_local.root.src|d())
-                           else "/usr/local/src") + "/avahi" }}'
-
-                                                                   # ]]]
-# .. envvar:: avahi__alias_git_dest [[[
-#
-# Absolute path to the directory where the :command:`avahi-alias` repository
-# will be cloned.
-avahi__alias_git_dest: '{{ avahi__alias_git_src + "/" + avahi__alias_git_repo.split("://")[1] }}'
+avahi__alias_enabled: '{{ True
+                          if (ansible_local|d() and ansible_local.python|d() and
+                              (ansible_local.python.installed2|d())|bool)
+                          else False }}'
 
                                                                    # ]]]
 # .. envvar:: avahi__alias_install_path [[[
@@ -409,6 +385,22 @@ avahi__combined_services: '{{ lookup("template",
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: avahi__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+# Currently there is no python3-avahi package available in Debian.
+# Ref: https://bugs.debian.org/853239
+avahi__python__dependent_packages3: []
+
+                                                                   # ]]]
+# .. envvar:: avahi__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+avahi__python__dependent_packages2:
+
+  - 'python-avahi'
+
+                                                                   # ]]]
 # .. envvar:: avahi__ferm__dependent_rules [[[
 #
 # Configuration for the :ref:`debops.ferm`.

@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _slapd__ref_defaults:
+
 # Default variables
 # =================
 #
@@ -59,6 +61,9 @@ slapd__default_schemas:
 
   # Support for 'sudo' rules in LDAP directory
   - '/etc/ldap/schema/fusiondirectory/sudo.schema'
+
+  # Support for 'eduPerson' and 'eduOrg' schema, included in DebOps
+  - '{{ slapd__debops_schema_path + "/eduperson.schema" }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__schemas [[[
@@ -177,7 +182,7 @@ slapd__log_dir: '/var/log/slapd'
 slapd__domain: '{{ ansible_local.core.domain
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.domain|d())
-                   else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                   else ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__base_dn [[[
@@ -185,7 +190,7 @@ slapd__domain: '{{ ansible_local.core.domain
 # BaseDN value of the main OpenLDAP server that contains the LDAP data, defined
 # as a YAML list.
 slapd__base_dn: '{{ slapd__domain.split(".")
-                    | map("regex_replace", "(.*)", "dc=\1")
+                    | map("regex_replace", "^(.*)$", "dc=\1")
                     | list }}'
 
                                                                    # ]]]
@@ -577,7 +582,10 @@ slapd__default_tasks:
         - 'homeDirectory,loginShell eq'
         - 'uidNumber,gidNumber eq'
         - 'entryCSN,entryUUID eq'
-        - 'sudoUser eq'
+        - 'sudoUser eq,sub'
+        - 'authorizedService eq'
+        - 'host eq'
+        - 'gid eq'
 
   - name: 'Enable the monitor database'
     dn: 'olcDatabase={2}monitor,cn=config'

@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _sysctl__ref_defaults:
+
 # debops.sysctl default variables
 # ===============================
 
@@ -19,13 +21,10 @@
 # the current namespace (host, VM, container). The path elements need to be
 # separated by a dot (``.``) instead of a slash (``/``).
 # See :ref:`sysctl__ref_writable` for more details.
-sysctl__writable: '{{ [ "net" ]
-                      if (ansible_virtualization_role == "guest" and
-                          ansible_virtualization_type in [ "docker", "lxc", "openvz" ])
-                      else (ansible_local.sysctl.writable
-                            if (ansible_local|d() and ansible_local.sysctl|d() and
-                                ansible_local.sysctl.writable|d())
-                            else []) }}'
+sysctl__writable: '{{ ansible_local.sysctl.writable
+                      if (ansible_local|d() and ansible_local.sysctl|d() and
+                          ansible_local.sysctl.writable|d())
+                      else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Shared memory configuration [[[

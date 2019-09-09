@@ -17,7 +17,7 @@
 #     inventory-file).
 #   - no passwords are set or modified on any account;
 #   - if set, playbook will configure hostname and domain on the host using
-#     'inventory_hostname' and 'bootstrap_domain' variables;
+#     'inventory_hostname' and 'netbase__domain' variables;
 #
 # Usage:
 # To connect directly as root, run:
@@ -53,14 +53,24 @@
 
   roles:
 
-    - role: debops.apt
-      tags: [ 'role::apt', 'skip::apt' ]
-
     - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+      tags: [ 'role::python', 'skip::python', 'role::netbase' ]
+      python__dependent_packages3:
+        - '{{ netbase__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ netbase__python__dependent_packages2 }}'
+
+    - role: debops.resolvconf
+      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
 
     - role: debops.netbase
       tags: [ 'role::netbase', 'skip::netbase' ]
+
+    - role: debops.apt_proxy
+      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
+
+    - role: debops.apt
+      tags: [ 'role::apt', 'skip::apt' ]
 
     - role: debops.sudo
       tags: [ 'role::sudo', 'skip::sudo', 'role::system_groups' ]

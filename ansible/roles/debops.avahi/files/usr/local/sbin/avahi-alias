@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+
+# Copyright 2017 George C. Hawkins (https://github.com/george-hawkins)
+# Copyright 2019 Maciej Delmanowski <drybjed@gmail.com>
+# Homepage: https://github.com/george-hawkins/avahi-aliases-notes
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+# Warning: at the moment (2019) Debian does not provide 'python3-avahi'
+# package, Python 2.7 is required to run this script. The installation of the
+# 'avahi' Python package from PyPI is broken.
+# Ref: https://bugs.debian.org/853239
+
+import avahi
+import dbus
+import time
+import sys
+import locale
+from encodings.idna import ToASCII
+
+# Got these from /usr/include/avahi-common/defs.h
+CLASS_IN = 0x01
+TYPE_CNAME = 0x05
+
+TTL = 60
+
+
+def publish_cname(cname):
+    bus = dbus.SystemBus()
+    server = dbus.Interface(bus.get_object(avahi.DBUS_NAME,
+                                           avahi.DBUS_PATH_SERVER),
+                            avahi.DBUS_INTERFACE_SERVER)
+    group = dbus.Interface(bus.get_object(avahi.DBUS_NAME,
+                                          server.EntryGroupNew()),
+                           avahi.DBUS_INTERFACE_ENTRY_GROUP)
+
+    rdata = createRR(server.GetHostNameFqdn())
+    cname = encode_dns(cname)
+
+    group.AddRecord(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, dbus.UInt32(0),
+                    cname, CLASS_IN, TYPE_CNAME, TTL, rdata)
+    group.Commit()
+    print("Published " + cname.decode())
+
+
+def encode_dns(name):
+    out = []
+    for part in name.split('.'):
+        if len(part) == 0:
+            continue
+        out.append(ToASCII(part))
+    return b'.'.join(out)
+
+
+def createRR(name):
+    out = []
+    for part in name.split('.'):
+        if len(part) == 0:
+            continue
+        out.append(chr(len(part)).encode())
+        out.append(ToASCII(part))
+    out.append(b'\0')
+    return b''.join(out)
+
+
+if __name__ == '__main__':
+    for name in sys.argv[1:]:
+        publish_cname(name)
+    try:
+        # Just loop forever
+        while 1:
+            time.sleep(60)
+    except KeyboardInterrupt:
+        print("Exiting")

@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _icinga__ref_defaults:
+
 # debops.icinga default variables
 # ===============================
 
@@ -128,7 +130,7 @@ icinga__fqdn: '{{ ansible_local.core.fqdn
 icinga__domain: '{{ ansible_local.core.domain
                     if (ansible_local|d() and ansible_local.core|d() and
                         ansible_local.core.domain|d())
-                    else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                    else ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__master_nodes [[[
@@ -590,7 +592,8 @@ icinga__default_configuration:
         value: |
           include_recursive "repository.d"
         state: '{{ "absent"
-                   if (ansible_distribution_release == "wheezy")
+                   if (ansible_distribution_release == "wheezy" or
+                       icinga__version is version("2.8.0", ">="))
                    else "present" }}'
 
       - name: 'conf.d'

@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _dnsmasq__ref_defaults:
+
 # debops.dnsmasq default variables
 # ================================
 
@@ -16,7 +18,7 @@
 # .. envvar:: dnsmasq__base_packages [[[
 #
 # List of APT packages to install for :command:`dnsmasq` support.
-dnsmasq__base_packages: [ 'dnsmasq', 'resolvconf' ]
+dnsmasq__base_packages: [ 'dnsmasq' ]
 
                                                                    # ]]]
 # .. envvar:: dnsmasq__packages [[[
@@ -93,7 +95,7 @@ dnsmasq__hostname: '{{ ansible_hostname }}'
 dnsmasq__base_domain: '{{ ansible_local.core.domain
                           if (ansible_local|d() and ansible_local.core|d() and
                               ansible_local.core.domain|d())
-                          else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                          else ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: dnsmasq__base_domain_rebind_ok [[[
@@ -274,6 +276,16 @@ dnsmasq__default_configuration:
                    (ansible_local.consul.installed|d())|bool)
                else "init" }}'
 
+  - name: 'lxd-override'
+    filename: 'lxd'
+    comment: |
+      Tell any system-wide dnsmasq instance to make sure to bind to interfaces
+      instead of listening on 0.0.0.0
+    raw: |
+      bind-dynamic
+      except-interface = lxdbr0
+    state: '{{ "present" if (ansible_distribution == "Ubuntu") else "ignore" }}'
+
   - name: 'reserved-domains.conf'
     options:
 
@@ -352,7 +364,10 @@ dnsmasq__default_configuration:
           maintaining the leases.
         option: 'rebind-domain-ok'
         value: '{{ dnsmasq__base_domain }}'
-        state: '{{ "present" if dnsmasq__base_domain_rebind_ok|bool else "init" }}'
+        state: '{{ "present"
+                   if (dnsmasq__base_domain_rebind_ok|bool and
+                       dnsmasq__base_domain|d())
+                   else "absent" }}'
 
       - name: 'rebind-parent-domain-ok'
         comment: |
@@ -363,6 +378,7 @@ dnsmasq__default_configuration:
         value: '{{ dnsmasq__base_domain.split(".")[1:] | join(".") }}'
         state: '{{ "present"
                    if (dnsmasq__base_domain_rebind_ok|bool and
+                        dnsmasq__base_domain|d() and
                        (dnsmasq__base_domain.split(".") | length >= 4))
                    else "absent" }}'
 
@@ -379,9 +395,9 @@ dnsmasq__default_configuration:
         state: '{{ "comment"
                    if (ansible_local|d() and
                        (ansible_local.lxc|d() and ansible_local.lxc.net_domain|d()) or
-                       (ansible_local.resolver|d() and
-                        ((ansible_local.resolver.upstream_nameservers
-                          | d(ansible_local.resolver.nameservers)) | ipaddr("private"))))
+                       (ansible_local.resolvconf|d() and
+                        ((ansible_local.resolvconf.upstream_nameservers
+                          | d(ansible_local.resolvconf.nameservers)) | ipaddr("private"))))
                    else "present" }}'
 
       - name: 'resolv-file'
@@ -407,6 +423,22 @@ dnsmasq__default_configuration:
                             if (ansible_local|d() and ansible_local.lxc|d() and
                                 ansible_local.lxc.net_address|d())
                             else "") }}'
+
+      # Create a separate 'lxc' host record that points to the 'lxcbr0'
+      # interface from the outside, if there's no external domain set.
+      - name: 'host-record'
+        value: '{{ (ansible_local.lxc.net_domain
+                    if (ansible_local|d() and ansible_local.lxc|d() and
+                        ansible_local.lxc.net_domain|d())
+                    else "")
+                   + "," + (ansible_local.lxc.net_address
+                            if (ansible_local|d() and ansible_local.lxc|d() and
+                                ansible_local.lxc.net_address|d())
+                            else "") }}'
+        state: '{{ "present"
+                   if (ansible_local|d() and ansible_local.lxc|d() and
+                       "." not in ansible_local.lxc.net_domain|d())
+                   else "absent" }}'
 
       - name: 'rev-server'
         value: '{{ (ansible_local.lxc.net_subnet
@@ -564,7 +596,7 @@ dnsmasq__ferm__dependent_rules:
     by_role: 'debops.dnsmasq'
     name: 'dhcpv4'
     weight: '40'
-    protocol: [ 'udp', 'tcp' ]
+    protocol: [ 'udp' ]
     dport: [ 'bootps' ]
     interface: '{{ dnsmasq__combined_interfaces | flatten | parse_kv_items
                    | selectattr("state", "equalto", "present")

@@ -49,11 +49,14 @@ project_root = find_debops_project(required=True)
 # todo: need to decide on semantics!
 # config = read_config(project_root)
 
+# External programms used. List here for easy substitution for
+# hard-coded paths.
+ANSIBLE = 'ansible'
 
 # ---- Main script ----
 
 # Make sure required commands are present
-require_commands('ansible')
+require_commands(ANSIBLE)
 
 ansible_inventory = find_inventorypath(project_root)
 
@@ -64,12 +67,12 @@ if module_name not in DEBOPS_RESERVED_NAMES:
 else:
     module = []
 
-os.environ['ANSIBLE_HOSTS'] = os.path.abspath(ansible_inventory)
+os.environ['ANSIBLE_INVENTORY'] = os.path.abspath(ansible_inventory)
 
 # Allow insecure SSH connections if requested
 if INSECURE:
     os.environ['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
 
 # Run ansible with custom environment
-cmd = ['ansible'] + module + sys.argv[1:]
+cmd = [ANSIBLE] + module + sys.argv[1:]
 subprocess.call(cmd)

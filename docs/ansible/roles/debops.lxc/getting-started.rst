@@ -108,7 +108,8 @@ The LXC containers created by the role tasks or by the
 specifically by the ``lxc@.service`` unit. This is done because on Debian
 Stretch using the :command:`lxc-stop` command directly to stop a container
 results in a timeout and container processes being forcibly killed by the
-system. The :command:`lxc@.service` :command:`systemd` unit is modified by the
+system. On Debian Stretch and Ubuntu Xenial distributions, the
+:command:`lxc@.service` :command:`systemd` unit is modified by the
 :ref:`debops.lxc` role to shutdown the container "from the inside" via the
 :command:`lxc-attach` command, which results in a properly shut down container.
 

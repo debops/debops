@@ -1,0 +1,14 @@
+---
+
+- name: Configure backup2l service
+  hosts: [ 'debops_service_backup2l' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.backup2l
+      tags: [ 'role::backup2l', 'skip::backup2l' ]

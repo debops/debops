@@ -1,5 +1,11 @@
 ---
 
+- name: Detect the OS release manually, no Ansible facts available
+  raw: grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d" " -f2 | tr -d '\n'
+  register: python__register_raw_release
+  changed_when: False
+  check_mode: False
+
 - name: Update APT repositories, install core Python packages
   raw: |
     if [ -z "$(find /var/cache/apt/pkgcache.bin -mmin {{ python__raw_apt_cache_valid_time }})" ]; then

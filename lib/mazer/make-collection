@@ -10,7 +10,7 @@
 set -o nounset -o pipefail -o errexit
 
 # Check if we are in the correct directory
-if ! [ -f ansible/galaxy.yml ] ; then
+if ! [ -f lib/mazer/make-collection ] ; then
     printf "%s\\n" "Error: this script needs to be executed in the root of the DebOps repository"
     exit 1
 fi
@@ -35,7 +35,6 @@ file_list=(
     LICENSE
     INSTALL.rst
     CHANGELOG.rst
-    ansible/galaxy.yml
 )
 
 mkdir -p "${workdir}/roles" \
@@ -66,6 +65,42 @@ cp ansible/roles/debops.ansible_plugins/library/*.py "${workdir}/plugins/modules
 for filename in "${file_list[@]}" ; do
     cp "${filename}" "${workdir}/"
 done
+
+# Generate the 'galaxy.yml' file
+cat <<EOF > "${workdir}/galaxy.yml"
+---
+
+# Configuration file used by Mazer to build a collection of Ansible artifacts.
+
+namespace: "debops"
+name: "debops"
+version: "$(git describe | tr -d 'v')"
+description: "Your Debian-based data center in a box"
+
+authors:
+  - "Maciej Delmanowski <drybjed@gmail.com>"
+  - "DebOps Developers <debops-users@lists.debops.org>"
+
+repository: "https://github.com/debops/debops"
+documentation: "https://docs.debops.org/en/master/ansible/role-index.html"
+homepage: "https://debops.org/"
+issues: "https://github.com/debops/debops/issues"
+
+dependencies: {}
+
+readme: "README.md"
+license:
+  - "GPL-3.0-only"
+license_file: "LICENSE"
+
+tags:
+  - "debian"
+  - "ubuntu"
+  - "sysadmin"
+  - "cluster"
+  - "datacenter"
+  - "collection"
+EOF
 
 pushd "${workdir}" > /dev/null
 mazer build

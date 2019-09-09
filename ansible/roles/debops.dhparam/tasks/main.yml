@@ -43,7 +43,7 @@
              --outfile {{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }}
              --bits {{ item }}
     {% elif dhparam__source_library == 'openssl' %}
-    openssl dhparam -out {{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }} {{ item }}
+    openssl dhparam {{ dhparam__openssl_options }} -out {{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }} {{ item }}
     {% endif %}
   args:
     creates: '{{ dhparam__source_path + "/" + dhparam__prefix + item + dhparam__suffix }}'

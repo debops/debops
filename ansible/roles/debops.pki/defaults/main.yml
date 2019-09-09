@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _pki__ref_defaults:
+
 # debops.pki default variables [[[
 # ================================
 
@@ -543,7 +545,7 @@ pki_ca_name_constraints_critical: True
 #
 # The DNS domain used by default for an Certificate Authority configuration if
 # no specific ``item.domain`` is configured.
-pki_ca_domain: '{{ ansible_domain if ansible_domain else ansible_hostname }}'
+pki_ca_domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: pki_ca_organization [[[
@@ -602,6 +604,7 @@ pki_ca_service_key_size: '4096'
 # Configuration of the Root Certificate Authority.
 pki_authorities_ca_root:
   name: 'root'
+  enabled: '{{ True if pki_ca_domain|d() else False }}'
   subdomain: 'root-ca'
   subject: '{{ pki_ca_root_dn }}'
   key_size: '{{ pki_ca_root_key_size }}'
@@ -612,6 +615,7 @@ pki_authorities_ca_root:
 # Configuration of the Domain Certificate Authority.
 pki_authorities_ca_domain:
   name: 'domain'
+  enabled: '{{ True if pki_ca_domain|d() else False }}'
   subdomain: 'domain-ca'
   subject: '{{ pki_ca_domain_dn }}'
   issuer_name: 'root'
@@ -626,7 +630,7 @@ pki_authorities_ca_service:
   subdomain: 'service-ca'
   subject: '{{ pki_ca_service_dn }}'
   type: 'service'
-  enabled: '{{ pki_ca_service_enabled | bool }}'
+  enabled: '{{ True if (pki_ca_domain|d() and pki_ca_service_enabled|bool) else False }}'
   key_size: '{{ pki_ca_service_key_size }}'
 
                                                                    # ]]]

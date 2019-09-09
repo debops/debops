@@ -394,7 +394,7 @@ configuration file and specifying the subdomain(s) in it:
 .. code-block:: yaml
 
    ---
-   dokuwiki__main_domain: 'wiki.{{ ansible_domain }}'
+   dokuwiki__fqdn: 'wiki.{{ ansible_domain }}'
 
 Remember that the chosen subdomain (``wiki.`` or your own) needs to be
 configured in your DNS server to point to the specified remote host.

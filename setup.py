@@ -7,8 +7,10 @@ import subprocess
 
 try:
     import pypandoc
-    README = pypandoc.convert('README.md', 'rst')
+    README = pypandoc.convert_file('README.md', 'rst')
 except(IOError, ImportError):
+    print('Warning: The "pandoc" support is required to convert '
+          'the README.md to reStructuredText format')
     README = open('README.md').read()
 
 try:
@@ -30,10 +32,10 @@ SCRIPTS = [os.path.join('bin', n) for n in [
 try:
     with open(os.devnull, 'w') as devnull:
         RELEASE = subprocess.check_output(
-                ['git describe'], shell=True, stderr=devnull
-                ).strip(b'\n').lstrip(b'v')
+                ['git', 'describe'], stderr=devnull
+                ).strip().lstrip(b'v')
     with open('VERSION', 'w') as version_file:
-        version_file.write('{}\n'.format(RELEASE))
+        version_file.write('{}\n'.format(RELEASE.decode('utf-8')))
 except subprocess.CalledProcessError:
     try:
         RELEASE = open('VERSION').read().strip()
@@ -45,7 +47,7 @@ except subprocess.CalledProcessError:
                         RELEASE = line.split()[1].rstrip(b'`_').lstrip(b'v')
                         break
             with open('VERSION', 'w') as version_file:
-                version_file.write('{}\n'.format(RELEASE))
+                version_file.write('{}\n'.format(RELEASE.decode('utf-8')))
         except Exception:
             RELEASE = '0.0.0'
 
@@ -59,10 +61,10 @@ try:
     setup(
         name="debops",
         version=unicode(RELEASE),
-        install_requires=['argparse', 'future'],
+        install_requires=['argparse', 'distro', 'future'],
         extras_require={
             'ansible': ['ansible', 'netaddr', 'passlib',
-                        'python-ldap', 'dnspython']
+                        'python-ldap', 'dnspython', 'pyopenssl']
             },
 
         scripts=SCRIPTS,

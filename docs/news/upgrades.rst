@@ -11,8 +11,25 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Role configuration changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- In the :ref:`debops.dnsmasq` role, :ref:`dnsmasq__ref_interfaces` variable
+  configuration, the ``router_enabled`` parameter has been renamed to the
+  ``router_state`` parameter, with changed value type.
+
+- In the :ref:`debops.golang` role, the ``golang__*_packages`` variables are
+  used to define Go packages instead of simple list of APT packages, with
+  entirely new syntax. Existing roles that rely on these variables might need
+  to be updated. See the :ref:`golang__ref_packages` documentation for more
+  details.
+
+
+v1.1.0 (2019-08-25)
+-------------------
+
 GPG key management changes
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The :ref:`debops.keyring` centralizes management of the APT keyring and various
 GPG keyrings in unprivileged UNIX accounts. Various DebOps roles have been
@@ -47,6 +64,22 @@ List of modified DebOps roles:
 - ``debops-contrib.neurodebian``
 - ``debops-contrib.x2go_server``
 
+NodeJS and NPM changes
+~~~~~~~~~~~~~~~~~~~~~~
+
+- By default, the :ref:`debops.nodejs` role will install the NodeJS and NPM
+  packages from the OS (Debian or Ubuntu) repositories. On the Debian Oldstable
+  release (currently Stretch), the packages backported from the Stable release
+  will be used. The role supports an automatic upgrade to the upstrean NodeJS
+  package when the support for NodeSource repositories is enabled using the
+  :envvar:`nodejs__node_upstream` variable.
+
+  On existing installations, status of the upstream APT repositorie should be
+  preserved, however note that the Ansible local fact name that tracks this has
+  been changed to ``ansible_local.nodejs.node_upstream``, along with the
+  default variable name. You might want to update the Ansible inventory to
+  reflect the desired status of the NodeJS and NPM upstream support.
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -67,6 +100,12 @@ Inventory variable changes
   inventory group ``[debops_service_docker_server]`` to continue using this
   role.
 
+  Also, the Docker server no longer listens on a TCP port by default, even if
+  :ref:`debops.pki` is enabled. You must set ``docker_server__tcp`` to ``True``
+  and configure an IP address whitelist in ``docker_server__tcp_allow`` if you
+  want to connect to the Docker server over a network. It is recommended to use
+  :ref:`debops.pki` to secure the connection with TLS.
+
 - The :ref:`debops.lxc` role uses different names of the container
   configuration options depending on the LXC version used on the host. The
   ``name`` parameters used in the configuration might change unexpectedly
@@ -78,12 +117,32 @@ Inventory variable changes
   You can check the :envvar:`lxc__default_configuration` variable to see which
   ``name`` parameters can change.
 
+- The ``lxc__net_interface_fqdn`` variable has been renamed to
+  :envvar:`lxc__net_fqdn` to conform to the variable naming scheme for domain
+  and FQDN names used in different DebOps roles. The new variable defines the
+  FQDN name of the ``lxcbr0`` interface. The :envvar:`lxc__net_domain` variable
+  which has done that previously is now used to define the DNS domain for the
+  internal LXC subnet, and the new :envvar:`lxc__net_base_domain` variable
+  defines the base DNS domain for the ``lxc.`` subdomain.
+
 - The :ref:`debops.ipxe` role default variables have been renamed to move them
   to their own ``ipxe__*`` namespace; you will have to update the Ansible
   inventory.
 
 - The ``core__keyserver`` variable and its corresponding local fact have been
   replaced by the :envvar:`keyring__keyserver` with a corresponding local fact.
+
+- The :ref:`debops.nginx` role no longer defaults to limiting the allowed HTTP
+  request methods to GET, HEAD and POST on PHP-enabled websites. Use the
+  ``item.php_limit_except`` parameter if you want to keep limiting the request
+  methods.
+
+- The ``nodejs__upstream*`` variables in the :ref:`debops.nodejs` role have
+  been renamed to ``nodejs__node_upstream*`` to better indicate their purpose
+  and differentiate them from the ``nodejs__yarn_upstream*`` variables.
+
+- The ``dokuwiki__main_domain`` variable has been renamed to
+  :envvar:`dokuwiki__fqdn` to fit the naming scheme in other DebOps roles.
 
 
 v1.0.0 (2019-05-22)
@@ -569,8 +628,8 @@ Inventory variable changes
   install Python packages.
 
 - The ``nodejs__upstream_version`` variable has been renamed to
-  :envvar:`nodejs__upstream_release` to better represent the contents, which is
-  not a specific NodeJS version, but a specific major release.
+  :envvar:`nodejs__node_upstream_release` to better represent the contents,
+  which is not a specific NodeJS version, but a specific major release.
 
 - The ``gitlab_domain`` variable, previously used to set the FQDN of the GitLab
   installation, now only sets the domain part; it's value is also changed from

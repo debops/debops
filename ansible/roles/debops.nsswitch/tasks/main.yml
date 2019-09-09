@@ -39,4 +39,5 @@
   service:
     name: 'systemd-logind'
     state: 'restarted'
-  when: ansible_service_mgr == 'systemd' and nsswitch__register_config is changed
+  when: ansible_service_mgr == 'systemd' and nsswitch__register_config is changed and
+        ansible_connection != 'local'

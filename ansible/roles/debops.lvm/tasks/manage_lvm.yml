@@ -42,11 +42,12 @@
 
 - name: Manage LVM Logical Volumes
   lvol:
-    lv:    '{{ item.lv }}'
-    vg:    '{{ item.vg }}'
-    size:  '{{ item.size }}'
-    force: '{{ item.force | d(omit) }}'
-    state: 'present'
+    lv:     '{{ item.lv }}'
+    vg:     '{{ item.vg }}'
+    size:   '{{ item.size }}'
+    force:  '{{ item.force | d(omit) }}'
+    shrink: '{{ item.force | d(False) }}'
+    state:  'present'
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and

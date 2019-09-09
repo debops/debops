@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _dokuwiki__ref_defaults:
+
 # debops.dokuwiki default variables [[[
 # =====================================
 
@@ -13,16 +15,16 @@
 # Basic configuration options [[[
 # -------------------------------
 
-# .. envvar:: dokuwiki__main_domain [[[
+# .. envvar:: dokuwiki__fqdn [[[
 #
 # Default domain which will be used to host the "main" wiki instance.
-dokuwiki__main_domain: 'wiki.{{ ansible_domain }}'
+dokuwiki__fqdn: 'wiki.{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__domains [[[
 #
 # List of domains on which DokuWiki is configured in nginx.
-dokuwiki__domains: '{{ [ dokuwiki__main_domain ] +
+dokuwiki__domains: '{{ [ dokuwiki__fqdn ] +
                        dokuwiki__farm_animals|d([]) }}'
 
                                                                    # ]]]
@@ -179,8 +181,13 @@ dokuwiki__plugins_syntax:
   - repo: 'https://github.com/cosmocode/dig.git'
     dest: 'dig'
 
+  # This plugin has been replaced by 'switchpanel' plugin
   - repo: 'https://github.com/grantemsley/dokuwiki-plugin-patchpanel.git'
     dest: 'patchpanel'
+    state: 'absent'
+
+  - repo: 'https://github.com/GreenItSolutions/dokuwiki-plugin-switchpanel.git'
+    dest: 'switchpanel'
 
   - repo: 'https://github.com/ashrafhasson/dokuwiki-plugin-advrack.git'
     dest: 'advrack'

@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _opendkim__ref_defaults:
+
 # debops.opendkim default variables [[[
 # =====================================
 
@@ -91,7 +93,7 @@ opendkim__socket: '{{ "/var/spool/postfix/opendkim/opendkim.sock"
 opendkim__domain: '{{ ansible_local.core.domain
                       if (ansible_local|d() and ansible_local.core|d() and
                           ansible_local.core.domain|d())
-                      else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                      else ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: opendkim__fqdn [[[
@@ -473,23 +475,6 @@ opendkim__postfix__dependent_maincf:
     value:
       - name: 'unix:/opendkim/opendkim.sock'
         weight: -300
-
-                                                                   # ]]]
-# .. envvar:: opendkim__python__dependent_packages3 [[[
-#
-# Configuration for the :ref:`debops.python` Ansible role.
-opendkim__python__dependent_packages3:
-
-  - 'python3-openssl'
-
-                                                                   # ]]]
-# .. envvar:: opendkim__python__dependent_packages2 [[[
-#
-# Configuration for the :ref:`debops.python` Ansible role.
-opendkim__python__dependent_packages2:
-
-  - 'python-openssl'
-
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

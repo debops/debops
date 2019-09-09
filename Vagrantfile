@@ -15,13 +15,16 @@
 
 # Configuration variables:
 #
-#     VAGRANT_BOX="debian/stretch64"
+#     VAGRANT_BOX="debian/buster64"
 #         Specify the box to use for controller.
 #
-#     VAGRANT_NODE_BOX="debian/stretch64"
+#     VAGRANT_NODE_BOX="debian/buster64"
 #         Specify the box to use for nodes.
 #
-#     VAGRANT_HOSTNAME="stretch"
+#     ANSIBLE_FROM="debian" / ANSIBLE_FROM="pypi" / ANSIBLE_FROM="devel"
+#         Specify the way to install ansible.
+#
+#     VAGRANT_HOSTNAME="buster"
 #         Set a custom hostname after the box boots up.
 #
 #     CONTROLLER=false
@@ -91,7 +94,7 @@ if grep "127.0.0.1" /etc/hosts | grep "${current_fqdn}" > /dev/null ; then
     printf "Updating the box IP address to '%s' in /etc/hosts...\n" "${current_default_ip}"
     sed -i -e "/^127\.0\.0\.1.*$(hostname -f | sed -e 's/\./\\\./g')/d" /etc/hosts
 
-    # The upstream Vagrant box image contains 'stretch' as an alias of
+    # The upstream Vagrant box image contains 'buster' as an alias of
     # 'localhost', let's remove it to avoid potential issues.
     sed -i -r -e 's/^127\.0\.0\.1\\s+localhost.*$/127.0.0.1\\tlocalhost/' /etc/hosts
 
@@ -284,6 +287,9 @@ export CI_JOB_ID="#{ENV['CI_JOB_ID']}"
 export CI_JOB_NAME="#{ENV['CI_JOB_NAME']}"
 export CI_JOB_STAGE="#{ENV['CI_JOB_STAGE']}"
 export JANE_TEST_PLAY="#{ENV['JANE_TEST_PLAY']}"
+export JANE_TEST_FACT="#{ENV['JANE_TEST_FACT']}"
+export JANE_TEST_SCRIPT="#{ENV['JANE_TEST_SCRIPT']}"
+export JANE_IGNORE_IDEMPOTENCY="#{ENV['JANE_IGNORE_IDEMPOTENCY']}"
 export JANE_FORCE_TESTS="#{ENV['JANE_FORCE_TESTS']}"
 export JANE_INVENTORY_DIRS="#{ENV['JANE_INVENTORY_DIRS']}"
 export JANE_INVENTORY_GROUPS="#{ENV['JANE_INVENTORY_GROUPS']}"
@@ -327,16 +333,27 @@ fi
 if ! type ansible > /dev/null 2>&1 ; then
     jane notify warning "Ansible not found"
 
+    os_release="$(grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d' ' -f2 | tr -d '\n')"
+
     tee "/etc/apt/sources.list" > "/dev/null" <<EOF
-deb http://deb.debian.org/debian stretch main
-deb http://deb.debian.org/debian stretch-updates main
-deb http://deb.debian.org/debian stretch-backports main
-deb http://security.debian.org/ stretch/updates main
+deb http://deb.debian.org/debian ${os_release} main
+deb http://deb.debian.org/debian ${os_release}-updates main
+deb http://deb.debian.org/debian ${os_release}-backports main
 EOF
+
+    if [ "${os_release}" == "wheezy" ] || [ "${os_release}" == "jessie" ] || [ "${os_release}" == "stretch" ] || [ "${os_release}" == "buster" ] ; then
+        tee -a "/etc/apt/sources.list" > "/dev/null" <<EOF
+deb http://security.debian.org/ ${os_release}/updates main
+EOF
+    else
+        tee -a "/etc/apt/sources.list" > "/dev/null" <<EOF
+deb http://security.debian.org/ ${os_release}-security main
+EOF
+    fi
 
     tee "/etc/apt/preferences.d/provision_ansible.pref" > "/dev/null" <<EOF
 Package: ansible
-Pin: release a=stretch-backports
+Pin: release a=${os_release}-backports
 Pin-Priority: 500
 EOF
 
@@ -359,10 +376,12 @@ EOF
         jq \
         make \
         python-apt \
+        python-distro \
         python-dnspython \
         python-future \
         python-jinja2 \
         python-ldap \
+        python-netaddr \
         python-nose2 \
         python-nose2-cov \
         python-openssl \
@@ -379,11 +398,52 @@ EOF
         python-yaml \
         python3 \
         python3-apt \
+        python3-distro \
+        python3-dnspython \
+        python3-future \
+        python3-jinja2 \
+        python3-netaddr \
+        python3-nose2 \
+        python3-nose2-cov \
+        python3-openssl \
+        python3-passlib \
         python3-pip \
+        python3-pycodestyle \
+        python3-pytest \
+        python3-pytest-cov \
         python3-setuptools \
+        python3-sphinx \
+        python3-sphinx-rtd-theme \
+        python3-unittest2 \
+        python3-wheel \
+        python3-yaml \
         rsync \
         shellcheck \
-        yamllint ${ansible_from_debian}
+        yamllint
+
+    # Install packages needed to build missing Python modules
+    if [ "${os_release}" == "wheezy" ] || [ "${os_release}" == "jessie" ] || [ "${os_release}" == "stretch" ] ; then
+
+        DEBIAN_FRONTEND=noninteractive apt-get -y \
+        --no-install-recommends install \
+            build-essential \
+            libffi-dev \
+            libldap2-dev \
+            libsasl2-dev \
+            libssl-dev \
+            python-dev \
+            python3-dev
+    fi
+
+    if [ ! "${os_release}" == "wheezy" ] && [ ! "${os_release}" == "jessie" ] && [ ! "${os_release}" == "stretch" ] ; then
+
+        DEBIAN_FRONTEND=noninteractive apt-get -y \
+        --no-install-recommends install \
+            python3-ldap
+    fi
+
+    DEBIAN_FRONTEND=noninteractive apt-get -y \
+    --no-install-recommends install ${ansible_from_debian}
 
     jane notify cache "Cleaning up cache directories..."
     find /var/lib/apt/lists -maxdepth 1 -type f ! -name 'lock' -delete
@@ -405,12 +465,12 @@ if [ -z "${JANE_BOX_INIT:-}" ] ; then
     # So we need to install PyPI packages on the real box, not the template.
     jane notify install "Installing test requirements via PyPI..."
 
-    pip install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
+    pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
     mkdir /tmp/build
     rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
     cd /tmp/build
     make sdist > /dev/null
-    pip install dist/*
+    pip3 install dist/*
     cd - > /dev/null
 
     jane notify cache "Cleaning up cache directories..."
@@ -511,12 +571,12 @@ fi
 
 jane notify install "Installing test requirements via PyPI..."
 
-sudo pip install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
+sudo pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
 mkdir /tmp/build
 rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
 cd /tmp/build
 make sdist > /dev/null
-sudo pip install dist/*
+sudo pip3 install dist/*
 cd - > /dev/null
 
 jane notify cache "Cleaning up cache directories..."
@@ -643,7 +703,7 @@ VAGRANT_HOSTNAME_MASTER = (ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant') + '/vagran
 if File.exist? VAGRANT_HOSTNAME_MASTER
       master_hostname = IO.read( VAGRANT_HOSTNAME_MASTER ).strip
 else
-      master_hostname = "debops-#{SecureRandom.hex(3)}"
+      master_hostname = ENV['VAGRANT_HOSTNAME'] || "debops-#{SecureRandom.hex(3)}"
       IO.write( VAGRANT_HOSTNAME_MASTER, master_hostname )
 end
 master_fqdn = master_hostname + '.' + VAGRANT_DOMAIN
@@ -658,7 +718,7 @@ else
     VAGRANT_NODES = ENV['VAGRANT_NODES'] || 0
 end
 IO.write( VAGRANT_NODE_NUMBER, VAGRANT_NODES )
-VAGRANT_NODE_BOX = ENV['VAGRANT_NODE_BOX'] || 'debian/stretch64'
+VAGRANT_NODE_BOX = ENV['VAGRANT_NODE_BOX'] || 'debian/buster64'
 
 # Vagrant removed the atlas.hashicorp.com to vagrantcloud.com
 # redirect. The value of DEFAULT_SERVER_URL in Vagrant versions
@@ -689,7 +749,7 @@ Vagrant.configure("2") do |config|
                 # Don't populate '/vagrant' directory on other nodes
                 node.vm.synced_folder ".", "/vagrant", disabled: true
 
-                if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
+                if ENV['VAGRANT_BOX'] || 'debian/buster64' == 'debian/buster64'
                     node.ssh.insert_key = false
                 end
 
@@ -711,7 +771,7 @@ Vagrant.configure("2") do |config|
     end
 
     config.vm.define "master", primary: true do |subconfig|
-        subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/stretch64'
+        subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/buster64'
         subconfig.vm.hostname = master_fqdn
 
         subconfig.vm.provision "shell", inline: $setup_eatmydata,  keep_color: true
@@ -729,14 +789,15 @@ Vagrant.configure("2") do |config|
             SHELL
         end
 
-        if ENV['VAGRANT_BOX'] || 'debian/stretch64' == 'debian/stretch64'
+        if ENV['VAGRANT_BOX'] || 'debian/buster64' == 'debian/buster64'
             subconfig.ssh.insert_key = false
         end
 
         subconfig.vm.provider "libvirt" do |libvirt, override|
             # On a libvirt provider, default sync method is NFS. If we switch
             # it to 'rsync', this will drop the dependency on NFS on the host.
-            override.vm.synced_folder ENV['CI_PROJECT_DIR'] || ".", "/vagrant", type: "rsync"
+            override.vm.synced_folder ENV['CI_PROJECT_DIR'] || ".", "/vagrant", type: "rsync", \
+                                      rsync__exclude: ['.git/', 'build/', 'docs/', '*.box' ]
 
             libvirt.random_hostname = true
             libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '1024'

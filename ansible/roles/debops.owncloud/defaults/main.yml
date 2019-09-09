@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _owncloud__ref_defaults:
+
 # Default variables
 # =================
 
@@ -760,7 +762,7 @@ owncloud__fqdn: 'cloud.{{ owncloud__domain }}'
 owncloud__domain: '{{ ansible_local.core.domain
                       if (ansible_local|d() and ansible_local.core|d() and
                           ansible_local.core.domain|d())
-                      else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                      else ansible_domain }}'
 
 
 # .. envvar:: owncloud__upload_size
@@ -1927,6 +1929,8 @@ owncloud__nginx__dependent_servers:
     name: '{{ owncloud__fqdn }}'
     root: '{{ owncloud__deploy_path }}'
     deny_hidden: False
+    ## Nextcloud has it's own maintenance page
+    maintenance: '{{ False if (owncloud__variant == "nextcloud") else True }}'
 
     ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
     ## DebOps default should be fine.
@@ -1997,20 +2001,20 @@ owncloud__nginx__dependent_servers:
 
       - pattern: '/'
         options: |
-          rewrite ^ /index.php$uri;
+          rewrite ^ /index.php$request_uri;
 
-      - pattern: '~ ^/(?:build|tests|config|lib|3rdparty|templates|data)/'
+      - pattern: '~ ^\/(?:build|tests|config|lib|3rdparty|templates|data)\/'
         options: |
           deny all;
 
-      - pattern: '~ ^/(?:\.|autotest|occ|issue|indie|db_|console)'
+      - pattern: '~ ^\/(?:\.|autotest|occ|issue|indie|db_|console)'
         options: |
           deny all;
 
-      - pattern: '~ ^/(?:index|remote|public|cron|core/ajax/update|status|ocs/v[12]|updater/.+|ocs-provider/.+|core/templates/40[34])\.php(?:$|/)'
+      - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|core\/templates\/40[34])\.php(?:$|\/)'
         options: |
           include fastcgi_params;
-          fastcgi_split_path_info ^(.+\.php)(/.+)$;
+          fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           fastcgi_param PATH_INFO $fastcgi_path_info;
           fastcgi_param HTTPS on;
@@ -2027,17 +2031,17 @@ owncloud__nginx__dependent_servers:
 
           fastcgi_read_timeout {{ owncloud__timeout }};
 
-      - pattern: '~ ^/(?:updater|ocs-provider)(?:$|/)'
+      - pattern: '~ ^\/(?:updater|oc[ms]-provider)(?:$|\/)'
         options: |
           try_files $uri/ =404;
           index index.php;
 
-      - pattern: '~* \.(?:css|js)$'
+      - pattern: '~ \.(?:css|js|woff2?|svg|gif|map)$'
         options: |
-          # Adding the cache control header for js and css files
+          # Adding the cache control header for js, css and map files
           # Make sure it is BELOW the PHP block
 
-          try_files $uri /index.php$uri$is_args$args;
+          try_files $uri /index.php$request_uri;
           add_header Cache-Control "public, max-age=15778463";
 
           add_header X-Content-Type-Options nosniff;
@@ -2053,9 +2057,9 @@ owncloud__nginx__dependent_servers:
           access_log off;
           {% endif %}
 
-      - pattern: '~* \.(?:svg|gif|png|html|ttf|woff2?|ico|jpg|jpeg)$'
+      - pattern: '~ \.(?:png|html|ttf|ico|jpg|jpeg|bcmap)$'
         options: |
-          try_files $uri /index.php$uri$is_args$args;
+          try_files $uri /index.php$request_uri;
 
           {% if not (owncloud__nginx_access_log_assets|bool) %}
           access_log off;
@@ -2176,11 +2180,8 @@ owncloud__php__dependent_pools:
     post_max_size: '{{ owncloud__upload_size }}'
 
     ## https://secure.php.net/manual/de/ini.core.php#ini.memory-limit
-    ## FIXME: ownCloud and the PHP manual suggest that it should be enabled.
-    ## Is that really needed because the process needs to hold the entire file
-    ## in memory or does it support "streaming" the file thought itself?
-    ## Currently disabled. Enable when required.
-    # memory_limit: '{{ owncloud__upload_size }}'
+    ## Nextcloud now warns with a PHP memory limit lower than 512MB
+    memory_limit: '{{ owncloud__upload_size }}'
 
     ## https://secure.php.net/manual/en/info.configuration.php#ini.max-input-time
     max_input_time: '{{ owncloud__timeout }}'

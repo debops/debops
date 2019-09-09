@@ -3,17 +3,23 @@
 - name: Pre hooks
   include: '{{ lookup("task_src", "sshd/pre_main.yml") }}'
 
-- name: Check if OpenSSH is installed (or half-installed)
-  script: 'scripts/dpkg-state{{ "2" if (ansible_python_version is version_compare("3.5", "<"))
-                                    else "3" }} openssh-server'
-  register: sshd__register_prev_pkg_state
-  changed_when: False
-  failed_when: sshd__register_prev_pkg_state.rc != 0 or
-               sshd__register_prev_pkg_state.stdout|trim not in
-                 ["not-installed", "config-files",
-                  "unpacked", "half-installed", "half-configured",
-                  "triggers-pending", "triggers-awaited", "installed"]
-  check_mode: False
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Ansible local fact script
+  template:
+    src: 'etc/ansible/facts.d/sshd.fact.j2'
+    dest: '/etc/ansible/facts.d/sshd.fact'
+    mode: '0755'
+  register: sshd__register_fact_script
+
+- name: Reload Ansible local facts
+  setup:
+    filter: ansible_local
+  when: sshd__register_fact_script is changed
 
 - name: Make sure that OpenSSH configuration directory exists
   file:
@@ -55,8 +61,20 @@
     content: |
       This file disables the ssh server.  It was created by debops.sshd.
       This file will be removed when configuration is successfully completed.
-  when: sshd__register_prev_pkg_state.stdout|trim in
-          ["not-installed", "config-files"]
+  when: (ansible_local|d() and ansible_local.sshd|d() and
+         not (ansible_local.sshd.installed|d())|bool)
+
+  # In a case where the OpenSSH server is installed by the role but not started
+  # due to conditions specified above, this task will ensure that the runtime
+  # directory exists. Without this, configuration check before the daemon is
+  # restarted fails and stops the playbook execution.
+- name: Ensure that the '/run/sshd' directory exists on first install
+  file:
+    path: '/run/sshd'
+    state: 'directory'
+    mode: '0755'
+  when: (ansible_local|d() and ansible_local.sshd|d() and
+         not (ansible_local.sshd.installed|d())|bool)
 
 - name: Ensure OpenSSH support is installed
   apt:
@@ -72,6 +90,11 @@
     install_recommends: False
   register: sshd__register_packages
   until: sshd__register_packages is succeeded
+
+- name: Reload Ansible local facts
+  setup:
+    filter: ansible_local
+  when: sshd__register_packages is changed
 
 - name: Check OpenSSH server version
   environment:
@@ -167,13 +190,13 @@
   tags: [ 'role::sshd:known_hosts' ]
 
 - name: Check if /etc/ssh/moduli contains weak DH parameters
-  shell: awk '$5 < {{ sshd__moduli_minimum }}' /etc/ssh/moduli
+  shell: awk '$5 < {{ (sshd__moduli_minimum|int -1) }}' /etc/ssh/moduli
   register: sshd__register_moduli
   changed_when: sshd__register_moduli.stdout
   check_mode: False
 
 - name: Remove DH parameters smaller than the requested size
-  shell: awk '$5 >= {{ sshd__moduli_minimum }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
+  shell: awk '$5 >= {{ (sshd__moduli_minimum|int - 1) }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
          [ -r /etc/ssh/moduli.new -a -s /etc/ssh/moduli.new ] && mv /etc/ssh/moduli.new /etc/ssh/moduli || true
   notify: [ 'Test sshd configuration and restart' ]
   when: sshd__register_moduli.stdout
@@ -207,28 +230,6 @@
     executable: 'bash'
     removes: '/etc/pam.d/sshd.dpkg-divert'
   when: sshd__pam_deploy_state != 'present'
-
-- name: Make sure that Ansible local fact directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save Ansible local fact script
-  template:
-    src: 'etc/ansible/facts.d/sshd.fact.j2'
-    dest: '/etc/ansible/facts.d/sshd.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: sshd__register_fact_script
-
-- name: Reload Ansible local facts
-  setup:
-    filter: ansible_local
-  when: sshd__register_fact_script is changed
 
 - name: Post hooks
   include: '{{ lookup("task_src", "sshd/post_main.yml") }}'

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # The entrypoint script for Docker containers.
 # See the 'Dockerfile' configuration file in the root of the repository for
@@ -7,21 +7,19 @@
 
 set -o nounset -o pipefail -o errexit
 
-# Ensure that the required directory exists, otherwise the restart of the
-# OpenSSH daemon during playbook execution inside of the container will fail with:
-# "Missing privilege separation directory: /run/sshd"
-sudo mkdir -p /run/sshd
-
 if ! [ -d "src" ] ; then
 
     debops-init src/controller
     mkdir -p src/controller/ansible/inventory/host_vars/localhost
 
     sed -i '/ansible_connection=local$/ c\localhost ansible_connection=local' \
-       src/controller/ansible/inventory/hosts
+        src/controller/ansible/inventory/hosts
 
     echo -e "---\\n\\n# Use smaller DH parameters to speed up test runs\\ndhparam__bits: [ '1024' ]" \
-       > src/controller/ansible/inventory/host_vars/localhost/dhparam.yml
+        > src/controller/ansible/inventory/host_vars/localhost/dhparam.yml
+
+    echo -e "---\\n\\n# Allow use of sudo without password by administrators\\nsystem_groups__admins_sudo_nopasswd: True" \
+        > src/controller/ansible/inventory/host_vars/localhost/system_groups.yml
 
 fi
 

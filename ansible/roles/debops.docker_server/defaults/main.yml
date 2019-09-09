@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _docker_server__ref_defaults:
+
 # debops.docker_server default variables [[[
 # ======================================
 
@@ -38,9 +40,12 @@ docker_server__distribution_release: '{{ ansible_local.core.distribution_release
 # upstream version of Docker.
 # Note that switching from upstream to default on one host, may not always
 # work. You may need to manually remove the upstream version and configuration.
-docker_server__upstream: '{{ True
-                             if (docker_server__distribution_release == "stretch")
-                             else False }}'
+docker_server__upstream: '{{ ansible_local.docker_server.upstream
+                             if (ansible_local|d() and ansible_local.docker_server|d() and
+                                 ansible_local.docker_server.upstream is defined)
+                             else (True
+                                   if (docker_server__distribution_release == "stretch")
+                                   else False) }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__upstream_edition [[[
@@ -119,6 +124,7 @@ docker_server__base_packages:
   - '{{ [ "virtualenv" ] if (ansible_distribution_release not in ["trusty", "wheezy"]) else [] }}'
   - "bridge-utils"
   - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
+  - '{{ [] if docker_server__upstream|bool else "docker-compose" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__packages [[[
@@ -179,15 +185,6 @@ docker_server__default_pip_packages:
     src:  '{{ docker_server__virtualenv + "/bin/docker-compose" }}'
     state: '{{ "present" if docker_server__upstream|bool else "absent" }}'
 
-  - name: 'docker-py'
-    version: '0.5.3'
-    state: '{{ "present" if docker_server__ferment|bool else "absent" }}'
-
-  - name: 'ferment'
-    path: '/usr/local/bin/ferment'
-    src:  '{{ docker_server__virtualenv + "/bin/ferment" }}'
-    state: '{{ "present" if docker_server__ferment|bool else "absent" }}'
-
                                                                    # ]]]
 # .. envvar:: docker_server__pip_packages [[[
 #
@@ -231,10 +228,10 @@ docker_server__fixed_cidr: ''
 # List of IP addresses of nameservers used by Docker. By default they
 # are gathered by the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of
 # the remote host.
-docker_server__dns_nameserver: '{{ ansible_local.resolver.upstream_nameservers
+docker_server__dns_nameserver: '{{ ansible_local.resolvconf.upstream_nameservers
                                    if (ansible_local|d() and
-                                       ansible_local.resolver|d() and
-                                       ansible_local.resolver.upstream_nameservers|d())
+                                       ansible_local.resolvconf|d() and
+                                       ansible_local.resolvconf.upstream_nameservers|d())
                                    else (ansible_dns.nameservers
                                          if ("127.0.0.1" not in ansible_dns.nameservers)
                                          else []) }}'
@@ -244,11 +241,11 @@ docker_server__dns_nameserver: '{{ ansible_local.resolver.upstream_nameservers
 #
 # List of DNS search domains to use by Docker. By default they are gathered by
 # the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of the remote host.
-docker_server__dns_search: '{{ ansible_local.resolver.search
+docker_server__dns_search: '{{ ansible_local.resolvconf.search
                                if (ansible_local|d() and
-                                   ansible_local.resolver|d() and
-                                   ansible_local.resolver.search|d() and
-                                   (ansible_local.resolver.upstream_nameservers|d() or
+                                   ansible_local.resolvconf|d() and
+                                   ansible_local.resolvconf.search|d() and
+                                   (ansible_local.resolvconf.upstream_nameservers|d() or
                                     "127.0.0.1" not in ansible_dns.nameservers))
                                else (ansible_dns.search|d()
                                      if ("127.0.0.1" not in ansible_dns.nameservers)
@@ -260,10 +257,8 @@ docker_server__dns_search: '{{ ansible_local.resolver.search
 
 # .. envvar:: docker_server__tcp [[[
 #
-# Enable or disable listening for TLS connections on the TCP docker port. By
-# default remote connections are enabled if the :ref:`debops.pki` role has been
-# configured on remote host (access is controlled by the firewall).
-docker_server__tcp: '{{ docker_server__pki | bool }}'
+# Enable or disable listening for incoming TCP connections.
+docker_server__tcp: False
 
                                                                    # ]]]
 # .. envvar:: docker_server__tcp_bind [[[
@@ -287,7 +282,7 @@ docker_server__tls_tcp_port: '2376'
                                                                    # ]]]
 # .. envvar:: docker_server__tcp_port [[[
 #
-# Port on which to listen for incoming TLS connections.
+# Port on which to listen for incoming TCP connections.
 docker_server__tcp_port: '{{ docker_server__tls_tcp_port
                              if (docker_server__pki|d() | bool)
                              else docker_server__unencrypted_tcp_port }}'
@@ -296,16 +291,16 @@ docker_server__tcp_port: '{{ docker_server__tls_tcp_port
 # .. envvar:: docker_server__tcp_allow [[[
 #
 # List of IP addresses or subnets in CIDR format which are allowed to connect
-# to the Docker daemon over TLS. If it's not specified, remote connections are
+# to the Docker daemon over TCP. If it's not specified, remote connections are
 # denied by the firewall.
 docker_server__tcp_allow: []
 
                                                                    # ]]]
 # .. envvar:: docker_server__tcp_listen [[[
 #
-# Default connection configured in addition to local socket connection, using
-# TCP over TLS.
-docker_server__tcp_listen: '{{ ("tcp://" + docker_server__tcp_bind + ":" + docker_server__tcp_port)
+# Default TCP connection configured in addition to local socket connection.
+docker_server__tcp_listen: '{{ ("tcp://" + docker_server__tcp_bind + ":" +
+                                docker_server__tcp_port)
                                if (docker_server__tcp|d() | bool) else "" }}'
 
                                                                    # ]]]
@@ -388,9 +383,12 @@ docker_server__registry_mirrors: []
 # .. envvar:: docker_server__storage_driver [[[
 #
 # Storage driver for docker volumes.
-docker_server__storage_driver: '{{ "aufs"
-                                   if (ansible_distribution_release in ["wheezy", "jessie" ])
-                                   else "overlay" }}'
+docker_server__storage_driver: '{{ ansible_local.docker_server.storage_driver
+                                   if (ansible_local|d() and ansible_local.docker_server|d() and
+                                       ansible_local.docker_server.storage_driver|d())
+                                   else ("aufs"
+                                         if (ansible_distribution_release in ["wheezy", "jessie" ])
+                                         else "overlay2") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__storage_options [[[
@@ -477,34 +475,11 @@ docker_server__pki_key: 'default.key'
 
 # .. envvar:: docker_server__ferm_post_hook [[[
 #
-# Enable or disable installation for the :program:`ferm` post hook when :program:`ferment`
-# is disabled.
+# Enable or disable installation for the :program:`ferm` post hook.
 docker_server__ferm_post_hook: '{{ True
-                                   if (ansible_local|d() and
-                                       ansible_local.ferm|d() and
-                                       not docker_server__ferment|bool)
+                                   if (ansible_local|d() and ansible_local.ferm|d() and
+                                       (ansible_local.ferm.enabled|d())|bool)
                                    else False }}'
-
-                                                                   # ]]]
-# .. envvar:: docker_server__ferment [[[
-#
-# Enable or disable support for :program:`ferment` script, which can generate :program:`ferm`
-# configuration with the current Docker state.
-docker_server__ferment: '{{ True
-                            if (ansible_local|d() and
-                                ansible_local.ferm|d() and
-                                not docker_server__upstream|bool)
-                            else False }}'
-
-                                                                   # ]]]
-# .. envvar:: docker_server__ferment_wrapper [[[
-#
-# Path to the :program:`ferment` wrapper script used to generate :program:`ferm` configuration.
-docker_server__ferment_wrapper: '{{ (ansible_local.root.lib
-                                     if (ansible_local|d() and
-                                         ansible_local.root|d() and
-                                         ansible_local.root.lib|d())
-                                     else "/usr/local/lib") + "/docker-ferment-wrapper" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -559,20 +534,16 @@ docker_server__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: docker_server__ferm__dependent_rules [[[
 #
-# Configuration for :ref:`debops.ferm` role which enables support for :program:`ferment`
-# script and opens access to the Docker REST API in the firewall.
+# Configuration for :ref:`debops.ferm` role which opens access to the Docker
+# REST API in the firewall.
 docker_server__ferm__dependent_rules:
 
+  # Support for ferment has been dropped from DebOps
   - type: 'custom'
     weight: '99'
     role: 'docker'
     name: 'ferment_rules'
-    rules: |
-      @def $DOCKER_FERMENT = `test -x {{ docker_server__ferment_wrapper }} && echo 1 || echo 0`;
-      @if $DOCKER_FERMENT {
-          @include '{{ docker_server__ferment_wrapper + (" " + docker_server__bridge if docker_server__bridge else "") }}|';
-      }
-    state: '{{ "present" if docker_server__ferment|bool else "absent" }}'
+    rule_state: 'absent'
 
   - type: 'accept'
     dport: '{{ [ docker_server__tcp_port ] + docker_server__custom_ports }}'

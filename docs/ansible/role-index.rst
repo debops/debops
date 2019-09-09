@@ -31,6 +31,7 @@ etc.
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
 - :ref:`debops.prosody`
+- :ref:`debops.roundcube`
 - :ref:`debops.rstudio_server`
 - :ref:`debops.phpipam`
 - ``debops.phpmyadmin``
@@ -80,6 +81,7 @@ are not accessed directly by end users.
 - :ref:`debops.ldap`
 - :ref:`debops.memcached`
 - :ref:`debops.mosquitto`
+- :ref:`debops.nscd`
 - :ref:`debops.rabbitmq_management`
 - :ref:`debops.rabbitmq_server`
 - :ref:`debops.salt`
@@ -94,6 +96,7 @@ are not accessed directly by end users.
 Backup
 ------
 
+- :ref:`debops.backup2l`
 - :ref:`debops.rsnapshot`
 - ``debops.boxbackup``
 
@@ -117,9 +120,22 @@ Directory services
 ------------------
 
 - :ref:`debops.ldap`
+- :ref:`debops.nscd`
 - :ref:`debops.nslcd`
 - :ref:`debops.nsswitch`
 - :ref:`debops.slapd`
+
+
+Domain Name System
+------------------
+
+It's always DNS.
+
+- :ref:`debops.avahi`
+- :ref:`debops.dnsmasq`
+- :ref:`debops.netbase`
+- :ref:`debops.resolvconf`
+- :ref:`debops.unbound`
 
 
 Encryption
@@ -191,6 +207,7 @@ Mail services
 - :ref:`debops.postfix`
 - :ref:`debops.postscreen`
 - :ref:`debops.postwhite`
+- :ref:`debops.roundcube`
 - :ref:`debops.saslauthd`
 - ``debops.smstools``
 
@@ -220,6 +237,7 @@ Networking
 - :ref:`debops.ifupdown`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`
+- :ref:`debops.resolvconf`
 - :ref:`debops.stunnel`
 - :ref:`debops.tinc`
 - :ref:`debops.unbound`
@@ -269,6 +287,7 @@ System configuration
 --------------------
 
 - :ref:`debops.atd`
+- :ref:`debops.console`
 - :ref:`debops.cron`
 - :ref:`debops.debops_legacy`
 - :ref:`debops.environment`
@@ -296,7 +315,6 @@ System configuration
 - :ref:`debops.system_users`
 - :ref:`debops.users`
 - :ref:`debops.yadm`
-- ``debops.console``
 - ``debops.gitusers``
 
 

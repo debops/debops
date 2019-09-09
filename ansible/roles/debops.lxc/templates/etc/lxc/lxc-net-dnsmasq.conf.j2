@@ -10,7 +10,7 @@ dns-loop-detect
 domain = {{ lxc__net_domain + ',' + (lxc__net_address | ipaddr('subnet')) + (',local' if (lxc__net_address | ipaddr('prefix') in [ 8, 16, 24 ]) else '') }}
 
 # Set the FQDN name of the bridge interface in the DNS
-interface-name = {{ lxc__net_interface_fqdn }},{{ lxc__net_bridge }}
+interface-name = {{ lxc__net_fqdn }},{{ lxc__net_bridge }}
 {% if (lxc__net_domain.split('.') | length >= 3 and lxc__net_domain.split('.')[1:] | length >= 2) %}
 
 # Include the parent domain as searchable via resolvconf

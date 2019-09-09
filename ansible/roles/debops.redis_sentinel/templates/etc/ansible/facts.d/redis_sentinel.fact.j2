@@ -39,7 +39,7 @@ if output['installed']:
     try:
         redis_sentinel_version_stdout = subprocess.check_output(
                 ["dpkg-query", "-W", "-f=${Version}\n'",
-                 "redis-sentinel"]).split('-')[0]
+                 "redis-sentinel"]).decode('utf-8').split('-')[0]
         output['version'] = redis_sentinel_version_stdout.split(':')[1]
 
     except Exception:
@@ -91,7 +91,9 @@ if output['installed']:
                                                  'port': entry['port']})
                                     monitor_entry = (
                                             {'name': monitor,
-                                             'master_host': master_ip_port[0],
+                                             'master_host': (
+                                                 master_ip_port[0].decode(
+                                                     'utf-8')),
                                              'master_port': master_ip_port[1],
                                              'other_sentinels': sentinels})
                                     if monitor in pass_map.keys():
@@ -134,4 +136,4 @@ if output['installed']:
     except Exception:
         pass
 
-print(dumps(output, sort_keys=True, indent=2))
+print(dumps(output, sort_keys=True, indent=4))

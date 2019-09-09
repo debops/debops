@@ -24,6 +24,7 @@
 
 variables:
   TEST_PLAYBOOKS: '/vagrant/lib/tests/playbooks'
+  TEST_SCRIPTS: '/vagrant/lib/tests/scripts'
   DEBOPS_PLAYBOOKS:  '/vagrant/ansible/playbooks'
   VAGRANT_DOTFILE_PATH: '/var/tmp/vagrant-dotfile-${CI_JOB_ID}'
   GIT_STRATEGY: 'clone'
@@ -50,7 +51,6 @@ stages:
     - './lib/tests/jane gitlab script'
   after_script:
     - './lib/tests/jane gitlab after_script'
-  retry: 1
 
 
 .tpl_test_role_no_deps: &test_role_no_deps
@@ -89,6 +89,7 @@ stages:
 'ansible role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'ansible.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ansible.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_ansible'
     JANE_DIFF_PATTERN: '.*/debops.ansible/.*'
@@ -100,6 +101,7 @@ stages:
 'apache role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'apache.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apache.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_apache'
     JANE_DIFF_PATTERN: '.*/debops.apache/.*'
@@ -111,6 +113,7 @@ stages:
 'apt role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'apt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml'
     JANE_DIFF_PATTERN: '.*/debops.apt/.*'
     JANE_LOG_PATTERN: '\[debops\.apt\]'
@@ -118,6 +121,7 @@ stages:
 'apt_cacher_ng role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'apt_cacher_ng.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_cacher_ng.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_apt_cacher_ng'
     JANE_DIFF_PATTERN: '.*/debops.apt_cacher_ng/.*'
@@ -126,6 +130,7 @@ stages:
 'apt_listchanges role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'apt_listchanges.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_listchanges.yml'
     JANE_DIFF_PATTERN: '.*/debops.apt_listchanges/.*'
     JANE_LOG_PATTERN: '\[debops\.apt_listchanges\]'
@@ -133,6 +138,7 @@ stages:
 'apt_install role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'apt_install.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_install.yml'
     JANE_DIFF_PATTERN: '.*/debops.apt_install/.*'
     JANE_LOG_PATTERN: '\[debops\.apt_install\]'
@@ -140,6 +146,7 @@ stages:
 'apt_mark role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'apt_mark.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_mark.yml'
     JANE_DIFF_PATTERN: '.*/debops.apt_mark/.*'
     JANE_LOG_PATTERN: '\[debops\.apt_mark\]'
@@ -147,6 +154,7 @@ stages:
 'apt_preferences role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'apt_preferences.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_preferences.yml'
     JANE_DIFF_PATTERN: '.*/debops.apt_preferences/.*'
     JANE_LOG_PATTERN: '\[debops\.apt_preferences\]'
@@ -154,6 +162,7 @@ stages:
 'apt_proxy role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'apt_proxy.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_proxy.yml'
     JANE_DIFF_PATTERN: '.*/debops.apt_proxy/.*'
     JANE_LOG_PATTERN: '\[debops\.apt_proxy\]'
@@ -164,6 +173,7 @@ stages:
 'atd role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'atd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/atd.yml'
     JANE_DIFF_PATTERN: '.*/debops.atd/.*'
     JANE_LOG_PATTERN: '\[debops\.atd\]'
@@ -174,6 +184,7 @@ stages:
 'auth role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'auth.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/auth.yml'
     JANE_DIFF_PATTERN: '.*/debops.auth/.*'
     JANE_LOG_PATTERN: '\[debops\.auth\]'
@@ -181,6 +192,7 @@ stages:
 'authorized_keys role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'authorized_keys.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/authorized_keys.yml'
     JANE_DIFF_PATTERN: '.*/debops.authorized_keys/.*'
     JANE_LOG_PATTERN: '\[debops\.authorized_keys\]'
@@ -191,6 +203,7 @@ stages:
 'avahi role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'avahi.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/avahi.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_avahi'
     JANE_DIFF_PATTERN: '.*/debops.avahi/.*'
@@ -199,10 +212,20 @@ stages:
 
 # --- b --- [[[2
 
+'backup2l role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'backup2l.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/backup2l.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_backup2l'
+    JANE_DIFF_PATTERN: '.*/debops.backup2l/.*'
+    JANE_LOG_PATTERN: '\[debops\.backup2l\]'
+
 # At the moment BoxBackup role is broken, needs to be updated.
 #'boxbackup role':
 #  <<: *test_role_1st_deps
 #  variables:
+#    JANE_TEST_FACT: 'boxbackup.fact'
 #    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/boxbackup.yml'
 #    JANE_INVENTORY_GROUPS: 'debops_service_boxbackup'
 #    JANE_DIFF_PATTERN: '.*/debops.boxbackup/.*'
@@ -229,6 +252,7 @@ stages:
 'core role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'core.fact root.fact tags.fact uuid.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/core.yml'
     JANE_DIFF_PATTERN: '.*/debops.core/.*'
     JANE_LOG_PATTERN: '\[debops\.core\]'
@@ -236,6 +260,7 @@ stages:
 'cran role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'cran.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cran.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_cran'
     JANE_DIFF_PATTERN: '.*/debops.cran/.*'
@@ -244,6 +269,7 @@ stages:
 'cron role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'cron.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cron.yml'
     JANE_DIFF_PATTERN: '.*/debops.cron/.*'
     JANE_LOG_PATTERN: '\[debops\.cron\]'
@@ -251,6 +277,7 @@ stages:
 'cryptsetup role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'cryptsetup.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cryptsetup.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_cryptsetup'
     JANE_DIFF_PATTERN: '.*/debops.cryptsetup/.*'
@@ -260,6 +287,7 @@ stages:
 'cryptsetup/persistent_paths role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'cryptsetup.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cryptsetup-persistent_paths.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_cryptsetup_persistent_paths'
     JANE_DIFF_PATTERN: '.*/debops.cryptsetup/.*'
@@ -272,6 +300,7 @@ stages:
 'debops role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'debops.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/debops.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_debops'
     JANE_DIFF_PATTERN: '.*/debops.debops/.*'
@@ -289,6 +318,7 @@ stages:
 'debops_fact role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'debops_fact.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/debops_fact.yml'
     JANE_DIFF_PATTERN: '.*/debops.debops_fact/.*'
     JANE_LOG_PATTERN: '\[debops\.debops_fact\]'
@@ -303,6 +333,7 @@ stages:
 'dhcp_probe role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'dhcp_probe.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dhcp_probe.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_dhcp_probe'
     JANE_DIFF_PATTERN: '.*/debops.dhcp_probe/.*'
@@ -311,6 +342,7 @@ stages:
 'dhcpd role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'dhcpd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dhcpd.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_dhcpd'
     JANE_DIFF_PATTERN: '.*/debops.dhcpd/.*'
@@ -319,6 +351,7 @@ stages:
 'dhparam role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'dhparam.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dhparam.yml'
     JANE_DIFF_PATTERN: '.*/debops.dhparam/.*'
     JANE_LOG_PATTERN: '\[debops\.dhparam\]'
@@ -326,6 +359,8 @@ stages:
 'dnsmasq role':
   <<: *test_role_2nd_deps
   variables:
+    BASE_VAGRANT_BOX: 'debian/stretch64'
+    JANE_TEST_FACT: 'dnsmasq.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml ${DEBOPS_PLAYBOOKS}/service/dnsmasq.yml'
     JANE_INVENTORY_DIRS: 'common dnsmasq'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown,debops_service_dnsmasq'
@@ -336,6 +371,8 @@ stages:
 'dnsmasq/persistent_paths role':
   <<: *test_role_2nd_deps
   variables:
+    BASE_VAGRANT_BOX: 'debian/stretch64'
+    JANE_TEST_FACT: 'dnsmasq.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml ${DEBOPS_PLAYBOOKS}/service/dnsmasq-persistent_paths.yml'
     JANE_INVENTORY_DIRS: 'common dnsmasq'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown,debops_service_dnsmasq_persistent_paths'
@@ -346,6 +383,7 @@ stages:
 'docker_gen role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'docker_gen.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_gen.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_docker_gen'
     JANE_DIFF_PATTERN: '.*/debops.docker_gen/.*'
@@ -354,6 +392,7 @@ stages:
 'docker_registry role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'docker_registry.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_registry.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_docker_registry'
     JANE_DIFF_PATTERN: '.*/debops.docker_registry/.*'
@@ -362,6 +401,7 @@ stages:
 'docker_server role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'docker_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_server.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_docker_server'
     JANE_DIFF_PATTERN: '.*/debops.docker_server/.*'
@@ -371,6 +411,7 @@ stages:
 'dokuwiki role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'dokuwiki.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dokuwiki.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_dokuwiki'
     JANE_DIFF_PATTERN: '.*/debops.dokuwiki/.*'
@@ -379,6 +420,7 @@ stages:
 'dovecot role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'dovecot.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dovecot.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_dovecot'
     JANE_INVENTORY_HOSTVARS: 'dovecot_pki=false'
@@ -391,6 +433,7 @@ stages:
 'elastic_co role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'elastic_co.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/elastic_co.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_elastic_co'
     JANE_DIFF_PATTERN: '.*/debops.elastic_co/.*'
@@ -399,6 +442,7 @@ stages:
 'elasticsearch role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'elasticsearch.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/elasticsearch.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_elasticsearch'
     JANE_DIFF_PATTERN: '.*/debops.elasticsearch/.*'
@@ -407,6 +451,7 @@ stages:
 'environment role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'environment.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/environment.yml'
     JANE_DIFF_PATTERN: '.*/debops.environment/.*'
     JANE_LOG_PATTERN: '\[debops\.environment\]'
@@ -414,6 +459,7 @@ stages:
 'etc_aliases role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'etc_aliases.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etc_aliases.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_etc_aliases'
     JANE_DIFF_PATTERN: '.*/debops.etc_aliases/.*'
@@ -422,6 +468,7 @@ stages:
 'etc_services role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'etc_services.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etc_services.yml'
     JANE_DIFF_PATTERN: '.*/debops.etc_services/.*'
     JANE_LOG_PATTERN: '\[debops\.etc_services\]'
@@ -429,6 +476,7 @@ stages:
 'etckeeper role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'etckeeper.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etckeeper.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_etckeeper'
     JANE_DIFF_PATTERN: '.*/debops.etckeeper/.*'
@@ -437,6 +485,7 @@ stages:
 'etherpad role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'etherpad.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etherpad.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_etherpad'
     JANE_DIFF_PATTERN: '.*/debops.etherpad/.*'
@@ -445,14 +494,17 @@ stages:
 'etherpad/mariadb role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'etherpad.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/etherpad.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_etherpad'
     JANE_DIFF_PATTERN: '.*/debops.etherpad/.*'
     JANE_LOG_PATTERN: '\[debops\.etherpad\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'etherpad/postgresql role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'etherpad.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/etherpad.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_etherpad'
     JANE_INVENTORY_HOSTVARS: 'postgresql_server__delegate_to=localhost postgresql__delegate_to=localhost'
@@ -465,6 +517,7 @@ stages:
 'fail2ban role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'fail2ban.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/fail2ban.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_fail2ban'
     JANE_DIFF_PATTERN: '.*/debops.fail2ban/.*'
@@ -473,6 +526,7 @@ stages:
 'fcgiwrap role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'fcgiwrap.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/fcgiwrap.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_fcgiwrap'
     JANE_DIFF_PATTERN: '.*/debops.fcgiwrap/.*'
@@ -481,6 +535,7 @@ stages:
 'ferm role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'ferm.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ferm.yml'
     JANE_DIFF_PATTERN: '.*/debops.ferm/.*'
     JANE_LOG_PATTERN: '\[debops\.ferm\]'
@@ -488,6 +543,7 @@ stages:
 'freeradius role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'freeradius.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/freeradius.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_freeradius'
     JANE_DIFF_PATTERN: '.*/debops.freeradius/.*'
@@ -499,6 +555,7 @@ stages:
 'gitlab role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'gitlab.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_server.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_redis_server,debops_service_gitlab'
     JANE_INVENTORY_HOSTVARS: 'postgresql_server__delegate_to=localhost postgresql__delegate_to=localhost'
@@ -510,6 +567,7 @@ stages:
 'gitlab_runner role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_gitlab_runner'
     JANE_DIFF_PATTERN: '.*/debops.gitlab_runner/.*'
@@ -518,6 +576,7 @@ stages:
 'gitlab_runner/docker_server role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_docker_server,debops_service_gitlab_runner'
     JANE_DIFF_PATTERN: '.*/debops.gitlab_runner/.*'
@@ -527,6 +586,7 @@ stages:
 'gitlab_runner/libvirt role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirtd.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_libvirtd,debops_service_gitlab_runner'
     JANE_DIFF_PATTERN: '.*/debops.gitlab_runner/.*'
@@ -536,6 +596,7 @@ stages:
 'gitlab_runner/lxc role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lxc.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_lxc,debops_service_gitlab_runner'
     JANE_DIFF_PATTERN: '.*/debops.gitlab_runner/.*'
@@ -545,6 +606,7 @@ stages:
 'gitusers role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'gitusers.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/gitusers.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_gitusers'
     JANE_DIFF_PATTERN: '.*/debops.gitusers/.*'
@@ -553,6 +615,7 @@ stages:
 'golang role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'golang.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/golang.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_golang'
     JANE_DIFF_PATTERN: '.*/debops.golang/.*'
@@ -561,6 +624,7 @@ stages:
 'grub role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'grub.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/grub.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_grub'
     JANE_DIFF_PATTERN: '.*/debops.grub/.*'
@@ -570,6 +634,7 @@ stages:
 'gunicorn role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'gunicorn.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/gunicorn.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_gunicorn'
     JANE_DIFF_PATTERN: '.*/debops.gunicorn/.*'
@@ -581,6 +646,7 @@ stages:
 'hashicorp role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'hashicorp.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/hashicorp.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_hashicorp'
     JANE_INVENTORY_HOSTVARS: 'hashicorp__applications=[\"consul\",\"consul-template\"]'
@@ -590,6 +656,7 @@ stages:
 'hwraid role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'hwraid.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/hwraid.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_hwraid'
     JANE_DIFF_PATTERN: '.*/debops.hwraid/.*'
@@ -601,6 +668,7 @@ stages:
 'icinga role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'icinga.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_pki,debops_service_icinga'
     JANE_DIFF_PATTERN: '.*/debops.icinga/.*'
@@ -609,6 +677,7 @@ stages:
 'icinga_db/mariadb role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'icinga_db.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_pki,debops_service_mariadb_server,debops_service_icinga,debops_service_icinga_db'
     JANE_DIFF_PATTERN: '.*/debops.icinga_db/.*'
@@ -617,6 +686,7 @@ stages:
 'icinga_db/postgresql role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'icinga_db.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_pki,debops_service_postgresql_server,debops_service_icinga,debops_service_icinga_db'
     JANE_INVENTORY_HOSTVARS: 'postgresql_server__delegate_to=localhost postgresql__delegate_to=localhost'
@@ -626,6 +696,7 @@ stages:
 'icinga_web role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'icinga_web.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml ${DEBOPS_PLAYBOOKS}/service/icinga_web.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_pki,debops_service_postgresql_server,debops_service_icinga,debops_service_icinga_db,debops_service_icinga_web'
     JANE_INVENTORY_HOSTVARS: 'postgresql_server__delegate_to=localhost postgresql__delegate_to=localhost'
@@ -635,6 +706,8 @@ stages:
 'ifupdown role':
   <<: *test_role_1st_deps
   variables:
+    BASE_VAGRANT_BOX: 'debian/stretch64'
+    JANE_TEST_FACT: 'ifupdown.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown'
     JANE_DIFF_PATTERN: '.*/debops.ifupdown/.*'
@@ -644,6 +717,7 @@ stages:
 'ipxe role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'ipxe.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ipxe.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_ipxe'
     JANE_DIFF_PATTERN: '.*/debops.ipxe/.*'
@@ -652,6 +726,7 @@ stages:
 'iscsi role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'iscsi.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/iscsi.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_iscsi'
     JANE_DIFF_PATTERN: '.*/debops.iscsi/.*'
@@ -664,6 +739,7 @@ stages:
 'java role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'java.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/java.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_java'
     JANE_DIFF_PATTERN: '.*/debops.java/.*'
@@ -675,6 +751,7 @@ stages:
 'keyring role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'keyring.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/keyring.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_keyring'
     JANE_DIFF_PATTERN: '.*/debops.keyring/.*'
@@ -683,6 +760,7 @@ stages:
 'kibana role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'kibana.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/kibana.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_kibana'
     JANE_DIFF_PATTERN: '.*/debops.kibana/.*'
@@ -693,6 +771,7 @@ stages:
 'kmod role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'kmod.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/kmod.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_kmod'
     JANE_DIFF_PATTERN: '.*/debops.kmod/.*'
@@ -704,6 +783,7 @@ stages:
 'ldap role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'ldap.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ldap.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_ldap'
     JANE_INVENTORY_HOSTVARS: 'ldap__enabled=true'
@@ -713,15 +793,18 @@ stages:
 'librenms role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'librenms.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/librenms.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_apt,debops_service_mariadb_server,debops_service_librenms'
     JANE_INVENTORY_HOSTVARS: 'apt__nonfree=true librenms__devices=[]'
     JANE_DIFF_PATTERN: '.*/debops.librenms/.*'
     JANE_LOG_PATTERN: '\[debops\.librenms\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'libvirt role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'libvirt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirt.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_libvirt'
     JANE_DIFF_PATTERN: '.*/debops.libvirt/.*'
@@ -731,6 +814,7 @@ stages:
 'libvirtd role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'libvirtd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirtd.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_libvirtd'
     JANE_DIFF_PATTERN: '.*/debops.libvirtd/.*'
@@ -740,6 +824,7 @@ stages:
 'libvirtd_qemu role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'libvirtd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirtd_qemu.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_libvirtd_qemu'
     JANE_DIFF_PATTERN: '.*/debops.libvirtd_qemu/.*'
@@ -749,6 +834,7 @@ stages:
 'locales role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'locales.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/locales.yml'
     JANE_DIFF_PATTERN: '.*/debops.locales/.*'
     JANE_LOG_PATTERN: '\[debops\.locales\]'
@@ -756,6 +842,7 @@ stages:
 'logrotate role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'logrotate.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/logrotate.yml'
     JANE_DIFF_PATTERN: '.*/debops.logrotate/.*'
     JANE_LOG_PATTERN: '\[debops\.logrotate\]'
@@ -763,6 +850,7 @@ stages:
 'lvm role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'lvm.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lvm.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_lvm'
     JANE_DIFF_PATTERN: '.*/debops.lvm/.*'
@@ -772,6 +860,7 @@ stages:
 'lxc role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'lxc.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lxc.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_lxc'
     JANE_DIFF_PATTERN: '.*/debops.lxc/.*'
@@ -784,6 +873,7 @@ stages:
 'machine role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'machine.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/machine.yml'
     JANE_DIFF_PATTERN: '.*/debops.machine/.*'
     JANE_LOG_PATTERN: '\[debops\.machine\]'
@@ -791,6 +881,7 @@ stages:
 'mailman role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'mailman.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mailman.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mailman'
     JANE_INVENTORY_HOSTVARS: 'mailman__site_list_notify=false'
@@ -800,6 +891,7 @@ stages:
 'mariadb role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'mariadb.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb'
     JANE_DIFF_PATTERN: '.*/debops.mariadb/.*'
@@ -808,6 +900,7 @@ stages:
 'mariadb_server role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'mariadb.fact mariadb_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server'
     JANE_DIFF_PATTERN: '.*/debops.mariadb_server/.*'
@@ -816,15 +909,18 @@ stages:
 'mariadb_server/client role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'mariadb.fact mariadb_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/mariadb.yml'
     JANE_INVENTORY_DIRS: 'common mariadb_server/client'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_mariadb'
     JANE_DIFF_PATTERN: '.*/debops.mariadb/.*'
     JANE_LOG_PATTERN: '\[debops\.mariadb\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'memcached role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'memcached.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/memcached.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_memcached'
     JANE_DIFF_PATTERN: '.*/debops.memcached/.*'
@@ -833,6 +929,7 @@ stages:
 'monit role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'monit.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/monit.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_monit'
     JANE_DIFF_PATTERN: '.*/debops.monit/.*'
@@ -841,6 +938,7 @@ stages:
 'mosquitto role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'mosquitto.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mosquitto-plain.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mosquitto'
     JANE_DIFF_PATTERN: '.*/debops.mosquitto/.*'
@@ -849,6 +947,7 @@ stages:
 'mosquitto/nginx role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'mosquitto.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mosquitto-nginx.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mosquitto_nginx'
     JANE_DIFF_PATTERN: '.*/debops.mosquitto/.*'
@@ -857,6 +956,7 @@ stages:
 'mount role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'mount.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mount.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mount'
     JANE_DIFF_PATTERN: '.*/debops.mount/.*'
@@ -866,8 +966,9 @@ stages:
 # --- n --- [[[2
 
 'netbase role':
-  <<: *test_role_no_deps
+  <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'netbase.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/netbase.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_netbase'
     JANE_DIFF_PATTERN: '.*/debops.netbase/.*'
@@ -876,6 +977,7 @@ stages:
 'netbox role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'netbox.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_server.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/netbox.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_redis_server,debops_service_postgresql_server,debops_service_netbox'
     JANE_INVENTORY_HOSTVARS: 'postgresql_server__delegate_to=localhost postgresql__delegate_to=localhost'
@@ -885,6 +987,7 @@ stages:
 'neurodebian role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'neurodebian.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/neurodebian.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_neurodebian'
     JANE_DIFF_PATTERN: '.*/debops.neurodebian/.*'
@@ -893,6 +996,7 @@ stages:
 'nfs role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'nfs.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nfs.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_nfs'
     JANE_DIFF_PATTERN: '.*/debops.nfs/.*'
@@ -901,6 +1005,7 @@ stages:
 'nfs_server role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'nfs_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nfs_server.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_nfs_server'
     JANE_DIFF_PATTERN: '.*/debops.nfs_server/.*'
@@ -909,6 +1014,7 @@ stages:
 'nginx role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'nginx.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nginx.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_nginx'
     JANE_DIFF_PATTERN: '.*/debops.nginx/.*'
@@ -917,6 +1023,8 @@ stages:
 'nginx/passenger role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'nginx.fact'
+    BASE_VAGRANT_BOX: 'debian/stretch64'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nginx.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_nginx'
     JANE_INVENTORY_HOSTVARS: 'nginx_flavor=passenger'
@@ -926,14 +1034,25 @@ stages:
 'nodejs role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'nodejs.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nodejs.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_nodejs'
     JANE_DIFF_PATTERN: '.*/debops.nodejs/.*'
     JANE_LOG_PATTERN: '\[debops\.nodejs\]'
 
+'nscd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'nscd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nscd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_nscd'
+    JANE_DIFF_PATTERN: '.*/debops.nscd/.*'
+    JANE_LOG_PATTERN: '\[debops\.nscd\]'
+
 'nslcd role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'nslcd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nslcd.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_nslcd'
     JANE_INVENTORY_HOSTVARS: 'ldap__enabled=true'
@@ -943,6 +1062,7 @@ stages:
 'nsswitch role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'nsswitch.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nsswitch.yml'
     JANE_DIFF_PATTERN: '.*/debops.nsswitch/.*'
     JANE_LOG_PATTERN: '\[debops\.nsswitch\]'
@@ -950,6 +1070,7 @@ stages:
 'ntp role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'ntp.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ntp.yml'
     JANE_DIFF_PATTERN: '.*/debops.ntp/.*'
     JANE_LOG_PATTERN: '\[debops\.ntp\]'
@@ -957,6 +1078,7 @@ stages:
 'nullmailer role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'nullmailer.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nullmailer.yml'
     JANE_DIFF_PATTERN: '.*/debops.nullmailer/.*'
     JANE_LOG_PATTERN: '\[debops\.nullmailer\]'
@@ -967,6 +1089,7 @@ stages:
 'opendkim role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'opendkim.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/opendkim.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_opendkim'
     JANE_DIFF_PATTERN: '.*/debops.opendkim/.*'
@@ -975,18 +1098,22 @@ stages:
 'owncloud/apache role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'owncloud.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/owncloud-apache.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_owncloud_apache'
     JANE_DIFF_PATTERN: '.*/debops.owncloud/.*'
     JANE_LOG_PATTERN: '\[debops\.owncloud\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'owncloud/nginx role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'owncloud.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/owncloud-nginx.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_owncloud'
     JANE_DIFF_PATTERN: '.*/debops.owncloud/.*'
     JANE_LOG_PATTERN: '\[debops\.owncloud\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 
 # --- p --- [[[2
@@ -994,6 +1121,7 @@ stages:
 'pam_access role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'pam_access.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pam_access.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_pam_access'
     JANE_DIFF_PATTERN: '.*/debops.pam_access/.*'
@@ -1002,6 +1130,7 @@ stages:
 'persistent_paths role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'persistent_paths.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/persistent_paths.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_persistent_paths'
     JANE_DIFF_PATTERN: '.*/debops.persistent_paths/.*'
@@ -1010,6 +1139,7 @@ stages:
 'php role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'php.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/php.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_php'
     JANE_DIFF_PATTERN: '.*/debops.php/.*'
@@ -1018,14 +1148,18 @@ stages:
 'phpipam role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'phpipam.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/phpipam.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_phpipam'
     JANE_DIFF_PATTERN: '.*/debops.phpipam/.*'
     JANE_LOG_PATTERN: '\[debops\.phpipam\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'phpmyadmin role':
   <<: *test_role_2nd_deps
   variables:
+    BASE_VAGRANT_BOX: 'debian/stretch64'
+    JANE_TEST_FACT: 'phpmyadmin.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/phpmyadmin.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_phpmyadmin'
     JANE_DIFF_PATTERN: '.*/debops.phpmyadmin/.*'
@@ -1034,6 +1168,7 @@ stages:
 'pki role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'pki.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml'
     JANE_DIFF_PATTERN: '.*/debops.pki/.*'
     JANE_LOG_PATTERN: '\[debops\.pki\]'
@@ -1041,6 +1176,7 @@ stages:
 'postconf role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'postconf.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postconf.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_postconf'
     JANE_DIFF_PATTERN: '.*/debops.postconf/.*'
@@ -1049,7 +1185,9 @@ stages:
 'postfix role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'postfix.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postfix.yml'
+    JANE_TEST_SCRIPT: '${TEST_SCRIPTS}/postfix-send-mail'
     JANE_INVENTORY_GROUPS: 'debops_service_postfix'
     JANE_DIFF_PATTERN: '.*/debops.postfix/.*'
     JANE_LOG_PATTERN: '\[debops\.postfix\]'
@@ -1057,6 +1195,7 @@ stages:
 'postgresql role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'postgresql.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_postgresql'
     JANE_DIFF_PATTERN: '.*/debops.postgresql/.*'
@@ -1065,6 +1204,7 @@ stages:
 'postgresql_server role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'postgresql.fact postgresql_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server'
     JANE_DIFF_PATTERN: '.*/debops.postgresql_server/.*'
@@ -1073,6 +1213,7 @@ stages:
 'postgresql_server/client role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'postgresql.fact postgresql_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/postgresql.yml'
     JANE_INVENTORY_DIRS: 'common postgresql_server/client'
     JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_postgresql'
@@ -1082,6 +1223,7 @@ stages:
 'postscreen role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'postscreen.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postscreen.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_postscreen'
     JANE_DIFF_PATTERN: '.*/debops.postscreen/.*'
@@ -1090,6 +1232,7 @@ stages:
 'postwhite role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'postwhite.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postwhite.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_postwhite'
     JANE_DIFF_PATTERN: '.*/debops.postwhite/.*'
@@ -1098,6 +1241,7 @@ stages:
 'preseed role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'preseed.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/preseed.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_preseed'
     JANE_DIFF_PATTERN: '.*/debops.preseed/.*'
@@ -1106,6 +1250,7 @@ stages:
 'proc_hidepid role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'proc_hidepid.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/proc_hidepid.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_proc_hidepid'
     JANE_DIFF_PATTERN: '.*/debops.proc_hidepid/.*'
@@ -1114,6 +1259,7 @@ stages:
 'prosody/pki role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'prosody.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/prosody.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_pki,debops_service_prosody'
     JANE_DIFF_PATTERN: '.*/debops.prosody/.*'
@@ -1122,6 +1268,7 @@ stages:
 'python role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'python.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_python'
     JANE_DIFF_PATTERN: '.*/debops.python/.*'
@@ -1131,7 +1278,9 @@ stages:
   <<: *test_role_no_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python_raw.yml'
-    #JANE_INVENTORY_HOSTVARS: 'ansible_python_interpreter=/usr/bin/python3'
+    # Ansible from upstream requires Python 2 environment, so don't wipe it,
+    # otherwise this particular test fails.
+    JANE_INVENTORY_HOSTVARS: 'python__v2=true'
     JANE_INVENTORY_GROUPS: 'debops_service_python'
     JANE_DIFF_PATTERN: '.*/debops.python/.*'
     JANE_LOG_PATTERN: '\[debops\.python\]'
@@ -1142,6 +1291,7 @@ stages:
 'rabbitmq_management role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'rabbitmq_management.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rabbitmq_management.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_rabbitmq_management'
     JANE_DIFF_PATTERN: '.*/debops.rabbitmq_management/.*'
@@ -1150,6 +1300,7 @@ stages:
 'rabbitmq_server role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'rabbitmq_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rabbitmq_server.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_rabbitmq_server'
     JANE_DIFF_PATTERN: '.*/debops.rabbitmq_server/.*'
@@ -1158,6 +1309,8 @@ stages:
 'radvd role':
   <<: *test_role_2nd_deps
   variables:
+    BASE_VAGRANT_BOX: 'debian/stretch64'
+    JANE_TEST_FACT: 'radvd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml ${DEBOPS_PLAYBOOKS}/service/radvd.yml'
     JANE_INVENTORY_DIRS: 'common radvd'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown,debops_service_radvd'
@@ -1168,6 +1321,7 @@ stages:
 'redis_server role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'redis_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_server.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_redis_server'
     JANE_DIFF_PATTERN: '.*/debops.redis_server/.*'
@@ -1176,6 +1330,7 @@ stages:
 'redis_sentinel role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'redis_sentinel.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_sentinel.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_redis_sentinel'
     JANE_DIFF_PATTERN: '.*/debops.redis_sentinel/.*'
@@ -1184,15 +1339,26 @@ stages:
 'reprepro role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'reprepro.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/reprepro.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_reprepro'
     JANE_INVENTORY_HOSTVARS: 'reprepro_gpg_key_length=\"512\"'
     JANE_DIFF_PATTERN: '.*/debops.reprepro/.*'
     JANE_LOG_PATTERN: '\[debops\.reprepro\]'
 
+'resolvconf role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'resolvconf.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/resolvconf.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_resolvconf'
+    JANE_DIFF_PATTERN: '.*/debops.resolvconf/.*'
+    JANE_LOG_PATTERN: '\[debops\.resolvconf\]'
+
 'resources role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'resources.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/resources.yml'
     JANE_DIFF_PATTERN: '.*/debops.resources/.*'
     JANE_LOG_PATTERN: '\[debops\.resources\]'
@@ -1200,6 +1366,7 @@ stages:
 'root_account role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'root_account.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/root_account.yml'
     JANE_DIFF_PATTERN: '.*/debops.root_account/.*'
     JANE_LOG_PATTERN: '\[debops\.root_account\]'
@@ -1207,6 +1374,7 @@ stages:
 'roundcube role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'roundcube.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/roundcube.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_roundcube'
     JANE_DIFF_PATTERN: '.*/debops.roundcube/.*'
@@ -1215,17 +1383,20 @@ stages:
 'roundcube/mariadb role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'roundcube.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/roundcube.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_mariadb_server,debops_service_roundcube'
     JANE_INVENTORY_HOSTVARS: 'roundcube__database=mysql-default'
     JANE_DIFF_PATTERN: '.*/debops.roundcube/.*'
     JANE_LOG_PATTERN: '\[debops\.roundcube\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
     VAGRANT_MASTER_MEMORY: '4096'
   tags: [ 'mem-6GB' ]
 
 'rsnapshot role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'rsnapshot.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rsnapshot.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_rsnapshot'
     JANE_DIFF_PATTERN: '.*/debops.rsnapshot/.*'
@@ -1234,6 +1405,9 @@ stages:
 'rstudio_server role':
   <<: *test_role_3rd_deps
   variables:
+    # Needed due to old libssl dependency of rstudio-server package
+    BASE_VAGRANT_BOX: 'debian/stretch64'
+    JANE_TEST_FACT: 'rstudio_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rstudio_server.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_rstudio_server'
     JANE_DIFF_PATTERN: '.*/debops.rstudio_server/.*'
@@ -1242,6 +1416,7 @@ stages:
 'rsyslog role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'rsyslog.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rsyslog.yml'
     JANE_DIFF_PATTERN: '.*/debops.rsyslog/.*'
     JANE_LOG_PATTERN: '\[debops\.rsyslog\]'
@@ -1249,6 +1424,7 @@ stages:
 'ruby role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'ruby.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ruby.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_ruby'
     JANE_DIFF_PATTERN: '.*/debops.ruby/.*'
@@ -1260,6 +1436,7 @@ stages:
 'salt role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'salt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/salt.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_salt'
     JANE_DIFF_PATTERN: '.*/debops.salt/.*'
@@ -1268,6 +1445,7 @@ stages:
 'samba role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'samba.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/samba.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_samba'
     JANE_INVENTORY_HOSTVARS: 'samba__kernel_modules_load=false'
@@ -1277,6 +1455,7 @@ stages:
 'saslauthd role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'saslauthd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/saslauthd.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_saslauthd'
     JANE_DIFF_PATTERN: '.*/debops.saslauthd/.*'
@@ -1292,6 +1471,7 @@ stages:
 'sks role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'sks.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sks.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_sks'
     JANE_DIFF_PATTERN: '.*/debops.sks/.*'
@@ -1300,6 +1480,7 @@ stages:
 'slapd role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'slapd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/slapd.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_slapd'
     JANE_INVENTORY_HOSTVARS: 'slapd_pki=false'
@@ -1309,6 +1490,7 @@ stages:
 'slapd/pki role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'slapd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/slapd.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_pki,debops_service_slapd'
     JANE_DIFF_PATTERN: '.*/debops.slapd/.*'
@@ -1317,6 +1499,7 @@ stages:
 'smstools role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'smstools.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/smstools.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_smstools'
     JANE_DIFF_PATTERN: '.*/debops.smstools/.*'
@@ -1325,6 +1508,7 @@ stages:
 'snmpd role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'snmpd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/snmpd.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_snmpd'
     JANE_DIFF_PATTERN: '.*/debops.snmpd/.*'
@@ -1333,6 +1517,7 @@ stages:
 'sshd role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'sshd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sshd.yml'
     JANE_INVENTORY_HOSTVARS: 'sshd__allow_groups=[\"root\",\"admins\",\"vagrant\"]'
     JANE_DIFF_PATTERN: '.*/debops.sshd/.*'
@@ -1341,6 +1526,7 @@ stages:
 'stunnel role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'stunnel.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/stunnel.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_stunnel'
     JANE_DIFF_PATTERN: '.*/debops.stunnel/.*'
@@ -1349,6 +1535,7 @@ stages:
 'sudo role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'sudo.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sudo.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_sudo'
     JANE_DIFF_PATTERN: '.*/debops.sudo/.*'
@@ -1357,6 +1544,7 @@ stages:
 'system_groups role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'system_groups.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_groups.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_system_groups'
     JANE_DIFF_PATTERN: '.*/debops.system_groups/.*'
@@ -1365,6 +1553,7 @@ stages:
 'system_users role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'system_users.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_users.yml'
     JANE_DIFF_PATTERN: '.*/debops.system_users/.*'
     JANE_LOG_PATTERN: '\[debops\.system_users\]'
@@ -1372,6 +1561,7 @@ stages:
 'swapfile role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'swapfile.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/swapfile.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_swapfile'
     JANE_DIFF_PATTERN: '.*/debops.swapfile/.*'
@@ -1381,6 +1571,7 @@ stages:
 'sysctl role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'sysctl.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysctl.yml'
     JANE_DIFF_PATTERN: '.*/debops.sysctl/.*'
     JANE_LOG_PATTERN: '\[debops\.sysctl\]'
@@ -1389,6 +1580,7 @@ stages:
 'sysfs role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'sysfs.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysfs.yml'
     JANE_INVENTORY_DIRS: 'common sysfs'
     JANE_INVENTORY_GROUPS: 'debops_service_sysfs'
@@ -1399,6 +1591,7 @@ stages:
 'sysnews role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'sysnews.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysnews.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_sysnews'
     JANE_DIFF_PATTERN: '.*/debops.sysnews/.*'
@@ -1410,6 +1603,7 @@ stages:
 'tcpwrappers role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'tcpwrappers.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tcpwrappers.yml'
     JANE_DIFF_PATTERN: '.*/debops.tcpwrappers/.*'
     JANE_LOG_PATTERN: '\[debops\.tcpwrappers\]'
@@ -1417,6 +1611,7 @@ stages:
 'tftpd role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'tftpd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tftpd.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_tftpd'
     JANE_DIFF_PATTERN: '.*/debops.tftpd/.*'
@@ -1425,6 +1620,7 @@ stages:
 'tgt role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'tgt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tgt.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_tgt'
     JANE_DIFF_PATTERN: '.*/debops.tgt/.*'
@@ -1433,6 +1629,8 @@ stages:
 'tinc/gateway role':
   <<: *test_role_3rd_deps
   variables:
+    JANE_TEST_FACT: 'tinc.fact'
+    BASE_VAGRANT_BOX: 'debian/stretch64'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ifupdown.yml ${DEBOPS_PLAYBOOKS}/service/tinc.yml'
     JANE_INVENTORY_DIRS: 'common tinc/gateway'
     JANE_INVENTORY_GROUPS: 'debops_service_ifupdown,debops_service_tinc'
@@ -1446,6 +1644,7 @@ stages:
 'unattended_upgrades role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'unattended_upgrades.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/unattended_upgrades.yml'
     JANE_DIFF_PATTERN: '.*/debops.unattended_upgrades/.*'
     JANE_LOG_PATTERN: '\[debops\.unattended_upgrades\]'
@@ -1453,6 +1652,7 @@ stages:
 'unbound role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'unbound.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/unbound.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_unbound'
     JANE_DIFF_PATTERN: '.*/debops.unbound/.*'
@@ -1461,6 +1661,7 @@ stages:
 'users role':
   <<: *test_role_no_deps
   variables:
+    JANE_TEST_FACT: 'users.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/users.yml'
     JANE_DIFF_PATTERN: '.*/debops.users/.*'
     JANE_LOG_PATTERN: '\[debops\.users\]'
@@ -1471,6 +1672,7 @@ stages:
 'wpcli role':
   <<: *test_role_2nd_deps
   variables:
+    JANE_TEST_FACT: 'wpcli.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/wpcli.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_wpcli'
     JANE_DIFF_PATTERN: '.*/debops.wpcli/.*'
@@ -1482,6 +1684,7 @@ stages:
 'yadm role':
   <<: *test_role_1st_deps
   variables:
+    JANE_TEST_FACT: 'yadm.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/yadm.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_yadm'
     JANE_INVENTORY_HOSTVARS: 'yadm__dotfiles_enabled=true'

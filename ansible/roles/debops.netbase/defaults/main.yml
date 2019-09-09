@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _netbase__ref_defaults:
+
 # debops.netbase default variables
 # ================================
 
@@ -68,44 +70,44 @@ netbase__hostname: '{{ (inventory_hostname_short | d(inventory_hostname.split(".
                                                                    # ]]]
 # .. envvar:: netbase__domain [[[
 #
-# Define a local domain for a given host. If this variable is empty, no domain
-# configuration will be added to the :file:`/etc/hosts` database and it's
-# assumed that a DNS service manages the local domain.
+# Define a local domain for a given host. If not changed, the DNS domain is
+# defined based on the following rules:
 #
 # If the host has been installed with a domain, and its FQDN points to the
-# ``127.0.1.1`` address, the role assumes that a DNS service for the local
-# domain is present, and will not configure a domain in the :file:`/etc/hosts`
-# database. The existing ``127.0.1.1`` entry will be removed to not override
-# the DNS resolution.
+# ``127.0.1.1`` address, the role will check on the remote host if a given FQDN
+# exists in the DNS database. If the FQDN can be resolved, the ``127.0.1.1``
+# entry will be removed from the :file:`/etc/hosts` file to allow the DNS
+# database to provide the correct IP address. If the FQDN is not found in DNS
+# database, the existing entry will be left intact.
 #
-# If the host has been configured with a domain in :file:`/etc/hosts` file and
-# its FQDN points to any other IP address than ``127.0.1.1``, the role will
-# generate the IPv4 and IPv6 entries for this domain which should preserve the
-# existing configuration, with assumption that the :file:`/etc/hosts` entry is
-# supposed to be there for the correct domain resolution, for example this
-# domain is not defined in the DNS.
+# If the host has been configured with a domain in :file:`/etc/hosts` file
+# which is also present in the DNS database, and its FQDN points to any other
+# IP address than ``127.0.1.1``, the role will generate the IPv4 and IPv6
+# entries for this domain which should preserve the existing configuration.
 #
 # If the host has been installed without a domain specified, a domain will be
 # generated based on the ``ansible_host`` variable (if it's set to a FQDN
-# address) or ``inventory_hostname`` variable, and saved in the
-# :file:`/etc/hosts` database. The host's FQDN and hostname will point to the
-# default IPv4 and IPv6 addresses of the host.
+# address) and saved in the :file:`/etc/hosts` database. The host's FQDN and
+# hostname will point to the default IPv4 and IPv6 addresses of the host.
+# If the Ansible inventory does not have a FQDN defined for a given host in the
+# ``ansible_host`` variable, the host is assumed to be standalone and a domain
+# will not be generated for it.
 netbase__domain: '{{ ""
                      if (ansible_local|d() and ansible_local.netbase|d() and
                          (((ansible_local.netbase.self_address|d()) != "127.0.1.1" and
-                           (not ansible_local.netbase.self_local|d())|bool) or
+                           (not ansible_local.netbase.self_local_hostname|d())|bool) or
                           ((ansible_local.netbase.self_address|d()) == "127.0.1.1" and
-                            ansible_local.netbase.self_domain|d())))
+                            ansible_local.netbase.self_domain|d() and
+                            ansible_local.netbase.self_domain_source in [ "dns" ])))
                      else (ansible_local.netbase.self_domain
                            if (ansible_local|d() and ansible_local.netbase|d() and
                                (ansible_local.netbase.self_domain|d()) and
-                               (ansible_local.netbase.self_address|d()) != "127.0.1.1" and
-                               (ansible_local.netbase.self_local|d())|bool)
+                               (ansible_local.netbase.self_local_hostname|d())|bool)
                            else ((ansible_host | d(ansible_ssh_host | d("0"))).split(".")[1:] | join(".")
                                  if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ipaddr)
                                  else (inventory_hostname.split(".")[1:] | join(".")
                                        if (inventory_hostname.split(".") | count > 1)
-                                       else inventory_hostname))) }}'
+                                       else ""))) }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__aliases [[[
@@ -128,7 +130,14 @@ netbase__aliases: '{{ ([ netbase__hostname ]
 # :file:`/etc/hosts` database with the FQDN and the hostname. If the host does
 # not have a proper IPv4 address associated with it and you want to use IPv4
 # networking, you can use ``127.0.1.1`` to set the hostname.
-netbase__host_ipv4_address: '{{ ansible_default_ipv4.address | d() }}'
+netbase__host_ipv4_address: '{{ (ansible_default_ipv4.address | d())
+                                if (ansible_domain|d() and
+                                    ansible_local|d() and ansible_local.netbase|d() and
+                                    ansible_local.netbase.self_domain_source in [ "dns" ])
+                                else (ansible_local.netbase.self_address
+                                      if (ansible_local|d() and ansible_local.netbase|d() and
+                                          ansible_local.netbase.self_address|d())
+                                      else "127.0.1.1") }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__host_ipv6_address [[[
@@ -143,7 +152,10 @@ netbase__host_ipv6_address: '{{ ansible_default_ipv6.address | d() }}'
 # The actual :file:`/etc/hosts` entry with the local domain definition. It will
 # be set as the IPv4 and/or IPv6 addresses defined in above variables.
 netbase__domain_host_entry: '{{ ([ netbase__hostname + "." + netbase__domain ] + netbase__aliases)
-                                if netbase__domain|d() else [] }}'
+                                if netbase__domain|d()
+                                else (netbase__hostname
+                                      if (not ansible_domain|d())
+                                      else []) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Host database in :file:`/etc/hosts` [[[
@@ -187,7 +199,9 @@ netbase__default_hosts:
   - name:  '{{ netbase__host_ipv4_address }}'
     value: '{{ netbase__domain_host_entry }}'
     separator: '{{ True
-                   if (netbase__host_ipv4_address != "127.0.1.1")
+                   if (netbase__host_ipv4_address == "127.0.1.1" and
+                       (ansible_local|d() and ansible_local.netbase|d() and
+                        ansible_local.netbase.self_domain_source not in [ "dns" ]))
                    else False }}'
 
   - name:  '{{ netbase__host_ipv6_address }}'
@@ -268,5 +282,24 @@ netbase__group_networks: {}
 # YAML dictionary of network entries which should be present on specific hosts
 # in the Ansible inventory.
 netbase__host_networks: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration variables for other Ansible roles [[[
+# ---------------------------------------------------
+
+# .. envvar:: netbase__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+netbase__python__dependent_packages3:
+
+  - 'python3-dnspython'
+
+                                                                   # ]]]
+# .. envvar:: netbase__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+netbase__python__dependent_packages2:
+
+  - 'python-dnspython'
                                                                    # ]]]
                                                                    # ]]]

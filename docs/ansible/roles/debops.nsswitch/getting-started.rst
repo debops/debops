@@ -28,7 +28,13 @@ might change from the one created by the Debian packages.
 According to the :man:`nsswitch.conf(5)`, processes that use the NSS
 configuration file read the :file:`/etc/nsswitch.conf` only once, therefore
 a restart of these processes (for example :command:`nscd` or :command:`sssd`)
-might be needed. At the moment the role does not do this automatically.
+might be needed.
+
+At the moment the role restarts the :command:`systemd-logind` service on the
+configuration changes, but only when the playbook is executed against a remote
+host, to avoid breaking local user session. Changes on ``localhost`` might need
+the system to be restarted for :command:`systemd-logind` to reload the new
+configuration correctly.
 
 
 .. _nsswitch__ref_mdns:

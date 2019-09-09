@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _nslcd__ref_defaults:
+
 # debops.nslcd default variables
 # ==============================
 
@@ -16,9 +18,12 @@
 # .. envvar:: nslcd__base_packages [[[
 #
 # List of APT packages required for LDAP lookups via NSS and PAM.
-nslcd__base_packages: [ 'libpam-ldapd', 'libnss-ldapd',
-                        'nslcd', 'nslcd-utils',
-                        'openssl', 'ca-certificates' ]
+nslcd__base_packages:
+  - [ 'libpam-ldapd', 'libnss-ldapd', 'nslcd', 'openssl', 'ca-certificates' ]
+  - '{{ "nslcd-utils"
+        if (ansible_local|d() and ansible_local.python|d() and
+            (ansible_local.python.installed2|d())|bool)
+        else [] }}'
 
                                                                    # ]]]
 # .. envvar:: nslcd__packages [[[

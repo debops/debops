@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _sshd__ref_defaults:
+
 # debops.sshd default variables [[[
 # =================================
 
@@ -115,7 +117,7 @@ sshd__tcpwrappers_default: 'ALL'
 # .. envvar:: sshd__ferm_weight [[[
 #
 # Specify the "weight" of the ``sshd`` firewall rules. The more weight they
-# have, he later in the firewall they will be defined. If you change the
+# have, the later in the firewall they will be defined. If you change the
 # default weight, you will need to remove the old rules manually from the remote
 # host.
 sshd__ferm_weight: '30'
@@ -125,7 +127,7 @@ sshd__ferm_weight: '30'
 #
 # Enable or disable limited SSH access from all hosts in :command:`ip(6)tables`.
 # Recent new connections are filtered and when too many new connections are
-# created in specified time window, host is added to the recent blocklist.
+# created in specified time window, the host is added to the recent blocklist.
 sshd__ferm_limit: True
 
                                                                    # ]]]
@@ -219,15 +221,33 @@ sshd__log_level: 'INFO'
                                                                    # ]]]
 # .. envvar:: sshd__permit_root_login [[[
 #
-# Specify if access to ``root`` account should be granted. By default ``root``
-# can be accessed only using SSH public keys.
-sshd__permit_root_login: 'without-password'
+# Specify if access to ``root`` account should be granted. By default, if the
+# :ref:`debops.root_account` role has been applied on the host, the ``root``
+# can be accessed only using SSH public keys since the role is expected to set
+# them up. Otherwise, access via password is allowed. Alternatively, configured
+# sysadmin accounts via the :ref:`debops.system_users` disable password-based
+# access.
+sshd__permit_root_login: '{{ "without-password"
+                             if ((ansible_local|d() and ansible_local.root_account|d() and
+                                  (ansible_local.root_account.ssh_authorized_keys|d())|bool) or
+                                 (ansible_local|d() and ansible_local.system_users|d() and
+                                  (ansible_local.system_users.configured|d())|bool))
+                             else "yes" }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__password_authentication [[[
 #
-# Enable or disable password authentication.
-sshd__password_authentication: 'no'
+# Enable or disable password authentication. This option will be enabled if the
+# ``root`` acount does not have SSH authorized keys present, to allow the
+# ``root`` account to login to the host. Alternatively, sysadmin access
+# configured by the :ref:`debops.system_users` role disables password
+# authentication.
+sshd__password_authentication: '{{ "no"
+                                   if ((ansible_local|d() and ansible_local.root_account|d() and
+                                        (ansible_local.root_account.ssh_authorized_keys|d())|bool) or
+                                       (ansible_local|d() and ansible_local.system_users|d() and
+                                        (ansible_local.system_users.configured|d())|bool))
+                                   else "yes" }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__accept_env [[[
@@ -852,7 +872,7 @@ sshd__pam_access__dependent_rules:
         origins: '.{{ ansible_local.core.domain
                       if (ansible_local|d() and ansible_local.core|d() and
                           ansible_local.core.domain|d())
-                      else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                      else ansible_domain }}'
 
       - name: 'deny-root'
         comment: 'Deny access to root account via SSH from anywhere else'
@@ -891,7 +911,7 @@ sshd__pam_access__dependent_rules:
         origins: '.{{ ansible_local.core.domain
                       if (ansible_local|d() and ansible_local.core|d() and
                           ansible_local.core.domain|d())
-                      else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                      else ansible_domain }}'
 
       - name: 'deny-all'
         comment: 'Deny access via SSH by anyone from anywhere'

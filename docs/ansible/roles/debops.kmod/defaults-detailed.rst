@@ -172,8 +172,11 @@ The ``kmod__*_load`` list variables can be used to specify which kernel modules
 should be loaded at boot time. If a single module is specified, the role will
 try to load it if it's currently not present in the kernel.
 
-The configuration is stored in the :file:`/etc/modules-load.d/` directory. Each
-list entry is a YAML dictionary with specific parameters:
+The configuration is stored in the :file:`/etc/modules-load.d/` directory on
+hosts that use th :command:`systemd` service manager. On other hosts, the role
+will modify the :file:`/etc/modules` file directly.
+
+Each list entry is a YAML dictionary with specific parameters:
 
 ``name``
   Required. Name of the kernel module to manage. This parameter is used as
@@ -215,7 +218,8 @@ list entry is a YAML dictionary with specific parameters:
 
 ``modules``
   Optional. List of modules to load on boot time. If specified, the string used
-  in the ``name`` parameter is ignored.
+  in the ``name`` parameter is ignored. On non-:command:`systemd` hosts this
+  parameter is ignored, use the ``name`` parameter instead.
 
 Examples
 ~~~~~~~~

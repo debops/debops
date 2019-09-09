@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _gitlab__ref_defaults:
+
 # debops.gitlab default variables [[[
 # ===================================
 
@@ -36,8 +38,13 @@ gitlab__release_map:
   'stretch': '10-8-stable'
   'xenial':  '10-8-stable'
 
-  'buster':  '11-10-stable'
-  'bionic':  '11-10-stable'
+  # OS releases with Ruby 2.5
+  'buster':  '12-1-stable'
+  'bionic':  '12-1-stable'
+
+  # OS releases with Ruby 2.6+ (future)
+  'bullseye': '12-1-stable'
+  'eoan':     '12-1-stable'
 
                                                                    # ]]]
 # .. envvar:: gitlab__distribution_release [[[
@@ -126,7 +133,7 @@ gitlab__fqdn: 'code.{{ gitlab_domain }}'
 gitlab_domain: '{{ ansible_local.core.domain
                    if (ansible_local|d() and ansible_local.core|d() and
                        ansible_local.core.domain|d())
-                   else (ansible_domain if ansible_domain else ansible_hostname) }}'
+                   else ansible_domain }}'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[

@@ -154,18 +154,21 @@
   when: ((snmpd_register_version|d() and not snmpd_register_version.stdout) and
          (snmpd_account|d() and snmpd_account))
 
+- name: Save local SNMPv3 password for retrieval via Ansible facts
+  template:
+    src: 'etc/snmp/ansible-local-password.json.j2'
+    dest: '/etc/snmp/ansible-local-password.json'
+    mode: '0600'
+  no_log: True
+
 - name: Make sure that Ansible local fact directory exists
   file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
 
 - name: Save snmpd local facts
   template:
     src: 'etc/ansible/facts.d/snmpd.fact.j2'
     dest: '/etc/ansible/facts.d/snmpd.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0600'
+    mode: '0755'

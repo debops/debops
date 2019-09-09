@@ -56,7 +56,6 @@
                                 if ((item.create_home|d(True))|bool)
                                 else omit) }}'
     uid:                '{{ item.uid                | d(omit) }}'
-    append:             '{{ item.append             | d(True) }}'
     state:              '{{ item.state              | d("present") }}'
     comment:            '{{ item.comment            | d(omit) }}'
     password:           '{{ item.password           | d("*") }}'
@@ -190,7 +189,7 @@
          item.linger is defined and item.linger|bool and (item.user|d(True))|bool)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
 
-- name: Disllow specified UNIX accounts to linger when not logged in
+- name: Disallow specified UNIX accounts to linger when not logged in
   command: loginctl disable-linger {{ (item.prefix | d(system_users__prefix)) + item.name }}
   args:
     removes: '/var/lib/systemd/linger/{{ (item.prefix | d(system_users__prefix)) + item.name }}'

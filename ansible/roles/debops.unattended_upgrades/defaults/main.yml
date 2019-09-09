@@ -1,6 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. _unattended_upgrades__ref_defaults:
+
 # debops.unattended_upgrades default variables [[[
 # ================================================
 
@@ -113,6 +115,11 @@ unattended_upgrades__security_origins:
     - 'o=Debian,n=${distro_codename},l=Debian-Security'
     - 'o=${distro_id},n=${distro_codename}-updates'
 
+  # https://www.devuan.org/
+  'Devuan':
+    - 'o=Devuan,n=${distro_codename}-security,l=Devuan-Security'
+    - 'o=Devuan,n=${distro_codename}-updates'
+
   # http://www.ubuntu.com/usn/
   'Ubuntu':
     - 'o=Ubuntu,n=${distro_codename},a=${distro_codename}-security'
@@ -134,6 +141,10 @@ unattended_upgrades__release_origins:
     - 'o=Debian Backports'
 
   'Debian':
+    - 'o=${distro_id},n=${distro_codename}'
+    - 'o=${distro_id} Backports,n=${distro_codename}-backports'
+
+  'Devuan':
     - 'o=${distro_id},n=${distro_codename}'
     - 'o=${distro_id} Backports,n=${distro_codename}-backports'
 
@@ -266,7 +277,7 @@ unattended_upgrades__auto_reboot: False
 # Specify the time of the automatic reboot instead of ``now``.
 unattended_upgrades__auto_reboot_time: '{{ "02:30"
                                             if (ansible_virtualization_role in [ "host", "NA" ])
-                                            else "02:" + ((55 |random(seed=inventory_hostname, start=40))|string) }}'
+                                            else ("02:%02d"|format(55 |random(seed=inventory_hostname, start=40))) }}'
 
                                                                    # ]]]
 # .. envvar:: unattended_upgrades__bandwidth_limit [[[

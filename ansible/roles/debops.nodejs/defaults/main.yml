@@ -1,8 +1,10 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# debops.nodejs default variables [[[
-# ===================================
+# .. _nodejs__ref_defaults:
+
+# debops.nodejs default variables
+# ===============================
 
 # .. contents:: Sections
 #    :local:
@@ -10,147 +12,62 @@
 # .. include:: ../../../../includes/global.rst
 
 
-# Upstream configuration [[[
-# --------------------------
+# Global configuration [[[
+# ------------------------
 
-# .. envvar:: nodejs__upstream [[[
+# .. envvar:: nodejs__distribution_release [[[
+#
+# Specify the OS distribution release to use for the upstream APT repositories
+# and other configuration.
+nodejs__distribution_release: '{{ ansible_local.core.distribution_release
+                                  if (ansible_local|d() and ansible_local.core|d() and
+                                      ansible_local.core.distribution_release|d())
+                                  else ansible_distribution_release }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Node upstream configuration [[[
+# -------------------------------
+
+# .. envvar:: nodejs__node_upstream [[[
 #
 # Enable or disable support for NodeSource APT repositories. By default the
 # upstream package will be installed due to no security support in Debian
 # Stable release.
-nodejs__upstream: '{{ ansible_local.nodejs.upstream|bool
-                      if (ansible_local|d() and ansible_local.nodejs|d() and
-                          ansible_local.nodejs.upstream is defined)
-                      else True }}'
+nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream|bool
+                           if (ansible_local|d() and ansible_local.nodejs|d() and
+                               ansible_local.nodejs.node_upstream is defined)
+                           else nodejs__distribution_release in [ "jessie", "xenial" ] }}'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_release [[[
+# .. envvar:: nodejs__node_upstream_release [[[
 #
-# Specify the NodeJS release to install from the NodeSource APT repository.
+# Specify the Node.js release to install from the NodeSource APT repository.
 # See https://github.com/nodejs/Release for the current release and maintenance
 # shedule. Available releases:
-#
-# - ``node_6.x``
 #
 # - ``node_8.x``
 #
 # - ``node_10.x``
 #
-# - ``iojs_1.x``
+# - ``node_12.x``
 #
-# - ``iojs_2.x``
-#
-# If you switch to the ``iojs`` release, you need to update the list of
-# installed APT packages manually.
-nodejs__upstream_release: 'node_8.x'
+nodejs__node_upstream_release: '{{ "node_8.x"
+                                   if (nodejs__distribution_release in
+                                       [ "wheezy", "jessie", "stretch",
+                                         "trusty", "xenial", "bionic" ])
+                                   else "node_10.x" }}'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_distribution_release [[[
-#
-# Specify the OS distribution release to use for the upstream APT repository.
-nodejs__upstream_distribution_release: '{{ ansible_local.core.distribution_release
-                                           if (ansible_local|d() and ansible_local.core|d() and
-                                               ansible_local.core.distribution_release|d())
-                                           else ansible_distribution_release }}'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__upstream_key_id [[[
+# .. envvar:: nodejs__node_upstream_key_id [[[
 #
 # GPG fingerprint of APT repository signing key.
-nodejs__upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
+nodejs__node_upstream_key_id: '9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280'
 
                                                                    # ]]]
-# .. envvar:: nodejs__upstream_repository [[[
+# .. envvar:: nodejs__node_upstream_repository [[[
 #
 # URL of the NodeSource APT repository in ``sources.list`` format.
-nodejs__upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__upstream_release }} {{ nodejs__upstream_distribution_release }} main'
-                                                                   # ]]]
-                                                                   # ]]]
-# NPM installation via git [[[
-# ----------------------------
-
-# The :command:`npm` package in Debian is unmaintained and has been dropped
-# from Debian Stretch. NPM is installed automatically with upstream version of
-# NodeJS, however if you want to use the distribution version, the role can
-# install NPM system-wide using the project's GitHub repository.
-
-# Be aware that the NPM will be installed in :file:`/usr` prefix using this
-# method, ie. binaries will be in :file:`/usr/bin` instead of
-# :file:`/usr/local/bin`, which might lead to conflicts with ``.deb`` packages
-# of NPM and/or NodeJS.
-
-# .. envvar:: nodejs__npm_git_enabled [[[
-#
-# Enable or disable NPM installation via the GitHub repository. This should be
-# disabled if upstream NodeJS APT package is installed.
-nodejs__npm_git_enabled: '{{ False
-                             if (nodejs__upstream|bool or
-                                 (ansible_local|d() and ansible_local.nodejs|d() and
-                                  (ansible_local.nodejs.configured|d())|bool))
-                             else True }}'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__npm_git_src [[[
-#
-# The source directory where NPM repository will be cloned.
-nodejs__npm_git_src: '{{ (ansible_local.root.src
-                          if (ansible_local|d() and ansible_local.root|d() and
-                              ansible_local.root.src|d())
-                          else "/usr/local/src") + "/nodejs" }}'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__npm_git_repo [[[
-#
-# The URL of the NPM git repository.
-nodejs__npm_git_repo: 'https://github.com/npm/npm'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__npm_git_version [[[
-#
-# The branch or tag to check out from the NPM :command:`git` repository. By
-# default the fixed releases will be chedked out if found, otherwise latest NPM
-# release will be installed.
-nodejs__npm_git_version: '{{ nodejs__npm_git_version_map[ansible_distribution_release]
-                             | d(nodejs__npm_git_release) }}'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__npm_git_version_map [[[
-#
-# YAML dictionary which maps fixed NPM releases to specific OS releases.
-# NPM v6.0.0+ doesn't work with NodeJS 4.x anymore, therefore on OS releases
-# with older NodeJS it is fixed to the last working release.
-nodejs__npm_git_version_map:
-  'jessie':  'v5.10.0'
-  'stretch': 'v5.10.0'
-  'xenial':  'v5.10.0'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__npm_git_release [[[
-#
-# The default NPM rolling release branch which will install the latest version
-# released by upstream. This version might be upgraded automatically by Ansible
-# runs.
-nodejs__npm_git_release: 'latest'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__npm_git_dest [[[
-#
-# The absolute path where the NPM :command:`git` repository will be cloned.
-nodejs__npm_git_dest: '{{ nodejs__npm_git_src + "/" + nodejs__npm_git_repo.split("://")[1] }}'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__npm_git_update [[[
-#
-# Enable or disable updates of the NPM :command:`git` repository. If updates
-# are detected, the role will reinstall NPM automatically.
-nodejs__npm_git_update: False
-
-                                                                   # ]]]
-# .. envvar:: nodejs__npm_git_install_command [[[
-#
-# The command that will be used to install / update NPM. It's executed in the
-# base directory of the NPM :command:`git` repository.
-nodejs__npm_git_install_command: 'bin/npm-cli.js install -g'
+nodejs__node_upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__node_upstream_release }} {{ nodejs__distribution_release }} main'
                                                                    # ]]]
                                                                    # ]]]
 # Yarn upstream configuration [[[
@@ -159,11 +76,19 @@ nodejs__npm_git_install_command: 'bin/npm-cli.js install -g'
 # .. envvar:: nodejs__yarn_upstream [[[
 #
 # Enable or disable support for Yarn upstream APT repository.
+#
+# At the moment the ``yarnpkg`` package in Debian Buster is broken if Node.js
+# from NodeSource is installed, therfore in that case installation from
+# upstream will be enabled automatically. Ref: https://bugs.debian.org/933229
 nodejs__yarn_upstream: '{{ True
-                           if (ansible_local|d() and ansible_local.nodejs|d() and
-                               ansible_local.nodejs.yarn_upstream is defined and
-                               ansible_local.nodejs.yarn_upstream|bool)
-                           else False }}'
+                           if nodejs__node_upstream|bool
+                           else (ansible_local.nodejs.yarn_upstream|bool
+                                 if (ansible_local|d() and ansible_local.nodejs|d() and
+                                     ansible_local.nodejs.yarn_upstream is defined)
+                                 else (True
+                                       if (nodejs__distribution_release in
+                                           [ "jessie", "stretch", "xenial", "bionic" ])
+                                       else False)) }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__yarn_upstream_key_id [[[
@@ -181,20 +106,32 @@ nodejs__yarn_upstream_repository: 'deb https://dl.yarnpkg.com/debian/ stable mai
 # APT packages [[[
 # ----------------
 
+# .. envvar:: nodejs__remove_packages [[[
+#
+# List of APT packages to remove before installation of Node.js support.
+nodejs__remove_packages:
+
+  # This package collides with the 'yarn' upstream package
+  # Ref: https://bugs.debian.org/913997
+  - 'cmdtest'
+
+  # Remove the OS release package if Yarn from upstream should be installed
+  - '{{ "yarnpkg" if nodejs__yarn_upstream|bool else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: nodejs__base_packages [[[
 #
 # List of base APT packages to install.
 nodejs__base_packages:
   - 'nodejs'
-  - '{{ "yarn" if nodejs__yarn_upstream|bool else [] }}'
-
-                                                                   # ]]]
-# .. envvar:: nodejs__distribution_packages [[[
-#
-# List of APT packages which are only needed when NodeJS is installed from
-# current OS release repositories.
-nodejs__distribution_packages:
-  - '{{ [ "nodejs-legacy" ] if (not nodejs__upstream|bool) else [] }}'
+  - '{{ [] if nodejs__node_upstream|bool else "npm" }}'
+  - '{{ "yarn"
+        if nodejs__yarn_upstream|bool
+        else ([]
+              if (nodejs__distribution_release in
+                  [ "wheezy", "jessie", "stretch",
+                    "trusty", "xenial", "bionic" ])
+              else "yarnpkg") }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__packages [[[
@@ -278,12 +215,28 @@ nodejs__npm_production_mode: True
 # Configuration for the :ref:`debops.apt_preferences` Ansible role.
 nodejs__apt_preferences__dependent_list:
 
-  - packages: [ 'nodejs', 'nodejs-*', 'node-*', 'libssl1.0.0', 'libssl-dev' ]
-    backports: [ 'jessie' ]
+  - packages: [ 'nodejs', 'nodejs-*', 'node-*', 'libssl1.0.0', 'libssl-dev', 'npm', 'libuv1', 'libuv1-dev' ]
+    backports: [ 'jessie', 'stretch' ]
     reason: 'Unsupported NodeJS version, parity with next Debian release'
     by_role: 'debops_nodejs'
     filename: 'debops_nodejs.pref'
-    state: '{{ "absent" if nodejs__upstream|bool else "present" }}'
+    state: '{{ "absent" if nodejs__node_upstream|bool else "present" }}'
+
+  - package: '*'
+    pin: 'origin "deb.nodesource.com"'
+    priority: '100'
+    reason: "Don't upgrade software automatically using packages from external repository"
+    role: 'debops.nodejs'
+    suffix: '_deb_nodesource_com'
+    state: '{{ "present" if nodejs__node_upstream|bool else "absent" }}'
+
+  - packages: [ 'nodejs', 'nodejs-*' ]
+    pin: 'origin "deb.nodesource.com"'
+    priority: '501'
+    reason: 'Prefer nodejs packages from the same repository for consistency'
+    role: 'debops.nodejs'
+    suffix: '_deb_nodesource_com'
+    state: '{{ "present" if nodejs__node_upstream|bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__keyring__dependent_apt_keys [[[
@@ -291,13 +244,12 @@ nodejs__apt_preferences__dependent_list:
 # Configuration for the :ref:`debops.keyring` Ansible role.
 nodejs__keyring__dependent_apt_keys:
 
-  - id: '{{ nodejs__upstream_key_id }}'
-    repo: '{{ nodejs__upstream_repository }}'
-    state: '{{ "present" if nodejs__upstream|bool else "absent" }}'
+  - id: '{{ nodejs__node_upstream_key_id }}'
+    repo: '{{ nodejs__node_upstream_repository }}'
+    state: '{{ "present" if nodejs__node_upstream|bool else "absent" }}'
 
   - id: '{{ nodejs__yarn_upstream_key_id }}'
     repo: '{{ nodejs__yarn_upstream_repository }}'
     state: '{{ "present" if nodejs__yarn_upstream|bool else "absent" }}'
-                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]

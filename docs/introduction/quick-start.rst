@@ -37,7 +37,7 @@ Quick start with Docker
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Start a Docker container which acts as an Ansible Controller host with DebOps
-support, based on Debian Stretch:
+support, based on Debian Buster:
 
 .. code-block:: console
 
@@ -90,13 +90,6 @@ commands:
 
 Docker notes
 ~~~~~~~~~~~~
-
-At the moment, some of the DebOps roles don't work well in a Docker container,
-therefore inside one you might want to skip some roles for now:
-
-.. code-block:: console
-
-   debops --skip-tags role::sysctl
 
 Not everything will work as expected inside a Docker container, for example
 various daemons are not restarted properly. However you can still use the

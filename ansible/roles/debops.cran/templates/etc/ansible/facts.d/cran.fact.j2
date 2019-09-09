@@ -17,7 +17,7 @@ try:
     with open(os.devnull, 'w') as devnull:
         cran_stdout = subprocess.check_output(
             ["/usr/bin/R --version"],
-            shell=True, stderr=devnull)
+            shell=True, stderr=devnull).decode('utf-8')
 
 except subprocess.CalledProcessError:
     pass
@@ -27,4 +27,4 @@ if cran_stdout:
         if 'R version' in line:
             output['version'] = line.split()[2]
 
-print(dumps(output, sort_keys=True, indent=2))
+print(dumps(output, sort_keys=True, indent=4))

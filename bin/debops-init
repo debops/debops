@@ -30,8 +30,8 @@ debops-init: create a new DebOps project directory
 from __future__ import print_function
 
 import os
+import distro
 import codecs
-import subprocess
 import glob
 import argparse
 import socket
@@ -70,11 +70,24 @@ retry_files_enabled = False
 ;ssh_args = -o ControlMaster=auto -o ControlPersist=60s
 """
 
+DEFAULT_GITATTRIBUTES = """
+# Uncomment the lines below to encrypt your secrets with git-crypt
+#ansible/{SECRET_NAME}/** filter=git-crypt diff=git-crypt
+#{SECRET_NAME}/** filter=git-crypt diff=git-crypt
+"""
+
 DEFAULT_GITIGNORE = r"""\
+debops
+ansible.cfg
 ansible/{SECRET_NAME}
 {SECRET_NAME}
+
+# Remove the line below to store encrypted secrets in
+# the git repository
 {ENCFS_PREFIX}{SECRET_NAME}
-ansible.cfg
+
+roles
+playbooks
 
 #-- python
 *.py[co]
@@ -155,6 +168,9 @@ def write_config_files(project_root):
     # Create .debops.cfg
     write_file(os.path.join(project_root, DEBOPS_CONFIG),
                DEFAULT_DEBOPS_CONFIG)
+    # Create .gitattributes
+    write_file(os.path.join(project_root, '.gitattributes'),
+               DEFAULT_GITATTRIBUTES.format(SECRET_NAME=SECRET_NAME))
     # Create .gitignore
     write_file(os.path.join(project_root, '.gitignore'),
                DEFAULT_GITIGNORE.format(SECRET_NAME=SECRET_NAME,
@@ -163,7 +179,8 @@ def write_config_files(project_root):
     hosts_filename = os.path.join(project_root, "ansible", INVENTORY, "hosts")
     # Swap in different hosts file content depending on the host's OS/distro
     if (platform.system() == "Linux" and
-            platform.linux_distribution()[0].lower() in ("debian", "ubuntu")):
+            (distro.linux_distribution(full_distribution_name=False)[0]
+             ).lower() in ("debian", "ubuntu")):
         write_file(hosts_filename,
                    HOSTS_FILE_HEADER, HOSTS_FILE_CONTENT_CONTROLER)
     else:
