@@ -54,6 +54,8 @@ Directory structure
 
         - :ref:`sudo.schema <slapd__ref_sudo>`
 
+        - :ref:`eduperson.schema <slapd__ref_eduperson>`
+
       - ``olcDatabase={0}config``
 
         - :ref:`olcOverlay={0}syncprov <slapd__ref_syncprov_overlay>` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)

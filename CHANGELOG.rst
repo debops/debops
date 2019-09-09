@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.1: https://github.com/debops/debops/compare/v1.1.0...stable-1.1
 
+Added
+~~~~~
+
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Add support for :ref:`eduPerson LDAP schema <slapd__ref_eduperson>` with
+  updated schema file included in the role.
+
 
 `debops v1.1.1`_ - 2019-09-08
 -----------------------------
