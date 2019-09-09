@@ -28,7 +28,11 @@ ssl_dh_parameters_length = 2048
 {% set dovecot_tpl_tls_key_file     = dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_key %}
 ssl_cert    = <{{ dovecot_tpl_tls_cert_file }}
 ssl_key     = <{{ dovecot_tpl_tls_key_file }}
+{% if (ansible_distribution_release in [ "wheezy", "jessie", "precise", "trusty" ] %}
 ssl_protocols   = {{ dovecot_ssl_protocols }}
+{% else %}
+ssl_min_protocol = {{ dovecot_ssl_protocols }}
+{% endif %}
 ssl_cipher_list = {{ dovecot_ssl_cipher_list }}
 {% else %}
 ssl = no
