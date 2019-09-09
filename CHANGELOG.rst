@@ -49,6 +49,12 @@ General
 
   .. __: https://github.com/vmware/open-vm-tools
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Add support for :ref:`eduPerson LDAP schema <slapd__ref_eduperson>` with
+  updated schema file included in the role.
+
 Changed
 ~~~~~~~
 
