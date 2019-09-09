@@ -97,6 +97,9 @@
 {%     endif %}
 {%     if config.port|d() or config.ports|d() %}
 {%       set _ = ferm__tpl_config.update({'dmz_ports': (debops__tpl_macros.flattened(config.port|d(config.ports))) | from_json }) %}
+{%       if ferm__tpl_config['dport'] == [] %}
+{%          set _ = ferm__tpl_config['dport'].extend(ferm__tpl_config['dmz_ports']) %}
+{%       endif %}
 {%     endif %}
 {%   endif %}
 {%   for interface in (debops__tpl_macros.flattened(config.interface_present|d(config.interfaces_present)) | from_json) %}
@@ -389,10 +392,10 @@
         table filter chain FORWARD {
 {%     if ferm__tpl_config['dmz_ports']|d() %}
             protocol ({{ ferm__tpl_config['protocol']|d([ 'tcp' ]) | join(" ") }}) {
-{%       if ferm__tpl_config['dmz_ports'] | length > 1 %}
-                mod multiport destination-ports ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
+{%       if ferm__tpl_config['dport'] | length > 1 %}
+                mod multiport destination-ports ({{ ferm__tpl_config['dport'] | join(" ") }}) {
 {%       else %}
-                dport ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
+                dport ({{ ferm__tpl_config['dport'] | join(" ") }}) {
 {%       endif %}
                     destination $PRIVATE_IP ACCEPT;
                 }
