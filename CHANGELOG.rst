@@ -27,6 +27,15 @@ Added
 - Add support for :ref:`eduPerson LDAP schema <slapd__ref_eduperson>` with
   updated schema file included in the role.
 
+Fixed
+~~~~~
+
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The ``dmz`` firewall configuration will use the ``dport`` parameter instead
+  of ``port``, otherwise filtering rules will not work as expected.
+
 
 `debops v1.0.9`_ - 2019-09-08
 -----------------------------
