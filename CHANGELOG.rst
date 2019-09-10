@@ -27,6 +27,15 @@ Added
 - Add support for :ref:`eduPerson LDAP schema <slapd__ref_eduperson>` with
   updated schema file included in the role.
 
+Changed
+~~~~~~~
+
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- Various improvements in SSL cipher and Diffie-Hellman parameter
+  configuration.
+
 Fixed
 ~~~~~
 
