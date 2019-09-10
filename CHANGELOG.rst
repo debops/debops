@@ -69,6 +69,9 @@ Updates of upstream application versions
   installer versions have been updated to their next point releases, 9.10 and
   10.1 respectively.
 
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v2.6.3``.
+
 General
 '''''''
 
