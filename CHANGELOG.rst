@@ -131,6 +131,12 @@ Fixed
   ``bind-interfaces``. This allows the :command:`dnsmasq` service to start
   correctly.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The ``dmz`` firewall configuration will use the ``dport`` parameter instead
+  of ``port``, otherwise filtering rules will not work as expected.
+
 :ref:`debops.nfs_server` role
 '''''''''''''''''''''''''''''
 
