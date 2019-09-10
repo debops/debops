@@ -30,6 +30,12 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v2.6.3``.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
