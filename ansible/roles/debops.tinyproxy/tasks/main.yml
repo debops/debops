@@ -1,0 +1,45 @@
+---
+
+- name: Install Tinyproxy requested packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ tinyproxy__base_packages }}'
+    - '{{ tinyproxy__packages }}'
+  register: tinyproxy__register_install
+  until: tinyproxy__register_install is succeeded
+  notify: [ 'Restart tinyproxy' ]
+
+- name: Divert the original tinyproxy configuration file
+  command: dpkg-divert --quiet --local --divert /etc/tinyproxy/tinyproxy.conf.dpkg-divert --rename /etc/tinyproxy/tinyproxy.conf
+  args:
+    creates: '/etc/tinyproxy/tinyproxy.conf.dpkg-divert'
+
+- name: Generate tinyproxy configuration
+  template:
+    src: 'tinyproxy.conf.j2'
+    dest: '/etc/tinyproxy/tinyproxy.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ tinyproxy__combined_configuration | parse_kv_items }}'
+  notify: [ 'Restart tinyproxy' ]
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ])
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Tinyproxy local facts
+  template:
+    src: 'etc/ansible/facts.d/tinyproxy.fact.j2'
+    dest: '/etc/ansible/facts.d/tinyproxy.fact'
+    mode: '0755'
+  register: tinyproxy__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: tinyproxy__register_facts is changed
