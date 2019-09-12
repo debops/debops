@@ -39,6 +39,11 @@ Changed
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Fixed wrong constant name in the :command:`debops` script.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
