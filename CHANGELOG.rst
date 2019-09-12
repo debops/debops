@@ -49,6 +49,14 @@ General
 
   .. __: https://github.com/vmware/open-vm-tools
 
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- The role can now be used to authenticate users of different services against
+  the LDAP directory via integration with the :ref:`debops.ldap` role and its
+  framework. Multiple LDAP profiles can be used to provide different access
+  control for different services.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
