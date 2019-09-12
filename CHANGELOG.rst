@@ -35,6 +35,10 @@ Added
 - Add support for :ref:`eduPerson LDAP schema <slapd__ref_eduperson>` with
   updated schema file included in the role.
 
+- The role will configure SASL authentication in the OpenLDAP service using the
+  :ref:`debops.saslauthd` Ansible role. Both humans and machines can
+  authenticate to the OpenLDAP directory using their respective LDAP objects.
+
 Changed
 ~~~~~~~
 

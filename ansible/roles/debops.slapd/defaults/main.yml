@@ -563,6 +563,21 @@ slapd__default_tasks:
       olcSecurity: 'ssf=128 update_ssf=128 simple_bind=128'
     state: '{{ "exact" if slapd__pki|bool else "init" }}'
 
+  - name: 'Configure supported SASL authentication methods'
+    dn: 'cn=config'
+    attributes:
+      olcSaslSecProps: 'noanonymous,minssf=128'
+    state: 'exact'
+
+    # Warning: changes in this attribute require slapd restart
+  - name: 'Define SASL regex matching rules'
+    dn: 'cn=config'
+    attributes:
+      olcAuthzRegexp:
+        - '{0}uid=([^,]*),cn=[^,]*,cn=auth uid=$1,ou=People,{{ slapd__basedn }}'
+        - '{1}uid=([^,]*),cn=([^,]*),cn=[^,]*,cn=auth ldap:///ou=Hosts,{{ slapd__basedn }}??sub?(&(objectClass=account)(uid=$1)(host=$2))'
+    state: 'exact'
+
   - name: 'Define the maximum size of the main database'
     dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
     attributes:
@@ -921,5 +936,24 @@ slapd__tcpwrappers__dependent_allow:
     weight: '50'
     filename: 'slapd_dependent_allow'
     comment: 'Allow connections to OpenLDAP service'
+
+                                                                   # ]]]
+# .. envvar:: slapd__saslauthd__dependent_instances [[[
+#
+# Configuration for the :ref:`debops.saslauthd` Ansible role.
+slapd__saslauthd__dependent_instances:
+
+  - name: 'slapd'
+    group: '{{ slapd__group }}'
+    description: 'OpenLDAP SASL Authentication Daemon'
+    config_path: '/etc/ldap/sasl2/slapd.conf'
+    config_group: '{{ slapd__group }}'
+    config_raw: |
+      pwcheck_method: saslauthd
+      mech_list: PLAIN LOGIN EXTERNAL
+      saslauthd_path: /var/lib/slapd/saslauthd/mux
+    socket_path: '/var/lib/slapd/saslauthd'
+    socket_group: '{{ slapd__group }}'
+    ldap_profile: 'slapd'
                                                                    # ]]]
                                                                    # ]]]
