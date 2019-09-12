@@ -9,7 +9,10 @@ support.
 
 This role allows configuration of multiple :command:`saslauthd` instances which
 can be used by different services. By default role can configure support for
-SMTP AUTH for Postfix, other services might be supported in the future.
+SMTP AUTH for Postfix, other services might be supported in the future. The
+role is also integrated with the LDAP framework implemented in the
+:ref:`debops.ldap` role and can be used to implement authentication via the
+LDAP directory in other services.
 
 
 Installation

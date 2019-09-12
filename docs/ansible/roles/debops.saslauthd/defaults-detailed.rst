@@ -52,6 +52,12 @@ parameters:
   be a system group with GID < 1000. If ``False``, it will be a normal group
   with GID >= 1000.
 
+``notify``
+  Optional. String or a list which contains names of the Ansible handlers to
+  notify when a configuration changes. This parameter makes sense only in
+  dependent configuration, because the handlers need to be present in a given
+  Ansible playbook.
+
 The parameters specified next are used and related to the :command:`saslauthd`
 daemon configuration files located in :file:`/etc/default/saslauthd-*`:
 
@@ -79,6 +85,13 @@ daemon configuration files located in :file:`/etc/default/saslauthd-*`:
 ``daemon_options``
   Optional. Additional :command:`saslauthd` daemon options for a given
   instance. If not specified, ``-c`` is added by default.
+
+``ldap_profile``
+  Optional. Name of the :ref:`LDAP profile <saslauthd__ref_ldap_profiles>` to
+  use for a given :command:`saslauthd` instance. If not specified, the
+  ``global`` profile located in the :file:`/etc/saslauthd.conf` configuration
+  file will be used by default. This parameter is only valid with the ``ldap``
+  authentication mechanism enabled.
 
 The following parameters are related to the SASL configuration file generated
 for a given instance:
@@ -148,3 +161,82 @@ Modify existing Postfix configuration to connect to a PostgreSQL database:
          sql_passwd: password
          sql_database: mail
          sql_select: select password from mailboxes where name='%u' and domain='%r' and smtp_enabled=1
+
+.. _saslauthd__ref_ldap_profiles:
+
+saslauthd__ldap_profiles
+------------------------
+
+The ``saslauthd__ldap_*_profiles`` variables define a list of "LDAP profiles",
+:file:`/etc/saslauthd-*.conf` configuration files which configure the ``ldap``
+SASL authentication mechanism. The :command:`saslauthd` service instances can
+select a LDAP profile to use, or if not defined, will fall back to the
+:file:`/etc/saslauthd.conf` configuration file which is defined in the
+``global`` LDAP profile.
+
+Examples
+~~~~~~~~
+
+Check the :envvar:`saslauthd__ldap_default_profiles` variable for a set of
+default LDAP profiles defined in the role.
+
+The manual for the :file:`/etc/saslauthd.conf` configuration file is not
+available in Debian directly. You can find it in the ``cyrus-sasl2-doc`` APT
+package, in the :file:`/usr/share/doc/cyrus-sasl2-doc/LDAP_SASLAUTHD.gz` file.
+
+Syntax
+~~~~~~
+
+Each LDAP profile definition is a YAML dictionary with specific parameters:
+
+``name``
+  Required. The name of the LDAP profile, used in the filename. You can select
+  a given LDAP profile in the SASL instance configuration by specifying this
+  name in the ``ldap_profile`` parameter.
+
+  Multiple configuration entries with the same ``name`` parameter are merged
+  together and can affect each other.
+
+``state``
+  Optional. If not specified or ``present``, a given LDAP profile configuration
+  file is created on the host. If ``absent``, a given LDAP profile will be
+  removed from the host. If ``ignore``, this configuration entry will not be
+  evaluated by the role during execution.
+
+``owner``
+  Optional. The UNIX account which will be the owner of the generated
+  configuration file. If not specified, ``root`` is used by default.
+
+``group``
+  Optional. The UNIX group of the generated configuration file. If not
+  specified, ``sasl`` is used by default.
+
+``mode``
+  Optional. The mode of the generated configuration file. If not specified,
+  ``0640`` is used by default.
+
+``raw``
+  Optional. String or YAML text block with contents of the
+  :file:`/etc/saslauthd.conf` configuration, inserted in the configuration file
+  as-is.
+
+``options``
+  Optional. If the ``raw`` configuration parameter is not specified, this
+  parameter can be used to define the contents of the configuration file.
+  The ``options`` parameters from multiple configuration entries with the same
+  ``name`` parameter are merged together, and can affect each other.
+
+  The configuration is defined as a list of YAML dictionaries with specific
+  parameters:
+
+  ``name``
+    The name of the configuration option.
+
+  ``value``
+    The value of the configuration option, defined as a string or a YAML list
+    which list elements joined by spaces.
+
+  ``state``
+    If not specified or ``present``, a given configuration option will be
+    present in the generated file. If ``absent``, a given configuration option
+    will be removed from the generated file.

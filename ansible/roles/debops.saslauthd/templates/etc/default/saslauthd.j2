@@ -30,7 +30,7 @@ NAME="saslauthd-{{ item.name }}"
 # for more information.
 #
 # Example: MECHANISMS="pam"
-MECHANISMS="{{ item.mech | d(item.mechanism | d(item.mechanisms | d('pam'))) }}"
+MECHANISMS="{{ item.mech | d(item.mechanism | d(item.mechanisms | d(saslauthd__default_mechanism))) }}"
 
 # Additional options for this mechanism. (default: none)
 # See the saslauthd man page for information about mech-specific options.
@@ -60,4 +60,4 @@ THREADS={{ item.threads | d(ansible_processor_vcpus) }}
 # then your Postfix is running in a chroot.
 # If it has the line "smtp inet n - n - - smtpd" then your Postfix is NOT
 # running in a chroot.
-OPTIONS="{{ item.daemon_options | d('-c') + ' -m ' + item.socket_path }}"
+OPTIONS="{{ item.daemon_options | d('-c') + ' -m ' + item.socket_path + ((' -O /etc/saslauthd-' + item.ldap_profile + '.conf') if (item.ldap_profile|d('global') != 'global' and saslauthd__ldap_device_dn|d()) else '') }}"
