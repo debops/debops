@@ -10,5 +10,17 @@
 
   roles:
 
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
+
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ saslauthd__ldap__dependent_tasks }}'
+
     - role: debops.saslauthd
       tags: [ 'role::saslauthd', 'skip::saslauthd' ]
