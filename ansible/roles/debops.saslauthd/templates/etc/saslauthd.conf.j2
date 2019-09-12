@@ -1,7 +1,13 @@
 # {{ ansible_managed }}
 
-# SASL configuration for: {{ item.name }}
+# SASL LDAP configuration for: {{ item.name }}
 
-{% if item.config_raw|d() %}
-{{ item.config_raw }}
+{% if item.raw|d() %}
+{{ item.raw }}
+{% elif item.options|d() %}
+{%   for element in item.options %}
+{%     if element.name|d() and element.value|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{{ "{}: {}".format(element.name, (element.value if element.value is string else (element.value | selectattr("state", "equalto", "present") | map(attribute="name") | list | join(" ")))) }}
+{%     endif %}
+{%   endfor %}
 {% endif %}

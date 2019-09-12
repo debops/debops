@@ -10,6 +10,7 @@ debops.saslauthd
    getting-started
    defaults/main
    defaults-detailed
+   ldap-dit
    copyright
 
 ..

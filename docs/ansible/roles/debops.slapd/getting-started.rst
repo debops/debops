@@ -32,6 +32,31 @@ option is to use an external firewall with IDS/IPS systems that can analyze
 LDAP traffic.
 
 
+SASL authentication
+-------------------
+
+The role uses the :ref:`debops.saslauthd` Ansible role to configure the
+:command:`saslauthd` service which provides SASL authentication capability. PAM
+authentication is used by default to authenticate LDAP access via the UNIX
+accounts. If LDAP support is configured on the host by the :ref:`debops.ldap`
+role, the directory will be used for authentication instead.
+
+Humans can authenticate themselves by specifying their account names without
+a domain part, which are defined by the ``uid`` attribute of their
+``inetOrgPerson`` LDAP objects, looked up in the ``ou=People`` subtree of the
+LDAP directory.
+
+Computers can authenticate to the LDAP directory by specifying an UNIX account
+name and their FQDN domain name, for example ``sshd@host.example.org``, which
+corresponds to the ``uid`` and ``host`` attributes of the ``account`` LDAP
+objects. Only hosts that have been registered in the LDAP directory
+``ou=Hosts`` subtree can authenticate with this method.
+
+The :ref:`debops.saslauthd` role defines the ``slapd`` LDAP profile which
+contains the LDAP search query and filtering rules which can be used for access
+control to the OpenLDAP directory itself.
+
+
 Example inventory
 -----------------
 
