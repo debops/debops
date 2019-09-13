@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
 {% if item.comment|d() %}
-{{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{{ item.comment | regex_replace('\n$','') | comment() }}
 {% endif %}
 {% if item.options|d() %}
 {%   for element in item.options %}
@@ -17,7 +17,7 @@
 
 {%           endif %}
 {%           if element.comment|d() %}
-{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{{ element.comment | regex_replace('\n$','') | comment() }}
 {%           endif %}
 {%           if element.value|d() %}
 {%             if element.value is string %}
@@ -29,7 +29,7 @@
 {%             endif %}
 {%           elif element.raw|d() %}
 {%             if element.state|d('present') == 'comment' %}
-{{ "{}".format(element.raw | regex_replace('\n$','')) | comment(decoration='#', prefix='', postfix='') -}}
+{{ "{}".format(element.raw | regex_replace('\n$','')) | comment() }}
 {%             else %}
 {{ "{}".format(element.raw | regex_replace('\n$','')) }}
 {%             endif %}

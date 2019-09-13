@@ -1,14 +1,12 @@
 ---
 
-- name: Install Tinyproxy requested packages
+- name: Install required APT packages
   package:
-    name: '{{ item }}'
+    name: '{{ q("flattened", tinyproxy__base_packages
+                             + tinyproxy__packages) }}'
     state: 'present'
-  with_flattened:
-    - '{{ tinyproxy__base_packages }}'
-    - '{{ tinyproxy__packages }}'
-  register: tinyproxy__register_install
-  until: tinyproxy__register_install is succeeded
+  register: tinyproxy__register_packages
+  until: tinyproxy__register_packages is succeeded
   notify: [ 'Restart tinyproxy' ]
 
 - name: Divert the original tinyproxy configuration file
