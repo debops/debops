@@ -54,6 +54,12 @@ Updates of upstream application versions
 - Various improvements in SSL cipher and Diffie-Hellman parameter
   configuration.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- The :command:`nginx` server configuration has been updated to include latest
+  changes in upstream Nextcloud documentation.
+
 Fixed
 ~~~~~
 
