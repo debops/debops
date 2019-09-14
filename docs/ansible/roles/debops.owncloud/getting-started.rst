@@ -24,7 +24,11 @@ In case you chose a different host, you will need to specify which of your
 database servers the ownCloud instance should use by specifying the database
 server host as :envvar:`owncloud__database_server`.
 
-For UTF8 4-byte support, you should set the following in your inventory of the database server:
+If you are upgrading an existing Nextcloud installation, you should follow
+`Enabling MySQL 4-byte support`__
+and then set the following in your inventory of the database server:
+
+.. __: https://docs.nextcloud.com/server/16/admin_manual/configuration_database/mysql_4byte_support.html
 
 .. code-block:: yaml
 
@@ -36,6 +40,9 @@ For UTF8 4-byte support, you should set the following in your inventory of the d
          'innodb_large_prefix': 'on'
          'innodb_file_format': 'barracuda'
          'innodb_file_per_table': 'true'
+
+For database clean installs this is not required anymore because MySQL 4-byte
+is enabled by default by the :ref:`debops.mariadb_server` Ansible role.
 
 
 In memory caching
