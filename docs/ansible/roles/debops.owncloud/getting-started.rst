@@ -62,7 +62,7 @@ Refer to :ref:`debops.redis_server` documentation for details.
 PHP configuration
 -----------------
 
-Starting with Nextcloud 16, a setup warning is emitted in the Nextcloud admin web interface "The PHP memory limit is below the recommended value of 512MB.". To give the application what it asks for set the following in your inventory:
+Starting with Nextcloud 16, a setup warning is emitted in the Nextcloud admin web interface "The PHP memory limit is below the recommended value of 512MB.". The role already configures Nginx to pass an increased memory_limit to PHP. However, this might not be picked up in some cases. When this happens you might want to set the following in your inventory:
 
 .. code-block:: yaml
 
