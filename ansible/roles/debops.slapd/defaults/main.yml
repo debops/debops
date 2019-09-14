@@ -546,7 +546,7 @@ slapd__default_tasks:
     dn: 'cn=config'
     attributes:
       olcTLSDHParamFile: '{{ slapd__dhparam_file }}'
-    state: '{{ "exact" if slapd__dhparam_file|d() else "init" }}'
+    state: '{{ "exact" if (slapd__pki|bool and slapd__dhparam_file|d()) else "init" }}'
 
   - name: 'Configure TLS cipher suites'
     dn: 'cn=config'
@@ -564,7 +564,7 @@ slapd__default_tasks:
   - name: 'Configure supported SASL authentication methods'
     dn: 'cn=config'
     attributes:
-      olcSaslSecProps: 'noanonymous,minssf=128'
+      olcSaslSecProps: 'noanonymous,minssf={{ "128" if slapd__pki|bool else "0" }}'
     state: 'exact'
 
     # Warning: changes in this attribute require slapd restart
