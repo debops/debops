@@ -104,6 +104,13 @@ General
   precompiled binaries from remote resources. See the role documentation for
   more details.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Drop Nextcloud 14 support because it is EOL. You need to upgrade Nextcloud
+  manually if you are running 14 or below. Add Nextcloud 16 support. Now
+  default to Nextcloud 15 for new installations.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
