@@ -24,7 +24,7 @@ In case you chose a different host, you will need to specify which of your
 database servers the ownCloud instance should use by specifying the database
 server host as :envvar:`owncloud__database_server`.
 
-For UTF8 4-byte support, you should set the following in your inventory:
+For UTF8 4-byte support, you should set the following in your inventory of the database server:
 
 .. code-block:: yaml
 
@@ -58,6 +58,16 @@ server host as :envvar:`owncloud__redis_host` and setting
 :envvar:`owncloud__redis_enabled` to ``True``.
 Additionally, you will need to set the :envvar:`owncloud__redis_password`.
 Refer to :ref:`debops.redis_server` documentation for details.
+
+PHP configuration
+-----------------
+
+Starting with Nextcloud 16, a setup warning is emitted in the Nextcloud admin web interface "The PHP memory limit is below the recommended value of 512MB.". To give the application what it asks for set the following in your inventory:
+
+.. code-block:: yaml
+
+   php__ini_memory_limit: '512M'
+
 
 .. _owncloud__ref_choosing_a_webserver:
 
