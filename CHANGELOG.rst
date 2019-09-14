@@ -42,6 +42,12 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.owncloud` role, the default Nextcloud version has been
+  updated to ``15.0``, because the ``14.0`` release has reached End of Life.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
