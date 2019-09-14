@@ -24,15 +24,18 @@ In case you chose a different host, you will need to specify which of your
 database servers the ownCloud instance should use by specifying the database
 server host as :envvar:`owncloud__database_server`.
 
-For experimental UTF8 4-byte support, you can set the following in your inventory:
+For UTF8 4-byte support, you should set the following in your inventory:
 
 .. code-block:: yaml
 
    mariadb_server__options:
-     ## https://docs.nextcloud.com/server/13/admin_manual/installation/system_requirements.html#emoji-utf8-4-byte-support-with-mysql-mariadb
-     'innodb_large_prefix': 'on'
-     'innodb_file_format': 'barracuda'
-     'innodb_file_per_table': 'true'
+     - section: 'mysqld'
+       options:
+
+         ## https://docs.nextcloud.com/server/16/admin_manual/configuration_database/mysql_4byte_support.html
+         'innodb_large_prefix': 'on'
+         'innodb_file_format': 'barracuda'
+         'innodb_file_per_table': 'true'
 
 
 In memory caching
