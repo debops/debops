@@ -24,15 +24,25 @@ In case you chose a different host, you will need to specify which of your
 database servers the ownCloud instance should use by specifying the database
 server host as :envvar:`owncloud__database_server`.
 
-For experimental UTF8 4-byte support, you can set the following in your inventory:
+If you are upgrading an existing Nextcloud installation, you should follow
+`Enabling MySQL 4-byte support`__
+and then set the following in your inventory of the database server:
+
+.. __: https://docs.nextcloud.com/server/16/admin_manual/configuration_database/mysql_4byte_support.html
 
 .. code-block:: yaml
 
    mariadb_server__options:
-     ## https://docs.nextcloud.com/server/13/admin_manual/installation/system_requirements.html#emoji-utf8-4-byte-support-with-mysql-mariadb
-     'innodb_large_prefix': 'on'
-     'innodb_file_format': 'barracuda'
-     'innodb_file_per_table': 'true'
+     - section: 'mysqld'
+       options:
+
+         ## https://docs.nextcloud.com/server/16/admin_manual/configuration_database/mysql_4byte_support.html
+         'innodb_large_prefix': 'on'
+         'innodb_file_format': 'barracuda'
+         'innodb_file_per_table': 'true'
+
+For database clean installs this is not required anymore because MySQL 4-byte
+is enabled by default by the :ref:`debops.mariadb_server` Ansible role.
 
 
 In memory caching
@@ -55,6 +65,16 @@ server host as :envvar:`owncloud__redis_host` and setting
 :envvar:`owncloud__redis_enabled` to ``True``.
 Additionally, you will need to set the :envvar:`owncloud__redis_password`.
 Refer to :ref:`debops.redis_server` documentation for details.
+
+PHP configuration
+-----------------
+
+Starting with Nextcloud 16, a setup warning is emitted in the Nextcloud admin web interface "The PHP memory limit is below the recommended value of 512MB.". The role already configures Nginx to pass an increased memory_limit to PHP. However, this might not be picked up in some cases. When this happens you might want to set the following in your inventory:
+
+.. code-block:: yaml
+
+   php__ini_memory_limit: '512M'
+
 
 .. _owncloud__ref_choosing_a_webserver:
 
