@@ -2011,23 +2011,23 @@ owncloud__nginx__dependent_servers:
         options: |
           deny all;
 
-      - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|core\/templates\/40[34])\.php(?:$|\/)'
+      - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+)\.php(?:$|\/)'
         options: |
           include fastcgi_params;
           fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           fastcgi_param PATH_INFO $fastcgi_path_info;
           fastcgi_param HTTPS on;
-          fastcgi_param modHeadersAvailable true; #Avoid sending the security headers twice
+          #Avoid sending the security headers twice
+          fastcgi_param modHeadersAvailable true;
+          # Enable pretty urls
           fastcgi_param front_controller_active true;
-
-          fastcgi_pass php_owncloud;
-
           fastcgi_intercept_errors on;
-
           {% if (ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0") is version_compare("1.7.11",'>=') %}
           fastcgi_request_buffering off;
           {% endif %}
+
+          fastcgi_pass php_owncloud;
 
           fastcgi_read_timeout {{ owncloud__timeout }};
 
@@ -2045,13 +2045,13 @@ owncloud__nginx__dependent_servers:
           add_header Cache-Control "public, max-age=15778463";
 
           add_header X-Content-Type-Options nosniff;
+          add_header X-Download-Options noopen;
           {% if not (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">=")) %}
           add_header X-Frame-Options "SAMEORIGIN";
           {% endif %}
-          add_header X-XSS-Protection "1; mode=block";
-          add_header X-Robots-Tag none;
-          add_header X-Download-Options noopen;
           add_header X-Permitted-Cross-Domain-Policies none;
+          add_header X-Robots-Tag none;
+          add_header X-XSS-Protection "1; mode=block";
 
           {% if not (owncloud__nginx_access_log_assets|bool) %}
           access_log off;
