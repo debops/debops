@@ -51,6 +51,9 @@ Updates of upstream application versions
 - In the :ref:`debops.owncloud` role, the default Nextcloud version has been
   updated to ``15.0``, because the ``14.0`` release has reached End of Life.
 
+- In the :ref:`debops.ipxe` role, the Debian Stretch netboot installer and
+  non-free firmware versions have been updated to their newest releases.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
