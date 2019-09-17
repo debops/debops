@@ -1,5 +1,6 @@
 # {{ ansible_managed }}
 
+{% for item in tinyproxy__combined_configuration | parse_kv_items %}
 {% if item.comment|d() %}
 {{ item.comment | regex_replace('\n$','') | comment() }}
 {% endif %}
@@ -48,3 +49,4 @@
 {% if item.raw|d() %}
 {{ item.raw | regex_replace('\n$','') }}
 {% endif %}
+{% endfor %}

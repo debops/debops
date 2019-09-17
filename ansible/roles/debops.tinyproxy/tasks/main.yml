@@ -21,9 +21,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ tinyproxy__combined_configuration | parse_kv_items }}'
   notify: [ 'Restart tinyproxy' ]
-  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ])
 
 - name: Make sure that Ansible local facts directory exists
   file:
