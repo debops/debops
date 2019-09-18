@@ -142,6 +142,16 @@ General
 - The role will use Ansible local facts to check if OpenSSH server package is
   installed to conditionally enable/disable its start on first install.
 
+Removed
+~~~~~~~
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Set `nginx_upstream_php5_www_data` to absent. If you are still using
+  that Nginx upstream which was enabled by default then update your Ansible
+  role and switch to a supported PHP release.
+
 Fixed
 ~~~~~
 
