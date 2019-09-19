@@ -80,6 +80,11 @@ General
 - The ``dmz`` firewall configuration will use the ``dport`` parameter instead
   of ``port``, otherwise filtering rules will not work as expected.
 
+:ref:`debops.icinga_db` role
+''''''''''''''''''''''''''''
+
+- Fix the role fact script execution in Python 2.7 environment.
+
 
 `debops v1.1.1`_ - 2019-09-08
 -----------------------------

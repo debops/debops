@@ -12,6 +12,12 @@ try:
 except ImportError:
     from ConfigParser import ConfigParser
 
+# Python 2 compatibility
+try:
+    from StringIO import StringIO
+except:
+    pass
+
 
 def get_config(config_file):
     config_data = []
@@ -22,7 +28,12 @@ def get_config(config_file):
             try:
                 config.read_string(config_string.decode('utf-8'))
             except AttributeError:
-                config.read_string(config_string)
+                try:
+                    config.read_string(config_string)
+                except:
+                    # Python 2 compatibility
+                    sbuffer = StringIO(config_string)
+                    config.readfp(sbuffer)
 
             for section in config.sections():
 
