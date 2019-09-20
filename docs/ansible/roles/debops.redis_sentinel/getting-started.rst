@@ -14,7 +14,7 @@ configuration defined by the distribution packages. Next, a new,
 TCP ports and UNIX socket the same as the default Redis Sentinel setup. This
 should allow easy creation of additional Redis Sentinel instances when necessary.
 
-Keep in mind that once the :file:`sentine.conf` configuration file is
+Keep in mind that once the :file:`sentinel.conf` configuration file is
 generated, the role will not modify it. You should design the required Redis
 Sentinel setup in a development environment, and then deploy it in production.
 To reconfigure an instance from scratch, you can remove it by setting its state
