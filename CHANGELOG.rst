@@ -85,6 +85,12 @@ General
 
 - Fix the role fact script execution in Python 2.7 environment.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Fix raw OS release detection code to handle newlines at both ends of the
+  string.
+
 
 `debops v1.1.1`_ - 2019-09-08
 -----------------------------
