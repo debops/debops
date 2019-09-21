@@ -123,7 +123,7 @@ python__v2: '{{ ansible_local.python.installed2
                       if ((ansible_python_interpreter|d("")).endswith("python") or
                           (discovered_interpreter_python|d("")).endswith("python") or
                            (python__register_raw_release|d() and
-                            python__register_raw_release.stdout|d("") in
+                            (python__register_raw_release.stdout|d("")).strip() in
                             [ "wheezy", "jessie", "stretch",
                               "precise", "trusty", "xenial" ]))
                       else False) }}'
