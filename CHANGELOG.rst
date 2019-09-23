@@ -21,6 +21,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` Ansible playbook will create the LDAP
+  obejects ``cn=LDAP Replicators`` and ``cn=Password Reset Agents`` to allow
+  other Ansible roles to utilize them without the need for the system
+  administrator to define them by hand.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
