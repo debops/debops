@@ -88,6 +88,12 @@ General
 - The ``dmz`` firewall configuration will use the ``dport`` parameter instead
   of ``port``, otherwise filtering rules will not work as expected.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Use the Ansible local facts from the :ref:`debops.docker_server` role instead
+  from the old ``debops.docker`` role after it was renamed.
+
 :ref:`debops.icinga_db` role
 ''''''''''''''''''''''''''''
 

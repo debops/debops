@@ -28,8 +28,8 @@
     name: '{{ gitlab_runner__user }}'
     groups: 'docker'
     append: True
-  when: (ansible_local|d() and ansible_local.docker|d() and
-         (ansible_local.docker.installed|d()) | bool)
+  when: (ansible_local|d() and ansible_local.docker_server|d() and
+         (ansible_local.docker_server.installed|d()) | bool)
 
 - name: Copy custom files to GitLab Runner host
   copy:

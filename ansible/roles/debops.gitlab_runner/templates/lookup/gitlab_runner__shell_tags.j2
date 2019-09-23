@@ -5,8 +5,8 @@
 {% if (ansible_local|d() and ansible_local.tags|d()) %}
 {%   set _ = output.extend(ansible_local.tags) %}
 {% endif %}
-{% if (ansible_local|d() and ansible_local.docker|d() and
-       (ansible_local.docker.installed|d()) | bool) %}
+{% if (ansible_local|d() and ansible_local.docker_server|d() and
+       (ansible_local.docker_server.installed|d()) | bool) %}
 {%   set _ = output.append('docker-host') %}
 {% endif %}
 {% if (ansible_local|d() and ansible_local.lxc|d() and
