@@ -117,8 +117,9 @@ gitlab_runner__shell: '/bin/bash'
 #
 # Global number of jobs that can run concurrently on all configured runners.
 gitlab_runner__concurrent: '{{ ansible_processor_vcpus
-                               if (ansible_local|d() and ansible_local.docker|d() and
-                                   (ansible_local.docker.installed|d()) | bool)
+                               if (ansible_local|d() and
+                                   ansible_local.docker_server|d() and
+                                   (ansible_local.docker_server.installed|d()) | bool)
                                else "1" }}'
 
                                                                    # ]]]
@@ -251,8 +252,8 @@ gitlab_runner__default_instances:
     executor: 'shell'
     run_untagged: False
     state: '{{ "absent"
-               if (ansible_local|d() and ansible_local.docker|d() and
-                   (ansible_local.docker.installed|d()) | bool)
+               if (ansible_local|d() and ansible_local.docker_server|d() and
+                   (ansible_local.docker_server.installed|d()) | bool)
                else "present" }}'
 
   - name: '{{ ansible_hostname + "-docker" }}'
@@ -260,7 +261,7 @@ gitlab_runner__default_instances:
     tags: [ 'docker' ]
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.docker|d() and
-                   (ansible_local.docker.installed|d()) | bool)
+                   (ansible_local.docker_server.installed|d()) | bool)
                else "absent" }}'
 
   - name: '{{ ansible_hostname + "-docker-root" }}'
@@ -270,8 +271,8 @@ gitlab_runner__default_instances:
     run_untagged: False
     tags: [ 'docker-privileged' ]
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.docker|d() and
-                   (ansible_local.docker.installed|d()) | bool)
+               if (ansible_local|d() and ansible_local.docker_server|d() and
+                   (ansible_local.docker_server.installed|d()) | bool)
                else "absent" }}'
 
                                                                    # ]]]
