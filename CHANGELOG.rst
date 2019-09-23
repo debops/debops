@@ -41,6 +41,14 @@ General
   (:command:`view`, :command:`less`, :command:`more`) are available and use the
   best one automatically.
 
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` Ansible playbook will create the LDAP
+  obejects ``cn=LDAP Replicators`` and ``cn=Password Reset Agents`` to allow
+  other Ansible roles to utilize them without the need for the system
+  administrator to define them by hand.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
