@@ -156,6 +156,15 @@
           owner: '{{ admin_dn }}'
           description: 'People responsible for LDAP infrastructure'
 
+      - name: 'Create cn=LDAP Replicators group'
+        dn: '{{ [ "cn=LDAP Replicators", ldap__system_groups_rdn ] + ldap__base_dn }}'
+        objectClass: 'groupOfNames'
+        attributes:
+          cn: 'LDAP Replicators'
+          member: '{{ admin_dn }}'
+          owner: '{{ admin_dn }}'
+          description: 'Service accounts used for LDAP replication'
+
       - name: 'Create cn=LDAP Editors group'
         dn: '{{ [ "cn=LDAP Editors", ldap__system_groups_rdn ] + ldap__base_dn }}'
         objectClass: 'groupOfNames'
@@ -187,6 +196,15 @@
           member: '{{ admin_dn }}'
           owner: '{{ admin_dn }}'
           description: 'People responsible for personal accounts'
+
+      - name: 'Create cn=Password Reset Agents group'
+        dn: '{{ [ "cn=Password Reset Agents", ldap__system_groups_rdn ] + ldap__base_dn }}'
+        objectClass: 'groupOfNames'
+        attributes:
+          cn: 'Password Reset Agents'
+          member: '{{ admin_dn }}'
+          owner: '{{ admin_dn }}'
+          description: 'Services that can perform password changes on behalf of users'
 
       - name: 'Create cn=UNIX SSH users group'
         dn: '{{ [ "cn=UNIX SSH users", ldap__system_groups_rdn ] + ldap__base_dn }}'
