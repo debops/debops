@@ -43,22 +43,21 @@ FIXME: Figure out how that can be configured.
    # ownCloud LDAP recommendations by the debops.owncloud maintainers for MS Windows AD [[[
    # Note that those recommendations might deviate from ownCloud
    # recommendations but those are the settings which are proven to work.
-   owncloud__ldap_create_user: False
    owncloud__ldap_method: 'plain'
    owncloud__ldap_expert_username_attr: 'sAMAccountName'
 
    owncloud__ldap_conf_map:
-     ldapHost: '{{ "ldaps://" if (owncloud__ldap_method in ["ssl", "tls"]) else "" }}{{ owncloud__ldap_host }}'
+     ldapHost: '{{ owncloud__ldap_primary_server }}'
      ldapPort: '{{ owncloud__ldap_port }}'
      ldapAgentName: '{{ owncloud__ldap_binddn }}'
-     ldapBase: '{{ owncloud__ldap_basedn }}'
+     ldapBase: '{{ owncloud__ldap_base_dn | join(",") }}'
      ldapExpertUsernameAttr: '{{ owncloud__ldap_expert_username_attr }}'
    # .. ]]]
 
    # Custom settings.
-   owncloud__ldap_host: 'dc01.example.org'
-   owncloud__ldap_basedn: 'DC=example,DC=org'
-   owncloud__ldap_binddn: 'CN=owncloudbind,OU=service-users,{{ owncloud__ldap_basedn }}'
+   owncloud__ldap_primary_server: 'dc01.example.org'
+   owncloud__ldap_base_dn: [ 'DC=example', 'DC=org' ]
+   owncloud__ldap_binddn: 'CN=owncloudbind,OU=service-users,{{ owncloud__ldap_base_dn | join(",") }}'
 
 Note that this leaves the LDAP configuration in ownCloud at an unfinished state.
 The role maintainers consider it to be easier to finish the LDAP configuration

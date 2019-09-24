@@ -17,7 +17,7 @@ not yet used by default and not very well tested.
 Features
 ~~~~~~~~
 
-* LDAP setup.
+* Support for LDAP using the :ref:`debops.ldap` Ansible role.
 * In memory caching using Redis for file locking and APCu.
 * Theming support (only tested with ownCloud 10).
 * Extensive configuration options via Ansible’s inventory.

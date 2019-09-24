@@ -23,6 +23,7 @@ Directory structure
           - :envvar:`cn=host.example.org <ldap__device_self_rdn>` (:envvar:`conditional <ldap__device_enabled>`)
 
             - :ref:`uid=nslcd <nslcd__ref_ldap_dit>` -> :ref:`debops.nslcd`
+            - :ref:`uid=nextcloud <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
             - :ref:`uid=saslauthd <saslauthd__ref_ldap_dit>` -> :ref:`debops.saslauthd`
             - :ref:`uid=sshd <sshd__ref_ldap_dit>` -> :ref:`debops.sshd`
             - :ref:`uid=sudo <sudo__ref_ldap_dit>` -> :ref:`debops.sudo`

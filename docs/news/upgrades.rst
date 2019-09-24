@@ -24,6 +24,37 @@ Role configuration changes
   to be updated. See the :ref:`golang__ref_packages` documentation for more
   details.
 
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.owncloud` role has an improved LDAP support that uses the
+  :ref:`debops.ldap` role infrastructure. Due to that, some of the default
+  variables have been changed:
+
+  +----------------------------------+-----------------------------------------+---------------+
+  | Old variable name                | New variable name                       | Changed value |
+  +==================================+=========================================+===============+
+  | ``owncloud__ldap_create_user``   | Removed                                 | No            |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_domain``        | Removed                                 | No            |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_basedn``        | :envvar:`owncloud__ldap_base_dn`        | Yes           |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_host``          | :envvar:`owncloud__ldap_primary_server` | Yes           |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_password``      | :envvar:`owncloud__ldap_bindpw`         | Yes           |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_password_file`` | Removed                                 | No            |
+  +----------------------------------+-----------------------------------------+---------------+
+
+  The location of the Nextcloud LDAP account object in the LDAP directory tree
+  as well as the object class and its attributes has been changed, see the
+  :ref:`debops.owncloud LDAP DIT <owncloud__ref_ldap_dit>` documentation page
+  for more details.
+
+  The default connection method used by Nextcloud to connect to the LDAP
+  directory has been changed from ``ssl`` to ``tls``.
+
 
 v1.1.0 (2019-08-25)
 -------------------
