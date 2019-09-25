@@ -1436,6 +1436,8 @@ owncloud__ldap_conf_map:
   homeFolderNamingRule: '{{ owncloud__home_folder_naming_rule }}'
   ldapCacheTTL: '{{ owncloud__ldap_cache_ttl }}'
   ldapTLS: '{{ "1" if (owncloud__ldap_method == "tls") else "0" }}'
+  turnOnPasswordChange: '1'
+  ldapDefaultPPolicyDN: '{{ ([ "cn=Default Password Policy", "ou=Password Policies" ] + owncloud__ldap_base_dn) | join(",") }}'
 
 # .. ownCloud Mail configuration [[[1
 #
@@ -1841,6 +1843,12 @@ owncloud__ldap__dependent_tasks:
     objectClass: '{{ owncloud__ldap_self_object_classes }}'
     attributes: '{{ owncloud__ldap_self_attributes }}'
     no_log: True
+    state: '{{ "present" if owncloud__ldap_device_dn|d() else "ignore" }}'
+
+  - name: 'Enable password management by {{ owncloud__ldap_binddn }}'
+    dn: '{{ ([ "cn=Password Reset Agents", "ou=System Groups" ] + owncloud__ldap_base_dn) | join(",") }}'
+    attributes:
+      member: '{{ owncloud__ldap_binddn }}'
     state: '{{ "present" if owncloud__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]
