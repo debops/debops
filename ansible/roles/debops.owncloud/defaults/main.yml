@@ -1301,7 +1301,7 @@ owncloud__ldap_user_filter_objectclass: 'inetOrgPerson'
 # .. envvar:: owncloud__ldap_group_filter
 #
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
-owncloud__ldap_group_filter: '(&(|(objectclass=posixGroup)))'
+owncloud__ldap_group_filter: '(objectClass=groupOfNames)'
 
 
 # .. envvar:: owncloud__ldap_group_filter_groups
@@ -1345,7 +1345,7 @@ owncloud__ldap_login_filter_attributes: ''
 #   FIXME
 #   Attribute contains full DN of the user.
 #
-owncloud__ldap_group_assoc_attribute: 'memberUid'
+owncloud__ldap_group_assoc_attribute: 'member'
 
 
 # .. envvar:: owncloud__home_folder_naming_rule
@@ -1487,6 +1487,9 @@ owncloud__ldap_default_config:
 
   - name: 'ldapTLS'
     value: '{{ "1" if (owncloud__ldap_method == "tls") else "0" }}'
+
+  - name: 'hasMemberOfFilterSupport'
+    value: '1'
 
   - name: 'turnOnPasswordChange'
     value: '1'
