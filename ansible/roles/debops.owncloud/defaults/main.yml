@@ -1179,8 +1179,8 @@ owncloud__ldap_enabled: '{{ True
 
 # .. envvar:: owncloud_ldap_update_settings
 #
-# Ensure that the settings listed in :envvar:`owncloud__ldap_conf_map` are
-# up-to-date on the remote system.
+# Ensure that the settings listed in :envvar:`owncloud__ldap_combined_config`
+# are up-to-date on the remote system.
 # Set to ``False`` to only configure LDAP settings in ownCloud when ownCloud
 # currently has no LDAP configuration.
 owncloud_ldap_update_settings: True
@@ -1400,9 +1400,6 @@ owncloud__ldap_cache_ttl: '600'
 # empty for default behaviour. Changes will affect only newly mapped LDAP
 # users.
 #
-# You will need to add this variable yourself to :envvar:`owncloud__ldap_conf_map`
-# right now.
-#
 # For a Microsoft Windows environment, putting this:
 #
 # .. code-block:: yaml
@@ -1428,30 +1425,92 @@ owncloud__ldap_config_id: '{{ ansible_local.owncloud.ldap_config_id
                                     else "") }}'
 
 
-# .. envvar:: owncloud__ldap_conf_map
+# .. envvar:: owncloud__ldap_default_config [[[
 #
-owncloud__ldap_conf_map:
-  ldapHost: '{{  owncloud__ldap_primary_server }}'
-  ldapPort: '{{ owncloud__ldap_port }}'
-  ldapAgentName: '{{ owncloud__ldap_binddn }}'
-  ldapBase: '{{ owncloud__ldap_base_dn | join(",") }}'
-  ldapEmailAttribute: 'mail'
-  ldapConfigurationActive: '1'
-  ldapUserDisplayName: '{{ owncloud__ldap_user_display_name }}'
-  ldapUserFilter: '{{ owncloud__ldap_user_filter }}'
-  ldapUserFilterObjectclass: '{{ owncloud__ldap_user_filter_objectclass }}'
-  ldapLoginFilter: '{{ owncloud__ldap_login_filter }}'
-  ldapLoginFilterAttributes: '{{ owncloud__ldap_login_filter_attributes }}'
-  ldapGroupFilter: '{{ owncloud__ldap_group_filter }}'
-  ldapGroupFilterGroups: '{{ owncloud__ldap_group_filter_groups }}'
-  ldapGroupFilterObjectclass: '{{ owncloud__ldap_group_filter_objectclass }}'
-  ldapGroupMemberAssocAttr:  '{{ owncloud__ldap_group_assoc_attribute }}'
-  homeFolderNamingRule: '{{ owncloud__home_folder_naming_rule }}'
-  ldapCacheTTL: '{{ owncloud__ldap_cache_ttl }}'
-  ldapTLS: '{{ "1" if (owncloud__ldap_method == "tls") else "0" }}'
-  turnOnPasswordChange: '1'
-  ldapDefaultPPolicyDN: '{{ ([ "cn=Default Password Policy", "ou=Password Policies" ] + owncloud__ldap_base_dn) | join(",") }}'
+# The LDAP configuration options defined by default.
+# See :ref:`owncloud__ref_ldap_config` for more details.
+owncloud__ldap_default_config:
 
+  - name: 'ldapHost'
+    value: '{{ owncloud__ldap_primary_server }}'
+
+  - name: 'ldapPort'
+    value: '{{ owncloud__ldap_port }}'
+
+  - name: 'ldapAgentName'
+    value: '{{ owncloud__ldap_binddn }}'
+
+  - name: 'ldapAgentPassword'
+    value: '{{ owncloud__ldap_bindpw }}'
+
+  - name: 'ldapBase'
+    value: '{{ owncloud__ldap_base_dn | join(",") }}'
+
+  - name: 'ldapEmailAttribute'
+    value: 'mail'
+
+  - name: 'ldapConfigurationActive'
+    value: '1'
+
+  - name: 'ldapUserDisplayName'
+    value: '{{ owncloud__ldap_user_display_name }}'
+
+  - name: 'ldapUserFilter'
+    value: '{{ owncloud__ldap_user_filter }}'
+
+  - name: 'ldapUserFilterObjectclass'
+    value: '{{ owncloud__ldap_user_filter_objectclass }}'
+
+  - name: 'ldapLoginFilter'
+    value: '{{ owncloud__ldap_login_filter }}'
+
+  - name: 'ldapLoginFilterAttributes'
+    value: '{{ owncloud__ldap_login_filter_attributes }}'
+
+  - name: 'ldapGroupFilter'
+    value: '{{ owncloud__ldap_group_filter }}'
+
+  - name: 'ldapGroupFilterGroups'
+    value: '{{ owncloud__ldap_group_filter_groups }}'
+
+  - name: 'ldapGroupFilterObjectclass'
+    value: '{{ owncloud__ldap_group_filter_objectclass }}'
+
+  - name: 'ldapGroupMemberAssocAttr'
+    value: '{{ owncloud__ldap_group_assoc_attribute }}'
+
+  - name: 'homeFolderNamingRule'
+    value: '{{ owncloud__home_folder_naming_rule }}'
+
+  - name: 'ldapCacheTTL'
+    value: '{{ owncloud__ldap_cache_ttl }}'
+
+  - name: 'ldapTLS'
+    value: '{{ "1" if (owncloud__ldap_method == "tls") else "0" }}'
+
+  - name: 'turnOnPasswordChange'
+    value: '1'
+
+  - name: 'ldapDefaultPPolicyDN'
+    value: '{{ ([ "cn=Default Password Policy", "ou=Password Policies" ]
+                + owncloud__ldap_base_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_config [[[
+#
+# The LDAP configuration options defined by the user.
+# See :ref:`owncloud__ref_ldap_config` for more details.
+owncloud__ldap_config: []
+
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_combined_config [[[
+#
+# The variable that combines default and user LDAP configuration and is used in
+# the role tasks and templates.
+owncloud__ldap_combined_config: '{{ owncloud__ldap_default_config
+                                    + owncloud__ldap_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # .. ownCloud Mail configuration [[[1
 #
 # -------------------------------

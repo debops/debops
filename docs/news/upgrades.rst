@@ -40,6 +40,8 @@ Inventory variable changes
   +----------------------------------+-----------------------------------------+---------------+
   | ``owncloud__ldap_basedn``        | :envvar:`owncloud__ldap_base_dn`        | Yes           |
   +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_conf_map``      | :envvar:`owncloud__ldap_default_config` | Yes           |
+  +----------------------------------+-----------------------------------------+---------------+
   | ``owncloud__ldap_host``          | :envvar:`owncloud__ldap_primary_server` | Yes           |
   +----------------------------------+-----------------------------------------+---------------+
   | ``owncloud__ldap_password``      | :envvar:`owncloud__ldap_bindpw`         | Yes           |
@@ -54,6 +56,10 @@ Inventory variable changes
 
   The default connection method used by Nextcloud to connect to the LDAP
   directory has been changed from ``ssl`` to ``tls``.
+
+  The LDAP configuration method was rewritten and now uses custom DebOps filter
+  plugins to allow merging of configuration from the role defaults and
+  inventory variables. See :ref:`owncloud__ref_ldap_config` for more details.
 
 
 v1.1.0 (2019-08-25)
