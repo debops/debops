@@ -29,6 +29,27 @@ Object Classes and Attributes
   - :ref:`debops.owncloud`: :envvar:`Object Classes <owncloud__ldap_self_object_classes>`, :envvar:`Attributes <owncloud__ldap_self_attributes>`
 
 
+.. _owncloud__ref_ldap_dit_access:
+
+Access Control
+--------------
+
+DebOps LDAP environment includes the :ref:`'ldapns' schema <slapd__ref_ldapns>`
+which can be used to define access control rules to services. The lists below
+define the attribute values which will grant access to the service managed by
+the :ref:`debops.owncloud` role, and specifies other roles with the same access
+control rules:
+
+- objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
+
+  - ``nextcloud``
+  - ``owncloud``
+  - ``web-public``
+  - ``*`` (all services)
+
+LDAP filter definition: :envvar:`owncloud__ldap_login_filter`
+
+
 Parent nodes
 ------------
 

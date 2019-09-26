@@ -1318,9 +1318,31 @@ owncloud__ldap_group_filter_objectclass: 'posixGroup'
 
 # .. envvar:: owncloud__ldap_login_filter
 #
-# The settings in the Login Filter tab determine which LDAP users can log in to your ownCloud system.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#login-filter>`__ for details.
-owncloud__ldap_login_filter: '(&(|(objectclass=inetOrgPerson))(uid=%uid))'
+# The settings in the Login Filter tab determine which LDAP users can log in to
+# your ownCloud system. With the default filter, users can log in using their
+# usernames from the ``uid`` attribute, as well as their e-mail addresses
+# defined using the ``mail`` attribute. In either case, users need to have
+# access to the Nextcloud service defined by the ``authorizedService``
+# attribute.
+#
+# The ``entryUUID`` attribute search is required to perform password modify
+# extended operations.
+owncloud__ldap_login_filter: '(&
+                                (objectclass=inetOrgPerson)
+                                (|
+                                  (uid=%uid)
+                                  (|
+                                    (mail=%uid)
+                                    (entryUUID=%uid)
+                                  )
+                                )
+                                (|
+                                  (authorizedService=nextcloud)
+                                  (authorizedService=owncloud)
+                                  (authorizedService=web-public)
+                                  (authorizedService=*)
+                                )
+                              )'
 
 
 # .. envvar:: owncloud__ldap_login_filter_attributes

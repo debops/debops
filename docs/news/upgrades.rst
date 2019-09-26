@@ -64,13 +64,15 @@ Inventory variable changes
   Some of the default configuration options have been changed to better
   integrate Nextcloud with the LDAP environment managed by DebOps:
 
-  ============================================== ================================== ==============================
+  ============================================== =============================================== ==============================
   Variable name                                  Old value                          New value
-  ============================================== ================================== ==============================
-  :envvar:`owncloud__ldap_group_filter`          ``(&(|(objectclass=posixGroup)))`` ``(objectClass=groupOfNames)``
-  ---------------------------------------------- ---------------------------------- ------------------------------
-  :envvar:`owncloud__ldap_group_assoc_attribute` ``memberUid``                      ``member``
-  ============================================== ================================== ==============================
+  ============================================== =============================================== ==============================
+  :envvar:`owncloud__ldap_login_filter`          ``(&(|(objectclass=inetOrgPerson))(uid=%uid))`` too large; see the variable
+  ---------------------------------------------- ----------------------------------------------- ------------------------------
+  :envvar:`owncloud__ldap_group_filter`          ``(&(|(objectclass=posixGroup)))``              ``(objectClass=groupOfNames)``
+  ---------------------------------------------- ----------------------------------------------- ------------------------------
+  :envvar:`owncloud__ldap_group_assoc_attribute` ``memberUid``                                   ``member``
+  ============================================== =============================================== ==============================
 
   Support for the :ref:`memberOf overlay <slapd__ref_memberof_overlay>` has
   also been enabled by default, since the overlay is included in
