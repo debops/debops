@@ -12,6 +12,7 @@ debops.owncloud
    defaults-detailed
    external-users
    external-storage
+   ldap-dit
    copyright
    upgrade
 

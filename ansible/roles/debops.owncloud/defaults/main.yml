@@ -1171,71 +1171,113 @@ owncloud__user_files_host: []
 # Enable LDAP support. ownCloud support multiple LDAP servers but this role
 # configures only default one. If you need something more complex you can
 # use :envvar:`owncloud__occ_cmd_list`.
-owncloud__ldap_enabled: False
+owncloud__ldap_enabled: '{{ True
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                (ansible_local.ldap.enabled|d())|bool)
+                            else False }}'
 
 
 # .. envvar:: owncloud_ldap_update_settings
 #
-# Ensure that the settings listed in :envvar:`owncloud__ldap_conf_map` are
-# up-to-date on the remote system.
+# Ensure that the settings listed in :envvar:`owncloud__ldap_combined_config`
+# are up-to-date on the remote system.
 # Set to ``False`` to only configure LDAP settings in ownCloud when ownCloud
 # currently has no LDAP configuration.
 owncloud_ldap_update_settings: True
 
 
-# .. envvar:: owncloud__ldap_create_user
+# .. envvar:: owncloud__ldap_base_dn [[[
 #
-# Should the :envvar:`owncloud__ldap_binddn` LDAP user be created if it does not exist?
-owncloud__ldap_create_user: True
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, automated Nextcloud LDAP configuration will not be performed.
+owncloud__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.base_dn|d())
+                            else [] }}'
 
-
-# .. envvar:: owncloud__ldap_domain
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_device_dn [[[
 #
-# Domain name used to generate base DN.
-owncloud__ldap_domain: '{{ owncloud__domain }}'
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the Nextcloud service account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+owncloud__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                              if (ansible_local|d() and ansible_local.ldap|d() and
+                                  ansible_local.ldap.device_dn|d())
+                              else [] }}'
 
-
-# .. envvar:: owncloud__ldap_basedn
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_self_rdn [[[
 #
-# Base DN
-owncloud__ldap_basedn: '{{ "dc=" + owncloud__ldap_domain.split(".") | join(",dc=") }}'
+# The Relative Distinguished Name of the account LDAP object used by the
+# Nextcloud service to access the LDAP directory.
+owncloud__ldap_self_rdn: 'uid=nextcloud'
 
-
-# .. envvar:: owncloud__ldap_binddn
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_self_object_classes [[[
 #
-# DN to bind as
-owncloud__ldap_binddn: '{{ "cn=owncloud," + secret_ldap_services_dn }}'
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the Nextcloud service to access the LDAP directory.
+owncloud__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 
-
-# .. envvar:: owncloud__ldap_host
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_self_attributes [[[
 #
-owncloud__ldap_host: 'ldap.{{ owncloud__domain }}'
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# Nextcloud service to access the LDAP directory.
+owncloud__ldap_self_attributes:
+  uid: '{{ owncloud__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ owncloud__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "Nextcloud" service to access the LDAP directory'
 
-
-# .. envvar:: owncloud__ldap_password_file
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_binddn [[[
 #
-# .. Maintainer note: LDAP DNs can be set to case-sensitive which is not the default.
-# .. Otherwise, owncloud__ldap_* could be converted to lowercase for the file path.
-# .. https://stackoverflow.com/questions/29897684/is-ldap-dn-case-insensitive
+# The Distinguished Name of the account LDAP object used by the
+# Nextcloud service to bind to the LDAP directory.
+owncloud__ldap_binddn: '{{ ([ owncloud__ldap_self_rdn ] + owncloud__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_bindpw [[[
 #
-owncloud__ldap_password_file: '{{ secret + "/credentials/" + owncloud__ldap_host + "/slapd/" + owncloud__ldap_basedn + "/" + owncloud__ldap_binddn + ".password" }}'
+# The password stored in the account LDAP object used by the Nextcloud service
+# to bind to the LDAP directory.
+owncloud__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                                  + owncloud__ldap_binddn | to_uuid + ".password length=32") }}'
 
-
-# .. envvar:: owncloud__ldap_password
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_uri [[[
 #
-owncloud__ldap_password: '{{ lookup("password", owncloud__ldap_password_file) }}'
+# List of LDAP URIs that point to the directory servers which should be used by
+# Nextcloud.
+owncloud__ldap_uri: '{{ ansible_local.ldap.uri
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.uri|d())
+                        else [] }}'
 
-
-# .. envvar:: owncloud__ldap_method
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_primary_server [[[
 #
-owncloud__ldap_method: 'ssl'
+# The primary LDAP server URI to use.
+owncloud__ldap_primary_server: '{{ owncloud__ldap_uri | first }}'
 
-
-# .. envvar:: owncloud__ldap_port
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_method [[[
 #
-owncloud__ldap_port: '{{ 636 if (owncloud__ldap_method in ["ssl", "tls"]) else 389 }}'
+# The LDAP connection method to use, either ``tls`` (recommended), ``ssl`` or
+# ``plain`` (discouraged).
+owncloud__ldap_method: 'tls'
 
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_port [[[
+#
+# The TCP port to use for LDAP connections.
+owncloud__ldap_port: '{{ 636 if (owncloud__ldap_method in ["ssl"]) else 389 }}'
 
+                                                                   # ]]]
 # .. envvar:: owncloud__ldap_user_display_name
 #
 # The attribute that should be used as display name in ownCloud.
@@ -1259,7 +1301,7 @@ owncloud__ldap_user_filter_objectclass: 'inetOrgPerson'
 # .. envvar:: owncloud__ldap_group_filter
 #
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
-owncloud__ldap_group_filter: '(&(|(objectclass=posixGroup)))'
+owncloud__ldap_group_filter: '(objectClass=groupOfNames)'
 
 
 # .. envvar:: owncloud__ldap_group_filter_groups
@@ -1276,9 +1318,31 @@ owncloud__ldap_group_filter_objectclass: 'posixGroup'
 
 # .. envvar:: owncloud__ldap_login_filter
 #
-# The settings in the Login Filter tab determine which LDAP users can log in to your ownCloud system.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#login-filter>`__ for details.
-owncloud__ldap_login_filter: '(&(|(objectclass=inetOrgPerson))(uid=%uid))'
+# The settings in the Login Filter tab determine which LDAP users can log in to
+# your ownCloud system. With the default filter, users can log in using their
+# usernames from the ``uid`` attribute, as well as their e-mail addresses
+# defined using the ``mail`` attribute. In either case, users need to have
+# access to the Nextcloud service defined by the ``authorizedService``
+# attribute.
+#
+# The ``entryUUID`` attribute search is required to perform password modify
+# extended operations.
+owncloud__ldap_login_filter: '(&
+                                (objectclass=inetOrgPerson)
+                                (|
+                                  (uid=%uid)
+                                  (|
+                                    (mail=%uid)
+                                    (entryUUID=%uid)
+                                  )
+                                )
+                                (|
+                                  (authorizedService=nextcloud)
+                                  (authorizedService=owncloud)
+                                  (authorizedService=web-public)
+                                  (authorizedService=*)
+                                )
+                              )'
 
 
 # .. envvar:: owncloud__ldap_login_filter_attributes
@@ -1303,7 +1367,7 @@ owncloud__ldap_login_filter_attributes: ''
 #   FIXME
 #   Attribute contains full DN of the user.
 #
-owncloud__ldap_group_assoc_attribute: 'memberUid'
+owncloud__ldap_group_assoc_attribute: 'member'
 
 
 # .. envvar:: owncloud__home_folder_naming_rule
@@ -1358,9 +1422,6 @@ owncloud__ldap_cache_ttl: '600'
 # empty for default behaviour. Changes will affect only newly mapped LDAP
 # users.
 #
-# You will need to add this variable yourself to :envvar:`owncloud__ldap_conf_map`
-# right now.
-#
 # For a Microsoft Windows environment, putting this:
 #
 # .. code-block:: yaml
@@ -1373,28 +1434,108 @@ owncloud__ldap_expert_username_attr: ''
 
 # .. ]]]
 
-# .. envvar:: owncloud__ldap_conf_map
+# .. envvar:: owncloud__ldap_config_id
 #
-owncloud__ldap_conf_map:
-  ldapHost: '{{ "ldaps://" if (owncloud__ldap_method in ["ssl", "tls"]) else "" }}{{ owncloud__ldap_host }}'
-  ldapPort: '{{ owncloud__ldap_port }}'
-  ldapAgentName: '{{ owncloud__ldap_binddn }}'
-  ldapBase: '{{ owncloud__ldap_basedn }}'
-  ldapEmailAttribute: 'mail'
-  ldapConfigurationActive: '1'
-  ldapUserDisplayName: '{{ owncloud__ldap_user_display_name }}'
-  ldapUserFilter: '{{ owncloud__ldap_user_filter }}'
-  ldapUserFilterObjectclass: '{{ owncloud__ldap_user_filter_objectclass }}'
-  ldapLoginFilter: '{{ owncloud__ldap_login_filter }}'
-  ldapLoginFilterAttributes: '{{ owncloud__ldap_login_filter_attributes }}'
-  ldapGroupFilter: '{{ owncloud__ldap_group_filter }}'
-  ldapGroupFilterGroups: '{{ owncloud__ldap_group_filter_groups }}'
-  ldapGroupFilterObjectclass: '{{ owncloud__ldap_group_filter_objectclass }}'
-  ldapGroupMemberAssocAttr:  '{{ owncloud__ldap_group_assoc_attribute }}'
-  homeFolderNamingRule: '{{ owncloud__home_folder_naming_rule }}'
-  ldapCacheTTL: '{{ owncloud__ldap_cache_ttl }}'
+# The configuration database configID to use for the LDAP configuration managed
+# by the role.
+owncloud__ldap_config_id: '{{ ansible_local.owncloud.ldap_config_id
+                              if (ansible_local|d() and ansible_local.owncloud|d() and
+                                  ansible_local.owncloud.ldap_config_id|d())
+                              else (owncloud__register_ldap_config_id.stdout
+                                    if (owncloud__register_ldap_config_id|d() and
+                                        owncloud__register_ldap_config_id.stdout|d())
+                                    else "") }}'
 
 
+# .. envvar:: owncloud__ldap_default_config [[[
+#
+# The LDAP configuration options defined by default.
+# See :ref:`owncloud__ref_ldap_config` for more details.
+owncloud__ldap_default_config:
+
+  - name: 'ldapHost'
+    value: '{{ owncloud__ldap_primary_server }}'
+
+  - name: 'ldapPort'
+    value: '{{ owncloud__ldap_port }}'
+
+  - name: 'ldapAgentName'
+    value: '{{ owncloud__ldap_binddn }}'
+
+  - name: 'ldapAgentPassword'
+    value: '{{ owncloud__ldap_bindpw }}'
+
+  - name: 'ldapBase'
+    value: '{{ owncloud__ldap_base_dn | join(",") }}'
+
+  - name: 'ldapEmailAttribute'
+    value: 'mail'
+
+  - name: 'ldapConfigurationActive'
+    value: '1'
+
+  - name: 'ldapUserDisplayName'
+    value: '{{ owncloud__ldap_user_display_name }}'
+
+  - name: 'ldapUserFilter'
+    value: '{{ owncloud__ldap_user_filter }}'
+
+  - name: 'ldapUserFilterObjectclass'
+    value: '{{ owncloud__ldap_user_filter_objectclass }}'
+
+  - name: 'ldapLoginFilter'
+    value: '{{ owncloud__ldap_login_filter }}'
+
+  - name: 'ldapLoginFilterAttributes'
+    value: '{{ owncloud__ldap_login_filter_attributes }}'
+
+  - name: 'ldapGroupFilter'
+    value: '{{ owncloud__ldap_group_filter }}'
+
+  - name: 'ldapGroupFilterGroups'
+    value: '{{ owncloud__ldap_group_filter_groups }}'
+
+  - name: 'ldapGroupFilterObjectclass'
+    value: '{{ owncloud__ldap_group_filter_objectclass }}'
+
+  - name: 'ldapGroupMemberAssocAttr'
+    value: '{{ owncloud__ldap_group_assoc_attribute }}'
+
+  - name: 'homeFolderNamingRule'
+    value: '{{ owncloud__home_folder_naming_rule }}'
+
+  - name: 'ldapCacheTTL'
+    value: '{{ owncloud__ldap_cache_ttl }}'
+
+  - name: 'ldapTLS'
+    value: '{{ "1" if (owncloud__ldap_method == "tls") else "0" }}'
+
+  - name: 'hasMemberOfFilterSupport'
+    value: '1'
+
+  - name: 'turnOnPasswordChange'
+    value: '1'
+
+  - name: 'ldapDefaultPPolicyDN'
+    value: '{{ ([ "cn=Default Password Policy", "ou=Password Policies" ]
+                + owncloud__ldap_base_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_config [[[
+#
+# The LDAP configuration options defined by the user.
+# See :ref:`owncloud__ref_ldap_config` for more details.
+owncloud__ldap_config: []
+
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_combined_config [[[
+#
+# The variable that combines default and user LDAP configuration and is used in
+# the role tasks and templates.
+owncloud__ldap_combined_config: '{{ owncloud__ldap_default_config
+                                    + owncloud__ldap_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # .. ownCloud Mail configuration [[[1
 #
 # -------------------------------
@@ -1787,6 +1928,25 @@ owncloud__keyring__dependent_gpg_keys:
     home: '{{ owncloud__system_home }}'
     id: '{{ owncloud__upstream_key_fingerprint }}'
     state: '{{ "present" if (owncloud__variant in ["nextcloud"]) else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+owncloud__ldap__dependent_tasks:
+
+  - name: 'Create Nextcloud account for {{ owncloud__ldap_device_dn | join(",") }}'
+    dn: '{{ owncloud__ldap_binddn }}'
+    objectClass: '{{ owncloud__ldap_self_object_classes }}'
+    attributes: '{{ owncloud__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present" if owncloud__ldap_device_dn|d() else "ignore" }}'
+
+  - name: 'Enable password management by {{ owncloud__ldap_binddn }}'
+    dn: '{{ ([ "cn=Password Reset Agents", "ou=System Groups" ] + owncloud__ldap_base_dn) | join(",") }}'
+    attributes:
+      member: '{{ owncloud__ldap_binddn }}'
+    state: '{{ "present" if owncloud__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__mariadb__dependent_databases [[[

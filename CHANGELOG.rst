@@ -119,6 +119,19 @@ General
   manually if you are running 14 or below. Add Nextcloud 16 support. Now
   default to Nextcloud 15 for new installations.
 
+- The LDAP support in Nextcloud has been converted to use the
+  :ref:`debops.ldap` infrastructure and not configure LDAP objects directly.
+  LDAP support in Nextcloud will be enabled automatically if it's enabled on
+  the host. Some of the configuration variables have been changed; see the
+  :ref:`upgrade_notes` for more details.
+
+- The default LDAP filter configured in the
+  :envvar:`owncloud__ldap_login_filter` variable has been modified to limit
+  access to the service to objects with specific attributes. See the
+  :ref:`Nextcloud LDAP access control <owncloud__ref_ldap_dit_access>`
+  documentation page for details about the required attributes and their
+  values.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 

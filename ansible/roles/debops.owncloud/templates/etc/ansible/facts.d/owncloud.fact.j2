@@ -11,6 +11,10 @@ output = loads('''{{ ({
     "enabled": (owncloud__deploy_state == "present"),
     "webserver": owncloud__webserver|string,
     "variant": owncloud__variant|string,
+    "ldap_config_id": (owncloud__register_ldap_config_id.stdout
+                       if (owncloud__register_ldap_config_id|d() and
+                           owncloud__register_ldap_config_id.stdout|d())
+                       else owncloud__ldap_config_id),
     "auto_security_updates_enabled": (owncloud__auto_security_updates_enabled
                                       | bool),
     }) | to_nice_json }}''')

@@ -155,3 +155,67 @@ is a simple string of the script‘s file path or a dict with the following opti
 ``state``
   Required, string. Allows to specify if upgrade hook script should be invoked
   (``present``) or ignored (``absent``) during after the upgrade.
+
+.. _owncloud__ref_ldap_config:
+
+owncloud__ldap_config
+---------------------
+
+The ``owncloud__ldap_*_config`` variables define the configuration of the "LDAP
+user and group backend" Nextcloud plugin. The configuration is stored in the
+Nextcloud database and can be manipulated using the :command:`occ ldap:*`
+commands. To view the current LDAP configuration and possible parameters, you
+can run the command:
+
+.. code-block:: console
+
+   occ ldap:show-config
+
+Detailed information about configuring the LDAP support in Nextcloud can be
+found in the `Nextcloud LDAP documentation page`__
+
+.. __: https://docs.nextcloud.com/server/stable/admin_manual/configuration_user/user_auth_ldap.html
+
+Examples
+~~~~~~~~
+
+The :envvar:`owncloud__ldap_default_config` variable contains the default
+parameters used to configure the LDAP support.
+
+To modify the default values, or add new parameters, you can define them in the
+Ansible inventory using the :envvar:`owncloud__ldap_config` variable, for
+example:
+
+.. code-block:: yaml
+
+   owncloud__ldap_config:
+
+     - name: 'turnOnPasswordChange'
+       value: '0'
+
+Syntax
+~~~~~~
+
+The ``owncloud__ldap_*_config`` variables contain a list of YAML dictionaries,
+each dictionary defines a single configuration entry using specific parameters:
+
+``name``
+  Required. The name of the LDAP plugin configuration option, case-sensitive.
+  Multiple configuration entries with the same ``name`` parameter are merged
+  together and can affect each other.
+
+``value``
+  Required. The value of the configuration option, should be specified as
+  a string.
+
+``state``
+  Optional. If not specified or ``present``, a given configuration option will
+  be set in the database. If ``absent``, the configuration will not be set
+  (existing configuration value stays intact). If ``ignore``, a given
+  configuration entry will not be evaluated during role execution.
+
+``no_log``
+  Optional, boolean. If not specified or ``False``, a given configuration entry
+  will not be obfuscated during execution. If ``True``, or if the configuration
+  entry ``name`` is ``ldapAgentPassword``, the configuration entry will be
+  obfuscated during execution to avoid password leaking.
