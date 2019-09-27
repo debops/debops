@@ -23,6 +23,7 @@ Directory structure
           - :envvar:`cn=host.example.org <ldap__device_self_rdn>` (:envvar:`conditional <ldap__device_enabled>`)
 
             - :ref:`uid=nslcd <nslcd__ref_ldap_dit>` -> :ref:`debops.nslcd`
+            - :ref:`uid=nextcloud <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
             - :ref:`uid=saslauthd <saslauthd__ref_ldap_dit>` -> :ref:`debops.saslauthd`
             - :ref:`uid=sshd <sshd__ref_ldap_dit>` -> :ref:`debops.sshd`
             - :ref:`uid=sudo <sudo__ref_ldap_dit>` -> :ref:`debops.sudo`
@@ -31,6 +32,12 @@ Directory structure
       - :envvar:`ou=Groups <ldap__groups_rdn>`
       - :envvar:`ou=Machines <ldap__machines_rdn>`
       - :envvar:`ou=Services <ldap__services_rdn>`
+
+      - :envvar:`ou=System Groups <ldap__system_groups_rdn>`
+
+        - ``cn=Password Reset Agents`` (via the :file:`ldap/init-directory.yml` playbook)
+
+          - ``member``: :ref:`uid=nextcloud,cn=host.example.org,... <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
 
 
 Object Classes and Attributes

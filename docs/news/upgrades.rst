@@ -24,6 +24,60 @@ Role configuration changes
   to be updated. See the :ref:`golang__ref_packages` documentation for more
   details.
 
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.owncloud` role has an improved LDAP support that uses the
+  :ref:`debops.ldap` role infrastructure. Due to that, some of the default
+  variables have been changed:
+
+  +----------------------------------+-----------------------------------------+---------------+
+  | Old variable name                | New variable name                       | Changed value |
+  +==================================+=========================================+===============+
+  | ``owncloud__ldap_create_user``   | Removed                                 | No            |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_domain``        | Removed                                 | No            |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_basedn``        | :envvar:`owncloud__ldap_base_dn`        | Yes           |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_conf_map``      | :envvar:`owncloud__ldap_default_config` | Yes           |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_host``          | :envvar:`owncloud__ldap_primary_server` | Yes           |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_password``      | :envvar:`owncloud__ldap_bindpw`         | Yes           |
+  +----------------------------------+-----------------------------------------+---------------+
+  | ``owncloud__ldap_password_file`` | Removed                                 | No            |
+  +----------------------------------+-----------------------------------------+---------------+
+
+  The location of the Nextcloud LDAP account object in the LDAP directory tree
+  as well as the object class and its attributes has been changed, see the
+  :ref:`debops.owncloud LDAP DIT <owncloud__ref_ldap_dit>` documentation page
+  for more details.
+
+  The default connection method used by Nextcloud to connect to the LDAP
+  directory has been changed from ``ssl`` to ``tls``.
+
+  The LDAP configuration method was rewritten and now uses custom DebOps filter
+  plugins to allow merging of configuration from the role defaults and
+  inventory variables. See :ref:`owncloud__ref_ldap_config` for more details.
+
+  Some of the default configuration options have been changed to better
+  integrate Nextcloud with the LDAP environment managed by DebOps:
+
+  ============================================== =============================================== ==============================
+  Variable name                                  Old value                          New value
+  ============================================== =============================================== ==============================
+  :envvar:`owncloud__ldap_login_filter`          ``(&(|(objectclass=inetOrgPerson))(uid=%uid))`` too large; see the variable
+  ---------------------------------------------- ----------------------------------------------- ------------------------------
+  :envvar:`owncloud__ldap_group_filter`          ``(&(|(objectclass=posixGroup)))``              ``(objectClass=groupOfNames)``
+  ---------------------------------------------- ----------------------------------------------- ------------------------------
+  :envvar:`owncloud__ldap_group_assoc_attribute` ``memberUid``                                   ``member``
+  ============================================== =============================================== ==============================
+
+  Support for the :ref:`memberOf overlay <slapd__ref_memberof_overlay>` has
+  also been enabled by default, since the overlay is included in
+  :ref:`debops.slapd` role.
+
 
 v1.1.0 (2019-08-25)
 -------------------

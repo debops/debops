@@ -42,8 +42,9 @@
         - '{{ apache__ferm__dependent_rules }}'
 
     - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+      tags: [ 'role::python', 'skip::python', 'role::ldap' ]
       python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
         - '{{ mariadb__python__dependent_packages3
               if (owncloud__database == "mariadb")
               else [] }}'
@@ -51,12 +52,18 @@
               if (owncloud__database == "postgresql")
               else [] }}'
       python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
         - '{{ mariadb__python__dependent_packages2
               if (owncloud__database == "mariadb")
               else [] }}'
         - '{{ postgresql__python__dependent_packages2
               if (owncloud__database == "postgresql")
               else [] }}'
+
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ owncloud__ldap__dependent_tasks }}'
 
     - role: debops.mariadb
       tags: [ 'role::mariadb', 'skip::mariadb' ]
