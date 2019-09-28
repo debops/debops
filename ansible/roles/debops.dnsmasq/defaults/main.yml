@@ -312,6 +312,17 @@ dnsmasq__default_configuration:
           local = /intranet/internal/private/corp/home/lan/
         state: 'present'
 
+  - name: 'block-dns-over-https'
+    comment: |
+      Blocking the 'use-application-dns.net' domain instructs the applications
+      that support DNS over HTTPS to not use it and rely on the system resolver
+      instead. This might be required for certain applications to support
+      access to internal services, resolve split-DNS correctly, etc.
+
+      Ref: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
+    raw: |
+      server = /use-application-dns.net/
+    state: 'present'
 
   - name: 'dns-global.conf'
     options:
