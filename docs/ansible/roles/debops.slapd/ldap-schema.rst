@@ -184,6 +184,15 @@ attribute as the UNIX group name, but it's usually a simple configuration
 change.
 
 
+.. _slapd__ref_ppolicy_schema:
+
+The ``ppolicy`` schema
+----------------------
+
+The ``ppolicy`` schema provides LDAP object and attribute definitions required
+by the :ref:`slapd__ref_ppolicy_overlay`.
+
+
 .. _slapd__ref_ldapns:
 
 The ``ldapns`` schema
