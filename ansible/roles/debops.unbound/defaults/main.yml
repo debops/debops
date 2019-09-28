@@ -132,6 +132,18 @@ unbound__combined_remote_control: '{{ unbound__default_remote_control
 # List of forward or stub DNS zones defined by the role.
 unbound__default_zones:
 
+  - name: 'block-dns-over-https'
+    comment: |
+      Blocking the 'use-application-dns.net' domain instructs the applications
+      that support DNS over HTTPS to not use it and rely on the system resolver
+      instead. This might be required for certain applications to support
+      access to internal services, resolve split-DNS correctly, etc.
+
+      Ref: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
+    zone: 'use-application-dns.net.'
+    type: 'local'
+    local_zone_type: 'always_nxdomain'
+
   - name: 'lxc-net'
     comment: |
       Support for resolving LXC container hosts that use the 'lxc-net' bridge

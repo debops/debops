@@ -75,6 +75,15 @@ LDAP
   :ref:`debops.saslauthd` Ansible role. Both humans and machines can
   authenticate to the OpenLDAP directory using their respective LDAP objects.
 
+:ref:`debops.unbound` role
+''''''''''''''''''''''''''
+
+- The role will tell the client applications to `disable DNS-over-HTTPS
+  support`__ using the ``use-application-dns.net`` DNS record. This should
+  allow connections to internal sites and preserve the split-DNS functionality.
+
+  .. __: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
+
 Changed
 ~~~~~~~
 
