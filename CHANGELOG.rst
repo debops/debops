@@ -57,6 +57,15 @@ LDAP
 
   .. __: https://github.com/vmware/open-vm-tools
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- The role will tell the client applications to `disable DNS-over-HTTPS
+  support`__ using the ``use-application-dns.net`` DNS record. This should
+  allow connections to internal sites and preserve the split-DNS functionality.
+
+  .. __: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
@@ -74,6 +83,15 @@ LDAP
 - The role will configure SASL authentication in the OpenLDAP service using the
   :ref:`debops.saslauthd` Ansible role. Both humans and machines can
   authenticate to the OpenLDAP directory using their respective LDAP objects.
+
+:ref:`debops.unbound` role
+''''''''''''''''''''''''''
+
+- The role will tell the client applications to `disable DNS-over-HTTPS
+  support`__ using the ``use-application-dns.net`` DNS record. This should
+  allow connections to internal sites and preserve the split-DNS functionality.
+
+  .. __: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
 
 Changed
 ~~~~~~~
