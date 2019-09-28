@@ -50,9 +50,9 @@ Parent nodes
 
 - :ref:`debops.ldap <ldap__ref_ldap_dit>`
 
-  - :envvar:`ansible_local.ldap.base_dn <ldap__base_dn>` -> :envvar:`sshd__ldap_base_dn`
+  - :envvar:`ansible_local.ldap.base_dn <ldap__base_dn>` -> :envvar:`saslauthd__ldap_base_dn`
 
-  - :envvar:`ansible_local.ldap.device_dn <ldap__device_dn>` -> :envvar:`sshd__ldap_device_dn`
+  - :envvar:`ansible_local.ldap.device_dn <ldap__device_dn>` -> :envvar:`saslauthd__ldap_device_dn`
 
 
 Child nodes
