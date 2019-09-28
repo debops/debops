@@ -23,6 +23,32 @@ Object Classes and Attributes
   - :ref:`debops.sshd`: :envvar:`Object Classes <sshd__ldap_self_object_classes>`, :envvar:`Attributes <sshd__ldap_self_attributes>`
 
 
+.. _sshd__ref_ldap_dit_access:
+
+Access Control
+--------------
+
+DebOps LDAP environment includes the :ref:`'ldapns' schema <slapd__ref_ldapns>`
+which can be used to define access control rules to services. The lists below
+define the attribute values which will grant access to the service managed by
+the :ref:`debops.sshd` role, and specifies other roles with the same access
+control rules:
+
+- objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
+
+  - ``sshd``
+  - ``*`` (all services)
+
+- objectClass ``hostObject``, attribute ``host``:
+
+  - ``hostname``
+  - ``hostname.example.org``
+  - ``*.example.org``
+  - ``*`` (all hosts)
+
+LDAP filter definition: :envvar:`sshd__ldap_filter`
+
+
 Parent nodes
 ------------
 
