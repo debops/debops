@@ -23,14 +23,36 @@ Object Classes and Attributes
   - :ref:`debops.saslauthd`: :envvar:`Object Classes <saslauthd__ldap_self_object_classes>`, :envvar:`Attributes <saslauthd__ldap_self_attributes>`
 
 
+.. _saslauthd__ref_ldap_dit_access:
+
+Access Control
+--------------
+
+DebOps LDAP environment includes the :ref:`'ldapns' schema <slapd__ref_ldapns>`
+which can be used to define access control rules to services. The lists below
+define the attribute values which will grant access to the service managed by
+the :ref:`debops.saslauthd` role, and specifies other roles with the same
+access control rules:
+
+The ``smtpd`` LDAP profile
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
+
+  - ``smtpd``
+  - ``*`` (all services)
+
+LDAP filter definition: :envvar:`saslauthd__ldap_default_profiles`
+
+
 Parent nodes
 ------------
 
 - :ref:`debops.ldap <ldap__ref_ldap_dit>`
 
-  - :envvar:`ansible_local.ldap.base_dn <ldap__base_dn>` -> :envvar:`sshd__ldap_base_dn`
+  - :envvar:`ansible_local.ldap.base_dn <ldap__base_dn>` -> :envvar:`saslauthd__ldap_base_dn`
 
-  - :envvar:`ansible_local.ldap.device_dn <ldap__device_dn>` -> :envvar:`sshd__ldap_device_dn`
+  - :envvar:`ansible_local.ldap.device_dn <ldap__device_dn>` -> :envvar:`saslauthd__ldap_device_dn`
 
 
 Child nodes

@@ -45,6 +45,11 @@ used for :ref:`ldap__ref_admin`.
 The playbook will not make any changes to existing LDAP objects. The default
 ``cn=admin`` LDAP object created during OpenLDAP installation will be removed.
 
+.. note:: For the LDAP access to work, Ansible Controller needs to trust the
+   Certificate Authority which is used by the OpenLDAP service. If you rely on
+   the :ref:`debops.pki` internal CA, you will have to add the Root CA
+   certificate managed by the role to the operating system certificate store.
+
 
 Example inventory
 -----------------
