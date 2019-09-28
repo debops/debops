@@ -30,15 +30,16 @@ borgbackup__packages: []
 # The OS distribution release which is used to decide if we should install
 # borgmatic using pip or not.
 borgbackup__distribution_release: '{{ ansible_local.core.distribution_release
-                                  if (ansible_local|d() and ansible_local.core|d() and
-                                      ansible_local.core.distribution_release|d())
-                                  else ansible_distribution_release }}'
+                                      if (ansible_local|d() and ansible_local.core|d() and
+                                          ansible_local.core.distribution_release|d())
+                                      else ansible_distribution_release }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__borgmatic_pip_install [[[
 #
 # Whether borgmatic should be installed using pip.
-borgbackup__borgmatic_pip_install: '{{ borgbackup__distribution_release == "stretch" }}'
+# The version in buster is too old so we install one last time from upstream.
+borgbackup__borgmatic_pip_install: '{{ borgbackup__distribution_release in ["stretch", "buster"] }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__pip_install_dependency_packages [[[
@@ -72,9 +73,9 @@ borgbackup__borgmatic_packages: '{{ borgbackup__pip_install_dependency_packages
 #
 # Path where the borgmatic ``virtualenv`` directory will be stored.
 borgbackup__virtualenv: '{{ (ansible_local.root.lib
-                           if (ansible_local|d() and ansible_local.root|d() and
-                               ansible_local.root.lib|d())
-                           else "/usr/local/lib") + "/borgbackup/virtualenv" }}'
+                             if (ansible_local|d() and ansible_local.root|d() and
+                                 ansible_local.root.lib|d())
+                             else "/usr/local/lib") + "/borgbackup/virtualenv" }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__bin_path [[[
@@ -82,9 +83,9 @@ borgbackup__virtualenv: '{{ (ansible_local.root.lib
 # Bin path where the borgbackup executables should be symlinked to when
 # installing with pip.
 borgbackup__bin_path: '{{ (ansible_local.root.bin
-                         if (ansible_local|d() and ansible_local.root|d() and
-                             ansible_local.root.bin|d())
-                         else "/usr/local/bin") }}'
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.bin|d())
+                           else "/usr/local/bin") }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__virtualenv_executables [[[
