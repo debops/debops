@@ -57,6 +57,15 @@ LDAP
 
   .. __: https://github.com/vmware/open-vm-tools
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- The role will tell the client applications to `disable DNS-over-HTTPS
+  support`__ using the ``use-application-dns.net`` DNS record. This should
+  allow connections to internal sites and preserve the split-DNS functionality.
+
+  .. __: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
