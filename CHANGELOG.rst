@@ -47,6 +47,11 @@ LDAP
   :ref:`debops.saslauthd` Ansible role. Both humans and machines can
   authenticate to the OpenLDAP directory using their respective LDAP objects.
 
+:ref:`debops.unbound` role
+''''''''''''''''''''''''''
+
+- Add support for ``local-zone`` and ``local-data`` configuration options.
+
 Changed
 ~~~~~~~
 

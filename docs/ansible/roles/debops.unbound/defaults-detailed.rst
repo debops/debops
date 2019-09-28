@@ -40,9 +40,21 @@ Each list entry is a YAML dictionary with specific parameters:
   a particular delegation.
 
 ``type``
-  Optional. The zone type to use, either ``forward`` (default if not specified)
-  or ``stub``. See the :man:`unbound.conf(5)` for details about stub and
-  forward zones.
+  Optional. The zone type to use, either ``forward`` (default if not
+  specified), ``local`` or ``stub``. See the :man:`unbound.conf(5)` for details
+  about stub and forward zones.
+
+``local_zone_type``
+  Optional. If the ``type`` parameter is set to ``local``, this parameter can
+  be used to define the type of the local zone (``static`` (default),
+  ``transparent``, etc. See :man:`unbound.conf(5)` manual page, ``local-zone:``
+  keyword for the details about local zone types.
+
+``local_zone_data``
+  Optional. If the ``type`` parameter is set to ``local``, this parameter can
+  be used to define the data of a given local zone. This is a YAML list of
+  entries, each entry can specify a DNS Resource Record as a string. See the
+  examples section for an example local zone configuration.
 
 ``nameserver``, ``nameservers``
   Optional. IP address or list of IP addresses of the DNS nameservers of
@@ -103,3 +115,20 @@ Create custom forward zone for internal network:
        nameserver: '192.0.2.1'
        options:
          - 'forward-first': True
+
+Define a local DNS entry ``example.test.`` with a few resource records:
+
+.. code-block:: yaml
+
+   unbound__zones:
+
+     - name: 'example.test'
+       zone: 'example.test.'
+       type: 'local'
+       local_zone_type: 'static'
+       local_zone_data:
+         - 'NS localhost.'
+         - 'SOA localhost. nobody.invalid. 1 3600 1200 604800 10800'
+         - 'PTR localhost.'
+         - 'A 192.0.2.1'
+         - 'AAAA 2001:db8::1'

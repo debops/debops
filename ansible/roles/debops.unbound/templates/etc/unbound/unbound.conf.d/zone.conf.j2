@@ -50,8 +50,18 @@
 {% macro print_zone(config) %}
 {%   set real_zone_name = (config.zone | d(config.name)) %}
 {%   set zone_name = (real_zone_name + ('.' if not real_zone_name.endswith('.') else '')) %}
+{%   if config.type|d('forward') == 'local' %}
+server:
+    local-zone: "{{ (zone_name | regex_replace('\n$','') | regex_replace('\.$','')) + '.' }}" {{ config.local_zone_type | d('static') }}
+{%     if config.local_zone_data|d() %}
+{%       for record in ([ config.local_zone_data ] if (config.local_zone_data is string) else config.local_zone_data) %}
+    local-data: "{{ ((zone_name | regex_replace('\n$','') | regex_replace('\.$','')) + '. ') + record | regex_replace('\n$','') }}"
+{%       endfor %}
+{%     endif %}
+{%   else %}
 {{ config.type | d('forward') }}-zone:
     name: "{{ zone_name }}"
+{%   endif %}
 {%   if unbound__tpl_nameservers %}
 {%     for entry in unbound__tpl_nameservers %}
     {{ config.type | d('forward') }}-addr: {{ entry }}
