@@ -10,6 +10,7 @@ debops.gitlab
    getting-started
    defaults/main
    remote_db
+   ldap-dit
    copyright
 
 ..

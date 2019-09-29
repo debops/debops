@@ -40,10 +40,12 @@
         - '{{ gitlab__python__dependent_packages3 }}'
         - '{{ nginx__python__dependent_packages3 }}'
         - '{{ postgresql__python__dependent_packages3 if gitlab__database == "postgresql" else [] }}'
+        - '{{ ldap__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ gitlab__python__dependent_packages2 }}'
         - '{{ nginx__python__dependent_packages2 }}'
         - '{{ postgresql__python__dependent_packages2 if gitlab__database == "postgresql" else [] }}'
+        - '{{ ldap__python__dependent_packages2 }}'
 
     - role: debops.golang
       tags: [ 'role::golang', 'skip::golang' ]
@@ -83,6 +85,11 @@
       postgresql__dependent_pgpass:
         - '{{ gitlab__postgresql__dependent_pgpass }}'
       when: gitlab__database == 'postgresql'
+
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ gitlab__ldap__dependent_tasks }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx', 'skip::nginx' ]

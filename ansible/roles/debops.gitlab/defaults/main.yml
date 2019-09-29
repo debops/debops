@@ -741,90 +741,184 @@ gitlab_ce_bundle_install_without:
 # More information about LDAP support in GitLab can be found at
 # https://gitlab.com/help/administration/auth/ldap.md
 
-# .. envvar:: gitlab_ldap_enable [[[
+# .. envvar:: gitlab__ldap_enabled [[[
 #
 # Enable or disable LDAP support.
-gitlab_ldap_enable: False
+gitlab__ldap_enabled: '{{ True
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              (ansible_local.ldap.enabled|d())|bool)
+                          else False }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_manage [[[
+# .. envvar:: gitlab__ldap_base_dn [[[
 #
-# If enabled, the role will try to create/manage the relevant entries on the
-# LDAP server. If disabled, only the configuration file entries will be
-# created, you will need to configure the LDAP server yourself.
-gitlab_ldap_manage: True
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, LDAP configuration will not be generated.
+gitlab__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              ansible_local.ldap.base_dn|d())
+                          else [] }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_domain [[[
+# .. envvar:: gitlab__ldap_device_dn [[[
 #
-# The base DNS domain used to generate LDAP configuration parameters.
-gitlab_ldap_domain: '{{ gitlab_domain }}'
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the GitLab service account LDAP object.
+# If the list is empty, the role will not create the account LDAP object
+# automatically.
+gitlab__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.device_dn|d())
+                            else [] }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_label [[[
+# .. envvar:: gitlab__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# GitLab service to access the LDAP directory.
+gitlab__ldap_self_rdn: 'uid=gitlab'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the Gitlab service to access the LDAP directory.
+gitlab__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# GitLab service to access the LDAP directory.
+gitlab__ldap_self_attributes:
+  uid: '{{ gitlab__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ gitlab__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "GitLab" service to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# GitLab service to bind to the LDAP directory.
+gitlab__ldap_binddn: '{{ ([ gitlab__ldap_self_rdn ] + gitlab__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the GitLab service to
+# bind to the LDAP directory.
+gitlab__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                                + gitlab__ldap_binddn | to_uuid + ".password length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_sync_time [[[
+#
+# Specify the time in seconds between LDAP permission checks. The checks will
+# be performed on the next GitLab interaction after the timeout.
+gitlab__ldap_sync_time: '3600'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_label [[[
 #
 # Specify the name of the LDAP server displayed on the login page.
-gitlab_ldap_label: '{{ gitlab_ldap_domain }}'
+gitlab__ldap_label: 'LDAP'
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_host [[[
+# .. envvar:: gitlab__ldap_host [[[
 #
 # FQDN address of the LDAP server to connect to.
-gitlab_ldap_host: 'ldap.{{ gitlab_domain }}'
+gitlab__ldap_host: '{{ (ansible_local.ldap.hosts
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.hosts|d())
+                        else []) | first }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_port [[[
+# .. envvar:: gitlab__ldap_port [[[
 #
 # The LDAP service port to use for connections.
-gitlab_ldap_port: '389'
+gitlab__ldap_port: '{{ ansible_local.ldap.port
+                       if (ansible_local|d() and ansible_local.ldap|d() and
+                           ansible_local.ldap.port|d())
+                       else "389" }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_method [[[
+# .. envvar:: gitlab__ldap_encryption [[[
 #
-# The connection method that should be used to connect to the LDAP server.
-# Available methods: ``tls``, ``ssl``, ``plain``.
-gitlab_ldap_method: 'tls'
+# The encryption method that should be used to connect to the LDAP server.
+# Available methods: ``start_tls``, ``simple_tls``, ``plain``.
+gitlab__ldap_encryption: '{{ "start_tls"
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 (ansible_local.ldap.start_tls|d())|bool)
+                             else "simple_tls" }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_basedn [[[
+# .. envvar:: gitlab__ldap_timeout [[[
 #
-# The LDAP BaseDN string used to connect to the LDAP server.
-gitlab_ldap_basedn: '{{ "dc=" + gitlab_ldap_domain.split(".") | join(",dc=") }}'
+# Set timeout in seconds for LDAP queries.
+gitlab__ldap_timeout: '10'
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_binddn [[[
-#
-# The GitLab user account on the LDAP server, used to bind to the LDAP server.
-gitlab_ldap_binddn: '{{ "cn=gitlab," + secret_ldap_services_dn }}'
-
-                                                                   # ]]]
-# .. envvar:: gitlab_ldap_password_file [[[
-#
-# Path to the LDAP bind account password file on the Ansible Controller.
-# See the :ref:`debops.secret` role for more details.
-gitlab_ldap_password_file: '{{ secret + "/credentials/" + gitlab_ldap_host
-                               + "/slapd/" + gitlab_ldap_basedn + "/"
-                               + gitlab_ldap_binddn + ".password" }}'
-
-                                                                   # ]]]
-# .. envvar:: gitlab_ldap_password [[[
-#
-# The password of the LDAP bind account.
-gitlab_ldap_password: '{{ lookup("password", gitlab_ldap_password_file) }}'
-
-                                                                   # ]]]
-# .. envvar:: gitlab_ldap_activedirectory [[[
+# .. envvar:: gitlab__ldap_activedirectory [[[
 #
 # Enable or disable support for ActiveDirectory servers.
-gitlab_ldap_activedirectory: False
+gitlab__ldap_activedirectory: False
 
                                                                    # ]]]
-# .. envvar:: gitlab_ldap_uid [[[
+# .. envvar:: gitlab__ldap_account_attribute [[[
 #
 # Name of the LDAP attribute to use for account lookups. On plain LDAP servers
 # it's usually ``uid``, on older ActiveDirectory installations it could be
 # ``sAMAccountName``.
-gitlab_ldap_uid: 'uid'
+gitlab__ldap_account_attribute: '{{ "sAMAccountName"
+                                    if (gitlab__ldap_activedirectory|bool)
+                                    else "uid" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_user_filter [[[
+#
+# LDAP search query which will be used by the GitLab service to filter the
+# available user accounts.
+gitlab__ldap_user_filter: '(&
+                             (objectClass=inetOrgPerson)
+                             (|
+                               (authorizedService=gitlab)
+                               (authorizedService=web-public)
+                               (authorizedService=*)
+                             )
+                           )'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_username_or_email_login [[[
+#
+# If this variable is enabled, GitLab will ignore everything
+# after the first '@' in the LDAP username submitted by the user on login.
+#
+# Example:
+# - the user enters 'jane.doe@example.com' and 'p@ssw0rd' as LDAP credentials;
+# - GitLab queries the LDAP server with 'jane.doe' and 'p@ssw0rd'.
+#
+# If you are using "uid: 'userPrincipalName'" on ActiveDirectory you need to
+# disable this setting, because the userPrincipalName contains an '@'.
+gitlab__ldap_username_or_email_login: '{{ True
+                                          if (gitlab__ldap_account_attribute in
+                                              [ "uid", "sAMAccountName" ])
+                                          else False }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_block_auto_created_users [[[
+#
+# Enable this setting to keep new LDAP users blocked until they have been
+# cleared by the admin.
+gitlab__ldap_block_auto_created_users: False
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_lowercase_usernames [[[
+#
+# If enabled, GitLab will convert usernames to lowercase before searching the
+# for the LDAP user accounts.
+gitlab__ldap_lowercase_usernames: True
                                                                    # ]]]
                                                                    # ]]]
 # Piwik configuration [[[
@@ -1101,6 +1195,19 @@ gitlab__postgresql__dependent_pgpass:
     home: '{{ gitlab_home }}'
     database: '{{ gitlab_database_name }}'
     role: '{{ gitlab_database_user }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+gitlab__ldap__dependent_tasks:
+
+  - name: 'Create GitLab account for {{ gitlab__ldap_device_dn | join(",") }}'
+    dn: '{{ gitlab__ldap_binddn }}'
+    objectClass: '{{ gitlab__ldap_self_object_classes }}'
+    attributes: '{{ gitlab__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present" if gitlab__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__nginx__dependent_upstreams [[[

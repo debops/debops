@@ -27,6 +27,56 @@ Role configuration changes
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- The :ref:`debops.gitlab` role has an improved LDAP support that uses the
+  :ref:`debops.ldap` role infrastructure. Due to that, some of the default
+  variables have been changed:
+
+  +---------------------------------+------------------------------------------+---------------+
+  | Old variable name               | New variable name                        | Changed value |
+  +=================================+==========================================+===============+
+  | ``gitlab_ldap_activedirectory`` | :envvar:`gitlab__ldap_activedirectory`   | No            |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_enable``          | :envvar:`gitlab__ldap_enabled`           | No            |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_basedn``          | :envvar:`gitlab__ldap_base_dn`           | Yes           |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_binddn``          | :envvar:`gitlab__ldap_binddn`            | Yes           |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_domain``          | Removed                                  | No            |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_host``            | :envvar:`gitlab__ldap_host`              | No            |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_label``           | :envvar:`gitlab__ldap_label`             | No            |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_manage``          | Removed                                  | No            |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_method``          | :envvar:`gitlab__ldap_encryption`        | Yes           |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_password``        | :envvar:`gitlab__ldap_bindpw`            | Yes           |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_password_file``   | Removed                                  | No            |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_port``            | :envvar:`gitlab__ldap_port`              | No            |
+  +---------------------------------+------------------------------------------+---------------+
+  | ``gitlab_ldap_uid``             | :envvar:`gitlab__ldap_account_attribute` | Yes           |
+  +---------------------------------+------------------------------------------+---------------+
+
+  The location of the GitLab LDAP account object in the LDAP directory tree
+  as well as the object class and its attributes has been changed, see the
+  :ref:`debops.gitlab LDAP DIT <gitlab__ref_ldap_dit>` documentation page
+  for more details.
+
+  Some of the default configuration options have been changed to better
+  integrate GitLab with the LDAP environment managed by DebOps:
+
+  ============================================== ================================== ==============================
+  Variable name                                  Old value                          New value
+  ============================================== ================================== ==============================
+  :envvar:`gitlab__ldap_user_filter`             not defined                         too large; see the variable
+  ---------------------------------------------- ---------------------------------- ------------------------------
+  :envvar:`gitlab__ldap_label`                   ``ldap.{{ ansible_domain }}``      ``LDAP``
+  ============================================== ================================== ==============================
+
 - The :ref:`debops.owncloud` role has an improved LDAP support that uses the
   :ref:`debops.ldap` role infrastructure. Due to that, some of the default
   variables have been changed:
