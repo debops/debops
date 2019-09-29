@@ -63,4 +63,4 @@ Parent nodes
 Child nodes
 -----------
 
-There are no child nodes defined for the :ref:`debops.saslauthd` Ansible role.
+There are no child nodes defined for the :ref:`debops.owncloud` Ansible role.
