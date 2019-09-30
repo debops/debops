@@ -13,6 +13,7 @@ def cmd_exists(cmd):
         for path in os.environ["PATH"].split(os.pathsep)
     )
 
+
 def read_resolv_file(file):
     try:
         with open(file, 'r') as f:
@@ -81,9 +82,14 @@ if os.path.isfile(systemdresolved_path):
         if not server.startswith('127.'):
             upstream_nameservers.append(server)
 
+# If nameservers contains a localhost address, and we've found some
+# upstream nameservers, then output the upstream nameservers.
+# - 127.0.0.1 is the stub address used by resolvconf
+# - 127.0.0.53 is the stub address used by systemd-resolved
+if (('127.0.0.1' in output['nameservers'] or
+    '127.0.0.53' in output['nameservers']) and
+    upstream_nameservers):
 
-# 127.0.0.53 is the stub address used by systemd-resolved
-if ('127.0.0.1' in output['nameservers'] or '127.0.0.53' in output['nameservers']) and upstream_nameservers:
     output['upstream_nameservers'] = upstream_nameservers
 
 print(dumps(output, sort_keys=True, indent=4))
