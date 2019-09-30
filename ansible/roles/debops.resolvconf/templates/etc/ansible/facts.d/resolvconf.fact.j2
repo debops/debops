@@ -14,9 +14,9 @@ def cmd_exists(cmd):
     )
 
 
-def read_resolv_file(file):
+def read_resolv_file(resolv_file):
     try:
-        with open(file, 'r') as f:
+        with open(resolv_file, 'r') as f:
             nameservers = []
             domain = ''
             search = []
@@ -56,31 +56,27 @@ if search:
 
 # Get the upstream resolver configuration
 upstream_nameservers = []
+resolvconf_files = []
 resolvconf_path = '/run/resolvconf/interface'
+systemdresolved_path = '/run/systemd/resolve/resolv.conf'
 if os.path.isdir(resolvconf_path):
-    resolvconf_files = ([f for f in os.listdir(resolvconf_path)
+    resolvconf_files = ([os.path.join(resolvconf_path, f)
+                         for f in os.listdir(resolvconf_path)
                          if os.path.isfile(os.path.join(resolvconf_path, f))])
 
-    for element in resolvconf_files:
-        try:
-            with open(os.path.join(resolvconf_path, element), 'r') as f:
-                for line in f:
-                    if line.startswith('nameserver'):
-                        server = line.strip().split()[1]
-                        if not server.startswith('127.'):
-                            upstream_nameservers.append(server)
-
-        except Exception:
-            pass
-
-# Get the upstream resolvers from systemd-resolved
-systemdresolved_path = '/run/systemd/resolve/resolv.conf'
 if os.path.isfile(systemdresolved_path):
-    nameservers, domain, search = read_resolv_file(systemdresolved_path)
+    resolvconf_files.append(systemdresolved_path)
 
-    for server in nameservers:
-        if not server.startswith('127.'):
-            upstream_nameservers.append(server)
+for element in resolvconf_files:
+    try:
+        nameservers, domain, search = read_resolv_file(element)
+
+        for server in nameservers:
+            if not server.startswith('127.'):
+                upstream_nameservers.append(server)
+
+    except Exception:
+        pass
 
 # If nameservers contains a localhost address, and we've found some
 # upstream nameservers, then output the upstream nameservers.
