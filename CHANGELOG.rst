@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.1: https://github.com/debops/debops/compare/v1.1.0...stable-1.1
 
+Added
+~~~~~
+
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- Read upstream nameserver information from :command:`systemd-resolved`
+  service, when it's active.
+
 
 `debops v1.1.2`_ - 2019-09-28
 -----------------------------
