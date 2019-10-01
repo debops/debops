@@ -35,6 +35,14 @@ Added
   operation of a given LDAP object, which can be used to, for example, check
   the date of the last successful login of a given user account.
 
+Fixed
+~~~~~
+
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Fix wrong ``ansible_local.docker`` fact variable reference in role defaults.
+
 
 `debops v1.1.2`_ - 2019-09-28
 -----------------------------
