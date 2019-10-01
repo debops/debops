@@ -133,3 +133,25 @@ attributes, for example number of possible values, size or format.
 .. __: https://www.openldap.org/doc/admin24/overlays.html#Constraints
 
 Manual page: :man:`slapo-constraint(5)`
+
+
+.. _slapd__ref_lastbind_overlay:
+
+LastBind overlay
+----------------
+
+The ``lastbind`` overlay and the corresponding OpenLDAP module can be used to
+maintain information about last login time of a LDAP account, similar to the
+`lastLogon`__ functionality from Active Directory. The primary purpose
+of the ``lastbind`` overlay is detection of inactive user accounts; it
+shouldn't be relied on for real-time login tracking.
+
+.. __: https://ldapwiki.com/wiki/LastLogon
+
+The time of the last successful authenticated bind operation of a given LDAP
+object is stored in the ``authTimestamp`` operational attribute (not
+replicated, not visible in normal queries, has to be specifically requested).
+By default the timestamp is updated once a day to avoid performance issues in
+larger environments.
+
+Manual page: :man:`slapo-lastbind(5)`

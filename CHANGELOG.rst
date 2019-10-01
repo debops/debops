@@ -18,6 +18,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Added
+~~~~~
+
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The :ref:`lastbind overlay <slapd__ref_lastbind_overlay>` will be enabled by
+  default. This overlay records the timestamp of the last successful bind
+  operation of a given LDAP object, which can be used to, for example, check
+  the date of the last successful login of a given user account.
+
 
 `debops v1.0.10`_ - 2019-09-28
 ------------------------------
