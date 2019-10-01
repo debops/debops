@@ -36,6 +36,8 @@ Directory structure
 
         - ``{8}back_monitor``
 
+        - ``{9}lastbind``
+
       - :ref:`cn=schema <slapd__ref_ldap_schemas>`
 
         - :ref:`core.schema <slapd__ref_initial_schemas>`
@@ -77,6 +79,8 @@ Directory structure
         - :ref:`olcOverlay={5}auditlog <slapd__ref_auditlog_overlay>`
 
         - :ref:`olcOverlay={6}constraint <slapd__ref_constraint_overlay>`
+
+        - :ref:`olcOverlay={7}lastbind <slapd__ref_lastbind_overlay>`
 
         - :envvar:`olcAccess <slapd__acl_tasks>` (:ref:`documentation <slapd__ref_acl>`)
 
