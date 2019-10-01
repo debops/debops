@@ -159,7 +159,7 @@ def update_git_repository(path, dry_run=False, remote_uri=False):
 
     if dry_run:
         subprocess.call([GIT, 'fetch'])
-        subprocess.call([GIT, 'diff', 'HEAD', 'origin', '--stat'])
+        subprocess.call([GIT, 'diff', 'HEAD', 'origin/'+branch, '--stat'])
     else:
         # Get the current sha of the head branch
         current_sha = subprocess.check_output(
