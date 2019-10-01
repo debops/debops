@@ -94,6 +94,8 @@ GALAXY_ACCOUNT = "debops"
 # hard-coded paths.
 GIT = 'git'
 
+# Default git branch used
+GIT_BRANCH = 'master'
 
 # ---- Functions ----
 
@@ -188,7 +190,7 @@ def update_git_repository(path, dry_run=False, remote_uri=False):
 
 # ---- Main script ----
 
-def main(project_dir=None, dry_run=False):
+def main(branch, project_dir=None, dry_run=False):
 
     # Check if user specified a directory as a parameter, if yes, use it as
     # a project directory and clone DebOps playbooks inside
@@ -255,7 +257,7 @@ def main(project_dir=None, dry_run=False):
 
         print("DebOps monorepo has not been found, installing into",
               monorepo_path)
-        clone_git_repository(MONOREPO_GIT_URI, 'master',
+        clone_git_repository(MONOREPO_GIT_URI, branch,
                              monorepo_path, dry_run)
     else:
         print("DebOps monorepo has been found in", monorepo_path)
@@ -278,7 +280,7 @@ def main(project_dir=None, dry_run=False):
               install_path)
         print()
 
-        clone_git_repository(PLAYBOOKS_GIT_URI, 'master',
+        clone_git_repository(PLAYBOOKS_GIT_URI, branch,
                              install_path, dry_run)
         os.chdir(install_path)
         os.makedirs(roles_path)
@@ -296,10 +298,11 @@ def main(project_dir=None, dry_run=False):
 parser = argparse.ArgumentParser()
 parser.add_argument('--dry-run', action='store_true',
                     help='perform a trial run with no changes made')
+parser.add_argument('--branch', default=GIT_BRANCH)
 parser.add_argument('project_dir', nargs='?')
 args = parser.parse_args()
 
 try:
-    main(args.project_dir, args.dry_run)
+    main(args.branch, args.project_dir, args.dry_run)
 except KeyboardInterrupt:
     raise SystemExit('... aborted')
