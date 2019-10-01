@@ -84,6 +84,11 @@ LDAP
   :ref:`debops.saslauthd` Ansible role. Both humans and machines can
   authenticate to the OpenLDAP directory using their respective LDAP objects.
 
+- The :ref:`lastbind overlay <slapd__ref_lastbind_overlay>` will be enabled by
+  default. This overlay records the timestamp of the last successful bind
+  operation of a given LDAP object, which can be used to, for example, check
+  the date of the last successful login of a given user account.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
