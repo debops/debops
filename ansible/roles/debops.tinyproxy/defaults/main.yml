@@ -39,36 +39,12 @@ tinyproxy__allow: []
 tinyproxy__port: '8888'
 
                                                                    # ]]]
-# Configuration for other Ansible roles [[[
-# -----------------------------------------
-
-# .. envvar:: tinyproxy__ferm__dependent_rules [[[
-#
-# Configuration for :ref:`debops.ferm` Tinyproxy role.
-tinyproxy__ferm__dependent_rules:
-
-  - type: 'accept'
-    dport: [ 'tinyproxy' ]
-    saddr: '{{ tinyproxy__allow }}'
-    accept_any: False
-    weight: '40'
-    role: 'tinyproxy'
-
-                                                                   # ]]]
-# .. envvar:: tinyproxy__etc_services__dependent_list [[[
-#
-# Configuration for the :ref:`debops.etc_services` Ansible role.
-tinyproxy__etc_services__dependent_list:
-
-  - name: 'tinyproxy'
-    port: '{{ tinyproxy__port }}'
-
-                                                                   # ]]]
 # Tinyproxy configuration file [[[
 # --------------------------------
 
 # The variables below define the contents of the
 # :file:`/etc/tinyproxy/tinyproxy.conf` configuration file.
+# See :ref:`tinyproxy__ref_configuration` for more details.
 
 # .. envvar:: tinyproxy__default_configuration [[[
 #
@@ -81,15 +57,6 @@ tinyproxy__default_configuration:
 
       - name: 'User Group'
         comment: |
-          ##
-          ## tinyproxy.conf -- tinyproxy daemon configuration file
-          ##
-          ## This example tinyproxy.conf file contains example settings
-          ## with explanations in comments. For decriptions of all
-          ## parameters, see the tinproxy.conf(5) manual page.
-          ##
-
-
           User/Group: This allows you to set the user and group that will be
           used for tinyproxy after the initial binding to the port has been done
           as the root user. Either the user or group name or the UID or GID
@@ -497,5 +464,30 @@ tinyproxy__configuration: []
 # configuration template. This list defines the order in which the options from
 # different variables are processed.
 tinyproxy__combined_configuration: '{{ tinyproxy__default_configuration + tinyproxy__configuration }}'
+
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: tinyproxy__ferm__dependent_rules [[[
+#
+# Configuration for :ref:`debops.ferm` Tinyproxy role.
+tinyproxy__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'tinyproxy' ]
+    saddr: '{{ tinyproxy__allow }}'
+    accept_any: False
+    weight: '40'
+    role: 'tinyproxy'
+
+                                                                   # ]]]
+# .. envvar:: tinyproxy__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+tinyproxy__etc_services__dependent_list:
+
+  - name: 'tinyproxy'
+    port: '{{ tinyproxy__port }}'
 
                                                                    # ]]]

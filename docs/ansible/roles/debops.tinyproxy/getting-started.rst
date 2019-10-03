@@ -21,7 +21,7 @@ Example playbook
 ----------------
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses the ``debops.influxdb`` role:
+that uses the ``debops.tinyproxy`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/tinyproxy.yml
    :language: yaml

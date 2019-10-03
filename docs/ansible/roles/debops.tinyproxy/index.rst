@@ -11,6 +11,7 @@ Ubuntu host. Tinyproxy is a light-weight HTTP/HTTPS proxy daemon for POSIX opera
 
    getting-started
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------
@@ -22,4 +23,4 @@ Copyright
  mode: rst
  ispell-local-dictionary: "american"
  End:
- 
+
