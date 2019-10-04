@@ -29,6 +29,15 @@ Added
   operation of a given LDAP object, which can be used to, for example, check
   the date of the last successful login of a given user account.
 
+Changed
+~~~~~~~
+
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- Don't install the ``php-mcrypt`` package, it's not required by base DokuWiki
+  installation.
+
 
 `debops v1.0.10`_ - 2019-09-28
 ------------------------------
