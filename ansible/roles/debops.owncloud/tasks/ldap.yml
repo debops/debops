@@ -33,7 +33,7 @@
   when: owncloud__register_local_facts_ldap is changed
 
 - name: Configure LDAP parameters
-  command: php --file "{{ owncloud__app_home }}/occ" ldap:set-config "{{ owncloud__ldap_config_id }}" "{{ item.name }}" "{{ item.value }}"
+  command: php --file "{{ owncloud__app_home }}/occ" ldap:set-config "{{ owncloud__ldap_config_id }}" "'{{ item.name }}'" "'{{ item.value }}'"
   changed_when: False
   become: True
   become_user: '{{ owncloud__app_user }}'
