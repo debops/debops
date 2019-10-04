@@ -9,6 +9,7 @@ debops.dokuwiki
    introduction
    getting-started
    defaults/main
+   ldap-dit
    copyright
 
 ..
