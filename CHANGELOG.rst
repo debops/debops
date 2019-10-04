@@ -66,6 +66,14 @@ LDAP
 
   .. __: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
 
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- The role will configure LDAP support in DokuWiki when LDAP environment
+  managed by the :ref:`debops.ldap` Ansible role is detected. Read the
+  :ref:`dokuwiki__ref_ldap_support` chapter in the documentation for more
+  details.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 

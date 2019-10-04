@@ -22,6 +22,7 @@ Directory structure
 
           - :envvar:`cn=host.example.org <ldap__device_self_rdn>` (:envvar:`conditional <ldap__device_enabled>`)
 
+            - :ref:`uid=dokuwiki <dokuwiki__ref_ldap_dit>` -> :ref:`debops.dokuwiki`
             - :ref:`uid=gitlab <gitlab__ref_ldap_dit>` -> :ref:`debops.gitlab`
             - :ref:`uid=nslcd <nslcd__ref_ldap_dit>` -> :ref:`debops.nslcd`
             - :ref:`uid=nextcloud <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
@@ -31,6 +32,9 @@ Directory structure
 
       - :envvar:`ou=People <ldap__people_rdn>`
       - :envvar:`ou=Groups <ldap__groups_rdn>`
+
+        - :ref:`cn=DokuWiki Administrators <dokuwiki__ref_ldap_dit>` -> :ref:`debops.dokuwiki`
+
       - :envvar:`ou=Machines <ldap__machines_rdn>`
       - :envvar:`ou=Services <ldap__services_rdn>`
 

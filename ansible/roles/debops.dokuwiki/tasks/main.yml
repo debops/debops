@@ -149,6 +149,15 @@
          (item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
 
+- name: Generate protected local configuration file
+  template:
+    src: 'srv/www/dokuwiki/sites/public/conf/local.protected.php.j2'
+    dest: '{{ dokuwiki__git_checkout + "/conf/local.protected.php" }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__group }}'
+    mode: '0600'
+  no_log: True
+
 - name: Install maintenance scripts
   template:
     src: '{{ item }}.j2'
