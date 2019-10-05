@@ -1,0 +1,74 @@
+---
+
+# DebOps uses the "to_uuid" Ansible filter to convert LDAP Distinguished Names
+# to UUID strings that are safe to use in shell and store in the filesystem.
+# This playbook can be used to convert Distinguished Names to UUID strings to
+# help locate specific data about a particular Distinguished Name, for example
+# a password stored in the 'secret/ldap/credentials/' directory or in the
+# 'pass' database.
+#
+# To use this playbook, it is best to apply it against a specifc host that is
+# configured to use LDAP via the 'debops.ldap' Ansible role. If that's not the
+# case, the playbook will still work, however the resulting UUIDs might not be
+# correct.
+#
+# Remember to specify Distinguished Name attributes separated by commas,
+# without spaces between them. For example, don't use:
+#
+#     uid=user, ou=People, dc=example, dc=org
+#
+# Specify the DN as:
+#
+#     uid=user,ou=People,dc=example,dc=org
+#
+# Usage: debops ldap/get-uuid -l ldap-host
+
+
+- name: Convert LDAP Distinguished Name to UUID
+  hosts: [ 'all' ]
+  serial: '1'
+  gather_subset: '!all'
+
+  vars:
+
+    # LDAP base Distinguished Name
+    ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                      if (ansible_local|d() and ansible_local.ldap|d() and
+                          ansible_local.ldap.base_dn|d())
+                      else (ansible_domain.split(".")
+                            | map("regex_replace", "^(.*)$", "dc=\1")
+                            | list) }}'
+
+    # Relative Distinguished Name of the LDAP object that contains the personal
+    # user accounts
+    ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
+                         if (ansible_local|d() and ansible_local.ldap|d() and
+                             ansible_local.ldap.people_rdn|d())
+                         else "ou=People" }}'
+
+    # Relative Distinguished Name of an user account to convert to an UUID
+    person_rdn: 'uid={{ person_uid.user_input }}'
+
+    # Distinguished Name of an LDAP object to convert to an UUID
+    object_dn: '{{ (([ person_rdn, ldap_people_rdn ] + ldap_base_dn) | join(","))
+                   if person_uid.user_input|d()
+                   else object_dn_string.user_input }}'
+
+  tasks:
+
+    - name: Get the UUID of an user account based on uid
+      pause:
+        prompt: 'uid (case-sensitive)'
+      register: person_uid
+
+    - name: Get the UUID of a Distinguished Name
+      pause:
+        prompt: 'dn (case-sensitive)'
+      register: object_dn_string
+      when: not person_uid.user_input|d()
+
+    - name: LDAP object information
+      debug:
+        msg: '{{ {"DN:": object_dn,
+                  "UUID:": (object_dn | to_uuid)} }}'
+      when: object_dn|d()
