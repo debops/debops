@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.tinyproxy` role can be used to set up a lightweight
+  HTTP/HTTPS proxy for an upstream server.
+
 General
 '''''''
 
