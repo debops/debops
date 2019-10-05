@@ -1,0 +1,54 @@
+# {{ ansible_managed }}
+##
+## tinyproxy.conf -- tinyproxy daemon configuration file
+##
+{% for item in tinyproxy__combined_configuration | parse_kv_items %}
+{% if item.comment|d() %}
+{{ item.comment | regex_replace('\n$','') | comment() }}
+{% endif %}
+{% if item.options|d() %}
+{%   for element in item.options %}
+{%     if element is string %}
+{%       if not loop.first %}
+
+{%       endif %}
+{{ "{}".format(element) }}
+{%     elif element is mapping %}
+{%       if element.name|d() %}
+{%         if element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%           if (loop.first and item.comment|d() and element.comment|d()) or (not loop.first and (element.comment|d() or (element.separator|d())|bool)) %}
+
+{%           endif %}
+{%           if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment() }}
+{%           endif %}
+{%           if element.value|d() %}
+{%             if element.value is string %}
+{{ "{}{} = {}".format(('#' if (element.state|d('present') == 'comment') else ''), element.option | d(element.name), element.value) }}
+{%             else %}
+{%               for thing in (element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list) %}
+{{ "{}{} = {}".format(('#' if (element.state|d('present') == 'comment') else ''), element.option | d(element.name), thing) }}
+{%               endfor %}
+{%             endif %}
+{%           elif element.raw|d() %}
+{%             if element.state|d('present') == 'comment' %}
+{{ "{}".format(element.raw | regex_replace('\n$','')) | comment() }}
+{%             else %}
+{{ "{}".format(element.raw | regex_replace('\n$','')) }}
+{%             endif %}
+{%           else %}
+{{ "{}{}".format(('#' if (element.state|d('present') == 'comment') else ''), element.option | d(element.name)) }}
+{%           endif %}
+{%         endif %}
+{%       else %}
+{%         for key, value in element.items() %}
+{{ "{} = {}".format(key, value) }}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if item.raw|d() %}
+{{ item.raw | regex_replace('\n$','') }}
+{% endif %}
+{% endfor %}
