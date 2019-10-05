@@ -129,6 +129,15 @@ Updates of upstream application versions
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v2.6.3``.
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The ``$DEBOPS_FROM`` environment variable can be used to select how DebOps
+  scripts should be installed in the Vagrant environment: either ``devel``
+  (local build) or ``pypi`` (installation from PyPI repository). This makes
+  Vagrant environment more useful on Windows hosts, where :file:`/vagrant`
+  directory is not mounted due to issues with symlinks.
+
 General
 '''''''
 
