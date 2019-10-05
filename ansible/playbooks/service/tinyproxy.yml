@@ -1,0 +1,24 @@
+---
+
+- name: Manage Tinyproxy
+  hosts: [ 'debops_service_tinyproxy', 'debops_tinyproxy' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ tinyproxy__etc_services__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ tinyproxy__ferm__dependent_rules }}'
+
+    - role: debops.tinyproxy
+      tags: [ 'role::tinyproxy', 'skip::tinyproxy' ]
