@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+LDAP
+''''
+
+- The :file:`ldap/get-uuid.yml` Ansible playbook can be used to convert LDAP
+  Distinguished Names to UUIDs to look up the password files if needed.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
