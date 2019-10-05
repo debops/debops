@@ -55,6 +55,9 @@ LDAP
   other Ansible roles to utilize them without the need for the system
   administrator to define them by hand.
 
+- The :file:`ldap/get-uuid.yml` Ansible playbook can be used to convert LDAP
+  Distinguished Names to UUIDs to look up the password files if needed.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 

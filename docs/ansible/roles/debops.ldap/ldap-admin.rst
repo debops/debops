@@ -69,6 +69,9 @@ are named based on the UUID value of the current user Distinguished Name used
 as the BindDN (in the :envvar:`ldap__admin_binddn` variable). The UUID
 conversion is used because LDAP Distinguished Names can contain spaces, and the
 Ansible lookups don't work too well with filenames that contain spaces.
+You can use the :file:`ldap/get-uuid.yml` playbook to convert user account DNs
+or arbitrary LDAP Distinguished Names to an UUID value you can use to look up
+the passwords manually, if needed.
 
 You can store new credentials in the :command:`pass` password manager using the
 :file:`ansible/playbooks/ldap/save-credential.yml` Ansible playbook included
