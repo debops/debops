@@ -38,6 +38,15 @@ Added
 Changed
 ~~~~~~~
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The ``$DEBOPS_FROM`` environment variable can be used to select how DebOps
+  scripts should be installed in the Vagrant environment: either ``devel``
+  (local build) or ``pypi`` (installation from PyPI repository). This makes
+  Vagrant environment more useful on Windows hosts, where :file:`/vagrant`
+  directory is not mounted due to issues with symlinks.
+
 :ref:`debops.dokuwiki` role
 '''''''''''''''''''''''''''
 
