@@ -83,6 +83,12 @@ Continuous Integration
   example different IP addresses). This should avoid leaving the outdated
   attributes in the host LDAP object.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The number of rounds in SHA-512 password hashes has been increased from 5000
+  (default) to 100001. Existing password hashes will be unaffected.
+
 Fixed
 ~~~~~
 
