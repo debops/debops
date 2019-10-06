@@ -231,6 +231,9 @@ General
   the :ref:`posixGroupId LDAP schema <slapd__ref_posixgroupid>`. This should
   improve performance in UNIX environments connected to the LDAP directory.
 
+- The number of rounds in SHA-512 password hashes has been increased from 5000
+  (default) to 100001. Existing password hashes will be unaffected.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
