@@ -101,7 +101,9 @@ hosts, copied from the ``systemd`` documentation page:
 ------------------------- ------------------------- --------------- ----------------------------------
       524288…1879048191   `Container UID ranges`__  ``systemd``     ``nss-mymachines``
 ------------------------- ------------------------- --------------- ----------------------------------
-**1879048192…4294967294** **Unused**
+**1879048192…2147483647** **Unused**
+------------------------- ------------------------- --------------- ----------------------------------
+  2147483648…4294967294   HIC SVNT LEONES
 ------------------------- ------------------------- --------------- ----------------------------------
              4294967295   32bit ``(uid_t) -1``      Linux
 ========================= ========================= =============== ==================================
@@ -137,7 +139,7 @@ the :ref:`debops.ldap` role are:
   Ideally the 0-65535 UID/GID range should be avoided altogether to allow for
   a continuous UID/GID range which makes randomized allocation easier.
 
-With these parameters in mind, the 1879048192…4294967294 UID/GID range,
+With these parameters in mind, the 1879048192…2147483647 UID/GID range,
 highlighted in the table above, seems to be the best candidate to contain
 a reserved LDAP UID/GID range.
 
@@ -185,11 +187,17 @@ role.
 
 With the selected ranges, a set of subUIDs/subGIDs (``210000000-420000000``) is
 also possible, therefore this range should be safe to use inside of the LXC
-containers. This unfortunately limits the ability to completely separate
-containers using private subUID/subGID ranges for each of them, but since the
-UID/GID numbers inside of the containers will belong to the same "entity" be it
-a person or a service, the risk in the case of breach between LXC containers
-should be minimized.
+containers. Note however, that the UID/GID range above ``2147483648`` is
+considered risky due to issues in some of the kernel subsystems and userspace
+tools that don't work well with UIDs outside of the signed 32bit range. This
+puts an upper limit on the normal set of UID/GID numbers to ``2047483647`` if
+you want to stay away from that region.
+
+This unfortunately limits the ability to completely separate containers using
+private subUID/subGID ranges for each of them, but since the UID/GID numbers
+inside of the containers will belong to the same "entity" be it a person or
+a service, the risk in the case of breach between LXC containers should be
+minimized.
 
 
 Collisions with local UNIX accounts/groups
