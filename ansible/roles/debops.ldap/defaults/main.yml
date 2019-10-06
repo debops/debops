@@ -683,8 +683,11 @@ ldap__default_tasks:
     dn: '{{ ldap__device_dn }}'
     attributes: '{{ ldap__device_attributes }}'
     state: '{{ "present"
-               if (ldap__device_enabled|bool)
-               else "ignore" }}'
+               if (ldap__fact_configured|bool and
+                   ldap__device_enabled|bool)
+               else ("exact"
+                     if (ldap__device_enabled|bool)
+                     else "ignore") }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__tasks [[[
