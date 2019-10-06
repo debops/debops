@@ -101,7 +101,7 @@ hosts, copied from the ``systemd`` documentation page:
 ------------------------- ------------------------- --------------- ----------------------------------
       524288…1879048191   `Container UID ranges`__  ``systemd``     ``nss-mymachines``
 ------------------------- ------------------------- --------------- ----------------------------------
-**1879048191…2147483647** **Unused**
+**1879048192…2147483647** **Unused**
 ------------------------- ------------------------- --------------- ----------------------------------
   2147483648…4294967294   HIC SVNT LEONES
 ------------------------- ------------------------- --------------- ----------------------------------
@@ -139,7 +139,7 @@ the :ref:`debops.ldap` role are:
   Ideally the 0-65535 UID/GID range should be avoided altogether to allow for
   a continuous UID/GID range which makes randomized allocation easier.
 
-With these parameters in mind, the 1879048191…2147483647 UID/GID range,
+With these parameters in mind, the 1879048192…2147483647 UID/GID range,
 highlighted in the table above, seems to be the best candidate to contain
 a reserved LDAP UID/GID range.
 
