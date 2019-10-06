@@ -66,6 +66,15 @@ Continuous Integration
 - Don't install the ``php-mcrypt`` package, it's not required by base DokuWiki
   installation.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will reset the LDAP host attributes defined in the
+  :envvar:`ldap__device_attributes` variable on first configuration in case
+  that the host has been reinstalled and some of their values changed (for
+  example different IP addresses). This should avoid leaving the outdated
+  attributes in the host LDAP object.
+
 Fixed
 ~~~~~
 
