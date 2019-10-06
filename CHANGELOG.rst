@@ -115,6 +115,11 @@ LDAP
 
   .. __: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
 
+- The role will configure the :command:`unbound` daemon to allow non-recursive
+  access to DNS queries when a host is managed by Ansible locally, with
+  assumption that it's an Ansible Controller host. This change unblocks use of
+  the :command:`dig +trace` and similar commands.
+
 Changed
 ~~~~~~~
 
@@ -176,6 +181,15 @@ General
   Go applications either from APT packages, build them from source, or download
   precompiled binaries from remote resources. See the role documentation for
   more details.
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will reset the LDAP host attributes defined in the
+  :envvar:`ldap__device_attributes` variable on first configuration in case
+  that the host has been reinstalled and some of their values changed (for
+  example different IP addresses). This should avoid leaving the outdated
+  attributes in the host LDAP object.
 
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
