@@ -42,6 +42,9 @@ LDAP
   operation of a given LDAP object, which can be used to, for example, check
   the date of the last successful login of a given user account.
 
+- Add support for :ref:`nextcloud LDAP schema <slapd__ref_nextcloud>` which
+  provides attributes needed to define disk quotas for Nextcloud user accounts.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
