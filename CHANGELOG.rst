@@ -42,6 +42,14 @@ LDAP
   operation of a given LDAP object, which can be used to, for example, check
   the date of the last successful login of a given user account.
 
+:ref:`debops.unbound` role
+''''''''''''''''''''''''''
+
+- The role will configure the :command:`unbound` daemon to allow non-recursive
+  access to DNS queries when a host is managed by Ansible locally, with
+  assumption that it's an Ansible Controller host. This change unblocks use of
+  the :command:`dig +trace` and similar commands.
+
 Changed
 ~~~~~~~
 

@@ -34,7 +34,27 @@ unbound__packages: []
 # .. envvar:: unbound__default_server [[[
 #
 # The default Unbound 'server' configuration defined by the role.
-unbound__default_server: []
+unbound__default_server:
+
+  - name: 'localhost-allow_snoop'
+    option: 'access-control'
+    comment: |
+      By default unbound blocks non-recursive queries to prevent abuse; this
+      prevents commands like 'dig +trace' from working correctly. Since query
+      tracing is a useful debugging and diagnostic tool, non-recursive queries
+      will be allowed when the host is managed locally with assumption that
+      this is an administrator's machine.
+    value:
+
+      - name: '127.0.0.0/8'
+        args: 'allow_snoop'
+
+      - name: '::1/128'
+        args: 'allow_snoop'
+
+    state: '{{ "present"
+               if (unbound__fact_ansible_connection == "local")
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: unbound__server [[[
