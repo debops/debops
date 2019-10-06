@@ -261,3 +261,16 @@ The schema is available in Debian in the
 slightly outdated and does not include object and attribute descriptions.
 Because of that, DebOps contains its own copy of the schema, cleaned up and
 updated, which will be imported by default to OpenLDAP directory server.
+
+
+.. _slapd__ref_nextcloud:
+
+The ``nextcloud`` schema
+------------------------
+
+The ``nextcloud`` schema provides a set of LDAP objectClasses and attributes
+that can be used to control LDAP integration with :ref:`Nextcloud
+<debops.owncloud>` application. Using these attributes, administrators can
+define disk quotas for Nextcloud users stored in the LDAP directory, as well as
+define which user groups present in LDAP are available in the Nextcloud user
+interface.

@@ -1302,7 +1302,10 @@ owncloud__ldap_user_filter_objectclass: 'inetOrgPerson'
 # .. envvar:: owncloud__ldap_group_filter
 #
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
-owncloud__ldap_group_filter: '(objectClass=groupOfNames)'
+owncloud__ldap_group_filter: '(&
+                                (objectClass=groupOfNames)
+                                (nextcloudEnabled=true)
+                              )'
 
 
 # .. envvar:: owncloud__ldap_group_filter_groups
@@ -1510,6 +1513,12 @@ owncloud__ldap_default_config:
 
   - name: 'ldapTLS'
     value: '{{ "1" if (owncloud__ldap_method == "tls") else "0" }}'
+
+  - name: 'ldapQuotaAttribute'
+    value: 'nextcloudQuota'
+
+  - name: 'ldapQuotaDefault'
+    value: '10 GB'
 
   - name: 'hasMemberOfFilterSupport'
     value: '1'
