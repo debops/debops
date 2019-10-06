@@ -214,6 +214,16 @@ General
   documentation page for details about the required attributes and their
   values.
 
+- The default LDAP group filter configured in the
+  :envvar:`owncloud__ldap_group_filter` variable has been modified to limit the
+  available set of ``groupOfNames`` LDAP objects to only those that have the
+  ``nextcloudEnabled`` attribute set to ``true``.
+
+- Support for disk quotas for LDAP users has been added in the default
+  configuration, based on the :ref:`nextcloud LDAP schema
+  <slapd__ref_nextcloud>`. The default disk quota is set to 10 GB and can be
+  changed using the ``nextcloudQuota`` LDAP attribute.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 

@@ -119,7 +119,7 @@ Inventory variable changes
   ============================================== =============================================== ==============================
   :envvar:`owncloud__ldap_login_filter`          ``(&(|(objectclass=inetOrgPerson))(uid=%uid))`` too large; see the variable
   ---------------------------------------------- ----------------------------------------------- ------------------------------
-  :envvar:`owncloud__ldap_group_filter`          ``(&(|(objectclass=posixGroup)))``              ``(objectClass=groupOfNames)``
+  :envvar:`owncloud__ldap_group_filter`          ``(&(|(objectclass=posixGroup)))``              too large; see the variable
   ---------------------------------------------- ----------------------------------------------- ------------------------------
   :envvar:`owncloud__ldap_group_assoc_attribute` ``memberUid``                                   ``member``
   ============================================== =============================================== ==============================

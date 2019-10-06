@@ -28,6 +28,12 @@ Object Classes and Attributes
 
   - :ref:`debops.owncloud`: :envvar:`Object Classes <owncloud__ldap_self_object_classes>`, :envvar:`Attributes <owncloud__ldap_self_attributes>`
 
+Custom objectClasses and attributes from the :ref:`nextcloud
+<slapd__ref_nextcloud>` LDAP schema:
+
+- objectClass ``nextcloudAccount``, attributes ``nextcloudEnabled``, ``nextcloudQuota``
+- objectClass ``nextcloudGroup``, attributes ``nextcloudEnabled``
+
 
 .. _owncloud__ref_ldap_dit_access:
 
