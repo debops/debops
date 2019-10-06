@@ -27,6 +27,13 @@ LDAP
 - The :file:`ldap/get-uuid.yml` Ansible playbook can be used to convert LDAP
   Distinguished Names to UUIDs to look up the password files if needed.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Ensure that the :file:`/run/network/` directory exists, in case that the
+  system is not configured by :command:`ifupdown` package initially, e.g.
+  recent Ubuntu releases.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
