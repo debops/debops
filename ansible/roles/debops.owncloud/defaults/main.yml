@@ -899,6 +899,18 @@ owncloud__group_config: {}
 owncloud__host_config: {}
 
 
+# .. envvar:: owncloud__combined_config
+#
+# See `ownCloud config.php configuration`_.
+# Variable which combines all of the other Owncloud configuration
+# and is used in the configuration template.
+owncloud__combined_config: '{{ owncloud__role_config
+                               | combine(owncloud__role_recommended_config,
+                                         owncloud__config,
+                                         owncloud__group_config,
+                                         owncloud__host_config) }}'
+
+
 # .. ownCloud applications configuration [[[1
 #
 # ---------------------------------------
