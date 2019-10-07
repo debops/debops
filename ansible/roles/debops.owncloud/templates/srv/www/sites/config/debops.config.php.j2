@@ -13,14 +13,8 @@
 {{ filtered_item | to_yaml }}
 {% endmacro %}{# ]]]
 #}
-{% set owncloud__tpl_unchecked_config_dict =
-  owncloud__role_config
-    | combine(owncloud__role_recommended_config)
-    | combine(owncloud__config)
-    | combine(owncloud__group_config)
-    | combine(owncloud__host_config) %}
 {% set owncloud__tpl_active_config_dict = {} %}
-{% for config_key, config_item in owncloud__tpl_unchecked_config_dict.items() %}
+{% for config_key, config_item in owncloud__combined_config.items() %}
 {%   if config_item is mapping and "state" in config_item and config_item.state and "value" in config_item %}
 {%     if config_item.state == "present" and config_item.value %}
 {%       set _ = owncloud__tpl_active_config_dict.update({config_key: (get_value(config_item.value) | from_yaml) }) %}
