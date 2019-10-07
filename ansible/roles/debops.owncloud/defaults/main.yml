@@ -1006,6 +1006,18 @@ owncloud__host_apps_config: {}
 owncloud__dependent_apps_config: {}
 
 
+# .. envvar:: owncloud__host_apps_config
+#
+# See `ownCloud applications configuration`_.
+# Variable which combines all of the apps variables
+# and is used in the configuration template.
+owncloud__apps_config_combined: '{{ owncloud__dependent_apps_config
+                                    | combine(owncloud__role_apps_config,
+                                              owncloud__apps_config,
+                                              owncloud__group_apps_config,
+                                              owncloud__host_apps_config) }}'
+
+
 # .. envvar:: owncloud__app_documents_enabled
 #
 # Whether the `ownCloud documents application`_ should be enabled.
