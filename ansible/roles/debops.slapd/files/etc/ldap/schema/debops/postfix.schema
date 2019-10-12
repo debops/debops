@@ -31,26 +31,18 @@
 # Postfix attribute definitions
 # -------------------------------
 
-attributetype ( 1.3.6.1.4.1.4203.666.1.200
-                NAME 'mailacceptinggeneralid'
-                DESC 'Postfix mail local address alias attribute'
-                EQUALITY caseIgnoreMatch
-                SUBSTR caseIgnoreSubstringsMatch
-                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024} )
-
-attributetype ( 1.3.6.1.4.1.4203.666.1.201
-                NAME 'maildrop'
-                DESC 'Postfix mail final destination attribute'
-                EQUALITY caseIgnoreMatch
-                SUBSTR caseIgnoreSubstringsMatch
-                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024} )
-
 attributetype ( 1.3.6.1.4.1.4203.666.1.202
                 NAME 'mailEnabled'
                 DESC 'TRUE to enable, FALSE to disable mail account'
                 EQUALITY booleanMatch
                 SYNTAX 1.3.6.1.4.1.1466.115.121.1.7 SINGLE-VALUE )
 
+attributetype ( 1.3.6.1.4.1.4203.666.1.200
+                NAME 'mailAlias'
+                DESC 'Postfix mail alias attribute'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024} )
 
 
 # Postfix object definitions
@@ -61,5 +53,4 @@ objectclass ( 1.3.6.1.4.1.4203.666.1.100
               DESC 'Postfix mail user class'
               SUP top
               AUXILIARY
-              MUST ( mailEnabled )
-              MAY  ( mailacceptinggeneralid $ maildrop ) )
+              MAY  ( mailEnabled $ mailAlias ) )
