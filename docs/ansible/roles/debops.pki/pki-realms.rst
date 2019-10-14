@@ -175,6 +175,7 @@ is provided by the internal ``debops.pki`` Certificate Authority:
        │   ├── cert.pem -> ../internal/cert.pem
        │   ├── cert.pem.sig
        │   ├── chain.pem -> cert_intermediate_dhparam.pem
+       │   ├── full.pem
        │   ├── intermediate_root.pem
        │   ├── root.pem -> ../internal/root.pem
        │   └── trusted.pem -> intermediate_root.pem
@@ -313,7 +314,9 @@ The :file:`public/` directory holds the currently active certificates which are
 symlinks to the real certificate files in one of the active directories mentioned above.
 Some additional files are also created here by the :program:`pki-realm` script, namely
 the certificate chain (server certificate + intermediate certificates) and the
-trusted chain (intermediate certificates + root certificate).
+trusted chain (intermediate certificates + root certificate). The full
+certificate contains server certificate + intermediate certificates + root
+certificate, which might be required by some applications.
 
 The :file:`private/` directory holds the private key of a given realm. Access to
 this directory and files inside is restricted by UNIX permissions and only
@@ -510,6 +513,7 @@ available for other applications and services:
         │   ├── cert.pem -> ../internal/cert.pem
         │   ├── cert.pem.sig
         │   ├── chain.pem -> cert_intermediate_dhparam.pem
+        │   ├── full.pem
         │   ├── intermediate_root.pem
         │   ├── root.pem -> ../internal/root.pem
         │   └── trusted.pem -> intermediate_root.pem
