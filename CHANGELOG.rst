@@ -34,6 +34,17 @@ LDAP
   system is not configured by :command:`ifupdown` package initially, e.g.
   recent Ubuntu releases.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Newly created PKI realms will have a new :file:`public/full.pem` file which
+  contains the full X.509 certificate chain, including the Root CA certificate,
+  which might be required by some applications that rely on TLS.
+
+  Existing PKI realms will not be modified, but Ansible roles that use the PKI
+  infrastructure might expect the new files to be present. It is advisable to
+  recreate the PKI realms when possible, or create the missing files manually.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 

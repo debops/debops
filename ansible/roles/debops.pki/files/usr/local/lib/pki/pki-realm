@@ -1436,6 +1436,20 @@ process_public_files () {
                     cat public/intermediate.pem public/root.pem.tmp > public/intermediate_root.pem.tmp
                 fi
 
+                if [ -r public/cert.pem.tmp ] && [ -r public/intermediate_root.pem.tmp ] ; then
+                    cat public/cert.pem.tmp public/intermediate_root.pem.tmp > public/full.pem.tmp
+                elif [ -r public/cert.pem.tmp ] && [ -r public/intermediate_root.pem ] ; then
+                    cat public/cert.pem.tmp public/intermediate_root.pem > public/full.pem.tmp
+                elif [ -r public/cert.pem ] && [ -r public/intermediate_root.pem.tmp ] ; then
+                    cat public/cert.pem public/intermediate_root.pem.tmp > public/full.pem.tmp
+                elif [ -r public/cert.pem.tmp ] && [ -r public/root.pem.tmp ] ; then
+                    cat public/cert.pem.tmp public/root.pem.tmp > public/full.pem.tmp
+                elif [ -r public/cert.pem.tmp ] && [ -r public/root.pem ] ; then
+                    cat public/cert.pem.tmp public/root.pem > public/full.pem.tmp
+                elif [ -r public/cert.pem ] && [ -r public/root.pem.tmp ] ; then
+                    cat public/cert.pem public/root.pem.tmp > public/full.pem.tmp
+                fi
+
                 if [ -r public/alt_intermediate.pem.tmp ] && [ -r public/alt_root.pem.tmp ] ; then
                     cat public/alt_intermediate.pem.tmp public/alt_root.pem.tmp > public/alt_intermediate_root.pem.tmp
                 elif [ -r public/alt_intermediate.pem ] && [ -r public/alt_root.pem.tmp ] ; then
