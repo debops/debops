@@ -83,6 +83,17 @@ LDAP
   :ref:`dokuwiki__ref_ldap_support` chapter in the documentation for more
   details.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Newly created PKI realms will have a new :file:`public/full.pem` file which
+  contains the full X.509 certificate chain, including the Root CA certificate,
+  which might be required by some applications that rely on TLS.
+
+  Existing PKI realms will not be modified, but Ansible roles that use the PKI
+  infrastructure might expect the new files to be present. It is advisable to
+  recreate the PKI realms when possible, or create the missing files manually.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
@@ -176,6 +187,20 @@ General
   :ref:`GitLab LDAP access control <gitlab__ref_ldap_dit_access>`
   documentation page for details about the required attributes and their
   values.
+
+- The GitLab project has changed its codebase structure, because of that the
+  Gitlab CE :command:`git` repository has been moved to a new location,
+  https://gitlab.com/gitlab-org/gitlab-foss/. The role has been updated
+  accordingly. Existing installations should work fine after the new codebase
+  is cloned, but if unsure, users should check the change first in
+  a development environment.
+
+  More details can be found in GitLab blog posts `here`__ and `here`__, as well
+  as the `Frequently Asked Questions`__ page.
+
+  .. __: https://about.gitlab.com/blog/2019/02/21/merging-ce-and-ee-codebases/
+  .. __: https://about.gitlab.com/blog/2019/08/23/a-single-codebase-for-gitlab-community-and-enterprise-edition/
+  .. __: https://gitlab.com/gitlab-org/gitlab/issues/13855
 
 :ref:`debops.golang` role
 '''''''''''''''''''''''''
