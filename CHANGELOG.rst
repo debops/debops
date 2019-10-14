@@ -177,6 +177,20 @@ General
   documentation page for details about the required attributes and their
   values.
 
+- The GitLab project has changed its codebase structure, because of that the
+  Gitlab CE :command:`git` repository has been moved to a new location,
+  https://gitlab.com/gitlab-org/gitlab-foss/. The role has been updated
+  accordingly. Existing installations should work fine after the new codebase
+  is cloned, but if unsure, users should check the change first in
+  a development environment.
+
+  More details can be found in GitLab blog posts `here`__ and `here`__, as well
+  as the `Frequently Asked Questions`__ page.
+
+  .. __: https://about.gitlab.com/blog/2019/02/21/merging-ce-and-ee-codebases/
+  .. __: https://about.gitlab.com/blog/2019/08/23/a-single-codebase-for-gitlab-community-and-enterprise-edition/
+  .. __: https://gitlab.com/gitlab-org/gitlab/issues/13855
+
 :ref:`debops.golang` role
 '''''''''''''''''''''''''
 
