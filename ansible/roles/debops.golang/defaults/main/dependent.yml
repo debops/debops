@@ -24,12 +24,12 @@ golang__keyring__dependent_gpg_keys:
     group: '{{ golang__group }}'
     home:  '{{ golang__home }}'
     state: '{{ "present"
-               if (golang__combined_packages | parse_kv_items
+               if (q("flattened", golang__combined_packages) | parse_kv_items
                    | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
                    | map(attribute="gpg") | list)
                else "absent" }}'
 
-  - '{{ golang__combined_packages | parse_kv_items
+  - '{{ q("flattened", golang__combined_packages) | parse_kv_items
         | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
         | map(attribute="gpg") | list }}'
 
