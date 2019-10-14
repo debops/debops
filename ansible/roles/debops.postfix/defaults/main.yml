@@ -257,6 +257,261 @@ postfix__tls_dh512_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
                                    else "" }}'
                                                                    # ]]]
                                                                    # ]]]
+# .. LDAP authentication [[[1
+#
+# .. _postfix__ref_ldap_defaults:
+#
+# -----------------------
+#   LDAP authentication
+# -----------------------
+
+# .. envvar:: postfix__ldap_enabled [[[
+#
+# Enable or disable support for LDAP authentication in Postfix.
+# It is disabled by default in order to define a single Mail Relay Server.
+postfix__ldap_enabled: 'False'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, automated Postfix LDAP configuration will not be performed.
+postfix__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.base_dn|d())
+                            else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the Postfix service account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+postfix__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                              if (ansible_local|d() and ansible_local.ldap|d() and
+                                  ansible_local.ldap.device_dn|d())
+                              else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# Postfix service to access the LDAP directory.
+postfix__ldap_self_rdn: 'uid=postfix'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the nextcloudFIXME service to access the LDAP directory.
+postfix__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# Postfix service to access the LDAP directory.
+postfix__ldap_self_attributes:
+  uid: '{{ postfix__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ postfix__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "Postfix" service to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# Postfix service to bind to the LDAP directory.
+postfix__ldap_binddn: '{{ ([ postfix__ldap_self_rdn ] + postfix__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the Postfix service
+# to bind to the LDAP directory.
+postfix__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                                  + postfix__ldap_binddn | to_uuid + ".password length=32 "
+                                  + "chars=alpha,digits,!@_#$%^&*") }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_people_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the user
+# accounts stored in LDAP.
+postfix__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
+                               if (ansible_local|d() and ansible_local.ldap|d() and
+                                   ansible_local.ldap.people_rdn|d())
+                               else "ou=People" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_people_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the user accounts
+# used by Postfix.
+postfix__ldap_people_dn: '{{ [ postfix__ldap_people_rdn ] + postfix__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_uri [[[
+#
+# List of LDAP URIs that point to the directory servers which should be used by
+# nextcloudFIXME.
+postfix__ldap_uri: '{{ ansible_local.ldap.uri
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.uri|d())
+                        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_private_groups [[[
+#
+# When this variable is enabled, the :ref:`debops.ldap` role will create
+# a separate LDAP objects that manage the Postfix groups as subtree of the
+# DokiWiki service LDAP object. If you set this parameter to ``False``, the
+# role will use the global ``ou=Groups,dc=example,dc=org`` subtree instead.
+postfix__ldap_private_groups: True
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_groups_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the groups
+# stored in LDAP.
+postfix__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
+                               if (ansible_local|d() and ansible_local.ldap|d() and
+                                   ansible_local.ldap.groups_rdn|d())
+                               else "ou=Groups" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_groups_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the groups used by
+# Postfix. If private groups are enabled, this object will be created
+# automatically.
+postfix__ldap_groups_dn: '{{ ([ postfix__ldap_groups_rdn, postfix__ldap_self_rdn ]
+                               + postfix__ldap_device_dn)
+                              if postfix__ldap_private_groups|bool
+                              else ([ postfix__ldap_groups_rdn ] + postfix__ldap_base_dn) }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# LDAP connection options [[[
+# ---------------------------
+
+# .. envvar:: postfix__ldap_server_uri [[[
+#
+# The URI address of the LDAP server used by Postfix.
+postfix__ldap_server_uri: '{{ (ansible_local.ldap.uri
+                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                    ansible_local.ldap.uri|d())
+                                else [""]) | first }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_server_port [[[
+#
+# The TCP port which should be used for connections to the LDAP server.
+postfix__ldap_server_port: '{{ ansible_local.ldap.port
+                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                    ansible_local.ldap.port|d())
+                                else ("389" if postfix__ldap_start_tls|bool else "636") }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_start_tls [[[
+#
+# If ``True``, Postfix will use STARTTLS extension to make encrypted
+# connections to the LDAP server.
+postfix__ldap_start_tls: '{{ ansible_local.ldap.start_tls
+                              if (ansible_local|d() and ansible_local.ldap|d() and
+                                  (ansible_local.ldap.start_tls|d())|bool)
+                              else True }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# .. Advanced settings [[[
+#
+# ~~~~~~~~~~~~~~~~~~~~~
+#   Advanced settings
+# ~~~~~~~~~~~~~~~~~~~~~
+
+# .. envvar:: postfix__ldap_user_filter [[[
+#
+# The LDAP filter used to look up user accounts in the directory.
+postfix__ldap_user_filter: '(&
+                               (&
+                                 (objectClass=inetOrgPerson)
+                                 (objectClass=postfixUser)
+                               )
+                                 (mailEnabled=TRUE)
+                               (|
+                                 (uid=%{user})
+                                 (mail=%{user})
+                               )
+                               (|
+                                 (authorizedService=postfix)
+                                 (authorizedService=mail)
+                                 (authorizedService=\\*)
+                               )
+                             )'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# .. Expert settings [[[
+#
+# ~~~~~~~~~~~~~~~~~~~
+#   Expert settings
+# ~~~~~~~~~~~~~~~~~~~
+
+# .. envvar:: postfix__ldap_quota_attribute [[[
+#
+# Set the LDAP attribute value to be read by Postfix in order to get the user quota.
+postfix__ldap_quota_attribute: 'mailQuota'
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_quota_default [[[
+#
+# User default LDAP quota. Use human-readable values, e.g. "2 GB".
+postfix__ldap_quota_default: '10 GB'
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_default_config [[[
+#
+# The LDAP configuration options defined by default.
+# See :ref:`postfix__ref_ldap_config` for more details.
+postfix__ldap_default_config: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_config [[[
+#
+# List of custom LDAP configuration options defined for all hosts
+# in the Ansible inventory.
+# See :ref:`postfix__ref_ldap_config` for more details.
+postfix__ldap_config: []
+                                                                   # ]]]
+
+# .. envvar:: postfix__group_ldap_config [[[
+#
+# List of custom LDAP configuration options defined on hosts in
+# a specific Ansible inventory group.
+postfix__group_ldap_config: []
+                                                                   # ]]]
+
+# .. envvar:: postfix__host_ldap_config [[[
+#
+# List of custom LDAP configuration options defined on specific
+# hosts in the Ansible inventory.
+postfix__host_ldap_config: []
+                                                                   # ]]]
+
+# .. envvar:: postfix__ldap_combined_config [[[
+#
+# The variable that combines default and user LDAP configuration and is used in
+# the role tasks and templates.
+postfix__ldap_combined_config: '{{ postfix__ldap_default_config
+                                    + postfix__ldap_config
+                                    + postfix__group_ldap_config
+                                    + postfix__host_ldap_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Postfix 'main.cf' configuration [[[
 # -----------------------------------
 
