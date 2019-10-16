@@ -875,9 +875,68 @@ postfix__tls_maincf:
     value: 'NO_COMPRESSION'
     section: 'tls'
     state: '{{ "present"
-              if (postfix__version is version_compare("2.11.0", ">="))
-              else "ignore" }}'
+            if (postfix__version is version_compare("2.11.0", ">="))
+            else "ignore" }}'
 
+  # Postfix is final destination for the specified list of virtual alias domains,
+  # that is, domains for which all addresses are aliased to addresses in other local or remote domains
+  - name: 'virtual_alias_domains'
+    value: 'ldap:/etc/postfix/ldap/virtual_alias_domains'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
+            else "ignore" }}'
+
+  # Postfix is final destination for the specified list of domains; mail is delivered
+  # via the $virtual_transport mail delivery transport
+  - name: 'virtual_mailbox_domains'
+    value: '$myhostname'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
+            else "ignore" }}'
+
+  # Optional lookup tables that alias specific mail addresses or domains to other local or remote address.
+  - name: 'virtual_alias_maps'
+    value: 'ldap:/etc/postfix/ldap/virtual_alias_maps'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
+            else "ignore" }}'
+
+  #A prefix that the virtual delivery agent prepends to all pathname results from $virtual_mailbox_maps table lookups.
+  # This is a safety measure to ensure that an out of control map doesn't litter the file system with mailboxes.
+  - name: 'virtual_mailbox_base'
+    value: '/var/mail'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
+            else "ignore" }}'
+
+  # Optional lookup tables with all valid addresses in the domains that match $virtual_mailbox_domains.
+  - name: 'virtual_mailbox_maps'
+    value: 'ldap:/etc/postfix/ldap/virtual_mailbox_maps'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
+            else "ignore" }}'
+
+  # Lookup tables with the per-recipient user ID that the virtual delivery agent uses while writing
+  # to the recipient's mailbox.
+  - name: 'virtual_uid_maps'
+    value: 'ldap:/etc/postfix/ldap/virtual_uid_maps'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
+            else "ignore" }}'
+
+  # Lookup tables with the per-recipient group ID for virtual mailbox delivery.
+  - name: 'virtual_gid_maps'
+    value: 'ldap:/etc/postfix/ldap/virtual_gid_maps'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
+            else "ignore" }}'
                                                                    # ]]]
 # .. envvar:: postfix__restrictions_maincf [[[
 #
