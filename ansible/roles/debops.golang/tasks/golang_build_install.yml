@@ -120,6 +120,7 @@
               + ((binary_item.dest | d(binary_item.src | d(binary_item))) | basename) }}'
     remote_src: True
     mode: '{{ binary_item.mode | d("0755") }}'
+  register: golang__register_download_install
   notify: '{{ binary_item.notify if binary_item.notify|d() else omit }}'
   loop: '{{ build.url_binaries | d([]) }}'
   loop_control:
@@ -190,6 +191,7 @@
               + ((binary_item.dest | d(binary_item.src | d(binary_item))) | basename) }}'
     remote_src: True
     mode: '{{ binary_item.mode | d("0755") }}'
+  register: golang__register_build_install
   notify: '{{ binary_item.notify if binary_item.notify|d() else omit }}'
   loop: '{{ build.git_binaries | d([]) }}'
   loop_control:
@@ -229,4 +231,6 @@
   action: setup
   when: (ansible_local|d() and ansible_local.golang|d() and
          (ansible_local.golang.configured|d())|bool and
-         golang__register_build_database is changed)
+         (golang__register_build_database is changed or
+          golang__register_download_install is changed or
+          golang__register_build_install is changed))
