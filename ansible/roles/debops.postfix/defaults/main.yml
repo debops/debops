@@ -470,6 +470,16 @@ postfix__ldap_user_filter: '(&
 # Expert settings [[[
 # ------------------
 
+# .. envvar:: postfix__virtual_mailbox_base [[[
+#
+# A prefix that the virtual delivery agent prepends to all pathname results from
+#  $virtual_mailbox_maps table lookups.
+# The directories under this base contain the users MailDirs.
+# This directory must be created in advance and must be writeable by all potential mail users.
+# To achieve this, either use the same GID across all mail users and set group ownership to that GID,
+# or make the directory world writable.
+postfix__virtual_mailbox_base: '/var/vmail'
+                                                                   # ]]]
 # .. envvar:: postfix__ldap_quota_attribute [[[
 #
 # Set the LDAP attribute value to be read by Postfix in order to get the user quota.
