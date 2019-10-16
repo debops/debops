@@ -27,6 +27,11 @@
       ferm__dependent_rules:
         - '{{ postfix__ferm__dependent_rules }}'
 
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ postfix__ldap__dependent_tasks }}'
+
     - role: debops.etc_aliases
       tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
 
