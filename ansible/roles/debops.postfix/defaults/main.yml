@@ -937,6 +937,14 @@ postfix__tls_maincf:
     state: '{{ "present"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
             else "ignore" }}'
+
+  # Optional lookup table with the SASL login names that own the sender (MAIL FROM) addresses.
+  - name: 'smtpd_sender_login_maps'
+    value: 'ldap:/etc/postfix/ldap/smtpd_sender_login_maps'
+    section: 'base'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool)
+            else "ignore" }}'
                                                                    # ]]]
 # .. envvar:: postfix__restrictions_maincf [[[
 #
