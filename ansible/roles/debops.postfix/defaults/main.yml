@@ -22,6 +22,12 @@ postfix__base_packages: [ 'postfix', 'postfix-pcre', 'bsd-mailx', 'make',
                           'ssl-cert', 'ca-certificates' ]
 
                                                                    # ]]]
+# .. envvar:: postfix__ldap_packages [[[
+#
+# List of additional APT packages needed for the LDAP support.
+postfix__ldap_packages: '{{ [ "postfix-ldap" ] if postfix__ldap_enabled else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: postfix__dependent_packages [[[
 #
 # List of additional APT packages requested by other Ansible roles via role
@@ -175,6 +181,15 @@ postfix__pki_ca: '{{ ansible_local.pki.ca
                      else "CA.crt" }}'
 
                                                                    # ]]]
+# .. envvar:: postfix__pki_ca_crt [[[
+#
+# Filename of the root CA certificate used by the ``debops.postfix`` role
+# to verify TLS connections to the LDAP server.
+postfix__pki_ca_crt: '{{ postfix__pki_path + "/"
+                       + postfix__pki_realm + "/"
+                       + postfix__pki_ca }}                                                                   '
+
+                                                                   # ]]]
 # .. envvar:: postfix__pki_crt [[[
 #
 # Name of the certificate file used by Postfix, relative to the PKI realm
@@ -256,14 +271,17 @@ postfix__tls_dh512_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
                                        ansible_local.dhparam[postfix__dhparam_set]|d())
                                    else "" }}'
                                                                    # ]]]
+# .. envvar:: postfix__no_log [[[
+#
+# This variable can be used in the Ansible tasks to set the ``no_log``
+# parameter. Changing it to ``False`` can help with debugging issues with the
+# roles, but otherwise it should be set to ``True`` to ensure that Ansible
+# doesn't leak sensitive data in its logs.
+postfix__no_log: True
                                                                    # ]]]
-# .. LDAP authentication [[[1
-#
-# .. _postfix__ref_ldap_defaults:
-#
-# -----------------------
-#   LDAP authentication
-# -----------------------
+                                                                   # ]]]
+# LDAP authentication [[[
+# --------------------------
 
 # .. envvar:: postfix__ldap_enabled [[[
 #
@@ -357,10 +375,10 @@ postfix__ldap_people_dn: '{{ [ postfix__ldap_people_rdn ] + postfix__ldap_base_d
 #
 # List of LDAP URIs that point to the directory servers which should be used by
 # nextcloudFIXME.
-postfix__ldap_uri: '{{ ansible_local.ldap.uri
-                        if (ansible_local|d() and ansible_local.ldap|d() and
-                            ansible_local.ldap.uri|d())
-                        else [] }}'
+postfix__ldap_uri: '{{ (ansible_local.ldap.uri
+                    if (ansible_local|d() and ansible_local.ldap|d() and
+                        ansible_local.ldap.uri|d())
+                    else [""]) | first }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__ldap_private_groups [[[
@@ -428,40 +446,29 @@ postfix__ldap_start_tls: '{{ ansible_local.ldap.start_tls
                                                                    # ]]]
                                                                    # ]]]
 
-# .. Advanced settings [[[
-#
-# ~~~~~~~~~~~~~~~~~~~~~
-#   Advanced settings
-# ~~~~~~~~~~~~~~~~~~~~~
+# Advanced settings [[[
+# ---------------------
 
 # .. envvar:: postfix__ldap_user_filter [[[
 #
 # The LDAP filter used to look up user accounts in the directory.
 postfix__ldap_user_filter: '(&
-                               (&
-                                 (objectClass=inetOrgPerson)
-                                 (objectClass=postfixUser)
-                               )
-                                 (mailEnabled=TRUE)
-                               (|
-                                 (uid=%{user})
-                                 (mail=%{user})
-                               )
-                               (|
-                                 (authorizedService=postfix)
-                                 (authorizedService=mail)
-                                 (authorizedService=\\*)
-                               )
+                               (objectClass=inetOrgPerson)
+                               (objectClass=posixAccount)
+                               (objectClass=postfixUser)
+                             )
+                             (mailEnabled=TRUE)
+                             (|
+                               (authorizedService=postfix)
+                               (authorizedService=mail)
+                               (authorizedService=\*)
                              )'
 
                                                                    # ]]]
                                                                    # ]]]
 
-# .. Expert settings [[[
-#
-# ~~~~~~~~~~~~~~~~~~~
-#   Expert settings
-# ~~~~~~~~~~~~~~~~~~~
+# Expert settings [[[
+# ------------------
 
 # .. envvar:: postfix__ldap_quota_attribute [[[
 #
@@ -476,7 +483,6 @@ postfix__ldap_quota_default: '10 GB'
 # .. envvar:: postfix__ldap_default_config [[[
 #
 # The LDAP configuration options defined by default.
-# See :ref:`postfix__ref_ldap_config` for more details.
 postfix__ldap_default_config: []
 
                                                                    # ]]]
@@ -484,7 +490,6 @@ postfix__ldap_default_config: []
 #
 # List of custom LDAP configuration options defined for all hosts
 # in the Ansible inventory.
-# See :ref:`postfix__ref_ldap_config` for more details.
 postfix__ldap_config: []
                                                                    # ]]]
 
@@ -1611,6 +1616,34 @@ postfix__ferm__dependent_rules:
     rule_state: '{{ "present"
                     if ("submission" in postfix__env_active_services|d([]))
                     else "absent" }}'
+                                                                   # ]]]
+# .. envvar:: postfix__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+postfix__ldap__dependent_tasks:
+
+  - name: 'Create Postfix account for {{ postfix__ldap_device_dn | join(",") }}'
+    dn: '{{ postfix__ldap_binddn }}'
+    objectClass: '{{ postfix__ldap_self_object_classes }}'
+    attributes: '{{ postfix__ldap_self_attributes }}'
+    no_log: '{{ postfix__no_log|d(True) }}'
+    state: '{{ "present"
+                if (postfix__ldap_enabled|bool and
+                    postfix__ldap_device_dn|d())
+                else "ignore" }}'
+
+  - name: 'Create Postfix group container for {{ postfix__ldap_device_dn | join(",") }}'
+    dn: '{{ postfix__ldap_groups_dn }}'
+    objectClass: 'organizationalUnit'
+    attributes:
+      ou: '{{ postfix__ldap_groups_rdn.split("=")[1] }}'
+      description: 'User groups used in Postfix'
+    state: '{{ "present"
+               if (postfix__ldap_enabled|bool and
+                   postfix__ldap_device_dn|d() and
+                   postfix__ldap_private_groups|bool)
+               else "ignore" }}'
+
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
