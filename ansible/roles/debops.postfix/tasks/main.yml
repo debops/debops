@@ -3,6 +3,7 @@
 - name: Install Postfix APT packages
   apt:
     name: '{{ (postfix__base_packages
+             + postfix__ldap_packages
              + postfix__dependent_packages
              + postfix__packages)
              | flatten }}'
@@ -126,6 +127,10 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Check postfix and reload' ]
+
+- include: 'ldap.yml'
+  when: (postfix__ldap_enabled | bool)
+  tags: [ 'role::postfix:ldap' ]
 
 - name: Remove Postfix lookup tables
   file:

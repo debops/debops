@@ -1,0 +1,24 @@
+---
+
+- name: Make sure 'postfix/ldap' directory exists
+  file:
+    dest: '/etc/postfix/ldap'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Generate LDAP virtual files
+  template:
+    src:   'ldap/postfix__{{ item }}.j2'
+    dest:  '/etc/postfix/ldap/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode:  '0644'
+  loop:
+    - 'virtual_alias_domains'
+    - 'virtual_alias_maps'
+    - 'virtual_mailbox_maps'
+    - 'virtual_uid_maps'
+    - 'smtpd_sender_login_maps'
+  no_log: '{{ postfix__no_log|d(True) }}'
