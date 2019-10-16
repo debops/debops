@@ -1,0 +1,22 @@
+# {{ ansible_managed }}
+
+# Connection information for the LDAP directory
+
+server_host = {{ postfix__ldap_uri }}
+start_tls = {{ "yes" if (postfix__ldap_start_tls|bool) else "no" }}
+version = 3
+{% if postfix__pki|bool %}
+# File containing the X509 Certification Authority certificates in
+# PEM format which are to be recognized by the client  in  SSL/TLS connections
+tls_ca_cert_file = {{ postfix__pki_ca_crt }}
+# Whether or not to request server's X509  certificate  and  check
+# its  validity  when  establishing SSL/TLS connections.
+tls_require_cert = yes
+{% endif %}
+
+bind = yes
+bind_dn = {{ postfix__ldap_binddn }}
+bind_pw = {{ postfix__ldap_bindpw }}
+
+search_base = {{ postfix__ldap_people_dn|join(",") }}
+scope = sub
