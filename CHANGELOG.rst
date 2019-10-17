@@ -18,6 +18,14 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.1: https://github.com/debops/debops/compare/v1.1.0...stable-1.1
 
+Added
+~~~~~
+
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- Add separate group and account variables for use via role dependency.
+
 Changed
 ~~~~~~~
 
