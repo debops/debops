@@ -22,6 +22,13 @@
         - '{{ etc_aliases__secret__directories }}'
         - '{{ postfix__secret__directories }}'
 
+    - role: debops.system_users
+      tags: [ 'role::system_users', 'skip::system_users' ]
+      system_users__dependent_accounts:
+        - '{{ postfix__ldap_dependent_system_users
+              if (postfix__ldap_enabled|bool)
+              else [] }}'
+
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:

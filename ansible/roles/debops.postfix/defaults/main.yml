@@ -470,16 +470,6 @@ postfix__ldap_user_filter: '(&
 # Expert settings [[[
 # ------------------
 
-# .. envvar:: postfix__virtual_mailbox_base [[[
-#
-# A prefix that the virtual delivery agent prepends to all pathname results from
-#  $virtual_mailbox_maps table lookups.
-# The directories under this base contain the users MailDirs.
-# This directory must be created in advance and must be writeable by all potential mail users.
-# To achieve this, either use the same GID across all mail users and set group ownership to that GID,
-# or make the directory world writable.
-postfix__virtual_mailbox_base: '/var/vmail'
-                                                                   # ]]]
 # .. envvar:: postfix__ldap_quota_attribute [[[
 #
 # Set the LDAP attribute value to be read by Postfix in order to get the user quota.
@@ -525,6 +515,48 @@ postfix__ldap_combined_config: '{{ postfix__ldap_default_config
                                     + postfix__ldap_config
                                     + postfix__group_ldap_config
                                     + postfix__host_ldap_config }}'
+                                                                   # ]]]
+
+# (LDAP) Virtual Mail settings  [[[
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# All mailboxes are stored directly in the file system of the server.
+# See :ref:`postfix__virtual_mailbox_base` for more details.
+# For the accesses to the mailbox directories a separate user "vmail" ("Virtual Mail") is created,
+# under which the accesses of Postfix, Dovecot and other components of the mail server should take place.
+# On the one hand this prevents mail server components from accessing sensitive system directories,
+# on the other hand it protects the mailboxes from external access.
+# Only vmail (and root) are allowed to access the mailboxes.
+
+# .. envvar:: postfix__virtual_mail_posix_user [[[
+#
+# Virtual Mail POSIX username
+postfix__virtual_mail_posix_user: 'vmail'
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mail_posix_uidnumber [[[
+#
+# Virtual Mail POSIX uidNumber
+postfix__virtual_mail_posix_uidnumber: 500
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mail_posix_group [[[
+#
+# Virtual Mail POSIX group
+postfix__virtual_mail_posix_group: 'vmail'
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mail_posix_gidnumber [[[
+#
+# Virtual Mail POSIX gidNumber
+postfix__virtual_mail_posix_gidnumber: 500
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mailbox_base [[[
+#
+# A prefix that the virtual delivery agent prepends to all pathname results from
+#  $virtual_mailbox_maps table lookups.
+# The directories under this base contain the users MailDirs.
+# This directory must be created in advance and must be writeable by all potential mail users.
+# To achieve this, either use the same GID across all mail users and set group ownership to that GID,
+# or make the directory world writable.
+postfix__virtual_mailbox_base: '/var/vmail'
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
 # Postfix 'main.cf' configuration [[[
@@ -1721,6 +1753,21 @@ postfix__ldap__dependent_tasks:
                    postfix__ldap_private_groups|bool)
                else "ignore" }}'
 
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_dependent_system_users [[[
+#
+# Configuration for the :ref:`debops.system_users` Ansible role.
+postfix__ldap_dependent_system_users:
+
+  - name: '{{ postfix__virtual_mail_posix_user }}'
+    group: '{{ postfix__virtual_mail_posix_group }}'
+    uid: '{{ postfix__virtual_mail_posix_uidnumber|int }}'
+    gid: '{{ postfix__virtual_mail_posix_gidnumber|int }}'
+    system: True
+    comment: 'Postfix Virtual Mail user'
+    shell: '/usr/sbin/nologin'
+    home: '{{ postfix__virtual_mailbox_base }}'
+    state: 'present'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
