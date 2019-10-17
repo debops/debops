@@ -532,20 +532,10 @@ postfix__ldap_combined_config: '{{ postfix__ldap_default_config
 # Virtual Mail POSIX username
 postfix__virtual_mail_posix_user: 'vmail'
                                                                    # ]]]
-# .. envvar:: postfix__virtual_mail_posix_uidnumber [[[
-#
-# Virtual Mail POSIX uidNumber
-postfix__virtual_mail_posix_uidnumber: 500
-                                                                   # ]]]
 # .. envvar:: postfix__virtual_mail_posix_group [[[
 #
 # Virtual Mail POSIX group
 postfix__virtual_mail_posix_group: 'vmail'
-                                                                   # ]]]
-# .. envvar:: postfix__virtual_mail_posix_gidnumber [[[
-#
-# Virtual Mail POSIX gidNumber
-postfix__virtual_mail_posix_gidnumber: 500
                                                                    # ]]]
 # .. envvar:: postfix__virtual_mailbox_base [[[
 #
@@ -1761,8 +1751,6 @@ postfix__ldap_dependent_system_users:
 
   - name: '{{ postfix__virtual_mail_posix_user }}'
     group: '{{ postfix__virtual_mail_posix_group }}'
-    uid: '{{ postfix__virtual_mail_posix_uidnumber|int }}'
-    gid: '{{ postfix__virtual_mail_posix_gidnumber|int }}'
     system: True
     comment: 'Postfix Virtual Mail user'
     shell: '/usr/sbin/nologin'
