@@ -917,7 +917,7 @@ postfix__tls_maincf:
   #A prefix that the virtual delivery agent prepends to all pathname results from $virtual_mailbox_maps table lookups.
   # This is a safety measure to ensure that an out of control map doesn't litter the file system with mailboxes.
   - name: 'virtual_mailbox_base'
-    value: '/var/mail'
+    value: '{{ postfix__virtual_mailbox_base }}'
     section: 'virtual'
     state: '{{ "present"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
