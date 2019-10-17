@@ -195,6 +195,14 @@ system_users__group_groups: []
 system_users__host_groups: []
 
                                                                    # ]]]
+# .. envvar:: system_users__dependent_groups [[[
+#
+# List of UNIX system groups to manage on the current playbook host. This variable is
+# meant to be used from a role dependency in :file:`role/meta/main.yml` or in
+# a playbook.
+system_users__dependent_groups: []
+
+                                                                   # ]]]
 # .. envvar:: system_users__default_accounts [[[
 #
 # List of default UNIX system user accounts managed by Ansible.
@@ -233,6 +241,14 @@ system_users__group_accounts: []
 system_users__host_accounts: []
 
                                                                    # ]]]
+# .. envvar:: system_users__dependent_accounts [[[
+#
+# List of UNIX system user accounts to manage on the current playbook host.
+# This variable is meant to be used from a role dependency in
+# :file:`role/meta/main.yml` or in a playbook.
+system_users__dependent_accounts: []
+
+                                                                   # ]]]
 # .. envvar:: system_users__combined_accounts [[[
 #
 # This variable combines other group and account variables together and is used
@@ -240,9 +256,11 @@ system_users__host_accounts: []
 system_users__combined_accounts: '{{ system_users__groups
                                      + system_users__group_groups
                                      + system_users__host_groups
+                                     + system_users__dependent_groups
                                      + system_users__default_accounts
                                      + system_users__accounts
                                      + system_users__group_accounts
-                                     + system_users__host_accounts }}'
+                                     + system_users__host_accounts
+                                     + system_users__dependent_accounts }}'
                                                                    # ]]]
                                                                    # ]]]
