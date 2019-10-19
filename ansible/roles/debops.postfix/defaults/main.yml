@@ -400,6 +400,16 @@ postfix__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
                                else "ou=Groups" }}'
 
                                                                    # ]]]
+# .. envvar:: postfix__ldap_domains_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the (virtual mail)
+# domains stored in LDAP.
+postfix__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn
+                               if (ansible_local|d() and ansible_local.ldap|d() and
+                                   ansible_local.ldap.domains_rdn|d())
+                               else "ou=Domains" }}'
+
+                                                                   # ]]]
 # .. envvar:: postfix__ldap_groups_dn [[[
 #
 # The Distinguished Name of the LDAP object which contains the groups used by
@@ -410,6 +420,16 @@ postfix__ldap_groups_dn: '{{ ([ postfix__ldap_groups_rdn, postfix__ldap_self_rdn
                               if postfix__ldap_private_groups|bool
                               else ([ postfix__ldap_groups_rdn ] + postfix__ldap_base_dn) }}'
 
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_domains_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the (virtual mail) domains used by
+# Postfix. If private groups are enabled, this object will be created
+# automatically.
+postfix__ldap_domains_dn: '{{ ([ postfix__ldap_domains_rdn, postfix__ldap_self_rdn ]
+                               + postfix__ldap_device_dn)
+                              if postfix__ldap_private_groups|bool
+                              else ([ postfix__ldap_domains_rdn ] + postfix__ldap_base_dn) }}'
                                                                    # ]]]
                                                                    # ]]]
 
@@ -1742,6 +1762,28 @@ postfix__ldap__dependent_tasks:
                    postfix__ldap_device_dn|d() and
                    postfix__ldap_private_groups|bool)
                else "ignore" }}'
+
+  - name: 'Create Postfix domains container for {{ postfix__ldap_device_dn | join(",") }}'
+    dn: '{{ postfix__ldap_domains_dn }}'
+    objectClass: 'organizationalUnit'
+    attributes:
+      ou: '{{ postfix__ldap_domains_rdn.split("=")[1] }}'
+      description: 'Virtual Mail Domains used in Postfix'
+    state: '{{ "present"
+               if (postfix__ldap_enabled|bool and
+                   postfix__ldap_device_dn|d() and
+                   postfix__ldap_private_groups|bool)
+               else "ignore" }}'
+
+  - name: 'Create Postfix Virtual Mail Domain for {{ postfix__ldap_device_dn | join(",") }}'
+    dn: '{{ (postfix__ldap_base_dn + postfix__ldap_domains_dn) | join(",") }}'
+    objectClass: 'domain'
+    state: '{{ "present"
+               if (postfix__ldap_enabled|bool and
+                   postfix__ldap_device_dn|d() and
+                   postfix__ldap_private_groups|bool)
+               else "ignore" }}'
+
 
                                                                    # ]]]
 # .. envvar:: postfix__ldap_dependent_system_users [[[
