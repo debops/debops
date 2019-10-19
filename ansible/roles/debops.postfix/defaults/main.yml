@@ -431,6 +431,18 @@ postfix__ldap_domains_dn: '{{ ([ postfix__ldap_domains_rdn, postfix__ldap_self_r
                               if postfix__ldap_private_groups|bool
                               else ([ postfix__ldap_domains_rdn ] + postfix__ldap_base_dn) }}'
                                                                    # ]]]
+# .. envvar:: postfix__ldap_default_virtual_domain_rdn [[[
+#
+# The rdn of the default virtual mail domain used by Postfix.
+# This is usually the same domain used by the LDAP.
+postfix__ldap_default_virtual_domain_rdn: '{{ ansible_domain }}'
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_default_virtual_domain_dn [[[
+#
+# The dn of the default virtual mail domain used by Postfix.
+postfix__ldap_default_virtual_domain_dn: '{{ (["dc=" + postfix__ldap_default_virtual_domain_rdn]
+                                              + postfix__ldap_domains_dn) | join(",") }}'
+                                                                   # ]]]
                                                                    # ]]]
 
 # LDAP connection options [[[
@@ -1775,8 +1787,8 @@ postfix__ldap__dependent_tasks:
                    postfix__ldap_private_groups|bool)
                else "ignore" }}'
 
-  - name: 'Create Postfix Virtual Mail Domain for {{ postfix__ldap_device_dn | join(",") }}'
-    dn: '{{ (postfix__ldap_base_dn + postfix__ldap_domains_dn) | join(",") }}'
+  - name: 'Create Postfix Default Virtual Mail Domain for {{ postfix__ldap_default_virtual_domain_dn }}'
+    dn: '{{ postfix__ldap_default_virtual_domain_dn }}'
     objectClass: 'domain'
     state: '{{ "present"
                if (postfix__ldap_enabled|bool and
