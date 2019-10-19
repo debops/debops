@@ -1,0 +1,10 @@
+{% include 'postfix__virtual_ldap_header.j2' %}
+
+
+# The virtual_mailbox_domains configurations performs a lookup,
+# if the postfix is responsible for the given domain.
+
+search_base = {{ postfix__ldap_domains_dn|join(",") }}
+scope = sub
+query_filter = {{ postfix__ldap_domain_filter }}
+result_attribute = dc

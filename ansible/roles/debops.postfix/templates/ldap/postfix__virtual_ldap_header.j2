@@ -8,16 +8,14 @@ version = 3
 {% if postfix__pki|bool %}
 # File containing the X509 Certification Authority certificates in
 # PEM format which are to be recognized by the client  in  SSL/TLS connections
-tls_ca_cert_file = {{ postfix__pki_ca_crt }}
+##tls_ca_cert_file = {{ postfix__pki_ca_crt }}
 # Whether or not to request server's X509  certificate  and  check
 # its  validity  when  establishing SSL/TLS connections.
 # FIXME: set to yes again
-tls_require_cert = no
+##tls_require_cert = no
 {% endif %}
 
 bind = yes
 bind_dn = {{ postfix__ldap_binddn }}
 bind_pw = {{ postfix__ldap_bindpw }}
 
-search_base = {{ postfix__ldap_people_dn|join(",") }}
-scope = sub

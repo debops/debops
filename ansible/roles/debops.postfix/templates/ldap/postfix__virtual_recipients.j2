@@ -1,0 +1,11 @@
+{% include 'postfix__virtual_ldap_header.j2' %}
+
+
+# As we only want to accept mail, where we know the recipients
+# (and are responsible for them), the virtual_mailbox_maps configuration is used.
+
+search_base = {{ postfix__ldap_people_dn|join(",") }}
+scope = sub
+query_filter = (&(|(mail=%s)(mailAlias=%s)){{ postfix__ldap_user_filter }})
+result_attribute = mail
+result_format = {{ postfix__virtual_mailbox_base }}/%d/%u/mailbox/

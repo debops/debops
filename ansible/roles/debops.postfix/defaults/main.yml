@@ -497,6 +497,15 @@ postfix__ldap_user_filter: '(&
                              )'
 
                                                                    # ]]]
+# .. envvar:: postfix__ldap_domain_filter [[[
+#
+# The LDAP filter used to look up user accounts in the directory.
+postfix__ldap_domain_filter: '(&
+                                (ObjectClass=dNSDomain)
+                                (dc=%s)
+                               )'
+
+                                                                   # ]]]
                                                                    # ]]]
 
 # Expert settings [[[
@@ -567,7 +576,7 @@ postfix__virtual_mail_posix_user: 'vmail'
 # .. envvar:: postfix__virtual_mail_posix_uidnumber [[[
 #
 # Virtual Mail POSIX uidNumber
-postfix__virtual_mail_posix_uidnumber: 500
+postfix__virtual_mail_posix_uidnumber: 5000
                                                                    # ]]]
 # .. envvar:: postfix__virtual_mail_posix_group [[[
 #
@@ -577,7 +586,7 @@ postfix__virtual_mail_posix_group: 'vmail'
 # .. envvar:: postfix__virtual_mail_posix_gidnumber [[[
 #
 # Virtual Mail POSIX gidNumber
-postfix__virtual_mail_posix_gidnumber: 500
+postfix__virtual_mail_posix_gidnumber: 5000
                                                                    # ]]]
 # .. envvar:: postfix__virtual_mailbox_base [[[
 #
@@ -957,14 +966,14 @@ postfix__tls_maincf:
   - name: 'virtual_alias_domains'
     value: 'ldap:/etc/postfix/ldap/virtual_alias_domains'
     section: 'virtual'
-    state: '{{ "present"
+    state: '{{ "absent"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
             else "ignore" }}'
 
   # Postfix is final destination for the specified list of domains; mail is delivered
   # via the $virtual_transport mail delivery transport
   - name: 'virtual_mailbox_domains'
-    value: '$myhostname'
+    value: 'ldap:/etc/postfix/ldap/virtual_domains.cf'
     section: 'virtual'
     state: '{{ "present"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
@@ -972,7 +981,7 @@ postfix__tls_maincf:
 
   # Optional lookup tables that alias specific mail addresses or domains to other local or remote address.
   - name: 'virtual_alias_maps'
-    value: 'ldap:/etc/postfix/ldap/virtual_alias_maps'
+    value: 'ldap:/etc/postfix/ldap/virtual_aliases.cf'
     section: 'virtual'
     state: '{{ "present"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
@@ -989,7 +998,7 @@ postfix__tls_maincf:
 
   # Optional lookup tables with all valid addresses in the domains that match $virtual_mailbox_domains.
   - name: 'virtual_mailbox_maps'
-    value: 'ldap:/etc/postfix/ldap/virtual_mailbox_maps'
+    value: 'ldap:/etc/postfix/ldap/virtual_recipients.cf'
     section: 'virtual'
     state: '{{ "present"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
@@ -998,7 +1007,7 @@ postfix__tls_maincf:
   # Lookup tables with the per-recipient user ID that the virtual delivery agent uses while writing
   # to the recipient's mailbox.
   - name: 'virtual_uid_maps'
-    value: 'ldap:/etc/postfix/ldap/virtual_uid_maps'
+    value: 'static:{{ postfix__virtual_mail_posix_uidnumber }}'
     section: 'virtual'
     state: '{{ "present"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
@@ -1006,7 +1015,15 @@ postfix__tls_maincf:
 
   # Lookup tables with the per-recipient group ID for virtual mailbox delivery.
   - name: 'virtual_gid_maps'
-    value: 'ldap:/etc/postfix/ldap/virtual_gid_maps'
+    value: 'static:{{ postfix__virtual_mail_posix_gidnumber }}'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
+            else "ignore" }}'
+
+  # The minimum user ID value that the virtual delivery agent accepts as a result from $virtual_uid_maps table lookup
+  - name: 'virtual_minimum_uid'
+    value: '{{ postfix__virtual_mail_posix_uidnumber }}'
     section: 'virtual'
     state: '{{ "present"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
@@ -1014,7 +1031,7 @@ postfix__tls_maincf:
 
   # Optional lookup table with the SASL login names that own the sender (MAIL FROM) addresses.
   - name: 'smtpd_sender_login_maps'
-    value: 'ldap:/etc/postfix/ldap/smtpd_sender_login_maps'
+    value: 'ldap:/etc/postfix/ldap/virtual_senders.cf'
     section: 'base'
     state: '{{ "present"
             if (postfix__ldap_enabled|bool)
@@ -1799,7 +1816,7 @@ postfix__ldap__dependent_tasks:
 
   - name: 'Create Postfix Default Virtual Mail Domain for {{ postfix__ldap_default_virtual_domain_dn }}'
     dn: '{{ postfix__ldap_default_virtual_domain_dn }}'
-    objectClass: 'domain'
+    objectClass: 'dNSDomain'
     state: '{{ "present"
                if (postfix__ldap_enabled|bool and
                    postfix__ldap_device_dn|d() and
@@ -1815,8 +1832,8 @@ postfix__ldap_dependent_system_users:
 
   - name: '{{ postfix__virtual_mail_posix_user }}'
     group: '{{ postfix__virtual_mail_posix_group }}'
-    uid: '{{ postfix__virtual_mail_posix_uidnumber|int }}'
-    gid: '{{ postfix__virtual_mail_posix_gidnumber|int }}'
+    uid: '{{ postfix__virtual_mail_posix_uidnumber }}'
+    gid: '{{ postfix__virtual_mail_posix_gidnumber }}'
     system: True
     comment: 'Postfix Virtual Mail user'
     shell: '/usr/sbin/nologin'

@@ -11,17 +11,15 @@
 - name: Generate LDAP virtual files
   template:
     src:   'ldap/postfix__{{ item }}.j2'
-    dest:  '/etc/postfix/ldap/{{ item }}'
+    dest:  '/etc/postfix/ldap/{{ item }}.cf'
     owner: 'postfix'
     group: 'postfix'
     mode:  '0400'
   loop:
-    - 'virtual_alias_domains'
-    - 'virtual_alias_maps'
-    - 'virtual_mailbox_maps'
-    - 'virtual_uid_maps'
-    - 'virtual_gid_maps'
-    - 'smtpd_sender_login_maps'
+    - 'virtual_aliases'
+    - 'virtual_recipients'
+    - 'virtual_domains'
+    - 'virtual_senders'
   no_log: '{{ postfix__no_log|d(True) }}'
 
 - name: "Make sure vmail home directory ({{ postfix__virtual_mailbox_base }}) exists"
