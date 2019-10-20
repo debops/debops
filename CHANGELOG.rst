@@ -18,6 +18,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Changed
+~~~~~~~
+
+debops-contrib.dropbear_initramfs role
+''''''''''''''''''''''''''''''''''''''
+
+- Better default value for `dropbear_initramfs__network_device` by
+  detecting the default network interface using Ansible facts instead of the
+  previously hard-coded ``eth0``.
+
 
 `debops v1.0.11`_ - 2019-10-14
 ------------------------------

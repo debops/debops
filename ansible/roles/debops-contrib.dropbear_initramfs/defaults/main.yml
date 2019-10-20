@@ -72,7 +72,15 @@ dropbear_initramfs__network_autoconf: 'dhcp'
 # .. envvar:: dropbear_initramfs__network_device [[[
 #
 # Default network device.
-dropbear_initramfs__network_device: 'eth0'
+dropbear_initramfs__network_device: '{{
+  ansible_default_ipv6.interface
+  if ansible_default_ipv6.interface|d()
+  else (
+    ansible_default_ipv4.interface
+    if ansible_default_ipv4.interface|d()
+    else "eth0"
+  )
+  }}'
 
                                                                    # ]]]
 # .. envvar:: dropbear_initramfs__network_address [[[
