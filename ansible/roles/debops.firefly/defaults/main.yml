@@ -1,0 +1,362 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _firefly__ref_defaults:
+
+# debops.firefly default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# System packages [[[
+# -------------------
+
+# .. envvar:: firefly__required_php_packages [[[
+#
+# List of PHP packages required by Firefly.
+firefly__required_php_packages:
+  - 'bcmath'
+  - 'curl'
+  - 'gd'
+  - 'intl'
+  - 'session'
+  - 'json'
+  - 'openssl'
+  - 'xml'
+  - 'tokenizer'
+
+  - '{{ [ "pgsql" ] if (firefly__database_type == "postgresql") else [] }}'
+  - '{{ [ "mysql" ] if (firefly__database_type == "mysql") else [] }}'
+  - '{{ [ "sqlite3" ] if (firefly__database_type == "sqlite") else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that firefly is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that firefly is uninstalled and it's configuration is removed.
+#
+firefly__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# Application user, group, directories [[[
+# ----------------------------------------
+
+# .. envvar:: firefly__user [[[
+#
+# Firefly system user account.
+firefly__user: 'firefly'
+
+                                                                   # ]]]
+# .. envvar:: firefly__group [[[
+#
+# Firefly system user group.
+firefly__group: 'firefly'
+
+                                                                   # ]]]
+# .. envvar:: firefly__home [[[
+#
+# Path to the home directory of the Firefly system account.
+firefly__home: '{{ (ansible_local.nginx.www
+                    if (ansible_local|d() and ansible_local.nginx|d() and
+                        ansible_local.nginx.www|d())
+                    else "/srv/www") + "/" + firefly__user }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__install_path [[[
+#
+# Path where Firefly application source will be installed, this directory
+# should be readable by the webserver.
+firefly__install_path: '{{ firefly__home + "/sites/public" }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__gecos [[[
+#
+# The GECOS string set for the Firefly account.
+firefly__gecos: 'Firefly'
+
+                                                                   # ]]]
+# .. envvar:: firefly__shell [[[
+#
+# The default shell of the Firefly account.
+firefly__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Webserver configuration [[[
+# ---------------------------
+
+# .. envvar:: firefly__fqdn [[[
+#
+# FQDN of Firefly.
+firefly__fqdn: 'firefly.{{ firefly__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__domain [[[
+#
+# Default domain used Firefly.
+firefly__domain: '{{ ansible_local.core.domain
+                      if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.domain|d())
+                      else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__webserver_user [[[
+#
+# Name of the webserver user account which will be granted read only access to
+# the firefly application directory.
+firefly__webserver_user: '{{ ansible_local.nginx.user
+                              if (ansible_local|d() and ansible_local.nginx|d() and
+                                  ansible_local.nginx.user|d())
+                              else "www-data" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database configuration [[[
+# --------------------------
+
+# .. envvar:: firefly__database_type [[[
+#
+# Specify the type of the database to use for database,
+# either ``postgresql`` (preferred) or ``mariadb``. The role will try to detect
+# the available databases automatically based on the Ansible local facts.
+firefly__database_type: '{{ ansible_local.firefly.database_type
+                               if (ansible_local|d() and ansible_local.firefly|d() and
+                                   ansible_local.firefly.database_type|d())
+                               else ("postgresql"
+                                     if (ansible_local|d() and ansible_local.postgresql is defined)
+                                     else ("mariadb"
+                                           if (ansible_local|d() and ansible_local.mariadb is defined)
+                                           else "firefly requires a database")) }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__database_name [[[
+#
+# Name of the Firefly database.
+firefly__database_name: 'firefly_production'
+
+                                                                   # ]]]
+# .. envvar:: firefly__database_user [[[
+#
+# Firefly database user.
+firefly__database_user: '{{ firefly__user }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__database_password_path [[[
+#
+# Path to database password file located on the Ansible Controller. See the
+# :ref:`debops.secret` role for more details.
+firefly__database_password_path: '{{ secret + "/" + firefly__database_type + "/" +
+                                        ansible_local[firefly__database_type].delegate_to }}{%
+                                          if firefly__database_type == "postgresql" %}/{{ ansible_local[firefly__database_type].port }}{% endif
+                                        %}{{ "/credentials/" + firefly__database_user +
+                                        "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__database_password [[[
+#
+# Password for Firefly database.
+firefly__database_password: "{{ lookup('password', firefly__database_password_path
+                                       + ' length=48 chars=ascii_letters,digits,.-_') }}"
+
+                                                                   # ]]]
+# .. envvar:: firefly__database_host [[[
+#
+# The address of the database server.
+firefly__database_host: '{{ ansible_local[firefly__database_type].server
+                               if (ansible_local|d() and ansible_local[firefly__database_type]|d() and
+                                   ansible_local[firefly__database_type].server|d())
+                               else "localhost" }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__database_port [[[
+#
+# The port on which the database server listens for
+# connections.
+firefly__database_port: '{{ ansible_local[firefly__database_type].port
+                               if (ansible_local|d() and ansible_local[firefly__database_type]|d() and
+                                   ansible_local[firefly__database_type].port|d())
+                               else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__database_delegate_to [[[
+#
+# The Ansible inventory name of the host to which the database tasks will be
+# delegated to.
+firefly__database_delegate_to: '{{ ansible_local[firefly__database_type].delegate_to
+                                      if (ansible_local|d() and ansible_local[firefly__database_type]|d() and
+                                          ansible_local[firefly__database_type].delegate_to|d())
+                                      else inventory_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__database_init [[[
+#
+# Enable or disable initialization of the database.
+firefly__database_init: '{{ False
+                               if (ansible_local|d() and ansible_local.firefly|d() and
+                                   (ansible_local.firefly.installed|d())|bool)
+                               else True }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Application sources and deployment [[[
+# --------------------------------------
+
+# .. envvar:: firefly__gpg_key_id [[[
+#
+# The GPG ID of the key used for signing firefly releases.
+firefly__gpg_key_id: '90F5 46F1 3B81 B67A 1BAA  5DDD C169 61E6 55E7 4B5E'
+
+                                                                   # ]]]
+# .. envvar:: firefly__git_repo [[[
+#
+# The URI of the firefly :command:`git` source repository.
+firefly__git_repo: 'https://github.com/firefly-iii/firefly-iii.git'
+
+                                                                   # ]]]
+# .. envvar:: firefly__git_version [[[
+#
+# The :command:`git` branch or tag which will be installed.
+# Currently 4.8.1.4.
+firefly__version: '49de827a49aca6b1ab0d6253e86da03de49463a0'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Firefly configuration options [[[
+# ---------------------------------
+
+# .. envvar:: firefly__config_time_zone [[[
+#
+# Specify the timezone used by Firefly.
+firefly__config_time_zone: '{{ ansible_local.timezone
+                               if (ansible_local|d() and
+                                   ansible_local.timezone|d())
+                               else "Etc/UTC" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration of other Ansible roles [[[
+# ----------------------------------------
+
+# .. envvar:: firefly__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+firefly__keyring__dependent_gpg_keys:
+
+  - id: '{{ firefly__gpg_key_id }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__php__dependent_packages [[[
+#
+# List of PHP packages to install using the debops.php_ role.
+firefly__php__dependent_packages:
+  - '{{ firefly__required_php_packages }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__php__dependent_pools [[[
+#
+# PHP pools managed by the debops.php_ role.
+firefly__php__dependent_pools:
+  name: 'firefly'
+  by_role: 'debops.firefly'
+  user: '{{ firefly__user }}'
+  group: '{{ firefly__group }}'
+                                                                   # ]]]
+# .. envvar:: firefly__nginx__dependent_upstreams [[[
+#
+# PHP upstream server configuration managed by the debops.nginx_ role.
+firefly__nginx__dependent_upstreams:
+
+  - name: 'php_firefly'
+    by_role: 'debops.firefly'
+    enabled: True
+    type: 'php'
+    php_pool: 'firefly'
+
+                                                                   # ]]]
+# .. envvar:: firefly__nginx__dependent_servers [[[
+#
+# :program:`nginx` server configuration managed by the debops.nginx_ role.
+firefly__nginx__dependent_servers:
+
+  - name: '{{ firefly__fqdn }}'
+    filename: 'debops.firefly'
+    by_role: 'debops.firefly'
+    type: 'php'
+    root: '{{ firefly__install_path + "/public" }}'
+    index: 'index.php'
+
+    ## Set by Firefly.
+    frame_options: '{{ omit }}'
+    xss_protection: '{{ omit }}'
+    content_type_options: '{{ omit }}'
+    http_referrer_policy: '{{ omit }}'
+
+    location_list:
+      - pattern: '/'
+        options: |
+          try_files $uri /index.php?$query_string;
+
+    php_upstream: 'php_firefly'
+
+                                                                   # ]]]
+# .. envvar:: firefly__postgresql__dependent_roles [[[
+#
+# Role configuration for the :ref:`debops.postgresql` Ansible role.
+firefly__postgresql__dependent_roles:
+  - name: '{{ firefly__database_user }}'
+  - name: '{{ firefly__database_name }}'
+    flags: [ 'NOLOGIN' ]
+
+                                                                   # ]]]
+# .. envvar:: firefly__postgresql__dependent_groups [[[
+#
+# Group configuration for the :ref:`debops.postgresql` Ansible role.
+firefly__postgresql__dependent_groups:
+  - roles: [ '{{ firefly__database_user }}' ]
+    groups: [ '{{ firefly__database_name }}' ]
+    database: '{{ firefly__database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__postgresql__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.postgresql` Ansible role.
+firefly__postgresql__dependent_databases:
+  - name: '{{ firefly__database_name }}'
+    owner: '{{ firefly__database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__postgresql__dependent_pgpass [[[
+#
+# ``~/.pgpass`` configuration for the :ref:`debops.postgresql` Ansible role.
+firefly__postgresql__dependent_pgpass:
+  - owner: '{{ firefly__user }}'
+    group: '{{ firefly__group }}'
+    home: '{{ firefly__home }}'
+    system: True
+
+                                                                   # ]]]
+# .. envvar:: firefly__mariadb__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.mariadb` Ansible role.
+firefly__mariadb__dependent_databases:
+
+  - name: '{{ firefly__database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: firefly__mariadb__dependent_users [[[
+#
+# User configuration for the :ref:`debops.mariadb` Ansible role.
+firefly__mariadb__dependent_users:
+
+  - database: '{{ firefly__database_name }}'
+    user: '{{ firefly__database_user }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

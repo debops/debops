@@ -1,0 +1,79 @@
+---
+
+- name: Setup and manage the personal finances manager Firefly
+  hosts: [ 'debops_service_firefly' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::php',
+              'role::mariadb', 'role::postgresql',
+              'role::nginx', 'role::firefly' ]
+      keyring__dependent_apt_keys:
+        - '{{ php__keyring__dependent_apt_keys }}'
+        - '{{ mariadb__keyring__dependent_apt_keys if (firefly__database_type == "mariadb") else [] }}'
+        - '{{ postgresql__keyring__dependent_apt_keys if (firefly__database_type == "postgresql") else [] }}'
+        - '{{ nginx__keyring__dependent_apt_keys }}'
+      keyring__dependent_gpg_keys:
+        - '{{ firefly__keyring__dependent_gpg_keys }}'
+
+    - role: debops.php/env
+      tags: [ 'role::php', 'role::php:env' ]
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm', 'role::nginx' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.php
+      tags: [ 'role::php', 'skip::php' ]
+      php__dependent_packages:
+        - '{{ firefly__php__dependent_packages }}'
+      php__dependent_pools:
+        - '{{ firefly__php__dependent_pools }}'
+
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ mariadb__python__dependent_packages3 if firefly__database_type == "mariadb" else [] }}'
+        - '{{ postgresql__python__dependent_packages3 if firefly__database_type == "postgresql" else [] }}'
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ mariadb__python__dependent_packages2 if firefly__database_type == "mariadb" else [] }}'
+        - '{{ postgresql__python__dependent_packages2 if firefly__database_type == "postgresql" else [] }}'
+        - '{{ nginx__python__dependent_packages2 }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
+      mariadb__dependent_databases:
+        - '{{ firefly__mariadb__dependent_databases }}'
+      mariadb__dependent_users:
+        - '{{ firefly__mariadb__dependent_users }}'
+      when: firefly__database_type == 'mariadb'
+
+    - role: debops.postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ firefly__postgresql__dependent_roles }}'
+      postgresql__dependent_groups:
+        - '{{ firefly__postgresql__dependent_groups }}'
+      postgresql__dependent_databases:
+        - '{{ firefly__postgresql__dependent_databases }}'
+      postgresql__dependent_pgpass:
+        - '{{ firefly__postgresql__dependent_pgpass }}'
+      when: firefly__database_type == 'postgresql'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ firefly__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ firefly__nginx__dependent_upstreams }}'
+
+    - role: debops.firefly
+      tags: [ 'role::firefly', 'skip::firefly' ]

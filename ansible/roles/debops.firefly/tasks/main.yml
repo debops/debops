@@ -1,0 +1,51 @@
+---
+
+- name: Create Firefly system group
+  group:
+    name: '{{ firefly__group }}'
+    state: '{{ "present" if (firefly__deploy_state == "present") else "absent" }}'
+    system: True
+
+- name: Create Firefly system user
+  user:
+    name: '{{ firefly__user }}'
+    group: '{{ firefly__group }}'
+    home: '{{ firefly__home }}'
+    comment: '{{ firefly__gecos }}'
+    shell: '{{ firefly__shell }}'
+    state: '{{ "present" if (firefly__deploy_state == "present") else "absent" }}'
+    system: True
+
+- name: Clone Firefly git repository
+  git:
+    repo: '{{ firefly__git_repo }}'
+    dest: '{{ firefly__install_path }}'
+    version: '{{ firefly__version }}'
+  become: True
+  become_user: '{{ firefly__user }}'
+  when: (firefly__deploy_state == "present")
+
+- name: Install missing PHP packages via Composer
+  composer:
+    command: 'install'
+    working_dir: '{{ firefly__install_path }}'
+  become: True
+  become_user: '{{ firefly__user }}'
+  when: (firefly__deploy_state == "present")
+
+- name: Check that PHP platform requirements are satisfied
+  composer:
+    command: 'check-platform-reqs'
+    working_dir: '{{ firefly__install_path }}'
+  become: True
+  become_user: '{{ firefly__user }}'
+  when: (firefly__deploy_state == "present")
+
+- name: Generate Firefly .env configuration
+  template:
+    src: 'srv/www/firefly/sites/public/env.j2'
+    dest: '{{ firefly__install_path + "/.env" }}'
+    owner: '{{ firefly__user }}'
+    group: '{{ firefly__group }}'
+    mode: '0640'
+  tags: [ 'role::firefly:config' ]
