@@ -283,6 +283,13 @@ General
 - The role will use Ansible local facts to check if OpenSSH server package is
   installed to conditionally enable/disable its start on first install.
 
+debops-contrib.dropbear_initramfs role
+''''''''''''''''''''''''''''''''''''''
+
+- Better default value for `dropbear_initramfs__network_device` by
+  detecting the default network interface using Ansible facts instead of the
+  previously hard-coded ``eth0``.
+
 Removed
 ~~~~~~~
 
