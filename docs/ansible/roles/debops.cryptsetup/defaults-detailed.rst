@@ -306,6 +306,12 @@ Each item of those lists is a dictionary with the following documented keys:
     the filesystem is unmounted. Additionally ensures that the cryptsetup mapping
     is removed so that no direct access to the plain-text block device is possible.
 
+  .. _cryptsetup__devices_state_mapped:
+
+  ``mapped``
+    Same as :ref:`mounted <cryptsetup__devices_state_mounted>` except that no
+    filesystem is mounted.
+
   .. _cryptsetup__devices_state_present:
 
   ``present``
