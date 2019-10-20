@@ -55,8 +55,8 @@ icinga_web__src: '{{ (ansible_local.root.src
                       else "/usr/local/src") + "/icinga_web" }}'
                                                                    # ]]]
                                                                    # ]]]
-# Network configuraton [[[
-# ------------------------
+# Network configuration [[[
+# -------------------------
 
 # .. envvar:: icinga_web__fqdn [[[
 #
@@ -208,7 +208,7 @@ icinga_web__database_user: 'icingaweb2'
 # :ref:`debops.secret` role for more details.
 icinga_web__database_password_path: '{{ secret + "/" + icinga_web__database_type + "/" +
                                         ansible_local[icinga_web__database_type].delegate_to }}{%
-                                          if icinga_web__database_type=="postgresql" %}/{{ ansible_local[icinga_web__database_type].port }}{% endif
+                                          if icinga_web__database_type == "postgresql" %}/{{ ansible_local[icinga_web__database_type].port }}{% endif
                                         %}{{ "/credentials/" + icinga_web__database_user +
                                         "/password" }}'
 
@@ -413,7 +413,7 @@ icinga_web__director_database_user: 'icinga2_director'
 # Icinga 2 Director database.
 icinga_web__director_database_password_path: '{{ secret + "/" + icinga_web__director_database_type + "/" +
                                                  ansible_local[icinga_web__director_database_type].delegate_to }}{%
-                                                   if icinga_web__director_database_type=="postgresql" %}/{{ ansible_local[icinga_web__director_database_type].port }}{% endif
+                                                   if icinga_web__director_database_type == "postgresql" %}/{{ ansible_local[icinga_web__director_database_type].port }}{% endif
                                                  %}{{ "/credentials/" + icinga_web__director_database_user +
                                                  "/password" }}'
 
