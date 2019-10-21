@@ -256,11 +256,11 @@ system_users__dependent_accounts: []
 system_users__combined_accounts: '{{ system_users__groups
                                      + system_users__group_groups
                                      + system_users__host_groups
-                                     + system_users__dependent_groups
+                                     + (system_users__dependent_groups | flatten)
                                      + system_users__default_accounts
                                      + system_users__accounts
                                      + system_users__group_accounts
                                      + system_users__host_accounts
-                                     + system_users__dependent_accounts | flatten }}'
+                                     + (system_users__dependent_accounts | flatten) }}'
                                                                    # ]]]
                                                                    # ]]]
