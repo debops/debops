@@ -282,17 +282,79 @@ postfix__no_log: True
                                                                    # ]]]
 # Virtual Mail [[[
 # ----------------
+#
+# This settings help to configure to enable `postfix` to host multiple (virtual) domains,
+# and thus provide email to several domains with just one `mail server`.
+# Currently the Virtual Mail support works only with LDAP enabled, in the future `mariaDB` could be enabled.
+#
+
+# .. envvar:: postfix__ldap_enabled [[[
+#
+# In order to enable Virtual Mail support, you need to enable LDAP authentication support manually.
+# It is disabled by default in order to define a single Mail Relay Server.
+# When enabled, `postfix` will configure mail-boxes locally and allow LDAP authenticated users to
+# send email over this instance.
+postfix__ldap_enabled: 'False'
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mail_posix_user [[[
+#
+# Virtual Mail POSIX username
+# For the accesses to the mailbox directories a separate user `vmail` (`Virtual Mail`) is created,
+# under which the accesses of Postfix, Dovecot and other components of the mail server should take place.
+# On the one hand this prevents mail server components from accessing sensitive system directories,
+# on the other hand it protects the mailboxes from external access.
+# Only vmail (and root) are allowed to access the mailboxes.
+postfix__virtual_mail_posix_user: 'vmail'
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mail_posix_uidnumber [[[
+#
+# Virtual Mail POSIX uidNumber
+#
+postfix__virtual_mail_posix_uidnumber: 5000
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mail_posix_group [[[
+#
+# Virtual Mail POSIX group
+#
+postfix__virtual_mail_posix_group: 'vmail'
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mail_posix_gidnumber [[[
+#
+# Virtual Mail POSIX gidNumber
+#
+postfix__virtual_mail_posix_gidnumber: 5000
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_mailbox_base [[[
+#
+# All mailboxes are stored directly in the file system of the server.
+#
+# This setting describes the prefix that the virtual delivery agent prepends to all pathname results from
+# `$virtual_mailbox_maps` table lookups.
+# The directories under this base contain the users MailDirs.
+# This directory must be created in advance and must be writeable by all potential mail users.
+# To achieve this, either use the same GID across all mail users and set group ownership to that GID,
+# or make the directory world writable.
+postfix__virtual_mailbox_base: '/var/vmail'
+                                                                   # ]]]
+# .. envvar:: postfix__virtual_alias_maps [[[
+#
+# Optional lookup tables that alias specific mail addresses or domains
+# to other local or remote address.
+# The default option, when using Virtual Mail with LDAP, will first go over the
+# alisaes set by :ref:`debops.etc_aliases` and if no match is found query
+# the LDAP for the email address.
+#
+# Specify zero or more `type:name` lookup tables, separated by whitespace or comma.
+# Tables will be searched in the specified order until a match is found.
+# Note: these lookups are recursive.
+postfix__virtual_alias_maps:
+  - '$alias_maps'
+  - 'ldap:/etc/postfix/ldap/virtual_aliases.cf'
+                                                                   # ]]]
 
 # LDAP authentication [[[
 # ^^^^^^^^^^^^^^^^^^^^^^^
 
-# .. envvar:: postfix__ldap_enabled [[[
-#
-# Enable or disable support for LDAP authentication in Postfix.
-# It is disabled by default in order to define a single Mail Relay Server.
-postfix__ldap_enabled: 'False'
-
-                                                                   # ]]]
 # .. envvar:: postfix__ldap_base_dn [[[
 #
 # The base Distinguished Name which should be used to create Distinguished
@@ -480,8 +542,8 @@ postfix__ldap_start_tls: '{{ ansible_local.ldap.start_tls
                                                                    # ]]]
                                                                    # ]]]
 
-# Advanced settings [[[
-# ^^^^^^^^^^^^^^^^^^^^^
+# LDAP settings [[[
+# ^^^^^^^^^^^^^^^^^
 
 # .. envvar:: postfix__ldap_user_filter [[[
 #
@@ -552,69 +614,6 @@ postfix__ldap_combined_config: '{{ postfix__ldap_default_config
                                     + postfix__ldap_config
                                     + postfix__group_ldap_config
                                     + postfix__host_ldap_config }}'
-                                                                   # ]]]
-                                                                   # ]]]
-
-# Virtual Mail settings  [[[
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# The following settings allow to configure the `Virtual Mail` server more extensively.
-#
-
-# .. envvar:: postfix__virtual_mail_posix_user [[[
-#
-# Virtual Mail POSIX username
-# For the accesses to the mailbox directories a separate user `vmail` (`Virtual Mail`) is created,
-# under which the accesses of Postfix, Dovecot and other components of the mail server should take place.
-# On the one hand this prevents mail server components from accessing sensitive system directories,
-# on the other hand it protects the mailboxes from external access.
-# Only vmail (and root) are allowed to access the mailboxes.
-postfix__virtual_mail_posix_user: 'vmail'
-                                                                   # ]]]
-# .. envvar:: postfix__virtual_mail_posix_uidnumber [[[
-#
-# Virtual Mail POSIX uidNumber
-#
-postfix__virtual_mail_posix_uidnumber: 5000
-                                                                   # ]]]
-# .. envvar:: postfix__virtual_mail_posix_group [[[
-#
-# Virtual Mail POSIX group
-#
-postfix__virtual_mail_posix_group: 'vmail'
-                                                                   # ]]]
-# .. envvar:: postfix__virtual_mail_posix_gidnumber [[[
-#
-# Virtual Mail POSIX gidNumber
-#
-postfix__virtual_mail_posix_gidnumber: 5000
-                                                                   # ]]]
-# .. envvar:: postfix__virtual_mailbox_base [[[
-#
-# All mailboxes are stored directly in the file system of the server.
-#
-# This setting describes the prefix that the virtual delivery agent prepends to all pathname results from
-# `$virtual_mailbox_maps` table lookups.
-# The directories under this base contain the users MailDirs.
-# This directory must be created in advance and must be writeable by all potential mail users.
-# To achieve this, either use the same GID across all mail users and set group ownership to that GID,
-# or make the directory world writable.
-postfix__virtual_mailbox_base: '/var/vmail'
-                                                                   # ]]]
-# .. envvar:: postfix__virtual_alias_maps [[[
-#
-# Optional lookup tables that alias specific mail addresses or domains
-# to other local or remote address.
-# The default option, when using Virtual Mail with LDAP, will first go over the
-# alisaes set by :ref:`debops.etc_aliases` and if no match is found query
-# the LDAP for the email address.
-#
-# Specify zero or more `type:name` lookup tables, separated by whitespace or comma.
-# Tables will be searched in the specified order until a match is found.
-# Note: these lookups are recursive.
-postfix__virtual_alias_maps:
-  - '$alias_maps'
-  - 'ldap:/etc/postfix/ldap/virtual_aliases.cf'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
