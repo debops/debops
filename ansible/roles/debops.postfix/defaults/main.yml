@@ -597,6 +597,21 @@ postfix__virtual_mail_posix_gidnumber: 5000
 # or make the directory world writable.
 postfix__virtual_mailbox_base: '/var/vmail'
                                                                    # ]]]
+# .. envvar:: postfix__virtual_alias_maps [[[
+#
+# Optional lookup tables that alias specific mail addresses or domains
+# to other local or remote address. #
+# The default option, when using Virtual Mail with LDAP, will first go over the
+# alisaes set by :ref:`debops.etc_aliases` and if no match is found query
+# the LDAP for the email address.
+#
+# Specify zero or more "type:name" lookup tables, separated by whitespace or comma.
+# Tables will be searched in the specified order until a match is found.
+# Note: these lookups are recursive.
+postfix__virtual_alias_maps:
+  - '$alias_maps'
+  - 'ldap:/etc/postfix/ldap/virtual_aliases.cf'
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
 # Postfix 'main.cf' configuration [[[
@@ -980,7 +995,7 @@ postfix__tls_maincf:
 
   # Optional lookup tables that alias specific mail addresses or domains to other local or remote address.
   - name: 'virtual_alias_maps'
-    value: 'ldap:/etc/postfix/ldap/virtual_aliases.cf'
+    value: '{{ postfix__virtual_alias_maps | join(",") }}'
     section: 'virtual'
     state: '{{ "present"
             if (postfix__ldap_enabled|bool and postfix__version is version_compare("2.0", ">="))
