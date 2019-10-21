@@ -14,6 +14,12 @@ delivers the mail directly to other hosts. Local mail is enabled by default,
 support for mail aliases is provided by the ``debops.etc_aliases`` Ansible
 role.
 
+When **LDAP support is explicitly enabled** it is also possible set up a
+``virtual user mail system``, i.e. where the senders and recipients do not
+correspond to the Linux system users.
+Hence it is possible to host emails for other domains.
+The users, email alias and domains will be managed with LDAP.
+
 Additional configuration is defined in separate variables and can be easily
 disabled or modified if necessary. To do that, you can modify the values of the
 :envvar:`postfix__combined_maincf` and :envvar:`postfix__combined_mastercf`
