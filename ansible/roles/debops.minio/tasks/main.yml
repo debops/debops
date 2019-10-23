@@ -1,0 +1,166 @@
+---
+
+- import_role:
+    name: 'debops.secret'
+
+- import_role:
+    name: 'debops.ansible_plugins'
+
+- name: Create required UNIX system group
+  group:
+    name: '{{ minio__group }}'
+    state: 'present'
+    system: True
+
+- name: Create required UNIX system account
+  user:
+    name: '{{ minio__user }}'
+    group: '{{ minio__group }}'
+    groups: '{{ minio__additional_groups }}'
+    append: True
+    home: '{{ minio__home }}'
+    comment: '{{ minio__comment }}'
+    shell: '{{ minio__shell }}'
+    skeleton: '/dev/null'
+    state: 'present'
+    system: True
+
+- name: Create required application directories
+  file:
+    path: '{{ item.path }}'
+    state: 'directory'
+    owner: '{{ minio__user }}'
+    group: '{{ minio__group }}'
+    mode: '{{ item.mode }}'
+  loop:
+
+    - path: '{{ minio__config_dir }}'
+      mode: '0750'
+
+    - path: '{{ minio__volumes_dir }}'
+      mode: '0750'
+
+    - path: '{{ minio__tls_certs_dir }}'
+      mode: '0700'
+
+- name: Create volume directories
+  file:
+    path: '{{ (""
+               if ((item.path | d(item)).startswith("/"))
+               else (minio__volumes_dir + "/"))
+              + (item.path | d(item)) }}'
+    state: 'directory'
+    owner: '{{ minio__user }}'
+    group: '{{ minio__group }}'
+    mode: '0750'
+  loop: '{{ minio__volumes + minio__group_volumes + minio__host_volumes }}'
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+
+- name: Symlink TLS files to MinIO home directory
+  file:
+    path: '{{ item.path }}'
+    src: '{{ item.src }}'
+    state: 'link'
+  loop:
+    - path: '{{ minio__tls_certs_dir + "/private.key" }}'
+      src: '{{ minio__tls_private_key }}'
+
+    - path: '{{ minio__tls_certs_dir + "/public.crt" }}'
+      src: '{{ minio__tls_public_crt }}'
+  when: minio__pki_enabled|bool
+
+- name: Install systemd configuration files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    mode: '0644'
+  loop:
+    - 'etc/systemd/system/minio.service'
+    - 'etc/systemd/system/minio@.service'
+  register: minio__register_systemd
+
+- name: Reload systemd daemon if required
+  systemd:
+    daemon_reload: True
+  when: ansible_service_mgr == 'systemd' and
+        minio__register_systemd is changed
+
+- name: Stop and disable MinIO instances if requested
+  systemd:
+    name: 'minio@{{ item.name }}.service'
+    state: 'stopped'
+    enabled: False
+  loop: '{{ minio__combined_instances | parse_kv_items }}'
+  when: ansible_service_mgr == 'systemd' and
+        item.name|d() and item.state|d('present') in [ 'absent' ]
+  no_log: True
+
+- name: Remove MinIO instance configuration files if requested
+  file:
+    path: '{{ minio__config_dir + "/" + item.name }}'
+    state: 'absent'
+  loop: '{{ minio__combined_instances | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') in [ 'absent' ]
+  no_log: True
+
+- name: Generate MinIO instance configuration files
+  template:
+    src: 'etc/minio/instance.j2'
+    dest: '{{ minio__config_dir + "/" + item.name }}'
+    owner: '{{ minio__user }}'
+    group: '{{ minio__group }}'
+    mode: '0640'
+  loop: '{{ minio__combined_instances | parse_kv_items }}'
+  register: minio__register_instance_config
+  when: item.name|d() and item.port|d() and
+        item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  no_log: True
+
+- name: Start and enable MinIO instances
+  systemd:
+    name: 'minio@{{ item.name }}.service'
+    state: 'started'
+    enabled: True
+  loop: '{{ minio__combined_instances | parse_kv_items }}'
+  when: ansible_service_mgr == 'systemd' and
+        item.name|d() and item.port|d() and
+        item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  no_log: True
+
+- name: Start and enable MinIO service
+  systemd:
+    name: 'minio.service'
+    state: 'started'
+    enabled: True
+  when: ansible_service_mgr == 'systemd'
+
+- name: Restart MinIO instances if configuration was modified
+  systemd:
+    name: 'minio@{{ item.item.name }}.service'
+    state: 'restarted'
+  loop: '{{ minio__register_instance_config.results }}'
+  when: item is changed
+
+- name: Install PKI hook script
+  template:
+    src: 'etc/pki/hooks/minio.j2'
+    dest: '/etc/pki/hooks/minio'
+    mode: '0755'
+  when: ansible_service_mgr == 'systemd' and minio__pki_enabled|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save MinIO local facts
+  template:
+    src: 'etc/ansible/facts.d/minio.fact.j2'
+    dest: '/etc/ansible/facts.d/minio.fact'
+    mode: '0755'
+  register: minio__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: minio__register_facts is changed

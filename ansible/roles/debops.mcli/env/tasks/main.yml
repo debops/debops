@@ -1,0 +1,14 @@
+---
+
+- name: Prepare mcli environment
+  set_fact:
+    mcli__env_upstream_url_release: '{{ ansible_local.mcli.release_tag
+                                         if (ansible_local|d() and ansible_local.mcli|d() and
+                                             ansible_local.mcli.release_tag|d() and
+                                             ansible_local.mcli.release_tag.startswith("RELEASE.") and
+                                             not mcli__upstream_upgrade|bool)
+                                         else (lookup("url",
+                                                      (mcli__upstream_url_mirror + mcli__upstream_platform
+                                                       + "/mc.sha256sum"))
+                                               | regex_search("mc\.RELEASE\..+$")
+                                               | regex_replace("^mc\.","")) }}'

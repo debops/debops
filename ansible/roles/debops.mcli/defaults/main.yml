@@ -1,0 +1,150 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _mcli__ref_defaults:
+
+# debops.mcli default variables
+# =============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Go application deployment [[[
+# -----------------------------
+
+# These variables control how the :command:`mcli` binary is installed on the
+# host. The installation is performed by the :ref:`debops.golang` role, refer
+# to its documentation for details. The installation definition can be found in
+# the :envvar:`mcli__golang__dependent_packages` variable.
+
+# .. envvar:: mcli__upstream_gpg_key [[[
+#
+# The fingerprint of the GPG key which is used to sign the MinIO Client
+# releases. It will be used to verify the downloaded signature file as well as
+# the :command:`git` tags in the source repository.
+mcli__upstream_gpg_key: '4405 F3F0 DDBA 1B9E 68A3  1D25 12C7 4390 F9AA C728'
+
+                                                                   # ]]]
+# .. envvar:: mcli__upstream_type [[[
+#
+# Specify the method which should be used to install MinIO Client binary.
+# Either ``url`` to download the configured binary directly and virify it using
+# the specified GPG key, or ``git`` to clone the MinIO Client :command:`git`
+# repository and build the specified version from source.
+mcli__upstream_type: 'url'
+
+                                                                   # ]]]
+# .. envvar:: mcli__upstream_upgrade [[[
+#
+# Enable or disable automatic upgrades of MinIO Client downloaded from
+# upstream. This does not affect installations built from the :command:`git`
+# repository.
+#
+# MinIO Client is updated quite freqently. Remember that already downloaded MinIO
+# Client releases are not removed automatically; check the download directory (by
+# default :file:`/var/local/_golang/go/src/releases/linux-amd64/mc/`
+# directory) and remove old releases.
+mcli__upstream_upgrade: False
+
+                                                                   # ]]]
+# .. envvar:: mcli__upstream_url_mirror [[[
+#
+# The base URL of the MinIO Client download page, should end with the ``/``
+# character.
+mcli__upstream_url_mirror: 'https://dl.min.io/client/mc/release/'
+
+                                                                   # ]]]
+# .. envvar:: mcli__upstream_platform [[[
+#
+# Specify the OS type and platform architecture to use for installation. The
+# list of supported architectures and OS types can be found on the
+# https://dl.min.io/client/mc/release/ page.
+mcli__upstream_platform: 'linux-amd64'
+
+                                                                   # ]]]
+# .. envvar:: mcli__upstream_url_release [[[
+#
+# The version of MinIO Client to download from upstream on a given host. You
+# should specify the ``RELEASE.YYYY-MM-DDTHH-MM-SSZ`` tagged release number.
+#
+# Available MinIO Client releases: https://github.com/minio/mc/releases
+mcli__upstream_url_release: '{{ mcli__env_upstream_url_release }}'
+
+                                                                   # ]]]
+# .. envvar:: mcli__upstream_url_binary [[[
+#
+# The path to the MinIO Client binary on the upstream HTTPS server, relative to
+# the OS type and platform directory.
+mcli__upstream_url_binary: '{{ "archive/mc." + mcli__upstream_url_release }}'
+
+                                                                   # ]]]
+# .. envvar:: mcli__upstream_git_repository [[[
+#
+# The URL of the upstream :command:`git` repository which contains MinIO Client
+# source code.
+mcli__upstream_git_repository: 'https://github.com/minio/mc'
+
+                                                                   # ]]]
+# .. envvar:: mcli__upstream_git_release [[[
+#
+# The version of MinIO Client to build from source on a given host. The build
+# version depends on the availability of a specific Golang version and other
+# factors.  Latest MinIO Client versions which can be built on a given OS
+# distribution release are preferable.
+mcli__upstream_git_release: '{{ "RELEASE.2019-03-20T21-29-03Z"
+                                if (ansible_distribution_release in
+                                    [ "stretch", "buster", "xenial", "bionic" ])
+                                    else ("RELEASE.2019-09-05T23-43-50Z"
+                                      if (ansible_distribution_release in
+                                          [ "bullseye" ])
+                                      else mcli__upstream_url_release) }}'
+
+                                                                   # ]]]
+# .. envvar:: mcli__binary [[[
+#
+# Absolute path to the :command:`mcli` Go binary installed on the host.
+# See the :ref:`debops.golang` role for more details.
+mcli__binary: '{{ ansible_local.golang.binaries["mcli"]
+                   if (ansible_local|d() and ansible_local.golang|d() and
+                       ansible_local.golang.binaries|d() and
+                       ansible_local.golang.binaries.mcli|d())
+                   else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: mcli__golang__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.golang` Ansible role.
+mcli__golang__dependent_packages:
+
+  - name: 'mcli'
+    upstream_type: '{{ mcli__upstream_type }}'
+    gpg: '{{ mcli__upstream_gpg_key }}'
+    url:
+
+      - src: '{{ mcli__upstream_url_mirror + mcli__upstream_platform + "/" + mcli__upstream_url_binary }}'
+        dest: 'releases/{{ mcli__upstream_platform }}/mc/mc.{{ mcli__upstream_url_release }}'
+        checksum: 'sha256:{{ mcli__upstream_url_mirror + mcli__upstream_platform + "/" + mcli__upstream_url_binary }}.sha256sum'
+
+      - src: '{{ mcli__upstream_url_mirror + mcli__upstream_platform + "/" + mcli__upstream_url_binary + ".asc" }}'
+        dest: 'releases/{{ mcli__upstream_platform }}/mc/mc.{{ mcli__upstream_url_release }}.asc'
+        gpg_verify: True
+
+    url_binaries:
+      - src: 'releases/{{ mcli__upstream_platform }}/mc/mc.{{ mcli__upstream_url_release }}'
+        dest: 'mcli'
+    git:
+      - repo: '{{ mcli__upstream_git_repository }}'
+        version: '{{ mcli__upstream_git_release }}'
+        build_script: |
+          make clean build
+    git_binaries:
+      - src: '{{ mcli__upstream_git_repository.split("://")[1] + "/mc" }}'
+        dest: 'mcli'
+                                                                   # ]]]
+                                                                   # ]]]

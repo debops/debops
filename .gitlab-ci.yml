@@ -917,6 +917,15 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.mariadb\]'
     JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
+'mcli role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_FACT: 'mcli.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mcli.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_mcli'
+    JANE_DIFF_PATTERN: '.*/debops.mcli/.*'
+    JANE_LOG_PATTERN: '\[debops\.mcli\]'
+
 'memcached role':
   <<: *test_role_no_deps
   variables:
@@ -925,6 +934,24 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_memcached'
     JANE_DIFF_PATTERN: '.*/debops.memcached/.*'
     JANE_LOG_PATTERN: '\[debops\.memcached\]'
+
+'minio role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_FACT: 'minio.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/minio.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_minio'
+    JANE_DIFF_PATTERN: '.*/debops.minio/.*'
+    JANE_LOG_PATTERN: '\[debops\.minio\]'
+
+'minio/pki role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_FACT: 'minio.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/minio.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_pki,debops_service_minio'
+    JANE_DIFF_PATTERN: '.*/debops.minio/.*'
+    JANE_LOG_PATTERN: '\[debops\.minio\]'
 
 'monit role':
   <<: *test_role_no_deps

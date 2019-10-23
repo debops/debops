@@ -24,6 +24,12 @@ Added
 New DebOps roles
 ''''''''''''''''
 
+- The :ref:`debops.minio` and :ref:`debops.mcli` Ansible roles can be used to
+  install and configure `MinIO`__ object storage service and its corresponding
+  client binary.
+
+  .. __: https://minio.io/
+
 - The :ref:`debops.tinyproxy` role can be used to set up a lightweight
   HTTP/HTTPS proxy for an upstream server.
 

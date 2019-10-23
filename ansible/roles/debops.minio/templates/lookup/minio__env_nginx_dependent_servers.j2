@@ -1,0 +1,20 @@
+{% set minio__tpl_nginx_dependent_servers = [] %}
+{% for element in minio__combined_instances | parse_kv_items %}
+{%   if (element.name|d() and element.port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
+{%     set server = {'name': [ (element.fqdn | d(element.name + '.' + minio__domain)) ]
+                             + ((( ( [ element.domain ] if (element.domain is string) else element.domain)
+                                   | map('regex_replace', '^(.*)$', '*.\\1')) | list)
+                                if element.domain|d() else [])
+                             + ((( ( [ element.domains ] if (element.domains is string) else element.domains)
+                                   | map('regex_replace', '^(.*)$', '*.\\1')) | list)
+                                if element.domains|d() else []),
+                     'filename': 'minio-' + element.name,
+                     'state': element.state,
+                     'type': 'proxy',
+                     'options': 'ignore_invalid_headers off;\nclient_max_body_size 0;\nproxy_buffering off;',
+                     'proxy_pass': ('https' if minio__pki_enabled|bool else 'http') + '://minio-' + element.name,
+                     'proxy_options': 'proxy_http_version 1.1;\nproxy_read_timeout 15m;\nproxy_send_timeout 15m;\nproxy_request_buffering off;'} %}
+{%     set _ = minio__tpl_nginx_dependent_servers.append(server) %}
+{%   endif %}
+{% endfor %}
+{{ minio__tpl_nginx_dependent_servers | to_yaml }}

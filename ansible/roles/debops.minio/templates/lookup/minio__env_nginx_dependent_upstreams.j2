@@ -1,0 +1,10 @@
+{% set minio__tpl_nginx_dependent_upstreams = [] %}
+{% for element in minio__combined_instances | parse_kv_items %}
+{%   if (element.name|d() and element.port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
+{%     set upstream = {'name': 'minio-' + element.name,
+                       'state': element.state,
+                       'server': (minio__fqdn if minio__pki_enabled|bool else '127.0.0.1') + ':' + element.port|string} %}
+{%     set _ = minio__tpl_nginx_dependent_upstreams.append(upstream) %}
+{%   endif %}
+{% endfor %}
+{{ minio__tpl_nginx_dependent_upstreams | to_yaml }}
