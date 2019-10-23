@@ -1,0 +1,37 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=MinIO '%i' instance
+Documentation=https://docs.min.io
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists={{ minio__config_dir }}/%i
+AssertFileIsExecutable={{ minio__binary }}
+PartOf=minio.service
+ReloadPropagatedFrom=minio.service
+Before=minio.service
+
+[Service]
+WorkingDirectory={{ minio__home }}
+
+User={{ minio__user }}
+Group={{ minio__group }}
+
+EnvironmentFile=-{{ minio__config_dir }}/%i
+
+ExecStart={{ minio__binary }} $MINIO_TYPE $MINIO_OPTS $MINIO_VOLUMES
+
+# Let systemd restart this service always
+Restart=always
+
+# Specifies the maximum file descriptor number that can be opened by this process
+LimitNOFILE=65536
+
+# Disable timeout logic and wait until process is stopped
+TimeoutStopSec=infinity
+SendSIGKILL=no
+SyslogIdentifier=minio-%i
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=minio.service
