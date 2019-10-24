@@ -335,6 +335,16 @@ Fixed
 Security
 ~~~~~~~~
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Mitigation for the `CVE-2019-11043`__ vulnerability has been applied in the
+  :command:`nginx` ``php`` and ``php5`` configuration templates. The mitigation
+  is based on the `suggested workaround`__ from the PHP Bug Tracker.
+
+  .. __: https://security-tracker.debian.org/tracker/CVE-2019-11043
+  .. __: https://bugs.php.net/bug.php?id=78599
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
