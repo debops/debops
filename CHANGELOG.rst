@@ -36,6 +36,19 @@ debops-contrib.dropbear_initramfs role
   detecting the default network interface using Ansible facts instead of the
   previously hard-coded ``eth0``.
 
+Security
+~~~~~~~~
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Security patch for the `CVE-2019-11043`__ vulnerability has been applied in
+  the Nextcloud configuration for the :ref:`debops.nginx` role. The patch is
+  based on the `fix suggested by upstream`__.
+
+  .. __: https://security-tracker.debian.org/tracker/CVE-2019-11043
+  .. __: https://nextcloud.com/blog/urgent-security-issue-in-nginx-php-fpm/
+
 
 `debops v1.0.11`_ - 2019-10-14
 ------------------------------
