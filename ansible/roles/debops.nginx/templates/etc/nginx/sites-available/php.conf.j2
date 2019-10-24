@@ -48,6 +48,9 @@
 {% block nginx_tpl_block_custom_locations %}
 {%   if item.php_upstream|d() %}
 
+        # CVE-2019-11043 mitigation (https://security-tracker.debian.org/tracker/CVE-2019-11043)
+        # Based on: https://bugs.php.net/bug.php?id=78599
+        rewrite ^(.*?)\n $1;
         location ~ ^(?!.+\.php/)(?<script_name>.+\.php)$ {
 {%     if item.php_limit_except is undefined %}
                 limit_except GET HEAD POST { deny all; }
@@ -82,6 +85,9 @@
                 fastcgi_pass {{ item.php_upstream }};
         }
 
+        # CVE-2019-11043 mitigation (https://security-tracker.debian.org/tracker/CVE-2019-11043)
+        # Based on: https://bugs.php.net/bug.php?id=78599
+        rewrite ^(.*?)\n $1;
         location ~ ^(?<script_name>.+\.php)(?<path_info>/.*)$ {
 {%     if item.php_limit_except is undefined %}
                 limit_except GET HEAD POST { deny all; }
