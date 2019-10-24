@@ -305,7 +305,8 @@ host that has created it). This is done, so that services depending on the
 existence of the private keys and certificates can function correctly at all
 times.
 
-The :program:`pki-realm` script checks which of these directories have valid
+The :program:`pki-realm` script, located in :file:`/usr/local/lib/pki` on
+remote hosts, checks which of these directories have valid
 certificates in order of :envvar:`pki_authority_preference`, and the first
 valid one is used as the "active" directory.  Files from the active directory
 are symlinked to the :file:`public/` directory.
@@ -385,7 +386,7 @@ the "root" CA. The :file:`hostname.example.com/domain/` directory inside the
 ``hostname.example.com`` host.
 
 When all of the requests from the remote hosts are uploaded to the Ansible
-Controller, the :program:`pki-authority` script inside the :file:`secret/` directory takes
+Controller, the :program:`pki-authority` script inside the :file:`secret/lib` directory takes
 over and performs certificate signing for all of the currently managed hosts.
 The certificate named :file:`cert.pem` is placed in the :file:`internal/`
 directory of each host according to the realm the request came from.
