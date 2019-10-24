@@ -84,14 +84,13 @@ the next section). The contents of these files are:
 
 :file:`default.key`
   This is the server private key. It's readable only by the ``root`` account
-  and by selected UNIX group – this can be used to limit access to different
-  private keys by different UNIX accounts.
-  FIXME: selected UNIX group
+  and by :envvar:`pki_private_group` – this can be used to limit access to
+  different private keys by different UNIX accounts.
 
 :file:`default.pem`
   This file contains the private key, server certificate and Intermediate
   CA certificate(s). It has the same restrictions as the private key – can be
-  read only by the ``root`` account and selected UNIX group.
+  read only by the ``root`` account and by :envvar:`pki_private_group`.
 
 :file:`trusted.crt`
   This is the complete trust chain of intermediate and root CA certificates,
