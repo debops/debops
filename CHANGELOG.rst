@@ -49,6 +49,15 @@ The ``listen.backlog`` PHP-FPM option will be set to ``511`` by default. It is
 also exposed as the :envvar:`php__fpm_listen_backlog` default variable and can be
 modified by the ``item.listen_backlog`` pool parameter.
 
+Fixed
+~~~~~
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Fix a "variable is undefined" issue when the :file:`service/owncloud.yml`
+  Ansible playbook is executed with the ``role::nginx`` Ansible tag.
+
 
 `debops v1.0.12`_ - 2019-10-25
 ------------------------------
