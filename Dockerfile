@@ -65,7 +65,8 @@ WORKDIR /home/ansible
 ENV USER ansible
 
 # Add contents of the DebOps monorepo to the container
-COPY . .local/share/debops/debops
+# with the right permissions
+COPY --chown=ansible:ansible . .local/share/debops/debops
 
 ENTRYPOINT ["/home/ansible/.local/share/debops/debops/lib/docker/docker-entrypoint"]
 CMD ["/bin/bash"]
