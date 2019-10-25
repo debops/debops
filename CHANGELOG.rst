@@ -39,6 +39,9 @@ General
 - Add the ``iputils-ping`` package in the :file:`Dockerfile` for the
   :command:`ping` command to be available in the Docker environment.
 
+- The DebOps files inside of the Docker container will be owned by the
+  ``ansible`` unprivileged UNIX account to make runtime modification possible.
+
 
 `debops v1.1.4`_ - 2019-10-25
 -----------------------------
