@@ -21,6 +21,9 @@
 #     VAGRANT_NODE_BOX="debian/buster64"
 #         Specify the box to use for nodes.
 #
+#     VAGRANT_NODES=0
+#         Specify the number of additional nodes. Default: 0.
+#
 #     ANSIBLE_FROM="debian" (default) / ANSIBLE_FROM="pypi" / ANSIBLE_FROM="devel"
 #         Specify the way to install ansible.
 #
