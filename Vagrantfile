@@ -737,6 +737,14 @@ else
 end
 master_fqdn = master_hostname + '.' + VAGRANT_DOMAIN
 
+VAGRANT_HOSTNAME = (ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant') + '/vagrant_hostname'
+if File.exist? VAGRANT_HOSTNAME
+      node_hostname_prefix = IO.read( VAGRANT_HOSTNAME ).strip
+else
+      node_hostname_prefix = ENV['VAGRANT_HOSTNAME'] || "debops-#{SecureRandom.hex(3)}"
+      IO.write( VAGRANT_HOSTNAME, node_hostname_prefix )
+end
+
 # Persist the number of additional nodes in the DebOps cluster to allow
 # 'vagrant' commands without the VAGRANT_NODES variable being set in the
 # environment.
@@ -766,7 +774,7 @@ Vagrant.configure("2") do |config|
     if VAGRANT_NODES != 0
         (1..VAGRANT_NODES.to_i).each do |i|
 
-            node_fqdn = master_hostname + "-node#{i}." + VAGRANT_DOMAIN
+            node_fqdn = node_hostname_prefix + "-node#{i}." + VAGRANT_DOMAIN
             config.vm.define "node#{i}", autostart: true do |node|
 
                 node.vm.box = VAGRANT_NODE_BOX
