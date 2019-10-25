@@ -1,0 +1,81 @@
+---
+
+- name: Manage MinIO service
+  hosts: [ 'debops_service_minio' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.minio/env
+      tags: [ 'role::minio', 'role::etc_services', 'role::ferm',
+              'role::keyring', 'role::golang', 'role::nginx' ]
+
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
+      keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
+      keyring__dependent_gpg_keys:
+        - '{{ nginx__keyring__dependent_apt_keys }}'
+        - '{{ golang__keyring__dependent_gpg_keys }}'
+      golang__dependent_packages:
+        - '{{ minio__golang__dependent_packages }}'
+
+    - role: debops.sysfs/env
+      tags: [ 'role::sysfs', 'role::secret' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::sysfs' ]
+      secret__directories:
+        - '{{ sysfs__secret__directories | d([]) }}'
+
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ golang__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: debops.etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ minio__etc_services__dependent_list }}'
+
+    - role: debops.golang
+      tags: [ 'role::golang', 'skip::golang' ]
+      golang__dependent_packages:
+        - '{{ minio__golang__dependent_packages }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ minio__ferm__dependent_rules }}'
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: debops.sysctl
+      tags: [ 'role::sysctl', 'skip::sysctl' ]
+      sysctl__dependent_parameters:
+        - '{{ minio__sysctl__dependent_parameters }}'
+
+    - role: debops.sysfs
+      tags: [ 'role::sysfs', 'skip::sysfs' ]
+      sysfs__dependent_attributes:
+        - '{{ minio__sysfs__dependent_attributes }}'
+
+    - role: debops.python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ nginx__python__dependent_packages2 }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_upstreams:
+        - '{{ minio__nginx__dependent_upstreams }}'
+      nginx__dependent_servers:
+        - '{{ minio__nginx__dependent_servers }}'
+
+    - role: debops.minio
+      tags: [ 'role::minio', 'skip::minio' ]
