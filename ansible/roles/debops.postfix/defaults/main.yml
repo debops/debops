@@ -310,7 +310,7 @@ postfix__virtual_mail_posix_user: 'vmail'
 #
 # Virtual Mail POSIX uidNumber
 #
-postfix__virtual_mail_posix_uidnumber: 5000
+postfix__virtual_mail_posix_uidnumber: '{{ getent_passwd[postfix__virtual_mail_posix_user][1]|int }}'
                                                                    # ]]]
 # .. envvar:: postfix__virtual_mail_posix_group [[[
 #
@@ -322,7 +322,7 @@ postfix__virtual_mail_posix_group: 'vmail'
 #
 # Virtual Mail POSIX gidNumber
 #
-postfix__virtual_mail_posix_gidnumber: 5000
+postfix__virtual_mail_posix_gidnumber: '{{ getent_group[postfix__virtual_mail_posix_group][1]|int }}'
                                                                    # ]]]
 # .. envvar:: postfix__virtual_mailbox_base [[[
 #
@@ -335,6 +335,14 @@ postfix__virtual_mail_posix_gidnumber: 5000
 # To achieve this, either use the same GID across all mail users and set group ownership to that GID,
 # or make the directory world writable.
 postfix__virtual_mailbox_base: '/var/vmail'
+                                                                   # ]]]
+# .. envvar:: postfix__ldap_system_users [[[
+#
+# Postfix Virtual Users
+postfix__ldap_system_users:
+  - name: '{{ postfix__virtual_mail_posix_user }}'
+    group: '{{ postfix__virtual_mail_posix_group }}'
+    home: '{{ postfix__virtual_mailbox_base }}'
                                                                    # ]]]
 # .. envvar:: postfix__virtual_alias_maps [[[
 #
@@ -1841,22 +1849,6 @@ postfix__ldap__dependent_tasks:
                else "ignore" }}'
 
 
-                                                                   # ]]]
-# .. envvar:: postfix__ldap_dependent_system_users [[[
-#
-# Configuration for the :ref:`debops.system_users` Ansible role.
-postfix__ldap_dependent_system_users:
-
-  - name: '{{ postfix__virtual_mail_posix_user }}'
-    group: '{{ postfix__virtual_mail_posix_group }}'
-    uid: '{{ postfix__virtual_mail_posix_uidnumber }}'
-    gid: '{{ postfix__virtual_mail_posix_gidnumber }}'
-    system: True
-    comment: 'Postfix Virtual Mail user'
-    shell: '/usr/sbin/nologin'
-    home: '{{ postfix__virtual_mailbox_base }}'
-    skeleton: null
-    state: 'present'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
