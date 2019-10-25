@@ -42,6 +42,13 @@ General
 - The DebOps files inside of the Docker container will be owned by the
   ``ansible`` unprivileged UNIX account to make runtime modification possible.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+The ``listen.backlog`` PHP-FPM option will be set to ``511`` by default. It is
+also exposed as the :envvar:`php__fpm_listen_backlog` default variable and can be
+modified by the ``item.listen_backlog`` pool parameter.
+
 
 `debops v1.1.4`_ - 2019-10-25
 -----------------------------
