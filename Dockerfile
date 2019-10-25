@@ -31,6 +31,7 @@ RUN apt-get -q update \
     && DEBIAN_FRONTEND=noninteractive apt-get \
        --no-install-recommends -yq install \
        iproute2 \
+       iputils-ping \
        levee \
        openssh-client \
        python-apt \
