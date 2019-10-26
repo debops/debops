@@ -174,5 +174,5 @@ Requests modified by a third party, unless the challenge password can be
 intercepted (it's currently passed using environment variables).
 
 If for any reason CSR signing cannot be completed, you will need to remove the
-:file:`internal/gnutls.conf` and :file:`internal/request.pem` files to
-re-initialize the certificate signing.
+:file:`internal/gnutls.conf` and :file:`internal/request.pem` files on remote
+hosts to re-initialize the certificate signing.
