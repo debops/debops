@@ -173,6 +173,18 @@ General
   to allow easier changes of the command location in various operating systems,
   for example Guix.
 
+- The default Ansible callback plugin used by DebOps is changed to ``yaml``,
+  which gives a cleaner look for various outputs and error messages. The
+  callback plugin will be active by default in new DebOps project directories;
+  in existing directories users can add:
+
+  .. code-block:: ini
+
+     [ansible defaults]
+     stdout_callback = yaml
+
+  in the :file:`.debops.cfg` configuration file.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
