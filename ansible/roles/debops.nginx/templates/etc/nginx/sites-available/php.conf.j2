@@ -46,6 +46,14 @@
 {%   endif %}
 {% endblock %}
 {% block nginx_tpl_block_custom_locations %}
+{%   if item.location|d() %}
+{%     if '/' not in item.location.keys() %}
+        location / {
+                try_files {{ (([ item.try_files ] if item.try_files is string else item.try_files) if item.try_files|d() else ["$uri $uri/ $uri.php"]) | join(' ') }};
+        }
+
+{%     endif %}
+{%   endif %}
 {%   if item.php_upstream|d() %}
 
         # CVE-2019-11043 mitigation (https://security-tracker.debian.org/tracker/CVE-2019-11043)
