@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.1: https://github.com/debops/debops/compare/v1.1.0...stable-1.1
 
+Added
+~~~~~
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The ``try_files`` option in the PHP location blocks can be overridden using
+  the ``item.php_try_files`` parameter.
+
 Changed
 ~~~~~~~
 

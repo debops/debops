@@ -763,6 +763,11 @@ Available when ``item.type`` is set to ``php`` for a server.
 
   If set to ``False``, nothing is included.
 
+``php_try_files``
+  Optional. A string or list with ``try_files`` option values which should be
+  defined in the PHP location blocks. If not defined, the default is to use the
+  ``$script_name`` and ``=404`` values.
+
 ``php_options``
   Optional, string. Additional options to append to php location.
 
