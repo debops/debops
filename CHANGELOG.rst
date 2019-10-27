@@ -344,6 +344,15 @@ Fixed
 
   .. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_python_version.html#dictionary-views
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fix an issue in the :file:`php.conf.j2` server template when an
+  ``item.location`` parameter is specified, overridding the default set of
+  ``location`` blocks defined in the :file:`default.conf.j` template. If the
+  ``/`` location is not specified in the ``item.location`` dictionary,
+  a default one will be included by the role.
+
 Security
 ~~~~~~~~
 
