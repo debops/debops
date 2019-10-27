@@ -67,7 +67,7 @@
                 limit_except {{ item.php_limit_except if item.php_limit_except is string else item.php_limit_except | join(' ') }} { deny all; }
 
 {%     endif %}
-                try_files $script_name =404;
+                try_files {{ (([ item.php_try_files ] if item.php_try_files is string else item.php_try_files) if item.php_try_files|d() else ['$script_name', '=404']) | join(' ') }};
 
 {%     if item.php_include|d(True) %}
 {%       if (nginx_version|d() and nginx_version is version_compare('1.6.1','<')) %}
@@ -104,7 +104,7 @@
                 limit_except {{ item.php_limit_except if item.php_limit_except is string else item.php_limit_except | join(' ') }} { deny all; }
 
 {%     endif %}
-                try_files $script_name =404;
+                try_files {{ (([ item.php_try_files ] if item.php_try_files is string else item.php_try_files) if item.php_try_files|d() else ['$script_name', '=404']) | join(' ') }};
 
 {%     if (item.php_include is undefined or item.php_include|d()) %}
                 include {{ item.php_include | default('fastcgi_params') }};
