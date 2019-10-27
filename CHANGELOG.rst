@@ -58,6 +58,15 @@ Fixed
 - Fix a "variable is undefined" issue when the :file:`service/owncloud.yml`
   Ansible playbook is executed with the ``role::nginx`` Ansible tag.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fix an issue in the :file:`php.conf.j2` server template when an
+  ``item.location`` parameter is specified, overridding the default set of
+  ``location`` blocks defined in the :file:`default.conf.j` template. If the
+  ``/`` location is not specified in the ``item.location`` dictionary,
+  a default one will be included by the role.
+
 
 `debops v1.1.4`_ - 2019-10-25
 -----------------------------
