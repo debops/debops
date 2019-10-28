@@ -10,11 +10,33 @@
 
   roles:
 
+    - role: debops.etc_aliases/env
+      tags: [ 'role::etc_aliases', 'role::secret' ]
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix:env', 'role::postfix', 'role::secret', 'role::ferm' ]
+
     - role: debops.secret
       tags: [ 'role::secret', 'role::postfix_virtual_ldap' ]
       secret__directories:
         - '{{ etc_aliases__secret__directories }}'
         - '{{ postfix__secret__directories }}'
 
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ postfix__ferm__dependent_rules }}'
+
+    - role: debops.etc_aliases
+      tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
+
     - role: debops.postfix_virtual_ldap
       tags: [ 'role::postfix_virtual_ldap', 'skip::postfix_virtual_ldap' ]
+
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ postfix_virtual_ldap__ldap_dependent_tasks }}'
+
+    - role: debops.postfix
+      tags: [ 'role::postfix', 'skip::postfix' ]
