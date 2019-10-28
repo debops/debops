@@ -210,6 +210,7 @@ Mail services
 - :ref:`debops.opendkim`
 - :ref:`debops.postconf`
 - :ref:`debops.postfix`
+- :ref:`debops.postfix_virtual_ldap`
 - :ref:`debops.postscreen`
 - :ref:`debops.postwhite`
 - :ref:`debops.roundcube`
