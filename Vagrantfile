@@ -31,7 +31,10 @@
 #         Specify the way to install debops.
 #
 #     VAGRANT_HOSTNAME="buster"
-#         Set a custom hostname after the box boots up.
+#         Set a custom hostname-prefix after the box boots up.
+#
+#     VAGRANT_HOSTNAME_MASTER="master"
+#         Set a custom hostname-prefix after the box boots up.
 #
 #     CONTROLLER=false
 #         Set to 'true' to set up a configuration with normal Diffie-Hellman
