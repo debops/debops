@@ -28,7 +28,7 @@
     src: '{{ item.welcome_template | d(nginx_welcome_template) }}'
     dest: '{{ item.root + "/index.html"
               if item.root | d()
-              else ("{}/sites/{}/{}/normalize.css".format(
+              else ("{}/sites/{}/{}/index.html".format(
                 nginx_www + ("/" + item.owner if item.owner | d() else ""),
                 (item.name if item.name is string else item.name[0]) | d("default"),
                 item.public_dir_name | d(nginx_public_dir_name))
