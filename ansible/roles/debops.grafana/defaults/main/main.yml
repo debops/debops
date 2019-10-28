@@ -1,0 +1,193 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.grafana default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Domain name configuration [[[
+# -----------------------------
+
+# .. envvar:: grafana__fqdn [[[
+#
+# String or list of the Fully Qualified domain names on which the Grafana
+# application will be available, used by the webserver. The first item will be
+# used as the e-mail sender domain name.
+grafana__fqdn: 'grafana.{{ grafana__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: grafana__domain [[[
+#
+# The DNS domain used by other variables in the ``debops.grafana`` role.
+grafana__domain: '{{ ansible_local.core.domain
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.domain|d())
+                    else ansible_domain }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Grafana configuration [[[
+# --------------------------------
+
+# .. envvar:: grafana__nginx_enabled: True [[[
+#
+# Enable or disable Nginx dependencies.
+grafana__nginx_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: grafana__upstream_apt_id [[[
+#
+# The Grafana fingerprint.
+grafana__upstream_apt_id: '4E40 DDF6 D76E 284A 4A67  80E4 8C8C 34C5 2409 8CB6'
+
+                                                                   # ]]]
+# .. envvar:: grafana__upstream_apt_repository [[[
+#
+# The APT repository URI of the upstream Grafana repository.
+grafana__upstream_apt_repository: 'deb https://packages.grafana.com/oss/deb stable main'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Installation, APT packages [[[
+# ----------------
+
+# .. envvar:: grafana__base_packages [[[
+#
+# List of APT packages which are required by the Grafana role.
+grafana__base_packages: [ 'grafana' ]
+
+                                                                   # ]]]
+# .. envvar:: grafana__packages [[[
+#
+# List of APT packages to install on all hosts in Grafana inventory.
+grafana__packages: [ 'software-properties-common', 'apt-transport-https' ]
+
+                                                                   # ]]]
+# .. envvar:: grafana__deploy_type [[[
+#
+# Select how Grafana should be installed by the role:
+#
+# - ``system``: install Grafana using current OS packages, possibly from the
+#               backports repository.
+#
+# - ``upstream``: install Grafana from the upstream APT repository on
+#                 Launchpad (PPA, usable on Debian as well).
+#
+# - ``bootstrap``: install APT packages required for Grafana and build a local
+#                  ``.deb`` package using the upstream GitHub repository.
+#
+grafana__deploy_type: "upstream"
+
+                                                                   # ]]]
+# .. envvar:: grafana__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be allowed to connect to the
+# Grafana in :command:`ip(6)tables` and TCP wrappers. If it's empty, remote
+# connections are not allowed.
+grafana__allow: [ '0.0.0.0/0' ]
+
+                                                                   # ]]]
+# .. envvar:: grafana__port [[[
+#
+# Port number on which this Grafana listens on.
+grafana__port: '3001'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Grafana configuration file [[[
+# ------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/grafana/grafana.ini` configuration file.
+
+# .. envvar:: grafana__default_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+grafana__default_configuration:
+
+  - name: 'server'
+    options:
+      - http_port: '{{ grafana__port }}'
+        domain: '{{ grafana__fqdn }}'
+        # TODO find a way to manage this
+        #root_url: '{{ "http://%(domain)s" }} '
+
+                                                                   # ]]]
+# .. envvar:: grafana__configuration [[[
+#
+# List of configuration options defined on all hosts in the Grafana inventory.
+grafana__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__combined_configuration [[[
+#
+# Actual list of Grafana configuration options passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+grafana__combined_configuration: '{{ grafana__default_configuration + grafana__configuration }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: grafana__ferm__dependent_rules [[[
+#
+# Configuration for :ref:`debops.ferm` Ansible role.
+grafana__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'grafana' ]
+    saddr: '{{ grafana__allow }}'
+    accept_any: False
+    weight: '40'
+    role: 'grafana'
+    rule_state: '{{ "absent" if (grafana__nginx_enabled | bool) else "present" }}'
+
+                                                                   # ]]]
+# .. envvar:: grafana__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+grafana__etc_services__dependent_list:
+
+  - name: 'grafana'
+    port: '{{ grafana__port }}'
+
+                                                                   # ]]]
+# .. envvar:: grafana__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+grafana__keyring__dependent_apt_keys:
+
+  - id: '{{ grafana__upstream_apt_id }}'
+    repo: '{{ grafana__upstream_apt_repository }}'
+    state: '{{ "present" if (grafana__deploy_type == "upstream") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: grafana__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+grafana__nginx__dependent_upstreams:
+  - name: 'grafana'
+    server: [ 'localhost' ]
+    port: '{{ grafana__port }}'
+
+                                                                   # ]]]
+# .. envvar:: grafana__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+grafana__nginx__dependent_servers:
+  - name: ['{{ grafana__fqdn }}']
+    by_role: 'debops.grafana'
+    filename: 'debops.grafana'
+    location:
+      '/': |
+        proxy_pass http://grafana;
+                                                                   # ]]]
+                                                                   # ]]]
