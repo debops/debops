@@ -46,8 +46,8 @@ listen = {{ item.listen | d('/run/php' + php__version + '-fpm-' + item.name + '.
 
 {#
 ; Set listen(2) backlog.
-; Default Value: 511 (-1 on FreeBSD and OpenBSD)
-;listen.backlog = 511 #}
+; Default Value: 511 (-1 on FreeBSD and OpenBSD)  #}
+listen.backlog = {{ item.listen_backlog | d(php__fpm_listen_backlog) }}
 {#
 ; Set permissions for unix socket, if one is used. In Linux, read/write
 ; permissions must be set in order to allow connections from a web server. Many
