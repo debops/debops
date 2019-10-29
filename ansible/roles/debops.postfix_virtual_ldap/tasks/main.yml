@@ -1,28 +1,24 @@
 ---
 
-- name: Make sure required POSIX groups exist
+- name: Make sure required POSIX group exist
   group:
-    name: '{{ item.group | d(item.name) }}'
-    state: present
-    system: '{{ item.system | d(True) | bool }}'
-  with_flattened:
-    - '{{ postfix_virtual_ldap__system_users }}'
-  when: 'item.state|d("present") != "absent" and item.name|d() and item.home|d()'
-
-- name: Make sure required POSIX system accounts exist
-  user:
-    name: '{{ item.name }}'
+    name: '{{ postfix_virtual_ldap__vmail_posix_group |
+              d(postfix_virtual_ldap__vmail_posix_user) }}'
     state: 'present'
-    comment: '{{ item.comment | d("Postfix Virtual Mail user") }}'
-    group: '{{ item.group | d(item.name) }}'
-    home: '{{ item.home }}'
-    create_home: '{{ item.create_home | d(True) | bool }}'
-    system: '{{ item.system | d(True) | bool }}'
-    shell: '{{ item.shell | d("/usr/sbin/nologin") }}'
-    skeleton: '{{ item.skeleton | d(None) }}'
-  with_flattened:
-    - '{{ postfix_virtual_ldap__system_users }}'
-  when: 'item.state|d("present") != "absent" and item.name|d() and item.home|d()'
+    system: True
+
+- name: Make sure required POSIX system account exist
+  user:
+    name: '{{ postfix_virtual_ldap__vmail_posix_user }}'
+    state: 'present'
+    comment: 'Postfix Virtual Mail user'
+    group: '{{ postfix_virtual_ldap__vmail_posix_group |
+               d(postfix_virtual_ldap__vmail_posix_user) }}'
+    home: '{{ postfix_virtual_ldap__mailbox_base }}'
+    create_home: True
+    system: True
+    shell: '/usr/sbin/nologin'
+    skeleton: null
 
 - name: "Make sure vmail home directory ({{ postfix_virtual_ldap__mailbox_base }}) exists with restrictive permissions"
   file:
