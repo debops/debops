@@ -278,8 +278,8 @@ postfix_virtual_ldap__postfix__lookup_virtual_aliases:
 # As we only want to accept mail, where we know the recipients
 # (and are responsible for them), the virtual_mailbox_maps configuration is used.
 postfix_virtual_ldap__postfix__lookup_virtual_recipients:
-  search_base: '{{ postfix__ldap_people_dn|join(",") }}'
-  query_filter: '(&(|(mail=%s)(mailAlias=%s)){{ postfix__ldap_user_filter }})'
+  search_base: '{{ postfix_virtual_ldap__ldap_people_dn|join(",") }}'
+  query_filter: '(&(|(mail=%s)(mailAlias=%s)){{ postfix_virtual_ldap__ldap_user_filter }})'
   result_attribute: 'mail'
   result_format: '/%d/%u/mailbox/'
                                                                    # ]]]
@@ -288,8 +288,8 @@ postfix_virtual_ldap__postfix__lookup_virtual_recipients:
 # The virtual_mailbox_domains configurations performs a lookup,
 # if the postfix is responsible for the given domain.
 postfix_virtual_ldap__postfix__lookup_virtual_domains:
-  search_base: '{{ postfix__ldap_domains_dn|join(",") }}'
-  query_filter: '{{ postfix__ldap_domain_filter }}'
+  search_base: '{{ postfix_virtual_ldap__ldap_domains_dn|join(",") }}'
+  query_filter: '{{ postfix_virtual_ldap__ldap_domain_filter }}'
   result_attribute: 'dc'
                                                                    # ]]]
 # .. envvar:: postfix_virtual_ldap__postfix__lookup_virtual_senders [[[
@@ -300,8 +300,8 @@ postfix_virtual_ldap__postfix__lookup_virtual_domains:
 # The later one is also used for catchalls where the mailAlias
 # is set to e.g. @foobar.com
 postfix_virtual_ldap__postfix__lookup_virtual_senders:
-  search_base: '{{ postfix__ldap_people_dn|join(",") }}'
-  query_filter: '(&(mailAlias=%s){{ postfix__ldap_user_filter }})'
+  search_base: '{{ postfix_virtual_ldap__ldap_people_dn|join(",") }}'
+  query_filter: '(&(mailAlias=%s){{ postfix_virtual_ldap__ldap_user_filter }})'
   result_attribute: 'uid, mail'
                                                                    # ]]]
 # .. envvar:: postfix_virtual_ldap__postfix__lookup_tables [[[
