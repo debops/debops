@@ -169,7 +169,7 @@ postfix_virtual_ldap__virtual_maincf:
     state: '{{ "absent"
             if (postfix_virtual_ldap__ldap_enabled|bool and
                 postfix__version is version_compare("2.0", ">="))
-            else "ignore" }}'
+            else "absent" }}'
 
   # Postfix is final destination for the specified list of domains; mail is delivered
   # via the $virtual_transport mail delivery transport
@@ -179,7 +179,7 @@ postfix_virtual_ldap__virtual_maincf:
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
                 postfix__version is version_compare("2.0", ">="))
-            else "ignore" }}'
+            else "absent" }}'
 
   # Optional lookup tables that alias specific mail addresses or domains to other local or remote address.
   - name: 'virtual_alias_maps'
@@ -188,7 +188,7 @@ postfix_virtual_ldap__virtual_maincf:
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
                 postfix__version is version_compare("2.0", ">="))
-            else "ignore" }}'
+            else "absent" }}'
 
   #A prefix that the virtual delivery agent prepends to all pathname results from $virtual_mailbox_maps table lookups.
   # This is a safety measure to ensure that an out of control map doesn't litter the file system with mailboxes.
@@ -198,7 +198,7 @@ postfix_virtual_ldap__virtual_maincf:
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
                 postfix__version is version_compare("2.0", ">="))
-            else "ignore" }}'
+            else "absent" }}'
 
   # Optional lookup tables with all valid addresses in the domains that match $virtual_mailbox_domains.
   - name: 'virtual_mailbox_maps'
@@ -207,7 +207,7 @@ postfix_virtual_ldap__virtual_maincf:
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
                 postfix__version is version_compare("2.0", ">="))
-            else "ignore" }}'
+            else "absent" }}'
 
   # Lookup tables with the per-recipient user ID that the virtual delivery agent uses while writing
   # to the recipient's mailbox.
@@ -217,7 +217,7 @@ postfix_virtual_ldap__virtual_maincf:
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
                 postfix__version is version_compare("2.0", ">="))
-            else "ignore" }}'
+            else "absent" }}'
 
   # Lookup tables with the per-recipient group ID for virtual mailbox delivery.
   - name: 'virtual_gid_maps'
@@ -226,7 +226,7 @@ postfix_virtual_ldap__virtual_maincf:
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
                 postfix__version is version_compare("2.0", ">="))
-            else "ignore" }}'
+            else "absent" }}'
 
   # The minimum user ID value that the virtual delivery agent accepts as a result from $virtual_uid_maps table lookup
   - name: 'virtual_minimum_uid'
@@ -235,7 +235,7 @@ postfix_virtual_ldap__virtual_maincf:
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
                 postfix__version is version_compare("2.0", ">="))
-            else "ignore" }}'
+            else "absent" }}'
 
   # Optional lookup table with the SASL login names that own the sender (MAIL FROM) addresses.
   - name: 'smtpd_sender_login_maps'
@@ -243,7 +243,7 @@ postfix_virtual_ldap__virtual_maincf:
     section: 'base'
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool)
-            else "ignore" }}'
+            else "absent" }}'
                                                                    # ]]]
 # .. envvar:: postfix_virtual_ldap__postfix__lookup_header [[[
 #
