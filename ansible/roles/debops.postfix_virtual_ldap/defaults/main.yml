@@ -232,10 +232,7 @@ postfix_virtual_ldap__virtual_maincf:
   - name: 'virtual_minimum_uid'
     value: '{{ postfix_virtual_ldap__vmail_posix_uidnumber }}'
     section: 'virtual'
-    state: '{{ "present"
-            if (postfix_virtual_ldap__ldap_enabled|bool and
-                postfix__version is version_compare("2.0", ">="))
-            else "absent" }}'
+    state: 'absent'
 
   # Optional lookup table with the SASL login names that own the sender (MAIL FROM) addresses.
   - name: 'smtpd_sender_login_maps'
