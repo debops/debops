@@ -10,7 +10,11 @@ debops.postfix_virtual_ldap
    getting-started
    defaults/main
    guides
-   copyright
+
+Copyright
+---------
+
+.. literalinclude:: ../../../../ansible/roles/debops.postfix_virtual_ldap/COPYRIGHT
 
 ..
  Local Variables:
