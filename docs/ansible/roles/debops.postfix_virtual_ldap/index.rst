@@ -3,10 +3,13 @@
 debops.postfix_virtual_ldap
 ===========================
 
+The ``debops.postfix_virtual_ldap`` Ansible role can be used to configure and
+manage a `Postfix`_ Virtual Mail server with an LDAP backend.
+It allows configuration of Postfix using Ansible inventory variables.
+
 .. toctree::
    :maxdepth: 3
 
-   introduction
    getting-started
    defaults/main
    guides
