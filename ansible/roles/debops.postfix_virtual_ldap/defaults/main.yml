@@ -164,7 +164,7 @@ postfix_virtual_ldap__virtual_maincf:
   # Postfix is final destination for the specified list of virtual alias domains,
   # that is, domains for which all addresses are aliased to addresses in other local or remote domains
   - name: 'virtual_alias_domains'
-    value: 'ldap:/etc/postfix/ldap/virtual_alias_domains'
+    value: 'ldap:/etc/postfix/ldap_virtual_alias_domains.cf'
     section: 'virtual'
     state: '{{ "absent"
             if (postfix_virtual_ldap__ldap_enabled|bool and
@@ -174,7 +174,7 @@ postfix_virtual_ldap__virtual_maincf:
   # Postfix is final destination for the specified list of domains; mail is delivered
   # via the $virtual_transport mail delivery transport
   - name: 'virtual_mailbox_domains'
-    value: 'ldap:/etc/postfix/ldap/virtual_domains.cf'
+    value: 'ldap:/etc/postfix/ldap_virtual_domains.cf'
     section: 'virtual'
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
@@ -202,7 +202,7 @@ postfix_virtual_ldap__virtual_maincf:
 
   # Optional lookup tables with all valid addresses in the domains that match $virtual_mailbox_domains.
   - name: 'virtual_mailbox_maps'
-    value: 'ldap:/etc/postfix/ldap/virtual_recipients.cf'
+    value: 'ldap:/etc/postfix/ldap_virtual_recipients.cf'
     section: 'virtual'
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool and
@@ -239,7 +239,7 @@ postfix_virtual_ldap__virtual_maincf:
 
   # Optional lookup table with the SASL login names that own the sender (MAIL FROM) addresses.
   - name: 'smtpd_sender_login_maps'
-    value: 'ldap:/etc/postfix/ldap/virtual_senders.cf'
+    value: 'ldap:/etc/postfix/ldap_virtual_senders.cf'
     section: 'base'
     state: '{{ "present"
             if (postfix_virtual_ldap__ldap_enabled|bool)
