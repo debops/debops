@@ -245,10 +245,10 @@ postfix_virtual_ldap__virtual_maincf:
             if (postfix_virtual_ldap__ldap_enabled|bool)
             else "ignore" }}'
                                                                    # ]]]
-# .. envvar:: postfix_virtual_ldap__postfix__lookup_table_header [[[
+# .. envvar:: postfix_virtual_ldap__postfix__lookup_header [[[
 #
 # The header of the lookup table containing the settings to connect to the LDAP server
-postfix_virtual_ldap__postfix__lookup_table_header:
+postfix_virtual_ldap__postfix__lookup_header:
   server_host: '{{ postfix_virtual_ldap__ldap_uri }}'
   start_tls: '{{ "yes"
                   if (postfix_virtual_ldap__ldap_start_tls|bool)
@@ -276,18 +276,18 @@ postfix_virtual_ldap__postfix__lookup_virtual_aliases:
   query_filter: '(&(mailAlias=%s){{ postfix_virtual_ldap__ldap_user_filter }})'
   result_attribute: 'mail'
                                                                    # ]]]
-# .. envvar:: postfix_virtual_ldap__postfix__dependent_lookup_tables [[[
+# .. envvar:: postfix_virtual_ldap__postfix__lookup_tables [[[
 #
 # The Virtual Mail lookup tables for postfix
-postfix_virtual_ldap__postfix__dependent_lookup_tables:
-  - name: 'ldap_virtual_aliases'
+postfix_virtual_ldap__postfix__lookup_tables:
+  - name: 'ldap_virtual_aliases.cf'
     state: 'present'
     comment: |
       The virtual_alias_maps setting is used to find the target mailbox
       (configured in the attribute mail, aka the mailbox or maildrop).
     mode: '0600'
     no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
-    config: '{{ postfix_virtual_ldap__postfix__lookup_table_header |
+    config: '{{ postfix_virtual_ldap__postfix__lookup_header |
                  combine(postfix_virtual_ldap__postfix__lookup_virtual_aliases) }}'
                                                                    # ]]]
                                                                    # ]]]
