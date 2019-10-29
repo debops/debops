@@ -265,6 +265,7 @@ postfix_virtual_ldap__postfix__lookup_header:
   bind: 'yes'
   bind_dn: '{{ postfix_virtual_ldap__ldap_binddn }}'
   bind_pw: '{{ postfix_virtual_ldap__ldap_bindpw }}'
+  scope: 'sub'
                                                                    # ]]]
 # .. envvar:: postfix_virtual_ldap__postfix__lookup_virtual_aliases [[[
 #
@@ -272,9 +273,39 @@ postfix_virtual_ldap__postfix__lookup_header:
 # (configured in the attribute mail, aka the mailbox or maildrop).
 postfix_virtual_ldap__postfix__lookup_virtual_aliases:
   search_base: '{{ postfix_virtual_ldap__ldap_people_dn|join(",") }}'
-  scope: 'sub'
   query_filter: '(&(mailAlias=%s){{ postfix_virtual_ldap__ldap_user_filter }})'
   result_attribute: 'mail'
+                                                                   # ]]]
+# .. envvar:: postfix_virtual_ldap__postfix__lookup_virtual_recipients [[[
+#
+# As we only want to accept mail, where we know the recipients
+# (and are responsible for them), the virtual_mailbox_maps configuration is used.
+postfix_virtual_ldap__postfix__lookup_virtual_recipients:
+  search_base: '{{ postfix__ldap_people_dn|join(",") }}'
+  query_filter: '(&(|(mail=%s)(mailAlias=%s)){{ postfix__ldap_user_filter }})'
+  result_attribute: 'mail'
+  result_format: '/%d/%u/mailbox/'
+                                                                   # ]]]
+# .. envvar:: postfix_virtual_ldap__postfix__lookup_virtual_domains [[[
+#
+# The virtual_mailbox_domains configurations performs a lookup,
+# if the postfix is responsible for the given domain.
+postfix_virtual_ldap__postfix__lookup_virtual_domains:
+  search_base: '{{ postfix__ldap_domains_dn|join(",") }}'
+  query_filter: '{{ postfix__ldap_domain_filter }}'
+  result_attribute: 'dc'
+                                                                   # ]]]
+# .. envvar:: postfix_virtual_ldap__postfix__lookup_virtual_senders [[[
+#
+# The smtpd_sender_login_maps configurations performs a lookup from an incoming
+# email-recipient to a username. Postfix first performs a full lookup
+# on user@domain, then user and then @domain.
+# The later one is also used for catchalls where the mailAlias
+# is set to e.g. @foobar.com
+postfix_virtual_ldap__postfix__lookup_virtual_senders:
+  search_base: '{{ postfix__ldap_people_dn|join(",") }}'
+  query_filter: '(&(mailAlias=%s){{ postfix__ldap_user_filter }})'
+  result_attribute: 'uid, mail'
                                                                    # ]]]
 # .. envvar:: postfix_virtual_ldap__postfix__lookup_tables [[[
 #
@@ -289,6 +320,36 @@ postfix_virtual_ldap__postfix__lookup_tables:
     no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
     config: '{{ postfix_virtual_ldap__postfix__lookup_header |
                  combine(postfix_virtual_ldap__postfix__lookup_virtual_aliases) }}'
+  - name: 'ldap_virtual_recipients.cf'
+    state: 'present'
+    comment: |
+      As we only want to accept mail, where we know the recipients
+      (and are responsible for them), the virtual_mailbox_maps configuration is used.
+    mode: '0600'
+    no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
+    config: '{{ postfix_virtual_ldap__postfix__lookup_header |
+                 combine(postfix_virtual_ldap__postfix__lookup_virtual_recipients) }}'
+  - name: 'ldap_virtual_domains.cf'
+    state: 'present'
+    comment: |
+      The virtual_mailbox_domains configurations performs a lookup,
+      if the postfix is responsible for the given domain.
+    mode: '0600'
+    no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
+    config: '{{ postfix_virtual_ldap__postfix__lookup_header |
+                 combine(postfix_virtual_ldap__postfix__lookup_virtual_domains) }}'
+  - name: 'ldap_virtual_senders.cf'
+    state: 'present'
+    comment: |
+      The smtpd_sender_login_maps configurations performs a lookup from an incoming
+      email-recipient to a username. Postfix first performs a full lookup
+      on user@domain, then user and then @domain.
+      The later one is also used for catchalls where the mailAlias
+      is set to e.g. @foobar.com
+    mode: '0600'
+    no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
+    config: '{{ postfix_virtual_ldap__postfix__lookup_header |
+                 combine(postfix_virtual_ldap__postfix__lookup_virtual_senders) }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP [[[
