@@ -24,47 +24,12 @@ postfix_virtual_ldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
 # PKI / TLS configuration [[[
 # ---------------------------
 
-# .. envvar:: postfix_virtual_ldap__pki [[[
+# .. envvar:: postfix_virtual_ldap_tls_ca_cert_dir [[[
 #
-# Enable or disable support for TLS in Postfix, managed by the :ref:`debops.pki`
-# Ansible role.
-postfix_virtual_ldap__pki: '{{ (True
-                               if (ansible_local|d() and ansible_local.pki|d() and
-                                   ansible_local.pki.enabled|d() | bool)
-                               else False) | bool }}'
-                                                                   # ]]]
-# .. envvar:: postfix_virtual_ldap__pki_path [[[
-#
-# Absolute path to the directory where PKI realms are located.
-postfix_virtual_ldap__pki_path: '{{ ansible_local.pki.path
-                                    if (ansible_local|d() and ansible_local.pki|d() and
-                                       ansible_local.pki.path|d())
-                                    else "/etc/pki/realms" }}'
-                                                                   # ]]]
-# .. envvar:: postfix_virtual_ldap__pki_realm [[[
-#
-# Name of the default PKI realm used by Postfix.
-postfix_virtual_ldap__pki_realm: '{{ ansible_local.pki.realm
-                                     if (ansible_local|d() and ansible_local.pki|d() and
-                                         ansible_local.pki.realm|d())
-                                     else "domain" }}'
-                                                                   # ]]]
-# .. envvar:: postfix_virtual_ldap__pki_ca [[[
-#
-# Name of the Root Certificate Authority certificate file used by Postfix,
-# relative to the PKI realm directory.
-postfix_virtual_ldap__pki_ca: '{{ ansible_local.pki.ca
-                                  if (ansible_local|d() and ansible_local.pki|d() and
-                                      ansible_local.pki.ca|d())
-                                  else "CA.crt" }}'
-                                                                   # ]]]
-# .. envvar:: postfix_virtual_ldap__pki_ca_crt [[[
-#
-# Filename of the root CA certificate used by the ``debops.postfix_virtual_ldap`` role
-# to verify TLS connections to the LDAP server.
-postfix_virtual_ldap__pki_ca_crt: '{{ postfix_virtual_ldap__pki_path + "/"
-                                    + postfix_virtual_ldap__pki_realm + "/"
-                                    + postfix_virtual_ldap__pki_ca }}'
+# Directory containing X509 Certification  Authority  certificates
+# in  PEM  format  which  are  to  be  recognized by the client in
+# SSL/TLS connections. The files each contain one CA  certificate.
+postfix_virtual_ldap_tls_ca_cert_dir: '/etc/ssl/certs/'
                                                                    # ]]]
                                                                    # ]]]
 # Secrets [[[
@@ -252,14 +217,7 @@ postfix_virtual_ldap__postfix__lookup_header:
                   if (postfix_virtual_ldap__ldap_start_tls|bool)
                   else "no" }}'
   version: '3'
-  # File containing the X509 Certification Authority certificates in
-  # PEM format which are to be recognized by the client  in  SSL/TLS connections
-  #tls_ca_cert_file: '{{ postfix_virtual_ldap__pki_ca_crt
-  #                      if postfix_virtual_ldap__pki|d(False) else None }}'
-  # Whether or not to request server's X509  certificate  and  check
-  # its  validity  when  establishing SSL/TLS connections.
-  # FIXME: set to yes again
-  tls_require_cert: 'no'
+  tls_ca_cert_dir: '{{ postfix_virtual_ldap_tls_ca_cert_dir }}'
   bind: 'yes'
   bind_dn: '{{ postfix_virtual_ldap__ldap_binddn }}'
   bind_pw: '{{ postfix_virtual_ldap__ldap_bindpw }}'
