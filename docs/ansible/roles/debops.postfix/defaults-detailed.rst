@@ -168,7 +168,7 @@ The parameters below are related to the contents of the lookup table file:
   parameters are merged together.
 
 ``content``
-  Optional. An YAML list with lookup table entries. Each entry can e a string
+  Optional. An YAML list with lookup table entries. Each entry can be a string
   that defines a lookup table key, its value will be defined by the
   ``default_action`` parameter. Otherwise you can specify parameters similar to
   those supported by the ``options`` list. Contents of the ``content``
