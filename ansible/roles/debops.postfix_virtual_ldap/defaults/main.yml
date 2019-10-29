@@ -245,6 +245,42 @@ postfix_virtual_ldap__virtual_maincf:
             if (postfix_virtual_ldap__ldap_enabled|bool)
             else "ignore" }}'
                                                                    # ]]]
+# .. envvar:: postfix_virtual_ldap__postfix__dependent_lookup_tables [[[
+#
+# The Virtual Mail lookup tables for postfix
+postfix_virtual_ldap__postfix__dependent_lookup_tables:
+  - name: 'ldap_virtual_aliases'
+    state: 'present'
+    comment: |
+      The virtual_alias_maps setting is used to find the target mailbox
+      (configured in the attribute mail, aka the mailbox or maildrop).
+    mode: '0600'
+    no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
+    config:
+      #### Header #####
+      server_host: '{{ postfix_virtual_ldap__ldap_uri }}'
+      start_tls: '{{ "yes"
+                      if (postfix_virtual_ldap__ldap_start_tls|bool)
+                      else "no" }}'
+      version: '3'
+      # File containing the X509 Certification Authority certificates in
+      # PEM format which are to be recognized by the client  in  SSL/TLS connections
+      tls_ca_cert_file: '{{ postfix_virtual_ldap__pki_ca_crt
+                            if postfix_virtual_ldap__pki|d(False) else None }}'
+      # Whether or not to request server's X509  certificate  and  check
+      # its  validity  when  establishing SSL/TLS connections.
+      # FIXME: set to yes again
+      tls_require_cert: 'no'
+      bind: 'yes'
+      bind_dn: '{{ postfix_virtual_ldap__ldap_binddn }}'
+      bind_pw: '{{ postfix_virtual_ldap__ldap_bindpw }}'
+      #### End Header #####
+      search_base: '{{ postfix_virtual_ldap__ldap_people_dn|join(",") }}'
+      scope: 'sub'
+      query_filter: '(&(mailAlias=%s){{ postfix_virtual_ldap__ldap_user_filter }})'
+      result_attribute: 'mail'
+
+                                                                   # ]]]
                                                                    # ]]]
 # LDAP [[[
 # ----------------------
