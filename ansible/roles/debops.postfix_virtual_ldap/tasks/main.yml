@@ -1,6 +1,15 @@
 ---
 
-- name: Make sure required system accounts exist
+- name: Make sure required POSIX groups exist
+  group:
+    name: '{{ item.group | d(item.name) }}'
+    state: present
+    system: '{{ item.system | d(True) | bool }}'
+  with_flattened:
+    - '{{ postfix_virtual_ldap__system_users }}'
+  when: 'item.state|d("present") != "absent" and item.name|d() and item.home|d()'
+
+- name: Make sure required POSIX system accounts exist
   user:
     name: '{{ item.name }}'
     state: 'present'
