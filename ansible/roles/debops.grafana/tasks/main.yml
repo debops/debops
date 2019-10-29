@@ -1,5 +1,8 @@
 ---
 
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'grafana/pre_main.yml') }}"
+
 - name: Install requested packages
   package:
     name: '{{ q("flattened", grafana__base_packages
@@ -39,3 +42,6 @@
 - name: Update Ansible facts if they were modified
   action: setup
   when: grafana__register_facts is changed
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'grafana/post_main.yml') }}"
