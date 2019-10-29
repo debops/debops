@@ -32,7 +32,7 @@ grafana__domain: '{{ ansible_local.core.domain
                                                                    # ]]]
                                                                    # ]]]
 # Grafana configuration [[[
-# --------------------------------
+# -------------------------
 
 # .. envvar:: grafana__nginx_enabled: True [[[
 #
@@ -65,23 +65,7 @@ grafana__base_packages: [ 'grafana' ]
 # .. envvar:: grafana__packages [[[
 #
 # List of APT packages to install on all hosts in Grafana inventory.
-grafana__packages: [ 'software-properties-common', 'apt-transport-https' ]
-
-                                                                   # ]]]
-# .. envvar:: grafana__deploy_type [[[
-#
-# Select how Grafana should be installed by the role:
-#
-# - ``system``: install Grafana using current OS packages, possibly from the
-#               backports repository.
-#
-# - ``upstream``: install Grafana from the upstream APT repository on
-#                 Launchpad (PPA, usable on Debian as well).
-#
-# - ``bootstrap``: install APT packages required for Grafana and build a local
-#                  ``.deb`` package using the upstream GitHub repository.
-#
-grafana__deploy_type: "upstream"
+grafana__packages: []
 
                                                                    # ]]]
 # .. envvar:: grafana__allow [[[
@@ -89,7 +73,7 @@ grafana__deploy_type: "upstream"
 # List of IP addresses or CIDR subnets which will be allowed to connect to the
 # Grafana in :command:`ip(6)tables` and TCP wrappers. If it's empty, remote
 # connections are not allowed.
-grafana__allow: [ '0.0.0.0/0' ]
+grafana__allow: []
 
                                                                    # ]]]
 # .. envvar:: grafana__port [[[
@@ -145,7 +129,7 @@ grafana__ferm__dependent_rules:
   - type: 'accept'
     dport: [ 'grafana' ]
     saddr: '{{ grafana__allow }}'
-    accept_any: False
+    accept_any: True
     weight: '40'
     role: 'grafana'
     rule_state: '{{ "absent" if (grafana__nginx_enabled | bool) else "present" }}'
@@ -167,7 +151,6 @@ grafana__keyring__dependent_apt_keys:
 
   - id: '{{ grafana__upstream_apt_id }}'
     repo: '{{ grafana__upstream_apt_repository }}'
-    state: '{{ "present" if (grafana__deploy_type == "upstream") else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: grafana__nginx__dependent_upstreams [[[
@@ -183,11 +166,10 @@ grafana__nginx__dependent_upstreams:
 #
 # Server configuration for the :ref:`debops.nginx` Ansible role.
 grafana__nginx__dependent_servers:
-  - name: ['{{ grafana__fqdn }}']
+  - name: '{{ grafana__fqdn }}'
     by_role: 'debops.grafana'
     filename: 'debops.grafana'
-    location:
-      '/': |
-        proxy_pass http://grafana;
+    type: proxy
+    proxy_pass: 'http://grafana/'
                                                                    # ]]]
                                                                    # ]]]
