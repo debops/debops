@@ -313,7 +313,8 @@ postfix_virtual_ldap__postfix__lookup_tables:
     comment: |
       The virtual_alias_maps setting is used to find the target mailbox
       (configured in the attribute mail, aka the mailbox or maildrop).
-    mode: '0600'
+    group: 'postfix'
+    mode: '0640'
     no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
     config: '{{ postfix_virtual_ldap__postfix__lookup_header |
                  combine(postfix_virtual_ldap__postfix__lookup_virtual_aliases) }}'
@@ -322,7 +323,8 @@ postfix_virtual_ldap__postfix__lookup_tables:
     comment: |
       As we only want to accept mail, where we know the recipients
       (and are responsible for them), the virtual_mailbox_maps configuration is used.
-    mode: '0600'
+    group: 'postfix'
+    mode: '0640'
     no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
     config: '{{ postfix_virtual_ldap__postfix__lookup_header |
                  combine(postfix_virtual_ldap__postfix__lookup_virtual_recipients) }}'
@@ -331,7 +333,8 @@ postfix_virtual_ldap__postfix__lookup_tables:
     comment: |
       The virtual_mailbox_domains configurations performs a lookup,
       if the postfix is responsible for the given domain.
-    mode: '0600'
+    group: 'postfix'
+    mode: '0640'
     no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
     config: '{{ postfix_virtual_ldap__postfix__lookup_header |
                  combine(postfix_virtual_ldap__postfix__lookup_virtual_domains) }}'
@@ -343,7 +346,8 @@ postfix_virtual_ldap__postfix__lookup_tables:
       on user@domain, then user and then @domain.
       The later one is also used for catchalls where the mailAlias
       is set to e.g. @foobar.com
-    mode: '0600'
+    group: 'postfix'
+    mode: '0640'
     no_log: '{{ postfix_virtual_ldap__no_log|d(True) }}'
     config: '{{ postfix_virtual_ldap__postfix__lookup_header |
                  combine(postfix_virtual_ldap__postfix__lookup_virtual_senders) }}'
