@@ -11,13 +11,13 @@
   roles:
 
     - role: debops.etc_aliases/env
-      tags: [ 'role::etc_aliases', 'role::secret' ]
+      tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
 
     - role: debops.postfix/env
-      tags: [ 'role::postfix:env', 'role::postfix', 'role::secret', 'role::ferm' ]
+      tags: [ 'role::postfix:env', 'role::postfix', 'role::postfix_virtual_ldap', 'role::secret', 'role::ferm' ]
 
     - role: debops.secret
-      tags: [ 'role::secret', 'role::postfix_virtual_ldap' ]
+      tags: [ 'role::secret', 'role::postfix', 'role::postfix_virtual_ldap' ]
       secret__directories:
         - '{{ etc_aliases__secret__directories }}'
         - '{{ postfix__secret__directories }}'
@@ -31,7 +31,7 @@
       tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
 
     - role: debops.postfix_virtual_ldap
-      tags: [ 'role::postfix_virtual_ldap', 'skip::postfix_virtual_ldap' ]
+      tags: [ 'role::postfix_virtual_ldap', 'skip::postfix_virtual_ldap', 'role::postfix' ]
 
     - role: debops.ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
@@ -42,9 +42,8 @@
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_packages:
         - '{{ postfix_virtual_ldap__packages }}'
+      postfix__dependent_lookup_tables:
+        - '{{ postfix_virtual_ldap__postfix__lookup_tables }}'
       postfix__dependent_maincf:
         - role: 'postfix_virtual_ldap'
           config: '{{ postfix_virtual_ldap__virtual_maincf }}'
-      postfix__dependent_lookup_tables:
-        - role: 'postfix_virtual_ldap'
-          config: '{{ postfix_virtual_ldap__postfix__lookup_tables }}'
