@@ -419,13 +419,13 @@ postfix_virtual_ldap__ldap_uri: '{{ (ansible_local.ldap.uri
                                     else [""]) | first }}'
 
                                                                    # ]]]
-# .. envvar:: postfix_virtual_ldap__ldap_private_groups [[[
+# .. envvar:: postfix_virtual_ldap__ldap_private_subtree [[[
 #
 # When this variable is enabled, the :ref:`debops.ldap` role will create
 # a separate LDAP objects that manage the Postfix groups as subtree of the
 # DokiWiki service LDAP object. If you set this parameter to ``False``, the
 # role will use the global ``ou=Groups,dc=example,dc=org`` subtree instead.
-postfix_virtual_ldap__ldap_private_groups: True
+postfix_virtual_ldap__ldap_private_subtree: True
 
                                                                    # ]]]
 # .. envvar:: postfix_virtual_ldap__ldap_groups_rdn [[[
@@ -455,7 +455,7 @@ postfix_virtual_ldap__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn
 # automatically.
 postfix_virtual_ldap__ldap_groups_dn: '{{ ([ postfix_virtual_ldap__ldap_groups_rdn, postfix_virtual_ldap__ldap_self_rdn ]
                                            + postfix_virtual_ldap__ldap_device_dn)
-                                            if postfix_virtual_ldap__ldap_private_groups|bool
+                                            if postfix_virtual_ldap__ldap_private_subtree|bool
                                             else ([ postfix_virtual_ldap__ldap_groups_rdn ]
                                                   + postfix_virtual_ldap__ldap_base_dn) }}'
 
@@ -467,7 +467,7 @@ postfix_virtual_ldap__ldap_groups_dn: '{{ ([ postfix_virtual_ldap__ldap_groups_r
 # automatically.
 postfix_virtual_ldap__ldap_domains_dn: '{{ ([ postfix_virtual_ldap__ldap_domains_rdn, postfix_virtual_ldap__ldap_self_rdn ]
                                             + postfix_virtual_ldap__ldap_device_dn)
-                                              if postfix_virtual_ldap__ldap_private_groups|bool
+                                              if postfix_virtual_ldap__ldap_private_subtree|bool
                                               else ([ postfix_virtual_ldap__ldap_domains_rdn ]
                                                     + postfix_virtual_ldap__ldap_base_dn) }}'
                                                                    # ]]]
@@ -613,7 +613,7 @@ postfix_virtual_ldap__ldap__dependent_tasks:
     state: '{{ "present"
                if (postfix_virtual_ldap__ldap_enabled|bool and
                    postfix_virtual_ldap__ldap_device_dn|d() and
-                   postfix_virtual_ldap__ldap_private_groups|bool)
+                   postfix_virtual_ldap__ldap_private_subtree|bool)
                else "ignore" }}'
 
   - name: 'Create Postfix domains container for {{ postfix_virtual_ldap__ldap_device_dn | join(",") }}'
@@ -625,7 +625,7 @@ postfix_virtual_ldap__ldap__dependent_tasks:
     state: '{{ "present"
                if (postfix_virtual_ldap__ldap_enabled|bool and
                    postfix_virtual_ldap__ldap_device_dn|d() and
-                   postfix_virtual_ldap__ldap_private_groups|bool)
+                   postfix_virtual_ldap__ldap_private_subtree|bool)
                else "ignore" }}'
 
   - name: 'Create Postfix Default Virtual Mail Domain for {{ postfix_virtual_ldap__ldap_default_virtual_domain_dn }}'
@@ -634,7 +634,7 @@ postfix_virtual_ldap__ldap__dependent_tasks:
     state: '{{ "present"
                if (postfix_virtual_ldap__ldap_enabled|bool and
                    postfix_virtual_ldap__ldap_device_dn|d() and
-                   postfix_virtual_ldap__ldap_private_groups|bool)
+                   postfix_virtual_ldap__ldap_private_subtree|bool)
                else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]
