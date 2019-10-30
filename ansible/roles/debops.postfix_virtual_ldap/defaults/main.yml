@@ -422,10 +422,12 @@ postfix_virtual_ldap__ldap_uri: '{{ (ansible_local.ldap.uri
 # .. envvar:: postfix_virtual_ldap__ldap_private_subtree [[[
 #
 # When this variable is enabled, the :ref:`debops.ldap` role will create
-# a separate LDAP objects that manage the Postfix groups as subtree of the
+# separate LDAP objects that manage the Postfix groups as subtree of the
 # DokiWiki service LDAP object. If you set this parameter to ``False``, the
-# role will use the global ``ou=Groups,dc=example,dc=org`` subtree instead.
-postfix_virtual_ldap__ldap_private_subtree: True
+# role will use the **global** ``ou=Groups,dc=example,dc=org`` subtree instead.
+#
+# This setting can be used to scale the Postfix server vertically.
+postfix_virtual_ldap__ldap_private_subtree: False
 
                                                                    # ]]]
 # .. envvar:: postfix_virtual_ldap__ldap_groups_rdn [[[
