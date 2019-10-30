@@ -279,6 +279,13 @@ General
   <slapd__ref_nextcloud>`. The default disk quota is set to 10 GB and can be
   changed using the ``nextcloudQuota`` LDAP attribute.
 
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- Support for the ``465`` TCP port for message submission over Implicit TLS is
+  no longer deprecated (status changed by the :rfc:`8314` document) and will be
+  enabled by default with the ``auth`` capability.
+
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
 
