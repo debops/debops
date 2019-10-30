@@ -142,13 +142,15 @@
     src:   'etc/postfix/lookup_table.j2'
     dest:  '/etc/postfix/{{ item.name }}'
     owner: '{{ item.owner | d("root") }}'
-    group: '{{ item.group | d("root") }}'
-    mode:  '{{ item.mode  | d("0644") }}'
+    group: '{{ item.group | d("postfix") }}'
+    mode:  '{{ item.mode  | d("0640") }}'
   with_flattened:
     - '{{ postfix__combined_lookup_tables | parse_kv_items }}'
   notify: [ 'Process Postfix Makefile', 'Check postfix and reload' ]
   when: item.name|d() and item.state|d('present') != 'absent'
-  no_log: '{{ item.no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
+  no_log: '{{ item.no_log | d(True
+                              if (item.mode|d("0640") in ["0640","0600"])
+                              else False) }}'
 
 - name: Save dependent configuration on Ansible Controller
   template:

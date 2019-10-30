@@ -279,6 +279,14 @@ General
   <slapd__ref_nextcloud>`. The default disk quota is set to 10 GB and can be
   changed using the ``nextcloudQuota`` LDAP attribute.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- The default primary group of the lookup tables has been changed to
+  ``postfix``, default mode for new lookup tables will be set to ``0640``.
+  This change helps secure lookup tables that utilize remote databases with
+  authentication.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
