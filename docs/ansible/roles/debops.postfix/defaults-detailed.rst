@@ -141,6 +141,13 @@ The parameters below are related to the contents of the lookup table file:
   dictionary value is the option value. Values can be either strings or YAML
   lists. See the manpage of specific lookup tables for the supported options.
 
+``connection``
+  Optional. An YAML dictionary which uses the same syntax as the ``config``
+  parameter. The ``connection`` parameter can be used to define connection
+  details for a particular database in a separate YAML dictionary, which then
+  can be referenced in multiple lookup tables at once with different query
+  configuration. See the examples below for an example usage.
+
 ``options``
   Optional. An YAML list with lookup table entries. Each entry is a YAML
   dictionary. If the dictionary has a ``name`` key, it will be interpreted as
@@ -179,6 +186,12 @@ The parameters below are related to the contents of the lookup table file:
 ``default_action``
   Optional. The default action defined for the lookup table entries that don't
   specify one themselves.
+
+If the ``connection`` or ``config`` parameters are specified, for convenience
+you can specify the options that control the lookup table configuration from
+the :man:`ldap_table(5)`, :man:`mysql_table(5)`, :man:`sqlite_table(5)` and
+:man:`pgsql_table(5)` as the lookup table parameters, on the same level as the
+``name`` parameter.
 
 Examples
 ~~~~~~~~
@@ -221,6 +234,29 @@ database:
 
    postfix__maincf:
      - virtual_mailbox_maps: [ 'proxy:mysql:${config_directory}/virtual_mailbox_maps.cf' ]
+
+The same example with connection details defined in a separate variable which
+can be reused in multiple lookup tables:
+
+.. code-block:: yaml
+
+   db_connection:
+     hosts:    [ 'db1.example.net', 'db2.example.net' ]
+     user:     'mailuser'
+     password: 'mailpassword'
+     dbname:   'mail'
+
+   postfix__lookup_tables:
+
+     - name: 'virtual_mailbox_maps.cf'
+       connection: '{{ db_connection }}'
+       query:      "SELECT maildir FROM mailbox WHERE local_part='%u' AND domain='%d' AND active='1'"
+
+   postfix__maincf:
+     - virtual_mailbox_maps: [ 'proxy:mysql:${config_directory}/virtual_mailbox_maps.cf' ]
+
+Note that the parameters of a particular table can be defined on the same level
+as the ``name`` parameter, for ease of use.
 
 
 .. _postfix__ref_lookup_tables_example_banned_helo:

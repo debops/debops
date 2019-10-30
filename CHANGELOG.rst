@@ -287,6 +287,10 @@ General
   This change helps secure lookup tables that utilize remote databases with
   authentication.
 
+- Postfix lookup tables can now use shared connection configuration defined in
+  a YAML dictionary to minimize data duplication.
+  See the :ref:`postfix__ref_lookup_tables` documentation for more details.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
