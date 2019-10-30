@@ -119,15 +119,6 @@ postldap__virtual_alias_maps:
 #
 # List of options needed by `postfix` for the Virtual Mail configuration
 postldap__postfix__dependent_maincf:
-  # Postfix is final destination for the specified list of virtual alias domains,
-  # that is, domains for which all addresses are aliased to addresses in other local or remote domains
-  - name: 'virtual_alias_domains'
-    value: 'ldap:/etc/postfix/ldap_virtual_alias_domains.cf'
-    section: 'virtual'
-    state: '{{ "present"
-            if (postldap__ldap_enabled|bool and
-                postfix__version is version_compare("2.0", ">="))
-            else "absent" }}'
 
   # Postfix is final destination for the specified list of domains; mail is delivered
   # via the $virtual_transport mail delivery transport
