@@ -86,6 +86,11 @@ General
 Fixed
 ~~~~~
 
+:ref:`debops.hashicorp` role
+''''''''''''''''''''''''''''
+
+- Fix support for the Python 3.x environment in the local fact template.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
