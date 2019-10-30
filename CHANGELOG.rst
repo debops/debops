@@ -58,6 +58,14 @@ The ``listen.backlog`` PHP-FPM option will be set to ``511`` by default. It is
 also exposed as the :envvar:`php__fpm_listen_backlog` default variable and can be
 modified by the ``item.listen_backlog`` pool parameter.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- The default primary group of the lookup tables has been changed to
+  ``postfix``, default mode for new lookup tables will be set to ``0640``.
+  This change helps secure lookup tables that utilize remote databases with
+  authentication.
+
 Fixed
 ~~~~~
 
