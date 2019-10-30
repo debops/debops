@@ -22,20 +22,20 @@
         - '{{ etc_aliases__secret__directories }}'
         - '{{ postfix__secret__directories }}'
 
-    - role: debops.postfix_virtual_ldap
+    - role: debops.postldap
       tags: [ 'role::postfix_virtual_ldap', 'skip::postfix_virtual_ldap', 'role::postfix' ]
 
     - role: debops.ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
-        - '{{ postfix_virtual_ldap__ldap__dependent_tasks }}'
+        - '{{ postldap__ldap__dependent_tasks }}'
 
     - role: debops.postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_packages:
-        - '{{ postfix_virtual_ldap__postfix__dependent_packages }}'
+        - '{{ postldap__postfix__dependent_packages }}'
       postfix__dependent_lookup_tables:
-        - '{{ postfix_virtual_ldap__postfix__dependent_lookup_tables }}'
+        - '{{ postldap__postfix__dependent_lookup_tables }}'
       postfix__dependent_maincf:
         - role: 'postfix_virtual_ldap'
-          config: '{{ postfix_virtual_ldap__postfix__dependent_maincf }}'
+          config: '{{ postldap__postfix__dependent_maincf }}'

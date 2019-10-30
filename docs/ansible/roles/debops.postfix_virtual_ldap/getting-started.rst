@@ -4,7 +4,7 @@ Getting started
 Default configuration
 ---------------------
 
-The ``debops.postfix_virtual_ldap`` role configures a Postfix SMTP server with
+The ``debops.postldap`` role configures a Postfix SMTP server with
 support for a ``virtual user mail system``, i.e. where the senders and
 recipients do not correspond to the Linux system users.
 Hence it is possible to host emails for other domains.
@@ -40,7 +40,7 @@ Example playbook
 ----------------
 
 If you are using this role without DebOps, here's an example Ansible playbook
-that uses the ``debops.postfix_virtual_ldap`` role:
+that uses the ``debops.postldap`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/postfix_virtual_ldap.yml
    :language: yaml

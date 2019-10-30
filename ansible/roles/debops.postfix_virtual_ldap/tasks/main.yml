@@ -2,40 +2,40 @@
 
 - name: Make sure required POSIX group exist
   group:
-    name: '{{ postfix_virtual_ldap__vmail_posix_group |
-              d(postfix_virtual_ldap__vmail_posix_user) }}'
+    name: '{{ postldap__vmail_posix_group |
+              d(postldap__vmail_posix_user) }}'
     state: 'present'
     system: True
 
 - name: Make sure required POSIX system account exist
   user:
-    name: '{{ postfix_virtual_ldap__vmail_posix_user }}'
+    name: '{{ postldap__vmail_posix_user }}'
     state: 'present'
     comment: 'Postfix Virtual Mail user'
-    group: '{{ postfix_virtual_ldap__vmail_posix_group |
-               d(postfix_virtual_ldap__vmail_posix_user) }}'
-    home: '{{ postfix_virtual_ldap__mailbox_base }}'
+    group: '{{ postldap__vmail_posix_group |
+               d(postldap__vmail_posix_user) }}'
+    home: '{{ postldap__mailbox_base }}'
     create_home: True
     system: True
     shell: '/usr/sbin/nologin'
     skeleton: null
 
-- name: "Make sure vmail home directory ({{ postfix_virtual_ldap__mailbox_base }}) exists with restrictive permissions"
+- name: "Make sure vmail home directory ({{ postldap__mailbox_base }}) exists with restrictive permissions"
   file:
-    dest: '{{ postfix_virtual_ldap__mailbox_base }}'
+    dest: '{{ postldap__mailbox_base }}'
     state: 'directory'
-    owner: '{{ postfix_virtual_ldap__vmail_posix_user }}'
-    group: '{{ postfix_virtual_ldap__vmail_posix_group }}'
+    owner: '{{ postldap__vmail_posix_user }}'
+    group: '{{ postldap__vmail_posix_group }}'
     mode: '0750'
 
 - name: Get vmail group info
   getent:
     database: 'group'
     split: ':'
-    key: '{{ postfix_virtual_ldap__vmail_posix_group }}'
+    key: '{{ postldap__vmail_posix_group }}'
 
 - name: Get vmail passwd info
   getent:
     database: 'passwd'
     split: ':'
-    key: '{{ postfix_virtual_ldap__vmail_posix_user }}'
+    key: '{{ postldap__vmail_posix_user }}'

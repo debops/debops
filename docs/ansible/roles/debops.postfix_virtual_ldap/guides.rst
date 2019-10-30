@@ -1,4 +1,4 @@
-.. _postfix_virtual_ldap__ref_guides:
+.. _postldap__ref_guides:
 
 Postfix configuration guides
 ============================
@@ -10,7 +10,7 @@ roles, here you can see the configuration specific to ``debops.postfix`` role.
 .. contents:: Sections
    :local:
 
-.. _postfix_virtual_ldap__ref_guides_virtual_user_mail:
+.. _postldap__ref_guides_virtual_user_mail:
 
 Configure Postfix as a Virtual User Mail System
 -----------------------------------------------

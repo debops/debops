@@ -24,7 +24,7 @@ Added
 New DebOps roles
 ''''''''''''''''
 
-- Add :ref:`debops.postfix_virtual_ldap` Ansible role to configure and enable
+- Add :ref:`debops.postldap` Ansible role to configure and enable
   :ref:`debops.postfix` to host multiple (virtual) domains,and thus provide
   email service to several domains with just one `mail server`.
   Currently the Virtual Mail support works only with **LDAP enabled**,
