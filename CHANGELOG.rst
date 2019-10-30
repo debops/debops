@@ -237,6 +237,18 @@ General
   example different IP addresses). This should avoid leaving the outdated
   attributes in the host LDAP object.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role will create the webroot directory specified in the ``item.root``
+  parameter even if the ``item.owner`` and ``item.group`` parameters are not
+  defined. This might have idempotency issues if the :ref:`debops.nginx` role
+  configuration and the application role configuration try to modify the same
+  directory attributes. To disable the webroot creation, you can set the
+  ``item.webroot_create`` parameter to ``False``. Alternatively, you should
+  specify the intended owner, group and directory mode in the :command:`nginx`
+  server configuration.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
