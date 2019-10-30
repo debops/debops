@@ -2,6 +2,8 @@
 
 # {{ ansible_managed }}
 
+# This file is managed remotely, all changes will be lost
+
 from __future__ import print_function
 from json import dumps, loads
 import os
@@ -13,7 +15,7 @@ def cmd_exists(cmd):
         for path in os.environ["PATH"].split(os.pathsep)
     )
 
-
-output['installed'] = cmd_exists('grafana')
+output = {}
+output['installed'] = cmd_exists('grafana-server')
 
 print(dumps(output, sort_keys=True, indent=4))
