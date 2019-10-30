@@ -109,15 +109,16 @@ parameters:
 
 ``group``
   Optional. The UNIX group which will be the primary group of the generated
-  file. If not specified, ``root`` will be used by default.
+  file. If not specified, ``postfix`` will be used by default.
 
 ``mode``
   Optional. The attributes set on the generated file. If not specified,
-  ``0644`` will be set by default.
+  ``0640`` will be set by default.
 
-  If you specify ``0600`` file attributes, the task which manages the file will
-  automatically set the ``no_log`` Ansible parameter to ``True``, so that the
-  contents of the file are not logged or displayed during Ansible execution.
+  If you specify ``0600`` or ``0640`` file attributes, the task which manages
+  the file will automatically set the ``no_log`` Ansible parameter to ``True``,
+  so that the contents of the file are not logged or displayed during Ansible
+  execution.
 
 ``no_log``
   Optional, boolean. If not specified or ``False``, the task will be processed
@@ -211,7 +212,6 @@ database:
    postfix__lookup_tables:
 
      - name: 'virtual_mailbox_maps.cf'
-       mode: '0600'
        config:
          hosts:    [ 'db1.example.net', 'db2.example.net' ]
          user:     'mailuser'
