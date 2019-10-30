@@ -202,17 +202,21 @@ postscreen__postfix__dependent_maincf:
 
   - name: 'postscreen_blacklist_action'
     value: 'drop'
+    state: 'present'
 
   - name: 'postscreen_greet_action'
     value: 'enforce'
+    state: 'present'
 
   - name: 'postscreen_dnsbl_action'
     value: 'enforce'
+    state: 'present'
 
   - name: 'postscreen_access_list'
     value:
       - 'permit_mynetworks'
       - 'cidr:${config_directory}/postscreen_access.cidr'
+    state: 'present'
 
   - name: 'postscreen_dnsbl_sites'
     value: '{{ postscreen__dnsbl_sites + postscreen__dnsbl_wl_sites }}'
@@ -240,24 +244,31 @@ postscreen__postfix__dependent_maincf:
 
   - name: 'postscreen_whitelist_interfaces'
     value: [ 'static:all' ]
+    state: 'present'
 
   - name: 'postscreen_pipelining_enable'
     value: True
+    state: 'present'
 
   - name: 'postscreen_pipelining_action'
     value: 'enforce'
+    state: 'present'
 
   - name: 'postscreen_non_smtp_command_enable'
     value: True
+    state: 'present'
 
   - name: 'postscreen_non_smtp_command_action'
     value: 'drop'
+    state: 'present'
 
   - name: 'postscreen_bare_newline_enable'
     value: True
+    state: 'present'
 
   - name: 'postscreen_bare_newline_action'
     value: 'ignore'
+    state: 'present'
 
                                                                    # ]]]
 # .. envvar:: postscreen__postfix__dependent_mastercf [[[

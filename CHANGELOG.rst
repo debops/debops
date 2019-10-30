@@ -70,6 +70,12 @@ General
   a YAML dictionary to minimize data duplication.
   See the :ref:`postfix__ref_lookup_tables` documentation for more details.
 
+:ref:`debops.postscreen` role
+'''''''''''''''''''''''''''''
+
+- Explicitly set the Postfix configuration state to ensure that it works from
+  dependent role configuration stored on the Ansible Controller.
+
 Fixed
 ~~~~~
 
