@@ -33,9 +33,9 @@ Supported Postfix capabilities and their effects:
   that the SASL Auth facilities are available on the host.
 
   This capability will enable SMTP authentication support via either Dovecot or
-  Cyrus SASL library, preferred in that order. The ``submission`` and
-  optionally ``smtps`` Postfix services will be enabled, with corresponding
-  firewall configuration that allows access from any host, by default.
+  Cyrus SASL library, preferred in that order. The ``submission`` and ``smtps``
+  Postfix services will be enabled, with corresponding firewall configuration
+  that allows access from any host, by default.
 
 
 ``authcleanup``
@@ -48,10 +48,7 @@ Supported Postfix capabilities and their effects:
 
 ``deprecated``
   When enabled, the role will configure Postfix features and services that are
-  considered as deprecated:
-
-  - `SMTPS <https://en.wikipedia.org/wiki/SMTPS>`_ service, enabled by the
-    ``auth`` capability;
+  considered as deprecated.
 
 
 ``overhead``

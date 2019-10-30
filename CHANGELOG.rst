@@ -243,6 +243,18 @@ General
   example different IP addresses). This should avoid leaving the outdated
   attributes in the host LDAP object.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role will create the webroot directory specified in the ``item.root``
+  parameter even if the ``item.owner`` and ``item.group`` parameters are not
+  defined. This might have idempotency issues if the :ref:`debops.nginx` role
+  configuration and the application role configuration try to modify the same
+  directory attributes. To disable the webroot creation, you can set the
+  ``item.webroot_create`` parameter to ``False``. Alternatively, you should
+  specify the intended owner, group and directory mode in the :command:`nginx`
+  server configuration.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
@@ -272,6 +284,25 @@ General
   configuration, based on the :ref:`nextcloud LDAP schema
   <slapd__ref_nextcloud>`. The default disk quota is set to 10 GB and can be
   changed using the ``nextcloudQuota`` LDAP attribute.
+
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- Support for the ``465`` TCP port for message submission over Implicit TLS is
+  no longer deprecated (status changed by the :rfc:`8314` document) and will be
+  enabled by default with the ``auth`` capability.
+
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- The default primary group of the lookup tables has been changed to
+  ``postfix``, default mode for new lookup tables will be set to ``0640``.
+  This change helps secure lookup tables that utilize remote databases with
+  authentication.
+
+- Postfix lookup tables can now use shared connection configuration defined in
+  a YAML dictionary to minimize data duplication.
+  See the :ref:`postfix__ref_lookup_tables` documentation for more details.
 
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''

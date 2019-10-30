@@ -108,12 +108,29 @@ Common role options
   Optional. Specify name of the template to use to generate nginx server
   configuration. Templates can extend other templates.
 
-``owner``
-  Optional, string. If specified, nginx will configure the server root to
-  :file:`/srv/www/<``owner>/sites/<item.name[0]>/public/`, if not specified,
-  nginx will configure server root to
-  :file:`/srv/www/sites/<``name[0]/public/`.
+``webroot_create``
+  Optional, boolean. Whether the role will create a server's root directory.
+  Overrides ``nginx_webroot_create``.
 
+``owner``
+  Optional, string. Sets the owner of the server root.
+  Overrides ``nginx_webroot_owner``.
+
+  If specified, nginx will configure the server root to
+  :file:`/srv/www/<owner>/sites/<name[0]>/public/`.
+
+  If not specified, nginx will configure the server root to
+  :file:`/srv/www/sites/<name[0]>/public/`.
+
+  If it is set and no ``group`` is specified, the group is set to ``owner``.
+
+``group``
+  Optional, string. Explicitly sets the group of the server root.
+  Overrides ``owner`` and ``nginx_webroot_group``.
+
+``mode``
+  Optional, string. The permissions of the server root directory.
+  Overrides ``nginx_webroot_mode``.
 
 .. _nginx__ref_servers_common_webserver_options:
 
@@ -128,7 +145,7 @@ Common webserver options
 ``root``
   Optional, string.
   Absolute path to server root to use for this server configuration.
-  Defaults to :file:`/srv/www/<``name[0]>/public/`.
+  Defaults to :file:`/srv/www/<name[0]>/public/`.
   See also ``owner`` parameter.
   The directive will be omitted if set to ``False``.
 

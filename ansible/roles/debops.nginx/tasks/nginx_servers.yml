@@ -2,13 +2,16 @@
 
 - name: Create global webroot directories if allowed
   file:
-    path: '{{ nginx_www }}/sites/{{ item.name
-                                    if item.name is string else item.name[0]
-                                      | d("default") }}/{{ item.public_dir_name | d(nginx_public_dir_name) }}'
+    path: '{{ item.root | d(
+              "{}/sites/{}/{}".format(
+                nginx_www + ("/" + item.owner if item.owner | d() else ""),
+                (item.name if item.name is string else item.name[0]) | d("default"),
+                item.public_dir_name | d(nginx_public_dir_name))
+              ) }}'
     state: 'directory'
-    owner: '{{ nginx_webroot_owner }}'
-    group: '{{ nginx_webroot_group }}'
-    mode: '{{ nginx_webroot_mode }}'
+    owner: '{{ item.owner | d(nginx_webroot_owner) }}'
+    group: '{{ item.group | d(item.owner | d(nginx_webroot_group)) }}'
+    mode: '{{ item.mode | d(nginx_webroot_mode) }}'
   with_flattened:
     - '{{ nginx__servers }}'
     - '{{ nginx__default_servers }}'
@@ -18,16 +21,21 @@
     - '{{ nginx_default_servers | d([]) }}'
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
-  when: (nginx_webroot_create|bool and item.state|d('present') != 'absent' and
-         (item.root is undefined and item.owner is undefined and item.group is undefined))
+  when: ((item.webroot_create|d(nginx_webroot_create)|bool) and
+         item.state|d('present') != 'absent')
 
 - name: Create default welcome page if enabled
   template:
     src: '{{ item.welcome_template | d(nginx_welcome_template) }}'
-    dest: '{{ nginx_www }}/sites/{{ item.name
-                                    if item.name is string else item.name[0] | d("default") }}/public/index.html'
+    dest: '{{ item.root + "/index.html"
+              if item.root | d()
+              else ("{}/sites/{}/{}/index.html".format(
+                nginx_www + ("/" + item.owner if item.owner | d() else ""),
+                (item.name if item.name is string else item.name[0]) | d("default"),
+                item.public_dir_name | d(nginx_public_dir_name))
+              ) }}'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
-    group: '{{ item.owner | d(nginx_webroot_group) }}'
+    group: '{{ item.group | d(item.owner | d(nginx_webroot_group)) }}'
     force: '{{ item.welcome_force|d() | bool }}'
   with_flattened:
     - '{{ nginx__servers }}'
@@ -38,17 +46,23 @@
     - '{{ nginx_default_servers | d([]) }}'
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
-  when: (nginx_webroot_create|bool and item.state|d('present') != 'absent' and
+  when: ((item.webroot_create|d(nginx_webroot_create)|bool) and
+         item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool) and
          (item.welcome|d() | bool))
 
 - name: Copy 'normalize.css' CSS file for welcome page
   template:
     src: 'srv/www/sites/welcome/public/normalize.css'
-    dest: '{{ nginx_www }}/sites/{{ item.name
-                                    if item.name is string else item.name[0] | d("default") }}/public/normalize.css'
+    dest: '{{ item.root + "/normalize.css"
+              if item.root | d()
+              else ("{}/sites/{}/{}/normalize.css".format(
+                nginx_www + ("/" + item.owner if item.owner | d() else ""),
+                (item.name if item.name is string else item.name[0]) | d("default"),
+                item.public_dir_name | d(nginx_public_dir_name))
+              ) }}'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
-    group: '{{ item.owner | d(nginx_webroot_group) }}'
+    group: '{{ item.group | d(item.owner | d(nginx_webroot_group)) }}'
     force: '{{ item.welcome_force|d() | bool }}'
   with_flattened:
     - '{{ nginx__servers }}'
@@ -59,7 +73,8 @@
     - '{{ nginx_default_servers | d([]) }}'
     - '{{ nginx_internal_servers | d([]) }}'
     - '{{ nginx_dependent_servers | d([]) }}'
-  when: (nginx_webroot_create|bool and item.state|d('present') != 'absent' and
+  when: ((item.webroot_create|d(nginx_webroot_create)|bool) and
+         item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool) and
          (item.welcome|d() | bool))
 
