@@ -192,10 +192,10 @@ postldap__postfix__dependent_maincf:
             if (postldap__ldap_enabled|bool)
             else "absent" }}'
                                                                    # ]]]
-# .. envvar:: postldap__postfix_lookup_header [[[
+# .. envvar:: postldap__postfix_ldap_connection [[[
 #
 # The header of the lookup table containing the settings to connect to the LDAP server
-postldap__postfix_lookup_header:
+postldap__postfix_ldap_connection:
   server_host: '{{ postldap__ldap_uri }}'
   start_tls: '{{ "yes"
                   if (postldap__ldap_start_tls|bool)
@@ -258,8 +258,8 @@ postldap__postfix__dependent_lookup_tables:
       The virtual_alias_maps setting is used to find the target mailbox
       (configured in the attribute mail, aka the mailbox or maildrop).
     no_log: '{{ postldap__no_log|d(True) }}'
-    config: '{{ postldap__postfix_lookup_header |
-                 combine(postldap__postfix__lookup_virtual_aliases) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    config: '{{ postldap__postfix__lookup_virtual_aliases }}'
 
   - name: 'ldap_virtual_recipients.cf'
     state: 'present'
@@ -267,8 +267,8 @@ postldap__postfix__dependent_lookup_tables:
       As we only want to accept mail, where we know the recipients
       (and are responsible for them), the virtual_mailbox_maps configuration is used.
     no_log: '{{ postldap__no_log|d(True) }}'
-    config: '{{ postldap__postfix_lookup_header |
-                 combine(postldap__postfix__lookup_virtual_recipients) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    config: '{{ postldap__postfix__lookup_virtual_recipients }}'
 
   - name: 'ldap_virtual_domains.cf'
     state: 'present'
@@ -276,8 +276,8 @@ postldap__postfix__dependent_lookup_tables:
       The virtual_mailbox_domains configurations performs a lookup,
       if the postfix is responsible for the given domain.
     no_log: '{{ postldap__no_log|d(True) }}'
-    config: '{{ postldap__postfix_lookup_header |
-                 combine(postldap__postfix__lookup_virtual_domains) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    config: '{{ postldap__postfix__lookup_virtual_domains }}'
 
   - name: 'ldap_virtual_senders.cf'
     state: 'present'
@@ -288,8 +288,8 @@ postldap__postfix__dependent_lookup_tables:
       The later one is also used for catchalls where the mailAlias
       is set to e.g. @foobar.com
     no_log: '{{ postldap__no_log|d(True) }}'
-    config: '{{ postldap__postfix_lookup_header |
-                 combine(postldap__postfix__lookup_virtual_senders) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    config: '{{ postldap__postfix__lookup_virtual_senders }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -395,11 +395,11 @@ postldap__ldap_people_dn: '{{ [ postldap__ldap_people_rdn ]
 # .. envvar:: postldap__ldap_uri [[[
 #
 # List of LDAP URIs that point to the directory servers which should be used by
-# nextcloudFIXME.
-postldap__ldap_uri: '{{ (ansible_local.ldap.uri
+# `postfix virtual`.
+postldap__ldap_uri: '{{ ansible_local.ldap.uri
                                     if (ansible_local|d() and ansible_local.ldap|d() and
                                         ansible_local.ldap.uri|d())
-                                    else [""]) | first }}'
+                                    else [""] }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_private_subtree [[[
