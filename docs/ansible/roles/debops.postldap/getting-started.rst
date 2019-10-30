@@ -21,7 +21,7 @@ Example inventory
 -----------------
 
 To install and configure Postfix Virtual Mail Server on a host,
-it needs to be present in the ``[debops_service_postfix_virtual_ldap]``
+it needs to be present in the ``[debops_service_postldap]``
 Ansible inventory group:
 
 .. code-block:: ini
@@ -32,7 +32,7 @@ Ansible inventory group:
    [debops_service_slapd]
    hostname_of_ldap_server
 
-   [debops_service_postfix_virtual_ldap]
+   [debops_service_postldap]
    hostname_of_mail_server
 
 
@@ -42,7 +42,7 @@ Example playbook
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.postldap`` role:
 
-.. literalinclude:: ../../../../ansible/playbooks/service/postfix_virtual_ldap.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/postldap.yml
    :language: yaml
 
 
@@ -56,6 +56,6 @@ configuration is already in the desired state.
 
 Available role tags:
 
-``role::postfix_virtual_ldap``
+``role::postldap``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.

@@ -1,7 +1,7 @@
 ---
 
 - name: Manage Postfix service with Virtual Mail LDAP backend
-  hosts: [ 'debops_service_postfix_virtual_ldap' ]
+  hosts: [ 'debops_service_postldap' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -14,16 +14,16 @@
       tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
 
     - role: debops.postfix/env
-      tags: [ 'role::postfix:env', 'role::postfix', 'role::postfix_virtual_ldap', 'role::secret', 'role::ferm' ]
+      tags: [ 'role::postfix:env', 'role::postfix', 'role::postldap', 'role::secret', 'role::ferm' ]
 
     - role: debops.secret
-      tags: [ 'role::secret', 'role::postfix', 'role::postfix_virtual_ldap' ]
+      tags: [ 'role::secret', 'role::postfix', 'role::postldap' ]
       secret__directories:
         - '{{ etc_aliases__secret__directories }}'
         - '{{ postfix__secret__directories }}'
 
     - role: debops.postldap
-      tags: [ 'role::postfix_virtual_ldap', 'skip::postfix_virtual_ldap', 'role::postfix' ]
+      tags: [ 'role::postldap', 'skip::postldap', 'role::postfix' ]
 
     - role: debops.ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
@@ -37,5 +37,5 @@
       postfix__dependent_lookup_tables:
         - '{{ postldap__postfix__dependent_lookup_tables }}'
       postfix__dependent_maincf:
-        - role: 'postfix_virtual_ldap'
+        - role: 'postldap'
           config: '{{ postldap__postfix__dependent_maincf }}'

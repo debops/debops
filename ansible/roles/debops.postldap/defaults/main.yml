@@ -24,12 +24,12 @@ postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
 # PKI / TLS configuration [[[
 # ---------------------------
 
-# .. envvar:: postfix_virtual_ldap_tls_ca_cert_dir [[[
+# .. envvar:: postldap_tls_ca_cert_dir [[[
 #
 # Directory containing X509 Certification  Authority  certificates
 # in  PEM  format  which  are  to  be  recognized by the client in
 # SSL/TLS connections. The files each contain one CA  certificate.
-postfix_virtual_ldap_tls_ca_cert_dir: '/etc/ssl/certs/'
+postldap_tls_ca_cert_dir: '/etc/ssl/certs/'
                                                                    # ]]]
                                                                    # ]]]
 # Secrets [[[
@@ -210,7 +210,7 @@ postldap__postfix_lookup_header:
                   if (postldap__ldap_start_tls|bool)
                   else "no" }}'
   version: '3'
-  tls_ca_cert_dir: '{{ postfix_virtual_ldap_tls_ca_cert_dir }}'
+  tls_ca_cert_dir: '{{ postldap_tls_ca_cert_dir }}'
   bind: 'yes'
   bind_dn: '{{ postldap__ldap_binddn }}'
   bind_pw: '{{ postldap__ldap_bindpw }}'
