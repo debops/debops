@@ -122,6 +122,8 @@ infrastructure environments.
    :maxdepth: 2
    :hidden:
 
+   developer-guide/contributing
+   developer-guide/contribution-workflow
    dep/index
    developer-guide/development-model
    developer-guide/monorepo-layout
