@@ -121,4 +121,46 @@ on another feature, or bugfix.
    git rebase upstream/master
    git push origin master
 
+How to test your changes
+------------------------
+
+Once you push your contribution, Travis CI will run a first round of tests,
+mostly related to linting and syntax checking, then will promptly reject your
+contribution for the most pedantic reasons imaginable.
+
+In order to avoid this awkward scenario,
+you can (and should) run :command:`make test` yourself!
+
+But first, your development machine has to satisfy a few dependencies:
+
+.. code-block:: console
+
+   sudo apt install build-essential git graphviz shellcheck
+   pip install -U pycodestyle nose2 sphinx yamllint ansible-lint
+
+You also need **Docker**, and a user able to run docker containers.
+
+Installing Docker Community Edition on Debian involves adding their apt
+repository that corresponds to your distro, as described in the
+`Docker CE Debian installation instructions`__.
+
+.. __: https://docs.docker.com/install/linux/docker-ce/debian/
+
+You may also want to check out
+`Docker CE post-installation steps for linux`__.
+For our purposes, all you need is to add your user to the ``docker`` group:
+
+.. __: https://docs.docker.com/install/linux/linux-postinstall/
+
+.. code-block:: console
+
+   sudo usermod -aG docker <username>
+   # log out or reboot for this to take effect.
+
+Then finally:
+
+.. code-block:: console
+
+   make test
+
 Happy hacking!
