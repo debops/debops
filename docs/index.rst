@@ -101,20 +101,12 @@ infrastructure environments.
    user-guide/debops-for-ansible
    user-guide/project-directories
    user-guide/site-playbook
-   user-guide/debops-cli
-   user-guide/debops-config
-   user-guide/bugs
 
 .. toctree::
    :caption: Admin Guide
    :maxdepth: 2
    :hidden:
 
-   admin-guide/bootstrap.rst
-   admin-guide/common-config.rst
-   admin-guide/dev-network.rst
-   admin-guide/basic-virtualization.rst
-   admin-guide/basic-mailserver.rst
    admin-guide/debops-oid-registry.rst
 
 .. toctree::
@@ -124,24 +116,9 @@ infrastructure environments.
 
    developer-guide/contributing
    developer-guide/contribution-workflow
-   dep/index
+   developer-guide/contributing-docs
    developer-guide/development-model
-   developer-guide/monorepo-layout
-   developer-guide/code-standards
-   developer-guide/software-sources
-   developer-guide/debops-roadmap
-
-.. toctree::
-   :caption: Tester Guide
-   :maxdepth: 2
-   :hidden:
-
-   tester-guide/test-methodology
-   tester-guide/travis-ci
-   tester-guide/gitlab-ci
-   tester-guide/vagrant
-   tester-guide/jane
-   tester-guide/testinfra
+   dep/index
 
 .. toctree::
    :caption: Ansible Roles
