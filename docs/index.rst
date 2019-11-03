@@ -58,16 +58,6 @@ computer, using Docker or Vagrant. Alternatively, a set of scripts can be
 installed on your own computer, that will let you manage multiple, separate IT
 infrastructure environments.
 
-.. note::
-
-   The DebOps documentation is currently being reorganized, some of the
-   sections might be empty or misleading. Ansible role documentation is
-   current for the roles in the `DebOps monorepo`__, the old project
-   documentation is available at the end of the Table of Contents.
-
-.. __: https://github.com/debops/debops/
-
-
 .. toctree::
    :caption: Introduction
    :maxdepth: 1
@@ -77,20 +67,6 @@ infrastructure environments.
    introduction/quick-start
    introduction/getting-started
    introduction/faq
-   introduction/community
-   introduction/philosophy
-   introduction/timeline
-   introduction/other-projects
-   introduction/references
-
-.. toctree::
-   :caption: News
-   :maxdepth: 1
-   :hidden:
-
-   news/releases
-   news/changelog
-   news/upgrades
 
 .. toctree::
    :caption: User Guide
@@ -99,15 +75,22 @@ infrastructure environments.
 
    user-guide/install
    user-guide/debops-for-ansible
+   user-guide/configuration
    user-guide/project-directories
+   user-guide/playbooks
    user-guide/site-playbook
+   user-guide/custom-environment
+   user-guide/scripts
 
 .. toctree::
    :caption: Admin Guide
    :maxdepth: 2
    :hidden:
 
-   admin-guide/debops-oid-registry.rst
+   admin-guide/linux-containers
+   admin-guide/service-ports
+   admin-guide/debops-oid-registry
+   admin-guide/local-apt-repository
 
 .. toctree::
    :caption: Developer Guide
@@ -121,28 +104,39 @@ infrastructure environments.
    dep/index
 
 .. toctree::
-   :caption: Ansible Roles
+   :caption: Roles
    :hidden:
 
    ansible/role-index
    ansible/roles/index
 
 .. toctree::
-   :caption: DebOps API
+   :caption: The DebOps Project
+   :maxdepth: 2
+   :hidden:
+
+   meta/community
+   meta/policy
+   meta/philosophy
+   meta/timeline
+   meta/references
+   meta/other-projects
+
+.. toctree::
+   :caption: News
+   :maxdepth: 1
+   :hidden:
+
+   news/releases
+   news/changelog
+   news/upgrades
+
+.. toctree::
+   :caption: The DebOps API
    :maxdepth: 2
    :hidden:
 
    debops-api/index
-
-.. toctree::
-   :caption: Old documentation
-   :maxdepth: 2
-   :glob:
-   :hidden:
-
-   debops-tools/index
-   debops-playbooks/index
-   debops-policy/index
 
 ..
  Local Variables:

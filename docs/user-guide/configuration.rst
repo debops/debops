@@ -1,4 +1,4 @@
-.. _DebOps configuration:
+.. _configuration:
 
 Configuration
 =============
@@ -9,7 +9,6 @@ files found are merged and the values read later take precedence.
 Windows:
 
 - ``%APPDATA%\debops.cfg`` (with ``%APPDATA%`` defaulting to ``~\Application Data``)
-
 - ``project-dir\.debops.cfg``
 
 MacOS X:
@@ -20,11 +19,8 @@ MacOS X:
 All others (including Linux):
 
 - :file:`/etc/debops.cfg`
-
 - in each directory of ``$XDG_CONFIG_DIRS``: ``dir/debops.cfg``
-
 - ``$XDG_CONFIG_HOME/debops.cfg``
-
 - ``project-dir/.debops.cfg``
 
 
@@ -35,6 +31,7 @@ Configuration options
 
 .. _INI file: https://en.wikipedia.org/wiki/INI_file
 
+
 The ``[paths]`` section
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -44,11 +41,9 @@ The ``[paths]`` section
 
   Default values:
 
-  - Linux: :file:`$XDG_DATA_HOME/debops/`
-
-  - MacOS X: :file:`~/Library/Application Support/debops/`
-
-  - MS Windows: ``%APPDTA%\debops``
+  - **Linux**: :file:`$XDG_DATA_HOME/debops/`
+  - **MacOS X**: :file:`~/Library/Application Support/debops/`
+  - **MS Windows**: ``%APPDTA%\debops``
 
 ``install-path``
   Indicates where DebOps playbooks and roles are installed.
@@ -118,7 +113,6 @@ This file is created by ``debops-init`` command in the specified project directo
 
    [ansible ssh_connection]
    ;ssh_args = -o ControlMaster=auto -o ControlPersist=60s
-
 
 
 ..

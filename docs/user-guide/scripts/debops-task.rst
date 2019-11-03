@@ -1,3 +1,5 @@
+.. _cmd_debops-task:
+
 The ``debops-task`` command
 ===========================
 
@@ -15,4 +17,3 @@ Example commands:
     debops-task all -m setup
 
     debops-task somegroup -m shell -a "touch /tmp/foo && rm -rf /tmp/foo"
-

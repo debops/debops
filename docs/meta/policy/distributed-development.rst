@@ -3,7 +3,7 @@
 Distributed Development Model
 =============================
 
-.. include:: ../includes/global.rst
+.. include:: ../../includes/global.rst
 
 The DebOps Project relies on a set of tools to allow distributed development in
 a secure and authenticated way.

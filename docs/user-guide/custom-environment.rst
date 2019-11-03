@@ -1,5 +1,7 @@
-Playbook environment variables
-==============================
+.. _custom_environment:
+
+Custom environment variables
+============================
 
 .. include:: ../includes/global.rst
 
@@ -25,11 +27,12 @@ The configured environment variables will be active in all of the DebOps
 playbooks included in this repository. The more specific variables override the
 more general ones, just like normal Ansible variables.
 
-The environment variables defined using these YAML dictionaries have only
-effect during the :command:`ansible-playbook` run. Normal :command:`ansible` commands as well
-as commands/services executed on remote hosts will not use them. To configure
-desired environment variables on remote hosts, you might wan to check the
-debops.environment_ Ansible role.
+The environment variables defined using these YAML dictionaries only have
+effect during the :command:`ansible-playbook` run.
+Normal :command:`ansible` commands as well as commands/services executed on
+remote hosts will not use them.
+To configure desired environment variables on remote hosts,
+you might want to check the `debops.environment`_ Ansible role.
 
 Examples
 --------

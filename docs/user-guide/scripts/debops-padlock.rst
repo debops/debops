@@ -1,3 +1,5 @@
+.. _cmd_debops-padlock:
+
 The :command:`debops-padlock` command
 =====================================
 
