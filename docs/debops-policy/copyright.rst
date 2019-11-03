@@ -1,5 +1,0 @@
-Copyright
-=========
-
-.. literalinclude:: COPYRIGHT
-

@@ -1,24 +1,28 @@
-Playbook layout
-===============
+.. _playbooks:
 
-DebOps playbooks is split into several files to allow partial usage possible::
+The DebOps playbooks
+====================
 
-    site.yml
-    |            ,---- <- core.yml
-    |-- <- common.yml
-    `-,
-      |-- <- sys.yml
-      |-- <- env.yml
-      |-- <- net.yml
-      |-- <- srv.yml
-      |-- <- app.yml
-      |-- <- virt.yml
-      `-- <- hw.yml
+The DebOps playbooks are split into several files to allow partial usage:
 
-When you run ``debops`` script or :command:`ansible-playbook`, you can either run the
-main :file:`site.yml` playbook, or specify name of the playbook you want to use to
-narrow the set of roles; this makes the Ansible runs shorter and lowers the
-startup time.
+.. code-block:: console
+
+  site.yml
+  |            ┌---- <- service/core.yml
+  |-- <- common.yml
+  └-┐
+    |-- <- sys.yml
+    |-- <- env.yml
+    |-- <- net.yml
+    |-- <- srv.yml
+    |-- <- app.yml
+    |-- <- virt.yml
+    └-- <- hw.yml
+
+When you run the ``debops`` script or :command:`ansible-playbook`,
+you can either run the main :file:`site.yml` playbook,
+or specify name of the playbook you want to use to narrow the set of roles;
+this makes the Ansible runs shorter and lowers the startup time.
 
 Order of the playbooks apart from the common ones (:file:`common.yml`,
 :file:`core.yml`) is not significant, although running roles that are used many
@@ -38,7 +42,7 @@ Playbooks which are common for all hosts:
   a set of common roles which configure base services like SMTP service, a set
   of user accounts, :command:`ip(6)tables` firewall, APT repositories, and so on.
 
-:file:`core.yml`
+:file:`service/core.yml`
   This is a playbook required on all hosts that use DebOps roles, regardless if
   you are using the playbooks or not. It's included by the :file:`common.yml`
   playbook. It will set up custom Ansible facts required by some of the roles,
@@ -87,4 +91,3 @@ groups:
 :file:`hw.yml`
   At the end are roles which directly manage resources and services related to
   hardware, for example RAID health monitoring and notification.
-

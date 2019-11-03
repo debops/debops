@@ -1,3 +1,5 @@
+.. _cmd_debops-defaults:
+
 The ``debops-defaults`` command
 ===============================
 
@@ -17,4 +19,3 @@ Example commands:
     debops-defaults > defaults.txt
 
     debops-defaults mysql postgresql nginx
-

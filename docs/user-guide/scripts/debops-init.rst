@@ -1,3 +1,5 @@
+.. _cmd_debops-init:
+
 The ``debops-init`` command
 ===========================
 
@@ -9,4 +11,3 @@ Example commands:
 .. code:: shell
 
     debops-init ~/myproject
-

@@ -1,3 +1,5 @@
+.. _cmd_debops:
+
 The ``debops`` command
 ======================
 
@@ -17,4 +19,3 @@ Example commands:
     debops -l mygroup
 
     debops -t foo
-

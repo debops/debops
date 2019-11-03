@@ -35,8 +35,6 @@ User guide
 ~~~~~~~~~~
 
 - **Debugging tips**: How to find and fix bugs in DebOps
-- **The DebOps CLI**: Description of the debops commands
-- **Script configuration**: Description of ``debops.cfg`` configuration options
 
 Admin guide
 ~~~~~~~~~~~
