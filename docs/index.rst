@@ -91,7 +91,6 @@ infrastructure environments.
    admin-guide/linux-containers
    admin-guide/service-ports
    admin-guide/local-apt-repository
-   admin-guide/debops-oid-registry
 
 .. toctree::
    :caption: Developer Guide
@@ -116,6 +115,7 @@ infrastructure environments.
    meta/timeline
    meta/references
    meta/other-projects
+   meta/debops-oid-registry
    debops-api/index
 
 .. toctree::
