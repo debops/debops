@@ -1,7 +1,7 @@
 .. _ansible_roles:
 
-Ansible roles included in DebOps
-================================
+Roles (index)
+=============
 
 .. toctree::
    :maxdepth: 1

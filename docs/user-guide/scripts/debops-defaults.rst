@@ -1,7 +1,7 @@
 .. _cmd_debops-defaults:
 
-The ``debops-defaults`` command
-===============================
+The :command:`debops-defaults` command
+======================================
 
 Collect the default values of all DebOps roles and output them as
 one output stream.

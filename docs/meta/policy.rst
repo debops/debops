@@ -10,7 +10,6 @@ DebOps Guidelines and Policies
    policy/distributed-development
    policy/code-signing-policy
    policy/security-policy
-   policy/planned-policy-changes
 
 ..
  Local Variables:

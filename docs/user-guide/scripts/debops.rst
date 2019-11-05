@@ -1,7 +1,7 @@
 .. _cmd_debops:
 
-The ``debops`` command
-======================
+The :command:`debops` command
+=============================
 
 Wraps :command:`ansible-playbook` and since that's the most commonly ran command we
 decided it's a good idea to shorten it to ``debops`` instead of ``debops-playbook``.

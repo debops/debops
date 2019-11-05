@@ -65,32 +65,33 @@ infrastructure environments.
 
    overview
    introduction/quick-start
+   introduction/install
    introduction/getting-started
    introduction/faq
 
 .. toctree::
-   :caption: User Guide
+   :caption: User Manual
    :maxdepth: 2
    :hidden:
 
-   user-guide/install
    user-guide/debops-for-ansible
    user-guide/configuration
    user-guide/project-directories
-   user-guide/playbooks
-   user-guide/site-playbook
-   user-guide/custom-environment
    user-guide/scripts
+   user-guide/custom-environment
+   user-guide/playbooks
+   ansible/role-index
+   ansible/roles/index
 
 .. toctree::
-   :caption: Admin Guide
+   :caption: Admin Recipes
    :maxdepth: 2
    :hidden:
 
    admin-guide/linux-containers
    admin-guide/service-ports
-   admin-guide/debops-oid-registry
    admin-guide/local-apt-repository
+   admin-guide/debops-oid-registry
 
 .. toctree::
    :caption: Developer Guide
@@ -100,15 +101,9 @@ infrastructure environments.
    developer-guide/contributing
    developer-guide/contribution-workflow
    developer-guide/contributing-docs
+   developer-guide/testing
    developer-guide/development-model
    dep/index
-
-.. toctree::
-   :caption: Roles
-   :hidden:
-
-   ansible/role-index
-   ansible/roles/index
 
 .. toctree::
    :caption: The DebOps Project
@@ -121,6 +116,7 @@ infrastructure environments.
    meta/timeline
    meta/references
    meta/other-projects
+   debops-api/index
 
 .. toctree::
    :caption: News
@@ -130,13 +126,6 @@ infrastructure environments.
    news/releases
    news/changelog
    news/upgrades
-
-.. toctree::
-   :caption: The DebOps API
-   :maxdepth: 2
-   :hidden:
-
-   debops-api/index
 
 ..
  Local Variables:

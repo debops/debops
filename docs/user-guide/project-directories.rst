@@ -190,3 +190,43 @@ not cause issues in the filesystem.
 This file contains configuration for some of the custom DebOps lookup plugins,
 as well as configuration which should be added to the automatically generated
 :file:`ansible.cfg` configuration file.
+
+
+Overriding the ``site`` playbook
+--------------------------------
+
+:file:`debops/ansible/playbooks/site.yml` connects all debops roles.
+
+By creating a playbook named :file:`ansible/playbooks/site.yml` inside your
+project folder, you can override the debops version of :file:`site.yml`
+and hook your role to the :command:`debops` command instead:
+
+in :file:`ansible/playbooks/site.yml`:
+
+.. code-block:: yaml
+
+  ---
+  - include: '{{ lookup("ENV", "HOME") + "/.local/share/debops/debops/ansible/playbooks/site.yml" }}'
+  - include: your_role.yml
+
+
+in :file:`ansible/playbooks/your_role.yml`:
+
+.. code-block:: yaml
+
+  ---
+  - name: Manage the your specific setup
+    hosts: [ 'debops_all_hosts' ]
+    roles:
+      - role: ansible.your_role
+        tags: [ 'role::your_role' ]
+
+
+.. note::
+
+  Note that the path to :file:`debops/ansible/playbooks/site.yml`
+  can vary per OS and installation method.
+  You can either provide the path to the playbook,
+  or create a symlink to the correct destination in your project folder.
+
+You can override any of the other DebOps playbooks in a similar fashion.

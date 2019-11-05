@@ -23,21 +23,44 @@ and lives in the ``docs/`` folder of the `monorepo`__.
 The documentation for roles lives in ``doc/ansible/roles/``.
 
 You can build the documentation yourself on
-:ref:`your local fork<contribution_workflow>` by running ``make docs`` from your
-project folder. The resulting html files will be in ``docs/_build/html/``.
+:ref:`your local fork<contribution_workflow>` by running
+:ref:`make docs<cmd_make_docs>` from your project folder.
+
+
+Fixing broken links
+-------------------
+While working with the documentation, the :ref:`make links<cmd_make_links>`
+command can be used to spot and fix broken external links.
+
+- Broken links should be corrected or omitted
+- Permanent redirects should be pointed to the new addresses
+- Temporary redirects are fine and the listed links are usually desirable
+
+
+Migration artifacts
+-------------------
+
+Due to how the DebOps project was structured during earlier days of developent,
+the practice was to ``.. include::`` an :file:`../includes/global.rst` to
+share references between multiple git repositories.
+
+The current best practice is to use dynamically generated references,
+so if you are editing a file in the documentation and you spot this ``include``,
+feel free to remove it and fix the page so it builds without it.
+
 
 Documentation suggestions
 -------------------------
 
 These are a few subjects the current documentation is lacking.
 
-User guide
-~~~~~~~~~~
+User Manual
+~~~~~~~~~~~
 
 - **Debugging tips**: How to find and fix bugs in DebOps
 
-Admin guide
-~~~~~~~~~~~
+Admin Recipes
+~~~~~~~~~~~~~
 
 - **Host Preparation**: Describe how DebOps hosts should be prepared (bootstrapped) for management
 - **Common Configuration**: Describe default configuration applied on hosts by the common playbook
@@ -45,19 +68,13 @@ Admin guide
 - **Basic mail server**: Describe mail server setup with Postfix, Dovecot
 - **Development network**: Describe Vagrant replacement, a development network with DNS, DHCP, PXE and preseeding
 
-Developer guide
+Developer Guide
 ~~~~~~~~~~~~~~~
 
 - **Monorepo layout**: How the DebOps github monorepo is structured
 - **Code standards**: How to write Ansible roles for DebOps
 - **Software sources**: How DebOps handles external software
 - **Project roadmap**: Long term plans for DebOps
-
-Tester guide
-~~~~~~~~~~~~
-
-- **Test methodology**: Describe how DebOps is tested
-- **Travis CI tests**: How DebOps is tested on Travis CI
 - **GitLab CI tests**: How DebOps is tested on GitLab CI
 - **Vagrant documentation**: Information about Vagrant usage in tests
 - **Jane documentation**: Information about Jane
