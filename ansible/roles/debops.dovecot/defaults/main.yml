@@ -45,6 +45,7 @@ dovecot_dependencies: True
 # - ``deny``: Deny access for users
 # - ``system``: Mail users are Linux system users
 # - ``sql``: Mail users are stored in a SQL database
+# - ``ldap``: Mail users are stored in an LDAP directory
 # - ``passwdfile``: Users password are stored in a file
 #
 dovecot_user_accounts: [ 'deny', 'system' ]
@@ -58,10 +59,11 @@ dovecot_deny_users: [ 'root' ]
                                                                    # ]]]
 # .. envvar:: dovecot_mail_location [[[
 #
-# Mailbox location. For maildir set something like ``maildir:~/Maildir``.
+# Mailbox location. For mbox set something like
+#  ``mbox:~/mail:INBOX=/var/mail/%u``.
 # For more information about the supported format, check `Dovecot Mail
-# Location <http://wiki2.dovecot.org/MailLocation>`_
-dovecot_mail_location: 'mbox:~/mail:INBOX=/var/mail/%u'
+# Location <https://doc.dovecot.org/configuration_manual/mail_location/>`_
+dovecot_mail_location: 'maildir:~/Maildir'
 
                                                                    # ]]]
 # .. envvar:: dovecot_mail_dotlock [[[
@@ -206,31 +208,56 @@ dovecot_passwdfile_mailbox_path: '%u'
 # .. envvar:: dovecot_pki [[[
 #
 # Enable or disable support for TLS in Dovecot (using debops.pki)
-dovecot_pki: True
+dovecot_pki: '{{ (True
+                                if (ansible_local|d() and ansible_local.pki|d() and
+                                    ansible_local.pki.enabled|d() | bool)
+                                else False) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_path [[[
 #
 # Base PKI directory
-dovecot_pki_path: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.base_path }}{% else %}/etc/pki{% endif %}'
+dovecot_pki_path: '{{ ansible_local.pki.path
+                                         if (ansible_local|d() and ansible_local.pki|d() and
+                                             ansible_local.pki.path|d())
+                                         else "/etc/pki/realms" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_realm [[[
 #
 # Default PKI realm used by Dovecot
-dovecot_pki_realm: '{% if (ansible_local is defined and ansible_local.pki is defined) %}{{ ansible_local.pki.realm }}{% else %}system{% endif %}'
+dovecot_pki_realm: '{{ ansible_local.pki.realm
+                                           if (ansible_local|d() and ansible_local.pki|d() and
+                                               ansible_local.pki.realm|d())
+                                           else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__pki_ca [[[
+#
+# Name of the Root Certificate Authority certificate file used by Postfix,
+# relative to the PKI realm directory.
+dovecot__pki_ca: '{{ ansible_local.pki.ca
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.ca|d())
+                     else "CA.crt" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_crt [[[
 #
 # Default certificate, relative to ``dovecot_pki_realm`` variable
-dovecot_pki_crt: 'default.crt'
+dovecot_pki_crt: '{{ ansible_local.pki.crt
+                                       if (ansible_local|d() and ansible_local.pki|d() and
+                                           ansible_local.pki.crt|d())
+                                       else "default.crt" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_key [[[
 #
 # Default private key, relative to ``dovecot_pki_realm`` variable
-dovecot_pki_key: 'default.key'
+dovecot_pki_key: '{{ ansible_local.pki.key
+                                       if (ansible_local|d() and ansible_local.pki|d() and
+                                           ansible_local.pki.key|d())
+                                       else "default.key" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_ssl_required [[[
@@ -241,12 +268,12 @@ dovecot_pki_key: 'default.key'
 dovecot_ssl_required: True
 
                                                                    # ]]]
-# .. envvar:: dovecot_ssl_protocols [[[
+# .. envvar:: dovecot_ssl_min_protocol [[[
 #
 # SSL ciphers to use. On new distros you only specify the minimum ssl
 # protocol version Dovecot accepts, defaulting to TLSv1.
 # On old distros disable SSLv2,3 and allow TLSv1.0 or better.
-dovecot_ssl_protocols: '{{ "!SSLv2 !SSLv3"
+dovecot_ssl_min_protocol: '{{ "!SSLv2 !SSLv3"
                            if (ansible_distribution_release in
                                [ "wheezy", "jessie", "precise", "trusty" ])
                            else "TLSv1" }}'
@@ -288,8 +315,9 @@ dovecot_ssl_cipher_list_ncsc_nl: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHAC
 #
 # List of IMAP ``inet_listeners`` which will be enabled. See
 # :ref:`dovecot_imap_listeners` for more details.
-dovecot_imap_listeners: [ 'imap', 'imaps' ]
-
+dovecot_imap_listeners: '{{ [ "imap", "imaps" ]
+                            if ( dovecot_pki|d(True) )
+                            else [ "imap" ] }}'
                                                                    # ]]]
 # .. envvar:: dovecot_imap_config_map [[[
 #
@@ -302,7 +330,9 @@ dovecot_imap_config_map: {}
 #
 # List of POP3 ``inet_listeners`` which will be enabled. See
 # :ref:`dovecot_pop3_listeners` for more details.
-dovecot_pop3_listeners: [ 'pop3', 'pop3s' ]
+dovecot_pop3_listeners: '{{ [ "pop3", "pop3s" ]
+                            if ( dovecot_pki|d(True) )
+                            else [ "pop3" ] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pop3_config_map [[[
