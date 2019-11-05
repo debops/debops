@@ -157,6 +157,16 @@
     group: '{{ dokuwiki__group }}'
     mode: '0600'
   no_log: True
+  tags: [ 'role::dokuwiki:conf' ]
+
+- name: Generate local MIME configuration file
+  template:
+    src: 'srv/www/dokuwiki/sites/public/conf/mime.local.conf.j2'
+    dest: '{{ dokuwiki__git_checkout + "/conf/mime.local.conf" }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__group }}'
+    mode: '0600'
+  tags: [ 'role::dokuwiki:conf', 'role::dokuwiki:mime' ]
 
 - name: Install maintenance scripts
   template:
