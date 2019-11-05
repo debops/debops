@@ -248,15 +248,15 @@ This type is used to enable connection tracking using the `iptables conntrack`_
 or `iptables state`_ extension. The following type-specific YAML keys are
 supported:
 
-``active_target``
+``tracking_active_target``
   Optional. :command:`iptables` jump target for valid connections. Defaults to
   ``ACCEPT``.
 
-``invalid_target``
+``tracking_invalid_target``
   Optional. :command:`iptables` jump target for invalid connections. Defaults to
   ``DROP``.
 
-``module``
+``tracking_module``
   Optional. :command:`iptables` module used for connection tracking. Possible values:
   ``state`` or ``conntrack``. Defaults to ``conntrack``.
 
