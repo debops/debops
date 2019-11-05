@@ -317,12 +317,34 @@ dovecot_ssl_cipher_list_ncsc_nl: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHAC
 dovecot_imap_listeners: '{{ [ "imap", "imaps" ]
                             if ( dovecot_pki|d(True) )
                             else [ "imap" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot_imap_default_config_map [[[
+#
+# Default IMAP configuration properties. See :ref:`dovecot_imap_config_map`
+# for more details.
+dovecot_imap_default_config_map:
+  login-service:
+    inet_listener:
+      imap:
+        port: '{{ 0 if (dovecot_pki|d(True)) else 143 }}'
+      imaps:
+        port: '{{ 993 if (dovecot_pki|d(True)) else 0 }}'
+        ssl: yes
+
                                                                    # ]]]
 # .. envvar:: dovecot_imap_config_map [[[
 #
 # Custom IMAP configuration properties. See :ref:`dovecot_imap_config_map`
 # for more details.
 dovecot_imap_config_map: {}
+
+                                                                   # ]]]
+# .. envvar:: dovecot_imap_combined_config_map [[[
+#
+# Combined IMAP configuration properties.
+dovecot_imap_combined_config_map: '{{ dovecot_imap_default_config_map
+                                      |combine(dovecot_imap_config_map, recursive=True) }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pop3_listeners [[[

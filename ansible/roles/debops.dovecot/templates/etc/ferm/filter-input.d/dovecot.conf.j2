@@ -26,10 +26,10 @@ protocol tcp dport {{ ferm_service|default(service) }} {
 
 {% if 'imap' in dovecot_protocols %}
 {%   for service in dovecot_imap_listeners|default([]) %}
-{%     if dovecot_imap_config_map is defined and dovecot_imap_config_map %}
-{%       if 'login-service' in dovecot_imap_config_map %}
-{%         if 'inet_listener' in dovecot_imap_config_map['login-service'] %}
-{%           set dovecot_tpl_imap_svc_props = dovecot_imap_config_map['login-service']['inet_listener'][service]|default({}) %}
+{%     if dovecot_imap_combined_config_map is defined and dovecot_imap_combined_config_map %}
+{%       if 'login-service' in dovecot_imap_combined_config_map %}
+{%         if 'inet_listener' in dovecot_imap_combined_config_map['login-service'] %}
+{%           set dovecot_tpl_imap_svc_props = dovecot_imap_combined_config_map['login-service']['inet_listener'][service]|default({}) %}
 {%         endif %}
 {%       endif %}
 {%     endif %}
