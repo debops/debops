@@ -25,6 +25,7 @@ The above steps performed the following tasks:
 - Added files to be encrypted
 - Locked it, which unmounts :file:`secret/` -- it is now secure
 
+
 That sounds annoying, can it be done better?
 --------------------------------------------
 
@@ -37,6 +38,7 @@ happen automatically. It may change your passwords and whatever else you have st
 
 If you use the ``debops`` script you won't have to worry about anything being changed.
 
+
 Delete your secrets
 -------------------
 
@@ -47,17 +49,20 @@ You can fix this by unmounting it yourself before trying to delete it, run:
 
 ``fusermount -u <path to secret/>``
 
+
 Migrate an existing secrets directory to be encrypted
 -----------------------------------------------------
 
 EncFS can only mount empty directories but don't worry. Just move the files
 inside of :file:`secret/` to somewhere else, then start the steps above.
 
+
 Why does it ask for the GPG password twice?
 -------------------------------------------
 
 Two files are being encrypted. The EncFS configuration and the EncFS keyfile.
 If you use an agent then you won't have to enter your password.
+
 
 What if GPG fails to decrypt?
 -----------------------------
@@ -66,6 +71,7 @@ If the configuration is not decrypted properly, EncFS discards the garbled data
 and tries to create a new encrypted directory. You can just ``CTRL+C`` to
 quit and fix your issues.
 
+
 What if you want to keep your encrypted secrets in a git repository?
 --------------------------------------------------------------------
 
@@ -73,9 +79,9 @@ DebOps by default creates an entry in ``.gitignore`` file to prevent committing
 encrypted files to the git repository. If you are sure that you want to do it,
 just comment or remove the `.encfs.secret` line from ``.gitignore``.
 
-You can also use debops.secret_ role to keep content of the ``secret``
-directory in other sorts of storage - for details please consult the
-documentation of that role.
+You can also use :ref:`debops.secret` role to keep the content of the
+:file:`secret/` directory in other sorts of storage -
+for details please consult the documentation of that role.
 
 
 ..

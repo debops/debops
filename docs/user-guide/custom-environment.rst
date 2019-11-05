@@ -3,8 +3,6 @@
 Custom environment variables
 ============================
 
-.. include:: ../includes/global.rst
-
 In certain situations, for example on a network where direct Internet access is
 not allowed and users are required to use a HTTP proxy, you might need to
 define a custom set of environment variables for Ansible to execute playbooks.
@@ -32,7 +30,7 @@ effect during the :command:`ansible-playbook` run.
 Normal :command:`ansible` commands as well as commands/services executed on
 remote hosts will not use them.
 To configure desired environment variables on remote hosts,
-you might want to check the `debops.environment`_ Ansible role.
+you might want to check the :ref:`debops.environment` role.
 
 Examples
 --------

@@ -1,7 +1,7 @@
 .. _cmd_debops-task:
 
-The ``debops-task`` command
-===========================
+The :command:`debops-task` command
+==================================
 
 Wraps :command:`ansible`, it can accept anything :command:`ansible` does.
 
