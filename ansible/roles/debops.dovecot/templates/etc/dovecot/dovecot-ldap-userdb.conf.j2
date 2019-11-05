@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+uris = {{ dovecot__ldap_uri|join(",") }}
+tls = '{{ "yes"
+          if (postldap__ldap_start_tls|bool)
+          else "no" }}'
+debug_level = 0
+dn = {{ postldap__ldap_binddn }}
+dnpass = {{ postldap__ldap_bindpw }}
+auth_bind = yes
+ldap_version = 3
+base = ou=Users,ou=Mail,dc=example,dc=com
+user_attrs = mailHomeDirectory=home,mailUidNumber=uid,mailGidNumber=gid,mailQuota=quota_rule=*:storage=%$,mailGroupACL=acl_groups,mailExpungeTrash=namespace/inbox/mailbox/Trash/autoexpunge
+user_filter = (&(objectClass=mailUser)(mailDrop=%u)(!(mailEnabled=FALSE)))
+iterate_attrs = mailDrop=user
+iterate_filter = (objectClass=mailUser)

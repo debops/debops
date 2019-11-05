@@ -437,6 +437,266 @@ dovecot_custom_localconf: False
 dovecot_firewall: True
                                                                    # ]]]
                                                                    # ]]]
+# LDAP [[[
+# --------
+
+# LDAP authentication [[[
+# ^^^^^^^^^^^^^^^^^^^^^^
+
+# .. envvar:: dovecot__ldap_enabled [[[
+#
+# In order to enable Virtual Mail support LDAP authentication needs to be enabled.
+# When enabled, `dovecot` will authenticate users against LDAP and authorize access to the user's mailbox.
+dovecot__ldap_enabled: '{{ True
+                                       if (ansible_local|d() and ansible_local.ldap|d() and
+                                          (ansible_local.ldap.enabled|d())|bool)
+                                       else False }}'
+# ]]]
+# .. envvar:: dovecot__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list.
+dovecot__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                                        if (ansible_local|d() and ansible_local.ldap|d() and
+                                            ansible_local.ldap.base_dn|d())
+                                        else [] }}'
+
+# ]]]
+# .. envvar:: dovecot__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the Postfix/Dovecot Virtual Mail service account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+dovecot__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                                          if (ansible_local|d() and ansible_local.ldap|d() and
+                                              ansible_local.ldap.device_dn|d())
+                                          else [] }}'
+
+# ]]]
+# .. envvar:: dovecot__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# `dovecot` service to access the LDAP directory.
+dovecot__ldap_self_rdn: 'uid=dovecot'
+
+# ]]]
+# .. envvar:: dovecot__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the `dovecot` service to access the LDAP directory.
+dovecot__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+# ]]]
+# .. envvar:: dovecot__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# `dovecot` service to access the LDAP directory.
+dovecot__ldap_self_attributes:
+  uid: '{{ dovecot__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ dovecot__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "Dovecot" service to access the LDAP directory'
+
+  # ]]]
+# .. envvar:: dovecot__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# Dovecot service to bind to the LDAP directory.
+dovecot__ldap_binddn: '{{ ([ dovecot__ldap_self_rdn ]
+                                        + dovecot__ldap_device_dn) | join(",") }}'
+
+# ]]]
+# .. envvar:: dovecot__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the `dovecot` service
+# to bind to the LDAP directory.
+dovecot__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                                  + dovecot__ldap_binddn | to_uuid + ".password length=32 "
+                                  + "chars=alpha,digits,!@_#$%^&*") }}'
+
+# ]]]
+# .. envvar:: dovecot__ldap_people_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the user
+# accounts stored in LDAP.
+dovecot__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
+                               if (ansible_local|d() and ansible_local.ldap|d() and
+                                   ansible_local.ldap.people_rdn|d())
+                               else "ou=People" }}'
+
+# ]]]
+# .. envvar:: dovecot__ldap_people_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the user accounts
+# used by Postfix and Dovecot.
+dovecot__ldap_people_dn: '{{ [ dovecot__ldap_people_rdn ]
+                                          + dovecot__ldap_base_dn }}'
+
+# ]]]
+# .. envvar:: dovecot__ldap_uri [[[
+#
+# List of LDAP URIs that point to the directory servers which should be used by
+# `dovecot` service.
+dovecot__ldap_uri: '{{ ansible_local.ldap.uri
+                                    if (ansible_local|d() and ansible_local.ldap|d() and
+                                        ansible_local.ldap.uri|d())
+                                    else [""] }}'
+
+# LDAP connection options [[[
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+# .. envvar:: postldap__ldap_server_uri [[[
+#
+# The URI address of the LDAP server used by Postfix.
+postldap__ldap_server_uri: '{{ (ansible_local.ldap.uri
+                                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                                ansible_local.ldap.uri|d())
+                                            else [""]) | first }}'
+
+# ]]]
+# .. envvar:: postldap__ldap_server_port [[[
+#
+# The TCP port which should be used for connections to the LDAP server.
+postldap__ldap_server_port: '{{ ansible_local.ldap.port
+                                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                                ansible_local.ldap.port|d())
+                                            else ("389" if postldap__ldap_start_tls|bool else "636") }}'
+
+# ]]]
+# .. envvar:: postldap__ldap_start_tls [[[
+#
+# If ``True``, Postfix will use STARTTLS extension to make encrypted
+# connections to the LDAP server.
+postldap__ldap_start_tls: '{{ ansible_local.ldap.start_tls
+                                          if (ansible_local|d() and ansible_local.ldap|d() and
+                                              (ansible_local.ldap.start_tls|d())|bool)
+                                          else True }}'
+
+  # ]]]
+# ]]]
+# LDAP settings [[[
+# ^^^^^^^^^^^^^^^^^
+
+# .. envvar:: postldap__ldap_user_filter [[[
+#
+# The LDAP filter used to look up user accounts in the directory.
+postldap__ldap_user_filter: '(&
+                                           (objectClass=inetOrgPerson)
+                                           (objectClass=postfixUser)
+                                         )
+                                         (mailEnabled=TRUE)
+                                         (|
+                                           (authorizedService=postfix)
+                                           (authorizedService=mail)
+                                           (authorizedService=\*)
+                                         )'
+
+# ]]]
+# .. envvar:: postldap__ldap_domain_filter [[[
+#
+# The LDAP filter used to look up user accounts in the directory.
+postldap__ldap_domain_filter: '(&
+                                            (ObjectClass=dNSDomain)
+                                            (dc=%s)
+                                           )'
+
+# ]]]
+# .. envvar:: postldap__ldap_quota_attribute [[[
+#
+# Set the LDAP attribute value to be read by Postfix in order to get the user quota.
+postldap__ldap_quota_attribute: 'mailQuota'
+# ]]]
+# .. envvar:: postldap__ldap_quota_default [[[
+#
+# User default LDAP quota. Use human-readable values, e.g. "2 GB".
+postldap__ldap_quota_default: '10 GB'
+# ]]]
+# .. envvar:: postldap__ldap_default_config [[[
+#
+# The LDAP configuration options defined by default.
+postldap__ldap_default_config: []
+
+# ]]]
+# .. envvar:: postldap__ldap_config [[[
+#
+# List of custom LDAP configuration options defined for all hosts
+# in the Ansible inventory.
+postldap__ldap_config: []
+# ]]]
+
+# .. envvar:: postldap__group_ldap_config [[[
+#
+# List of custom LDAP configuration options defined on hosts in
+# a specific Ansible inventory group.
+postldap__group_ldap_config: []
+# ]]]
+
+# .. envvar:: postldap__host_ldap_config [[[
+#
+# List of custom LDAP configuration options defined on specific
+# hosts in the Ansible inventory.
+postldap__host_ldap_config: []
+# ]]]
+
+# .. envvar:: postldap__ldap_combined_config [[[
+#
+# The variable that combines default and user LDAP configuration and is used in
+# the role tasks and templates.
+postldap__ldap_combined_config: '{{ postldap__ldap_default_config
+                                              + postldap__ldap_config
+                                              + postldap__group_ldap_config
+                                              + postldap__host_ldap_config }}'
+# ]]]
+# .. envvar:: postldap__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+postldap__ldap__dependent_tasks:
+  - name: 'Create Postfix account for {{ postldap__ldap_device_dn | join(",") }}'
+    dn: '{{ postldap__ldap_binddn }}'
+    objectClass: '{{ postldap__ldap_self_object_classes }}'
+    attributes: '{{ postldap__ldap_self_attributes }}'
+    no_log: '{{ postldap__no_log|d(True) }}'
+    state: '{{ "present"
+                if (postldap__ldap_enabled|bool and
+                    postldap__ldap_device_dn|d())
+                else "ignore" }}'
+
+  - name: 'Create Postfix group container for {{ postldap__ldap_device_dn | join(",") }}'
+    dn: '{{ postldap__ldap_groups_dn }}'
+    objectClass: 'organizationalUnit'
+    attributes:
+      ou: '{{ postldap__ldap_groups_rdn.split("=")[1] }}'
+      description: 'User groups used in Postfix'
+    state: '{{ "present"
+               if (postldap__ldap_enabled|bool and
+                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_private_subtree|bool)
+               else "ignore" }}'
+
+  - name: 'Create Postfix domains container for {{ postldap__ldap_device_dn | join(",") }}'
+    dn: '{{ postldap__ldap_domains_dn }}'
+    objectClass: 'organizationalUnit'
+    attributes:
+      ou: '{{ postldap__ldap_domains_rdn.split("=")[1] }}'
+      description: 'Virtual Mail Domains used in Postfix'
+    state: '{{ "present"
+               if (postldap__ldap_enabled|bool and
+                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_private_subtree|bool)
+               else "ignore" }}'
+
+  - name: 'Create Postfix Default Virtual Mail Domain for {{ postldap__ldap_default_virtual_domain_dn }}'
+    dn: '{{ postldap__ldap_default_virtual_domain_dn }}'
+    objectClass: 'dNSDomain'
+    state: '{{ "present"
+               if (postldap__ldap_enabled|bool and
+                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_private_subtree|bool)
+               else "ignore" }}'
+      # ]]]
+      # ]]]
+    # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
