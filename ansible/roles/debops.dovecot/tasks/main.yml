@@ -146,12 +146,15 @@
 
 - name: Generate Dovecot ldap configuration
   template:
-    src: "{{ lookup('template_src', 'etc/dovecot/dovecot-ldap-passdb.conf.j2') }}"
-    dest: '/etc/dovecot/dovecot-ldap.conf.ext'
+    src: "{{ lookup('template_src', 'etc/dovecot/{{ item }}.j2') }}"
+    dest: '/etc/dovecot/{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
+  loop:
+    - 'dovecot-ldap-userdb.conf'
+    - 'dovecot-ldap-passdb.conf'
   when: "'ldap' in dovecot_user_accounts"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
 
