@@ -250,3 +250,240 @@ The list of task parameters supported by the role:
   once. This might be important in cases where the LDAP directory is
   replicated, or values from different remote hosts can result in the same LDAP
   objects, e.g. objects with ``X-ORDERED`` index numbers, like LDAP schemas.
+
+
+.. _slapd__ref_slapacl_tests:
+
+slapd__slapacl_tests
+--------------------
+
+The ``slapd__slapacl_*_tests`` variables define a set of :man:`slapacl(8)`
+tests to perform against the OpenLDAP ACL configuration. The tests are
+generated and stored in a shell script which is then executed against the local
+:command:`slapd` instance.
+
+See :ref:`slapd__ref_acl` for more details about the default set of OpenLDAP
+Access Control Lists defined by the :ref:`debops.slapd` role. The
+:ref:`slapd__ref_acl_tests` section has more details about the ACL test
+infrastructure built into the :ref:`debops.slapd` role.
+
+Examples
+~~~~~~~~
+
+Check the access rules of a given LDAP object. Non-existent objects don't
+generate an error. Existing objects will generate a list of ACL permissions.
+To see the rules, pipe the script output to a different command or to a file.
+
+.. code-block:: yaml
+
+   slapd__slapacl_tests:
+
+     - name: 'Check access to ou=People,{{ slapd__basedn }}'
+       dn: 'ou=People,{{ slapd__basedn }}'
+
+Check the access rules of a given LDAP object by another LDAP object. To see
+the rules, pipe the script output to a different command or to a file.
+
+.. code-block:: yaml
+
+   slapd__slapacl_tests:
+
+     - name: 'Check access to ou=People,{{ slapd__basedn }} by user'
+       dn: 'ou=People,{{ slapd__basedn }}'
+       authdn: 'uid=user,ou=People,{{ slapd__basedn }}'
+
+Check the access rules of a given LDAP object by a SASL identity. To see the
+rules, pipe the script output to a different command or to a file.
+
+.. code-block:: yaml
+
+   slapd__slapacl_tests:
+
+     - name: 'Check access to ou=People,{{ slapd__basedn }} by SASL user'
+       dn: 'ou=People,{{ slapd__basedn }}'
+       uid: 'user'
+
+Test the access policy of a specific LDAP object, accessed by anonymous user.
+Failed policy test will result in an error.
+
+.. code-block:: yaml
+
+   slapd__slapacl_tests:
+
+     - name: 'Test access to ou=People,{{ slapd__basedn }} by anonymous user'
+       dn: 'ou=People,{{ slapd__basedn }}'
+       authdn: ''
+       policy: 'none(=0)'
+
+Test the access policy of a specific LDAP object attribute, accessed by another
+LDAP entry. Failed policy test will result in an error.
+
+.. code-block:: yaml
+
+   slapd__slapacl_tests:
+
+     - name: 'Test write access to ou=People,{{ slapd__basedn }} by a service'
+       dn: 'ou=People,{{ slapd__basedn }}'
+       authdn: 'uid=service,ou=Services,{{ slapd__basedn }}'
+       query: 'entry/write'
+       policy: 'deny'
+
+Test the access policy of a specific LDAP object attribute, accessed on behalf
+of a LDAP user by a LDAP service entry via SASL proxy authorization. Failed
+policy test will result in an error.
+
+.. code-block:: yaml
+
+   slapd__slapacl_tests:
+
+     - name: 'Test write access to ou=People,{{ slapd__basedn }} by another user'
+       dn: 'ou=People,{{ slapd__basedn }}'
+       authdn: 'uid=service,ou=Services,{{ slapd__basedn }}'
+       authzid: 'dn:uid=user,ou=People,{{ slapd__basedn }}'
+       query: 'entry/write'
+       policy: 'allow'
+
+Test the access rules of a LDAP object, accessed by another LDAP entry. Failed
+rule test will result in an error.
+
+.. code-block:: yaml
+
+   slapd__slapacl_tests:
+
+     - name: 'Test access rules for ou=People,{{ slapd__basedn }} by user'
+       dn: 'ou=People,{{ slapd__basedn }}'
+       authdn: 'uid=user,ou=People,{{ slapd__basedn }}'
+       queries:
+
+         - name: 'description/write'
+           result: 'write access to description: ALLOWED'
+
+         - name: 'entry'
+           result: 'entry: manage(=mwrscxd)'
+
+Syntax
+~~~~~~
+
+The ACL tests are defined using a list of YAML dictionaries. Each dictionary
+describes one test using specific parameters:
+
+``name``
+  Required. The descriptive name of the test, not used otherwise. Each test has
+  to have an unique ``name`` parameter. The configuration entries with the same
+  ``name`` are merged together and can affect each other in order of
+  appearance.
+
+``dn``
+  Required. The Distinguished Name of the LDAP object to test.
+
+``authdn``
+  Optional. The Distinguished Name of the LDAP object which is used as the
+  identity which accesses the tested object.
+
+``uid``
+  Optional. The SASL id (login name) which will be mapped to a LDAP object
+  using the configured ``authz-regexp`` rules configured in the OpenLDAP
+  server. This LDAP object will be used as the identity which accesses the
+  tested object.
+
+``authzid``
+  Optional. The `SASL proxy authorization`__ id (login name) prefixed with
+  ``u:``, which will be mapped to a LDAP object using the ``authz-regexp``
+  rules configured in the OpenLDAP server, or Distinguished Name of an LDAP
+  object prefixed with ``dn:``. The ``authdn`` or ``uid`` LDAP object will use
+  the ``authzid`` object to access the test subject.
+
+  .. __: https://www.openldap.org/doc/admin24/sasl.html#SASL%20Proxy%20Authorization
+
+``options``
+  Optional. List of addiontal :man:`slapacl(8)` option which should be used for
+  a particular test, for example:
+
+  .. code-block:: yaml
+
+     options: [ 'ssf="128"' ]
+
+  The option values are not quoted in the script template and need to be quoted
+  in the parameter if necessary.
+
+``dry_run``
+  Optional, boolean. If ``True``, instead of using a real ``dn`` LDAP object
+  from the directory, the :command:`slapacl` command will generate a fake DN
+  entry with no attributes which can be used to simulate non-existent LDAP
+  objects. This is required by certain backend databases, for example
+  ``cn=config``.
+
+  ACL rules tested against the attributes of the fake DN entry might not be
+  accurate, use this only with tests against entries themselves.
+
+``debug``
+  Optional. Enable debugging and set the desired log level as a string.
+  Supported log levels can be seen by running the :command:`slapd -d ?`
+  command, or can be found in the :man:`slapd-config(5)` manual page in the
+  ``olcLogLevel`` option documentation. In the case of the ACL tests, the
+  useful log level can be ``acl``.
+
+``state``
+  Optional. If not specified or ``present``, a given test will be included in
+  the generated script. If ``absent``, the test will not be included in the
+  script. If ``ignore``, a given configuration entry will not be evaluated by
+  the role.
+
+  If ``init``, a given configuration entry will be prepared, but not actually
+  included in the generated script. Such entries can then be enabled
+  conditionally by another entry with the same ``name`` parameter.
+
+``comment``
+  Optional. String or YAML text block with comments about a given tests. The
+  comments will be included in the actual script and not displayed otherwise.
+
+``query``
+  Optional. Specify the attribute, optionally an access level and a value to
+  which a given ``dn`` LDAP object should have access, for example ``cn/write``
+  or ``o/write:Example Org``. You can also specify ``entry``, to test access to
+  a given LDAP object without specific attributes (this is the default if
+  ``query`` parameter is not specified) or ``children`` to specify access to
+  child objects of a given LDAP object.
+
+``policy``
+  Optional. Specify the access policy of a given ACL test. If a given test
+  checks particular attribute with a specific access level, for example
+  ``cn/write``, you can define the policy using keywords ``allow``,
+  ``allowed``, ``accept``, ``grant``, ``permit`` to allow access, or
+  ``disallow``, ``denied``, ``reject``, ``revoke``, ``deny`` to deny access to
+  a given attribute.
+
+  If the test checks access policy for an ``entry``, ``children``, or if
+  a ``query`` parameter is not specified, the ``policy`` parameter needs to
+  have an exact permission set for the script to successfully compare the
+  :command:`slapacl` command output with the desired policy. For example, the
+  ``read`` access needs to be specified as ``read(=rscxd)``. Check the script
+  output to see the expected value if you are unsure what needs to be set as
+  the ``policy`` value.
+
+``queries``
+  Optional. A list of YAML dictionaries, each dictionary defines an attribute
+  test similar to the ``query``/``policy`` combination. This parameter can be
+  used to define more complex ACL rule test cases where different object
+  attributes have different access policies. Tests defined using the
+  ``queries`` parameter use the :command:`diff` command to compare the results.
+
+  The ``queries`` parameters from tests with the same ``name`` parameters are
+  merged together, and their entries can modify each other when they have the
+  same ``name`` value.
+
+  Each test case is defined using specific paramters:
+
+  ``name``
+    Required. The attribute to test, with optional access level and value,
+    similar to the ``query`` parameter, for example ``ou/write``.
+
+  ``result``
+    Optional. Specify the exact line that contains the result of a given test
+    case. You can inspect the output of the test script to find what needs to
+    be defined here.
+
+  ``state``
+    Optional. If not defined or ``present``, a given test case will be included
+    in the test script. If ``absent``, a given test case will not be included
+    in the test script.
