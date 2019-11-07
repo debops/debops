@@ -18,7 +18,7 @@
 #
 # List of additional APT packages needed for the LDAP support.
 postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
-                                                       if postldap__ldap_enabled else [] }}'
+                                           if postldap__ldap_enabled else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # PKI / TLS configuration [[[
@@ -66,19 +66,16 @@ postldap__vmail_posix_user: 'vmail'
 # .. envvar:: postldap__vmail_posix_uidnumber [[[
 #
 # Virtual Mail POSIX uidNumber
-#
 postldap__vmail_posix_uidnumber: '{{ getent_passwd[postldap__vmail_posix_user][1]|int }}'
                                                                    # ]]]
 # .. envvar:: postldap__vmail_posix_group [[[
 #
 # Virtual Mail POSIX group
-#
 postldap__vmail_posix_group: 'vmail'
                                                                    # ]]]
 # .. envvar:: postldap__vmail_posix_gidnumber [[[
 #
 # Virtual Mail POSIX gidNumber
-#
 postldap__vmail_posix_gidnumber: '{{ getent_group[postldap__vmail_posix_group][1]|int }}'
                                                                    # ]]]
 # .. envvar:: postldap__mailbox_base [[[
@@ -305,9 +302,9 @@ postldap__postfix__dependent_lookup_tables:
 # When enabled, `postfix` will configure mail-boxes locally and allow LDAP authenticated users to
 # send email over this instance.
 postldap__ldap_enabled: '{{ True
-                                       if (ansible_local|d() and ansible_local.ldap|d() and
-                                          (ansible_local.ldap.enabled|d())|bool)
-                                       else False }}'
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                               (ansible_local.ldap.enabled|d())|bool)
+                            else False }}'
                                                                    # ]]]
 # .. envvar:: postldap__ldap_base_dn [[[
 #
@@ -315,9 +312,9 @@ postldap__ldap_enabled: '{{ True
 # Names of the LDAP directory objects, defined as a YAML list. If this variable
 # is empty, automated Postfix LDAP configuration will not be performed.
 postldap__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                                        if (ansible_local|d() and ansible_local.ldap|d() and
-                                            ansible_local.ldap.base_dn|d())
-                                        else [] }}'
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.base_dn|d())
+                            else [] }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_device_dn [[[
@@ -327,9 +324,9 @@ postldap__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
 postldap__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                                          if (ansible_local|d() and ansible_local.ldap|d() and
-                                              ansible_local.ldap.device_dn|d())
-                                          else [] }}'
+                              if (ansible_local|d() and ansible_local.ldap|d() and
+                                  ansible_local.ldap.device_dn|d())
+                              else [] }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_self_rdn [[[
@@ -362,7 +359,7 @@ postldap__ldap_self_attributes:
 # The Distinguished Name of the account LDAP object used by the
 # Postfix service to bind to the LDAP directory.
 postldap__ldap_binddn: '{{ ([ postldap__ldap_self_rdn ]
-                                        + postldap__ldap_device_dn) | join(",") }}'
+                              + postldap__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_bindpw [[[
@@ -370,8 +367,8 @@ postldap__ldap_binddn: '{{ ([ postldap__ldap_self_rdn ]
 # The password stored in the account LDAP object used by the Postfix service
 # to bind to the LDAP directory.
 postldap__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                                  + postldap__ldap_binddn | to_uuid + ".password length=32 "
-                                  + "chars=alpha,digits,!@_#$%^&*") }}'
+                           + postldap__ldap_binddn | to_uuid + ".password length=32 "
+                           + "chars=alpha,digits,!@_#$%^&*") }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_people_rdn [[[
@@ -389,7 +386,7 @@ postldap__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
 # The Distinguished Name of the LDAP object which contains the user accounts
 # used by Postfix.
 postldap__ldap_people_dn: '{{ [ postldap__ldap_people_rdn ]
-                                          + postldap__ldap_base_dn }}'
+                                + postldap__ldap_base_dn }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_uri [[[
@@ -397,9 +394,9 @@ postldap__ldap_people_dn: '{{ [ postldap__ldap_people_rdn ]
 # List of LDAP URIs that point to the directory servers which should be used by
 # `postfix virtual`.
 postldap__ldap_uri: '{{ ansible_local.ldap.uri
-                                    if (ansible_local|d() and ansible_local.ldap|d() and
-                                        ansible_local.ldap.uri|d())
-                                    else [""] }}'
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.uri|d())
+                        else [""] }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_private_subtree [[[
@@ -418,9 +415,9 @@ postldap__ldap_private_subtree: False
 # The Relative Distinguished Name of the LDAP object which contains the groups
 # stored in LDAP.
 postldap__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
-                                           if (ansible_local|d() and ansible_local.ldap|d() and
-                                               ansible_local.ldap.groups_rdn|d())
-                                           else "ou=Groups" }}'
+                               if (ansible_local|d() and ansible_local.ldap|d() and
+                                   ansible_local.ldap.groups_rdn|d())
+                               else "ou=Groups" }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_domains_rdn [[[
@@ -428,9 +425,9 @@ postldap__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
 # The Relative Distinguished Name of the LDAP object which contains the (virtual mail)
 # domains stored in LDAP.
 postldap__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn
-                                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                                ansible_local.ldap.domains_rdn|d())
-                                            else "ou=Domains" }}'
+                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                    ansible_local.ldap.domains_rdn|d())
+                                else "ou=Domains" }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_groups_dn [[[
@@ -439,10 +436,10 @@ postldap__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn
 # Postfix. If private groups are enabled, this object will be created
 # automatically.
 postldap__ldap_groups_dn: '{{ ([ postldap__ldap_groups_rdn, postldap__ldap_self_rdn ]
-                                           + postldap__ldap_device_dn)
-                                            if postldap__ldap_private_subtree|bool
-                                            else ([ postldap__ldap_groups_rdn ]
-                                                  + postldap__ldap_base_dn) }}'
+                                 + postldap__ldap_device_dn)
+                                  if postldap__ldap_private_subtree|bool
+                                  else ([ postldap__ldap_groups_rdn ]
+                                        + postldap__ldap_base_dn) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_domains_dn [[[
@@ -451,10 +448,10 @@ postldap__ldap_groups_dn: '{{ ([ postldap__ldap_groups_rdn, postldap__ldap_self_
 # Postfix. If private groups are enabled, this object will be created
 # automatically.
 postldap__ldap_domains_dn: '{{ ([ postldap__ldap_domains_rdn, postldap__ldap_self_rdn ]
-                                            + postldap__ldap_device_dn)
-                                              if postldap__ldap_private_subtree|bool
-                                              else ([ postldap__ldap_domains_rdn ]
-                                                    + postldap__ldap_base_dn) }}'
+                                  + postldap__ldap_device_dn)
+                                    if postldap__ldap_private_subtree|bool
+                                    else ([ postldap__ldap_domains_rdn ]
+                                          + postldap__ldap_base_dn) }}'
                                                                    # ]]]
 # .. envvar:: postldap__ldap_default_virtual_domain_rdn [[[
 #
@@ -466,8 +463,8 @@ postldap__ldap_default_virtual_domain_rdn: '{{ ansible_domain }}'
 #
 # The dn of the default virtual mail domain used by Postfix.
 postldap__ldap_default_virtual_domain_dn: '{{ (["dc="
-                                                           + postldap__ldap_default_virtual_domain_rdn]
-                                                           + postldap__ldap_domains_dn) | join(",") }}'
+                                               + postldap__ldap_default_virtual_domain_rdn]
+                                               + postldap__ldap_domains_dn) | join(",") }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP connection options [[[
@@ -519,9 +516,9 @@ postldap__ldap_user_filter: '(|
 #
 # The LDAP filter used to look up user accounts in the directory.
 postldap__ldap_domain_filter: '(&
-                                            (ObjectClass=dNSDomain)
-                                            (dc=%s)
-                                           )'
+                                 (ObjectClass=dNSDomain)
+                                 (dc=%s)
+                                )'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_default_config [[[
@@ -556,9 +553,9 @@ postldap__host_ldap_config: []
 # The variable that combines default and user LDAP configuration and is used in
 # the role tasks and templates.
 postldap__ldap_combined_config: '{{ postldap__ldap_default_config
-                                              + postldap__ldap_config
-                                              + postldap__group_ldap_config
-                                              + postldap__host_ldap_config }}'
+                                    + postldap__ldap_config
+                                    + postldap__group_ldap_config
+                                    + postldap__host_ldap_config }}'
                                                                    # ]]]
 # .. envvar:: postldap__ldap__dependent_tasks [[[
 #
