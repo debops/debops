@@ -106,6 +106,13 @@ Fixed
   ``/`` location is not specified in the ``item.location`` dictionary,
   a default one will be included by the role.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- On hosts with unprivileged :command:`rsyslog` service, ensure that the
+  :file:`/var/log/` directory permissions are correct even when owner and group
+  are already set correctly.
+
 
 `debops v1.0.12`_ - 2019-10-25
 ------------------------------
