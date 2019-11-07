@@ -19,6 +19,7 @@
 # List of additional APT packages needed for the LDAP support.
 postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
                                            if postldap__ldap_enabled else [] }}'
+
                                                                    # ]]]
                                                                    # ]]]
 # PKI / TLS configuration [[[
@@ -30,6 +31,7 @@ postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
 # in  PEM  format  which  are  to  be  recognized by the client in
 # SSL/TLS connections. The files each contain one CA  certificate.
 postldap__tls_ca_cert_dir: '/etc/ssl/certs/'
+
                                                                    # ]]]
                                                                    # ]]]
 # Secrets [[[
@@ -42,6 +44,7 @@ postldap__tls_ca_cert_dir: '/etc/ssl/certs/'
 # roles, but otherwise it should be set to ``True`` to ensure that Ansible
 # doesn't leak sensitive data in its logs.
 postldap__no_log: True
+
                                                                    # ]]]
                                                                    # ]]]
 
@@ -62,21 +65,25 @@ postldap__no_log: True
 # on the other hand it protects the mailboxes from external access.
 # Only vmail (and root) are allowed to access the mailboxes.
 postldap__vmail_posix_user: 'vmail'
+
                                                                    # ]]]
 # .. envvar:: postldap__vmail_posix_uidnumber [[[
 #
 # Virtual Mail POSIX uidNumber
 postldap__vmail_posix_uidnumber: '{{ getent_passwd[postldap__vmail_posix_user][1]|int }}'
+
                                                                    # ]]]
 # .. envvar:: postldap__vmail_posix_group [[[
 #
 # Virtual Mail POSIX group
 postldap__vmail_posix_group: 'vmail'
+
                                                                    # ]]]
 # .. envvar:: postldap__vmail_posix_gidnumber [[[
 #
 # Virtual Mail POSIX gidNumber
 postldap__vmail_posix_gidnumber: '{{ getent_group[postldap__vmail_posix_group][1]|int }}'
+
                                                                    # ]]]
 # .. envvar:: postldap__mailbox_base [[[
 #
@@ -89,6 +96,7 @@ postldap__vmail_posix_gidnumber: '{{ getent_group[postldap__vmail_posix_group][1
 # To achieve this, either use the same GID across all mail users and set group ownership to that GID,
 # or make the directory world writable.
 postldap__mailbox_base: '/var/vmail'
+
                                                                    # ]]]
 # .. envvar:: postldap__virtual_alias_maps [[[
 #
@@ -104,6 +112,7 @@ postldap__mailbox_base: '/var/vmail'
 postldap__virtual_alias_maps:
   - '$alias_maps'
   - 'ldap:/etc/postfix/ldap_virtual_aliases.cf'
+
                                                                    # ]]]
                                                                    # ]]]
 # Postfix 'main.cf' configuration [[[
@@ -188,6 +197,7 @@ postldap__postfix__dependent_maincf:
     state: '{{ "present"
             if (postldap__ldap_enabled|bool)
             else "absent" }}'
+
                                                                    # ]]]
 # .. envvar:: postldap__postfix_ldap_connection [[[
 #
@@ -203,6 +213,7 @@ postldap__postfix_ldap_connection:
   bind_dn: '{{ postldap__ldap_binddn }}'
   bind_pw: '{{ postldap__ldap_bindpw }}'
   scope: 'sub'
+
                                                                    # ]]]
 # .. envvar:: postldap__postfix_lookup_virtual_aliases [[[
 #
@@ -212,6 +223,7 @@ postldap__postfix_lookup_virtual_aliases:
   search_base: '{{ postldap__ldap_people_dn|join(",") }}'
   query_filter: '(&(mailAlias=%s){{ postldap__ldap_user_filter }})'
   result_attribute: 'mail'
+
                                                                    # ]]]
 # .. envvar:: postldap__postfix_lookup_virtual_recipients [[[
 #
@@ -222,6 +234,7 @@ postldap__postfix_lookup_virtual_recipients:
   query_filter: '(&(|(mail=%s)(mailAlias=%s)){{ postldap__ldap_user_filter }})'
   result_attribute: 'mail'
   result_format: '/%d/%u/mailbox/'
+
                                                                    # ]]]
 # .. envvar:: postldap__postfix_lookup_virtual_domains [[[
 #
@@ -231,6 +244,7 @@ postldap__postfix_lookup_virtual_domains:
   search_base: '{{ postldap__ldap_domains_dn|join(",") }}'
   query_filter: '{{ postldap__ldap_domain_filter }}'
   result_attribute: 'dc'
+
                                                                    # ]]]
 # .. envvar:: postldap__postfix_lookup_virtual_senders [[[
 #
@@ -243,6 +257,7 @@ postldap__postfix_lookup_virtual_senders:
   search_base: '{{ postldap__ldap_people_dn|join(",") }}'
   query_filter: '(&(mailAlias=%s){{ postldap__ldap_user_filter }})'
   result_attribute: 'uid, mail'
+
                                                                    # ]]]
 # .. envvar:: postldap__postfix__dependent_lookup_tables [[[
 #
@@ -305,6 +320,7 @@ postldap__ldap_enabled: '{{ True
                             if (ansible_local|d() and ansible_local.ldap|d() and
                                (ansible_local.ldap.enabled|d())|bool)
                             else False }}'
+
                                                                    # ]]]
 # .. envvar:: postldap__ldap_base_dn [[[
 #
@@ -465,6 +481,7 @@ postldap__ldap_default_virtual_domain_rdn: '{{ ansible_domain }}'
 postldap__ldap_default_virtual_domain_dn: '{{ (["dc="
                                                + postldap__ldap_default_virtual_domain_rdn]
                                                + postldap__ldap_domains_dn) | join(",") }}'
+
                                                                    # ]]]
                                                                    # ]]]
 # LDAP connection options [[[
@@ -532,6 +549,7 @@ postldap__ldap_default_config: []
 # List of custom LDAP configuration options defined for all hosts
 # in the Ansible inventory.
 postldap__ldap_config: []
+
                                                                    # ]]]
 
 # .. envvar:: postldap__group_ldap_config [[[
@@ -539,6 +557,7 @@ postldap__ldap_config: []
 # List of custom LDAP configuration options defined on hosts in
 # a specific Ansible inventory group.
 postldap__group_ldap_config: []
+
                                                                    # ]]]
 
 # .. envvar:: postldap__host_ldap_config [[[
@@ -546,6 +565,7 @@ postldap__group_ldap_config: []
 # List of custom LDAP configuration options defined on specific
 # hosts in the Ansible inventory.
 postldap__host_ldap_config: []
+
                                                                    # ]]]
 
 # .. envvar:: postldap__ldap_combined_config [[[
@@ -556,6 +576,7 @@ postldap__ldap_combined_config: '{{ postldap__ldap_default_config
                                     + postldap__ldap_config
                                     + postldap__group_ldap_config
                                     + postldap__host_ldap_config }}'
+
                                                                    # ]]]
 # .. envvar:: postldap__ldap__dependent_tasks [[[
 #
@@ -603,6 +624,7 @@ postldap__ldap__dependent_tasks:
                    postldap__ldap_device_dn|d() and
                    postldap__ldap_private_subtree|bool)
                else "ignore" }}'
+
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
