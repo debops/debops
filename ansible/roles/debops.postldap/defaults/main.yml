@@ -207,42 +207,42 @@ postldap__postfix_ldap_connection:
   bind_pw: '{{ postldap__ldap_bindpw }}'
   scope: 'sub'
                                                                    # ]]]
-# .. envvar:: postldap__postfix__lookup_virtual_aliases [[[
+# .. envvar:: postldap__postfix_lookup_virtual_aliases [[[
 #
 # The virtual_alias_maps setting is used to find the target mailbox
 # (configured in the attribute mail, aka the mailbox or maildrop).
-postldap__postfix__lookup_virtual_aliases:
+postldap__postfix_lookup_virtual_aliases:
   search_base: '{{ postldap__ldap_people_dn|join(",") }}'
   query_filter: '(&(mailAlias=%s){{ postldap__ldap_user_filter }})'
   result_attribute: 'mail'
                                                                    # ]]]
-# .. envvar:: postldap__postfix__lookup_virtual_recipients [[[
+# .. envvar:: postldap__postfix_lookup_virtual_recipients [[[
 #
 # As we only want to accept mail, where we know the recipients
 # (and are responsible for them), the virtual_mailbox_maps configuration is used.
-postldap__postfix__lookup_virtual_recipients:
+postldap__postfix_lookup_virtual_recipients:
   search_base: '{{ postldap__ldap_people_dn|join(",") }}'
   query_filter: '(&(|(mail=%s)(mailAlias=%s)){{ postldap__ldap_user_filter }})'
   result_attribute: 'mail'
   result_format: '/%d/%u/mailbox/'
                                                                    # ]]]
-# .. envvar:: postldap__postfix__lookup_virtual_domains [[[
+# .. envvar:: postldap__postfix_lookup_virtual_domains [[[
 #
 # The virtual_mailbox_domains configurations performs a lookup,
 # if the postfix is responsible for the given domain.
-postldap__postfix__lookup_virtual_domains:
+postldap__postfix_lookup_virtual_domains:
   search_base: '{{ postldap__ldap_domains_dn|join(",") }}'
   query_filter: '{{ postldap__ldap_domain_filter }}'
   result_attribute: 'dc'
                                                                    # ]]]
-# .. envvar:: postldap__postfix__lookup_virtual_senders [[[
+# .. envvar:: postldap__postfix_lookup_virtual_senders [[[
 #
 # The smtpd_sender_login_maps configurations performs a lookup from an incoming
 # email-recipient to a username. Postfix first performs a full lookup
 # on user@domain, then user and then @domain.
 # The later one is also used for catchalls where the mailAlias
 # is set to e.g. @foobar.com
-postldap__postfix__lookup_virtual_senders:
+postldap__postfix_lookup_virtual_senders:
   search_base: '{{ postldap__ldap_people_dn|join(",") }}'
   query_filter: '(&(mailAlias=%s){{ postldap__ldap_user_filter }})'
   result_attribute: 'uid, mail'
@@ -259,7 +259,7 @@ postldap__postfix__dependent_lookup_tables:
       (configured in the attribute mail, aka the mailbox or maildrop).
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    config: '{{ postldap__postfix__lookup_virtual_aliases }}'
+    config: '{{ postldap__postfix_lookup_virtual_aliases }}'
 
   - name: 'ldap_virtual_recipients.cf'
     state: 'present'
@@ -268,7 +268,7 @@ postldap__postfix__dependent_lookup_tables:
       (and are responsible for them), the virtual_mailbox_maps configuration is used.
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    config: '{{ postldap__postfix__lookup_virtual_recipients }}'
+    config: '{{ postldap__postfix_lookup_virtual_recipients }}'
 
   - name: 'ldap_virtual_domains.cf'
     state: 'present'
@@ -277,7 +277,7 @@ postldap__postfix__dependent_lookup_tables:
       if the postfix is responsible for the given domain.
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    config: '{{ postldap__postfix__lookup_virtual_domains }}'
+    config: '{{ postldap__postfix_lookup_virtual_domains }}'
 
   - name: 'ldap_virtual_senders.cf'
     state: 'present'
@@ -289,7 +289,7 @@ postldap__postfix__dependent_lookup_tables:
       is set to e.g. @foobar.com
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    config: '{{ postldap__postfix__lookup_virtual_senders }}'
+    config: '{{ postldap__postfix_lookup_virtual_senders }}'
 
                                                                    # ]]]
                                                                    # ]]]
