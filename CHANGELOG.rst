@@ -27,6 +27,12 @@ Added
 - The ``try_files`` option in the PHP location blocks can be overridden using
   the ``item.php_try_files`` parameter.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The Access Control List rules can now be tested using the :man:`slapacl(8)`
+  command via a generated :ref:`test suite script <slapd__ref_acl_tests>`.
+
 Changed
 ~~~~~~~
 

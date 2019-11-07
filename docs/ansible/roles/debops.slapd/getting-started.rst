@@ -102,6 +102,10 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
+``role::slapd:slapacl``
+  Run tasks that maintain the :command:`slapacl` test suite script and perform
+  OpenLDAP ACL tests when enabled.
+
 
 Other resources
 ---------------
