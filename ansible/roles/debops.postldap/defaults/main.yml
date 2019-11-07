@@ -508,16 +508,11 @@ postldap__ldap_start_tls: '{{ ansible_local.ldap.start_tls
 # .. envvar:: postldap__ldap_user_filter [[[
 #
 # The LDAP filter used to look up user accounts in the directory.
-postldap__ldap_user_filter: '(&
-                                           (objectClass=inetOrgPerson)
-                                           (objectClass=postfixUser)
-                                         )
-                                         (mailEnabled=TRUE)
-                                         (|
-                                           (authorizedService=postfix)
-                                           (authorizedService=mail)
-                                           (authorizedService=\*)
-                                         )'
+postldap__ldap_user_filter: '(|
+                               (authorizedService=postfix)
+                               (authorizedService=mail)
+                               (authorizedService=\*)
+                             )'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_domain_filter [[[
