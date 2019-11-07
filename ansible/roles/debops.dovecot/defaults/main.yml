@@ -57,20 +57,15 @@ dovecot_user_accounts: [ 'deny', 'system' ]
 dovecot_deny_users: [ 'root' ]
 
                                                                    # ]]]
-# .. envvar:: dovecot_mail_location_base [[[
-#
-# Base directory for the Mailbox location. See: `:ref:postldap__mailbox_base`.
-dovecot_mail_location_base: '{{ "/var/vmail/%d/%u/mailbox"
-                                 if (dovecot__ldap_enabled|d(False))
-                                 else "~" }}'
-
-# ]]]
 # .. envvar:: dovecot_mail_location [[[
 #
 # Mailbox location. For mbox set something like ``mbox:~/mail:INBOX=/var/mail/%u``.
 # For more information about the supported format, check `Dovecot Mail
 # Location <https://doc.dovecot.org/configuration_manual/mail_location/>`_
-dovecot_mail_location: 'maildir:{{ dovecot_mail_location_base }}/Maildir'
+dovecot_mail_location: 'maildir:{{ "/var/vmail/%d/%n/mailbox"
+                                   if (dovecot__ldap_enabled|d(False))
+                                   else 
+                                     "~/Maildir" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_mail_dotlock [[[
@@ -296,7 +291,8 @@ dovecot_ssl_min_protocol: '{{ "!SSLv2 !SSLv3"
 # .. envvar:: dovecot_ssl_dh_parameters_length [[[
 #
 # Diffie-Hellman parameters length
-dovecot_ssl_dh_parameters_length: 2048
+# Only needed for Dovecot v2.2.x in old-distros.
+dovecot_ssl_dh_parameters_length: 4096
 
                                                                    # ]]]
 # .. envvar:: dovecot_ssl_cipher_list [[[
@@ -322,6 +318,37 @@ dovecot_ssl_cipher_list_better_cypto: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:E
 # https://www.ncsc.nl/english/current-topics/factsheets/it-security-guidelines-for-transport-layer-security-tls.html
 dovecot_ssl_cipher_list_ncsc_nl: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256'
                                                                    # ]]]
+                                                                   # ]]]
+# Diffie-Hellman parameters [[[
+# -----------------------------
+
+# .. envvar:: dovecot__dhparam [[[
+#
+# Enable or disable support for custom Diffie-Hellman parameters managed by the
+# :ref:`debops.dhparam` Ansible role.
+dovecot__dhparam: '{{ ansible_local.dhparam.enabled
+                      if (ansible_local|d() and ansible_local.dhparam|d() and
+                          ansible_local.dhparam.enabled is defined)
+                      else False }}'
+
+# ]]]
+# .. envvar:: dovecot__dhparam_set [[[
+#
+# Name of the Diffie-Hellman parameter set to use in Dovecot configuration. See
+# :ref:`debops.dhparam` Ansible role for more details.
+dovecot__dhparam_set: 'default'
+
+# ]]]
+# .. envvar:: dovecot__ssl_dh_file [[[
+#
+# Absolute path to Diffie-Hellman parameters file which should be used by Dovecot.
+dovecot__ssl_dh_file: '{{ ansible_local.dhparam[dovecot__dhparam_set]
+                                    if (ansible_local|d() and ansible_local.dhparam|d() and
+                                        ansible_local.dhparam[dovecot__dhparam_set]|d())
+                                    else "" }}'
+
+# ]]]
+# ]]]
 # Dovecot custom configuration [[[
 # --------------------------------
 
@@ -565,7 +592,7 @@ dovecot__ldap_binddn: '{{ ([ dovecot__ldap_self_rdn ]
 # to bind to the LDAP directory.
 dovecot__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                                   + dovecot__ldap_binddn | to_uuid + ".password length=32 "
-                                  + "chars=alpha,digits,!@_#$%^&*") }}'
+                                  + "chars=alpha,digits,!@_$%^&*") }}'
 
 # ]]]
 # .. envvar:: dovecot__ldap_people_rdn [[[
@@ -626,16 +653,18 @@ dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls
 #
 # The LDAP filter used to look up user accounts in the directory.
 dovecot__ldap_user_filter: '(&
-                               (objectClass=inetOrgPerson)
-                               (objectClass=postfixUser)
-                             )
-                             (!(mailEnabled=FALSE))
-                             (|
-                               (authorizedService=postfix)
-                               (authorizedService=mail)
-                               (authorizedService=\*)
-                             )
-                             (mailDrop=%u)'
+                              (&
+                                  (objectClass=inetOrgPerson)
+                                  (objectClass=postfixUser)
+                              )
+                              (|
+                                  (authorizedService=postfix)
+                                  (authorizedService=mail)
+                                  (authorizedService=*)
+                              )
+                              (!(mailEnabled=FALSE))
+                              (mailDrop=%u)
+                            )'
 
 # ]]]
 # .. envvar:: dovecot__ldap_domain_filter [[[

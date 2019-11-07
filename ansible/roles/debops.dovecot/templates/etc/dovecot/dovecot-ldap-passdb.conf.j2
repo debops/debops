@@ -10,7 +10,6 @@ tls = '{{ "yes"
         else "no" }}'
 tls_ca_cert_dir = {{ dovecot__tls_ca_cert_dir }}
 tls_require_cert = hard
-tls_allow_invalid_cert = false
 
 ## Passdb LDAP with authentication binds
 # LDAP server verifies the password, so Dovecot doesn't need to know what
@@ -25,13 +24,8 @@ dn = {{ dovecot__ldap_binddn }}
 dnpass = {{ dovecot__ldap_bindpw }}
 
 pass_attrs = \
-    uid=%u
+    uid=%u,\
     mailDrop=mail,\
     userPassword=userPassword
 
 pass_filter = {{ dovecot__ldap_user_filter }}
-
-# Virtual Mail user and group
-mail_uid = {{ dovecot__vmail_posix_user }}
-mail_gid = {{  dovecot__vmail_posix_group }}
-

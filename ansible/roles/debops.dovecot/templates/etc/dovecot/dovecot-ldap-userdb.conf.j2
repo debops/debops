@@ -10,7 +10,6 @@ tls = '{{ "yes"
         else "no" }}'
 tls_ca_cert_dir = {{ dovecot__tls_ca_cert_dir }}
 tls_require_cert = hard
-tls_allow_invalid_cert = false
 
 ## Passdb LDAP with authentication binds
 # LDAP server verifies the password, so Dovecot doesn't need to know what
@@ -25,22 +24,9 @@ dn = {{ dovecot__ldap_binddn }}
 dnpass = {{ dovecot__ldap_bindpw }}
 
 user_attrs = \
+    uid=%u,\
     mailQuota=quota_rule=*:bytes=%{ldap:{{ dovecot__ldap_quota_attribute }}}:storage=%$,\
     mailGroupACL=acl_groups,\
     mailExpungeTrash=namespace/inbox/mailbox/Trash/autoexpunge
-    #=mail=maildir:/var/spool/vmail/%{ldap:sAMAccountName}/Maildir
-    #=mail=maildir:/var/vmail/%d/%n/Maildir
-    #mailboxPath=home=/home/%{ldap:mailboxPath}, \
-    #mailboxPath=mail=maildir:~/Maildir
 
 user_filter = {{ dovecot__ldap_user_filter }}
-
-# For using doveadm -A:
-#iterate_attrs = =user=%{ldap:mail}
-#iterate_filter = (objectClass=posixAccount)
-#iterate_attrs = mailDrop=user
-#iterate_filter = (objectClass=mailUser)
-
-# Virtual Mail user and group
-mail_uid = {{ dovecot__vmail_posix_user }}
-mail_gid = {{  dovecot__vmail_posix_group }}
