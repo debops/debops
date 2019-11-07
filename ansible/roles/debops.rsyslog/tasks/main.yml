@@ -45,8 +45,9 @@
   shell: |
     [ ! -d {{ rsyslog__home }} ] \
       || ( [ "$(stat -c '%G' {{ rsyslog__home }})" = "{{ rsyslog__group }}" ] \
-             || ( chown -v root:{{ rsyslog__group }} {{ rsyslog__home }} ; \
-                  chmod -v 775 {{ rsyslog__home }} ) )
+             || chown -v root:{{ rsyslog__group }} {{ rsyslog__home }} ; \
+           [ "$(stat -c '%a' {{ rsyslog__home }})" = "775" ] \
+             || chmod -v 775 {{ rsyslog__home }} )
     for i in {{ rsyslog__default_logfiles | join(" ") }} ; do
       [ ! -f ${i} ] || \
         ( [ "$(stat -c '%U' ${i})" = "{{ rsyslog__file_owner }}" ] \
