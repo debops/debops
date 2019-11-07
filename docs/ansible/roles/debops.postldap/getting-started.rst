@@ -10,7 +10,7 @@ recipients do not correspond to the Linux system users.
 Hence it is possible to host emails for other domains.
 The users, email alias and domains will be managed with LDAP.
 Local mail is enabled by default, support for mail aliases is provided by
-the ``debops.etc_aliases`` Ansible role and the LDAP user attribute
+the :ref:`debops.etc_aliases` Ansible role and the LDAP user attribute
 ``mailAlias``.
 
 This role only works when **LDAP support is explicitly enabled** and the
