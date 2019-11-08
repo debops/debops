@@ -10,6 +10,7 @@
     # Re-instantiate dependent variables to evaluate variables that use them.
     # Without this, dependent variables may contain outdated configuration.
     ldap__fact_dependent_tasks: '{{ ldap__dependent_tasks }}'
+  tags: [ 'role::ldap:tasks' ]
 
 - name: Install packages required for LDAP support
   package:
@@ -61,6 +62,7 @@
   become_user: '{{ ldap__admin_become_user }}'
   delegate_to: '{{ ldap__admin_delegate_to }}'
   run_once: True
+  tags: [ 'role::ldap:tasks' ]
 
 - name: Perform LDAP tasks
   include_tasks: 'ldap_tasks.yml'
@@ -72,6 +74,7 @@
   when: ldap__enabled|bool and ldap__admin_enabled|bool and
         item.name|d() and item.dn|d() and
         item.state|d('present') not in [ 'init', 'ignore' ]
+  tags: [ 'role::ldap:tasks' ]
   no_log: '{{ item.no_log | d(True
                               if ("userPassword" in (item.attributes|d({})).keys() or
                                   "olcRootPW"    in (item.attributes|d({})).keys())

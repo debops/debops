@@ -324,6 +324,15 @@ General
 - The number of rounds in SHA-512 password hashes has been increased from 5000
   (default) to 100001. Existing password hashes will be unaffected.
 
+- The ``employeeNumber`` attribute in the ``ou=People,dc=example,dc=org`` LDAP
+  subtree will be constrained to digits only, and the LDAP directory will
+  enforce its uniqueness in the subtree. This allows the attribute to be used
+  for correlation of personal LDAP objects to RDBMS-based databases.
+
+- The ``mail`` attribute is changed from unique for objects in the
+  ``ou=People,dc=example,dc=org`` LDAP subtree to globally unique, due to its
+  use for authentication purposes. The attribute will be indexed by default.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
