@@ -900,7 +900,9 @@ postfix__original_mastercf:
     private: False
     chroot: True
     command: 'smtpd'
-    state: 'comment'
+    state: '{{ "present"  
+               if (postfix__pki|bool)
+               else "comment" }}'
     options:
 
       - syslog_name: 'postfix/smtps'
