@@ -89,6 +89,14 @@ General
 - Explicitly set the Postfix configuration state to ensure that it works from
   dependent role configuration stored on the Ansible Controller.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The ``employeeNumber`` attribute in the ``ou=People,dc=example,dc=org`` LDAP
+  subtree will be constrained to digits only, and the LDAP directory will
+  enforce its uniqueness in the subtree. This allows the attribute to be used
+  for correlation of personal LDAP objects to RDBMS-based databases.
+
 Fixed
 ~~~~~
 
