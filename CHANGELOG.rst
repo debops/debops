@@ -112,6 +112,12 @@ Fixed
   ``/`` location is not specified in the ``item.location`` dictionary,
   a default one will be included by the role.
 
+:ref:`debops.opendkim` role
+'''''''''''''''''''''''''''
+
+- Make sure that :ref:`debops.postfix` dependent configuration has the state
+  set explicitly, otherwise it will not be included in the configuration.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
