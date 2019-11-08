@@ -19,7 +19,6 @@
 # List of additional APT packages needed for the LDAP support.
 postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
                                            if postldap__ldap_enabled else [] }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # PKI / TLS configuration [[[
@@ -31,7 +30,6 @@ postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
 # in  PEM  format  which  are  to  be  recognized by the client in
 # SSL/TLS connections. The files each contain one CA  certificate.
 postldap__tls_ca_cert_dir: '/etc/ssl/certs/'
-
                                                                    # ]]]
                                                                    # ]]]
 # Secrets [[[
@@ -44,7 +42,6 @@ postldap__tls_ca_cert_dir: '/etc/ssl/certs/'
 # roles, but otherwise it should be set to ``True`` to ensure that Ansible
 # doesn't leak sensitive data in its logs.
 postldap__no_log: True
-
                                                                    # ]]]
                                                                    # ]]]
 
@@ -112,7 +109,6 @@ postldap__mailbox_base: '/var/vmail'
 postldap__virtual_alias_maps:
   - '$alias_maps'
   - 'ldap:/etc/postfix/ldap_virtual_aliases.cf'
-
                                                                    # ]]]
                                                                    # ]]]
 # Postfix 'main.cf' configuration [[[
@@ -302,7 +298,6 @@ postldap__postfix__dependent_lookup_tables:
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     config: '{{ postldap__postfix_lookup_virtual_senders }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # LDAP [[[
@@ -481,7 +476,6 @@ postldap__ldap_default_virtual_domain_rdn: '{{ ansible_domain }}'
 postldap__ldap_default_virtual_domain_dn: '{{ (["dc="
                                                + postldap__ldap_default_virtual_domain_rdn]
                                                + postldap__ldap_domains_dn) | join(",") }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # LDAP connection options [[[
@@ -513,7 +507,6 @@ postldap__ldap_start_tls: '{{ ansible_local.ldap.start_tls
                                           if (ansible_local|d() and ansible_local.ldap|d() and
                                               (ansible_local.ldap.start_tls|d())|bool)
                                           else True }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # LDAP settings [[[
@@ -624,7 +617,6 @@ postldap__ldap__dependent_tasks:
                    postldap__ldap_device_dn|d() and
                    postldap__ldap_private_subtree|bool)
                else "ignore" }}'
-
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
