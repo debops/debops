@@ -100,6 +100,10 @@ General
   enforce its uniqueness in the subtree. This allows the attribute to be used
   for correlation of personal LDAP objects to RDBMS-based databases.
 
+- The ``mail`` attribute is changed from unique for objects in the
+  ``ou=People,dc=example,dc=org`` LDAP subtree to globally unique, due to its
+  use for authentication purposes. The attribute will be indexed by default.
+
 Fixed
 ~~~~~
 
