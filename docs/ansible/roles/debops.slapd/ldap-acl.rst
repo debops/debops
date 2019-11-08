@@ -503,13 +503,13 @@ execution of the test script by Ansible :envvar:`can be disabled
 new ACL rules to fail the Ansible execution during development.
 
 Some of the test cases require real, existing LDAP objects to execute properly.
-The :ref:`debops.slapd` role provides a set of ``slapd__slapacl_*_rdn`` default
-variables that correspond to various LDAP objects like unprivileged and
-privileged user accounts. To enable the more extensive tests, you need to
-create the required LDAP objects, grant them the permissions you want and
-define their Relative Distinguished Names in the Ansible inventory. When the
-default values of the variables are changed, the role will enable the
-additional tests automatically.
+The :ref:`debops.slapd` role provides the :envvar:`slapd__slapacl_test_rdn_map`
+YAML dictionary that contains Relative Distinguished Names of various LDAP
+objects like unprivileged and privileged user accounts. To enable the more
+extensive tests, you need to create the required LDAP objects, grant them the
+permissions you want and define their Relative Distinguished Names in the above
+YAML dictionary through the Ansible inventory. When the default values of the
+variable are changed, the role will enable the additional tests automatically.
 
 
 References

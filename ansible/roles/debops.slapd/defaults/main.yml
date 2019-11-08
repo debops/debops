@@ -866,22 +866,27 @@ slapd__slapacl_run_tests: True
 slapd__slapacl_script: '/etc/ldap/slapacl-test-suite'
 
                                                                    # ]]]
-# .. envvar:: slapd__slapacl_regular_person_rdn [[[
+# .. envvar:: slapd__slapacl_test_rdn_map [[[
 #
 # Some of the :command:`slapacl` tests require existing LDAP objects to work
-# correctly. This variable contains the Relative Distinguished Name of an
-# unprivileged LDAP user account. Change the value via the Ansible inventory to
-# an existing personal account to enable the related tests.
-slapd__slapacl_regular_person_rdn: 'uid=unprivileged-user'
+# correctly. This variable defines a YAML dictionary with Relative
+# Distinguished Names of various object types used in the default ACL test
+# cases. You should define any number of these in the inventory and point them
+# to real user accounts or service accounts - the more you define, the more
+# tests will be active.
+slapd__slapacl_test_rdn_map:
 
-                                                                   # ]]]
-# .. envvar:: slapd__slapacl_admin_person_rdn [[[
-#
-# Some of the :command:`slapacl` tests require existing LDAP objects to work
-# correctly. This variable contains the Relative Distinguished Name of a LDAP
-# administrator personal account. Change the value via the Ansible inventory to
-# an existing personal account to enable the related tests.
-slapd__slapacl_admin_person_rdn: 'uid=admin-user'
+  # LDAP Administrator (see everything, write access to all)
+  ldap_admin_rdn:    'uid=<user>'
+
+  # LDAP Editor (see most things, write access to most things)
+  ldap_editor_rdn:   'uid=<user>'
+
+  # Account Administrator (write access to personal objects)
+  account_admin_rdn: 'uid=<user>'
+
+  # An unprivileged user account
+  person_rdn:        'uid=<user>'
 
                                                                    # ]]]
 # .. envvar:: slapd__slapacl_default_tests [[[
@@ -896,7 +901,7 @@ slapd__slapacl_default_tests:
     policy: '=0'
     dry_run: True
 
-  - name: 'Allow adminisrator access to cn=config'
+  - name: 'Allow administrator access to cn=config'
     dn: 'cn=config'
     authdn: 'cn=admin,cn=config'
     policy: 'manage(=mwrscxd)'
@@ -904,20 +909,20 @@ slapd__slapacl_default_tests:
 
   - name: 'Deny regular user access to cn=config'
     dn: 'cn=config'
-    authdn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     policy: '=0'
     dry_run: True
     state: '{{ "present"
-               if (slapd__slapacl_regular_person_rdn != "uid=unprivileged-user")
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Deny direct admin access to cn=config'
     dn: 'cn=config'
-    authdn: '{{ slapd__slapacl_admin_person_rdn }},ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     policy: '=0'
     dry_run: True
     state: '{{ "present"
-               if (slapd__slapacl_admin_person_rdn != "uid=admin-user")
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Deny anonymous access to cn=Monitor'
@@ -933,21 +938,21 @@ slapd__slapacl_default_tests:
     policy: 'none(=0)'
 
   - name: "Allow authentication by anonymous users"
-    dn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
+    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     authdn: ''
     query: 'userPassword'
     policy: 'auth(=xd)'
     state: '{{ "present"
-               if (slapd__slapacl_regular_person_rdn != "uid=unprivileged-user")
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: "Deny password read access by anonymous users"
-    dn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
+    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     authdn: ''
     query: 'userPassword/read'
     policy: 'denied'
     state: '{{ "present"
-               if (slapd__slapacl_regular_person_rdn != "uid=unprivileged-user")
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Deny anonymous access to ou=People'
@@ -962,25 +967,25 @@ slapd__slapacl_default_tests:
         result: 'children: none(=0)'
 
     state: '{{ "present"
-               if (slapd__slapacl_admin_person_rdn != "uid=admin-user")
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Deny write access to ou=People by unprivileged users'
     dn: 'ou=People,{{ slapd__basedn }}'
-    authdn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     query: 'entry/write'
     policy: 'denied'
     state: '{{ "present"
-               if (slapd__slapacl_regular_person_rdn != "uid=unprivileged-user")
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Allow write access to ou=People by administrators'
     dn: 'ou=People,{{ slapd__basedn }}'
-    authdn: '{{ slapd__slapacl_admin_person_rdn }},ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     query: 'entry/write'
     policy: 'allowed'
     state: '{{ "present"
-               if (slapd__slapacl_admin_person_rdn != "uid=admin-user")
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
                                                                    # ]]]
