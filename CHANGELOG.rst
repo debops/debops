@@ -97,12 +97,6 @@ Fixed
 
 - Fix support for the Python 3.x environment in the local fact template.
 
-:ref:`debops.owncloud` role
-'''''''''''''''''''''''''''
-
-- Fix a "variable is undefined" issue when the :file:`service/owncloud.yml`
-  Ansible playbook is executed with the ``role::nginx`` Ansible tag.
-
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
@@ -111,6 +105,12 @@ Fixed
   ``location`` blocks defined in the :file:`default.conf.j` template. If the
   ``/`` location is not specified in the ``item.location`` dictionary,
   a default one will be included by the role.
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Fix a "variable is undefined" issue when the :file:`service/owncloud.yml`
+  Ansible playbook is executed with the ``role::nginx`` Ansible tag.
 
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
