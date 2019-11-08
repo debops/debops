@@ -462,6 +462,7 @@ slapd__default_tasks:
       olcUniqueURI:
         - 'ldap:///{{ slapd__basedn }}?uidNumber?sub'
         - 'ldap:///{{ slapd__basedn }}?gidNumber?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?employeeNumber?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?mail?sub'
@@ -500,6 +501,7 @@ slapd__default_tasks:
       olcConstraintAttribute:
         - 'jpegPhoto size 524288'  # 512 KiB
         - 'userPassword count 5'
+        - 'employeeNumber regex ^[[:digit:]]+$'
         - 'uidNumber regex ^[[:digit:]]+$'
         - 'gidNumber regex ^[[:digit:]]+$'
         - 'macAddress regex ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
