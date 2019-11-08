@@ -33,6 +33,9 @@ Added
 - The Access Control List rules can now be tested using the :man:`slapacl(8)`
   command via a generated :ref:`test suite script <slapd__ref_acl_tests>`.
 
+- Enable Referential Integrity overlay for most of the LDAP attributes that use
+  the Distinguished Names as values.
+
 Changed
 ~~~~~~~
 
