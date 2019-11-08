@@ -30,9 +30,8 @@ and Email-Webclient correspondingly.
 
 The following example shows a real-world™ setup on the Hetzner Cloud. It consists of two servers,
 one ``controller`` and a ``mail-server``. The LDAP directory is hosted also in the ``controller``.
-``mail-server`` has access to LDAP over an internal network (10.10.10.0/24) attached directly to the VMs.
+``mail-server`` has access to LDAP over an internal network (10.10.10.0/28) attached directly to the VMs.
 This setup has no internal DNS server (no split-DNS), thus internal IPs are mapped to DNS entries in the form ``$service.hetzner.mydomain.net``.
-See `secret__ldap_fqdn`.
 
 .. code-block:: yaml
   :caption: ansible/inventory/group_vars/hetzner/ldap.yml
@@ -43,13 +42,6 @@ See `secret__ldap_fqdn`.
   ldap__enabled: True
 
   ldap__domain: 'mydomain.net'
-
-  # Domain used for LDAP base DN and to select default LDAP server.
-  secret__ldap_domain: 'mydomain.net'
-
-  # LDAP server hostname / internal IP address which holds the database.
-  # ldap_* modules will connect to it natively, so it should be available at least from the Ansible Controller.
-  secret__ldap_fqdn: 'ldap.hetzner.mydomain.net'
 
 .. code-block:: yaml
   :caption: ansible/inventory/host_vars/skynet.mydomain.net/slapd.yml
@@ -63,16 +55,6 @@ See `secret__ldap_fqdn`.
   slapd__accept_any: false
 
   slapd__group_allow:
-    # IPv4/v6 localhost
-    - '127.0.0.1'
-    - '::1'
-    - '{{ ansible_default_ipv4.address
-          if (ansible_default_ipv4|d() and ansible_default_ipv4.address|d() )
-          else "127.0.0.1" }}'
-    - '{{ ansible_default_ipv6.address
-          if (ansible_default_ipv6|d() and ansible_default_ipv6.address|d() )
-          else "::1" }}'
-
     # Hetzner internal network
     - '10.10.10.0/28'
 
@@ -106,21 +88,4 @@ See `secret__ldap_fqdn`.
   postfix__domain: 'mydomain.net'
 
   postfix__pki_realm: 'mail.mydomain.net'
-
-  # Enable debugging
-  postldap__no_log: False
-
-  postldap__ldap_private_subtree: True
-
-  # Use a different LDAP filter to look up user accounts in the directory.
-  postldap__ldap_user_filter: '(&
-                                 (objectClass=inetOrgPerson)
-                                 (objectClass=postfixUser)
-                               )
-                               (mailEnabled=TRUE)
-                               (|
-                                 (authorizedService=postfix)
-                                 (authorizedService=mail)
-                                 (authorizedService=\*)
-                               )'
 
