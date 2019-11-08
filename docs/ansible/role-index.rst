@@ -1,7 +1,7 @@
 .. _role_index:
 
-DebOps role index
-=================
+Roles (by category)
+===================
 
 This is a curated index of DebOps roles, categorized by their type and purpose.
 Roles that are not linked don't have complete documentation available, or are

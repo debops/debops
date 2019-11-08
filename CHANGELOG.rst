@@ -132,6 +132,9 @@ LDAP
 - Add support for :ref:`nextcloud LDAP schema <slapd__ref_nextcloud>` which
   provides attributes needed to define disk quotas for Nextcloud user accounts.
 
+- The Access Control List rules can now be tested using the :man:`slapacl(8)`
+  command via a generated :ref:`test suite script <slapd__ref_acl_tests>`.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 

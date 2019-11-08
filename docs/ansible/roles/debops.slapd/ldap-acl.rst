@@ -432,6 +432,86 @@ Current issues with the default ACL
   a server-side way to restrict object creation to allowed object classes only.
 
 
+.. _slapd__ref_acl_tests:
+
+Access Control List tests and validation
+----------------------------------------
+
+Due to its complexity, LDAP access control policy requires extensive testing to
+ensure that there are no missed loopholes or unintended data disclosures. With
+OpenLDAP service, the :man:`slapacl(8)` command can be used to test the ACL
+rules against existing or simulated LDAP objects.
+
+The :command:`slapacl` command has to be executed with full access to the
+``cn=config`` database, which means running it on the OpenLDAP server itself,
+as the ``openldap`` UNIX account. Unfortunately, :command:`slapacl` command
+does not support any test definition files and the tests have to be applied
+using command line arguments.
+
+To make ACL testing more reliable and easier to use, the :ref:`debops.slapd`
+Ansible role implements a custom template and :ref:`a set of variables
+<slapd__ref_slapacl_tests>` which can be used to generate a shell script, by
+default located at :file:`/etc/ldap/slapacl-test-suite`. This script can then
+be executed to perform various ACL tests and report the results. The test suite
+is executed by Ansible on each run of the :ref:`debops.slapd` role to ensure
+that any changes to the ACL rules are immediately tested.
+
+.. warning:: The test suite shell script is executed by Ansible as the
+   ``openldap`` UNIX account and has full access to the OpenLDAP environment,
+   database and other files owned by the service. The generated test cases are
+   not validated against any command injection attacks through the Ansible
+   variables and could be used to take over the OpenLDAP service. Ensure that
+   the access to the OpenLDAP servers and the Ansible inventory used to
+   configure them is restricted.
+
+To generate the test suite script and perform the tests using Ansible, you can
+execute the :ref:`debops.slapd` playbook with a special tag:
+
+.. code-block:: console
+
+   debops service/slapd -l <host> -t role::slapd:slapacl
+
+This command will regenerate the script and execute it to check the ACL rules.
+
+The test script is designed with a large number of ACL test cases in mind
+(200+). By default it only outputs the details about failed test cases, to make
+them easier to spot on the command line, or in Ansible output. To see the full
+report of the various tests, you need to redirect the standard output to
+another command, for example:
+
+.. code-block:: console
+
+   /etc/ldap/slapacl-test-suite | more
+
+The output of the failed test cases is sent to the standard error. You can
+redirect the failed test cases to a file for further analysis:
+
+.. code-block:: console
+
+   /etc/ldap/slapacl-test-suite 2> /tmp/slapd-acl-errors
+
+In this case the script will print the ``.`` to indicate successful tests and
+``X`` for failed tests on its standard output.
+
+The :envvar:`default set of test cases <slapd__slapacl_default_tests>` is
+designed to test validity of the default LDAP Access Control List rules defined
+by the :ref:`debops.slapd` role and will be expanded over time to cover more
+test cases. If you modify the default ACL rules, you might also need to update
+the existing test cases to conform to the new rules. Alternatively, the
+execution of the test script by Ansible :envvar:`can be disabled
+<slapd__slapacl_run_tests>` temporarily or permanently if you don't want your
+new ACL rules to fail the Ansible execution during development.
+
+Some of the test cases require real, existing LDAP objects to execute properly.
+The :ref:`debops.slapd` role provides a set of ``slapd__slapacl_*_rdn`` default
+variables that correspond to various LDAP objects like unprivileged and
+privileged user accounts. To enable the more extensive tests, you need to
+create the required LDAP objects, grant them the permissions you want and
+define their Relative Distinguished Names in the Ansible inventory. When the
+default values of the variables are changed, the role will enable the
+additional tests automatically.
+
+
 References
 ----------
 

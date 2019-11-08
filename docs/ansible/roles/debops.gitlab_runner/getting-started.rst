@@ -35,7 +35,7 @@ To change the environment variable that holds the registration token, or save
 the token in Ansible inventory, you can use the :envvar:`gitlab_runner__token`
 variable.
 
-For example storing the token in the ``ansible/secret`` folder:
+For example storing the token in the :file:`ansible/secret/credentials` folder:
 
 .. code-block:: console
 
@@ -53,11 +53,16 @@ executors - one unprivileged, and one privileged. The executors will have a set
 of tags that identify them, shell executors will have additional tags that
 describe the host's architecture, OS release, etc.
 
-If the ``debops.lxc`` role has been used to configure LXC support on a Debian
-Stretch or Ubuntu Xenial host, the ``debops.gitlab_runner`` will install the
-``vagrant-lxc`` package and configure :command:`sudo` support for it. Using
-a shell executor you can start and stop Vagrant Boxes using LXC containers and
-execute commands inside them.
+If the ``debops.lxc`` role has been used to configure LXC support on the host,
+the ``debops.gitlab_runner`` will install the ``vagrant-lxc`` package and
+configure :command:`sudo` support for it. Using a shell executor you can start
+and stop Vagrant Boxes using LXC containers and execute commands inside them.
+
+If the ``debops.libvirtd`` role has been used to configure libvirt support on
+the host, the ``debops.gitlab_runner`` will install the ``vagrant-libvirt``
+package and configure :command:`sudo` support for it. Using a shell executor
+you can start and stop Vagrant Boxes using libvirt and execute commands inside
+them.
 
 The Runner instances can be configured with variables specified as the keys of
 the dictionary that holds the specific Runner configuration. If any required
