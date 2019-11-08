@@ -124,6 +124,7 @@
                 "attributes": item.attributes|d({})} }}'
   when: item.name|d() and item.dn|d() and
         item.state|d('present') not in [ 'init', 'ignore' ]
+  tags: [ 'role::slapd:tasks' ]
   no_log: '{{ item.no_log | d(True
                               if ("userPassword" in (item.attributes|d({})).keys() or
                                   "olcRootPW"    in (item.attributes|d({})).keys())
@@ -134,7 +135,7 @@
     path: '{{ slapd__slapacl_script }}'
     state: 'absent'
   when: slapd__slapacl_deploy_state == 'absent'
-  tags: [ 'role::slapd:slapacl' ]
+  tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
 
 - name: Generate slapacl test suite script
   template:
@@ -144,7 +145,7 @@
     mode: '0750'
   register: slapd__register_slapacl_script
   when: slapd__slapacl_deploy_state == 'present'
-  tags: [ 'role::slapd:slapacl' ]
+  tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
 
 - name: Test ACL rules using slapacl
   environment:
@@ -156,4 +157,4 @@
   when: slapd__slapacl_deploy_state == 'present' and
         slapd__slapacl_run_tests|bool
   changed_when: slapd__register_slapacl_test.stderr|d()
-  tags: [ 'role::slapd:slapacl' ]
+  tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
