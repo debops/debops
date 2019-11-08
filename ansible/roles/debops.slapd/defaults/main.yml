@@ -986,6 +986,10 @@ slapd__slapacl_default_tests:
       - name: 'children'
         result: 'children: none(=0)'
 
+    state: '{{ "present"
+               if (slapd__slapacl_admin_person_rdn != "uid=admin-user")
+               else "init" }}'
+
   - name: 'Deny write access to ou=People by unprivileged users'
     dn: 'ou=People,{{ slapd__basedn }}'
     authdn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
