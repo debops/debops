@@ -104,6 +104,15 @@ General
   ``ou=People,dc=example,dc=org`` LDAP subtree to globally unique, due to its
   use for authentication purposes. The attribute will be indexed by default.
 
+- The default ACL rules have been overhauled to add support for the
+  ``ou=Roles,dc=example,dc=org`` subtree and use of the ``organizationalRole``
+  LDAP objects for authorization. The old set of rules is still active to
+  ensure that the existing environments work as expected.
+
+  If you use a modified ACL configuration, you should include the new rules as
+  well to ensure that changes in the :ref:`debops.ldap` support are working
+  correctly.
+
 Fixed
 ~~~~~
 
