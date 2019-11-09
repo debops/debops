@@ -72,10 +72,6 @@
         state: 'absent'
         entry_state: 'absent'
 
-      - name: 'Create the {{ ldap__system_groups_rdn }} object'
-        dn: '{{ [ ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
       - name: 'Create the {{ ldap__groups_rdn }} object'
         dn: '{{ [ ldap__groups_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalUnit'
@@ -90,6 +86,10 @@
 
       - name: 'Create the {{ ldap__people_rdn }} object'
         dn: '{{ [ ldap__people_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalUnit'
+
+      - name: 'Create the {{ ldap__roles_rdn }} object'
+        dn: '{{ [ ldap__roles_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalUnit'
 
       - name: 'Create the {{ ldap__services_rdn }} object'
@@ -147,35 +147,30 @@
           host: '*'
           sshPublicKey: '{{ admin_sshkeys }}'
 
-      - name: 'Create cn=LDAP Administrators group'
-        dn: '{{ [ "cn=LDAP Administrators", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
+      - name: 'Create cn=LDAP Administrators role'
+        dn: '{{ [ "cn=LDAP Administrators", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
         attributes:
           cn: 'LDAP Administrators'
-          member: '{{ admin_dn }}'
-          owner: '{{ admin_dn }}'
+          roleOccupant: '{{ admin_dn }}'
           description: 'People responsible for LDAP infrastructure'
 
-      - name: 'Create cn=LDAP Replicators group'
-        dn: '{{ [ "cn=LDAP Replicators", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
+      - name: 'Create cn=LDAP Replicators role'
+        dn: '{{ [ "cn=LDAP Replicators", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
         attributes:
           cn: 'LDAP Replicators'
-          member: '{{ admin_dn }}'
-          owner: '{{ admin_dn }}'
           description: 'Service accounts used for LDAP replication'
 
-      - name: 'Create cn=LDAP Editors group'
-        dn: '{{ [ "cn=LDAP Editors", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
+      - name: 'Create cn=LDAP Editors role'
+        dn: '{{ [ "cn=LDAP Editors", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
         attributes:
           cn: 'LDAP Editors'
-          member: '{{ admin_dn }}'
-          owner: '{{ admin_dn }}'
           description: 'People responsible for LDAP contents'
 
       - name: 'Create cn=UNIX Administrators group'
-        dn: '{{ [ "cn=UNIX Administrators", ldap__system_groups_rdn ] + ldap__base_dn }}'
+        dn: '{{ [ "cn=UNIX Administrators", ldap__groups_rdn ] + ldap__base_dn }}'
         objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',
                        'authorizedServiceObject', 'hostObject' ]
         attributes:
@@ -188,26 +183,22 @@
           authorizedService: '*'
           host: '*'
 
-      - name: 'Create cn=Account Administrators group'
-        dn: '{{ [ "cn=Account Administrators", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
+      - name: 'Create cn=Account Administrators role'
+        dn: '{{ [ "cn=Account Administrators", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
         attributes:
           cn: 'Account Administrators'
-          member: '{{ admin_dn }}'
-          owner: '{{ admin_dn }}'
           description: 'People responsible for personal accounts'
 
-      - name: 'Create cn=Password Reset Agents group'
-        dn: '{{ [ "cn=Password Reset Agents", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
+      - name: 'Create cn=Password Reset Agents role'
+        dn: '{{ [ "cn=Password Reset Agents", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
         attributes:
           cn: 'Password Reset Agents'
-          member: '{{ admin_dn }}'
-          owner: '{{ admin_dn }}'
           description: 'Services that can perform password changes on behalf of users'
 
       - name: 'Create cn=UNIX SSH users group'
-        dn: '{{ [ "cn=UNIX SSH users", ldap__system_groups_rdn ] + ldap__base_dn }}'
+        dn: '{{ [ "cn=UNIX SSH users", ldap__groups_rdn ] + ldap__base_dn }}'
         objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',
                        'authorizedServiceObject', 'hostObject' ]
         attributes:
