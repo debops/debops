@@ -67,7 +67,10 @@ postldap__vmail_posix_user: 'vmail'
 # .. envvar:: postldap__vmail_posix_uidnumber [[[
 #
 # Virtual Mail POSIX uidNumber
-postldap__vmail_posix_uidnumber: '{{ getent_passwd[postldap__vmail_posix_user][1]|int }}'
+postldap__vmail_posix_uidnumber: '{{ ansible_local.postldap.vmail_posix_uidnumber
+                                     if (ansible_local|d() and ansible_local.postldap|d() and
+                                         ansible_local.postldap.vmail_posix_uidnumber|d())
+                                     else None }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__vmail_posix_group [[[
@@ -79,7 +82,10 @@ postldap__vmail_posix_group: 'vmail'
 # .. envvar:: postldap__vmail_posix_gidnumber [[[
 #
 # Virtual Mail POSIX gidNumber
-postldap__vmail_posix_gidnumber: '{{ getent_group[postldap__vmail_posix_group][1]|int }}'
+postldap__vmail_posix_gidnumber: '{{ ansible_local.postldap.postldap__vmail_posix_gidnumber
+                                     if (ansible_local|d() and ansible_local.postldap|d() and
+                                       ansible_local.postldap.postldap__vmail_posix_gidnumber|d())
+                                     else None }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__mailbox_base [[[
@@ -163,7 +169,7 @@ postldap__postfix__dependent_maincf:
   # Lookup tables with the per-recipient user ID that the virtual delivery agent uses while writing
   # to the recipient's mailbox.
   - name: 'virtual_uid_maps'
-    value: 'static:{{ postldap__vmail_posix_uidnumber }}'
+    value: 'static:{{ postldap__vmail_posix_uidnumber|mandatory }}'
     section: 'virtual'
     state: '{{ "present"
             if (postldap__ldap_enabled|bool and
@@ -172,7 +178,7 @@ postldap__postfix__dependent_maincf:
 
   # Lookup tables with the per-recipient group ID for virtual mailbox delivery.
   - name: 'virtual_gid_maps'
-    value: 'static:{{ postldap__vmail_posix_gidnumber }}'
+    value: 'static:{{ postldap__vmail_posix_gidnumber|mandatory }}'
     section: 'virtual'
     state: '{{ "present"
             if (postldap__ldap_enabled|bool and
@@ -182,7 +188,7 @@ postldap__postfix__dependent_maincf:
   # The minimum user ID value that the virtual delivery agent accepts as a result from $virtual_uid_maps table lookup
   # FIXME: problems while parsing number.
   - name: 'virtual_minimum_uid'
-    value: '{{ postldap__vmail_posix_uidnumber }}'
+    value: '{{ postldap__vmail_posix_uidnumber|mandatory }}'
     section: 'virtual'
     state: 'absent'
 

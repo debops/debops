@@ -1,0 +1,12 @@
+#!{{ ansible_user_shell|d("/usr/bin/env sh") }}
+
+cat << EOF
+{
+    "installed": true,
+    "vmail_posix_user" : "{{ postldap__vmail_posix_user }}",
+    "vmail_posix_uidnumber" : {{ postldap__register_vmail_posix_user.uid|int }},
+    "vmail_posix_group" : "{{ postldap__vmail_posix_group }}",
+    "vmail_posix_gidnumber" : "{{ postldap__register_vmail_posix_user.group|int }}",
+    "mailbox_base" : "{{ postldap__mailbox_base }}"
+}
+EOF
