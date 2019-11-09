@@ -83,4 +83,6 @@ Child nodes
 
 - :envvar:`ansible_local.ldap.machines_rdn <ldap__machines_rdn>`
 
+- :envvar:`ansible_local.ldap.roles_rdn <ldap__roles_rdn>`
+
 - :envvar:`ansible_local.ldap.services_rdn <ldap__services_rdn>`

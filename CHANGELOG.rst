@@ -197,6 +197,26 @@ General
 
   in the :file:`.debops.cfg` configuration file.
 
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` playbook has been updated to use the new
+  ``ou=Roles,dc=example,dc=org`` LDAP subtree, which will contain various
+  ``organizationalRole`` objects. After updating the OpenLDAP Access Control
+  List using the :ref:`debops.slapd` role, you can use the playbook on an
+  existing installation to create the missing objects.
+
+  The ``cn=UNIX Administrators`` and ``cn=UNIX SSH users`` LDAP objects will be
+  created in the ``ou=Groups,dc=example,dc=org`` LDAP subtree. On existing
+  installations, these objects need to be moved manually to the new subtree,
+  otherwise the playbook will try to create them and fail due to duplicate
+  UID/GID numbers which are enforced to be unique. You can move the objects
+  using an LDAP client, for example Apache Directory Studio.
+
+  The ``ou=System Groups,dc=example=dc,org`` subtree will not be created
+  anymore. On existing installations this subtree will be left intact and can
+  be safely removed after migration.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
