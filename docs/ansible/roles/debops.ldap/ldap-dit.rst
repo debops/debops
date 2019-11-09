@@ -38,11 +38,11 @@ Directory structure
       - :envvar:`ou=Machines <ldap__machines_rdn>`
       - :envvar:`ou=Services <ldap__services_rdn>`
 
-      - :envvar:`ou=System Groups <ldap__system_groups_rdn>`
+      - :envvar:`ou=Roles <ldap__roles_rdn>`
 
         - ``cn=Password Reset Agents`` (via the :file:`ldap/init-directory.yml` playbook)
 
-          - ``member``: :ref:`uid=nextcloud,cn=host.example.org,... <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
+          - ``roleOccupant``: :ref:`uid=nextcloud,cn=host.example.org,... <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
 
 
 Object Classes and Attributes
