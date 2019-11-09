@@ -177,6 +177,8 @@ ldap__people_rdn: 'ou=People'
 # The RDN added to the BaseDN that contains LDAP System Group objects, for
 # example ``groupOfNames`` or ``groupOfUniqueNames``. This group is used for
 # internal LDAP administration.
+#
+# This variable is obsolete and will be removed in the future.
 ldap__system_groups_rdn: 'ou=System Groups'
 
                                                                    # ]]]
@@ -203,6 +205,13 @@ ldap__hosts_rdn: 'ou=Hosts'
 # branch is meant to be used for client machines that require access to the
 # LDAP directory.
 ldap__machines_rdn: 'ou=Machines'
+
+                                                                   # ]]]
+# .. envvar:: ldap__roles_rdn [[[
+#
+# The RDN added to the BaseDN that contains LDAP Role objects, for example
+# ``organizationalRole``.
+ldap__roles_rdn: 'ou=Roles'
 
                                                                    # ]]]
 # .. envvar:: ldap__services_rdn [[[
@@ -628,12 +637,6 @@ ldap__default_tasks:
     attributes:
       ou: '{{ ldap__people_rdn.split("=")[1] }}'
 
-  - name: 'Ensure that {{ ldap__system_groups_rdn }} object exists in LDAP directory'
-    dn: '{{ [ ldap__system_groups_rdn ] + ldap__base_dn }}'
-    objectClass: [ 'organizationalUnit' ]
-    attributes:
-      ou: '{{ ldap__system_groups_rdn.split("=")[1] }}'
-
   - name: 'Ensure that {{ ldap__groups_rdn }} object exists in LDAP directory'
     dn: '{{ [ ldap__groups_rdn ] + ldap__base_dn }}'
     objectClass: [ 'organizationalUnit' ]
@@ -653,6 +656,12 @@ ldap__default_tasks:
     attributes:
       ou: '{{ ldap__machines_rdn.split("=")[1] }}'
       description: 'Client machines'
+
+  - name: 'Ensure that {{ ldap__roles_rdn }} object exists in LDAP directory'
+    dn: '{{ [ ldap__roles_rdn ] + ldap__base_dn }}'
+    objectClass: [ 'organizationalUnit' ]
+    attributes:
+      ou: '{{ ldap__roles_rdn.split("=")[1] }}'
 
   - name: 'Ensure that {{ ldap__services_rdn }} object exists in LDAP directory'
     dn: '{{ [ ldap__services_rdn ] + ldap__base_dn }}'
