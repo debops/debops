@@ -129,6 +129,15 @@ LDAP
 - The Access Control List rules can now be tested using the :man:`slapacl(8)`
   command via a generated :ref:`test suite script <slapd__ref_acl_tests>`.
 
+- The default ACL rules have been overhauled to add support for the
+  ``ou=Roles,dc=example,dc=org`` subtree and use of the ``organizationalRole``
+  LDAP objects for authorization. The old set of rules is still active to
+  ensure that the existing environments work as expected.
+
+  If you use a modified ACL configuration, you should include the new rules as
+  well to ensure that changes in the :ref:`debops.ldap` support are working
+  correctly.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
