@@ -652,8 +652,8 @@ slapd__acl_tasks:
 
         - |-
           to dn.subtree="{{ slapd__basedn }}"
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrators, ou=Roles,{{ slapd__basedn }}" manage
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Replicators,    ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" manage
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Replicator,    ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" manage
           by group/groupOfNames/member.exact="cn=LDAP Replicators,    ou=System Groups,{{ slapd__basedn }}" read
           by * break
@@ -662,9 +662,9 @@ slapd__acl_tasks:
           to dn.subtree="{{ slapd__basedn }}" filter="(memberOf=cn=Hidden Objects, ou=Groups,{{ slapd__basedn }})"
              attrs="children,entry"
           by self break
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrators,    ou=Roles,{{ slapd__basedn }}" break
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editors,           ou=Roles,{{ slapd__basedn }}" break
-          by group/organizationalRole/roleOccupant.exact="cn=Hidden Object Viewers,  ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator,    ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=Hidden Object Viewer,  ou=Roles,{{ slapd__basedn }}" break
           by group/groupOfNames/member.exact="cn=LDAP Administrators,    ou=System Groups,{{ slapd__basedn }}" break
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" break
           by * none
@@ -680,9 +680,9 @@ slapd__acl_tasks:
           to dn.subtree="ou=People,{{ slapd__basedn }}"
              attrs="shadowLastChange"
           by self write
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editors,           ou=Roles,{{ slapd__basedn }}" write
-          by group/organizationalRole/roleOccupant.exact="cn=Account Administrators, ou=Roles,{{ slapd__basedn }}" write
-          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agents,  ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agent,  ou=Roles,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
@@ -692,9 +692,9 @@ slapd__acl_tasks:
           to dn.subtree="ou=People,{{ slapd__basedn }}"
              attrs="userPassword"
           by self =w
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editors,           ou=Roles,{{ slapd__basedn }}" =w
-          by group/organizationalRole/roleOccupant.exact="cn=Account Administrators, ou=Roles,{{ slapd__basedn }}" =w
-          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agents,  ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agent,  ou=Roles,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
@@ -708,30 +708,30 @@ slapd__acl_tasks:
           by *         none
 
         - |-
-          to dn.regex="^cn=(LDAP Administrators|LDAP Replicators), ou=Roles,{{ slapd__basedn }}$"
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editors,           ou=Roles,{{ slapd__basedn }}" read
-          by group/organizationalRole/roleOccupant.exact="cn=Account Administrators, ou=Roles,{{ slapd__basedn }}" read
+          to dn.regex="^cn=(LDAP Administrator|LDAP Replicator), ou=Roles,{{ slapd__basedn }}$"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" read
           by * break
 
         - |-
           to dn.subtree="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editors,           ou=Roles,{{ slapd__basedn }}" read
-          by group/organizationalRole/roleOccupant.exact="cn=Account Administrators, ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" read
           by * break
 
         - |-
           to dn.subtree="ou=System Groups,{{ slapd__basedn }}"
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editors, ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor, ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" read
           by * break
 
         - |-
           to dn.subtree="{{ slapd__basedn }}"
-          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editors, ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" write
           by * break
 
@@ -744,13 +744,13 @@ slapd__acl_tasks:
         - |-
           to dn.regex="^([^,]+,)?ou=(People|Groups|Machines),{{ slapd__basedn }}$"
              attrs="children,entry"
-          by group/organizationalRole/roleOccupant.exact="cn=Account Administrators, ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by * break
 
         - |-
           to dn.regex="^[^,]+,ou=(People|Groups|Machines),{{ slapd__basedn }}$"
-          by group/organizationalRole/roleOccupant.exact="cn=Account Administrators, ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by * break
 

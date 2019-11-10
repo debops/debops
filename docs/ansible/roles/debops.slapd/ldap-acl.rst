@@ -82,10 +82,10 @@ The "Test RDN" and "Test DN" attributes refer to the
 :ref:`slapd__ref_acl_tests` and specifically to the
 :envvar:`slapd__slapacl_test_rdn_map` variable.
 
-.. _slapd__ref_acl_dn_ldap_admins:
+.. _slapd__ref_acl_dn_ldap_admin:
 
-cn=LDAP Administrators,ou=Roles,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cn=LDAP Administrator,ou=Roles,dc=example,dc=org
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Test RDN: ``ldap_admin_rdn``
 :Obsolete: cn=LDAP Administrators,ou=System Groups,dc=example,dc=org
@@ -94,10 +94,10 @@ This is an ``organizationalRole`` LDAP object that defines via its
 ``roleOccupant`` attribute the Distinguished Names of the people who have full,
 privileged access to the LDAP directory.
 
-.. _slapd__ref_acl_dn_ldap_replicators:
+.. _slapd__ref_acl_dn_ldap_replicator:
 
-cn=LDAP Replicators,ou=Roles,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cn=LDAP Replicator,ou=Roles,dc=example,dc=org
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Test DN:  ``ldap_replicator_dn``
 :Obsolete: cn=LDAP Replicators,ou=System Groups,dc=example,dc=org
@@ -121,10 +121,10 @@ will be able to manipulate the LDAP attributes of certain objects
 (``posixAccount``, ``posixGroup``, ``posixGroupId``) which can affect the
 security boundary in an UNIX-like environment.
 
-.. _slapd__ref_acl_dn_ldap_editors:
+.. _slapd__ref_acl_dn_ldap_editor:
 
-cn=LDAP Editors,ou=Roles,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cn=LDAP Editor,ou=Roles,dc=example,dc=org
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Test RDN: ``ldap_editor_rdn``
 :Obsolete: cn=LDAP Editors,ou=System Groups,dc=example,dc=org
@@ -136,10 +136,10 @@ access to most of the LDAP directory, apart from the LDAP Administrators and
 the LDAP Replicators roles, the UNIX Administrators group, the ``ou=System
 Groups`` subtree and UNIX attributes.
 
-.. _slapd__ref_acl_dn_account_admins:
+.. _slapd__ref_acl_dn_account_admin:
 
-cn=Account Administrators,ou=Roles,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cn=Account Administrator,ou=Roles,dc=example,dc=org
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Test RDN: ``account_admin_rdn``
 :Obsolete: cn=Account Administrators,ou=System Groups,dc=example,dc=org
@@ -151,8 +151,8 @@ client machines, organizational groups and other user-specific data.
 
 .. _slapd__ref_acl_dn_password_reset:
 
-cn=Password Reset Agents,ou=Roles,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cn=Password Reset Agent,ou=Roles,dc=example,dc=org
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Test RDN: ``password_reset_dn``
 :Obsolete: cn=Password Reset Agents,ou=System Groups,dc=example,dc=org
@@ -171,7 +171,7 @@ cn=Hidden Objects,ou=Groups,dc=example,dc=org
 This is a ``groupOfNames`` LDAP object that defines via its ``member``
 attribute the Distinguished Names of the LDAP objects which should be visible
 only to LDAP Administrators, LDAP Editors and LDAP objects present in the
-:ref:`slapd__ref_acl_dn_hidden_object_viewers` role. The access control list
+:ref:`slapd__ref_acl_dn_hidden_object_viewer` role. The access control list
 checks the ``memberOf`` attribute of an LDAP object and grants or denies access
 to it depending on the member status.
 
@@ -182,10 +182,10 @@ Otherwise the children of hidden objects can be still visible in general LDAP
 searches, for example ``(objectClass=*)``. The DN attribute of such entries can
 also disclose the presence of a hidden object.
 
-.. _slapd__ref_acl_dn_hidden_object_viewers:
+.. _slapd__ref_acl_dn_hidden_object_viewer:
 
-cn=Hidden Object Viewers,ou=Roles,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cn=Hidden Object Viewer,ou=Roles,dc=example,dc=org
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is an ``organizationalRole`` LDAP object which can be used to give other
 LDAP objects a way to see the LDAP objects hidden by the
@@ -208,16 +208,16 @@ Rule 0: full access by LDAP admins and replicators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: main LDAP directory tree
-:Manage by: :ref:`slapd__ref_acl_dn_ldap_admins`
-:Read by:   :ref:`slapd__ref_acl_dn_ldap_replicators`
+:Manage by: :ref:`slapd__ref_acl_dn_ldap_admin`
+:Read by:   :ref:`slapd__ref_acl_dn_ldap_replicator`
 :Others:    continue evaluation
 
 - Grant full access to the entire LDAP directory tree by the members of the
-  :ref:`slapd__ref_acl_dn_ldap_admins` role, including passwords and other
+  :ref:`slapd__ref_acl_dn_ldap_admin` role, including passwords and other
   confidential data.
 
 - Grant read-only access to the entire LDAP directory tree by the members of
-  the :ref:`slapd__ref_acl_dn_ldap_replicators` role, including passwords and
+  the :ref:`slapd__ref_acl_dn_ldap_replicator` role, including passwords and
   other confidential data.
 
 - Continue evaluation of the ACL rules for anyone else.
@@ -233,15 +233,15 @@ Rule 1: certain LDAP objects are visible only to privileged accounts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to:     members of the ``cn=Hidden Objects`` group
-:Skipped by:    object owners (self), :ref:`slapd__ref_acl_dn_ldap_admins`,
-                :ref:`slapd__ref_acl_dn_ldap_editors`,
-                :ref:`slapd__ref_acl_dn_hidden_object_viewers`
+:Skipped by:    object owners (self), :ref:`slapd__ref_acl_dn_ldap_admin`,
+                :ref:`slapd__ref_acl_dn_ldap_editor`,
+                :ref:`slapd__ref_acl_dn_hidden_object_viewer`
 :Others:        no access
 
 - Skip rule evaluation for the hidden LDAP objects themselves, for the members
-  of the :ref:`slapd__ref_acl_dn_ldap_admins`, the
-  :ref:`slapd__ref_acl_dn_ldap_editors` and the
-  :ref:`slapd__ref_acl_dn_hidden_object_viewers` LDAP groups. In effect it
+  of the :ref:`slapd__ref_acl_dn_ldap_admin`, the
+  :ref:`slapd__ref_acl_dn_ldap_editor` and the
+  :ref:`slapd__ref_acl_dn_hidden_object_viewer` LDAP roles. In effect it
   makes the hidden objects visible to these entities.
 
 - Deny access to the hidden objects to anyone else.
@@ -286,8 +286,8 @@ Rule 3: restrict access to shadow database of the personal accounts
 
 - Grant write access to the ``shadowLastChange`` attribute in all objects under
   the ``ou=People,dc=example,dc=org`` Distinguished Name by the members of the
-  :ref:`slapd__ref_acl_dn_ldap_editors` and
-  :ref:`slapd__ref_acl_dn_account_admins` roles.
+  :ref:`slapd__ref_acl_dn_ldap_editor` and
+  :ref:`slapd__ref_acl_dn_account_admin` roles.
 
 - Grant write-only access to the ``shadowLastChange`` attribute in all objects
   under the ``ou=People,dc=example,dc=org`` Distinguished Name by the members
@@ -321,8 +321,8 @@ Rule 4: restrict access to password attribute of the personal accounts
 
 - Grant write-only access to the ``userPassword`` attribute in all objects
   under the ``ou=People,dc=example,dc=org`` Distinguished Name by the members
-  of the :ref:`slapd__ref_acl_dn_ldap_editors`,
-  :ref:`slapd__ref_acl_dn_account_admins` and
+  of the :ref:`slapd__ref_acl_dn_ldap_editor`,
+  :ref:`slapd__ref_acl_dn_account_admin` and
   :ref:`slapd__ref_acl_dn_password_reset` roles.
 
 - Permit authentication attempts using the ``userPassword`` attribute in all
@@ -372,20 +372,20 @@ Rule 5: restrict access to password attribute in LDAP directory
 Rule 6: restrict access to privileged roles by administration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:Access to:    the :ref:`slapd__ref_acl_dn_ldap_admins` and the :ref:`slapd__ref_acl_dn_ldap_replicators` roles
+:Access to:    the :ref:`slapd__ref_acl_dn_ldap_admin` and the :ref:`slapd__ref_acl_dn_ldap_replicator` roles
 :Read-only by: LDAP Editors, Account Administrators
 :Others:       continue evaluation
 
-- Grant read-only access to the :ref:`slapd__ref_acl_dn_ldap_admins` and the
-  :ref:`slapd__ref_acl_dn_ldap_replicators` roles by the members of the
-  :ref:`slapd__ref_acl_dn_ldap_editors` and the
-  :ref:`slapd__ref_acl_dn_account_admins` roles.
+- Grant read-only access to the :ref:`slapd__ref_acl_dn_ldap_admin` and the
+  :ref:`slapd__ref_acl_dn_ldap_replicator` roles by the members of the
+  :ref:`slapd__ref_acl_dn_ldap_editor` and the
+  :ref:`slapd__ref_acl_dn_account_admin` roles.
 
 - Continue evaluation of the ACL rules for anyone else.
 
 .. note::
-   The :ref:`slapd__ref_acl_dn_ldap_admins` and the
-   :ref:`slapd__ref_acl_dn_ldap_replicators` roles are used to control
+   The :ref:`slapd__ref_acl_dn_ldap_admin` and the
+   :ref:`slapd__ref_acl_dn_ldap_replicator` roles are used to control
    privileged access to the LDAP directory and other security contexts. LDAP
    Editors and Account Administrators should not be allowed to modify them,
    otherwise they could easily grant themselves more privileged access.
@@ -401,8 +401,8 @@ Rule 7: restrict access to privileged UNIX group by administration
 :Others:       continue evaluation
 
 - Grant read-only access to the :ref:`slapd__ref_acl_dn_unix_admins` group by
-  the members of the :ref:`slapd__ref_acl_dn_ldap_editors` and the
-  :ref:`slapd__ref_acl_dn_account_admins` roles.
+  the members of the :ref:`slapd__ref_acl_dn_ldap_editor` and the
+  :ref:`slapd__ref_acl_dn_account_admin` roles.
 
 - Continue evaluation of the ACL rules for anyone else.
 
@@ -424,7 +424,7 @@ Rule 8: restrict access to System Groups by LDAP editors
 
 - Grant read-only access to all objects under the ``ou=System
   Groups,dc=example,dc=org`` Distinguished Name by the members of the
-  :ref:`slapd__ref_acl_dn_ldap_editors` role.
+  :ref:`slapd__ref_acl_dn_ldap_editor` role.
 
 - Continue evaluation of the ACL rules for anyone else.
 
@@ -441,11 +441,11 @@ Rule 9: write access to most of the directory by LDAP editors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: most sections of the main LDAP directory tree
-:Write by:  :ref:`slapd__ref_acl_dn_ldap_editors`
+:Write by:  :ref:`slapd__ref_acl_dn_ldap_editor`
 :Others:    continue evaluation
 
 - Grant write access to the most parts of the main LDAP directory tree by the
-  members of the :ref:`slapd__ref_acl_dn_ldap_editors` role.
+  members of the :ref:`slapd__ref_acl_dn_ldap_editor` role.
 
 - Continue evaluation of the ACL rules for anyone else.
 
@@ -483,13 +483,13 @@ Rule 11: account admins can create new child objects under specific DNs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: new child objects of specific Distinguished Names
-:Write by:  :ref:`slapd__ref_acl_dn_account_admins`
+:Write by:  :ref:`slapd__ref_acl_dn_account_admin`
 :Others:    continue evaluation
 
 - Grant write access to new children objects and the entries of the
   ``ou=People,dc=example,dc=org``, ``ou=Machines,dc=example,dc=org`` and
   ``ou=Groups,dc=example,dc=org`` Distinguished Names by the members of the
-  :ref:`slapd__ref_acl_dn_account_admins` role.
+  :ref:`slapd__ref_acl_dn_account_admin` role.
 
 - Continue evaluation of the ACL rules for anyone else.
 
@@ -506,13 +506,13 @@ Rule 12: account admins can modify existing child objects under specific DNs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: existing child objects of specific Distinguished Names
-:Write by:  :ref:`slapd__ref_acl_dn_account_admins`
+:Write by:  :ref:`slapd__ref_acl_dn_account_admin`
 :Others:    continue evaluation
 
 - Grant write access to existing children objects of the
   ``ou=People,dc=example,dc=org``, ``ou=Machines,dc=example,dc=org`` and
   ``ou=Groups,dc=example,dc=org`` Distinguished Names by the members of the
-  :ref:`slapd__ref_acl_dn_account_admins` role.
+  :ref:`slapd__ref_acl_dn_account_admin` role.
 
 - Continue evaluation of the ACL rules for anyone else.
 
