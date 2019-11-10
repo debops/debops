@@ -147,26 +147,26 @@
           host: '*'
           sshPublicKey: '{{ admin_sshkeys }}'
 
-      - name: 'Create cn=LDAP Administrators role'
-        dn: '{{ [ "cn=LDAP Administrators", ldap__roles_rdn ] + ldap__base_dn }}'
+      - name: 'Create cn=LDAP Administrator role'
+        dn: '{{ [ "cn=LDAP Administrator", ldap__roles_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalRole'
         attributes:
-          cn: 'LDAP Administrators'
+          cn: 'LDAP Administrator'
           roleOccupant: '{{ admin_dn }}'
           description: 'People responsible for LDAP infrastructure'
 
-      - name: 'Create cn=LDAP Replicators role'
-        dn: '{{ [ "cn=LDAP Replicators", ldap__roles_rdn ] + ldap__base_dn }}'
+      - name: 'Create cn=LDAP Replicator role'
+        dn: '{{ [ "cn=LDAP Replicator", ldap__roles_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalRole'
         attributes:
-          cn: 'LDAP Replicators'
+          cn: 'LDAP Replicator'
           description: 'Service accounts used for LDAP replication'
 
-      - name: 'Create cn=LDAP Editors role'
-        dn: '{{ [ "cn=LDAP Editors", ldap__roles_rdn ] + ldap__base_dn }}'
+      - name: 'Create cn=LDAP Editor role'
+        dn: '{{ [ "cn=LDAP Editor", ldap__roles_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalRole'
         attributes:
-          cn: 'LDAP Editors'
+          cn: 'LDAP Editor'
           description: 'People responsible for LDAP contents'
 
       - name: 'Create cn=UNIX Administrators group'
@@ -183,25 +183,25 @@
           authorizedService: '*'
           host: '*'
 
-      - name: 'Create cn=Account Administrators role'
-        dn: '{{ [ "cn=Account Administrators", ldap__roles_rdn ] + ldap__base_dn }}'
+      - name: 'Create cn=Account Administrator role'
+        dn: '{{ [ "cn=Account Administrator", ldap__roles_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalRole'
         attributes:
-          cn: 'Account Administrators'
+          cn: 'Account Administrator'
           description: 'People responsible for personal accounts'
 
-      - name: 'Create cn=Password Reset Agents role'
-        dn: '{{ [ "cn=Password Reset Agents", ldap__roles_rdn ] + ldap__base_dn }}'
+      - name: 'Create cn=Password Reset Agent role'
+        dn: '{{ [ "cn=Password Reset Agent", ldap__roles_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalRole'
         attributes:
-          cn: 'Password Reset Agents'
+          cn: 'Password Reset Agent'
           description: 'Services that can perform password changes on behalf of users'
 
-      - name: 'Create cn=Hidden Object Viewers role'
-        dn: '{{ [ "cn=Hidden Object Viewers", ldap__roles_rdn ] + ldap__base_dn }}'
+      - name: 'Create cn=Hidden Object Viewer role'
+        dn: '{{ [ "cn=Hidden Object Viewer", ldap__roles_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalRole'
         attributes:
-          cn: 'Hidden Object Viewers'
+          cn: 'Hidden Object Viewer'
           memberOf: '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
           description: 'LDAP objects which can see hidden objects'
 
@@ -212,7 +212,7 @@
           cn: 'Hidden Objects'
           member:
             - '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
-            - '{{ ([ "cn=Hidden Object Viewers", ldap__roles_rdn ] + ldap__base_dn) | join(",") }}'
+            - '{{ ([ "cn=Hidden Object Viewer", ldap__roles_rdn ] + ldap__base_dn) | join(",") }}'
           memberOf: '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
           owner: '{{ admin_dn }}'
           description: 'LDAP objects which are accessible only by privileged accounts'
