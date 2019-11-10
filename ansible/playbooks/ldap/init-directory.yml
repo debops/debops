@@ -197,6 +197,26 @@
           cn: 'Password Reset Agents'
           description: 'Services that can perform password changes on behalf of users'
 
+      - name: 'Create cn=Hidden Object Viewers role'
+        dn: '{{ [ "cn=Hidden Object Viewers", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
+        attributes:
+          cn: 'Hidden Object Viewers'
+          memberOf: '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
+          description: 'LDAP objects which can see hidden objects'
+
+      - name: 'Create cn=Hidden Objects group'
+        dn: '{{ [ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn }}'
+        objectClass: 'groupOfNames'
+        attributes:
+          cn: 'Hidden Objects'
+          member:
+            - '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
+            - '{{ ([ "cn=Hidden Object Viewers", ldap__roles_rdn ] + ldap__base_dn) | join(",") }}'
+          memberOf: '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
+          owner: '{{ admin_dn }}'
+          description: 'LDAP objects which are accessible only by privileged accounts'
+
       - name: 'Create cn=UNIX SSH users group'
         dn: '{{ [ "cn=UNIX SSH users", ldap__groups_rdn ] + ldap__base_dn }}'
         objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',

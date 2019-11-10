@@ -163,11 +163,35 @@ Agents, usually application(s) that act on behalf of the users to allow them to
 perform password changes after out-of-band authentication. This group should
 have access to user passwords to be able to reset them.
 
+.. _slapd__ref_acl_dn_hidden_objects:
+
+cn=Hidden Objects,ou=Groups,dc=example,dc=org
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 This is a ``groupOfNames`` LDAP object that defines via its ``member``
-attribute the Distinguished Names of the Password Reset Agents, usually
-application(s) that act on behalf of the users to allow them to perform
-password changes after out-of-band authentication. This group should have
-access to user passwords to be able to reset them.
+attribute the Distinguished Names of the LDAP objects which should be visible
+only to LDAP Administrators, LDAP Editors and LDAP objects present in the
+:ref:`slapd__ref_acl_dn_hidden_object_viewers` role. The access control list
+checks the ``memberOf`` attribute of an LDAP object and grants or denies access
+to it depending on the member status.
+
+Due to limitations of the OpenLDAP Access Control List features, to hide the
+children objects of a given LDAP object, all of them need to be also included
+as separate ``member`` attributes in the ``cn=Hidden Objects`` group.
+Otherwise the children of hidden objects can be still visible in general LDAP
+searches, for example ``(objectClass=*)``. The DN attribute of such entries can
+also disclose the presence of a hidden object.
+
+.. _slapd__ref_acl_dn_hidden_object_viewers:
+
+cn=Hidden Object Viewers,ou=Roles,dc=example,dc=org
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is an ``organizationalRole`` LDAP object which can be used to give other
+LDAP objects a way to see the LDAP objects hidden by the
+:ref:`slapd__ref_acl_dn_hidden_objects` group, after adding them using the
+``roleOccupant`` attribute. LDAP Administrators and LDAP Editors don't have to
+be included here because they see the hidden LDAP objects by default.
 
 
 Access Control List rules
@@ -205,7 +229,27 @@ Rule 0: full access by LDAP admins and replicators
 
 .. _slapd__ref_acl_rule1:
 
-Rule 1: restrict access to POSIX attributes
+Rule 1: certain LDAP objects are visible only to privileged accounts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:Access to:     members of the ``cn=Hidden Objects`` group
+:Skipped by:    object owners (self), :ref:`slapd__ref_acl_dn_ldap_admins`,
+                :ref:`slapd__ref_acl_dn_ldap_editors`,
+                :ref:`slapd__ref_acl_dn_hidden_object_viewers`
+:Others:        no access
+
+- Skip rule evaluation for the hidden LDAP objects themselves, for the members
+  of the :ref:`slapd__ref_acl_dn_ldap_admins`, the
+  :ref:`slapd__ref_acl_dn_ldap_editors` and the
+  :ref:`slapd__ref_acl_dn_hidden_object_viewers` LDAP groups. In effect it
+  makes the hidden objects visible to these entities.
+
+- Deny access to the hidden objects to anyone else.
+
+
+.. _slapd__ref_acl_rule2:
+
+Rule 2: restrict access to POSIX attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: POSIX objects with specific attributes
@@ -226,9 +270,9 @@ Rule 1: restrict access to POSIX attributes
    of UNIX administrators should be able to manage this security domain.
 
 
-.. _slapd__ref_acl_rule2:
+.. _slapd__ref_acl_rule3:
 
-Rule 2: restrict access to shadow database of the personal accounts
+Rule 3: restrict access to shadow database of the personal accounts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to:     ``shadowLastChange`` attribute in personal accounts
@@ -260,9 +304,9 @@ Rule 2: restrict access to shadow database of the personal accounts
    change existing ones.
 
 
-.. _slapd__ref_acl_rule3:
+.. _slapd__ref_acl_rule4:
 
-Rule 3: restrict access to password attribute of the personal accounts
+Rule 4: restrict access to password attribute of the personal accounts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to:     ``userPassword`` attribute in personal accounts
@@ -296,9 +340,9 @@ Rule 3: restrict access to password attribute of the personal accounts
    to limit brute-force attempts.
 
 
-.. _slapd__ref_acl_rule4:
+.. _slapd__ref_acl_rule5:
 
-Rule 4: restrict access to password attribute in LDAP directory
+Rule 5: restrict access to password attribute in LDAP directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to:     ``userPassword`` attribute in all objects
@@ -323,9 +367,9 @@ Rule 4: restrict access to password attribute in LDAP directory
    brute-force attempts.
 
 
-.. _slapd__ref_acl_rule5:
+.. _slapd__ref_acl_rule6:
 
-Rule 5: restrict access to privileged roles by administration
+Rule 6: restrict access to privileged roles by administration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to:    the :ref:`slapd__ref_acl_dn_ldap_admins` and the :ref:`slapd__ref_acl_dn_ldap_replicators` roles
@@ -347,9 +391,9 @@ Rule 5: restrict access to privileged roles by administration
    otherwise they could easily grant themselves more privileged access.
 
 
-.. _slapd__ref_acl_rule6:
+.. _slapd__ref_acl_rule7:
 
-Rule 6: restrict access to privileged UNIX group by administration
+Rule 7: restrict access to privileged UNIX group by administration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to:    the :ref:`slapd__ref_acl_dn_unix_admins` group
@@ -369,9 +413,9 @@ Rule 6: restrict access to privileged UNIX group by administration
    themselves more privileged access.
 
 
-.. _slapd__ref_acl_rule7:
+.. _slapd__ref_acl_rule8:
 
-Rule 7: restrict access to System Groups by LDAP editors
+Rule 8: restrict access to System Groups by LDAP editors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to:    objects under the ``ou=System Groups,dc=example,dc=org`` DN
@@ -391,9 +435,9 @@ Rule 7: restrict access to System Groups by LDAP editors
    otherwise they could easily grant themselves more privileged access.
 
 
-.. _slapd__ref_acl_rule8:
+.. _slapd__ref_acl_rule9:
 
-Rule 8: write access to most of the directory by LDAP editors
+Rule 9: write access to most of the directory by LDAP editors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: most sections of the main LDAP directory tree
@@ -410,10 +454,10 @@ Rule 8: write access to most of the directory by LDAP editors
    from the restrictions set in the previous ACL rules.
 
 
-.. _slapd__ref_acl_rule9:
+.. _slapd__ref_acl_rule10:
 
-Rule 9: group owners can add or remove members of their groups
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Rule 10: group owners can add or remove members of their groups
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: ``member`` attribute of the ``System Groups`` or ``Groups`` LDAP
             objects
@@ -433,9 +477,9 @@ Rule 9: group owners can add or remove members of their groups
    Names should be able to add or remove members in their own group.
 
 
-.. _slapd__ref_acl_rule10:
+.. _slapd__ref_acl_rule11:
 
-Rule 10: account admins can create new child objects under specific DNs
+Rule 11: account admins can create new child objects under specific DNs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: new child objects of specific Distinguished Names
@@ -456,9 +500,9 @@ Rule 10: account admins can create new child objects under specific DNs
    allow creation of new children objects.
 
 
-.. _slapd__ref_acl_rule11:
+.. _slapd__ref_acl_rule12:
 
-Rule 11: account admins can modify existing child objects under specific DNs
+Rule 12: account admins can modify existing child objects under specific DNs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: existing child objects of specific Distinguished Names
@@ -477,9 +521,9 @@ Rule 11: account admins can modify existing child objects under specific DNs
    accounts, as well as modify existing groups in the LDAP directory.
 
 
-.. _slapd__ref_acl_rule12:
+.. _slapd__ref_acl_rule13:
 
-Rule 12: grant read access to authenticated users
+Rule 13: grant read access to authenticated users
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Access to: entire LDAP directory
