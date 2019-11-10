@@ -495,27 +495,21 @@ dovecot_firewall: True
 # On the one hand this prevents mail server components from accessing sensitive system directories,
 # on the other hand it protects the mailboxes from external access.
 # Only vmail (and root) are allowed to access the mailboxes.
-dovecot__vmail_posix_user: 'vmail'
+dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user
+                               if (ansible_local|d() and ansible_local.postldap|d() and
+                                 ansible_local.postldap.vmail_posix_user|d())
+                                else "vmail" }}'
                                                                    # ]]]
-# .. envvar:: dovecot__vmail_posix_uidnumber [[[
-#
-# Virtual Mail POSIX uidNumber
-#
-dovecot__vmail_posix_uidnumber: '{{ getent_passwd[dovecot__vmail_posix_user][1]|int }}'
-# ]]]
 # .. envvar:: dovecot__vmail_posix_group [[[
 #
 # Virtual Mail POSIX group
 #
-dovecot__vmail_posix_group: 'vmail'
-# ]]]
-# .. envvar:: dovecot__vmail_posix_gidnumber [[[
-#
-# Virtual Mail POSIX gidNumber
-#
-dovecot__vmail_posix_gidnumber: '{{ getent_group[dovecot__vmail_posix_group][1]|int }}'
-# ]]]
-# ]]]
+dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group
+                                if (ansible_local|d() and ansible_local.postldap|d() and
+                                  ansible_local.postldap.vmail_posix_group|d())
+                                else "vmail" }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # LDAP [[[
 # --------
 
