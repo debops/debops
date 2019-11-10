@@ -72,8 +72,11 @@ $config['smtp_user'] = '{{ roundcube__smtp_user }}';
 // will use the current user's password for login
 $config['smtp_pass'] = '{{ roundcube__smtp_pass }}';
 
+{% if (roundcube__local_config_map is defined and 'product_name' not in roundcube__local_config_map) or
+      (roundcube__local_config_map is not defined) %}
 // Name your service. This is displayed on the login screen and in the window title
 $config['product_name'] = '{{ roundcube__product_name }}';
+{% endif %}
 
 // this key is used to encrypt the users imap password which is stored
 // in the session record (and the client cookie if remember password is enabled).
