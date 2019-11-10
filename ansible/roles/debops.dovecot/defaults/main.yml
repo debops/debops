@@ -521,20 +521,20 @@ dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group
 # In order to enable Virtual Mail support LDAP authentication needs to be enabled.
 # When enabled, `dovecot` will authenticate users against LDAP and authorize access to the user's mailbox.
 dovecot__ldap_enabled: '{{ True
-                                       if (ansible_local|d() and ansible_local.ldap|d() and
-                                          (ansible_local.ldap.enabled|d())|bool)
-                                       else False }}'
-# ]]]
+                           if (ansible_local|d() and ansible_local.ldap|d() and
+                              (ansible_local.ldap.enabled|d())|bool)
+                           else False }}'
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_base_dn [[[
 #
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list.
 dovecot__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                                        if (ansible_local|d() and ansible_local.ldap|d() and
-                                            ansible_local.ldap.base_dn|d())
-                                        else [] }}'
+                           if (ansible_local|d() and ansible_local.ldap|d() and
+                             ansible_local.ldap.base_dn|d())
+                           else [] }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_device_dn [[[
 #
 # The Distinguished Name of the current host LDAP object, defined as a YAML
@@ -542,25 +542,25 @@ dovecot__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
 dovecot__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                                          if (ansible_local|d() and ansible_local.ldap|d() and
-                                              ansible_local.ldap.device_dn|d())
-                                          else [] }}'
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.device_dn|d())
+                             else [] }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_self_rdn [[[
 #
 # The Relative Distinguished Name of the account LDAP object used by the
 # `dovecot` service to access the LDAP directory.
 dovecot__ldap_self_rdn: 'uid=dovecot'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_self_object_classes [[[
 #
 # List of the LDAP object classes which will be used to create the LDAP object
 # used by the `dovecot` service to access the LDAP directory.
 dovecot__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_self_attributes [[[
 #
 # YAML dictionary that defines the attributes of the LDAP object used by the
@@ -577,36 +577,36 @@ dovecot__ldap_self_attributes:
 # The Distinguished Name of the account LDAP object used by the
 # Dovecot service to bind to the LDAP directory.
 dovecot__ldap_binddn: '{{ ([ dovecot__ldap_self_rdn ]
-                                        + dovecot__ldap_device_dn) | join(",") }}'
+                             + dovecot__ldap_device_dn) | join(",") }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_bindpw [[[
 #
 # The password stored in the account LDAP object used by the `dovecot` service
 # to bind to the LDAP directory.
 dovecot__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                                  + dovecot__ldap_binddn | to_uuid + ".password length=32 "
-                                  + "chars=alpha,digits,!@_$%^&*") }}'
+                          + dovecot__ldap_binddn | to_uuid + ".password length=32 "
+                          + "chars=alpha,digits,!@_$%^&*") }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_people_rdn [[[
 #
 # The Relative Distinguished Name of the LDAP object which contains the user
 # accounts stored in LDAP.
 dovecot__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                               if (ansible_local|d() and ansible_local.ldap|d() and
-                                   ansible_local.ldap.people_rdn|d())
-                               else "ou=People" }}'
+                              if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.people_rdn|d())
+                              else "ou=People" }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_people_dn [[[
 #
 # The Distinguished Name of the LDAP object which contains the user accounts
 # used by Postfix and Dovecot.
 dovecot__ldap_people_dn: '{{ [ dovecot__ldap_people_rdn ]
-                                          + dovecot__ldap_base_dn }}'
+                               + dovecot__ldap_base_dn }}'
 
-# ]]]
+                                                                   # ]]]
 
 # LDAP connection options [[[
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -616,30 +616,30 @@ dovecot__ldap_people_dn: '{{ [ dovecot__ldap_people_rdn ]
 # List of LDAP URIs that point to the directory servers which should be used by
 # `dovecot` service.
 dovecot__ldap_uri: '{{ ansible_local.ldap.uri
-                                    if (ansible_local|d() and ansible_local.ldap|d() and
-                                        ansible_local.ldap.uri|d())
-                                    else [""] }}'
+                       if (ansible_local|d() and ansible_local.ldap|d() and
+                         ansible_local.ldap.uri|d())
+                       else [""] }}'
 
 # .. envvar:: dovecot__ldap_server_port [[[
 #
 # The TCP port which should be used for connections to the LDAP server.
 dovecot__ldap_server_port: '{{ ansible_local.ldap.port
-                                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                                ansible_local.ldap.port|d())
-                                            else ("389" if dovecot__ldap_start_tls|bool else "636") }}'
+                               if (ansible_local|d() and ansible_local.ldap|d() and
+                                  ansible_local.ldap.port|d())
+                               else ("389" if dovecot__ldap_start_tls|bool else "636") }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_start_tls [[[
 #
 # If ``True``, Postfix will use STARTTLS extension to make encrypted
 # connections to the LDAP server.
 dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls
-                                          if (ansible_local|d() and ansible_local.ldap|d() and
-                                              (ansible_local.ldap.start_tls|d())|bool)
-                                          else True }}'
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                (ansible_local.ldap.start_tls|d())|bool)
+                             else True }}'
 
   # ]]]
-# ]]]
+                                                                   # ]]]
 # LDAP settings [[[
 # ^^^^^^^^^^^^^^^^^
 
@@ -664,48 +664,48 @@ dovecot__ldap_user_filter: '(&
 #
 # Set the LDAP attribute value to be read by Postfix in order to get the user quota.
 dovecot__ldap_quota_attribute: 'mailQuota'
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_quota_default [[[
 #
 # User default LDAP quota. Use human-readable values, e.g. "2 GB".
 dovecot__ldap_quota_default: '10 GB'
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_default_config [[[
 #
 # The LDAP configuration options defined by default.
 dovecot__ldap_default_config: []
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_config [[[
 #
 # List of custom LDAP configuration options defined for all hosts
 # in the Ansible inventory.
 dovecot__ldap_config: []
-# ]]]
+                                                                   # ]]]
 
 # .. envvar:: dovecot__group_ldap_config [[[
 #
 # List of custom LDAP configuration options defined on hosts in
 # a specific Ansible inventory group.
 dovecot__group_ldap_config: []
-# ]]]
+                                                                   # ]]]
 
 # .. envvar:: dovecot__host_ldap_config [[[
 #
 # List of custom LDAP configuration options defined on specific
 # hosts in the Ansible inventory.
 dovecot__host_ldap_config: []
-# ]]]
+                                                                   # ]]]
 
 # .. envvar:: dovecot__ldap_combined_config [[[
 #
 # The variable that combines default and user LDAP configuration and is used in
 # the role tasks and templates.
 dovecot__ldap_combined_config: '{{ dovecot__ldap_default_config
-                                              + dovecot__ldap_config
-                                              + dovecot__group_ldap_config
-                                              + dovecot__host_ldap_config }}'
-# ]]]
+                                   + dovecot__ldap_config
+                                   + dovecot__group_ldap_config
+                                   + dovecot__host_ldap_config }}'
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap__dependent_tasks [[[
 #
 # Configuration for the :ref:`debops.ldap` Ansible role.
@@ -723,7 +723,7 @@ dovecot__ldap__dependent_tasks:
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
-    # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
