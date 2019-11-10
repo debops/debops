@@ -659,6 +659,17 @@ slapd__acl_tasks:
           by * break
 
         - |-
+          to dn.subtree="{{ slapd__basedn }}" filter="(memberOf=cn=Hidden Objects, ou=Groups,{{ slapd__basedn }})"
+             attrs="children,entry"
+          by self break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrators,    ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editors,           ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=Hidden Object Viewers,  ou=Roles,{{ slapd__basedn }}" break
+          by group/groupOfNames/member.exact="cn=LDAP Administrators,    ou=System Groups,{{ slapd__basedn }}" break
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" break
+          by * none
+
+        - |-
           to filter="(| (objectClass=posixAccount) (objectClass=posixGroup) (objectClass=posixGroupId) )"
              attrs="uid,uidNumber,gid,gidNumber,homeDirectory"
           by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
