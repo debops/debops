@@ -138,6 +138,11 @@ LDAP
   well to ensure that changes in the :ref:`debops.ldap` support are working
   correctly.
 
+- You can now hide specific LDAP objects from unprivileged users by adding them
+  to a special ``cn=Hidden Objects,ou=Groups,dc=example,dc=org`` LDAP group.
+  The required ACL rule will be enabled by default; the objects used to control
+  visibility will be created by the :file:`ldap/init-directory.yml` playbook.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
