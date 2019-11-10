@@ -68,21 +68,21 @@
 {% endif %}
 {# Rule arguments #}
 {# ============== #}
-{% set ferm__tpl_invalid_target = 'DROP' %}
-{% set ferm__tpl_active_target = 'ACCEPT' %}
-{% set ferm__tpl_module = 'conntrack' %}
+{% set ferm__tpl_tracking_invalid_target = 'DROP' %}
+{% set ferm__tpl_tracking_active_target = 'ACCEPT' %}
+{% set ferm__tpl_tracking_module = 'conntrack' %}
 {% set ferm__tpl_interface = [] %}
 {% set ferm__tpl_outerface = [] %}
 {% set ferm__tpl_interface_not = [] %}
 {% set ferm__tpl_outerface_not = [] %}
-{% if item.invalid_target|d() %}
-{%   set ferm__tpl_invalid_target = item.invalid_target %}
+{% if item.tracking_invalid_target|d() %}
+{%   set ferm__tpl_tracking_invalid_target = item.tracking_invalid_target %}
 {% endif %}
-{% if item.active_target|d() %}
-{%   set ferm__tpl_active_target = item.active_target %}
+{% if item.tracking_active_target|d() %}
+{%   set ferm__tpl_tracking_active_target = item.tracking_active_target %}
 {% endif %}
-{% if item.module|d() %}
-{%   set ferm__tpl_module = item.module %}
+{% if item.tracking_module|d() %}
+{%   set ferm__tpl_tracking_module = item.tracking_module %}
 {% endif %}
 {% if item.interface|d() %}
 {%   if item.interface is string %}
@@ -121,10 +121,10 @@
 {% elif ferm__tpl_outerface_not %}
 {%   set _ = ferm__tpl_arguments.append("outerface ! " + ferm__tpl_outerface_not[0] | string) %}
 {% endif %}
-{% if ferm__tpl_module == 'state' %}
-{%   set ferm__tpl_module_command = 'mod state state' %}
+{% if ferm__tpl_tracking_module == 'state' %}
+{%   set ferm__tpl_tracking_module_command = 'mod state state' %}
 {% else %}
-{%   set ferm__tpl_module_command = 'mod conntrack ctstate' %}
+{%   set ferm__tpl_tracking_module_command = 'mod conntrack ctstate' %}
 {% endif %}
 {# Main template #}
 {# ============= #}
@@ -135,8 +135,8 @@
 {% if item.when is undefined or item.when | bool %}
 {%   if ferm__tpl_domain_args %}{{ ferm__tpl_domain_args | join(" ") }} {% endif %}{
     {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
-        {{ ferm__tpl_module_command }} INVALID {{ ferm__tpl_invalid_target }};
-        {{ ferm__tpl_module_command }} (ESTABLISHED RELATED) {{ ferm__tpl_active_target }};
+        {{ ferm__tpl_tracking_module_command }} INVALID {{ ferm__tpl_tracking_invalid_target }};
+        {{ ferm__tpl_tracking_module_command }} (ESTABLISHED RELATED) {{ ferm__tpl_tracking_active_target }};
     }
 }
 {% else %}

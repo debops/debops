@@ -126,6 +126,9 @@ LDAP
 - Add support for :ref:`nextcloud LDAP schema <slapd__ref_nextcloud>` which
   provides attributes needed to define disk quotas for Nextcloud user accounts.
 
+- The Access Control List rules can now be tested using the :man:`slapacl(8)`
+  command via a generated :ref:`test suite script <slapd__ref_acl_tests>`.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
@@ -320,6 +323,15 @@ General
 
 - The number of rounds in SHA-512 password hashes has been increased from 5000
   (default) to 100001. Existing password hashes will be unaffected.
+
+- The ``employeeNumber`` attribute in the ``ou=People,dc=example,dc=org`` LDAP
+  subtree will be constrained to digits only, and the LDAP directory will
+  enforce its uniqueness in the subtree. This allows the attribute to be used
+  for correlation of personal LDAP objects to RDBMS-based databases.
+
+- The ``mail`` attribute is changed from unique for objects in the
+  ``ou=People,dc=example,dc=org`` LDAP subtree to globally unique, due to its
+  use for authentication purposes. The attribute will be indexed by default.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
