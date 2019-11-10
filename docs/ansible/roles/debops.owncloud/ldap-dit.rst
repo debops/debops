@@ -16,7 +16,7 @@ Directory structure
 
 - :ref:`ou=Roles <ldap__ref_ldap_dit>` -> :ref:`debops.ldap`
 
-  - ``cn=Password Reset Agents``
+  - ``cn=Password Reset Agent``
 
     - ``roleOccupant``: :envvar:`uid=nextcloud,cn=host.example.org,... <owncloud__ldap_binddn>`
 

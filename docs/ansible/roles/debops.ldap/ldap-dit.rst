@@ -40,7 +40,7 @@ Directory structure
 
       - :envvar:`ou=Roles <ldap__roles_rdn>`
 
-        - ``cn=Password Reset Agents`` (via the :file:`ldap/init-directory.yml` playbook)
+        - ``cn=Password Reset Agent`` (via the :file:`ldap/init-directory.yml` playbook)
 
           - ``roleOccupant``: :ref:`uid=nextcloud,cn=host.example.org,... <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
 
