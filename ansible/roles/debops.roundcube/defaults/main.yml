@@ -247,34 +247,63 @@ roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
                                                                    # ]]]
 # .. envvar:: roundcube__default_host [[[
 #
-# Mail host chosen to perform the log-in.
+# The IMAP host chosen to perform the log-in.
+#
+# Leave blank to show a textbox at login, give a list of hosts
+# to display a pulldown menu or set one host as string.
+# To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
+# Supported replacement variables:
+# %n - hostname ($_SERVER['SERVER_NAME'])
+# %t - hostname without the first part
+# %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+# %s - domain name after the '@' from e-mail address provided at login screen
+# For example %n = mail.domain.tld, %t = domain.tld
 roundcube__default_host: 'localhost'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_server [[[
 #
 # SMTP server host (for sending mails).
+#
+# Enter hostname with prefix tls:// to use STARTTLS, or use
+# prefix ssl:// to use the deprecated SSL over SMTP (aka SMTPS)
+# Supported replacement variables:
+# %h - user's IMAP hostname
+# %n - hostname ($_SERVER['SERVER_NAME'])
+# %t - hostname without the first part
+# %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+# %z - IMAP domain (IMAP hostname without the first part)
+# For example %n = mail.domain.tld, %t = domain.tld
 roundcube__smtp_server: ''
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_port [[[
 #
 # SMTP port.
-roundcube__smtp_port: '25'
+#
+# SMTP port (default is 25; use 587 for STARTTLS or 465 for the
+# deprecated SSL over SMTP (aka SMTPS))
+roundcube__smtp_port: '587'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_user [[[
 #
 # SMTP username (if required) if you use %u as the username Roundcube will
 # use the current username for login.
-roundcube__smtp_user: ''
+roundcube__smtp_user: '%u'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_pass [[[
 #
 # SMTP password (if required) if you use %p as the password Roundcube will
 # use the current user's password for login.
-roundcube__smtp_pass: ''
+roundcube__smtp_pass: '%p'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__product_name [[[
+#
+#  Name your service. This is displayed on the login screen and in the window title
+roundcube__product_name: 'Roundcube Webmail'
 
                                                                    # ]]]
 # .. envvar:: roundcube__des_key [[[
