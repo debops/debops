@@ -2007,9 +2007,9 @@ owncloud__ldap__dependent_tasks:
     state: '{{ "present" if owncloud__ldap_device_dn|d() else "ignore" }}'
 
   - name: 'Enable password management by {{ owncloud__ldap_binddn }}'
-    dn: '{{ ([ "cn=Password Reset Agents", "ou=System Groups" ] + owncloud__ldap_base_dn) | join(",") }}'
+    dn: '{{ ([ "cn=Password Reset Agent", "ou=Roles" ] + owncloud__ldap_base_dn) | join(",") }}'
     attributes:
-      member: '{{ owncloud__ldap_binddn }}'
+      roleOccupant: '{{ owncloud__ldap_binddn }}'
     state: '{{ "present" if owncloud__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]

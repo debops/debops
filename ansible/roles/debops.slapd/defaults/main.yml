@@ -654,13 +654,33 @@ slapd__acl_tasks:
 
         - |-
           to dn.subtree="{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" manage
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Replicator,    ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" manage
           by group/groupOfNames/member.exact="cn=LDAP Replicators,    ou=System Groups,{{ slapd__basedn }}" read
           by * break
 
         - |-
+          to dn.subtree="{{ slapd__basedn }}" filter="(memberOf=cn=Hidden Objects, ou=Groups,{{ slapd__basedn }})"
+             attrs="children,entry"
+          by self break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator,    ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=Hidden Object Viewer,  ou=Roles,{{ slapd__basedn }}" break
+          by group/groupOfNames/member.exact="cn=LDAP Administrators,    ou=System Groups,{{ slapd__basedn }}" break
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" break
+          by * none
+
+        - |-
           to filter="(| (objectClass=posixAccount) (objectClass=posixGroup) (objectClass=posixGroupId) )"
              attrs="uid,uidNumber,gid,gidNumber,homeDirectory"
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by users read
+
+        - |-
+          to dn.subtree="ou=SUDOers,{{ slapd__basedn }}"
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
           by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by users read
 
@@ -668,6 +688,9 @@ slapd__acl_tasks:
           to dn.subtree="ou=People,{{ slapd__basedn }}"
              attrs="shadowLastChange"
           by self write
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agent,  ou=Roles,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
@@ -677,6 +700,9 @@ slapd__acl_tasks:
           to dn.subtree="ou=People,{{ slapd__basedn }}"
              attrs="userPassword"
           by self =w
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agent,  ou=Roles,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
@@ -690,12 +716,30 @@ slapd__acl_tasks:
           by *         none
 
         - |-
+          to dn.regex="^cn=(LDAP Administrator|LDAP Replicator), ou=Roles,{{ slapd__basedn }}$"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
+          to dn.subtree="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
           to dn.subtree="ou=System Groups,{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor, ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" read
           by * break
 
         - |-
           to dn.subtree="{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" write
           by * break
 
@@ -708,13 +752,26 @@ slapd__acl_tasks:
         - |-
           to dn.regex="^([^,]+,)?ou=(People|Groups|Machines),{{ slapd__basedn }}$"
              attrs="children,entry"
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by * break
 
         - |-
           to dn.regex="^[^,]+,ou=(People|Groups|Machines),{{ slapd__basedn }}$"
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by * break
+
+        - |-
+          to attrs="carLicense,homePhone,homePostalAddress"
+          by self write
+          by * none
+
+        - |-
+          to attrs="mobile"
+          by self write
+          by group/organizationalRole/roleOccupant.exact="cn=SMS Gateway, ou=Roles,{{ slapd__basedn }}" read
+          by * none
 
         - |-
           to *
@@ -914,11 +971,23 @@ slapd__slapacl_test_rdn_map:
   # LDAP Editor (see most things, write access to most things)
   ldap_editor_rdn:   'uid=<user>'
 
+  # UNIX Administrator (manages UNIX environment)
+  unix_admin_rdn:    'uid=<user>'
+
   # Account Administrator (write access to personal objects)
   account_admin_rdn: 'uid=<user>'
 
   # An unprivileged user account
   person_rdn:        'uid=<user>'
+
+  # Distinguished Name of a LDAP Replicator
+  ldap_replicator_dn: ''
+
+  # Distinguished Name of a Password Reset Agent
+  password_reset_dn: ''
+
+  # Distinguished Name of a SMS Gateway object
+  sms_gateway_dn: ''
 
                                                                    # ]]]
 # .. envvar:: slapd__slapacl_default_tests [[[
