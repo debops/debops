@@ -27,6 +27,12 @@ Added
 - The ``try_files`` option in the PHP location blocks can be overridden using
   the ``item.php_try_files`` parameter.
 
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- The role will install the ``libsasl2-modules`` APT package when Postfix
+  ``auth`` capability is enabled, to allow for the SASL authentication to work.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
