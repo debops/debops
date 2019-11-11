@@ -211,7 +211,7 @@ Password Reset Agent
 ~~~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=Password Reset Agent,ou=Roles,dc=example,dc=org
-:Test RDN: ``password_reset_dn``
+:Test DN: ``password_reset_dn``
 :Obsolete: cn=Password Reset Agents,ou=System Groups,dc=example,dc=org
 
 - Role grants write-only access to the ``shadowLastChange`` and the
@@ -220,6 +220,17 @@ Password Reset Agent
 
 - This role is meant for applications that act on behalf of the users to allow
   them to perform password changes after out-of-band authentication.
+
+.. _slapd__ref_acl_role_sms_gateway:
+
+SMS Gateway
+~~~~~~~~~~~
+
+:DN:       cn=SMS Gateway,ou=Roles,dc=example,dc=org
+:Test DN: ``sms_gateway_dn``
+
+- Role grants read-only access to the ``mobile`` LDAP attribute, required by
+  the SMS gateways to send SMS messages.
 
 .. _slapd__ref_acl_role_hidden_object_viewer:
 
@@ -267,9 +278,9 @@ Object owners
   write-only access to the ``userPassword`` attribute in their own LDAP objects
   to allow password changes.
 
-- Object owners have write access to the ``carLicense``, ``homePhone`` and
-  ``homePostalAddress`` attributes in their own objects. These attributes
-  cannot be seen by other unprivileged users.
+- Object owners have write access to the ``mobile``, ``carLicense``,
+  ``homePhone`` and ``homePostalAddress`` attributes in their own objects.
+  These attributes cannot be seen by other unprivileged users.
 
 Authenticated users
 ~~~~~~~~~~~~~~~~~~~

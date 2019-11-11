@@ -145,6 +145,10 @@ LDAP
 - Write access to the ``ou=SUDOers,dc=example,dc=org`` LDAP subtree has been
   restricted to the members of the "UNIX Administrators" LDAP group.
 
+- New "SMS Gateway" LDAP role grants read-only access to the ``mobile``
+  attribute by SMS gateways. This is needed for implementing 2-factor
+  authentication via SMS messages.
+
 Fixed
 ~~~~~
 
