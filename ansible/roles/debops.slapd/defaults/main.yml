@@ -677,6 +677,12 @@ slapd__acl_tasks:
           by users read
 
         - |-
+          to dn.subtree="ou=SUDOers,{{ slapd__basedn }}"
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by users read
+
+        - |-
           to dn.subtree="ou=People,{{ slapd__basedn }}"
              attrs="shadowLastChange"
           by self write
