@@ -768,6 +768,12 @@ slapd__acl_tasks:
           by * none
 
         - |-
+          to attrs="mobile"
+          by self write
+          by group/organizationalRole/roleOccupant.exact="cn=SMS Gateway, ou=Roles,{{ slapd__basedn }}" read
+          by * none
+
+        - |-
           to *
           by users read
           by * none
@@ -979,6 +985,9 @@ slapd__slapacl_test_rdn_map:
 
   # Distinguished Name of a Password Reset Agent
   password_reset_dn: ''
+
+  # Distinguished Name of a SMS Gateway object
+  sms_gateway_dn: ''
 
                                                                    # ]]]
 # .. envvar:: slapd__slapacl_default_tests [[[

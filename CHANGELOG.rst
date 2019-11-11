@@ -143,6 +143,10 @@ LDAP
   The required ACL rule will be enabled by default; the objects used to control
   visibility will be created by the :file:`ldap/init-directory.yml` playbook.
 
+- New "SMS Gateway" LDAP role grants read-only access to the ``mobile``
+  attribute by SMS gateways. This is needed for implementing 2-factor
+  authentication via SMS messages.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
