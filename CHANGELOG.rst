@@ -178,6 +178,14 @@ Fixed
 - Fix a "variable is undefined" issue when the :file:`service/owncloud.yml`
   Ansible playbook is executed with the ``role::nginx`` Ansible tag.
 
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- Disable the ``smtpd_helo_restrictions`` option on the ``submission`` and
+  ``smtps`` TCP ports when the authentication and MX lookups are enabled. This
+  should fix an issue where SMTP client sends the host's IP address as its
+  HELO/EHLO response, which might not be configurable by the user.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 

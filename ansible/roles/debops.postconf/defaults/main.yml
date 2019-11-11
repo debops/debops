@@ -319,6 +319,13 @@ postconf__postfix__dependent_mastercf:
 
   - name: 'submission'
     options:
+
+      - name: 'smtpd_helo_restrictions'
+        value: ''
+        state: '{{ "present"
+                   if ("public-mx-required" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
       - name: 'cleanup_service_name'
         value: 'authcleanup'
         state: '{{ "present"
@@ -330,6 +337,13 @@ postconf__postfix__dependent_mastercf:
 
   - name: 'smtps'
     options:
+
+      - name: 'smtpd_helo_restrictions'
+        value: ''
+        state: '{{ "present"
+                   if ("public-mx-required" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
       - name: 'cleanup_service_name'
         value: 'authcleanup'
         state: '{{ "present"
