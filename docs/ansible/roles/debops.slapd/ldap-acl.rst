@@ -97,6 +97,10 @@ UNIX Administrators
   ``posixAccount``, ``posixGroup`` and ``posixGroupId`` LDAP objects. Everyone
   else has read-only access to these attributes.
 
+- Members of this group have write access to the
+  ``ou=SUDOers,dc=example,dc=org`` LDAP subtree which contains
+  :man:`sudoers.ldap(5)` configuration. Everyone else has read-only access.
+
 - Access to the group is restricted to Read-only by role occupants of the
   :ref:`slapd__ref_acl_role_ldap_editor` and the
   :ref:`slapd__ref_acl_role_account_admin` LDAP roles.

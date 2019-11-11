@@ -371,6 +371,9 @@ LDAP
   attributes has been restricted to privileged accounts only (administrators,
   entry owner). The values cannot be seen by unprivileged and anonymous users.
 
+- Write access to the ``ou=SUDOers,dc=example,dc=org`` LDAP subtree has been
+  restricted to the members of the "UNIX Administrators" LDAP group.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
