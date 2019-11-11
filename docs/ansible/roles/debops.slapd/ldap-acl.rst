@@ -53,7 +53,7 @@ Default security policy
 - Object owners should be able to modify passwords in their own objects.
 
 - Authenticated users should have read access to most of the directory, apart
-  from security-sensitive data like passwords or private keys.
+  from security-sensitive data like passwords or private information.
 
 
 Required LDAP schemas
@@ -262,6 +262,10 @@ Object owners
 - Object owners have write access to the ``shadowLastChange`` attribute, and
   write-only access to the ``userPassword`` attribute in their own LDAP objects
   to allow password changes.
+
+- Object owners have write access to the ``carLicense``, ``homePhone`` and
+  ``homePostalAddress`` attributes in their own objects. These attributes
+  cannot be seen by other unprivileged users.
 
 Authenticated users
 ~~~~~~~~~~~~~~~~~~~

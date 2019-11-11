@@ -138,6 +138,10 @@ LDAP
   The required ACL rule will be enabled by default; the objects used to control
   visibility will be created by the :file:`ldap/init-directory.yml` playbook.
 
+- Access to the ``carLicense``, ``homePhone`` and ``homePostalAddress``
+  attributes has been restricted to privileged accounts only (administrators,
+  entry owner). The values cannot be seen by unprivileged and anonymous users.
+
 Fixed
 ~~~~~
 
