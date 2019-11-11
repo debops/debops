@@ -34,10 +34,6 @@ Jinja templates:
   This filter plugin can be used to filter strings or lists that match shell
   glob patterns.
 
-``ldappassword``
-  This filter plugin can be used to convert plaintext passwords to hashes that
-  can be stored in the LDAP ``userPassword`` attribute.
-
 ``parse_kv_config``
   Parse a YAML list of dictionaries and output a sorted and expanded list of
   YAML dictionaries that contain a common set of dictionary keys. The filter

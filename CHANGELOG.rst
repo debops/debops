@@ -399,6 +399,14 @@ debops-contrib.dropbear_initramfs role
 Removed
 ~~~~~~~
 
+:ref:`debops.ansible_plugins` role
+''''''''''''''''''''''''''''''''''
+
+- The ``ldappassword`` Ansible filter plugin has been removed as it is no
+  longer used in DebOps roles. The preferred method for storing passwords in
+  LDAP is to pass them in plaintext (over TLS) and let the directory server
+  store them in a hashed form. See also: :rfc:`3062`.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
