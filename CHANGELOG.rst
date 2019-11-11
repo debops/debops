@@ -367,6 +367,10 @@ LDAP
   ``ou=People,dc=example,dc=org`` LDAP subtree to globally unique, due to its
   use for authentication purposes. The attribute will be indexed by default.
 
+- Access to the ``carLicense``, ``homePhone`` and ``homePostalAddress``
+  attributes has been restricted to privileged accounts only (administrators,
+  entry owner). The values cannot be seen by unprivileged and anonymous users.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
