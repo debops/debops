@@ -36,6 +36,10 @@ Added
 - Enable Referential Integrity overlay for most of the LDAP attributes that use
   the Distinguished Names as values.
 
+- New "SMS Gateway" LDAP role grants read-only access to the ``mobile``
+  attribute by SMS gateways. This is needed for implementing 2-factor
+  authentication via SMS messages.
+
 Changed
 ~~~~~~~
 
