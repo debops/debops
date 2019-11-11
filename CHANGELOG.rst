@@ -441,6 +441,14 @@ Fixed
   ``/`` location is not specified in the ``item.location`` dictionary,
   a default one will be included by the role.
 
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- Disable the ``smtpd_helo_restrictions`` option on the ``submission`` and
+  ``smtps`` TCP ports when the authentication and MX lookups are enabled. This
+  should fix an issue where SMTP client sends the host's IP address as its
+  HELO/EHLO response, which might not be configurable by the user.
+
 Security
 ~~~~~~~~
 
