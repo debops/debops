@@ -155,6 +155,17 @@ LDAP
 - Write access to the ``ou=SUDOers,dc=example,dc=org`` LDAP subtree has been
   restricted to the members of the "UNIX Administrators" LDAP group.
 
+Removed
+~~~~~~~
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The use of the ``params`` option in the ``ldap_attrs`` and ``ldap_entry``
+  Ansible modules is deprecated due to their insecure nature. As a consequence,
+  the :ref:`debops.ldap` role has been updated to not use this option and the
+  ``ldap__admin_auth_params`` variable has been removed.
+
 Fixed
 ~~~~~
 
