@@ -169,6 +169,13 @@ Removed
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The "Edit on GitHub" links on the role default variable pages in the
+  documentation have been fixed and now point to the correct source files on
+  GitHub.
+
 :ref:`debops.hashicorp` role
 ''''''''''''''''''''''''''''
 
