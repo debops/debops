@@ -21,12 +21,12 @@
 
     - role: debops.php/env
       tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
-    
+
     - role: debops.roundcube/env
       tags: [ 'role::roundcube', 'role::roundcube:env', 'role::nodejs' ]
 
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences', 'skip::apt_preferences', 
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences',
               'role::nginx', 'role::php', 'role::nodejs' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
