@@ -174,6 +174,12 @@ Fixed
 
 - Fix support for the Python 3.x environment in the local fact template.
 
+:ref:`debops.keyring` role
+''''''''''''''''''''''''''
+
+- The role should now work as expected with GnuPG v1.x available on the host,
+  on older OS releases.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
