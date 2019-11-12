@@ -8,7 +8,7 @@
           - { src: 'styles/styles.less', dest: 'styles/styles.css' }
           - { src: 'styles/print.less',  dest: 'styles/print.css' }
           - { src: 'styles/embed.less',  dest: 'styles/embed.css' }
-      
+
     - name: Generate CSS files for the 'elastic' skin
       command: 'lessc --compress {{ item.src }} {{ item.dest }}'
       args:
@@ -23,7 +23,7 @@
         group: '{{ roundcube__group }}'
         mode: '0644'
       loop: '{{ roundcube__fact_skin_elastic_css_files }}'
-  
+
   when: roundcube__skin_folder is defined
         and roundcube__skin_folder == 'elastic'
         and roundcube__git_checkout is defined
