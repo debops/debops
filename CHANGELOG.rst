@@ -155,6 +155,17 @@ LDAP
   attribute by SMS gateways. This is needed for implementing 2-factor
   authentication via SMS messages.
 
+Removed
+~~~~~~~
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The use of the ``params`` option in the ``ldap_attrs`` and ``ldap_entry``
+  Ansible modules is deprecated due to their insecure nature. As a consequence,
+  the :ref:`debops.ldap` role has been updated to not use this option and the
+  ``ldap__admin_auth_params`` variable has been removed.
+
 Fixed
 ~~~~~
 
