@@ -369,8 +369,12 @@ dovecot_imap_default_config_map:
   login-service:
     inet_listener:
       imap:
-        port: '{{ 0 if (dovecot_pki|d(True)) else 143 }}'
+        # Use only localhost when PKI is true, otherwise listen on all IPs
+        address: '{{ "127.0.0.1, [::0]" if (dovecot_pki|d(True)) else "0.0.0.0, [::]" }}'
+        port: 143
       imaps:
+        address: '0.0.0.0, [::]'
+        # Disable IMAPS if PKI is false
         port: '{{ 993 if (dovecot_pki|d(True)) else 0 }}'
         ssl: 'yes'
 
