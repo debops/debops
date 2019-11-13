@@ -211,6 +211,16 @@ postconf__combined_lookup_tables: '{{ postconf__default_lookup_tables
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: postconf__postfix__dependent_packages [[[
+#
+# List of APT packages to install passed to the :ref:`debops.postfix` Ansible
+# role.
+postconf__postfix__dependent_packages:
+  - '{{ "libsasl2-modules"
+        if ("auth" in postconf__combined_capabilities)
+        else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: postconf__postfix__dependent_lookup_tables [[[
 #
 # Lookup table configuration passed to the :ref:`debops.postfix` Ansible role.
@@ -319,6 +329,13 @@ postconf__postfix__dependent_mastercf:
 
   - name: 'submission'
     options:
+
+      - name: 'smtpd_helo_restrictions'
+        value: ''
+        state: '{{ "present"
+                   if ("public-mx-required" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
       - name: 'cleanup_service_name'
         value: 'authcleanup'
         state: '{{ "present"
@@ -330,6 +347,13 @@ postconf__postfix__dependent_mastercf:
 
   - name: 'smtps'
     options:
+
+      - name: 'smtpd_helo_restrictions'
+        value: ''
+        state: '{{ "present"
+                   if ("public-mx-required" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
       - name: 'cleanup_service_name'
         value: 'authcleanup'
         state: '{{ "present"

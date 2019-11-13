@@ -44,15 +44,16 @@ Default security policy
   to it.
 
 - Grant LDAP editors write access to most of the LDAP directory. They don't
-  have write access to ``ou=System Groups`` subtree as well as to the UNIX
-  attributes, they cannot see passwords (but can change them).
+  have write access to the LDAP Administrators and the LDAP Replicators roles,
+  the UNIX Administrators group, the ``ou=System Groups`` subtree as well as to
+  the UNIX attributes, they cannot see passwords (but can change them).
 
 - Group owners should be able to add or remove members of their own group.
 
 - Object owners should be able to modify passwords in their own objects.
 
 - Authenticated users should have read access to most of the directory, apart
-  from security-sensitive data like passwords or private keys.
+  from security-sensitive data like passwords or private information.
 
 
 Required LDAP schemas
@@ -68,355 +69,237 @@ If some of the schemas specified here are not present, the default ACL
 configuration will not be enabled correctly.
 
 
-Important Distinguished Names
------------------------------
+Directory groups
+----------------
 
-This section of the documentation lists various LDAP objects that can be
-present in the LDAP directory and are included in the ACL. They might not be
-present initially and might need to be created by the administrator to perform
-their function. The LDAP Distinguished Names used in the documentation assume
-that the ``example.org`` DNS domain is used by the OpenLDAP server.
+In this section of the documentation you can find a list of LDAP groups which
+are used in the default :ref:`debops.slapd` Access Control List rules. These
+groups can be created in the directory using the
+:file:`ldap/init-directory.yml` Ansible playbook included in DebOps. The LDAP
+Distinguished Names used in the documentation assume that the ``example.org``
+DNS domain is used by the OpenLDAP server.
 
-.. _slapd__ref_acl_dn_ldap_admins:
+The "Test RDN" and "Test DN" attributes refer to the
+:ref:`slapd__ref_acl_tests` and specifically to the
+:envvar:`slapd__slapacl_test_rdn_map` variable.
 
-cn=LDAP Administrators,ou=System Groups,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _slapd__ref_acl_group_unix_admins:
 
-This is a ``groupOfNames`` LDAP object that defines via its ``member``
-attribute the Distinguished Names of the people who have full, privileged
-access to the LDAP directory.
+UNIX Administrators
+~~~~~~~~~~~~~~~~~~~
 
-.. _slapd__ref_acl_dn_ldap_replicators:
+:DN:       cn=UNIX Administrators,ou=Groups,dc=example,dc=org
+:Test RDN: ``unix_admin_rdn``
+:Obsolete: cn=UNIX Administrators,ou=System Groups,dc=example,dc=org
 
-cn=LDAP Replicators,ou=System Groups,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Members of this group have write access to the ``uid``, ``uidNumber``,
+  ``gid``, ``gidNumber`` and ``homeDirectory`` attributes of the
+  ``posixAccount``, ``posixGroup`` and ``posixGroupId`` LDAP objects. Everyone
+  else has read-only access to these attributes.
 
-The is a ``groupOfNames`` LDAP object that defines via its ``member`` attribute
-the Distinguished Names of the objects that are used for authenticated access
-to data replication by other OpenLDAP servers. This group should have full
-access to the LDAP directory for successful replication.
+- Members of this group have write access to the
+  ``ou=SUDOers,dc=example,dc=org`` LDAP subtree which contains
+  :man:`sudoers.ldap(5)` configuration. Everyone else has read-only access.
 
-.. _slapd__ref_acl_dn_unix_admins:
+- Access to the group is restricted to Read-only by role occupants of the
+  :ref:`slapd__ref_acl_role_ldap_editor` and the
+  :ref:`slapd__ref_acl_role_account_admin` LDAP roles.
 
-cn=UNIX Administrators,ou=System Groups,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _slapd__ref_acl_group_hidden_objects:
 
-This is a ``groupOfNames`` LDAP object that defines via its ``member``
-attribute the Distinguished Names of the UNIX administrators. These accounts
-will be able to manipulate the LDAP attributes of certain objects
-(``posixAccount``, ``posixGroup``, ``posixGroupId``) which can affect the
-security boundary in an UNIX-like environment.
+Hidden Objects
+~~~~~~~~~~~~~~
 
-.. _slapd__ref_acl_dn_ldap_editors:
+:DN: cn=Hidden Objects,ou=Groups,dc=example,dc=org
 
-cn=LDAP Editors,ou=System Groups,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Objects in this group are visible only to themselves as well as people and
+  other entities with the :ref:`slapd__ref_acl_role_ldap_admin`, the
+  :ref:`slapd__ref_acl_role_ldap_editor` and the
+  :ref:`slapd__ref_acl_role_hidden_object_viewer` roles.
 
-This is a ``groupOfNames`` LDAP object that defines via its ``member``
-attribute the Distinguished Names of the LDAP editors. The editors are expected
-to be proficient in LDAP management and are granted write access to most of the
-LDAP directory, apart from the ``ou=System Groups`` subtree and UNIX
-attributes.
+- The access control list checks the ``memberOf`` attribute of an LDAP object
+  and grants or denies access to it depending on its membership status.
 
-.. _slapd__ref_acl_dn_account_admins:
+.. note:: Due to limitations of the OpenLDAP Access Control List features, to
+   hide the children objects of a given LDAP object, all of them need to be
+   also included as separate ``member`` attributes in the
+   :ref:`slapd__ref_acl_group_hidden_objects` group. Otherwise the children of
+   hidden objects can be still visible in general LDAP searches, for example
+   ``(objectClass=*)``. The DN attribute of such entries can also disclose the
+   presence of a hidden object.
 
-cn=Account Administrators,ou=System Groups,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is a ``groupOfNames`` LDAP object that defines via its ``member``
-attribute the Distinguished Names of the account administrators. They are
-responsible for managing the user accounts of people, client machines,
-organizational groups and other user-specific data.
+Directory roles
+---------------
 
-.. _slapd__ref_acl_dn_password_reset:
+In this section of the documentation you can find a list of LDAP roles which
+are used in the default :ref:`debops.slapd` Access Control List rules. These
+roles can be created in the directory using the :file:`ldap/init-directory.yml`
+Ansible playbook included in DebOps. The LDAP Distinguished Names used in the
+documentation assume that the ``example.org`` DNS domain is used by the
+OpenLDAP server.
 
-cn=Password Reset Agents,ou=System Groups,dc=example,dc=org
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The "Test RDN" and "Test DN" attributes refer to the
+:ref:`slapd__ref_acl_tests` and specifically to the
+:envvar:`slapd__slapacl_test_rdn_map` variable.
 
-This is a ``groupOfNames`` LDAP object that defines via its ``member``
-attribute the Distinguished Names of the Password Reset Agents, usually
-application(s) that act on behalf of the users to allow them to perform
-password changes after out-of-band authentication. This group should have
-access to user passwords to be able to reset them.
+.. _slapd__ref_acl_role_ldap_admin:
 
+LDAP Administrator
+~~~~~~~~~~~~~~~~~~
 
-Access Control List rules
--------------------------
+:DN:       cn=LDAP Administrator,ou=Roles,dc=example,dc=org
+:Test RDN: ``ldap_admin_rdn``
+:Obsolete: cn=LDAP Administrators,ou=System Groups,dc=example,dc=org
 
-This section of the documentation contains human-readable explanation of the
-ACL rules defined in the :envvar:`slapd__acl_tasks` default variable. These
-rules should be kept up to date with changes to the ACL contents.
+- Role grants full access to the entire LDAP directory.
 
+- Access to the role is restricted to read-only by role occupants of the
+  :ref:`slapd__ref_acl_role_ldap_editor` and the
+  :ref:`slapd__ref_acl_role_account_admin` LDAP roles.
 
-.. _slapd__ref_acl_rule0:
+.. _slapd__ref_acl_role_ldap_replicator:
 
-Rule 0: full access by LDAP admins and replicators
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LDAP Replicator
+~~~~~~~~~~~~~~~
 
-:Access to: main LDAP directory tree
-:Manage by: :ref:`slapd__ref_acl_dn_ldap_admins`
-:Read by:   :ref:`slapd__ref_acl_dn_ldap_replicators`
-:Others:    continue evaluation
+:DN:       cn=LDAP Replicator,ou=Roles,dc=example,dc=org
+:Test DN:  ``ldap_replicator_dn``
+:Obsolete: cn=LDAP Replicators,ou=System Groups,dc=example,dc=org
 
-- Grant full access to the entire LDAP directory tree by the members of the
-  :ref:`slapd__ref_acl_dn_ldap_admins` group, including passwords and other
-  confidential data.
+- Role grants read-only access to the entire LDAP directory.
 
-- Grant read-only access to the entire LDAP directory tree by the members of
-  the :ref:`slapd__ref_acl_dn_ldap_replicators` group, including passwords and
-  other confidential data.
+- Access to the role is restricted to read-only by role occupants of the
+  :ref:`slapd__ref_acl_role_ldap_editor` and the
+  :ref:`slapd__ref_acl_role_account_admin` LDAP roles.
 
-- Continue evaluation of the ACL rules for anyone else.
+.. _slapd__ref_acl_role_ldap_editor:
 
-.. note::
-   LDAP administrators and replicator accounts should have full access to the
-   entire LDAP directory.
+LDAP Editor
+~~~~~~~~~~~
 
+:DN:       cn=LDAP Editor,ou=Roles,dc=example,dc=org
+:Test RDN: ``ldap_editor_rdn``
+:Obsolete: cn=LDAP Editors,ou=System Groups,dc=example,dc=org
 
-.. _slapd__ref_acl_rule1:
+- Role grants write access to most of the LDAP directory, apart from the
+  privileged groups and roles.
 
-Rule 1: restrict access to POSIX attributes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _slapd__ref_acl_role_account_admin:
 
-:Access to: POSIX objects with specific attributes
-:Write by:  UNIX Administrators
-:Read by:   authenticated users
+Account Administrator
+~~~~~~~~~~~~~~~~~~~~~
 
-- Grant write access to the ``uid``, ``uidNumber``, ``gid``, ``gidNumber`` and
-  ``homeDirectory`` attributes in ``posixAccount``, ``posixGroup`` and
-  ``posixGroupId`` LDAP objects by the members of the
-  :ref:`slapd__ref_acl_dn_unix_admins` group.
+:DN:       cn=Account Administrator,ou=Roles,dc=example,dc=org
+:Test RDN: ``account_admin_rdn``
+:Obsolete: cn=Account Administrators,ou=System Groups,dc=example,dc=org
 
-- Authenticated users can read contents of the specific POSIX attributes, but
-  not modify them.
+- Role grants write access to the ``shadowLastChange`` and write-only access to
+  the ``userPassword`` attributes in the ``ou=People,dc=example,dc=org`` LDAP
+  subtree to allow password changes in personal accounts.
 
-.. note::
-   The POSIX/UNIX environment is treated as a separate security domain with its
-   own rules, different than the LDAP directory domain. Only a specific subset
-   of UNIX administrators should be able to manage this security domain.
+- Role grants write access in the ``ou=People,dc=example,dc=org``,
+  ``ou=Groups,dc=example,dc=org`` and the ``ou=Machines,dc=example,dc=org``
+  LDAP subtrees.
 
+.. note:: Purpose of this role is too broad and in the future it will be split
+   into separate, more focused LDAP roles.
 
-.. _slapd__ref_acl_rule2:
+.. _slapd__ref_acl_role_password_reset:
 
-Rule 2: restrict access to shadow database of the personal accounts
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Password Reset Agent
+~~~~~~~~~~~~~~~~~~~~
 
-:Access to:     ``shadowLastChange`` attribute in personal accounts
-:Write by:      object owners (self), LDAP Editors, Account Administrators
-:Write-only by: Password Reset Agents
-:Read by:       authenticated users
+:DN:       cn=Password Reset Agent,ou=Roles,dc=example,dc=org
+:Test DN: ``password_reset_dn``
+:Obsolete: cn=Password Reset Agents,ou=System Groups,dc=example,dc=org
 
-- Grant write access to the ``shadowLastChange`` attribute in all objects under
-  the ``ou=People,dc=example,dc=org`` Distinguished Name by the object owners
-  (self) to allow for password changes by the users themselves.
+- Role grants write-only access to the ``shadowLastChange`` and the
+  ``userPassword`` attributes in the ``ou=People,dc=example,dc=org`` LDAP
+  subtree to allow password changes in personal accounts.
 
-- Grant write access to the ``shadowLastChange`` attribute in all objects under
-  the ``ou=People,dc=example,dc=org`` Distinguished Name by the members of the
-  :ref:`slapd__ref_acl_dn_ldap_editors` and
-  :ref:`slapd__ref_acl_dn_account_admins` groups.
+- This role is meant for applications that act on behalf of the users to allow
+  them to perform password changes after out-of-band authentication.
 
-- Grant write-only access to the ``shadowLastChange`` attribute in all objects
-  under the ``ou=People,dc=example,dc=org`` Distinguished Name by the members
-  of the :ref:`slapd__ref_acl_dn_password_reset` group to allow successfull
-  password resets.
+.. _slapd__ref_acl_role_sms_gateway:
 
-- Grant read-only access to the ``shadowLastChange`` attribute in all objects
-  under the ``ou=People,dc=example,dc=org`` Distinguished Name by the
-  authenticated users.
+SMS Gateway
+~~~~~~~~~~~
 
-.. note::
-   This rule is required for successful password changes performed by the
-   object owners and other entities that are allowed to set new passwords or
-   change existing ones.
+:DN:       cn=SMS Gateway,ou=Roles,dc=example,dc=org
+:Test DN: ``sms_gateway_dn``
 
+- Role grants read-only access to the ``mobile`` LDAP attribute, required by
+  the SMS gateways to send SMS messages.
 
-.. _slapd__ref_acl_rule3:
+.. _slapd__ref_acl_role_hidden_object_viewer:
 
-Rule 3: restrict access to password attribute of the personal accounts
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Hidden Object Viewer
+~~~~~~~~~~~~~~~~~~~~
 
-:Access to:     ``userPassword`` attribute in personal accounts
-:Write-only by: object owners (self), LDAP Editors, Account Administrators,
-                Password Reset Agents
-:Auth by:       anonymous users
-:Others:        no access
+:DN: cn=Hidden Object Viewer,ou=Roles,dc=example,dc=org
 
-- Grant write-only access to the ``userPassword`` attribute in all objects
-  under the ``ou=People,dc=example,dc=org`` Distinguished Name by the object
-  owners (self) to allow for password changes by the users themselves.
+- Role occupants can see LDAP objects included in the
+  :ref:`slapd__ref_acl_group_hidden_objects` LDAP group.
 
-- Grant write-only access to the ``userPassword`` attribute in all objects
-  under the ``ou=People,dc=example,dc=org`` Distinguished Name by the members
-  of the :ref:`slapd__ref_acl_dn_ldap_editors`,
-  :ref:`slapd__ref_acl_dn_account_admins` and
-  :ref:`slapd__ref_acl_dn_password_reset` groups.
 
-- Permit authentication attempts using the ``userPassword`` attribute in all
-  objects under the ``ou=People,dc=example,dc=org`` Distinguished Name by the
-  anonymous users.
+Other directory objects
+-----------------------
 
-- Deny access to the ``userPassword`` attribute in all objects under the
-  ``ou=People,dc=example,dc=org`` Distinguished Name to everyone else.
+This section of the documentation describes various other LDAP objects and
+their default access policy defined by the :ref:`debops.slapd` Ansible role.
 
-.. note::
-   This rule is required for successful user account password changes performed
-   by the object owners and other entities that are allowed to set new
-   passwords or change existing ones, and to allow authentication by anonymous
-   users. Hashed password strings should not be available to unprivileged users
-   to limit brute-force attempts.
+System Groups
+~~~~~~~~~~~~~
 
+:DN: ou=System Groups,dc=example,dc=org
 
-.. _slapd__ref_acl_rule4:
+- This subtree was used to hold LDAP objects related to access control, which
+  have been converted to normal groups and roles. It can be safely removed from
+  existing LDAP directories; the ACL rules for this LDAP object will be removed
+  at a later date to allow for secure migration to the new directory layout.
 
-Rule 4: restrict access to password attribute in LDAP directory
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Group owners
+~~~~~~~~~~~~
 
-:Access to:     ``userPassword`` attribute in all objects
-:Write-only by: object owners (self)
-:Auth by:       anonymous users
-:Others:        no access
+- The owners of the LDAP groups under the ``ou=Groups,dc=example,dc=org`` LDAP
+  subtree, defined by the ``owner`` attribute, can add, modify or remove
+  members in their respecitve groups, using the ``member`` attribute.
 
-- Grant write-only access to the ``userPassword`` attribute in all objects in
-  the LDAP directory  by the object owners (self) to allow for password changes
-  by the users themselves.
+Object owners
+~~~~~~~~~~~~~
 
-- Permit authentication attempts using the ``userPassword`` attribute in all
-  objects in the LDAP directory by the anonymous users.
+:DN: self
 
-- Deny access to the ``userPassword`` attribute in all objects in the LDAP
-  directory to everyone else.
+- Object owners see their own LDAP objects even if they are hidden using the
+  :ref:`slapd__ref_acl_group_hidden_objects` LDAP group.
 
-.. note::
-   This rule is required for successful password changes performed by the
-   object owners and to allow authentication by anonymous users. Hashed
-   password strings should not be available to unprivileged users to limit
-   brute-force attempts.
+- Object owners have write access to the ``shadowLastChange`` attribute, and
+  write-only access to the ``userPassword`` attribute in their own LDAP objects
+  to allow password changes.
 
+- Object owners have write access to the ``mobile``, ``carLicense``,
+  ``homePhone`` and ``homePostalAddress`` attributes in their own objects.
+  These attributes cannot be seen by other unprivileged users.
 
-.. _slapd__ref_acl_rule5:
+Authenticated users
+~~~~~~~~~~~~~~~~~~~
 
-Rule 5: restrict access to System Groups by LDAP editors
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:DN: users
+:Test RDN: ``person_rdn``
 
-:Access to:    objects under the ``ou=System Groups,dc=example,dc=org`` DN
-:Read-only by: LDAP Editors
-:Others:       continue evaluation
+- Authenticated users have read-only access to most of the LDAP directory,
+  depending on the restrictions defined by the ACL rules.
 
-- Grant read-only access to all objects under the ``ou=System
-  Groups,dc=example,dc=org`` Distinguished Name by the members of the
-  :ref:`slapd__ref_acl_dn_ldap_editors` group.
+Anonymous users
+~~~~~~~~~~~~~~~
 
-- Continue evaluation of the ACL rules for anyone else.
+:DN: anonymous
 
-.. note::
-   The objects under the ``ou=System Groups,dc=example,dc=org`` Distinguished
-   Name are used to control privileged access to the LDAP directory and other
-   security contexts. LDAP Editors should not be allowed to modify them,
-   otherwise they could easily grant themselves more privileged access.
+- Anonymous users can authenticate to the LDAP directory via the
+  ``userPassword`` attribute.
 
-
-.. _slapd__ref_acl_rule6:
-
-Rule 6: write access to most of the directory by LDAP editors
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-:Access to: most sections of the main LDAP directory tree
-:Write by:  :ref:`slapd__ref_acl_dn_ldap_editors`
-:Others:    continue evaluation
-
-- Grant write access to the most parts of the main LDAP directory tree by the
-  members of the :ref:`slapd__ref_acl_dn_ldap_editors` group.
-
-- Continue evaluation of the ACL rules for anyone else.
-
-.. note::
-   The LDAP Editors have write access to the entire LDAP directory tree, apart
-   from the restrictions set in the previous ACL rules.
-
-
-.. _slapd__ref_acl_rule7:
-
-Rule 7: group owners can add or remove members of their groups
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-:Access to: ``member`` attribute of the ``System Groups`` or ``Groups`` LDAP
-            objects
-:Write by:  owners of a given group
-:Others:    continue evaluation
-
-- Grant write access to the ``member`` attribute of the child objects under the
-  ``ou=System Groups,dc=example,dc=org`` or ``ou=Groups,dc=example,dc=org``
-  Distinguished Names by the accounts defined in the ``owner`` attribute of
-  a given child object.
-
-- Continue evaluation of the ACL rules for anyone else.
-
-.. note::
-   The owners of the groups defined under the ``ou=System
-   Groups,dc=example,dc=org`` or ``ou=Groups,dc=example,dc=org`` Distinguished
-   Names should be able to add or remove members in their own group.
-
-
-.. _slapd__ref_acl_rule8:
-
-Rule 8: account admins can create new child objects under specific DNs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-:Access to: new child objects of specific Distinguished Names
-:Write by:  :ref:`slapd__ref_acl_dn_account_admins`
-:Others:    continue evaluation
-
-- Grant write access to new children objects and the entries of the
-  ``ou=People,dc=example,dc=org``, ``ou=Machines,dc=example,dc=org`` and
-  ``ou=Groups,dc=example,dc=org`` Distinguished Names by the members of the
-  :ref:`slapd__ref_acl_dn_account_admins` group.
-
-- Continue evaluation of the ACL rules for anyone else.
-
-.. note::
-   Account administrators should be able to add new user and client machine
-   accounts, as well as create new groups in the LDAP directory. Access to the
-   parent objects themselves is granted only when children are specified, to
-   allow creation of new children objects.
-
-
-.. _slapd__ref_acl_rule9:
-
-Rule 9: account admins can modify existing child objects under specific DNs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-:Access to: existing child objects of specific Distinguished Names
-:Write by:  :ref:`slapd__ref_acl_dn_account_admins`
-:Others:    continue evaluation
-
-- Grant write access to existing children objects of the
-  ``ou=People,dc=example,dc=org``, ``ou=Machines,dc=example,dc=org`` and
-  ``ou=Groups,dc=example,dc=org`` Distinguished Names by the members of the
-  :ref:`slapd__ref_acl_dn_account_admins` group.
-
-- Continue evaluation of the ACL rules for anyone else.
-
-.. note::
-   Account administrators should be able to modify user and client machine
-   accounts, as well as modify existing groups in the LDAP directory.
-
-
-.. _slapd__ref_acl_rule10:
-
-Rule 10: grant read access to authenticated users
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-:Access to: entire LDAP directory
-:Read by:   authenticated users
-:Others:    no access
-
-- Grant read access to entire LDAP directory by authenticated users.
-
-- Deny access to all objects in the LDAP directory to everyone else.
-
-.. note::
-   Authenticated users should be able to read contents of the LDAP directory,
-   apart from any restrictions imposed by earlier ACL rules.
+- No other access is granted to anonymous users.
 
 
 Current issues with the default ACL
