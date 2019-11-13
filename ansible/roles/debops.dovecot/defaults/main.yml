@@ -211,27 +211,27 @@ dovecot_passwdfile_mailbox_path: '%u'
 #
 # Enable or disable support for TLS in Dovecot (using debops.pki)
 dovecot_pki: '{{ (True
-                                if (ansible_local|d() and ansible_local.pki|d() and
-                                    ansible_local.pki.enabled|d() | bool)
-                                else False) | bool }}'
+                  if (ansible_local|d() and ansible_local.pki|d() and
+                    ansible_local.pki.enabled|d() | bool)
+                  else False) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_path [[[
 #
 # Base PKI directory
 dovecot_pki_path: '{{ ansible_local.pki.path
-                                         if (ansible_local|d() and ansible_local.pki|d() and
-                                             ansible_local.pki.path|d())
-                                         else "/etc/pki/realms" }}'
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                        ansible_local.pki.path|d())
+                      else "/etc/pki/realms" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_realm [[[
 #
 # Default PKI realm used by Dovecot
 dovecot_pki_realm: '{{ ansible_local.pki.realm
-                                           if (ansible_local|d() and ansible_local.pki|d() and
-                                               ansible_local.pki.realm|d())
-                                           else "domain" }}'
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                        ansible_local.pki.realm|d())
+                      else "domain" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_ca [[[
@@ -239,27 +239,27 @@ dovecot_pki_realm: '{{ ansible_local.pki.realm
 # Name of the Root Certificate Authority certificate file used by Postfix,
 # relative to the PKI realm directory.
 dovecot__pki_ca: '{{ ansible_local.pki.ca
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.ca|d())
-                     else "CA.crt" }}'
+                    if (ansible_local|d() and ansible_local.pki|d() and
+                      ansible_local.pki.ca|d())
+                    else "CA.crt" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_crt [[[
 #
 # Default certificate, relative to ``dovecot_pki_realm`` variable
 dovecot_pki_crt: '{{ ansible_local.pki.crt
-                                       if (ansible_local|d() and ansible_local.pki|d() and
-                                           ansible_local.pki.crt|d())
-                                       else "default.crt" }}'
+                    if (ansible_local|d() and ansible_local.pki|d() and
+                      ansible_local.pki.crt|d())
+                    else "default.crt" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_key [[[
 #
 # Default private key, relative to ``dovecot_pki_realm`` variable
 dovecot_pki_key: '{{ ansible_local.pki.key
-                                       if (ansible_local|d() and ansible_local.pki|d() and
-                                           ansible_local.pki.key|d())
-                                       else "default.key" }}'
+                    if (ansible_local|d() and ansible_local.pki|d() and
+                      ansible_local.pki.key|d())
+                    else "default.key" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__tls_ca_cert_dir [[[
@@ -283,9 +283,9 @@ dovecot_ssl_required: True
 # protocol version Dovecot accepts, defaulting to TLSv1.
 # On old distros disable SSLv2,3 and allow TLSv1.0 or better.
 dovecot_ssl_min_protocol: '{{ "!SSLv2 !SSLv3"
-                           if (ansible_distribution_release in
-                               [ "wheezy", "jessie", "precise", "trusty" ])
-                           else "TLSv1" }}'
+                              if (ansible_distribution_release in
+                                [ "wheezy", "jessie", "precise", "trusty" ])
+                              else "TLSv1" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_ssl_dh_parameters_length [[[
@@ -343,9 +343,9 @@ dovecot__dhparam_set: 'default'
 #
 # Absolute path to Diffie-Hellman parameters file which should be used by Dovecot.
 dovecot__ssl_dh_file: '{{ ansible_local.dhparam[dovecot__dhparam_set]
-                                    if (ansible_local|d() and ansible_local.dhparam|d() and
-                                        ansible_local.dhparam[dovecot__dhparam_set]|d())
-                                    else "" }}'
+                          if (ansible_local|d() and ansible_local.dhparam|d() and
+                            ansible_local.dhparam[dovecot__dhparam_set]|d())
+                          else "" }}'
 
 # ]]]
 # ]]]
@@ -500,9 +500,9 @@ dovecot_firewall: True
 # on the other hand it protects the mailboxes from external access.
 # Only vmail (and root) are allowed to access the mailboxes.
 dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user
-                               if (ansible_local|d() and ansible_local.postldap|d() and
-                                 ansible_local.postldap.vmail_posix_user|d())
-                                else "vmail" }}'
+                              if (ansible_local|d() and ansible_local.postldap|d() and
+                                ansible_local.postldap.vmail_posix_user|d())
+                              else "vmail" }}'
                                                                    # ]]]
 # .. envvar:: dovecot__vmail_posix_group [[[
 #
