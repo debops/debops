@@ -462,9 +462,10 @@ slapd__default_tasks:
       olcUniqueURI:
         - 'ldap:///{{ slapd__basedn }}?uidNumber?sub'
         - 'ldap:///{{ slapd__basedn }}?gidNumber?sub'
+        - 'ldap:///{{ slapd__basedn }}?mail?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?employeeNumber?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
-        - 'ldap:///ou=People,{{ slapd__basedn }}?mail?sub'
     state: 'exact'
 
   - name: 'Configure memberOf overlay in the main database'
@@ -486,6 +487,10 @@ slapd__default_tasks:
         - 'uniqueMember'
         - 'manager'
         - 'owner'
+        - 'roleOccupant'
+        - 'seeAlso'
+        - 'secretary'
+        - 'documentAuthor'
     state: 'exact'
 
   - name: 'Configure Audit Logging overlay in the main database'
@@ -500,6 +505,7 @@ slapd__default_tasks:
       olcConstraintAttribute:
         - 'jpegPhoto size 524288'  # 512 KiB
         - 'userPassword count 5'
+        - 'employeeNumber regex ^[[:digit:]]+$'
         - 'uidNumber regex ^[[:digit:]]+$'
         - 'gidNumber regex ^[[:digit:]]+$'
         - 'macAddress regex ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
@@ -617,6 +623,7 @@ slapd__default_tasks:
         - 'authorizedService eq'
         - 'host eq'
         - 'gid eq'
+        - 'mail eq,sub'
 
   - name: 'Enable the monitor database'
     dn: 'olcDatabase={2}monitor,cn=config'
@@ -647,13 +654,33 @@ slapd__acl_tasks:
 
         - |-
           to dn.subtree="{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" manage
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Replicator,    ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" manage
           by group/groupOfNames/member.exact="cn=LDAP Replicators,    ou=System Groups,{{ slapd__basedn }}" read
           by * break
 
         - |-
+          to dn.subtree="{{ slapd__basedn }}" filter="(memberOf=cn=Hidden Objects, ou=Groups,{{ slapd__basedn }})"
+             attrs="children,entry"
+          by self break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator,    ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=Hidden Object Viewer,  ou=Roles,{{ slapd__basedn }}" break
+          by group/groupOfNames/member.exact="cn=LDAP Administrators,    ou=System Groups,{{ slapd__basedn }}" break
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" break
+          by * none
+
+        - |-
           to filter="(| (objectClass=posixAccount) (objectClass=posixGroup) (objectClass=posixGroupId) )"
              attrs="uid,uidNumber,gid,gidNumber,homeDirectory"
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by users read
+
+        - |-
+          to dn.subtree="ou=SUDOers,{{ slapd__basedn }}"
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
           by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by users read
 
@@ -661,6 +688,9 @@ slapd__acl_tasks:
           to dn.subtree="ou=People,{{ slapd__basedn }}"
              attrs="shadowLastChange"
           by self write
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agent,  ou=Roles,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
@@ -670,6 +700,9 @@ slapd__acl_tasks:
           to dn.subtree="ou=People,{{ slapd__basedn }}"
              attrs="userPassword"
           by self =w
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agent,  ou=Roles,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" =w
           by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
@@ -683,12 +716,30 @@ slapd__acl_tasks:
           by *         none
 
         - |-
+          to dn.regex="^cn=(LDAP Administrator|LDAP Replicator), ou=Roles,{{ slapd__basedn }}$"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
+          to dn.subtree="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
           to dn.subtree="ou=System Groups,{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor, ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" read
           by * break
 
         - |-
           to dn.subtree="{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" write
           by * break
 
@@ -701,13 +752,26 @@ slapd__acl_tasks:
         - |-
           to dn.regex="^([^,]+,)?ou=(People|Groups|Machines),{{ slapd__basedn }}$"
              attrs="children,entry"
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by * break
 
         - |-
           to dn.regex="^[^,]+,ou=(People|Groups|Machines),{{ slapd__basedn }}$"
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
           by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
           by * break
+
+        - |-
+          to attrs="carLicense,homePhone,homePostalAddress"
+          by self write
+          by * none
+
+        - |-
+          to attrs="mobile"
+          by self write
+          by group/organizationalRole/roleOccupant.exact="cn=SMS Gateway, ou=Roles,{{ slapd__basedn }}" read
+          by * none
 
         - |-
           to *
@@ -891,22 +955,39 @@ slapd__slapacl_run_tests: True
 slapd__slapacl_script: '/etc/ldap/slapacl-test-suite'
 
                                                                    # ]]]
-# .. envvar:: slapd__slapacl_regular_person_rdn [[[
+# .. envvar:: slapd__slapacl_test_rdn_map [[[
 #
 # Some of the :command:`slapacl` tests require existing LDAP objects to work
-# correctly. This variable contains the Relative Distinguished Name of an
-# unprivileged LDAP user account. Change the value via the Ansible inventory to
-# an existing personal account to enable the related tests.
-slapd__slapacl_regular_person_rdn: 'uid=unprivileged-user'
+# correctly. This variable defines a YAML dictionary with Relative
+# Distinguished Names of various object types used in the default ACL test
+# cases. You should define any number of these in the inventory and point them
+# to real user accounts or service accounts - the more you define, the more
+# tests will be active.
+slapd__slapacl_test_rdn_map:
 
-                                                                   # ]]]
-# .. envvar:: slapd__slapacl_admin_person_rdn [[[
-#
-# Some of the :command:`slapacl` tests require existing LDAP objects to work
-# correctly. This variable contains the Relative Distinguished Name of a LDAP
-# administrator personal account. Change the value via the Ansible inventory to
-# an existing personal account to enable the related tests.
-slapd__slapacl_admin_person_rdn: 'uid=admin-user'
+  # LDAP Administrator (see everything, write access to all)
+  ldap_admin_rdn:    'uid=<user>'
+
+  # LDAP Editor (see most things, write access to most things)
+  ldap_editor_rdn:   'uid=<user>'
+
+  # UNIX Administrator (manages UNIX environment)
+  unix_admin_rdn:    'uid=<user>'
+
+  # Account Administrator (write access to personal objects)
+  account_admin_rdn: 'uid=<user>'
+
+  # An unprivileged user account
+  person_rdn:        'uid=<user>'
+
+  # Distinguished Name of a LDAP Replicator
+  ldap_replicator_dn: ''
+
+  # Distinguished Name of a Password Reset Agent
+  password_reset_dn: ''
+
+  # Distinguished Name of a SMS Gateway object
+  sms_gateway_dn: ''
 
                                                                    # ]]]
 # .. envvar:: slapd__slapacl_default_tests [[[
@@ -921,7 +1002,7 @@ slapd__slapacl_default_tests:
     policy: '=0'
     dry_run: True
 
-  - name: 'Allow adminisrator access to cn=config'
+  - name: 'Allow administrator access to cn=config'
     dn: 'cn=config'
     authdn: 'cn=admin,cn=config'
     policy: 'manage(=mwrscxd)'
@@ -929,20 +1010,20 @@ slapd__slapacl_default_tests:
 
   - name: 'Deny regular user access to cn=config'
     dn: 'cn=config'
-    authdn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     policy: '=0'
     dry_run: True
     state: '{{ "present"
-               if (slapd__slapacl_regular_person_rdn != "uid=unprivileged-user")
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Deny direct admin access to cn=config'
     dn: 'cn=config'
-    authdn: '{{ slapd__slapacl_admin_person_rdn }},ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     policy: '=0'
     dry_run: True
     state: '{{ "present"
-               if (slapd__slapacl_admin_person_rdn != "uid=admin-user")
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Deny anonymous access to cn=Monitor'
@@ -958,21 +1039,21 @@ slapd__slapacl_default_tests:
     policy: 'none(=0)'
 
   - name: "Allow authentication by anonymous users"
-    dn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
+    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     authdn: ''
     query: 'userPassword'
     policy: 'auth(=xd)'
     state: '{{ "present"
-               if (slapd__slapacl_regular_person_rdn != "uid=unprivileged-user")
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: "Deny password read access by anonymous users"
-    dn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
+    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     authdn: ''
     query: 'userPassword/read'
     policy: 'denied'
     state: '{{ "present"
-               if (slapd__slapacl_regular_person_rdn != "uid=unprivileged-user")
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Deny anonymous access to ou=People'
@@ -986,22 +1067,26 @@ slapd__slapacl_default_tests:
       - name: 'children'
         result: 'children: none(=0)'
 
+    state: '{{ "present"
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               else "init" }}'
+
   - name: 'Deny write access to ou=People by unprivileged users'
     dn: 'ou=People,{{ slapd__basedn }}'
-    authdn: '{{ slapd__slapacl_regular_person_rdn }},ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     query: 'entry/write'
     policy: 'denied'
     state: '{{ "present"
-               if (slapd__slapacl_regular_person_rdn != "uid=unprivileged-user")
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
   - name: 'Allow write access to ou=People by administrators'
     dn: 'ou=People,{{ slapd__basedn }}'
-    authdn: '{{ slapd__slapacl_admin_person_rdn }},ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
     query: 'entry/write'
     policy: 'allowed'
     state: '{{ "present"
-               if (slapd__slapacl_admin_person_rdn != "uid=admin-user")
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
                else "init" }}'
 
                                                                    # ]]]

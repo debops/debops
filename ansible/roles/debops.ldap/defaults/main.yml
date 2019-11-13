@@ -179,6 +179,8 @@ ldap__people_rdn: 'ou=People'
 # The RDN added to the BaseDN that contains LDAP System Group objects, for
 # example ``groupOfNames`` or ``groupOfUniqueNames``. This group is used for
 # internal LDAP administration.
+#
+# This variable is obsolete and will be removed in the future.
 ldap__system_groups_rdn: 'ou=System Groups'
 
                                                                    # ]]]
@@ -205,6 +207,13 @@ ldap__hosts_rdn: 'ou=Hosts'
 # branch is meant to be used for client machines that require access to the
 # LDAP directory.
 ldap__machines_rdn: 'ou=Machines'
+
+                                                                   # ]]]
+# .. envvar:: ldap__roles_rdn [[[
+#
+# The RDN added to the BaseDN that contains LDAP Role objects, for example
+# ``organizationalRole``.
+ldap__roles_rdn: 'ou=Roles'
 
                                                                    # ]]]
 # .. envvar:: ldap__services_rdn [[[
@@ -598,18 +607,6 @@ ldap__admin_become: False
 # Specify the UNIX account to which perform the privilege escalation, if
 # enabled in the previous variable.
 ldap__admin_become_user: 'root'
-
-                                                                   # ]]]
-# .. envvar:: ldap__admin_auth_params [[[
-#
-# YAML dictionary that contains authentication configuration, which is passed
-# to the ``ldap_entry`` and ``ldap__attrs`` Ansible modules to configure remote
-# LDAP connections.
-ldap__admin_auth_params:
-  server_uri: '{{ ldap__admin_server_uri }}'
-  start_tls: '{{ ldap__start_tls }}'
-  bind_dn: '{{ ldap__admin_binddn }}'
-  bind_pw: '{{ ldap__fact_admin_bindpw }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP tasks and operations [[[
@@ -630,12 +627,6 @@ ldap__default_tasks:
     attributes:
       ou: '{{ ldap__people_rdn.split("=")[1] }}'
 
-  - name: 'Ensure that {{ ldap__system_groups_rdn }} object exists in LDAP directory'
-    dn: '{{ [ ldap__system_groups_rdn ] + ldap__base_dn }}'
-    objectClass: [ 'organizationalUnit' ]
-    attributes:
-      ou: '{{ ldap__system_groups_rdn.split("=")[1] }}'
-
   - name: 'Ensure that {{ ldap__groups_rdn }} object exists in LDAP directory'
     dn: '{{ [ ldap__groups_rdn ] + ldap__base_dn }}'
     objectClass: [ 'organizationalUnit' ]
@@ -655,6 +646,12 @@ ldap__default_tasks:
     attributes:
       ou: '{{ ldap__machines_rdn.split("=")[1] }}'
       description: 'Client machines'
+
+  - name: 'Ensure that {{ ldap__roles_rdn }} object exists in LDAP directory'
+    dn: '{{ [ ldap__roles_rdn ] + ldap__base_dn }}'
+    objectClass: [ 'organizationalUnit' ]
+    attributes:
+      ou: '{{ ldap__roles_rdn.split("=")[1] }}'
 
   - name: 'Ensure that {{ ldap__services_rdn }} object exists in LDAP directory'
     dn: '{{ [ ldap__services_rdn ] + ldap__base_dn }}'
