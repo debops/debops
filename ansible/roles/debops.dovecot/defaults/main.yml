@@ -370,7 +370,10 @@ dovecot_imap_default_config_map:
     inet_listener:
       imap:
         # Use only localhost when PKI is true, otherwise listen on all IPs
-        address: '{{ "127.0.0.1, [::0]" if (dovecot_pki|d(True)) else "0.0.0.0, [::]" }}'
+        address: '{{ "127.0.0.1, [::0]" 
+                      if (dovecot_pki|d(True)) 
+                      else 
+                        "0.0.0.0, [::]" }}'
         port: 143
       imaps:
         address: '0.0.0.0, [::]'
@@ -390,7 +393,9 @@ dovecot_imap_config_map: {}
 #
 # Combined IMAP configuration properties.
 dovecot_imap_combined_config_map: '{{ dovecot_imap_default_config_map
-                                      |combine(dovecot_imap_config_map, recursive=True) }}'
+                                      |combine(
+                                        dovecot_imap_config_map,
+                                        recursive=True) }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pop3_listeners [[[
@@ -398,8 +403,9 @@ dovecot_imap_combined_config_map: '{{ dovecot_imap_default_config_map
 # List of POP3 ``inet_listeners`` which will be enabled. See
 # :ref:`dovecot_pop3_listeners` for more details.
 dovecot_pop3_listeners: '{{ [ "pop3", "pop3s" ]
-                            if ( dovecot_pki|d(True) )
-                            else [ "pop3" ] }}'
+                              if ( dovecot_pki|d(True) )
+                              else 
+                                [ "pop3" ] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pop3_config_map [[[
