@@ -18,7 +18,12 @@
 # .. envvar:: dovecot_protocols [[[
 #
 # List of protocols which should be installed and enabled. Supported are:
-# ``imap``, ``pop3``, ``managesieve``, ``lmtp``
+#
+#  - ``imap``
+#  - ``pop3``
+#  - ``managesieve``
+#  - ``lmtp``
+#
 dovecot_protocols: [ 'imap' ]
 
                                                                    # ]]]
@@ -482,11 +487,49 @@ dovecot_postfix_transport: 'lmtp:unix:private/dovecot-lmtp'
 dovecot_custom_localconf: False
 
                                                                    # ]]]
-# .. envvar:: dovecot_firewall [[[
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: dovecot__accept_any [[[
 #
-# Choose to use firewall with debops.ferm to drive iptables or not.
+# Specofy the default firewall policy for dovecot IMAP services.
 #
-dovecot_firewall: True
+# If ``True``, any host can connect to the dovecot daemon unless allow
+# restrictions are defined using the variables below.
+#
+# If ``False``, no hosts can connect to the dovecot daemon by default. You
+# need to specify IP addresses or subnets that can access the services using
+# the variables below.
+dovecot__accept_any: True
+
+                                                                   # ]]]
+# .. envvar:: dovecot__allow_imap [[[
+#
+# List of hosts/networks that can access the ``imap`` port (143).
+dovecot__allow_imap: []
+
+                                                                   # ]]]
+# .. envvar:: dovecot__allow_imaps [[[
+#
+# List of hosts/networks that can access the ``imaps`` port (993).
+dovecot__allow_imaps: []
+
+                                                                   # ]]]
+# .. envvar:: dovecot__allow_pop3 [[[
+#
+# List of hosts/networks that can access the ``pop3`` port (110).
+dovecot__allow_pop3: []
+                                                                   # ]]]
+# .. envvar:: dovecot__allow_pop3s [[[
+#
+# List of hosts/networks that can access the ``pop3s`` port (995).
+dovecot__allow_pop3s: []
+                                                                   # ]]]
+# .. envvar:: dovecot__allow_sieve [[[
+#
+# List of hosts/networks that can access the ``ManageSieve Protocol`` port (4190).
+dovecot__allow_sieve: []
                                                                    # ]]]
                                                                    # ]]]
 # Virtual Mail [[[
@@ -751,5 +794,64 @@ dovecot__postfix__dependent_maincf:
 #
 # The :file:`master.cf` configuration for ``debops.postfix`` Ansible role.
 dovecot__postfix__dependent_mastercf: []
+                                                                   # ]]]
+# .. envvar:: dovecot_server__ferm__dependent_rules [[[
+#
+# Configuration for :ref:`debops.ferm` Ansible role.
+dovecot__ferm__dependent_rules:
+
+  - name: 'dovecot_imap'
+    type: 'accept'
+    by_role: 'debops.dovecot'
+    dport: [ 'imap2' ]
+    saddr: '{{ dovecot__allow_imap }}'
+    accept_any: '{{ dovecot__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("imap" in dovecot_protocols|d([]))
+                    else "absent" }}'
+
+  - name: 'dovecot_imaps'
+    type: 'accept'
+    by_role: 'debops.dovecot'
+    dport: [ 'imaps' ]
+    saddr: '{{ dovecot__allow_imaps }}'
+    accept_any: '{{ dovecot__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("imap" in dovecot_protocols|d([])
+                         and dovecot_pki|d(True))
+                    else "absent" }}'
+
+  - name: 'dovecot_pop3'
+    type: 'accept'
+    by_role: 'debops.dovecot'
+    dport: [ 'pop3' ]
+    saddr: '{{ dovecot__allow_pop3 }}'
+    accept_any: '{{ dovecot__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("pop3" in dovecot_protocols|d([]))
+                    else "absent" }}'
+
+  - name: 'dovecot_pop3s'
+    type: 'accept'
+    by_role: 'debops.dovecot'
+    dport: [ 'pop3s' ]
+    saddr: '{{ dovecot__allow_pop3s }}'
+    accept_any: '{{ dovecot__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("pop3" in dovecot_protocols|d([])
+                         and dovecot_pki|d(True))
+                    else "absent" }}'
+
+  - name: 'dovecot_sieve'
+    type: 'accept'
+    by_role: 'debops.dovecot'
+    dport: [ 'sieve' ]
+    saddr: '{{ dovecot__allow_sieve }}'
+    accept_any: '{{ dovecot__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("managesieve" in dovecot_protocols|d([])
+                         and dovecot_pki|d(True))
+                    else "absent" }}'
+
                                                                    # ]]]
                                                                    # ]]]

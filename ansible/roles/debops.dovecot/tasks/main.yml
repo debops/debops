@@ -166,16 +166,6 @@
     group: 'root'
     mode: '0644'
 
-- name: Configure firewall for Dovecot
-  template:
-    src: 'etc/ferm/filter-input.d/dovecot.conf.j2'
-    dest: '/etc/ferm/filter-input.d/dovecot.conf'
-    owner: 'root'
-    group: 'adm'
-    mode: '0644'
-  notify: [ 'Restart ferm' ]
-  when: (dovecot_firewall is defined and dovecot_firewall)
-
 - name: Create private directory to store passwdfile
   file:
     path: "{{ dovecot_passwdfile_path }}"
