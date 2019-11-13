@@ -1,0 +1,388 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.influxdb default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Domain name configuration [[[
+# -----------------------------
+
+# .. envvar:: influxdb__fqdn [[[
+#
+# String or list of the Fully Qualified domain names on which the Influxdb
+# application will be available, used by the webserver. The first item will be
+# used as the e-mail sender domain name.
+influxdb__fqdn: '{{ ansible_hostname }}.{{ influxdb__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__domain [[[
+#
+# The DNS domain used by other variables in the ``debops.influxdb`` role.
+influxdb__domain: '{{ ansible_local.core.domain
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.domain|d())
+                    else ansible_domain }}'
+
+                                                                   # ]]]
+# Installation, APT packages [[[
+# ------------------------------
+
+# .. envvar:: influxdb__upstream_apt_id [[[
+#
+# The InfluxDB fingerprint.
+influxdb__upstream_apt_id: '05CE15085FC09D18E99EFB22684A14CF2582E0C5'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__upstream_apt_repository [[[
+#
+# The URL of the Influxdb upstream :command:`git` repository.
+influxdb__upstream_apt_repository: 'deb https://repos.influxdata.com/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__base_packages [[[
+#
+# List of APT base packages which are required by the InfluxDB application.
+influxdb__base_packages: [ 'influxdb' ]
+
+                                                                   # ]]]
+# .. envvar:: influxdb__packages [[[
+#
+# List of APT packages which are required by the InfluxDB application.
+influxdb__packages: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# PyPI packages [[[
+# -----------------
+
+# The ``influxdb`` Python module is not available in Debian repositories,
+# therefore it's installed by default from PyPI.
+# This allows usage of the ``influxdb`` module in Ansible roles
+# after checking if InfluxDB is installed via Ansible local facts.
+# To disable this, make the PyPI package list empty.
+
+# .. envvar:: influxdb__pip_packages [[[
+#
+# List of PyPI packages to install system-wide using :command:`pip` package
+# manager.
+influxdb__pip_packages: [ 'influxdb' ]
+
+                                                                   # ]]]
+# .. envvar:: influxdb__group_packages [[[
+#
+# List of APT packages to install on a group of hosts in InfluxDB inventory.
+influxdb__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__host_packages [[[
+#
+# List of APT packages to install on specific hosts in InfluxDB inventory.
+influxdb__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__dependent_packages [[[
+#
+# List of APT packages to install specified by other InfluxDB roles.
+influxdb__dependent_packages: []
+                                                                   # ]]]
+# .. envvar:: influxdb__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+influxdb__keyring__dependent_apt_keys:
+
+  - id: '{{ influxdb__upstream_apt_id }}'
+    repo: '{{ influxdb__upstream_apt_repository }}'
+                                                                   # ]]]
+# .. envvar:: influxdb__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be allowed to connect to the
+# InfluxDB server in :command:`ip(6)tables` and TCP wrappers. If it's empty, remote
+# connections are not allowed.
+influxdb__allow: [ 0.0.0.0/0 ]
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Databases, user accounts [[[
+# ----------------------------
+
+# .. envvar:: influxdb__databases [[[
+#
+# List of databases configured on the InfluxDB.
+# :ref:`influxdb_database` for more details.
+influxdb__databases: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__dependent_databases [[[
+#
+# List of databases configured on the Influxdb server, defined by another
+# Ansible role.
+influxdb__dependent_databases: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__users [[[
+#
+# List of user accounts configured on the InfluxDB server. See
+# :ref:`influxdb_user` for more details.
+influxdb__users: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__dependent_users [[[
+#
+# List of user accounts configured on the Influxdb server, defined by another
+# Ansible role.
+influxdb__dependent_users: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__admin_user [[[
+#
+# The name of the default admin user configured on the InfluxDB server.
+influxdb__admin_user: 'admin'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__password_length [[[
+#
+# Length of automatically generated user accounts, saved in the ``secret/``
+# directory. See :ref:`debops.secret` role for more details about passwords.
+influxdb__password_length: '48'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__default_privileges_grant [[[
+#
+# Default privileges granted automatically.
+influxdb__default_privileges_grant: 'ALL'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__port [[[
+#
+# Port number on which this InfluxDB listens on.
+influxdb__port: '8086'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__port_rpc [[[
+#
+# Port number used by the RPC service for RPC calls made by the CLI for backup and restore operations .
+influxdb__port_rpc: '8088'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__auth_enabled [[[
+#
+# Enable or Disable authentication.
+influxdb__auth_enabled: '{{ ansible_local.influxdb.admin_created
+                            if (ansible_local|d() and ansible_local.influxdb|d()
+                                and ansible_local.influxdb.admin_created|d())
+                            else False }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# InfluxDB configuration file [[[
+# -------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/influxdb/influxdb.conf` configuration file.
+
+# .. envvar:: influxdb__default_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+influxdb__default_configuration:
+
+  - name: 'global'
+    options:
+      - bind-address: '"127.0.0.1:{{ influxdb__port_rpc }}"'
+
+  - name: 'meta'
+    options:
+      - dir: '"/var/lib/influxdb/meta"'
+
+  - name: 'data'
+    options:
+      - dir: '"/var/lib/influxdb/data"'
+        wal-dir: '"/var/lib/influxdb/wal"'
+        series-id-set-cache-size: '100'
+
+  - name: 'coordinator'
+    options: []
+
+  - name: 'retention'
+    options: []
+
+  - name: 'shard-precreation'
+    options: []
+
+  - name: 'monitor'
+    options: []
+
+  - name: 'http'
+    options:
+      - bind-address: '":{{ influxdb__port }}"'
+        https-enabled: '{{ "true" if influxdb__pki else "false" }}'
+        auth-enabled: '{{ "true" if influxdb__auth_enabled else "false" }}'
+
+  - name: 'logging'
+    options: []
+
+  - name: 'subscriber'
+    options: []
+
+  - name: 'graphite'
+    options: []
+
+  - name: 'collectd'
+    options: []
+
+  - name: 'opentsdb'
+    options: []
+
+  - name: 'udp'
+    options: []
+
+  - name: 'continuous_queries'
+    options: []
+
+  - name: 'tls'
+    options: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__configuration [[[
+#
+# List of configuration options defined on all hosts in the InfluxDB inventory.
+influxdb__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__combined_configuration [[[
+#
+# Actual list of InfluxDB configuration options passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+influxdb__combined_configuration: '{{ influxdb__default_configuration + influxdb__configuration + influxdb__pki_options }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: influxdb__ferm__dependent_rules [[[
+#
+# Configuration for :ref:`debops.ferm` InfluxDB role.
+influxdb__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'influxdb' ]
+    saddr: '{{ influxdb__allow }}'
+    accept_any: True
+    weight: '40'
+    role: 'influxdb'
+
+  - type: 'accept'
+    dport: [ 'influxdb-rpc' ]
+    saddr: '{{ influxdb__allow }}'
+    accept_any: True
+    weight: '41'
+    role: 'influxdb'
+
+
+                                                                   # ]]]
+# .. envvar:: influxdb__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+influxdb__etc_services__dependent_list:
+
+  - name: 'influxdb'
+    port: '{{ influxdb__port }}'
+
+  - name: 'influxdb-rpc'
+    port: '{{ influxdb__port_rpc }}'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+influxdb__python__dependent_packages2: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+influxdb__python__dependent_packages3: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: influxdb__append_groups [[[
+#
+# List of additional system groups to append to the InfluxDB system user.
+# ``ssl-cert`` group is required for access to certificate private keys.
+influxdb__append_groups: [ 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: influxdb__pki_options [[[
+#
+# Configuration of SSL support in :program:`influxdb`, managed by :ref:`debops.pki` role.
+influxdb__pki_options:
+  - name: 'http'
+    state: '{{ "present" if influxdb__pki|bool else "absent" }}'
+    options:
+      - 'https-certificate':   '"{{ influxdb__pki_path + "/" + influxdb__pki_realm + "/" + influxdb__pki_crt }}"'
+        'https-private-key':    '"{{ influxdb__pki_path + "/" + influxdb__pki_realm + "/" + influxdb__pki_key }}"'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__validate_certs [[[
+#
+# Enable or disable the certificates validation.
+influxdb__validate_certs: False
+
+                                                                   # ]]]
+# .. envvar:: influxdb__pki [[[
+#
+# Enable or disable support for SSL in InfluxDB (using :ref:`debops.pki`).
+influxdb__pki: '{{ True
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.enabled|d() and
+                       influxdb__pki_realm in ansible_local.pki.known_realms)
+                   else False }}'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__pki_path [[[
+#
+# Base path for PKI directory.
+influxdb__pki_path: '{{ ansible_local.pki.base_path
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.base_path|d())
+                        else "/etc/pki" }}'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__pki_realm [[[
+#
+# Default PKI realm used by InfluxDB.
+influxdb__pki_realm: '{{ ansible_local.pki.realm
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.realm|d())
+                               else "realms" }}'
+                                                                   # ]]]
+# # .. envvar:: influxdb__pki_ca [[[
+# #
+# # Root CA certificate used by InfluxDB, relative to :envvar:`influxdb__pki_realm`.
+# influxdb__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__pki_crt [[[
+#
+# Host certificate used by InfluxDB, relative to :envvar:`influxdb__pki_realm`.
+influxdb__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__pki_key [[[
+#
+# Host private key used by InfluxDB, relative to :envvar:`influxdb__pki_realm`.
+influxdb__pki_key: 'default.key'
+
+                                                                   # ]]]
+                                                                   # ]]]
