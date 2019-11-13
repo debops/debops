@@ -18,6 +18,12 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+
+`debops v1.0.13`_ - 2019-11-13
+------------------------------
+
+.. _debops v1.0.13: https://github.com/debops/debops/compare/v1.0.12...v1.0.13
+
 Added
 ~~~~~
 
