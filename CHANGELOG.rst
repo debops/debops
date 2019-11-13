@@ -129,6 +129,24 @@ LDAP
 - The Access Control List rules can now be tested using the :man:`slapacl(8)`
   command via a generated :ref:`test suite script <slapd__ref_acl_tests>`.
 
+- The default ACL rules have been overhauled to add support for the
+  ``ou=Roles,dc=example,dc=org`` subtree and use of the ``organizationalRole``
+  LDAP objects for authorization. The old set of rules is still active to
+  ensure that the existing environments work as expected.
+
+  If you use a modified ACL configuration, you should include the new rules as
+  well to ensure that changes in the :ref:`debops.ldap` support are working
+  correctly.
+
+- You can now hide specific LDAP objects from unprivileged users by adding them
+  to a special ``cn=Hidden Objects,ou=Groups,dc=example,dc=org`` LDAP group.
+  The required ACL rule will be enabled by default; the objects used to control
+  visibility will be created by the :file:`ldap/init-directory.yml` playbook.
+
+- New "SMS Gateway" LDAP role grants read-only access to the ``mobile``
+  attribute by SMS gateways. This is needed for implementing 2-factor
+  authentication via SMS messages.
+
 :ref:`debops.unbound` role
 ''''''''''''''''''''''''''
 
@@ -169,6 +187,10 @@ Continuous Integration
   Vagrant environment more useful on Windows hosts, where :file:`/vagrant`
   directory is not mounted due to issues with symlinks.
 
+- The :command:`make test` command will not run the Docker tests anymore, to
+  make the default tests faster. To run the Docker tests with all other tests,
+  you can use the :command:`make test docker` command.
+
 General
 '''''''
 
@@ -187,6 +209,26 @@ General
      stdout_callback = yaml
 
   in the :file:`.debops.cfg` configuration file.
+
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` playbook has been updated to use the new
+  ``ou=Roles,dc=example,dc=org`` LDAP subtree, which will contain various
+  ``organizationalRole`` objects. After updating the OpenLDAP Access Control
+  List using the :ref:`debops.slapd` role, you can use the playbook on an
+  existing installation to create the missing objects.
+
+  The ``cn=UNIX Administrators`` and ``cn=UNIX SSH users`` LDAP objects will be
+  created in the ``ou=Groups,dc=example,dc=org`` LDAP subtree. On existing
+  installations, these objects need to be moved manually to the new subtree,
+  otherwise the playbook will try to create them and fail due to duplicate
+  UID/GID numbers which are enforced to be unique. You can move the objects
+  using an LDAP client, for example Apache Directory Studio.
+
+  The ``ou=System Groups,dc=example=dc,org`` subtree will not be created
+  anymore. On existing installations this subtree will be left intact and can
+  be safely removed after migration.
 
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
@@ -333,6 +375,13 @@ General
   ``ou=People,dc=example,dc=org`` LDAP subtree to globally unique, due to its
   use for authentication purposes. The attribute will be indexed by default.
 
+- Access to the ``carLicense``, ``homePhone`` and ``homePostalAddress``
+  attributes has been restricted to privileged accounts only (administrators,
+  entry owner). The values cannot be seen by unprivileged and anonymous users.
+
+- Write access to the ``ou=SUDOers,dc=example,dc=org`` LDAP subtree has been
+  restricted to the members of the "UNIX Administrators" LDAP group.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
@@ -354,6 +403,22 @@ debops-contrib.dropbear_initramfs role
 Removed
 ~~~~~~~
 
+:ref:`debops.ansible_plugins` role
+''''''''''''''''''''''''''''''''''
+
+- The ``ldappassword`` Ansible filter plugin has been removed as it is no
+  longer used in DebOps roles. The preferred method for storing passwords in
+  LDAP is to pass them in plaintext (over TLS) and let the directory server
+  store them in a hashed form. See also: :rfc:`3062`.
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The use of the ``params`` option in the ``ldap_attrs`` and ``ldap_entry``
+  Ansible modules is deprecated due to their insecure nature. As a consequence,
+  the :ref:`debops.ldap` role has been updated to not use this option and the
+  ``ldap__admin_auth_params`` variable has been removed.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
@@ -363,6 +428,13 @@ Removed
 
 Fixed
 ~~~~~
+
+General
+'''''''
+
+- The "Edit on GitHub" links on the role default variable pages in the
+  documentation have been fixed and now point to the correct source files on
+  GitHub.
 
 :ref:`debops.dnsmasq` role
 ''''''''''''''''''''''''''
@@ -395,6 +467,14 @@ Fixed
   ``location`` blocks defined in the :file:`default.conf.j` template. If the
   ``/`` location is not specified in the ``item.location`` dictionary,
   a default one will be included by the role.
+
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- Disable the ``smtpd_helo_restrictions`` option on the ``submission`` and
+  ``smtps`` TCP ports when the authentication and MX lookups are enabled. This
+  should fix an issue where SMTP client sends the host's IP address as its
+  HELO/EHLO response, which might not be configurable by the user.
 
 Security
 ~~~~~~~~

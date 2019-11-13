@@ -14,11 +14,11 @@ Directory structure
 
   - :envvar:`uid=nextcloud <owncloud__ldap_self_rdn>`
 
-- :ref:`ou=System Groups <ldap__ref_ldap_dit>` -> :ref:`debops.ldap`
+- :ref:`ou=Roles <ldap__ref_ldap_dit>` -> :ref:`debops.ldap`
 
-  - ``cn=Password Reset Agents``
+  - ``cn=Password Reset Agent``
 
-    - ``member``: :envvar:`uid=nextcloud,cn=host.example.org,... <owncloud__ldap_binddn>`
+    - ``roleOccupant``: :envvar:`uid=nextcloud,cn=host.example.org,... <owncloud__ldap_binddn>`
 
 
 Object Classes and Attributes

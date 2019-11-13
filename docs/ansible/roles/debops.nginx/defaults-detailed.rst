@@ -145,20 +145,20 @@ Common webserver options
 ``root``
   Optional, string.
   Absolute path to server root to use for this server configuration.
-  Defaults to :file:`/srv/www/<name[0]>/public/`.
+  Defaults to :file:`/srv/www/sites/<name[0]>/public/`.
   See also ``owner`` parameter.
   The directive will be omitted if set to ``False``.
 
 ``public_dir_name``
   Optional, string.
-  Folder name witch will be concatenated to :file:`/srv/www/<``name[0]>/`
+  Folder name witch will be concatenated to :file:`/srv/www/sites/<name[0]>/`
   Defaults to :file:`public`.
 
 ``root_suffix``
   Optional, string.
   Used in scenario when the site root is in another subfoder.
-  Example. The files are stored in ``/srv/www/<name[0]>/public``,
-  but in nginx the root needs to be ``/srv/www/<name[0]>/public/current/pub``
+  Example. The files are stored in ``/srv/www/sites/<name[0]>/public``,
+  but in nginx the root needs to be ``/srv/www/sites/<name[0]>/public/current/pub``.
   Defaults to empty string.
 
 
