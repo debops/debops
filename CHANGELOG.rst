@@ -187,6 +187,10 @@ Continuous Integration
   Vagrant environment more useful on Windows hosts, where :file:`/vagrant`
   directory is not mounted due to issues with symlinks.
 
+- The :command:`make test` command will not run the Docker tests anymore, to
+  make the default tests faster. To run the Docker tests with all other tests,
+  you can use the :command:`make test docker` command.
+
 General
 '''''''
 
