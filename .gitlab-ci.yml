@@ -801,6 +801,15 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.librenms\]'
     JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
+'libuser role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'libuser.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libuser.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_libuser'
+    JANE_DIFF_PATTERN: '.*/debops.libuser/.*'
+    JANE_LOG_PATTERN: '\[debops\.libuser\]'
+
 'libvirt role':
   <<: *test_role_1st_deps
   variables:

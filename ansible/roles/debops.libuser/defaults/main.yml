@@ -1,0 +1,249 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.libuser default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# Installation, Apt packages [[[
+# ------------------------------
+
+# .. envvar:: libuser__base_packages [[[
+#
+# List of APT base packages which are required by the Libuser service.
+libuser__base_packages: [ 'libuser' ]
+
+                                                                   # ]]]
+# .. envvar:: libuser__packages [[[
+#
+# List of APT packages which are required by the Libuser service.
+libuser__packages: []
+
+                                                                   # ]]]
+# .. envvar:: libuser__system_users__dependent_ [[[
+#
+# Configuration for :ref:`debops.libuser` Libuser role.
+libuser__system_users__dependent_ :
+
+                                                                   # ]]]
+# .. envvar:: libuser__users__dependent_ [[[
+#
+# Configuration for :ref:`debops.libuser` Libuser role.
+libuser__users__dependent_ :
+
+                                                                   # ]]]
+# .. envvar:: libuser__libuser_cnf_file [[[
+#
+# Absolute path for the client configuration file managed by the
+# ``debops.libuser`` Ansible role.
+# libuser__libuser_cnf_file: '{{ "/etc/libuser.conf"
+#                                      if (libuser__register_conf.stat.exists|bool)
+#                                      else "absent" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+libuser__libuser_cnf_file: '/etc/libuser.conf'
+# Libuser configuration file [[[
+# ------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/libuser.conf` configuration file.
+
+# .. envvar:: libuser__default_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+libuser__default_configuration:
+
+  - name: 'import'
+    options:
+
+      - name: 'login_defs'
+        value: '/etc/login.defs'
+        state: 'present'
+
+      - name: 'default_useradd'
+        value: '/etc/default/useradd'
+        state: 'present'
+
+  - name: 'defaults'
+    options:
+
+      - name: 'moduledir'
+        value: '/your/custom/directory'
+        state: 'comment'
+
+      - name: 'skeleton'
+        value: '/etc/skel'
+        state: 'comment'
+
+      - name: 'mailspooldir'
+        value: '/var/mail'
+        state: 'comment'
+
+      - name: 'crypt_style'
+        value: 'sha512'
+        state: 'present'
+
+      - name: 'modules'
+        value: 'files shadow'
+        state: 'present'
+
+      - name: 'create_modules'
+        value: 'files shadow'
+        state: 'present'
+
+      # - name: 'modules'
+      #   value: 'files shadow ldap'
+      #   state: 'comment'
+
+      # - name: 'create_modules'
+      #   value: 'ldap'
+      #   state: 'comment'
+
+  - name: 'userdefaults'
+    options:
+      - name: 'LU_USERNAME'
+        value: '%n'
+        state: 'present'
+
+      - name: 'LU_UIDNUMBER'
+        value: '500'
+        state: 'comment'
+
+      - name: 'LU_GIDNUMBER'
+        value: '%u'
+        state: 'present'
+
+      - name: 'LU_USERPASSWORD'
+        value: '!!'
+        state: 'comment'
+
+      - name: 'LU_GECOS'
+        value: '%n'
+        state: 'comment'
+
+      - name: 'LU_HOMEDIRECTORY'
+        value: '/home/%n'
+        state: 'comment'
+
+      - name: 'LU_LOGINSHELL'
+        value: '/bin/bash'
+        state: 'comment'
+
+      - name: 'LU_SHADOWNAME'
+        value: '%n'
+        state: 'comment'
+
+      - name: 'LU_SHADOWPASSWORD'
+        value: '!!'
+        state: 'comment'
+
+      - name: 'LU_SHADOWLASTCHANGE'
+        value: '%d'
+        state: 'comment'
+
+      - name: 'LU_SHADOWMIN'
+        value: '0'
+        state: 'comment'
+
+      - name: 'LU_SHADOWMAX'
+        value: '99999'
+        state: 'comment'
+
+      - name: 'LU_SHADOWWARNING'
+        value: '7'
+        state: 'comment'
+
+      - name: 'LU_SHADOWINACTIVE'
+        value: '-1'
+        state: 'comment'
+
+      - name: 'LU_SHADOWEXPIRE'
+        value: '1'
+        state: 'comment'
+
+      - name: 'LU_SHADOWFLAG'
+        value: '-1'
+        state: 'comment'
+
+  - name: 'groupdefaults'
+    options:
+      - name: 'LU_GROUPNAME'
+        value: '%n'
+        state: 'present'
+
+      - name: 'LU_GIDNUMBER'
+        value: '500'
+        state: 'comment'
+
+      - name: 'LU_GROUPPASSWORD'
+        value: '!!'
+        state: 'comment'
+
+      - name: 'LU_MEMBERUID'
+        value: ''
+        state: 'comment'
+
+      - name: 'LU_ADMINISTRATORUID'
+        value: ''
+        state: 'comment'
+
+  - name: 'files'
+    options:
+      - name: 'directory'
+        value: '/etc'
+        state: 'comment'
+
+  - name: 'shadow'
+    options:
+      - name: 'directory'
+        value: '/etc'
+        state: 'comment'
+
+  - name: 'ldap'
+    options:
+      - name: 'server'
+        value: 'ldap'
+        state: 'comment'
+
+      - name: 'basedn'
+        value: 'dc=example,dc=com'
+        state: 'comment'
+
+      - name: 'userBranch'
+        value: 'ou=People'
+        state: 'comment'
+
+      - name: 'groupBranch'
+        value: 'ou=Group'
+        state: 'comment'
+
+      - name: 'binddn'
+        value: 'cn=Manager,dc=example,dc=com'
+        state: 'comment'
+
+      - name: 'user'
+        value: 'Manager'
+        state: 'comment'
+
+      - name: 'authuser'
+        value: 'Manager'
+        state: 'comment'
+
+  - name: 'sasl'
+    options:
+      - name: 'appname'
+        value: 'imap'
+        state: 'comment'
+
+      - name: 'domain'
+        value: 'EXAMPLE.COM'
+        state: 'comment'
+
+                                                                   # ]]]
+                                                                   # ]]]
