@@ -157,7 +157,7 @@ def main():
             path=dict(required=True,  type='path', aliases=['name']),
             state=dict(required=False, type='str', default='present',
                        choices=['absent', 'present']),
-            package=dict(required=False, type='str'),
+            package=dict(required=False, type='str', default='LOCAL'),
             divert=dict(required=False, type='path'),
             rename=dict(required=False, type='bool', default=False),
             force=dict(required=False, type='bool', default=False),
