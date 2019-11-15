@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 
 # Copyright: (c) 2017-2018, Yann Amar <quidame@poivron.org>
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+ (see COPYING or
+# https://www.gnu.org/licenses/gpl-3.0.txt)
 # Source: https://github.com/quidame/ansible-module-dpkg_divert
 
 from __future__ import absolute_import, division, print_function
+from ansible.module_utils.basic import AnsibleModule
+import os.path
+import re
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
@@ -58,8 +63,8 @@ options:
     package:
         description:
             - The name of the package whose copy of file is not diverted, also
-              known as the diversion holder or the package the diversion belongs
-              to.
+              known as the diversion holder or the package the diversion
+              belongs to.
             - The actual package does not have to be installed or even to exist
               for its name to be valid. If not specified, the diversion is hold
               by 'LOCAL', that is reserved by/for dpkg for local dversions.
@@ -90,7 +95,8 @@ options:
               no need to use it for I(remove) action if I(divert) or I(package)
               are not used.
             - This doesn't override the rename's lock feature, i.e. it doesn't
-              help to force I(rename), but only to force the diversion for dpkg.
+              help to force I(rename), but only to force the diversion for
+              dpkg.
         type: 'bool'
         default: false
 requirements: [ dpkg-divert, env ]
@@ -111,24 +117,24 @@ EXAMPLES = '''
     package: branding
     state: absent
 
-- name: divert and rename screenrc to screenrc.dpkg-divert, even if diversion is already set
+# Divert and rename screenrc to screenrc.dpkg-divert, even if diversion is
+# already set
+- name: Divert with custom rename
   dpkg_divert:
     path: /etc/screenrc
     divert: /etc/screenrc.dpkg-divert
     rename: yes
     force: yes
 
-- name: remove the screenrc diversion and maybe move the diverted file to its original place
+  # Remove the screenrc diversion and maybe move the diverted file to its
+  # original place
+- name: Remove diversion and rename file
   dpkg_divert:
     path: /etc/screenrc
     state: absent
     rename: yes
 '''
 
-
-from ansible.module_utils.basic import AnsibleModule
-import os.path
-import re
 
 def main():
 
@@ -144,15 +150,16 @@ def main():
     # needs doing).
 
     module = AnsibleModule(
-        argument_spec = dict(
-            path = dict(required=True,  type='path', aliases=['name']),
-            state = dict(required=False, type='str', default='present', choices=['absent','present']),
-            package = dict(required=False, type='str'),
-            divert = dict(required=False, type='path'),
-            rename = dict(required=False, type='bool', default=False),
-            force = dict(required=False, type='bool', default=False),
+        argument_spec=dict(
+            path=dict(required=True,  type='path', aliases=['name']),
+            state=dict(required=False, type='str', default='present',
+                       choices=['absent', 'present']),
+            package=dict(required=False, type='str'),
+            divert=dict(required=False, type='path'),
+            rename=dict(required=False, type='bool', default=False),
+            force=dict(required=False, type='bool', default=False),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     path = module.params['path']
@@ -200,7 +207,8 @@ def main():
 
     # `dpkg-divert --listpackage FILE` always returns 0, but not diverted files
     # provide no output.
-    rc, listpackage, _ = module.run_command([DPKG_DIVERT, '--listpackage', path])
+    rc, listpackage, _ = module.run_command(
+            [DPKG_DIVERT, '--listpackage', path])
     rc, placeholder, _ = module.run_command(TESTCOMMAND)
 
     # There is probably no need to do more than that. Please read the first
@@ -209,9 +217,11 @@ def main():
     if rc == 0 or not force or not listpackage:
         rc, stdout, stderr = module.run_command(COMMANDLINE, check_rc=True)
         if re.match('^(Leaving|No diversion)', stdout):
-            module.exit_json(changed=False, stdout=stdout, stderr=stderr, cmd=cmd)
+            module.exit_json(changed=False, stdout=stdout,
+                             stderr=stderr, cmd=cmd)
         else:
-            module.exit_json(changed=True, stdout=stdout, stderr=stderr, cmd=cmd)
+            module.exit_json(changed=True, stdout=stdout,
+                             stderr=stderr, cmd=cmd)
 
     # So, here we are: the test failed AND force is true AND a diversion exists
     # for the file.  Anyway, we have to remove it first (then stop here, or add
@@ -229,7 +239,8 @@ def main():
 
     if state == 'absent':
         rc, stdout, stderr = module.run_command(FORCEREMOVE, check_rc=True)
-        module.exit_json(changed=True, stdout=stdout, stderr=stderr, cmd=forcerm)
+        module.exit_json(changed=True, stdout=stdout,
+                         stderr=stderr, cmd=forcerm)
 
     # The situation is that we want to modify the settings (package or divert)
     # of an existing diversion. dpkg-divert does not handle this, and we have
@@ -237,9 +248,13 @@ def main():
     rc, truename, _ = module.run_command([DPKG_DIVERT, '--truename', path])
     rc, rmout, rmerr = module.run_command(FORCEREMOVE, check_rc=True)
     if module.check_mode:
-        module.exit_json(changed=True, cmd=[forcerm, cmd], msg=[rmout,
-            "*** RUNNING IN CHECK MODE ***",
-            "The next step can't be actually performed - even dry-run - without error (since the previous removal didn't happen) but is supposed to achieve the task."])
+        module.exit_json(changed=True, cmd=[forcerm, cmd],
+                         msg=[rmout,
+                              "*** RUNNING IN CHECK MODE ***",
+                              "The next step can't be actually performed - "
+                              "even dry-run - without error (since the "
+                              "previous removal didn't happen) but is "
+                              "supposed to achieve the task."])
 
     old = truename.rstrip()
     if divert:
@@ -287,14 +302,17 @@ def main():
     #   - new exists with default contents
     #   => idempotency for next times, and no breakage
     #
-    if rename and old_exists and not new_exists: os.rename(old, new)
+    if rename and old_exists and not new_exists:
+        os.rename(old, new)
 
     rc, stdout, stderr = module.run_command(COMMANDLINE)
-    rc == 0 and module.exit_json(changed=True, stdout=stdout, stderr=stderr, cmd=[forcerm, cmd], msg=[rmout, stdout])
+    rc == 0 and module.exit_json(changed=True, stdout=stdout, stderr=stderr,
+                                 cmd=[forcerm, cmd], msg=[rmout, stdout])
 
     # Damn! FORCEREMOVE succeeded and COMMANDLINE failed. Try to restore old
     # state and end up with a 'failed' status anyway.
-    if rename and ( old_exists and not os.path.isfile(old) ) and ( os.path.isfile(new) and not new_exists ):
+    if (rename and (old_exists and not os.path.isfile(old)) and
+            (os.path.isfile(new) and not new_exists)):
         os.rename(new, old)
 
     RESTORE = [ENVIRONMENT, 'LC_ALL=C', DPKG_DIVERT, '--divert', old, path]
@@ -307,7 +325,9 @@ def main():
     rename and RESTORE.insert(3, '--rename')
 
     module.run_command(RESTORE, check_rc=True)
-    module.exit_json(failed=True, changed=True, stdout=stdout, stderr=stderr, cmd=[forcerm, cmd])
+    module.exit_json(failed=True, changed=True, stdout=stdout,
+                     stderr=stderr, cmd=[forcerm, cmd])
+
 
 if __name__ == '__main__':
     main()
