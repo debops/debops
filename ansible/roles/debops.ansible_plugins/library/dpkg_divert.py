@@ -106,7 +106,7 @@ requirements: [ dpkg-divert, env ]
 '''
 
 EXAMPLES = '''
-# Divert /etc/screenrc to /etc/screenrc.distrib and rename the file
+# Divert /etc/screenrc to /etc/screenrc.dpkg-divert and rename the file
 - name: Create local diversion
   dpkg_divert: path=/etc/screenrc
 
@@ -202,6 +202,13 @@ def main():
     if divert:
         COMMANDLINE.insert(3, '--divert')
         COMMANDLINE.insert(4, divert)
+    else:
+        if package == 'LOCAL':
+            COMMANDLINE.insert(3, '--divert')
+            COMMANDLINE.insert(4, '.'.join([path, 'dpkg-divert']))
+        elif package:
+            COMMANDLINE.insert(3, '--divert')
+            COMMANDLINE.insert(4, '.'.join([path, 'distrib']))
 
     if package == 'LOCAL':
         COMMANDLINE.insert(3, '--local')
@@ -273,7 +280,10 @@ def main():
     if divert:
         new = divert
     else:
-        new = '.'.join([path, 'distrib'])
+        if package == 'LOCAL':
+            new = '.'.join([path, 'dpkg-divert'])
+        elif package:
+            new = '.'.join([path, 'distrib'])
 
     # Store state of files as they may change
     old_exists = os.path.isfile(old)
