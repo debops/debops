@@ -90,7 +90,7 @@ options:
               in the diversion database (adding an already existing diversion
               or removing a non-existing one).
         type: 'bool'
-        default: false
+        default: true
     force:
         description:
             - Force to divert file when diversion already exists and is hold
@@ -106,10 +106,13 @@ requirements: [ dpkg-divert, env ]
 '''
 
 EXAMPLES = '''
-- name: divert /etc/screenrc to /etc/screenrc.distrib and keep file in place
+# Divert /etc/screenrc to /etc/screenrc.distrib and rename the file
+- name: Create local diversion
   dpkg_divert: path=/etc/screenrc
 
-- name: divert /etc/screenrc for package 'branding' (fake, used as a tag)
+# Divert /etc/screenrc to /etc/screenrc.distrib for package 'branding' and
+# rename the file
+- name: Create diversion for APT package
   dpkg_divert:
     name: /etc/screenrc
     package: branding
@@ -119,6 +122,13 @@ EXAMPLES = '''
     name: /etc/screenrc
     package: branding
     state: absent
+
+# Divert screenrc to screenrc.dpkg-divert, but don't rename the file
+- name: Divert with custom rename
+  dpkg_divert:
+    path: /etc/screenrc
+    divert: /etc/screenrc.dpkg-divert
+    rename: no
 
 # Divert and rename screenrc to screenrc.dpkg-divert, even if diversion is
 # already set
@@ -159,7 +169,7 @@ def main():
                        choices=['absent', 'present']),
             package=dict(required=False, type='str', default='LOCAL'),
             divert=dict(required=False, type='path'),
-            rename=dict(required=False, type='bool', default=False),
+            rename=dict(required=False, type='bool', default=True),
             force=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode=True,
