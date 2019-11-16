@@ -29,6 +29,15 @@ General
   package upgrades. The module is available in the
   :ref:`debops.ansible_plugins` role.
 
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
+  has been updated to the next point release, 10.2.
+
 
 `debops v1.1.5`_ - 2019-11-13
 -----------------------------
