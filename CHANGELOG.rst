@@ -18,6 +18,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Added
+~~~~~
+
+General
+'''''''
+
+- A new Ansible module, ``dpkg_divert``, can be used to divert the
+  configuration files out of the way to preserve them and avoid issues with
+  package upgrades. The module is available in the
+  :ref:`debops.ansible_plugins` role.
+
 
 `debops v1.0.13`_ - 2019-11-13
 ------------------------------
