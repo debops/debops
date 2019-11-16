@@ -53,6 +53,11 @@ General
   (:command:`view`, :command:`less`, :command:`more`) are available and use the
   best one automatically.
 
+- A new Ansible module, ``dpkg_divert``, can be used to divert the
+  configuration files out of the way to preserve them and avoid issues with
+  package upgrades. The module is available in the
+  :ref:`debops.ansible_plugins` role.
+
 LDAP
 ''''
 
