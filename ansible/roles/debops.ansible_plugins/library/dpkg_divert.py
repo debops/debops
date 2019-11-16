@@ -12,6 +12,8 @@
 from __future__ import absolute_import, division, print_function
 from ansible.module_utils.basic import AnsibleModule
 import os.path
+import errno
+import os
 import re
 
 __metaclass__ = type
@@ -91,6 +93,14 @@ options:
               or removing a non-existing one).
         type: 'bool'
         default: true
+    delete:
+        description:
+            - When I(yes), delete the file in place of the original before
+              reverting. This only applies with I(state=absent) to avoid
+              C(dpkg-divert) command complaining about existing file in place
+              of the diverted one.
+        type: 'bool'
+        default: false
     force:
         description:
             - Force to divert file when diversion already exists and is hold
@@ -116,6 +126,12 @@ EXAMPLES = '''
   dpkg_divert:
     name: /etc/screenrc
     package: branding
+
+- name: Delete the file in place of the original and remove the diversion
+  dpkg_divert:
+    name: /etc/screenrc
+    state: absent
+    delete: yes
 
 - name: remove the screenrc diversion only if belonging to 'branding'
   dpkg_divert:
@@ -170,6 +186,7 @@ def main():
             package=dict(required=False, type='str', default='LOCAL'),
             divert=dict(required=False, type='path'),
             rename=dict(required=False, type='bool', default=True),
+            delete=dict(required=False, type='bool', default=False),
             force=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode=True,
@@ -180,6 +197,7 @@ def main():
     package = module.params['package']
     divert = module.params['divert']
     rename = module.params['rename']
+    delete = module.params['delete']
     force = module.params['force']
 
     DPKG_DIVERT = module.get_bin_path('dpkg-divert', required=True)
@@ -235,7 +253,43 @@ def main():
     # sentence of the next comment for a better understanding of the following
     # `if` statement:
     if rc == 0 or not force or not listpackage:
-        rc, stdout, stderr = module.run_command(COMMANDLINE, check_rc=True)
+
+        # If requested, delete the file to make way for the reverted one, but
+        # only of the diversion currently exists.
+        if not module.check_mode:
+            if state == 'absent' and listpackage and delete:
+                try:
+                    os.unlink(path)
+                except OSError as e:
+                    # It may already have been removed
+                    if e.errno != errno.ENOENT:
+                        raise AnsibleModuleError(
+                                results={'msg': "unlinking failed: %s "
+                                         % to_native(e), 'path': path})
+
+        # In the check mode, the 'dpkg-divert' command still tests the
+        # diversion removal for real and returns with an error when a changed
+        # file is in place. In that specific case, we instead simulate a file
+        # deletion and diversion removal ourselves to have the check mode
+        # succeed.
+        if (module.check_mode and state == 'absent' and delete and
+                listpackage and os.path.exists(path)):
+            fake_stdout = ['Deleting', path, 'and', 'removing']
+            if package == 'LOCAL':
+                fake_stdout.append('local')
+            fake_stdout.extend(['diversion', 'of', path, 'to'])
+            if divert:
+                fake_stdout.append(divert)
+            else:
+                if package == 'LOCAL':
+                    fake_stdout.append('.'.join([path, 'dpkg-divert']))
+                elif package:
+                    fake_stdout.append('.'.join([path, 'distrib']))
+
+            rc, stdout, stderr = [0, ' '.join(fake_stdout), '']
+        else:
+            rc, stdout, stderr = module.run_command(COMMANDLINE, check_rc=True)
+
         if re.match('^(Leaving|No diversion)', stdout):
             module.exit_json(changed=False, stdout=stdout,
                              stderr=stderr, cmd=cmd)
