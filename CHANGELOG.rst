@@ -94,6 +94,14 @@ LDAP
   :ref:`dokuwiki__ref_ldap_support` chapter in the documentation for more
   details.
 
+:ref:`debops.cron` role
+'''''''''''''''''''''''
+
+- The execution time of the ``hourly``, ``daily``, ``weekly`` and ``monthly``
+  :command:`cron` jobs will be randomized on a per-host basis to avoid large
+  job execution spikes every morning. See the role documentation for more
+  details.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
