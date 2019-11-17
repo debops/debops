@@ -29,6 +29,14 @@ General
   package upgrades. The module is available in the
   :ref:`debops.ansible_plugins` role.
 
+:ref:`debops.cron` role
+'''''''''''''''''''''''
+
+- The execution time of the ``hourly``, ``daily``, ``weekly`` and ``monthly``
+  :command:`cron` jobs will be randomized on a per-host basis to avoid large
+  job execution spikes every morning. See the role documentation for more
+  details.
+
 Changed
 ~~~~~~~
 

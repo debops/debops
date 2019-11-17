@@ -1,5 +1,8 @@
 ---
 
+- import_role:
+    name: 'debops.ansible_plugins'
+
 - name: Install cron packages
   package:
     name: '{{ q("flattened", (cron__base_packages
@@ -8,6 +11,23 @@
   register: cron__register_packages
   until: cron__register_packages is succeeded
   when: cron__enabled|bool
+
+- name: Divert the original crontab configuration
+  dpkg_divert:
+    path: '/etc/crontab'
+    state: '{{ cron__crontab_deploy_state }}'
+    delete: True
+  when: cron__enabled|bool and ansible_pkg_mgr == 'apt'
+  tags: [ 'role::cron:crontab' ]
+
+- name: Generate crontab configuration file
+  template:
+    src: 'etc/crontab.j2'
+    dest: '/etc/crontab'
+    mode: '0644'
+  when: cron__enabled|bool and
+        cron__crontab_deploy_state == 'present'
+  tags: [ 'role::cron:crontab' ]
 
 - name: Remove custom cron files
   file:
