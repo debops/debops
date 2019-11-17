@@ -1,0 +1,46 @@
+# {{ ansible_managed }}
+
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file
+# and files in /etc/cron.d. These files also have username fields,
+# that none of the other crontabs do.
+
+{% for variable, value in cron__crontab_combined_environment.items() %}
+{{ '{}={}'.format(variable | upper, value) }}
+{% endfor %}
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# | .-------------- hour (0 - 23)
+# | |  .----------- day of month (1 - 31)
+# | |  |  .-------- month (1 - 12) OR jan,feb,mar,apr ...
+# | |  |  |  .----- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# | |  |  |  |
+# * *  *  *  *  user-name  command to be executed
+{% for element in cron__crontab_combined_jobs | parse_kv_config %}
+{%   if element.name|d() and element.job|d() and element.state|d('present') not in [ 'absent', 'ignore', 'imit' ] %}
+{%     if element.special_time|d() %}
+{%       if element.special_time in [ 'reboot', 'yearly', 'annually', 'monthly', 'weekly', 'daily', 'midnight', 'hourly' ] %}
+{{ '{:<15} {}\t{}'.format(
+    ('@' + element.special_time),
+    element.user | d('root'),
+    element.job) }}
+{%       else %}
+{{ '{:<15} {}\t{}'.format(
+    element.special_time,
+    element.user | d('root'),
+    element.job) }}
+{%       endif %}
+{%     else %}
+{{ '{:<2}  {:<2} {:<2} {:<2} {:<2} {}\t{}'.format(
+    element.minute  | d('*'),
+    element.hour    | d('*'),
+    element.day     | d('*'),
+    element.month   | d('*'),
+    element.weekday | d('*'),
+    element.user    | d('root'),
+    element.job) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
