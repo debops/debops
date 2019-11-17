@@ -29,6 +29,15 @@ General
   package upgrades. The module is available in the
   :ref:`debops.ansible_plugins` role.
 
+Fixed
+~~~~~
+
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- Use the supported option name (``ssl_protocols`` instead of
+  ``ssl_min_protocol``) on Ubuntu Bionic installations.
+
 
 `debops v1.0.13`_ - 2019-11-13
 ------------------------------
