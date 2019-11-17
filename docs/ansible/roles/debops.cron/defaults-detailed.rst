@@ -11,6 +11,135 @@ them.
    :local:
    :depth: 1
 
+.. _cron__ref_crontab_jobs:
+
+cron__crontab_jobs
+------------------
+
+The ``cron__crontab_*_jobs`` variables define what :command:`cron` jobs will be
+present in the :file:`/etc/crontab` configuration file. You can read more about
+the contents of this file in the :man:`crontab(5)` manual page.
+
+This configuration is meant for the system-wide :command:`cron` configuration,
+application-specific :command:`cron` jobs should be configured via the
+:ref:`cron__ref_jobs` variables.
+
+Examples
+~~~~~~~~
+
+The syntax is similar to that used by the `cron Ansible module`__.
+
+.. __: https://docs.ansible.com/ansible/latest/modules/cron_module.html
+
+Define a :command:`cron` job which will be executed every minute:
+
+.. code-block:: yaml
+
+   cron__crontab_jobs:
+     - name: 'run-each-minute'
+       job: '/bin/true'
+
+Run a job each day at midnight:
+
+.. code-block:: yaml
+
+   cron__crontab_jobs:
+     - name: 'run-each-day'
+       minute: '0'
+       hour: '0'
+       job: '/bin/true'
+
+Alternative way to run a job each day at midnight:
+
+.. code-block:: yaml
+
+   cron__crontab_jobs:
+     - name: 'run-each-day'
+       special_time: 'daily'
+       job: '/bin/true'
+
+Run a job as the ``nobody`` user, 23 minutes every two hours, every day:
+
+.. code-block:: yaml
+
+   cron__crontab_jobs:
+     - name: 'custom-job-schedule'
+       user: 'nobody'
+       special_time: '23 0-23/2 * * *'
+       job: '/bin/true'
+
+You can also check the :envvar:`cron__crontab_default_jobs` variable to see the
+configuration of the ``hourly``, ``daily``, ``weekly`` and ``monthly``
+:command:`cron` job schedules.
+
+Override daily :command:`cron` job schedule to execute on a specific hour
+instead of the randomized one:
+
+.. code-block:: yaml
+
+   cron__crontab_jobs:
+     - name: 'crontab-daily'
+       hour: '5'
+
+Syntax
+~~~~~~
+
+Each list entry is a YAML dictionary that describes a :command:`cron` job using
+specific parameters:
+
+``name``
+  Required. A string that defines a configuration entry, not used otherwise.
+  Configuration entries with the same ``name`` parameter are merged together in
+  the order of appearance and can affect each other.
+
+``job``
+  Required. The command to execute by :command:`cron` for a given job.
+
+``state``
+  Optional. If not specified or ``present``, a given job will be included in
+  the generated :file:`/etc/crontab` file. If ``absent``, a given job will be
+  removed from the generated file. If ``ignore``, the configuration entry will
+  not be evaluated by role during execution.
+
+``minute``
+  Optional. Execute a :command:`cron` job on a specific minute. If not
+  specified, ``*`` will be used which executes a job every minute.
+
+``hour``
+  Optional. Execute a :command:`cron` job on a specific hour. If not specified,
+  ``*`` will be used which executes a job every hour.
+
+``day``
+  Optional. Execute a :command:`cron` job on a specific day of the month. If
+  not specified, ``*`` will be used which executes a job every day of the
+  month.
+
+``weekday``
+  Optional. Execute a :command:`cron` job ona specific day of the week. If not
+  specified, ``*`` will be used which executes a job every day of the week.
+
+``special_time``
+  Optional. Specify the job execution time using one of the built-in
+  :command:`cron` aliases:
+
+  - ``reboot``: execute a job at system boot
+  - ``yearly`` or ``annually``: execute a job once a year, at midnight of
+    January 1st
+  - ``monthly``: execute a job once a month, at midnight of the first day of
+    the month
+  - ``weekly``: execute a job once a week, at midnight each Sunday
+  - ``daily`` or ``midnight``: execute a job once a day, at midnight
+  - ``hourly``: execute a job once an hour, on the hour
+
+  Alternatively, you can specify a custom execution time as a string using this
+  parameter, for example every March 23rd if it's a Sunday. See the
+  :man:`crontab(5)` manual page for details.
+
+``user``
+  Optional. Specify the UNIX account which should be used to execute a given
+  :command:`cron` job. If not specified, ``root`` will be used by default.
+
+
 .. _cron__ref_jobs:
 
 cron__jobs
