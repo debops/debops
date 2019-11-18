@@ -26,15 +26,15 @@
   file:
     dest: '/etc/ansible/facts.d'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
 
 - name: Save Libuser local facts
   template:
     src: 'etc/ansible/facts.d/libuser.fact.j2'
     dest: '/etc/ansible/facts.d/libuser.fact'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
   register: libuser__register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: libuser__register_local_facts is changed

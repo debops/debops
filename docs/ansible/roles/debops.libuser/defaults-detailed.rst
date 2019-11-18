@@ -11,7 +11,7 @@ simple strings or lists, here you can find documentation and examples for them.
    :depth: 3
 
 
-.. _libuser__ref_configuration:
+.. _libuser__ref_original_configuration:
 
 libuser__original_configuration
 -------------------------------
@@ -50,3 +50,6 @@ Each entry in the list is a YAML dictionary that describes the configuration fil
   ``comment``
     Optional. String or a YAML text block with a comment added to a given
     configuration entry.
+
+  ``value``
+    Optional for main options. If specified, set a value of a given option.

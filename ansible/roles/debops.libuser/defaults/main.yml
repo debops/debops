@@ -27,7 +27,7 @@ libuser__packages: []
                                                                    # ]]]
 # .. envvar:: libuser__enabled [[[
 #
-# Should Ansible manage libusers accounts? Set to False to disable.
+# Should Ansible use ``libusers`` library to manage UNIX accounts and groups?
 libuser__enabled: True
 
                                                                    # ]]]
@@ -36,6 +36,7 @@ libuser__enabled: True
 
 # The variables below define the contents of the
 # :file:`/etc/libuser.conf` configuration file.
+# See :ref:`libuser__ref_original_configuration` for more details.
 
 # .. envvar:: libuser__original_configuration [[[
 #
@@ -84,16 +85,9 @@ libuser__original_configuration:
         value: 'files shadow'
         state: 'present'
 
-      # - name: 'modules'
-      #   value: 'files shadow ldap'
-      #   state: 'comment'
-
-      # - name: 'create_modules'
-      #   value: 'ldap'
-      #   state: 'comment'
-
   - name: 'userdefaults'
     options:
+
       - name: 'LU_USERNAME'
         value: '%n'
         state: 'present'
@@ -160,6 +154,7 @@ libuser__original_configuration:
 
   - name: 'groupdefaults'
     options:
+
       - name: 'LU_GROUPNAME'
         value: '%n'
         state: 'present'
@@ -183,6 +178,7 @@ libuser__original_configuration:
 
   - name: 'files'
     options:
+
       - name: 'directory'
         comment: 'This is useful for the case where some master files are used to populate a different NSS mechanism which this workstation uses.'
         value: '/etc'
@@ -190,6 +186,7 @@ libuser__original_configuration:
 
   - name: 'shadow'
     options:
+
       - name: 'directory'
         comment: 'This is useful for the case where some master files are used to populate a different NSS mechanism which this workstation uses.'
         value: '/etc'
@@ -197,6 +194,7 @@ libuser__original_configuration:
 
   - name: 'ldap'
     options:
+
       - name: 'server'
         comment: 'Setting these is always necessary.'
         value: 'ldap'
@@ -231,6 +229,7 @@ libuser__original_configuration:
 
   - name: 'sasl'
     options:
+
       - name: 'appname'
         comment: 'Set these only if your sasldb is only used by a particular application, and in a particular domain.  The default (all applications, all domains) is probably correct for most installations.'
         value: 'imap'
