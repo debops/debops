@@ -11,7 +11,42 @@ simple strings or lists, here you can find documentation and examples for them.
    :depth: 3
 
 
-.. _users__ref_accounts:
+.. _libuser__ref_configuration:
 
-users__accounts
----------------
+libuser__original_configuration
+-------------------------------
+
+Syntax
+~~~~~~
+
+Each entry in the list is a YAML dictionary that describes the configuration file in the
+:file:`/etc/libuser.conf`, using specific parameters:
+
+``name``
+  Required. This parameter defines the option name, and it needs to be unique
+  in a given configuration file. Parameters from different options lists with
+  the same ``name`` are merged together when the configuration entries are
+  merged.
+
+``options``
+  Optional. A YAML list of :command:`libuser` configuration options defined in
+  the configuration file. The ``options`` parameters from different
+  configuration entries are merged together, therefore it's easy to modify
+  specific parameters without the need to copy the entire value to the
+  inventory.
+
+  Each element of the options list is a YAML dictionary with specific
+  parameters:
+
+  ``name``
+    Required for the main options. The Name of the libuser option to add.
+
+  ``state``
+    Optional. If not specified or ``present``, the entry will be added in the
+    configuration file. If ``absent``, the entry will be removed from the
+    configuration file. If ``comment``, the entry will be included in the
+    configuration file, but commented out.
+
+  ``comment``
+    Optional. String or a YAML text block with a comment added to a given
+    configuration entry.

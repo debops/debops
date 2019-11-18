@@ -1,8 +1,5 @@
 ---
 
-- name: DebOps pre_tasks hook
-  include: "{{ lookup('task_src', 'libuser/pre_main.yml') }}"
-
 - name: Install Libuser requested packages
   package:
     name: '{{ q("flattened", libuser__base_packages
@@ -10,27 +7,20 @@
     state: 'present'
   register: libuser__register_packages
   until: libuser__register_packages is succeeded
-  notify: [ 'Restart libuser' ]
-
-- name: Check if Libuser config file exists
-  stat:
-    path: '/etc/libuser.conf'
-  register: libuser__register_conf
+  when: libuser__enabled | bool
 
 - name: Divert the original libuser configuration file
   command: dpkg-divert --quiet --local --divert /etc/libuser.conf.dpkg-divert --rename /etc/libuser.conf
   args:
     creates: '/etc/libuser.conf.dpkg-divert'
-  when: libuser__register_conf is changed
+  when: libuser__enabled|bool
 
 - name: Configure main libuser config file
   template:
     src: 'libuser.conf.j2'
     dest: '/etc/libuser.conf'
-    owner: 'root'
-    group: 'root'
     mode: '0644'
-  # when: (libuser__register_conf|d() and not libuser__register_conf.stdout)
+  when: libuser__enabled|bool
 
 - name: Make sure that local fact directory exists
   file:
@@ -48,6 +38,3 @@
     group: 'root'
     mode: '0755'
   register: libuser__register_local_facts
-
-- name: DebOps post_tasks hook
-  include: "{{ lookup('task_src', 'libuser/post_main.yml') }}"

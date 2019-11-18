@@ -12,6 +12,7 @@
 # Installation, Apt packages [[[
 # ------------------------------
 
+
 # .. envvar:: libuser__base_packages [[[
 #
 # List of APT base packages which are required by the Libuser service.
@@ -24,45 +25,29 @@ libuser__base_packages: [ 'libuser' ]
 libuser__packages: []
 
                                                                    # ]]]
-# .. envvar:: libuser__system_users__dependent_ [[[
+# .. envvar:: libuser__enabled [[[
 #
-# Configuration for :ref:`debops.libuser` Libuser role.
-libuser__system_users__dependent_ :
+# Should Ansible manage libusers accounts? Set to False to disable.
+libuser__enabled: True
 
                                                                    # ]]]
-# .. envvar:: libuser__users__dependent_ [[[
-#
-# Configuration for :ref:`debops.libuser` Libuser role.
-libuser__users__dependent_ :
-
-                                                                   # ]]]
-# .. envvar:: libuser__libuser_cnf_file [[[
-#
-# Absolute path for the client configuration file managed by the
-# ``debops.libuser`` Ansible role.
-# libuser__libuser_cnf_file: '{{ "/etc/libuser.conf"
-#                                      if (libuser__register_conf.stat.exists|bool)
-#                                      else "absent" }}'
-
-                                                                   # ]]]
-                                                                   # ]]]
-libuser__libuser_cnf_file: '/etc/libuser.conf'
 # Libuser configuration file [[[
 # ------------------------------
 
 # The variables below define the contents of the
 # :file:`/etc/libuser.conf` configuration file.
 
-# .. envvar:: libuser__default_configuration [[[
+# .. envvar:: libuser__original_configuration [[[
 #
 # The default configuration options which should be present in the main
 # configuration file.
-libuser__default_configuration:
+libuser__original_configuration:
 
   - name: 'import'
     options:
 
       - name: 'login_defs'
+        comment: 'Data from these files is used when libuser.conf does not define a value. The mapping is documented in the man page.'
         value: '/etc/login.defs'
         state: 'present'
 
@@ -74,10 +59,12 @@ libuser__default_configuration:
     options:
 
       - name: 'moduledir'
+        comment: 'The default (/usr/lib*/libuser) is usually correct'
         value: '/your/custom/directory'
         state: 'comment'
 
       - name: 'skeleton'
+        comment: 'The following variables are usually imported:'
         value: '/etc/skel'
         state: 'comment'
 
@@ -164,7 +151,7 @@ libuser__default_configuration:
         state: 'comment'
 
       - name: 'LU_SHADOWEXPIRE'
-        value: '1'
+        value: '-1'
         state: 'comment'
 
       - name: 'LU_SHADOWFLAG'
@@ -178,6 +165,7 @@ libuser__default_configuration:
         state: 'present'
 
       - name: 'LU_GIDNUMBER'
+        comment: 'This is better imported from /etc/login.defs:'
         value: '500'
         state: 'comment'
 
@@ -196,18 +184,21 @@ libuser__default_configuration:
   - name: 'files'
     options:
       - name: 'directory'
+        comment: 'This is useful for the case where some master files are used to populate a different NSS mechanism which this workstation uses.'
         value: '/etc'
         state: 'comment'
 
   - name: 'shadow'
     options:
       - name: 'directory'
+        comment: 'This is useful for the case where some master files are used to populate a different NSS mechanism which this workstation uses.'
         value: '/etc'
         state: 'comment'
 
   - name: 'ldap'
     options:
       - name: 'server'
+        comment: 'Setting these is always necessary.'
         value: 'ldap'
         state: 'comment'
 
@@ -216,6 +207,7 @@ libuser__default_configuration:
         state: 'comment'
 
       - name: 'userBranch'
+        comment: 'Setting these is rarely necessary, since it is usually correct.'
         value: 'ou=People'
         state: 'comment'
 
@@ -224,10 +216,12 @@ libuser__default_configuration:
         state: 'comment'
 
       - name: 'binddn'
+        comment: 'Set only if your administrative user uses simple bind operations to connect to the server.'
         value: 'cn=Manager,dc=example,dc=com'
         state: 'comment'
 
       - name: 'user'
+        comment: 'Set this only if the default user (as determined by SASL) is incorrect for SASL bind operations.  Usually, it iss correct, so you will rarely need to set these.'
         value: 'Manager'
         state: 'comment'
 
@@ -238,6 +232,7 @@ libuser__default_configuration:
   - name: 'sasl'
     options:
       - name: 'appname'
+        comment: 'Set these only if your sasldb is only used by a particular application, and in a particular domain.  The default (all applications, all domains) is probably correct for most installations.'
         value: 'imap'
         state: 'comment'
 
@@ -245,5 +240,35 @@ libuser__default_configuration:
         value: 'EXAMPLE.COM'
         state: 'comment'
 
+                                                                   # ]]]
+# .. envvar:: libuser__configuration [[[
+#
+# The configuration which should be present on all hosts in the Ansible
+# inventory.
+libuser__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: libuser__host_configuration [[[
+#
+# The configuration which should be present on specific hosts in the Ansible
+# inventory.
+libuser__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: libuser__group_configuration [[[
+#
+# The configuration which should be present on hosts in a specific Ansible
+# inventory group.
+libuser__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: libuser__combined_configuration [[[
+#
+# The variable which combines all of the other configuration variables and is
+# used in the Ansible tasks.
+libuser__combined_configuration: '{{ libuser__configuration
+                                     + libuser__original_configuration
+                                     + libuser__host_configuration
+                                     + libuser__group_configuration }}'
                                                                    # ]]]
                                                                    # ]]]

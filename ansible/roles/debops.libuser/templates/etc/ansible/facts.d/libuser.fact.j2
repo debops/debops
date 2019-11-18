@@ -3,19 +3,10 @@
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import dumps, loads
-import os
+from json import loads, dumps
+from sys import exit
 
-
-def cmd_exists(cmd):
-    return any(
-        os.access(os.path.join(path, cmd), os.X_OK)
-        for path in os.environ["PATH"].split(os.pathsep)
-    )
-
-
-output = {}
-output['installed'] = cmd_exists('libuser')
-# output['admin_created'] = True
+output = loads("""{{ {'configured': True,
+                     } | to_nice_json }}""")
 
 print(dumps(output, sort_keys=True, indent=4))
