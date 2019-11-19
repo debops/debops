@@ -14,7 +14,9 @@ the :ref:`debops.etc_aliases` Ansible role and the LDAP user attribute
 ``mailAlias``.
 
 This role only works when **LDAP support is explicitly enabled** and the
-environment has a working LDAP infrastructure.
+environment has a working LDAP infrastructure. See the :ref:`debops.ldap` role
+and its documentation for more details about setting up LDAP client support on
+a host.
 
 
 Example inventory
@@ -26,14 +28,22 @@ Ansible inventory group:
 
 .. code-block:: ini
 
-   [debops_service_ldap]
-   hostname_of_ldap_server
-
    [debops_service_slapd]
-   hostname_of_ldap_server
+   ldap-server
+
+   [debops_service_postfix]
+   mail-server
+
+   [debops_service_postconf]
+   mail-server
 
    [debops_service_postldap]
-   hostname_of_mail_server
+   mail-server
+
+The ``debops.postldap`` playbook configures only the LDAP part of postfix
+configuration, you should use the :ref:`debops.postfix` role and its playbook
+to set up Postfix mail server. Additional useful configuration can be found in
+the :ref:`debops.postconf` role.
 
 
 Example playbook

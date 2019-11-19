@@ -88,4 +88,3 @@ This setup has no internal DNS server (no split-DNS), thus internal IPs are mapp
   postfix__domain: 'mydomain.net'
 
   postfix__pki_realm: 'mail.mydomain.net'
-

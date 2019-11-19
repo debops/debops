@@ -4,7 +4,7 @@
 # .. _postldap__ref_defaults:
 
 # debops.postldap default variables [[[
-# =================================================
+# =====================================
 
 # .. contents:: Sections
 #    :local:
@@ -44,14 +44,13 @@ postldap__tls_ca_cert_dir: '/etc/ssl/certs/'
 postldap__no_log: True
                                                                    # ]]]
                                                                    # ]]]
-
 # Virtual Mail [[[
 # ----------------
 #
-# This settings help to configure to enable `postfix` to host multiple (virtual) domains,
-# and thus provide email to several domains with just one `mail server`.
-# Currently the Virtual Mail support works only with LDAP enabled, in the future `mariaDB` could be enabled.
-#
+# The settings below help to configure to enable Postfix to host multiple
+# (virtual) domains, and thus provide email to several domains with just one
+# "mail server".  Currently the Virtual Mail support works only with LDAP
+# enabled, in the future MariaDB support could be added as well.
 
 # .. envvar:: postldap__vmail_posix_user [[[
 #
@@ -297,7 +296,7 @@ postldap__postfix__dependent_lookup_tables:
     state: 'present'
     comment: |
       The smtpd_sender_login_maps configurations performs a lookup from an incoming
-      email-recipient to a username. Postfix first performs a full lookup
+      email-sender to a username. Postfix first performs a full lookup
       on user@domain, then user and then @domain.
       The later one is also used for catchalls where the mailAlias
       is set to e.g. @foobar.com
@@ -310,7 +309,7 @@ postldap__postfix__dependent_lookup_tables:
 # --------
 
 # LDAP authentication [[[
-# ^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^
 
 # .. envvar:: postldap__ldap_enabled [[[
 #
@@ -539,7 +538,7 @@ postldap__ldap_user_filter: '(&
 #
 # The LDAP filter used to look up user accounts in the directory.
 postldap__ldap_domain_filter: '(&
-                                 (ObjectClass=dNSDomain)
+                                 (objectClass=dNSDomain)
                                  (dc=%s)
                                 )'
 
@@ -557,7 +556,6 @@ postldap__ldap_default_config: []
 postldap__ldap_config: []
 
                                                                    # ]]]
-
 # .. envvar:: postldap__group_ldap_config [[[
 #
 # List of custom LDAP configuration options defined on hosts in
@@ -565,7 +563,6 @@ postldap__ldap_config: []
 postldap__group_ldap_config: []
 
                                                                    # ]]]
-
 # .. envvar:: postldap__host_ldap_config [[[
 #
 # List of custom LDAP configuration options defined on specific
@@ -573,7 +570,6 @@ postldap__group_ldap_config: []
 postldap__host_ldap_config: []
 
                                                                    # ]]]
-
 # .. envvar:: postldap__ldap_combined_config [[[
 #
 # The variable that combines default and user LDAP configuration and is used in

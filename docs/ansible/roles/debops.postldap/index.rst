@@ -1,7 +1,7 @@
 .. _debops.postldap:
 
 debops.postldap
-===========================
+===============
 
 The ``debops.postldap`` Ansible role can be used to configure and
 manage a `Postfix` Virtual Mail server with an LDAP backend.
