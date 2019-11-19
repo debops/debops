@@ -12,6 +12,26 @@
   until: cron__register_packages is succeeded
   when: cron__enabled|bool
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+  tags: [ 'role::cron:crontab' ]
+
+- name: Save cron local facts
+  template:
+    src: 'etc/ansible/facts.d/cron.fact.j2'
+    dest: '/etc/ansible/facts.d/cron.fact'
+    mode: '0755'
+  register: cron__register_facts
+  tags: [ 'role::cron:crontab' ]
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: cron__register_facts is changed
+  tags: [ 'role::cron:crontab' ]
+
 - name: Divert the original crontab configuration
   dpkg_divert:
     path: '/etc/crontab'
@@ -96,24 +116,3 @@
     - '{{ cron__combined_jobs }}'
     - 'jobs'
   when: cron__enabled|bool and item.0.state|d('present') not in [ 'absent', 'ignore' ]
-
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save cron local facts
-  template:
-    src: 'etc/ansible/facts.d/cron.fact.j2'
-    dest: '/etc/ansible/facts.d/cron.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: cron__register_facts
-
-- name: Update Ansible facts if they were modified
-  action: setup
-  when: cron__register_facts is changed
