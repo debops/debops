@@ -24,6 +24,12 @@ Added
 New DebOps roles
 ''''''''''''''''
 
+- Add :ref:`debops.postldap` Ansible role to configure and enable
+  :ref:`debops.postfix` to host multiple (virtual) domains,and thus provide
+  email service to several domains with just one `mail server`.
+  Currently the Virtual Mail support works only with **LDAP enabled**,
+  in the future `mariaDB` could be enabled.
+
 - The :ref:`debops.minio` and :ref:`debops.mcli` Ansible roles can be used to
   install and configure `MinIO`__ object storage service and its corresponding
   client binary.
