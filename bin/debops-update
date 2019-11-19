@@ -145,7 +145,7 @@ def clone_git_repository(repo_uri, branch, destination):
                      repo_uri, destination])
 
 
-def update_git_repository(path, dry_run=False, remote_uri=False):
+def update_git_repository(path, branch, dry_run=False, remote_uri=False):
     """
     Update an exiting git repository.
 
@@ -155,34 +155,46 @@ def update_git_repository(path, dry_run=False, remote_uri=False):
     old_pwd = os.getcwd()
     os.chdir(path)
 
+    current_checkout_branch = subprocess.check_output(
+                [GIT, 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+    print("Current branch checked out:", current_checkout_branch)
     if dry_run:
         subprocess.call([GIT, 'fetch'])
-        subprocess.call([GIT, 'diff', 'HEAD', 'origin/'+branch, '--stat'])
+        subprocess.call([GIT, 'diff', 'HEAD', 'origin/' + branch, '--stat'])
+
     else:
+        # Fetch silently
+        # subprocess.call([GIT, 'fetch', '--quiet'])
+        subprocess.call([GIT, 'fetch'])
+
+        if current_checkout_branch != branch:
+            # checkout of new branch
+            #subprocess.call([GIT, 'checkout', branch])
+            subprocess.call([GIT, 'checkout', '--progress', branch])
+
         # Get the current sha of the head branch
         current_sha = subprocess.check_output(
-                [GIT, 'rev-parse', 'HEAD']).strip()
+            [GIT, 'rev-parse', 'HEAD']).strip()
 
-        # Fetch it silently and store the new sha
-        subprocess.call([GIT, 'fetch', '--quiet'])
         fetch_sha = subprocess.check_output(
-                [GIT, 'rev-parse', 'FETCH_HEAD']).strip()
+            [GIT, 'rev-parse', 'FETCH_HEAD']).strip()
 
         if current_sha != fetch_sha:
             print()
             print('--')
-            subprocess.call([GIT, 'merge', fetch_sha])
+            # subprocess.call([GIT, 'merge', fetch_sha])
+            subprocess.call([GIT, 'merge', '-v', fetch_sha])
 
             if remote_uri:
                 compare_uri = (remote_uri + '/compare/' + current_sha[:7]
-                               + '...' + fetch_sha[:7])
+                                   + '...' + fetch_sha[:7])
                 print()
                 print("Compare:", compare_uri)
 
             print('--')
             print()
 
-    # Move back to the initial directory
+            # Move back to the initial directory
     os.chdir(old_pwd)
 
 
@@ -259,7 +271,7 @@ def main(branch, project_dir=None, dry_run=False):
                              monorepo_path)
     else:
         print("DebOps monorepo has been found in", monorepo_path)
-        update_git_repository(monorepo_path, dry_run)
+        update_git_repository(monorepo_path, branch, dry_run)
 
     # Skip the rest of the script with least amount of changes
     return
