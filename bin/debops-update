@@ -155,8 +155,8 @@ def update_git_repository(path, branch, dry_run=False, remote_uri=False):
     old_pwd = os.getcwd()
     os.chdir(path)
 
-    current_checkout_branch = subprocess.check_output(
-                [GIT, 'rev-parse', '--abbrev-ref', 'HEAD']).strip()
+    current_branch = subprocess.check_output(
+                [GIT, 'rev-parse', '--abbrev-ref', 'HEAD']).decode('utf-8').strip()
     print("Current branch checked out:", current_checkout_branch)
     if dry_run:
         subprocess.call([GIT, 'fetch'])
@@ -167,7 +167,7 @@ def update_git_repository(path, branch, dry_run=False, remote_uri=False):
         # subprocess.call([GIT, 'fetch', '--quiet'])
         subprocess.call([GIT, 'fetch'])
 
-        if current_checkout_branch != branch:
+        if current_branch != branch:
             # checkout of new branch
             #subprocess.call([GIT, 'checkout', branch])
             subprocess.call([GIT, 'checkout', '--progress', branch])
