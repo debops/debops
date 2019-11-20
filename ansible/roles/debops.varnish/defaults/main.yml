@@ -1,0 +1,140 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.varnish default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Installation, APT packages [[[
+# ------------------------------
+
+# .. envvar:: varnish__base_packages [[[
+#
+# List of APT base packages which are required by the Varnish server.
+varnish__base_packages: [ 'varnish' ]
+
+                                                                   # ]]]
+# .. envvar:: varnish__packages [[[
+#
+# List of APT packages which are required by the Varnish server.
+varnish__packages: []
+
+                                                                   # ]]]
+# .. envvar:: varnish__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be allowed to connect to the
+# Varnish server in :command:`ip(6)tables` and TCP wrappers. If it's empty, remote
+# connections are not allowed.
+varnish__allow: [ 0.0.0.0/0 ]
+
+                                                                   # ]]]
+# .. envvar:: varnish__port [[[
+#
+# Port number on which this Varnish listens on.
+varnish__port: '6082'
+
+                                                                   # ]]]
+# .. envvar:: varnish__listen_port [[[
+#
+# Port number on which this Varnish listens on.
+varnish__listen_port: '6081'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Varnish configuration file [[[
+# --------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/varnish/default.vcl` configuration file.
+# See :ref:`varnish__ref_configuration` for more details.
+
+# .. envvar:: varnish__default_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+varnish__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: varnish__default_configuration [[[
+#
+# List of configuration options defined on all hosts in the Varnish inventory.
+varnish__default_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: varnish__config_path [[[
+#
+# The absolute path for the location of the Varnish config file.
+varnish__config_path: '/etc/varnish'
+
+                                                                   # ]]]
+# .. envvar:: varnish__jailing_mechanism [[[
+#
+# The jailing mechanism for the Varnish config.
+# Varnish  jails  are  a generalization over various platform specific methods to reduce the privileges of varnish processes.
+varnish__jailing_mechanism: 'unix,user=vcache'
+
+                                                                   # ]]]
+# .. envvar:: varnish__listen_host [[[
+#
+# IP address on which Varnish server listens on for new connections. To allow
+# connections from remote hosts, you need to change this to ``0.0.0.0`` for IPv4
+# only connections, or ``::`` for IPv4 and IPv6 connections.
+varnish__listen_host: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: varnish__storage [[[
+#
+# ss
+varnish__storage: 'malloc,256m'
+
+                                                                   # ]]]
+# .. envvar:: varnish__combined_configuration [[[
+#
+# Actual list of Varnish configuration options passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+varnish__combined_configuration: '{{ varnish__default_configuration + varnish__configuration }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: varnish__ferm__dependent_rules [[[
+#
+# Configuration for :ref:`debops.ferm` Varnish role.
+varnish__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'varnish' ]
+    saddr: '{{ varnish__allow }}'
+    accept_any: False
+    weight: '40'
+    role: 'varnish'
+
+  - type: 'accept'
+    dport: [ 'varnish-listen' ]
+    saddr: '{{ varnish__allow }}'
+    accept_any: False
+    weight: '41'
+    role: 'varnish'
+
+                                                                   # ]]]
+# .. envvar:: varnish__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+varnish__etc_services__dependent_list:
+
+  - name: 'varnish'
+    port: '{{ varnish__port }}'
+
+  - name: 'varnish-listen'
+    port: '{{ varnish__listen_port }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
