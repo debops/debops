@@ -31,20 +31,6 @@
     mode: '0644'
   notify: [ 'Reload daemon' ]
 
-# - name: Reconfigure systemd services when modified
-#   systemd:
-#     name: '{{ "lxc-net.service" if (lxc__net_deploy_state == "present") else omit }}'
-#     state: '{{ "restarted" if (lxc__net_deploy_state == "present") else omit }}'
-#     daemon_reload: True
-#   when: ansible_service_mgr == 'systemd'
-
-# - name: Load varnish.service file if
-#   lineinfile:
-#     path: /lib/systemd/system/varnish.service
-#     regexp: 'ExecStart=/usr/sbin/varnishd -j unix,user=vcache -F -a :6081 -T localhost:6082 -f /etc/varnish/default.vcl -S /etc/varnish/secret -s malloc,256m'
-#     line: 'ExecStart=/usr/sbin/varnishd -j unix,user=vcache -F -a :80 -T localhost:6082 -f /etc/varnish/default.vcl -S /etc/varnish/secret -s malloc,256m'
-#   when: ansible_service_mgr == 'systemd'
-
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -61,27 +47,6 @@
 - name: Update Ansible facts if they were modified
   action: setup
   when: varnish__register_facts is changed
-
-
-
-
-# - name: Ensure Varnish services are started enabled on startup (Xenial specific)
-#   service:
-#     name: "{{ item }}"
-#     state: started
-#     enabled: true
-#     use: "service"
-#   with_items: "{{ varnish_enabled_services | default([]) }}"
-#   when:
-#     - varnish_enabled_services
-#     - (ansible_os_family == 'Debian' and ansible_distribution_release == "xenial")
-
-
-
-
-
-
-
 
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'varnish/post_main.yml') }}"
