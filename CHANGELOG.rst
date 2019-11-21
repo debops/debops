@@ -46,6 +46,14 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.2.
 
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- The ``smtpd`` LDAP profile will use the ``authorizedService`` values in the
+  form of ``<class>:<type>`` to be compatible with the new ``debops.postldap``
+  Ansible role. The specific values have also been changed, you might need to
+  update the LDAP attributes to match the new values.
+
 Fixed
 ~~~~~
 

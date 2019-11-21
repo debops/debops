@@ -39,8 +39,9 @@ The ``smtpd`` LDAP profile
 
 - objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
 
-  - ``smtpd``
-  - ``*`` (all services)
+  - ``all:all`` (all services)
+  - ``mail:all``
+  - ``mail:send``
 
 LDAP filter definition: :envvar:`saslauthd__ldap_default_profiles`
 
