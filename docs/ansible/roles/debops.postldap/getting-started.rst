@@ -19,6 +19,58 @@ and its documentation for more details about setting up LDAP client support on
 a host.
 
 
+Overriding lookup table configuration
+-------------------------------------
+
+The Postfix LDAP lookup tables defined by the :ref:`debops.ldap` Ansible role
+are designed to work with the LDAP directory set up by the :ref:`debops.ldap`
+and :ref:`debops.slapd` roles. If you want to use different LDAP directory
+configuration, or tailor the default configuration to your own needs, you can
+override specific parameters in the looup table configuration via the Ansible
+inventory.
+
+The role defers to the :ref:`debops.postfix` Ansible role for actual looup
+table configuration and passes the details via the role dependent variables.
+You can find more about the details in the :ref:`postfix__ref_lookup_tables`
+documentation.
+
+For example, if you want to change the LDAP filter of the
+:file:`ldap_virtual_recipients.cf` lookup table, you can defined in the Ansible
+inventory:
+
+.. code-block:: yaml
+
+   # ansible/inventory/host_vars/mail-server/postfix.yml
+
+   postfix__host_lookup_tables:
+
+     - name: 'ldap_virtual_recipients.cf`
+       state: 'append'
+       query_filter: '(&(|(mail=%s)(mailAlias=%s)))'
+
+Please note that the configuration is defined in the ``postfix__*`` variables,
+not ``postldap__*`` variables. It is also important to use the ``append`` state
+to make sure that the configuration is only applied when the
+:ref:`debops.postldap` configuration is "active".
+
+If you want to disable a part of the LDAP configuration defined in the Ansible
+inventory, you can change the state to ``ignore``, which will then use the
+definition from the role defaults.
+
+Avoid any other states in this case, because the resulting configuration will
+be applied in different contexts, for example when you run the
+:ref:`debops.postfix` role directly, and will break your configuration.
+
+After making your changes, you can apply them by running the command:
+
+.. code-block:: console
+
+   debops service/postldap -l mail-server -t role::postfix --diff
+
+This will execute the :ref:`debops.postfix` role in the context of the
+:ref:`debops.postldap` role and correct set of variables will be active.
+
+
 Example inventory
 -----------------
 
