@@ -23,6 +23,26 @@ Object Classes and Attributes
   - :ref:`debops.postldap`: :envvar:`Object Classes <postldap__ldap_self_object_classes>`, :envvar:`Attributes <postldap__ldap_self_attributes>`
 
 
+.. _postldap__ref_ldap_dit_access:
+
+Access Control
+--------------
+
+DebOps LDAP environment includes the :ref:`'ldapns' schema <slapd__ref_ldapns>`
+which can be used to define access control rules to services. The lists below
+define the attribute values which will grant access to the service managed by
+the :ref:`debops.postldap` role, and specifies other roles with the same
+access control rules:
+
+- objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
+
+  - ``all:all`` (all services)
+  - ``mail:all``
+  - ``mail:read``
+  - ``mail:receive``
+  - ``mail:send``
+
+
 Parent nodes
 ------------
 
