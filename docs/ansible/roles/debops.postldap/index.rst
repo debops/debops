@@ -13,6 +13,7 @@ It allows configuration of Postfix using Ansible inventory variables.
    getting-started
    defaults/main
    guides
+   ldap-dit
 
 Copyright
 ---------
