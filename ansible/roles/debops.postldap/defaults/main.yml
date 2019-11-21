@@ -113,7 +113,7 @@ postldap__mailbox_base: '/var/vmail'
 # Note: these lookups are recursive.
 postldap__virtual_alias_maps:
   - '$alias_maps'
-  - 'ldap:/etc/postfix/ldap_virtual_aliases.cf'
+  - 'ldap:/etc/postfix/ldap_virtual_alias_maps.cf'
                                                                    # ]]]
                                                                    # ]]]
 # Postfix 'main.cf' configuration [[[
@@ -130,7 +130,7 @@ postldap__postfix__dependent_maincf:
   # Postfix is final destination for the specified list of domains; mail is delivered
   # via the $virtual_transport mail delivery transport
   - name: 'virtual_mailbox_domains'
-    value: 'ldap:/etc/postfix/ldap_virtual_domains.cf'
+    value: 'ldap:/etc/postfix/ldap_virtual_mailbox_domains.cf'
     section: 'virtual'
     state: '{{ "present"
             if (postldap__ldap_enabled|bool and
@@ -158,7 +158,7 @@ postldap__postfix__dependent_maincf:
 
   # Optional lookup tables with all valid addresses in the domains that match $virtual_mailbox_domains.
   - name: 'virtual_mailbox_maps'
-    value: 'ldap:/etc/postfix/ldap_virtual_recipients.cf'
+    value: 'ldap:/etc/postfix/ldap_virtual_mailbox_maps.cf'
     section: 'virtual'
     state: '{{ "present"
             if (postldap__ldap_enabled|bool and
@@ -193,7 +193,7 @@ postldap__postfix__dependent_maincf:
 
   # Optional lookup table with the SASL login names that own the sender (MAIL FROM) addresses.
   - name: 'smtpd_sender_login_maps'
-    value: 'ldap:/etc/postfix/ldap_virtual_senders.cf'
+    value: [ 'ldap:/etc/postfix/ldap_smtpd_sender_login_maps.cf' ]
     section: 'base'
     state: '{{ "present"
             if (postldap__ldap_enabled|bool)
@@ -221,7 +221,7 @@ postldap__postfix_ldap_connection:
 # The Virtual Mail lookup tables for postfix
 postldap__postfix__dependent_lookup_tables:
 
-  - name: 'ldap_virtual_aliases.cf'
+  - name: 'ldap_virtual_alias_maps.cf'
     state: 'present'
     comment: |
       The virtual_alias_maps setting is used to find the target mailbox
@@ -245,7 +245,7 @@ postldap__postfix__dependent_lookup_tables:
                   )'
     result_attribute: 'mail'
 
-  - name: 'ldap_virtual_recipients.cf'
+  - name: 'ldap_virtual_mailbox_maps.cf'
     state: 'present'
     comment: |
       As we only want to accept mail, where we know the recipients
@@ -270,7 +270,7 @@ postldap__postfix__dependent_lookup_tables:
     result_attribute: 'mail'
     result_format: '/%d/%u/mailbox/'
 
-  - name: 'ldap_virtual_domains.cf'
+  - name: 'ldap_virtual_mailbox_domains.cf'
     state: 'present'
     comment: |
       The virtual_mailbox_domains configurations performs a lookup,
@@ -284,7 +284,7 @@ postldap__postfix__dependent_lookup_tables:
                    )'
     result_attribute: 'dc'
 
-  - name: 'ldap_virtual_senders.cf'
+  - name: 'ldap_smtpd_sender_login_maps.cf'
     state: 'present'
     comment: |
       The smtpd_sender_login_maps configurations performs a lookup from an incoming
