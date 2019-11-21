@@ -350,6 +350,11 @@ LDAP
   no longer deprecated (status changed by the :rfc:`8314` document) and will be
   enabled by default with the ``auth`` capability.
 
+- The role will configure Postfix to check the sender address of authenticated
+  mail messages and block those that don't belong to the authenticated user.
+  This will be enabled with the ``auth`` and the ``unauth-sender``
+  capabilities, and requires an user database to work correctly.
+
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
 
