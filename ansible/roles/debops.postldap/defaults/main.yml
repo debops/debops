@@ -21,9 +21,40 @@ postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
                                            if postldap__ldap_enabled else [] }}'
                                                                    # ]]]
                                                                    # ]]]
-# PKI / TLS configuration [[[
-# ---------------------------
+# DNS / PKI / TLS configuration [[[
+# ---------------------------------
 
+# .. envvar:: postldap__domain [[[
+#
+# The DNS domain used to generate a :man:`ldap_table(5)` pattern for LDAP
+# search queries.
+postldap__domain: '{{ ansible_local.core.domain
+                      if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.domain|d())
+                      else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__domain_rev_pattern [[[
+#
+# The search pattern based on the primary DNS domain of the host, with entries
+# defined in reverse order, for example ``%3.%2.%1``, depending on the number
+# of levels in the domain with maximum of 9. See :man:`ldap_table(5)` manual
+# page for more details about usage of this pattern.
+#
+# This pattern may be used in LDAP search queries which look for the host DNS
+# domain or its subdomains. If multiple DNS domains are used in LDAP with
+# different levels (number of domain parts), each level needs to be defined
+# separately in the LDAP search query.
+postldap__domain_rev_pattern: |-
+  {% set reversed = [] %}
+  {% for element in postldap__domain.split(".") %}
+  {% set _ = reversed.append("%" + loop.index|string) %}
+  {% endfor %}
+  {% if reversed | length == 1 %}
+  {{ "%d" }}{% else %}
+  {{ reversed[0:9][::-1] | join(".") }}{% endif %}
+
+# ]]]
 # .. envvar:: postldap__tls_ca_cert_dir [[[
 #
 # Directory containing X509 Certification  Authority  certificates
@@ -386,11 +417,17 @@ postldap__postfix__dependent_lookup_tables:
     query_filter: '(|
                      (&
                        (objectClass=dNSDomain)
-                       (dc=%d)
+                       (|
+                         (dc=%d)
+                         (dc={{ postldap__domain_rev_pattern }})
+                       )
                      )
                      (&
                        (objectClass=domainRelatedObject)
-                       (associatedDomain=%d)
+                       (|
+                         (associatedDomain=%d)
+                         (associatedDomain={{ postldap__domain_rev_pattern }})
+                       )
                      )
                    )'
     result_attribute: 'dc, associatedDomain'
