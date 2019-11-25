@@ -1,0 +1,53 @@
+---
+
+- name: Make sure required POSIX group exist
+  group:
+    name: '{{ postldap__vmail_posix_group |
+              d(postldap__vmail_posix_user) }}'
+    state: 'present'
+    system: True
+  tags: [ 'role::postldap:user', 'role::postldap:group' ]
+
+- name: Make sure required POSIX system account exist
+  user:
+    name: '{{ postldap__vmail_posix_user }}'
+    state: 'present'
+    comment: 'Postfix Virtual Mail user'
+    group: '{{ postldap__vmail_posix_group |
+               d(postldap__vmail_posix_user) }}'
+    home: '{{ postldap__mailbox_base }}'
+    create_home: True
+    system: True
+    shell: '/usr/sbin/nologin'
+    skeleton: null
+  tags: [ 'role::postldap:user' ]
+
+- name: "Make sure vmail home directory ({{ postldap__mailbox_base }}) exists with restrictive permissions"
+  file:
+    dest: '{{ postldap__mailbox_base }}'
+    state: 'directory'
+    owner: '{{ postldap__vmail_posix_user }}'
+    group: '{{ postldap__vmail_posix_group }}'
+    mode: '0750'
+  tags: [ 'role::postldap:user' ]
+
+- name: Make sure Ansible local facts directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Configure PostLDAP local facts
+  template:
+    src: 'etc/ansible/facts.d/postldap.fact.j2'
+    dest: '/etc/ansible/facts.d/postldap.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: postldap__register_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: postldap__register_facts is changed

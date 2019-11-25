@@ -24,6 +24,12 @@ Added
 New DebOps roles
 ''''''''''''''''
 
+- Add :ref:`debops.postldap` Ansible role to configure and enable
+  :ref:`debops.postfix` to host multiple (virtual) domains,and thus provide
+  email service to several domains with just one `mail server`.
+  Currently the Virtual Mail support works only with **LDAP enabled**,
+  in the future `mariaDB` could be enabled.
+
 - The :ref:`debops.minio` and :ref:`debops.mcli` Ansible roles can be used to
   install and configure `MinIO`__ object storage service and its corresponding
   client binary.
@@ -343,6 +349,11 @@ LDAP
 - Support for the ``465`` TCP port for message submission over Implicit TLS is
   no longer deprecated (status changed by the :rfc:`8314` document) and will be
   enabled by default with the ``auth`` capability.
+
+- The role will configure Postfix to check the sender address of authenticated
+  mail messages and block those that don't belong to the authenticated user.
+  This will be enabled with the ``auth`` and the ``unauth-sender``
+  capabilities, and requires an user database to work correctly.
 
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''

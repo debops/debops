@@ -301,13 +301,28 @@ postconf__postfix__dependent_maincf:
 
       - name: 'permit_mynetworks'
 
-      - name: 'permit_sasl_authenticated'
+      - name: 'reject_authenticated_sender_login_mismatch'
         copy_id_from: 'permit_mynetworks'
+        weight: 10
+
+      - name: 'permit_sasl_authenticated'
+        copy_id_from: 'reject_authenticated_sender_login_mismatch'
         weight: 10
 
       - name: 'check_sender_access hash:${config_directory}/unauth_sender_access'
         copy_id_from: 'permit_sasl_authenticated'
         weight: 10
+
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities and
+                   "unauth-sender" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_relay_restrictions'
+    value:
+
+      - name: 'reject_authenticated_sender_login_mismatch'
+        copy_id_from: 'permit_mynetworks'
 
     state: '{{ "present"
                if ("auth" in postconf__combined_capabilities and
@@ -336,6 +351,12 @@ postconf__postfix__dependent_mastercf:
                    if ("public-mx-required" in postconf__combined_capabilities)
                    else "ignore" }}'
 
+      - name: 'smtpd_sender_restrictions'
+        value: 'reject_authenticated_sender_login_mismatch'
+        state: '{{ "present"
+                   if ("unauth-sender" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
       - name: 'cleanup_service_name'
         value: 'authcleanup'
         state: '{{ "present"
@@ -352,6 +373,12 @@ postconf__postfix__dependent_mastercf:
         value: ''
         state: '{{ "present"
                    if ("public-mx-required" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
+      - name: 'smtpd_sender_restrictions'
+        value: 'reject_authenticated_sender_login_mismatch'
+        state: '{{ "present"
+                   if ("unauth-sender" in postconf__combined_capabilities)
                    else "ignore" }}'
 
       - name: 'cleanup_service_name'

@@ -26,6 +26,7 @@ Directory structure
             - :ref:`uid=gitlab <gitlab__ref_ldap_dit>` -> :ref:`debops.gitlab`
             - :ref:`uid=nslcd <nslcd__ref_ldap_dit>` -> :ref:`debops.nslcd`
             - :ref:`uid=nextcloud <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
+            - :ref:`uid=postfix <postldap__ref_ldap_dit>` -> :ref:`debops.postldap`
             - :ref:`uid=saslauthd <saslauthd__ref_ldap_dit>` -> :ref:`debops.saslauthd`
             - :ref:`uid=sshd <sshd__ref_ldap_dit>` -> :ref:`debops.sshd`
             - :ref:`uid=sudo <sudo__ref_ldap_dit>` -> :ref:`debops.sudo`

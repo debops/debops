@@ -74,6 +74,12 @@ Supported Postfix capabilities and their effects:
   a list of its own domains. If any messages are sent from these domains
   unauthenticated, they will be rejected.
 
+  With auhenticated mail, Postfix will check the sender address against the
+  mail user database defined in the ``smtpd_sender_login_maps`` lookup tables.
+  If the sender address does not belong to the authenticated user, mail will be
+  rejected. This requires configuration of an user database, for example using
+  the :ref:`debops.postldap` role.
+
 
 Example inventory
 -----------------

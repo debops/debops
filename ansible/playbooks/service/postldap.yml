@@ -1,0 +1,37 @@
+---
+
+- name: Manage Postfix service with Virtual Mail LDAP backend
+  hosts: [ 'debops_service_postldap' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.postfix/env
+      tags: [ 'role::postfix:env', 'role::postfix', 'role::postldap', 'role::secret', 'role::ferm' ]
+
+    - role: debops.secret
+      tags: [ 'role::secret', 'role::postfix', 'role::postldap' ]
+      secret__directories:
+        - '{{ postfix__secret__directories }}'
+
+    - role: debops.postldap
+      tags: [ 'role::postldap', 'skip::postldap', 'role::postfix' ]
+
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ postldap__ldap__dependent_tasks }}'
+
+    - role: debops.postfix
+      tags: [ 'role::postfix', 'skip::postfix' ]
+      postfix__dependent_packages:
+        - '{{ postldap__postfix__dependent_packages }}'
+      postfix__dependent_lookup_tables:
+        - '{{ postldap__postfix__dependent_lookup_tables }}'
+      postfix__dependent_maincf:
+        - role: 'postldap'
+          config: '{{ postldap__postfix__dependent_maincf }}'
