@@ -37,6 +37,12 @@ General
   job execution spikes every morning. See the role documentation for more
   details.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will install the ``libsasl2-modules`` APT package to allow SASL
+  authentication to the LDAP directory.
+
 Changed
 ~~~~~~~
 
