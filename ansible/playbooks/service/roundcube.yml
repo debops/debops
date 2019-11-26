@@ -37,7 +37,7 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+      tags: [ 'role::python', 'skip::python', 'role::mariadb' ]
       python__dependent_packages3:
         - '{{ mariadb__python__dependent_packages3 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
         - '{{ nginx__python__dependent_packages3 }}'
