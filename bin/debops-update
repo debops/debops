@@ -157,44 +157,53 @@ def update_git_repository(path, branch, dry_run=False, remote_uri=False):
 
     current_branch = subprocess.check_output(
                 [GIT, 'rev-parse', '--abbrev-ref', 'HEAD']).decode('utf-8').strip()
-    print("Current branch checked out:", current_checkout_branch)
-    if dry_run:
-        subprocess.call([GIT, 'fetch'])
-        subprocess.call([GIT, 'diff', 'HEAD', 'origin/' + branch, '--stat'])
+    print("Current branch:", current_branch)
 
-    else:
-        # Fetch silently
-        # subprocess.call([GIT, 'fetch', '--quiet'])
-        subprocess.call([GIT, 'fetch'])
-
-        if current_branch != branch:
+    if current_branch != branch:
+        if dry_run:
+            subprocess.call([GIT, 'fetch'])
+            subprocess.call([GIT, 'diff', 'HEAD', 'origin/' + branch, '--stat'])
+        else:
             # checkout of new branch
             #subprocess.call([GIT, 'checkout', branch])
             subprocess.call([GIT, 'checkout', '--progress', branch])
+    else:
+        if dry_run:
+            subprocess.call([GIT, 'fetch'])
+            subprocess.call([GIT, 'diff', 'HEAD', 'origin/' + current_branch, '--stat'])
 
-        # Get the current sha of the head branch
-        current_sha = subprocess.check_output(
-            [GIT, 'rev-parse', 'HEAD']).strip()
 
-        fetch_sha = subprocess.check_output(
-            [GIT, 'rev-parse', 'FETCH_HEAD']).strip()
+    # Fetch silently
+    # subprocess.call([GIT, 'fetch', '--quiet'])
+    subprocess.call([GIT, 'fetch'])
 
-        if current_sha != fetch_sha:
-            print()
-            print('--')
-            # subprocess.call([GIT, 'merge', fetch_sha])
-            subprocess.call([GIT, 'merge', '-v', fetch_sha])
+    # Get the current sha of the head branch
+    current_sha = subprocess.check_output(
+        [GIT, 'rev-parse', 'HEAD']).strip()
 
-            if remote_uri:
-                compare_uri = (remote_uri + '/compare/' + current_sha[:7]
+    print("Current SHA:", current_sha)
+
+    fetch_sha = subprocess.check_output(
+        [GIT, 'rev-parse', 'FETCH_HEAD']).strip()
+
+    print("Fetch SHA:", fetch_sha)
+
+    if current_sha != fetch_sha:
+        print()
+        print('--')
+        # subprocess.call([GIT, 'merge', fetch_sha])
+        subprocess.call([GIT, 'merge', '-v', fetch_sha])
+
+        if remote_uri:
+            compare_uri = (remote_uri + '/compare/' + current_sha[:7]
                                    + '...' + fetch_sha[:7])
-                print()
-                print("Compare:", compare_uri)
-
-            print('--')
             print()
+            print("Compare:", compare_uri)
 
-            # Move back to the initial directory
+        print('--')
+        print()
+
+    # Move back to the initial directory
     os.chdir(old_pwd)
 
 
