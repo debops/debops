@@ -43,7 +43,8 @@ Requirements
 - At least 2 Debian hosts configured by DebOps/Ansible, there can be more hosts
   included in the cluster.
 - All hosts have proper time synchronization using NTP.
-- All hosts can reach each other via DNS hostnames.
+- All hosts can reach each other via DNS hostnames and the firewall + TCP
+  Wrappers access has been allowed using the ``slapd__*_allow`` variables.
 
 
 DNS configuration
