@@ -75,6 +75,12 @@ Fixed
 - Use the supported option name (``ssl_protocols`` instead of
   ``ssl_min_protocol``) on Ubuntu Bionic installations.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- Configuration entries which define Postfix lookup tables can now use integers
+  as values.
+
 
 `debops v1.0.13`_ - 2019-11-13
 ------------------------------
