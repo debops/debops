@@ -35,7 +35,11 @@
 {{ '{} = {}'.format(config_key, (([ value ] if value is string else value) | join(', '))) }}
 {%     elif config_key in item.keys() | sort %}
 {%       set value = item[config_key] %}
+{%       if value is iterable %}
 {{ '{} = {}'.format(config_key, (([ value ] if value is string else value) | join(', '))) }}
+{%       else %}
+{{ '{} = {}'.format(config_key, value) }}
+{%       endif %}
 {%     endif %}
 {%   endfor %}
 {% else %}
