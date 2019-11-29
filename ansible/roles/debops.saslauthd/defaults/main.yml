@@ -295,21 +295,22 @@ saslauthd__ldap_default_profiles:
         value: '(|
                   (&
                     (objectClass=inetOrgPerson)
-                    (uid=%U)
                     (|
+                      (uid=%U)
+                      (mail=%U@%d)
+                    )
+                    (|
+                      (authorizedService=all)
                       (authorizedService=mail:send)
-                      (authorizedService=mail:all)
-                      (authorizedService=all:all)
                     )
                   )
                   (&
                     (objectClass=account)
                     (uid=%U)
-                    (host=%r)
+                    (host=%d)
                     (|
+                      (authorizedService=all)
                       (authorizedService=mail:send)
-                      (authorizedService=mail:all)
-                      (authorizedService=all:all)
                     )
                   )
                 )'

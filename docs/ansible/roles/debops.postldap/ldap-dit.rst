@@ -36,9 +36,7 @@ access control rules:
 
 - objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
 
-  - ``all:all`` (all services)
-  - ``mail:all``
-  - ``mail:read``
+  - ``all`` (all services)
   - ``mail:receive``
   - ``mail:send``
 

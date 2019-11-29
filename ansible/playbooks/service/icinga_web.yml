@@ -41,7 +41,7 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+      tags: [ 'role::python', 'skip::python', 'role::mariadb', 'role::postgresql' ]
       python__dependent_packages3:
         - '{{ postgresql__python__dependent_packages3 if icinga_web__database_type == "postgresql" else [] }}'
         - '{{ mariadb__python__dependent_packages3 if icinga_web__database_type == "mariadb" else [] }}'

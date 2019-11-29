@@ -249,6 +249,15 @@ LDAP
   anymore. On existing installations this subtree will be left intact and can
   be safely removed after migration.
 
+- The access to the OpenLDAP service configured using the :ref:`debops.slapd`
+  role now requires explicit firewall and TCP Wrappers configuration to allow
+  access from trusted IP addresses and subnets. You can use the
+  ``slapd__*_allow`` variables in the Ansible inventory to specify the IP
+  addresses and subnets that can access the service.
+
+  To preserve the old behaviour of granting access by default from anywhere,
+  you can set the :envvar:`slapd__accept_any` variable to ``True``.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 

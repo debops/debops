@@ -21,15 +21,25 @@ existing installation, but that's not a 100% guarantee.
 - :ref:`slapd__ref_acl`
 
 
-Access to service allowed by default
-------------------------------------
+Access to service denied by default
+-----------------------------------
 
-The default configuration allows access to the OpenLDAP service from anywhere
-through the firewall and TCP Wrappers. Keep that in mind while designing the
-LDAP Access Control List and password policies. You can control the default
-behaviour using the :envvar:`slapd__accept_any` boolean variable. Another
-option is to use an external firewall with IDS/IPS systems that can analyze
-LDAP traffic.
+The default configuration denies access to the OpenLDAP service from anywhere
+through the firewall and TCP Wrappers, although the :command:`slapd` daemon
+will listen for connections on all interfaces. You can use the
+``slapd__*_allow`` variables to define what IP addresses or subnets have access
+to the LDAP service.
+
+If you don't use the :ref:`debops.ferm` and the :ref:`debops.tcpwrappers`
+Ansible roles to control access to services, keep in mind that the OpenLDAP
+service will be available publicly. This might be important while designing the
+LDAP Access Control List and password policies.
+
+You can control the default behaviour using the :envvar:`slapd__accept_any`
+boolean variable. Another option is to use an external firewall with IDS/IPS
+systems that can analyze LDAP traffic. Access through a VPN connection, for
+example using the :ref:`debops.tinc` Ansible role, can also be a good option
+for limiting the exposure of LDAP directory directly to the Internet.
 
 
 SASL authentication
