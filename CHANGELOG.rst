@@ -66,6 +66,9 @@ LDAP
   Ansible role. The specific values have also been changed, you might need to
   update the LDAP attributes to match the new values.
 
+- Users can now use their e-mail addresses specified in the ``mail`` LDAP
+  attribute to authenticate the outgoing mail messages.
+
 Fixed
 ~~~~~
 
