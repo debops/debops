@@ -69,6 +69,14 @@ LDAP
 - Users can now use their e-mail addresses specified in the ``mail`` LDAP
   attribute to authenticate the outgoing mail messages.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The ``host`` index now includes the substring match in addition to the
+  equality match. On existing installations, the ``olcIndex`` entry for
+  ``host`` index has to be modified manually to ``eq,sub`` for the role to work
+  correctly.
+
 Fixed
 ~~~~~
 
