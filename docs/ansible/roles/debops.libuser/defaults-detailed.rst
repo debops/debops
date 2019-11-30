@@ -41,6 +41,10 @@ Each entry in the list is a YAML dictionary that describes the configuration fil
   ``name``
     Required for the main options. The Name of the libuser option to add.
 
+  ``option``
+    Optional. Override the ``name`` parameter to allow for multiple
+    configuration options with the same parameter.
+
   ``state``
     Optional. If not specified or ``present``, the entry will be added in the
     configuration file. If ``absent``, the entry will be removed from the
@@ -50,6 +54,10 @@ Each entry in the list is a YAML dictionary that describes the configuration fil
   ``comment``
     Optional. String or a YAML text block with a comment added to a given
     configuration entry.
+
+  ``separator``
+    Optional, boolean. If ``True``, add an empty line before the configuration
+    parameter, useful for visually separating configuration options.
 
   ``value``
     Optional for main options. If specified, set a value of a given option.
