@@ -5,26 +5,14 @@ Getting started
    :local:
 
 
-Support for ``libuser`` library
--------------------------------
-
-The role uses the ``libuser`` library, supported by the ``group`` and ``user``
-Ansible modules, to manage the UNIX groups and accounts present on the hosts.
-The library is used to ensure that the groups and accounts created locally on
-the host that uses the LDAP directory as the user/group database have UID/GID
-values in the correct ranges, thus avoiding collisions with the LDAP directory
-UID/GID ranges. Without the ``libuser`` these local groups and accounts would
-be created in the LDAP UID/GID ranges, since the normal UNIX user management
-tools pick the next UID/GID based on the contents of the ``getent`` output, and
-not from the local user and group databases.
-
 Example inventory
 -----------------
 
 The ``debops.libuser`` Ansible role is included by default in the
 :file:`common.yml` DebOps playbook; you don't need to do anything to have it
-executed. It's also included in the :file:`bootstrap.yml` playbooksto create
-sysadmin accounts during host bootstrapping.
+executed. It's also included in the :file:`bootstrap.yml` and the
+:file:bootstrap-ldap.yml` playbooks to help create the local sysadmin accounts
+during host bootstrapping.
 
 If you don’t want to let ``debops.libuser`` manage user accounts, you can
 disable it with the following setting in your inventory:

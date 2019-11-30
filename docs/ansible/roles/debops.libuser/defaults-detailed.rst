@@ -11,10 +11,17 @@ simple strings or lists, here you can find documentation and examples for them.
    :depth: 3
 
 
-.. _libuser__ref_original_configuration:
+.. _libuser__ref_configuration:
 
-libuser__original_configuration
--------------------------------
+libuser__configuration
+----------------------
+
+Examples
+~~~~~~~~
+
+See the :envvar:`libuser__original_configuration` variable for the original
+contents of the :file:`/etc/libuser.conf` file and how they are represented in
+the role configuration.
 
 Syntax
 ~~~~~~
