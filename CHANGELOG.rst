@@ -39,6 +39,12 @@ New DebOps roles
 - The :ref:`debops.tinyproxy` role can be used to set up a lightweight
   HTTP/HTTPS proxy for an upstream server.
 
+- The :ref:`debops.libuser` Ansible role configures the `libuser`__ library and
+  related commands. This library is used by some of the other DebOps roles to
+  manage local UNIX accounts and groups on LDAP-enabled hosts.
+
+  .. __: https://pagure.io/libuser/
+
 General
 '''''''
 
