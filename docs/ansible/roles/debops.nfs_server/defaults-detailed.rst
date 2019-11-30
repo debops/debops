@@ -131,10 +131,10 @@ Anyone can access it, barring any firewall configuration:
    nfs_server__exports:
      - path: '/srv/nfs/usr'
        bind:
-        src: '/usr'
-        options:
+         src: '/usr'
+         options:
 
-          - 'x-systemd.requires=zfs-mount.service'
+           - 'x-systemd.requires=zfs-mount.service'
 
        options: [ 'ro', 'no_subtree_check', 'async' ]
        acl: '*'
