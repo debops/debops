@@ -278,6 +278,7 @@ Security
 - :ref:`debops.ferm`
 - :ref:`debops.freeradius`
 - :ref:`debops.keyring`
+- :ref:`debops.libuser`
 - :ref:`debops.pam_access`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`

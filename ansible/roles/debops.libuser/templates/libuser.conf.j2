@@ -1,0 +1,35 @@
+# {{ ansible_managed }}
+
+# See libuser.conf(5) for more information.
+
+# Do not modify the default module list if you care about unattended calls
+# to programs (i.e., scripts) working!
+
+{% for element in libuser__combined_configuration | parse_kv_items %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if not loop.first %}
+
+{%     endif %}
+{%     if element.name %}
+{{ '[{}]'.format(element.name) }}
+{%     endif %}
+{%     if element.options|d() %}
+{%       for thing in element.options %}
+{%         if thing.name|d() and thing.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%           set thing_commented = ('# ' if thing.state|d('present') == 'comment' else '') %}
+{%           if (thing.separator|d())|bool %}
+
+{%           endif %}
+{%           if thing.comment|d() %}
+{{ thing.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%           endif %}
+{%           if thing.value|d() %}
+{{ '{}{} = {}'.format(thing_commented, thing.option | d(thing.name), ([ thing.value ] if thing.value is string else thing.value) | join(',')) }}
+{%           else %}
+{{ '{}{} ='.format(thing_commented, thing.option | d(thing.name)) }}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
