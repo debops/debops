@@ -134,7 +134,7 @@ Anyone can access it, barring any firewall configuration:
         src: '/usr'
         options:
 
-          - x-systemd.requires=zfs-mount.service
+          - 'x-systemd.requires=zfs-mount.service'
 
        options: [ 'ro', 'no_subtree_check', 'async' ]
        acl: '*'
