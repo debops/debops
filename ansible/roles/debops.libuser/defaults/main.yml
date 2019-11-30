@@ -12,7 +12,12 @@
 # Installation, Apt packages [[[
 # ------------------------------
 
+# .. envvar:: libuser__enabled [[[
+#
+# Should Ansible use ``libuser`` library to manage UNIX accounts and groups?
+libuser__enabled: True
 
+                                                                   # ]]]
 # .. envvar:: libuser__base_packages [[[
 #
 # List of APT base packages which are required by the Libuser service.
@@ -23,13 +28,7 @@ libuser__base_packages: [ 'libuser' ]
 #
 # List of APT packages which are required by the Libuser service.
 libuser__packages: []
-
                                                                    # ]]]
-# .. envvar:: libuser__enabled [[[
-#
-# Should Ansible use ``libusers`` library to manage UNIX accounts and groups?
-libuser__enabled: True
-
                                                                    # ]]]
 # Libuser configuration file [[[
 # ------------------------------
@@ -277,13 +276,6 @@ libuser__original_configuration:
 libuser__configuration: []
 
                                                                    # ]]]
-# .. envvar:: libuser__host_configuration [[[
-#
-# The configuration which should be present on specific hosts in the Ansible
-# inventory.
-libuser__host_configuration: []
-
-                                                                   # ]]]
 # .. envvar:: libuser__group_configuration [[[
 #
 # The configuration which should be present on hosts in a specific Ansible
@@ -291,13 +283,20 @@ libuser__host_configuration: []
 libuser__group_configuration: []
 
                                                                    # ]]]
+# .. envvar:: libuser__host_configuration [[[
+#
+# The configuration which should be present on specific hosts in the Ansible
+# inventory.
+libuser__host_configuration: []
+
+                                                                   # ]]]
 # .. envvar:: libuser__combined_configuration [[[
 #
 # The variable which combines all of the other configuration variables and is
 # used in the Ansible tasks.
-libuser__combined_configuration: '{{ libuser__configuration
-                                     + libuser__original_configuration
-                                     + libuser__host_configuration
-                                     + libuser__group_configuration }}'
+libuser__combined_configuration: '{{ libuser__original_configuration
+                                     + libuser__configuration
+                                     + libuser__group_configuration
+                                     + libuser__host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
