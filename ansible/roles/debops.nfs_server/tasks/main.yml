@@ -47,8 +47,8 @@
 - name: Bind mount requested directories
   mount:
     name: '{{ item.path }}'
-    src: '{{ item.bind }}'
-    opts: 'bind'
+    src: '{{ item.bind.src | d(item.bind) }}'
+    opts: '{{ ( [ "bind" ] + item.bind.options | d([]) ) | join(",") }}'
     fstype: 'none'
     state: 'mounted'
   with_flattened:

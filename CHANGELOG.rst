@@ -43,6 +43,13 @@ General
 - The role will install the ``libsasl2-modules`` APT package to allow SASL
   authentication to the LDAP directory.
 
+:ref:`debops.nfs_server` role
+'''''''''''''''''''''''''''''
+
+- You can now define NFS bind mounts with mount options to accommodate
+  filesystems with special requirements, for example dependency on
+  a :command:`systemd` service.
+
 Changed
 ~~~~~~~
 
