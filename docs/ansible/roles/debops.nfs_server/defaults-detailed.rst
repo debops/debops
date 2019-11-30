@@ -43,6 +43,14 @@ Each list entry is a YAML dictionary with specific parameters:
   bind-mounted to the specified ``path``. This is useful when you want to
   export directories that are outside of the NFS4 root pseudo-filesystem.
 
+  ``src``
+    A string acting the same way as if you assigned the value directly
+    to the ``bind`` option.
+
+  ``options``
+    A list of extra option to add to the mount. Useful if you need special
+    behavior like waiting for other services to be started before the mount.
+
 ``acl``
   Required. Access Control List of a given NFS export. This can be either
   a string (hostname, NIS netgroup, single IP address, single CIDR subnet), or
@@ -59,7 +67,8 @@ Each list entry is a YAML dictionary with specific parameters:
     Either ``present`` or ``absent``, enables or disables a given client entry.
 
 ``comment``
-  Optional. A string or a YAML text block with a comment added to a given NFS export.
+  Optional. A string or a YAML text block with a comment added to a given NFS
+  export.
 
 ``state``
   Optional. If not specified or ``present``, the NFS export will be present in
@@ -112,3 +121,20 @@ networks, with different set of parameters:
 
          - clients: [ '2001:db8:dead:beef::/64', '*.example.org' ]
            options: [ 'rw', 'no_subtree_check', 'no_root_squash' ]
+
+Export the :file:`/usr` directory read-only, by bind-mounting it to the NFS4
+root filesystem, but only after the ZFS service has started.
+Anyone can access it, barring any firewall configuration:
+
+.. code-block:: yaml
+
+   nfs_server__exports:
+     - path: '/srv/nfs/usr'
+       bind:
+         src: '/usr'
+         options:
+
+           - 'x-systemd.requires=zfs-mount.service'
+
+       options: [ 'ro', 'no_subtree_check', 'async' ]
+       acl: '*'
