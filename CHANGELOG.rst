@@ -336,6 +336,13 @@ LDAP
   specify the intended owner, group and directory mode in the :command:`nginx`
   server configuration.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The :envvar:`nullmailer__adminaddr` list is set to empty by default to not
+  redirect all e-mail messages sent through the :command:`nullmailer` service
+  to the ``root`` account. This should be done on the relayhost instead.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
