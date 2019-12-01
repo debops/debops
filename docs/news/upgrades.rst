@@ -11,6 +11,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v1.2.0 (2019-12-01)
+-------------------
+
 Role configuration changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
