@@ -55,6 +55,21 @@ inventory:
    nullmailer__relayhost: '<FQDN address of mail server>'
 
 
+LDAP integration
+----------------
+
+If the :ref:`LDAP environment <debops.ldap>` is configured on the host, the
+:ref:`debops.nullmailer` role will automatically use it to create an LDAP
+service account in the directory. The relayhost configuration will have SMTP
+authentication enabled with the ``nullmailer@<host.example.org>`` username,
+which can then be used by the relay server via SASL authentication to find the
+corresponding ``nullmailer`` account in the LDAP directory and authenticate the
+service.
+
+See the :ref:`debops.postldap` Ansible role documentation for details about
+configuring Postfix mail relay with LDAP directory support.
+
+
 Example inventory
 -----------------
 

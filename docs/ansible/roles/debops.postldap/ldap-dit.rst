@@ -18,7 +18,7 @@ Directory structure
 Object Classes and Attributes
 -----------------------------
 
-- :envvar:`uid=postfix <owncloud__ldap_self_rdn>`
+- :envvar:`uid=postfix <postldap__ldap_self_rdn>`
 
   - :ref:`debops.postldap`: :envvar:`Object Classes <postldap__ldap_self_object_classes>`, :envvar:`Attributes <postldap__ldap_self_attributes>`
 

@@ -11,6 +11,7 @@ debops.nullmailer
    defaults/main
    defaults-detailed
    copyright
+   ldap-dit
 
 ..
  Local Variables:
