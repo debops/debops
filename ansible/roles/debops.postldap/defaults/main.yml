@@ -232,12 +232,41 @@ postldap__postfix__dependent_maincf:
 
   - name: 'smtpd_sender_restrictions'
     value:
+      - name: 'check_sasl_access ldap:${config_directory}/ldap_known_sender_relays.cf'
+        copy_id_from: 'permit_mynetworks'
+        weight: 5
       - name: 'check_sender_access ldap:${config_directory}/ldap_unauth_sender_access.cf'
         copy_id_from: 'permit_sasl_authenticated'
         weight: 10
       - name: 'check_sender_access ldap:${config_directory}/ldap_unauth_domain_access.cf'
         copy_id_from: 'permit_sasl_authenticated'
         weight: 15
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool)
+            else "ignore" }}'
+
+  - name: 'smtpd_relay_restrictions'
+    value:
+      - name: 'check_sasl_access ldap:${config_directory}/ldap_known_sender_relays.cf'
+        copy_id_from: 'permit_mynetworks'
+        weight: 5
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool)
+            else "ignore" }}'
+
+  - name: 'smtpd_restriction_classes'
+    value: [ 'smtpd_permit_known_sender_relays' ]
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool)
+            else "ignore" }}'
+
+  - name: 'smtpd_permit_known_sender_relays'
+    value:
+      # FIXME: Needs a better check, empty result doesn't block spoofed e-mail
+      # senders passed through a known relay
+      - 'reject_unlisted_sender'
+      - 'permit_sasl_authenticated'
+      - 'reject'
     state: '{{ "present"
             if (postldap__ldap_enabled|bool)
             else "ignore" }}'
@@ -357,6 +386,33 @@ postldap__postfix__dependent_lookup_tables:
     result_attribute: 'uid, mail, mailAlias'
     size_limit: 1
 
+  - name: 'ldap_known_sender_relays.cf'
+    state: 'present'
+    comment: |
+      This lookup table checks if a given SASL authenticated login specified as
+      'user@fqdn' is a service account which can be used to relay e-mails from
+      other hosts through Postfix. If such service account is found, the lookup
+      table tells Postfix to use a relaxed sender and relay restrictions which
+      don't check for sender <-> login mismatch. This is required for accepting
+      e-mail messages from trusted SMTP services, for example nullmailer, which
+      can send e-mail messages on behalf of other users but cannot authenticate
+      as them.
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    query_filter: '(&
+                    (objectClass=account)
+                    (uid=%u)
+                    (host=%d)
+                    (|
+                      (authorizedService=all)
+                      (authorizedService=mail:send)
+                    )
+                  )'
+    result_attribute: 'uid'
+    result_format: 'smtpd_permit_known_sender_relays'
+    size_limit: 1
+
   - name: 'ldap_unauth_sender_access.cf'
     state: 'present'
     comment: |
@@ -469,7 +525,8 @@ postldap__ldap_self_rdn: 'uid=postfix'
 #
 # List of the LDAP object classes which will be used to create the LDAP object
 # used by the `postfix` service to access the LDAP directory.
-postldap__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+postldap__ldap_self_object_classes: [ 'account', 'simpleSecurityObject',
+                                      'authorizedServiceObject' ]
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_self_attributes [[[
@@ -481,6 +538,7 @@ postldap__ldap_self_attributes:
   userPassword: '{{ postldap__ldap_bindpw }}'
   host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
   description: 'Account used by the "Postfix" service to access the LDAP directory'
+  authorizedService: 'mail:send'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_binddn [[[

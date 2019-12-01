@@ -114,6 +114,14 @@ LDAP
   job execution spikes every morning. See the role documentation for more
   details.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- When the :ref:`LDAP environment <debops.ldap>` is configured on a host, the
+  :ref:`debops.nullmailer` role will create the service account in the LDAP
+  directory and configure the :command:`nullmailer` service to use SASL
+  authentication with its LDAP credentials to send e-mails to the relayhost.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
@@ -327,6 +335,13 @@ LDAP
   ``item.webroot_create`` parameter to ``False``. Alternatively, you should
   specify the intended owner, group and directory mode in the :command:`nginx`
   server configuration.
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The :envvar:`nullmailer__adminaddr` list is set to empty by default to not
+  redirect all e-mail messages sent through the :command:`nullmailer` service
+  to the ``root`` account. This should be done on the relayhost instead.
 
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
