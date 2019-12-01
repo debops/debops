@@ -132,6 +132,88 @@ nullmailer__defaultdomain: '{{ nullmailer__domain }}'
 nullmailer__allmailfrom: ''
                                                                    # ]]]
                                                                    # ]]]
+# LDAP environment [[[
+# --------------------
+
+# .. envvar:: nullmailer__ldap_enabled [[[
+#
+# Enable or disable integration with the LDAP directory. The integration is
+# enabled automatically when the :ref:`debops.ldap` environment is configured
+# on the host.
+nullmailer__ldap_enabled: '{{ ansible_local.ldap.enabled
+                              if (ansible_local|d() and ansible_local.ldap|d() and
+                                  ansible_local.ldap.enabled is defined)
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, the LDAP account for the :command`nullmailer` SMTP service will not
+# be created in the LDAP directory.
+nullmailer__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                              if (ansible_local|d() and ansible_local.ldap|d() and
+                                  ansible_local.ldap.base_dn|d())
+                              else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the :command:`nullmailer` service account
+# LDAP object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+nullmailer__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                    ansible_local.ldap.device_dn|d())
+                                else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# :command:`nullmailer` service to send the authenticated messages to the
+# relayhost.
+nullmailer__ldap_self_rdn: 'uid=nullmailer'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the :command:`nullmailer` service to send authenticated mail
+# messages.
+nullmailer__ldap_self_object_classes: [ 'account', 'simpleSecurityObject',
+                                        'authorizedServiceObject' ]
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# :command:`nullmailer` service to send authenticated mail messages.
+nullmailer__ldap_self_attributes:
+  uid: '{{ nullmailer__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ nullmailer__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "nullmailer" service to send authenticated mail messages'
+  authorizedService: 'mail:send'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# :command:`nullmailer` service to bind to the LDAP directory.
+nullmailer__ldap_binddn: '{{ ([ nullmailer__ldap_self_rdn ] + nullmailer__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the
+# :command:`nullmailer` service to bind to the LDAP directory.
+nullmailer__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                                    + nullmailer__ldap_binddn | to_uuid + ".password length=32") }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # SMTP relay configuration [[[
 # ----------------------------
 
@@ -167,9 +249,16 @@ nullmailer__relayhost_options: []
 # messages. See :ref:`nullmailer__ref_remotes` for more details.
 nullmailer__default_remotes:
 
+  - host: '{{ nullmailer__relayhost }}'
+    auth: True
+    user: '{{ nullmailer__ldap_self_rdn.split("=")[1] + "@" + nullmailer__fqdn }}'
+    password: '{{ nullmailer__ldap_bindpw }}'
+    state: '{{ "present" if nullmailer__ldap_enabled|bool else "absent" }}'
+
   - '{{ (nullmailer__relayhost_options | combine({"host": nullmailer__relayhost}))
         if (nullmailer__relayhost_options is mapping)
         else ({"host": nullmailer__relayhost,
+               "state": ("absent" if nullmailer__ldap_enabled|bool else "present"),
                "options": nullmailer__relayhost_options}) }}'
 
                                                                    # ]]]
@@ -339,6 +428,19 @@ nullmailer__smtpd_allow: []
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: nullmailer__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+nullmailer__ldap__dependent_tasks:
+
+  - name: 'Create nullmailer account for {{ nullmailer__ldap_device_dn | join(",") }}'
+    dn: '{{ nullmailer__ldap_binddn }}'
+    objectClass: '{{ nullmailer__ldap_self_object_classes }}'
+    attributes: '{{ nullmailer__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present" if nullmailer__ldap_device_dn|d() else "ignore" }}'
+
+                                                                   # ]]]
 # .. envvar:: nullmailer__ferm__dependent_rules [[[
 #
 # Configuration for the :ref:`debops.ferm` role.

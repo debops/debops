@@ -114,6 +114,14 @@ LDAP
   job execution spikes every morning. See the role documentation for more
   details.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- When the :ref:`LDAP environment <debops.ldap>` is configured on a host, the
+  :ref:`debops.nullmailer` role will create the service account in the LDAP
+  directory and configure the :command:`nullmailer` service to use SASL
+  authentication with its LDAP credentials to send e-mails to the relayhost.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
