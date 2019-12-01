@@ -469,7 +469,8 @@ postldap__ldap_self_rdn: 'uid=postfix'
 #
 # List of the LDAP object classes which will be used to create the LDAP object
 # used by the `postfix` service to access the LDAP directory.
-postldap__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+postldap__ldap_self_object_classes: [ 'account', 'simpleSecurityObject',
+                                      'authorizedServiceObject' ]
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_self_attributes [[[
@@ -481,6 +482,7 @@ postldap__ldap_self_attributes:
   userPassword: '{{ postldap__ldap_bindpw }}'
   host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
   description: 'Account used by the "Postfix" service to access the LDAP directory'
+  authorizedService: 'mail:send'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_binddn [[[
