@@ -8,20 +8,21 @@ dependencies:
     tags: [ 'role::php', 'role::apt_preferences', 'role::logrotate' ]
 
   - role: debops.apt_preferences
+    tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
     apt_preferences__dependent_list:
       - '{{ nginx__apt_preferences__dependent_list }}'
       - '{{ php__apt_preferences__dependent_list }}'
 
   - role: debops.logrotate
-    tags: [ 'role::logrotate' ]
+    tags: [ 'role::logrotate', 'skip::logrotate' ]
     logrotate__dependent_config:
       - '{{ php__logrotate__dependent_config }}'
 
   - role: debops.php
+    tags: [ 'role::php', 'skip::php' ]
     php__dependent_packages: [ 'mysql', 'mcrypt', 'gd' ]
     php__dependent_pools: [ '{{ phpmyadmin_php5_pool }}' ]
     when: phpmyadmin_dependencies is defined and phpmyadmin_dependencies
-    tags: [ 'mysql', 'phpmyadmin' ]
 
   - role: debops.ferm
     tags: [ 'role::ferm', 'skip::ferm' ]
@@ -29,10 +30,10 @@ dependencies:
       - '{{ nginx__ferm__dependent_rules }}'
 
   - role: debops.nginx
+    tags: [ 'role::nginx', 'skip::nginx' ]
     nginx_servers: [ '{{ phpmyadmin_nginx_server }}' ]
     nginx_upstreams: [ '{{ phpmyadmin_nginx_upstream_php5 }}' ]
     when: phpmyadmin_dependencies is defined and phpmyadmin_dependencies
-    tags: [ 'mysql', 'phpmyadmin', 'nginx' ]
 
 galaxy_info:
 
