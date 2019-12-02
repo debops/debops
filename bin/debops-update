@@ -209,7 +209,7 @@ def update_git_repository(path, branch, dry_run=False, remote_uri=False):
 
 # ---- Main script ----
 
-def main(branch, project_dir=None, dry_run=False):
+def main(branch=GIT_DEFAULT_BRANCH, project_dir=None, dry_run=False):
 
     # Check if user specified a directory as a parameter, if yes, use it as
     # a project directory and clone DebOps playbooks inside
@@ -317,7 +317,7 @@ def main(branch, project_dir=None, dry_run=False):
 parser = argparse.ArgumentParser()
 parser.add_argument('--dry-run', action='store_true',
                     help='perform a trial run with no changes made')
-parser.add_argument('--branch', default=GIT_DEFAULT_BRANCH)
+parser.add_argument('--branch')
 parser.add_argument('project_dir', nargs='?')
 args = parser.parse_args()
 
