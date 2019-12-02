@@ -18,6 +18,16 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v1.2.0...master
 
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- Old ``[debops_<role_name>]`` Ansible inventory groups have been removed from
+  DebOps playbooks. Users should use the the ``[debops_service_<role_name>]``
+  group names instead.
+
 
 `debops v1.2.0`_ - 2019-12-01
 -----------------------------
