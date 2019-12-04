@@ -36,15 +36,16 @@ control rules:
 
 - objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
 
+  - ``all`` (all services)
+  - ``shell``
   - ``sshd``
-  - ``*`` (all services)
 
 - objectClass ``hostObject``, attribute ``host``:
 
-  - ``hostname``
-  - ``hostname.example.org``
-  - ``*.example.org``
-  - ``*`` (all hosts)
+  - ``posix:all`` (all hosts)
+  - ``posix:hostname.example.org``
+  - ``posix:*.example.org``
+  - ``posix:urn:*`` (see :envvar:`sshd__ldap_posix_urn` variable)
 
 LDAP filter definition: :envvar:`sshd__ldap_filter`
 

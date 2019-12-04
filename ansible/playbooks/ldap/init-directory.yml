@@ -143,8 +143,8 @@
           loginShell:    '{{ ldap__shell }}'
 
           # Other attributes
-          authorizedService: '*'
-          host: '*'
+          authorizedService: 'all'
+          host: 'posix:all'
           sshPublicKey: '{{ admin_sshkeys }}'
 
       - name: 'Create cn=LDAP Administrator role'
@@ -180,8 +180,7 @@
           member: '{{ admin_dn }}'
           owner: '{{ admin_dn }}'
           description: 'People responsible for UNIX-like infrastructure'
-          authorizedService: '*'
-          host: '*'
+          host: 'posix:all'
 
       - name: 'Create cn=Account Administrator role'
         dn: '{{ [ "cn=Account Administrator", ldap__roles_rdn ] + ldap__base_dn }}'
@@ -235,8 +234,7 @@
           owner: '{{ admin_dn }}'
           member: '{{ admin_dn }}'
           description: 'People who can connect to UNIX-like infrastructure via SSH'
-          authorizedService: '*'
-          host: '*'
+          host: 'posix:all'
 
       - name: 'Create SUDOers container'
         dn: '{{ [ "ou=SUDOers" ] + ldap__base_dn }}'

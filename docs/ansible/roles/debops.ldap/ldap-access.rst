@@ -272,6 +272,50 @@ Find all LDAP entries which can send e-mail messages or have global access:
    ldapsearch -Z -b "dc=example,dc=org" \
               "(| (authorizedService=all) (authorizedService=mail:send) )" dn
 
+Known access controls
+~~~~~~~~~~~~~~~~~~~~~
+
+This paragraph lists various ``authorizedService`` values which are used by
+different DebOps roles to grant access to services. You can check the
+:ref:`ldap__ref_dit` to find what DebOps roles use which access control.
+
+================ ============================================================
+Access control   Description
+================ ============================================================
+all              Grants access to all services supported by DebOps. Mutually
+                 exclusive with other access controls.
+---------------- ------------------------------------------------------------
+mail:access      Grants read/write access to mail account contents through
+                 a service, for example IMAP or POP3.
+---------------- ------------------------------------------------------------
+mail:receive     Allows a given mail account to receive e-mail messages via
+                 a service, for example SMTP - the mail account is present in
+                 alias and mailbox lookup tables.
+---------------- ------------------------------------------------------------
+mail:send        Allows a given mail account to send e-mail messages via
+                 a service, for example SMTP - the mail account is allowed to
+                 authenticate to the MTA.
+---------------- ------------------------------------------------------------
+shell            Grants access to the UNIX environment through a service, for
+                 example SSH. To be fully effective, a given LDAP entry also
+                 needs to have a corresponding ``host`` attribute with the
+                 ``posix:`` value which specifices the hosts on which the
+                 accounts and groups are present, as well as required objet
+                 classes (``posixAccount``, ``posixGroup``, ``posixGroupId``).
+                 See "Host-based access control" below for more details.
+---------------- ------------------------------------------------------------
+web:public       Grants access to various web services which are reachable over
+                 public Internet. Different services can also limit access
+                 using the ``host`` attribute, consult the specific services
+                 for details.
+================ ============================================================
+
+Apart from these access controls, different services implement their own access
+controls based usually on the daemon name (``slapd``, ``sshd``, etc.). See the
+corresponding LDAP DIT documentation pages of these roles for more details.
+
+
+.. _ldap__ref_ldap_access_host:
 
 Host-based access control
 -------------------------
@@ -284,8 +328,41 @@ can be used to create host-based access rules.
 Various services and systems can check for the presence of the ``host``
 attribute with specific value patterns. The preferred value format in this case
 should be: ``<service|system>:<host>``, where the ``<host>`` can be a FQDN
-hostname, or a woldcard domain (``*.example.org``), or just a hostname, or the
-value ``all`` for all hosts in the cluster.
+hostname, or a woldcard domain (``*.example.org``), or the value ``all`` for
+all hosts in the cluster.
+
+A separate URN-like (:rfc:`8141`) scheme is also available to allow for
+definition of POSIX accounts or groups that is independent from the DNS
+database, for example to distinguish hosts by their role like "production",
+"development", etc. This can be defined using the format:
+``<service|system>:urn:<pattern>``. Ansible roles are free to match any number
+of URN-like patterns in LDAP filters defined in the services they manage.
+
+For example, POSIX accounts and groups can be split into "development" and
+"production" servers using separate URN-like names:
+
+- ``posix:urn:dev:app1``
+- ``posix:urn:dev:app2``
+- ``posix:urn:prod:app1``
+- ``posix:urn:prod:app2``
+
+Then, hosts that should support ``app1`` for both development and production,
+can look for the URN: ``posix:urn:*:app1``. hosts which are meant only for
+development, can look for URN: ``posix:urn:dev:*``, and so on.
+
+The default glob pattern used by hosts is defined in the
+:envvar:`ldap__host_urn_pattern` variable and can be accessed by other Ansible
+roles via ``ansible_local.ldap.host_urn_pattern`` local fact. The default URN
+pattern defined by the role is:
+
+- ``host:<hostname>:*``
+
+This should match all URNs that specify the hostname with any other identifier
+defined as a suffix, for example a value that defines a POSIX account on the
+``server1`` host:
+
+- ``posix:urn:host:server1:any``
+
 
 Examples of LDAP search queries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -296,7 +373,7 @@ access to shell services:
 .. code-block:: console
 
    ldapsearch -Z -b "dc=example,dc=org" \
-              "(& (objectClass=posixAccount) (| (host=shell:host.example.org) (host=shell:all) ) )"
+              "(& (objectClass=posixAccount) (| (host=posix:host.example.org) (host=posix:all) ) )"
 
 Get list of POSIX accounts which should be present on any host in a specific
 domain. This uses the substring match to get all entries with a specific
@@ -305,7 +382,7 @@ domain:
 .. code-block:: console
 
    ldapsearch -Z -b "dc=example,dc=org" \
-              "(& (objectClass=posixAccount) (| (host=shell:*.example.org) (host=shell:all) ) )"
+              "(& (objectClass=posixAccount) (| (host=posix:*.example.org) (host=posix:all) ) )"
 
 Get list of POSIX accounts which should be present on all hosts in a specific
 domain. This query looks for all entries with a wildcard (``*.example.org``)
@@ -314,4 +391,28 @@ domain defined as the value:
 .. code-block:: console
 
    ldapsearch -Z -b "dc=example,dc=org" \
-              "(& (objectClass=posixAccount) (| (host=shell:\2a.example.org) (host=shell:all) ) )"
+              "(& (objectClass=posixAccount) (| (host=posix:\2a.example.org) (host=posix:all) ) )"
+
+Known access controls
+~~~~~~~~~~~~~~~~~~~~~
+
+This paragraph lists various ``host`` values which are used by different DebOps
+roles to grant access on a per-host basis. You can check the
+:ref:`ldap__ref_dit` to find what DebOps roles use which access control.
+
+================== ============================================================
+Access control     Description
+================== ============================================================
+posix:all          A given POSIX account or POSIX group will be present on all
+                   hosts in the cluster.
+------------------ ------------------------------------------------------------
+posix:<fqdn>       A given POSIX account or POSIX group will be present on
+                   a specific host defined by its FQDN name.
+------------------ ------------------------------------------------------------
+posix:\*.<domain>  A given POSIX account or POSIX group will be present on
+                   a specific host defined by its domain name (``*.`` prefix is
+                   required).
+------------------ ------------------------------------------------------------
+posix:urn:*        A given POSIX account or POSIX group will be present on
+                   hosts which look for a defined Uniform Resource Name.
+================== ============================================================

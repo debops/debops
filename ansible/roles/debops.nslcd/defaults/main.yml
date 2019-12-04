@@ -123,6 +123,31 @@ nslcd__ldap_binddn: '{{ ([ nslcd__ldap_self_rdn ] + nslcd__ldap_device_dn) | joi
 # service to bind to the LDAP directory.
 nslcd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                                + nslcd__ldap_binddn | to_uuid + ".password length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_posix_urn [[[
+#
+# A part of the LDAP filter which matches a ``posix:urn:*`` string stored in
+# the ``host`` attribute which can be used to define where POSIX accounts and
+# groups should be present. The label can be defined with glob-like patterns.
+nslcd__ldap_posix_urn: '{{ ansible_local.ldap.host_urn_pattern
+                           if (ansible_local|d() and ansible_local.ldap|d() and
+                               ansible_local.ldap.host_urn_pattern|d())
+                           else "*" }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_host_filter [[[
+#
+# The LDAP filter used in ``passwd``, ``shadow`` and ``group`` filters to
+# control the access to UNIX environment on specific hosts or domains. See the
+# ``filter_passwd_group`` parameter in :command:`nslcd` configuration for its
+# default usage.
+nslcd__ldap_host_filter: '(|
+                            (host=posix:all)
+                            (host=posix:{{ ansible_fqdn }})
+                            (host=posix:\2a.{{ ansible_domain }})
+                            (host=posix:urn:{{ nslcd__ldap_posix_urn }})
+                          )'
                                                                    # ]]]
                                                                    # ]]]
 # Service configuration [[[
@@ -205,6 +230,13 @@ nslcd__default_configuration:
     option: 'map'
     map: 'group'
     value: 'cn gid'
+
+  - name: 'filter_passwd_group'
+    raw: |
+      filter passwd (& (objectClass=posixAccount) {{ nslcd__ldap_host_filter }} )
+      filter group  (& (objectClass=posixGroupId) {{ nslcd__ldap_host_filter }} )
+      filter shadow (& (objectClass=shadowAccount) {{ nslcd__ldap_host_filter }} )
+    comment: 'Limit which UNIX accounts and groups are present on a host'
 
                                                                    # ]]]
 # .. envvar:: nslcd__configuration [[[

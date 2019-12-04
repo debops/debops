@@ -11,6 +11,52 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+LDAP
+~~~~
+
+- The values of the ``authorizedService`` and ``host`` LDAP attributes expected
+  by various DebOps roles have been changed. You will need to update your LDAP
+  directory entries for the new values to take effect before applying these
+  changes to the remote hosts, otherwise users and services might stop working
+  correctly.
+
+  Changes in the ``authorizedService`` attribute:
+
+  =================== ========================= =================================
+  Old value           New value                 Notes
+  =================== ========================= =================================
+  \*                  all                       Grants access to all services
+  ------------------- ------------------------- ---------------------------------
+  web-public          web:public                Grants access to
+                                                publicly-reachable web services
+  ------------------- ------------------------- ---------------------------------
+  None                shell                     Grants access to UNIX environment
+                                                over SSH protocol
+  =================== ========================= =================================
+
+  Changes in the ``host`` attribute:
+
+  =================== ========================= =================================
+  Old value           New value                 Notes
+  =================== ========================= =================================
+  \*                  posix:all                 Grants access to POSIX
+                                                environment on all hosts
+  ------------------- ------------------------- ---------------------------------
+  <fqdn>              posix:<fqdn>              Grants access to POSIX
+                                                environment on a specific host
+                                                based on its FQDN
+  ------------------- ------------------------- ---------------------------------
+  \*.<domain>         posix:\*.<domain>         Grants access to POSIX
+                                                environment on a specific host
+                                                based on its domain
+  ------------------- ------------------------- ---------------------------------
+  <hostname>          Removed                   This scheme has been replaced
+                                                by a more general purpose
+                                                "URN-like" scheme. See
+                                                :ref:`ldap__ref_ldap_access_host`
+                                                for more details.
+  =================== ========================= =================================
+
 
 v1.2.0 (2019-12-01)
 -------------------

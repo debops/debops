@@ -18,6 +18,29 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v1.2.0...master
 
+Added
+~~~~~
+
+:ref:`debops.nslcd` role
+''''''''''''''''''''''''
+
+- The role will now use a LDAP host filter by default, to allow for easy
+  control over what UNIX accounts and UNIX groups are present on which hosts
+  using the ``host`` LDAP attribute.
+
+Changed
+~~~~~~~
+
+LDAP
+''''
+
+- The ``authorizedService`` and ``host`` LDAP attribute values used for access
+  control in various DebOps roles and the :file:`ldap/init-directory.yml`
+  playbook have been updated and made consistent with the
+  :ref:`ldap__ref_ldap_access` documentation. You need to update the LDAP
+  entries that use them before applying these changes on the hosts managed by
+  DebOps. See :ref:`upgrade_notes` for detailed list of changed values.
+
 Removed
 ~~~~~~~
 
