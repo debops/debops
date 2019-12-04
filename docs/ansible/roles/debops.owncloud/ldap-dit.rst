@@ -48,10 +48,10 @@ control rules:
 
 - objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
 
+  - ``all`` (all services)
   - ``nextcloud``
   - ``owncloud``
-  - ``web-public``
-  - ``*`` (all services)
+  - ``web:public``
 
 LDAP filter definition: :envvar:`owncloud__ldap_login_filter`
 

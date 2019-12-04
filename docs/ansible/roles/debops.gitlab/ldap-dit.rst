@@ -36,9 +36,9 @@ control rules:
 
 - objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
 
+  - ``all`` (all services)
   - ``gitlab``
-  - ``web-public``
-  - ``*`` (all services)
+  - ``web:public``
 
 LDAP filter definition: :envvar:`gitlab__ldap_user_filter`
 

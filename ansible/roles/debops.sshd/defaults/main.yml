@@ -637,6 +637,17 @@ sshd__ldap_bind_pw_file: '/etc/ssh/ldap_authorized_keys_bindpw'
 sshd__ldap_filter: '{{ sshd__ldap_filter_map["service+host"] }}'
 
                                                                    # ]]]
+# .. envvar:: sshd__ldap_posix_urn [[[
+#
+# A part of the LDAP filter which matches a ``posix:urn:*`` string stored in
+# the ``host`` attribute which can be used to define where POSIX accounts and
+# groups should be present. The string can be defined with glob-like patterns.
+sshd__ldap_posix_urn: '{{ ansible_local.ldap.host_urn_pattern
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              ansible_local.ldap.host_urn_pattern|d())
+                          else "*" }}'
+
+                                                                   # ]]]
 # .. envvar:: sshd__ldap_filter_map [[[
 #
 # Dict with set of available LDAP filters that can be used to lookup the SSH
@@ -644,13 +655,44 @@ sshd__ldap_filter: '{{ sshd__ldap_filter_map["service+host"] }}'
 sshd__ldap_filter_map:
 
   # User account needs 'authorizedService' attribute
-  'service': '(&(objectClass=posixAccount)(uid=$username)(|(authorizedService=$service)(authorizedService=\\*)))'
+  'service': '(&
+                (objectClass=posixAccount)
+                (uid=$username)
+                (|
+                  (authorizedService=all)
+                  (authorizedService=$service)
+                  (authorizedService=shell)
+                )
+              )'
 
   # User account needs 'host' attribute
-  'host': '(&(objectClass=posixAccount)(uid=$username)(|(host=$hostname)(host=$fqdn)(host=\\*.$domain)(host=\\*)))'
+  'host': '(&
+             (objectClass=posixAccount)
+             (uid=$username)
+             (|
+               (host=posix:all)
+               (host=posix:$fqdn)
+               (host=posix:\2a.$domain)
+               (host=posix:urn:{{ sshd__ldap_posix_urn }})
+             )
+           )'
 
   # User account needs both 'authorizedService' and 'host' attributes.
-  'service+host': '(&(objectClass=posixAccount)(uid=$username)(|(authorizedService=$service)(authorizedService=\\*))(|(host=$hostname)(host=$fqdn)(host=\\*.$domain)(host=\\*)))'
+  'service+host': '(&
+                     (objectClass=posixAccount)
+                     (uid=$username)
+                     (|
+                       (authorizedService=all)
+                       (authorizedService=$service)
+                       (authorizedService=shell)
+                     )
+                     (|
+                       (host=posix:all)
+                       (host=posix:$fqdn)
+                       (host=posix:\2a.$domain)
+                       (host=posix:urn:{{ sshd__ldap_posix_urn }})
+                     )
+                   )'
                                                                    # ]]]
                                                                    # ]]]
 # PAM configuration [[[

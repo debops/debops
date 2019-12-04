@@ -1314,7 +1314,9 @@ owncloud__ldap_user_display_name: 'cn'
 #
 # Use this to control which LDAP users are listed as ownCloud users on your ownCloud server.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#user-filter>`__ for details.
-owncloud__ldap_user_filter: '(|(objectclass=inetOrgPerson))'
+owncloud__ldap_user_filter: '(|
+                               (objectclass=inetOrgPerson)
+                             )'
 
 
 # .. envvar:: owncloud__ldap_user_filter_objectclass
@@ -1365,10 +1367,10 @@ owncloud__ldap_login_filter: '(&
                                   )
                                 )
                                 (|
+                                  (authorizedService=all)
                                   (authorizedService=nextcloud)
                                   (authorizedService=owncloud)
-                                  (authorizedService=web-public)
-                                  (authorizedService=*)
+                                  (authorizedService=web:public)
                                 )
                               )'
 

@@ -48,9 +48,9 @@ control rules:
 
 - objectClass ``authorizedServiceObject``, attribute ``authorizedService``:
 
+  - ``all`` (all services)
   - ``dokuwiki``
-  - ``web-public``
-  - ``*`` (all services)
+  - ``web:public``
 
 LDAP filter definition: :envvar:`dokuwiki__ldap_user_filter`
 

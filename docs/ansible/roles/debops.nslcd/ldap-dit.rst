@@ -23,6 +23,31 @@ Object Classes and Attributes
   - :ref:`debops.nslcd`: :envvar:`Object Classes <nslcd__ldap_self_object_classes>`, :envvar:`Attributes <nslcd__ldap_self_attributes>`
 
 
+.. _nslcd__ref_ldap_dit_access:
+
+Access Control
+--------------
+
+DebOps LDAP environment includes the :ref:`'ldapns' schema <slapd__ref_ldapns>`
+which can be used to define access control rules to services. The lists below
+define the attribute values which will grant access to the service managed by
+the :ref:`debops.nslcd` role, and specifies other roles with the same access
+control rules:
+
+- objectClass ``hostObject``, attribute ``host``:
+
+  - ``posix:all`` (all hosts)
+  - ``posix:hostname.example.org``
+  - ``posix:*.example.org``
+  - ``posix:urn:*`` (see :envvar:`nslcd__ldap_posix_urn` variable)
+
+LDAP filter definition: :envvar:`nslcd__ldap_host_filter`
+
+These rules apply to UNIX accounts (``passwd`` database) as well as UNIX groups
+(``group`` database). UNIX accounts or group without the specified ``host``
+attribute values will not be present on a given host.
+
+
 Parent nodes
 ------------
 
