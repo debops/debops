@@ -52,6 +52,34 @@ resolvconf__base_packages: [ 'resolvconf' ]
 resolvconf__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# Static DNS configuration [[[
+# ----------------------------
+
+# .. envvar:: resolvconf__static_enabled [[[
+#
+# Enable or disable support for static DNS configuration.
+resolvconf__static_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__static_filename [[[
+#
+# Name of the file in the :file:`/run/resolvconf/interface/` directory which
+# contains static DNS configuration. The role will not clean up old files if
+# this name is changed when the configuration is already applied on the host.
+#
+# You can change the interface name "prefix" to affect the order of the search
+# domains in the generated :file:`/etc/resolv.conf` configuration file.
+resolvconf__static_filename: 'lo.static'
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__static_content [[[
+#
+# String or YAML text block with static :man:`resolv.conf(5)` configuration
+# which should be merged into the generated :file:`/etc/resolv.conf`
+# configuration file.
+resolvconf__static_content: ''
+                                                                   # ]]]
+                                                                   # ]]]
 # Network interface order [[[
 # ---------------------------
 
