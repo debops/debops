@@ -9,6 +9,36 @@
   until: resolvconf__register_packages is succeeded
   when: resolvconf__enabled|bool
 
+- name: Generate static configuration script
+  template:
+    src: 'usr/local/lib/resolvconf-static.j2'
+    dest: '/usr/local/lib/resolvconf-static'
+    mode: '0755'
+  notify: [ 'Apply static resolvconf configuration' ]
+  when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
+
+- name: Create systemd override directory
+  file:
+    path: '/etc/systemd/system/resolvconf.service.d'
+    state: 'directory'
+    mode: '0755'
+  when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
+
+- name: Generate systemd service override
+  template:
+    src: 'etc/systemd/system/resolvconf.service.d/static.conf.j2'
+    dest: '/etc/systemd/system/resolvconf.service.d/static.conf'
+    mode: '0644'
+  register: resolvconf__register_systemd
+  when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
+
+- name: Reload systemd daemons
+  systemd:
+    daemon_reload: True
+  when: resolvconf__enabled|bool and resolvconf__static_enabled|bool and
+        ansible_service_mgr == 'systemd' and
+        resolvconf__register_systemd is changed
+
 - name: Divert original interface-order file
   command: dpkg-divert --quiet --local
                        --divert '/etc/resolvconf/interface-order.dpkg-divert'
