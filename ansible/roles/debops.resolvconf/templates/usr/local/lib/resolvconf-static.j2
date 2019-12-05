@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+static_enabled="{{ 'true' if resolvconf__static_content|d() else 'false' }}"
+static_filename="/run/resolvconf/interface/{{ resolvconf__static_filename }}"
+
+reload_resolvconf () {
+    # Don't try to restart resolvconf under systemd if it's not running
+    # This avoids issues with resolvconf starting early during boot
+    if [ -d /run/systemd/system ]; then
+        if [ "$(systemctl is-active resolvconf.service)" = "active" ] ; then
+            resolvconf -u
+        fi
+    else
+        resolvconf -u
+    fi
+}
+
+if [ "${static_enabled}" = "true" ] ; then
+
+    # shellcheck disable=SC1117
+    cat <<EOF > "${static_filename}"
+{{ resolvconf__static_content | regex_replace("\n$","") }}
+EOF
+    reload_resolvconf
+
+else
+
+    if [ -f "${static_filename}" ] ; then
+        rm -f "${static_filename}"
+        reload_resolvconf
+    fi
+
+fi

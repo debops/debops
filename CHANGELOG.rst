@@ -28,6 +28,12 @@ Added
   control over what UNIX accounts and UNIX groups are present on which hosts
   using the ``host`` LDAP attribute.
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- The role can now define static DNS configuration to be merged with other DNS
+  data sources in the :file:`/etc/resolv.conf` configuration file.
+
 Changed
 ~~~~~~~
 
