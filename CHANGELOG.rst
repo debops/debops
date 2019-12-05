@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.2: https://github.com/debops/debops/compare/v1.2.0...stable-1.2
 
+Added
+~~~~~
+
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- The role can now define static DNS configuration to be merged with other DNS
+  data sources in the :file:`/etc/resolv.conf` configuration file.
+
 
 `debops v1.2.0`_ - 2019-12-01
 -----------------------------

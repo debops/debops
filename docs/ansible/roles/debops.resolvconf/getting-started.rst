@@ -5,6 +5,26 @@ Getting started
    :local:
 
 
+Support for static configuration
+--------------------------------
+
+In addition to handling DNS configuration from multiple sources, the role
+supports "static" DNS configuration created via a script. To use it, set the
+:envvar:`resolvconf__static_enabled` variable to ``True``, and specify the
+:man:`resolv.conf(5)` configuration as a string or YAML text block:
+
+.. code-block:: yaml
+
+   resolvconf__static_content: |
+     nameserver 192.0.2.1
+     search example.org example.net
+
+The script will create a file in the :command:`resolvconf` runtime directory,
+by default named :file:`lo.static`, which will merge the specified
+configuration with other DNS sources. The role will also configure
+:command:`systemd` to apply the static configuration on system boot.
+
+
 Example inventory
 -----------------
 
