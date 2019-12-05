@@ -32,7 +32,8 @@ output = loads('''{{ {"configured": False,
                       "uid_gid_max": ldap__uid_gid_max,
                       "home": ldap__home,
                       "shell": ldap__shell,
-                      "host_urn_pattern": ldap__host_urn_pattern
+                      "urn_patterns": (ldap__combined_urn_patterns
+                                       | flatten)
                      } | to_nice_json }}''')
 
 if os.path.exists(config_file) and os.path.isfile(config_file):

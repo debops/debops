@@ -637,15 +637,17 @@ sshd__ldap_bind_pw_file: '/etc/ssh/ldap_authorized_keys_bindpw'
 sshd__ldap_filter: '{{ sshd__ldap_filter_map["service+host"] }}'
 
                                                                    # ]]]
-# .. envvar:: sshd__ldap_posix_urn [[[
+# .. envvar:: sshd__ldap_posix_urns [[[
 #
-# A part of the LDAP filter which matches a ``posix:urn:*`` string stored in
-# the ``host`` attribute which can be used to define where POSIX accounts and
-# groups should be present. The string can be defined with glob-like patterns.
-sshd__ldap_posix_urn: '{{ ansible_local.ldap.host_urn_pattern
-                          if (ansible_local|d() and ansible_local.ldap|d() and
-                              ansible_local.ldap.host_urn_pattern|d())
-                          else "*" }}'
+# List of LDAP search filters which are derived from URN-like patterns defined
+# for a given host in the :ref:`debops.ldap` role.
+# See :ref:`ldap__ref_ldap_access_host` for more details.
+sshd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.urn_patterns|d())
+                            else [])
+                           | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
+                           | list }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_filter_map [[[
@@ -673,7 +675,7 @@ sshd__ldap_filter_map:
                (host=posix:all)
                (host=posix:$fqdn)
                (host=posix:\2a.$domain)
-               (host=posix:urn:{{ sshd__ldap_posix_urn }})
+               {{ sshd__ldap_posix_urns | join(" ") }}
              )
            )'
 
@@ -690,7 +692,7 @@ sshd__ldap_filter_map:
                        (host=posix:all)
                        (host=posix:$fqdn)
                        (host=posix:\2a.$domain)
-                       (host=posix:urn:{{ sshd__ldap_posix_urn }})
+                       {{ sshd__ldap_posix_urns | join(" ") }}
                      )
                    )'
                                                                    # ]]]

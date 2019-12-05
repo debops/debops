@@ -440,14 +440,56 @@ ldap__home: '/home'
 ldap__shell: '/bin/bash'
 
                                                                    # ]]]
-# .. envvar:: ldap__host_urn_pattern [[[
-#
-# Define a short URN-like string which will be used as a LDAP filter for
-# host-based access control. The string can contain glob patterns. This value
-# is available for other Ansible roles via local facts.
-#
+# Host-based access control [[[
+# -----------------------------
+
+# Lists below define URN-like patterns which can be used by other Ansible roles
+# to implement host-based access control. The list of URN patterns defined on
+# a given host is available via Ansible local facts.
 # See :ref:`ldap__ref_ldap_access_host` for more details.
-ldap__host_urn_pattern: '{{ "host:" + ansible_hostname + ":*" }}'
+#
+# The lists are flattened in the fact script, you can use an empty list to
+# enable or disable an URN pattern conditionally.
+
+# .. envvar:: ldap__default_urn_patterns [[[
+#
+# List of the URN-like patterns defined by the role.
+ldap__default_urn_patterns:
+
+  - '{{ ("deploy:" + ansible_local.machine.deployment)
+        if (ansible_local|d() and ansible_local.machine|d() and
+            ansible_local.machine.deployment|d())
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: ldap__urn_patterns [[[
+#
+# List of the URN-like patterns defined on all hosts in the Ansible inventory.
+ldap__urn_patterns: []
+
+                                                                   # ]]]
+# .. envvar:: ldap__group_urn_patterns [[[
+#
+# List of the URN-like patterns defined on hosts in a specific Ansible
+# inventory group.
+ldap__group_urn_patterns: []
+
+                                                                   # ]]]
+# .. envvar:: ldap__host_urn_patterns [[[
+#
+# List of the URN-like patterns defined on specific hosts in the Ansible
+# inventory.
+ldap__host_urn_patterns: []
+
+                                                                   # ]]]
+# .. envvar:: ldap__combined_urn_patterns [[[
+#
+# Variable which combines all other URN pattern lists and is used in role
+# templates.
+ldap__combined_urn_patterns: '{{ ldap__default_urn_patterns
+                                 + ldap__urn_patterns
+                                 + ldap__group_urn_patterns
+                                 + ldap__host_urn_patterns }}'
                                                                    # ]]]
                                                                    # ]]]
 # System-wide LDAP configuration [[[

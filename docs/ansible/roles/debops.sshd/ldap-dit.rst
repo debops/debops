@@ -45,7 +45,7 @@ control rules:
   - ``posix:all`` (all hosts)
   - ``posix:hostname.example.org``
   - ``posix:*.example.org``
-  - ``posix:urn:*`` (see :envvar:`sshd__ldap_posix_urn` variable)
+  - ``posix:urn:<pattern>`` (see :envvar:`sshd__ldap_posix_urns` variable)
 
 LDAP filter definition: :envvar:`sshd__ldap_filter`
 
