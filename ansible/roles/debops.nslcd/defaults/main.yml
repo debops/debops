@@ -125,15 +125,17 @@ nslcd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                                + nslcd__ldap_binddn | to_uuid + ".password length=32") }}'
 
                                                                    # ]]]
-# .. envvar:: nslcd__ldap_posix_urn [[[
+# .. envvar:: nslcd__ldap_posix_urns [[[
 #
-# A part of the LDAP filter which matches a ``posix:urn:*`` string stored in
-# the ``host`` attribute which can be used to define where POSIX accounts and
-# groups should be present. The label can be defined with glob-like patterns.
-nslcd__ldap_posix_urn: '{{ ansible_local.ldap.host_urn_pattern
-                           if (ansible_local|d() and ansible_local.ldap|d() and
-                               ansible_local.ldap.host_urn_pattern|d())
-                           else "*" }}'
+# List of LDAP search filters which are derived from URN-like patterns defined
+# for a given host in the :ref:`debops.ldap` role.
+# See :ref:`ldap__ref_ldap_access_host` for more details.
+nslcd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.urn_patterns|d())
+                             else [])
+                            | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
+                            | list }}'
 
                                                                    # ]]]
 # .. envvar:: nslcd__ldap_host_filter [[[
@@ -146,7 +148,7 @@ nslcd__ldap_host_filter: '(|
                             (host=posix:all)
                             (host=posix:{{ ansible_fqdn }})
                             (host=posix:\2a.{{ ansible_domain }})
-                            (host=posix:urn:{{ nslcd__ldap_posix_urn }})
+                            {{ nslcd__ldap_posix_urns | join(" ") }}
                           )'
                                                                    # ]]]
                                                                    # ]]]

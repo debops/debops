@@ -39,7 +39,7 @@ control rules:
   - ``posix:all`` (all hosts)
   - ``posix:hostname.example.org``
   - ``posix:*.example.org``
-  - ``posix:urn:*`` (see :envvar:`nslcd__ldap_posix_urn` variable)
+  - ``posix:urn:<pattern>`` (see :envvar:`nslcd__ldap_posix_urns` variable)
 
 LDAP filter definition: :envvar:`nslcd__ldap_host_filter`
 

@@ -282,21 +282,21 @@ different DebOps roles to grant access to services. You can check the
 ================ ============================================================
 Access control   Description
 ================ ============================================================
-all              Grants access to all services supported by DebOps. Mutually
+``all``          Grants access to all services supported by DebOps. Mutually
                  exclusive with other access controls.
 ---------------- ------------------------------------------------------------
-mail:access      Grants read/write access to mail account contents through
+``mail:access``  Grants read/write access to mail account contents through
                  a service, for example IMAP or POP3.
 ---------------- ------------------------------------------------------------
-mail:receive     Allows a given mail account to receive e-mail messages via
+``mail:receive`` Allows a given mail account to receive e-mail messages via
                  a service, for example SMTP - the mail account is present in
                  alias and mailbox lookup tables.
 ---------------- ------------------------------------------------------------
-mail:send        Allows a given mail account to send e-mail messages via
+``mail:send``    Allows a given mail account to send e-mail messages via
                  a service, for example SMTP - the mail account is allowed to
                  authenticate to the MTA.
 ---------------- ------------------------------------------------------------
-shell            Grants access to the UNIX environment through a service, for
+``shell``        Grants access to the UNIX environment through a service, for
                  example SSH. To be fully effective, a given LDAP entry also
                  needs to have a corresponding ``host`` attribute with the
                  ``posix:`` value which specifices the hosts on which the
@@ -304,7 +304,7 @@ shell            Grants access to the UNIX environment through a service, for
                  classes (``posixAccount``, ``posixGroup``, ``posixGroupId``).
                  See "Host-based access control" below for more details.
 ---------------- ------------------------------------------------------------
-web:public       Grants access to various web services which are reachable over
+``web:public``   Grants access to various web services which are reachable over
                  public Internet. Different services can also limit access
                  using the ``host`` attribute, consult the specific services
                  for details.
@@ -350,18 +350,26 @@ Then, hosts that should support ``app1`` for both development and production,
 can look for the URN: ``posix:urn:*:app1``. hosts which are meant only for
 development, can look for URN: ``posix:urn:dev:*``, and so on.
 
-The default glob pattern used by hosts is defined in the
-:envvar:`ldap__host_urn_pattern` variable and can be accessed by other Ansible
-roles via ``ansible_local.ldap.host_urn_pattern`` local fact. The default URN
-pattern defined by the role is:
+The glob patterns used by DebOps are defined in the ``ldap__*_urn_patterns``
+variables and can be accessed by other Ansible roles via
+``ansible_local.ldap.urn_patterns`` local fact. The default URN pattern defined
+by the :ref:`debops.ldap` role is:
 
-- ``host:<hostname>:*``
+- ``deploy:<deployment>``
 
-This should match all URNs that specify the hostname with any other identifier
-defined as a suffix, for example a value that defines a POSIX account on the
-``server1`` host:
+The ``<deployment>`` is set using :ref:`debops.machine` role Ansible local
+facts and can be set as ``development``, ``integration``, ``staging`` or
+``production``. POSIX accounts or groups which define a specific URN-like
+string will be present on a specific set of hosts. For example, to ensure that
+a given UNIX account is present on production hosts, add the ``host`` attribute
+with value:
 
-- ``posix:urn:host:server1:any``
+- ``posix:urn:deploy:production``
+
+By default any URN-like pattern that matches a given LDAP entry will be
+included in search result. To change that and, for example, match both URN
+pattern and specific host/domain, you need to edit the LDAP search filters in
+the roles that use them.
 
 
 Examples of LDAP search queries
@@ -400,19 +408,20 @@ This paragraph lists various ``host`` values which are used by different DebOps
 roles to grant access on a per-host basis. You can check the
 :ref:`ldap__ref_dit` to find what DebOps roles use which access control.
 
-================== ============================================================
-Access control     Description
-================== ============================================================
-posix:all          A given POSIX account or POSIX group will be present on all
-                   hosts in the cluster.
------------------- ------------------------------------------------------------
-posix:<fqdn>       A given POSIX account or POSIX group will be present on
-                   a specific host defined by its FQDN name.
------------------- ------------------------------------------------------------
-posix:\*.<domain>  A given POSIX account or POSIX group will be present on
-                   a specific host defined by its domain name (``*.`` prefix is
-                   required).
------------------- ------------------------------------------------------------
-posix:urn:*        A given POSIX account or POSIX group will be present on
-                   hosts which look for a defined Uniform Resource Name.
-================== ============================================================
+======================= ============================================================
+Access control          Description
+======================= ============================================================
+``posix:all``           A given POSIX account or POSIX group will be present on all
+                        hosts in the cluster.
+----------------------- ------------------------------------------------------------
+``posix:<fqdn>``        A given POSIX account or POSIX group will be present on
+                        a specific host defined by its FQDN name.
+----------------------- ------------------------------------------------------------
+``posix:*.<domain>``    A given POSIX account or POSIX group will be present on
+                        a specific host defined by its domain name (``*.`` prefix is
+                        required).
+----------------------- ------------------------------------------------------------
+``posix:urn:<pattern>`` A given POSIX account or POSIX group will be present on
+                        hosts which look for a defined Uniform Resource Name
+                        pattern.
+======================= ============================================================
