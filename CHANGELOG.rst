@@ -27,6 +27,15 @@ Added
 - The role can now define static DNS configuration to be merged with other DNS
   data sources in the :file:`/etc/resolv.conf` configuration file.
 
+Fixed
+~~~~~
+
+Global
+''''''
+
+- The :file:`postldap.yml` playbook has been included in the global
+  :file:`site.yml` playbook.
+
 
 `debops v1.2.0`_ - 2019-12-01
 -----------------------------
