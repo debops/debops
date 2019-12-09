@@ -57,6 +57,20 @@ LDAP
                                                 for more details.
   =================== ========================= =================================
 
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- A few of the default variables in the :ref:`debops.dovecot` role have been
+  renamed:
+
+  +---------------------------+---------------------------------------+---------------+
+  | Old variable name         | New variable name                     | Changed value |
+  +===========================+=======================================+===============+
+  | ``dovecot_ssl_protocols`` | :envvar:`dovecot_ssl_min_protocol`    | No            |
+  +---------------------------+---------------------------------------+---------------+
+  | ``dovecot_firewall``      | Removed, see "Firewall configuration" | No            |
+  +---------------------------+---------------------------------------+---------------+
+
 
 v1.2.0 (2019-12-01)
 -------------------
