@@ -92,9 +92,12 @@ special ``debops.pki/env`` role provided within the main role.
 
 .. literalinclude:: ../../../../ansible/playbooks/service/pki.yml
    :language: yaml
-   
+
+
+.. _pki__ref_realm_renewal:
+
 Renewing Certificates
-------------------------
+---------------------
 
 For renewing certificates, just
 
