@@ -38,6 +38,17 @@ dovecot_auth_mechanisms: [ 'plain', 'login' ]
 #
 # Should the Dovecot role manage it's own dependencies?
 dovecot_dependencies: True
+
+                                                                   # ]]]
+# .. envvar:: dovecot__version [[[
+#
+# Variable which specifies what Dovecot version is installed on the host. It is
+# defined via Ansible local facts and can be used in conditions to modify the
+# configuration as needed.
+dovecot__version: '{{ ansible_local.dovecot.version
+                      if (ansible_local|d() and ansible_local.dovecot|d() and
+                          ansible_local.dovecot.version|d())
+                      else "0.0.0" }}'
                                                                    # ]]]
                                                                    # ]]]
 # User database/mailbox configuration [[[
