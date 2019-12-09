@@ -200,7 +200,8 @@ LDAP
 
   Existing PKI realms will not be modified, but Ansible roles that use the PKI
   infrastructure might expect the new files to be present. It is advisable to
-  recreate the PKI realms when possible, or create the missing files manually.
+  :ref:`recreate the PKI realms <pki__ref_realm_renewal>` when possible, or
+  create the missing files manually.
 
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
