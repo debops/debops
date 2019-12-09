@@ -11,7 +11,9 @@
     - '{{ postgresql_server__clusters }}'
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d()
+  when:
+    - item.name|d()
+    - item.standby is not defined
   no_log: True
 
 - name: Grant connect on postgres to PUBLIC
@@ -26,7 +28,9 @@
     - '{{ postgresql_server__clusters }}'
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d()
+  when:
+    - item.name|d()
+    - item.standby is not defined
 
 - name: Revoke temporary on postgres from PUBLIC
   postgresql_privs:
@@ -40,4 +44,6 @@
     - '{{ postgresql_server__clusters }}'
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
-  when: item.name|d()
+  when:
+    - item.name|d()
+    - item.standby is not defined
