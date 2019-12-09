@@ -13,6 +13,14 @@ service using the certificates provided by `ansible-pki`_. It will further use t
 and 993 (IMAPS). Every user account which is able to login via PAM, can then also
 login via IMAP and access its mails stored as an mbox file in ``/var/mail/<username>``.
 
+LDAP support
+------------
+
+When the :ref:`LDAP environment <debops.ldap>` is configured on a host, the
+``debops.dovecot`` role will automatically switch from system account
+authentication to LDAP-based accounts.
+
+
 Example inventory
 -----------------
 

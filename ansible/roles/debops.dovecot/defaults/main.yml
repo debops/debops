@@ -64,7 +64,9 @@ dovecot__version: '{{ ansible_local.dovecot.version
 # - ``ldap``: Mail users are stored in an LDAP directory
 # - ``passwdfile``: Users password are stored in a file
 #
-dovecot_user_accounts: [ 'deny', 'system' ]
+dovecot_user_accounts: '{{ [ "deny", "ldap" ]
+                           if dovecot__ldap_enabled|bool
+                           else [ "deny", "system" ] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_deny_users [[[
