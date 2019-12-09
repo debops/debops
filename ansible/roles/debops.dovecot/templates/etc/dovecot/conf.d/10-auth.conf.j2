@@ -21,6 +21,10 @@ disable_plaintext_auth=no
 
 auth_mechanisms = {{ " ".join(dovecot_auth_mechanisms) }}
 
+# Default realm/domain to use if none was specified. This is used for both
+# SASL realms and appending @domain to username in plaintext logins.
+auth_default_realm = {{ dovecot__auth_default_realm }}
+
 ##
 ## Password and user databases
 ##
@@ -36,6 +40,9 @@ auth_mechanisms = {{ " ".join(dovecot_auth_mechanisms) }}
 {% endif %}
 {% if 'sql' in dovecot_user_accounts %}
 !include auth-sql.conf.ext
+{% endif %}
+{% if 'ldap' in dovecot_user_accounts %}
+    !include auth-ldap.conf.ext
 {% endif %}
 {% if 'passwdfile' in dovecot_user_accounts %}
 !include auth-passwdfile.conf.ext

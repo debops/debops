@@ -20,19 +20,26 @@ ssl = yes
 
 # Prefer the server's order of ciphers over client's. (Dovecot >=2.2.6 Required)
 ssl_prefer_server_ciphers = yes
-
-# Diffie-Hellman parameters length (Default is 1024, Dovecot >=2.2.7 Required)
-ssl_dh_parameters_length = {{ dovecot_ssl_dh_parameters_length }}
-
+    
 {% set dovecot_tpl_tls_cert_file    = dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_crt %}
 {% set dovecot_tpl_tls_key_file     = dovecot_pki_path + "/" + dovecot_pki_realm + "/" + dovecot_pki_key %}
 ssl_cert    = <{{ dovecot_tpl_tls_cert_file }}
 ssl_key     = <{{ dovecot_tpl_tls_key_file }}
-{% if ansible_distribution_release in [ "wheezy", "jessie", "precise", "trusty", "bionic" ] %}
-ssl_protocols   = {{ dovecot_ssl_protocols }}
+
+ssl_client_ca_dir = /etc/ssl/certs
+
+{% if dovecot__version is version("2.3.0", "<") %}
+ssl_protocols   = {{ dovecot_ssl_min_protocol }}
+
+# Diffie-Hellman parameters length (Default is 1024, Dovecot >=2.2.7 Required, Since v2.3.3+ Diffie-Hellman parameters have been made optional)
+ssl_dh_parameters_length = {{ dovecot_ssl_dh_parameters_length }}
 {% else %}
-ssl_min_protocol = {{ dovecot_ssl_protocols }}
+ssl_min_protocol = {{ dovecot_ssl_min_protocol }}
+
+# Diffie-Hellman Parameters for SSL
+ssl_dh =< {{ dovecot__ssl_dh_file }}
 {% endif %}
+
 ssl_cipher_list = {{ dovecot_ssl_cipher_list }}
 {% else %}
 ssl = no

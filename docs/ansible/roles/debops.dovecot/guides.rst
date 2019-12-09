@@ -1,6 +1,13 @@
 Guides and examples
 ===================
 
+
+Check Dovecot IMAP config is running
+------------------------------------
+
+Take a look at the official Dovecot documentation on how to test an IMAP connection, Auth and Inbox listing. 
+See `Test Dovecot Installation <https://wiki2.dovecot.org/TestInstallation>`_.
+
 Using maildir mail storage format
 ---------------------------------
 

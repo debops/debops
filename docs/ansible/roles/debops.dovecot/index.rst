@@ -11,6 +11,7 @@ debops.dovecot
    defaults/main
    defaults-detailed
    guides
+   ldap-dit
    copyright
 
 ..

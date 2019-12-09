@@ -47,6 +47,30 @@ LDAP
   entries that use them before applying these changes on the hosts managed by
   DebOps. See :ref:`upgrade_notes` for detailed list of changed values.
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role gained support for mail accounts stored in the LDAP directory, based
+  on the :ref:`DebOps LDAP infrastructure <debops.ldap>`. When the LDAP
+  environment is detected on the host, the LDAP support will be enabled
+  automatically, and mail accounts based on POSIX accounts will be disabled.
+
+- The default mailbox format used by Dovecot has been changed from ``mbox`` to
+  Maildir; the user mailboxes will be stored by default in the
+  :file:`~/Maildir/` subdirectory of a given user account. On existing
+  installations, the mailboxes might need to be converted and moved manually.
+
+- Dovecot will use the host DNS domain as the default SASL realm when users
+  will not specify their domain in their login username.
+
+- The role should better integrate with the :ref:`DebOps PKI environment
+  <debops.pki>` and gracefully disable TLS support when it has not been
+  configured.
+
+- The firewall configuration has been redesigned and the :ref:`debops.dovecot`
+  role no longer generates the :command:`ferm` configuration files directly,
+  instead using the :ref:`debops.ferm` role as a dependency.
+
 Removed
 ~~~~~~~
 
@@ -176,7 +200,8 @@ LDAP
 
   Existing PKI realms will not be modified, but Ansible roles that use the PKI
   infrastructure might expect the new files to be present. It is advisable to
-  recreate the PKI realms when possible, or create the missing files manually.
+  :ref:`recreate the PKI realms <pki__ref_realm_renewal>` when possible, or
+  create the missing files manually.
 
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
