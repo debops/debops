@@ -678,9 +678,8 @@ dovecot__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
 # used by Postfix and Dovecot.
 dovecot__ldap_people_dn: '{{ [ dovecot__ldap_people_rdn ]
                                + dovecot__ldap_base_dn }}'
-
                                                                    # ]]]
-
+                                                                   # ]]]
 # LDAP connection options [[[
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -693,6 +692,7 @@ dovecot__ldap_uri: '{{ ansible_local.ldap.uri
                          ansible_local.ldap.uri|d())
                        else [""] }}'
 
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_server_port [[[
 #
 # The TCP port which should be used for connections to the LDAP server.
@@ -710,8 +710,7 @@ dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls
                              if (ansible_local|d() and ansible_local.ldap|d() and
                                 (ansible_local.ldap.start_tls|d())|bool)
                              else True }}'
-
-  # ]]]
+                                                                   # ]]]
                                                                    # ]]]
 # LDAP settings [[[
 # ^^^^^^^^^^^^^^^^^
@@ -753,22 +752,22 @@ dovecot__ldap_default_config: []
 # List of custom LDAP configuration options defined for all hosts
 # in the Ansible inventory.
 dovecot__ldap_config: []
-                                                                   # ]]]
 
+                                                                   # ]]]
 # .. envvar:: dovecot__group_ldap_config [[[
 #
 # List of custom LDAP configuration options defined on hosts in
 # a specific Ansible inventory group.
 dovecot__group_ldap_config: []
-                                                                   # ]]]
 
+                                                                   # ]]]
 # .. envvar:: dovecot__host_ldap_config [[[
 #
 # List of custom LDAP configuration options defined on specific
 # hosts in the Ansible inventory.
 dovecot__host_ldap_config: []
-                                                                   # ]]]
 
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_combined_config [[[
 #
 # The variable that combines default and user LDAP configuration and is used in
@@ -778,6 +777,11 @@ dovecot__ldap_combined_config: '{{ dovecot__ldap_default_config
                                    + dovecot__group_ldap_config
                                    + dovecot__host_ldap_config }}'
                                                                    # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
 # .. envvar:: dovecot__ldap__dependent_tasks [[[
 #
 # Configuration for the :ref:`debops.ldap` Ansible role.
@@ -793,12 +797,6 @@ dovecot__ldap__dependent_tasks:
                 else "ignore" }}'
 
                                                                    # ]]]
-                                                                   # ]]]
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# -----------------------------------------
-
 # .. envvar:: dovecot__postfix__dependent_maincf [[[
 #
 # The :file:`main.cf` configuration for ``debops.postfix`` Ansible role.
@@ -814,7 +812,7 @@ dovecot__postfix__dependent_maincf:
 # The :file:`master.cf` configuration for ``debops.postfix`` Ansible role.
 dovecot__postfix__dependent_mastercf: []
                                                                    # ]]]
-# .. envvar:: dovecot_server__ferm__dependent_rules [[[
+# .. envvar:: dovecot__ferm__dependent_rules [[[
 #
 # Configuration for :ref:`debops.ferm` Ansible role.
 dovecot__ferm__dependent_rules:
@@ -871,6 +869,6 @@ dovecot__ferm__dependent_rules:
                     if ("managesieve" in dovecot_protocols|d([])
                          and dovecot_pki|d(True))
                     else "absent" }}'
-
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
