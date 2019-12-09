@@ -13,6 +13,9 @@
     - role: debops.postfix/env
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
 
+    - role: debops.dovecot/env
+      tags: [ 'role::dovecot', 'role::secret', 'role::ferm' ]
+
     - role: debops.secret
       tags: [ 'role::secret', 'role::postfix' ]
       secret__directories:
@@ -21,7 +24,7 @@
     - role: debops.ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
-        - '{{ postfix__ferm__dependent_rules }}'
+        - '{{ dovecot__ferm__dependent_rules }}'
 
     - role: debops.postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
@@ -31,6 +34,11 @@
       postfix__dependent_mastercf:
         - role: 'dovecot'
           config: '{{ dovecot__postfix__dependent_mastercf }}'
+
+    - role: debops.ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ dovecot__ldap__dependent_tasks }}'
 
     - role: debops.dovecot
       tags: [ 'role::dovecot', 'skip::dovecot' ]

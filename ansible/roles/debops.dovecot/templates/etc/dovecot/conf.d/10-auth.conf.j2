@@ -37,6 +37,9 @@ auth_mechanisms = {{ " ".join(dovecot_auth_mechanisms) }}
 {% if 'sql' in dovecot_user_accounts %}
 !include auth-sql.conf.ext
 {% endif %}
+{% if 'ldap' in dovecot_user_accounts %}
+    !include auth-ldap.conf.ext
+{% endif %}
 {% if 'passwdfile' in dovecot_user_accounts %}
 !include auth-passwdfile.conf.ext
 {% endif %}

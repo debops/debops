@@ -1,0 +1,32 @@
+# {{ ansible_managed }}
+
+debug_level = 0
+
+uris = {{ dovecot__ldap_uri|join(",") }}
+ldap_version = 3
+
+tls = '{{ "yes"
+        if (dovecot__ldap_start_tls|bool)
+        else "no" }}'
+tls_ca_cert_dir = {{ dovecot__tls_ca_cert_dir }}
+tls_require_cert = hard
+
+## Passdb LDAP with authentication binds
+# LDAP server verifies the password, so Dovecot doesn't need to know what
+# format the password is stored in. A bit more secure, as a security hole
+# in Dovecot doesn't give attacker access to all the users' password hashes.
+# (And Dovecot admins in general don't have direct access to them.)
+auth_bind = yes
+
+scope = subtree
+base = {{ dovecot__ldap_people_dn|join(",") }}
+dn = {{ dovecot__ldap_binddn }}
+dnpass = {{ dovecot__ldap_bindpw }}
+
+user_attrs = \
+    uid=%u,\
+    mailQuota=quota_rule=*:bytes=%{ldap:{{ dovecot__ldap_quota_attribute }}}:storage=%$,\
+    mailGroupACL=acl_groups,\
+    mailExpungeTrash=namespace/inbox/mailbox/Trash/autoexpunge
+
+user_filter = {{ dovecot__ldap_user_filter }}
