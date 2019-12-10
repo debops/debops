@@ -97,6 +97,11 @@ LDAP
   deployment path. Checking the changes in a development environment is
   recommended before deploying them in production environment.
 
+- The role will use DNS SRV resource records to find the IMAP and/or SMTP
+  (submission) services to use in the RoundCube Webmail configuration, with
+  a fallback to static subdomains. See :ref:`roundcube__ref_srv_records` for
+  more details.
+
 Removed
 ~~~~~~~
 

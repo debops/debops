@@ -253,6 +253,44 @@ roundcube__domain: '{{ ansible_local.core.domain
                        else ansible_domain }}'
 
                                                                    # ]]]
+# .. envvar:: roundcube__imap_srv_rr [[[
+#
+# List which contains the result of the :command:`dig` query for IMAP server
+# ``SRV`` resource records in the host's domain. See :rfc:`6186` for details.
+roundcube__imap_srv_rr: '{{ q("dig", "_imaps._tcp." + roundcube__domain + "./SRV", "flat=0") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__imap_fqdn [[[
+#
+# The FQDN address of the IMAP server which stores user mailboxes. By default
+# the host is located using DNS SRV resource records; if there are none, role
+# checks if a local Dovecot installation is present and uses the host FQDN as
+# the IMAP server address. Finally, the static ``imap.<domain>`` is used.
+#
+# Use of FQDN instead of ``localhost`` is required for X.509 certificate
+# verification and for correct information in system logs.
+roundcube__imap_fqdn: '{{ (roundcube__imap_srv_rr | selectattr("target", "defined")
+                           | map(attribute="target")
+                           | map("regex_replace", "\.$","")
+                           | list | first)
+                          if ("NXDOMAIN" not in roundcube__imap_srv_rr and
+                              roundcube__imap_srv_rr[0])
+                          else (ansible_fqdn
+                                if (ansible_local|d() and ansible_local.dovecot|d() and
+                                    (ansible_local.dovecot.installed|d())|bool)
+                                else ("imap." + roundcube__domain)) }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__imap_port [[[
+#
+# TCP port used for IMAP connections
+roundcube__imap_port: '{{ (roundcube__imap_srv_rr | selectattr("target", "defined")
+                           | map(attribute="port") | list | sort | first)
+                          if ("NXDOMAIN" not in roundcube__imap_srv_rr and
+                              roundcube__imap_srv_rr[0])
+                          else "993" }}'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__imap_server [[[
 #
 # The IMAP host chosen to perform the log-in.
@@ -267,13 +305,56 @@ roundcube__domain: '{{ ansible_local.core.domain
 # %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 # %s - domain name after the '@' from e-mail address provided at login screen
 # For example %n = mail.domain.tld, %t = domain.tld
-roundcube__imap_server: 'localhost'
+roundcube__imap_server: '{{ ("ssl://"
+                             if (roundcube__imap_port == "993")
+                             else ("tls://"
+                                   if (roundcube__imap_port == "143")
+                                   else "tls://"))
+                             + roundcube__imap_fqdn }}'
 
                                                                    # ]]]
-# .. envvar:: roundcube__imap_port [[[
+# .. envvar:: roundcube__smtp_srv_rr [[[
 #
-# TCP port used for IMAP connections
-roundcube__imap_port: '143'
+# List which contains the result of the :command:`dig` query for SMTP
+# (submission) server ``SRV`` resource records in the host's domain. See
+# :rfc:`6186` for details.
+roundcube__smtp_srv_rr: '{{ q("dig", "_submissions._tcp." + roundcube__domain + "./SRV", "flat=0") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_fqdn [[[
+#
+# The FQDN address of the SMTP (submission) server which will be used to send
+# e-mail messages. By default the host is located using DNS SRV resource
+# records; if there are none, role checks if a local Postfix installation is
+# present and uses the host FQDN as the SMTP (submission) server address.
+# Finally, the static ``smtp.<domain>`` is used.
+#
+# Use of FQDN instead of ``localhost`` is required for X.509 certificate
+# verification and for correct information in system logs.
+roundcube__smtp_fqdn: '{{ (roundcube__smtp_srv_rr | selectattr("target", "defined")
+                           | map(attribute="target")
+                           | map("regex_replace", "\.$","")
+                           | list | first)
+                          if ("NXDOMAIN" not in roundcube__smtp_srv_rr and
+                              roundcube__smtp_srv_rr[0])
+                          else (ansible_fqdn
+                                if (ansible_local|d() and ansible_local.postfix|d() and
+                                    (ansible_local.postfix.installed|d())|bool)
+                                else ("smtp." + roundcube__domain)) }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_port [[[
+#
+# SMTP port.
+#
+# SMTP port (default is 25; use 587 for STARTTLS or 465 for the
+# deprecated SSL over SMTP (aka SMTPS))
+roundcube__smtp_port: '{{ (roundcube__smtp_srv_rr | selectattr("target", "defined")
+                           | map(attribute="port") | list | sort | first)
+                          if ("NXDOMAIN" not in roundcube__smtp_srv_rr and
+                              roundcube__smtp_srv_rr[0])
+                          else "465" }}'
+
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_server [[[
 #
@@ -288,16 +369,12 @@ roundcube__imap_port: '143'
 # %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 # %z - IMAP domain (IMAP hostname without the first part)
 # For example %n = mail.domain.tld, %t = domain.tld
-roundcube__smtp_server: 'localhost'
-
-                                                                   # ]]]
-# .. envvar:: roundcube__smtp_port [[[
-#
-# SMTP port.
-#
-# SMTP port (default is 25; use 587 for STARTTLS or 465 for the
-# deprecated SSL over SMTP (aka SMTPS))
-roundcube__smtp_port: '25'
+roundcube__smtp_server: '{{ ("ssl://"
+                             if (roundcube__smtp_port == "465")
+                             else ("tls://"
+                                   if (roundcube__smtp_port == "587")
+                                   else "tls://"))
+                             + roundcube__smtp_fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_user [[[
