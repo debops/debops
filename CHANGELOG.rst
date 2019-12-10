@@ -102,6 +102,17 @@ LDAP
   a fallback to static subdomains. See :ref:`roundcube__ref_srv_records` for
   more details.
 
+- RoundCube will use the user login and password credentials to authenticate to
+  the SMTP (submission) service before sending e-mail messages. This allows the
+  SMTP server to check the message details, block mail with forged sender
+  address, etc. The default configuration uses encrypted connections to the
+  IMAP and SMTP services to ensure confidentiality and security.
+
+- User logins that don't specify a domain will have the host domain
+  automatically appended to them during authentication. This solves an issue
+  where use of logins with or without domain for authentication would result in
+  separate RoundCube profiles created in the database.
+
 Removed
 ~~~~~~~
 

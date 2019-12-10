@@ -381,14 +381,14 @@ roundcube__smtp_server: '{{ ("ssl://"
 #
 # SMTP username (if required) if you use %u as the username Roundcube will
 # use the current username for login.
-roundcube__smtp_user: ''
+roundcube__smtp_user: '%u'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_pass [[[
 #
 # SMTP password (if required) if you use %p as the password Roundcube will
 # use the current user's password for login.
-roundcube__smtp_pass: ''
+roundcube__smtp_pass: '%p'
 
                                                                    # ]]]
 # .. envvar:: roundcube__product_name [[[
@@ -402,6 +402,16 @@ roundcube__product_name: 'Roundcube Webmail'
 # Encryption key for the users imap password which is stored in the session
 # record (and the client cookie if remember password is enabled).
 roundcube__des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/des_key chars=hexdigits length=24") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__username_domain [[[
+#
+# Specify a domain (realm) to add to usernames without a specified domain.
+# Defining a default domain helps avoid creating separate RoundCube profiles
+# when users use logins with and without a domain specified.
+#
+# The default is to create a domain based on the host DNS domain.
+roundcube__username_domain: '%d'
 
                                                                    # ]]]
 # .. envvar:: roundcube__local_config_map [[[
