@@ -22,9 +22,6 @@
     - role: debops.php/env
       tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
 
-    - role: debops.roundcube/env
-      tags: [ 'role::roundcube', 'role::roundcube:env', 'role::nodejs' ]
-
     - role: debops.apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences',
               'role::nginx', 'role::php', 'role::nodejs' ]
@@ -62,7 +59,7 @@
     - role: debops.nodejs
       tags: [ 'role::nodejs', 'skip::nodejs' ]
       nodejs__npm_dependent_packages:
-        - '{{ roundcube__nodejs_npm__dependent_packages }}'
+        - '{{ roundcube__nodejs__npm_dependent_packages }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
