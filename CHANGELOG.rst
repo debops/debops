@@ -80,6 +80,14 @@ LDAP
   role no longer generates the :command:`ferm` configuration files directly,
   instead using the :ref:`debops.ferm` role as a dependency.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The variable that defines the FQDN address of the RoundCube installation has
+  been changed from :envvar:`roundcube__domain` to :envvar:`roundcube__fqdn`.
+  The default subdomain has also been changed from ``roundcube`` to ``webmail``
+  to offer a more widely used name for the application.
+
 Removed
 ~~~~~~~
 

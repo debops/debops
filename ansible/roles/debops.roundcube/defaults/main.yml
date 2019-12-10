@@ -239,10 +239,20 @@ roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sq
 # Roundcube application options [[[
 # ---------------------------------
 
+# .. envvar:: roundcube__fqdn [[[
+#
+# The default DNS address of the RoundCube web application, used in the HTTP
+# server configuration.
+roundcube__fqdn: 'webmail.{{ roundcube__domain }}'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__domain [[[
 #
-# String or List of domains which will be used to access the roundcube instance.
-roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
+# The DNS domain of the RoundCube installation.
+roundcube__domain: '{{ ansible_local.core.domain
+                       if (ansible_local|d() and ansible_local.core|d() and
+                           ansible_local.core.domain|d())
+                       else ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__imap_server [[[
@@ -405,7 +415,7 @@ roundcube__max_file_size: '30'
 # :program:`nginx` server configuration managed by the debops.nginx_ role.
 roundcube__nginx__dependent_servers:
 
-  - name: '{{ roundcube__domain }}'
+  - name: '{{ roundcube__fqdn }}'
     filename: 'debops.roundcube'
     by_role: 'debops.roundcube'
     type: 'php'

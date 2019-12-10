@@ -15,7 +15,7 @@ Default setup
 
 If you don't specify any configuration values, the role will setup a Nginx_
 HTTP server running a default installation of the latest Roundcube stable
-release which is then accessible via ``https://roundcube.<your-domain>``.
+release which is then accessible via ``https://webmail.<your-domain>``.
 SQLite is used as database backend for storing the user settings.
 
 
