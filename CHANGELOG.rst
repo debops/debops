@@ -88,6 +88,15 @@ LDAP
   The default subdomain has also been changed from ``roundcube`` to ``webmail``
   to offer a more widely used name for the application.
 
+- The default RoundCube installation path defined in the
+  :envvar:`roundcube__git_checkout` variable has been changed and no longer
+  uses the web application FQDN. This should make changing the web application
+  address independent from the installation directory.
+
+  Due to this change, existing installations will be re-installed in the new
+  deployment path. Checking the changes in a development environment is
+  recommended before deploying them in production environment.
+
 Removed
 ~~~~~~~
 
