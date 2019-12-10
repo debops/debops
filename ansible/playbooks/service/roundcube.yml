@@ -11,20 +11,27 @@
   roles:
 
     - role: debops.keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::php', 'role::nginx', 'role::mariadb' ]
+      tags: [ 'role::keyring', 'skip::keyring',
+              'role::php', 'role::nodejs', 'role::nginx', 'role::mariadb' ]
       keyring__dependent_apt_keys:
         - '{{ php__keyring__dependent_apt_keys }}'
+        - '{{ nodejs__keyring__dependent_apt_keys }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
         - '{{ mariadb__keyring__dependent_apt_keys }}'
 
     - role: debops.php/env
       tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
 
+    - role: debops.roundcube/env
+      tags: [ 'role::roundcube', 'role::roundcube:env', 'role::nodejs' ]
+
     - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::nginx', 'role::php' ]
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences',
+              'role::nginx', 'role::php', 'role::nodejs' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ php__apt_preferences__dependent_list }}'
+        - '{{ nodejs__apt_preferences__dependent_list }}'
 
     - role: debops.logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
@@ -51,6 +58,11 @@
         - '{{ roundcube__php__dependent_packages }}'
       php__dependent_pools:
         - '{{ roundcube__php__dependent_pools }}'
+
+    - role: debops.nodejs
+      tags: [ 'role::nodejs', 'skip::nodejs' ]
+      nodejs__npm_dependent_packages:
+        - '{{ roundcube__nodejs_npm__dependent_packages }}'
 
     - role: debops.nginx
       tags: [ 'role::nginx', 'skip::nginx' ]

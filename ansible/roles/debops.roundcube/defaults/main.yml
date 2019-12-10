@@ -137,7 +137,7 @@ roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")
 # .. envvar:: roundcube__git_version [[[
 #
 # Roundcube release tag to deploy.
-roundcube__git_version: '1.3.0'
+roundcube__git_version: '1.4.0'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_checkout [[[
@@ -245,21 +245,50 @@ roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sq
 roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
 
                                                                    # ]]]
-# .. envvar:: roundcube__default_host [[[
+# .. envvar:: roundcube__imap_server [[[
 #
-# Mail host chosen to perform the log-in.
-roundcube__default_host: 'localhost'
+# The IMAP host chosen to perform the log-in.
+# This variable is also called `default_server` by Roundcube  .
+#
+# Leave blank to show a textbox at login, give a list of hosts
+# to display a pulldown menu or set one host as string.
+# To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
+# Supported replacement variables:
+# %n - hostname ($_SERVER['SERVER_NAME'])
+# %t - hostname without the first part
+# %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+# %s - domain name after the '@' from e-mail address provided at login screen
+# For example %n = mail.domain.tld, %t = domain.tld
+roundcube__imap_server: 'localhost'
 
+                                                                   # ]]]
+# .. envvar:: roundcube__imap_port [[[
+#
+# TCP port used for IMAP connections
+roundcube__imap_port: '143'
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_server [[[
 #
 # SMTP server host (for sending mails).
-roundcube__smtp_server: ''
+#
+# Enter hostname with prefix tls:// to use STARTTLS, or use
+# prefix ssl:// to use the deprecated SSL over SMTP (aka SMTPS)
+# Supported replacement variables:
+# %h - user's IMAP hostname
+# %n - hostname ($_SERVER['SERVER_NAME'])
+# %t - hostname without the first part
+# %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+# %z - IMAP domain (IMAP hostname without the first part)
+# For example %n = mail.domain.tld, %t = domain.tld
+roundcube__smtp_server: 'localhost'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_port [[[
 #
 # SMTP port.
+#
+# SMTP port (default is 25; use 587 for STARTTLS or 465 for the
+# deprecated SSL over SMTP (aka SMTPS))
 roundcube__smtp_port: '25'
 
                                                                    # ]]]
@@ -275,6 +304,12 @@ roundcube__smtp_user: ''
 # SMTP password (if required) if you use %p as the password Roundcube will
 # use the current user's password for login.
 roundcube__smtp_pass: ''
+
+                                                                   # ]]]
+# .. envvar:: roundcube__product_name [[[
+#
+#  Name your service. This is displayed on the login screen and in the window title
+roundcube__product_name: 'Roundcube Webmail'
 
                                                                    # ]]]
 # .. envvar:: roundcube__des_key [[[
@@ -316,6 +351,42 @@ roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', '
 # the plugins shipped by default.
 roundcube__plugins: []
                                                                    # ]]]
+# .. envvar:: roundcube__log_driver [[[
+#
+# Define the log driver:
+  # Currently available:
+  #
+  # - syslog [default]
+  # - stdout
+  # - stdout
+  #
+roundcube__log_driver: 'syslog'
+                                                                   # ]]]
+                                                                   # ]]]
+# Skins [[[
+# -------------------
+
+# .. envvar:: roundcube__skin_folder [[[
+#
+# skin name: folder from `/skins <https://github.com/roundcube/roundcubemail/tree/1.4.0/skins>`_
+# Currently available:
+#
+# - classic
+# - elastic [default] (mobile-ready, requires nodejs dependency, due to CSS-LESS syntax)
+# - larry
+#
+roundcube__skin_folder: 'elastic'
+                                                                   # ]]]
+# .. envvar:: roundcube__skin_logo [[[
+#
+# Logo image replacement. Specifies location of the image as:
+#
+# - URL relative to the document root of this Roundcube installation
+# - full URL with http:// or https:// prefix
+# - URL relative to the current skin folder (when starts with a '/')
+#
+roundcube__skin_logo: 'null'
+                                                                   # ]]]
                                                                    # ]]]
 # Other variables [[[
 # -------------------
@@ -355,7 +426,7 @@ roundcube__nginx__dependent_servers:
 
       - pattern: '@roundcube'
         options: |
-          rewrite ^/favicon\.ico$ skins/larry/images/favicon.ico last;
+          rewrite ^/favicon\.ico$ skins/{{ roundcube__skin_folder }}/images/favicon.ico last;
 
       - pattern: '~ ^/?(installer|[A-Z0-9]+$)'
         options: |
@@ -435,6 +506,13 @@ roundcube__php__dependent_pools:
     magic_quotes_sybase:        'off'
     session.auto_start:         'off'
     suhosin.session.encrypt:    'off'
+                                                                   # ]]]
+# .. envvar:: roundcube__nodejs_npm__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.nodejs` Ansible role.
+roundcube__nodejs_npm__dependent_packages:
+  # Dependency for the 'elastic' skin to compile the CSS files
+  - 'less'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

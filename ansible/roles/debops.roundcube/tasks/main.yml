@@ -1,7 +1,7 @@
 ---
 
 - name: Pre hooks
-  include: '{{ lookup("task_src", "roundcube/pre_main.yml") }}'
+  include_tasks: '{{ lookup("task_src", "roundcube/pre_main.yml") }}'
 
 
 # ---- Environment ----
@@ -47,9 +47,13 @@
   until: roundcube__register_packages is succeeded
   tags: [ 'role::roundcube:pkg' ]
 
-- include: deploy_roundcube.yml
+- include_tasks: deploy_roundcube.yml
   tags: [ 'role::roundcube:deployment' ]
 
+
+# ---- Skins/Themes ----
+- include_tasks: configure_skins.yml
+  tags: [ 'role::roundcube:skins', 'role::roundcube:themes' ]
 
 # ---- Configuration ----
 
@@ -63,7 +67,7 @@
   when: roundcube__database_map[roundcube__database].dbtype == 'sqlite'
   tags: [ 'role::roundcube:database' ]
 
-- include: configure_mysql.yml
+- include_tasks: configure_mysql.yml
   when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
   tags: [ 'role::roundcube:database' ]
 
@@ -91,4 +95,4 @@
   tags: [ 'role::roundcube:database' ]
 
 - name: Post hooks
-  include: '{{ lookup("task_src", "roundcube/post_main.yml") }}'
+  include_tasks: '{{ lookup("task_src", "roundcube/post_main.yml") }}'
