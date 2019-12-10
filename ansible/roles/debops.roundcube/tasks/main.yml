@@ -16,25 +16,6 @@
   register: roundcube__register_version
   tags: [ 'role::roundcube:database' ]
 
-# this task is necessary, to trigger proper database upgrades after
-# updating the role to v0.2.0 because the default installation path
-# has changed.
-- name: Get version of deprecated Roundcube installation on role upgrade
-  command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
-           /srv/www/roundcube/sites/{{
-               roundcube__domain if roundcube__domain is string
-               else roundcube__domain[0] }}/public/program/include/iniset.php
-  args:
-    warn: False
-  changed_when: False
-  failed_when: False
-  register: roundcube__register_version_old
-  when: (not roundcube__register_version.stdout|d()) and
-        (not roundcube__git_checkout == '/srv/www/roundcube/sites/'
-         + (roundcube__domain if roundcube__domain is string
-                              else roundcube__domain[0]) + '/public')
-  tags: [ 'role::roundcube:database' ]
-
 
 # ---- Deployment ----
 
@@ -89,9 +70,7 @@
   register: roundcube__register_updatedb
   changed_when: roundcube__register_updatedb.stdout|d()
   when: (roundcube__register_version.stdout|d() and
-         roundcube__git_version is version_compare(roundcube__register_version.stdout, '>')) or
-        (roundcube__register_version_old is not skipped and
-         roundcube__register_version_old.stdout|d())
+         roundcube__git_version is version_compare(roundcube__register_version.stdout, '>'))
   tags: [ 'role::roundcube:database' ]
 
 - name: Post hooks
