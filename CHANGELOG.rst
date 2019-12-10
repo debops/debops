@@ -37,6 +37,15 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- The RoundCube version installed by the :ref:`debops.roundcube` role has been
+  updated to the `1.4.1 release`__, which includes a new "Elastic" theme
+  compatible with mobile devices, and other improvements.
+
+  .. __: https://github.com/roundcube/roundcubemail/releases/tag/1.4.1
+
 LDAP
 ''''
 
