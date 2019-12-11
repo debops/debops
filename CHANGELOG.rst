@@ -18,6 +18,18 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Added
+~~~~~
+
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- A given PostgreSQL server cluster can be configured to enable `standby
+  replication mode`__, and receive streaming replication data from a master
+  PostgreSQL server. See role documentation for examples.
+
+  .. __: https://www.postgresql.org/docs/current/warm-standby.html
+
 
 `debops v1.0.14`_ - 2019-12-01
 ------------------------------
