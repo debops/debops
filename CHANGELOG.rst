@@ -21,6 +21,15 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- A given PostgreSQL server cluster can be configured to enable `standby
+  replication mode`__, and receive streaming replication data from a master
+  PostgreSQL server. See role documentation for examples.
+
+  .. __: https://www.postgresql.org/docs/current/warm-standby.html
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
