@@ -21,9 +21,49 @@
            --port={{ item.port }} {{ item.version | d(postgresql_server__version) }} {{ item.name }}
   args:
     creates: '/etc/postgresql/{{ item.version | d(postgresql_server__version) }}/{{ item.name }}/postgresql.conf'
+  register: postgresql_server__register_createcluster
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: item.name|d() and item.port|d()
+
+- name: Remove data directory for PostgreSQL replication standby clusters
+  file:
+    path: '{{ item.item.data_directory | d(postgresql_server__data_directory + "/"
+                                           + (item.item.version | d(postgresql_server__version))
+                                           + "/" + item.item.name) }}'
+    state: absent
+  when:
+    - item.item.standby is defined
+    - item is changed
+    - item is success
+  with_items: '{{ postgresql_server__register_createcluster.results }}'
+  loop_control:
+    label: '{{ item.item }}'
+
+- name: Synchronize data for PostgreSQL replication standby clusters
+  environment:
+    LANG: '{{ item.item.locale | d(postgresql_server__locale) }}'
+    LC_ALL: '{{ item.item.locale | d(postgresql_server__locale) }}'
+  command: >-
+    pg_basebackup
+    --pgdata={{ item.item.data_directory | d(postgresql_server__data_directory + "/"
+                                             + (item.item.version | d(postgresql_server__version))
+                                             + "/" + item.item.name) }}
+    --dbname="{{ item.item.standby.conninfo }}"
+    --write-recovery-conf
+    {% if item.item.standby.slot_name is defined %}
+    --slot={{ item.item.standby.slot_name }}
+    --create-slot
+    {% endif %}
+  become: True
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when:
+    - item.item.standby is defined
+    - item is changed
+    - item is success
+  with_items: '{{ postgresql_server__register_createcluster.results }}'
+  loop_control:
+    label: '{{ item.item }}'
 
 - name: Ensure that conf.d directories exist
   file:
