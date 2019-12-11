@@ -1,0 +1,31 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import os
+
+roundcube_deploy_path = loads('''{{ roundcube__git_checkout
+                                    | to_nice_json }}''')
+
+roundcube_version_file = (roundcube_deploy_path +
+                          '/program/include/iniset.php')
+
+output = {'installed': False}
+
+try:
+    with open(roundcube_version_file, 'r') as f:
+        for line in f:
+            if "define('RCMAIL_VERSION'," in line.strip().split():
+                line = line.strip().split()[1]
+                line = line.lstrip("'").rstrip("');")
+
+                output.update(
+                        {'installed': True,
+                         'version': line})
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))

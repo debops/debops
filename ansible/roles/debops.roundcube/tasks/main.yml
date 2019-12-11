@@ -31,6 +31,22 @@
 - include_tasks: deploy_roundcube.yml
   tags: [ 'role::roundcube:deployment' ]
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save RoundCube local facts
+  template:
+    src: 'etc/ansible/facts.d/roundcube.fact.j2'
+    dest: '/etc/ansible/facts.d/roundcube.fact'
+    mode: '0755'
+  register: roundcube__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: roundcube__register_facts is changed
 
 # ---- Skins/Themes ----
 - include_tasks: configure_skins.yml
