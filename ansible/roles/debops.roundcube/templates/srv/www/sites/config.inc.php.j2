@@ -5,7 +5,7 @@
  | Local configuration for the Roundcube Webmail installation.           |
  |                                                                       |
  | This file is part of the Roundcube Webmail client                     |
- | Copyright (C) 2005-2013, The Roundcube Dev Team                       |
+ | Copyright (C) The Roundcube Dev Team                                  |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
@@ -19,11 +19,15 @@
 
 $config = array();
 
+// ----------------------------------
+// SQL DATABASE
+// ----------------------------------
+
 // Database connection string (DSN) for read+write operations
 {#// Format (compatible with PEAR MDB2): db_provider://user:password@host/database
-// Currently supported db_providers: mysql, pgsql, sqlite, mssql or sqlsrv
+// Currently supported db_providers: mysql, pgsql, sqlite, mssql, sqlsrv, oracle
 // For examples see http://pear.php.net/manual/en/package.database.mdb2.intro-dsn.php
-// NOTE: for SQLite use absolute path: 'sqlite:////full/path/to/sqlite.db?mode=0646' #}
+// NOTE: for SQLite use absolute path (Linux): 'sqlite:////full/path/to/sqlite.db?mode=0646' #}
 {% if roundcube__database_map[roundcube__database].dbtype == 'sqlite' %}
 $config['db_dsnw'] = 'sqlite:///{{ roundcube__git_checkout }}/{{ roundcube__database_map[roundcube__database].dbname }}?mode=640';
 {% endif %}
@@ -31,7 +35,17 @@ $config['db_dsnw'] = 'sqlite:///{{ roundcube__git_checkout }}/{{ roundcube__data
 $config['db_dsnw'] = 'mysql://{{ roundcube__database_map[roundcube__database].dbuser }}:{{ roundcube__database_map[roundcube__database].dbpass }}@{{ roundcube__database_map[roundcube__database].dbhost }}/{{ roundcube__database_map[roundcube__database].dbname }}';
 {% endif %}
 
-// The mail host chosen to perform the log-in.
+// ----------------------------------
+// LOGGING/DEBUGGING
+// ----------------------------------
+// log driver:  'syslog', 'stdout' or 'file'.
+$config['log_driver'] = '{{ roundcube__log_driver }}';
+
+// ----------------------------------
+// IMAP
+// ----------------------------------
+
+// The IMAP host chosen to perform the log-in.
 {#// Leave blank to show a textbox at login, give a list of hosts
 // to display a pulldown menu or set one host as string.
 // To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
@@ -41,11 +55,18 @@ $config['db_dsnw'] = 'mysql://{{ roundcube__database_map[roundcube__database].db
 // %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
 // %s - domain name after the '@' from e-mail address provided at login screen
 // For example %n = mail.domain.tld, %t = domain.tld #}
-{{ macros.roundcube_config('default_host', roundcube__default_host) }}
+{{ macros.roundcube_config('default_host', roundcube__imap_server) }}
+
+// TCP port used for IMAP connections
+$config['default_port'] = {{ roundcube__imap_port }};
+
+// ----------------------------------
+// SMTP
+// ----------------------------------
 
 // SMTP server host (for sending mails).
-{#// To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
-// If left blank, the PHP mail() function is used
+{#// Enter hostname with prefix tls:// to use STARTTLS, or use
+// prefix ssl:// to use the deprecated SSL over SMTP (aka SMTPS)
 // Supported replacement variables:
 // %h - user's IMAP hostname
 // %n - hostname ($_SERVER['SERVER_NAME'])
@@ -67,10 +88,14 @@ $config['smtp_user'] = '{{ roundcube__smtp_user }}';
 // will use the current user's password for login
 $config['smtp_pass'] = '{{ roundcube__smtp_pass }}';
 
+// ----------------------------------
+// SYSTEM
+// ----------------------------------
+
 {% if (roundcube__local_config_map is defined and 'product_name' not in roundcube__local_config_map) or
       (roundcube__local_config_map is not defined) %}
 // Name your service. This is displayed on the login screen and in the window title
-$config['product_name'] = 'Roundcube Webmail';
+$config['product_name'] = '{{ roundcube__product_name }}';
 {% endif %}
 
 // this key is used to encrypt the users imap password which is stored
@@ -79,6 +104,22 @@ $config['product_name'] = 'Roundcube Webmail';
 // YOUR KEY MUST BE DIFFERENT THAN THE SAMPLE VALUE FOR SECURITY REASONS #}
 $config['des_key'] = '{{ roundcube__des_key }}';
 
+// Automatically add this domain to user names for login
+// Only for IMAP servers that require full e-mail addresses for login
+// Specify an array with 'host' => 'domain' values to support multiple hosts
+// Supported replacement variables:
+// %h - user's IMAP hostname
+// %n - hostname ($_SERVER['SERVER_NAME'])
+// %t - hostname without the first part
+// %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+// %z - IMAP domain (IMAP hostname without the first part)
+// For example %n = mail.domain.tld, %t = domain.tld
+$config['username_domain'] = '{{ roundcube__username_domain }}';
+
+// ----------------------------------
+// PLUGINS
+// ----------------------------------
+
 // List of active plugins (in plugins/ directory)
 $config['plugins'] = array(
 {% for plugin in roundcube__default_plugins + roundcube__plugins %}
@@ -86,11 +127,18 @@ $config['plugins'] = array(
 {% endfor %}
 );
 
-{% if (roundcube__local_config_map is defined and 'skin' not in roundcube__local_config_map) or
-      (roundcube__local_config_map is not defined) %}
+// ----------------------------------
+// USER PREFERENCES
+// ----------------------------------
+
 // skin name: folder from skins/
-$config['skin'] = 'larry';
-{% endif %}
+$config['skin'] = '{{ roundcube__skin_folder }}';
+
+// Logo image replacement. Specifies location of the image as:
+{# // - URL relative to the document root of this Roundcube installation
+// - full URL with http:// or https:// prefix
+// - URL relative to the current skin folder (when starts with a '/') #}
+$config['skin_logo'] = {{ roundcube__skin_logo }};
 
 // custom configuration options
 {% for key,value in roundcube__local_config_map.items()|default([]) %}

@@ -37,6 +37,15 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- The RoundCube version installed by the :ref:`debops.roundcube` role has been
+  updated to the `1.4.1 release`__, which includes a new "Elastic" theme
+  compatible with mobile devices, and other improvements.
+
+  .. __: https://github.com/roundcube/roundcubemail/releases/tag/1.4.1
+
 LDAP
 ''''
 
@@ -70,6 +79,39 @@ LDAP
 - The firewall configuration has been redesigned and the :ref:`debops.dovecot`
   role no longer generates the :command:`ferm` configuration files directly,
   instead using the :ref:`debops.ferm` role as a dependency.
+
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The variable that defines the FQDN address of the RoundCube installation has
+  been changed from :envvar:`roundcube__domain` to :envvar:`roundcube__fqdn`.
+  The default subdomain has also been changed from ``roundcube`` to ``webmail``
+  to offer a more widely used name for the application.
+
+- The default RoundCube installation path defined in the
+  :envvar:`roundcube__git_checkout` variable has been changed and no longer
+  uses the web application FQDN. This should make changing the web application
+  address independent from the installation directory.
+
+  Due to this change, existing installations will be re-installed in the new
+  deployment path. Checking the changes in a development environment is
+  recommended before deploying them in production environment.
+
+- The role will use DNS SRV resource records to find the IMAP and/or SMTP
+  (submission) services to use in the RoundCube Webmail configuration, with
+  a fallback to static subdomains. See :ref:`roundcube__ref_srv_records` for
+  more details.
+
+- RoundCube will use the user login and password credentials to authenticate to
+  the SMTP (submission) service before sending e-mail messages. This allows the
+  SMTP server to check the message details, block mail with forged sender
+  address, etc. The default configuration uses encrypted connections to the
+  IMAP and SMTP services to ensure confidentiality and security.
+
+- User logins that don't specify a domain will have the host domain
+  automatically appended to them during authentication. This solves an issue
+  where use of logins with or without domain for authentication would result in
+  separate RoundCube profiles created in the database.
 
 Removed
 ~~~~~~~

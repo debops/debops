@@ -1,0 +1,30 @@
+---
+
+- name: Generate CSS files for the 'elastic' skin
+  block:
+    - name: Set 'elastic' skin CSS files
+      set_fact:
+        roundcube__fact_skin_elastic_css_files:
+          - { src: 'styles/styles.less', dest: 'styles/styles.css' }
+          - { src: 'styles/print.less',  dest: 'styles/print.css' }
+          - { src: 'styles/embed.less',  dest: 'styles/embed.css' }
+
+    - name: Generate CSS files for the 'elastic' skin
+      command: 'lessc --compress {{ item.src }} {{ item.dest }}'
+      args:
+        chdir: '{{ roundcube__git_checkout }}/skins/{{ roundcube__skin_folder }}'
+        creates: '{{ item.dest }}'
+      loop: '{{ roundcube__fact_skin_elastic_css_files }}'
+
+    - name: Adjust permissions of CSS files
+      file:
+        path: '{{ roundcube__git_checkout }}/skins/{{ roundcube__skin_folder }}/{{ item.dest }}'
+        owner: '{{ roundcube__user }}'
+        group: '{{ roundcube__group }}'
+        mode: '0644'
+      loop: '{{ roundcube__fact_skin_elastic_css_files }}'
+
+  when: roundcube__skin_folder is defined
+        and roundcube__skin_folder == 'elastic'
+        and roundcube__git_checkout is defined
+  tags: [ 'role::roundcube:skin:elastic' ]

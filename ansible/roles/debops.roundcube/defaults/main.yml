@@ -137,15 +137,13 @@ roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")
 # .. envvar:: roundcube__git_version [[[
 #
 # Roundcube release tag to deploy.
-roundcube__git_version: '1.3.0'
+roundcube__git_version: '1.4.1'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_checkout [[[
 #
 # Default path where Roundcube source files will be deployed.
-roundcube__git_checkout: '{{ roundcube__www + "/sites/" +
-                             (roundcube__domain if roundcube__domain is string else roundcube__domain[0]) +
-                             "/public" }}'
+roundcube__git_checkout: '{{ roundcube__www + "/sites/" + roundcube__user + "/public" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__src [[[
@@ -239,42 +237,164 @@ roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sq
 # Roundcube application options [[[
 # ---------------------------------
 
+# .. envvar:: roundcube__fqdn [[[
+#
+# The default DNS address of the RoundCube web application, used in the HTTP
+# server configuration.
+roundcube__fqdn: 'webmail.{{ roundcube__domain }}'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__domain [[[
 #
-# String or List of domains which will be used to access the roundcube instance.
-roundcube__domain: [ 'roundcube.{{ ansible_domain }}' ]
+# The DNS domain of the RoundCube installation.
+roundcube__domain: '{{ ansible_local.core.domain
+                       if (ansible_local|d() and ansible_local.core|d() and
+                           ansible_local.core.domain|d())
+                       else ansible_domain }}'
 
                                                                    # ]]]
-# .. envvar:: roundcube__default_host [[[
+# .. envvar:: roundcube__imap_srv_rr [[[
 #
-# Mail host chosen to perform the log-in.
-roundcube__default_host: 'localhost'
+# List which contains the result of the :command:`dig` query for IMAP server
+# ``SRV`` resource records in the host's domain. See :rfc:`6186` for details.
+roundcube__imap_srv_rr: '{{ q("dig", "_imaps._tcp." + roundcube__domain + "./SRV", "flat=0") }}'
 
                                                                    # ]]]
-# .. envvar:: roundcube__smtp_server [[[
+# .. envvar:: roundcube__imap_fqdn [[[
 #
-# SMTP server host (for sending mails).
-roundcube__smtp_server: ''
+# The FQDN address of the IMAP server which stores user mailboxes. By default
+# the host is located using DNS SRV resource records; if there are none, role
+# checks if a local Dovecot installation is present and uses the host FQDN as
+# the IMAP server address. Finally, the static ``imap.<domain>`` is used.
+#
+# Use of FQDN instead of ``localhost`` is required for X.509 certificate
+# verification and for correct information in system logs.
+roundcube__imap_fqdn: '{{ (roundcube__imap_srv_rr | selectattr("target", "defined")
+                           | map(attribute="target")
+                           | map("regex_replace", "\.$","")
+                           | list | first)
+                          if ("NXDOMAIN" not in roundcube__imap_srv_rr and
+                              roundcube__imap_srv_rr[0])
+                          else (ansible_fqdn
+                                if (ansible_local|d() and ansible_local.dovecot|d() and
+                                    (ansible_local.dovecot.installed|d())|bool)
+                                else ("imap." + roundcube__domain)) }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__imap_port [[[
+#
+# TCP port used for IMAP connections
+roundcube__imap_port: '{{ (roundcube__imap_srv_rr | selectattr("target", "defined")
+                           | map(attribute="port") | list | sort | first)
+                          if ("NXDOMAIN" not in roundcube__imap_srv_rr and
+                              roundcube__imap_srv_rr[0])
+                          else "993" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__imap_server [[[
+#
+# The IMAP host chosen to perform the log-in.
+# This variable is also called `default_server` by Roundcube  .
+#
+# Leave blank to show a textbox at login, give a list of hosts
+# to display a pulldown menu or set one host as string.
+# To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
+# Supported replacement variables:
+# %n - hostname ($_SERVER['SERVER_NAME'])
+# %t - hostname without the first part
+# %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+# %s - domain name after the '@' from e-mail address provided at login screen
+# For example %n = mail.domain.tld, %t = domain.tld
+roundcube__imap_server: '{{ ("ssl://"
+                             if (roundcube__imap_port == "993")
+                             else ("tls://"
+                                   if (roundcube__imap_port == "143")
+                                   else "tls://"))
+                             + roundcube__imap_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_srv_rr [[[
+#
+# List which contains the result of the :command:`dig` query for SMTP
+# (submission) server ``SRV`` resource records in the host's domain. See
+# :rfc:`6186` for details.
+roundcube__smtp_srv_rr: '{{ q("dig", "_submissions._tcp." + roundcube__domain + "./SRV", "flat=0") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_fqdn [[[
+#
+# The FQDN address of the SMTP (submission) server which will be used to send
+# e-mail messages. By default the host is located using DNS SRV resource
+# records; if there are none, role checks if a local Postfix installation is
+# present and uses the host FQDN as the SMTP (submission) server address.
+# Finally, the static ``smtp.<domain>`` is used.
+#
+# Use of FQDN instead of ``localhost`` is required for X.509 certificate
+# verification and for correct information in system logs.
+roundcube__smtp_fqdn: '{{ (roundcube__smtp_srv_rr | selectattr("target", "defined")
+                           | map(attribute="target")
+                           | map("regex_replace", "\.$","")
+                           | list | first)
+                          if ("NXDOMAIN" not in roundcube__smtp_srv_rr and
+                              roundcube__smtp_srv_rr[0])
+                          else (ansible_fqdn
+                                if (ansible_local|d() and ansible_local.postfix|d() and
+                                    (ansible_local.postfix.installed|d())|bool)
+                                else ("smtp." + roundcube__domain)) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_port [[[
 #
 # SMTP port.
-roundcube__smtp_port: '25'
+#
+# SMTP port (default is 25; use 587 for STARTTLS or 465 for the
+# deprecated SSL over SMTP (aka SMTPS))
+roundcube__smtp_port: '{{ (roundcube__smtp_srv_rr | selectattr("target", "defined")
+                           | map(attribute="port") | list | sort | first)
+                          if ("NXDOMAIN" not in roundcube__smtp_srv_rr and
+                              roundcube__smtp_srv_rr[0])
+                          else "465" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__smtp_server [[[
+#
+# SMTP server host (for sending mails).
+#
+# Enter hostname with prefix tls:// to use STARTTLS, or use
+# prefix ssl:// to use the deprecated SSL over SMTP (aka SMTPS)
+# Supported replacement variables:
+# %h - user's IMAP hostname
+# %n - hostname ($_SERVER['SERVER_NAME'])
+# %t - hostname without the first part
+# %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+# %z - IMAP domain (IMAP hostname without the first part)
+# For example %n = mail.domain.tld, %t = domain.tld
+roundcube__smtp_server: '{{ ("ssl://"
+                             if (roundcube__smtp_port == "465")
+                             else ("tls://"
+                                   if (roundcube__smtp_port == "587")
+                                   else "tls://"))
+                             + roundcube__smtp_fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_user [[[
 #
 # SMTP username (if required) if you use %u as the username Roundcube will
 # use the current username for login.
-roundcube__smtp_user: ''
+roundcube__smtp_user: '%u'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_pass [[[
 #
 # SMTP password (if required) if you use %p as the password Roundcube will
 # use the current user's password for login.
-roundcube__smtp_pass: ''
+roundcube__smtp_pass: '%p'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__product_name [[[
+#
+#  Name your service. This is displayed on the login screen and in the window title
+roundcube__product_name: 'Roundcube Webmail'
 
                                                                    # ]]]
 # .. envvar:: roundcube__des_key [[[
@@ -282,6 +402,16 @@ roundcube__smtp_pass: ''
 # Encryption key for the users imap password which is stored in the session
 # record (and the client cookie if remember password is enabled).
 roundcube__des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/des_key chars=hexdigits length=24") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__username_domain [[[
+#
+# Specify a domain (realm) to add to usernames without a specified domain.
+# Defining a default domain helps avoid creating separate RoundCube profiles
+# when users use logins with and without a domain specified.
+#
+# The default is to create a domain based on the host DNS domain.
+roundcube__username_domain: '%d'
 
                                                                    # ]]]
 # .. envvar:: roundcube__local_config_map [[[
@@ -316,6 +446,42 @@ roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', '
 # the plugins shipped by default.
 roundcube__plugins: []
                                                                    # ]]]
+# .. envvar:: roundcube__log_driver [[[
+#
+# Define the log driver:
+  # Currently available:
+  #
+  # - syslog [default]
+  # - stdout
+  # - stdout
+  #
+roundcube__log_driver: 'syslog'
+                                                                   # ]]]
+                                                                   # ]]]
+# Skins [[[
+# -------------------
+
+# .. envvar:: roundcube__skin_folder [[[
+#
+# skin name: folder from `/skins <https://github.com/roundcube/roundcubemail/tree/1.4.0/skins>`_
+# Currently available:
+#
+# - classic
+# - elastic [default] (mobile-ready, requires nodejs dependency, due to CSS-LESS syntax)
+# - larry
+#
+roundcube__skin_folder: 'elastic'
+                                                                   # ]]]
+# .. envvar:: roundcube__skin_logo [[[
+#
+# Logo image replacement. Specifies location of the image as:
+#
+# - URL relative to the document root of this Roundcube installation
+# - full URL with http:// or https:// prefix
+# - URL relative to the current skin folder (when starts with a '/')
+#
+roundcube__skin_logo: 'null'
+                                                                   # ]]]
                                                                    # ]]]
 # Other variables [[[
 # -------------------
@@ -334,7 +500,7 @@ roundcube__max_file_size: '30'
 # :program:`nginx` server configuration managed by the debops.nginx_ role.
 roundcube__nginx__dependent_servers:
 
-  - name: '{{ roundcube__domain }}'
+  - name: '{{ roundcube__fqdn }}'
     filename: 'debops.roundcube'
     by_role: 'debops.roundcube'
     type: 'php'
@@ -355,7 +521,7 @@ roundcube__nginx__dependent_servers:
 
       - pattern: '@roundcube'
         options: |
-          rewrite ^/favicon\.ico$ skins/larry/images/favicon.ico last;
+          rewrite ^/favicon\.ico$ skins/{{ roundcube__skin_folder }}/images/favicon.ico last;
 
       - pattern: '~ ^/?(installer|[A-Z0-9]+$)'
         options: |
@@ -435,6 +601,13 @@ roundcube__php__dependent_pools:
     magic_quotes_sybase:        'off'
     session.auto_start:         'off'
     suhosin.session.encrypt:    'off'
+                                                                   # ]]]
+# .. envvar:: roundcube__nodejs__npm_dependent_packages [[[
+#
+# Configuration for the :ref:`debops.nodejs` Ansible role.
+roundcube__nodejs__npm_dependent_packages:
+  # Dependency for the 'elastic' skin to compile the CSS files
+  - 'less'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

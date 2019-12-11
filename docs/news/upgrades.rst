@@ -71,6 +71,16 @@ Inventory variable changes
   | ``dovecot_firewall``      | Removed, see "Firewall configuration" | No            |
   +---------------------------+---------------------------------------+---------------+
 
+- Some of the variables in the :ref:`debops.roundcube` role have been renamed:
+
+  +-----------------------------+----------------------------------+---------------+
+  | Old variable name           | New variable name                | Changed value |
+  +=============================+==================================+===============+
+  | ``roundcube__default_host`` | :envvar:`roundcube__imap_server` | No            |
+  +-----------------------------+----------------------------------+---------------+
+  | ``roundcube__domain``       | :envvar:`roundcube__fqdn`        | Yes, a string |
+  +-----------------------------+----------------------------------+---------------+
+
 
 v1.2.0 (2019-12-01)
 -------------------
