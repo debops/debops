@@ -340,3 +340,50 @@ entry:
 ``allow``
   List of IP addresses or CIDR subnets which should be allowed to connect to
   a given cluster.
+
+``standby``
+  Optional.
+  Configure `standby replication <https://www.postgresql.org/docs/current/warm-standby.html>`_
+  cluster parameters. This cluster will act as a streaming replication standby server. The
+  replication master configuration can be done using standard :file:`postgresql.conf`
+  configuration parameters. Standby configuration parameters:
+
+  ``conninfo``
+    Required. Connection info (as a PostgreSQL connection string) to connect to the
+    master cluster.
+
+  ``slot_name``
+    Optional. Replication slot name to use.
+
+  Example standby configuration:
+
+  .. code-block:: yaml
+
+     postgresql_server__cluster_main:
+       name: 'main'
+       port: '5432'
+
+       hot_standby: 'on'
+       standby:
+         conninfo: 'host=postgresql-master user=replication password=XXXX'
+         slot_name: 'my_hot_standby'
+
+  Example master configuration:
+
+  .. code-block:: yaml
+
+     postgresql_server__cluster_main:
+       name: 'main'
+       port: '5432'
+
+       max_replication_slots: 1
+       # Set to 2 to allow for 1 "hanging" connection until it times out
+       max_wal_senders: 2
+       wal_level: 'replica'
+
+     # Create replication user
+     postgresql__roles:
+       - name: 'replication'
+         flags:
+           - 'REPLICATION'
+           - 'LOGIN'
