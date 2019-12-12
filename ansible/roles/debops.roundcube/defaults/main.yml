@@ -414,26 +414,317 @@ roundcube__des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fq
 roundcube__username_domain: '%d'
 
                                                                    # ]]]
-# .. envvar:: roundcube__local_config_map [[[
+# .. envvar:: roundcube__log_driver [[[
 #
-# Custom configuration values for the Roundcube config.inc.php.
-roundcube__local_config_map: {}
+# Define the log driver. Currently available: ``syslog``, ``stdout``, ``file``.
+roundcube__log_driver: 'syslog'
+                                                                   # ]]]
+                                                                   # ]]]
+# Roundcube configuration file [[[
+# --------------------------------
+
+# These variables define the contents of the :file:`config/config.inc.php`
+# local configuration file. See :ref:`roundcube__ref_configuration` for more
+# details.
+
+# .. envvar:: roundcube__original_configuration [[[
+#
+# The list defines the Roundcube configuration options stored in the
+# :file:`config.inc.php.sample` configuration file. Modifications to these
+# configuration options should be done using the subsequent variables.
+roundcube__original_configuration:
+
+  - name: 'init_config'
+    raw: |
+      $config = array();
+    section: 'init'
+
+  - name: 'db_dsnw'
+    comment: |
+      Database connection string (DSN) for read+write operations
+      Format (compatible with PEAR MDB2): db_provider://user:password@host/database
+      Currently supported db_providers: mysql, pgsql, sqlite, mssql, sqlsrv, oracle
+      For examples see http://pear.php.net/manual/en/package.database.mdb2.intro-dsn.php
+      NOTE: for SQLite use absolute path (Linux): 'sqlite:////full/path/to/sqlite.db?mode=0646'
+            or (Windows): 'sqlite:///C:/full/path/to/sqlite.db'
+    value: 'mysql://roundcube:pass@localhost/roundcubemail'
+    section: 'sql'
+
+  - name: 'default_host'
+    comment: |
+      The IMAP host chosen to perform the log-in.
+      Leave blank to show a textbox at login, give a list of hosts
+      to display a pulldown menu or set one host as string.
+      To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
+      Supported replacement variables:
+      %n - hostname ($_SERVER['SERVER_NAME'])
+      %t - hostname without the first part
+      %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+      %s - domain name after the '@' from e-mail address provided at login screen
+      For example %n = mail.domain.tld, %t = domain.tld
+    value: 'localhost'
+    section: 'imap'
+
+  - name: 'smtp_server'
+    comment: |
+      SMTP server host (for sending mails).
+      Enter hostname with prefix tls:// to use STARTTLS, or use
+      prefix ssl:// to use the deprecated SSL over SMTP (aka SMTPS)
+      Supported replacement variables:
+      %h - user's IMAP hostname
+      %n - hostname ($_SERVER['SERVER_NAME'])
+      %t - hostname without the first part
+      %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+      %z - IMAP domain (IMAP hostname without the first part)
+      For example %n = mail.domain.tld, %t = domain.tld
+    value: 'localhost'
+    section: 'smtp'
+
+  - name: 'smtp_port'
+    comment: |
+      SMTP port (default is 25; use 587 for STARTTLS or 465 for the
+      deprecated SSL over SMTP (aka SMTPS))
+    value: 587
+    section: 'smtp'
+
+  - name: 'smtp_user'
+    comment: |
+      SMTP username (if required) if you use %u as the username Roundcube
+      will use the current username for login
+    value: '%u'
+    section: 'smtp'
+
+  - name: 'smtp_pass'
+    comment: |
+      SMTP password (if required) if you use %p as the password Roundcube
+      will use the current user's password for login
+    value: '%p'
+    section: 'smtp'
+
+  - name: 'support_url'
+    comment: |
+      Provide an URL where a user can get support for this Roundcube installation
+      PLEASE DO NOT LINK TO THE ROUNDCUBE.NET WEBSITE HERE!
+    value: ''
+    section: 'system'
+
+  - name: 'product_name'
+    comment: |
+      Name your service. This is displayed on the login screen and in the window title
+    value: 'Roundcube Webmail'
+    section: 'system'
+
+  - name: 'des_key'
+    comment: |
+      this key is used to encrypt the users imap password which is stored
+      in the session record (and the client cookie if remember password is enabled).
+      please provide a string of exactly 24 chars.
+      YOUR KEY MUST BE DIFFERENT THAN THE SAMPLE VALUE FOR SECURITY REASONS
+    value: 'rcmail-!24ByteDESkey*Str'
+    section: 'system'
+
+  - name: 'plugins'
+    comment: 'List of active plugins (in plugins/ directory)'
+    value: [ 'archive', 'zipdownload' ]
+    section: 'plugins'
+
+  - name: 'skin'
+    comment: 'Skin name: folder from skins/'
+    value: 'elastic'
+    section: 'userprefs'
 
                                                                    # ]]]
-# .. envvar:: roundcube__group_local_config_map [[[
+# .. envvar:: roundcube__default_configuration [[[
 #
-# Custom configuration values which can be defined on a group level and
-# eventually are merged with :envvar:`roundcube__local_config_map`.
-roundcube__group_local_config_map: {}
+# This list defines Roundcube configuration options which are defined by the
+# role and override the original configuration options.
+roundcube__default_configuration:
+
+  - name: 'db_dsnw'
+    value: '{{ "sqlite:///" + roundcube__git_checkout + "/"
+                            + roundcube__database_map[roundcube__database].dbname
+                            + "?mode=640" }}'
+    state: '{{ "present"
+               if (roundcube__database_map[roundcube__database].dbtype == "sqlite")
+               else "ignore" }}'
+
+  - name: 'db_dsnw'
+    value: '{{ "mysql://" + roundcube__database_map[roundcube__database].dbuser + ":"
+                          + roundcube__database_map[roundcube__database].dbpass + "@"
+                          + roundcube__database_map[roundcube__database].dbhost + "/"
+                          + roundcube__database_map[roundcube__database].dbname }}'
+    state: '{{ "present"
+               if (roundcube__database_map[roundcube__database].dbtype == "mysql")
+               else "ignore" }}'
+
+  - name: 'log_driver'
+    comment: |
+      Log driver: "syslog", "stdout" or "file"
+    value: '{{ roundcube__log_driver }}'
+
+  - name: 'default_host'
+    value: '{{ roundcube__imap_server }}'
+
+  - name: 'default_port'
+    comment: 'TCP port used for IMAP connections'
+    value: '{{ roundcube__imap_port }}'
+    copy_id_from: 'default_host'
+
+  - name: 'smtp_server'
+    value: '{{ roundcube__smtp_server }}'
+
+  - name: 'smtp_port'
+    value: '{{ roundcube__smtp_port }}'
+
+  - name: 'smtp_user'
+    value: '{{ roundcube__smtp_user }}'
+
+  - name: 'smtp_pass'
+    value: '{{ roundcube__smtp_pass }}'
+
+  - name: 'product_name'
+    value: '{{ roundcube__product_name }}'
+
+  - name: 'des_key'
+    value: '{{ roundcube__des_key }}'
+
+  - name: 'username_domain'
+    comment: |
+      Automatically add this domain to user names for login
+      Only for IMAP servers that require full e-mail addresses for login
+      Specify an array with 'host' => 'domain' values to support multiple hosts
+      Supported replacement variables:
+      %h - user's IMAP hostname
+      %n - hostname ($_SERVER['SERVER_NAME'])
+      %t - hostname without the first part
+      %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+      %z - IMAP domain (IMAP hostname without the first part)
+      For example %n = mail.domain.tld, %t = domain.tld
+    value: '{{ roundcube__username_domain }}'
+
+  - name: 'plugins'
+    value: '{{ (roundcube__default_plugins
+                + roundcube__plugins) | unique }}'
+
+  - name: 'skin'
+    value: '{{ roundcube__skin_folder }}'
+
+  - name: 'skin_logo'
+    comment: |
+      Logo image replacement. Specifies location of the image as:
+      - URL relative to the document root of this Roundcube installation
+      - full URL with http:// or https:// prefix
+      - URL relative to the current skin folder (when starts with a '/')
+
+      An array can be used to specify different logos for specific template files
+      The array key specifies the place(s) the logo should be applied to and
+      is made up of (up to) 3 parts:
+      - skin name prefix (always with colon, can be replaced with *)
+      - template name (or * for all templates)
+      - logo type - it is used for logos used on multiple templates the
+        available types include '[favicon]' for favicon, '[print]' for logo on
+        all print templates (e.g. messageprint, contactprint) and '[small]' for
+        small screen logo in supported skins
+    value: '{{ roundcube__skin_logo }}'
+    copy_id_from: 'skin'
 
                                                                    # ]]]
-# .. envvar:: roundcube__host_local_config_map [[[
+# .. envvar:: roundcube__configuration [[[
 #
-# Custom configuration values which can be defined ona host level and
-# eventually are merged with :envvar:`roundcube__local_config_map`.
-roundcube__host_local_config_map: {}
+# This list defines Roundcube configuration options which should be present on
+# all hosts in the Ansible inventory.
+roundcube__configuration: []
 
                                                                    # ]]]
+# .. envvar:: roundcube__group_configuration [[[
+#
+# This list defines Roundcube configuration options which should be present on
+# hosts in a specific Ansible inventory group.
+roundcube__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__host_configuration [[[
+#
+# This list defines Roundcube configuration options which should be present on
+# specific hosts in the Ansible inventory.
+roundcube__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__combined_configuration [[[
+#
+# This variable combines all Roundcube configuration lists and is used in role
+# tasks and templates.
+roundcube__combined_configuration: '{{ roundcube__original_configuration
+                                       + roundcube__default_configuration
+                                       + roundcube__configuration
+                                       + roundcube__group_configuration
+                                       + roundcube__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration file sections [[[
+# -------------------------------
+
+# These variables define the sections in the Roundcube
+# :file:`config/config.inc.php` configuration file. See
+# :ref:`roundcube__ref_configuration_sections` for more details.
+
+# .. envvar:: roundcube__default_configuration_sections [[[
+#
+# The list of the default configuration sections defined by the role.
+roundcube__default_configuration_sections:
+
+  - name: 'init'
+    state: 'hidden'
+
+  - name: 'sql'
+    title: 'SQL DATABASE'
+
+  - name: 'logging'
+    title: 'LOGGING/DEBUGGING'
+
+  - name: 'imap'
+
+  - name: 'smtp'
+
+  - name: 'ldap'
+
+  - name: 'cache'
+    title: 'CACHE(S)'
+
+  - name: 'system'
+
+  - name: 'plugins'
+
+  - name: 'ui'
+    title: 'USER INTERFACE'
+
+  - name: 'addressbook'
+    title: 'ADDRESSBOOK SETTINGS'
+
+  - name: 'userprefs'
+    title: 'USER PREFERENCES'
+
+  - name: 'unknown'
+    title: 'OTHER OPTIONS'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__configuration_sections [[[
+#
+# List of configuration sections defined by the user.
+roundcube__configuration_sections: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__combined_configuration_sections [[[
+#
+# Variable which combines all of the configuration section lists and is used in
+# role tasks and templates.
+roundcube__combined_configuration_sections: '{{ roundcube__default_configuration_sections
+                                                + roundcube__configuration_sections }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Plugins [[[
+# -----------
+
 # .. envvar:: roundcube__default_plugins [[[
 #
 # List of plugins shipped and enabled by default with Roundcube.
@@ -445,17 +736,6 @@ roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', '
 # Additional Roundcube plugins to enable. Check the :file:`plugins/` folder for
 # the plugins shipped by default.
 roundcube__plugins: []
-                                                                   # ]]]
-# .. envvar:: roundcube__log_driver [[[
-#
-# Define the log driver:
-  # Currently available:
-  #
-  # - syslog [default]
-  # - stdout
-  # - stdout
-  #
-roundcube__log_driver: 'syslog'
                                                                    # ]]]
                                                                    # ]]]
 # Skins [[[
@@ -480,7 +760,7 @@ roundcube__skin_folder: 'elastic'
 # - full URL with http:// or https:// prefix
 # - URL relative to the current skin folder (when starts with a '/')
 #
-roundcube__skin_logo: 'null'
+roundcube__skin_logo: null
                                                                    # ]]]
                                                                    # ]]]
 # Other variables [[[

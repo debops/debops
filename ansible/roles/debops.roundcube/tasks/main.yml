@@ -68,9 +68,9 @@
   when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
   tags: [ 'role::roundcube:database' ]
 
-- name: Configure Roundcube
+- name: Generate Roundcube configuration
   template:
-    src: 'srv/www/sites/config.inc.php.j2'
+    src: 'srv/www/sites/roundcube/public/config/config.inc.php.j2'
     dest: '{{ roundcube__git_checkout + "/config/config.inc.php" }}'
     owner: 'root'
     group: '{{ roundcube__group }}'

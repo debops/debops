@@ -128,6 +128,12 @@ LDAP
   where use of logins with or without domain for authentication would result in
   separate RoundCube profiles created in the database.
 
+- The Roundcube configuration has been redesigned and now uses the custom
+  Ansible filter plugins to generate the :file:`config/config.inc.php`
+  configuration file. The format of the configuration variables has been
+  changed, you will need to update the Ansible inventory.
+  See :ref:`roundcube__ref_configuration` for more details.
+
 Removed
 ~~~~~~~
 

@@ -1,0 +1,181 @@
+<?php
+
+/* {{ ansible_managed }} */
+
+/*
+ +-----------------------------------------------------------------------+
+ | Local configuration for the Roundcube Webmail installation.           |
+ |                                                                       |
+ | This is a local configuration file which contains the options         |
+ | which override the values defined in the defaults.inc.php file.       |
+ +-----------------------------------------------------------------------+
+*/
+{% macro print_value(data) %}
+{%   if data is mapping %}
+{%     for key, value in data.items() %}
+{%       if value is not string and value is not mapping and value is iterable %}
+{{ "'{}' => {}".format(key, print_value(value)) -}}
+{% else %}
+{{ "'{}' => {},".format(key, print_value(value)) -}}
+{%       endif %}
+{%     endfor %}
+{%   elif data is none %}
+{{ "null" -}}
+{%   elif data | bool and data is not iterable %}
+{%     if data | int and data | string != 'True' %}
+{{ "{}".format(data) -}}
+{%     else %}
+{{ "true" -}}
+{%     endif %}
+{%   elif not data | bool and data is not iterable %}
+{%     if data is not none %}
+{%       if data | int or data | string == '0' %}
+{{ "{}".format(data) -}}
+{%       else %}
+{{ "false" -}}
+{%       endif %}
+{%     endif %}
+{%   elif data is string %}
+{{ "'{}'".format(data) -}}
+{%   elif data is not string and data is not mapping and data is iterable %}
+{{ "array(" }}
+{{ print_array(data) | indent(4, true) -}}
+{{ ")," -}}
+{%   endif %}
+{% endmacro %}
+{% macro print_array(data) %}
+{%   if data is not string and data is not mapping and data is iterable %}
+{%     for entry in data %}
+{%       if entry is mapping %}
+{%         for key, value in entry.items() %}
+{%           if key is number %}
+{%             set quote_char = "" %}
+{%           else %}
+{%             set quote_char = "'" %}
+{%           endif %}
+{%           if value is none %}
+{{ "{}{}{} => null,".format(quote_char, key, quote_char) }}
+{%           elif value | bool and value is not iterable %}
+{%             if value | int and value | string != 'True' %}
+{{ "{}{}{} => {},".format(quote_char, key, quote_char, value) }}
+{%             else %}
+{{ "{}{}{} => true,".format(quote_char, key, quote_char) }}
+{%             endif %}
+{%           elif not value | bool and value is not iterable %}
+{%             if value is not none %}
+{%               if value | int or value | string == '0' %}
+{{ "{}{}{} => {},".format(quote_char, key, quote_char, value) }}
+{%               else %}
+{{ "{}{}{} => false,".format(quote_char, key, quote_char) }}
+{%               endif %}
+{%             endif %}
+{%           elif value is string %}
+{{ "{}{}{} => '{}',".format(quote_char, key, quote_char, value) }}
+{%           elif value is not string and value is not mapping and value is iterable %}
+{%             if value %}
+{{ "{}{}{} => array(".format(quote_char, key, quote_char) }}
+{{ print_array(value) | indent(4, true) -}}
+{{ ")," }}
+{%             else %}
+{{ "{}{}{} => array();".format(quote_char, key, quote_char) }}
+{%             endif %}
+{%           endif %}
+{%         endfor %}
+{%       elif entry is string %}
+{{ "'{}',".format(entry) }}
+{%       elif entry is not string and entry is not mapping and entry is iterable %}
+{{ "array(" }}
+{%         for thing in entry %}
+{{ print_value(thing) | indent(4, true) }}
+{%         endfor %}
+{{ ")," }}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% for section in roundcube__combined_configuration_sections | parse_kv_config %}
+{%   if section.name|d() and section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     set section_config = (roundcube__combined_configuration | parse_kv_config
+                             | selectattr("section", "equalto", section.name) | list) %}
+{%     if section_config|d() %}
+{%       if section.state != 'hidden' %}
+{{ (section.title | d(section.name | upper)) | comment(
+    prefix='\n// ----------------------------------',
+    postfix='// ----------------------------------\n',
+    decoration='// ') }}
+{%       else %}
+
+{%       endif %}
+{%       for element in section_config %}
+{%         if element.name|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%           if ((element.comment|d() and not loop.first) or
+                 (element.separator|d())|bool and not loop.first) %}
+
+{%           endif %}
+{%           if element.comment|d() %}
+{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='// ') -}}
+{%           endif %}
+{%           if element.state|d('present') == 'comment' %}
+{%             set comment_state = '//' %}
+{%           else %}
+{%             set comment_state = '' %}
+{%           endif %}
+{%           if (element.quotes|d(True))|bool %}
+{%             set quote_char = "'" %}
+{%           else %}
+{%             set quote_char = "" %}
+{%           endif %}
+{%           if element.option|d() %}
+{%             set element_name = ([ element.option ] if element.option is string else element.option) | join("']['") %}
+{%           else %}
+{%             set element_name = element.name %}
+{%           endif %}
+{%           if element.raw is not defined and element.value is not defined and element.array is not defined %}
+{{ "{}$config['{}'] = array();".format(comment_state, element_name) }}
+{%           elif element.raw is defined %}
+{%             if element.state|d('present') == 'comment' %}
+{{ "/*" }}
+{%             endif %}
+{{ element.raw | regex_replace('\n$', '') }}
+{%             if element.state|d('present') == 'comment' %}
+{{ "*/" }}
+{%             endif %}
+{%           elif element.value is defined %}
+{%             if element.value is none %}
+{{ "{}$config['{}'] = null;".format(comment_state, element_name) }}
+{%             elif element.value | bool and element.value is not iterable %}
+{%               if element.value | int and element.value | string != 'True' %}
+{{ "{}$config['{}'] = {};".format(comment_state, element_name, element.value) }}
+{%               else %}
+{{ "{}$config['{}'] = true;".format(comment_state, element_name) }}
+{%               endif %}
+{%             elif not element.value | bool and element.value is not iterable %}
+{%               if element.value is not none %}
+{%                 if element.value | int or element.value | string == '0' %}
+{{ "{}$config['{}'] = {};".format(comment_state, element_name, element.value) }}
+{%                 else %}
+{{ "{}$config['{}'] = false;".format(comment_state, element_name) }}
+{%                 endif %}
+{%               endif %}
+{%             elif element.value is string %}
+{{ "{}$config['{}'] = {}{}{};".format(comment_state, element_name, quote_char, element.value, quote_char) }}
+{%             elif element.value is not string and element.value is not mapping and element.value is iterable %}
+{%               set array_elements = (element.value | selectattr("state", "equalto", "present") | map(attribute="name") | list) %}
+{{ "{}$config['{}'] = array({});".format(comment_state, element_name, "'" + (array_elements | join("', '")) + "'") }}
+{%             endif %}
+{%           elif element.array|d() %}
+{%             if element.state|d('present') == 'comment' %}
+{{ "/*" }}
+{%             endif %}
+{{ "$config['{}'] = array(".format(element_name) }}
+{{ print_array(element.array) | indent(4, true) -}}
+{{ ");" }}
+{%             if element.state|d('present') == 'comment' %}
+{{ "*/" }}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
