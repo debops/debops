@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.ansible_plugins` role
+''''''''''''''''''''''''''''''''''
+
+- The ``parse_kv_config`` and ``parse_kv_items`` Ansible filter plugins now
+  support the ``null`` value defined in the configuration entries.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
