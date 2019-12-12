@@ -89,7 +89,8 @@ def _parse_kv_value(current_data, new_data, data_index):
         old_state = current_data.get('state', 'present')
         new_value = new_data['value']
 
-        if isinstance(new_value, (basestring, int, float, bool)):
+        if (new_value is None or
+                isinstance(new_value, (basestring, int, float, bool))):
             if (old_value is None or isinstance(old_value,
                                                 (basestring, int,
                                                  float, bool, dict))):
@@ -541,6 +542,8 @@ if __name__ == '__main__':
               value: 'test2'
             - name: 'local'
               value: 'test3'
+            - name: 'local_null'
+              value: null
             '''))
 
             expected_items = yaml.safe_load(textwrap.dedent('''
@@ -559,6 +562,14 @@ if __name__ == '__main__':
               separator: false
               state: present
               value: test2
+              weight: 0
+            - id: 30
+              name: local_null
+              real_weight: 30
+              section: unknown
+              separator: false
+              state: present
+              value: null
               weight: 0
             '''))
 
