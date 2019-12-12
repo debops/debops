@@ -347,6 +347,7 @@ Virtualization
 - :ref:`debops.libvirtd`
 - :ref:`debops.libvirtd_qemu`
 - :ref:`debops.lxc`
+- :ref:`debops.lxd`
 
 
 Ansible internals

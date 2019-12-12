@@ -1,0 +1,287 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _lxd__ref_defaults:
+
+# debops.lxd default variables
+# ============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Installation and packages [[[
+# -----------------------------
+
+# .. envvar:: lxd__upstream_enabled [[[
+#
+# Enable or disable installation of LXD from upstream :command:`git`
+# repository. LXD currently is not packaged in Debian, therefore installation
+# from source will be performed on Debian hosts. On Ubuntu hosts the role will
+# install the distribution APT packages.
+lxd__upstream_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: lxd__upstream_type [[[
+#
+# Specify the upstream installation type to use. Currently only ``apt`` (on
+# Ubuntu) and ``git`` (elsewhere) are a valid option.
+lxd__upstream_type: '{{ "apt"
+                        if (ansible_distribution == "Ubuntu")
+                        else "git" }}'
+
+                                                                   # ]]]
+# .. envvar:: lxd__upstream_gpg_key [[[
+#
+# The GPG key used to sign LXD release tags in the repository, required for
+# signature verification.
+lxd__upstream_gpg_key: '602F 5676 63E5 93BC BD14  F338 C638 974D 6479 2D67'
+
+                                                                   # ]]]
+# .. envvar:: lxd__upstream_git_repository [[[
+#
+# The URL of the :command:`git` repository with LXD source code.
+lxd__upstream_git_repository: 'https://github.com/lxc/lxd'
+
+                                                                   # ]]]
+# .. envvar:: lxd__upstream_git_release [[[
+#
+# The :command:`git` release tag to install. At the moment the LTS release of
+# LXD does not correctly comile on Debian, so more recent release is used
+# instead. This will change on the next working LTS release.
+lxd__upstream_git_release: 'lxd-3.18'
+
+                                                                   # ]]]
+# .. envvar:: lxd__golang_gosrc [[[
+#
+# Directory with compiled source code of additional libraries required by LXD.
+# They will be installed to the :file:`/usr/local/lib/` directory by the role.
+lxd__golang_gosrc: '{{ ansible_local.golang.gosrc
+                       if (ansible_local|d() and ansible_local.golang|d() and
+                           ansible_local.golang.gosrc|d())
+                       else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: lxd__binary [[[
+#
+# Absolute path to the :command:`lxd` binary installed by the
+# :ref:`debops.golang` Ansible role. The path is used in various
+# :command:`systemd` unit files.
+lxd__binary: '{{ ansible_local.golang.binaries["lxd"]
+                 if (ansible_local|d() and ansible_local.golang|d() and
+                     ansible_local.golang.binaries|d() and
+                     ansible_local.golang.binaries.lxd|d())
+                 else "/usr/bin/lxd" }}'
+
+                                                                   # ]]]
+# .. envvar:: lxd__base_packages [[[
+#
+# List of APT packages required by the LXD service.
+lxd__base_packages: [ 'dnsmasq-base', 'lxcfs', 'squashfs-tools' ]
+
+                                                                   # ]]]
+# .. envvar:: lxd__packages [[[
+#
+# List of additional APT packages to install with LXD.
+lxd__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# POSIX environment [[[
+# ---------------------
+
+# .. envvar:: lxd__group [[[
+#
+# The POSIX system group which grants full access to the LXD service.
+lxd__group: 'lxd'
+
+                                                                   # ]]]
+# .. envvar:: lxd__admin_accounts [[[
+#
+# List of POSIX accounts which will be granted full access to the LXD service
+# by adding them to the LXD system group.
+lxd__admin_accounts: '{{ ansible_local.core.admin_users
+                         if (ansible_local|d() and ansible_local.core|d() and
+                             ansible_local.core.admin_users|d())
+                         else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LXD configuration preseeding [[[
+# --------------------------------
+
+# These variables define the initial "preseed" YAML configuration which will be
+# applied to the LXD service on first installation or on request.
+# See :ref:`lxd__ref_preseed` for more details.
+
+# .. envvar:: lxd__default_preseed [[[
+#
+# List of the default preseed configuration entries defined by the role.
+lxd__default_preseed:
+
+  - name: 'server-default'
+    seed:
+      config: {}
+
+  - name: 'network-default'
+    seed:
+      networks:
+        - name: 'lxdbr0'
+          config:
+            ipv4.address: 'auto'
+            ipv6.address: 'auto'
+          description: ''
+          managed: True
+          type: ''
+
+  - name: 'storage-default'
+    seed:
+      storage_pools:
+        - name: 'default'
+          config: {}
+          description: ''
+          driver: 'dir'
+
+  - name: 'profile-default'
+    seed:
+      profiles:
+        - name: 'default'
+          config: {}
+          description: ''
+          devices:
+            eth0:
+              name: 'eth0'
+              nictype: 'bridged'
+              parent: 'lxdbr0'
+              type: 'nic'
+            root:
+              path: '/'
+              pool: 'default'
+              type: 'disk'
+
+  - name: 'cluster-default'
+    seed:
+      cluster: null
+
+                                                                   # ]]]
+# .. envvar:: lxd__preseed [[[
+#
+# List of the preseed configuration entries defined on all hosts in the Ansible
+# inventory.
+lxd__preseed: []
+
+                                                                   # ]]]
+# .. envvar:: lxd__group_preseed [[[
+#
+# List of the preseed configuration entries defined on hosts in a specific
+# Ansible inventory group.
+lxd__group_preseed: []
+
+                                                                   # ]]]
+# .. envvar:: lxd__host_preseed [[[
+#
+# List of the preseed configuration entries defined on specific hosts in the
+# Ansible inventory.
+lxd__host_preseed: []
+
+                                                                   # ]]]
+# .. envvar:: lxd__combined_preseed [[[
+#
+# Variable which combines all of the preseed confituration lists and is used in
+# role tasks and templates.
+lxd__combined_preseed: '{{ lxd__default_preseed
+                           + lxd__preseed
+                           + lxd__group_preseed
+                           + lxd__host_preseed }}'
+
+                                                                   # ]]]
+# .. envvar:: lxd__init_preseed [[[
+#
+# Variable which controls when the preseed configuration should be applied to
+# the LXD service. It can be set via the ``--extra-vars`` Ansible argument to
+# re-apply the preseed configuration on existing installations.
+lxd__init_preseed: '{{ False
+                       if (ansible_local|d() and ansible_local.lxd|d() and
+                           (ansible_local.lxd.installed|d())|bool)
+                       else True }}'
+
+                                                                   # ]]]
+# .. envvar:: lxd__preseed_data [[[
+#
+# Variable which holds the YAML configuration data passed to the
+# :command:`lxd init --preseed` command via stdin.
+lxd__preseed_data: '{{ lookup("template", "lookup/lxd__preseed_data.j2") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: lxd__golang__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.golang` Ansible role.
+lxd__golang__dependent_packages:
+
+  - name: 'lxd'
+    state: '{{ "present" if lxd__upstream_enabled|bool else "absent" }}'
+    upstream_type: '{{ lxd__upstream_type }}'
+    apt_packages: [ 'lxd', 'lxd-client' ]
+    apt_dev_packages: [ 'autoconf', 'automake', 'tcl', 'libacl1-dev', 'libcap-dev',
+                        'liblxc1', 'lxc-dev', 'libtool', 'libuv1-dev', 'make',
+                        'pkg-config', 'libapparmor-dev', 'libseccomp-dev',
+                        'libcap-dev' ]
+    gpg: '{{ lxd__upstream_gpg_key }}'
+    git:
+      - repo: '{{ lxd__upstream_git_repository }}'
+        version: '{{ lxd__upstream_git_release }}'
+        build_script: |
+          export GOPATH="${HOME}/go"
+          make deps
+          export CGO_CFLAGS="-I${HOME}/go/deps/sqlite/ -I${HOME}/go/deps/libco/ -I${HOME}/go/deps/raft/include/ -I${HOME}/go/deps/dqlite/include/"
+          export CGO_LDFLAGS="-L${HOME}/go/deps/sqlite/.libs/ -L${HOME}/go/deps/libco/ -L${HOME}/go/deps/raft/.libs -L${HOME}/go/deps/dqlite/.libs/"
+          export LD_LIBRARY_PATH="${HOME}/go/deps/sqlite/.libs/:${HOME}/go/deps/libco/:${HOME}/go/deps/raft/.libs/:${HOME}/go/deps/dqlite/.libs/"
+          make
+    git_binaries:
+
+      - src: '{{ lxd__upstream_git_repository.split("://")[1] + "/../../../../bin/lxd" }}'
+        dest: 'lxd'
+
+      - src: '{{ lxd__upstream_git_repository.split("://")[1] + "/../../../../bin/lxc" }}'
+        dest: 'lxc'
+
+                                                                   # ]]]
+# .. envvar:: lxd__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+lxd__logrotate__dependent_config:
+
+  - filename: 'lxd'
+    divert: '{{ False if lxd__upstream_enabled|bool else True }}'
+    log: '/var/log/lxd/lxd.log'
+    options: |
+      copytruncate
+      daily
+      rotate 7
+      delaycompress
+      compress
+      notifempty
+      missingok
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: lxd__sysctl__dependent_parameters [[[
+#
+# Configuration for the :ref:`debops.sysctl` Ansible role.
+lxd__sysctl__dependent_parameters:
+
+  - name: 'lxd-inotify'
+    divert: '{{ False if lxd__upstream_enabled|bool else True }}'
+    weight: '10'
+    options:
+
+      - name: 'fs.inotify.max_user_instances'
+        comment: |
+          Increase the user inotify instance limit to allow for about
+          100 containers to run before the limit is hit again
+        value: 1024
+                                                                   # ]]]
+                                                                   # ]]]

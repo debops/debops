@@ -1,0 +1,8 @@
+{% set lxd__tpl_preseed = {} %}
+{% for element in lxd__combined_preseed | parse_kv_config %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] and element.seed|d() %}
+{%     set combined_preseed = lxd__tpl_preseed | combine(element.seed, recursive=True) %}
+{%     set _ = lxd__tpl_preseed.update(combined_preseed) %}
+{%   endif %}
+{% endfor %}
+{{ lxd__tpl_preseed | to_yaml }}

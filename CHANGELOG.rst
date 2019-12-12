@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.lxd` role brings support for LXD on Debian hosts by building
+  the Go binaries from source, without Snap installation.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 
