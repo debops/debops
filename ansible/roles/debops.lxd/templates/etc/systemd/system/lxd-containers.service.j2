@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=LXD - container startup/shutdown
+Documentation=man:lxd(1)
+After=lxd.socket lxd.service
+Requires=lxd.socket
+
+[Service]
+Type=oneshot
+ExecStart={{ lxd__binary }} activateifneeded
+ExecStop={{ lxd__binary }} shutdown
+TimeoutStartSec=600s
+TimeoutStopSec=600s
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

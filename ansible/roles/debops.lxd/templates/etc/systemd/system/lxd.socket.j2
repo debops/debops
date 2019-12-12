@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=LXD - unix socket
+Documentation=man:lxd(1)
+After=network.target
+
+[Socket]
+ListenStream=/var/lib/lxd/unix.socket
+SocketUser=root
+SocketGroup={{ lxd__group }}
+SocketMode=0660
+Service=lxd.service
+
+[Install]
+WantedBy=sockets.target

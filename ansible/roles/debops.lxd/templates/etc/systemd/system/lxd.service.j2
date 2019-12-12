@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=LXD - main daemon
+After=network-online.target openvswitch-switch.service lxcfs.service lxd.socket
+Requires=network-online.target lxcfs.service lxd.socket
+Documentation=man:lxd(1)
+
+[Service]
+EnvironmentFile=-/etc/environment
+ExecStartPre=/usr/lib/x86_64-linux-gnu/lxc/lxc-apparmor-load
+ExecStart={{ lxd__binary }} --group {{ lxd__group }} --logfile=/var/log/lxd/lxd.log
+ExecStartPost={{ lxd__binary }} waitready --timeout=600
+ExecStop={{ lxd__binary }} shutdown
+KillMode=process
+TimeoutStartSec=600s
+TimeoutStopSec=30s
+Restart=on-failure
+LimitNOFILE=1048576
+LimitNPROC=infinity
+TasksMax=infinity
+
+[Install]
+Also=lxd-containers.service lxd.socket
