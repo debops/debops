@@ -21,6 +21,11 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Support for Gravatars is now configurable using role default variables.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 

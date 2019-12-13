@@ -172,10 +172,14 @@ production: &base
   ## Gravatar
   ## For Libravatar see: http://doc.gitlab.com/ce/customization/libravatar.html
   gravatar:
-    enabled: true                 # Use user avatar image from Gravatar.com (default: true)
+    enabled: {{ gitlab__gravatar_enabled }}        # Use user avatar image from Gravatar.com (default: true)
     # gravatar urls: possible placeholders: %{hash} %{size} %{email} %{username}
-    # plain_url: "http://..."     # default: http://www.gravatar.com/avatar/%{hash}?s=%{size}&d=identicon
-    # ssl_url:   "https://..."    # default: https://secure.gravatar.com/avatar/%{hash}?s=%{size}&d=identicon
+{% if gitlab__gravatar_plain_url != '' %}
+    plain_url: "{{ gitlab__gravatar_plain_url }}"  # default: http://www.gravatar.com/avatar/%{hash}?s=%{size}&d=identicon
+{% endif %}
+{% if gitlab__gravatar_ssl_url != '' %}
+    ssl_url:   "{{ gitlab__gravatar_ssl_url }}"    # default: https://secure.gravatar.com/avatar/%{hash}?s=%{size}&d=identicon
+{% endif %}
 
   ## Auxiliary jobs
   # Periodically executed jobs, to self-heal Gitlab, do external synchronizations, etc.
