@@ -216,6 +216,13 @@ the final output:
   configuration file, Bigger weight will move the configuration option lower in
   the configuration file.
 
+``value_cast``
+  Optional. Specify the type of a given value to use in the configuration file.
+  Supported types: ``int``/``integer``, ``str``/``string``, ``float``,
+  ``null``/``none``, ``bool``/``boolean``. This parameter is onlu useful when
+  the value is defined using another variable, in which case the type
+  information is not preserved by Jinja templating.
+
 
 .. _roundcube__ref_configuration_sections:
 
