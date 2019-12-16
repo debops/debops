@@ -25,7 +25,9 @@ Added
 ''''''''''''''''''''''''''''''''''
 
 - The ``parse_kv_config`` and ``parse_kv_items`` Ansible filter plugins now
-  support the ``null`` value defined in the configuration entries.
+  support the ``null`` value defined in the configuration entries. The values
+  defined via additional variables can now be casted as strings, integers,
+  floats or booleans to preserve their type.
 
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''

@@ -88,13 +88,25 @@ def _parse_kv_value(current_data, new_data, data_index):
         old_value = current_data.get('value')
         old_state = current_data.get('state', 'present')
         new_value = new_data['value']
+        new_value_cast = new_data.get('value_cast', None)
 
         if (new_value is None or
                 isinstance(new_value, (basestring, int, float, bool))):
             if (old_value is None or isinstance(old_value,
                                                 (basestring, int,
                                                  float, bool, dict))):
-                current_data['value'] = new_value
+                if new_value_cast in ['null', 'none', 'None']:
+                    current_data['value'] = None
+                elif new_value_cast in ['int', 'integer']:
+                    current_data['value'] = int(new_value)
+                elif new_value_cast in ['str', 'string']:
+                    current_data['value'] = str(new_value)
+                elif new_value_cast in ['bool', 'boolean']:
+                    current_data['value'] = bool(new_value)
+                elif new_value_cast == 'float':
+                    current_data['value'] = float(new_value)
+                else:
+                    current_data['value'] = new_value
 
             # TODO(drybjed): This never evaluates to true.
             #  if (old_value is not None and old_state in ['comment'] and
