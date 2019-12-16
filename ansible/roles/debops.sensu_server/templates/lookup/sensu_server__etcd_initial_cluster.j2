@@ -1,0 +1,5 @@
+{% set sensu_server__tpl_etcd_initial_cluster = [] %}
+{% for backend in groups[sensu_server__backend_inventory_group] %}
+{%     set _ = sensu_server__tpl_etcd_initial_cluster.append(backend + "=" + ("https" if sensu_server__pki|bool else "http") + "://" + hostvars[backend]["ansible_ssh_host"] + ":2380") %}
+{% endfor %}
+{{ sensu_server__tpl_etcd_initial_cluster|join(',') }}

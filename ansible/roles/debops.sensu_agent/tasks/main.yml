@@ -1,0 +1,54 @@
+---
+
+- name: Install Sensu Go agent packages
+  package:
+    name: '{{ q("flattened", (sensu_agent__base_packages
+                              + sensu_agent__packages)) }}'
+    state: 'present'
+  register: sensu_agent__register_install_status
+  until: sensu_agent__register_install_status is succeeded
+
+- name: Add sensu agent user to specified groups
+  user:
+    name: 'sensu'
+    groups: '{{ sensu_agent__append_groups | join(",") | default(omit) }}'
+    append: True
+    createhome: False
+  when: sensu_agent__pki|bool
+
+- name: Ensure Sensu directories exists
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'sensu'
+    group: 'sensu'
+    mode: '0750'
+  with_items:
+    - '{{ sensu_agent__cache_directory }}'
+
+- name: Configure sensu agent
+  template:
+    src: 'etc/sensu/agent.yml.j2'
+    dest: '/etc/sensu/agent.yml'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::sensu_agent:config' ]
+  notify: restart sensu-agent
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Sensu agent local facts
+  template:
+    src: 'etc/ansible/facts.d/sensu_agent.fact.j2'
+    dest: '/etc/ansible/facts.d/sensu_agent.fact'
+    mode: '0755'
+  register: sensu_agent__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: sensu_agent__register_facts is changed

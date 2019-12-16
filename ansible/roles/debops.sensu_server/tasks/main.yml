@@ -1,0 +1,101 @@
+---
+
+- name: Install Sensu Go Server packages
+  package:
+    name: '{{ q("flattened", (sensu_server__base_packages
+                              + sensu_server__packages)) }}'
+    state: 'present'
+  register: sensu_server__register_install_status
+  until: sensu_server__register_install_status is succeeded
+
+- name: Stop Sensu backend server on first install
+  service:
+    name: 'sensu-backend'
+    state: 'stopped'
+  when: (sensu_server__register_install_status|d() and sensu_server__register_install_status is changed)
+
+- name: Add sensu backend server user to specified groups
+  user:
+    name: 'sensu'
+    groups: '{{ sensu_server__append_groups | join(",") | default(omit) }}'
+    append: True
+    createhome: False
+  when: sensu_server__pki|bool
+
+- name: Ensure Sensu directories exists
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'sensu'
+    group: 'sensu'
+    mode: '0750'
+  with_items:
+    - '{{ sensu_server__state_directory }}'
+    - '{{ sensu_server__cache_directory }}'
+
+- name: Configure sensu backend server
+  template:
+    src: 'etc/sensu/backend.yml.j2'
+    dest: '/etc/sensu/backend.yml'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::sensu_server:config' ]
+  notify: restart sensu-backend
+
+- name: Start Sensu backend server on first install
+  service:
+    name: 'mysql'
+    state: 'started'
+  when: (sensu_server__register_install_status|d() and sensu_server__register_install_status is changed)
+
+- name: Configure sensu cli on first install
+  shell:
+    'sensuctl configure -n --username "admin" --password "P@ssw0rd!" --namespace default --url "{{ sensu_server__api_url }}"'
+  when: (sensu_server__register_install_status|d() and sensu_server__register_install_status is changed)
+
+- name: Change sensu admin account password on first install
+  shell:
+    'sensuctl user change-password "admin" --current-password "P@ssw0rd!" --new-password "{{ sensu_server__admin_account_password }}"'
+  no_log: True
+  when: (sensu_server__register_install_status|d() and sensu_server__register_install_status is changed)
+
+- name: Change sensu agent account password on first install
+  shell:
+    'sensuctl user change-password "agent" --current-password "P@ssw0rd!" --new-password "{{ sensu_server__agent_account_password }}"'
+  no_log: True
+#  when: (sensu_server__register_install_status|d() and sensu_server__register_install_status is changed)
+
+- name: Manage Sensu backend server user accounts
+  sensu_user:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name:       '{{ item.user | d(item.name) | d(item) }}'
+    password:   '{{ item.password | d(lookup("password",
+                    secret + "/sensu_server/accounts/"
+                    + (item.user | d(item.name | d(item)))
+                    + "/password length="
+                    + sensu_server__account_password_length)) }}'
+    state:      '{{ item.state | d("present") }}'
+    groups:     '{{ item.groups if item.groups|d() else omit }}'
+  with_flattened:
+    - '{{ sensu_server__combined_accounts }}'
+  tags: [ 'role::sensu_server:user' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Sensu backend server local facts
+  template:
+    src: 'etc/ansible/facts.d/sensu_server.fact.j2'
+    dest: '/etc/ansible/facts.d/sensu_server.fact'
+    mode: '0755'
+  register: sensu_server__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: sensu_server__register_facts is changed

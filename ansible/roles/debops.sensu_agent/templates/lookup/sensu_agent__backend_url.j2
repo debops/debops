@@ -1,0 +1,5 @@
+{% set sensu_agent__tpl_backend_url = [] %}
+{% for backend in groups[sensu_agent__backend_inventory_group] %}
+{%     set _ = sensu_agent__tpl_backend_url.append(("wss" if sensu_agent__pki|bool else "ws") + "://" + hostvars[backend]["ansible_ssh_host"] + ":8081") %}
+{% endfor %}
+{{ sensu_agent__tpl_backend_url }}

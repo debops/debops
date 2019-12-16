@@ -1,0 +1,19 @@
+---
+
+- name: Manage Sensu agent
+  hosts: [ 'debops_service_sensu_agent' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::sensu_agent' ]
+      keyring__dependent_apt_keys:
+        - '{{ sensu_agent__keyring__dependent_apt_keys }}'
+
+    - role: debops.sensu_agent
+      tags: [ 'role::sensu_agent', 'skip::sensu_agent' ]

@@ -1,0 +1,486 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _sensu_server__ref_defaults:
+
+# debops.sensu_server default variables
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# -------------------------------
+
+# .. envvar:: sensu_server__base_packages [[[
+#
+# List of the default APT packages to install for Sensu Server support.
+sensu_server__base_packages: [ 'sensu-go-backend', 'sensu-go-cli' ]
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__packages [[[
+#
+# List of additional APT packages to install with Sensu Server.
+sensu_server__packages: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: sensu_server__fqdn [[[
+#
+# The Fully Qualified Domain Name address on which the Sensu server
+# Dashboard and API will be accessible.
+sensu_server__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be permitted to access the
+# Sensu server Dashboard web interface and API. If the list is empty, anybody can
+# access the service.
+sensu_server__allow: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Backend configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_server__state_directory [[[
+#
+# Path to store state data
+sensu_server__state_directory: '/var/lib/sensu/sensu-backend'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__cache_directory [[[
+#
+# Path to store cached data
+sensu_server__cache_directory: '/var/cache/sensu/sensu-backend'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__debug [[[
+#
+# Enable debugging and profiling features
+sensu_server__debug: false
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__log_level [[[
+#
+# Logging level
+# Available log levels: panic, fatal, error, warn, info, debug
+sensu_server__log_level: 'warn'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__deregistration_handler [[[
+#
+# Default event handler to use when processing agent deregistration events
+sensu_server__deregistration_handler: ''
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Agent configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_server__agent_host [[[
+#
+# Agent listener host. Listens on all IPv4 and IPv6 addresses by default
+sensu_server__agent_host: '[::]'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__agent_port [[[
+#
+# Agent listener port
+sensu_server__agent_port: 8081
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__agent_account_password [[[
+#
+# Sensu RBAC password used by the agents
+sensu_server__agent_account_password: '{{ lookup("password",
+                                          secret + "/sensu_server/accounts/"
+                                          + "agent/password length="
+                                          + sensu_server__account_password_length) }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__agent_auth [[[
+#
+# COMMERCIAL FEATURE: Access client TLS authentication in the packaged
+# Sensu Go distribution.
+sensu_server__agent_auth: False
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__agent_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Sensu backend service over ``ws[s]://`` connection.
+#
+# If this list is empty, anybody can connect the service.
+sensu_server__agent_allow: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# API configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_server__api_host [[[
+#
+# Agent listener host
+sensu_server__api_host: '{{ ansible_fqdn if sensu_server__pki|bool else "127.0.0.1" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__api_port [[[
+#
+# API listener port
+sensu_server__api_port: 8080
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__api_listen_address [[[
+#
+# Address the API daemon will listen for requests on
+sensu_server__api_listen_address: '{{ sensu_server__api_host }}:{{ sensu_server__api_port }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__api_url [[[
+#
+# URL used to connect to the API
+sensu_server__api_url: '{{ ("https" if sensu_server__pki|bool else "http") +
+                           "://" + sensu_server__api_listen_address }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Dashboard configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_server__dashboard_host [[[
+#
+# Dashboard listener host
+sensu_server__dashboard_host: '{{ ansible_fqdn if sensu_server__pki|bool else "127.0.0.1" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__dashboard_port [[[
+#
+# Dashboard listener port
+sensu_server__dashboard_port: 3000
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Store configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_server__etcd_client_cert_auth [[[
+#
+# Enable client cert authentication.
+sensu_server__etcd_client_cert_auth: false
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_network_host [[[
+#
+# Etcd listener host.
+sensu_server__etcd_network_host: '{{ ansible_default_ipv4.address
+                                     if (ansible_local|d() and ansible_local.ferm|d() and
+                                         ansible_local.ferm.enabled|d() and
+                                         ansible_local.ferm.enabled|bool)
+                                     else "127.0.0.1" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_advertise_client_urls [[[
+#
+# List of this member’s client URLs to advertise to the rest of the cluster.
+sensu_server__etcd_advertise_client_urls: '{{ ("https" if sensu_server__pki|bool else "http") +
+                                              "://" + sensu_server__etcd_network_host + ":2379" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_advertise_peer_urls [[[
+#
+# List of this member’s peer URLs to advertise to the rest of the cluster.
+sensu_server__etcd_advertise_peer_urls: '{{ ("https" if sensu_server__pki|bool else "http") +
+                                            "://" + sensu_server__etcd_network_host + ":2380" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_listen_client_urls [[[
+#
+# List of URLs to listen on for client traffic.
+sensu_server__etcd_listen_client_urls: '{{ ("https" if sensu_server__pki|bool else "http") +
+                                           "://" + sensu_server__etcd_network_host + ":2379" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_listen_peer_urls [[[
+#
+# List of URLs to listen on for peer traffic.
+sensu_server__etcd_listen_peer_urls: '{{ ("https" if sensu_server__pki|bool else "http") +
+                                         "://" + sensu_server__etcd_network_host + ":2380" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__backend_inventory_group [[[
+#
+# Name of the Ansible inventory group which contains Sensu backend server host in
+# a "homogeneous" configuration (each node having the same functions as every
+# other node).
+sensu_server__backend_inventory_group: 'debops_service_sensu_server'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_name [[[
+#
+# Human-readable name for this member.
+sensu_server__etcd_name: '{{ ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_initial_cluster [[[
+#
+# Initial cluster configuration for bootstrapping.
+sensu_server__etcd_initial_cluster: '{{ lookup("template",
+                                        "lookup/sensu_server__etcd_initial_cluster.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_initial_cluster_state [[[
+#
+# Initial cluster state (new or existing).
+sensu_server__etcd_initial_cluster_state: 'new'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_initial_cluster_token [[[
+#
+# Initial cluster token for the etcd cluster during bootstrap.
+sensu_server__etcd_initial_cluster_token: '{{ lookup("password",
+                                              secret + "/sensu_server/cluster/token") }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__no_embed_etcd [[[
+#
+# Don’t embed etcd. Use external etcd instead.
+sensu_server__no_embed_etcd: False
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__etcd_cipher_suits [[[
+#
+# List of allowed cipher suites for etcd TLS configuration. Sensu supports TLS
+# 1.0-1.2 cipher suites as listed in the Go TLS documentation. You can use this
+# attribute to defend your TLS servers from attacks on weak TLS ciphers. The
+# default cipher suites are determined by Go, based on the hardware used.
+#
+# NOTE: To use TLS 1.3, add the following environment variable: GODEBUG="tls13=1".
+sensu_server__etcd_cipher_suits:
+  - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+  - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+  - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+  - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Sensu backend server user account configuration [[[
+# ---------------------------------------
+
+# These variables can be used to manage Sensu backend server user accounts.
+
+# .. envvar:: sensu_server__admin_accounts [[[
+#
+# List of automatically managed administrator accounts, based of the admin
+# users managed by the :ref:`debops.core` Ansible role.
+sensu_server__admin_accounts: '{{ lookup("template",
+                                  "lookup/sensu_server__admin_accounts.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__accounts [[[
+#
+# List of Sensu backend server user accounts which should be managed on all hosts in the
+# Ansible inventory.
+sensu_server__accounts: []
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__group_accounts [[[
+#
+# List of Sensu backend server user accounts which should be managed on hosts in a specific
+# Ansible inventory group.
+sensu_server__group_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__host_accounts [[[
+#
+# List of Sensu backend server user accounts which should be managed on specific hosts in
+# the Ansible inventory.
+sensu_server__host_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__combined_accounts [[[
+#
+# Combined list of Sensu backend server user accounts, passed to the Ansible task.
+sensu_server__combined_accounts: '{{ sensu_server__admin_accounts
+                                        + sensu_server__accounts
+                                        + sensu_server__group_accounts
+                                        + sensu_server__host_accounts }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__account_password_length [[[
+#
+# The default length of the autogenerated user account passwords.
+sensu_server__account_password_length: '32'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__admin_account_password [[[
+#
+# The admin account password for sensuctl.
+sensu_server__admin_account_password: '{{ lookup("password",
+                                          secret + "/sensu_server/accounts/"
+                                          + "admin/password length="
+                                          + sensu_server__account_password_length) }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: sensu_server__append_groups [[[
+#
+# List of additional system groups to append to the Sensu system user.
+# ``ssl-cert`` group is required for access to certificate private keys.
+sensu_server__append_groups: [ 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__pki [[[
+#
+# Enable or disable support for SSL in Sensu (using :ref:`debops.pki`).
+sensu_server__pki: '{{ (True
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.enabled|d() and
+                            sensu_server__pki_realm in ansible_local.pki.known_realms)
+                        else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__pki_path [[[
+#
+# Base path for PKI directory.
+sensu_server__pki_path: '{{ (ansible_local.pki.base_path
+                             if (ansible_local|d() and ansible_local.pki|d() and
+                                 ansible_local.pki.base_path|d())
+                             else "/etc/pki") }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__pki_realm [[[
+#
+# Default PKI realm used by Sensu backend server.
+sensu_server__pki_realm: '{{ ansible_local.pki.realm
+                             if (ansible_local|d() and ansible_local.pki|d() and
+                                 ansible_local.pki.realm|d())
+                             else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__pki_ca [[[
+#
+# Root CA certificate used by Sensu, relative to :envvar:`sensu_server__pki_realm`.
+sensu_server__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__pki_crt [[[
+#
+# Host certificate used by Sensu, relative to :envvar:`sensu_server__pki_realm`.
+sensu_server__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__pki_key [[[
+#
+# Host private key used by Sensu, relative to :envvar:`sensu_server__pki_realm`.
+sensu_server__pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__insecure_skip_tls_verify [[[
+#
+# Skip SSL verification.
+# WARNING: This configuration flag is intended for use in development systems only. Do not use this flag in production.
+sensu_server__insecure_skip_tls_verify: false
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: sensu_server__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+sensu_server__keyring__dependent_apt_keys:
+
+  - id: 'CB16 05C4 E988 C91F 4382  49E3 A5BC 3FB7 0A3F 7426'
+    url: 'https://packagecloud.io/sensu/stable/gpgkey'
+    repo: 'deb https://packagecloud.io/sensu/stable/debian/ {{ ansible_distribution_release }} main'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+sensu_server__nginx__dependent_servers:
+
+  - name: '{{ sensu_server__fqdn }}'
+    by_role: 'debops.sensu_server'
+    filename: 'debops.sensu_server'
+    allow: '{{ sensu_server__allow }}'
+
+    location:
+      '/auth': |
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Port  443;
+        proxy_pass {{ "https" if sensu_server__pki|bool else "http" }}://sensu_server_api;
+
+      '/api/': |
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Port  443;
+        proxy_pass {{ "https" if sensu_server__pki|bool else "http" }}://sensu_server_api/api/;
+
+      '/': |
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Port  443;
+        proxy_pass {{ "https" if sensu_server__pki|bool else "http" }}://sensu_server_dashboard;
+#
+                                                                   # ]]]
+# .. envvar:: sensu_server__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+sensu_server__nginx__dependent_upstreams:
+
+  - name: 'sensu_server_dashboard'
+    server: '{{ sensu_server__dashboard_host + ":" + sensu_server__dashboard_port|string }}'
+
+  - name: 'sensu_server_api'
+    server: '{{ sensu_server__api_listen_address }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_server__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+sensu_server__ferm__dependent_rules:
+
+  - name: 'sensu-ws'
+    type: 'accept'
+    saddr: '{{ sensu_server__agent_allow }}'
+    dport: [ '{{ sensu_server__agent_port }}' ]
+    accept_any: True
+
+  - name: 'sensu-api'
+    type: 'accept'
+    saddr: '{{ ansible_default_ipv4.address }}'
+    dport: [ '{{ sensu_server__api_port }}' ]
+    accept_any: False
+    rule_state: '{{ "present" if sensu_server__pki|bool else "absent" }}'
+
+  - name: 'sensu-dashboard'
+    type: 'accept'
+    saddr: '{{ ansible_default_ipv4.address }}'
+    dport: [ '{{ sensu_server__dashboard_port }}' ]
+    accept_any: False
+    rule_state: '{{ "present" if sensu_server__pki|bool else "absent" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
