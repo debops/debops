@@ -2568,24 +2568,78 @@ roundcube__default_configuration:
   - name: 'smtp_pass'
     value: '{{ roundcube__smtp_pass }}'
 
-  - name: 'product_name'
-    value: '{{ roundcube__product_name }}'
+  - name: 'skin_logo'
+    value: '{{ roundcube__skin_logo }}'
+
+    # Ensure that all communication to the client is encrypted
+  - name: 'force_https'
+    value: True
 
   - name: 'des_key'
     value: '{{ roundcube__des_key }}'
 
+    # Roundcube developers consider this a better choice
+  - name: 'cipher_method'
+    value: 'AES-256-CBC'
+
   - name: 'username_domain'
     value: '{{ roundcube__username_domain }}'
+
+    # Slow down potential bots
+  - name: 'sendmail_delay'
+    value: 5
+
+  - name: 'product_name'
+    value: '{{ roundcube__product_name }}'
+
+    # Use the system-wide MIME database from the 'mime-support' APT package
+  - name: 'mime_types'
+    value: '/etc/mime.types'
+
+    # Help mitigate mails to non-existent DNS domains
+  - name: 'email_dns_check'
+    value: True
 
   - name: 'plugins'
     value: '{{ (roundcube__default_plugins
                 + roundcube__plugins) | unique }}'
 
+    # Create Special Folders automatically. This will ensure that the Junk
+    # folder is present and selected in the preferences.
+  - name: 'create_default_folders'
+    value: True
+
+    # Set the default number of autocompletion characters for lower sever load.
+  - name: 'autocomplete_min_length'
+    value: 3
+
+    # Set the default mail charset to Unicode
+  - name: 'default_charset'
+    value: 'UTF-8'
+
   - name: 'skin'
     value: '{{ roundcube__skin_folder }}'
 
-  - name: 'skin_logo'
-    value: '{{ roundcube__skin_logo }}'
+    # Don't prefer HTML message view by default
+  - name: 'prefer_html'
+    value: False
+
+    # Delete spam messages without moving them to Trash first
+  - name: 'delete_junk'
+    value: True
+
+    # Forward e-mails as attachments by default
+  - name: 'forward_attachment'
+    value: True
+
+    # Display the sender e-mail address by default to help users detect forged
+    # senders
+  - name: 'message_show_email'
+    value: True
+
+    # Better support for mailing lists
+  - name: 'reply_all_mode'
+    value: 1
 
                                                                    # ]]]
 # .. envvar:: roundcube__configuration [[[
