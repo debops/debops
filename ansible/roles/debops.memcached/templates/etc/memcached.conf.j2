@@ -47,6 +47,11 @@ logfile /var/log/memcached.log
 
 # Maximize core file limit
 # -r
+{% if memcached__version is version("1.5.6", ">=") %}
+# Use a pidfile
+
+-P /run/memcached/memcached.pid
+{% endif %}
 {% if memcached__options|d() %}
 
 {{ memcached__options }}

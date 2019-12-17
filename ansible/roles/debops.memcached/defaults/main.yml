@@ -25,6 +25,16 @@ memcached__base_packages: [ 'memcached' ]
 #
 # List of additional APT packages to install with :command:`memcached`.
 memcached__packages: []
+
+                                                                   # ]]]
+# .. envvar:: memcached__version [[[
+#
+# The installed :command:`memcached` version. This variable is autodetected
+# using Ansible local facts.
+memcached__version: '{{ ansible_local.memcached.version
+                        if (ansible_local|d() and ansible_local.memcached|d() and
+                            ansible_local.memcached.version|d())
+                        else "0.0.0" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Memcached configuration [[[

@@ -8,11 +8,26 @@
   register: memcached__register_packages
   until: memcached__register_packages is succeeded
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save memcached local facts
+  template:
+    src: 'etc/ansible/facts.d/memcached.fact.j2'
+    dest: '/etc/ansible/facts.d/memcached.fact'
+    mode: '0755'
+  register: memcached__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: memcached__register_facts is changed
+
 - name: Configure memcached
   template:
     src: 'etc/memcached.conf.j2'
     dest: '/etc/memcached.conf'
-    owner: 'root'
-    group: 'root'
     mode: '0644'
   notify: [ 'Restart memcached' ]
