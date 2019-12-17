@@ -2,7 +2,8 @@
 
 - name: Install memcached
   package:
-    name: 'memcached'
+    name: '{{ (memcached__base_packages
+               + memcached__packages) | flatten }}'
     state: 'present'
   register: memcached__register_packages
   until: memcached__register_packages is succeeded
