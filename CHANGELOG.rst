@@ -95,6 +95,13 @@ LDAP
   role no longer generates the :command:`ferm` configuration files directly,
   instead using the :ref:`debops.ferm` role as a dependency.
 
+:ref:`debops.memcached` role
+''''''''''''''''''''''''''''
+
+- All variables in the role have been renamed from ``memcached_*`` to
+  ``memcached__*`` to create the role namespace. You need to update the
+  inventory accordingly.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 

@@ -15,52 +15,52 @@
 # Memcached configuration [[[
 # ---------------------------
 
-# .. envvar:: memcached_bind [[[
+# .. envvar:: memcached__bind [[[
 #
 # IP address on which ``memcached`` listens for new connections. To listen on
 # all interfaces, set it to ``0.0.0.0``.
-memcached_bind: '127.0.0.1'
+memcached__bind: '127.0.0.1'
 
                                                                    # ]]]
-# .. envvar:: memcached_allow [[[
+# .. envvar:: memcached__allow [[[
 #
 # List of IP addresses or CIDR subnets which are allowed to connect to this
 # ``memcached``. If the list is empty, remote connections are denied.
-memcached_allow: []
+memcached__allow: []
 
                                                                    # ]]]
-# .. envvar:: memcached_memory [[[
+# .. envvar:: memcached__memory [[[
 #
 # Maximum amount of RAM ``memcached`` is allowed to use.
-memcached_memory: '{{ (memcached_memory_available  | float *
-                       memcached_memory_multiplier | float) | int }}'
+memcached__memory: '{{ (memcached__memory_available  | float *
+                        memcached__memory_multiplier | float) | int }}'
 
                                                                    # ]]]
-# .. envvar:: memcached_memory_available [[[
+# .. envvar:: memcached__memory_available [[[
 #
 # Amount of RAM which ``debops.memcached`` takes into account while calculating
-# ``memcached_memory`` variable.
-memcached_memory_available: '{{ ansible_memtotal_mb }}'
+# ``memcached__memory`` variable.
+memcached__memory_available: '{{ ansible_memtotal_mb }}'
 
                                                                    # ]]]
-# .. envvar:: memcached_memory_multiplier [[[
+# .. envvar:: memcached__memory_multiplier [[[
 #
 # Value which is multiplied by amount of available RAM to limit memory
 # accessible to ``memcached``. 1.0 will allow access to all available memory,
 # values bigger than 1.0 don't make much sense.
-memcached_memory_multiplier: '0.3'
+memcached__memory_multiplier: '0.3'
 
                                                                    # ]]]
-# .. envvar:: memcached_connections [[[
+# .. envvar:: memcached__connections [[[
 #
 # Maximum number of allowed connections.
-memcached_connections: '1024'
+memcached__connections: '1024'
 
                                                                    # ]]]
-# .. envvar:: memcached_options [[[
+# .. envvar:: memcached__options [[[
 #
 # Additional ``memcached`` options, specified as YAML text block.
-memcached_options: ''
+memcached__options: ''
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -83,7 +83,7 @@ memcached__ferm__dependent_rules:
   - type: 'accept'
     dport: [ 'memcache' ]
     protocol: [ 'tcp', 'udp' ]
-    saddr: '{{ memcached_allow }}'
+    saddr: '{{ memcached__allow }}'
     accept_any: False
     weight: '50'
     role: 'memcached'
