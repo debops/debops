@@ -4,29 +4,28 @@ Getting started
 .. contents::
    :local:
 
+
 Example inventory
 -----------------
 
-To install ``memcached`` on a host, you can add it in ``[debops_memcached]``
-Ansible group::
+To install the ``memcached`` service on a host, you can add it in the ``[debops_service_memcached]``
+Ansible inventory group:
 
-    [debops_memcached]
+.. code-block:: none
+
+    [debops_service_memcached]
     hostname
+
 
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.memcached`` role::
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.memcached`` role:
 
-    ---
+.. literalinclude:: ../../../../ansible/playbooks/service/memcached.yml
+   :language: yaml
 
-    - name: Install memcached service
-      hosts: debops_memcached
-      become: True
-
-      roles:
-        - role: debops.memcached
-          tags: memcached
 
 Ansible tags
 ------------
@@ -41,16 +40,3 @@ Available role tags:
 ``role::memcached``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
-
-``type::dependency``
-  This tag specifies which tasks are defined in role dependencies. You can use
-  this to omit them using ``--skip-tags`` parameter.
-
-``depend-of::memcached``
-  Execute all ``debops.memcached`` role dependencies in its context.
-
-``depend::etc_services:memcached``
-  Run ``debops.etc_services`` dependent role in ``debops.memcached`` context.
-
-``depend::ferm:memcached``
-  Run ``debops.ferm`` dependent role in ``debops.memcached`` context.
