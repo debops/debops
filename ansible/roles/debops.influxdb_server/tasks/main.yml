@@ -1,0 +1,52 @@
+---
+
+- name: Install InfluxDB Server packages
+  package:
+    name: '{{ q("flattened", (influxdb_server__base_packages
+                              + influxdb_server__packages)) }}'
+    state: 'present'
+  register: influxdb_server__register_install_status
+  until: influxdb_server__register_install_status is succeeded
+
+- name: Add InfluxDB server user to specified groups
+  user:
+    name: 'influxdb'
+    groups: '{{ influxdb_server__append_groups | join(",") | default(omit) }}'
+    append: True
+    createhome: False
+  when: influxdb_server__pki|bool
+
+- name: Ensure InfluxDB server directory exists
+  file:
+    path: '{{ influxdb_server__directory }}'
+    state: 'directory'
+    owner: 'influxdb'
+    group: 'influxdb'
+    mode: '0750'
+
+- name: Configure InfluxDB server
+  template:
+    src: 'etc/influxdb/influxdb.conf.j2'
+    dest: '/etc/influxdb/influxdb.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::influxdb_server:config' ]
+  notify: restart influxdb
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save InfluxDB server local facts
+  template:
+    src: 'etc/ansible/facts.d/influxdb_server.fact.j2'
+    dest: '/etc/ansible/facts.d/influxdb_server.fact'
+    mode: '0755'
+  register: influxdb_server__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: influxdb_server__register_facts is changed

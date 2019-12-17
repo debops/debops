@@ -1,0 +1,24 @@
+---
+
+- name: Manage InfluxDB server
+  hosts: [ 'debops_service_influxdb_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::nginx', 'role::influxdb_server' ]
+      keyring__dependent_apt_keys:
+        - '{{ influxdb_server__keyring__dependent_apt_keys }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ influxdb_server__ferm__dependent_rules }}'
+
+    - role: debops.influxdb_server
+      tags: [ 'role::influxdb_server', 'skip::influxdb_server' ]
