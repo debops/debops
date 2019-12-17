@@ -1,22 +1,6 @@
 ---
 
-dependencies:
-
-  - role: debops.etc_services
-    tags: [ 'role::etc_services', 'skip::etc_services' ]
-    etc_services_dependent_list:
-      - name: 'memcache'
-        port: '11211'
-
-  - role: debops.ferm
-    tags: [ 'role::ferm', 'skip::ferm' ]
-    ferm_input_dependent_list:
-      - type: 'dport_accept'
-        protocol: [ 'tcp', 'udp' ]
-        dport: [ 'memcache' ]
-        saddr: '{{ memcached_allow }}'
-        weight: '50'
-        filename: 'memcached_dependency_accept'
+dependencies: []
 
 galaxy_info:
 

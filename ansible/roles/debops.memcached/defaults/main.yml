@@ -12,6 +12,9 @@
 # .. include:: ../../../../includes/global.rst
 
 
+# Memcached configuration [[[
+# ---------------------------
+
 # .. envvar:: memcached_bind [[[
 #
 # IP address on which ``memcached`` listens for new connections. To listen on
@@ -58,5 +61,31 @@ memcached_connections: '1024'
 #
 # Additional ``memcached`` options, specified as YAML text block.
 memcached_options: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
+# .. envvar:: memcached__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+memcached__etc_services__dependent_list:
+
+  - name: 'memcache'
+    port: '11211'
+
+                                                                   # ]]]
+# .. envvar:: memcached__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+memcached__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'memcache' ]
+    protocol: [ 'tcp', 'udp' ]
+    saddr: '{{ memcached_allow }}'
+    accept_any: False
+    weight: '50'
+    role: 'memcached'
+                                                                   # ]]]
                                                                    # ]]]
