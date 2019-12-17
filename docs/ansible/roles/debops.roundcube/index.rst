@@ -13,6 +13,7 @@ written in PHP.
 
    getting-started
    defaults/main
+   defaults-detailed
    guides
 
 Copyright

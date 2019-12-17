@@ -18,9 +18,13 @@ spell checking library:
 
 .. code:: yaml
 
-   roundcube__local_config_map:
-     spellcheck_engine: 'enchant'
-     spellcheck_languages: "array('en', 'fr')"
+   roundcube__configuration:
+
+     - name: 'spellcheck_engine'
+       value: 'enchant'
+
+     - name: 'spellcheck_languages'
+       value: [ 'en', 'fr' ]
 
 Of course, many more languages are supported. You can find more information
 about the required packages and configuration in the Roundcube `defaults.inc.php`_.

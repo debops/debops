@@ -73,13 +73,19 @@ Inventory variable changes
 
 - Some of the variables in the :ref:`debops.roundcube` role have been renamed:
 
-  +-----------------------------+----------------------------------+---------------+
-  | Old variable name           | New variable name                | Changed value |
-  +=============================+==================================+===============+
-  | ``roundcube__default_host`` | :envvar:`roundcube__imap_server` | No            |
-  +-----------------------------+----------------------------------+---------------+
-  | ``roundcube__domain``       | :envvar:`roundcube__fqdn`        | Yes, a string |
-  +-----------------------------+----------------------------------+---------------+
+  +---------------------------------------+------------------------------------------+---------------+
+  | Old variable name                     | New variable name                        | Changed value |
+  +=======================================+==========================================+===============+
+  | ``roundcube__default_host``           | :envvar:`roundcube__imap_server`         | No            |
+  +---------------------------------------+------------------------------------------+---------------+
+  | ``roundcube__domain``                 | :envvar:`roundcube__fqdn`                | Yes, a string |
+  +---------------------------------------+------------------------------------------+---------------+
+  | ``roundcube__local_config_map``       | :envvar:`roundcube__configuration`       | Yes           |
+  +---------------------------------------+------------------------------------------+---------------+
+  | ``roundcube__group_local_config_map`` | :envvar:`roundcube__group_configuration` | Yes           |
+  +---------------------------------------+------------------------------------------+---------------+
+  | ``roundcube__host_local_config_map``  | :envvar:`roundcube__host_configuration`  | Yes           |
+  +---------------------------------------+------------------------------------------+---------------+
 
 
 v1.2.0 (2019-12-01)
