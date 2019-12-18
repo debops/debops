@@ -29,6 +29,23 @@
     - role: debops.python/raw
 
 
+- name: Bootstrap APT configuration on a host
+  hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.apt_proxy
+      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
+
+    - role: debops.apt
+      tags: [ 'role::apt', 'skip::apt' ]
+
+
 - import_playbook: 'service/core.yml'
 
 
@@ -63,12 +80,6 @@
       apt_preferences__dependent_list:
         - '{{ sshd__apt_preferences__dependent_list }}'
         - '{{ yadm__apt_preferences__dependent_list }}'
-
-    - role: debops.apt_proxy
-      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
-
-    - role: debops.apt
-      tags: [ 'role::apt', 'skip::apt' ]
 
     - role: debops.etckeeper
       tags: [ 'role::etckeeper', 'skip::etckeeper' ]
