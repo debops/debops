@@ -118,6 +118,7 @@
     owner: 'root'
     group: 'root'
     force: '{{ ansible_check_mode|d(omit) }}'
+  when: not (item in firejail__combined_program_sandboxes and firejail__combined_program_sandboxes[item].system_wide_sandboxed|d("present") in ["ignored"])
   with_items: '{{ firejail__combined_program_sandboxes.keys() | union(firejail__fact_system_wide_profiles) }}'
 # ]]]
 
