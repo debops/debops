@@ -16,7 +16,7 @@ Containers, using the ``lxc-net`` service. The internal network will have its
 own DHCP/DNS server with ``lxc.{{ ansible_domain }}`` DNS domain by default.
 You can configure a DNS proxy on the LXC host to be able to access the LXC
 containers by their DNS names instead of their IP addresses. The
-:ref:`debops.dnsmasq` and :ref:`debops.unbound` Ansiible roles will
+:ref:`debops.dnsmasq` and :ref:`debops.unbound` Ansible roles will
 automatically integrate with the LXC host configuration using Ansible local
 facts and will generate the configuration necessary to access the
 ``lxc.{{ ansible_domain }}`` DNS domain.
