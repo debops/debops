@@ -77,11 +77,9 @@ sysctl__hardening_enabled: True
                                                                    # ]]]
 # .. envvar:: sysctl__system_ip_forwarding_enabled [[[
 #
-# Is the system expected to forward IP traffic?
-sysctl__system_ip_forwarding_enabled: '{{ ansible_local.ferm.forward | bool
-                                          if (ansible_local|d() and ansible_local.ferm|d() and
-                                              "forward" in ansible_local.ferm)
-                                          else False }}'
+# Should the system forward IP traffic for all interfaces?
+# Refer to ``debops.ifupdown`` which can selectively enable traffic forwarding.
+sysctl__system_ip_forwarding_enabled: False
 
                                                                    # ]]]
 # .. envvar:: sysctl__hardening_ipv6_disabled [[[
