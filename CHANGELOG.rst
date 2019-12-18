@@ -537,6 +537,11 @@ General
   documentation have been fixed and now point to the correct source files on
   GitHub.
 
+- Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
+  installed from CD. :ref:`debops.apt` needs to be run early to regenerate
+  :file:`/etc/apt/sources.list` which might still contain a now not functional
+  CD entry.
+
 :ref:`debops.dnsmasq` role
 ''''''''''''''''''''''''''
 
