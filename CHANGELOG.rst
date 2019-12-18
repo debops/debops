@@ -60,6 +60,16 @@ General
   :file:`/etc/apt/sources.list` which might still contain a now not functional
   CD entry.
 
+Fixed
+~~~~~
+
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The ``dmz`` firewall configuration will now not interpret the port as part of
+  a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
+  ``[]``.
+
 
 `debops v1.1.6`_ - 2019-12-01
 -----------------------------
