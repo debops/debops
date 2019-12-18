@@ -2617,17 +2617,17 @@ roundcube__default_configuration:
 
   - name: 'db_dsnw'
     value: '{{ "sqlite:///" + roundcube__git_checkout + "/"
-                            + roundcube__database_map[roundcube__database].dbname
+                            + roundcube__database_map[roundcube__database].dbname|d()
                             + "?mode=640" }}'
     state: '{{ "present"
                if (roundcube__database_map[roundcube__database].dbtype == "sqlite")
                else "ignore" }}'
 
   - name: 'db_dsnw'
-    value: '{{ "mysql://" + roundcube__database_map[roundcube__database].dbuser + ":"
-                          + roundcube__database_map[roundcube__database].dbpass + "@"
-                          + roundcube__database_map[roundcube__database].dbhost + "/"
-                          + roundcube__database_map[roundcube__database].dbname }}'
+    value: '{{ "mysql://" + roundcube__database_map[roundcube__database].dbuser|d() + ":"
+                          + roundcube__database_map[roundcube__database].dbpass|d() + "@"
+                          + roundcube__database_map[roundcube__database].dbhost|d() + "/"
+                          + roundcube__database_map[roundcube__database].dbname|d() }}'
     state: '{{ "present"
                if (roundcube__database_map[roundcube__database].dbtype == "mysql")
                else "ignore" }}'
