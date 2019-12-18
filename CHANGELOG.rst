@@ -35,6 +35,17 @@ Added
 
   .. __: https://www.postgresql.org/docs/current/warm-standby.html
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
+  installed from CD. :ref:`debops.apt` needs to be run early to regenerate
+  :file:`/etc/apt/sources.list` which might still contain a now not functional
+  CD entry.
+
 
 `debops v1.0.14`_ - 2019-12-01
 ------------------------------
