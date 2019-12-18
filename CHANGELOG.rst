@@ -49,6 +49,17 @@ Added
 - The role can now define static DNS configuration to be merged with other DNS
   data sources in the :file:`/etc/resolv.conf` configuration file.
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
+  installed from CD. :ref:`debops.apt` needs to be run early to regenerate
+  :file:`/etc/apt/sources.list` which might still contain a now not functional
+  CD entry.
+
 
 `debops v1.1.6`_ - 2019-12-01
 -----------------------------
