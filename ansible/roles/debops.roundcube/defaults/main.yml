@@ -483,8 +483,11 @@ roundcube__smtp_pass: '%p'
                                                                    # ]]]
 # .. envvar:: roundcube__product_name [[[
 #
-#  Name your service. This is displayed on the login screen and in the window title
-roundcube__product_name: 'Roundcube Webmail'
+# Name your service. This is displayed on the login screen and in the window title
+roundcube__product_name: '{{ (ansible_local.machine.organization
+                              if (ansible_local|d() and ansible_local.machine|d() and
+                                  ansible_local.machine.organization|d())
+                              else "Roundcube") + " Webmail" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__des_key [[[
