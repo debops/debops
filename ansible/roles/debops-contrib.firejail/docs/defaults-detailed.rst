@@ -56,6 +56,9 @@ following supported keys:
   ``absent``
     The sandbox should be absent system wide.
 
+  ``ignored``
+    A potentially existing file in :file:`/usr/local/bin/` is ignored.
+
   Defaults to :envvar:`firejail__global_profiles_system_wide_sandboxed`.
   Refer to :manpage:`firejail(1)` under "Desktop Integration" or `Firejail
   0.9.38 Release Announcement`_ under "Symlink invocation".
