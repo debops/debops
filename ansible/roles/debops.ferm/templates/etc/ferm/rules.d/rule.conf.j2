@@ -416,7 +416,7 @@
 {%       endif %}
 {%       if ferm__tpl_config['dport']|d() %}
                         @if @eq($DOMAIN, ip)  @if @ne($PRIVATE_IPV4,"") {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IPV4 {% endif %}DNAT to @cat($PRIVATE_IPV4, ":{{ ferm__tpl_config['dport'][0] }}");
-                        @if @eq($DOMAIN, ip6) @if @ne($PRIVATE_IPV6,"") {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IPV6 {% endif %}DNAT to @cat($PRIVATE_IPV6, ":{{ ferm__tpl_config['dport'][0] }}");
+                        @if @eq($DOMAIN, ip6) @if @ne($PRIVATE_IPV6,"") {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IPV6 {% endif %}DNAT to @cat("[",$PRIVATE_IPV6, "]:{{ ferm__tpl_config['dport'][0] }}");
 {%       else %}
                         {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IP {% endif %}DNAT to $PRIVATE_IP;
 {%       endif %}
