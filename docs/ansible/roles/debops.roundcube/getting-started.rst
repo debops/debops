@@ -64,12 +64,27 @@ Example inventory
 -----------------
 
 To install and configure Roundcube on a host, it needs to be present in the
-``[debops_service_roundcube]`` Ansible inventory group:
+``[debops_service_roundcube]`` Ansible inventory group. Additional services
+like :ref:`memcached <debops.memcached>`, :ref:`Redis <debops.redis_server>`
+and :ref:`MariaDB database <debops.mariadb_server>` can help increase the
+website performance.
 
 .. code-block:: none
 
-    [debops_service_roundcube]
-    hostname
+   [debops_all_hosts]
+   webmail
+
+   [debops_service_mariadb_server]
+   webmail
+
+   [debops_service_memcached]
+   webmail
+
+   [debops_service_redis_server]
+   webmail
+
+   [debops_service_roundcube]
+   webmail
 
 
 .. _roundcube__ref_example_playbook:

@@ -19,10 +19,10 @@ logfile /var/log/memcached.log
 # Be even more verbose (print client commands as well)
 # -vv
 
-# Start with a cap of {{ memcached_memory }} megs of memory. Note that the
+# Start with a cap of {{ memcached__memory }} megs of memory. Note that the
 # daemon will grow to this size, but does not start out holding this much
 # memory
--m {{ memcached_memory }}
+-m {{ memcached__memory }}
 
 # Default connection port is 11211
 -p 11211
@@ -34,10 +34,10 @@ logfile /var/log/memcached.log
 # Specify which IP address to listen on. The default is to listen on all IP addresses
 # This parameter is one of the only security measures that memcached has, so make sure
 # it's listening on a firewalled interface.
--l {{ memcached_bind }}
+-l {{ memcached__bind }}
 
 # Limit the number of simultaneous incoming connections. The daemon default is 1024
--c {{ memcached_connections }}
+-c {{ memcached__connections }}
 
 # Lock down all paged memory. Consult with the README and homepage before you do this
 # -k
@@ -47,7 +47,12 @@ logfile /var/log/memcached.log
 
 # Maximize core file limit
 # -r
+{% if memcached__version is version("1.5.6", ">=") %}
+# Use a pidfile
 
-{% if memcached_options|d() and memcached_options %}
-{{ memcached_options }}
+-P /run/memcached/memcached.pid
+{% endif %}
+{% if memcached__options|d() %}
+
+{{ memcached__options }}
 {% endif %}

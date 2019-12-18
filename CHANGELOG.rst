@@ -49,6 +49,15 @@ New DebOps roles
 - The role can now define static DNS configuration to be merged with other DNS
   data sources in the :file:`/etc/resolv.conf` configuration file.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The Roundcube installation is now more integrated with the DebOps
+  environment. The role will automatically configure :ref:`Redis
+  <debops.redis_server>` and :ref:`memcached <debops.memcached>` support if
+  they are detected on the Roundcube host, which should improve application
+  performance.
+
 Changed
 ~~~~~~~
 
@@ -94,6 +103,13 @@ LDAP
 - The firewall configuration has been redesigned and the :ref:`debops.dovecot`
   role no longer generates the :command:`ferm` configuration files directly,
   instead using the :ref:`debops.ferm` role as a dependency.
+
+:ref:`debops.memcached` role
+''''''''''''''''''''''''''''
+
+- All variables in the role have been renamed from ``memcached_*`` to
+  ``memcached__*`` to create the role namespace. You need to update the
+  inventory accordingly.
 
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
