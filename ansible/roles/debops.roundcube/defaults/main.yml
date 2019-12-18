@@ -36,6 +36,8 @@ roundcube__required_php_packages:
 # List of recommended/optional PHP packages for Roundcube.
 # Refer to the `official Roundcube documentation <https://github.com/roundcube/roundcubemail/wiki/Install-Requirements>`__ for details.
 roundcube__optional_php_packages:
+  - '{{ "memcached" if roundcube__memcached_enabled|bool else [] }}'
+  - '{{ "redis"     if roundcube__redis_enabled|bool     else [] }}'
   - 'fileinfo'
   - 'pspell'
   - 'zip'
@@ -232,6 +234,94 @@ roundcube__database_map:
 # Initial Roundcube database schema loaded by Ansible.
 roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sql"
     if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""}}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Cache configuration [[[
+# -----------------------
+
+# .. envvar:: roundcube__memcached_enabled [[[
+#
+# Enable or disable support for :command:`memcached` service. It will be
+# enabled automatically if local instance of :command:`memcached` is detected.
+roundcube__memcached_enabled: '{{ True
+                                  if (ansible_local|d() and ansible_local.memcached|d() and
+                                      (ansible_local.memcached.installed|d())|bool)
+                                  else False }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__memcached_hosts [[[
+#
+# List of the :command:`memcached` instances to use by Roundcube. By default
+# only the local instance will be used, if detected.
+# See :ref:`debops.memcached` for more details.
+roundcube__memcached_hosts: [ 'localhost:11211' ]
+
+                                                                   # ]]]
+# .. envvar:: roundcube__redis_enabled [[[
+#
+# Enable or disable support for :command:`redis` service. It will be enabled
+# automatically if local instance of :command:`redis` is detected.
+roundcube__redis_enabled: '{{ True
+                              if (ansible_local|d() and ansible_local.redis_server|d() and
+                                  (ansible_local.redis_server.installed|d())|bool)
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__redis_host [[[
+#
+# The address of the Redis server instance to use. Currently only a single
+# server is supported by Roundcube. By default the Redis instance on the same
+# host will be used, if it's detected via Ansible local facts.
+roundcube__redis_server: 'localhost'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__redis_port [[[
+#
+# The TCP port to use for Redis connections.
+roundcube__redis_port: '{{ ansible_local.redis_server.port
+                           if (ansible_local|d() and ansible_local.redis_server|d() and
+                               ansible_local.redis_server.port|d())
+                           else "6379" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__redis_database [[[
+#
+# The Redis "database" number to use.
+roundcube__redis_database: '1'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__redis_password [[[
+#
+# Specify the password required for authentication to Redis.
+roundcube__redis_password: '{{ ansible_local.redis_server.password
+                               if (ansible_local|d() and ansible_local.redis_server|d() and
+                                   ansible_local.redis_server.password|d())
+                               else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__redis_hosts [[[
+#
+# List of the Redis instances which should be used by Roundcube. Currently only
+# a single instance is supported, but the variable expects a list.
+roundcube__redis_hosts: [ '{{ ([ roundcube__redis_server,
+                                 roundcube__redis_port,
+                                 roundcube__redis_database,
+                                 roundcube__redis_password ])
+                              | join(":") }}' ]
+
+                                                                   # ]]]
+# .. envvar:: roundcube__session_storage [[[
+#
+# Select the session storage type to use. Currently supported are ``redis`` and
+# ``memcached``. The session storage will be selected automatically by
+# detecting available cache services via Ansible local facts. If the variable
+# is empty, session storage will not be configured and will fall back to
+# the ``db`` storage type.
+roundcube__session_storage: '{{ "redis"
+                                if roundcube__redis_enabled|bool
+                                else ("memcached"
+                                      if roundcube__memcached_enabled|bool
+                                      else "") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Roundcube application options [[[
@@ -2555,6 +2645,20 @@ roundcube__default_configuration:
     value: '{{ roundcube__imap_port }}'
     value_cast: 'int'
 
+    # Enable use of memcached to cache IMAP indexes, if local memcached
+    # instance is detected
+  - name: 'imap_cache'
+    value: 'memcached'
+    state: '{{ "present" if roundcube__memcached_enabled|bool else "ignore" }}'
+
+    # Enable message caching in the database if the IMAP server is remote
+  - name: 'messages_cache'
+    value: True
+    state: '{{ "ignore"
+               if (ansible_local|d() and ansible_local.dovecot|d() and
+                   (ansible_local.dovecot.installed|d())|bool)
+               else "present" }}'
+
   - name: 'smtp_server'
     value: '{{ roundcube__smtp_server }}'
 
@@ -2568,12 +2672,33 @@ roundcube__default_configuration:
   - name: 'smtp_pass'
     value: '{{ roundcube__smtp_pass }}'
 
+    # Enable use of memcached to cache LDAP data, if local memcached instance
+    # is detected
+  - name: 'ldap_cache'
+    value: 'memcached'
+    state: '{{ "present" if roundcube__memcached_enabled|bool else "ignore" }}'
+
+    # Enable support for memcached on localhost if it's detected
+  - name: 'memcache_hosts'
+    value: '{{ roundcube__memcached_hosts }}'
+    state: '{{ "present" if roundcube__memcached_enabled|bool else "ignore" }}'
+
+    # Enable support for Redis on localhost if it's detected
+  - name: 'redis_hosts'
+    value: '{{ roundcube__redis_hosts }}'
+    state: '{{ "present" if roundcube__redis_enabled|bool else "ignore" }}'
+
   - name: 'skin_logo'
     value: '{{ roundcube__skin_logo }}'
 
     # Ensure that all communication to the client is encrypted
   - name: 'force_https'
     value: True
+
+    # Configure preferred session storage backend
+  - name: 'session_storage'
+    value: '{{ roundcube__session_storage }}'
+    state: '{{ "present" if roundcube__session_storage|d() else "ignore" }}'
 
   - name: 'des_key'
     value: '{{ roundcube__des_key }}'
