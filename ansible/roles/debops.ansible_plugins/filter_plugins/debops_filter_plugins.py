@@ -114,7 +114,7 @@ def _parse_kv_value(current_data, new_data, data_index):
             #      current_data['state'] = 'present'
 
         elif isinstance(new_value, list):
-            if (old_value is None or isinstance(old_value, dict)):
+            if isinstance(old_value, dict):
                 dict_value = current_data.get('value', {}).copy()
             else:
                 dict_value = {}
@@ -604,6 +604,37 @@ if __name__ == '__main__':
               section: unknown
               separator: false
               state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_null_to_list(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: null
+            - name: 'local'
+              value: ['test1']
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value:
+              - id: 0
+                name: test1
+                real_weight: 0
+                state: present
+                weight: 0
               weight: 0
             '''))
 
