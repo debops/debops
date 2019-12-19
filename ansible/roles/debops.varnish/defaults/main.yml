@@ -33,10 +33,10 @@ varnish__packages: []
 varnish__allow: []
 
                                                                    # ]]]
-# .. envvar:: varnish__port [[[
+# .. envvar:: varnish__management_port [[[
 #
-# Port number on which this Varnish listens on.
-varnish__port: '6082'
+# Port number used to administrate varnish.
+varnish__management_port: '6082'
 
                                                                    # ]]]
 # .. envvar:: varnish__listen_port [[[
@@ -86,12 +86,12 @@ varnish__config_template_name: 'default.vcl.j2'
 varnish__jailing_mechanism: 'unix,user=vcache'
 
                                                                    # ]]]
-# .. envvar:: varnish__listen_host [[[
+# .. envvar:: varnish__management_listen_host [[[
 #
-# IP address on which Varnish server listens on for new connections. To allow
+# IP address on which Varnish server accepts management connections. To allow
 # connections from remote hosts, you need to change this to ``0.0.0.0`` for IPv4
 # only connections, or ``::`` for IPv4 and IPv6 connections.
-varnish__listen_host: 'localhost'
+varnish__management_listen_host: 'localhost'
 
                                                                    # ]]]
 # .. envvar:: varnish__storage [[[
@@ -138,7 +138,7 @@ varnish__ferm__dependent_rules:
 varnish__etc_services__dependent_list:
 
   - name: 'varnish'
-    port: '{{ varnish__port }}'
+    port: '{{ varnish__management_port }}'
 
   - name: 'varnish-listen'
     port: '{{ varnish__listen_port }}'
