@@ -14,7 +14,7 @@
 
 - name: Generate default varnish configuration
   template:
-    src: '{{ lookup("template_src", "varnish/default.vcl.j2") }}'
+    src: '{{ lookup("template_src", "varnish/" + varnish__config_template_name) }}'
     dest: '/etc/varnish/default.vcl'
     mode: '0644'
   notify: [ 'Restart varnish' ]
