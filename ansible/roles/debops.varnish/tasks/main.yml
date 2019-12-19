@@ -12,14 +12,9 @@
   until: varnish__register_packages is succeeded
   notify: [ 'Restart varnish' ]
 
-- name: Divert the original varnish configuration file
-  command: dpkg-divert --quiet --local --divert /etc/varnish/default.vcl.dpkg-divert --rename /etc/varnish/default.vcl
-  args:
-    creates: '/etc/varnsih/default.vcl.dpkg-divert'
-
 - name: Generate default varnish configuration
   template:
-    src: '{{ lookup("template_src", "varnish/default.vcl") }}'
+    src: '{{ lookup("template_src", "varnish/default.vcl.j2") }}'
     dest: '/etc/varnish/default.vcl'
     mode: '0644'
   notify: [ 'Restart varnish' ]
