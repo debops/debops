@@ -198,8 +198,10 @@ unbound__default_zones:
       - 'do-not-query-localhost': False
       - 'domain-insecure': 'consul.'
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.consul|d() and
-                   (ansible_local.consul.installed|d())|bool)
+               if (ansible_local|d() and ansible_local.hashicorp|d() and
+                   ansible_local.hashicorp.installed|bool and
+                   ansible_local.hashicorp.applications|d() and
+                   "consul" in ansible_local.hashicorp.applications.keys())
                else "absent" }}'
 
                                                                    # ]]]
