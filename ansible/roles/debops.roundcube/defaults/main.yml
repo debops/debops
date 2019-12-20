@@ -124,16 +124,22 @@ roundcube__shell: '/usr/sbin/nologin'
 # Roundcube source and deployment [[[
 # -----------------------------------
 
+# .. envvar:: roundcube__git_gpg_key [[[
+#
+# The GPG key used to sign Roundcube releases.
+roundcube__git_gpg_key: '4295 5C9D 6F2A CA9D 3E96  D55F 3E54 28D0 262C 54F8'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__git_repo [[[
 #
 # Roundcube source repository.
 roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
 
                                                                    # ]]]
-# .. envvar:: roundcube__git_dest [[[
+# .. envvar:: roundcube__git_dir [[[
 #
 # Roundcube source directory on the host.
-roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
+roundcube__git_dir: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_version [[[
@@ -142,10 +148,10 @@ roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")
 roundcube__git_version: '1.4.1'
 
                                                                    # ]]]
-# .. envvar:: roundcube__git_checkout [[[
+# .. envvar:: roundcube__git_dest [[[
 #
 # Default path where Roundcube source files will be deployed.
-roundcube__git_checkout: '{{ roundcube__www + "/sites/" + roundcube__user + "/public" }}'
+roundcube__git_dest: '{{ roundcube__www + "/sites/" + roundcube__user + "/public" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__src [[[
@@ -232,7 +238,7 @@ roundcube__database_map:
 # .. envvar:: roundcube__database_schema [[[
 #
 # Initial Roundcube database schema loaded by Ansible.
-roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sql"
+roundcube__database_schema: '{{ roundcube__git_dest + "/SQL/mysql.initial.sql"
     if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""}}'
                                                                    # ]]]
                                                                    # ]]]
@@ -2619,7 +2625,7 @@ roundcube__original_configuration:
 roundcube__default_configuration:
 
   - name: 'db_dsnw'
-    value: '{{ "sqlite:///" + roundcube__git_checkout + "/"
+    value: '{{ "sqlite:///" + roundcube__git_dest + "/"
                             + roundcube__database_map[roundcube__database].dbname|d()
                             + "?mode=640" }}'
     state: '{{ "present"
@@ -2916,6 +2922,17 @@ roundcube__max_file_size: '30'
 # Role-dependent configuration [[[
 # --------------------------------
 
+# .. envvar:: roundcube__keyring__dependent_gpg_keys [[[
+#
+# GPG key configuration for the :ref:`debops.keyring` Ansible role.
+roundcube__keyring__dependent_gpg_keys:
+
+  - user: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    home: '{{ roundcube__home }}'
+    id: '{{ roundcube__git_gpg_key }}'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__nginx__dependent_servers [[[
 #
 # :program:`nginx` server configuration managed by the debops.nginx_ role.
@@ -2925,7 +2942,7 @@ roundcube__nginx__dependent_servers:
     filename: 'debops.roundcube'
     by_role: 'debops.roundcube'
     type: 'php'
-    root: '{{ roundcube__git_checkout }}'
+    root: '{{ roundcube__git_dest }}'
     webroot_create: False
     access_policy: '{{ roundcube__nginx_access_policy }}'
     index: 'index.php'

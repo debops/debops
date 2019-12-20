@@ -86,6 +86,24 @@ Inventory variable changes
   +---------------------------------------+------------------------------------------+---------------+
   | ``roundcube__host_local_config_map``  | :envvar:`roundcube__host_configuration`  | Yes           |
   +---------------------------------------+------------------------------------------+---------------+
+  | ``roundcube__git_dest``               | :envvar:`roundcube__git_dir`             | No            |
+  +---------------------------------------+------------------------------------------+---------------+
+  | ``roundcube__git_checkout``           | :envvar:`roundcube__git_dest`            | No            |
+  +---------------------------------------+------------------------------------------+---------------+
+
+  Due to the change in the installation method, the Roundcube installation
+  needs to be done from scratch. Before the role can work correctly, you should
+  remove (or move aside) the source and installation directories. In the
+  default setup you can run on a host:
+
+  .. code-block:: console
+
+     rm -rf /srv/www/sites/roundcube/public /usr/local/src/roundcube
+
+  This will remove the installation and source directories, after which the
+  role should be able to install Roundcube without issues. Remember to create
+  backups in case of errors, epsecially if you use the SQLite database as
+  backend since by default it is located inside of the installation directory.
 
 
 v1.2.0 (2019-12-01)

@@ -8,7 +8,7 @@
 
 - name: Get version of current Roundcube installation
   command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
-           {{ roundcube__git_checkout }}/program/include/iniset.php
+           {{ roundcube__git_dest }}/program/include/iniset.php
   args:
     warn: False
   changed_when: False
@@ -56,7 +56,7 @@
 
 - name: Make sure database directory exists
   file:
-    path: '{{ roundcube__git_checkout }}/{{ roundcube__database_map[roundcube__database].dbname | dirname }}'
+    path: '{{ roundcube__git_dest }}/{{ roundcube__database_map[roundcube__database].dbname | dirname }}'
     state: directory
     owner: '{{ roundcube__user }}'
     group: '{{ roundcube__group }}'
@@ -71,16 +71,16 @@
 - name: Generate Roundcube configuration
   template:
     src: 'srv/www/sites/roundcube/public/config/config.inc.php.j2'
-    dest: '{{ roundcube__git_checkout + "/config/config.inc.php" }}'
+    dest: '{{ roundcube__git_dest + "/config/config.inc.php" }}'
     owner: 'root'
     group: '{{ roundcube__group }}'
     mode: '0640'
   tags: [ 'role::roundcube:config' ]
 
 - name: Update database schema
-  command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_checkout }}/SQL'
+  command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_dest }}/SQL'
   args:
-    chdir: '{{ roundcube__git_checkout }}'
+    chdir: '{{ roundcube__git_dest }}'
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_updatedb
