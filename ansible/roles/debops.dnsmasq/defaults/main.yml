@@ -272,8 +272,10 @@ dnsmasq__default_configuration:
     raw: |
       server = /consul/127.0.0.1#8600
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.consul|d() and
-                   (ansible_local.consul.installed|d())|bool)
+               if (ansible_local|d() and ansible_local.hashicorp|d() and
+                   ansible_local.hashicorp.installed|bool and
+                   ansible_local.hashicorp.applications|d() and
+                   "consul" in ansible_local.hashicorp.applications.keys())
                else "init" }}'
 
   - name: 'lxd-override'
