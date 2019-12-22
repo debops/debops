@@ -63,6 +63,7 @@ Changed
 
 General
 '''''''
+
 - Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
   installed from CD. :ref:`debops.apt` needs to be run early to regenerate
   :file:`/etc/apt/sources.list` which might still contain a now not functional
@@ -669,7 +670,6 @@ General
 
 - The ``dmz`` firewall configuration will use the ``dport`` parameter instead
   of ``port``, otherwise filtering rules will not work as expected.
-
 
 :ref:`debops.nfs_server` role
 '''''''''''''''''''''''''''''
