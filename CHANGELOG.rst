@@ -61,6 +61,13 @@ New DebOps roles
 Changed
 ~~~~~~~
 
+General
+'''''''
+- Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
+  installed from CD. :ref:`debops.apt` needs to be run early to regenerate
+  :file:`/etc/apt/sources.list` which might still contain a now not functional
+  CD entry.
+
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
@@ -157,8 +164,18 @@ General
 '''''''
 
 - Old ``[debops_<role_name>]`` Ansible inventory groups have been removed from
-  DebOps playbooks. Users should use the the ``[debops_service_<role_name>]``
+  DebOps playbooks. Users should use the ``[debops_service_<role_name>]``
   group names instead.
+
+Fixed
+~~~~~
+
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The ``dmz`` firewall configuration will now not interpret the port as part of
+  a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
+  ``[]``.
 
 
 `debops v1.2.0`_ - 2019-12-01
@@ -222,7 +239,7 @@ LDAP
 ''''
 
 - The :file:`ldap/init-directory.yml` Ansible playbook will create the LDAP
-  obejects ``cn=LDAP Replicators`` and ``cn=Password Reset Agents`` to allow
+  objects ``cn=LDAP Replicators`` and ``cn=Password Reset Agents`` to allow
   other Ansible roles to utilize them without the need for the system
   administrator to define them by hand.
 
@@ -652,6 +669,7 @@ General
 
 - The ``dmz`` firewall configuration will use the ``dport`` parameter instead
   of ``port``, otherwise filtering rules will not work as expected.
+
 
 :ref:`debops.nfs_server` role
 '''''''''''''''''''''''''''''
