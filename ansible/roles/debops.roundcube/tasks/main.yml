@@ -77,6 +77,20 @@
     mode: '0640'
   tags: [ 'role::roundcube:config' ]
 
+- name: Generate Roundcube plugin configuration
+  template:
+    src: 'srv/www/sites/roundcube/public/plugins/config.inc.php.j2'
+    dest: '{{ roundcube__git_dest + "/plugins/" + item.name + "/config.inc.php" }}'
+    owner: 'root'
+    group: '{{ roundcube__group }}'
+    mode: '0640'
+  loop: '{{ roundcube__combined_plugins | parse_kv_items
+            | selectattr("state", "match", "^(enabled|present)$")
+            | selectattr("options", "defined") | list }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [ 'role::roundcube:config' ]
+
 - name: Update database schema
   command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_dest }}/SQL'
   args:

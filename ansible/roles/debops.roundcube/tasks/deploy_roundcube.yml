@@ -42,33 +42,62 @@
     verify_commit: True
   become: True
   become_user: '{{ roundcube__user }}'
+  register: roundcube__register_git
 
-- name: Read PHP composer template
-  command: cat {{ roundcube__git_dest }}/composer.json-dist
-  become: True
-  become_user: '{{ roundcube__user }}'
-  register: roundcube__register_composer_json
-  changed_when: False
+- name: Read PHP composer data from upstream
+  slurp:
+    src: '{{ roundcube__git_dest + "/composer.json-dist" }}'
+  register: roundcube__register_composer_dist
+  when: roundcube__register_git is changed
 
+- name: Read currently deployed PHP composer data
+  slurp:
+    src: '{{ roundcube__git_dest + "/composer.json" }}'
+  register: roundcube__register_composer_installed
+  when: (ansible_local|d() and ansible_local.roundcube|d() and
+         (ansible_local.roundcube.installed|d())|bool and
+        roundcube__register_git is changed)
+
+- name: Update PHP composer data
+  template:
+    src: 'srv/www/sites/roundcube/public/composer.json.j2'
+    dest: '{{ roundcube__git_dest + "/composer.json" }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    mode: '0644'
+  when: roundcube__register_git is changed
 
 # ---- Post deployment ----
 
-- name: Generate PHP composer.json
-  template:
-    src: 'srv/www/sites/composer.json.j2'
-    dest: '{{ roundcube__git_dest }}/composer.json'
-    owner: 'root'
-    group: '{{ roundcube__group }}'
-    mode: '0640'
-
-- name: Install missing PHP packages via Composer
+- name: Install or upgrade PHP packages via Composer
   composer:
-    command: 'install'
+    command: '{{ "upgrade"
+                 if (ansible_local|d() and ansible_local.roundcube|d() and
+                     (ansible_local.roundcube.installed|d())|bool)
+                 else "install" }}'
     working_dir: '{{ roundcube__git_dest }}'
+    no_dev: True
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_composer
   until: roundcube__register_composer is succeeded
+  when: roundcube__register_git is changed
+
+- name: Install Roundcube plugins via Composer
+  composer:
+    command: 'require'
+    arguments: '{{ item }}'
+    working_dir: '{{ roundcube__git_dest }}'
+    no_dev: True
+  loop: '{{ roundcube__combined_plugins | parse_kv_items
+            | selectattr("state", "match", "^(enabled|present)$")
+            | selectattr("package", "defined")
+            | map(attribute="package") | list }}'
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_composer_plugins
+  until: roundcube__register_composer_plugins is succeeded
+  tags: [ 'skip::roundcube:plugins' ]
 
 - name: Install Javascript packages
   command: bin/install-jsdeps.sh

@@ -2735,8 +2735,9 @@ roundcube__default_configuration:
     value: True
 
   - name: 'plugins'
-    value: '{{ (roundcube__default_plugins
-                + roundcube__plugins) | unique }}'
+    value: '{{ roundcube__combined_plugins | parse_kv_items
+               | selectattr("state", "equalto", "enabled")
+               | map(attribute="name") | list | unique }}'
 
     # Create Special Folders automatically. This will ensure that the Junk
     # folder is present and selected in the preferences.
@@ -2869,20 +2870,179 @@ roundcube__combined_configuration_sections: '{{ roundcube__default_configuration
                                                 + roundcube__configuration_sections }}'
                                                                    # ]]]
                                                                    # ]]]
-# Plugins [[[
-# -----------
+# Roundcube plugins [[[
+# ---------------------
+
+# The variables below contain configuration of Roundcube plugins installed
+# using PHP Composer. See :ref:`roundcube__ref_plugins` for more details.
 
 # .. envvar:: roundcube__default_plugins [[[
 #
-# List of plugins shipped and enabled by default with Roundcube.
-roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', 'zipdownload' ]
+# List of Roundcube plugins configured by the role.
+roundcube__default_plugins:
+
+    # Plugin that adds a new button to the toolbar to move messages to a (user
+    # selectable) archive folder.
+  - name: 'archive'
+    state: 'enabled'
+
+    # This is a core plugin which provides supprt for handling attachments
+    # through the filesystem. It might be required by other plugins.
+  - name: 'filesystem_attachments'
+    state: 'enabled'
+
+    # This plugin provides jQuery library and features for other plugins.
+  - name: 'jqueryui'
+    state: 'enabled'
+
+    # This plugin adds an option to download all attachments to a message in
+    # one zip file, when a message has multiple attachments. The plugin also
+    # allows the download of a selection of messages in 1 zip file.
+  - name: 'zipdownload'
+    state: 'enabled'
+    options:
+
+      - name: 'zipdownload_attachments'
+        comment: |
+          Zip attachments
+          Only show the link when there are more than this many attachments
+          -1 to prevent downloading of attachments as zip
+        value: 1
+
+      - name: 'zipdownload_selection'
+        comment: |
+          Zip selection of mail messages
+          This option enables downloading of multiple messages as one zip archive.
+          The number or string value specifies maximum total size of all messages
+          in the archive (not the size of the archive itself).
+        value: '50MB'
+
+      - name: 'zipdownload_charset'
+        comment: |
+          Charset to use for filenames inside the zip
+        value: 'UTF-8'
+
+    # This plugin adds right-click context menus to various parts of the
+    # Roundcube interface.
+  - name: 'contextmenu'
+    package: 'johndoh/contextmenu'
+    state: 'enabled'
+
+    # This plugin provides a toolbar button annd folder menu option which
+    # calculates and displays the sizes of the message folders.
+  - name: 'show_folder_size'
+    package: 'jfcherng/show-folder-size'
+    state: 'enabled'
+    options:
+
+      - name: 'auto_show_folder_size'
+        comment: |
+          Automatically show the folder size without clicking on the toolbar button.
+          This could be a serious performance penalty if there are many users
+        value: False
+
+      - name: 'show_mailboxoptions_button'
+        comment: 'Show mailbox options button'
+        value: True
+
+      - name: 'show_toolbar_button'
+        comment: 'Show the toolbar button'
+        value: False
+
+    # This plugin adds a button on the main toolbar which opens the
+    # Nextcloud/ownCloud instance at specified URL.
+  - name: 'cloud_button'
+    package: 'san4op/cloud_button'
+    state: 'enabled'
+    options:
+
+      - name: 'cloud_button_url'
+        comment: 'URL to cloud storage'
+        value: '{{ "https://cloud." + ansible_domain + "/" }}'
+
+    # This plugin uses the LDAP directory to create the user identity at login.
+    # Currently it's disabled by default due to not working correctly during development.
+  - name: 'new_user_identity'
+    state: '{{ "ignore" if roundcube__ldap_enabled|bool else "ignore" }}'
+    options:
+
+      - name: 'new_user_identity_addressbook'
+        comment: |
+          The id of the address book to use to automatically set a
+          user's full name in their new identity. (This should be an
+          string, which refers to the $config['ldap_public'] array.)
+        value: 'People'
+
+      - name: 'new_user_identity_match'
+        comment: |
+          When automatically setting a user's full name in their
+          new identity, match the user's login name against this field.
+        value: 'cn'
+
+      - name: 'new_user_identity_onlogin'
+        comment: |
+          Determine whether to import user's identities on each login.
+          New user identity will be created for each e-mail address
+          present in address book, but not assigned to any identity.
+        value: True
+
+    # This plugin adds additional commands in the header of the message if
+    # Roundcube detects it's a mailing list message.
+  - name: 'listcommands'
+    package: 'cor/listcommands'
+    state: 'enabled'
+
+    # This plugin provides support for swipe gestures on mobile devices in the
+    # Elastic skin.
+  - name: 'swipe'
+    package: 'johndoh/swipe'
+    state: 'enabled'
+
+    # This plugin includes additional information in Dovecot connections to
+    # provide better logging capabilities.
+  - name: 'dovecot_ident'
+    package: 'cor/dovecot-ident'
+    state: 'enabled'
+
+    # This plugin adds support for parsing vCard attachments in e-mail
+    # messages.
+  - name: 'vcard_attachments'
+    state: 'enabled'
+
+    # This plugin adds support for generating Identicon avatars for contacts
+    # without images.
+  - name: 'identicon'
+    state: 'enabled'
 
                                                                    # ]]]
 # .. envvar:: roundcube__plugins [[[
 #
-# Additional Roundcube plugins to enable. Check the :file:`plugins/` folder for
-# the plugins shipped by default.
+# List of Roundcube plugins configured on all hosts in the Ansible inventory.
 roundcube__plugins: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__group_plugins [[[
+#
+# List of Roundcube plugins configured on hosts in a specific Ansible inventory
+# group.
+roundcube__group_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__host_plugins [[[
+#
+# List of Roundcube plugins configured on specific hosts in the Ansible
+# inventory.
+roundcube__host_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__combined_plugins [[[
+#
+# Varlabie which combines all Roundcube plugin lists and is used in role tasks
+# and templates.
+roundcube__combined_plugins: '{{ roundcube__default_plugins
+                                 + roundcube__plugins
+                                 + roundcube__group_plugins
+                                 + roundcube__host_plugins }}'
                                                                    # ]]]
                                                                    # ]]]
 # Skins [[[

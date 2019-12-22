@@ -163,6 +163,12 @@ LDAP
   of the ``git`` Ansible module. This requires full reinstallation of Roundcube
   application; see :ref:`upgrade_notes` for more details.
 
+- Support for Roundcube plugins has been redesigned and now uses custom Ansible
+  filters included in DebOps to manage plugins. The role can install plugins
+  from the Roundcube plugin repository and manage their configuration files.
+  A :envvar:`set of default plugins <roundcube__default_plugins>` has been
+  defined to make the default Roundcube installation a bit more user-friendly.
+
 Removed
 ~~~~~~~
 
