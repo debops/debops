@@ -141,7 +141,7 @@ General
 '''''''
 
 - Old ``[debops_<role_name>]`` Ansible inventory groups have been removed from
-  DebOps playbooks. Users should use the the ``[debops_service_<role_name>]``
+  DebOps playbooks. Users should use the ``[debops_service_<role_name>]``
   group names instead.
 
 
