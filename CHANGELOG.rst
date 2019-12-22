@@ -58,6 +58,9 @@ New DebOps roles
   they are detected on the Roundcube host, which should improve application
   performance.
 
+- If LDAP infrastructure is detected on the host, Roundcube will be configured
+  to use the LDAP directory managed by DebOps as an address book.
+
 Changed
 ~~~~~~~
 

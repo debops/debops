@@ -18,6 +18,15 @@ HTTP server running a default installation of the latest Roundcube stable
 release which is then accessible via ``https://webmail.<your-domain>``.
 SQLite is used as database backend for storing the user settings.
 
+When the :ref:`LDAP infrastructure <debops.ldap>` is detected on the Roundcube
+host, the role will install and configure LDAP support in Roundcube. The
+default address book will be configured to allow only searches in the
+directory, which is benefical in larger environments.
+
+Roundcube will use the current user credentials to login to the LDAP directory,
+therefore access to the LDAP entries and attributes depends on the LDAP ACL
+configuration in the directory itself.
+
 
 .. _roundcube__ref_srv_records:
 

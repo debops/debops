@@ -36,6 +36,7 @@ roundcube__required_php_packages:
 # List of recommended/optional PHP packages for Roundcube.
 # Refer to the `official Roundcube documentation <https://github.com/roundcube/roundcubemail/wiki/Install-Requirements>`__ for details.
 roundcube__optional_php_packages:
+  - '{{ "ldap"      if roundcube__ldap_enabled|bool      else [] }}'
   - '{{ "memcached" if roundcube__memcached_enabled|bool else [] }}'
   - '{{ "redis"     if roundcube__redis_enabled|bool     else [] }}'
   - 'fileinfo'
@@ -328,6 +329,147 @@ roundcube__session_storage: '{{ "redis"
                                 else ("memcached"
                                       if roundcube__memcached_enabled|bool
                                       else "") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP configuration [[[
+# ----------------------
+
+# These variables configure the access to the LDAP address book managed by
+# DebOps. See :ref:`debops.ldap` and :ref:`debops.slapd` role documentation to
+# learn more about managing LDAP infrastructure with DebOps, and `Roundcube
+# LDAP Address Books`__ documentation to learn more about configuring LDAP
+# access in Roundcube.
+
+# .. __: https://github.com/roundcube/roundcubemail/wiki/Configuration:-LDAP-Address-Books
+
+# .. envvar:: roundcube__ldap_enabled [[[
+#
+# Enable or disable LDAP integration in Roundcube.
+roundcube__ldap_enabled: '{{ ansible_local.ldap.enabled
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.enabled is defined)
+                             else False }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_addressbook_name [[[
+#
+# The name of the LDAP address book. It will be visible on the address book
+# list and as the source of the search results.
+roundcube__ldap_addressbook_name: 'LDAP Address Book'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_hosts [[[
+#
+# List of the FQDN addresses of the LDAP directory servers which should be used
+# by Roundcube.
+roundcube__ldap_hosts: '{{ ansible_local.ldap.hosts
+                           if (ansible_local|d() and ansible_local.ldap|d() and
+                               ansible_local.ldap.hosts|d())
+                           else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_port [[[
+#
+# The TCP port to use to connect to the LDAP directory.
+roundcube__ldap_port: '{{ ansible_local.ldap.port
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              ansible_local.ldap.port|d())
+                          else "389" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_use_tls [[[
+#
+# Enable or disable support for STARTTLS extension while connecting to the LDAP
+# directory.
+roundcube__ldap_use_tls: '{{ ansible_local.ldap.start_tls
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.start_tls|d())
+                             else True }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_base_dn [[[
+#
+# The Base Distinguished Name of the LDAP directory, defined as a YAML list.
+roundcube__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.base_dn|d())
+                             else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_people_rdn [[[
+#
+# The Relative Distinguished Name of the people subtree which contains personal
+# LDAP entries.
+roundcube__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.people_rdn|d())
+                             else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_people_dn [[[
+#
+# The Distinguished Name of the people subtree which will be used for LDAP
+# address book searches.
+roundcube__ldap_people_dn: '{{ [ roundcube__ldap_people_rdn ]
+                               + roundcube__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_groups_rdn [[[
+#
+# The Relative Distinguished Name of the groups subtree which contains group
+# LDAP entries.
+roundcube__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
+                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                    ansible_local.ldap.groups_rdn|d())
+                                else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_groups_dn [[[
+#
+# The Distinguished Name of the groups subtree which will be used for LDAP
+# address book searches.
+roundcube__ldap_groups_dn: '{{ [ roundcube__ldap_groups_rdn ]
+                               + roundcube__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_filed_map [[[
+#
+# YAML dictionary which defines mapping between Roundcube address book fields
+# and LDAP entry attributes. Some of the files are not mapped yet because they
+# don't work or there are currently no good LDAP equivalents.
+roundcube__ldap_field_map:
+  name: 'cn'
+  firstname: 'givenName'
+  #middlename
+  #prefix
+  #suffix
+  surname: 'sn'
+  #nicname
+  #maidenname
+  #gender
+  #spouse
+  #organization
+  #department
+  jobtitle: 'title'
+  #assistant
+  #manager
+  email: 'mail:*'
+  'phone:home': 'homePhone'
+  'phone:work': 'telephoneNumber'
+  'phone:mobile': 'mobile'
+  'phone:pager': 'pager'
+  'phone:workfax': 'facsimileTelephoneNumber'
+  street: 'street'
+  zipcode: 'postalCode'
+  region: 'st'
+  locality: 'l'
+  #address
+  #birthday
+  #anniversary
+  #website
+  #im
+  notes: 'description:*'
+  photo: 'jpegPhoto'
                                                                    # ]]]
                                                                    # ]]]
 # Roundcube application options [[[
@@ -2748,6 +2890,35 @@ roundcube__default_configuration:
   - name: 'autocomplete_min_length'
     value: 3
 
+    # Configure the access to the default LDAP address book managed by DebOps.
+    # Roundcube will use user credentials to login to the LDAP directory.
+  - name: 'ldap_public_people'
+    option: [ 'ldap_public', 'People' ]
+    section: 'addressbook'
+    state: '{{ "present" if roundcube__ldap_enabled|bool else "ignore" }}'
+    array:
+      - name: '{{ roundcube__ldap_addressbook_name }}'
+        hosts: '{{ roundcube__ldap_hosts }}'
+        port: '{{ roundcube__ldap_port }}'
+        use_tls: '{{ roundcube__ldap_use_tls }}'
+        ldap_version: 3
+        user_specific: True
+        base_dn: '{{ roundcube__ldap_people_dn | join(",") }}'
+        bind_dn: '{{ "uid=%u," + roundcube__ldap_people_dn | join(",") }}'
+        bind_pass: ''
+        filter: '(objectClass=inetOrgPerson)'
+        scope: 'sub'
+        searchonly: True
+        vlv: False
+        sort: 'sn'
+        search_fields: [ 'sn', 'cn', 'mail', 'telephoneNumber' ]
+        writable: False
+        groups:
+          - base_dn: '{{ roundcube__ldap_groups_dn | join(",") }}'
+            filter: '(objectClass=groupOfNames)'
+            object_classes: [ 'groupOfNames' ]
+        fieldmap: [ '{{ roundcube__ldap_field_map }}' ]
+
     # Set the default mail charset to Unicode
   - name: 'default_charset'
     value: 'UTF-8'
@@ -2921,6 +3092,12 @@ roundcube__default_plugins:
         comment: |
           Charset to use for filenames inside the zip
         value: 'UTF-8'
+
+    # This entry installs the libraries required for LDAP support in Roundcube.
+    # It's not a real plugin.
+  - name: 'ldap_support'
+    package: 'kolab/net_ldap3'
+    state: '{{ "present" if roundcube__ldap_enabled|bool else "ignore" }}'
 
     # This plugin adds right-click context menus to various parts of the
     # Roundcube interface.
