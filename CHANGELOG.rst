@@ -52,6 +52,13 @@ New DebOps roles
 Changed
 ~~~~~~~
 
+General
+'''''''
+- Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
+  installed from CD. :ref:`debops.apt` needs to be run early to regenerate
+  :file:`/etc/apt/sources.list` which might still contain a now not functional
+  CD entry.
+
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
@@ -143,6 +150,16 @@ General
 - Old ``[debops_<role_name>]`` Ansible inventory groups have been removed from
   DebOps playbooks. Users should use the ``[debops_service_<role_name>]``
   group names instead.
+
+Fixed
+~~~~~
+
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The ``dmz`` firewall configuration will now not interpret the port as part of
+  a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
+  ``[]``.
 
 
 `debops v1.2.0`_ - 2019-12-01
@@ -623,11 +640,6 @@ General
   documentation have been fixed and now point to the correct source files on
   GitHub.
 
-- Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
-  installed from CD. :ref:`debops.apt` needs to be run early to regenerate
-  :file:`/etc/apt/sources.list` which might still contain a now not functional
-  CD entry.
-
 :ref:`debops.dnsmasq` role
 ''''''''''''''''''''''''''
 
@@ -642,9 +654,6 @@ General
 - The ``dmz`` firewall configuration will use the ``dport`` parameter instead
   of ``port``, otherwise filtering rules will not work as expected.
 
-- The ``dmz`` firewall configuration will now not interpret the port as part of
-  a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
-  ``[]``.
 
 :ref:`debops.nfs_server` role
 '''''''''''''''''''''''''''''
