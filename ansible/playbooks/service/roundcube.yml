@@ -12,12 +12,15 @@
 
     - role: debops.keyring
       tags: [ 'role::keyring', 'skip::keyring',
-              'role::php', 'role::nodejs', 'role::nginx', 'role::mariadb' ]
+              'role::php', 'role::nodejs', 'role::nginx', 'role::mariadb',
+              'role::roundcube' ]
       keyring__dependent_apt_keys:
         - '{{ php__keyring__dependent_apt_keys }}'
         - '{{ nodejs__keyring__dependent_apt_keys }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
         - '{{ mariadb__keyring__dependent_apt_keys }}'
+      keyring__dependent_gpg_keys:
+        - '{{ roundcube__keyring__dependent_gpg_keys }}'
 
     - role: debops.php/env
       tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]

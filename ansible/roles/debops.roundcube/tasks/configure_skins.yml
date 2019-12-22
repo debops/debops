@@ -12,13 +12,13 @@
     - name: Generate CSS files for the 'elastic' skin
       command: 'lessc --compress {{ item.src }} {{ item.dest }}'
       args:
-        chdir: '{{ roundcube__git_checkout }}/skins/{{ roundcube__skin_folder }}'
+        chdir: '{{ roundcube__git_dest }}/skins/{{ roundcube__skin_folder }}'
         creates: '{{ item.dest }}'
       loop: '{{ roundcube__fact_skin_elastic_css_files }}'
 
     - name: Adjust permissions of CSS files
       file:
-        path: '{{ roundcube__git_checkout }}/skins/{{ roundcube__skin_folder }}/{{ item.dest }}'
+        path: '{{ roundcube__git_dest }}/skins/{{ roundcube__skin_folder }}/{{ item.dest }}'
         owner: '{{ roundcube__user }}'
         group: '{{ roundcube__group }}'
         mode: '0644'
@@ -26,5 +26,5 @@
 
   when: roundcube__skin_folder is defined
         and roundcube__skin_folder == 'elastic'
-        and roundcube__git_checkout is defined
+        and roundcube__git_dest is defined
   tags: [ 'role::roundcube:skin:elastic' ]

@@ -261,3 +261,84 @@ dictionary uses specific parameters:
   present, but the title will not be included in the generated configuration
   file. if ``ignore``, a given configuration entry will not be evaluated during
   role execution.
+
+
+.. _roundcube__ref_plugins:
+
+roundcube__plugins
+------------------
+
+The ``roundcube__*_plugins`` lists define what plugins will be enabled in
+Roundcube and optionally installed from the `Roundcube Plugins repository`__
+using `PHP Composer`__. The :command:`composer` command is assumed to be
+installed by the :ref:`debops.php` role.
+
+.. __: https://plugins.roundcube.net
+
+.. __: https://getcomposer.org
+
+Examples
+~~~~~~~~
+
+Override the default value in the ``cloud_button`` plugin configuration file:
+
+.. code-block:: yaml
+
+   roundcube__plugins:
+
+     - name: 'cloud_button'
+       state: 'append'
+       options:
+
+         - cloud_button_url: 'https://cloud.example.org/'
+
+See the :envvar:`roundcube__default_plugins` for a list of Roundcube plugin
+definitions which are enabled by the role.
+
+Syntax
+~~~~~~
+
+The plugins are defined using YAML dictionaries with specific parameters:
+
+``name``
+  Required. The name of the plugin, also the directory name in the
+  :file:`plugins/` subdirectory where the plugin is located. The ``name``
+  parameter is used in the ``$config['plugins']`` configuration option to
+  enable the plugin, only if the ``state`` parameter is set to ``enabled``.
+  Multiple configuration entries with the same ``name`` parameter are merged
+  together in the order of appearance.
+
+``state``
+  Optional. If not defined or ``present``, the plugin will be installed (if the
+  ``packate`` parameter is also defined), and its :file:`config.inc.php`
+  configuration file will be generated, but the plugin itself will not be
+  active in Roundcube. If ``enabled``, the plugin will be installed if needed,
+  and will be activated in the Roundcube configuration file.
+
+  If ``absent``, the plugin will be deactivated, but it will not be uninstalled
+  from the host. If ``ignore``, a given configuration entry won't be evaluated
+  during role execution. If ``init``, a given configuration entry will be
+  prepared but will not be activated - this can be used to prepare
+  configuration for plugins and activate them later conditionally if needed.
+  If ``append``, a given configuration entry is evaluated by the role only if
+  an entry with the same name is already present in the configuration (was
+  defined previously).
+
+``package``
+  Optional. If specified, a given plugin will be installed using PHP Composer
+  from the `Roundcube Plugins`__ repository. You need to specify the plugin name
+  using the ``namespace/plugin`` format, plugin names can be found on the
+  repository page.
+
+  .. __: https://plugins.roundcube.net/
+
+  This parameter is passed to the ``composer`` Ansible module as the
+  ``arguments`` parameter. You can use any valid value, for example by setting
+  a specific version of a plugin to use by defining it as
+  ``namespace/plugin:version``.
+
+``options``
+  Optional. List of configuration options for a specific plugin which will be
+  stored in the :file:`plugins/<plugin_name>/config.inc.php` configuration
+  file. The list format is the same as the Roundcube global configuration
+  defined in the :ref:`roundcube__ref_configuration` variables.

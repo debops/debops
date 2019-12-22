@@ -36,6 +36,7 @@ roundcube__required_php_packages:
 # List of recommended/optional PHP packages for Roundcube.
 # Refer to the `official Roundcube documentation <https://github.com/roundcube/roundcubemail/wiki/Install-Requirements>`__ for details.
 roundcube__optional_php_packages:
+  - '{{ "ldap"      if roundcube__ldap_enabled|bool      else [] }}'
   - '{{ "memcached" if roundcube__memcached_enabled|bool else [] }}'
   - '{{ "redis"     if roundcube__redis_enabled|bool     else [] }}'
   - 'fileinfo'
@@ -124,16 +125,22 @@ roundcube__shell: '/usr/sbin/nologin'
 # Roundcube source and deployment [[[
 # -----------------------------------
 
+# .. envvar:: roundcube__git_gpg_key [[[
+#
+# The GPG key used to sign Roundcube releases.
+roundcube__git_gpg_key: '4295 5C9D 6F2A CA9D 3E96  D55F 3E54 28D0 262C 54F8'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__git_repo [[[
 #
 # Roundcube source repository.
 roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
 
                                                                    # ]]]
-# .. envvar:: roundcube__git_dest [[[
+# .. envvar:: roundcube__git_dir [[[
 #
 # Roundcube source directory on the host.
-roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
+roundcube__git_dir: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_version [[[
@@ -142,10 +149,10 @@ roundcube__git_dest: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")
 roundcube__git_version: '1.4.1'
 
                                                                    # ]]]
-# .. envvar:: roundcube__git_checkout [[[
+# .. envvar:: roundcube__git_dest [[[
 #
 # Default path where Roundcube source files will be deployed.
-roundcube__git_checkout: '{{ roundcube__www + "/sites/" + roundcube__user + "/public" }}'
+roundcube__git_dest: '{{ roundcube__www + "/sites/" + roundcube__user + "/public" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__src [[[
@@ -232,7 +239,7 @@ roundcube__database_map:
 # .. envvar:: roundcube__database_schema [[[
 #
 # Initial Roundcube database schema loaded by Ansible.
-roundcube__database_schema: '{{ roundcube__git_checkout + "/SQL/mysql.initial.sql"
+roundcube__database_schema: '{{ roundcube__git_dest + "/SQL/mysql.initial.sql"
     if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""}}'
                                                                    # ]]]
                                                                    # ]]]
@@ -322,6 +329,147 @@ roundcube__session_storage: '{{ "redis"
                                 else ("memcached"
                                       if roundcube__memcached_enabled|bool
                                       else "") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP configuration [[[
+# ----------------------
+
+# These variables configure the access to the LDAP address book managed by
+# DebOps. See :ref:`debops.ldap` and :ref:`debops.slapd` role documentation to
+# learn more about managing LDAP infrastructure with DebOps, and `Roundcube
+# LDAP Address Books`__ documentation to learn more about configuring LDAP
+# access in Roundcube.
+
+# .. __: https://github.com/roundcube/roundcubemail/wiki/Configuration:-LDAP-Address-Books
+
+# .. envvar:: roundcube__ldap_enabled [[[
+#
+# Enable or disable LDAP integration in Roundcube.
+roundcube__ldap_enabled: '{{ ansible_local.ldap.enabled
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.enabled is defined)
+                             else False }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_addressbook_name [[[
+#
+# The name of the LDAP address book. It will be visible on the address book
+# list and as the source of the search results.
+roundcube__ldap_addressbook_name: 'LDAP Address Book'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_hosts [[[
+#
+# List of the FQDN addresses of the LDAP directory servers which should be used
+# by Roundcube.
+roundcube__ldap_hosts: '{{ ansible_local.ldap.hosts
+                           if (ansible_local|d() and ansible_local.ldap|d() and
+                               ansible_local.ldap.hosts|d())
+                           else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_port [[[
+#
+# The TCP port to use to connect to the LDAP directory.
+roundcube__ldap_port: '{{ ansible_local.ldap.port
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              ansible_local.ldap.port|d())
+                          else "389" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_use_tls [[[
+#
+# Enable or disable support for STARTTLS extension while connecting to the LDAP
+# directory.
+roundcube__ldap_use_tls: '{{ ansible_local.ldap.start_tls
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.start_tls|d())
+                             else True }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_base_dn [[[
+#
+# The Base Distinguished Name of the LDAP directory, defined as a YAML list.
+roundcube__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.base_dn|d())
+                             else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_people_rdn [[[
+#
+# The Relative Distinguished Name of the people subtree which contains personal
+# LDAP entries.
+roundcube__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.people_rdn|d())
+                             else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_people_dn [[[
+#
+# The Distinguished Name of the people subtree which will be used for LDAP
+# address book searches.
+roundcube__ldap_people_dn: '{{ [ roundcube__ldap_people_rdn ]
+                               + roundcube__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_groups_rdn [[[
+#
+# The Relative Distinguished Name of the groups subtree which contains group
+# LDAP entries.
+roundcube__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
+                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                    ansible_local.ldap.groups_rdn|d())
+                                else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_groups_dn [[[
+#
+# The Distinguished Name of the groups subtree which will be used for LDAP
+# address book searches.
+roundcube__ldap_groups_dn: '{{ [ roundcube__ldap_groups_rdn ]
+                               + roundcube__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_filed_map [[[
+#
+# YAML dictionary which defines mapping between Roundcube address book fields
+# and LDAP entry attributes. Some of the files are not mapped yet because they
+# don't work or there are currently no good LDAP equivalents.
+roundcube__ldap_field_map:
+  name: 'cn'
+  firstname: 'givenName'
+  #middlename
+  #prefix
+  #suffix
+  surname: 'sn'
+  #nicname
+  #maidenname
+  #gender
+  #spouse
+  #organization
+  #department
+  jobtitle: 'title'
+  #assistant
+  #manager
+  email: 'mail:*'
+  'phone:home': 'homePhone'
+  'phone:work': 'telephoneNumber'
+  'phone:mobile': 'mobile'
+  'phone:pager': 'pager'
+  'phone:workfax': 'facsimileTelephoneNumber'
+  street: 'street'
+  zipcode: 'postalCode'
+  region: 'st'
+  locality: 'l'
+  #address
+  #birthday
+  #anniversary
+  #website
+  #im
+  notes: 'description:*'
+  photo: 'jpegPhoto'
                                                                    # ]]]
                                                                    # ]]]
 # Roundcube application options [[[
@@ -2619,7 +2767,7 @@ roundcube__original_configuration:
 roundcube__default_configuration:
 
   - name: 'db_dsnw'
-    value: '{{ "sqlite:///" + roundcube__git_checkout + "/"
+    value: '{{ "sqlite:///" + roundcube__git_dest + "/"
                             + roundcube__database_map[roundcube__database].dbname|d()
                             + "?mode=640" }}'
     state: '{{ "present"
@@ -2729,8 +2877,9 @@ roundcube__default_configuration:
     value: True
 
   - name: 'plugins'
-    value: '{{ (roundcube__default_plugins
-                + roundcube__plugins) | unique }}'
+    value: '{{ roundcube__combined_plugins | parse_kv_items
+               | selectattr("state", "equalto", "enabled")
+               | map(attribute="name") | list | unique }}'
 
     # Create Special Folders automatically. This will ensure that the Junk
     # folder is present and selected in the preferences.
@@ -2740,6 +2889,35 @@ roundcube__default_configuration:
     # Set the default number of autocompletion characters for lower sever load.
   - name: 'autocomplete_min_length'
     value: 3
+
+    # Configure the access to the default LDAP address book managed by DebOps.
+    # Roundcube will use user credentials to login to the LDAP directory.
+  - name: 'ldap_public_people'
+    option: [ 'ldap_public', 'People' ]
+    section: 'addressbook'
+    state: '{{ "present" if roundcube__ldap_enabled|bool else "ignore" }}'
+    array:
+      - name: '{{ roundcube__ldap_addressbook_name }}'
+        hosts: '{{ roundcube__ldap_hosts }}'
+        port: '{{ roundcube__ldap_port }}'
+        use_tls: '{{ roundcube__ldap_use_tls }}'
+        ldap_version: 3
+        user_specific: True
+        base_dn: '{{ roundcube__ldap_people_dn | join(",") }}'
+        bind_dn: '{{ "uid=%u," + roundcube__ldap_people_dn | join(",") }}'
+        bind_pass: ''
+        filter: '(objectClass=inetOrgPerson)'
+        scope: 'sub'
+        searchonly: True
+        vlv: False
+        sort: 'sn'
+        search_fields: [ 'sn', 'cn', 'mail', 'telephoneNumber' ]
+        writable: False
+        groups:
+          - base_dn: '{{ roundcube__ldap_groups_dn | join(",") }}'
+            filter: '(objectClass=groupOfNames)'
+            object_classes: [ 'groupOfNames' ]
+        fieldmap: [ '{{ roundcube__ldap_field_map }}' ]
 
     # Set the default mail charset to Unicode
   - name: 'default_charset'
@@ -2863,20 +3041,185 @@ roundcube__combined_configuration_sections: '{{ roundcube__default_configuration
                                                 + roundcube__configuration_sections }}'
                                                                    # ]]]
                                                                    # ]]]
-# Plugins [[[
-# -----------
+# Roundcube plugins [[[
+# ---------------------
+
+# The variables below contain configuration of Roundcube plugins installed
+# using PHP Composer. See :ref:`roundcube__ref_plugins` for more details.
 
 # .. envvar:: roundcube__default_plugins [[[
 #
-# List of plugins shipped and enabled by default with Roundcube.
-roundcube__default_plugins: [ 'archive', 'filesystem_attachments', 'jqueryui', 'zipdownload' ]
+# List of Roundcube plugins configured by the role.
+roundcube__default_plugins:
+
+    # Plugin that adds a new button to the toolbar to move messages to a (user
+    # selectable) archive folder.
+  - name: 'archive'
+    state: 'enabled'
+
+    # This is a core plugin which provides supprt for handling attachments
+    # through the filesystem. It might be required by other plugins.
+  - name: 'filesystem_attachments'
+    state: 'enabled'
+
+    # This plugin provides jQuery library and features for other plugins.
+  - name: 'jqueryui'
+    state: 'enabled'
+
+    # This plugin adds an option to download all attachments to a message in
+    # one zip file, when a message has multiple attachments. The plugin also
+    # allows the download of a selection of messages in 1 zip file.
+  - name: 'zipdownload'
+    state: 'enabled'
+    options:
+
+      - name: 'zipdownload_attachments'
+        comment: |
+          Zip attachments
+          Only show the link when there are more than this many attachments
+          -1 to prevent downloading of attachments as zip
+        value: 1
+
+      - name: 'zipdownload_selection'
+        comment: |
+          Zip selection of mail messages
+          This option enables downloading of multiple messages as one zip archive.
+          The number or string value specifies maximum total size of all messages
+          in the archive (not the size of the archive itself).
+        value: '50MB'
+
+      - name: 'zipdownload_charset'
+        comment: |
+          Charset to use for filenames inside the zip
+        value: 'UTF-8'
+
+    # This entry installs the libraries required for LDAP support in Roundcube.
+    # It's not a real plugin.
+  - name: 'ldap_support'
+    package: 'kolab/net_ldap3'
+    state: '{{ "present" if roundcube__ldap_enabled|bool else "ignore" }}'
+
+    # This plugin adds right-click context menus to various parts of the
+    # Roundcube interface.
+  - name: 'contextmenu'
+    package: 'johndoh/contextmenu'
+    state: 'enabled'
+
+    # This plugin provides a toolbar button annd folder menu option which
+    # calculates and displays the sizes of the message folders.
+  - name: 'show_folder_size'
+    package: 'jfcherng/show-folder-size'
+    state: 'enabled'
+    options:
+
+      - name: 'auto_show_folder_size'
+        comment: |
+          Automatically show the folder size without clicking on the toolbar button.
+          This could be a serious performance penalty if there are many users
+        value: False
+
+      - name: 'show_mailboxoptions_button'
+        comment: 'Show mailbox options button'
+        value: True
+
+      - name: 'show_toolbar_button'
+        comment: 'Show the toolbar button'
+        value: False
+
+    # This plugin adds a button on the main toolbar which opens the
+    # Nextcloud/ownCloud instance at specified URL.
+  - name: 'cloud_button'
+    package: 'san4op/cloud_button'
+    state: 'enabled'
+    options:
+
+      - name: 'cloud_button_url'
+        comment: 'URL to cloud storage'
+        value: '{{ "https://cloud." + ansible_domain + "/" }}'
+
+    # This plugin uses the LDAP directory to create the user identity at login.
+    # Currently it's disabled by default due to not working correctly during development.
+  - name: 'new_user_identity'
+    state: '{{ "ignore" if roundcube__ldap_enabled|bool else "ignore" }}'
+    options:
+
+      - name: 'new_user_identity_addressbook'
+        comment: |
+          The id of the address book to use to automatically set a
+          user's full name in their new identity. (This should be an
+          string, which refers to the $config['ldap_public'] array.)
+        value: 'People'
+
+      - name: 'new_user_identity_match'
+        comment: |
+          When automatically setting a user's full name in their
+          new identity, match the user's login name against this field.
+        value: 'cn'
+
+      - name: 'new_user_identity_onlogin'
+        comment: |
+          Determine whether to import user's identities on each login.
+          New user identity will be created for each e-mail address
+          present in address book, but not assigned to any identity.
+        value: True
+
+    # This plugin adds additional commands in the header of the message if
+    # Roundcube detects it's a mailing list message.
+  - name: 'listcommands'
+    package: 'cor/listcommands'
+    state: 'enabled'
+
+    # This plugin provides support for swipe gestures on mobile devices in the
+    # Elastic skin.
+  - name: 'swipe'
+    package: 'johndoh/swipe'
+    state: 'enabled'
+
+    # This plugin includes additional information in Dovecot connections to
+    # provide better logging capabilities.
+  - name: 'dovecot_ident'
+    package: 'cor/dovecot-ident'
+    state: 'enabled'
+
+    # This plugin adds support for parsing vCard attachments in e-mail
+    # messages.
+  - name: 'vcard_attachments'
+    state: 'enabled'
+
+    # This plugin adds support for generating Identicon avatars for contacts
+    # without images.
+  - name: 'identicon'
+    state: 'enabled'
 
                                                                    # ]]]
 # .. envvar:: roundcube__plugins [[[
 #
-# Additional Roundcube plugins to enable. Check the :file:`plugins/` folder for
-# the plugins shipped by default.
+# List of Roundcube plugins configured on all hosts in the Ansible inventory.
 roundcube__plugins: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__group_plugins [[[
+#
+# List of Roundcube plugins configured on hosts in a specific Ansible inventory
+# group.
+roundcube__group_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__host_plugins [[[
+#
+# List of Roundcube plugins configured on specific hosts in the Ansible
+# inventory.
+roundcube__host_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: roundcube__combined_plugins [[[
+#
+# Varlabie which combines all Roundcube plugin lists and is used in role tasks
+# and templates.
+roundcube__combined_plugins: '{{ roundcube__default_plugins
+                                 + roundcube__plugins
+                                 + roundcube__group_plugins
+                                 + roundcube__host_plugins }}'
                                                                    # ]]]
                                                                    # ]]]
 # Skins [[[
@@ -2916,6 +3259,17 @@ roundcube__max_file_size: '30'
 # Role-dependent configuration [[[
 # --------------------------------
 
+# .. envvar:: roundcube__keyring__dependent_gpg_keys [[[
+#
+# GPG key configuration for the :ref:`debops.keyring` Ansible role.
+roundcube__keyring__dependent_gpg_keys:
+
+  - user: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    home: '{{ roundcube__home }}'
+    id: '{{ roundcube__git_gpg_key }}'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__nginx__dependent_servers [[[
 #
 # :program:`nginx` server configuration managed by the debops.nginx_ role.
@@ -2925,7 +3279,7 @@ roundcube__nginx__dependent_servers:
     filename: 'debops.roundcube'
     by_role: 'debops.roundcube'
     type: 'php'
-    root: '{{ roundcube__git_checkout }}'
+    root: '{{ roundcube__git_dest }}'
     webroot_create: False
     access_policy: '{{ roundcube__nginx_access_policy }}'
     index: 'index.php'

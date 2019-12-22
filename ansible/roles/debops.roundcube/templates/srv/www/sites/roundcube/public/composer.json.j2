@@ -1,0 +1,17 @@
+{% set output = {} %}
+{% if roundcube__register_composer_installed.content|d() %}
+{%   set output = (roundcube__register_composer_installed.content | b64decode | trim | from_json) %}
+{% endif %}
+{% if roundcube__register_composer_dist.content|d() %}
+{%   set dist = (roundcube__register_composer_dist.content | b64decode | trim | from_json) %}
+{% endif %}
+{% if dist|d() and output|d() %}
+{%   set output_require = output.require %}
+{%   for package, version in dist.require.items() %}
+{%     set _ = output_require.update({ package: version }) %}
+{%   endfor %}
+{%   set _ = output.update({ 'require': output_require}) %}
+{% else %}
+{%   set output = dist %}
+{% endif %}
+{{ output | to_nice_json }}

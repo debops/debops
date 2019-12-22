@@ -58,6 +58,9 @@ New DebOps roles
   they are detected on the Roundcube host, which should improve application
   performance.
 
+- If LDAP infrastructure is detected on the host, Roundcube will be configured
+  to use the LDAP directory managed by DebOps as an address book.
+
 Changed
 ~~~~~~~
 
@@ -128,7 +131,7 @@ LDAP
   to offer a more widely used name for the application.
 
 - The default RoundCube installation path defined in the
-  :envvar:`roundcube__git_checkout` variable has been changed and no longer
+  :envvar:`roundcube__git_dest` variable has been changed and no longer
   uses the web application FQDN. This should make changing the web application
   address independent from the installation directory.
 
@@ -157,6 +160,17 @@ LDAP
   configuration file. The format of the configuration variables has been
   changed, you will need to update the Ansible inventory.
   See :ref:`roundcube__ref_configuration` for more details.
+
+- Roundcube installation tasks have been cleaned up and the old method of
+  keeping track of the :command:`git` checkout is replaced by new functionality
+  of the ``git`` Ansible module. This requires full reinstallation of Roundcube
+  application; see :ref:`upgrade_notes` for more details.
+
+- Support for Roundcube plugins has been redesigned and now uses custom Ansible
+  filters included in DebOps to manage plugins. The role can install plugins
+  from the Roundcube plugin repository and manage their configuration files.
+  A :envvar:`set of default plugins <roundcube__default_plugins>` has been
+  defined to make the default Roundcube installation a bit more user-friendly.
 
 Removed
 ~~~~~~~
