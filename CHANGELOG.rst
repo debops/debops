@@ -49,6 +49,17 @@ Added
 - The role can now define static DNS configuration to be merged with other DNS
   data sources in the :file:`/etc/resolv.conf` configuration file.
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
+  installed from CD. :ref:`debops.apt` needs to be run early to regenerate
+  :file:`/etc/apt/sources.list` which might still contain a now not functional
+  CD entry.
+
 Fixed
 ~~~~~
 
@@ -57,6 +68,13 @@ Global
 
 - The :file:`postldap.yml` playbook has been included in the global
   :file:`site.yml` playbook.
+
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The ``dmz`` firewall configuration will now not interpret the port as part of
+  a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
+  ``[]``.
 
 
 `debops v1.2.0`_ - 2019-12-01
@@ -537,11 +555,6 @@ General
   documentation have been fixed and now point to the correct source files on
   GitHub.
 
-- Reorder :file:`bootstrap.yml` Ansible playbook to also work for systems freshly
-  installed from CD. :ref:`debops.apt` needs to be run early to regenerate
-  :file:`/etc/apt/sources.list` which might still contain a now not functional
-  CD entry.
-
 :ref:`debops.dnsmasq` role
 ''''''''''''''''''''''''''
 
@@ -555,10 +568,6 @@ General
 
 - The ``dmz`` firewall configuration will use the ``dport`` parameter instead
   of ``port``, otherwise filtering rules will not work as expected.
-
-- The ``dmz`` firewall configuration will now not interpret the port as part of
-  a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
-  ``[]``.
 
 :ref:`debops.nfs_server` role
 '''''''''''''''''''''''''''''
