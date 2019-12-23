@@ -61,6 +61,10 @@ New DebOps roles
 - If LDAP infrastructure is detected on the host, Roundcube will be configured
   to use the LDAP directory managed by DebOps as an address book.
 
+- The ManageSieve Roundcube plugin will be enabled by default to allow
+  configuration of Sieve filter scripts. The role will use the DNS SRV resource
+  records to find the Sieve service host and port to use.
+
 Changed
 ~~~~~~~
 
