@@ -432,6 +432,18 @@ roundcube__ldap_groups_dn: '{{ [ roundcube__ldap_groups_rdn ]
                                + roundcube__ldap_base_dn }}'
 
                                                                    # ]]]
+# .. envvar:: roundcube__ldap_hidden [[[
+#
+# Show or hide the LDAP address book in the Address Books interface. Hiding the
+# LDAP address book still allows for searching its contents and autocompletion
+# of recipient e-mail addresses.
+#
+# Since the default LDAP address book configuration disables direct browsing of
+# the contents and is read-only, displaying an entry for it is not very useful.
+# Therefore it will be hidden by default.
+roundcube__ldap_hidden: True
+
+                                                                   # ]]]
 # .. envvar:: roundcube__ldap_filed_map [[[
 #
 # YAML dictionary which defines mapping between Roundcube address book fields
@@ -627,6 +639,56 @@ roundcube__smtp_user: '%u'
 # SMTP password (if required) if you use %p as the password Roundcube will
 # use the current user's password for login.
 roundcube__smtp_pass: '%p'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__sieve_srv_rr [[[
+#
+# List which contains the result of the :command:`dig` query for Sieve server
+# ``SRV`` resource records in the host's domain. See :rfc:`5804` for details.
+roundcube__sieve_srv_rr: '{{ q("dig", "_sieve._tcp." + roundcube__domain + "./SRV", "flat=0") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__sieve_fqdn [[[
+#
+# The FQDN address of the Sieve server which allows manageement of the Sieve
+# filter scripts. By default the host is located using DNS SRV resource
+# records; if there are none, role checks if a local Dovecot installation is
+# present and uses the host FQDN as the Sieve server address. Finally, the
+# static ``sieve.<domain>`` is used.
+#
+# Use of FQDN instead of ``localhost`` is required for X.509 certificate
+# verification and for correct information in system logs.
+roundcube__sieve_fqdn: '{{ (roundcube__sieve_srv_rr | selectattr("target", "defined")
+                            | map(attribute="target")
+                            | map("regex_replace", "\.$","")
+                            | list | first)
+                           if ("NXDOMAIN" not in roundcube__sieve_srv_rr and
+                               roundcube__sieve_srv_rr[0])
+                           else (ansible_fqdn
+                                 if (ansible_local|d() and ansible_local.dovecot|d() and
+                                     (ansible_local.dovecot.installed|d())|bool)
+                                 else ("sieve." + roundcube__domain)) }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__sieve_port [[[
+#
+# TCP port used for Sieve connections
+roundcube__sieve_port: '{{ (roundcube__sieve_srv_rr | selectattr("target", "defined")
+                            | map(attribute="port") | list | sort | first)
+                           if ("NXDOMAIN" not in roundcube__sieve_srv_rr and
+                               roundcube__sieve_srv_rr[0])
+                           else "4190" }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__sieve_server [[[
+#
+# The Sieve host chosen to access the Sieve configuration interface.
+# Replacement variables supported in host name:
+# %h - user's IMAP hostname
+# %n - http hostname ($_SERVER['SERVER_NAME'])
+# %d - domain (http hostname without the first part)
+# For example %n = mail.domain.tld, %d = domain.tld
+roundcube__sieve_server: '{{ "tls://" + roundcube__sieve_fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__product_name [[[
@@ -2886,6 +2948,17 @@ roundcube__default_configuration:
   - name: 'create_default_folders'
     value: True
 
+    # Set minimum refresh interval available to users to 5 minutes, to lower
+    # the IMAP server load.
+  - name: 'min_refresh_interval'
+    value: 300
+
+    # Enable autocompletion for the LDAP address book.
+  - name: 'autocomplete_addressbooks'
+    value: '{{ ([ "sql" ] + ([ "People" ] if roundcube__ldap_enabled|bool else []))
+               | flatten }}'
+    state: '{{ "present" if roundcube__ldap_enabled|bool else "ignore" }}'
+
     # Set the default number of autocompletion characters for lower sever load.
   - name: 'autocomplete_min_length'
     value: 3
@@ -2912,6 +2985,7 @@ roundcube__default_configuration:
         vlv: False
         sort: 'sn'
         search_fields: [ 'sn', 'cn', 'mail', 'telephoneNumber' ]
+        hidden: '{{ roundcube__ldap_hidden }}'
         writable: False
         groups:
           - base_dn: '{{ roundcube__ldap_groups_dn | join(",") }}'
@@ -2930,6 +3004,11 @@ roundcube__default_configuration:
   - name: 'prefer_html'
     value: False
 
+    # Refresh the mail status in longer intervals (15 minutes) by default, to
+    # make the IMAP server load lower.
+  - name: 'refresh_interval'
+    value: 900
+
     # Delete spam messages without moving them to Trash first
   - name: 'delete_junk'
     value: True
@@ -2946,6 +3025,19 @@ roundcube__default_configuration:
     # Better support for mailing lists
   - name: 'reply_all_mode'
     value: 1
+
+  - name: 'swipe_actions'
+    comment: |
+      Configuration for the 'swipe' Roundcube plugin
+    array:
+      - messagelist:
+          - left:  'swipe-read'
+            right: 'move'
+            down:  'checkmail'
+      - contactlist:
+          - left:  'none'
+            right: 'compose'
+            down:  'none'
 
                                                                    # ]]]
 # .. envvar:: roundcube__configuration [[[
@@ -3190,6 +3282,189 @@ roundcube__default_plugins:
     # without images.
   - name: 'identicon'
     state: 'enabled'
+
+  - name: 'managesieve'
+    state: 'enabled'
+    options:
+
+      - name: 'managesieve_port'
+        comment: |
+          managesieve server port. When empty the port will be determined automatically
+          using getservbyname() function, with 4190 as a fallback.
+        value: null
+
+      - name: 'managesieve_host'
+        comment: |
+          managesieve server address, default is localhost.
+          Replacement variables supported in host name:
+          %h - user's IMAP hostname
+          %n - http hostname ($_SERVER['SERVER_NAME'])
+          %d - domain (http hostname without the first part)
+          For example %n = mail.domain.tld, %d = domain.tld
+        value: '{{ roundcube__sieve_server }}'
+
+      - name: 'managesieve_auth_type'
+        comment: |
+          Authentication method. Can be CRAM-MD5, DIGEST-MD5, PLAIN, LOGIN, EXTERNAL
+          or none. Optional, defaults to best method supported by server.
+        value: null
+
+      - name: 'managesieve_auth_cid'
+        comment: |
+          Optional managesieve authentication identifier to be used as authorization proxy.
+          Authenticate as a different user but act on behalf of the logged in user.
+          Works with PLAIN and DIGEST-MD5 auth.
+        value: null
+
+      - name: 'managesieve_auth_pw'
+        comment: |
+          Optional managesieve authentication password to be used for imap_auth_cid
+        value: null
+
+      - name: 'managesieve_usetls'
+        comment: |
+          Use or not TLS for managesieve server connection
+          Note: tls:// prefix in managesieve_host is also supported
+        value: False
+
+      - name: 'managesieve_conn_options'
+        comment: |
+          Connection scket context options
+          See http://php.net/manual/en/context.ssl.php
+          The example below enables server certificate validation
+        array:
+          - ssl:
+              - verify_peer: True
+                verify_depth: 3
+                cafile: '/etc/ssl/certs/ca-certificates.crt'
+        state: 'comment'
+
+      - name: 'managesieve_default'
+        comment: |
+          A file with default script content (eg. spam filter)
+        value: '/etc/dovecot/sieve/global'
+
+      - name: 'managesieve_script_name'
+        comment: |
+          The name of the script which will be used when there's no user script
+        value: 'managesieve'
+
+      - name: 'managesieve_mbox_encoding'
+        comment: |
+          Sieve RFC says that we should use UTF-8 endcoding for mailbox names,
+          but some implementations does not covert UTF-8 to modified UTF-7.
+          Defaults to UTF7-IMAP
+        value: 'UTF-8'
+
+      - name: 'managesieve_replace_delimiter'
+        comment: |
+          I need this because my dovecot (with listescape plugin) uses
+          ':' delimiter, but creates folders with dot delimiter
+        value: ''
+
+      - name: 'managesieve_disabled_extensions'
+        comment: |
+          Disabled sieve extensions (body, copy, date, editheader, encoded-character,
+          envelope, environment, ereject, fileinto, ihave, imap4flags, index,
+          mailbox, mboxmetadata, regex, reject, relational, servermetadata,
+          spamtest, spamtestplus, subaddress, vacation, variables, virustest, etc.
+          Note: not all extensions are implemented
+        value: []
+
+      - name: 'managesieve_debug'
+        comment: |
+          Enables debugging of conversation with sieve server. Logs it into <log_dir>/sieve
+        value: False
+
+      - name: 'managesieve_kolab_master'
+        comment: |
+          Enables features described in http://wiki.kolab.org/KEP:14
+        value: False
+
+      - name: 'managesieve_filename_extension'
+        comment: |
+          Script name extension used for scripts including. Dovecot uses '.sieve',
+          Cyrus uses '.siv'. Doesn't matter if you have managesieve_kolab_master disabled.
+        value: '.sieve'
+
+      - name: 'managesieve_filename_exceptions'
+        comment: |
+          List of reserved script names (without extension).
+          Scripts listed here will be not presented to the user.
+        value: []
+
+      - name: 'managesieve_domains'
+        comment: |
+          List of domains limiting destination emails in redirect action
+          If not empty, user will need to select domain from a list
+        value: []
+
+      - name: 'managesieve_default_headers'
+        comment: |
+          Default list of entries in header selector
+        value: [ 'Subject', 'From', 'To' ]
+
+      - name: 'managesieve_vacation'
+        comment: |
+          Enables separate management interface for vacation responses (out-of-office)
+          0 - no separate section (default),
+          1 - add Vacation section,
+          2 - add Vacation section, but hide Filters section
+        value: 1
+
+      - name: 'managesieve_forward'
+        comment: |
+          Enables separate management interface for setting forwards (redirect to and copy to)
+          0 - no separate section (default),
+          1 - add Forward section,
+          2 - add Forward section, but hide Filters section
+        value: 1
+
+      - name: 'managesieve_vacation_interval'
+        comment: |
+          Default vacation interval (in days).
+          Note: If server supports vacation-seconds extension it is possible
+          to define interval in seconds here (as a string), e.g. "3600s".
+        value: 0
+
+      - name: 'managesieve_vacation_addresses_init'
+        comment: |
+          Some servers require vacation :addresses to be filled with all
+          user addresses (aliases). This option enables automatic filling
+          of these on initial vacation form creation.
+        value: True
+
+      - name: 'managesieve_vacation_from_init'
+        comment: |
+          Sometimes you want to always reply with mail email address
+          This option enables automatic filling of :from field on initial
+          vacation form creation.
+        value: True
+
+      - name: 'managesieve_notify_methods'
+        comment: |
+          Supported methods of notify extension. Default: 'mailto'
+        value: [ 'mailto' ]
+
+      - name: 'managesieve_raw_editor'
+        comment: 'Enables scripts RAW editor feature'
+        value: True
+
+      - name: 'managesieve_disabled_actions'
+        comment: |
+          Disabled actions
+          Prevent user from performing specific actions:
+          list_sets, enable_disable_set, delete_set, new_set, download_set, new_rule, delete_rule
+          Note: disabling list_sets removes the Filter sets widget from the UI and means
+                the set defined in managesieve_script_name will always be used (and activated)
+        value: []
+
+      - name: 'managesieve_allowed_hosts'
+        comment: |
+          List of hosts that support managesieve.
+          Activate managesieve for selected hosts only. If this is not set all hosts are allowed.
+          Example: $config['managesieve_allowed_hosts'] = array('host1.mydomain.com','host2.mydomain.com');
+        value: null
 
                                                                    # ]]]
 # .. envvar:: roundcube__plugins [[[
