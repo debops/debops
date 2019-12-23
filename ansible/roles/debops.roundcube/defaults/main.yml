@@ -432,6 +432,18 @@ roundcube__ldap_groups_dn: '{{ [ roundcube__ldap_groups_rdn ]
                                + roundcube__ldap_base_dn }}'
 
                                                                    # ]]]
+# .. envvar:: roundcube__ldap_hidden [[[
+#
+# Show or hide the LDAP address book in the Address Books interface. Hiding the
+# LDAP address book still allows for searching its contents and autocompletion
+# of recipient e-mail addresses.
+#
+# Since the default LDAP address book configuration disables direct browsing of
+# the contents and is read-only, displaying an entry for it is not very useful.
+# Therefore it will be hidden by default.
+roundcube__ldap_hidden: True
+
+                                                                   # ]]]
 # .. envvar:: roundcube__ldap_filed_map [[[
 #
 # YAML dictionary which defines mapping between Roundcube address book fields
@@ -2962,6 +2974,7 @@ roundcube__default_configuration:
         vlv: False
         sort: 'sn'
         search_fields: [ 'sn', 'cn', 'mail', 'telephoneNumber' ]
+        hidden: '{{ roundcube__ldap_hidden }}'
         writable: False
         groups:
           - base_dn: '{{ roundcube__ldap_groups_dn | join(",") }}'
