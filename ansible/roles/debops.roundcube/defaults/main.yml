@@ -2948,6 +2948,11 @@ roundcube__default_configuration:
   - name: 'create_default_folders'
     value: True
 
+    # Set minimum refresh interval available to users to 5 minutes, to lower
+    # the IMAP server load.
+  - name: 'min_refresh_interval'
+    value: 300
+
     # Enable autocompletion for the LDAP address book.
   - name: 'autocomplete_addressbooks'
     value: '{{ ([ "sql" ] + ([ "People" ] if roundcube__ldap_enabled|bool else []))
@@ -2998,6 +3003,11 @@ roundcube__default_configuration:
     # Don't prefer HTML message view by default
   - name: 'prefer_html'
     value: False
+
+    # Refresh the mail status in longer intervals (15 minutes) by default, to
+    # make the IMAP server load lower.
+  - name: 'refresh_interval'
+    value: 900
 
     # Delete spam messages without moving them to Trash first
   - name: 'delete_junk'
