@@ -2948,6 +2948,12 @@ roundcube__default_configuration:
   - name: 'create_default_folders'
     value: True
 
+    # Enable autocompletion for the LDAP address book.
+  - name: 'autocomplete_addressbooks'
+    value: '{{ ([ "sql" ] + ([ "People" ] if roundcube__ldap_enabled|bool else []))
+               | flatten }}'
+    state: '{{ "present" if roundcube__ldap_enabled|bool else "ignore" }}'
+
     # Set the default number of autocompletion characters for lower sever load.
   - name: 'autocomplete_min_length'
     value: 3
