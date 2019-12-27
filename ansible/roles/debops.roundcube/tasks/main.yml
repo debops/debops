@@ -68,6 +68,10 @@
   when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
   tags: [ 'role::roundcube:database' ]
 
+- include_tasks: configure_postgresql.yml
+  when: roundcube__database_map[roundcube__database].dbtype == 'postgresql'
+  tags: [ 'role::roundcube:database' ]
+
 - name: Generate Roundcube configuration
   template:
     src: 'srv/www/sites/roundcube/public/config/config.inc.php.j2'

@@ -1,0 +1,20 @@
+---
+
+- name: Create Roundcube PostgreSQL database
+  postgresql_db:
+    name: '{{ roundcube__database_map[roundcube__database].dbname }}'
+    owner: '{{ roundcube__database_map[roundcube__database].dbuser }}'
+    state: 'present'
+  delegate_to: '{{ ansible_local.postgresql.delegate_to }}'
+  register: roundcube__register_postgresql_status
+
+- name: Import initial database schema
+  postgresql_db:
+    name: '{{ roundcube__database_map[roundcube__database].dbname }}'
+    state: 'restore'
+    target: '{{ roundcube__database_schema }}'
+    login_user: '{{ roundcube__database_map[roundcube__database].dbuser }}'
+    login_password: '{{ roundcube__database_map[roundcube__database].dbpass }}'
+    login_host: '{{ roundcube__database_map[roundcube__database].dbhost }}'
+  when: (roundcube__register_postgresql_status|d() is defined and
+         roundcube__register_postgresql_status is changed)

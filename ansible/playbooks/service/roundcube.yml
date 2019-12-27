@@ -44,13 +44,15 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: debops.python
-      tags: [ 'role::python', 'skip::python', 'role::mariadb' ]
+      tags: [ 'role::python', 'skip::python', 'role::mariadb', 'role::postgresql' ]
       python__dependent_packages3:
         - '{{ mariadb__python__dependent_packages3 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
         - '{{ nginx__python__dependent_packages3 }}'
+        - '{{ postgresql__python__dependent_packages3 if roundcube__database_map[roundcube__database].dbtype == "postgresql" else [] }}'
       python__dependent_packages2:
         - '{{ mariadb__python__dependent_packages2 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
         - '{{ nginx__python__dependent_packages2 }}'
+        - '{{ postgresql__python__dependent_packages2 if roundcube__database_map[roundcube__database].dbtype == "postgresql" else [] }}'
 
     - role: debops.php
       tags: [ 'role::php', 'skip::php' ]
@@ -84,6 +86,17 @@
           priv_aux: False
       mariadb__server: '{{ roundcube__database_map[roundcube__database].dbhost }}'
       when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
+
+    - role: debops.postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - db: '{{ roundcube__database_map[roundcube__database].dbname }}'
+          role: '{{ roundcube__database_map[roundcube__database].dbuser }}'
+          password: '{{ roundcube__database_map[roundcube__database].dbpass }}'
+      postgresql__server: '{{ roundcube__database_map[roundcube__database].dbhost
+                              if roundcube__database_map[roundcube__database].dbhost != "localhost"
+                              else "" }}'
+      when: roundcube__database_map[roundcube__database].dbtype == 'postgresql'
 
     - role: debops.roundcube
       tags: [ 'role::roundcube', 'skip::roundcube' ]
