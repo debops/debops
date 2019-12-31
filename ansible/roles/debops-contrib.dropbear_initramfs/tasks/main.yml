@@ -17,6 +17,14 @@
   when: (dropbear_initramfs__deploy_state == "present")
   notify: [ 'Update initramfs' ]
 
+- name: Configure dropbear options
+  template:
+    src: 'etc/dropbear-initramfs/config.j2'
+    dest: '/etc/dropbear-initramfs/config'
+    mode: '0644'
+  when: (dropbear_initramfs__deploy_state == "present")
+  notify: [ 'Update initramfs' ]
+
 - name: Configure to bring up additional interfaces/addresses in initramfs
   template:
     src: 'etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs.j2'
