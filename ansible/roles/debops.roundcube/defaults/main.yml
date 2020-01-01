@@ -214,7 +214,9 @@ roundcube__database_password: '{{ lookup("password", roundcube__database_passwor
 # .. envvar:: roundcube__database_name [[[
 #
 # Name of the database to use for Roundcube.
-roundcube__database_name: 'roundcubemail'
+roundcube__database_name: '{{ roundcube__database_user
+                              if roundcube__database == "postgresql-default"
+                              else "roundcubemail" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__database_map [[[
@@ -235,12 +237,37 @@ roundcube__database_map:
     dbhost: 'localhost'
     dbtableprefix: ''
 
+  postgresql-default:
+    dbtype: 'postgresql'
+    dbname: '{{ roundcube__database_name }}'
+    dbuser: '{{ roundcube__database_user }}'
+    dbpass: '{{ roundcube__database_password }}'
+    dbhost: 'localhost'
+    dbtableprefix: ''
+
+                                                                   # ]]]
+# .. envvar:: roundcube__database_schema_map [[[
+#
+# Database type to schema mapping.
+roundcube__database_schema_map:
+  mysql:      '{{ roundcube__git_dest + "/SQL/mysql.initial.sql" }}'
+  postgresql: '{{ roundcube__git_dest + "/SQL/postgres.initial.sql" }}'
+
                                                                    # ]]]
 # .. envvar:: roundcube__database_schema [[[
 #
 # Initial Roundcube database schema loaded by Ansible.
-roundcube__database_schema: '{{ roundcube__git_dest + "/SQL/mysql.initial.sql"
-    if (roundcube__database_map[roundcube__database].dbtype == "mysql") else ""}}'
+roundcube__database_schema: '{{ roundcube__database_schema_map[
+                                  roundcube__database_map[
+                                    roundcube__database
+                                  ].dbtype
+                                ]
+                                if roundcube__database_schema_map[
+                                     roundcube__database_map[
+                                       roundcube__database
+                                     ].dbtype
+                                   ]|d()
+                                else "" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Cache configuration [[[
@@ -2843,6 +2870,15 @@ roundcube__default_configuration:
                           + roundcube__database_map[roundcube__database].dbname|d() }}'
     state: '{{ "present"
                if (roundcube__database_map[roundcube__database].dbtype == "mysql")
+               else "ignore" }}'
+
+  - name: 'db_dsnw'
+    value: '{{ "pgsql://" + roundcube__database_map[roundcube__database].dbuser|d() + ":"
+                          + roundcube__database_map[roundcube__database].dbpass|d() + "@"
+                          + roundcube__database_map[roundcube__database].dbhost|d() + "/"
+                          + roundcube__database_map[roundcube__database].dbname|d() }}'
+    state: '{{ "present"
+               if (roundcube__database_map[roundcube__database].dbtype == "postgresql")
                else "ignore" }}'
 
   - name: 'log_driver'

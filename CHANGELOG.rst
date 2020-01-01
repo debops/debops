@@ -65,6 +65,9 @@ New DebOps roles
   configuration of Sieve filter scripts. The role will use the DNS SRV resource
   records to find the Sieve service host and port to use.
 
+- The role can now use PostgreSQL as a database backend. The database server
+  can be managed with the :ref:`debops.postgresql_server` role.
+
 Changed
 ~~~~~~~
 
