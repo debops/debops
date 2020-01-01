@@ -29,6 +29,11 @@ Added
   defined via additional variables can now be casted as strings, integers,
   floats or booleans to preserve their type.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- Add `docker_server__install_virtualenv` setting to disable python virtualvenv installation.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
