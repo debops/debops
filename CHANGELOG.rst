@@ -27,6 +27,11 @@ New DebOps roles
 - The :ref:`debops.lxd` role brings support for LXD on Debian hosts by building
   the Go binaries from source, without Snap installation.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- Add `docker_server__install_virtualenv` setting to disable python virtualvenv installation.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 

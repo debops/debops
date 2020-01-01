@@ -84,12 +84,14 @@
   with_flattened:
     - '{{ docker_server__default_pip_packages }}'
     - '{{ docker_server__pip_packages }}'
+  when: docker_server__install_virtualenv
 
 - name: Expose Docker virtualenv for Ansible modules
   file:
     path: '{{ docker_server__virtualenv_python_symlink }}'
     src:  '{{ docker_server__virtualenv_python_interpreter }}'
     state: 'link'
+  when: docker_server__install_virtualenv
 
 - name: Symlink selected Python scripts to /usr/local/bin
   file:
@@ -100,7 +102,8 @@
     - '{{ docker_server__default_pip_packages }}'
     - '{{ docker_server__pip_packages }}'
   when: item.path|d() and item.src|d() and
-        item.state|d('present') != 'absent'
+        item.state|d('present') != 'absent' and
+        docker_server__install_virtualenv
 
 - name: Install ferm post hook
   template:
