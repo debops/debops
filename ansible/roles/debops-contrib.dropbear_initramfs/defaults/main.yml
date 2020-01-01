@@ -170,6 +170,63 @@ dropbear_initramfs__combined_interfaces: '{{ lookup("template", "lookup/dropbear
 dropbear_initramfs__update_options: '-k all'
                                                                    # ]]]
                                                                    # ]]]
+# Dropbear options [[[
+# -------------------
+
+# .. envvar:: dropbear_initramfs__port [[[
+#
+# The port dropbear listens on.
+dropbear_initramfs__port: '22'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__disable_password_login [[[
+#
+# Disable password login?
+dropbear_initramfs__disable_password_login: '{{
+  True
+  if dropbear_initramfs__combined_authorized_keys|d()
+  else False
+  }}'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__disable_port_forwarding [[[
+#
+# Disable local and remote port forwarding?
+dropbear_initramfs__disable_port_forwarding: True
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__idle_timeout [[[
+#
+# Count of seconds after that dropbear times out.
+dropbear_initramfs__idle_timeout: '180'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__max_authentication_attempts [[[
+#
+# The maximum number of authentication attempts per connection.
+dropbear_initramfs__max_authentication_attempts: '10'
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__forced_command [[[
+#
+# Override the command provided by the user and always run this command.
+dropbear_initramfs__forced_command: ''
+
+                                                                   # ]]]
+# .. envvar:: dropbear_initramfs__dropbear_options [[[
+#
+# Set options parsed to dropbear.
+dropbear_initramfs__dropbear_options: '{{
+  "-p " + dropbear_initramfs__port +
+  (" -g -s" if dropbear_initramfs__disable_password_login|d() else "") +
+  (" -j -k" if dropbear_initramfs__disable_port_forwarding|d() else "") +
+  " -I " + dropbear_initramfs__idle_timeout +
+  " -T " + dropbear_initramfs__max_authentication_attempts +
+  (" -c " + dropbear_initramfs__forced_command if dropbear_initramfs__forced_command|d() else "")
+  }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
 # Authorized ssh keys [[[
 # -----------------------
 
