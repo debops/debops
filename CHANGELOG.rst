@@ -203,6 +203,12 @@ General
 Fixed
 ~~~~~
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- Do not add empty entries from `docker_server__listen` to daemon.json.
+  This causes the docker daemon to not parse the config and crash.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
