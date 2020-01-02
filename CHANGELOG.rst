@@ -122,6 +122,11 @@ LDAP
   role no longer generates the :command:`ferm` configuration files directly,
   instead using the :ref:`debops.ferm` role as a dependency.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- Replace deprecated `docker_server__graph` option with `docker_server__data_root`.
+
 :ref:`debops.memcached` role
 ''''''''''''''''''''''''''''
 
