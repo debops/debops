@@ -130,7 +130,9 @@ docker_server__base_packages:
 # .. envvar:: docker_server__packages [[[
 #
 # List of additional packages to install with Docker.
-docker_server__packages: []
+docker_server__packages: '{{
+  [] if docker_server__install_virtualenv
+  else [ "docker-compose" ] }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__version [[[
