@@ -210,9 +210,9 @@
     path: '~/.local/share/applications'
     state: 'directory'
   become: True
-  become_user: '{{ item.name }}'
+  become_user: '{{ item }}'
   no_log: '{{ not (firejail__ansible_log | bool) }}'
-  when: firejail__deploy_state in ["present"] and item.name != "root" and item.state|d("present") == "present"
+  when: firejail__deploy_state in ["present"] and item != "root" and item.state|d("present") == "present"
   with_flattened: '{{ firejail__combined_fix_for_users }}'
 
 - name: Apply workaround for desktop files
@@ -220,9 +220,9 @@
   register: firejail__register_cmd_firecfg_fix
   changed_when: ("created" in firejail__register_cmd_firecfg_fix.stdout)
   become: True
-  become_user: '{{ item.name }}'
+  become_user: '{{ item }}'
   no_log: '{{ not (firejail__ansible_log | bool) }}'
-  when: firejail__deploy_state in ["present"] and item.name != "root" and item.state|d("present") == "present"
+  when: firejail__deploy_state in ["present"] and item != "root" and item.state|d("present") == "present"
   with_flattened: '{{ firejail__combined_fix_for_users }}'
 
 # ]]]
