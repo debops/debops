@@ -27,6 +27,11 @@ New DebOps roles
 - The :ref:`debops.lxd` role brings support for LXD on Debian hosts by building
   the Go binaries from source, without Snap installation.
 
+debops-contrib.dropbear-initramfs role
+''''''''''''''''''''''''''''''''''''''
+
+- Add support to set `DROPBEAR_OPTIONS`.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 
