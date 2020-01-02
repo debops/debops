@@ -27,7 +27,7 @@
 {% endif %}
 {% if docker_server__listen|d() %}
 {%   for host in docker_server__listen %}
-{%     if host %}
+{%     if host|length %}
 {%       set _ = docker_server__tpl_options.append("-H " + host) %}
 {%     endif %}
 {%   endfor %}
