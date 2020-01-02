@@ -60,6 +60,14 @@ LDAP
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- Some variables in the :ref:`debops.docker_server` role have been renamed:
+
+  +--------------------------+------------------------------------+---------------+
+  | Old variable name        | New variable name                  | Changed value |
+  +==========================+====================================+===============+
+  | ``docker_server__graph`` | :envvar:`docker_server__data_root` | No            |
+  +--------------------------+------------------------------------+---------------+
+
 - A few of the default variables in the :ref:`debops.dovecot` role have been
   renamed:
 
