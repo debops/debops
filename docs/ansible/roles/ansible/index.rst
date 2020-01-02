@@ -16,7 +16,7 @@ Ansible upstream APT repository, or using a locally built ``.deb`` package.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.ansible/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/ansible/COPYRIGHT
 
 ..
  Local Variables:
