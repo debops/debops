@@ -103,6 +103,12 @@ LDAP
   entries that use them before applying these changes on the hosts managed by
   DebOps. See :ref:`upgrade_notes` for detailed list of changed values.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- Replace the deprecated `docker_server__graph` variable with the
+  :envvar:`docker_server__data_root` variable.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
@@ -126,11 +132,6 @@ LDAP
 - The firewall configuration has been redesigned and the :ref:`debops.dovecot`
   role no longer generates the :command:`ferm` configuration files directly,
   instead using the :ref:`debops.ferm` role as a dependency.
-
-:ref:`debops.docker_server` role
-''''''''''''''''''''''''''''''''
-
-- Replace deprecated `docker_server__graph` option with `docker_server__data_root`.
 
 :ref:`debops.memcached` role
 ''''''''''''''''''''''''''''
