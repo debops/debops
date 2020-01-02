@@ -9,19 +9,18 @@ Usage as a role dependency
 --------------------------
 
 To use the custom Ansible plugins from this role in your own Ansible roles, you
-should include the ``debops.ansible_plugins`` role as a dependency, in
+should include the ``ansible_plugins`` role as a dependency, in
 :file:`meta/main.yml` file of a given role:
 
 .. code-block:: yaml
 
    ---
    dependencies:
-     - role: debops.ansible_plugins
+     - role: ansible_plugins
 
-This will make the ``debops.ansible_plugins`` role a hard dependency of a given
-role, which should ensure that the ``debops.ansible_plugins`` role is always
-included, and doesn't need to be included in all playbooks that use a given
-role.
+This will make the ``ansible_plugins`` role a hard dependency of a given role,
+which should ensure that the ``ansible_plugins`` role is always included, and
+doesn't need to be included in all playbooks that use a given role.
 
 
 Custom Ansible filter plugins

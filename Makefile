@@ -165,7 +165,7 @@ test-debops-tools:
 .PHONY: test-debops-ansible_plugins
 test-debops-ansible_plugins:
 	@printf "%s\n" "Testing debops-ansible_plugins using nose2..."
-	@python3 ansible/roles/debops.ansible_plugins/filter_plugins/debops_filter_plugins.py
+	@python3 ansible/roles/ansible_plugins/filter_plugins/debops_filter_plugins.py
 
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:
