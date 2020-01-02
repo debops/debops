@@ -61,13 +61,13 @@
   failed_when: firejail__register_cmd_which_programs.rc not in [ 0, 1 ]
   register: firejail__register_cmd_which_programs
   when: (item in (
-          firejail__combined_program_sandboxes.keys() + (
+          firejail__combined_program_sandboxes.keys() | list + (
             firejail__fact_system_wide_profiles
             if (firejail__global_profiles_system_wide_sandboxed == "if_installed")
             else []
           )
         ))
-  with_items: '{{ firejail__combined_program_sandboxes.keys() | union(firejail__fact_system_wide_profiles) }}'
+  with_items: '{{ firejail__combined_program_sandboxes.keys() | list | union(firejail__fact_system_wide_profiles) }}'
 
 # For optimized performance, firejail__fact_installed_programs only contains
 # programs for which the install state actually matters.
@@ -117,7 +117,7 @@
     group: 'root'
     force: '{{ ansible_check_mode|d(omit) }}'
   when: not (item in firejail__combined_program_sandboxes and firejail__combined_program_sandboxes[item].system_wide_sandboxed|d("present") in ["ignored"])
-  with_items: '{{ firejail__combined_program_sandboxes.keys() | union(firejail__fact_system_wide_profiles) }}'
+  with_items: '{{ firejail__combined_program_sandboxes.keys() | list | union(firejail__fact_system_wide_profiles) }}'
 # ]]]
 
 # Manage profile [[[
@@ -194,7 +194,7 @@
            )
          ) or (
            item.stat.lnk_source == firejail__program_file_path and
-           (item.stat.path|basename not in (firejail__combined_program_sandboxes.keys()
+           (item.stat.path|basename not in (firejail__combined_program_sandboxes.keys() | list
                                             | union(firejail__fact_system_wide_profiles)))
          )
         ))
