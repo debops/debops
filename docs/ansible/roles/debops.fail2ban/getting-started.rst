@@ -18,16 +18,16 @@ Example inventory
 -----------------
 
 To enable ``fail2ban`` you can add a host or several hosts to
-``[debops_fail2ban]`` group::
+``[debops_service_fail2ban]`` group::
 
-    [debops_fail2ban]
+    [debops_service_fail2ban]
     hostname
 
 If you have many hosts which you want to protect using ``fail2ban``, you can
-instead create a child group and add it to the ``[debops_fail2ban]`` parent
+instead create a child group and add it to the ``[debops_service_fail2ban]`` parent
 group::
 
-    [debops_fail2ban:children]
+    [debops_service_fail2ban:children]
     protected_hosts
 
     [protected_hosts]
@@ -57,7 +57,7 @@ Here's an example playbook which uses ``debops.fail2ban`` role to install ``fail
     ---
 
     - name: Install fail2ban
-      hosts: debops_fail2ban
+      hosts: debops_service_fail2ban
 
       roles:
         - role: debops.fail2ban
