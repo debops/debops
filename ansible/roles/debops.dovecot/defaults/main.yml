@@ -372,6 +372,27 @@ dovecot_lmtp_config_map:
 dovecot_postfix_transport: 'lmtp:unix:private/dovecot-lmtp'
 
                                                                    # ]]]
+# .. envvar:: dovecot_auth_listeners [[[
+#
+# List of LMTP ``inet_listeners`` or ``unix_listeners`` which will be enabled.
+# See :ref:`dovecot_auth_listeners` for more details.
+dovecot_auth_listeners: [ '/var/spool/postfix/private/auth' ]
+
+                                                                   # ]]]
+# .. envvar:: dovecot_auth_config_map [[[
+#
+# Custom LMTP configuration properties. See :ref:`dovecot_auth_config_map`
+# for more details.
+dovecot_auth_config_map:
+  service:
+    # Postfix smtp-auth socket.
+    unix_listener:
+      /var/spool/postfix/private/auth:
+        user: 'postfix'
+        group: 'postfix'
+        mode: 0600
+
+                                                                   # ]]]
 # .. envvar:: dovecot_custom_localconf [[[
 #
 # Dovecot custom configuration added at the end of ``/etc/dovecot/local.conf``

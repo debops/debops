@@ -80,6 +80,11 @@ Global
 - Do not add empty entries from `docker_server__listen` to daemon.json.
   This causes the docker daemon to not parse the config and crash.
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- Ensure that the Postfix :file:`private/auth` socket is created by Dovecot.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
