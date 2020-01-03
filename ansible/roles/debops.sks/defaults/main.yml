@@ -12,6 +12,9 @@
 # .. include:: ../../../../includes/global.rst
 
 
+# SKS configuration [[[
+# ---------------------
+
 # .. envvar:: sks_autoinit [[[
 #
 # Automatically create keyserver database? Database will be empty
@@ -70,8 +73,61 @@ sks_hkp_allow: []
 # themselves.
 sks_public_list: []
 
-                                                                   # ]]]
 #  - name: 'keyserver.example.org'
 #    port: '{{ sks_recon_port }}'
 #    email: 'Server Administrator <root@example.org'
 #    gpg: '0xDEADBEEF'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: sks__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` role.
+sks__apt_preferences__dependent_list:
+
+  - package: 'sks'
+    backports: [ 'wheezy' ]
+    reason: [ 'Version from wheezy creates gmon.out files everywhere',
+              'https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=699847' ]
+
+                                                                   # ]]]
+# .. envvar:: sks__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+sks__etc_services__dependent_list:
+
+  - name: '{{ sks_recon_name }}'
+    port: '{{ sks_recon_port }}'
+    comment: 'SKS Keyserver Reconcilliation Service'
+
+  - name: '{{ sks_hkp_frontend_name }}'
+    port: '{{ sks_hkp_frontend_port }}'
+    comment: 'SKS Keyserver Backend Service'
+
+                                                                   # ]]]
+# .. envvar:: sks__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+# FIXME: Move configuration from the template.
+sks__ferm__dependent_rules: []
+
+                                                                   # ]]]
+# .. envvar:: sks__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+sks__nginx__dependent_servers:
+
+  - '{{ sks_nginx_frontend }}'
+  - '{{ sks_nginx_ssl_frontend }}'
+
+                                                                   # ]]]
+# .. envvar:: sks__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+sks__nginx__dependent_upstreams:
+
+  - '{{ sks_nginx_upstreams }}'
+                                                                   # ]]]
+                                                                   # ]]]
