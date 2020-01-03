@@ -176,6 +176,16 @@ sending emails. See also `smtpd_sasl_type` and `smtpd_sasl_path` values in
 Please refer to the :ref:`dovecot_imap_config_map` for a description of the dict
 layout.
 
+.. _dovecot_auth_listeners:
+
+dovecot_auth_listeners
+----------------------
+
+List of AUTH unix listener names which will be created. The AUTH
+listeners configuration works like the :ref:`dovecot_lmtp_listeners`.
+Each listeners mentioned in :envvar:`dovecot_auth_listeners` must also be defined
+in :ref:`dovecot_auth_config_map`.
+
 Example
 ~~~~~~~
 
