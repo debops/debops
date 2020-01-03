@@ -6,30 +6,6 @@ dependencies:
 
   - role: debops.secret
 
-  - role: debops.apt_preferences
-    tags: apt_preferences
-    apt_preferences_dependent_list:
-
-      - package: 'librdmacm1'
-        backports: [ 'wheezy' ]
-        reason:  'Required by tgt packages from wheezy-backports'
-        by_role: 'debops.tgt'
-
-      - package: 'tgt tgt-*'
-        backports: [ 'wheezy' ]
-        reason:  'Many bugfixes and improvements since original Wheezy release'
-        by_role: 'debops.tgt'
-
-  - role: debops.ferm
-    ferm_input_dependent_list:
-
-      - type: 'dport_accept'
-        dport: [ 'iscsi-target' ]
-        saddr: '{{ tgt_allow }}'
-        accept_any: True
-        filename: 'tgt_dependency_accept'
-        weight: '50'
-
 galaxy_info:
 
   role_name: 'tgt'
