@@ -49,6 +49,11 @@ General
 Fixed
 ~~~~~
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- Ensure that the Postfix :file:`private/auth` socket is created by Dovecot.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
