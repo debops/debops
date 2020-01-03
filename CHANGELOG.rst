@@ -133,6 +133,13 @@ LDAP
   role no longer generates the :command:`ferm` configuration files directly,
   instead using the :ref:`debops.ferm` role as a dependency.
 
+- Add option to enable ManageSieve by default without the need to update the config_maps,
+  to allow configuration of Sieve filter scripts.
+
+- Restored :envvar:`dovecot_mail_location` to original value of `maildir:~/Maildir`. It was
+  wrongfully changed to `/var/vmail/%d/%n/mailbox` if LDAP was enabled. See also
+  :envvar:`dovecot_vmail_home`.
+
 :ref:`debops.memcached` role
 ''''''''''''''''''''''''''''
 
