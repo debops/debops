@@ -56,3 +56,40 @@ phpmyadmin_upload_size: '64M'
 phpmyadmin_php5_max_children: '20'
 
                                                                    # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: phpmyadmin__php__dependent_packages [[[
+#
+# Package configuration for the :ref:`debops.php` Ansible role.
+phpmyadmin__php__dependent_packages:
+
+  - 'mysql'
+  - 'mcrypt'
+  - 'gd'
+
+                                                                   # ]]]
+# .. envvar:: phpmyadmin__php__dependent_pools [[[
+#
+# Pool configuration for the :ref:`debops.php` Ansible role.
+phpmyadmin__php__dependent_pools:
+
+  - '{{ phpmyadmin_php5_pool }}'
+
+                                                                   # ]]]
+# .. envvar:: phpmyadmin__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+phpmyadmin__nginx__dependent_servers:
+
+  - '{{ phpmyadmin_nginx_server }}'
+
+                                                                   # ]]]
+# .. envvar:: phpmyadmin__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+phpmyadmin__nginx__dependent_upstreams:
+
+  - '{{ phpmyadmin_nginx_upstream_php5 }}'
+                                                                   # ]]]
+                                                                   # ]]]
