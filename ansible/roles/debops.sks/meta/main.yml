@@ -1,35 +1,6 @@
 ---
 
-dependencies:
-
-  - role: debops.apt_preferences
-    tags: apt_preferences
-    apt_preferences_dependent_list:
-      - package: 'sks'
-        backports: [ 'wheezy' ]
-        reason: [ 'Version from wheezy creates gmon.out files everywhere',
-                  'https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=699847' ]
-
-  - role: debops.etc_services
-    etc_services_dependency_list:
-      - name: '{{ sks_recon_name }}'
-        port: '{{ sks_recon_port }}'
-        comment: 'SKS Keyserver Reconcilliation Service'
-
-      - name: '{{ sks_hkp_frontend_name }}'
-        port: '{{ sks_hkp_frontend_port }}'
-        comment: 'SKS Keyserver Backend Service'
-
-  - role: debops.ferm
-
-  - role: debops.nginx
-    nginx_servers:
-      - '{{ sks_nginx_frontend }}'
-      - '{{ sks_nginx_ssl_frontend }}'
-    nginx_upstreams:
-      - '{{ sks_nginx_upstreams }}'
-    when: sks_frontends is defined and inventory_hostname in sks_frontends
-    tags: nginx
+dependencies: []
 
 galaxy_info:
 

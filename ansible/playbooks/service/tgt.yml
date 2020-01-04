@@ -10,5 +10,15 @@
 
   roles:
 
+    - role: debops.apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ tgt__apt_preferences__dependent_list }}'
+
+    - role: debops.ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ tgt__ferm__dependent_rules }}'
+
     - role: debops.tgt
       tags: [ 'role::tgt', 'skip::tgt' ]

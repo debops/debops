@@ -12,6 +12,9 @@
 # .. include:: ../../../../includes/global.rst
 
 
+# TGT configuration [[[
+# ---------------------
+
 # .. envvar:: tgt_packages [[[
 #
 # List of packages installed for iSCSI Target support.
@@ -60,5 +63,37 @@ tgt_options: ''
 # List of iSCSI Targets configured on this host. See :ref:`tgt_targets` for
 # more details.
 tgt_targets: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
 
+# .. envvar:: tgt__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` role.
+tgt__apt_preferences__dependent_list:
+
+  - package: 'librdmacm1'
+    backports: [ 'wheezy' ]
+    reason:  'Required by tgt packages from wheezy-backports'
+    by_role: 'debops.tgt'
+
+  - package: 'tgt tgt-*'
+    backports: [ 'wheezy' ]
+    reason:  'Many bugfixes and improvements since original Wheezy release'
+    by_role: 'debops.tgt'
+
+                                                                   # ]]]
+# .. envvar:: tgt__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+tgt__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'iscsi-target' ]
+    saddr: '{{ tgt_allow }}'
+    accept_any: True
+    filename: 'tgt_dependency_accept'
+    weight: '50'
+                                                                   # ]]]
                                                                    # ]]]
