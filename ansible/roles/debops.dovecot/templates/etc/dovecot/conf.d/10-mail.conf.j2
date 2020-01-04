@@ -11,7 +11,12 @@ setup, you can provide your own template via lookup mechanism.
 ## Mailbox locations and namespaces
 ##
 
+{% if dovecot__ldap_enabled|d(False) %}
+# The vmail home directory is a per-user directory where Dovecot can save user-specific files.
+mail_home = {{ dovecot_vmail_home }}
+{% endif %}
 {% if dovecot_mail_location is defined and dovecot_mail_location %}
+# Mailbox location.
 mail_location = {{ dovecot_mail_location }}
 {% else %}
 # The default is empty, which means that Dovecot tries to find the mailboxes

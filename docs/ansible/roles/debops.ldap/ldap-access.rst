@@ -272,6 +272,8 @@ Find all LDAP entries which can send e-mail messages or have global access:
    ldapsearch -Z -b "dc=example,dc=org" \
               "(| (authorizedService=all) (authorizedService=mail:send) )" dn
 
+.. _ldap__ref_ldap_known_access_controls:
+
 Known access controls
 ~~~~~~~~~~~~~~~~~~~~~
 

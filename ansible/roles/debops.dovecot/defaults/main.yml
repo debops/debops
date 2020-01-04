@@ -75,15 +75,21 @@ dovecot_user_accounts: '{{ [ "deny", "ldap" ]
 dovecot_deny_users: [ 'root' ]
 
                                                                    # ]]]
+# .. envvar:: dovecot_vmail_home [[[
+#
+# The vmail home directory is a per-user directory where Dovecot can save user-specific files.
+# Dovecot's home directories have nothing to do with system users' home directories.
+# It's irrelevant if it's under /home/ or /var/mail/ or wherever.
+# For more information see: `Home Directories for Virtual Users <https://wiki.dovecot.org/VirtualUsers/Home>`_.
+dovecot_vmail_home: '/var/vmail/%d/%n'
+
+                                                                   # ]]]
 # .. envvar:: dovecot_mail_location [[[
 #
 # Mailbox location. For mbox set something like ``mbox:~/mail:INBOX=/var/mail/%u``.
 # For more information about the supported format, check `Dovecot Mail
 # Location <https://doc.dovecot.org/configuration_manual/mail_location/>`_
-dovecot_mail_location: 'maildir:{{ "/var/vmail/%d/%n/mailbox"
-                                  if (dovecot__ldap_enabled|d(False))
-                                  else
-                                  "~/Maildir" }}'
+dovecot_mail_location: 'maildir:~/Maildir'
 
                                                                    # ]]]
 # .. envvar:: dovecot__auth_default_realm [[[
@@ -407,6 +413,15 @@ dovecot_imap_default_config_map:
         ssl: 'yes'
 
                                                                    # ]]]
+
+# .. envvar:: dovecot_mail_plugins [[[
+#
+# Mail plugins enabled in dovecot.
+dovecot_mail_plugins: '$mail_plugins {{ "sieve"
+                                        if ("managesieve" in dovecot_protocols|d([]) and
+                                        dovecot_sieve_enabled|bool) else "" }}'
+
+                                                                   # ]]]
 # .. envvar:: dovecot_imap_config_map [[[
 #
 # Custom IMAP configuration properties. See :ref:`dovecot_imap_config_map`
@@ -440,16 +455,29 @@ dovecot_pop3_listeners: '{{ [ "pop3", "pop3s" ]
 dovecot_pop3_config_map: {}
 
                                                                    # ]]]
-# .. envvar:: dovecot_sieve [[[
+# .. envvar:: dovecot_sieve_enabled [[[
+#
+# Enable/disable the sieve mail plugin
+dovecot_sieve_enabled: true
+
+                                                                   # ]]]
+# .. envvar:: dovecot_sieve_port [[[
+#
+# Managesieve port
+dovecot_sieve_port: 4190
+
+                                                                   # ]]]
+
+# .. envvar:: dovecot_sieve_active_script [[[
 #
 # Location of link to active sieve script
-dovecot_sieve: '~/.dovecot.sieve'
+dovecot_sieve_active_script: '~/.dovecot.sieve'
 
                                                                    # ]]]
 # .. envvar:: dovecot_sieve_dir [[[
 #
 # Storage directory for sieve scripts uploaded by ManageSieve
-dovecot_sieve_dir: '~/sieve'
+dovecot_sieve_dir: 'file:~/sieve'
 
                                                                    # ]]]
 # .. envvar:: dovecot_managesieve_listeners [[[
@@ -463,14 +491,25 @@ dovecot_managesieve_listeners: [ 'sieve' ]
 #
 # Custom ManageSieve configuration properties. See :ref:`dovecot_managesieve_config_map`
 # for more details.
-dovecot_managesieve_config_map: {}
+dovecot_managesieve_config_map:
+
+  login-service:
+    inet_listener:
+      sieve:
+        port: '{{ dovecot_sieve_port|int }}'
+
+  plugin:
+    sieve: '{{ dovecot_sieve_dir }}'
+    active: '{{ dovecot_sieve_active_script }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_lda_config_map [[[
 #
 # Custom LDA configuration properties. See :ref:`dovecot_lda_config_map`
 # for more details.
-dovecot_lda_config_map: {}
+dovecot_lda_config_map:
+  protocol:
+    mail_plugins: '{{ dovecot_mail_plugins }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_lmtp_listeners [[[
@@ -491,6 +530,9 @@ dovecot_lmtp_config_map:
         user: 'postfix'
         group: 'postfix'
         mode: 0600
+
+  protocol:
+    mail_plugins: '{{ dovecot_mail_plugins }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_postfix_transport [[[
@@ -718,6 +760,7 @@ dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls
 # .. envvar:: dovecot__ldap_user_filter [[[
 #
 # The LDAP filter used to look up user accounts in the directory.
+# See :ref:`ldap__ref_admin` for more information.
 dovecot__ldap_user_filter: '(&
                               (objectClass=inetOrgPerson)
                               (|
