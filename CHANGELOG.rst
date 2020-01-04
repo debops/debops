@@ -84,6 +84,9 @@ General
   :file:`/etc/apt/sources.list` which might still contain a now not functional
   CD entry.
 
+- Most of the role dependencies have been moved either to the playbooks or to
+  the role task lists using the ``import_role`` Ansible module.
+
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
