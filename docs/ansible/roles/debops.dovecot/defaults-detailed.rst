@@ -162,6 +162,29 @@ The only valid key is ``protocol`` which references a YAML dict defining the
 ``protocol lda {}`` section. The ``protocol`` dict then accepts the upstream
 Dovecot configuration options such as ``mail_plugins``.
 
+.. _dovecot_auth_config_map:
+
+dovecot_auth_config_map
+-----------------------
+
+Configuration dictionary related to user authentication when sending emails over
+the SMTP protocol configuration. Postfix uses the `/var/spool/postfix/private/auth`
+UNIX socket to communicate with Dovecot in order to authenticate an user, while
+sending emails. See also `smtpd_sasl_type` and `smtpd_sasl_path` values in
+:envvar:`postconf__postfix__dependent_maincf`.
+
+Please refer to the :ref:`dovecot_imap_config_map` for a description of the dict
+layout.
+
+.. _dovecot_auth_listeners:
+
+dovecot_auth_listeners
+----------------------
+
+List of AUTH unix listener names which will be created. The AUTH
+listeners configuration works like the :ref:`dovecot_lmtp_listeners`.
+Each listeners mentioned in :envvar:`dovecot_auth_listeners` must also be defined
+in :ref:`dovecot_auth_config_map`.
 
 Example
 ~~~~~~~
