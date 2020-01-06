@@ -150,6 +150,13 @@ LDAP
   ``memcached__*`` to create the role namespace. You need to update the
   inventory accordingly.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Drop Nextcloud 15 support because it is EOL. You need to upgrade Nextcloud
+  manually if you are running version 15 or below. The role now defaults to
+  Nextcloud 16 for new installations.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
