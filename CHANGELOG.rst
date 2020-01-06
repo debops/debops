@@ -46,6 +46,9 @@ General
   :file:`/etc/apt/sources.list` which might still contain a now not functional
   CD entry.
 
+- Quote octal values in various roles to prevent wrong interpretation by
+  Ansible modules.
+
 Fixed
 ~~~~~
 
