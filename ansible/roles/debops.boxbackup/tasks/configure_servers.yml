@@ -6,7 +6,12 @@
   until: boxbackup__register_server_packages is succeeded
 
 - name: Make sure that boxbackup server directories exists
-  file: path={{ item }} state=directory owner=bbstored group=bbstored mode=0700
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'bbstored'
+    group: 'bbstored'
+    mode: '0700'
   with_items: [ '/etc/boxbackup', '/etc/boxbackup/bbstored',
                 '{{ boxbackup_storage }}', '{{ boxbackup_storage }}/backup' ]
 
@@ -29,7 +34,12 @@
     mode: '0600'
 
 - name: Configure boxbackup server
-  template: src={{ item }}.j2 dest=/{{ item }} owner=bbstored group=bbstored mode=0640
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'bbstored'
+    group: 'bbstored'
+    mode: '0640'
   with_items: [ 'etc/boxbackup/raidfile.conf', 'etc/boxbackup/bbstored.conf' ]
   notify:
     - Restart boxbackup-server
