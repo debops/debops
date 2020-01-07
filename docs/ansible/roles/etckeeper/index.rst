@@ -27,7 +27,7 @@ Ansible facts are gathered.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.etckeeper/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/etckeeper/COPYRIGHT
 
 ..
  Local Variables:
