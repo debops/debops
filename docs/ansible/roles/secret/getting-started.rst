@@ -12,7 +12,7 @@ include it in your common playbook at the beginning:
      become: True
 
      roles:
-       - role: debops.secret
+       - role: secret
 
 That will allow all your roles in this and subsequent plays to access
 the ``secret`` variable and use it consistently.
@@ -30,7 +30,7 @@ that require it:
 
    ---
    dependencies:
-     - role: debops.secret
+     - role: secret
 
 This will ensure that roles utilizing ``secret`` variable will be able to
 access it correctly and you don't need to remember to include
