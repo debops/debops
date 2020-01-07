@@ -27,7 +27,7 @@ the :ref:`debops.ifupdown`, and adjusts the configuration automatically.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.dnsmasq/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/dnsmasq/COPYRIGHT
 
 ..
  Local Variables:
