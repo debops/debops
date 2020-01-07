@@ -18,7 +18,7 @@
         - '{{ postgresql__keyring__dependent_apt_keys }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
 
-    - role: debops.gitlab/env
+    - role: gitlab/env
       tags: [ 'role::gitlab', 'role::postgresql' ]
 
     - role: debops.system_groups
@@ -98,7 +98,7 @@
       nginx__dependent_upstreams:
         - '{{ gitlab__nginx__dependent_upstreams }}'
 
-    - role: debops.gitlab
+    - role: gitlab
       tags: [ 'role::gitlab', 'skip::gitlab' ]
 
 # Import the 'debops.docker_registry' playbook to apply configuration of the
