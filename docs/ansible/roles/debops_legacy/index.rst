@@ -29,7 +29,7 @@ Ansible inventory if needed.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.debops_legacy/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/debops_legacy/COPYRIGHT
 
 ..
  Local Variables:
