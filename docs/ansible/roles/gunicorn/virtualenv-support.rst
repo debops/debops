@@ -95,7 +95,7 @@ role:
 
      roles:
 
-       - role: debops.gunicorn
+       - role: gunicorn
          gunicorn__dependent_applications:
            - '{{ application__gunicorn__dependent_applications }}'
 
