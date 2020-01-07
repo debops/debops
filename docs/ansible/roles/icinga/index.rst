@@ -36,7 +36,7 @@ DebOps provides support for Icinga 2, split into several roles:
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.icinga/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/icinga/COPYRIGHT
 
 ..
  Local Variables:

@@ -29,7 +29,7 @@ excerpt below):
 
    roles:
 
-     - role: debops.icinga
+     - role: icinga
        icinga__dependent_configuration:
          - role_name: '{{ role_name__icinga__dependent_configuration }}'
 
@@ -58,7 +58,7 @@ An example extended configuration (playbook excerpt):
 
    roles:
 
-     - role: debops.icinga
+     - role: icinga
        icinga__dependent_configuration:
          - role: 'role_name'
            config: '{{ role_name__icinga__dependent_configuration }}'
