@@ -65,7 +65,7 @@ role with your custom variable:
 
      roles:
 
-       - role: debops.hashicorp
+       - role: hashicorp
          hashicorp__dependent_applications:
            - '{{ consul__hashicorp_application }}'
 
@@ -94,7 +94,7 @@ The playbook:
 
      roles:
 
-       - role: debops.hashicorp
+       - role: hashicorp
          hashicorp__dependent_applications: '{{ consul__hashicorp__dependent_applications }}'
          hashicorp__consul_webui: '{{ consul__hashicorp__consul_webui | bool }}'
 
