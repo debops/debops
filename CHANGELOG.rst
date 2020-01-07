@@ -96,6 +96,9 @@ Updates of upstream application versions
 
   .. __: https://github.com/roundcube/roundcubemail/releases/tag/1.4.1
 
+- The Nextcloud version installed by the :ref:`debops.owncloud` role is updated
+  to Nextcloud 16.0 release.
+
 LDAP
 ''''
 
@@ -149,6 +152,13 @@ LDAP
 - All variables in the role have been renamed from ``memcached_*`` to
   ``memcached__*`` to create the role namespace. You need to update the
   inventory accordingly.
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Drop Nextcloud 15 support because it is EOL. You need to upgrade Nextcloud
+  manually if you are running version 15 or below. The role now defaults to
+  Nextcloud 16 for new installations.
 
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
