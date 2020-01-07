@@ -24,7 +24,7 @@ the network, or switch to another publicly available network boot menu.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.ipxe/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/ipxe/COPYRIGHT
 
 ..
  Local Variables:
