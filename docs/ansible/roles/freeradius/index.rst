@@ -21,7 +21,7 @@ FreeRADIUS server on a Debian/Ubuntu hosts.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.freeradius/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/freeradius/COPYRIGHT
 
 ..
  Local Variables:
