@@ -39,7 +39,7 @@ Ansible inventory is, of course, still possible but might not be optimal.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.golang/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/golang/COPYRIGHT
 
 ..
  Local Variables:
