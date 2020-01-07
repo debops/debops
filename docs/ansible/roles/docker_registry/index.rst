@@ -35,7 +35,7 @@ Authentication provided by the :ref:`debops.nginx` role.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.docker_registry/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/docker_registry/COPYRIGHT
 
 ..
  Local Variables:
