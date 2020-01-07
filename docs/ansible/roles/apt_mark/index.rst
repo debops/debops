@@ -19,7 +19,7 @@ current state. The role operates only on packages that are already installed.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.apt_mark/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/apt_mark/COPYRIGHT
 
 ..
  Local Variables:
