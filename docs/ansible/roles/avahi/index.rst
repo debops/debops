@@ -28,7 +28,7 @@ publish CNAME records pointing to the host itself via a custom script.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.avahi/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/avahi/COPYRIGHT
 
 ..
  Local Variables:
