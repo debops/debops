@@ -18,7 +18,7 @@ which can be copied to another system as a backup.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.backup2l/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/backup2l/COPYRIGHT
 
 
 ..
