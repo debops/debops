@@ -127,14 +127,6 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/apt_cacher_ng/.*'
     JANE_LOG_PATTERN: '\[debops\.apt_cacher_ng\]'
 
-'apt_listchanges role':
-  <<: *test_role_no_deps
-  variables:
-    JANE_TEST_FACT: 'apt_listchanges.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_listchanges.yml'
-    JANE_DIFF_PATTERN: '.*/debops.apt_listchanges/.*'
-    JANE_LOG_PATTERN: '\[debops\.apt_listchanges\]'
-
 'apt_install role':
   <<: *test_role_1st_deps
   variables:
@@ -142,6 +134,14 @@ stages:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_install.yml'
     JANE_DIFF_PATTERN: '.*/roles/apt_install/.*'
     JANE_LOG_PATTERN: '\[debops\.apt_install\]'
+
+'apt_listchanges role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'apt_listchanges.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_listchanges.yml'
+    JANE_DIFF_PATTERN: '.*/roles/apt_listchanges/.*'
+    JANE_LOG_PATTERN: '\[debops\.apt_listchanges\]'
 
 'apt_mark role':
   <<: *test_role_no_deps
