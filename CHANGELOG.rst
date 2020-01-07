@@ -96,6 +96,9 @@ Updates of upstream application versions
 
   .. __: https://github.com/roundcube/roundcubemail/releases/tag/1.4.1
 
+- The Nextcloud version installed by the :ref:`debops.owncloud` role is updated
+  to Nextcloud 16.0 release.
+
 LDAP
 ''''
 
