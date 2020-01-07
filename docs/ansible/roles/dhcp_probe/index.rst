@@ -24,7 +24,7 @@ system administrator with notification on newly detected rogue DHCP servers.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.dhcp_probe/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/dhcp_probe/COPYRIGHT
 
 ..
  Local Variables:
