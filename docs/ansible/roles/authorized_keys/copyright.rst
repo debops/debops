@@ -1,4 +1,4 @@
 Copyright
 =========
 
-.. literalinclude:: ../../../../ansible/roles/debops.authorized_keys/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/authorized_keys/COPYRIGHT
