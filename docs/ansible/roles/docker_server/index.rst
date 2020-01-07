@@ -24,7 +24,7 @@ distribution repositories, as well as from the upstream repository.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.docker_server/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/docker_server/COPYRIGHT
 
 ..
  Local Variables:
