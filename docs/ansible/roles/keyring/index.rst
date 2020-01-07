@@ -41,7 +41,7 @@ then retrieves the GPG keys either from:
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.keyring/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/keyring/COPYRIGHT
 
 ..
  Local Variables:
