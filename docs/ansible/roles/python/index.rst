@@ -26,7 +26,7 @@ packages and operate normally.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.python/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/python/COPYRIGHT
 
 ..
  Local Variables:
