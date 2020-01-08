@@ -20,7 +20,7 @@ contents of the :file:`/etc/issue` file displayed on the `system console`__.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.machine/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/machine/COPYRIGHT
 
 .. rubric:: Footnotes
 
