@@ -2,7 +2,7 @@
 
 dependencies:
 
-  - role: debops.pki
+  - role: pki
     when: boxbackup_server is defined and boxbackup_server == ansible_fqdn
 
     pki_private_groups_present: [ 'bbstored' ]
@@ -60,7 +60,7 @@ dependencies:
         default_dn: False
         cn: '{{ ansible_fqdn }}'
 
-  - role: debops.pki
+  - role: pki
     when: boxbackup_server is defined and boxbackup_server != ansible_fqdn
 
     pki_realms:
