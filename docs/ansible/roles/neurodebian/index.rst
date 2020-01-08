@@ -21,7 +21,7 @@ derivatives.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.neurodebian/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/neurodebian/COPYRIGHT
 
 ..
  Local Variables:
