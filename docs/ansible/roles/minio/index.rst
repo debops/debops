@@ -33,7 +33,7 @@ It can be installed on a host using the :ref:`debops.mcli` Ansible role.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.minio/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/minio/COPYRIGHT
 
 ..
  Local Variables:
