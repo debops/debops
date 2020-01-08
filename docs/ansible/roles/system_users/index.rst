@@ -24,7 +24,7 @@ without special modifications related to LDAP support.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.system_users/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/system_users/COPYRIGHT
 
 ..
  Local Variables:
