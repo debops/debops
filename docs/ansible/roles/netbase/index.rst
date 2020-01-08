@@ -19,7 +19,7 @@ network or larger clusters usage of a real DNS server is preferred.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.netbase/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/netbase/COPYRIGHT
 
 ..
  Local Variables:
