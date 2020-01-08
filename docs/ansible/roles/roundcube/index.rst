@@ -19,7 +19,7 @@ written in PHP.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.roundcube/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/roundcube/COPYRIGHT
 
 ..
  Local Variables:
