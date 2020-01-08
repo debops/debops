@@ -45,7 +45,7 @@ dependencies:
           'nginx' in rails_deploy_dependencies
     tags: nginx
 
-  - role: debops.monit
+  - role: monit
     monit_process_host_list:
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
     when: rails_deploy_dependencies is defined and
@@ -53,7 +53,7 @@ dependencies:
           not rails_deploy_worker_enabled
     tags: monit
 
-  - role: debops.monit
+  - role: monit
     monit_process_host_list:
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
       - pid: '{{ rails_deploy_service }}/{{ rails_deploy_worker }}.pid'
