@@ -22,7 +22,7 @@ configure the NFS client service.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.mount/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/mount/COPYRIGHT
 
 ..
  Local Variables:
