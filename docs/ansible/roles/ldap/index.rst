@@ -36,7 +36,7 @@ If you are looking for a LDAP server management solution, check out the
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.ldap/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/ldap/COPYRIGHT
 
 ..
  Local Variables:
