@@ -28,7 +28,7 @@ remote hosts over SSH.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.rsnapshot/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/rsnapshot/COPYRIGHT
 
 ..
  Local Variables:
