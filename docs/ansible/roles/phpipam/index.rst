@@ -23,7 +23,7 @@ nginx as a webserver (using :ref:`debops.nginx`).
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.phpipam/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/phpipam/COPYRIGHT
 
 ..
  Local Variables:
