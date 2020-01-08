@@ -30,7 +30,7 @@ in the ``passwd`` and ``group`` databases.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.libuser/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/libuser/COPYRIGHT
 
 ..
  Local Variables:
