@@ -31,7 +31,7 @@ instances and integrates with other DebOps roles like :ref:`debops.pki` and
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.slapd/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/slapd/COPYRIGHT
 
 ..
  Local Variables:
