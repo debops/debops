@@ -18,7 +18,7 @@ It allows configuration of Postfix using Ansible inventory variables.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.postldap/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/postldap/COPYRIGHT
 
 ..
  Local Variables:
