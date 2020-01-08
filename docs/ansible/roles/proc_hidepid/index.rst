@@ -18,7 +18,7 @@ processes that don't belong to a particular user account.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.proc_hidepid/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/proc_hidepid/COPYRIGHT
 
 ..
  Local Variables:
