@@ -42,7 +42,7 @@ file through them.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.resolvconf/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/resolvconf/COPYRIGHT
 
 ..
  Local Variables:
