@@ -24,7 +24,7 @@ its drop-in replacement, :command:`unscd`, created by the BusyBox project. The
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.nscd/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/nscd/COPYRIGHT
 
 ..
  Local Variables:
