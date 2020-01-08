@@ -10,7 +10,7 @@
 
   roles:
 
-    - role: debops.postfix/env
+    - role: postfix/env
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
 
     - role: dovecot/env
@@ -26,7 +26,7 @@
       ferm__dependent_rules:
         - '{{ dovecot__ferm__dependent_rules }}'
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'dovecot'

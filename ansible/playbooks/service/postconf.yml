@@ -13,7 +13,7 @@
     - role: postconf/env
       tags: [ 'role::postconf', 'role::postfix', 'role::ferm' ]
 
-    - role: debops.postfix/env
+    - role: postfix/env
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
       postfix__dependent_mastercf:
         - role: 'postconf'
@@ -29,7 +29,7 @@
       ferm__dependent_rules:
         - '{{ postfix__ferm__dependent_rules }}'
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_packages:
         - '{{ postconf__postfix__dependent_packages }}'

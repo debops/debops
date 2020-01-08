@@ -17,13 +17,13 @@
     # This role along with 'debops.etc_aliases' can be used to maintain the
     # /etc/aliases database.
     #
-    #- role: debops.etc_aliases/env
+    #- role: etc_aliases/env
     #  tags: [ 'role::etc_aliases', 'role::secret' ]
 
-    - role: debops.postfix/env
+    - role: postfix/env
       tags: [ 'role::postfix', 'role::secret' ]
 
-    - role: debops.secret
+    - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
       secret__directories:
         - '{{ postfix__secret__directories }}'
@@ -32,16 +32,16 @@
     # to manage the firewall. You don't need it if you run the main
     # 'debops.postfix' playbook before yours.
     #
-    #- role: debops.ferm
+    #- role: ferm
     #  tags: [ 'role::ferm', 'skip::ferm' ]
     #  ferm__dependent_rules:
     #    - '{{ etc_aliases__secret__directories }}'
     #    - '{{ postfix__ferm__dependent_rules }}'
 
-    #- role: debops.etc_aliases
+    #- role: etc_aliases
     #  tags: [ 'role::etc_aliases' ]
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix' ]
 
       postfix__dependent_packages:

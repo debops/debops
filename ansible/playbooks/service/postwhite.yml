@@ -10,7 +10,7 @@
 
   roles:
 
-    - role: debops.postfix/env
+    - role: postfix/env
       tags: [ 'role::postfix', 'role::secret' ]
       when: (ansible_local|d() and ansible_local.postfix|d() and
              (ansible_local.postfix.installed|d())|bool)
@@ -22,7 +22,7 @@
       when: (ansible_local|d() and ansible_local.postfix|d() and
              (ansible_local.postfix.installed|d())|bool)
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'postwhite'
