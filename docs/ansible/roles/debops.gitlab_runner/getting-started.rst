@@ -40,7 +40,7 @@ For example storing the token in the :file:`ansible/secret/credentials` folder:
 .. code-block:: console
 
    gitlab_runner__token: '{{ lookup("password", secret
-                           + "/credentials/" + ansible_fqdn
+                           + "/credentials/" + gitlab_runner__api_fqdn
                            + "/gitlab/runner/token chars=ascii,numbers") }}'
 
 Initial configuration

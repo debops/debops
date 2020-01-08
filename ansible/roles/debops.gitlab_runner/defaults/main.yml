@@ -126,7 +126,7 @@ gitlab_runner__concurrent: '{{ ansible_processor_vcpus
 # .. envvar:: gitlab_runner__domain [[[
 #
 # The default domain used in different places of the role.
-gitlab_runner__domain: '{{ ansible_domain }}'
+gitlab_runner__domain: '{{ gitlab_domain|d(ansible_domain) }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__fqdn [[[
@@ -139,7 +139,7 @@ gitlab_runner__fqdn: '{{ ansible_fqdn }}'
 #
 # Fully Qualified Domain Name of the GitLab CI host which will control the
 # runner operation.
-gitlab_runner__api_fqdn: 'code.{{ gitlab_runner__domain }}'
+gitlab_runner__api_fqdn: '{{ gitlab__fqdn|d("code." + gitlab_runner__domain) }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__api_url [[[
