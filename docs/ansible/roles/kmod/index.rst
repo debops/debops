@@ -22,7 +22,7 @@ options on their behalf.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.kmod/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/kmod/COPYRIGHT
 
 ..
  Local Variables:
