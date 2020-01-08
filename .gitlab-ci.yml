@@ -1374,6 +1374,15 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.radvd\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'redis_sentinel role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_FACT: 'redis_sentinel.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_sentinel.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_redis_sentinel'
+    JANE_DIFF_PATTERN: '.*/roles/redis_sentinel/.*'
+    JANE_LOG_PATTERN: '\[debops\.redis_sentinel\]'
+
 'redis_server role':
   <<: *test_role_2nd_deps
   variables:
@@ -1382,15 +1391,6 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_redis_server'
     JANE_DIFF_PATTERN: '.*/debops.redis_server/.*'
     JANE_LOG_PATTERN: '\[debops\.redis_server\]'
-
-'redis_sentinel role':
-  <<: *test_role_2nd_deps
-  variables:
-    JANE_TEST_FACT: 'redis_sentinel.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_sentinel.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_redis_sentinel'
-    JANE_DIFF_PATTERN: '.*/debops.redis_sentinel/.*'
-    JANE_LOG_PATTERN: '\[debops\.redis_sentinel\]'
 
 'reprepro role':
   <<: *test_role_2nd_deps

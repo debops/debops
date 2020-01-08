@@ -23,7 +23,7 @@ multiple Redis Sentinel instances on Debian/Ubuntu hosts.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.redis_sentinel/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/redis_sentinel/COPYRIGHT
 
 ..
  Local Variables:
