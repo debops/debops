@@ -30,7 +30,7 @@ upgrade an existing installation to their upstream versions.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.nodejs/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/nodejs/COPYRIGHT
 
 ..
  Local Variables:
