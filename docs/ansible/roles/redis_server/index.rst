@@ -23,7 +23,7 @@ Redis configuration files at runtime.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.redis_server/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/redis_server/COPYRIGHT
 
 ..
  Local Variables:
