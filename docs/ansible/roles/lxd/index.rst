@@ -30,7 +30,7 @@ Debian hosts.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.lxd/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/lxd/COPYRIGHT
 
 ..
  Local Variables:
