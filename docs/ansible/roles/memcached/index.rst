@@ -17,7 +17,7 @@ other applications to speed up slow operations on the databases/data stores.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.memcached/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/memcached/COPYRIGHT
 
 ..
  Local Variables:
