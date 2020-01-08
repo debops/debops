@@ -16,7 +16,7 @@
     - role: apache/env
       tags: [ 'role::apache', 'role::apache:env' ]
 
-    - role: debops.php/env
+    - role: php/env
       tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
 
     - role: apt_preferences
@@ -35,7 +35,7 @@
       mariadb__dependent_users: '{{ volkszaehler__mariadb__dependent_users }}'
       when: (volkszaehler__database == 'mariadb')
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php' ]
       php__dependent_packages:
         - '{{ volkszaehler__php__dependent_packages }}'

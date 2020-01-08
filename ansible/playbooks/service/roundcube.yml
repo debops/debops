@@ -22,7 +22,7 @@
       keyring__dependent_gpg_keys:
         - '{{ roundcube__keyring__dependent_gpg_keys }}'
 
-    - role: debops.php/env
+    - role: php/env
       tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
 
     - role: apt_preferences
@@ -54,7 +54,7 @@
         - '{{ nginx__python__dependent_packages2 }}'
         - '{{ postgresql__python__dependent_packages2 if roundcube__database_map[roundcube__database].dbtype == "postgresql" else [] }}'
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ roundcube__php__dependent_packages }}'
