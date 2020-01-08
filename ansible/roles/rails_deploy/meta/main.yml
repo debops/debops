@@ -4,7 +4,7 @@ dependencies:
 
   - role: etc_services
 
-  - role: debops.apt_preferences
+  - role: apt_preferences
     tags: [ 'role::apt_preferences' ]
     apt_preferences__dependent_list:
       - '{{ nodejs__apt_preferences__dependent_list }}'
@@ -38,7 +38,7 @@ dependencies:
           rails_deploy_database_adapter == 'mysql'
     tags: mysql
 
-  - role: debops.nginx
+  - role: nginx
     nginx_servers: [ '{{ rails_deploy_nginx_server }}' ]
     nginx_upstreams: [ '{{ rails_deploy_nginx_upstream }}' ]
     when: rails_deploy_dependencies is defined and
