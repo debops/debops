@@ -34,7 +34,7 @@ MinIO service itself.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.mcli/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/mcli/COPYRIGHT
 
 ..
  Local Variables:
