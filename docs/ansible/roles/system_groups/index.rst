@@ -30,7 +30,7 @@ UNIX groups to the services managed by these roles.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.system_groups/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/system_groups/COPYRIGHT
 
 ..
  Local Variables:
