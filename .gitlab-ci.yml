@@ -1597,6 +1597,16 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/sudo/.*'
     JANE_LOG_PATTERN: '\[debops\.sudo\]'
 
+'swapfile role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'swapfile.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/swapfile.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_swapfile'
+    JANE_DIFF_PATTERN: '.*/roles/swapfile/.*'
+    JANE_LOG_PATTERN: '\[debops\.swapfile\]'
+  tags: [ 'shell', 'vagrant-vm' ]
+
 'system_groups role':
   <<: *test_role_3rd_deps
   variables:
@@ -1613,16 +1623,6 @@ stages:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_users.yml'
     JANE_DIFF_PATTERN: '.*/debops.system_users/.*'
     JANE_LOG_PATTERN: '\[debops\.system_users\]'
-
-'swapfile role':
-  <<: *test_role_no_deps
-  variables:
-    JANE_TEST_FACT: 'swapfile.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/swapfile.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_swapfile'
-    JANE_DIFF_PATTERN: '.*/debops.swapfile/.*'
-    JANE_LOG_PATTERN: '\[debops\.swapfile\]'
-  tags: [ 'shell', 'vagrant-vm' ]
 
 'sysctl role':
   <<: *test_role_no_deps
