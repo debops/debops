@@ -13,7 +13,7 @@
     - role: redis_server/env
       tags: [ 'role::redis_server', 'role::ferm' ]
 
-    - role: debops.sysfs/env
+    - role: sysfs/env
       tags: [ 'role::sysfs', 'role::secret' ]
 
     - role: secret
@@ -41,7 +41,7 @@
       sysctl__dependent_parameters:
         - '{{ redis_server__sysctl__dependent_parameters }}'
 
-    - role: debops.sysfs
+    - role: sysfs
       tags: [ 'role::sysfs', 'skip::sysfs' ]
       sysfs__dependent_attributes:
         - '{{ redis_server__sysfs__dependent_attributes }}'

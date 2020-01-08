@@ -1616,6 +1616,17 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.sysctl\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'sysfs role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'sysfs.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysfs.yml'
+    JANE_INVENTORY_DIRS: 'common sysfs'
+    JANE_INVENTORY_GROUPS: 'debops_service_sysfs'
+    JANE_DIFF_PATTERN: '.*/roles/sysfs/.*'
+    JANE_LOG_PATTERN: '\[debops\.sysfs\]'
+  tags: [ 'shell', 'vagrant-vm' ]
+
 'system_groups role':
   <<: *test_role_3rd_deps
   variables:
@@ -1632,17 +1643,6 @@ stages:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_users.yml'
     JANE_DIFF_PATTERN: '.*/debops.system_users/.*'
     JANE_LOG_PATTERN: '\[debops\.system_users\]'
-
-'sysfs role':
-  <<: *test_role_1st_deps
-  variables:
-    JANE_TEST_FACT: 'sysfs.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysfs.yml'
-    JANE_INVENTORY_DIRS: 'common sysfs'
-    JANE_INVENTORY_GROUPS: 'debops_service_sysfs'
-    JANE_DIFF_PATTERN: '.*/debops.sysfs/.*'
-    JANE_LOG_PATTERN: '\[debops\.sysfs\]'
-  tags: [ 'shell', 'vagrant-vm' ]
 
 'sysnews role':
   <<: *test_role_no_deps
