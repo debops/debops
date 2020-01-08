@@ -17,7 +17,7 @@ hosts on the network, allowing for network boot and OS installation.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.tftpd/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/tftpd/COPYRIGHT
 
 ..
  Local Variables:
