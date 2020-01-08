@@ -42,7 +42,7 @@ And then pass this to ``debops.persistent_paths`` when calling the role:
    - role: role_owner.role_name
      tags: [ 'role::role_name' ]
 
-   - role: debops.persistent_paths
+   - role: persistent_paths
      tags: [ 'role::persistent_paths' ]
      persistent_paths__dependent_paths: '{{ role_name__persistent_paths__dependent_paths }}'
 
