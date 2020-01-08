@@ -26,7 +26,7 @@ the LDAP directory used by :command:`nslcd` to perform LDAP lookups.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.nslcd/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/nslcd/COPYRIGHT
 
 ..
  Local Variables:
