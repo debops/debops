@@ -1627,6 +1627,15 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.sysfs\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'sysnews role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'sysnews.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysnews.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_sysnews'
+    JANE_DIFF_PATTERN: '.*/roles/sysnews/.*'
+    JANE_LOG_PATTERN: '\[debops\.sysnews\]'
+
 'system_groups role':
   <<: *test_role_3rd_deps
   variables:
@@ -1643,15 +1652,6 @@ stages:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_users.yml'
     JANE_DIFF_PATTERN: '.*/debops.system_users/.*'
     JANE_LOG_PATTERN: '\[debops\.system_users\]'
-
-'sysnews role':
-  <<: *test_role_no_deps
-  variables:
-    JANE_TEST_FACT: 'sysnews.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysnews.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_sysnews'
-    JANE_DIFF_PATTERN: '.*/debops.sysnews/.*'
-    JANE_LOG_PATTERN: '\[debops\.sysnews\]'
 
 
 # --- t --- [[[2

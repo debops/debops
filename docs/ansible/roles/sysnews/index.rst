@@ -22,7 +22,7 @@ command.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.sysnews/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/sysnews/COPYRIGHT
 
 ..
  Local Variables:
