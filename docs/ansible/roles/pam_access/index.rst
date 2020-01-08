@@ -20,7 +20,7 @@ revoke access to services based on users, groups and origins.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.pam_access/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/pam_access/COPYRIGHT
 
 ..
  Local Variables:
