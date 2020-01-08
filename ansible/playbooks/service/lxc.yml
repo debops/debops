@@ -34,14 +34,13 @@
       python__dependent_packages2:
         - '{{ lxc__python__dependent_packages2 }}'
 
-    - role: debops.lxc
+    - role: lxc
       tags: [ 'role::lxc', 'skip::lxc' ]
 
 # If a host has 'debops.dnsmasq' or 'debops.unbound' roles configured, execute
-# its playbook in case that configuration applied by the 'debops.lxc' role
-# needs to be applied to 'dnsmasq' or 'unbound' services. This should ensure
-# that the '*.lxc' subdomain for internal LXC containers is resolvable on the
-# LXC host.
+# its playbook in case that configuration applied by the 'lxc' role needs to be
+# applied to 'dnsmasq' or 'unbound' services. This should ensure that the
+# '*.lxc' subdomain for internal LXC containers is resolvable on the LXC host.
 #
 # If the host is not in the Ansible inventory groups required by the
 # 'dnsmasq.yml' or the 'unbound.yml' playbooks, this should not impact

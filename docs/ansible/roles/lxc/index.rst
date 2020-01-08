@@ -26,7 +26,7 @@ can be managed remotely with Ansible.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.lxc/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/lxc/COPYRIGHT
 
 ..
  Local Variables:
