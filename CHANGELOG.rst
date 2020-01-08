@@ -32,6 +32,14 @@ New DebOps roles
 
 - Add `docker_server__install_virtualenv` setting to disable python virtualvenv installation.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- The role can now use DNS SRV resource records to find the GitLab API host
+  address. Additionally, GitLab Runner token can be stored in the
+  :file:`secret/` directory in a predetermined location to avoid exposing it
+  via the Ansible inventory. See the role documentation for details.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 

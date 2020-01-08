@@ -135,11 +135,36 @@ gitlab_runner__domain: '{{ ansible_domain }}'
 gitlab_runner__fqdn: '{{ ansible_fqdn }}'
 
                                                                    # ]]]
+# .. envvar:: gitlab_runner__gitlab_srv_rr [[[
+#
+# List which contains the result of the :command:`dig` query for Gitlab server
+# ``SRV`` resource records in the host's domain. See :rfc:`6186` for details.
+gitlab_runner__gitlab_srv_rr: '{{ q("dig", "_gitlab._tcp."
+                                    + gitlab_runner__domain
+                                    + "./SRV", "flat=0") }}'
+
+                                                                   # ]]]
 # .. envvar:: gitlab_runner__api_fqdn [[[
 #
-# Fully Qualified Domain Name of the GitLab CI host which will control the
+# The Fully Qualified Domain Name (FQDN) of the GitLab CI host which will control the
 # runner operation.
-gitlab_runner__api_fqdn: 'code.{{ gitlab_runner__domain }}'
+#
+# By default the host is located using DNS SRV resource records; if there are none,
+# role checks if a local Gitlab installation is present and uses the host FQDN as
+# the Gitlab API server address. Finally, the static ``code.<domain>`` is used.
+#
+# Use of FQDN instead of ``localhost`` is required for X.509 certificate
+# verification and for correct information in system logs.
+gitlab_runner__api_fqdn: '{{ (gitlab_runner__gitlab_srv_rr | selectattr("target", "defined")
+                              | map(attribute="target")
+                              | map("regex_replace", "\.$","")
+                              | list | first)
+                              if ("NXDOMAIN" not in gitlab_runner__gitlab_srv_rr and
+                                  gitlab_runner__gitlab_srv_rr[0])
+                              else (ansible_fqdn
+                                    if (ansible_local|d() and ansible_local.gitlab|d() and
+                                       (ansible_local.gitlab.installed|d())|bool)
+                                    else ("code." + gitlab_runner__domain)) }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__api_url [[[
