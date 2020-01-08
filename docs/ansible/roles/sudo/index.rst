@@ -19,7 +19,7 @@ package will be installed.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.sudo/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/sudo/COPYRIGHT
 
 ..
  Local Variables:
