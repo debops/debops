@@ -18,6 +18,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.2: https://github.com/debops/debops/compare/v1.2.0...stable-1.2
 
+Added
+~~~~~
+
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- The role can now use DNS SRV resource records to find the GitLab API host
+  address. Additionally, GitLab Runner token can be stored in the
+  :file:`secret/` directory in a predetermined location to avoid exposing it
+  via the Ansible inventory. See the role documentation for details.
+
 Changed
 ~~~~~~~
 
