@@ -10,7 +10,7 @@
 
   roles:
 
-    - role: debops.kibana/env
+    - role: kibana/env
       tags: [ 'role::kibana', 'role::secret', 'role::kibana:config' ]
 
     - role: debops.secret
@@ -18,7 +18,7 @@
       secret__directories:
         - '{{ kibana__secret__directories }}'
 
-    - role: debops.kibana
+    - role: kibana
       tags: [ 'role::kibana' ]
       kibana__dependent_role: 'application'
       kibana__dependent_state: '{{ application__deploy_state }}'
