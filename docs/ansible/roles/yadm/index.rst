@@ -33,7 +33,7 @@ Ansible roles to deploy dotfiles locally.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.yadm/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/yadm/COPYRIGHT
 
 ..
  Local Variables:
