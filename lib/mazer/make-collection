@@ -44,11 +44,13 @@ mkdir -p "${workdir}/roles" \
          "${workdir}/plugins/lookup" \
          "${workdir}/plugins/modules"
 
-# Drop the 'debops.' prefix from role directories so that Ansible Galaxy
-# accepts them as roles in a collection
+# Copy DebOps roles to the Ansible Collection build directory.
+# Omit specific DebOps roles from Ansible Collections.
 pushd ansible/roles > /dev/null
-for role in debops.* ; do
-    cp -r "${role}" "${workdir}/roles/${role#debops.}"
+for role in * ; do
+    if [[ ${role} != debops-contrib.* ]] && [[ ${role} != boxbackup ]] && [[ ${role} != rails_deploy ]] ; then
+        cp -r "${role}" "${workdir}/roles/${role}"
+    fi
 done
 popd > /dev/null
 
