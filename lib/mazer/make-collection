@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Build a Mazer collection tarball with Ansible artifacts
+# Build an Ansible Galaxy collection tarball with Ansible artifacts
 # Usage: run "make collection" in the root of the repository
 
-# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2019 DebOps https://debops.org/
+# Copyright (C) 2019-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019-2020 DebOps https://debops.org/
 
 
 set -o nounset -o pipefail -o errexit
@@ -15,9 +15,9 @@ if ! [ -f lib/mazer/make-collection ] ; then
     exit 1
 fi
 
-# Check if mazer is installed
-if ! type mazer > /dev/null 2>&1 ; then
-    printf "%s\\n" "Error: mazer not found"
+# Check if ansible-galaxy is installed
+if ! type ansible-galaxy > /dev/null 2>&1 ; then
+    printf "%s\\n" "Error: ansible-galaxy not found"
     exit 1
 fi
 
@@ -67,7 +67,7 @@ done
 cat <<EOF > "${workdir}/galaxy.yml"
 ---
 
-# Configuration file used by Mazer to build a collection of Ansible artifacts.
+# Configuration file used by Ansible Galaxy to build a collection of Ansible artifacts.
 
 namespace: "debops"
 name: "debops"
@@ -100,5 +100,5 @@ tags:
 EOF
 
 pushd "${workdir}" > /dev/null
-mazer build
+ansible-galaxy collection build
 popd > /dev/null
