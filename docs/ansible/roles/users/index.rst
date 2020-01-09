@@ -23,7 +23,7 @@ directory, and manage local system administrator accounts using the
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.users/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/users/COPYRIGHT
 
 ..
  Local Variables:
