@@ -28,7 +28,7 @@ environment <debops.php>` and :ref:`UNIX accounts <debops.users>`, etc.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.wpcli/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/wpcli/COPYRIGHT
 
 ..
  Local Variables:
