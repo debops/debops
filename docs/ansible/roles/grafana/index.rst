@@ -15,7 +15,7 @@ Ubuntu host. Grafana will be installed from upstream APT repository.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.grafana/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/grafana/COPYRIGHT
 
 ..
  Local Variables:
