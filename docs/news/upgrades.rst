@@ -11,6 +11,14 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+General
+~~~~~~~
+
+- Official DebOps roles have been renamed and the ``debops.`` prefix has been
+  dropped from the directory names. The custom playbooks and role dependencies
+  that use DebOps roles will have to be updated accordingly to function
+  correctly again.
+
 LDAP
 ~~~~
 
