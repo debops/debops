@@ -16,7 +16,7 @@ Ubuntu host. Varnish is an HTTP accelerator designed for content-heavy dynamic w
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.varnish/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/varnish/COPYRIGHT
 
 ..
  Local Variables:
