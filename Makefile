@@ -17,7 +17,7 @@ clean:          ## Clean up project directory
 clean: clean-tests clean-sdist clean-wheel
 
 .PHONY: collection
-collection:     ## Build collection of Ansible artifacts with Mazer
+collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
 
 .PHONY: versions
@@ -76,7 +76,7 @@ sdist-sign: sdist
 
 .PHONY: make-collection
 make-collection:
-	@lib/mazer/make-collection
+	@lib/ansible-galaxy/make-collection
 
 .PHONY: clean-sdist
 clean-sdist:
