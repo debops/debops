@@ -18,6 +18,19 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Changed
+~~~~~~~
+
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- If both :ref:`Devecot <debops.dovecot>` and :ref:`Cyrus <debops.saslauthd>`
+  services are installed on a host, Postfix will be configured to prefer Cyrus
+  for SASL authentication. This permits mail relay via the authenticated
+  :ref:`nullmailer <debops.nullmailer>` Mail Transfer Agents with accounts in
+  the LDAP directory. The preference can be changed using the
+  :envvar:`postconf__sasl_auth_method` variable.
+
 
 `debops v1.0.15`_ - 2020-01-09
 ------------------------------

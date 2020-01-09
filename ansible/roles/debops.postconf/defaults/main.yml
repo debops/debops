@@ -72,6 +72,21 @@ postconf__fqdn: '{{ ansible_local.core.fqdn
                     else ansible_fqdn }}'
 
                                                                    # ]]]
+# .. envvar:: postconf__sasl_auth_method [[[
+#
+# Select the preferred SASL authentication method for accepting authenticated
+# e-mail messages. Currently supported methods are "cyrus" which will use the
+# :command:`saslauthd` service, or "dovecot" which will use the Dovecot
+# service. The default preference is to use :command:`saslauthd` when it is
+# installed to allow for more flexible client authentication methods,
+# authenticated mail relays, and the like.
+postconf__sasl_auth_method: '{{ "cyrus"
+                                if (ansible_local|d() and ansible_local.saslauthd|d() and
+                                    (ansible_local.saslauthd.installed|d())|bool and
+                                    "smtpd" in ansible_local.saslauthd.instances)
+                                else "dovecot" }}'
+
+                                                                   # ]]]
 # .. envvar:: postconf__unauth_sender_domains [[[
 #
 # List of FQDN domains which are handled by this Postfix instance. Any
@@ -262,19 +277,17 @@ postconf__postfix__dependent_maincf:
                else "ignore" }}'
 
   - name: 'smtpd_sasl_type'
-    value: '{{ "dovecot"
-               if (ansible_local|d() and ansible_local.dovecot|d() and
-                   (ansible_local.dovecot.installed|d())|bool)
-               else "cyrus" }}'
+    value: '{{ "cyrus"
+               if (postconf__sasl_auth_method == "cyrus")
+               else "dovecot" }}'
     state: '{{ "present"
                if ("auth" in postconf__combined_capabilities)
                else "ignore" }}'
 
   - name: 'smtpd_sasl_path'
-    value: '{{ "private/auth"
-               if (ansible_local|d() and ansible_local.dovecot|d() and
-                   (ansible_local.dovecot.installed|d())|bool)
-               else "smtpd" }}'
+    value: '{{ "smtpd"
+               if (postconf__sasl_auth_method == "cyrus")
+               else "private/auth" }}'
     state: '{{ "present"
                if ("auth" in postconf__combined_capabilities)
                else "ignore" }}'
