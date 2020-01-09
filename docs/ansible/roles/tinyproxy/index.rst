@@ -16,7 +16,7 @@ Ubuntu host. Tinyproxy is a light-weight HTTP/HTTPS proxy daemon for POSIX opera
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.tinyproxy/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/tinyproxy/COPYRIGHT
 
 ..
  Local Variables:
