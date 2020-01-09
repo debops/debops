@@ -165,6 +165,16 @@ LDAP
   manually if you are running version 15 or below. The role now defaults to
   Nextcloud 16 for new installations.
 
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- If both :ref:`Devecot <debops.dovecot>` and :ref:`Cyrus <debops.saslauthd>`
+  services are installed on a host, Postfix will be configured to prefer Cyrus
+  for SASL authentication. This permits mail relay via the authenticated
+  :ref:`nullmailer <debops.nullmailer>` Mail Transfer Agents with accounts in
+  the LDAP directory. The preference can be changed using the
+  :envvar:`postconf__sasl_auth_method` variable.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
