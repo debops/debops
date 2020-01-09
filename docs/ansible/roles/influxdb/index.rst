@@ -16,7 +16,7 @@ Ubuntu host. InfluxDB will be installed from InfluxDB upstream APT repository.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.influxdb/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/influxdb/COPYRIGHT
 
 ..
  Local Variables:
