@@ -52,9 +52,6 @@ for role in debops.* ; do
 done
 popd > /dev/null
 
-# Remove the 'role_name' parameter which is not used in Galaxy Collections
-find "${workdir}"/roles/*/meta/main.yml -type f -exec sed -i -e '/role_name/d' {} +
-
 # Copy various Ansible plugins to the directories where collection expects them
 cp ansible/plugins/callback_plugins/*.py "${workdir}/plugins/callback"
 cp ansible/plugins/connection_plugins/*.py "${workdir}/plugins/connection"
