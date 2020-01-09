@@ -10,7 +10,7 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring',
               'role::nodejs', 'role::mariadb', 'role::postgresql', 'role::nginx' ]
       keyring__dependent_apt_keys:
@@ -19,31 +19,31 @@
         - '{{ postgresql__keyring__dependent_apt_keys if (etherpad__database == "postgresql") else [] }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ etherpad__etc_services__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ etherpad__logrotate__dependent_config }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ nodejs__apt_preferences__dependent_list }}'
 
-    - role: debops.nodejs
+    - role: nodejs
       tags: [ 'role::nodejs', 'skip::nodejs' ]
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::mariadb', 'role::postgresql' ]
       python__dependent_packages3:
         - '{{ postgresql__python__dependent_packages3 if etherpad__database == "postgres" else [] }}'
@@ -54,7 +54,7 @@
         - '{{ mariadb__python__dependent_packages2 if etherpad__database == "mysql" else [] }}'
         - '{{ nginx__python__dependent_packages2 }}'
 
-    - role: debops.mariadb
+    - role: mariadb
       tags: [ 'role::mariadb', 'skip::mariadb' ]
       mariadb__dependent_users:
         - '{{ etherpad__mariadb__dependent_users }}'
@@ -62,7 +62,7 @@
         - '{{ etherpad__mariadb__dependent_databases }}'
       when: etherpad__database == 'mysql'
 
-    - role: debops.postgresql
+    - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles:
         - '{{ etherpad__postgresql__dependent_roles }}'
@@ -74,12 +74,12 @@
         - '{{ etherpad__postgresql__dependent_pgpass }}'
       when: etherpad__database == 'postgres'
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ etherpad__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ etherpad__nginx__dependent_upstreams }}'
 
-    - role: debops.etherpad
+    - role: etherpad
       tags: [ 'role::etherpad', 'skip::etherpad' ]

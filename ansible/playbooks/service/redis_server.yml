@@ -10,48 +10,48 @@
 
   roles:
 
-    - role: debops.redis_server/env
+    - role: redis_server/env
       tags: [ 'role::redis_server', 'role::ferm' ]
 
-    - role: debops.sysfs/env
+    - role: sysfs/env
       tags: [ 'role::sysfs', 'role::secret' ]
 
-    - role: debops.secret
+    - role: secret
       tags: [ 'role::secret', 'role::sysfs' ]
       secret__directories:
         - '{{ sysfs__secret__directories | d([]) }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ redis_server__apt_preferences__dependent_list }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ redis_server__etc_services__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ redis_server__ferm__dependent_rules }}'
 
-    - role: debops.sysctl
+    - role: sysctl
       tags: [ 'role::sysctl', 'skip::sysctl' ]
       sysctl__dependent_parameters:
         - '{{ redis_server__sysctl__dependent_parameters }}'
 
-    - role: debops.sysfs
+    - role: sysfs
       tags: [ 'role::sysfs', 'skip::sysfs' ]
       sysfs__dependent_attributes:
         - '{{ redis_server__sysfs__dependent_attributes }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::redis_server' ]
       python__dependent_packages3:
         - '{{ redis_server__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ redis_server__python__dependent_packages2 }}'
 
-    - role: debops.redis_server
+    - role: redis_server
       tags: [ 'role::redis_server', 'skip::redis_server' ]

@@ -1,0 +1,114 @@
+---
+
+- import_role:
+    name: 'secret'
+
+# We want to have our configuration enabled as soon as possible for UTF-8
+# support, this check lets us know if MariaDB / MySQL server has just been
+# installed and we can quickly apply our own configuration and restart the
+# server before any more changes happen.
+- name: Check if database server is installed
+  environment:
+    LC_MESSAGES: 'C'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server'
+                                         'percona-server-server' 'mysql-wsrep-server-5.6'
+         | grep -v '^$'
+  args:
+    executable: 'bash'
+  register: mariadb_server__register_version
+  check_mode: False
+  changed_when: False
+  failed_when: False
+
+- name: Install database server packages
+  package:
+    name: '{{ q("flattened", (mariadb_server__base_packages
+                              + mariadb_server__packages_map[mariadb_server__flavor]
+                              + mariadb_server__packages
+                              + ([ "automysqlbackup" ]
+                                 if mariadb_server__backup|bool
+                                 else []))) }}'
+    state: 'present'
+  register: mariadb_server__register_install_status
+  until: mariadb_server__register_install_status is succeeded
+
+- name: Stop database server on first install
+  service:
+    name: 'mysql'
+    state: 'stopped'
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
+
+- name: Add database server user to specified groups
+  user:
+    name: 'mysql'
+    groups: '{{ mariadb_server__append_groups | join(",") | default(omit) }}'
+    append: True
+    createhome: False
+  when: mariadb_server__pki|bool
+
+- name: Check if MariaDB config directory exists
+  stat:
+    path: '/etc/mysql/mariadb.conf.d'
+  register: mariadb_server__register_confd
+
+- name: Ensure MariaDB data directory exists
+  file:
+    path: '{{ mariadb_server__datadir }}'
+    state: 'directory'
+    owner: 'mysql'
+    group: 'mysql'
+    mode: '0755'
+
+- name: Move MariaDB data files to data directory
+  shell:
+    'mv {{ mariadb_server__default_datadir }}/* {{ mariadb_server__datadir }}'
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed) and
+         (mariadb_server__datadir != mariadb_server__default_datadir))
+
+- name: Configure database client on first install
+  template:
+    src: 'etc/mysql/conf.d/client.cnf.j2'
+    dest: '{{ mariadb_server__client_cnf_file }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (mariadb_server__register_version|d() and not mariadb_server__register_version.stdout)
+
+- name: Configure database server
+  include: 'configure_server.yml'
+  tags: [ 'role::mariadb_server:configure' ]
+
+- name: Start database server on first install
+  service:
+    name: 'mysql'
+    state: 'started'
+  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
+
+- name: Secure database server
+  include: 'secure_installation.yml'
+  tags: [ 'role::mariadb_server:secure' ]
+
+- name: Make sure that local fact directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save MariaDB local facts
+  template:
+    src: 'etc/ansible/facts.d/mariadb.fact.j2'
+    dest: '/etc/ansible/facts.d/mariadb.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: mariadb_server__register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: mariadb_server__register_local_facts is changed

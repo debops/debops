@@ -17,7 +17,7 @@ clean:          ## Clean up project directory
 clean: clean-tests clean-sdist clean-wheel
 
 .PHONY: collection
-collection:     ## Build collection of Ansible artifacts with Mazer
+collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
 
 .PHONY: versions
@@ -76,7 +76,7 @@ sdist-sign: sdist
 
 .PHONY: make-collection
 make-collection:
-	@lib/mazer/make-collection
+	@lib/ansible-galaxy/make-collection
 
 .PHONY: clean-sdist
 clean-sdist:
@@ -105,7 +105,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-playbook-syntax test-yaml test-ansible-lint test-shell
+test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-playbook-syntax test-yaml test-shell
 
 .PHONY: test-pep8
 test-pep8:
@@ -165,7 +165,7 @@ test-debops-tools:
 .PHONY: test-debops-ansible_plugins
 test-debops-ansible_plugins:
 	@printf "%s\n" "Testing debops-ansible_plugins using nose2..."
-	@python3 ansible/roles/debops.ansible_plugins/filter_plugins/debops_filter_plugins.py
+	@python3 ansible/roles/ansible_plugins/filter_plugins/debops_filter_plugins.py
 
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:

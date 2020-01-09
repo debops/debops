@@ -10,27 +10,27 @@
 
   roles:
 
-    - role: debops.resolvconf
+    - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
       resolvconf__dependent_services:
         - 'unbound'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ unbound__apt_preferences__dependent_list }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
         - '{{ unbound__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ unbound__python__dependent_packages2 }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ unbound__etc_services__dependent_list }}'
 
-    - role: debops.unbound
+    - role: unbound
       tags: [ 'role::unbound', 'skip::unbound' ]

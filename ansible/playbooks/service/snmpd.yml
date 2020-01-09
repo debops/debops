@@ -10,20 +10,20 @@
 
   roles:
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ snmpd_apt_preferences_dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ snmpd_ferm_dependent_rules }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers_dependent_allow:
         - '{{ snmpd_tcpwrappers_dependent_allow }}'
 
-    - role: debops.snmpd
+    - role: snmpd
       tags: [ 'role::snmpd', 'skip::snmpd' ]

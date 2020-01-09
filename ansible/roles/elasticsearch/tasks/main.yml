@@ -1,0 +1,150 @@
+---
+
+- import_role:
+    name: 'secret'
+
+- name: Check if the dependent config file exists
+  stat:
+    path: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
+  register: elasticsearch__register_dependent_config_file
+  become: False
+  delegate_to: 'localhost'
+  when: (ansible_local|d() and ansible_local.elasticsearch|d() and
+         ansible_local.elasticsearch.installed|d())
+  tags: [ 'role::elasticsearch:config' ]
+
+- name: Load the dependent configuration from Ansible Controller
+  slurp:
+    src: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
+  register: elasticsearch__register_dependent_config
+  become: False
+  delegate_to: 'localhost'
+  when: (ansible_local|d() and ansible_local.elasticsearch|d() and
+         ansible_local.elasticsearch.installed|d() and
+         elasticsearch__register_dependent_config_file.stat.exists|bool)
+  tags: [ 'role::elasticsearch:config' ]
+
+- name: Divert original configuration files
+  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert
+           --rename {{ item }}
+  args:
+    creates: '{{ item }}.dpkg-divert'
+  with_items:
+    - '/etc/elasticsearch/elasticsearch.yml'
+    - '/etc/elasticsearch/jvm.options'
+    - '/usr/lib/sysctl.d/elasticsearch.conf'
+  notify: [ 'Start elasticsearch' ]
+  tags: [ 'role::elasticsearch:config' ]
+
+- name: Create systemd configuration directory
+  file:
+    path: '/etc/systemd/system/elasticsearch.service.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Generate systemd configuration
+  template:
+    src: 'etc/systemd/system/elasticsearch.service.d/ansible.conf.j2'
+    dest: '/etc/systemd/system/elasticsearch.service.d/ansible.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: elasticsearch__register_systemd
+
+- name: Reload systemd daemons
+  systemd:
+    daemon_reload: True
+  when: (elasticsearch__register_systemd is changed and
+         ansible_service_mgr == 'systemd')
+
+- name: Generate Elasticsearch configuration
+  template:
+    src: 'etc/elasticsearch/elasticsearch.yml.j2'
+    dest: '/etc/elasticsearch/elasticsearch.yml'
+    owner: 'root'
+    group: '{{ elasticsearch__group }}'
+    mode: '0660'
+  notify: [ 'Restart elasticsearch' ]
+  tags: [ 'role::elasticsearch:config' ]
+
+- name: Generate Elasticsearch JVM configuration
+  template:
+    src: 'etc/elasticsearch/jvm.options.j2'
+    dest: '/etc/elasticsearch/jvm.options'
+    owner: 'root'
+    group: '{{ elasticsearch__group }}'
+    mode: '0660'
+  notify: [ 'Restart elasticsearch' ]
+  when: elasticsearch__version is version_compare("5.0.0", ">=")
+  tags: [ 'role::elasticsearch:config' ]
+
+- name: Manage data paths
+  file:
+    path:    '{{ item }}'
+    state:   'directory'
+    owner:   '{{ elasticsearch__user }}'
+    group:   '{{ elasticsearch__group }}'
+    mode:    '0750'
+  with_flattened:
+    - '{{ elasticsearch__path_data }}'
+
+- name: Check state of installed Elasticsearch plugins
+  command: bin/elasticsearch-plugin list
+  args:
+    chdir: '/usr/share/elasticsearch'
+  register: elasticsearch__register_plugins
+  changed_when: False
+  check_mode: False
+
+- name: Install Elasticsearch plugins
+  command: bin/elasticsearch-plugin install {{ item.url | d(item.name) }} --batch
+  args:
+    chdir: '/usr/share/elasticsearch'
+  notify: [ 'Restart elasticsearch' ]
+  with_flattened:
+    - '{{ elasticsearch__combined_plugins }}'
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.name if ':' not in item.name else item.name.split(':')[1])
+         not in elasticsearch__register_plugins.stdout_lines)
+
+- name: Remove Elasticsearch plugins
+  command: bin/elasticsearch-plugin remove {{ item.name }}
+  args:
+    chdir: '/usr/share/elasticsearch'
+  notify: [ 'Restart elasticsearch' ]
+  with_flattened:
+    - '{{ elasticsearch__combined_plugins }}'
+  when: (item.name|d() and item.state|d('present') == 'absent' and
+         (item.name if ':' not in item.name else item.name.split(':')[1])
+         in elasticsearch__register_plugins.stdout_lines)
+
+- name: Save Elasticsearch dependent configuration on Ansible Controller
+  template:
+    src: 'secret/elasticsearch/dependent_config/config.json.j2'
+    dest: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
+  become: False
+  delegate_to: 'localhost'
+  tags: [ 'role::elasticsearch:config' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Elasticsearch local facts
+  template:
+    src: 'etc/ansible/facts.d/elasticsearch.fact.j2'
+    dest: '/etc/ansible/facts.d/elasticsearch.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: elasticsearch__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: elasticsearch__register_facts is changed

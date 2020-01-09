@@ -1,0 +1,92 @@
+---
+
+# Problem with ansible-lint not detecting custom Ansible modules
+# Ref: https://github.com/ansible/ansible-lint/issues/644
+- import_role:
+    name: 'ansible_plugins'
+
+# The custom libraries were built during LXD installation via the
+# 'debops.golang' role and need to be installed system-wide for the lxc/lxd
+# binaries to work correctly.
+- name: Copy custom dependent libraries to system directory
+  shell: |
+    set -o nounset -o pipefail -o errexit &&
+    mkdir -p /usr/local/lib/x86_64-linux-gnu &&
+    cp -Pf ../deps/raft/.libs/libraft.so* \
+           ../deps/sqlite/.libs/libsqlite3.so* \
+           ../deps/dqlite/.libs/libdqlite.so* \
+           ../deps/libco/libco.so* \
+           /usr/local/lib/x86_64-linux-gnu &&
+    ldconfig
+  args:
+    chdir: '{{ lxd__golang_gosrc }}'
+    creates: '/usr/local/lib/x86_64-linux-gnu/libraft.so.0'
+    executable: 'bash'
+  when: lxd__upstream_enabled|bool and lxd__upstream_type == 'git'
+
+- name: Install required packages
+  package:
+    name: '{{ (lxd__base_packages + lxd__packages) | flatten }}'
+    state: 'present'
+
+- name: Create required POSIX system group
+  group:
+    name: '{{ lxd__group }}'
+    state: 'present'
+    system: True
+
+- name: Add selected UNIX accounts to LXD system group
+  user:
+    name: '{{ item }}'
+    groups: '{{ lxd__group }}'
+    append: True
+  loop: '{{ lxd__admin_accounts }}'
+
+- name: Create the log directory
+  file:
+    state: 'directory'
+    path: '/var/log/lxd'
+    mode: '0700'
+
+- name: Generate systemd units
+  template:
+    src: 'etc/systemd/system/{{ item }}.j2'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+  loop: [ 'lxd.socket', 'lxd.service', 'lxd-containers.service' ]
+  register: lxd__register_systemd
+  when: lxd__upstream_enabled|bool and ansible_service_mgr == 'systemd'
+
+- name: Enable systemd units
+  systemd:
+    daemon_reload: True
+    name: '{{ item }}'
+    state: 'started'
+    enabled: True
+  loop: [ 'lxd.socket', 'lxd-containers.service' ]
+  when: lxd__register_systemd is changed
+
+- name: Apply preseed configuration
+  command: lxd init --preseed
+  args:
+    stdin: '{{ lxd__preseed_data }}'
+  changed_when: False
+  when: lxd__init_preseed|bool
+  tags: [ 'role::lxd:init' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save LXD local facts
+  template:
+    src: 'etc/ansible/facts.d/lxd.fact.j2'
+    dest: '/etc/ansible/facts.d/lxd.fact'
+    mode: '0755'
+  register: lxd__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: lxd__register_facts is changed

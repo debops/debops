@@ -1,0 +1,61 @@
+---
+
+- import_role:
+    name: 'secret'
+
+- name: Install requested packages
+  apt:
+    name: '{{ (console_base_packages + console_conditional_packages) | flatten }}'
+    state: 'present'
+    install_recommends: False
+  register: console__register_packages
+  until: console__register_packages is succeeded
+  when: item is defined and item
+  tags: [ 'meta::provision' ]
+
+- name: Check if /etc/inittab exists
+  stat:
+    path: '/etc/inittab'
+  register: console_register_inittab
+
+- name: Disable serial console in /etc/inittab
+  lineinfile:
+    dest: '/etc/inittab'
+    regexp: '^{{ console_serial_inittab }}'
+    state: 'absent'
+  when: ((console_serial is undefined or (console_serial is defined and not console_serial)) and
+         ((console_register_inittab is defined and console_register_inittab) and
+          console_register_inittab.stat.exists))
+  notify: [ 'Reload sysvinit' ]
+
+- name: Enable serial console in /etc/inittab
+  lineinfile:
+    dest: '/etc/inittab'
+    regexp: '^{{ console_serial_inittab }}'
+    state: 'present'
+    line: '{{ console_serial_inittab }}'
+  when: ((console_serial is defined and console_serial) and
+         ((console_register_inittab is defined and console_register_inittab) and
+          console_register_inittab.stat.exists))
+  notify: [ 'Reload sysvinit' ]
+
+- name: Configure fsck behaviour on boot
+  lineinfile:
+    dest: '/etc/default/rcS'
+    regexp: 'FSCKFIX='
+    state: 'present'
+    line: 'FSCKFIX={{ console_fsckfix }}'
+  when: ansible_distribution_release in console_fsckfix_releases
+
+- include: filesystem_mount.yml
+  tags: [ 'role::console:mount' ]
+  when: (
+          ansible_local|d() and (
+            (ansible_local.tags|d() and 'ignore-cap12s' in ansible_local.tags) or (
+              ansible_local.cap12s|d() and (
+                not ansible_local.cap12s.enabled|bool or
+                (ansible_local.cap12s.enabled|bool and 'cap_sys_admin' in ansible_local.cap12s.list)
+              )
+            )
+          )
+        )

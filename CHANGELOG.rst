@@ -87,6 +87,11 @@ General
 - Most of the role dependencies have been moved either to the playbooks or to
   the role task lists using the ``import_role`` Ansible module.
 
+- The official DebOps roles have been renamed and the ``debops.`` prefix has
+  been dropped from the directory names to better support Ansible Collections.
+  Custom playbooks and role dependencies which use the DebOps roles have to be
+  updated to work again.
+
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 

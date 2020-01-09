@@ -10,30 +10,30 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::php', 'role::wpcli' ]
       keyring__dependent_apt_keys:
         - '{{ php__keyring__dependent_apt_keys }}'
       keyring__dependent_gpg_keys:
         - '{{ wpcli__keyring__dependent_gpg_keys }}'
 
-    - role: debops.php/env
+    - role: php/env
       tags: [ 'role::php', 'role::logrotate' ]
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ php__apt_preferences__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ wpcli__php__dependent_packages }}'
 
-    - role: debops.wpcli
+    - role: wpcli
       tags: [ 'role::wpcli' ]

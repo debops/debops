@@ -1,0 +1,120 @@
+---
+
+# Problem with ansible-lint not detecting custom Ansible modules
+# Ref: https://github.com/ansible/ansible-lint/issues/644
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Install cron packages
+  package:
+    name: '{{ q("flattened", (cron__base_packages
+                              + cron__packages)) }}'
+    state: 'present'
+  register: cron__register_packages
+  until: cron__register_packages is succeeded
+  when: cron__enabled|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+  tags: [ 'role::cron:crontab' ]
+
+- name: Save cron local facts
+  template:
+    src: 'etc/ansible/facts.d/cron.fact.j2'
+    dest: '/etc/ansible/facts.d/cron.fact'
+    mode: '0755'
+  register: cron__register_facts
+  tags: [ 'role::cron:crontab' ]
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: cron__register_facts is changed
+  tags: [ 'role::cron:crontab' ]
+
+- name: Divert the original crontab configuration
+  dpkg_divert:
+    path: '/etc/crontab'
+    state: '{{ cron__crontab_deploy_state }}'
+    delete: True
+  when: cron__enabled|bool and ansible_pkg_mgr == 'apt'
+  tags: [ 'role::cron:crontab' ]
+
+- name: Generate crontab configuration file
+  template:
+    src: 'etc/crontab.j2'
+    dest: '/etc/crontab'
+    mode: '0644'
+  when: cron__enabled|bool and
+        cron__crontab_deploy_state == 'present'
+  tags: [ 'role::cron:crontab' ]
+
+- name: Remove custom cron files
+  file:
+    dest: '{{ item.1.dest }}'
+    state: 'absent'
+  with_subelements:
+    - '{{ cron__combined_jobs | selectattr("custom_files", "defined") | list }}'
+    - 'custom_files'
+  when: (cron__enabled|bool and (item.0.state|d('present') == 'absent' or item.1.state|d('present') == 'absent') and
+         (item.1.src|d() or item.1.content|d()) and item.1.dest|d())
+
+- name: Manage custom cron files
+  copy:
+    dest:    '{{ item.1.dest }}'
+    src:     '{{ item.1.src     | d(omit) }}'
+    content: '{{ item.1.content | d(omit) }}'
+    owner:   '{{ item.1.owner   | d("root") }}'
+    group:   '{{ item.1.group   | d("root") }}'
+    mode:    '{{ item.1.mode    | d("0755") }}'
+    force:   '{{ item.1.force   | d(omit) }}'
+  with_subelements:
+    - '{{ cron__combined_jobs | selectattr("custom_files", "defined") | list }}'
+    - 'custom_files'
+  when: (cron__enabled|bool and item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.1.state|d('present') != 'absent' and
+         (item.1.src|d() or item.1.content|d()) and item.1.dest|d())
+
+- name: Remove cron job files
+  file:
+    path: '/etc/cron.d/{{ item.0.file | d(item.0.cron_file) }}'
+    state: 'absent'
+  with_subelements:
+    - '{{ cron__combined_jobs }}'
+    - 'jobs'
+  when: cron__enabled|bool and item.0.state|d('present') == 'absent'
+
+- name: Manage cron environment variables
+  cron:
+    cron_file:  '{{ item.0.file | d(item.0.cron_file) }}'
+    name:       '{{ item.1.keys()[0] }}'
+    value:      '{{ item.1.values()[0] }}'
+    user:       '{{ item.0.user | d("root") }}'
+    state:      'present'
+    env:        True
+  with_subelements:
+    - '{{ cron__combined_jobs | selectattr("environment", "defined") | list }}'
+    - 'environment'
+  when: cron__enabled|bool and item.0.state|d('present') not in [ 'absent', 'ignore' ]
+
+- name: Manage cron jobs
+  cron:
+    name:         '{{ item.1.name }}'
+    job:          '{{ item.1.job }}'
+    cron_file:    '{{ item.0.file         | d(item.0.cron_file) }}'
+    disabled:     '{{ item.1.disabled     | d(omit) }}'
+    minute:       '{{ item.1.minute       | d(omit) }}'
+    hour:         '{{ item.1.hour         | d(omit) }}'
+    day:          '{{ item.1.day          | d(omit) }}'
+    month:        '{{ item.1.month        | d(omit) }}'
+    weekday:      '{{ item.1.weekday      | d(omit) }}'
+    special_time: '{{ item.1.special_time | d(omit) }}'
+    backup:       '{{ item.1.backup       | d(omit) }}'
+    user:         '{{ item.0.user         | d("root") }}'
+    state:        '{{ item.1.state        | d("present") }}'
+  with_subelements:
+    - '{{ cron__combined_jobs }}'
+    - 'jobs'
+  when: cron__enabled|bool and item.0.state|d('present') not in [ 'absent', 'ignore' ]

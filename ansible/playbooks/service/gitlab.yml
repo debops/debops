@@ -10,7 +10,7 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring',
               'role::nodejs', 'role::postgresql', 'role::nginx' ]
       keyring__dependent_apt_keys:
@@ -18,13 +18,13 @@
         - '{{ postgresql__keyring__dependent_apt_keys }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
 
-    - role: debops.gitlab/env
+    - role: gitlab/env
       tags: [ 'role::gitlab', 'role::postgresql' ]
 
-    - role: debops.system_groups
+    - role: system_groups
       tags: [ 'role::system_groups', 'skip::system_groups' ]
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ golang__apt_preferences__dependent_list }}'
@@ -34,7 +34,7 @@
         - '{{ ruby__apt_preferences__dependent_list }}'
         - '{{ gitlab__apt_preferences__dependent_list }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::mariadb', 'role::postgresql', 'role::ldap' ]
       python__dependent_packages3:
         - '{{ gitlab__python__dependent_packages3 }}'
@@ -47,32 +47,32 @@
         - '{{ postgresql__python__dependent_packages2 if gitlab__database == "postgresql" else [] }}'
         - '{{ ldap__python__dependent_packages2 }}'
 
-    - role: debops.golang
+    - role: golang
       tags: [ 'role::golang', 'skip::golang' ]
 
-    - role: debops.nodejs
+    - role: nodejs
       tags: [ 'role::nodejs', 'skip::nodejs' ]
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ gitlab__etc_services__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ gitlab__logrotate__dependent_config }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.ruby
+    - role: ruby
       tags: [ 'role::ruby', 'skip::ruby' ]
       ruby__dev_support: True
 
-    - role: debops.postgresql
+    - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles:
         - '{{ gitlab__postgresql__dependent_roles }}'
@@ -86,19 +86,19 @@
         - '{{ gitlab__postgresql__dependent_pgpass }}'
       when: gitlab__database == 'postgresql'
 
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ gitlab__ldap__dependent_tasks }}'
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ gitlab__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ gitlab__nginx__dependent_upstreams }}'
 
-    - role: debops.gitlab
+    - role: gitlab
       tags: [ 'role::gitlab', 'skip::gitlab' ]
 
 # Import the 'debops.docker_registry' playbook to apply configuration of the

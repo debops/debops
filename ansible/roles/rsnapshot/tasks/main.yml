@@ -1,0 +1,251 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Install required APT packages
+  package:
+    name: '{{ q("flattened", (rsnapshot__base_packages
+                              + rsnapshot__packages)) }}'
+    state: 'present'
+  register: rsnapshot__register_packages
+  until: rsnapshot__register_packages is succeeded
+
+- name: Install custom backup scripts
+  copy:
+    src: 'usr/local/sbin/'
+    dest: '{{ (ansible_local.root.sbin
+               if (ansible_local|d() and ansible_local.root|d() and
+                   ansible_local.root.sbin|d())
+               else "/usr/local/sbin") + "/" }}'
+    mode: '0755'
+
+- name: Create required directories
+  file:
+    path: '{{ item.path }}'
+    mode: '{{ item.mode }}'
+    state: 'directory'
+  loop:
+    - { path: '{{ rsnapshot__config_dir }}',    mode: '0755' }
+    - { path: '{{ rsnapshot__snapshot_root }}', mode: '0700' }
+
+- name: Configure rsnapshot-scheduler
+  template:
+    src: 'etc/rsnapshot-scheduler.conf.j2'
+    dest: '/etc/rsnapshot-scheduler.conf'
+    mode: '0644'
+
+- name: Configure rsnapshot backup scripts in cron
+  template:
+    src: 'etc/cron/rsnapshot-wrapper.j2'
+    dest: '/etc/cron.{{ item }}/rsnapshot-wrapper'
+    mode: '0755'
+  loop: [ 'hourly', 'daily', 'weekly', 'monthly' ]
+
+- name: Ensure that rsnapshot SSH identities are present
+  user:
+    name: 'root'
+    generate_ssh_key: True
+    ssh_key_file:    '.ssh/{{ item.name }}'
+    ssh_key_type:    '{{ item.type    | d(rsnapshot__ssh_key_type) }}'
+    ssh_key_bits:    '{{ item.bits    | d(rsnapshot__ssh_key_bits) }}'
+    ssh_key_comment: '{{ item.comment | d(rsnapshot__ssh_key_comment) }}'
+  loop: '{{ q("flattened", (rsnapshot__ssh_default_identities + rsnapshot__ssh_identities)) | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  register: rsnapshot__register_ssh_identities
+  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
+
+- name: Make sure /root/.ssh/known_hosts file exists
+  command: touch /root/.ssh/known_hosts
+  args:
+    creates: '/root/.ssh/known_hosts'
+    warn: False
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save rsnapshot local facts
+  template:
+    src: 'etc/ansible/facts.d/rsnapshot.fact.j2'
+    dest: '/etc/ansible/facts.d/rsnapshot.fact'
+    mode: '0755'
+  register: rsnapshot__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: (rsnapshot__register_ssh_identities is changed or
+         rsnapshot__register_facts is changed)
+
+  # The host facts are needed so that we have the real "ansible_fqdn" value
+  # that the backup host will use which could be different from the
+  # "inventory_hostname" or "ansible_host" values, which might be unusable by
+  # the 'rsnapshot' command.
+- name: Gather facts from configured hosts
+  setup:
+    gather_subset: '!all'
+    fact_path: '/dev/null'
+  delegate_to: '{{ item.name }}'
+  delegate_facts: True
+  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
+         not item.fqdn|d() and hostvars[item.name]|d() and
+         hostvars[item.name]['ansible_fqdn'] is not defined and
+         (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
+
+- name: Install required packages on hosts
+  package:
+    name: '{{ q("flattened", rsnapshot__host_packages) }}'
+    state: 'present'
+  register: rsnapshot__register_host_packages
+  until: rsnapshot__register_host_packages is succeeded
+  delegate_to: '{{ item.name }}'
+  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present"),
+                "packages": q("flattened", rsnapshot__host_packages)} }}'
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
+         (item.rsync|d(True))|bool and hostvars[item.name]|d() and
+         (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
+
+  # Example: https://github.com/anamba/rrsync-custom
+  # Example: https://www.guyrutenberg.com/2014/01/14/restricting-ssh-access-to-rsync/
+- name: Install restricted rsync script used for backups
+  environment:
+    rrsync_source: '{{ item.rrsync_source | d(rsnapshot__rrsync_source) }}'
+    rrsync_binary: '{{ item.rrsync_binary | d(rsnapshot__rrsync_binary) }}'
+  shell: |
+    set -o nounset -o pipefail -o errorexit
+    if [ -r "${rrsync_source}.gz" ] ; then
+        gzip -d -c "${rrsync_source}.gz" > "${rrsync_binary}"
+    elif [ -r "${rrsync_source}" ] ; then
+        cp "${rrsync_source}" "${rrsync_binary}"
+    fi
+    chmod 0755 "${rrsync_binary}"
+  args:
+    executable: 'bash'
+    creates: '{{ item.rrsync_binary | d(rsnapshot__rrsync_binary) }}'
+  delegate_to: '{{ item.name }}'
+  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present"),
+                "packages": q("flattened", rsnapshot__host_packages)} }}'
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
+         (item.rsync|d(True))|bool and hostvars[item.name]|d() and
+         (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
+
+- name: Deploy root ssh public key on configured hosts
+  authorized_key:
+    user: '{{ item.ssh_user | d("root") }}'
+    key: '{{ ansible_local.rsnapshot.ssh_identities[item.ssh_identity | d(rsnapshot__ssh_main_identity)]
+             if (ansible_local|d() and ansible_local.rsnapshot|d() and
+                 ansible_local.rsnapshot.ssh_identities|d() and
+                 ansible_local.rsnapshot.ssh_identities[item.ssh_identity | d(rsnapshot__ssh_main_identity)]|d())
+             else "" }}'
+    key_options: '{{ item.ssh_options | d(rsnapshot__ssh_options) }},command="{{ item.ssh_command | d(rsnapshot__ssh_command) }}"'
+    state: '{{ item.state | d("present") }}'
+  delegate_to: '{{ item.fqdn | d(item.name) }}'
+  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  register: rsnapshot__register_ssh_keys
+  when: (item.name|d() and item.state|d('present') not in [ 'ignore' ] and
+         not (item.local|d())|bool and (item.ssh_key|d(True))|bool and
+         (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
+
+- name: Remove old SSH host fingerprints if keys were modified
+  environment:
+    item_fqdn: '{{ item.item.fqdn | d(hostvars[item.item.name].ansible_fqdn if hostvars[item.item.name]|d() else item.item.name) }}'
+  shell: |
+    set -o nounset -o pipefail -o errorexit
+    if type dig > /dev/null ; then
+        host_names=(
+            "${item_fqdn}"
+            $(dig +short A "${item_fqdn}")
+            $(dig +short AAAA "${item_fqdn}")
+            $(dig +search +short "${item_fqdn}")
+        )
+        for address in ${host_names[@]} ; do
+            ssh-keygen -R ${address}
+        done
+    else
+        ssh-keygen -R "${item_fqdn}"
+    fi
+  args:
+    executable: 'bash'
+  loop: '{{ rsnapshot__register_ssh_keys.results }}'
+  loop_control:
+    label: '{{ {"name": item.item.name, "state": item.item.state|d("present")} }}'
+  when: (item.item.name|d() and item.item.state|d('present') not in [ 'absent', 'ignore' ] and
+         not (item.item.local|d())|bool and (item.item.ssh_scan|d(True))|bool and item is changed and
+         (not rsnapshot__limit|d() or (item.item.name in rsnapshot__limit)))
+
+- name: Get list of already scanned host fingerprints
+  shell: set -o nounset -o pipefail -o errexit &&
+         ssh-keygen -f /root/.ssh/known_hosts -F {{ item.fqdn | d(hostvars[item.name].ansible_fqdn if hostvars[item.name]|d() else item.name) }}
+         | grep -q '^# Host {{ item.fqdn | d(hostvars[item.name].ansible_fqdn if hostvars[item.name]|d() else item.name) }} found'
+  args:
+    executable: 'bash'
+  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
+         not (item.local|d())|bool and (item.ssh_scan|d(True))|bool and
+         (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
+  register: rsnapshot__register_known_hosts
+  changed_when: False
+  failed_when: False
+
+- name: Scan SSH fingerprints of the configured hosts
+  shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d("22") }}
+          {{ item.item.fqdn | d(hostvars[item.item.name].ansible_fqdn if hostvars[item.item.name]|d() else item.item.name) }} >> /root/.ssh/known_hosts'
+  loop: '{{ rsnapshot__register_known_hosts.results }}'
+  loop_control:
+    label: '{{ {"name": item.item.name, "state": item.item.state|d("present")} }}'
+  when: (item.item.name|d() and item.item.state|d('present') not in [ 'absent', 'ignore' ] and
+         not (item.item.local|d())|bool and (item.item.ssh_scan|d(True))|bool and item.rc|d() > 0 and
+         (not rsnapshot__limit|d() or (item.item.name in rsnapshot__limit)))
+
+- name: Remove host configuration directories if requested
+  file:
+    path: '{{ rsnapshot__config_dir + "/" + item.name }}'
+    state: 'absent'
+  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  when: (item.name|d() and item.state|d('present') == 'absent' and
+         (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
+
+- name: Create host configuration directories
+  file:
+    path: '{{ rsnapshot__config_dir + "/" + item.name }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
+         (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
+
+- name: Generate host configuration files
+  template:
+    src: 'etc/rsnapshot/hosts/{{ item.1 }}.j2'
+    dest: '{{ rsnapshot__config_dir + "/" + item.0.name + "/" + item.1 }}'
+    mode: '0644'
+  loop: '{{ (rsnapshot__combined_hosts
+             | parse_kv_items(defaults={
+                                        "options":  (rsnapshot__combined_configuration | parse_kv_config),
+                                        "excludes": (rsnapshot__combined_excludes      | parse_kv_items),
+                                        "includes": (rsnapshot__combined_includes      | parse_kv_items)
+                                       },
+                              merge_keys=["excludes", "includes"])
+            ) | product([ "include.txt", "exclude.txt", "rsnapshot.conf" ]) | list }}'
+  loop_control:
+    label: '{{ {"name": item.0.name, "state": item.0.state|d("present"), "file": item.1} }}'
+  when: (item.0.name|d() and item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         (not rsnapshot__limit|d() or (item.0.name in rsnapshot__limit)))

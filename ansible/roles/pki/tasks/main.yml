@@ -1,0 +1,540 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'pki/pre_main.yml') }}"
+
+- name: Generate random session token
+  set_fact:
+    pki_fact_session_token: '{{ 9999999999999999999999999999999999999 | random | string | hash("sha256") }}'
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+
+- name: Expose host FQDN and library path in temporary variables
+  set_fact:
+    pki_fact_fqdn: '{{ pki_fqdn }}'
+    pki_fact_lib_path: '{{ (ansible_local.root.lib
+                            if (ansible_local|d() and ansible_local.root|d() and
+                                ansible_local.root.lib|d())
+                            else "/usr/local/lib") + "/pki" }}'
+
+# Install PKI packages [[[
+- name: Install PKI packages
+  apt:
+    name: '{{ (pki_base_packages
+             + (pki_acme_packages if (pki_acme|bool or pki_acme_install|bool) else [])
+             + pki_packages)
+             | flatten }}'
+    state: 'present'
+    install_recommends: False
+    cache_valid_time: '{{ ansible_local.core.cache_valid_time
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.cache_valid_time|d())
+                          else "86400" }}'
+  register: pki__register_packages
+  until: pki__register_packages is succeeded
+  when: pki_enabled | bool
+# .. ]]]
+
+# Assert that required dependencies are met as documented [[[
+- name: Check Ansible Controller bash version
+  command: "/usr/bin/env bash -c 'echo $BASH_VERSION'"
+  changed_when: False
+  register: pki__register_bash_version
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+  check_mode: False
+
+- name: Check Ansible Controller crypto library version
+  shell: |
+    set -o nounset -o pipefail -o errexit &&
+    {% if pki_ca_library == 'gnutls' %}
+    certtool --version | head -n 1 | awk '{print $NF}'
+    {% elif pki_ca_library == 'openssl' %}
+    openssl version | awk '{print $2}'
+    {% endif %}
+  args:
+    executable: 'bash'
+  changed_when: False
+  register: pki__register_crypto_library_version
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+  check_mode: False
+
+- name: Assert that required dependencies are met as documented
+  assert:
+    that:
+      - 'pki__register_bash_version.stdout | regex_replace("[^0-9.]", "") is version_compare("4.3.0", ">=")'
+      - 'pki__register_crypto_library_version.stdout | regex_replace("[a-z]", "")
+         is version_compare("1.0.1" if (pki_ca_library == "openssl")
+                                    else pki__register_crypto_library_version.stdout, ">=")'
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+  when: pki_authorities|d() and pki_dependent_authorities|d()
+# .. ]]]
+
+# Create scripts and library/secrets directory [[[
+- name: Create library directory
+  file:
+    path: '{{ pki_fact_lib_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: pki_enabled | bool
+
+- name: Install local PKI scripts
+  copy:
+    src: 'secret/pki/lib/'
+    dest: '{{ secret + "/pki/lib/" }}'
+    mode: '0755'
+  become: False
+  delegate_to: 'localhost'
+  run_once: True
+  when: (pki_authorities or pki_dependent_authorities)
+
+- name: Install remote PKI scripts
+  copy:
+    src: 'usr/local/lib/pki/'
+    dest: '{{ pki_fact_lib_path }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: pki_enabled | bool
+# .. ]]]
+
+- name: Create private groups if requested
+  group:
+    name: '{{ item.name | d(item) }}'
+    system: '{{ (item.system | d(True)) | bool }}'
+    state: 'present'
+  with_items: '{{ pki_private_groups_present }}'
+  when: ((pki_enabled|bool and pki_private_groups_present) and
+         (item.when|d(True) | bool))
+
+- name: Configure acme-tiny support
+  include: acme_tiny.yml
+  when: (pki_enabled|bool and
+         (pki_acme|bool or pki_acme_install|bool))
+
+# Initialize PKI realms [[[
+
+- name: Ensure that /etc/pki directory exists
+  file:
+    path: '/etc/pki'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Ensure that sensitive files are excluded from version control
+  template:
+    src: 'etc/pki/gitignore.j2'
+    dest: '/etc/pki/.gitignore'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Initialize PKI realms
+  environment:
+    PKI_ROOT: '{{ pki_root }}'
+    PKI_ACME: '{{ (item.acme | d(pki_acme)) | bool | lower }}'
+    PKI_INTERNAL: '{{ (item.internal | d(pki_internal)) | bool | lower }}'
+    PKI_LIBRARY: '{{ item.library | d(pki_library) }}'
+    PKI_ACME_LIBRARY: '{{ item.acme_library | d(pki_acme_library) }}'
+  command: |
+    "{{ pki_fact_lib_path }}/pki-realm" init -n "{{ item.name }}"
+    --authority-preference "{{ (item.authority_preference | d(pki_authority_preference)) | join('/') }}"
+    --library "{{ item.library | d(pki_library) }}"
+    --realm-key-size "{{ item.realm_key_size | d(pki_realm_key_size) }}"
+    --internal "{{ (item.internal | d(pki_internal)) | bool | lower }}"
+    --private-dir-group "{{ item.private_dir_group | d(pki_private_group) }}"
+    --private-file-group "{{ item.private_file_group | d(pki_private_group) }}"
+    --private-dir-acl-groups "{{ (item.private_dir_acl_groups | d(pki_private_dir_acl_groups)) | join('/') }}"
+    --private-file-acl-groups "{{ (item.private_file_acl_groups | d(pki_private_file_acl_groups)) | join('/') }}"
+    --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}"
+    --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
+    --acme-default-subdomains "{{ (item.acme_default_subdomains | d(pki_acme_default_subdomains)) | join('/') }}"
+    --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
+    --default-domain "{{ item.default_domain | d(pki_default_domain) }}"
+    --default-subdomains "{{ (item.default_subdomains | d(pki_default_subdomains)) | join('/') }}"
+    --dhparam "{{ (item.dhparam | d(pki_dhparam)) | bool | lower }}"
+    --dhparam-file "{{ item.dhparam_file | d(pki_dhparam_file) }}"
+    --selfsigned-sign-days "{{ item.selfsigned_sign_days|d('365') }}"
+  args:
+    creates: '{{ pki_root + "/realms/" + item.name + "/config/realm.conf" }}'
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
+# ]]]
+
+# Download files [[[
+- when: pki_download_extra|bool
+  block:
+    - name: Download custom private files
+      copy:
+        src: '{{ item.src | d(omit) }}'
+        content: '{{ item.content | d(omit) }}'
+        dest: '{{ item.dest }}'
+        owner: '{{ item.owner | d("root") }}'
+        group: '{{ item.group | d(pki_private_group) }}'
+        mode: '{{ item.mode | d("0640") }}'
+        directory_mode: '{{ item.directory_mode | d(omit) }}'
+        follow: '{{ item.follow | d(omit) }}'
+        force: '{{ item.force | d(omit) }}'
+      with_flattened:
+        - '{{ pki_private_files }}'
+        - '{{ pki_group_private_files }}'
+        - '{{ pki_host_private_files }}'
+      when: (pki_enabled|bool and (item.src is defined or item.content is defined) and
+             item.dest is defined)
+
+    - name: Download private realm contents by host
+      copy:
+        src: '{{ secret + "/pki/realms/by-host/" + pki_fqdn + "/" + item.name + "/private/" }}'
+        dest: '/etc/pki/realms/{{ item.name }}/private/'
+        owner: 'root'
+        group: '{{ item.private_file_group | d(pki_private_group) }}'
+        mode: '0640'
+      with_items:
+        - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms + pki_dependent_realms }}'
+      when: (pki_enabled|bool and item.name is defined and
+             (item.enabled|d(True) | bool) and
+             (item.when|d(True) | bool))
+
+    - name: Download private realm contents by group
+      copy:
+        src: '{{ secret + "/pki/realms/by-group/" + item.1 + "/" + item.0.name + "/private/" }}'
+        dest: '/etc/pki/realms/{{ item.0.name }}/private/'
+        owner: 'root'
+        group: '{{ item.private_file_group | d(pki_private_group) }}'
+        mode: '0640'
+        force: False
+      with_nested:
+        - '{{ pki_group_realms + pki_default_realms }}'
+        - '{{ pki_inventory_groups }}'
+      when: (pki_enabled|bool and (item.0.name is defined and
+             (item.0.enabled|d(True) | bool) and
+             (item.0.when|d(True) | bool)) and
+             (item.1 is defined and item.1 in group_names))
+
+    - name: Download private realm contents for all hosts
+      copy:
+        src: '{{ secret + "/pki/realms/by-group/all/" + item.name + "/private/" }}'
+        dest: '/etc/pki/realms/{{ item.name }}/private/'
+        owner: 'root'
+        group: '{{ item.private_file_group | d(pki_private_group) }}'
+        mode: '0640'
+        force: False
+      with_items:
+        - '{{ pki_realms + pki_default_realms }}'
+      when: (pki_enabled|bool and item.name is defined and
+             (item.enabled|d(True) | bool) and
+             (item.when|d(True) | bool))
+    # ]]]
+
+# Create new PKI realms [[[
+- name: Create new PKI realms
+  environment:
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
+  command: |
+           "{{ pki_fact_lib_path }}/pki-realm" new-realm -n "{{ item.name }}"
+           --subject "{{ item.subject|d([]) | join('/') }}"
+           --domains "{{ item.domains|d([]) | join('/') }}"
+           --subdomains "{{ item.subdomains|d([]) | join('/') }}"
+           --acme "{{ item.acme|d(pki_acme) | bool | lower }}"
+           --acme-subject "{{ item.acme_subject|d([]) | join('/') }}"
+           --acme-domains "{{ item.acme_domains|d([]) | join('/') }}"
+           --acme-subdomains "{{ item.acme_subdomains|d([]) | join('/') }}"
+           --subject-alt-names "{{ item.subject_alt_names | d([]) | join('|') }}"
+           --acme-alt-names "{{ item.acme_alt_names | d([]) | join('|') }}"
+  args:
+    creates: '/etc/pki/realms/{{ item.name }}/default.key'
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
+# ]]]
+
+# Execute PKI realm commands [[[
+- name: Execute PKI realm commands
+  environment:
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
+  command: '"{{ pki_fact_lib_path }}/pki-realm" run -n "{{ item.name }}"'
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
+  changed_when: False
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
+# ]]]
+
+# Upload internal certificate requests [[[
+- name: Upload internal certificate requests
+  fetch:
+    src: '/etc/pki/realms/{{ item.name }}/internal/request.pem'
+    dest: '{{ secret + "/pki/requests/" + (item.authority | d(pki_default_authority)) +
+              "/" + pki_fqdn + "/" + item.name + "/request.pem" }}'
+    flat: True
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
+  when: (pki_enabled|bool and item.name is defined and
+         ((item.internal|d(True) | bool) and pki_internal|bool) and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
+# ]]]
+
+# PKI authorities [[[
+- name: Initialize PKI authorities
+  environment:
+    PKI_ROOT: '{{ secret + "/pki" }}'
+    PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
+    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/"
+                             + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
+  command: ./lib/pki-authority init --name "{{ item.name }}"
+           --default-sign-base "{{ pki_default_sign_base }}"
+           --root-sign-multiplier "{{ pki_default_root_sign_multiplier }}"
+           --ca-sign-multiplier "{{ pki_default_ca_sign_multiplier }}"
+           --cert-sign-multiplier "{{ pki_default_cert_sign_multiplier }}"
+  args:
+    chdir: '{{ secret + "/pki" }}'
+    creates: '{{ secret + "/pki/authorities/" + item.name + "/config/authority.conf" }}'
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+  with_flattened:
+    - '{{ pki_authorities + pki_dependent_authorities }}'
+  when: (item.name is defined and (item.enabled|d(True) | bool))
+
+- name: Create PKI authorities
+  environment:
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
+    PKI_ROOT: '{{ secret + "/pki" }}'
+    PKI_LIBRARY: '{{ item.pki_ca_library | d(pki_ca_library) }}'
+    PKI_CA_CERTIFICATES: '{{ secret + "/pki/ca-certificates/"
+                             + (item.ca_certificates_path | d(pki_ca_certificates_path)) }}'
+  command: ./lib/pki-authority new-ca --name "{{ item.name }}"
+           --type "{{ item.type | d('') }}"
+           --domain "{{ item.domain | d(pki_ca_domain) }}"
+           --subdomain "{{ item.subdomain }}"
+           --subject "{{ item.subject | join('/') }}"
+           --issuer-name "{{ item.issuer_name | d('') }}"
+           --root-sign-days "{{ item.root_sign_days | d('') }}"
+           --ca-sign-days "{{ item.ca_sign_days | d('') }}"
+           --cert-sign-days "{{ item.cert_sign_days | d('') }}"
+           --system-ca "{{ (item.system_ca | d(True)) | bool | lower }}"
+           --alt-authority "{{ item.alt_authority | d('') }}"
+           --key-size "{{ item.key_size | d('') }}"
+           --crl "{{ item.crl | d(True) }}"
+           --ocsp "{{ item.ocsp | d(True) }}"
+           --name-constraints "{{ item.name_constraints | d(pki_ca_name_constraints) }}"
+           --name-constraints-critical "{{ item.name_constraints_critical | d(pki_ca_name_constraints_critical) }}"
+  args:
+    chdir: '{{ secret + "/pki" }}'
+    creates: '{{ secret + "/pki/authorities/" + item.name + "/subject/cert.pem" }}'
+  delegate_to: 'localhost'
+  become: False
+  run_once: True
+  with_flattened:
+    - '{{ pki_authorities + pki_dependent_authorities }}'
+  when: (item.name is defined and (item.enabled|d(True) | bool))
+# ]]]
+
+# Sign certificate requests [[[
+- name: Sign certificate requests for current hosts
+  environment:
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
+  command: ./lib/pki-authority sign-by-host
+           {% for host in play_hosts %}{{ hostvars[host].pki_fact_fqdn | d('') }} {% endfor %}
+  args:
+    chdir: '{{ secret + "/pki" }}'
+  delegate_to: 'localhost'
+  register: pki_register_sign_by_host
+  become: False
+  run_once: True
+  when: (pki_authorities or pki_dependent_authorities)
+  changed_when: pki_register_sign_by_host.stdout|d()
+# ]]]
+
+# Download files [[[
+- when: pki_download_extra|bool
+  block:
+    - name: Download public realm contents by host
+      copy:
+        src: '{{ secret + "/pki/realms/by-host/" + pki_fqdn + "/" + item.0.name + "/" + item.1 + "/" }}'
+        dest: '/etc/pki/realms/{{ item.0.name }}/{{ item.1 }}/'
+        owner: 'root'
+        group: 'root'
+      with_nested:
+        - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms + pki_dependent_realms }}'
+        - [ 'external', 'internal' ]
+      when: (pki_enabled|bool and item.0.name is defined and
+             (item.0.enabled|d(True) | bool) and
+             (item.0.when|d(True) | bool))
+
+    - name: Download custom public files
+      copy:
+        src: '{{ item.src | d(omit) }}'
+        content: '{{ item.content | d(omit) }}'
+        dest: '{{ item.dest }}'
+        owner: '{{ item.owner | d("root") }}'
+        group: '{{ item.group | d(pki_public_group) }}'
+        mode: '{{ item.mode | d("0644") }}'
+        directory_mode: '{{ item.directory_mode | d(omit) }}'
+        follow: '{{ item.follow | d(omit) }}'
+        force: '{{ item.force | d(omit) }}'
+      with_flattened:
+        - '{{ pki_public_files }}'
+        - '{{ pki_group_public_files }}'
+        - '{{ pki_host_public_files }}'
+      when: (pki_enabled|bool and (item.src is defined or item.content is defined) and
+             item.dest is defined)
+
+    - name: Download external realm contents by group
+      copy:
+        src: '{{ secret + "/pki/realms/by-group/" + item.1 + "/" + item.0.name + "/external/" }}'
+        dest: '/etc/pki/realms/{{ item.0.name }}/external/'
+        owner: 'root'
+        group: 'root'
+        force: False
+      with_nested:
+        - '{{ pki_group_realms + pki_default_realms }}'
+        - '{{ pki_inventory_groups }}'
+      when: (pki_enabled|bool and (item.0.name is defined and
+              (item.0.enabled|d(True) | bool) and
+              (item.0.when|d(True) | bool)) and
+              (item.1 is defined and item.1 in group_names))
+
+    - name: Download external realm contents for all hosts
+      copy:
+        src: '{{ secret + "/pki/realms/by-group/all/" + item.name + "/external/" }}'
+        dest: '/etc/pki/realms/{{ item.name }}/external/'
+        owner: 'root'
+        group: 'root'
+        force: False
+      with_items:
+        - '{{ pki_realms + pki_default_realms }}'
+      when: (pki_enabled|bool and item.name is defined and
+             (item.enabled|d(True) | bool) and
+             (item.when|d(True) | bool))
+
+    - name: Download custom CA certificates by host
+      copy:
+        src: '{{ secret + "/pki/ca-certificates/by-host/" + pki_fqdn + "/" }}'
+        dest: '/usr/local/share/ca-certificates/pki/'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+      notify: [ 'Regenerate ca-certificates.crt' ]
+      when: pki_system_ca_certificates_download_by_host|d(pki_enabled) | bool
+
+    - name: Download custom CA certificates by group
+      copy:
+        src: '{{ secret + "/pki/ca-certificates/by-group/" + item + "/" }}'
+        dest: '/usr/local/share/ca-certificates/pki/'
+        owner: 'root'
+        group: 'root'
+        force: False
+      with_items: '{{ pki_inventory_groups }}'
+      notify: [ 'Regenerate ca-certificates.crt' ]
+      when: ((pki_system_ca_certificates_download_by_group|d(pki_enabled) | bool) and item in group_names)
+
+    - name: Download custom CA certificates for all hosts
+      copy:
+        src: '{{ secret + "/pki/ca-certificates/by-group/all/" }}'
+        dest: '/usr/local/share/ca-certificates/pki/'
+        owner: 'root'
+        group: 'root'
+        force: '{{ pki_system_ca_certificates_download_all_hosts_force|bool }}'
+      notify: [ 'Regenerate ca-certificates.crt' ]
+      when: pki_system_ca_certificates_download_all_hosts|d(pki_enabled) | bool
+# ]]]
+
+# Execute PKI realm commands [[[
+- name: Execute PKI realm commands
+  environment:
+    PKI_SESSION_TOKEN: '{{ pki_fact_session_token }}'
+  command: '"{{ pki_fact_lib_path }}/pki-realm" run -n "{{ item.name }}"'
+  with_flattened:
+    - '{{ pki_realms }}'
+    - '{{ pki_group_realms }}'
+    - '{{ pki_host_realms }}'
+    - '{{ pki_default_realms }}'
+    - '{{ pki_dependent_realms }}'
+  changed_when: False
+  when: (pki_enabled|bool and item.name is defined and
+         (item.enabled|d(True) | bool) and
+         (item.when|d(True) | bool))
+# ]]]
+
+# Manage PKI scheduler [[[
+- name: Manage PKI scheduler
+  cron:
+    name: 'Process PKI system realms'
+    user: 'root'
+    cron_file: 'pki-realm-scheduler'
+    job: 'test -x "{{ pki_fact_lib_path }}/pki-realm" && "{{ pki_fact_lib_path }}/pki-realm" schedule'
+    special_time: '{{ pki_scheduler_interval }}'
+    state: '{{ "present" if (pki_enabled|bool and pki_scheduler | bool) else "absent" }}'
+# ]]]
+
+- name: Manage system CA certificates
+  include: ca_certificates.yml
+  when: pki_enabled | bool
+
+# Ansible local facts [[[
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local facts
+  template:
+    src: 'etc/ansible/facts.d/pki.fact.j2'
+    dest: '/etc/ansible/facts.d/pki.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: pki_register_facts
+  notify: [ 'Gather PKI facts' ]
+
+- name: Flush handlers for PKI if needed
+  meta: flush_handlers
+  when: pki_register_facts is changed
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'pki/post_main.yml') }}"
+
+# ]]]

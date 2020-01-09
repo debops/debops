@@ -1,0 +1,257 @@
+---
+
+- import_role:
+    name: 'secret'
+
+- name: Create required groups
+  group:
+    name: '{{ item.name if item.name|d() else item }}'
+    system: '{{ item.system|bool if item.system is defined else gitlab_runner__system | bool }}'
+    state: 'present'
+  with_flattened:
+    - '{{ gitlab_runner__group }}'
+    - '{{ gitlab_runner__additional_groups }}'
+
+- name: Create gitlab-runner user
+  user:
+    name: '{{ gitlab_runner__user }}'
+    group: '{{ gitlab_runner__group }}'
+    groups: '{{ gitlab_runner__additional_groups | map(attribute="name") | list | join(",") }}'
+    append: True
+    home: '{{ gitlab_runner__home }}'
+    system: '{{ gitlab_runner__system | bool }}'
+    comment: '{{ gitlab_runner__comment }}'
+    shell: '{{ gitlab_runner__shell }}'
+    state: 'present'
+    generate_ssh_key: '{{ gitlab_runner__ssh_generate | bool }}'
+    ssh_key_bits: '{{ gitlab_runner__ssh_generate_bits }}'
+
+- name: Allow Docker access for gitlab-runner user
+  user:
+    name: '{{ gitlab_runner__user }}'
+    groups: 'docker'
+    append: True
+  when: (ansible_local|d() and ansible_local.docker_server|d() and
+         (ansible_local.docker_server.installed|d()) | bool)
+
+- name: Copy custom files to GitLab Runner host
+  copy:
+    src: '{{ item.src | d(omit) }}'
+    content: '{{ item.content | d(omit) }}'
+    dest: '{{ item.dest }}'
+    owner: '{{ item.owner | d(omit) }}'
+    group: '{{ item.group | d(omit) }}'
+    mode: '{{ item.mode | d(omit) }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+    follow: '{{ item.follow | d(omit) }}'
+    force: '{{ item.force | d(omit) }}'
+  with_flattened:
+    - '{{ gitlab_runner__custom_files }}'
+    - '{{ gitlab_runner__group_custom_files }}'
+    - '{{ gitlab_runner__host_custom_files }}'
+  when: ((item.src|d() or item.content|d()) and item.dest|d())
+
+- name: Make sure APT can access HTTPS repositories
+  apt:
+    name: [ 'apt-transport-https', 'openssl', 'ca-certificates' ]
+    state: 'present'
+    install_recommends: False
+    update_cache: True
+    cache_valid_time: '{{ ansible_local.core.cache_valid_time
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.cache_valid_time|d())
+                           else "86400" }}'
+  register: gitlab_runner__register_apt_https
+  until: gitlab_runner__register_apt_https is succeeded
+
+- name: Install gitlab-runner packages
+  apt:
+    name: "{{ query('flattened', ['{{ gitlab_runner__base_packages }}',
+                                  '{{ gitlab_runner__packages }}']) }}"
+    state: 'present'
+    install_recommends: False
+  register: gitlab_runner__register_packages
+  until: gitlab_runner__register_packages is succeeded
+
+- name: Check if GitLab service is available
+  uri:
+    url: '{{ gitlab_runner__api_url }}'
+  register: gitlab_runner__register_api
+  when: gitlab_runner__api_url|d() and gitlab_runner__api_url
+  failed_when: False
+  no_log: True
+
+- name: Register new GitLab Runners
+  uri:
+    url: '{{ (item.api_url | d(gitlab_runner__api_url)) + "api/v4/runners" }}'
+    method: 'POST'
+    body: 'token={{ item.token | d(gitlab_runner__token) }}&description={{ item.name
+           | urlencode }}&tag_list={{ ((item.tags|d([])
+                                        + (gitlab_runner__shell_tags
+                                           if (item.executor == "shell") else [])
+                                        + gitlab_runner__combined_tags) | unique | join(","))
+           | urlencode }}&run_untagged={{ item.run_untagged | d(gitlab_runner__run_untagged) }}'
+    status_code: '200,201'
+  register: gitlab_runner__register_new_instances
+  with_flattened:
+    - '{{ gitlab_runner__default_instances }}'
+    - '{{ gitlab_runner__instances }}'
+    - '{{ gitlab_runner__group_instances }}'
+    - '{{ gitlab_runner__host_instances }}'
+  when: (gitlab_runner__register_api.status|d() and gitlab_runner__register_api.status == 200 and
+         (item.token | d() or gitlab_runner__token) and item.name and
+         (item.state is undefined or item.state != 'absent') and
+         (ansible_local is undefined or
+          (ansible_local|d() and (ansible_local.gitlab_runner is undefined or
+           (ansible_local.gitlab_runner|d() and ansible_local.gitlab_runner.instances is defined and
+            item.name not in ansible_local.gitlab_runner.instances)))))
+
+- name: Generate GitLab Runner configuration files
+  template:
+    src: 'etc/gitlab-runner/{{ item }}.j2'
+    dest: '/etc/gitlab-runner/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  with_items: [ 'config.toml', 'ansible.json' ]
+
+- name: Delete GitLab Runners if requested
+  uri:
+    url: '{{ (item.0.api_url | d(gitlab_runner__api_url)) + "api/v4/runners/" + item.1.id | string }}'
+    method: 'DELETE'
+    headers:
+      'PRIVATE-TOKEN': '{{ gitlab_runner__api_token }}'
+  with_together:
+    - '{{ gitlab_runner__default_instances + gitlab_runner__instances
+          + gitlab_runner__group_instances + gitlab_runner__host_instances }}'
+    - '{{ ansible_local.gitlab_runner.instance_tokens
+          if (ansible_local|d() and ansible_local.gitlab_runner|d() and
+              ansible_local.gitlab_runner.instance_tokens|d()) else [] }}'
+  when: (gitlab_runner__register_api.status|d() and gitlab_runner__register_api.status == 200 and
+         gitlab_runner__api_token and item.0.name|d() and item.1.name|d() and item.0.name == item.1.name and
+         (item.0.state|d() and item.0.state == 'absent'))
+  failed_when: False
+  no_log: True
+
+- name: Get the SSH key from the remote host
+  slurp:
+    src: '~{{ gitlab_runner__user }}/.ssh/id_rsa.pub'
+  register: gitlab_runner__register_ssh_key
+  when: gitlab_runner__ssh_generate|bool
+
+- name: Distribute SSH key to other hosts
+  authorized_key:
+    key: '{{ gitlab_runner__register_ssh_key.content | b64decode | trim }}'
+    user: '{{ item.user }}'
+    state: 'present'
+    key_options: '{{ item.options | d() }}'
+  delegate_to: '{{ item.host }}'
+  become: '{{ item.become | d(True) }}'
+  with_items: '{{ gitlab_runner__ssh_install_to }}'
+  when: gitlab_runner__ssh_generate|bool and item.user|d() and item.host|d()
+
+- name: Make sure that the ~/.ssh directory exists
+  file:
+    path: '{{ gitlab_runner__home }}/.ssh'
+    state: 'directory'
+    owner: '{{ gitlab_runner__user }}'
+    group: '{{ gitlab_runner__group }}'
+    mode: '0700'
+  when: gitlab_runner__ssh_known_hosts|d()
+
+- name: Make sure the ~/.ssh/known_hosts file exists
+  copy:
+    content: ''
+    dest: '{{ gitlab_runner__home }}/.ssh/known_hosts'
+    owner: '{{ gitlab_runner__user }}'
+    group: '{{ gitlab_runner__group }}'
+    mode: '0644'
+    force: False
+  when: gitlab_runner__ssh_known_hosts|d()
+
+- name: Get list of already scanned host fingerprints
+  shell: set -o nounset -o pipefail -o errexit &&
+         ssh-keygen -f {{ gitlab_runner__home }}/.ssh/known_hosts -F {{ item }} | grep -q '^# Host {{ item }} found'
+  args:
+    executable: 'bash'
+  with_items: '{{ gitlab_runner__ssh_known_hosts }}'
+  when: gitlab_runner__ssh_known_hosts|d()
+  register: gitlab_runner__register_known_hosts
+  changed_when: False
+  failed_when: False
+  check_mode: False
+
+- name: Scan SSH fingerprints of specified hosts
+  shell: 'ssh-keyscan -H -T 10 {{ item.item }} >> {{ gitlab_runner__home + "/.ssh/known_hosts" }}'
+  with_items: '{{ gitlab_runner__register_known_hosts.results }}'
+  when: gitlab_runner__ssh_known_hosts and item is defined and item.rc > 0
+  failed_when: False
+
+- name: Configure Vagrant libvirt access
+  user:
+    name: '{{ gitlab_runner__user }}'
+    append: True
+    groups: '{{ ([ (ansible_local.libvirtd.unix_sock_group
+                    if (ansible_local|d() and ansible_local.libvirtd|d() and
+                        ansible_local.libvirtd.unix_sock_group|d())
+                    else "libvirt") ]
+                 + ([ "kvm" ]
+                    if (ansible_local|d() and ansible_local.libvirtd|d() and
+                        (ansible_local.libvirtd.hw_virt|d())|bool)
+                    else [])) | join(",") }}'
+  when: gitlab_runner__vagrant_libvirt|bool
+
+- name: Configure Vagrant libvirt sudo access
+  template:
+    src: 'etc/sudoers.d/gitlab-runner-vagrant-libvirt.j2'
+    dest: '/etc/sudoers.d/gitlab-runner-vagrant-libvirt'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+  when: (ansible_local|d() and ansible_local.sudo|d() and
+         (ansible_local.sudo.installed|d())|bool and
+         gitlab_runner__vagrant_libvirt|bool)
+
+- name: Find 'vagrant-libvirt' source code
+  command: find /usr/share/rubygems-integration/all/gems -maxdepth 1 -type d -name 'vagrant-libvirt-*'
+  register: gitlab_runner__register_libvirt_source
+  when: gitlab_runner__vagrant_libvirt_patch|bool
+  changed_when: False
+  check_mode: False
+  tags: [ 'role::gitlab_runner:patch' ]
+
+- name: Patch 'vagrant-libvirt' source code
+  patch:
+    src: '{{ "patches/package_domain-keep-ssh-host-keys-"
+             + (item | basename | replace("vagrant-libvirt-","")) + ".patch" }}'
+    basedir: '{{ item }}'
+  with_items: '{{ gitlab_runner__register_libvirt_source.stdout_lines }}'
+  when: gitlab_runner__vagrant_libvirt_patch|bool
+  tags: [ 'role::gitlab_runner:patch' ]
+
+- name: Configure Vagrant LXC sudo access
+  template:
+    src: 'etc/sudoers.d/gitlab-runner-vagrant-lxc.j2'
+    dest: '/etc/sudoers.d/gitlab-runner-vagrant-lxc'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+  when: (ansible_local|d() and ansible_local.sudo|d() and
+         (ansible_local.sudo.installed|d())|bool and
+         gitlab_runner__vagrant_lxc|bool)
+
+- name: Make sure that Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save GitLab Runner local facts
+  template:
+    src: 'etc/ansible/facts.d/gitlab_runner.fact.j2'
+    dest: '/etc/ansible/facts.d/gitlab_runner.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'

@@ -10,23 +10,23 @@
 
   roles:
 
-    - role: debops.dnsmasq/env
+    - role: dnsmasq/env
       tags: [ 'role::dnsmasq', 'role::ferm', 'role::tcpwrappers' ]
 
-    - role: debops.resolvconf
+    - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
       resolvconf__dependent_services:
         - 'dnsmasq'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ dnsmasq__ferm__dependent_rules }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ dnsmasq__env_tcpwrappers__dependent_allow }}'
 
-    - role: debops.dnsmasq
+    - role: dnsmasq
       tags: [ 'role::dnsmasq', 'skip::dnsmasq' ]

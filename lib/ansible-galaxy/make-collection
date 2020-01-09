@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+
+# Build an Ansible Galaxy collection tarball with Ansible artifacts
+# Usage: run "make collection" in the root of the repository
+
+# Copyright (C) 2019-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019-2020 DebOps https://debops.org/
+
+
+set -o nounset -o pipefail -o errexit
+
+# Check if we are in the correct directory
+if ! [ -f lib/ansible-galaxy/make-collection ] ; then
+    printf "%s\\n" "Error: this script needs to be executed in the root of the DebOps repository"
+    exit 1
+fi
+
+# Check if ansible-galaxy is installed
+if ! type ansible-galaxy > /dev/null 2>&1 ; then
+    printf "%s\\n" "Error: ansible-galaxy not found"
+    exit 1
+fi
+
+# Check if the repository is in a consistent state
+if ! git diff --quiet && git diff --cached --quiet ; then
+    printf "%s\\n" "Error: there are uncommitted changes in the repository"
+    git status --short
+    exit 1
+fi
+
+workdir="$(mktemp -d /tmp/debops.XXXXXXXXXX)"
+
+file_list=(
+    README.md
+    LICENSE
+    INSTALL.rst
+    CHANGELOG.rst
+)
+
+mkdir -p "${workdir}/roles" \
+         "${workdir}/plugins/callback" \
+         "${workdir}/plugins/connection" \
+         "${workdir}/plugins/filter" \
+         "${workdir}/plugins/lookup" \
+         "${workdir}/plugins/modules"
+
+# Copy DebOps roles to the Ansible Collection build directory.
+# Omit specific DebOps roles from Ansible Collections.
+pushd ansible/roles > /dev/null
+for role in * ; do
+    if [[ ${role} != debops-contrib.* ]] && [[ ${role} != boxbackup ]] && [[ ${role} != rails_deploy ]] ; then
+        cp -r "${role}" "${workdir}/roles/${role}"
+    fi
+done
+popd > /dev/null
+
+# Copy various Ansible plugins to the directories where collection expects them
+cp ansible/plugins/callback_plugins/*.py "${workdir}/plugins/callback"
+cp ansible/plugins/connection_plugins/*.py "${workdir}/plugins/connection"
+cp ansible/roles/ansible_plugins/filter_plugins/*.py "${workdir}/plugins/filter"
+cp ansible/roles/ansible_plugins/lookup_plugins/*.py "${workdir}/plugins/lookup"
+cp ansible/roles/ansible_plugins/library/*.py "${workdir}/plugins/modules"
+
+for filename in "${file_list[@]}" ; do
+    cp "${filename}" "${workdir}/"
+done
+
+# Generate the 'galaxy.yml' file
+cat <<EOF > "${workdir}/galaxy.yml"
+---
+
+# Configuration file used by Ansible Galaxy to build a collection of Ansible artifacts.
+
+namespace: "debops"
+name: "debops"
+version: "$(git describe | tr -d 'v')"
+description: "Your Debian-based data center in a box"
+
+authors:
+  - "Maciej Delmanowski <drybjed@gmail.com>"
+  - "DebOps Developers <debops-users@lists.debops.org>"
+
+repository: "https://github.com/debops/debops"
+documentation: "https://docs.debops.org/en/master/ansible/role-index.html"
+homepage: "https://debops.org/"
+issues: "https://github.com/debops/debops/issues"
+
+dependencies: {}
+
+readme: "README.md"
+license:
+  - "GPL-3.0-only"
+license_file: "LICENSE"
+
+tags:
+  - "debian"
+  - "ubuntu"
+  - "sysadmin"
+  - "cluster"
+  - "datacenter"
+  - "collection"
+EOF
+
+pushd "${workdir}" > /dev/null
+ansible-galaxy collection build
+popd > /dev/null
