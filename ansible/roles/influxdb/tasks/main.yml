@@ -104,7 +104,7 @@
                   "/credentials/" + influxdb__admin_user + "/password " +
                   "length=" + influxdb__password_length) }}'
   with_flattened: '{{ influxdb__databases + influxdb__dependent_databases }}'
-  when: ((item.database_name|d() or item.hostname|d()) and
+  when: ((item.database_name|d(item.name) or item.hostname|d()) and
          (item.state is undefined or item.state != 'absent'))
   register: influxdb__register_database_status
 
@@ -112,10 +112,14 @@
   influxdb_user:
     validate_certs: '{{ influxdb__validate_certs }}'
     user_name: '{{ item.user_name | d(item.name) }}'
-    user_password: '{{ item.user_password }}'
     hostname: '{{ influxdb__fqdn }}'
     state: 'absent'
     ssl: '{{ influxdb__pki }}'
+    login_username: '{{ influxdb__admin_user }}'
+    login_password: '{{ lookup("password",
+                  secret + "/influxdb/" + ansible_hostname +
+                  "/credentials/" + influxdb__admin_user + "/password " +
+                  "length=" + influxdb__password_length) }}'
   delegate_to: '{{ ansible_hostname }}'
   with_flattened: '{{ influxdb__users + influxdb__dependent_users }}'
   when: ((item.user_name|d(False)) and
