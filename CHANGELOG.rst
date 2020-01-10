@@ -21,6 +21,17 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+Mail Transport Agents
+'''''''''''''''''''''
+
+- The :envvar:`nullmailer__mailname` and the :envvar:`postfix__mailname`
+  variables will use the host's FQDN address instead of the DNS domain as the
+  mailname. This was done to not include the hostnames in the e-mail addresses,
+  however this is better handled by Postfix domain nasquerading done on the
+  mail relay host, which allows for exceptions, supports multiple DNS domains
+  and does not break mail delivery in subtle ways. See the
+  :ref:`debops.nullmailer` role documentation for an example configuration.
+
 :ref:`debops.postconf` role
 '''''''''''''''''''''''''''
 
