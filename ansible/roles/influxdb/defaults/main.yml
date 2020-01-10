@@ -158,15 +158,29 @@ influxdb__password_length: '48'
 influxdb__default_privileges_grant: 'ALL'
 
                                                                    # ]]]
+# .. envvar:: influxdb__bind_ip [[[
+#
+# The ip address on which this InfluxDB listens on.
+# Leave empty to bind on all interfaces.
+influxdb__bind_ip: ''
+
+                                                                   # ]]]
 # .. envvar:: influxdb__port [[[
 #
 # Port number on which this InfluxDB listens on.
 influxdb__port: '8086'
 
                                                                    # ]]]
+# .. envvar:: influxdb__bind_ip_rpc [[[
+#
+# The ip address used by the RPC service for RPC calls made by the CLI for backup and restore operations.
+# Leave empty to bind on all interfaces.
+influxdb__bind_ip_rpc: '127.0.0.1'
+
+                                                                   # ]]]
 # .. envvar:: influxdb__port_rpc [[[
 #
-# Port number used by the RPC service for RPC calls made by the CLI for backup and restore operations .
+# Port number used by the RPC service for RPC calls made by the CLI for backup and restore operations.
 influxdb__port_rpc: '8088'
 
                                                                    # ]]]
@@ -194,7 +208,7 @@ influxdb__default_configuration:
 
   - name: 'global'
     options:
-      - bind-address: '"127.0.0.1:{{ influxdb__port_rpc }}"'
+      - bind-address: '"{{ influxdb__bind_ip_rpc }}:{{ influxdb__port_rpc }}"'
 
   - name: 'meta'
     options:
@@ -220,7 +234,7 @@ influxdb__default_configuration:
 
   - name: 'http'
     options:
-      - bind-address: '":{{ influxdb__port }}"'
+      - bind-address: '"{{ influxdb__bind_ip }}:{{ influxdb__port }}"'
         https-enabled: '{{ "true" if influxdb__pki else "false" }}'
         auth-enabled: '{{ "true" if influxdb__auth_enabled else "false" }}'
 
