@@ -42,6 +42,16 @@ Mail Transport Agents
   the LDAP directory. The preference can be changed using the
   :envvar:`postconf__sasl_auth_method` variable.
 
+Fixed
+~~~~~
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- Again, redirect the e-mail messages for local recipients to the central
+  ``root`` e-mail account (but local to the SMTP relay). This fixes an issue
+  where e-mail messages were left in the mail queue and filled the disk space.
+
 
 `debops v1.0.15`_ - 2020-01-09
 ------------------------------
