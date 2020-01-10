@@ -77,7 +77,7 @@ nullmailer__packages: []
 #
 # The domain name of the host, stored in the :file:`/etc/mailname`
 # configuration file. See https://wiki.debian.org/EtcMailName for more details.
-nullmailer__mailname: '{{ nullmailer__domain }}'
+nullmailer__mailname: '{{ nullmailer__fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__fqdn [[[
@@ -97,8 +97,14 @@ nullmailer__domain: '{{ ansible_domain }}'
 #
 # If this list is not empty, all mail messages addressed to any user in the
 # default hostname from :file:`/etc/mailname` or ``localhost`` will be redirected
-# to the specified e-mail addresses (catch-all).
-nullmailer__adminaddr: []
+# to the specified e-mail addresses (catch-all). This is required for mail
+# directed to local accounts because :command:`nullmailer` does not support
+# local mailboxes.
+#
+# By default send all mail for local recipients to the "root" account on the
+# mail relay host. Let the relay host deal with forwarding such e-mail messages
+# to the proper recipients.
+nullmailer__adminaddr: [ '{{ "root@" + nullmailer__relayhost }}' ]
 
                                                                    # ]]]
 # .. envvar:: nullmailer__idhost [[[
@@ -226,11 +232,35 @@ nullmailer__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
 nullmailer__starttls: True
 
                                                                    # ]]]
+# .. envvar:: nullmailer__smtp_srv_rr [[[
+#
+# List which contains the result of the :command:`dig` query for SMTP
+# server ``SRV`` resource records in the host's domain. See
+# :rfc:`6186` for details.
+nullmailer__smtp_srv_rr: '{{ q("dig", "_smtp._tcp." + nullmailer__domain + "./SRV", "flat=0") }}'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__smtp_port [[[
+#
+# SMTP port (default is 25; use 587 for STARTTLS or 465 for Implicit TLS.
+nullmailer__smtp_port: '{{ (nullmailer__smtp_srv_rr | selectattr("target", "defined")
+                            | map(attribute="port") | list | sort | first)
+                           if ("NXDOMAIN" not in nullmailer__smtp_srv_rr and
+                               nullmailer__smtp_srv_rr[0])
+                           else "25" }}'
+
+                                                                   # ]]]
 # .. envvar:: nullmailer__relayhost [[[
 #
 # The FQDN address of the mail server to which all mail messages will be forwarded
 # to by the ``nullmailer`` service.
-nullmailer__relayhost: 'smtp.{{ nullmailer__domain }}'
+nullmailer__relayhost: '{{ (nullmailer__smtp_srv_rr | selectattr("target", "defined")
+                           | map(attribute="target")
+                           | map("regex_replace", "\.$","")
+                           | list | sort | first)
+                          if ("NXDOMAIN" not in nullmailer__smtp_srv_rr and
+                              nullmailer__smtp_srv_rr[0])
+                          else ("smtp." + nullmailer__domain) }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__relayhost_options [[[
@@ -240,7 +270,11 @@ nullmailer__relayhost: 'smtp.{{ nullmailer__domain }}'
 # a YAML dictionary with parameters used by other :command:`nullmailer`
 # remotes, or a YAML list with "raw" :command:`nullmailer` options.
 # See :ref:`nullmailer__ref_remotes` for more details.
-nullmailer__relayhost_options: []
+nullmailer__relayhost_options:
+  - '--port={{ nullmailer__smtp_port }}'
+  - '{{ "--ssl"
+        if (nullmailer__smtp_port == "465")
+        else "--starttls" }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__default_remotes [[[
@@ -250,6 +284,7 @@ nullmailer__relayhost_options: []
 nullmailer__default_remotes:
 
   - host: '{{ nullmailer__relayhost }}'
+    options: '{{ nullmailer__relayhost_options }}'
     auth: True
     user: '{{ nullmailer__ldap_self_rdn.split("=")[1] + "@" + nullmailer__fqdn }}'
     password: '{{ nullmailer__ldap_bindpw }}'

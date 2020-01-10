@@ -114,6 +114,17 @@ LDAP
   entries that use them before applying these changes on the hosts managed by
   DebOps. See :ref:`upgrade_notes` for detailed list of changed values.
 
+Mail Transport Agents
+'''''''''''''''''''''
+
+- The :envvar:`nullmailer__mailname` and the :envvar:`postfix__mailname`
+  variables will use the host's FQDN address instead of the DNS domain as the
+  mailname. This was done to not include the hostnames in the e-mail addresses,
+  however this is better handled by Postfix domain nasquerading done on the
+  mail relay host, which allows for exceptions, supports multiple DNS domains
+  and does not break mail delivery in subtle ways. See the
+  :ref:`debops.nullmailer` role documentation for an example configuration.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
@@ -151,6 +162,14 @@ LDAP
   wrongfully changed to `/var/vmail/%d/%n/mailbox` if LDAP was enabled. See also
   :envvar:`dovecot_vmail_home`.
 
+- If the LDAP support is enabled, the role will no longer configure Postfix via
+  the :ref:`debops.postfix` role to deliver local mail via Dovecot LMTP
+  service; this breaks mail delivery to local UNIX accounts (for example
+  ``root``) which might not have corresponding aliases in the virtual mail
+  database. Instead, ``virtual_transport`` option will be configured to pass
+  mail via LMTP to Dovecot, which then will deliver it to the virtual mailboxes
+  in :file:`/var/vmail/` subdirectories.
+
 :ref:`debops.memcached` role
 ''''''''''''''''''''''''''''
 
@@ -158,12 +177,28 @@ LDAP
   ``memcached__*`` to create the role namespace. You need to update the
   inventory accordingly.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The upstream SMTP relay will be detected automatically using DNS SRV resource
+  records, if they are defined.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
 - Drop Nextcloud 15 support because it is EOL. You need to upgrade Nextcloud
   manually if you are running version 15 or below. The role now defaults to
   Nextcloud 16 for new installations.
+
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- If both :ref:`Devecot <debops.dovecot>` and :ref:`Cyrus <debops.saslauthd>`
+  services are installed on a host, Postfix will be configured to prefer Cyrus
+  for SASL authentication. This permits mail relay via the authenticated
+  :ref:`nullmailer <debops.nullmailer>` Mail Transfer Agents with accounts in
+  the LDAP directory. The preference can be changed using the
+  :envvar:`postconf__sasl_auth_method` variable.
 
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
@@ -240,6 +275,13 @@ Fixed
 - The ``dmz`` firewall configuration will now not interpret the port as part of
   a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
   ``[]``.
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- Again, redirect the e-mail messages for local recipients to the central
+  ``root`` e-mail account (but local to the SMTP relay). This fixes an issue
+  where e-mail messages were left in the mail queue and filled the disk space.
 
 
 `debops v1.2.0`_ - 2019-12-01

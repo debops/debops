@@ -866,9 +866,42 @@ dovecot__ldap__dependent_tasks:
 # The :file:`main.cf` configuration for ``debops.postfix`` Ansible role.
 dovecot__postfix__dependent_maincf:
 
+  # The default TLS security level set by the 'postfix' role is "may", however
+  # when the mail is delivered over local UNIX socket, this results in
+  # a warning in the mail logs: "warning: smtp_connect_local: opportunistic TLS
+  # encryption is not appropriate for unix-domain destinations". Therefore if
+  # we know that Dovecot is installed locally and we deliver over an UNIX
+  # socket, we can disable the opportunistic TLS encryption for the LMTP
+  # protocol.
+  - name: 'lmtp_tls_security_level'
+    comment: |
+      Security level overridden via local Dovecot installation
+    value: '{{ "none"
+               if dovecot_postfix_transport.startswith("lmtp:unix:")
+               else "may" }}'
+    state: '{{ "present" if "lmtp" in dovecot_protocols else "ignore" }}'
+
+  # We don't care about the STARTTLS offer when we talk to Dovecot over an UNIX
+  # socket.
+  - name: 'lmtp_tls_note_starttls_offer'
+    value: '{{ False
+               if dovecot_postfix_transport.startswith("lmtp:unix:")
+               else True }}'
+    state: '{{ "present" if "lmtp" in dovecot_protocols else "ignore" }}'
+
+  - name: 'virtual_transport'
+    value: '{{ dovecot_postfix_transport }}'
+    state: '{{ "present"
+               if ("lmtp" in dovecot_protocols and
+                   dovecot__ldap_enabled|bool)
+               else "ignore" }}'
+
   - name: 'mailbox_transport'
     value: '{{ dovecot_postfix_transport }}'
-    state: '{{ "present" if "lmtp" in dovecot_protocols else "ignore" }}'
+    state: '{{ "present"
+               if ("lmtp" in dovecot_protocols and
+                   not dovecot__ldap_enabled|bool)
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__postfix__dependent_mastercf [[[

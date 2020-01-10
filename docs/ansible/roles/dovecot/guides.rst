@@ -101,7 +101,7 @@ Enable LMTP to deliver mails from Postfix
 -----------------------------------------
 
 `LMTP`_ is a reliable, scalable and secure protocol to deliver mails
-into local mail boxes. It is implemented by Dovecot as an alternative
+into virtual mail boxes. It is implemented by Dovecot as an alternative
 to the Dovecot LDA and also supports most mail plugins, such as
 sieve filtering.
 
@@ -142,7 +142,7 @@ network. When using the LMTP network socket, you have to configure
 Postfix independently by setting e.g.::
 
     postfix_local_maincf: |
-      mailbox_transport = lmtp:inet:192.168.1.123:24
+      virtual_transport = lmtp:inet:192.168.1.123:24
 
 
 .. _LMTP: http://wiki2.dovecot.org/LMTP
