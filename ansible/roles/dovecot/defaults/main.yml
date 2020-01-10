@@ -866,9 +866,19 @@ dovecot__ldap__dependent_tasks:
 # The :file:`main.cf` configuration for ``debops.postfix`` Ansible role.
 dovecot__postfix__dependent_maincf:
 
+  - name: 'virtual_transport'
+    value: '{{ dovecot_postfix_transport }}'
+    state: '{{ "present"
+               if ("lmtp" in dovecot_protocols and
+                   dovecot__ldap_enabled|bool)
+               else "ignore" }}'
+
   - name: 'mailbox_transport'
     value: '{{ dovecot_postfix_transport }}'
-    state: '{{ "present" if "lmtp" in dovecot_protocols else "ignore" }}'
+    state: '{{ "present"
+               if ("lmtp" in dovecot_protocols and
+                   not dovecot__ldap_enabled|bool)
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__postfix__dependent_mastercf [[[

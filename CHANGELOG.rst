@@ -162,6 +162,14 @@ Mail Transport Agents
   wrongfully changed to `/var/vmail/%d/%n/mailbox` if LDAP was enabled. See also
   :envvar:`dovecot_vmail_home`.
 
+- If the LDAP support is enabled, the role will no longer configure Postfix via
+  the :ref:`debops.postfix` role to deliver local mail via Dovecot LMTP
+  service; this breaks mail delivery to local UNIX accounts (for example
+  ``root``) which might not have corresponding aliases in the virtual mail
+  database. Instead, ``virtual_transport`` option will be configured to pass
+  mail via LMTP to Dovecot, which then will deliver it to the virtual mailboxes
+  in :file:`/var/vmail/` subdirectories.
+
 :ref:`debops.memcached` role
 ''''''''''''''''''''''''''''
 
