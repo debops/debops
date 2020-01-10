@@ -68,12 +68,18 @@ host.
 Default SMTP relay
 ------------------
 
-The default upstream SMTP relay is configured in the :envvar:`nullmailer__relayhost`
-default variable. If not configured otherwise, all mail will be forwarded to
-``smtp.{{ ansible_domain }}``. However, this might not be the correct
-destination in your environment. The ``nullmailer`` SMTP server does not
-resolve the MX records for a domain (as far as I can tell), so you need to
-specify the address to your SMTP server manually.
+The upstream SMTP relay is configured in the :envvar:`nullmailer__relayhost`
+variable. The role by default will check the DNS SRV resource records of the
+host's DNS domain to find the preferred SMTP server. You can define these
+records in the DNS:
+
+.. code-block:: none
+
+   _smtp._tcp     SRV   0 1 25   smtp.example.org.
+
+Only a single SRV record is supported, with multiple records only one will be
+selected based on the alphabetical order. If the SRV records are not found, the
+role will fall back to using the ``smtp`` subdomain.
 
 To set the desired value for all hosts in your environment, set in the
 inventory:

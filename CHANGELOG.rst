@@ -169,6 +169,12 @@ Mail Transport Agents
   ``memcached__*`` to create the role namespace. You need to update the
   inventory accordingly.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The upstream SMTP relay will be detected automatically using DNS SRV resource
+  records, if they are defined.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
