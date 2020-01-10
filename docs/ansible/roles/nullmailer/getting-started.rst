@@ -34,6 +34,36 @@ a different SMTP server - if it detects a ``postfix`` package installed on
 a host, it will automatically disable configuration of the ``nullmailer``
 service to not interfere with existing Postfix configuration.
 
+Local sender and recipient addresses without specified FQDN domain will have
+the host's FQDN set in their e-mail address "domain" part. This might be not
+desirable when you use multiple hosts behind a mail relay and send messages to
+external recipients. In that case, in the Postfix service on the mail relay you
+can configure `domain masquerading`__ to mask the internal hostnames.
+
+.. __: http://www.postfix.org/ADDRESS_REWRITING_README.html#masquerade
+
+If you use the :ref:`debops.postfix` role to manage the mail relay, you can do
+that with the following configuration in the Ansible inventory:
+
+.. code-block:: yaml
+
+   postfix__maincf:
+
+     - name: 'masquerade_domains'
+       value: [ 'example.org' ]
+
+     - name: 'local_header_rewrite_clients'
+       value: [ 'permit_inet_interfaces, 'permit_mynetworks',
+                'permit_sasl_authenticated' ]
+
+     - name: 'masquerade_exceptions'
+       value: [ 'MAILER-DAEMON', 'postmaster', 'root' ]
+
+This will mask ``any.thing.example.org`` in the e-mail addresses of senders and
+recipients and will convert them to ``example.org``. The exceptions will ensure
+that the mail from ``root`` account is not rewritten and points to the correct
+host.
+
 
 Default SMTP relay
 ------------------
