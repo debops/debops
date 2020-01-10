@@ -97,8 +97,14 @@ nullmailer__domain: '{{ ansible_domain }}'
 #
 # If this list is not empty, all mail messages addressed to any user in the
 # default hostname from :file:`/etc/mailname` or ``localhost`` will be redirected
-# to the specified e-mail addresses (catch-all).
-nullmailer__adminaddr: []
+# to the specified e-mail addresses (catch-all). This is required for mail
+# directed to local accounts because :command:`nullmailer` does not support
+# local mailboxes.
+#
+# By default send all mail for local recipients to the "root" account on the
+# mail relay host. Let the relay host deal with forwarding such e-mail messages
+# to the proper recipients.
+nullmailer__adminaddr: [ '{{ "root@" + nullmailer__relayhost }}' ]
 
                                                                    # ]]]
 # .. envvar:: nullmailer__idhost [[[
