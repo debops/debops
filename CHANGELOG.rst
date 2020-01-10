@@ -32,6 +32,12 @@ Mail Transport Agents
   and does not break mail delivery in subtle ways. See the
   :ref:`debops.nullmailer` role documentation for an example configuration.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The upstream SMTP relay will be detected automatically using DNS SRV resource
+  records, if they are defined.
+
 :ref:`debops.postconf` role
 '''''''''''''''''''''''''''
 
