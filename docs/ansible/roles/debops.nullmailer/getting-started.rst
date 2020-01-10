@@ -34,6 +34,12 @@ a different SMTP server - if it detects a ``postfix`` package installed on
 a host, it will automatically disable configuration of the ``nullmailer``
 service to not interfere with existing Postfix configuration.
 
+All mail directed to the local recipients will be forwarded to the ``root``
+UNIX account on the upstream SMTP mail relay - if it's Postfix, then this will
+be a local UNIX account. There you can deal with the e-mail messages as you see
+fit - forward them to a virtual ``root@<domain>`` account, or to other people,
+filter them, etc.
+
 Local sender and recipient addresses without specified FQDN domain will have
 the host's FQDN set in their e-mail address "domain" part. This might be not
 desirable when you use multiple hosts behind a mail relay and send messages to
