@@ -104,12 +104,6 @@ telegraf__keyring__dependent_apt_keys:
 # configuration file.
 telegraf__default_configuration:
 
-# - name: 'global_tags'
-#   options:
-#    - dc: '"us-east-1"'
-#        rack: '"1a"'
-#        user: '"$USER"'
-
   - name: 'agent'
     options:
       - hostname: '""'
@@ -125,12 +119,12 @@ telegraf__default_configuration:
 
   - name: inputs.disk
     options:
-      - ignore_fs: '[ "tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs" ]'
+      - ignore_fs: [ '"tmpfs"', '"devtmpfs"', '"devfs"', '"iso9660"', '"overlay"', '"aufs"', '"squashfs"' ]
 
   - name: inputs.net
     options:
       - interfaces: '[ "eth0" ]'
-        fielddrop: '[ "icmp*", "ip*", "tcp*", "udp*" ]'
+        fielddrop: [ '"icmp*"', '"ip*"', '"tcp*"', '"udp*"']
 
   # Get the number of processes and group them by status
   - name: inputs.processes

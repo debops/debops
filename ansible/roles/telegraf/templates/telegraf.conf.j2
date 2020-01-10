@@ -13,7 +13,11 @@
 {%     if element.options|d() %}
 {%       for thing in element.options %}
 {%          if thing.name|d() and thing.value|d() and thing.state|d('present') != 'absent' %}
+{%              if thing.value is not string and thing.value is not mapping and thing.value is iterable %}
+{{ '   {} = [{}]'.format(thing.name, thing.value | selectattr("state", "equalto", "present") | map(attribute="name") | list | join(',')) }}
+{%              else %}
 {{ '   {} = {}'.format(thing.name, thing.value) }}
+{%          endif %}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
