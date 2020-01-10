@@ -25,9 +25,10 @@
   when: influxdb__pip_packages|d()
 
 - name: Divert the original influxdb configuration file
-  command: dpkg-divert --quiet --local --divert /etc/influxdb/influxdb.conf.dpkg-divert --rename /etc/influxdb/influxdb.conf
-  args:
-    creates: '/etc/influxdb/influxdb.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/influxdb/influxdb.conf'
+    state: 'present'
+    delete: True
 
 - name: Configure main influxdb config file
   template:
