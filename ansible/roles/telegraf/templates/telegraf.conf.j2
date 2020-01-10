@@ -1,0 +1,21 @@
+# Global Agent Configuration
+
+# {{ ansible_managed }}
+
+{% for element in telegraf__combined_configuration | parse_kv_items %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+
+{%     if '.' in element.name %}
+{{ '[[{}]]'.format(element.name) }}
+{%     else %}
+{{ '[{}]'.format(element.name) }}
+{%     endif %}
+{%     if element.options|d() %}
+{%       for thing in element.options %}
+{%          if thing.name|d() and thing.value|d() and thing.state|d('present') != 'absent' %}
+{{ '   {} = {}'.format(thing.name, thing.value) }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

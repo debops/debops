@@ -1,0 +1,50 @@
+---
+
+- name: Install Telegraf requested packages
+  package:
+    name: '{{ q("flattened", telegraf__base_packages
+                             + telegraf__packages) }}'
+    state: 'present'
+    force: yes
+  register: telegraf__register_packages
+  until: telegraf__register_packages is succeeded
+  notify: [ 'Restart telegraf' ]
+
+- name: Divert the original telegraf configuration file
+  command: dpkg-divert --quiet --local --divert /etc/telegraf/telegraf.conf.dpkg-divert --rename /etc/telegraf/telegraf.conf
+  args:
+    creates: '/etc/telegraf/telegraf.conf.dpkg-divert'
+
+- name: Allow 'telegraf' user access to /proc if needed
+  user:
+    name: 'telegraf'
+    groups: '{{ telegraf__proc_hidepid_group }}'
+    append: True
+  when: telegraf__proc_hidepid | bool
+  notify: [ 'Restart telegraf' ]
+
+- name: Configure main telegraf config file
+  template:
+    src: 'telegraf.conf.j2'
+    dest: '/etc/telegraf/telegraf.conf'
+    owner: 'root'
+    group: 'adm'
+    mode: '0644'
+  notify: [ 'Reload telegraf' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save telegraf local facts
+  template:
+    src: 'etc/ansible/facts.d/telegraf.fact.j2'
+    dest: '/etc/ansible/facts.d/telegraf.fact'
+    mode: '0755'
+  register: telegraf__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: telegraf__register_facts is changed

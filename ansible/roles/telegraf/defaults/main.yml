@@ -1,0 +1,188 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.telegraf default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Telegraf server configuration [[[
+# --------------------------------
+
+
+# .. envvar:: telegraf__upstream_apt_id [[[
+#
+# The Telegraf id (fingerprint).
+telegraf__upstream_apt_id: '05CE15085FC09D18E99EFB22684A14CF2582E0C5'
+
+                                                                   # ]]]
+# .. envvar:: telegraf__upstream_apt_repository [[[
+#
+# The URL of the Telegraf upstream :command:`git` repository.
+telegraf__upstream_apt_repository: 'deb https://repos.influxdata.com/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Installation, APT packages [[[
+# ------------------------------
+
+# .. envvar:: telegraf__deploy_type [[[
+#
+# Select how Telegraf should be installed by the role:
+#
+# - ``system``: install Telegraf using current OS packages, possibly from the
+#               backports repository.
+#
+# - ``upstream``: install Telegraf from the upstream APT repository on
+#                 Launchpad (PPA, usable on Debian as well).
+#
+# - ``bootstrap``: install APT packages required for Telegraf and build a local
+#                  ``.deb`` package using the upstream GitHub repository.
+#
+telegraf__deploy_type: "upstream"
+
+                                                                   # ]]]
+# .. envvar:: telegraf__proc_hidepid [[[
+#
+# Should the ``debops.telegraf`` add the ``telegraf`` user account to a group that has
+# access to the ``/proc`` filesystem?
+telegraf__proc_hidepid: '{{ True
+                        if (ansible_local|d() and ansible_local.proc_hidepid|d() and
+                            (ansible_local.proc_hidepid.enabled|d())|bool)
+                        else False }}'
+
+                                                                   # ]]]
+# .. envvar:: telegraf__proc_hidepid_group [[[
+#
+# Name of the system group which ``telegraf`` user will be added to to get
+# information about processes.
+telegraf__proc_hidepid_group: '{{ (ansible_local.proc_hidepid.group
+                               if (ansible_local|d() and ansible_local.proc_hidepid|d() and
+                                   ansible_local.proc_hidepid.group|d())
+                               else "") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: telegraf__base_packages [[[
+#
+# List of APT base packages which are required by the Telegraf application.
+telegraf__base_packages: [ 'telegraf' ]
+
+                                                                   # ]]]
+# .. envvar:: telegraf__packages [[[
+#
+# List of APT packages which are required by the Telegraf application.
+telegraf__packages: [ 'apt-transport-https' ]
+
+                                                                   # ]]]
+# .. envvar:: telegraf__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+telegraf__keyring__dependent_apt_keys:
+
+  - id: '{{ telegraf__upstream_apt_id }}'
+    repo: '{{ telegraf__upstream_apt_repository }}'
+    state: '{{ "present" if (telegraf__deploy_type == "upstream") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: telegraf__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be allowed to connect to the
+# Telegraf server. If it's empty, remote connections are not allowed.
+telegraf__allow: [ '0.0.0.0/0' ]
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Telegraf configuration file [[[
+# ------------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/telegraf/telegraf.conf` configuration file.
+
+# .. envvar:: telegraf__default_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+telegraf__default_configuration:
+
+# - name: 'global_tags'
+#   options:
+#    - dc: '"us-east-1"'
+#        rack: '"1a"'
+#        user: '"$USER"'
+
+  - name: 'agent'
+    options:
+      - hostname: '""'
+        flush_interval: '"15s"'
+        interval: '"15s"'
+
+  - name: inputs.cpu
+    options:
+      - percpu: 'true'
+        totalcpu: 'true'
+        collect_cpu_time: 'false'
+        report_active: 'false'
+
+  - name: inputs.disk
+    options:
+      - ignore_fs: '[ "tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs" ]'
+
+  - name: inputs.net
+    options:
+      - interfaces: '[ "eth0" ]'
+        fielddrop: '[ "icmp*", "ip*", "tcp*", "udp*" ]'
+
+  # Get the number of processes and group them by status
+  - name: inputs.processes
+    options: []
+
+  - name: inputs.netstat
+    options: []
+
+  - name: inputs.processes
+    options: []
+
+  # Get kernel statistics from /proc/stat
+  - name: inputs.kernel
+    options: []
+
+  # Read metrics about disk IO by device
+  - name: inputs.diskio
+    options: []
+
+  - name: inputs.mem
+    options: []
+
+  - name: inputs.swap
+    options: []
+
+  - name: inputs.system
+    options: []
+
+
+  - name: outputs.influxdb
+    options: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__configuration [[[
+#
+# List of configuration options defined on all hosts in the Telegraf inventory.
+telegraf__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__combined_configuration [[[
+#
+# Actual list of Telegraf configuration options passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+telegraf__combined_configuration: '{{ telegraf__default_configuration + telegraf__configuration }}'
+
+                                                                   # ]]]
+                                                                   # ]]]

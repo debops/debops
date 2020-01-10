@@ -1,0 +1,19 @@
+---
+
+- name: Manage Telegraf server
+  hosts: [ 'debops_service_telegraf', 'debops_telegraf' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::telegraf' ]
+      keyring__dependent_apt_keys:
+        - '{{ telegraf__keyring__dependent_apt_keys }}'
+
+    - role: telegraf
+      tags: [ 'role::telegraf', 'skip::telegraf' ]
