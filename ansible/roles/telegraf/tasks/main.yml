@@ -11,9 +11,10 @@
   notify: [ 'Restart telegraf' ]
 
 - name: Divert the original telegraf configuration file
-  command: dpkg-divert --quiet --local --divert /etc/telegraf/telegraf.conf.dpkg-divert --rename /etc/telegraf/telegraf.conf
-  args:
-    creates: '/etc/telegraf/telegraf.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/telegraf/influxdb.conf'
+    state: 'present'
+    delete: True
 
 - name: Allow 'telegraf' user access to /proc if needed
   user:
