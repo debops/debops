@@ -268,6 +268,13 @@ Fixed
   a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
   ``[]``.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- Again, redirect the e-mail messages for local recipients to the central
+  ``root`` e-mail account (but local to the SMTP relay). This fixes an issue
+  where e-mail messages were left in the mail queue and filled the disk space.
+
 
 `debops v1.2.0`_ - 2019-12-01
 -----------------------------
