@@ -829,7 +829,7 @@ Vagrant.configure("2") do |config|
                                       rsync__exclude: ['.git/', 'build/', 'docs/', '*.box' ]
 
             libvirt.random_hostname = true
-            libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '1024'
+            libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '2048'
             libvirt.cpus =   ENV['VAGRANT_MASTER_CPUS']   || '2'
 
             if ENV['GITLAB_CI'] != "true"
