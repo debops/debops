@@ -105,6 +105,9 @@ grafana__default_configuration:
     options:
       - http_port: '{{ grafana__port }}'
         domain: '{{ grafana__fqdn }}'
+      - name: 'root_url'
+        value: 'https://%(domain)s'
+        state: '{{ "present" if (grafana__nginx_enabled | bool) else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: grafana__configuration [[[
