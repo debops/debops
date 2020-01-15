@@ -10,22 +10,22 @@
 
   roles:
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::ldap' ]
       python__dependent_packages3:
         - '{{ ldap__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ ldap__python__dependent_packages2 }}'
 
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ nslcd__ldap__dependent_tasks }}'
 
-    - role: debops.nslcd
+    - role: nslcd
       tags: [ 'role::nslcd', 'skip::nslcd' ]
 
-    - role: debops.nsswitch
+    - role: nsswitch
       tags: [ 'role::nsswitch', 'skip::nsswitch' ]
       nsswitch__dependent_services:
         - '{{ nslcd__nsswitch__dependent_services }}'

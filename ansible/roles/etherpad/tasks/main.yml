@@ -1,0 +1,249 @@
+---
+
+- import_role:
+    name: 'secret'
+
+- name: Install required Etherpad packages
+  package:
+    name: '{{ q("flattened", (etherpad__base_packages
+                              + (etherpad__document_packages
+                                 if etherpad_abiword|bool
+                                 else [])
+                              + etherpad__packages)) }}'
+    state: 'present'
+  register: etherpad__register_packages
+  until: etherpad__register_packages is succeeded
+
+- name: Create Etherpad system group
+  group:
+    name: '{{ etherpad_group }}'
+    system: yes
+    state: 'present'
+
+- name: Create Etherpad user
+  user:
+    name: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    home: '{{ etherpad_home }}'
+    shell: '{{ etherpad__shell }}'
+    comment: 'Etherpad'
+    system: yes
+    state: 'present'
+
+- name: Create Etherpad source directory
+  file:
+    path: '{{ etherpad_src_dir }}'
+    state: 'directory'
+    owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    mode: '0750'
+
+- name: Secure Etherpad home directory
+  file:
+    path: '{{ etherpad_home }}'
+    state: 'directory'
+    owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    mode: '0750'
+
+- name: Clone Etherpad source code
+  git:
+    repo: '{{ etherpad_source_address + "/" + etherpad_repository }}'
+    dest: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
+    version: '{{ etherpad_version }}'
+    bare: yes
+    update: yes
+  become: True
+  become_user: '{{ etherpad_user }}'
+  register: etherpad_register_source
+  tags: [ 'role::etherpad:source' ]
+
+- name: Check if Etherpad is checked out
+  stat:
+    path: '{{ etherpad_home + "/" + etherpad_repository }}'
+  register: etherpad_register_directory
+  tags: [ 'role::etherpad:source' ]
+
+- name: Create Etherpad directory
+  file:
+    path: '{{ etherpad_home + "/" + etherpad_repository }}'
+    state: 'directory'
+    owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    mode: '0755'
+  when: (etherpad_register_source is defined and etherpad_register_source is changed) or
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
+  tags: [ 'role::etherpad:source' ]
+
+- name: Prepare Etherpad worktree
+  template:
+    src: 'var/local/etherpad-lite/etherpad-lite/git.j2'
+    dest: '{{ etherpad_home + "/" + etherpad_repository }}/.git'
+    owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    mode: '0644'
+  when: (etherpad_register_source is defined and etherpad_register_source is changed) or
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
+  tags: [ 'role::etherpad:source' ]
+
+- name: Checkout Etherpad
+  command: git checkout --force {{ etherpad_version }}
+  args:
+    chdir: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
+    warn: False
+  environment:
+    GIT_WORK_TREE: '{{ etherpad_home + "/" + etherpad_repository }}'
+  become: True
+  become_user: '{{ etherpad_user }}'
+  register: etherpad_register_checkout
+  notify: [ 'Restart etherpad-lite' ]
+  when: (etherpad_register_source is defined and etherpad_register_source is changed) or
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
+  tags: [ 'role::etherpad:source' ]
+
+## Not used anywhere but it should stay for now: See https://github.com/debops/ansible-etherpad/pull/13
+- name: Generate Etherpad session key
+  set_fact:
+    etherpad_session_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn
+                              + "/etherpad/session_key chars=ascii,numbers,digits,hexdigits length=30") }}'
+  when: secret is defined and secret
+
+- name: Generate Etherpad configuration
+  template:
+    src: 'var/local/etherpad-lite/etherpad-lite/settings.json.j2'
+    dest: '{{ etherpad_home + "/" + etherpad_repository }}/settings.json'
+    owner: '{{ etherpad_user }}'
+    group: '{{ etherpad_group }}'
+    mode: '0644'
+  notify: [ 'Restart etherpad-lite' ]
+  tags: [ 'role::etherpad:config' ]
+
+- name: Create log directory
+  file:
+    path: '/var/log/etherpad-lite'
+    state: 'directory'
+    owner: '{{ etherpad_user }}'
+    group: 'adm'
+    mode: '0755'
+
+- name: Install Etherpad dependencies
+  command: bin/installDeps.sh
+  args:
+    chdir: '{{ etherpad_home + "/" + etherpad_repository }}'
+    creates: '{{ etherpad_home }}/.node-gyp'
+  become: True
+  become_user: '{{ etherpad_user }}'
+  when: etherpad_register_checkout is changed
+
+- name: Manage Etherpad plugins
+  npm:
+    name: '{{ item.name | d(item) }}'
+    path: '{{ etherpad_home + "/" + etherpad_repository }}'
+    state: '{{ item.state | d("present") }}'
+    production: yes
+  with_flattened:
+    - '{{ etherpad__default_plugins }}'
+    - '{{ etherpad_plugins }}'
+  become: True
+  become_user: '{{ etherpad_user }}'
+  notify: [ 'Restart etherpad-lite' ]
+  tags: [ 'role::etherpad:plugins' ]
+
+- name: Configure etherpad-lite system service
+  template:
+    src: 'etc/default/etherpad-lite.j2'
+    dest: '/etc/default/etherpad-lite'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: ansible_service_mgr != 'systemd'
+
+- name: Install etherpad-lite init script
+  template:
+    src: 'etc/init.d/etherpad-lite.j2'
+    dest: '/etc/init.d/etherpad-lite'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: etherpad__register_sysvinit
+  when: ansible_service_mgr != 'systemd'
+
+- name: Install etherpad-lite systemd unit
+  template:
+    src: 'etc/systemd/system/etherpad-lite.service.j2'
+    dest: '/etc/systemd/system/etherpad-lite.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: etherpad__register_systemd
+  when: ansible_service_mgr == 'systemd'
+
+- name: Reload systemd daemons
+  systemd:
+    daemon_reload: True
+  when: (ansible_service_mgr == 'systemd' and
+         (etherpad__register_sysvinit is changed or
+          etherpad__register_systemd is changed))
+
+- name: Ensure that etherpad-lite is started
+  service:
+    name: 'etherpad-lite'
+    state: 'started'
+    enabled: True
+  when: (etherpad__register_sysvinit is changed or
+         etherpad__register_systemd is changed)
+
+- name: Wait for the API key file generation
+  wait_for:
+    path: '{{ etherpad_api_key_file }}'
+    timeout: 30
+
+- name: Wait for Etherpad application port to be reachable
+  wait_for:
+    port: '{{ etherpad_port }}'
+    timeout: 30
+
+- name: Get the generated API key
+  command: cat {{ etherpad_api_key_file }}
+  register: etherpad_api_key
+  changed_when: False
+  check_mode: False
+  tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
+
+- name: Make API calls
+  uri:
+    url: 'http://localhost:{{ etherpad_port }}/api/{{ etherpad_api_version }}/{{ item.method }}?apikey={{
+          etherpad_api_key.stdout }}{% if item.args|d() %}{% for key, value in item.args.items() %}{{
+          "&" + key + "=" + value }}{% endfor %}{% endif %}'
+  register: etherpad_api_calls_exec
+  ## error while evaluating conditional???
+  # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()
+  with_items: '{{ etherpad_api_calls }}'
+  no_log: True
+  tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
+
+- name: Display API call responses for debugging
+  debug: var=etherpad_api_calls_exec
+  when: etherpad_api_calls_exec|d() and etherpad_api_calls_debug
+  tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Etherpad local facts
+  template:
+    src: 'etc/ansible/facts.d/etherpad.fact.j2'
+    dest: '/etc/ansible/facts.d/etherpad.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: etherpad__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: etherpad__register_facts is changed

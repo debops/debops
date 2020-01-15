@@ -10,27 +10,27 @@
 
   roles:
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ ruby__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.mariadb
+    - role: mariadb
       tags: [ 'role::mariadb' ]
       mariadb__dependent_databases: '{{ foodsoft__mariadb__dependent_databases }}'
       mariadb__dependent_users: '{{ foodsoft__mariadb__dependent_users }}'
       when: (foodsoft__database == 'mariadb')
 
-    - role: debops.ruby
+    - role: ruby
       tags: [ 'role::ruby' ]
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx' ]
       nginx__dependent_servers:
         - '{{ foodsoft__nginx__dependent_servers }}'

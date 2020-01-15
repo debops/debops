@@ -1,0 +1,97 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'iscsi/pre_main.yml') }}"
+
+- name: Install required iSCSI packages
+  package:
+    name:  '{{ q("flattened", iscsi__packages) }}'
+    state: 'present'
+  register: iscsi__register_packages
+  until: iscsi__register_packages is succeeded
+
+- name: Configure iSCSI Initiator IQN
+  lineinfile:
+    dest:   '/etc/iscsi/initiatorname.iscsi'
+    regexp: '^InitiatorName=iqn'
+    line:   'InitiatorName={{ iscsi__initiator_name }}'
+    state:  'present'
+  register: iscsi__register_initiatorname
+
+- name: Configure iSCSI discovery authentication
+  lineinfile:
+    dest:    '/etc/iscsi/iscsid.conf'
+    regexp:  '{{ (item.key | replace(".","\.")) + "\s=\s" }}'
+    line:    '{{ item.key + " = " + item.value }}'
+    state:   'present'
+  with_dict: '{{ iscsi__default_options }}'
+  when: item|d(False) and item.value
+  no_log: True
+
+- name: Restart iSCSI service if initial configuration changed
+  service:
+    name:  'open-iscsi'
+    state: 'restarted'
+  when: iscsi__enabled|d() and iscsi__register_initiatorname|d() and iscsi__register_initiatorname is changed
+
+- name: Generate iSCSI interface configuration
+  shell: iscsiadm -m iface -I {{ item }} -o new ;
+         iscsiadm -m iface -I {{ item }} --op=update -n iface.net_ifacename -v {{ item }}
+  args:
+    creates: '/etc/iscsi/ifaces/{{ item }}'
+  with_items: '{{ iscsi__interfaces }}'
+  when: (iscsi__interfaces|d(False) and item in ansible_interfaces)
+
+- name: Discover iSCSI targets on portals
+  open_iscsi:
+    discover: True
+    portal:   '{{ item }}'
+  with_items: '{{ iscsi__portals }}'
+  register: iscsi__register_discover_targets
+  when: (iscsi__portals|d(False) and (ansible_local|d() and ansible_local.iscsi|d() and
+         ansible_local.iscsi.discovered_portals is undefined or
+         (item not in ansible_local.iscsi.discovered_portals)))
+
+- name: Log in to specified iSCSI targets
+  open_iscsi:
+    target:    '{{ item.target }}'
+    login:     '{{ False if (not item.login|d(True)) else True }}'
+    node_auth: '{{ "CHAP" if (item.auth|d(False)) else omit }}'
+    node_user: '{{ item.auth_username if (item.auth|d(False)) else omit }}'
+    node_pass: '{{ item.auth_password if (item.auth|d(False)) else omit }}'
+    auto_node_startup: '{{ False if (not item.auto|d(True)) else True }}'
+  with_items: '{{ iscsi__targets }}'
+  register: iscsi__register_targets
+  when: iscsi__targets|d()
+  no_log: True
+
+- name: Make sure that local facts directory exists
+  file:
+    dest:  '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode:  '0755'
+
+- name: Save iSCSI facts
+  template:
+    src:   'etc/ansible/facts.d/iscsi.fact.j2'
+    dest:  '/etc/ansible/facts.d/iscsi.fact'
+    owner: 'root'
+    group: 'root'
+    mode:  '0644'
+
+- name: Manage LVM
+  include: manage_lvm.yml
+  when: (ansible_local|d() and ((ansible_local.tags|d() and 'ignore-cap12s' in ansible_local.tags) or
+         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'iscsi/post_main.yml') }}"

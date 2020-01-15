@@ -14,15 +14,15 @@
 
   roles:
 
-    - role: debops.dnsmasq/env
+    - role: dnsmasq/env
       tags: [ 'role::dnsmasq', 'role::ferm', 'role::tcpwrappers' ]
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ dnsmasq__ferm__dependent_rules }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ dnsmasq__env_tcpwrappers__dependent_allow }}'
@@ -31,5 +31,5 @@
       tags: [ 'role::apparmor' ]
       apparmor__local_dependent_config: '{{ dnsmasq__apparmor__local_dependent_config }}'
 
-    - role: debops.dnsmasq
+    - role: dnsmasq
       tags: [ 'role::dnsmasq', 'skip::dnsmasq' ]

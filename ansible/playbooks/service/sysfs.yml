@@ -10,13 +10,13 @@
 
   roles:
 
-    - role: debops.sysfs/env
+    - role: sysfs/env
       tags: [ 'role::sysfs', 'role::secret' ]
 
-    - role: debops.secret
+    - role: secret
       tags: [ 'role::secret', 'role::sysfs' ]
       secret__directories:
         - '{{ sysfs__secret__directories | d([]) }}'
 
-    - role: debops.sysfs
+    - role: sysfs
       tags: [ 'role::sysfs', 'skip::sysfs' ]

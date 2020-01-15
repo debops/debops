@@ -10,10 +10,10 @@
 
   roles:
 
-    - role: debops.mcli/env
+    - role: mcli/env
       tags: [ 'role::mcli', 'role::keyring', 'role::golang' ]
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
       keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
       keyring__dependent_gpg_keys:
@@ -21,15 +21,15 @@
       golang__dependent_packages:
         - '{{ mcli__golang__dependent_packages }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ golang__apt_preferences__dependent_list }}'
 
-    - role: debops.golang
+    - role: golang
       tags: [ 'role::golang', 'skip::golang' ]
       golang__dependent_packages:
         - '{{ mcli__golang__dependent_packages }}'
 
-    - role: debops.mcli
+    - role: mcli
       tags: [ 'role::mcli', 'skip::mcli' ]

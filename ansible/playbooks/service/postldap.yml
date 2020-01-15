@@ -10,23 +10,23 @@
 
   roles:
 
-    - role: debops.postfix/env
+    - role: postfix/env
       tags: [ 'role::postfix:env', 'role::postfix', 'role::postldap', 'role::secret', 'role::ferm' ]
 
-    - role: debops.secret
+    - role: secret
       tags: [ 'role::secret', 'role::postfix', 'role::postldap' ]
       secret__directories:
         - '{{ postfix__secret__directories }}'
 
-    - role: debops.postldap
+    - role: postldap
       tags: [ 'role::postldap', 'skip::postldap', 'role::postfix' ]
 
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ postldap__ldap__dependent_tasks }}'
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_packages:
         - '{{ postldap__postfix__dependent_packages }}'

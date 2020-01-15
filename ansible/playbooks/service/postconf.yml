@@ -10,26 +10,26 @@
 
   roles:
 
-    - role: debops.postconf/env
+    - role: postconf/env
       tags: [ 'role::postconf', 'role::postfix', 'role::ferm' ]
 
-    - role: debops.postfix/env
+    - role: postfix/env
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
       postfix__dependent_mastercf:
         - role: 'postconf'
           config: '{{ postconf__postfix__dependent_mastercf }}'
 
-    - role: debops.secret
+    - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
       secret__directories:
         - '{{ postfix__secret__directories }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ postfix__ferm__dependent_rules }}'
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_packages:
         - '{{ postconf__postfix__dependent_packages }}'
@@ -42,5 +42,5 @@
       postfix__dependent_lookup_tables:
         - '{{ postconf__postfix__dependent_lookup_tables }}'
 
-    - role: debops.postconf
+    - role: postconf
       tags: [ 'role::postconf', 'skip::postconf' ]

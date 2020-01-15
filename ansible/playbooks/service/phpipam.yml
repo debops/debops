@@ -10,28 +10,28 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::php', 'role::nginx', 'role::mariadb' ]
       keyring__dependent_apt_keys:
         - '{{ php__keyring__dependent_apt_keys }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
         - '{{ mariadb__keyring__dependent_apt_keys }}'
 
-    - role: debops.php/env
+    - role: php/env
       tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ php__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::mariadb' ]
       python__dependent_packages3:
         - '{{ mariadb__python__dependent_packages3 }}'
@@ -40,7 +40,7 @@
         - '{{ mariadb__python__dependent_packages2 }}'
         - '{{ nginx__python__dependent_packages2 }}'
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ phpipam__php__dependent_packages }}'
@@ -48,12 +48,12 @@
         - '{{ phpipam__php__dependent_pools }}'
       when: (phpipam__mode is defined and 'webui' in phpipam__mode)
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ phpipam__nginx__dependent_servers }}'
@@ -61,10 +61,10 @@
         - '{{ phpipam__nginx__dependent_upstreams }}'
       when: (phpipam__mode is defined and 'webui' in phpipam__mode)
 
-    - role: debops.mariadb
+    - role: mariadb
       tags: [ 'role::mariadb', 'skip::mariadb' ]
       mariadb__dependent_users:
         - '{{ phpipam__mariadb__dependent_users }}'
 
-    - role: debops.phpipam
+    - role: phpipam
       tags: [ 'role::phpipam', 'skip::phpipam' ]

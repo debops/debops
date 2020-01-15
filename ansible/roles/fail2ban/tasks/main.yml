@@ -1,0 +1,146 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Install required packages
+  apt:
+    name:
+      - 'fail2ban'
+      - 'whois'
+    state: 'present'
+    install_recommends: False
+  register: fail2ban__register_packages
+  until: fail2ban__register_packages is succeeded
+
+- name: Divert original fail2ban configuration
+  command: dpkg-divert --quiet --local --divert /etc/fail2ban/jail.conf.dpkg-divert --rename /etc/fail2ban/jail.conf
+  args:
+    creates: /etc/fail2ban/jail.conf.dpkg-divert
+
+- name: Copy upstream jail configuration
+  command: cp /etc/fail2ban/jail.conf.dpkg-divert /etc/fail2ban/jail.conf
+  args:
+    creates: '/etc/fail2ban/jail.conf'
+  notify: [ 'Restart fail2ban' ]
+
+- name: Disable default upstream jail
+  lineinfile:
+    dest: '/etc/fail2ban/jail.conf'
+    regexp: '^(enabled  = )true'
+    line: '\1false'
+    backrefs: yes
+  notify: [ 'Reload fail2ban jails' ]
+
+- name: Install custom fail2ban rule files
+  copy:
+    src: 'etc/fail2ban/'
+    dest: '/etc/fail2ban/'
+    owner: 'root'
+    group: 'root'
+  notify: [ 'Reload fail2ban jails' ]
+
+- name: Configure custom fail2ban actions
+  template:
+    src: '{{ lookup("template_src", "etc/fail2ban/action.d/action.local.j2") }}'
+    dest: '/etc/fail2ban/action.d/{{ item.filename | d(item.name) }}.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ fail2ban_actions }}'
+  notify: [ 'Restart fail2ban' ]
+  when: ((item.name is defined and item.name) and
+         (item.ban is defined and item.ban) and
+         (item.state | d('present') not in ['absent']))
+
+- name: Remove custom fail2ban actions if requested
+  file:
+    path: '/etc/fail2ban/action.d/{{ item.filename | d(item.name) }}.local'
+    state: 'absent'
+  with_items: '{{ fail2ban_actions }}'
+  notify: [ 'Restart fail2ban' ]
+  when: ((item.name is defined and item.name) and
+         (item.state | d('present') in ['absent']))
+
+- name: Configure custom fail2ban filters
+  template:
+    src: '{{ lookup("template_src", "etc/fail2ban/filter.d/filter.local.j2") }}'
+    dest: '/etc/fail2ban/filter.d/{{ item.filename | d(item.name) }}.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ fail2ban_filters }}'
+  notify: [ 'Restart fail2ban' ]
+  when: ((item.name is defined and item.name) and
+         (item.failregex is defined and item.failregex) and
+         (item.state | d('present') not in ['absent']))
+
+- name: Remove custom fail2ban filters if requested
+  file:
+    path: '/etc/fail2ban/filter.d/{{ item.filename | d(item.name) }}.local'
+    state: 'absent'
+  with_items: '{{ fail2ban_filters }}'
+  notify: [ 'Restart fail2ban' ]
+  when: ((item.name is defined and item.name) and
+         (item.state | d('present') in ['absent']))
+
+- name: Configure fail2ban
+  template:
+    src: '{{ lookup("template_src", "etc/fail2ban/fail2ban.local.j2") }}'
+    dest: '/etc/fail2ban/fail2ban.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart fail2ban' ]
+
+- name: Create jail.local.d directory
+  file:
+    path: '/etc/fail2ban/jail.local.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Configure jail default variables
+  template:
+    src: '{{ lookup("template_src", "etc/fail2ban/jail.local.d/default.local.j2") }}'
+    dest: '/etc/fail2ban/jail.local.d/00_default.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+
+- name: Remove fail2ban jails if requested
+  file:
+    path: '/etc/fail2ban/jail.local.d/{{ item.filename | default(item.name) }}.local'
+    state: 'absent'
+  with_flattened:
+    - '{{ fail2ban_jails }}'
+    - '{{ fail2ban_group_jails }}'
+    - '{{ fail2ban_host_jails }}'
+    - '{{ fail2ban_dependent_jails }}'
+  when: ((item.name is defined and item.name) and
+         (item.delete is defined and item.delete))
+
+- name: Configure fail2ban jails
+  template:
+    src: '{{ lookup("template_src", "etc/fail2ban/jail.local.d/jail.local.j2") }}'
+    dest: '/etc/fail2ban/jail.local.d/{{ item.filename | default(item.name) }}.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ fail2ban_jails }}'
+    - '{{ fail2ban_group_jails }}'
+    - '{{ fail2ban_host_jails }}'
+    - '{{ fail2ban_dependent_jails }}'
+  when: ((item.name is defined and item.name) and
+         (item.delete is undefined or not item.delete))
+
+- name: Assemble /etc/fail2ban/jail.local
+  assemble:
+    src: '/etc/fail2ban/jail.local.d'
+    dest: '/etc/fail2ban/jail.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload fail2ban jails' ]

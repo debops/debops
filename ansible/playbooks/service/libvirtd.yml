@@ -10,31 +10,31 @@
 
   roles:
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ libvirtd__apt_preferences__dependent_list }}'
 
-    - role: debops.nsswitch
+    - role: nsswitch
       tags: [ 'role::nsswitch', 'skip::nsswitch' ]
       nsswitch__dependent_services:
         - '{{ libvirtd__nsswitch__dependent_services }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ libvirtd__ferm__dependent_rules }}'
         - '{{ libvirtd_qemu__ferm__dependent_rules }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
         - '{{ libvirtd__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ libvirtd__python__dependent_packages2 }}'
 
-    - role: debops.libvirtd
+    - role: libvirtd
       tags: [ 'role::libvirtd', 'skip::libvirtd' ]
 
-    - role: debops.libvirtd_qemu
+    - role: libvirtd_qemu
       tags: [ 'role::libvirtd_qemu', 'skip::libvirtd_qemu', 'role::libvirtd', 'skip::libvirtd' ]

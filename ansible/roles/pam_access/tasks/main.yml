@@ -1,0 +1,91 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Check current pam_access diversions
+  environment:
+    LC_ALL: 'C'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '/etc/security/access*.conf.dpkg-divert' | awk '{print $NF}' || true
+  args:
+    executable: 'bash'
+  register: pam_access__register_diversions
+  check_mode: False
+  changed_when: False
+
+- name: Divert PAM access control files
+  vars:
+    access_conf: '{{ "/etc/security/"
+                     + item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
+  command: dpkg-divert --quiet --local
+           --divert {{ access_conf }}.dpkg-divert
+           --rename {{ access_conf }}
+  loop: '{{ pam_access__combined_rules | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
+  when: (pam_access__enabled|bool and item.name|d() and item.options|d() and
+         item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
+         ((item.divert|d())|bool and
+          (access_conf + '.dpkg-divert') not in pam_access__register_diversions.stdout_lines))
+
+- name: Generate PAM access control files
+  vars:
+    access_conf: '{{ "/etc/security/"
+                     + item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
+  template:
+    src: 'etc/security/access.conf.j2'
+    dest: '/etc/security/{{ item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
+    mode: '0644'
+  loop: '{{ pam_access__combined_rules | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
+  when: pam_access__enabled|bool and item.name|d() and item.options|d() and
+        item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+
+- name: Remove PAM access control files
+  vars:
+    access_conf: '{{ "/etc/security/"
+                     + item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
+  file:
+    path: '/etc/security/{{ item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
+    state: 'absent'
+  loop: '{{ pam_access__combined_rules | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
+  when: pam_access__enabled|bool and item.name|d() and item.state|d('present') == 'absent' and
+        item.divert is undefined
+
+- name: Revert PAM access control files
+  vars:
+    access_conf: '{{ "/etc/security/"
+                     + item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
+  shell: set -o nounset -o pipefail -o errexit &&
+         rm -f {{ access_conf }} &&
+         dpkg-divert --quiet --local --rename --remove {{ access_conf }}
+  args:
+    executable: 'bash'
+  loop: '{{ pam_access__combined_rules | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
+  when: (pam_access__enabled|bool and item.name|d() and
+         item.state|d('present') == 'absent' and
+         ((item.divert|d())|bool and
+          (access_conf + '.dpkg-divert') in pam_access__register_diversions.stdout_lines))
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save pam_access local facts
+  template:
+    src: 'etc/ansible/facts.d/pam_access.fact.j2'
+    dest: '/etc/ansible/facts.d/pam_access.fact'
+    mode: '0755'
+  register: pam_access__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: pam_access__register_facts is changed

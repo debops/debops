@@ -10,22 +10,22 @@
 
   roles:
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ slapd__ferm__dependent_rules }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ slapd__tcpwrappers__dependent_allow }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ slapd__logrotate__dependent_config }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::ldap', 'role::slapd' ]
       python__dependent_packages3:
         - '{{ ldap__python__dependent_packages3 }}'
@@ -34,15 +34,15 @@
         - '{{ ldap__python__dependent_packages2 }}'
         - '{{ slapd__python__dependent_packages2 }}'
 
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ saslauthd__ldap__dependent_tasks }}'
 
-    - role: debops.saslauthd
+    - role: saslauthd
       tags: [ 'role::saslauthd', 'skip::saslauthd' ]
       saslauthd__dependent_instances:
         - '{{ slapd__saslauthd__dependent_instances }}'
 
-    - role: debops.slapd
+    - role: slapd
       tags: [ 'role::slapd', 'skip::slapd' ]

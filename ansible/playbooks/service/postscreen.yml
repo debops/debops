@@ -10,15 +10,15 @@
 
   roles:
 
-    - role: debops.postfix/env
+    - role: postfix/env
       tags: [ 'role::postfix', 'role::secret' ]
 
-    - role: debops.secret
+    - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
       secret__directories:
         - '{{ postfix__secret__directories }}'
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_packages:
         - '{{ postscreen__postfix__dependent_packages }}'
@@ -29,5 +29,5 @@
         - role: 'postscreen'
           config: '{{ postscreen__postfix__dependent_mastercf }}'
 
-    - role: debops.postscreen
+    - role: postscreen
       tags: [ 'role::postscreen', 'skip::postscreen' ]

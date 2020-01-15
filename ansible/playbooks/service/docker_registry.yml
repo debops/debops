@@ -10,7 +10,7 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring',
               'role::nginx', 'role::docker_registry' ]
       keyring__dependent_apt_keys:
@@ -18,18 +18,18 @@
       keyring__dependent_gpg_keys:
         - '{{ docker_registry__keyring__dependent_gpg_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ golang__apt_preferences__dependent_list | d([]) }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ docker_registry__etc_services__dependent_list }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::ldap', 'role::docker_registry' ]
       python__dependent_packages3:
         - '{{ ldap__python__dependent_packages3 }}'
@@ -40,20 +40,20 @@
         - '{{ docker_registry__python__dependent_packages2 }}'
         - '{{ nginx__python__dependent_packages2 }}'
 
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ sudo__ldap__dependent_tasks }}'
 
-    - role: debops.sudo
+    - role: sudo
       tags: [ 'role::sudo', 'skip::sudo' ]
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_maps:
         - '{{ docker_registry__nginx__dependent_maps }}'
@@ -64,9 +64,9 @@
       nginx__dependent_servers:
         - '{{ docker_registry__nginx__dependent_servers }}'
 
-    - role: debops.golang
+    - role: golang
       tags: [ 'role::golang', 'skip::golang' ]
       when: docker_registry__upstream|bool
 
-    - role: debops.docker_registry
+    - role: docker_registry
       tags: [ 'role::docker_registry', 'skip::docker_registry' ]

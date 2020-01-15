@@ -26,7 +26,7 @@
 
   roles:
 
-    - role: debops.python/raw
+    - role: python/raw
       tags: [ 'role::python_raw', 'skip::python_raw', 'role::python' ]
 
 
@@ -40,10 +40,10 @@
 
   roles:
 
-    - role: debops.apt_proxy
+    - role: apt_proxy
       tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
 
-    - role: debops.apt
+    - role: apt
       tags: [ 'role::apt', 'skip::apt' ]
 
 
@@ -65,18 +65,18 @@
 
   roles:
 
-    - role: debops.pki/env
+    - role: pki/env
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
 
-    - role: debops.sshd/env
+    - role: sshd/env
       tags: [ 'role::sshd', 'role::ldap' ]
 
-    - role: debops.secret
+    - role: secret
       tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]
       secret_directories:
         - '{{ pki_env_secret_directories }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::netbase', 'role::ldap' ]
       python__dependent_packages3:
         - '{{ netbase__python__dependent_packages3 }}'
@@ -85,83 +85,83 @@
         - '{{ netbase__python__dependent_packages2 }}'
         - '{{ ldap__python__dependent_packages2 }}'
 
-    - role: debops.resolvconf
+    - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
 
-    - role: debops.netbase
+    - role: netbase
       tags: [ 'role::netbase', 'skip::netbase' ]
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ sshd__apt_preferences__dependent_list }}'
         - '{{ yadm__apt_preferences__dependent_list }}'
 
-    - role: debops.etckeeper
+    - role: etckeeper
       tags: [ 'role::etckeeper', 'skip::etckeeper' ]
 
-    - role: debops.cron
+    - role: cron
       tags: [ 'role::cron', 'skip::cron' ]
 
-    - role: debops.atd
+    - role: atd
       tags: [ 'role::atd', 'skip::atd' ]
 
-    - role: debops.dhparam
+    - role: dhparam
       tags: [ 'role::dhparam', 'skip::dhparam' ]
 
-    - role: debops.pki
+    - role: pki
       tags: [ 'role::pki', 'skip::pki' ]
 
     # LDAP client initialization should be done separately to prepare local
     # facts for other roles to use in configuration.
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
 
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ nslcd__ldap__dependent_tasks }}'
         - '{{ sudo__ldap__dependent_tasks }}'
         - '{{ sshd__ldap__dependent_tasks }}'
 
-    - role: debops.nslcd
+    - role: nslcd
       tags: [ 'role::nslcd', 'skip::nslcd' ]
 
-    - role: debops.nscd
+    - role: nscd
       tags: [ 'role::nscd', 'skip::nscd' ]
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::yadm' ]
       keyring__dependent_gpg_keys:
         - '{{ yadm__keyring__dependent_gpg_keys }}'
 
-    - role: debops.yadm
+    - role: yadm
       tags: [ 'role::yadm', 'skip::yadm' ]
 
-    - role: debops.sudo
+    - role: sudo
       tags: [ 'role::sudo', 'skip::sudo', 'role::system_groups' ]
 
     # The 'sudo' APT package modifies '/etc/nsswitch.conf' by itself, running
     # this role after 'debops.sudo' role skips additional changes done in the
     # configuration later on.
-    - role: debops.nsswitch
+    - role: nsswitch
       tags: [ 'role::nsswitch', 'skip::nsswitch' ]
       nsswitch__dependent_services:
         - '{{ nslcd__nsswitch__dependent_services }}'
 
-    - role: debops.libuser
+    - role: libuser
       tags: [ 'role::libuser', 'skip::libuser' ]
 
-    - role: debops.system_groups
+    - role: system_groups
       tags: [ 'role::system_groups', 'skip::system_groups' ]
 
-    - role: debops.system_users
+    - role: system_users
       tags: [ 'role::system_users', 'skip::system_users' ]
 
-    - role: debops.pam_access
+    - role: pam_access
       tags: [ 'role::pam_access', 'skip::pam_access' ]
       pam_access__dependent_rules:
         - '{{ sshd__pam_access__dependent_rules }}'
 
-    - role: debops.sshd
+    - role: sshd
       tags: [ 'role::sshd', 'skip::sshd' ]

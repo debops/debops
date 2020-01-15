@@ -1,0 +1,97 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Pre hooks
+  include: '{{ lookup("task_src", "apt_install/pre_main.yml") }}'
+
+- name: Debconf module dependencies
+  apt:
+    name:
+      - 'debconf'
+      - 'debconf-utils'
+    state: 'present'
+    install_recommends: '{{ apt_install__recommends|bool }}'
+  register: apt_install__register_debconf_packages
+  until: apt_install__register_debconf_packages is succeeded
+
+- name: Apply requested packages configuration
+  debconf:
+    name:      '{{ item.name }}'
+    question:  '{{ item.question | d(omit) }}'
+    selection: '{{ item.selection | d(omit) }}'
+    setting:   '{{ item.setting | d(omit) }}'
+    unseen:    '{{ item.unseen | d(omit) }}'
+    value:     '{{ item.value | d(omit) }}'
+    answer:    '{{ item.answer | d(omit) }}'
+    vtype:     '{{ item.vtype | d(omit) }}'
+  with_flattened:
+    - '{{ apt_install__debconf }}'
+    - '{{ apt_install__group_debconf }}'
+    - '{{ apt_install__host_debconf }}'
+  when: item.name|d()
+
+- name: Install requested APT packages
+  apt:
+    name: '{{ q("flattened", lookup("template",
+                             "lookup/apt_install__all_packages.j2",
+                             convert_data=False) | from_json) }}'
+    state: '{{ apt_install__state }}'
+    install_recommends: '{{ apt_install__recommends|bool }}'
+    update_cache: '{{ apt_install__update_cache|bool }}'
+    cache_valid_time: '{{ apt_install__cache_valid_time }}'
+  register: apt_install__register_packages
+  until: apt_install__register_packages is succeeded
+  when: apt_install__enabled|bool
+
+- name: Configure alternative symlinks
+  alternatives:
+    name:     '{{ item.name }}'
+    path:     '{{ item.path }}'
+    link:     '{{ item.link | d(omit) }}'
+    priority: '{{ item.priority | d(omit) }}'
+  with_flattened:
+    - '{{ apt_install__default_alternatives }}'
+    - '{{ apt_install__alternatives }}'
+    - '{{ apt_install__group_alternatives }}'
+    - '{{ apt_install__host_alternatives }}'
+  when: item.name|d() and item.path|d()
+
+- name: Configure automatic alternatives
+  command: update-alternatives --auto {{ item.name }}
+  register: apt_install__register_alternatives
+  with_flattened:
+    - '{{ apt_install__alternatives }}'
+    - '{{ apt_install__group_alternatives }}'
+    - '{{ apt_install__host_alternatives }}'
+  when: item.name|d() and not item.path|d()
+  changed_when: apt_install__register_alternatives.stdout|d()
+
+- name: Disable kernel hints about pending upgrades
+  template:
+    src: 'etc/needrestart/conf.d/no-kernel-hints.conf.j2'
+    dest: '/etc/needrestart/conf.d/no-kernel-hints.conf'
+    mode: '0644'
+  when: apt_install__enabled|bool and apt_install__no_kernel_hints|bool
+
+- name: Make sure that Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: apt_install__enabled|bool
+
+- name: Save local Ansible facts
+  template:
+    src: 'etc/ansible/facts.d/apt_install.fact.j2'
+    dest: '/etc/ansible/facts.d/apt_install.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: apt_install__enabled|bool
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "apt_install/post_main.yml") }}'

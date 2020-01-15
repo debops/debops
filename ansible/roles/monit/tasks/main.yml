@@ -1,0 +1,57 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: Install Monit packages
+  package:
+    name: '{{ q("flattened", (monit__base_packages
+                              + monit__packages)) }}'
+    state: 'present'
+  register: monit__register_packages
+  until: monit__register_packages is succeeded
+
+- name: Remove Monit configuration if requested
+  file:
+    path: '/etc/monit/conf.d/{{ ((item.weight|string + "_") if (item.weight != 0) else "") + item.name }}'
+    state: 'absent'
+  with_items: '{{ monit__combined_config | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') == 'absent'
+  notify: [ 'Test monit and reload' ]
+  no_log: '{{ True if (item.mode|d("0644") == "0600") else False }}'
+
+- name: Generate Monit configuration
+  template:
+    src: 'etc/monit/conf.d/template.j2'
+    dest: '/etc/monit/conf.d/{{ ((item.weight|string + "_") if (item.weight != 0) else "") + item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '{{ item.mode | d("0600") }}'
+  with_items: '{{ monit__combined_config | parse_kv_items }}'
+  when: item.name|d() and item.state|d('present') not in [ 'init', 'absent' ]
+  notify: [ 'Test monit and reload' ]
+  no_log: '{{ True if (item.mode|d("0644") == "0600") else False }}'
+
+- name: Make sure Ansible local facts directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Configure Monit local facts
+  template:
+    src: 'etc/ansible/facts.d/monit.fact.j2'
+    dest: '/etc/ansible/facts.d/monit.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: monit__register_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: monit__register_facts is changed

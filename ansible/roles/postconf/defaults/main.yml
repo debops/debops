@@ -1,0 +1,424 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _postconf__ref_defaults:
+
+# debops.postconf default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Postfix capabilities [[[
+# ------------------------
+
+# These variables roughly define what functionality will be enabled in Postfix.
+# See :ref:`postconf__ref_capabilities` for more details.
+
+# .. envvar:: postconf__autodetect_capabilities [[[
+#
+# List of Postfix capabilities enabled dynamically during role execution.
+postconf__autodetect_capabilities: '{{ postconf__env_capabilities }}'
+
+                                                                   # ]]]
+# .. envvar:: postconf__default_capabilities [[[
+#
+# List of Postfix capabilities enabled by default by the role.
+postconf__default_capabilities: [ 'overhead' ]
+
+                                                                   # ]]]
+# .. envvar:: postconf__capabilities [[[
+#
+# List of Postfix capabilities which should be enabled on all hosts in the
+# Ansible inventory.
+postconf__capabilities: []
+
+                                                                   # ]]]
+# .. envvar:: postconf__group_capabilities [[[
+#
+# List of Postfix capabilities which should be enabled on hosts in specific
+# Ansible inventory group.
+postconf__group_capabilities: []
+
+                                                                   # ]]]
+# .. envvar:: postconf__host_capabilities [[[
+#
+# List of Postfix capabilities which should be enabled in specific hosts in the
+# Ansible inventory.
+postconf__host_capabilities: []
+
+                                                                   # ]]]
+# .. envvar:: postconf__combined_capabilities [[[
+#
+# List that combines all Postfix capabilities from the other variables and is
+# used in other configuration variables and Ansible tasks.
+postconf__combined_capabilities: '{{ postconf__autodetect_capabilities
+                                     + postconf__default_capabilities
+                                     + postconf__capabilities
+                                     + postconf__group_capabilities
+                                     + postconf__host_capabilities }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Postfix configuration variables [[[
+# -----------------------------------
+
+# .. envvar:: postconf__fqdn [[[
+#
+# The Fully Qualified Domain Name of this SMTP host.
+postconf__fqdn: '{{ ansible_local.core.fqdn
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.fqdn|d())
+                    else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: postconf__sasl_auth_method [[[
+#
+# Select the preferred SASL authentication method for accepting authenticated
+# e-mail messages. Currently supported methods are "cyrus" which will use the
+# :command:`saslauthd` service, or "dovecot" which will use the Dovecot
+# service. The default preference is to use :command:`saslauthd` when it is
+# installed to allow for more flexible client authentication methods,
+# authenticated mail relays, and the like.
+postconf__sasl_auth_method: '{{ "cyrus"
+                                if (ansible_local|d() and ansible_local.saslauthd|d() and
+                                    (ansible_local.saslauthd.installed|d())|bool and
+                                    "smtpd" in ansible_local.saslauthd.instances)
+                                else "dovecot" }}'
+
+                                                                   # ]]]
+# .. envvar:: postconf__unauth_sender_domains [[[
+#
+# List of FQDN domains which are handled by this Postfix instance. Any
+# unauthenticated mail messages from these domains that are sent from external
+# hosts will be blocked. This list should be synchronized with the Postfix
+# ``$mydestination``, ``$relay_domains``, ``$virtual_mailbox_domains`` and
+# ``$virtual_alias_domains`` configuration parameters.
+postconf__unauth_sender_domains: [ '{{ postconf__fqdn }}' ]
+
+                                                                   # ]]]
+# .. envvar:: postconf__unauth_sender_default_action [[[
+#
+# The error message which will be sent to the SMTP servers that try to deliver
+# unauthenticated mail messages.
+postconf__unauth_sender_default_action: 'REJECT This server requires SMTP authentication'
+                                                                   # ]]]
+                                                                   # ]]]
+# Postfix lookup tables [[[
+# -------------------------
+
+# These lists define Postfix lookup tables placed in the :file:`/etc/postfix/`
+# directory. The configuration format is specified in the :ref:`debops.postfix`
+# role documentation.
+
+# .. envvar:: postconf__default_lookup_tables [[[
+#
+# List of default lookup tables defined by the role.
+postconf__default_lookup_tables:
+
+  - name: 'auth_header_checks.pcre'
+    by_role: 'debops.postconf'
+    comment: |
+      Cleanup headers in mail messages sent by authenticated clients through
+      submission/smtps service.
+
+      Documentation: https://askubuntu.com/questions/78163/
+    default_action: 'IGNORE'
+    options:
+      - '/^X-Mailer:/':   'IGNORE'
+      - '/^User-Agent:/': 'IGNORE'
+    state: '{{ "present"
+               if ("authcleanup" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'mx_access.cidr'
+    by_role: 'debops.postconf'
+    comment: |
+      Check if HELO or sender MX server is in subnets not accessible from the
+      public Internet. If so, reject mail delivery from these servers, because
+      any replies will be non-deliverable.
+    options:
+      - '0.0.0.0/8':       'REJECT Domain MX in broadcast network'
+      - '10.0.0.0/8':      'REJECT Domain MX in RFC 1918 private network'
+      - '127.0.0.0/8':     'REJECT Domain MX in loopback network'
+      - '169.254.0.0/16':  'REJECT Domain MX in link local network'
+      - '172.16.0.0/12':   'REJECT Domain MX in RFC 1918 private network'
+      - '192.0.2.0/24':    'REJECT Domain MX in TEST-NET-1 network'
+      - '192.168.0.0/16':  'REJECT Domain MX in RFC 1918 private network'
+      - '198.51.100.0/24': 'REJECT Domain MX in TEST-NET-2 network'
+      - '203.0.113.0/24':  'REJECT Domain MX in TEST-NET-3 network'
+      - '224.0.0.0/4':     'REJECT Domain MX in class D multicast network'
+      - '240.0.0.0/5':     'REJECT Domain MX in class E reserved network'
+      - '248.0.0.0/5':     'REJECT Domain MX in reserved network'
+
+      - '::1/128':         'REJECT Domain MX is Loopback address'
+      - '::/128':          'REJECT Domain MX is Unspecified address'
+      - '::/96':           'REJECT Domain MX in IPv4-Compatible IPv6'
+      - '::ffff:0:0/96':   'REJECT Domain MX in IPv4-Mapped IPv6'
+      - 'ff00::/8':        'REJECT Domain MX in Multicast network'
+      - 'fe80::/10':       'REJECT Domain MX in Link-local unicast network'
+      - 'fec0::/10':       'REJECT Domain MX in Site-local unicast network'
+    state: '{{ "present"
+               if ("public-mx-required" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'unauth_sender_access.in'
+    by_role: 'debops.postconf'
+    comment: |
+      Block any unauthenticated external mail that uses our domain names. Users
+      that send this mail need to enable SMTP authentication and use the
+      'submission' service.
+
+      Documentation: https://serverfault.com/a/51122
+    default_action: '{{ postconf__unauth_sender_default_action }}'
+    content: '{{ postconf__unauth_sender_domains }}'
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities and
+                   "unauth-sender" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'overhead_checks.pcre'
+    by_role: 'debops.postconf'
+    comment: |
+      "A man is not dead while his name is still spoken."
+                - Going Postal, Chapter 4 prologue
+
+      Ref: http://www.gnuterrypratchett.com/
+    options:
+      - '/^X-Clacks-Overhead:/': 'IGNORE'
+      - '/^To:/': 'PREPEND X-Clacks-Overhead: GNU Terry Pratchett'
+    state: '{{ "present"
+               if ("overhead" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: postconf__lookup_tables [[[
+#
+# List of lookup tables that are managed on all hosts in the Ansible inventory.
+postconf__lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postconf__group_lookup_tables [[[
+#
+# List of lookup tables that are managed on hosts in specific Ansible inventory
+# group.
+postconf__group_lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postconf__host_lookup_tables [[[
+#
+# List of lookup tables that are managed on specific hosts in the Ansible
+# inventory.
+postconf__host_lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postconf__combined_lookup_tables [[[
+#
+# Variable that combines the other lookup table lists together for eas of use.
+postconf__combined_lookup_tables: '{{ postconf__default_lookup_tables
+                                      + postconf__lookup_tables
+                                      + postconf__group_lookup_tables
+                                      + postconf__host_lookup_tables }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: postconf__postfix__dependent_packages [[[
+#
+# List of APT packages to install passed to the :ref:`debops.postfix` Ansible
+# role.
+postconf__postfix__dependent_packages:
+  - '{{ "libsasl2-modules"
+        if ("auth" in postconf__combined_capabilities)
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: postconf__postfix__dependent_lookup_tables [[[
+#
+# Lookup table configuration passed to the :ref:`debops.postfix` Ansible role.
+postconf__postfix__dependent_lookup_tables:
+  - '{{ postconf__combined_lookup_tables }}'
+
+                                                                   # ]]]
+# .. envvar:: postconf__postfix__dependent_maincf [[[
+#
+# The :file:`main.cf` configuration passed to the :ref:`debops.postfix` Ansible role.
+postconf__postfix__dependent_maincf:
+
+  - name: 'smtpd_sasl_auth_enable'
+    value: True
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_sasl_authenticated_header'
+    value: True
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'broken_sasl_auth_clients'
+    value: True
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_sasl_security_options'
+    value: [ 'noanonymous', 'noplaintext' ]
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_sasl_tls_security_options'
+    value: [ 'noanonymous' ]
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_sasl_type'
+    value: '{{ "cyrus"
+               if (postconf__sasl_auth_method == "cyrus")
+               else "dovecot" }}'
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_sasl_path'
+    value: '{{ "smtpd"
+               if (postconf__sasl_auth_method == "cyrus")
+               else "private/auth" }}'
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_helo_restrictions'
+    value:
+      - name: 'check_helo_mx_access cidr:${config_directory}/mx_access.cidr'
+    state: '{{ "present"
+               if ("public-mx-required" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_sender_restrictions'
+    value:
+      - name: 'check_sender_mx_access cidr:${config_directory}/mx_access.cidr'
+        weight: 50
+    state: '{{ "present"
+               if ("public-mx-required" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_sender_restrictions'
+    value:
+
+      - name: 'permit_mynetworks'
+
+      - name: 'reject_authenticated_sender_login_mismatch'
+        copy_id_from: 'permit_mynetworks'
+        weight: 10
+
+      - name: 'permit_sasl_authenticated'
+        copy_id_from: 'reject_authenticated_sender_login_mismatch'
+        weight: 10
+
+      - name: 'check_sender_access hash:${config_directory}/unauth_sender_access'
+        copy_id_from: 'permit_sasl_authenticated'
+        weight: 10
+
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities and
+                   "unauth-sender" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtpd_relay_restrictions'
+    value:
+
+      - name: 'reject_authenticated_sender_login_mismatch'
+        copy_id_from: 'permit_mynetworks'
+        weight: 10
+
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities and
+                   "unauth-sender" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtp_header_checks'
+    value: [ 'pcre:${config_directory}/overhead_checks.pcre' ]
+    state: '{{ "present"
+               if ("overhead" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: postconf__postfix__dependent_mastercf [[[
+#
+# The :file:`master.cf` configuration passed to the :ref:`debops.postfix` Ansible
+# role.
+postconf__postfix__dependent_mastercf:
+
+  - name: 'submission'
+    options:
+
+      - name: 'smtpd_helo_restrictions'
+        value: ''
+        state: '{{ "present"
+                   if ("public-mx-required" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
+      - name: 'smtpd_sender_restrictions'
+        value: 'reject_authenticated_sender_login_mismatch'
+        state: '{{ "present"
+                   if ("unauth-sender" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
+      - name: 'cleanup_service_name'
+        value: 'authcleanup'
+        state: '{{ "present"
+                   if ("authcleanup" in postconf__combined_capabilities)
+                   else "ignore" }}'
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'smtps'
+    options:
+
+      - name: 'smtpd_helo_restrictions'
+        value: ''
+        state: '{{ "present"
+                   if ("public-mx-required" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
+      - name: 'smtpd_sender_restrictions'
+        value: 'reject_authenticated_sender_login_mismatch'
+        state: '{{ "present"
+                   if ("unauth-sender" in postconf__combined_capabilities)
+                   else "ignore" }}'
+
+      - name: 'cleanup_service_name'
+        value: 'authcleanup'
+        state: '{{ "present"
+                   if ("authcleanup" in postconf__combined_capabilities)
+                   else "ignore" }}'
+    state: '{{ "present"
+               if ("auth" in postconf__combined_capabilities)
+               else "ignore" }}'
+
+  - name: 'authcleanup'
+    type: 'unix'
+    private: False
+    maxproc: 0
+    command: 'cleanup'
+    options:
+      - name: 'syslog_name'
+        value: 'postfix/authcleanup'
+      - name: 'header_checks'
+        value: [ 'regexp:/etc/postfix/auth_header_checks.pcre' ]
+    state: '{{ "present"
+               if ("authcleanup" in postconf__combined_capabilities)
+               else "ignore" }}'
+    copy_id_from: 'cleanup'
+    weight: 10
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

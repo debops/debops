@@ -10,37 +10,37 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::postgresql_server' ]
       keyring__dependent_apt_keys:
         - '{{ postgresql_server__keyring__dependent_apt_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ postgresql_server__apt_preferences__dependent_list }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ postgresql_server__etc_services__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ postgresql_server__ferm__dependent_rules }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::postgresql' ]
       python__dependent_packages3:
         - '{{ postgresql_server__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ postgresql_server__python__dependent_packages2 }}'
 
-    - role: debops.locales
+    - role: locales
       tags: [ 'role::locales', 'skip::locales' ]
       locales__dependent_list:
         - '{{ postgresql_server__locales__dependent_list }}'
 
-    - role: debops.postgresql_server
+    - role: postgresql_server
       tags: [ 'role::postgresql_server', 'skip::postgresql_server' ]

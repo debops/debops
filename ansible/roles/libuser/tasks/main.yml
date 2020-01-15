@@ -1,0 +1,43 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Install Libuser requested packages
+  package:
+    name: '{{ q("flattened", libuser__base_packages
+                             + libuser__packages) }}'
+    state: 'present'
+  register: libuser__register_packages
+  until: libuser__register_packages is succeeded
+  when: libuser__enabled | bool
+
+- name: Divert the original libuser configuration file
+  command: dpkg-divert --quiet --local --divert /etc/libuser.conf.dpkg-divert --rename /etc/libuser.conf
+  args:
+    creates: '/etc/libuser.conf.dpkg-divert'
+  when: libuser__enabled|bool
+
+- name: Configure main libuser config file
+  template:
+    src: 'etc/libuser.conf.j2'
+    dest: '/etc/libuser.conf'
+    mode: '0644'
+  when: libuser__enabled|bool
+
+- name: Make sure that local fact directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Libuser local facts
+  template:
+    src: 'etc/ansible/facts.d/libuser.fact.j2'
+    dest: '/etc/ansible/facts.d/libuser.fact'
+    mode: '0755'
+  register: libuser__register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: libuser__register_local_facts is changed

@@ -1,0 +1,10 @@
+---
+
+- import_role:
+    name: 'secret'
+
+- include: configure_servers.yml
+  when: boxbackup_server is defined and boxbackup_server == ansible_fqdn
+
+- include: configure_clients.yml
+  when: boxbackup_server is defined and boxbackup_server != ansible_fqdn

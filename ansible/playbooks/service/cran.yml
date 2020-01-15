@@ -10,22 +10,22 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::cran' ]
       keyring__dependent_apt_keys:
         - '{{ cran__keyring__dependent_apt_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ cran__apt_preferences__dependent_list }}'
         - '{{ java__apt_preferences__dependent_list
               if cran__java_integration|bool else [] }}'
 
-    - role: debops.java
+    - role: java
       tags: [ 'role::java', 'skip::java' ]
       java__install_jdk: True
       when: cran__java_integration|bool
 
-    - role: debops.cran
+    - role: cran
       tags: [ 'role::cran', 'skip::cran' ]

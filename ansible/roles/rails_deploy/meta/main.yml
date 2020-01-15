@@ -1,0 +1,87 @@
+---
+
+dependencies:
+
+  - role: etc_services
+
+  - role: apt_preferences
+    tags: [ 'role::apt_preferences' ]
+    apt_preferences__dependent_list:
+      - '{{ nodejs__apt_preferences__dependent_list }}'
+
+  - role: nodejs
+    when: '"bundle exec rake assets:precompile" in rails_deploy_post_migrate_shell_commands'
+    tags: nodejs
+
+  - role: ruby
+    when: rails_deploy_dependencies is defined and
+          'ruby' in rails_deploy_dependencies
+    tags: ruby
+
+  - role: redis_server
+    when: rails_deploy_worker_enabled and
+          rails_deploy_dependencies is defined and
+          'redis' in rails_deploy_dependencies
+    tags: redis
+
+  - role: postgresql
+    when: inventory_hostname == rails_deploy_hosts_master and
+          (rails_deploy_dependencies is defined and
+          'database' in rails_deploy_dependencies) and
+          rails_deploy_database_adapter == 'postgresql'
+    tags: postgresql
+
+  - role: debops.mysql
+    when: inventory_hostname == rails_deploy_hosts_master and
+          (rails_deploy_dependencies is defined and
+          'database' in rails_deploy_dependencies) and
+          rails_deploy_database_adapter == 'mysql'
+    tags: mysql
+
+  - role: nginx
+    nginx_servers: [ '{{ rails_deploy_nginx_server }}' ]
+    nginx_upstreams: [ '{{ rails_deploy_nginx_upstream }}' ]
+    when: rails_deploy_dependencies is defined and
+          'nginx' in rails_deploy_dependencies
+    tags: nginx
+
+  - role: monit
+    monit_process_host_list:
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
+    when: rails_deploy_dependencies is defined and
+          'monit' in rails_deploy_dependencies and
+          not rails_deploy_worker_enabled
+    tags: monit
+
+  - role: monit
+    monit_process_host_list:
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_service }}.pid'
+      - pid: '{{ rails_deploy_service }}/{{ rails_deploy_worker }}.pid'
+    when: rails_deploy_dependencies is defined and
+          'monit' in rails_deploy_dependencies and
+          rails_deploy_worker_enabled
+    tags: monit
+
+galaxy_info:
+
+  author: 'Nick Janetakis'
+  description: 'Deploy and monitor rails applications'
+  company: 'DebOps'
+  license: 'GNU General Public License v3'
+  min_ansible_version: '1.7.0'
+  platforms:
+    - name: Ubuntu
+      versions:
+        - precise
+        - quantal
+        - raring
+        - saucy
+        - trusty
+    - name: Debian
+      versions:
+        - wheezy
+        - jessie
+  galaxy_tags:
+    - development
+    - ruby
+    - rails
