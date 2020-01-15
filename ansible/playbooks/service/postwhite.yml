@@ -8,12 +8,16 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: postfix/env
-      tags: [ 'role::postfix', 'role::secret' ]
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
       when: (ansible_local|d() and ansible_local.postfix|d() and
              (ansible_local.postfix.installed|d())|bool)
+      tags: [ 'role::postfix', 'role::secret' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]

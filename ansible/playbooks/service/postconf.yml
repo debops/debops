@@ -8,16 +8,21 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
+      vars:
+        postfix__dependent_mastercf:
+          - role: 'postconf'
+            config: '{{ postconf__postfix__dependent_mastercf }}'
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
   roles:
 
     - role: postconf/env
       tags: [ 'role::postconf', 'role::postfix', 'role::ferm' ]
-
-    - role: postfix/env
-      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
-      postfix__dependent_mastercf:
-        - role: 'postconf'
-          config: '{{ postconf__postfix__dependent_mastercf }}'
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]

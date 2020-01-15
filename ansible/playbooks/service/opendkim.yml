@@ -15,11 +15,13 @@
         tasks_from: 'main_env'
       tags: [ 'role::opendkim', 'role::secret' ]
 
-  roles:
-
-    - role: postfix/env
-      tags: [ 'role::postfix', 'role::secret' ]
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
       when: opendkim__postfix_integration|bool
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::opendkim', 'role::postfix' ]

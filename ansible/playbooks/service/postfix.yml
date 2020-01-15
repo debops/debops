@@ -15,10 +15,12 @@
         tasks_from: 'main_env'
       tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
 
-  roles:
-
-    - role: postfix/env
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
