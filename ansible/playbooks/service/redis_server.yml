@@ -8,13 +8,17 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'sysfs'
+        tasks_from: 'main_env'
+      tags: [ 'role::sysfs', 'role::secret' ]
+
   roles:
 
     - role: redis_server/env
       tags: [ 'role::redis_server', 'role::ferm' ]
-
-    - role: sysfs/env
-      tags: [ 'role::sysfs', 'role::secret' ]
 
     - role: secret
       tags: [ 'role::secret', 'role::sysfs' ]

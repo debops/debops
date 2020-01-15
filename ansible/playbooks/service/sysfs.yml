@@ -8,10 +8,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: sysfs/env
+    - import_role:
+        name: 'sysfs'
+        tasks_from: 'main_env'
       tags: [ 'role::sysfs', 'role::secret' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::sysfs' ]
