@@ -8,10 +8,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: tinc/env
+    - import_role:
+        name: 'tinc'
+        tasks_from: 'main_env'
       tags: [ 'role::tinc', 'role::tinc:secret', 'role::secret', 'role::ferm' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::tinc:secret' ]
