@@ -11,6 +11,11 @@
   pre_tasks:
 
     - import_role:
+        name: 'postconf'
+        tasks_from: 'main_env'
+      tags: [ 'role::postconf', 'role::postfix', 'role::ferm' ]
+
+    - import_role:
         name: 'postfix'
         tasks_from: 'main_env'
       vars:
@@ -20,9 +25,6 @@
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
 
   roles:
-
-    - role: postconf/env
-      tags: [ 'role::postconf', 'role::postfix', 'role::ferm' ]
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
