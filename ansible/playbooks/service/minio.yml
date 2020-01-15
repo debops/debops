@@ -8,11 +8,15 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: minio/env
+    - import_role:
+        name: 'minio'
+        tasks_from: 'main_env'
       tags: [ 'role::minio', 'role::etc_services', 'role::ferm',
               'role::keyring', 'role::golang', 'role::nginx' ]
+
+  roles:
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
