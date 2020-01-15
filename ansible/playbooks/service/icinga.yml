@@ -8,15 +8,19 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'icinga'
+        tasks_from: 'main_env'
+      tags: [ 'role::icinga', 'role::secret' ]
+
   roles:
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::icinga' ]
       keyring__dependent_apt_keys:
         - '{{ icinga__keyring__dependent_apt_keys }}'
-
-    - role: icinga/env
-      tags: [ 'role::icinga', 'role::secret' ]
 
     - role: secret
       tags: [ 'role::secret', 'role::icinga' ]
