@@ -3,13 +3,18 @@
 debops.prosody
 ==============
 
+``debops.prosody`` configures and manages the XMPP server prosody.
+
 .. toctree::
    :maxdepth: 2
 
-   introduction
    getting-started
    defaults/main
-   copyright
+
+Copyright
+---------
+
+.. literalinclude:: ../../../../ansible/roles/prosody/COPYRIGHT
 
 ..
  Local Variables:

@@ -3,14 +3,25 @@
 debops.sysctl
 =============
 
+The ``debops.sysctl`` Ansible role manages Linux kernel parameters.
+It comes with kernel hardening and shared memory optimization enabled by
+default.
+The kernel hardening is ported from `hardening.os-hardening`__ for optimal
+compatibility with DebOps.
+
+.. __: https://github.com/hardening-io/ansible-os-hardening
+
 .. toctree::
    :maxdepth: 2
 
-   introduction
    getting-started
    defaults/main
    defaults-detailed
-   copyright
+
+Copyright
+---------
+
+.. literalinclude:: ../../../../ansible/roles/sysctl/COPYRIGHT
 
 ..
  Local Variables:

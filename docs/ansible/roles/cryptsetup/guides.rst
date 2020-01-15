@@ -7,9 +7,8 @@ Guides and examples
    :local:
    :depth: 2
 
-Be sure that you :ref:`installed <cryptsetup__ref_installation>` the role and
-setup your Ansible project to use the role
-(:ref:`cryptsetup__ref_getting_started`).
+Be sure that you installed the role and setup your Ansible project to use the
+role (:ref:`cryptsetup__ref_getting_started`).
 There is also the :ref:`Getting Started guide <getting-started>` to learn the basics.
 
 .. _cryptsetup__ref_guide_setup_loop_device:
