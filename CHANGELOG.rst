@@ -263,16 +263,6 @@ General
 Fixed
 ~~~~~
 
-:ref:`debops.gitlab_runner` role
-''''''''''''''''''''''''''''''''
-
-- Solve 'Build occasionally get "No such file or directory" accessing build directory' error.
-  See also https://gitlab.com/gitlab-org/gitlab-runner/issues/1379 .
-  Occasionally the runner stops with an error due to the conflicts created by `~/.bash_logout`
-  wipping the screen/terminal clean, thus confusing the runner. Therefore updated the
-  `debops.gitlab_runner` user creation to no add an user skeleton and just an empty home dir.
-  Additionally added task to clean up manually any `~/.bash_logout` files from current installations.
-
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
@@ -285,6 +275,16 @@ Fixed
 - The ``dmz`` firewall configuration will now not interpret the port as part of
   a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
   ``[]``.
+
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Solve 'Build occasionally get "No such file or directory" accessing build directory' error.
+  See also https://gitlab.com/gitlab-org/gitlab-runner/issues/1379 .
+  Occasionally the runner stops with an error due to the conflicts created by `~/.bash_logout`
+  wipping the screen/terminal clean, thus confusing the runner. Therefore updated the
+  `debops.gitlab_runner` user creation to no add an user skeleton and just an empty home dir.
+  Additionally added task to clean up manually any `~/.bash_logout` files from current installations.
 
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
@@ -497,7 +497,8 @@ Updates of upstream application versions
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v2.6.3``.
-
+wipping the screen/terminal clean, thus confusing the runner. Therefore updated the
+  `debops.gitlab_runner` user creation to no add an user skeleton and just an empty home di
 Continuous Integration
 ''''''''''''''''''''''
 
