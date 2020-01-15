@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- The GitLab backup :command:`cron` job can be enabled or disabled via
+  a dedicated variable.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
