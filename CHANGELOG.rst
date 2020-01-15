@@ -62,6 +62,14 @@ Mail Transport Agents
 Fixed
 ~~~~~
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Fix issue with GitLab Runner failing test jobs due to the default
+  :file:`~/.bash_logout` script wiping the terminal on logout. The role will
+  skip copying the :file:`/etc/skel/` contents on the new installations;
+  existing script will be removed.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
