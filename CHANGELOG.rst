@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
 
+Added
+~~~~~
+
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- The GitLab backup :command:`cron` job can be enabled or disabled via
+  a dedicated variable.
+
 Changed
 ~~~~~~~
 

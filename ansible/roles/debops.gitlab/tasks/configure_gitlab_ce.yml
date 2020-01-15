@@ -269,6 +269,9 @@
   cron:
     name: 'Create GitLab backup'
     special_time: '{{ gitlab_backup_frequency }}'
+    disabled: '{{ False
+                  if (gitlab_backup_enabled|d(True))
+                  else True }}'
     state: 'present'
     user: '{{ gitlab_user }}'
     job: 'cd {{ gitlab_ce_git_checkout }} \
