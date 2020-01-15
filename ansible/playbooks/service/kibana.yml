@@ -8,6 +8,13 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'kibana'
+        tasks_from: 'main_env'
+      tags: [ 'role::kibana', 'role::secret', 'role::kibana:config' ]
+
   roles:
 
     - role: keyring
@@ -15,9 +22,6 @@
       keyring__dependent_apt_keys:
         - '{{ nginx__keyring__dependent_apt_keys }}'
         - '{{ elastic_co__keyring__dependent_apt_keys }}'
-
-    - role: kibana/env
-      tags: [ 'role::kibana', 'role::secret', 'role::kibana:config' ]
 
     - role: secret
       tags: [ 'role::secret', 'role::kibana', 'role::kibana:config' ]
