@@ -35,13 +35,31 @@ To change the environment variable that holds the registration token, or save
 the token in Ansible inventory, you can use the :envvar:`gitlab_runner__token`
 variable.
 
-For example storing the token in the :file:`ansible/secret/credentials` folder:
+In case that you don't want to expose the registration token via the Ansible
+inventory directly, you can store it it in the
+:file:`ansible/secret/credentials/` directory managed by the
+:ref:`debops.secret` role in a predetermined location.
+
+To create the path and file to store the GitLab Token execute this commands in
+the root of the DebOps project directory with the relevant GitLab domain:
+
+.. code-block:: console
+
+   mkdir -pv ansible/secret/credentials/code.example.org/gitlab/runner
+   editor ansible/secret/credentials/code.example.org/gitlab/runner/token
+
+In the editor, paste the GitLab registration token and save the file. Then add
+the :envvar:`gitlab_runner__token` variable to your inventory.
 
 .. code-block:: console
 
    gitlab_runner__token: '{{ lookup("password", secret
-                           + "/credentials/" + ansible_fqdn
+                           + "/credentials/" + gitlab_runner__api_fqdn
                            + "/gitlab/runner/token chars=ascii,numbers") }}'
+
+This allows the token to be safely stored outside of the inventory but
+accessible at runtime.
+
 
 Initial configuration
 ---------------------
