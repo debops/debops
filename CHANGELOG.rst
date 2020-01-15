@@ -92,6 +92,11 @@ General
   Custom playbooks and role dependencies which use the DebOps roles have to be
   updated to work again.
 
+- In the :ref:`debops.gitlab_runner` role, the example showing how to store the
+  `gitlab_runner__token` in the inventory has been updated. The example now shows
+  how to store the token inside the Gitlab server credentials
+  under :file:`ansible/secret/credentials/`.
+
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
@@ -481,11 +486,6 @@ Changed
 
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
-
-- In the :ref:`debops.gitlab_runner` role, the example showing how to store the
-  `gitlab_runner__token` in the inventory has been updated. The example now shows
-  how to store the token inside the Gitlab server credentials
-  under :file:`ansible/secret/credentials/`.
 
 - In the :ref:`debops.gitlab` role, GitLab version has been updated to
   ``12.2``. This is the last release that supports Ruby 2.5 which is included
