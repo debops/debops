@@ -15,10 +15,12 @@
         tasks_from: 'main_env'
       tags: [ 'role::sysfs', 'role::secret' ]
 
-  roles:
-
-    - role: redis_server/env
+    - import_role:
+        name: 'redis_server'
+        tasks_from: 'main_env'
       tags: [ 'role::redis_server', 'role::ferm' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::sysfs' ]
