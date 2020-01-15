@@ -8,10 +8,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: nullmailer/env
+    - import_role:
+        name: 'nullmailer'
+        tasks_from: 'main_env'
       tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
+
+  roles:
 
     - role: python
       tags: [ 'role::python', 'skip::python', 'role::ldap' ]

@@ -34,6 +34,13 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'nullmailer'
+        tasks_from: 'main_env'
+      tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
+
   roles:
 
     - role: debops_fact
@@ -41,9 +48,6 @@
 
     - role: environment
       tags: [ 'role::environment', 'skip::environment' ]
-
-    - role: nullmailer/env
-      tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
 
     - role: pki/env
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
