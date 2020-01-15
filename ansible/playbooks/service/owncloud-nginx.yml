@@ -30,10 +30,12 @@
         tasks_from: 'main_env'
       tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
 
-  roles:
-
-    - role: owncloud/env
+    - import_role:
+        name: 'owncloud'
+        tasks_from: 'main_env'
       tags: [ 'role::owncloud', 'role::owncloud:env', 'role::nginx' ]
+
+  roles:
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::nginx', 'role::php' ]
