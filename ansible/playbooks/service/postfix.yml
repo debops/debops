@@ -8,10 +8,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: etc_aliases/env
+    - import_role:
+        name: 'etc_aliases'
+        tasks_from: 'main_env'
       tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
+
+  roles:
 
     - role: postfix/env
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
