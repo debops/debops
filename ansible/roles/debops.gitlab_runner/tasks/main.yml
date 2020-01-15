@@ -25,6 +25,12 @@
     state: 'present'
     generate_ssh_key: '{{ gitlab_runner__ssh_generate | bool }}'
     ssh_key_bits: '{{ gitlab_runner__ssh_generate_bits }}'
+    skeleton: null
+
+- name: "Remove '{{ gitlab_runner__home }}/.bash_logout' to avoid conflicts with the shell runner"
+  file:
+    state: 'absent'
+    path: "{{ gitlab_runner__home }}/.bash_logout"
 
 - name: Allow Docker access for gitlab-runner user
   user:
