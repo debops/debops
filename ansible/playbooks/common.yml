@@ -46,6 +46,11 @@
         tasks_from: 'main_env'
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
 
+    - import_role:
+        name: 'sshd'
+        tasks_from: 'main_env'
+      tags: [ 'role::sshd', 'role::ldap' ]
+
   roles:
 
     - role: debops_fact
@@ -53,9 +58,6 @@
 
     - role: environment
       tags: [ 'role::environment', 'skip::environment' ]
-
-    - role: sshd/env
-      tags: [ 'role::sshd', 'role::ldap' ]
 
     - role: secret
       tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]

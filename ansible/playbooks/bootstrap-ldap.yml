@@ -72,10 +72,12 @@
         tasks_from: 'main_env'
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
 
-  roles:
-
-    - role: sshd/env
+    - import_role:
+        name: 'sshd'
+        tasks_from: 'main_env'
       tags: [ 'role::sshd', 'role::ldap' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]
