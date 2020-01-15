@@ -497,8 +497,7 @@ Updates of upstream application versions
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v2.6.3``.
-wipping the screen/terminal clean, thus confusing the runner. Therefore updated the
-  `debops.gitlab_runner` user creation to no add an user skeleton and just an empty home di
+
 Continuous Integration
 ''''''''''''''''''''''
 
