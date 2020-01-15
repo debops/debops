@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The firewall will accept the initial DHCPv6 solicit packets on the multicast
+  port when IPv6 support is enabled.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
