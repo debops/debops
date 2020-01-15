@@ -497,6 +497,18 @@ ferm__default_rules:
     recent_remove: True
     recent_log: False
 
+  - name: 'accept_dhcpv6_client_solicit'
+    type: 'accept'
+    weight_class: 'any-service'
+    comment: 'Initial DHCPv6 Solicit message is sent to multicast'
+    domain: [ 'ip6' ]
+    saddr: [ 'fe80::/10' ]
+    daddr: [ 'ff02::1:2/128' ]
+    protocol: [ 'udp' ]
+    sport: [ 'dhcpv6-client' ]
+    dport: [ 'dhcpv6-server' ]
+    rule_state: '{{ "present" if ("ip6" in ferm__domains) else "absent" }}'
+
   - name: 'accept_dhcpv6_client'
     type: 'accept'
     weight_class: 'any-service'
@@ -508,6 +520,8 @@ ferm__default_rules:
     sport: [ 'dhcpv6-server' ]
     dport: [ 'dhcpv6-client' ]
     rule_state: '{{ "present" if ("ip6" in ferm__domains) else "absent" }}'
+
+
 
     # Avahi is usually installed by default on workstations and laptops where
     # it is useful. To manage Avahi on servers, you should enable the
