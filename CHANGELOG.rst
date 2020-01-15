@@ -435,7 +435,7 @@ Changed
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
-- In the :ref:`debops.gitlab_runner ` role, the example showing how to store the
+- In the :ref:`debops.gitlab_runner` role, the example showing how to store the
   `gitlab_runner__token` in the inventory has been updated. The example now shows
   how to store the token inside the Gitlab server credentials
   under :file:`ansible/secret/credentials/`.

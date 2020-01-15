@@ -42,6 +42,7 @@ To create the path and file to store the Gitlab Token execute this commands in y
 shell (update the *domain* accordingly):
 
 .. code-block:: console
+
   $ mkdir -pv ansible/secret/credentials/code.[put_your_domain_here]/gitlab/runner
   $ editor ansible/secret/credentials/code.[put_your_domain_here]/gitlab/runner/token
 
