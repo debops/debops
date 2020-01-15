@@ -3,14 +3,20 @@
 debops.nfs_server
 =================
 
+The ``debops.nfs_server`` Ansible role can be used to configure a NFS server
+on Debian or Ubuntu hosts.
+
 .. toctree::
    :maxdepth: 2
 
-   introduction
    getting-started
    defaults/main
    defaults-detailed
-   copyright
+
+Copyright
+---------
+
+.. literalinclude:: ../../../../ansible/roles/nfs_server/COPYRIGHT
 
 ..
  Local Variables:

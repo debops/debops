@@ -3,15 +3,21 @@
 debops.apt
 ==========
 
+``debops.apt`` configures and manages APT, the Advanced Package Tool in Debian and
+other derivative distributions.
+
 .. toctree::
    :maxdepth: 2
 
-   introduction
    getting-started
    defaults/main
    defaults-detailed
-   copyright
    upgrade
+
+Copyright
+---------
+
+.. literalinclude:: ../../../../ansible/roles/apt/COPYRIGHT
 
 ..
  Local Variables:

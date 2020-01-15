@@ -4,6 +4,22 @@ Getting started
 .. contents::
    :local:
 
+Ansible Controller requirements
+-------------------------------
+
+Some operations performed by the ``debops.pki`` role are done on the Ansible
+Controller. However, DebOps roles are not designed to manage the Ansible Controller
+host directly, so they cannot automatically install the required software.
+
+Software packages required by the role on the Ansible Controller::
+
+    bash >= 4.3.0
+    openssl >= 1.0.1
+
+.. Note that the role asserts that required dependencies are met. In case you
+   change the required versions here, remember to update them in
+   `../tasks/main.yml` as well.
+
 Initial configuration
 ---------------------
 
