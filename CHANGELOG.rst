@@ -284,6 +284,14 @@ Fixed
   a IPv6 address anymore. We now protect the IPv6 address by surrounding it by
   ``[]``.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Fix issue with GitLab Runner failing test jobs due to the default
+  :file:`~/.bash_logout` script wiping the terminal on logout. The role will
+  skip copying the :file:`/etc/skel/` contents on the new installations;
+  existing script will be removed.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
