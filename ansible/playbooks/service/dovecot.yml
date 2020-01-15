@@ -8,13 +8,17 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'dovecot'
+        tasks_from: 'main_env'
+      tags: [ 'role::dovecot', 'role::secret', 'role::ferm' ]
+
   roles:
 
     - role: postfix/env
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
-
-    - role: dovecot/env
-      tags: [ 'role::dovecot', 'role::secret', 'role::ferm' ]
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
