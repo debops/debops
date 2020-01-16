@@ -9,12 +9,16 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: kibana/env
+    - import_role:
+        name: 'kibana'
+        tasks_from: 'main_env'
       tags: [ 'role::kibana', 'role::secret', 'role::kibana:config' ]
 
-    - role: debops.secret
+  roles:
+
+    - role: secret
       tags: [ 'role::secret', 'role::kibana', 'role::kibana:config' ]
       secret__directories:
         - '{{ kibana__secret__directories }}'

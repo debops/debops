@@ -13,10 +13,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.dnsmasq/env
-      tags: [ 'role::apparmor' ]
+    - import_role:
+        name: 'dnsmasq'
+        tasks_from: 'main_env'
+      tags: [ 'role::dnsmasq', 'role::ferm', 'role::tcpwrappers' ]
+
+  roles:
 
     - role: debops-contrib.apparmor
       tags: [ 'role::apparmor' ]
@@ -24,6 +28,7 @@
 
 
 - name: Configure dnsmasq
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_contrib_service_dnsmasq' ]
   become: True
 
@@ -33,10 +38,10 @@
 
   roles:
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ dnsmasq__ferm__dependent_rules }}'
 
-    - role: debops.dnsmasq
+    - role: dnsmasq
       tags: [ 'role::dnsmasq' ]
