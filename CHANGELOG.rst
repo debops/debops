@@ -33,6 +33,16 @@ Added
 - The GitLab backup :command:`cron` job can be enabled or disabled via
   a dedicated variable.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- On Debian with the :command:`rsyslog` service in unprivileged mode, update
+  permissions of the :file:`/var/log/` directory `reset`__ by the
+  :command:`systemd` unit file on boot to allow writes by the ``syslog`` UNIX
+  group.
+
+  .. __: https://unix.stackexchange.com/questions/377376/
+
 Changed
 ~~~~~~~
 
