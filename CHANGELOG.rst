@@ -100,6 +100,12 @@ General
   Custom playbooks and role dependencies which use the DebOps roles have to be
   updated to work again.
 
+- The :file:`<role_name>/env` "sub-roles" in various DebOps roles have been
+  redesigned for use via the ``import_role`` Ansible module to improve support
+  for Ansible Collections. Existing Ansible playbooks that use such "sub-roles"
+  will have to be updated; check the playbooks included in DebOps for the new
+  usage examples.
+
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
