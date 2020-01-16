@@ -1,6 +1,7 @@
 ---
 
 - name: Security assertions
+  collections: [ 'debops.debops' ]
   hosts: [ 'all' ]
   tags: [ 'play::security-assertions' ]
   gather_facts: False
@@ -26,6 +27,7 @@
 - import_playbook: service/core.yml
 
 - name: Common configuration for all hosts
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_all_hosts', '!debops_no_common' ]
   gather_facts: True
   become: True

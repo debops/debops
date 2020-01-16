@@ -106,6 +106,10 @@ General
   will have to be updated; check the playbooks included in DebOps for the new
   usage examples.
 
+- The ``collections:`` keyword was added in all DebOps playbooks to support
+  usage with roles, modules and other plugins in an Ansible Collection. Due to
+  this, Ansible 2.8+ is required to use DebOps playbooks.
+
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
