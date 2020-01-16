@@ -41,6 +41,16 @@ Added
   :file:`secret/` directory in a predetermined location to avoid exposing it
   via the Ansible inventory. See the role documentation for details.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- On Debian with the :command:`rsyslog` service in unprivileged mode, update
+  permissions of the :file:`/var/log/` directory `reset`__ by the
+  :command:`systemd` unit file on boot to allow writes by the ``syslog`` UNIX
+  group.
+
+  .. __: https://unix.stackexchange.com/questions/377376/
+
 Changed
 ~~~~~~~
 
