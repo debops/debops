@@ -37,7 +37,8 @@ file_list=(
     CHANGELOG.rst
 )
 
-mkdir -p "${workdir}/roles" \
+mkdir -p "${workdir}/playbooks" \
+         "${workdir}/roles" \
          "${workdir}/plugins/callback" \
          "${workdir}/plugins/connection" \
          "${workdir}/plugins/filter" \
@@ -54,6 +55,9 @@ for role in * ; do
 done
 popd > /dev/null
 
+# Copy DebOps playbooks into the collection
+cp -r ansible/playbooks/* "${workdir}/playbooks"
+
 # Copy various Ansible plugins to the directories where collection expects them
 cp ansible/plugins/callback_plugins/*.py "${workdir}/plugins/callback"
 cp ansible/plugins/connection_plugins/*.py "${workdir}/plugins/connection"
@@ -63,6 +67,27 @@ cp ansible/roles/ansible_plugins/library/*.py "${workdir}/plugins/modules"
 
 for filename in "${file_list[@]}" ; do
     cp "${filename}" "${workdir}/"
+done
+
+# Convert Ansible plugin use to Ansible Collection format
+for plugin in task_src template_src parse_kv_config parse_kv_items ; do
+
+    printf "%s " "Searching for '${plugin}' plugin uses"
+    counter=0
+    while read -r in ; do
+        if grep -q "${plugin}" "${in}" ; then
+            file_list+=("${in}")
+            counter=$(( counter + 1 ))
+            counter_state=$(( counter % 5 ))
+            if [ ${counter_state} -eq 0 ] ; then
+                printf "%s" "."
+            fi
+        fi
+    done < <(find "${workdir}/roles" -type f \
+        -not -wholename "./${workdir}/roles/ansible_plugins")
+    printf " %s\\n" "found ${#file_list[@]} '${plugin}' uses, replacing..."
+    sed -i "s/${plugin}/debops.debops.${plugin}/" "${file_list[@]}"
+
 done
 
 # Generate the 'galaxy.yml' file

@@ -1,6 +1,7 @@
 ---
 
 - name: Manage Postfix configuration
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_postconf' ]
   become: True
 
@@ -8,16 +9,23 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: postconf/env
+    - import_role:
+        name: 'postconf'
+        tasks_from: 'main_env'
       tags: [ 'role::postconf', 'role::postfix', 'role::ferm' ]
 
-    - role: postfix/env
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
+      vars:
+        postfix__dependent_mastercf:
+          - role: 'postconf'
+            config: '{{ postconf__postfix__dependent_mastercf }}'
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
-      postfix__dependent_mastercf:
-        - role: 'postconf'
-          config: '{{ postconf__postfix__dependent_mastercf }}'
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]

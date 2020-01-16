@@ -1,6 +1,7 @@
 ---
 
 - name: Manage OpenSSH Server
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_all_hosts', 'debops_service_sshd' ]
   become: True
 
@@ -8,10 +9,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: sshd/env
+    - import_role:
+        name: 'sshd'
+        tasks_from: 'main_env'
       tags: [ 'role::sshd', 'role::ldap' ]
+
+  roles:
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]

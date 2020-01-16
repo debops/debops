@@ -1,6 +1,7 @@
 ---
 
 - name: Manage Redis Sentinel service
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_redis_sentinel' ]
   become: True
 
@@ -8,10 +9,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: redis_sentinel/env
+    - import_role:
+        name: 'redis_sentinel'
+        tasks_from: 'main_env'
       tags: [ 'role::redis_sentinel', 'role::ferm' ]
+
+  roles:
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]

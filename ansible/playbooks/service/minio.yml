@@ -1,6 +1,7 @@
 ---
 
 - name: Manage MinIO service
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_minio' ]
   become: True
 
@@ -8,11 +9,20 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: minio/env
+    - import_role:
+        name: 'minio'
+        tasks_from: 'main_env'
       tags: [ 'role::minio', 'role::etc_services', 'role::ferm',
               'role::keyring', 'role::golang', 'role::nginx' ]
+
+    - import_role:
+        name: 'sysfs'
+        tasks_from: 'main_env'
+      tags: [ 'role::sysfs', 'role::secret' ]
+
+  roles:
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
@@ -22,9 +32,6 @@
         - '{{ golang__keyring__dependent_gpg_keys }}'
       golang__dependent_packages:
         - '{{ minio__golang__dependent_packages }}'
-
-    - role: sysfs/env
-      tags: [ 'role::sysfs', 'role::secret' ]
 
     - role: secret
       tags: [ 'role::secret', 'role::sysfs' ]

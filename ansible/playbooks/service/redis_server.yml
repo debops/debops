@@ -1,6 +1,7 @@
 ---
 
 - name: Manage Redis server
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_redis_server' ]
   become: True
 
@@ -8,13 +9,19 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: redis_server/env
+    - import_role:
+        name: 'sysfs'
+        tasks_from: 'main_env'
+      tags: [ 'role::sysfs', 'role::secret' ]
+
+    - import_role:
+        name: 'redis_server'
+        tasks_from: 'main_env'
       tags: [ 'role::redis_server', 'role::ferm' ]
 
-    - role: sysfs/env
-      tags: [ 'role::sysfs', 'role::secret' ]
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::sysfs' ]

@@ -1,6 +1,7 @@
 ---
 
 - name: Manage network configuration using ifupdown
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_ifupdown' ]
   become: True
 
@@ -8,10 +9,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: ifupdown/env
+    - import_role:
+        name: 'ifupdown'
+        tasks_from: 'main_env'
       tags: [ 'role::ifupdown', 'role::kmod', 'role::ferm', 'role::sysctl' ]
+
+  roles:
 
     - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]

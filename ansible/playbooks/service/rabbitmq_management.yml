@@ -1,6 +1,7 @@
 ---
 
 - name: Configure RabbitMQ Management Console
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_rabbitmq_management' ]
   become: True
 
@@ -8,16 +9,20 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'rabbitmq_server'
+        tasks_from: 'main_env'
+      when: rabbitmq_management__local|bool
+      tags: [ 'role::rabbitmq_server', 'role::secret', 'role::rabbitmq_server:config' ]
+
   roles:
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::nginx' ]
       keyring__dependent_apt_keys:
         - '{{ nginx__keyring__dependent_apt_keys }}'
-
-    - role: rabbitmq_server/env
-      tags: [ 'role::rabbitmq_server', 'role::secret', 'role::rabbitmq_server:config' ]
-      when: rabbitmq_management__local|bool
 
     - role: secret
       tags: [ 'role::secret', 'role::rabbitmq_server', 'role::rabbitmq_server:config' ]

@@ -1,6 +1,7 @@
 ---
 
 - name: Manage /etc/aliases database
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_etc_aliases' ]
   become: True
 
@@ -8,10 +9,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: etc_aliases/env
+    - import_role:
+        name: 'etc_aliases'
+        tasks_from: 'main_env'
       tags: [ 'role::etc_aliases', 'role::secret' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::etc_aliases' ]

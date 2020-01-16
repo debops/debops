@@ -20,17 +20,21 @@
 
 
 - name: Bootstrap Python support on a host
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
   gather_facts: False
   become: True
 
-  roles:
+  tasks:
 
-    - role: python/raw
+    - import_role:
+        name: 'python'
+        tasks_from: 'main_raw'
       tags: [ 'role::python_raw', 'skip::python_raw', 'role::python' ]
 
 
 - name: Bootstrap APT configuration on a host
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
   become: True
 
@@ -51,6 +55,7 @@
 
 
 - name: Bootstrap host for Ansible management with LDAP
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
   become: True
 
@@ -63,13 +68,19 @@
     # Automatically enable LDAP support on new hosts
     ldap__enabled: True
 
-  roles:
+  pre_tasks:
 
-    - role: pki/env
+    - import_role:
+        name: 'pki'
+        tasks_from: 'main_env'
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
 
-    - role: sshd/env
+    - import_role:
+        name: 'sshd'
+        tasks_from: 'main_env'
       tags: [ 'role::sshd', 'role::ldap' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]

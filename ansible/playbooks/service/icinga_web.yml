@@ -1,6 +1,7 @@
 ---
 
 - name: Configure Icinga Web service
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_icinga_web' ]
   become: True
 
@@ -8,19 +9,25 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: keyring
+    - import_role:
+        name: 'keyring'
+      vars:
+        keyring__dependent_apt_keys:
+          - '{{ php__keyring__dependent_apt_keys }}'
+          - '{{ nginx__keyring__dependent_apt_keys }}'
+          - '{{ postgresql__keyring__dependent_apt_keys if (icinga_web__database_type == "postgresql") else [] }}'
+          - '{{ mariadb__keyring__dependent_apt_keys if (icinga_web__database_type == "mariadb") else [] }}'
       tags: [ 'role::keyring', 'skip::keyring',
               'role::php', 'role::nginx', 'role::postgresql', 'role::mariadb' ]
-      keyring__dependent_apt_keys:
-        - '{{ php__keyring__dependent_apt_keys }}'
-        - '{{ nginx__keyring__dependent_apt_keys }}'
-        - '{{ postgresql__keyring__dependent_apt_keys if (icinga_web__database_type == "postgresql") else [] }}'
-        - '{{ mariadb__keyring__dependent_apt_keys if (icinga_web__database_type == "mariadb") else [] }}'
 
-    - role: php/env
-      tags: [ 'role::php', 'role::logrotate' ]
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
+
+  roles:
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]

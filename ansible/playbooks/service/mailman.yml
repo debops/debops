@@ -1,6 +1,7 @@
 ---
 
 - name: Manage Mailman service
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_mailman' ]
   become: True
 
@@ -8,15 +9,19 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
   roles:
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::nginx' ]
       keyring__dependent_apt_keys:
         - '{{ nginx__keyring__dependent_apt_keys }}'
-
-    - role: postfix/env
-      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]

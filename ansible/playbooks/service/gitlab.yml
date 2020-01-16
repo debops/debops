@@ -1,12 +1,20 @@
 ---
 
 - name: Manage GitLab service
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_gitlab' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - import_role:
+        name: 'gitlab'
+        tasks_from: 'main_env'
+      tags: [ 'role::gitlab', 'role::postgresql' ]
 
   roles:
 
@@ -17,9 +25,6 @@
         - '{{ nodejs__keyring__dependent_apt_keys }}'
         - '{{ postgresql__keyring__dependent_apt_keys }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
-
-    - role: gitlab/env
-      tags: [ 'role::gitlab', 'role::postgresql' ]
 
     - role: system_groups
       tags: [ 'role::system_groups', 'skip::system_groups' ]

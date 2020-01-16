@@ -1,6 +1,7 @@
 ---
 
 - name: Manage MinIO Client (mcli) installation
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_mcli' ]
   become: True
 
@@ -8,10 +9,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: mcli/env
+    - import_role:
+        name: 'mcli'
+        tasks_from: 'main_env'
       tags: [ 'role::mcli', 'role::keyring', 'role::golang' ]
+
+  roles:
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]

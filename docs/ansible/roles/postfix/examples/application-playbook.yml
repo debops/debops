@@ -5,6 +5,7 @@
 # configuration options to it.
 
 - name: Manage application
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_application' ]
   become: True
 
@@ -12,16 +13,22 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
     # This role along with 'debops.etc_aliases' can be used to maintain the
     # /etc/aliases database.
     #
-    #- role: etc_aliases/env
-    #  tags: [ 'role::etc_aliases', 'role::secret' ]
+    #- import_role:
+    #    name: 'etc_aliases'
+    #    tasks_from: 'main_env'
+    #  tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
 
-    - role: postfix/env
-      tags: [ 'role::postfix', 'role::secret' ]
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]

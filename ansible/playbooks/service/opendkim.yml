@@ -1,6 +1,7 @@
 ---
 
 - name: Manage OpenDKIM service
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_opendkim' ]
   become: True
 
@@ -8,14 +9,20 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: postfix/env
-      tags: [ 'role::postfix', 'role::secret' ]
-      when: opendkim__postfix_integration|bool
-
-    - role: opendkim/env
+    - import_role:
+        name: 'opendkim'
+        tasks_from: 'main_env'
       tags: [ 'role::opendkim', 'role::secret' ]
+
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
+      when: opendkim__postfix_integration|bool
+      tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::opendkim', 'role::postfix' ]

@@ -1,6 +1,7 @@
 ---
 
 - name: Install and manage ownCloud instances with Apache as webserver
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_owncloud_apache' ]
   become: True
 
@@ -8,27 +9,37 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: keyring
+    - import_role:
+        name: 'keyring'
+      vars:
+        keyring__dependent_apt_keys:
+          - '{{ php__keyring__dependent_apt_keys }}'
+          - '{{ mariadb__keyring__dependent_apt_keys if (owncloud__database == "mariadb") else [] }}'
+          - '{{ postgresql__keyring__dependent_apt_keys if (owncloud__database == "postgresql") else [] }}'
+          - '{{ owncloud__keyring__dependent_apt_keys }}'
+        keyring__dependent_gpg_keys:
+          - '{{ owncloud__keyring__dependent_gpg_keys }}'
       tags: [ 'role::keyring', 'skip::keyring', 'role::php',
               'role::mariadb', 'role::postgresql', 'role::owncloud' ]
-      keyring__dependent_apt_keys:
-        - '{{ php__keyring__dependent_apt_keys }}'
-        - '{{ mariadb__keyring__dependent_apt_keys if (owncloud__database == "mariadb") else [] }}'
-        - '{{ postgresql__keyring__dependent_apt_keys if (owncloud__database == "postgresql") else [] }}'
-        - '{{ owncloud__keyring__dependent_apt_keys }}'
-      keyring__dependent_gpg_keys:
-        - '{{ owncloud__keyring__dependent_gpg_keys }}'
 
-    - role: apache/env
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
+
+    - import_role:
+        name: 'apache'
+        tasks_from: 'main_env'
       tags: [ 'role::apache', 'role::apache:env' ]
 
-    - role: php/env
-      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
-
-    - role: owncloud/env
+    - import_role:
+        name: 'owncloud'
+        tasks_from: 'main_env'
       tags: [ 'role::owncloud', 'role::owncloud:env' ]
+
+  roles:
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]

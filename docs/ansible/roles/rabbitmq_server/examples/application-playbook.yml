@@ -5,6 +5,7 @@
 # configuration options to it.
 
 - name: Manage application
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_rabbitmq_application' ]
   become: True
 
@@ -12,10 +13,14 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: rabbitmq_server/env
+    - import_role:
+        name: 'rabbitmq_server'
+        tasks_from: 'main_env'
       tags: [ 'role::rabbitmq_server', 'role::secret', 'role::rabbitmq_server:config' ]
+
+  roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::rabbitmq_server', 'role::rabbitmq_server:config' ]

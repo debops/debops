@@ -1,6 +1,7 @@
 ---
 
 - name: Install and manage ownCloud instances with Nginx as webserver
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_owncloud', 'debops_service_owncloud_nginx' ]
   become: True
 
@@ -8,26 +9,34 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: keyring
+    - import_role:
+        name: 'keyring'
+      vars:
+        keyring__dependent_apt_keys:
+          - '{{ php__keyring__dependent_apt_keys }}'
+          - '{{ mariadb__keyring__dependent_apt_keys if (owncloud__database == "mariadb") else [] }}'
+          - '{{ postgresql__keyring__dependent_apt_keys if (owncloud__database == "postgresql") else [] }}'
+          - '{{ nginx__keyring__dependent_apt_keys }}'
+          - '{{ owncloud__keyring__dependent_apt_keys }}'
+        keyring__dependent_gpg_keys:
+          - '{{ owncloud__keyring__dependent_gpg_keys }}'
       tags: [ 'role::keyring', 'skip::keyring', 'role::php',
               'role::mariadb', 'role::postgresql',
               'role::nginx', 'role::owncloud' ]
-      keyring__dependent_apt_keys:
-        - '{{ php__keyring__dependent_apt_keys }}'
-        - '{{ mariadb__keyring__dependent_apt_keys if (owncloud__database == "mariadb") else [] }}'
-        - '{{ postgresql__keyring__dependent_apt_keys if (owncloud__database == "postgresql") else [] }}'
-        - '{{ nginx__keyring__dependent_apt_keys }}'
-        - '{{ owncloud__keyring__dependent_apt_keys }}'
-      keyring__dependent_gpg_keys:
-        - '{{ owncloud__keyring__dependent_gpg_keys }}'
 
-    - role: php/env
-      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
 
-    - role: owncloud/env
+    - import_role:
+        name: 'owncloud'
+        tasks_from: 'main_env'
       tags: [ 'role::owncloud', 'role::owncloud:env', 'role::nginx' ]
+
+  roles:
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::nginx', 'role::php' ]
