@@ -122,6 +122,14 @@ Updates of upstream application versions
 - The Nextcloud version installed by the :ref:`debops.owncloud` role is updated
   to Nextcloud 16.0 release.
 
+- The Icinga Director version installed by the :ref:`debops.icinga_web` role
+  has been updated to the v1.7.2 release. Notable changes in `v1.7.x`__ are new
+  German and Japanese translations, side-by-side sync previews, a new
+  background daemon to replace the job runner and new module dependencies.
+  Other Icinga Web modules have also been updated to their latest versions.
+
+  .. __: https://github.com/Icinga/icingaweb2-module-director/releases/tag/v1.7.0
+
 LDAP
 ''''
 
@@ -187,6 +195,13 @@ Mail Transport Agents
   database. Instead, ``virtual_transport`` option will be configured to pass
   mail via LMTP to Dovecot, which then will deliver it to the virtual mailboxes
   in :file:`/var/vmail/` subdirectories.
+
+:ref:`debops.icinga_web` role
+'''''''''''''''''''''''''''''
+
+- The ``icinga2-director-jobs.service`` systemd service has been replaced with
+  ``icinga-director.service``. This service manages a new daemon that is
+  required for Icinga Director v1.7.0+.
 
 :ref:`debops.memcached` role
 ''''''''''''''''''''''''''''
