@@ -8,16 +8,24 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops-contrib.volkszaehler/env
+    - import_role:
+        name: 'volkszaehler'
+        tasks_from: 'main_env'
       tags: [ 'role::volkszaehler', 'role::volkszaehler:env', 'role::mariadb' ]
 
-    - role: apache/env
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
+
+    - import_role:
+        name: 'apache'
+        tasks_from: 'main_env'
       tags: [ 'role::apache', 'role::apache:env' ]
 
-    - role: php/env
-      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
+  roles:
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences' ]
