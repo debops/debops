@@ -708,7 +708,7 @@ owncloud__admin_username: 'admin-{{ lookup("env","USER") }}'
 # .. envvar:: owncloud__admin_password_path
 #
 # Path to database password file.
-owncloud__admin_password_path: '{{ secret + "/credentials/" + ansible_fqdn +
+owncloud__admin_password_path: '{{ secret + "/credentials/" + inventory_hostname +
                                   "/owncloud/admin/" + owncloud__admin_username +
                                   "/password" }}'
 
@@ -1074,7 +1074,7 @@ owncloud__smb_support: False
 #      - command: 'user:add --password-from-env --display-name="Administrator" --group="admin" admin'
 #        env:
 #          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
-#                       ansible_fqdn + '/owncloud/admin/' + 'admin' +
+#                       inventory_hostname + '/owncloud/admin/' + 'admin' +
 #                       '/password length=' + owncloud__password_length) }}"
 #
 #      ## Create an regular user. Note that you probably want to use an existing
@@ -1083,7 +1083,7 @@ owncloud__smb_support: False
 #        when: '{{ owncloud__release is version_compare("8.1", ">=") }}'
 #        env:
 #          OC_PASS: "{{ lookup('password', secret + '/credentials/' +
-#                       ansible_fqdn + '/owncloud/users/' + 'user' +
+#                       inventory_hostname + '/owncloud/users/' + 'user' +
 #                       '/password length=' + owncloud__password_length) }}"
 #
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`__ for details.

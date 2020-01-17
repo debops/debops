@@ -200,7 +200,7 @@ roundcube__database_user: 'roundcube'
 # .. envvar:: roundcube__database_password_path [[[
 #
 # Path to the database password file.
-roundcube__database_password_path: '{{ secret + "/credentials/" + ansible_fqdn
+roundcube__database_password_path: '{{ secret + "/credentials/" + inventory_hostname
                                        + "/roundcube/" + roundcube__database
                                        + "/" + roundcube__database_user + "/password" }}'
 
@@ -731,7 +731,7 @@ roundcube__product_name: '{{ (ansible_local.machine.organization
 #
 # Encryption key for the users imap password which is stored in the session
 # record (and the client cookie if remember password is enabled).
-roundcube__des_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn + "/roundcube/des_key chars=hexdigits length=24") }}'
+roundcube__des_key: '{{ lookup("password", secret + "/credentials/" + inventory_hostname + "/roundcube/des_key chars=hexdigits length=24") }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__username_domain [[[

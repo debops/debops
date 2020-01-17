@@ -147,7 +147,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
 
 - name: Create admin accounts
-  command: 'php adduser.php {{ item }} {{ lookup("password", secret + "/credentials/" + ansible_fqdn
+  command: 'php adduser.php {{ item }} {{ lookup("password", secret + "/credentials/" + inventory_hostname
                                                              + "/librenms/admin/" + item + "/password") }} 10'
   args:
     chdir: '{{ librenms__install_path }}'

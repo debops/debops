@@ -92,7 +92,7 @@
   shell: set -o nounset -o pipefail -o errexit &&
          echo | newlist {{ '' if (mailman__site_list_notify|bool) else '--quiet' }}
                         --language={{ mailman__site_language }} {{ mailman__site_list }} {{ mailman__site_admin }}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/'
+         {{ lookup('password', secret + '/credentials/' + inventory_hostname + '/mailman/list/'
             + mailman__site_domain + '/' + mailman__site_list
             + '/admin/password chars=ascii,numbers,digits,hexdigits length=' + mailman__site_password_length) }}
   args:
@@ -104,14 +104,14 @@
   no_log: True
 
 - name: Set site administrator password
-  command: mmsitepass {{ lookup('password', secret + '/credentials/' + ansible_fqdn
+  command: mmsitepass {{ lookup('password', secret + '/credentials/' + inventory_hostname
                          + '/mailman/site/site_administrator_password chars=ascii,numbers,digits,hexdigits length='
                          + mailman__site_password_length) }}
   when: mailman__register_site_list is changed
   no_log: True
 
 - name: Set list creator password
-  command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + ansible_fqdn
+  command: mmsitepass -c {{ lookup('password', secret + '/credentials/' + inventory_hostname
                             + '/mailman/site/list_creator_password chars=ascii,numbers,digits,hexdigits length='
                             + mailman__site_password_length) }}
   when: mailman__register_site_list is changed
@@ -140,12 +140,12 @@
          {{ item.password }}
          {% else %}
          {% if item.domain|d() and item.domain %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/'
+         {{ lookup('password', secret + '/credentials/' + inventory_hostname + '/mailman/list/'
                                + item.domain + '/' + item.name
                                + '/owner/password chars=ascii,numbers,digits,hexdigits length='
                                + mailman__admin_password_length) }}
          {% else %}
-         {{ lookup('password', secret + '/credentials/' + ansible_fqdn + '/mailman/list/'
+         {{ lookup('password', secret + '/credentials/' + inventory_hostname + '/mailman/list/'
                                + mailman__site_domain + '/' + item.name
                                + '/owner/password chars=ascii,numbers,digits,hexdigits length='
                                + mailman__admin_password_length) }}
