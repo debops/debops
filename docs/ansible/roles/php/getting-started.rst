@@ -11,12 +11,13 @@ The ``debops.php`` role supports management of multiple PHP versions; only one
 PHP version can be managed at a time. By default the role will install and
 configure the PHP version provided with the current OS release.
 
-The role checks for existence of ``php7.0`` and ``php5`` APT packages
-(by default in that order) and based on available versions installs either
-``php7.0-*`` or ``php5-*`` APT packages. If multiple versions of the PHP
-packages are available, the first found one wins. To force an older version in
-case the newer one is installed, you can change the order of the packages used
-for the version detection using the :envvar:`php__version_preference` list.
+The role checks for existence of ``php7.3``, ``php`` and ``php5.6`` APT
+packages (by default in that order) and based on available versions installs
+either ``php7.3-*``, the version preferred by the ``php`` package or
+``php5.6-*`` APT packages. If multiple versions of the PHP packages are
+available, the first found one wins. To force an older version in case the
+newer one is installed, you can change the order of the packages used for the
+version detection using the :envvar:`php__version_preference` list.
 
 To learn how to specify different PHP packages for installation, refer to
 :ref:`php__ref_packages` documentation.
