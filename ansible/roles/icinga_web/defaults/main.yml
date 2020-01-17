@@ -99,7 +99,7 @@ icinga_web__default_modules:
 
   - name: 'toplevelview'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-toplevelview'
-    git_version: 'v0.2.1'
+    git_version: 'v0.3.1'
     state: 'present'
 
   - name: 'monitoring'
@@ -107,18 +107,18 @@ icinga_web__default_modules:
 
   - name: 'businessprocess'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-businessprocess'
-    git_version: 'v2.1.0'
+    git_version: 'v2.2.0'
     state: 'present'
 
   - name: 'graphite'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-graphite'
-    git_version: 'v1.0.1'
+    git_version: 'v1.1.0'
     enabled: False
     state: 'present'
 
   - name: 'director'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-director'
-    git_version: 'v1.4.3'
+    git_version: 'v1.7.2'
     state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
 
   - name: 'generictts'
@@ -128,12 +128,12 @@ icinga_web__default_modules:
 
   - name: 'grafana'
     git_repo: 'https://github.com/Mikesch-mp/icingaweb2-module-grafana'
-    git_version: 'v1.2.5'
+    git_version: 'v1.3.6'
     state: 'present'
 
   - name: 'map'
     git_repo: 'https://github.com/nbuchwitz/icingaweb2-module-map'
-    git_version: 'v1.0.4'
+    git_version: 'v1.1.0'
     state: 'present'
 
   - name: 'pnp'
@@ -149,7 +149,7 @@ icinga_web__default_modules:
 
   - name: 'cube'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-cube'
-    git_version: 'v1.0.1'
+    git_version: 'v1.1.0'
     state: 'present'
 
   - name: 'netboximport'
@@ -158,6 +158,21 @@ icinga_web__default_modules:
     state: 'present'
 
   - name: 'doc'
+    state: 'present'
+
+  - name: 'ipl'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-ipl'
+    git_version: 'v0.4.0'
+    state: 'present'
+
+  - name: 'reactbundle'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-reactbundle'
+    git_version: 'v0.7.0'
+    state: 'present'
+
+  - name: 'incubator'
+    git_repo: 'https://github.com/Icinga/icingaweb2-module-incubator'
+    git_version: 'v0.5.0'
     state: 'present'
 
                                                                    # ]]]
@@ -351,6 +366,37 @@ icinga_web__master_database_port: '{{ ansible_local.icinga_db.dbc_dbport
 #
 # Enable or disable support for Icinga 2 Web Director module.
 icinga_web__director_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_user [[[
+#
+# The username of the Icinga 2 Director Unix account, which will
+# be automatically created by this role.
+icinga_web__director_user: 'icingadirector'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_group [[[
+#
+# The primary group of the Icinga 2 Director Unix account. Defaults to the group created by the `icingaweb2` APT package.
+icinga_web__director_group: '{{ icinga_web__group }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_home [[[
+#
+# The home directory of the Icinga 2 Director Unix account.
+icinga_web__director_home: '/var/local/{{ icinga_web__director_user }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_home_mode [[[
+#
+# Octal permissions on the home directory of the Icinga 2 Director Unix account.
+icinga_web__director_home_mode: '0755'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_shell [[[
+#
+# The shell of the Icinga 2 Director Unix account.
+icinga_web__director_shell: '/usr/sbin/nologin'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__director_api_fqdn [[[

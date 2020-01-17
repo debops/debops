@@ -180,26 +180,55 @@
         icinga_web__director_database_init|bool and
         icinga_web__director_kickstart_enabled|bool
 
-- name: Configure Director job runner service
-  template:
-    src: 'etc/systemd/system/icinga2-director-jobs.service.j2'
-    dest: '/etc/systemd/system/icinga2-director-jobs.service'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  register: icinga_web__register_systemd
-  when: icinga_web__director_enabled|bool and ansible_service_mgr == 'systemd'
+- name: Create Director Unix account
+  user:
+    name: '{{ icinga_web__director_user }}'
+    group: '{{ icinga_web__director_group }}'
+    system: True
+    home: '{{ icinga_web__director_home }}'
+    shell: '{{ icinga_web__director_shell }}'
 
-- name: Enable Director job runner service
+- name: Set permissions on Director home directory
+  file:
+    path: '{{ icinga_web__director_home }}'
+    mode: '{{ icinga_web__director_home_mode }}'
+
+- name: Check if old Director jobs service exists
+  stat:
+    path: '/etc/systemd/system/icinga2-director-jobs.service'
+  register: icinga_web__register_director_jobs_service
+
+- name: Stop and disable old Director jobs service
+  systemd:
+    name: 'icinga2-director-jobs.service'
+    state: 'stopped'
+    enabled: False
+  when: icinga_web__register_director_jobs_service.stat.exists
+
+- name: Remove old Director jobs service
+  file:
+    path: '/etc/systemd/system/icinga2-director-jobs.service'
+    state: 'absent'
+
+- name: Configure Director service
+  template:
+    src: 'etc/systemd/system/icinga-director.service.j2'
+    dest: '/etc/systemd/system/icinga-director.service'
+
+- name: Start and enable Director service
   systemd:
     daemon_reload: True
-    name: 'icinga2-director-jobs.service'
+    name: 'icinga-director.service'
     enabled: True
-    state: '{{ "restarted"
-               if (ansible_local|d() and ansible_local.icinga_web|d() and
-                   (ansible_local.icinga_web.installed|d())|bool)
-               else "started" }}'
-  when: icinga_web__register_systemd is changed
+    state: 'started'
+  when: icinga_web__director_enabled|bool
+
+- name: Stop and disable Director service
+  systemd:
+    name: 'icinga-director.service'
+    enabled: False
+    state: 'stopped'
+  when: icinga_web__director_enabled|bool == False
 
 - name: Make sure that Ansible local facts directory exists
   file:

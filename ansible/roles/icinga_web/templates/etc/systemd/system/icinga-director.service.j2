@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=Icinga Director - Monitoring Configuration
+Documentation=https://icinga.com/docs/director/latest/
+Wants=network.target
+
+[Service]
+EnvironmentFile=-/etc/default/icinga-director
+EnvironmentFile=-/etc/sysconfig/icinga-director
+ExecStart=/usr/bin/icingacli director daemon run
+ExecReload=/bin/kill -HUP ${MAINPID}
+User={{ icinga_web__director_user }}
+SyslogIdentifier=icingadirector
+Type=notify
+
+NotifyAccess=main
+WatchdogSec=10
+RestartSec=30
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
