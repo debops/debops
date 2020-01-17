@@ -30,7 +30,7 @@ done < <(find ansible/roles -type f -not -iwholename "./.git/*" -name "watch" -o
 
 printf " %s\\n" "found ${#file_list[@]} watch files"
 
-printf "%-30s %-20s %-15s %-10s\\n" "Ansible role" "Package" "Current" "Upstream"
+printf "%-20s %-20s %-20s %-10s\\n" "Ansible role" "Package" "Current" "Upstream"
 printf "%$(tput cols)s\\n" | tr ' ' '-'
 
 for watch_file in "${file_list[@]}" ; do
@@ -56,8 +56,8 @@ for watch_file in "${file_list[@]}" ; do
                         | awk '{print $10}' \
                         | sed -e 's/,//' || true)"
     if [ -n "${upstream_version}" ] ; then
-        printf "%-30s %-20s %-15s %-10s\\n" "${watch_role}" "${watch_package}" "${role_version}" "${upstream_version}"
+        printf "%-20s %-20s %-20s %-10s\\n" "${watch_role}" "${watch_package}" "${role_version}" "${upstream_version}"
     else
-        printf "%-30s %-20s %-15s\\n" "${watch_role}" "${watch_package}" "${role_version}"
+        printf "%-20s %-20s %-20s\\n" "${watch_role}" "${watch_package}" "${role_version}"
     fi
 done
