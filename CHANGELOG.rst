@@ -89,6 +89,15 @@ Fixed
   ``root`` e-mail account (but local to the SMTP relay). This fixes an issue
   where e-mail messages were left in the mail queue and filled the disk space.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- Change the default list of preferred PHP versions to include PHP 7.3 as the
+  preferred version. This should ensure that on hosts with the Ondřej Surý PHP
+  repositories enabled, PHP 7.3 will be installed by default even though newer
+  versions are available. This should solve installation issues with many PHP
+  applications that don't have full support for PHP 7.4+ release yet.
+
 
 `debops v1.2.1`_ - 2020-01-09
 -----------------------------
