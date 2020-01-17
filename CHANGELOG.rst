@@ -110,6 +110,12 @@ General
   usage with roles, modules and other plugins in an Ansible Collection. Due to
   this, Ansible 2.8+ is required to use DebOps playbooks.
 
+- The paths to the passwords stored in the :file:`secret/` directory by various
+  roles have been changed to use the ``inventory_hostname`` variable instead of
+  the ``ansible_fqdn`` variable. This change will result in passwords set in
+  various services to be regenerated, which might have an impact on service
+  availability. See :ref:`upgrade_notes` for details.
+
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
