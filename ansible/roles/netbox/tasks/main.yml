@@ -192,7 +192,7 @@
     SUPERUSER_NAME: '{{ netbox__superuser_name }}'
     SUPERUSER_EMAIL: '{{ netbox__superuser_email }}'
     SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
-  shell: set -o nounset -o pipefail -o errexit &&
+  shell: set -o nounset -o pipefail -o errexit
          echo "from django.contrib.auth.models import User;
                User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
          | ./manage.py shell
