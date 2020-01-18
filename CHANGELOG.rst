@@ -21,6 +21,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- Add `EteSync`__ secrets to list of files ignored by the :command:`etckeeper`
+  command.
+
+  .. __: https://www.etesync.com/
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
