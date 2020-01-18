@@ -7,6 +7,7 @@ from json import loads, dumps
 from sys import exit
 import os
 import subprocess
+import textwrap
 
 
 def cmd_exists(cmd):
@@ -27,13 +28,26 @@ output['installed3'] = cmd_exists('python3')
 
 if output['installed2']:
     try:
-        output['version2'] = subprocess.check_output(['python2', '-c', 'from __future__ import print_function; import platform; print(platform.python_version(), end="")'])
+        output['version2'] = subprocess.check_output([
+            'python2', '-c',
+            textwrap.dedent("""
+            from __future__ import print_function
+            import platform
+            print(platform.python_version(), end="")
+            """)
+        ])
     except subprocess.CalledProcessError:
         pass
 
 if output['installed3']:
     try:
-        output['version3'] = subprocess.check_output(['python3', '-c', 'import platform; print(platform.python_version(), end="")'])
+        output['version3'] = subprocess.check_output([
+            'python3', '-c',
+            textwrap.dedent("""
+            import platform
+            print(platform.python_version(), end="")
+            """)
+        ])
     except subprocess.CalledProcessError:
         pass
 
