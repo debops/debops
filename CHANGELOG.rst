@@ -41,6 +41,11 @@ Added
 - The GitLab backup :command:`cron` job can be enabled or disabled via
   a dedicated variable.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Expose Python 2.7 and Python 3.x versions via Ansible local facts.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
