@@ -180,6 +180,20 @@
   tags: [ 'role::resources:archives' ]
 
 # Manage custom files [[[1
+
+- name: Delete files on remote hosts
+  file:
+    path:  '{{ item.dest | d(item.path | d(item.name)) }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ resources__files }}'
+    - '{{ resources__group_files }}'
+    - '{{ resources__host_files }}'
+  when: (resources__enabled|bool and
+         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.state|d('present') == 'absent'))
+  tags: [ 'role::resources:files' ]
+
 - name: Copy files to remote hosts
   copy:
     dest:     '{{ item.dest     | d(item.path | d(item.name)) }}'
@@ -206,19 +220,6 @@
          (item.src|d() or item.content|d()) and
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d('present') != 'absent'))
-  tags: [ 'role::resources:files' ]
-
-- name: Delete files on remote hosts
-  file:
-    path:  '{{ item.dest | d(item.path | d(item.name)) }}'
-    state: 'absent'
-  with_flattened:
-    - '{{ resources__files }}'
-    - '{{ resources__group_files }}'
-    - '{{ resources__host_files }}'
-  when: (resources__enabled|bool and
-         (item.dest|d() or item.path|d() or item.name|d()) and
-         (item.state|d('present') == 'absent'))
   tags: [ 'role::resources:files' ]
 
 # Manage ACLs [[[1
