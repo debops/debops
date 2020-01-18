@@ -38,6 +38,7 @@ etc.
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
 - ``debops-contrib.kodi``
+- ``debops-contrib.volkszaehler``
 
 
 Application environments
@@ -92,7 +93,6 @@ are not accessed directly by end users.
 - ``debops.sks``
 - ``debops.smstools``
 - ``debops-contrib.bitcoind``
-- ``debops-contrib.volkszaehler``
 - ``debops-contrib.x2go_server``
 
 
