@@ -68,7 +68,7 @@ Each entry in the list is a YAML dictionary with specific parameters:
 ``config``
   Required. An YAML dictionary with Docker Registry configuration options. Each
   ``config`` dictionary will be merged recursively in the final configuration
-  file. You have to specify the entire dictionary structure fron the "base" of
+  file. You have to specify the entire dictionary structure from the "base" of
   the configuration file. Refer to the `Docker Registry documentation`__ for
   details about supported parameters and their values.
 
