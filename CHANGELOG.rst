@@ -49,6 +49,11 @@ Added
   :file:`secret/` directory in a predetermined location to avoid exposing it
   via the Ansible inventory. See the role documentation for details.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Expose Python 2.7 and Python 3.x versions via Ansible local facts.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
