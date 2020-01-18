@@ -6,6 +6,7 @@ from __future__ import print_function
 from json import loads, dumps
 from sys import exit
 import os
+import subprocess
 
 
 def cmd_exists(cmd):
@@ -23,5 +24,17 @@ output = loads("""{{ ({'configured': True,
 
 output['installed2'] = cmd_exists('python2')
 output['installed3'] = cmd_exists('python3')
+
+if output['installed2']:
+    try:
+        output['version2'] = subprocess.check_output(['python2', '-c', 'from __future__ import print_function; import platform; print(platform.python_version(), end="")'])
+    except subprocess.CalledProcessError:
+        pass
+
+if output['installed3']:
+    try:
+        output['version3'] = subprocess.check_output(['python3', '-c', 'import platform; print(platform.python_version(), end="")'])
+    except subprocess.CalledProcessError:
+        pass
 
 print(dumps(output, sort_keys=True, indent=4))
