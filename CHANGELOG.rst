@@ -81,6 +81,13 @@ New DebOps roles
 - The role can now use PostgreSQL as a database backend. The database server
   can be managed with the :ref:`debops.postgresql_server` role.
 
+:ref:`debops.docker_registry` role
+''''''''''''''''''''''''''''''''''
+
+- The :envvar:`docker_registry__basic_auth_except_get` variable allows to setup
+  a simple authentication schema without the need to deploy a fully blown
+  Docker Registry Token Authentication.
+
 Changed
 ~~~~~~~
 
