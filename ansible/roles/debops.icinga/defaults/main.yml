@@ -198,9 +198,16 @@ icinga__group_allow: []
 icinga__host_allow: []
 
                                                                    # ]]]
+# .. envvar:: icinga__api_listen [[[
+#
+# IP address on which the Icinga 2 REST API should listen. Defaults to all IPv4
+# and IPv6 addresses.
+icinga__api_listen: '::'
+
+                                                                   # ]]]
 # .. envvar:: icinga__api_port [[[
 #
-# The Icinga 2 REST API port.
+# The TCP port on which the Icinga 2 REST API should listen.
 icinga__api_port: '5665'
 
                                                                    # ]]]
@@ -694,6 +701,9 @@ icinga__default_configuration:
     comment: 'The API listener is used for distributed monitoring setups.'
     value: |
       object ApiListener "api" {
+        bind_host = "{{ icinga__api_listen }}"
+        bind_port = {{ icinga__api_port }}
+
       {% if icinga__pki_enabled|bool %}
         cert_path = "{{ icinga__pki_cert_path }}"
         key_path  = "{{ icinga__pki_key_path }}"

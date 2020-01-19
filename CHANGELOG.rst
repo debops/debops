@@ -49,6 +49,13 @@ Added
   :file:`secret/` directory in a predetermined location to avoid exposing it
   via the Ansible inventory. See the role documentation for details.
 
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- The role now configures the Icinga REST API to also listen on IPv6 addresses.
+  It is possible to change the listen address and port through the
+  ``icinga__api_listen`` and ``icinga__api_port`` variables.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
