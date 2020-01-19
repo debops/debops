@@ -21,6 +21,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.docker_registry` role
+''''''''''''''''''''''''''''''''''
+
+- The :envvar:`docker_registry__basic_auth_except_get` variable allows to setup
+  a simple authentication schema without the need to deploy a fully blown
+  Docker Registry Token Authentication.
+
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''
 
