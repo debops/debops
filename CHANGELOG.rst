@@ -41,6 +41,13 @@ Added
 - The GitLab backup :command:`cron` job can be enabled or disabled via
   a dedicated variable.
 
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- The role now configures the Icinga REST API to also listen on IPv6 addresses.
+  It is possible to change the listen address and port through the
+  ``icinga__api_listen`` and ``icinga__api_port`` variables.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
