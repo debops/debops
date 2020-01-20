@@ -11,8 +11,8 @@ pool {{ ntp__servers }} iburst
 {% endif %}
 
 {% endif %}
-{% if ntp__listen %}
-# Only listen on these interfaces for incomming connections
+{% if ntp__listen and ntp__listen != '*' %}
+# Only listen on these interfaces for incoming connections
 {% for address in ntp__listen %}
 bindaddress {{ address }}
 {% endfor %}
