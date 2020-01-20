@@ -100,6 +100,9 @@ Mail Transport Agents
   controlled by file permissions. This is suggested in the Chrony FAQ "How can
   I make chronyd more secure?".
 
+- Support :envvar:`ntp__listen` value ``*`` for Chrony to make transitioning
+  away from ``ntpd`` easier.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
