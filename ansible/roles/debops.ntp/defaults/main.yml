@@ -80,8 +80,11 @@ ntp__ignore_ntpdate: False
 #
 #   and so on.
 #
-ntp__servers: '{{ ntp__servers_map[ansible_distribution]
-                  | d(ntp__servers_map["default"]) }}'
+ntp__servers: '{{ (ntp__servers_map[ansible_distribution][1]
+                   | d(ntp__servers_map["default"][1]))
+                   if (ntp__daemon in ["chrony"])
+                   else ntp__servers_map[ansible_distribution]
+                        | d(ntp__servers_map["default"]) }}'
 
                                                                    # ]]]
 # .. envvar:: ntp__servers_map [[[
