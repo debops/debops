@@ -84,6 +84,14 @@ Mail Transport Agents
   and does not break mail delivery in subtle ways. See the
   :ref:`debops.nullmailer` role documentation for an example configuration.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Chrony will not listen on udp control port on loopback anymore. Unix sockets
+  are a better way for chronyc to talk to chronyd where local access is
+  controlled by file permissions. This is suggested in the Chrony FAQ "How can
+  I make chronyd more secure?".
+
 :ref:`debops.postconf` role
 '''''''''''''''''''''''''''
 
