@@ -100,8 +100,12 @@ Mail Transport Agents
   controlled by file permissions. This is suggested in the Chrony FAQ "How can
   I make chronyd more secure?".
 
-- Support :envvar:`ntp__listen` value ``*`` for Chrony to make transitioning
-  away from ``ntpd`` easier.
+- Chrony: Support :envvar:`ntp__listen` value ``*`` to make transitioning away
+  from ``ntpd`` easier.
+
+- Chrony: Reduce default NTP servers considered as time source from 4 pool addresses
+  (from which Chrony used 4 NTP servers each – 16 in total) to just 1 pool
+  address – 4 NTP time sources in total.
 
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
