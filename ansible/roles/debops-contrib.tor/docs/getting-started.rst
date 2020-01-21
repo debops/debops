@@ -23,8 +23,8 @@ be added to the ``[debops_service_tor]`` Ansible group in the inventory:
 It is proposed to change some of the nusenu.relayor defaults to better match DebOps Standards.
 The recommended way to do this adaption is to symlink the
 :file:`docs/inventory/debops_service_tor_global_role_vars` file shipped
-with this role in the documentation (:file:`ansible/roles/debops-contrib.tor/docs/inventory/debops_service_tor_global_role_vars`)` into your inventory under
-:file:`ansible/inventory/group_vars/debops_service_tor_global_role_vars`
+with this role in the documentation (:file:`ansible/roles/debops-contrib.tor/docs/inventory/debops_service_tor_global_role_vars.yml`)` into your inventory under
+:file:`ansible/inventory/group_vars/debops_service_tor_global_role_vars.yml`
 and include all hosts from the ``debops_service_tor`` in the
 ``debops_service_tor_global_role_vars`` host group by adding this:
 
@@ -36,7 +36,7 @@ and include all hosts from the ``debops_service_tor`` in the
 into your host inventory which makes the following adjustments to the defaults
 variables of other roles:
 
-.. literalinclude:: inventory/debops_service_tor_global_role_vars
+.. literalinclude:: inventory/debops_service_tor_global_role_vars.yml
    :language: yaml
 
 Example playbook

@@ -19,12 +19,12 @@ To setup and manage the X2Go server, add the hosts to the
     hostname
 
 If you are using debops.sshd_ for configuring your OpenSSH server, you will
-need to adopt some of the defaults of this role to allow X2Go clients to
+need to adapt some of the defaults of this role to allow X2Go clients to
 connect to the X2Go server via SSH.
 The recommended way to do this adaption is to symlink the
-:file:`docs/inventory/debops_service_x2go_server_global_role_vars` file shipped
+:file:`docs/inventory/debops_service_x2go_server_global_role_vars.yml` file shipped
 with this role into your inventory under
-:file:`ansible/inventory/group_vars/debops_service_x2go_server_global_role_vars`
+:file:`ansible/inventory/group_vars/debops_service_x2go_server_global_role_vars.yml`
 and include all hosts from the ``debops_service_x2go_server`` in the
 ``debops_service_x2go_server_global_role_vars`` host group by adding this:
 
@@ -36,7 +36,7 @@ and include all hosts from the ``debops_service_x2go_server`` in the
 into your host inventory which makes the following adjustments to the defaults
 variables of other roles:
 
-.. literalinclude:: inventory/debops_service_x2go_server_global_role_vars
+.. literalinclude:: inventory/debops_service_x2go_server_global_role_vars.yml
    :language: yaml
 
 Example playbook

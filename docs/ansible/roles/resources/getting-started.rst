@@ -66,3 +66,5 @@ Available role tags:
 ``role::resources:delayed_paths``
   Manage delayed paths on the remote hosts.
 
+``role::resources:commands``
+  Run specified commands on the remote hosts.

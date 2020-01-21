@@ -163,7 +163,7 @@ Create a directory owned by root on the mounted filesystem:
 
      - path: '/media/USB_Stick/Private'
 
-Create directory for data sharing btween unprivileged LXC containers. This
+Create directory for data sharing between unprivileged LXC containers. This
 assumes that the unprivileged LXC containers are started by ``root`` and use
 subUID/subGID range defined by the :ref:`debops.root_account` Ansible role:
 
