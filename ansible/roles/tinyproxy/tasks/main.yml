@@ -13,14 +13,15 @@
   notify: [ 'Restart tinyproxy' ]
 
 - name: Divert the original tinyproxy configuration file
-  command: dpkg-divert --quiet --local --divert /etc/tinyproxy/tinyproxy.conf.dpkg-divert --rename /etc/tinyproxy/tinyproxy.conf
-  args:
-    creates: '/etc/tinyproxy/tinyproxy.conf.dpkg-divert'
+  dpkg_divert:
+    path: '{{ tinyproxy__configuration_file }}'
+    state: 'present'
+    delete: True
 
 - name: Generate tinyproxy configuration
   template:
     src: 'etc/tinyproxy/tinyproxy.conf.j2'
-    dest: '/etc/tinyproxy/tinyproxy.conf'
+    dest: '{{ tinyproxy__configuration_file }}'
     mode: '0644'
   notify: [ 'Restart tinyproxy' ]
 
