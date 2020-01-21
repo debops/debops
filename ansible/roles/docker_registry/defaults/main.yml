@@ -207,7 +207,7 @@ docker_registry__max_upload_size: '4G'
                                                                    # ]]]
 # .. envvar:: docker_registry__basic_auth [[[
 #
-# Enable or disable HTTP Basic Authentication in the webserver frontend. if the
+# Enable or disable HTTP Basic Authentication in the webserver frontend. If the
 # GitLab Container Registry integration is enabled, the internal HTTP Basic
 # Auth is disabled.
 docker_registry__basic_auth: '{{ False
@@ -239,6 +239,14 @@ docker_registry__basic_auth_users: '{{ ansible_local.core.admin_users
                                        if (ansible_local|d() and ansible_local.core|d() and
                                            ansible_local.core.admin_users|d())
                                        else [] }}'
+                                                                   # ]]]
+# .. envvar:: docker_registry__basic_auth_except_get [[[
+#
+# If true, GET requests will not require authentication.
+# Even with successful authentication, Docker images can only be pushed to a
+# path that includes the machines hostname thus having some audit chain to the
+# build server that build the image.
+docker_registry__basic_auth_except_get: False
                                                                    # ]]]
                                                                    # ]]]
 # Filesystem storage configuration [[[
@@ -620,7 +628,9 @@ docker_registry__nginx__dependent_servers:
   - name: '{{ docker_registry__fqdn }}'
     filename: 'debops.docker_registry'
     allow: '{{ docker_registry__allow }}'
-    auth_basic: '{{ docker_registry__basic_auth | bool }}'
+    auth_basic: '{{ False
+                    if (docker_registry__basic_auth_except_get|bool)
+                    else (docker_registry__basic_auth | bool) }}'
     auth_basic_realm: '{{ docker_registry__basic_auth_realm }}'
     auth_basic_name: '{{ docker_registry__basic_auth_name }}'
 
@@ -647,6 +657,32 @@ docker_registry__nginx__dependent_servers:
           if ($http_user_agent ~ "^(docker\/1\.(3|4|5(?!\.[0-9]-dev))|Go ).*$" ) {
             return 404;
           }
+
+          {% if docker_registry__basic_auth_except_get|bool %}
+          set $auth_basic "{{ docker_registry__basic_auth_realm }}";
+          if ($request_method ~* "^(GET|HEAD)$") {
+              set $auth_basic "off";
+          }
+          if ($force_authentication) {
+              set $auth_basic "{{ docker_registry__basic_auth_realm }}";
+          }
+          auth_basic $auth_basic;
+          auth_basic_user_file {{ nginx_private_path + "/" + docker_registry__basic_auth_name }};
+
+          set $auth_status "deny";
+          if ($request_uri ~* "^/v2/([^/]+)/") {
+              set $user_path $1;
+          }
+          if ($remote_user = $user_path) {
+              set $auth_status "grant";
+          }
+          if ($request_method ~* "^(GET|HEAD)$") {
+              set $auth_status "grant";
+          }
+          if ($auth_status != "grant") {
+              return 401;
+          }
+          {% endif %}
 
           # If $docker_distribution_api_version is empty, the header will not be added.
           # See the map directive above where this variable is defined.
