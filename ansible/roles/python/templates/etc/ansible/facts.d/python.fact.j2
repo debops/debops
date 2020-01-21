@@ -6,6 +6,7 @@ from __future__ import print_function
 from json import loads, dumps
 from sys import exit
 import os
+import subprocess
 
 
 def cmd_exists(cmd):
@@ -28,5 +29,27 @@ output = loads("""{{ ({'enabled':  python__enabled | bool,
 
 output['installed2'] = cmd_exists('python2')
 output['installed3'] = cmd_exists('python3')
+
+if output['installed2']:
+    try:
+        # If this hack breaks in any way, switch to the platform module.
+        # Check the git log for an implementation.
+        output['version2'] = subprocess.check_output(
+            ['python2', '--version'],
+            stderr=subprocess.STDOUT
+        ).strip().split(' ')[-1]
+    except Exception:
+        pass
+
+if output['installed3']:
+    try:
+        # If this hack breaks in any way, switch to the platform module.
+        # Check the git log for an implementation.
+        output['version3'] = subprocess.check_output(
+            ['python3', '--version'],
+            stderr=subprocess.STDOUT
+        ).strip().split(' ')[-1]
+    except Exception:
+        pass
 
 print(dumps(output, sort_keys=True, indent=4))
