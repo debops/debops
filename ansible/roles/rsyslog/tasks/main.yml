@@ -58,6 +58,15 @@
   changed_when: rsyslog__register_file_permissions.stdout|d()
   notify: [ 'Restart rsyslogd' ]
 
+- name: Create systemd-tmpfiles override
+  copy:
+    dest: '/etc/tmpfiles.d/rsyslog-var-log.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    content: 'z {{ rsyslog__home }} 0775 root {{ rsyslog__group }} -'
+  when: ansible_service_mgr == "systemd" and rsyslog__unprivileged|bool and ansible_distribution == "Debian"
+
 - name: Divert main rsyslog configuration
   command: dpkg-divert --quiet --local --divert /etc/rsyslog.conf.dpkg-divert --rename /etc/rsyslog.conf
   args:
