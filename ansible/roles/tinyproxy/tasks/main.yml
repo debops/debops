@@ -12,6 +12,22 @@
   until: tinyproxy__register_packages is succeeded
   notify: [ 'Restart tinyproxy' ]
 
+- name: Create required UNIX system group
+  group:
+    name: '{{ tinyproxy__group }}'
+    state: 'present'
+    system: True
+
+- name: Make sure that required UNIX account exists
+  user:
+    name: '{{ tinyproxy__user }}'
+    group: '{{ tinyproxy__group }}'
+    home: '{{ tinyproxy__home }}'
+    comment: 'Tinyproxy daemon'
+    shell: '/bin/false'
+    state: 'present'
+    system: True
+
 - name: Divert the original tinyproxy configuration file
   dpkg_divert:
     path: '{{ tinyproxy__configuration_file }}'
