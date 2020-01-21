@@ -112,6 +112,12 @@ Fixed
   ``root`` e-mail account (but local to the SMTP relay). This fixes an issue
   where e-mail messages were left in the mail queue and filled the disk space.
 
+:ref:`debops.yadm` role
+'''''''''''''''''''''''
+
+- Install :command:`yadm` from upstream on Ubuntu Xenial to provide newer
+  version of the script than the one available in OS repositories.
+
 
 `debops v1.0.15`_ - 2020-01-09
 ------------------------------
