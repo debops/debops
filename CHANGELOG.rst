@@ -121,6 +121,12 @@ Fixed
   versions are available. This should solve installation issues with many PHP
   applications that don't have full support for PHP 7.4+ release yet.
 
+:ref:`debops.yadm` role
+'''''''''''''''''''''''
+
+- Install :command:`yadm` from upstream on Ubuntu Xenial to provide newer
+  version of the script than the one available in OS repositories.
+
 
 `debops v1.1.7`_ - 2020-01-09
 -----------------------------
