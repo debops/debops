@@ -108,6 +108,12 @@ Mail Transport Agents
   the LDAP directory. The preference can be changed using the
   :envvar:`postconf__sasl_auth_method` variable.
 
+:ref:`debops.tinyproxy` role
+''''''''''''''''''''''''''''
+
+- Ensure that role creates service POSIX account and group, as well as uses the
+  correct configuration file on older Ubuntu releases.
+
 Fixed
 ~~~~~
 
