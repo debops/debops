@@ -39,9 +39,39 @@ tinyproxy__allow: []
 tinyproxy__port: '8888'
 
                                                                    # ]]]
+                                                                   # ]]]
+# System configuration [[[
+# ------------------------
+
+# .. envvar:: tinyproxy__user [[[
+#
+# Name of the UNIX system account used by Tinyproxy service.
+tinyproxy__user: 'tinyproxy'
+
+                                                                   # ]]]
+# .. envvar:: tinyproxy__group [[[
+#
+# Name of the UNIX system group used by Tinyproxy service.
+tinyproxy__group: 'tinyproxy'
+
+                                                                   # ]]]
+# .. envvar:: tinyproxy__home [[[
+#
+# Absolute path of the Tinyproxy home directory.
+tinyproxy__home: '/run/tinyproxy'
+                                                                   # ]]]
+                                                                   # ]]]
 # Tinyproxy configuration file [[[
 # --------------------------------
 
+# .. envvar:: tinyproxy__configuration_file [[[
+#
+# The full path for the Tinyproxy configuration file
+tinyproxy__configuration_file: '{{ "/etc/tinyproxy.conf"
+                                  if (ansible_distribution_release in
+                                      [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+                                  else "/etc/tinyproxy/tinyproxy.conf" }}'
+                                                                   # ]]]
 # The variables below define the contents of the
 # :file:`/etc/tinyproxy/tinyproxy.conf` configuration file.
 # See :ref:`tinyproxy__ref_configuration` for more details.
@@ -62,8 +92,8 @@ tinyproxy__default_configuration:
           as the root user. Either the user or group name or the UID or GID
           number may be used.
         raw: |
-          User tinyproxy
-          Group tinyproxy
+          User {{ tinyproxy__user }}
+          Group {{ tinyproxy__group }}
         state: 'present'
 
       - name: 'Port'
@@ -466,6 +496,7 @@ tinyproxy__configuration: []
 tinyproxy__combined_configuration: '{{ tinyproxy__default_configuration + tinyproxy__configuration }}'
 
                                                                    # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
@@ -490,4 +521,5 @@ tinyproxy__etc_services__dependent_list:
   - name: 'tinyproxy'
     port: '{{ tinyproxy__port }}'
 
+                                                                   # ]]]
                                                                    # ]]]
