@@ -153,7 +153,7 @@
 
 # Configure cron job for background tasks [[[
 
-- name: Setup cron service
+- name: Setup cron service (nextcloud)
   cron:
     name: 'ownCloud Background Jobs'
     minute: '{{ owncloud__cron_minute }}'
@@ -161,6 +161,17 @@
     job: 'test -x /usr/bin/php && test -e {{ (owncloud__deploy_path + "/cron.php") | quote }}
           && /usr/bin/php -f {{ (owncloud__deploy_path + "/cron.php") | quote }}'
     cron_file: 'owncloud'
+  when: owncloud__variant == "nextcloud"
+
+- name: Setup cron service (owncloud)
+  cron:
+    name: 'ownCloud Background Jobs'
+    minute: '{{ owncloud__cron_minute }}'
+    user: '{{ owncloud__app_user }}'
+    job: 'test -x /usr/bin/php && test -e {{ (owncloud__deploy_path + "/occ") | quote }}
+          && /usr/bin/php {{ (owncloud__deploy_path + "/occ") | quote }} system:cron'
+    cron_file: 'owncloud'
+  when: owncloud__variant == "owncloud"
 
 # .. ]]]
 
