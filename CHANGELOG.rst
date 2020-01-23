@@ -140,7 +140,7 @@ Updates of upstream application versions
   .. __: https://github.com/roundcube/roundcubemail/releases/tag/1.4.1
 
 - The Nextcloud version installed by the :ref:`debops.owncloud` role is updated
-  to Nextcloud 16.0 release.
+  to Nextcloud 16.0 release. The ownCloud version has been updated to 10.3.
 
 - The Icinga Director version installed by the :ref:`debops.icinga_web` role
   has been updated to the v1.7.2 release. Notable changes in `v1.7.x`__ are new
