@@ -9,9 +9,9 @@ try:
     import pypandoc
     README = pypandoc.convert_file('README.md', 'rst')
 except(IOError, ImportError):
-    print('Warning: The "pandoc" support is required to convert '
+    print('Error: The "pandoc" support is required to convert '
           'the README.md to reStructuredText format')
-    README = open('README.md').read()
+    exit(1)
 
 try:
     unicode
@@ -26,6 +26,16 @@ except NameError:
 SCRIPTS = [os.path.join('bin', n) for n in [
     'debops', 'debops-init', 'debops-task',
     'debops-defaults', 'debops-padlock', 'debops-update']]
+
+MANPAGES_5 = []
+if os.path.exists('docs/_build/man'):
+    for manpage in os.listdir('docs/_build/man'):
+        if (os.path.isfile(os.path.join('docs/_build/man', manpage)) and
+                manpage.endswith('.5')):
+            MANPAGES_5.append(os.path.join('docs/_build/man', manpage))
+else:
+    print('Error: manual pages not built, aborting')
+    exit(1)
 
 # Retrieve the project version from 'git describe' command and store it in the
 # VERSION file, needed for correct installation of the Python package
@@ -68,6 +78,7 @@ try:
             },
 
         scripts=SCRIPTS,
+        data_files=[('share/man/man5', MANPAGES_5)],
         packages=find_packages(exclude=['tests']),
         include_package_data=True,
 
