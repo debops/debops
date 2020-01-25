@@ -311,6 +311,22 @@ Mail Transport Agents
   A :envvar:`set of default plugins <roundcube__default_plugins>` has been
   defined to make the default Roundcube installation a bit more user-friendly.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Chrony will not listen on udp control port on loopback anymore. Unix sockets
+  are a better way for chronyc to talk to chronyd where local access is
+  controlled by file permissions. This is suggested in the Chrony FAQ "How can
+  I make chronyd more secure?".
+
+- Chrony: Support :envvar:`ntp__listen` value ``*`` to make transitioning away
+  from ``ntpd`` easier.
+
+- Chrony: Reduce default NTP servers considered as time source from 4 pool addresses
+  (from which Chrony used 4 NTP servers each – 16 in total) to just 1 pool
+  address – 4 NTP time sources in total.
+
+
 Removed
 ~~~~~~~
 

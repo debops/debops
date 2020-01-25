@@ -1,5 +1,5 @@
 # Welcome to the chrony configuration file. See chrony.conf(5) for more
-# information about usuable directives.
+# information about usable directives.
 {% if ntp__servers is defined and ntp__servers %}
 # NTP servers to synchronize with
 {% if ntp__servers is string %}
@@ -11,8 +11,8 @@ pool {{ ntp__servers }} iburst
 {% endif %}
 
 {% endif %}
-{% if ntp__listen %}
-# Only listen on these interfaces for incomming connections
+{% if ntp__listen and ntp__listen != '*' %}
+# Only listen on these interfaces for incoming connections
 {% for address in ntp__listen %}
 bindaddress {{ address }}
 {% endfor %}
@@ -20,6 +20,9 @@ bindaddress {{ address }}
 {% endif %}
 # Only listen on localhost for command connections
 bindcmdaddress 127.0.0.1
+
+# Do not listen on udp control port on loopback. chronyc can still talk to chronyd via Unix sockets.
+cmdport 0
 
 {% if ntp__allow == False %}
 # Allow all hosts to connect to the server
