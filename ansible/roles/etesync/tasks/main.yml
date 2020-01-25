@@ -97,6 +97,16 @@
   when: etesync__register_source is changed
 
 # Configure EteSync server [[[1
+- name: Exclude secret files from etckeeper
+  copy:
+    content: |
+      secret.txt
+    dest: '{{ etesync__etc + "/.gitignore" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  tags: [ 'role::etesync:config' ]
+
 - name: Generate EteSync configuration
   template:
     src: 'etc/etesync-server/etesync-server.ini.j2'
