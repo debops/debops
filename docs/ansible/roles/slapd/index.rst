@@ -24,14 +24,20 @@ instances and integrates with other DebOps roles like :ref:`debops.pki` and
    ldap-acl
    backup-restore
    guide-multi-master-replication
-   defaults/main
    defaults-detailed
-   ldap-dit
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/slapd/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/slapd/COPYRIGHT
 
 ..
  Local Variables:

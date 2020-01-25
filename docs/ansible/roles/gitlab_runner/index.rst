@@ -18,12 +18,18 @@ registration token is supplied.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/gitlab_runner/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/gitlab_runner/COPYRIGHT
 
 ..
  Local Variables:

@@ -3,9 +3,11 @@
 Docker virtualenv support
 =========================
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 
 Python and Docker relationship

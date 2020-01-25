@@ -13,9 +13,11 @@ Each list entry is a YAML dictionary, which can be written in a simple or
 complex form. Entries that control OpenDKIM parameters of the same name will be
 combined together in order of appearance.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 
 Simple form of the configuration parameters

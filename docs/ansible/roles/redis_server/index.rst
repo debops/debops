@@ -15,15 +15,20 @@ Redis configuration files at runtime.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    config-pipeline
 
+.. only:: html
 
-Copyright
----------
+   .. toctree::
+      :maxdepth: 2
 
-.. literalinclude:: ../../../../ansible/roles/redis_server/COPYRIGHT
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/redis_server/COPYRIGHT
 
 ..
  Local Variables:

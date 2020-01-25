@@ -15,12 +15,18 @@ and more.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/snmpd/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/snmpd/COPYRIGHT
 
 ..
  Local Variables:

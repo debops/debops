@@ -3,8 +3,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 .. include:: ../../../includes/global.rst
 .. include:: includes/role.rst

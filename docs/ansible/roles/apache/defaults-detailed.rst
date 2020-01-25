@@ -16,9 +16,11 @@ them.
    there is something missing you are encouraged to cross-check with
    :ref:`debops.nginx` docs and enhance the documentation.
 
-.. contents::
-   :local:
-   :depth: 2
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 2
 
 
 .. _apache__ref_modules:

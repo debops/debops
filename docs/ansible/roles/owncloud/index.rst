@@ -30,17 +30,23 @@ Features
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    external-users
    external-storage
-   ldap-dit
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/owncloud/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/owncloud/COPYRIGHT
 
 ..
  Local Variables:

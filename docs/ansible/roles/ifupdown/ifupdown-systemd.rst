@@ -1,8 +1,10 @@
 Enhancements to ifupdown in systemd
 ===================================
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 ifup-all-auto.service
 ---------------------

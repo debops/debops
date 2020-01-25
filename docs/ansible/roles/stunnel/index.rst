@@ -15,15 +15,21 @@ create tunnels between two or more hosts, using Ansible inventory groups.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    guides
    troubleshooting
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/stunnel/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/stunnel/COPYRIGHT
 
 ..
  Local Variables:

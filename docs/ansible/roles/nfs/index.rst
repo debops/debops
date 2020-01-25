@@ -10,13 +10,19 @@ Debian/Ubuntu hosts.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/nfs/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/nfs/COPYRIGHT
 
 ..
  Local Variables:

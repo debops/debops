@@ -20,14 +20,20 @@ Postfix can be automatically configured to sign and verify e-mail messages.
    :maxdepth: 3
 
    getting-started
-   defaults/main
    defaults-detailed
    defaults-config
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/opendkim/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/opendkim/COPYRIGHT
 
 ..
  Local Variables:

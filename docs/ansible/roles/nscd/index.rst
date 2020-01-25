@@ -18,13 +18,19 @@ its drop-in replacement, :command:`unscd`, created by the BusyBox project. The
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/nscd/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/nscd/COPYRIGHT
 
 ..
  Local Variables:

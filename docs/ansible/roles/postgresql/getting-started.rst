@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 ``debops.postgresql`` role is only the "client" part. To have working
 a PostgreSQL installation, you also need to setup ``debops.postgresql_server``

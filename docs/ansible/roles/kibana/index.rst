@@ -17,14 +17,20 @@ control over their configuration options in the Kibana configuration file.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    dependency
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/kibana/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/kibana/COPYRIGHT
 
 ..
  Local Variables:

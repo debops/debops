@@ -5,9 +5,11 @@ Some of ``debops.dovecot`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 .. _dovecot_imap_config_map:
 
@@ -101,7 +103,7 @@ Examples
 Possible configuration options for enabling IMAP:
 
 +---------------------------------+-----------------------+----------------------------+------------------+
-| Service                         | ``dovecot_protocols`` | ``dovecot_imap_listeners`` | ``dovecot_pki``  +
+| Service                         | ``dovecot_protocols`` | ``dovecot_imap_listeners`` | ``dovecot_pki``  |
 +=================================+=======================+============================+==================+
 | Port 143 (plain)                | ``[ 'imap' ]``        | ``[ 'imap' ]``             | ``False``        |
 +---------------------------------+-----------------------+----------------------------+------------------+

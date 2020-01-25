@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 .. _etckeeper__ref_python3only:
 

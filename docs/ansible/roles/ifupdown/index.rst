@@ -21,16 +21,22 @@ as a dependency of another role, to provide network configuration as needed.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    ifupdown-systemd
    custom-hooks
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/ifupdown/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/ifupdown/COPYRIGHT
 
 ..
  Local Variables:

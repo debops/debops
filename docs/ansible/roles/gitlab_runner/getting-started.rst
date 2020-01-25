@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 .. _gitlab_runner__token:
 

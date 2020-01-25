@@ -6,8 +6,10 @@ Elasticsearch clustering
 The Elasticsearch service can be deployed either on a single host in
 a "standalone" mode, or in a cluster of multiple hosts. The cluster mode will be enabled automatically after a few important variables and inventory groups are configured.
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Standalone mode vs cluster mode

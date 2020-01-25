@@ -12,14 +12,20 @@ written in PHP.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    guides
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/roundcube/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/roundcube/COPYRIGHT
 
 ..
  Local Variables:

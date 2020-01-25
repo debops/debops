@@ -16,13 +16,19 @@ volumes, automatically create filesystems on them and mount them as needed.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/lvm/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/lvm/COPYRIGHT
 
 ..
  Local Variables:

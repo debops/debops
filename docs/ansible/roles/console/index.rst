@@ -10,12 +10,18 @@ Linux console and CLI environment.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/console/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/console/COPYRIGHT
 
 ..
  Local Variables:

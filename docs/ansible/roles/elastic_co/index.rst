@@ -15,12 +15,18 @@ installed software is performed by other Ansible roles.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/elastic_co/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/elastic_co/COPYRIGHT
 
 ..
  Local Variables:

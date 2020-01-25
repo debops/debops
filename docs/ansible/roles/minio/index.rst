@@ -26,14 +26,20 @@ It can be installed on a host using the :ref:`debops.mcli` Ansible role.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    deployment-guide
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/minio/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/minio/COPYRIGHT
 
 ..
  Local Variables:

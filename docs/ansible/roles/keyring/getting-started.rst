@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 SKS Keyserver pool used by default

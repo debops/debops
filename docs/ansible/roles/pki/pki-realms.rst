@@ -10,8 +10,10 @@ applications to access X.509 certificates and private keys. The management of
 the keys and certificates is moved outside of the application into a fixed
 directory and file structure, which other applications can access.
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 PKI realm overview
 ------------------

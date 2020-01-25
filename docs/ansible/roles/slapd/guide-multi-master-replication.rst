@@ -11,8 +11,10 @@ database contents across multiple sites.
 
 .. __: https://www.openldap.org/doc/admin24/replication.html#N-Way%20Multi-Master%20replication
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Introduction

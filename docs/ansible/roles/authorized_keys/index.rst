@@ -12,14 +12,20 @@ for example by using the :ref:`debops.sshd` Ansible role.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/authorized_keys/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/authorized_keys/COPYRIGHT
 
 ..
  Local Variables:

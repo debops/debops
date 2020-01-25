@@ -36,13 +36,19 @@ file through them.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/resolvconf/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/resolvconf/COPYRIGHT
 
 ..
  Local Variables:

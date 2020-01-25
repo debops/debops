@@ -5,9 +5,11 @@ Some of ``debops.redis_server`` default variables have more extensive configurat
 than simple strings or lists, here you can find documentation and examples for
 them.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 
 .. _redis_server__ref_instances:

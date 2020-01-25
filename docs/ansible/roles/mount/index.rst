@@ -16,13 +16,19 @@ configure the NFS client service.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/mount/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/mount/COPYRIGHT
 
 ..
  Local Variables:

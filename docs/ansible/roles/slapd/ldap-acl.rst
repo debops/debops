@@ -19,8 +19,10 @@ You can use the :file:`ansible/playbooks/ldap/init-directory.yml` Ansible
 playbook to initialize the new LDAP directory with the objects designed with
 the default ACL in mind. See :ref:`ldap__ref_ldap_init` for more details.
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Default security policy

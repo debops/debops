@@ -6,9 +6,11 @@ Default variable details
 .. include:: ../../../includes/global.rst
 .. include:: includes/role.rst
 
-.. contents::
-   :local:
-   :depth: 2
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 2
 
 
 Some of ``debops.cryptsetup`` variables have more extensive configuration.

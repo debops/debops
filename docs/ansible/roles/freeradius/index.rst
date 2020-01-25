@@ -14,14 +14,20 @@ FreeRADIUS server on a Debian/Ubuntu hosts.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    example-eduroam
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/freeradius/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/freeradius/COPYRIGHT
 
 ..
  Local Variables:

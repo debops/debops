@@ -13,10 +13,12 @@ another role.
 
    getting-started
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/ansible_plugins/COPYRIGHT
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/ansible_plugins/COPYRIGHT
 
 ..
  Local Variables:

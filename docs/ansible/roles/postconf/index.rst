@@ -12,12 +12,18 @@ tables.
    :maxdepth: 3
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/postconf/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/postconf/COPYRIGHT
 
 ..
  Local Variables:

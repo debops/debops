@@ -10,14 +10,20 @@ other derivative distributions.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/apt/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/apt/COPYRIGHT
 
 ..
  Local Variables:

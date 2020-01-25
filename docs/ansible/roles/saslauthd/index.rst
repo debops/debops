@@ -20,14 +20,20 @@ LDAP directory in other services.
    :maxdepth: 3
 
    getting-started
-   defaults/main
    defaults-detailed
-   ldap-dit
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/saslauthd/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/saslauthd/COPYRIGHT
 
 ..
  Local Variables:

@@ -14,8 +14,10 @@ configuration `in the Zytrax LDAP guide`__.
 
 .. __: http://www.zytrax.com/books/ldap/ch6/slapd-config.html#use-schemas
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 General notes

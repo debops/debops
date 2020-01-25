@@ -14,14 +14,20 @@ Refer to :ref:`debops.sysctl` for paging and swapping related kernel settings.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/swapfile/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/swapfile/COPYRIGHT
 
 ..
  Local Variables:

@@ -5,8 +5,10 @@ Getting started
 
 .. include:: ../../../includes/global.rst
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 Client configuration
 --------------------

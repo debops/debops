@@ -13,12 +13,18 @@ structures, using ``ini_file`` Ansible module.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/debops_fact/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/debops_fact/COPYRIGHT
 
 ..
  Local Variables:

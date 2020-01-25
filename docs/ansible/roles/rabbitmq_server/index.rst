@@ -12,14 +12,20 @@ Debian/Ubuntu hosts.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    dependency
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/rabbitmq_server/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/rabbitmq_server/COPYRIGHT
 
 ..
  Local Variables:

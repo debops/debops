@@ -3,8 +3,10 @@
 Deployment guide
 ================
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Deployment design

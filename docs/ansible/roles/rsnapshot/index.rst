@@ -21,14 +21,20 @@ remote hosts over SSH.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    guides
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/rsnapshot/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/rsnapshot/COPYRIGHT
 
 ..
  Local Variables:

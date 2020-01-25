@@ -5,8 +5,10 @@ Ansible integration
 
 .. include:: ../../../includes/global.rst
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Support for other Ansible roles

@@ -21,13 +21,19 @@ Other services and templates might be provided in the future.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/docker_gen/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/docker_gen/COPYRIGHT
 
 ..
  Local Variables:

@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 OpenLDAP features enabled by default
@@ -16,9 +18,11 @@ should review the configuration before doing so - the OpenLDAP server usually
 refuses the incorrect configuration outright, which should not affect the
 existing installation, but that's not a 100% guarantee.
 
-- :ref:`slapd__ref_overlays`
-- :ref:`slapd__ref_ldap_schemas`
-- :ref:`slapd__ref_acl`
+.. only:: html
+
+   - :ref:`slapd__ref_overlays`
+   - :ref:`slapd__ref_ldap_schemas`
+   - :ref:`slapd__ref_acl`
 
 
 Access to service denied by default

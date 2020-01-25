@@ -15,13 +15,19 @@ is run with or without different sets of role tags.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    guides
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/core/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/core/COPYRIGHT
 
 ..
  Local Variables:

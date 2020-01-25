@@ -17,13 +17,19 @@ Postfix directly on its own.
    :maxdepth: 3
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/postscreen/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/postscreen/COPYRIGHT
 
 ..
  Local Variables:

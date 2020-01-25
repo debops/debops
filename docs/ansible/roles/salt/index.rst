@@ -12,12 +12,18 @@ template scripts, etc. and contact the Salt Master service over DNS.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/salt/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/salt/COPYRIGHT
 
 ..
  Local Variables:

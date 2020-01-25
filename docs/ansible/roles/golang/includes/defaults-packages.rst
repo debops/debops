@@ -421,7 +421,3 @@ dictionary defines a Go package installation using specific parameters:
     subsequent application role(s) define a handler to use. In such case, this
     functionality can be used to restart a service after the binary is
     upgraded.
-
-
-Default variables
------------------

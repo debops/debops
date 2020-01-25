@@ -7,9 +7,11 @@ some of ``debops.postscreen`` default variables have more extensive configuratio
 than simple strings or lists, here you can find documentation and examples for
 them.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 
 .. _postscreen__ref_access:

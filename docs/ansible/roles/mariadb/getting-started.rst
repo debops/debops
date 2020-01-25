@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 ``debops.mariadb`` role is only the "client" part. To have working a
 MariaDB/MySQL installation, you also need to setup ``debops.mariadb_server``

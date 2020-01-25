@@ -33,14 +33,20 @@ Features
 
    getting-started
    guides
-   defaults/main
    defaults-detailed
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/cryptsetup/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/cryptsetup/COPYRIGHT
 
 ..
  Local Variables:

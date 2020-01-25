@@ -14,13 +14,19 @@ contents of the :file:`/etc/issue` file displayed on the `system console`__.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/machine/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/machine/COPYRIGHT
 
 .. rubric:: Footnotes
 

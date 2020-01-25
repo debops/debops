@@ -20,14 +20,19 @@ Ansible facts are gathered.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
+.. only:: html
 
-Copyright
----------
+   .. toctree::
+      :maxdepth: 2
 
-.. literalinclude:: ../../../../ansible/roles/etckeeper/COPYRIGHT
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/etckeeper/COPYRIGHT
 
 ..
  Local Variables:

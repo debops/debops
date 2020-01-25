@@ -13,14 +13,20 @@ backends.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    unprivileged-tls
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/rsyslog/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/rsyslog/COPYRIGHT
 
 ..
  Local Variables:

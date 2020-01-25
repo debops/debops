@@ -11,13 +11,19 @@ limit connections to daemons that utilize the ``libwrap`` library.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/tcpwrappers/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/tcpwrappers/COPYRIGHT
 
 ..
  Local Variables:

@@ -17,13 +17,19 @@ To configure a host to provide the :program:`libvirtd` service you can use the
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/libvirt/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/libvirt/COPYRIGHT
 
 ..
  Local Variables:

@@ -17,9 +17,11 @@ combined together in order of appearance. Since most of the Unbound
 configuration options use dashes in their names, you might want to quote the
 YAML dictionary keys to avoid issues with Jinja templating.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 
 Simple form of the configuration parameters

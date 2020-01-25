@@ -11,13 +11,19 @@ allow easier configuration maintenance.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/libvirtd_qemu/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/libvirtd_qemu/COPYRIGHT
 
 ..
  Local Variables:

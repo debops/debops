@@ -12,9 +12,11 @@ variable, which is passed to the configuration template.
 Each list entry is a YAML dictionary. Entries that control Postfix parameters
 of the same name will be combined together in order of appearance.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 
 Configuration variable format

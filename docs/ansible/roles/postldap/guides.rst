@@ -7,8 +7,10 @@ Here you can find a few guides that can help you configure more advanced
 Postfix features. Some of these can and are implemented as separate Ansible
 roles, here you can see the configuration specific to ``debops.postfix`` role.
 
-.. contents:: Sections
-   :local:
+.. only:: html
+
+   .. contents:: Sections
+      :local:
 
 .. _postldap__ref_guides_virtual_user_mail:
 

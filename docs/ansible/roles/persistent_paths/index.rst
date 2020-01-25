@@ -33,14 +33,20 @@ using the Ansible inventory.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    guides
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/persistent_paths/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/persistent_paths/COPYRIGHT
 
 ..
  Local Variables:

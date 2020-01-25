@@ -12,14 +12,20 @@ package will be installed.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
-   ldap-dit
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/sudo/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/sudo/COPYRIGHT
 
 ..
  Local Variables:

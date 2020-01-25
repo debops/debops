@@ -14,7 +14,6 @@ for other Ansible roles when it's used as a role dependency.
    :maxdepth: 3
 
    getting-started
-   defaults/main
    defaults-detailed
    defaults-maincf
    defaults-mastercf
@@ -22,10 +21,17 @@ for other Ansible roles when it's used as a role dependency.
    guides
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/postfix/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/postfix/COPYRIGHT
 
 ..
  Local Variables:

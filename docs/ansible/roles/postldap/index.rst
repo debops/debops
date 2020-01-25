@@ -11,14 +11,20 @@ It allows configuration of Postfix using Ansible inventory variables.
    :maxdepth: 3
 
    getting-started
-   defaults/main
    guides
-   ldap-dit
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/postldap/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/postldap/COPYRIGHT
 
 ..
  Local Variables:

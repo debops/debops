@@ -20,14 +20,20 @@ From Debian Stretch upwards, the role configures a custom set of
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    virtualenv-support
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/gunicorn/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/gunicorn/COPYRIGHT
 
 ..
  Local Variables:

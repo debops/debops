@@ -18,14 +18,20 @@ disable itself to allow easy switch to different SMTP servers.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
-   ldap-dit
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/nullmailer/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/nullmailer/COPYRIGHT
 
 ..
  Local Variables:
