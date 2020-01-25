@@ -7,7 +7,7 @@ Deploys a `EteSync`_ server. `EteSync`_ is a cross-platform project to provide
 secure, end-to-end encrypted, and privacy respecting sync for your contacts,
 calendars and tasks.
 
-.. _Docker: https://www.etesync.com/
+.. _EteSync: https://www.etesync.com/
 
 .. toctree::
    :maxdepth: 2
