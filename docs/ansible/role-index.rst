@@ -30,6 +30,7 @@ etc.
 - :ref:`debops.mailman`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
+- :ref:`debops.etesync`
 - :ref:`debops.prosody`
 - :ref:`debops.roundcube`
 - :ref:`debops.rstudio_server`

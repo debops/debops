@@ -27,6 +27,8 @@ New DebOps roles
 - The :ref:`debops.lxd` role brings support for LXD on Debian hosts by building
   the Go binaries from source, without Snap installation.
 
+- The :ref:`debops.etesync` role allows to setup a EteSync server.
+
 General
 '''''''
 
