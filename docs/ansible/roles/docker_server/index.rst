@@ -17,14 +17,20 @@ distribution repositories, as well as from the upstream repository.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    docker-virtualenv
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/docker_server/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/docker_server/COPYRIGHT
 
 ..
  Local Variables:

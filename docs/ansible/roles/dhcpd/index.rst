@@ -14,13 +14,19 @@ relay DHCP/BOOTP messages to your DHCP server.
    :maxdepth: 3
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/dhcpd/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/dhcpd/COPYRIGHT
 
 ..
  Local Variables:

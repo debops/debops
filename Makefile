@@ -32,6 +32,10 @@ docker: test-docker-build
 docs:           ## Build Sphinx documentation
 docs: test-docs
 
+.PHONY: man
+man:            ## Build manual pages from Sphinx documentation
+man: test-man
+
 .PHONY: links
 links:          ## Check external links in documentation
 links: check-links
@@ -62,11 +66,11 @@ yaml: test-yaml
 
 .PHONY: sdist
 sdist:          ## Create Python sdist package
-sdist: clean-sdist
+sdist: clean-sdist man
 	@python3 setup.py sdist
 
 .PHONY: sdist-quiet
-sdist-quiet: clean-sdist
+sdist-quiet: clean-sdist man
 	@python3 setup.py --quiet sdist
 
 .PHONY: sdist-sign
@@ -84,11 +88,11 @@ clean-sdist:
 
 .PHONY: wheel
 wheel:          ## Create Python wheel package
-wheel: clean-wheel
+wheel: clean-wheel man
 	@python3 setup.py bdist_wheel
 
 .PHONY: wheel-quiet
-wheel-quiet: clean-wheel
+wheel-quiet: clean-wheel man
 	@python3 setup.py --quiet bdist_wheel
 
 .PHONY: wheel-sign
@@ -105,7 +109,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-playbook-syntax test-yaml test-shell
+test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-yaml test-shell
 
 .PHONY: test-pep8
 test-pep8:
@@ -134,6 +138,11 @@ check-versions:
 test-docs:
 	@printf "%s\n" "Testing HTML documentation generation..."
 	@cd docs && sphinx-build -n -W -b html -d _build/doctrees . _build/html
+
+.PHONY: test-man
+test-man:
+	@printf "%s\n" "Testing man documentation generation..."
+	@cd docs && sphinx-build -n -W -b man -d _build/doctrees . _build/man
 
 .PHONY: check-links
 check-links:

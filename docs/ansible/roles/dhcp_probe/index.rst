@@ -18,13 +18,19 @@ system administrator with notification on newly detected rogue DHCP servers.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/dhcp_probe/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/dhcp_probe/COPYRIGHT
 
 ..
  Local Variables:

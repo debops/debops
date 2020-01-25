@@ -11,8 +11,10 @@ a two-dimesional surface.  There are different ways of representing
 a N-dimesional objects on two-dimesional surfaces, unfortunately this cannot be
 done without compromise.
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 POSIX attributes

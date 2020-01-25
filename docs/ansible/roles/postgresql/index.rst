@@ -16,13 +16,19 @@ To manage the PostgreSQL server itself, you will need to use
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/postgresql/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/postgresql/COPYRIGHT
 
 ..
  Local Variables:

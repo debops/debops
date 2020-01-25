@@ -13,12 +13,18 @@ processes that don't belong to a particular user account.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/proc_hidepid/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/proc_hidepid/COPYRIGHT
 
 ..
  Local Variables:

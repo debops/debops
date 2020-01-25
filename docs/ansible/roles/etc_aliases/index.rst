@@ -14,14 +14,20 @@ Ansible inventory variables, or as a dependency of another Ansible role.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    dependency
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/etc_aliases/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/etc_aliases/COPYRIGHT
 
 ..
  Local Variables:

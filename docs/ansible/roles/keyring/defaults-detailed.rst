@@ -5,9 +5,11 @@ Some of ``debops.keyring`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 
 .. _keyring__ref_dependent_apt_keys:

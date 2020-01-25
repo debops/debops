@@ -14,15 +14,21 @@ as a dependency by other roles to setup firewall rules for other services.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    rules
    guides
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/ferm/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/ferm/COPYRIGHT
 
 ..
  Local Variables:

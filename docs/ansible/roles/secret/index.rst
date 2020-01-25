@@ -38,13 +38,19 @@ Some usage examples of this role in `DebOps`__ include:
    :maxdepth: 2
 
    getting-started
-   defaults/main
    guides
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/secret/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/secret/COPYRIGHT
 
 ..
  Local Variables:

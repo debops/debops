@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 OpenNTPD, ifupdown and systemd integration
 ------------------------------------------

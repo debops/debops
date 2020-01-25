@@ -9,8 +9,10 @@ to manage contents of the :file:`/etc/postfix/main.cf` and
 options from multiple roles can be merged together and included in the Postfix
 configuration, or removed conditionally.
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Dependent role variable

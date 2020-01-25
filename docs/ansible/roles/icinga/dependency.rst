@@ -8,8 +8,10 @@ to manage contents of the :file:`/etc/icinga2/` directory idempotently.
 Configuration options from multiple roles can be merged together and included
 in the Icinga 2 configuration, or removed conditionally.
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Dependent role variable

@@ -18,14 +18,20 @@ manage the MariaDB server itself.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/mariadb/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/mariadb/COPYRIGHT
 
 ..
  Local Variables:

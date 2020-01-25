@@ -13,14 +13,20 @@ PHP management for their own use.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/php/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/php/COPYRIGHT
 
 ..
  Local Variables:

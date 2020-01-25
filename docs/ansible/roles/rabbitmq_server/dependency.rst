@@ -8,8 +8,10 @@ Ansible roles to manage RabbitMQ main configuration file idempotently.
 Configuration options from multiple roles can be merged together and included
 in the configuration file, or removed conditionally.
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Dependent role variables

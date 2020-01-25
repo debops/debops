@@ -13,14 +13,20 @@ with a different service (database, application, webserver).
    :maxdepth: 2
 
    getting-started
-   defaults/main
    remote_db
-   ldap-dit
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/gitlab/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/gitlab/COPYRIGHT
 
 ..
  Local Variables:

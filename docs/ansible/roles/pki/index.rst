@@ -24,17 +24,23 @@ support it (for example `Let's Encrypt`__).
    internal-ca
    acme-integration
    external-certificates
-   defaults/main
    defaults-detailed
    system-ca-certificates
    custom-files
    custom-hooks
    ansible-integration
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/pki/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/pki/COPYRIGHT
 
 ..
  Local Variables:

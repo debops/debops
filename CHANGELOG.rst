@@ -27,6 +27,14 @@ New DebOps roles
 - The :ref:`debops.lxd` role brings support for LXD on Debian hosts by building
   the Go binaries from source, without Snap installation.
 
+General
+'''''''
+
+- The DebOps Python package now includes the ``debops.<role>(5)`` manual pages
+  for most of the DebOps roles with  details about role usage, variable
+  definition and the like. The manual pages are based on the existing role
+  documentation.
+
 :ref:`debops.docker_registry` role
 ''''''''''''''''''''''''''''''''''
 

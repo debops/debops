@@ -1,9 +1,11 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 Usage as a role dependency
 --------------------------

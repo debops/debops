@@ -12,14 +12,20 @@ with version 2.4 and above.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    ansible-integration
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/apache/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/apache/COPYRIGHT
 
 ..
  Local Variables:

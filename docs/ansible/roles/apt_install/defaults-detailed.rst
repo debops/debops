@@ -7,9 +7,11 @@ Some of ``debops.apt_install`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 .. _apt_install__ref_debconf:
 

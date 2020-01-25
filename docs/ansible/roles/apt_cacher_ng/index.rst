@@ -16,13 +16,19 @@ The following options are available to get clients to use the Apt-Cacher NG serv
    :maxdepth: 2
 
    getting-started
-   defaults/main
    upgrade
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/apt_cacher_ng/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/apt_cacher_ng/COPYRIGHT
 
 ..
  Local Variables:

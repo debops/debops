@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 When ``fail2ban`` is installed, an ``ssh`` jail will be configured by default
 (by the Debian package, not DebOps).

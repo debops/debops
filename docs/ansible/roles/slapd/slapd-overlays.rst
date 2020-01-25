@@ -9,8 +9,10 @@ modify its functionality. The overlays listed below are enabled by the
 
 .. __: https://www.openldap.org/doc/admin24/overlays.html
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 .. _slapd__ref_syncprov_overlay:

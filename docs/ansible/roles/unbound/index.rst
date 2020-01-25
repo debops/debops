@@ -12,14 +12,20 @@ zone key, verified locally.
    :maxdepth: 3
 
    getting-started
-   defaults/main
    defaults-detailed
    defaults-server
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/unbound/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/unbound/COPYRIGHT
 
 ..
  Local Variables:

@@ -16,15 +16,21 @@ options in the Elasticsearch configuration file.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    clustering
    dependency
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/elasticsearch/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/elasticsearch/COPYRIGHT
 
 ..
  Local Variables:

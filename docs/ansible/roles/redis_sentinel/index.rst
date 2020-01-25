@@ -15,15 +15,20 @@ multiple Redis Sentinel instances on Debian/Ubuntu hosts.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    config-pipeline
 
+.. only:: html
 
-Copyright
----------
+   .. toctree::
+      :maxdepth: 2
 
-.. literalinclude:: ../../../../ansible/roles/redis_sentinel/COPYRIGHT
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/redis_sentinel/COPYRIGHT
 
 ..
  Local Variables:

@@ -15,14 +15,20 @@ to configure a webserver for that role using dependency variables.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    acme-support
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/nginx/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/nginx/COPYRIGHT
 
 ..
  Local Variables:

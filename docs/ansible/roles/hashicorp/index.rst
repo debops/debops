@@ -19,14 +19,20 @@ After that, other Ansible roles can be used to configure them as needed.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    security
    ansible-integration
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/hashicorp/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/hashicorp/COPYRIGHT
 
 ..
  Local Variables:

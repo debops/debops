@@ -8,8 +8,10 @@ roles to manage contents of the :file:`/etc/aliases` file idempotently.
 Configuration options from multiple roles can be merged together and included
 in the alias database, or removed conditionally.
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Dependent role variable

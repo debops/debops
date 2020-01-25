@@ -19,8 +19,10 @@ complex examples of the role usage.
 
    .. __: https://github.com/minio/minio/issues/4364
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 PKI infrastructure

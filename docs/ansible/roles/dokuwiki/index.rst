@@ -16,13 +16,19 @@ configure multiple DokuWiki instances with shared base installation using
    :maxdepth: 2
 
    getting-started
-   defaults/main
-   ldap-dit
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/dokuwiki/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/dokuwiki/COPYRIGHT
 
 ..
  Local Variables:

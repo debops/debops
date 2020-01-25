@@ -27,16 +27,21 @@ DebOps provides support for Icinga 2, split into several roles:
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
    deployment
    dependency
 
+.. only:: html
 
-Copyright
----------
+   .. toctree::
+      :maxdepth: 2
 
-.. literalinclude:: ../../../../ansible/roles/icinga/COPYRIGHT
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/icinga/COPYRIGHT
 
 ..
  Local Variables:

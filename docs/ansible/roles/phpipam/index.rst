@@ -18,12 +18,18 @@ nginx as a webserver (using :ref:`debops.nginx`).
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/phpipam/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/phpipam/COPYRIGHT
 
 ..
  Local Variables:

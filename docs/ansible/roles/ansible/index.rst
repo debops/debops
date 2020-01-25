@@ -11,12 +11,18 @@ Ansible upstream APT repository, or using a locally built ``.deb`` package.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/ansible/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/ansible/COPYRIGHT
 
 ..
  Local Variables:

@@ -12,12 +12,18 @@ other applications to speed up slow operations on the databases/data stores.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/memcached/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/memcached/COPYRIGHT
 
 ..
  Local Variables:

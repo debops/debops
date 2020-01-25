@@ -1,8 +1,10 @@
 Guides and examples
 ===================
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 Example MySQL tunnel
 --------------------

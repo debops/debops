@@ -1,8 +1,10 @@
 Usage guides
 ============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 Design of global variables in DebOps
 ------------------------------------

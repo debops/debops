@@ -17,13 +17,19 @@ role to configure ``sysfs`` on behalf of another Ansible role.
    :maxdepth: 2
 
    getting-started
-   defaults/main
    defaults-detailed
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/sysfs/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/sysfs/COPYRIGHT
 
 ..
  Local Variables:

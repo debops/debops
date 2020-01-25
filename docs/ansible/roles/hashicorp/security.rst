@@ -5,8 +5,10 @@ debops.hashicorp security considerations
 
 .. include:: ../../../includes/global.rst
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 
 Role security guidelines

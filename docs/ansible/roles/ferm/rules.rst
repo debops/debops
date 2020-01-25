@@ -10,9 +10,11 @@ rules. Here a description of the involved configurations should be given
 so that everyone can customize the ruleset according to individual
 requirements.
 
-.. contents::
-   :local:
-   :depth: 2
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 2
 
 .. _ferm__ref_default_rules:
 

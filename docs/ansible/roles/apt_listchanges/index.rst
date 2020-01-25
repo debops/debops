@@ -11,12 +11,18 @@ script to send that information via email messages to specified addresses.
    :maxdepth: 2
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/apt_listchanges/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/apt_listchanges/COPYRIGHT
 
 ..
  Local Variables:

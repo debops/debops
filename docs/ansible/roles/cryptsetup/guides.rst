@@ -3,9 +3,11 @@ Guides and examples
 
 .. include:: ../../../includes/global.rst
 
-.. contents::
-   :local:
-   :depth: 2
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 2
 
 Be sure that you installed the role and setup your Ansible project to use the
 role (:ref:`cryptsetup__ref_getting_started`).

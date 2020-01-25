@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 The ``debops.iscsi`` role depends heavily on the LVM support. It can be
 configured using ``debops.lvm`` role added to the playbook before the

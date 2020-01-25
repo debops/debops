@@ -21,12 +21,18 @@ See the documentation of the mentioned roles for more details.
    :maxdepth: 3
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/postwhite/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/postwhite/COPYRIGHT
 
 ..
  Local Variables:

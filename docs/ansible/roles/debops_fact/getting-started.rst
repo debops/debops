@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents:: Sections
-   :local:
+.. only:: html
+
+   .. contents:: Sections
+      :local:
 
 
 Reading custom facts

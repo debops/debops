@@ -3,8 +3,10 @@
 Unprivileged syslog and encrypted connections
 =============================================
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 The ``rsyslog`` daemon can be used in a privileged or an unprivileged mode. In
 a privileged mode the daemon is run on the ``root`` account, has access to all

@@ -3,9 +3,11 @@ Guides and examples
 
 .. include:: ../../../includes/global.rst
 
-.. contents::
-   :local:
-   :depth: 2
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 2
 
 .. _ferm__ref_guide_gateway:
 

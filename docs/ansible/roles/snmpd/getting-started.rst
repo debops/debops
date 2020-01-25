@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 ``debops.snmpd`` role will install ``snmpd`` package on Debian/Ubuntu hosts and
 secure access to SNMP using random SNMPv3 username / password combination, as

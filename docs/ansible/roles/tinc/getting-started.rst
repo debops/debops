@@ -3,8 +3,10 @@ Getting started
 
 .. include:: ../../../includes/global.rst
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 The ``debops.tinc`` role by itself only defines the connections between hosts,
 posing as Ethernet tunnels. To make a proper network, you need a defined

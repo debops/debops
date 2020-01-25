@@ -29,14 +29,20 @@ If you are looking for a LDAP server management solution, check out the
    ldap-admin
    ldap-access
    dependency
-   defaults/main
    defaults-detailed
-   ldap-dit
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/ldap/COPYRIGHT
+   .. toctree::
+      :maxdepth: 2
+
+      defaults/main
+      ldap-dit
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/ldap/COPYRIGHT
 
 ..
  Local Variables:

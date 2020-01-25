@@ -16,12 +16,18 @@ behind a Nginx proxy as a frontend.
    :maxdepth: 3
 
    getting-started
-   defaults/main
 
-Copyright
----------
+.. only:: html
 
-.. literalinclude:: ../../../../ansible/roles/etherpad/COPYRIGHT
+   .. toctree::
+      :maxdepth: 3
+
+      defaults/main
+
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/etherpad/COPYRIGHT
 
 ..
  Local Variables:

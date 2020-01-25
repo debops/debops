@@ -28,18 +28,25 @@ role playbooks, to simplify installation of the Go applications. Further
 service configuration should be done in a given application role. Usage via the
 Ansible inventory is, of course, still possible but might not be optimal.
 
-.. toctree::
-   :maxdepth: 2
+.. only:: html
 
-   getting-started
-   defaults/main/environment
-   defaults/main/packages
-   defaults/main/dependent
+   .. toctree::
+      :maxdepth: 2
 
-Copyright
----------
+      getting-started
+      defaults/main/environment
+      defaults/main/packages
+      defaults/main/dependent
 
-.. literalinclude:: ../../../../ansible/roles/golang/COPYRIGHT
+   Copyright
+   ---------
+
+   .. literalinclude:: ../../../../ansible/roles/golang/COPYRIGHT
+
+.. only:: man
+
+   .. include:: getting-started.rst
+   .. include:: includes/defaults-packages.rst
 
 ..
  Local Variables:

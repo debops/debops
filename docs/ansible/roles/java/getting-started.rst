@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents:: Sections
-   :local:
+.. only:: html
+
+   .. contents:: Sections
+      :local:
 
 Support for backported Java versions
 ------------------------------------

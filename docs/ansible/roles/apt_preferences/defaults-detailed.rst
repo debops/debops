@@ -5,9 +5,11 @@ Some of ``debops.apt_preferences`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
 
-.. contents::
-   :local:
-   :depth: 1
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
 
 .. _apt_preferences__list:
 

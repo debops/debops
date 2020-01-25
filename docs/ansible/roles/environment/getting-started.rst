@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents:: Sections
-   :local:
+.. only:: html
+
+   .. contents:: Sections
+      :local:
 
 .. _environment__ref_inventory__environment:
 

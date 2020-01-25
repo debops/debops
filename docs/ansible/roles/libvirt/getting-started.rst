@@ -1,8 +1,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 The ``debops.libvirt`` role is designed to use your normal admin account instead of
 a ``root`` account for managing ``libvirt`` via it's API. That way Ansible can

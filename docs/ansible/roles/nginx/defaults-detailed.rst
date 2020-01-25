@@ -13,9 +13,11 @@ them.
    modify this section, consider also checking debops.apache if the same also
    applies there, please.
 
-.. contents::
-   :local:
-   :depth: 2
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 2
 
 
 .. _nginx__ref_servers:
