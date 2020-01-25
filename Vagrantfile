@@ -485,7 +485,7 @@ if [ -z "${JANE_BOX_INIT:-}" ] ; then
         mkdir /tmp/build
         rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
         cd /tmp/build
-        make sdist > /dev/null
+        make sdist-quiet > /dev/null
         pip3 install dist/*
         cd - > /dev/null
     fi
@@ -603,7 +603,7 @@ if [ -n "${debops_from_devel}" ] ; then
     mkdir /tmp/build
     rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
     cd /tmp/build
-    make sdist > /dev/null
+    make sdist-quiet > /dev/null
     sudo pip3 install dist/*
     cd - > /dev/null
 fi

@@ -9,9 +9,9 @@ try:
     import pypandoc
     README = pypandoc.convert_file('README.md', 'rst')
 except(IOError, ImportError):
-    print('Error: The "pandoc" support is required to convert '
+    print('Warning: The "pandoc" support is required to convert '
           'the README.md to reStructuredText format')
-    exit(1)
+    README = open('README.md').read()
 
 try:
     unicode
@@ -34,8 +34,7 @@ if os.path.exists('docs/_build/man'):
                 manpage.endswith('.5')):
             MANPAGES_5.append(os.path.join('docs/_build/man', manpage))
 else:
-    print('Error: manual pages not built, aborting')
-    exit(1)
+    print('Warning: manual pages not built')
 
 # Retrieve the project version from 'git describe' command and store it in the
 # VERSION file, needed for correct installation of the Python package

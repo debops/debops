@@ -70,7 +70,7 @@ sdist: clean-sdist man
 	@python3 setup.py sdist
 
 .PHONY: sdist-quiet
-sdist-quiet: clean-sdist man
+sdist-quiet: clean-sdist
 	@python3 setup.py --quiet sdist
 
 .PHONY: sdist-sign
@@ -92,7 +92,7 @@ wheel: clean-wheel man
 	@python3 setup.py bdist_wheel
 
 .PHONY: wheel-quiet
-wheel-quiet: clean-wheel man
+wheel-quiet: clean-wheel
 	@python3 setup.py --quiet bdist_wheel
 
 .PHONY: wheel-sign
