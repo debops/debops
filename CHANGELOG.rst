@@ -70,6 +70,14 @@ Added
 
   .. __: https://unix.stackexchange.com/questions/377376/
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The :ref:`mailservice <slapd__ref_mailservice>` LDAP schema has been added to
+  the :ref:`debops.slapd` role. It provides a set of object classes and
+  attributes useful for defining e-mail recipients and simple mail distribution
+  lists in the LDAP directory.
+
 Changed
 ~~~~~~~
 
