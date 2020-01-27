@@ -274,3 +274,19 @@ that can be used to control LDAP integration with :ref:`Nextcloud
 define disk quotas for Nextcloud users stored in the LDAP directory, as well as
 define which user groups present in LDAP are available in the Nextcloud user
 interface.
+
+.. _slapd__ref_mailservice:
+
+The ``mailservice`` schema
+--------------------------
+
+The ``mailservice`` schema is based on several draft RFCs and includes a set of
+LDAP objects and attributes useful for mail services. The ``mailRecipient``
+object class provides attributes for "final destination" mail recipient
+accounts, like mail aliases, Sieve filtering rules, mail storage location,
+quota. The ``mailDistributionList`` object class allows for creation of simple
+mailing lists or distribution lists which can be used to distribute e-mail
+messages to multiple recipients with basic access controls.
+
+With this schema installed, the ``mail`` attribute should not be used for mail
+services, but should be relegated to user authentication only.
