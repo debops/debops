@@ -9,7 +9,7 @@ Getting started
 Example inventory
 -----------------
 
-To configure Docker on a given remote host, it needs to be added to the
+To configure EteSync on a given remote host, it needs to be added to the
 ``[debops_service_etesync]`` Ansible inventory group:
 
 .. code-block:: none
@@ -21,7 +21,7 @@ To configure Docker on a given remote host, it needs to be added to the
 Example playbook
 ----------------
 
-Here's an example playbook that can be used to manage Docker:
+Here's an example playbook that can be used to manage EteSync:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/etesync.yml
    :language: yaml
