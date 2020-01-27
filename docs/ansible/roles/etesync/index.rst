@@ -3,7 +3,7 @@
 debops.etesync
 ==============
 
-Deploys a `EteSync`_ server. `EteSync`_ is a cross-platform project to provide
+Deploys a `EteSync`_ server. EteSync is a cross-platform project to provide
 secure, end-to-end encrypted, and privacy respecting sync for your contacts,
 calendars and tasks.
 
