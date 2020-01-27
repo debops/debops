@@ -340,6 +340,36 @@ etesync__admin_auth_basic_realm: 'Access to EteSync admin interface is restricte
 etesync__admin_auth_basic_filename: ''
 
                                                                    # ]]]
+# .. envvar:: etesync__mail_to [[[
+#
+# List of recipients to which a mail will be send with the full URL of the
+# EteSync server in case :envvar:`etesync__http_psk_subpath` is set.
+etesync__mail_to: [ 'root@{{ ansible_domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: etesync__mail_subject [[[
+#
+# Subject of the Email to be send with the full service URL.
+etesync__mail_subject: 'PSK subpath URL to EteSync on {{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__mail_body [[[
+#
+# Body of the Email to be send with the full service URL.
+etesync__mail_body: |
+  EteSync has been deployed for the first time on {{ ansible_fqdn }}.
+  You have chosen to deploy the service on a random subpath thus the URL is
+  needed to access the service.
+
+  URL: {{ etesync__url }}
+
+  You can continue the user setup in the Django administration interface of EteSync over at:
+  {{ etesync__url }}/admin
+
+  Have a nice day :)
+
+# ]]]
+# ]]]
 # Configuration variables for other Ansible roles [[[
 # ---------------------------------------------------
 

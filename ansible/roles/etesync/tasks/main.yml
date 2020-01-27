@@ -176,6 +176,17 @@
          etesync__register_migration is not changed)
   no_log: True
 
+# Send PSK subpath URL to admin if needed [[[1
+- name: Send mail with the full URL of the EteSync server
+  mail:
+    from: 'root@{{ ansible_fqdn }}'
+    subject: '{{ etesync__mail_subject }}'
+    to: '{{ etesync__mail_to|d([]) | list | join(",") }}'
+    charset: 'utf8'
+    body: '{{ etesync__mail_body }}'
+  when: (etesync__http_psk_subpath != "" and etesync__mail_to|d() and "etesync" not in ansible_local)
+
+# Save EteSync local facts [[[1
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -196,9 +207,3 @@
 - name: Update Ansible facts if they were modified
   action: setup
   when: etesync__register_facts is changed
-
-- name: Print URL entry point if EteSync is deployed on a subpath
-  debug:
-    msg: 'URL: {{ etesync__url }}'
-  when: etesync__http_psk_subpath != ""
-  tags: [ 'role::etesync:show_url' ]
