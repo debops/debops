@@ -11,7 +11,7 @@
 # The data includes a random ID, os, arch, version, the number of series and other
 # usage data. No data from user databases is ever transmitted.
 # Change this option to true to disable reporting.
-# reporting-disabled = false
+reporting-disabled = {{ influxdb_server__reporting_disabled }}
 
 # Bind address to use for the RPC service for backup and restore.
 bind-address = "{{ influxdb_server__bind_address }}"
@@ -302,7 +302,7 @@ bind-address = "{{ influxdb_server__bind_address }}"
   {{ comment_line }}
 {%           endif %}
 {%         endfor %}
-{%         if option.value is string %}
+{%         if option.value is string and option.value not in ['true', 'false'] %}
   {{ option.name }} = "{{ option.value }}"
 {%         elif option.value[0].name is defined %}
   {{ option.name }} = {{ option.value | map(attribute='name') | list | to_json }}

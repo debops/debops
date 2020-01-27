@@ -1,0 +1,18 @@
+{% set influxdb__tpl_client      = ansible_local.influxdb.client      if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.client|d())      else "localhost" %}
+{% set influxdb__tpl_delegate_to = ansible_local.influxdb.delegate_to if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.delegate_to|d()) else influxdb_server__delegate_to %}
+{% set influxdb__tpl_host        = ansible_local.influxdb.host        if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.host|d())        else "localhost" %}
+{% set influxdb__tpl_port        = ansible_local.influxdb.port        if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.port|d())        else influxdb_server__http_endpoint_port %}
+{% set influxdb__tpl_server      = ansible_local.influxdb.server      if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.server|d())      else "localhost" %}
+{% if (influxdb_server__register_version.stdout or (influxdb_server__register_install_status|d() and influxdb_server__register_install_status.changed|bool)) %}
+{% set influxdb__tpl_client      = "localhost" %}
+{% set influxdb__tpl_delegate_to = influxdb_server__delegate_to %}
+{% set influxdb__tpl_host        = "localhost" %}
+{% set influxdb__tpl_server      = "localhost" %}
+{% endif %}
+{
+"client": "{{ influxdb__tpl_client }}",
+"delegate_to": "{{ influxdb__tpl_delegate_to }}",
+"host": "{{ influxdb__tpl_host }}",
+"port": "{{ influxdb__tpl_port }}",
+"server": "{{ influxdb__tpl_server }}"
+}

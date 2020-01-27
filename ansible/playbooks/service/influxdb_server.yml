@@ -20,5 +20,12 @@
       ferm__dependent_rules:
         - '{{ influxdb_server__ferm__dependent_rules }}'
 
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::influxdb_server' ]
+      python__dependent_packages3:
+        - '{{ influxdb_server__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ influxdb_server__python__dependent_packages2 }}'
+
     - role: influxdb_server
       tags: [ 'role::influxdb_server', 'skip::influxdb_server' ]

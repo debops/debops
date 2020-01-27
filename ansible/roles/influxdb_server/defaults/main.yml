@@ -49,7 +49,7 @@ influxdb_server__allow: []
 # identifier, OS, architecture, InfluxDB version, and the number of databases,
 # measurements, and unique series. Setting this option to true will disable
 # reporting.
-influxdb_server__reporting_disabled: true
+influxdb_server__reporting_disabled: 'true'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__bind_address [[[
@@ -58,11 +58,23 @@ influxdb_server__reporting_disabled: true
 influxdb_server__bind_address: '127.0.0.1:8088'
 
                                                                    # ]]]
-# .. envvar:: influxdb_server__bind_address [[[
+# .. envvar:: influxdb_server__default_directory [[[
+#
+# Default directory root for InfluxDB server.
+influxdb_server__default_directory: '/var/lib/influxdb'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__directory [[[
 #
 # The directory root for InfluxDB server.
-influxdb_server__directory: '/var/lib/influxdb'
+influxdb_server__directory: '{{ influxdb_server__default_directory }}'
 
+                                                                   # ]]]
+# .. envvar:: influxdb_server__delegate_to [[[
+#
+# Hostname of the server to which Ansible roles will delegate tasks. It should
+# point to "this server", using a FQDN hostname known to Ansible.
+influxdb_server__delegate_to: '{{ inventory_hostname }}'
                                                                    # ]]]
                                                                    # ]]]
 # Metastore configuration [[[
@@ -83,13 +95,13 @@ influxdb_server__meta_directory: '{{ influxdb_server__directory }}/meta'
 # policy, which is used when a write or query does not specify a
 # retention policy. Disable this setting to prevent the creation of this
 # retention policy when creating databases.
-influxdb_server__meta_retention_autocreate: true
+influxdb_server__meta_retention_autocreate: 'true'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__meta_logging_enabled [[[
 #
 # Enables the logging of messages from the meta service.
-influxdb_server__meta_logging_enabled: true
+influxdb_server__meta_logging_enabled: 'true'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -131,7 +143,7 @@ influxdb_server__data_index_version: 'inmem'
 # Enables verbose logging of additional debug information within the
 # TSM engine and WAL. The trace logging provide more useful output for
 # debugging TSM engine issues.
-influxdb_server__data_trace_logging_enabled: false
+influxdb_server__data_trace_logging_enabled: 'false'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__data_query_log_enabled [[[
@@ -139,7 +151,7 @@ influxdb_server__data_trace_logging_enabled: false
 # Enables the logging of parsed queries before execution. The query
 # log can be useful for troubleshooting, but logs any sensitive data
 # contained within a query.
-influxdb_server__data_query_log_enabled: false
+influxdb_server__data_query_log_enabled: 'false'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__data_validate_keys [[[
@@ -147,7 +159,7 @@ influxdb_server__data_query_log_enabled: false
 # Validates incoming writes to ensure keys only have valid Unicode
 # characters. This setting will incur a small overhead because every
 # key must be checked.
-influxdb_server__data_validate_keys: false
+influxdb_server__data_validate_keys: 'false'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__tsm_cache_max_memory_size [[[
@@ -221,7 +233,7 @@ influxdb_server__tsm_compact_throughput_burst: '48m'
 # problematic on some kernels (including CentOS and RHEL ), the default
 # is false. Changing the value to true might help users who have slow
 # disks in some cases.
-influxdb_server__tsm_use_madv_willneed: false
+influxdb_server__tsm_use_madv_willneed: 'false'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__inmem_max_series_per_database [[[
@@ -337,7 +349,7 @@ influxdb_server__coordinator_max_select_buckets: 0
 # .. envvar:: influxdb_server__retention_enabled [[[
 #
 # Set to false to prevent InfluxDB from enforcing retention policies.
-influxdb_server__retention_enabled: true
+influxdb_server__retention_enabled: 'true'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__retention_check_interval [[[
@@ -353,7 +365,7 @@ influxdb_server__retention_check_interval: '30m'
 # .. envvar:: influxdb_server__shard_precreation_enabled [[[
 #
 # Determines whether the shard precreation service is enabled.
-influxdb_server__shard_precreation_enabled: true
+influxdb_server__shard_precreation_enabled: 'true'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__shard_precreation_check_interval [[[
@@ -379,7 +391,7 @@ influxdb_server__shard_precreation_advance_period: '30m'
 # Set to false to disable recording statistics internally. If set to false
 # it will make it substantially more difficult to diagnose issues with your
 # installation.
-influxdb_server__monitor_store_enabled: true
+influxdb_server__monitor_store_enabled: 'true'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__monitor_store_database [[[
@@ -421,7 +433,7 @@ influxdb_server__logging_level: 'info'
 #
 # Suppresses the logo output that is printed when the program is started.
 # The logo is always suppressed if STDOUT is not a TTY.
-influxdb_server__logging_suppress_logo: false
+influxdb_server__logging_suppress_logo: 'false'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -432,7 +444,7 @@ influxdb_server__logging_suppress_logo: false
 #
 # Determines whether the subscriber service is enabled. To disable the
 # subscriber service, set the value to false.
-influxdb_server__subscriber_enabled: true
+influxdb_server__subscriber_enabled: 'true'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__subscriber_http_timeout [[[
@@ -445,7 +457,7 @@ influxdb_server__subscriber_http_timeout: '30s'
 #
 # Determines whether to allow insecure HTTPS connections to subscribers.
 # This is useful when testing with self-signed certificates.
-influxdb_server__subscriber_insecure_skip_verify: false
+influxdb_server__subscriber_insecure_skip_verify: 'false'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__subscriber_ca_certs [[[
@@ -472,10 +484,16 @@ influxdb_server__subscriber_write_buffer_size: 1000
 # Endpoints configuration [[[
 # -----------------------
 
+# .. envvar:: influxdb_server__http_endpoint_port [[[
+#
+# HTTP endpoint port
+influxdb_server__http_endpoint_port: '8086'
+
+                                                                   # ]]]
 # .. envvar:: influxdb_server__default_endpoint_ports [[[
 #
 # Default endpoint ports for getting data into and out of InfluxDB
-influxdb_server__default_endpoint_ports: [ '8086' ]
+influxdb_server__default_endpoint_ports: [ '{{ influxdb_server__http_endpoint_port }}' ]
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__endpoint_ports [[[
@@ -505,23 +523,23 @@ influxdb_server__default_endpoints:
     options:
 
       - name: 'enabled'
-        value: true
+        value: 'true'
         comment: '# Determines whether HTTP endpoint is enabled.'
 
       - name: 'flux-enabled'
-        value: false
+        value: 'false'
         comment: '# Determines whether the Flux query endpoint is enabled.'
 
       - name: 'flux-log-enabled'
-        value: false
+        value: 'false'
         comment: '# Determines whether the Flux query logging is enabled.'
 
       - name: 'bind-address'
-        value: ':8086'
+        value: ':{{ influxdb_server__http_endpoint_port }}'
         comment: '# The bind address used by the HTTP service.'
 
       - name: 'auth-enabled'
-        value: false
+        value: 'true'
         comment: '# Determines whether user authentication is enabled over HTTP/HTTPS.'
 
       - name: 'realm'
@@ -529,11 +547,11 @@ influxdb_server__default_endpoints:
         comment: '# The default realm sent back when issuing a basic auth challenge.'
 
       - name: 'log-enabled'
-        value: false
+        value: 'false'
         comment: '# Determines whether HTTP request logging is enabled.'
 
       - name: 'suppress-write-log'
-        value: false
+        value: 'false'
         comment: '# Determines whether the HTTP write request logs should be suppressed when the log is enabled.'
 
       - name: 'access-log-path'
@@ -555,36 +573,36 @@ influxdb_server__default_endpoints:
           # will cause every request to be printed.
 
       - name: 'write-tracing'
-        value: false
+        value: 'false'
         comment: '# Determines whether detailed write logging is enabled.'
 
       - name: 'pprof-enabled'
-        value: true
+        value: 'true'
         comment: |
           # Determines whether the pprof endpoint is enabled.  This endpoint is used for
           # troubleshooting and monitoring.
 
       - name: 'pprof-auth-enabled'
-        value: false
+        value: 'false'
         comment: |
           # Enables authentication on pprof endpoints. Users will need admin permissions
           # to access the pprof endpoints when this setting is enabled. This setting has
           # no effect if either auth-enabled or pprof-enabled are set to false.
 
       - name: 'debug-pprof-enabled'
-        value: false
+        value: 'false'
         comment: |
           # Enables a pprof endpoint that binds to localhost:6060 immediately on startup.
           # This is only needed to debug startup issues.
 
       - name: 'ping-auth-enabled'
-        value: false
+        value: 'false'
         comment: |
           # Enables authentication on the /ping, /metrics, and deprecated /status
           # endpoints. This setting has no effect if auth-enabled is set to false.
 
       - name: 'https-enabled'
-        value: '{{ influxdb_server__pki }}'
+        value: '{{ "true" if influxdb_server__pki else "false" }}'
         comment: '# Determines whether HTTPS is enabled.'
 
       - name: 'https-certificate'
@@ -612,7 +630,7 @@ influxdb_server__default_endpoints:
           # would exceed this limit are dropped. Setting this value to 0 disables the limit.
 
       - name: 'unix-socket-enabled'
-        value: false
+        value: 'false'
         comment: '# Enable http service over unix domain socket'
 
       - name: 'bind-socket'
@@ -660,20 +678,20 @@ influxdb_server__combined_endpoints: '{{ influxdb_server__default_endpoints + in
 # .. envvar:: influxdb_server__continuous_queries_enabled [[[
 #
 # Set to false to disable CQs.
-influxdb_server__continuous_queries_enabled: true
+influxdb_server__continuous_queries_enabled: 'true'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__continuous_queries_log_enabled [[[
 #
 # Set to false to disable logging for CQ events.
-influxdb_server__continuous_queries_log_enabled: true
+influxdb_server__continuous_queries_log_enabled: 'true'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__continuous_queries_query_stats_enabled [[[
 #
 # When set to true, continuous query execution statistics are written to
 # the default monitor store.
-influxdb_server__continuous_queries_query_stats_enabled: false
+influxdb_server__continuous_queries_query_stats_enabled: 'false'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__continuous_queries_run_interval [[[
@@ -774,6 +792,25 @@ influxdb_server__pki_key: 'default.key'
 
                                                                    # ]]]
                                                                    # ]]]
+# Default root account [[[
+# ----------------------------
+
+# .. envvar:: influxdb_server__password_length [[[
+#
+# Length of automatically generated user accounts, saved in the ``secret/``
+# directory. See :ref:`debops.secret` role for more details about passwords.
+influxdb_server__password_length: '48'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__root_password [[[
+#
+# Password for default root admin user.
+influxdb_server__root_password: '{{ lookup("password", secret + "/influxdb/" + ansible_fqdn +
+                                    "/credentials/root/password " +
+                                    "length=" + influxdb_server__password_length) }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
@@ -798,5 +835,20 @@ influxdb_server__ferm__dependent_rules:
     dport: [ '{{ influxdb_server__combined_endpoint_ports }}' ]
     accept_any: False
 
+                                                                   # ]]]
+# .. envvar:: influxdb_server__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+influxdb_server__python__dependent_packages3:
+
+  - 'python3-influxdb'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+influxdb_server__python__dependent_packages2:
+
+  - 'python-influxdb'
                                                                    # ]]]
                                                                    # ]]]
