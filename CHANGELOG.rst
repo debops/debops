@@ -103,6 +103,14 @@ General
 - The role can now use PostgreSQL as a database backend. The database server
   can be managed with the :ref:`debops.postgresql_server` role.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The :ref:`mailservice <slapd__ref_mailservice>` LDAP schema has been added to
+  the :ref:`debops.slapd` role. It provides a set of object classes and
+  attributes useful for defining e-mail recipients and simple mail distribution
+  lists in the LDAP directory.
+
 Changed
 ~~~~~~~
 

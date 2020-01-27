@@ -1,0 +1,238 @@
+# mailservice.schema - Support for generic mail service objects and attributes
+#
+# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020 DebOps project https://debops.org/
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Based on:
+# https://tools.ietf.org/html/draft-srivastava-ldap-mail-00
+# https://tools.ietf.org/html/draft-lachman-ldap-mail-routing-03
+# https://tools.ietf.org/html/draft-steinback-ldap-mailgroups-00
+
+
+# Object namespace definitions
+# ----------------------------
+
+# The Private Enterprise Number of the DebOps project registered at IANA
+# https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
+objectIdentifier DebOps 1.3.6.1.4.1.53622
+
+# The DebOps project LDAP namespace
+objectIdentifier LDAP DebOps:42
+
+# The mailservice.schema namespace
+objectIdentifier mailService LDAP:2
+
+# The mailservice.schema attribute namespace
+objectIdentifier mailServiceAttribute mailService:3
+
+# The mailservice.schema object namespace
+objectIdentifier mailServiceObject mailService:4
+
+
+# mailService attribute definitions
+# ---------------------------------
+
+attributeType ( mailServiceAttribute:1
+                NAME 'mailAddress'
+                DESC 'Primary RFC 822 email address of this recipient'
+                SUP mail SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:2
+                NAME 'mailAlias'
+                DESC 'Alternate RFC 822 email address(es) of this recipient'
+                SUP mail )
+
+attributeType ( mailServiceAttribute:3
+                NAME 'mailForwardTo'
+                DESC 'RFC 822 email address(es) to forward all incoming messages to'
+                SUP mail )
+
+attributeType ( mailServiceAttribute:4
+                NAME 'mailForwardToURL'
+                DESC 'LDAP search URL that defines the recipients of the mail messages
+                      sent to this mailing list'
+                EQUALITY caseExactIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:5
+                NAME 'mailErrorsTo'
+                DESC 'RFC 822 email address(es) to use when routing error and notification
+                      messages to the owner(s) of an email distribution list'
+                SUP mail )
+
+attributeType ( mailServiceAttribute:6
+                NAME 'mailRequestsTo'
+                DESC 'RFC 822 email address(es) to use when routing request
+                      messages sent to the email distribution list'
+                SUP mail )
+
+attributeType ( mailServiceAttribute:7
+                NAME 'mailEnvelopeAddress'
+                DESC 'RFC 822 envelope sender email address of a given mail user
+                      or email distribution list'
+                SUP mail SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:8
+                NAME 'mailRoutingAddress'
+                DESC 'RFC 822 email address to use when routing messages to
+                      the SMTP MTA of this recipient'
+                SUP mail SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:9
+                NAME 'mailHost'
+                DESC 'Fully Qualified Domain Name of the SMTP MTA that
+                      handles messages for this recipient'
+                SUP host SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:10
+                NAME 'mailUidNumber'
+                DESC 'UID required to access the mailbox'
+                SUP uidNumber SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:11
+                NAME 'mailGidNumber'
+                DESC 'GID required to access the mailbox'
+                SUP gidNumber SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:12
+                NAME 'mailHomeDirectory'
+                DESC 'The absolute path to the mail user home directory'
+                SUP homeDirectory SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:13
+                NAME 'mailMessageStore'
+                DESC 'The path to the mail user mailbox storage directory'
+                SUP homeDirectory SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:14
+                NAME 'mailQuota'
+                DESC 'Mail quota limit in kilobytes'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
+                SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:15
+                NAME 'mailACLGroups'
+                DESC 'Comma-separated list of mail groups a given mail user
+                      belongs to, used for mailbox access control'
+                EQUALITY caseExactIA5Match
+                SUBSTR caseExactIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
+                SINGLE-VALUE )
+
+attributetype ( mailServiceAttribute:16
+                NAME 'mailExpungeTrash'
+                DESC 'Time to automatically expunge Trash mailbox'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
+                SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:17
+                NAME 'mailSieveRuleSource'
+                DESC 'Definition of a Sieve filter script for a given mail user'
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:18
+                NAME 'mailSuppressErrors'
+                DESC 'Suppress error messages from being sent back to message originator'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:19
+                NAME 'mailDeliveryFile'
+                DESC 'Path to a file used for archiving messages sent to the distribution list'
+                SUP homeDirectory )
+
+attributeType ( mailServiceAttribute:20
+                NAME 'mailDeliveryOption'
+                DESC 'Message handling option for messages sent to a designated recipient'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:21
+                NAME 'mailProgramDeliveryInfo'
+                DESC 'Named programs for message post-processing'
+                EQUALITY caseExactIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:22
+                NAME 'mailAuthorizedDomain'
+                DESC 'Domains authorized to submit messages to the distribution list'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:23
+                NAME 'mailAuthorizedSender'
+                DESC 'Addresses authorized to submit messages to the distribution list'
+                EQUALITY caseExactIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:24
+                NAME 'mailUnauthorizedDomain'
+                DESC 'Domains not authorized to submit messages to the distribution list'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:25
+                NAME 'mailUnauthorizedSender'
+                DESC 'Addresses not authorized to submit messages to the distribution list'
+                EQUALITY caseExactIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:26
+                NAME 'mailRemoveHeader'
+                DESC 'Headers to remove from the messages sent to the mailing list'
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+attributeType ( mailServiceAttribute:27
+                NAME 'mailAddHeader'
+                DESC 'Headers to add to the messages sent to the mailing list'
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
+
+
+# mailService object definitions
+# ------------------------------
+
+objectClass ( mailServiceObject:1
+              NAME 'mailRecipient'
+              DESC 'The entry represents an entity within the organization that
+                    can receive SMTP mail, such as a mail user account.'
+              SUP top AUXILIARY
+              MUST ( mailAddress )
+              MAY ( mailAlias $ mailEnvelopeAddress $ mailRoutingAddress $
+                    mailHost $ mailUidNumber $ mailGidNumber $ mailHomeDirectory $
+                    mailMessageStore $ mailQuota $ mailACLGroups $ mailExpungeTrash $
+                    mailSieveRuleSource $ mailDeliveryOption $ mailProgramDeliveryInfo $
+                    cn $ description $ uid $ userPassword ) )
+
+objectClass ( mailServiceObject:2
+              NAME 'mailDistributionList'
+              DESC 'The entry represents an entity within the organization that
+                    can receive and forward SMTP mail, such as a mail
+                    group account (mailing list).'
+              SUP top AUXILIARY
+              MUST ( mailAddress )
+              MAY ( mailAlias $ mailForwardTo $ mailForwardToURL $ mailEnvelopeAddress $
+                    mailErrorsTo $ mailRequestsTo $ mailSuppressErrors $
+                    mailDeliveryFile $ mailDeliveryOption $ mailProgramDeliveryInfo $
+                    mailAuthorizedDomain $ mailAuthorizedSender $ mailUnauthorizedDomain $
+                    mailUnauthorizedSender $ mailRemoveHeader $ mailAddHeader $
+                    cn $ description $ owner $ manager $ seeAlso ) )
