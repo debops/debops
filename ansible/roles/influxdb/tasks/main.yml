@@ -1,0 +1,51 @@
+---
+
+- import_role:
+    name: 'secret'
+
+# Ansible does not support management of multiple InfluxDB from one user
+# account, so if a database server is installed locally, we will avoid messing
+# with local root account to not lose the control over it.
+- name: Check if database server is installed
+  environment:
+    LC_MESSAGES: 'C'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-query -W -f='${Version}\n' 'influxdb'
+         | grep -v '^$'
+  args:
+    executable: 'bash'
+  register: influxdb__register_version
+  changed_when: False
+  failed_when: False
+  check_mode: False
+
+- name: Override configuration if local server is detected
+  set_fact:
+    influxdb__server: 'localhost'
+  when: (influxdb__register_version.stdout|d(False))
+
+- name: Make sure that local fact directory exists
+  file:
+    dest: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save InfluxDB local facts
+  template:
+    src: 'etc/ansible/facts.d/influxdb.fact.j2'
+    dest: '/etc/ansible/facts.d/influxdb.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: influxdb__register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: influxdb__register_local_facts is change
+
+- name: Manage database contents
+  include: 'manage_contents.yml'
+  when: (influxdb__server|d(False) and influxdb__delegate_to)
+  tags: [ 'role::influxdb:contents' ]

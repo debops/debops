@@ -1,0 +1,27 @@
+---
+
+- name: Manage InfluxDB client
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_influxdb' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::nginx', 'role::influxdb' ]
+      keyring__dependent_apt_keys:
+        - '{{ influxdb__keyring__dependent_apt_keys }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::influxdb' ]
+      python__dependent_packages3:
+        - '{{ influxdb__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ influxdb__python__dependent_packages2 }}'
+
+    - role: influxdb
+      tags: [ 'role::influxdb', 'skip::influxdb' ]

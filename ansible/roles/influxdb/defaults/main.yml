@@ -1,0 +1,118 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _influxdb__ref_defaults:
+
+# debops.influxdb default variables
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# InfluxDB server configuration [[[
+# --------------------------------
+
+# .. envvar:: influxdb__server [[[
+#
+# FQDN hostname of the InfluxDB server. If a local InfluxDB server is detected, it
+# will override this variable automatically. Only one server at a time is
+# currently supported per host.
+influxdb__server: ''
+
+                                                                   # ]]]
+# .. envvar:: influxdb__port [[[
+#
+# Port number on which to connect to the server. You usually don't need to
+# change this.
+influxdb__port: '8086'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__delegate_to [[[
+#
+# When the InfluxDB server is used remotely, Ansible needs to run tasks on the
+# correct host. This variable controls the task delegation to the correct
+# database server.
+#
+# If the InfluxDB server is run locally, this should point to the inventory name
+# of the current host, NOT ``localhost`` because that would delegate the tasks
+# to the Ansible Controller.
+influxdb__delegate_to: '{{ influxdb__server
+                           if (influxdb__server|d() and
+                               influxdb__server != "localhost")
+                           else inventory_hostname }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: influxdb__pki [[[
+#
+# Enable or disable support for SSL in InfluxDB (using :ref:`debops.pki`).
+influxdb__pki: '{{ (True
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.enabled|d())
+                   else False) | bool }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Databases, user accounts [[[
+# ----------------------------
+
+# .. envvar:: influxdb__password_length [[[
+#
+# Length of automatically generated user accounts, saved in the ``secret/``
+# directory. See :ref:`debops.secret` role for more details about passwords.
+influxdb__password_length: '48'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__databases [[[
+#
+# List of databases configured on the InfluxDB server. See
+# :ref:`influxdb__databases` for more details.
+influxdb__databases: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__dependent_databases [[[
+#
+# List of databases configured on the InfluxDB server, defined by another
+# Ansible role.
+influxdb__dependent_databases: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__users [[[
+#
+# List of user accounts configured on the InfluxDB server. See
+# :ref:`influxdb__users` for more details.
+influxdb__users: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb__dependent_users [[[
+#
+# List of user accounts configured on the InfluxDB server, defined by another
+# Ansible role.
+influxdb__dependent_users: []
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: influxdb__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+influxdb__python__dependent_packages3:
+
+  - 'python3-influxdb'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+influxdb__python__dependent_packages2:
+
+  - 'python-influxdb'
+                                                                   # ]]]
+                                                                   # ]]]
