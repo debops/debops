@@ -29,10 +29,9 @@ SHARED_SPECS = dict(
                 default="http://localhost:8080",
                 fallback=(env_fallback, ["SENSU_URL"]),
             ),
-            namespace=dict(
-                default="default",
-                fallback=(env_fallback, ["SENSU_NAMESPACE"]),
-            )
+            api_key=dict(
+                fallback=(env_fallback, ["SENSU_API_KEY"]),
+            ),
         ),
     ),
     state=dict(
@@ -41,6 +40,10 @@ SHARED_SPECS = dict(
     ),
     name=dict(
         required=True,
+    ),
+    namespace=dict(
+        default="default",
+        fallback=(env_fallback, ["SENSU_NAMESPACE"]),
     ),
     labels=dict(
         type="dict",
@@ -69,10 +72,12 @@ def get_mutation_payload(source, *wanted_params):
         name=source["name"],
     )
     # Cluster-wide objects are not limited to a single namespace. This is why we set
-    # metadata.namespace field only if namespace is present in authentication parameters.
-    namespace = source["auth"]["namespace"]
-    if namespace:
-        payload["metadata"]["namespace"] = namespace
+    # metadata.namespace field only if namespace is present in parameters.
+    if "namespace" in source:
+        if not source["namespace"]:
+            # We are raising an exception here for the sake of sanity test.
+            raise AssertionError("BUG: namespace should not be None")
+        payload["metadata"]["namespace"] = source["namespace"]
 
     for kind in "labels", "annotations":
         if source.get(kind):
@@ -84,5 +89,5 @@ def get_mutation_payload(source, *wanted_params):
 
 def get_sensu_client(auth):
     return client.Client(
-        auth["url"], auth["user"], auth["password"], auth["namespace"],
+        auth["url"], auth["user"], auth["password"], auth["api_key"],
     )

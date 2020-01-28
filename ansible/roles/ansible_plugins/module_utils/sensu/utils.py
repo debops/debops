@@ -71,7 +71,7 @@ def delete(client, path):
 
 def put(client, path, payload):
     resp = client.put(path, payload)
-    if resp.status != 201:
+    if resp.status not in (200, 201):
         _abort(
             "PUT {0} failed with status {1}: {2}",
             path, resp.status, resp.data,
@@ -87,5 +87,18 @@ def dict_to_key_value_strings(data):
     return ["{0}={1}".format(k, v) for k, v in data.items()]
 
 
-def build_url_path(*parts):
-    return "/" + "/".join(quote(p, safe="") for p in parts if p)
+def build_url_path(api_group, api_version, namespace, *parts):
+    prefix = "/api/{0}/{1}/".format(api_group, api_version)
+    if namespace:
+        prefix += "namespaces/{0}/".format(quote(namespace, safe=""))
+    return prefix + "/".join(quote(p, safe="") for p in parts if p)
+
+
+def build_core_v2_path(namespace, *parts):
+    return build_url_path("core", "v2", namespace, *parts)
+
+
+def prepare_result_list(result):
+    if isinstance(result, list):
+        return result
+    return [] if result is None else [result]

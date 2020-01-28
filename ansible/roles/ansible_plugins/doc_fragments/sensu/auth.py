@@ -20,6 +20,7 @@ options:
           - The username to use for connecting to the Sensu API.
             If this is not set the value of the SENSU_USER environment
             variable will be checked.
+          - This parameter is ignored if the I(auth.api_key) parameter is set.
         type: str
         default: admin
       password:
@@ -27,6 +28,7 @@ options:
           - The Sensu user's password.
             If this is not set the value of the SENSU_PASSWORD environment
             variable will be checked.
+          - This parameter is ignored if the I(auth.api_key) parameter is set.
         type: str
         default: P@ssw0rd!
       url:
@@ -36,11 +38,15 @@ options:
             will be checked.
         type: str
         default: http://localhost:8080
-      namespace:
+      api_key:
         description:
-          - RBAC namespace to operate in.
-            If this is not set the value of the SENSU_NAMESPACE environment
-            variable will be checked.
+          - The API key that should be used when authenticating. If this is
+            not set, the value of the SENSU_API_KEY environment variable will
+            be checked.
+          - This replaces I(auth.user) and I(auth.password) parameters.
+          - For more information about the API key, refer to the official
+            Sensu documentation at
+            U(https://docs.sensu.io/sensu-go/latest/guides/use-apikey-feature/).
         type: str
-        default: default
+        version_added: "1.3"
 """

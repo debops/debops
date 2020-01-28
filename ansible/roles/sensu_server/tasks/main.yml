@@ -1,5 +1,11 @@
 ---
 
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
 - name: Install Sensu Go Server packages
   package:
     name: '{{ q("flattened", (sensu_server__base_packages
@@ -64,7 +70,7 @@
   shell:
     'sensuctl user change-password "agent" --current-password "P@ssw0rd!" --new-password "{{ sensu_server__agent_account_password }}"'
   no_log: True
-#  when: (sensu_server__register_install_status|d() and sensu_server__register_install_status is changed)
+  when: (sensu_server__register_install_status|d() and sensu_server__register_install_status is changed)
 
 - name: Manage Sensu backend server user accounts
   sensu_user:
@@ -99,3 +105,7 @@
 - name: Update Ansible facts if they were modified
   action: setup
   when: sensu_server__register_facts is changed
+
+- name: Manage Sensu contents
+  include: 'manage_contents.yml'
+  tags: [ 'role::sensu_server:contents' ]

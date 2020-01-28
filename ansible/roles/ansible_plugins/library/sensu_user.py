@@ -29,19 +29,18 @@ version_added: "1.0"
 extends_documentation_fragment:
   - sensu.auth
   - sensu.name
-notes:
-  - Parameter C(auth.namespace) is ignored in this module.
 options:
   state:
     description:
       - Desired state of the user.
       - Users cannot actually be deleted, only deactivated.
     type: str
-    choices: [ present, absent ]
-    default: present
+    choices: [ enabled, disabled ]
+    default: enabled
   password:
     description:
       - Password for the user.
+      - Required if I(state) is C(enabled).
     type: str
   groups:
     description:
@@ -51,7 +50,7 @@ options:
 
 EXAMPLES = '''
 - name: Create a user
-  user:
+  sensu_user:
     auth:
       url: http://localhost:8080
     name: awesome_username
@@ -59,6 +58,11 @@ EXAMPLES = '''
     groups:
       - dev
       - prod
+
+- name: Deactivate a user
+  sensu_user:
+    name: awesome_username
+    state: absent
 '''
 
 RETURN = '''
@@ -112,12 +116,15 @@ def main():
         ),
     )
 
-    module.params['auth']['namespace'] = None
     client = arguments.get_sensu_client(module.params['auth'])
-    path = utils.build_url_path('users', module.params['name'])
+    path = utils.build_core_v2_path(None, 'users', module.params['name'])
     state = module.params['state']
 
-    remote_object = utils.get(client, path)
+    try:
+        remote_object = utils.get(client, path)
+    except errors.Error as e:
+        module.fail_json(msg=str(e))
+
     if remote_object is None and state == 'absent' and module.params['password'] is None:
         module.fail_json(msg='Cannot disable a non existent user')
 

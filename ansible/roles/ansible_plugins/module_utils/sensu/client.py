@@ -6,35 +6,53 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-from ansible.module_utils.six.moves.urllib.parse import quote
-
 from ansible.module_utils.sensu import (
-    errors, http,
+    errors, http, utils,
 )
 
 
 class Client:
-    def __init__(self, address, username, password, namespace=None):
+    def __init__(self, address, username, password, api_key):
         self.address = address.rstrip("/")
         self.username = username
         self.password = password
+        self.api_key = api_key
 
-        if namespace:
-            self.url_template = "{0}/api/core/v2/namespaces/{1}{{0}}".format(
-                self.address, quote(namespace, safe=""),
-            )
-        else:
-            self.url_template = "{0}/api/core/v2{{0}}".format(self.address)
-
-        self._token = None  # Login when/if required
+        self._auth_header = None  # Login when/if required
 
     @property
-    def token(self):
-        if not self._token:
-            self._token = self._login()
-        return self._token
+    def auth_header(self):
+        if not self._auth_header:
+            self._auth_header = self._login()
+        return self._auth_header
 
     def _login(self):
+        if self.api_key:
+            return self._api_key_login()
+        return self._username_password_login()
+
+    def _api_key_login(self):
+        # We check the API key validity by using it to fetch its metadata from
+        # the backend. This should also take care of validating if the backend
+        # even supports the API key authentication.
+
+        url = "{0}{1}".format(self.address, utils.build_core_v2_path(
+            None, "apikeys", self.api_key,
+        ))
+        headers = dict(Authorization="Key {0}".format(self.api_key))
+
+        resp = http.request("GET", url, headers=headers)
+        if resp.status != 200:
+            raise errors.SensuError(
+                "The API key {0}...{1} seems to be invalid or the backend "
+                "does not support the API key authentication".format(
+                    self.api_key[:5], self.api_key[-5:],
+                )
+            )
+
+        return headers
+
+    def _username_password_login(self):
         resp = http.request(
             "GET", "{0}/auth".format(self.address), force_basic_auth=True,
             url_username=self.username, url_password=self.password,
@@ -55,11 +73,13 @@ class Client:
                 "Authentication call did not return access token",
             )
 
-        return resp.json["access_token"]
+        return dict(
+            Authorization="Bearer {0}".format(resp.json["access_token"]),
+        )
 
     def request(self, method, path, payload=None):
-        url = self.url_template.format(path)
-        headers = {"Authorization": "Bearer {0}".format(self.token)}
+        url = self.address + path
+        headers = self.auth_header
 
         return http.request(method, url, payload=payload, headers=headers)
 
