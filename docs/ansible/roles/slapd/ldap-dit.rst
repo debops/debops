@@ -60,6 +60,10 @@ Directory structure
 
         - :ref:`eduperson.schema <slapd__ref_eduperson>`
 
+        - :ref:`nextcloud.schema <slapd__ref_nextcloud>`
+
+        - :ref:`mailservice.schema <slapd__ref_mailservice>`
+
       - ``olcDatabase={0}config``
 
         - :ref:`olcOverlay={0}syncprov <slapd__ref_syncprov_overlay>` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)

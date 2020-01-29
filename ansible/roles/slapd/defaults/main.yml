@@ -68,6 +68,9 @@ slapd__default_schemas:
   # Support for 'nextcloud' schema, included in DebOps
   - '{{ slapd__debops_schema_path + "/nextcloud.schema" }}'
 
+  # Custom DebOps schema that defines mail-related LDAP objects and attributes
+  - '{{ slapd__debops_schema_path + "/mailservice.schema" }}'
+
                                                                    # ]]]
 # .. envvar:: slapd__schemas [[[
 #
@@ -463,6 +466,7 @@ slapd__default_tasks:
         - 'ldap:///{{ slapd__basedn }}?uidNumber?sub'
         - 'ldap:///{{ slapd__basedn }}?gidNumber?sub'
         - 'ldap:///{{ slapd__basedn }}?mail?sub'
+        - 'ldap:///{{ slapd__basedn }}?mailAddress,mailAlternateAddress?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?employeeNumber?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
@@ -509,6 +513,8 @@ slapd__default_tasks:
         - 'uidNumber regex ^[[:digit:]]+$'
         - 'gidNumber regex ^[[:digit:]]+$'
         - 'macAddress regex ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
+        - 'mailAddress set "this/mailAddress & this/mail"'
+        - 'mailAlternateAddress set "this/mailAlternateAddress & this/mail"'
     state: 'exact'
 
   - name: 'Configure LastBind overlay in the main database'
@@ -624,6 +630,8 @@ slapd__default_tasks:
         - 'host eq,sub'
         - 'gid eq'
         - 'mail eq,sub'
+        - 'mailAddress eq,sub'
+        - 'mailAlternateAddress eq,sub'
 
   - name: 'Enable the monitor database'
     dn: 'olcDatabase={2}monitor,cn=config'
