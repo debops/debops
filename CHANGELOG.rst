@@ -134,6 +134,12 @@ Fixed
   skip copying the :file:`/etc/skel/` contents on the new installations;
   existing script will be removed.
 
+:ref:`debops.gunicorn` role
+'''''''''''''''''''''''''''
+
+- Fix version detection via Ansible local fact script in Python 3.x runtime
+  environment.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
