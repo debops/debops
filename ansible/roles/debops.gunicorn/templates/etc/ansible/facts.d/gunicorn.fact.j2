@@ -23,7 +23,8 @@ try:
         if len(stdout) > 0:
             version = stdout
 
-        output.update({"version": version.split()[2].replace(')', '')})
+        output.update({"version": version.decode('utf-8')
+                                         .split()[2].replace(')', '')})
 
     else:
         output.update({"installed": False})
