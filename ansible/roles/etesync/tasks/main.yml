@@ -43,11 +43,6 @@
     - '{{ etesync__lib }}'
     - '{{ etesync__data }}'
 
-- name: Check if EteSync is installed
-  stat:
-    path: '{{ etesync__git_checkout }}'
-  register: etesync__register_installed
-
 # Download EteSync server [[[1
 - name: Clone EteSync source code
   git:
@@ -172,8 +167,7 @@
     executable: 'bash'
   become: True
   become_user: '{{ etesync__user }}'
-  when: (not etesync__register_installed.stat.exists|bool and
-         etesync__register_migration is not changed)
+  when: ("etesync" not in ansible_local)
   no_log: True
 
 # Send PSK subpath URL to admin if needed [[[1
