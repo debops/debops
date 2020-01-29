@@ -100,6 +100,12 @@ Mail Transport Agents
   and does not break mail delivery in subtle ways. See the
   :ref:`debops.nullmailer` role documentation for an example configuration.
 
+:ref:`debops.gunicorn` role
+'''''''''''''''''''''''''''
+
+- The role will use :command:`gunicorn3` binary by default if the Python 3.x
+  runtime environment is available on the host.
+
 :ref:`debops.ntp` role
 ''''''''''''''''''''''
 
