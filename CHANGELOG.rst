@@ -35,6 +35,10 @@ General
   definition and the like. The manual pages are based on the existing role
   documentation.
 
+- The DebOps project directories can now include the
+  :file:`ansible/global-vars.yml` file which can be used to define :ref:`global
+  Ansible variables <global_vars>` that can affect playbook initialization.
+
 :ref:`debops.docker_registry` role
 ''''''''''''''''''''''''''''''''''
 
