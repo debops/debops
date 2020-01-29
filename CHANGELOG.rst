@@ -21,6 +21,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- The DebOps project directories can now include the
+  :file:`ansible/global-vars.yml` file which can be used to define :ref:`global
+  Ansible variables <global_vars>` that can affect playbook initialization.
+
 :ref:`debops.docker_registry` role
 ''''''''''''''''''''''''''''''''''
 

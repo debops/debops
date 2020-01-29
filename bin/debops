@@ -240,6 +240,12 @@ def main(cmd_args):
     inventory_path = find_inventorypath(project_root)
     os.environ['ANSIBLE_INVENTORY'] = inventory_path
 
+    global_vars_file = os.path.join(inventory_path + '/../global-vars.yml')
+    if os.path.isfile(global_vars_file):
+        print('Including variables from ' + os.path.relpath(global_vars_file))
+        arg_list.extend(['--extra-vars',
+                         '@' + os.path.relpath(global_vars_file)])
+
     ansible_config_file = os.path.join(project_root, ANSIBLE_CONFIG_FILE)
     os.environ['ANSIBLE_CONFIG'] = os.path.abspath(ansible_config_file)
     gen_ansible_cfg(ansible_config_file, config, project_root, playbooks_path,
