@@ -59,18 +59,21 @@ SEPDIR={{ "yes" if ((item.auto_backup_isolate_databases | d(postgresql_server__a
 # Which day do you want weekly backups? (1 to 7 where 1 is Monday)
 DOWEEKLY={{ item.auto_backup_weekly | d(postgresql_server__auto_backup_weekly) }}
 
+{% set auto_backup_compression = item.auto_backup_compression
+                                 | d(postgresql_server__auto_backup_compression) %}
 # Choose Compression type. (gzip or bzip2)
-COMP="{{ item.auto_backup_compression | d(postgresql_server__auto_backup_compression) }}"
+COMP="{{ auto_backup_compression }}"
 
-# Compress communications between backup server and PostgreSQL server?
+# Compress backup on the fly with pg_dump (instead of afterwards with gzip or bzip2)
 # set compression level from 0 to 9 (0 means no compression)
-COMMCOMP=0
+COMMCOMP={{ item.auto_backup_compression_level
+            | default((auto_backup_compression == "pg_dump") | ternary(6,0)) }}
 
 # Additionally keep a copy of the most recent backup in a seperate directory.
 LATEST=no
 
 # Backup files extension
-EXT="sql"
+EXT="sql{{ (auto_backup_compression == "pg_dump") | ternary(".gz", "") }}"
 
 # Encyrption settings
 # (inspired by http://blog.altudov.com/2010/09/27/using-openssl-for-asymmetric-encryption-of-backups/)
