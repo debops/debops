@@ -63,6 +63,11 @@ Added
   It is possible to change the listen address and port through the
   ``icinga__api_listen`` and ``icinga__api_port`` variables.
 
+:ref:`debops.keyring` role
+''''''''''''''''''''''''''
+
+- The role will install the ``gpg`` APT package if it's missing from the host.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
