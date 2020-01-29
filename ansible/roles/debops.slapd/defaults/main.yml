@@ -466,6 +466,7 @@ slapd__default_tasks:
         - 'ldap:///{{ slapd__basedn }}?uidNumber?sub'
         - 'ldap:///{{ slapd__basedn }}?gidNumber?sub'
         - 'ldap:///{{ slapd__basedn }}?mail?sub'
+        - 'ldap:///{{ slapd__basedn }}?mailAddress,mailAlternateAddress?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?employeeNumber?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
@@ -512,6 +513,8 @@ slapd__default_tasks:
         - 'uidNumber regex ^[[:digit:]]+$'
         - 'gidNumber regex ^[[:digit:]]+$'
         - 'macAddress regex ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
+        - 'mailAddress set "this/mailAddress & this/mail"'
+        - 'mailAlternateAddress set "this/mailAlternateAddress & this/mail"'
     state: 'exact'
 
   - name: 'Configure LastBind overlay in the main database'
