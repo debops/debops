@@ -68,14 +68,14 @@ configuration file (normally the :command:`debops` script does that for you).
 Another year passed, and in June 2019 Ansible Galaxy team removed support for
 multi-role repositories and implemented Ansible Collections. But before that,
 the Mazer team removed support for multi-role repositories from the
-:command:`mazer` client, and at some point DebOps monorepo is/was uninstallable
+:command:`mazer` client, and at some point DebOps monorepo was uninstallable
 via Ansible Galaxy.
 
-The project now has support for Ansible Collections, and hopefully after June
-2019 the situation will improve. Right now the easiest method of installation
-is using the Python ``debops`` package from PyPI or directly from the GitHub
-repository. You can read the :ref:`DebOps installation instructions <install>`
-to find out more.
+Since DebOps v2.0.0 release, the project should be fully supported as an
+Ansible Collection available on Ansible Galaxy. If you use an older release
+installed from Galaxy, you should consider upgrading to the current stable
+release. You can read the :ref:`DebOps installation instructions <install>` to
+find out more.
 
 
 Why DebOps doesn't use :command:`ansible-vault` to store passwords?
