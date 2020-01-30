@@ -11,6 +11,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v2.0.0 (2020-01-30)
+-------------------
+
 General
 ~~~~~~~
 
