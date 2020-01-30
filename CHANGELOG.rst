@@ -35,14 +35,6 @@ General
   a simple authentication schema without the need to deploy a fully blown
   Docker Registry Token Authentication.
 
-:ref:`debops.etckeeper` role
-''''''''''''''''''''''''''''
-
-- Add `EteSync`__ secrets to list of files ignored by the :command:`etckeeper`
-  command.
-
-  .. __: https://www.etesync.com/
-
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
