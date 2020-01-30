@@ -77,13 +77,12 @@ the command:
 [debops-pypi]: https://pypi.org/project/debops/
 
 Alternatively, DebOps roles are available on [Ansible Galaxy][debops-galaxy]
-and can be installed using the [Mazer][mazer] content manager, with the
+as an Ansible Collection which can be installed using the `ansible-galaxy`
 command:
 
-    mazer install debops.debops
+    ansible-galaxy collection install debops.debops
 
 [debops-galaxy]: https://galaxy.ansible.com/debops/debops/
-[mazer]: https://galaxy.ansible.com/docs/mazer/index.html
 
 Read the [installation instructions][install] in the DebOps documentation for
 more details about required software and dependencies.
