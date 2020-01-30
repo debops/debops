@@ -60,7 +60,7 @@ using `debops-init` command.
 
 More quick start tips can be found [in the DebOps quick start guide][quick-start].
 
-[quick-start]: https://docs.debops.org/en/latest/introduction/quick-start.html
+[quick-start]: https://docs.debops.org/en/master/introduction/quick-start.html
 
 
 Installation
@@ -87,7 +87,7 @@ command:
 Read the [installation instructions][install] in the DebOps documentation for
 more details about required software and dependencies.
 
-[install]: https://docs.debops.org/en/master/user-guide/install.html
+[install]: https://docs.debops.org/en/master/introduction/install.html
 
 
 ## Getting started
@@ -152,7 +152,7 @@ You can pull latest changes to the project from the upstream repository:
 Read the [development guide][devel-guide] file for more details about the
 DebOps development process.
 
-[devel-guide]: https://github.com/debops/debops/blob/master/DEVELOPMENT.rst
+[devel-guide]: https://docs.debops.org/en/master/developer-guide/contribution-workflow.html
 
 
 ## Contributing
@@ -170,7 +170,7 @@ GPG-signed `git` commits are preferred to ensure authenticity.
 Read the [contributing guide][contrib-guide] file for more details about how to
 contribute to DebOps.
 
-[contrib-guide]: https://github.com/debops/debops/blob/master/CONTRIBUTING.rst
+[contrib-guide]: https://docs.debops.org/en/master/developer-guide/contributing.html
 
 
 ## Licensing
