@@ -75,6 +75,14 @@ General
 
 - The role will install the ``gpg`` APT package if it's missing from the host.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The :command:`autopostgresqlbackup` script can be configured to tell the
+  :command:`pg_dump` command to compress the generated backup files on the fly
+  instead of creating a separate ``.sql`` file and compressing it afterwards.
+  This mode is currently disabled by default.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
