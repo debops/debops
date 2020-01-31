@@ -11,12 +11,12 @@
 
 {%         endif %}
 {%         if element.comment|d() %}
-{%         if not loop.first %}
+{%           if not loop.first %}
 
+{%           endif %}
+{{           element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%         endif %}
-{{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
-{%         endif %}
-{{ element.value -}}
+{{         element.value -}}
 {%       endif %}
 {%     endif %}
 {%   endfor %}
