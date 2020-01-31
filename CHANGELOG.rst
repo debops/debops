@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.0: https://github.com/debops/debops/compare/v2.0.0...stable-2.0
 
+Added
+~~~~~
+
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- Allow the role to be used via role dependencies by adding the
+  :envvar:`sudo__dependent_sudoers` variable.
+
 Changed
 ~~~~~~~
 
