@@ -25,7 +25,8 @@ Added
 '''''''''''''''''''''''
 
 - Allow the role to be used via role dependencies by adding the
-  :envvar:`sudo__dependent_sudoers` variable.
+  :envvar:`sudo__dependent_sudoers` variable and improve the
+  :file:`etc/sudoers.d/config.j2` template.
 
 Fixed
 ~~~~~
