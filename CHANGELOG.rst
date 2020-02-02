@@ -38,6 +38,12 @@ Fixed
   in case that the DNS infrastructure is not configured. This avoids 60s
   timeouts during Ansible fact gathering in such cases.
 
+:ref:`debops.nslcd` role
+''''''''''''''''''''''''
+
+- Correctly refresh the :man:`pam_mkhomedir(8)` configuration on changes by
+  removing and installing the snippet again.
+
 
 `debops v1.1.8`_ - 2020-01-30
 -----------------------------
