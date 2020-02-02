@@ -155,13 +155,14 @@
     SUPERUSER_NAME: '{{ etesync__superuser_name }}'
     SUPERUSER_EMAIL: '{{ etesync__superuser_email }}'
     SUPERUSER_PASSWORD: '{{ etesync__superuser_password }}'
-  shell: |
+  shell:
     ## -o nounset can be enabled with virtualenv >= 16.2.
     ## Ref: https://github.com/pypa/virtualenv/pull/922
     set -o pipefail -o errexit;
-    source {{ etesync__virtualenv }}/bin/activate
+    source {{ etesync__virtualenv }}/bin/activate;
     echo "from django.contrib.auth.models import User;
-          User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')" | ./manage.py shell
+          User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
+    | ./manage.py shell
   args:
     chdir: '{{ etesync__git_checkout }}'
     executable: 'bash'
