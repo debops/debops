@@ -8,7 +8,7 @@
   register: nslcd__register_mkhomedir
 
 - name: Enable mkhomedir PAM module
-  shell: pam-auth-update --package --enable mkhomedir 2>/dev/null
+  shell: pam-auth-update --package --remove mkhomedir 2>/dev/null && pam-auth-update --package --enable mkhomedir 2>/dev/null
   when: nslcd__register_mkhomedir is changed
 
 - name: Install packages for nslcd support

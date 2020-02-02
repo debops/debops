@@ -28,6 +28,15 @@ Added
   :envvar:`sudo__dependent_sudoers` variable and improve the
   :file:`etc/sudoers.d/config.j2` template.
 
+Fixed
+~~~~~
+
+:ref:`debops.nslcd` role
+''''''''''''''''''''''''
+
+- Correctly refresh the :man:`pam_mkhomedir(8)` configuration on changes by
+  removing and installing the snippet again.
+
 
 `debops v1.0.16`_ - 2020-01-30
 ------------------------------
