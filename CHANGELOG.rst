@@ -18,6 +18,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.2: https://github.com/debops/debops/compare/v1.2.0...stable-1.2
 
+Fixed
+~~~~~
+
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- Use short timeout for DNS queries performed by the Ansible local fact script,
+  in case that the DNS infrastructure is not configured. This avoids 60s
+  timeouts during Ansible fact gathering in such cases.
+
 
 `debops v1.2.2`_ - 2020-01-30
 -----------------------------

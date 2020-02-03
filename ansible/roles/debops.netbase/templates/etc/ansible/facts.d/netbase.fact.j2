@@ -83,15 +83,18 @@ with open('/etc/hosts', 'r') as hosts:
     if output['self_domain_source'] == 'localhost':
         try:
             import dns.resolver
+            resolver = dns.resolver.Resolver()
+            resolver.timeout = 0.8
+            resolver.lifetime = 0.8
             try:
-                dns.resolver.query(output['self_fqdn'], 'AAAA')
+                resolver.query(output['self_fqdn'], 'AAAA')
                 output['self_domain_source'] = 'dns'
 
             except Exception:
                 pass
 
             try:
-                dns.resolver.query(output['self_fqdn'], 'A')
+                resolver.query(output['self_fqdn'], 'A')
                 output['self_domain_source'] = 'dns'
 
             except Exception:
