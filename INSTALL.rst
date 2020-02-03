@@ -312,40 +312,42 @@ Installation from Ansible Galaxy
 .. note:: This functionality is fully supported since DebOps v2.0.0+.
 
 DebOps is available on `Ansible Galaxy`__, a central database of Ansible roles.
-The project is `published there as an Ansible Collection`__, with Ansible roles and
-playbooks available in one package. To install it on your Ansible Controller,
-you have to use the :command:`ansible-galaxy` command provided with Ansible.
+The project is `published there as a set of Ansible Collections`__, with
+Ansible roles and playbooks split into multiple "packages" due to the number of
+available roles. To install them on your Ansible Controller, you have to use
+the :command:`ansible-galaxy` command provided with Ansible.
 
 .. __: https://galaxy.ansible.com/
 .. __: https://galaxy.ansible.com/debops/debops
 
-To install the DebOps Collection, run the command:
+To install the DebOps Collections, run the command:
 
 .. code-block:: console
 
    ansible-galaxy collection install debops.debops
 
-The DebOps Collection will be available in the directory:
+The DebOps Collections will be available in the directory:
 
 .. code-block:: none
 
-   ~/.ansible/collections/ansible_collections/debops/debops/
+   ~/.ansible/collections/ansible_collections/debops/
 
-The Collection includes the playbooks provided with DebOps which can be used to
-execute roles after setting up the required Ansible inventory. Various roles
-that use custom lookup or filter plugins are modified to use them from the
-Collection as well, but otherwise the roles should have the same functionality
-as those included in the DebOps Python package or in the monorepo.
+The ``debops.debops`` Collection includes the playbooks provided with DebOps
+which can be used to execute roles after setting up the required Ansible
+inventory. Various roles that use custom lookup or filter plugins are modified
+to use them from the Collections as well, but otherwise the roles should have
+the same functionality as those included in the DebOps Python package or in the
+monorepo.
 
 Read the `documentation about using Ansible Collections in Playbooks`__ for
 more details and examples.
 
 .. __: https://docs.ansible.com/ansible/latest/user_guide/collections_using.html#using-collections-in-a-playbook
 
-Upgrading an installed Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Upgrading installed Collections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To upgrade the already installed DebOps Collection to the latest release
+To upgrade the already installed DebOps Collections to the latest release
 published on Ansible Galaxy, you can run the command:
 
 .. code-block:: console
