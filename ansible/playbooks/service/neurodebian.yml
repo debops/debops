@@ -1,7 +1,8 @@
 ---
 
 - name: Install packages from the NeuroDebian repository
-  collections: [ 'debops.debops' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_neurodebian' ]
   become: True
 
@@ -22,4 +23,4 @@
         - '{{ neurodebian__keyring__dependent_apt_keys }}'
 
     - role: neurodebian
-      tags: [ 'role::neurodebian' ]
+      tags: [ 'role::neurodebian', 'skip::neurodebian' ]

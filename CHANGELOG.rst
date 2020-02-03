@@ -18,6 +18,28 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v2.0.0...master
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The DebOps Collection published on Ansible Galaxy has been split into
+  multiple Collections due to the number of Ansible roles present in DebOps.
+  The ``debops.debops`` collection will install additional ``debops.rolesXY``
+  collections automatically via collection dependencies. The playbooks have
+  been updated to include new Collections.
+
+Fixed
+~~~~~
+
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- Use short timeout for DNS queries performed by the Ansible local fact script,
+  in case that the DNS infrastructure is not configured. This avoids 60s
+  timeouts during Ansible fact gathering in such cases.
+
 
 `debops v2.0.0`_ - 2020-01-30
 -----------------------------

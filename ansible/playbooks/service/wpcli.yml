@@ -1,7 +1,8 @@
 ---
 
 - name: Install WP-CLI framework
-  collections: [ 'debops.debops' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_wpcli' ]
   become: True
 
@@ -43,4 +44,4 @@
         - '{{ wpcli__php__dependent_packages }}'
 
     - role: wpcli
-      tags: [ 'role::wpcli' ]
+      tags: [ 'role::wpcli', 'skip::wpcli' ]

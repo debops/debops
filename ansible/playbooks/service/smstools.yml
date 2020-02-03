@@ -1,7 +1,8 @@
 ---
 
 - name: Manage SMS Gateway service
-  collections: [ 'debops.debops' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_smstools' ]
   become: True
 
@@ -29,7 +30,7 @@
         - '{{ smstools__etc_services__dependent_list }}'
 
     - role: rsyslog
-      tags: [ 'role::syslog', 'skip::rsyslog' ]
+      tags: [ 'role::rsyslog', 'skip::rsyslog' ]
 
     - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
