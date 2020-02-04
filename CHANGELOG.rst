@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- Add support for the ``access_time`` and ``modification_time`` parameters of
+  the Ansible file module to the role.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
