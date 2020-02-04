@@ -112,7 +112,7 @@ General
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
-- Add `docker_server__install_virtualenv` setting to disable python virtualvenv installation.
+- Add `docker_server__install_virtualenv` setting to disable python virtualenv installation.
 
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
