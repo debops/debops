@@ -35,6 +35,12 @@ New DebOps roles
   Sealing and configures persistent storage of the log files. The role is
   included by default in the :file:`common.yml` playbook.
 
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- Add support for the ``access_time`` and ``modification_time`` parameters of
+  the Ansible file module to the role.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
