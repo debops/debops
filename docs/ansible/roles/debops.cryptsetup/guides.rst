@@ -17,7 +17,7 @@ There is also the :ref:`Getting Started guide <getting-started>` to learn the ba
 Setup an encrypted loop device
 ------------------------------
 
-For testing purposes `loop devices`_ can be used to get started with this role.
+For testing purposes `loop devices`_ can be used to get started with this role (Note loop devices are not required, regular files also work).
 So lets create a loop device:
 
 .. code-block:: shell

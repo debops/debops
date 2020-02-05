@@ -20,6 +20,6 @@ This script can come in handy to do this:
 .. literalinclude:: scripts/upgrade-from-v0.3.X-to-v0.4.X
    :language: shell
 
-The script is bundled with this role under
-:file:`./docs/scripts/upgrade-from-v0.3.X-to-v0.4.X` and can be invoked from
+The script is bundled with DebOps documentation under
+:file:`docs/ansible/roles/cryptsetup/scripts/upgrade-from-v0.3.X-to-v0.4.X` and can be invoked from
 there.
