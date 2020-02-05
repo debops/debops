@@ -548,7 +548,7 @@ Example for adding another boot disk to a FDE system with the same passphrase fo
 
 This section is very similar to the previous example and you are expected to have understood it to not have to repeat everything here. Compared to the previous section which configured two disks for automated decryption using external network tools, this example configures multiple disks for manual passphrase entering by a human. The idea therefore is to use the same passphrase for the disks.
 
-There are two options to provide the passphrase. Either :command:`cryptsetup luksFormat` the disks manually and then open the crypto layer with the expected name. Alternativly provide the passphrase on the Ansible controller in :file:`{{ cryptsetup__secret_path }}/sdX5_crypt_passphrase.txt` for example.
+There are two options to provide the passphrase. Either :command:`cryptsetup luksFormat` the disks manually and then open the crypto layer with the expected name. Alternatively provide the passphrase on the Ansible controller in :file:`{{ cryptsetup__secret_path }}/sdX5_crypt_passphrase.txt` for example.
 
 If you provided the passphrase on the Ansible controller, you will need the workaround as in the previous example by making use of the
 :ref:`ansible_controller_mounted state <cryptsetup__devices_state_ansible_controller_mounted>`. The role will need to be run two times with slightly changed configuration. For
@@ -571,7 +571,8 @@ the first run, use something like this to ensure that the crypto layer is presen
        state: 'ansible_controller_mounted'
 
 Now we will need the role to fix the entry in :file:`/etc/crypttab` so that the
-passphrase is asked only once on boot:
+passphrase is asked only once on boot.
+The ``keyfile`` parameter does nothing at this point with ``remote_keyfile`` specified so if you don’t want to store the passphrase on the Ansible controller and did :command:`cryptsetup luksFormat` manually, then feel free to omit ``keyfile``.
 
 .. code:: yaml
 
