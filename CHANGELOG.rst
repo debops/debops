@@ -18,6 +18,18 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v2.0.0...master
 
+Added
+~~~~~
+
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.etesync` role allows to setup a EteSync__ server.
+  EteSync is a cross-platform project to provide secure, end-to-end encrypted,
+  and privacy respecting sync for your contacts, calendars and tasks.
+
+.. __: https://www.etesync.com/
+
 Changed
 ~~~~~~~
 
@@ -54,12 +66,6 @@ New DebOps roles
 
 - The :ref:`debops.lxd` role brings support for LXD on Debian hosts by building
   the Go binaries from source, without Snap installation.
-
-- The :ref:`debops.etesync` role allows to setup a EteSync__ server.
-  EteSync is a cross-platform project to provide secure, end-to-end encrypted,
-  and privacy respecting sync for your contacts, calendars and tasks.
-
-.. __: https://www.etesync.com/
 
 General
 '''''''
