@@ -188,6 +188,11 @@ Each item of those lists is a dictionary with the following documented keys:
      When the header gets corrupted, the plaintext data might be inaccessible!
      Thus it is recommended to have a header backup on hand.
 
+     Debian buster and newer ship with Cryptsetup >2.0 which defaults to the LUKS2 format that provides redudancy of metadata.
+     For security reasons, there is no redundancy in keyslots binary data
+     (encrypted keys) but the format allows adding such a feature in future.
+     Thus it is still recommended to have a header backup on hand.
+
   Set to ``False`` to disable header backup creation and to ensure that the
   header backup is absent on the remote system.
   This option only has an effect in ``luks`` :ref:`item.mode <cryptsetup__devices_mode>`.

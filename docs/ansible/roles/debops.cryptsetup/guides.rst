@@ -17,7 +17,7 @@ There is also the `Getting Started with DebOps`_ guide to learn the basics.
 Setup an encrypted loop device
 ------------------------------
 
-For testing purposes `loop devices`_ can be used to get started with this role.
+For testing purposes `loop devices`_ can be used to get started with this role (Note loop devices are not required, regular files also work).
 So lets create a loop device:
 
 .. code-block:: shell
