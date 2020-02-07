@@ -3,29 +3,20 @@
 debops.rstudio_server
 =====================
 
-`RStudio <https://www.rstudio.com/>`_ is an Integrated Development Environment for
-the R programming language.
-
-This Ansible role can be used to deploy RStudio Server, which is RStudio
-implemented as a web application accessible in a browser.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/rstudio_server/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/rstudio_server/COPYRIGHT
 
 ..
  Local Variables:

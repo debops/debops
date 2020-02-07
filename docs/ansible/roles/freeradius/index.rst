@@ -3,12 +3,8 @@
 debops.freeradius
 =================
 
-`FreeRADIUS <https://freeradius.org/>`__ is a RADIUS (Remote Authentication
-Dial-In User Service) server. It can be used to set up Authorization,
-Authentication nd Accounting (AAA) services on a wired or wireless network.
-
-The ``debops.freeradius`` Ansible role can be used to install and configure
-FreeRADIUS server on a Debian/Ubuntu hosts.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -16,18 +12,12 @@ FreeRADIUS server on a Debian/Ubuntu hosts.
    getting-started
    defaults-detailed
    example-eduroam
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/freeradius/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/freeradius/COPYRIGHT
 
 ..
  Local Variables:

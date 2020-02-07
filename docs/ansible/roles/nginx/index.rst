@@ -3,13 +3,8 @@
 debops.nginx
 ============
 
-`Nginx <https://nginx.org/>`_ is a fast and light webserver with extensible
-configuration.
-
-The ``debops.nginx`` role can be used to install and manage `nginx` configuration
-for multiple websites at the same time. The server is configured using
-inventory variables. This role can also be used as a dependency of another role
-to configure a webserver for that role using dependency variables.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -17,18 +12,12 @@ to configure a webserver for that role using dependency variables.
    getting-started
    defaults-detailed
    acme-support
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/nginx/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/nginx/COPYRIGHT
 
 ..
  Local Variables:

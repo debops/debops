@@ -3,26 +3,19 @@
 debops.auth
 ===========
 
-The ``debops.auth`` role allows you to manage and configure basic user
-authentication and authorization on configured host, including setting up
-system groups with elevated privileges.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/auth/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/auth/COPYRIGHT
 
 ..
  Local Variables:

@@ -3,13 +3,8 @@
 debops.redis_server
 ===================
 
-`Redis <https://redis.io/>`__ is an in-memory key/value store, usable as
-a persistent database, cache or a message broker.
-
-The ``debops.redis_server`` Ansible role can be used to install and manage
-Redis on Debian/Ubuntu hosts. Role supports management of multiple Redis
-instances on a single host and is designed to cope with modifications done to
-Redis configuration files at runtime.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -17,18 +12,12 @@ Redis configuration files at runtime.
    getting-started
    defaults-detailed
    config-pipeline
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/redis_server/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/redis_server/COPYRIGHT
 
 ..
  Local Variables:

@@ -3,10 +3,8 @@
 debops.unbound
 ==============
 
-`Unbound <https://unbound.net/>`_ is a local DNS resolver. It supports
-`DNSSEC <https://en.wikipedia.org/wiki/DNSSEC>`_ validation and can be used to
-ensure that DNS queries protected by DNSSEC are signed by the correct DNS root
-zone key, verified locally.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 3
@@ -14,18 +12,12 @@ zone key, verified locally.
    getting-started
    defaults-detailed
    defaults-server
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 3
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/unbound/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/unbound/COPYRIGHT
 
 ..
  Local Variables:

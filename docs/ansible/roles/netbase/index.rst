@@ -3,29 +3,20 @@
 debops.netbase
 ==============
 
-The ``debops.netbase`` Ansible role manages the hostname stored in
-:file:`/etc/hostname`, as well as the local host and network database located
-in :file:`/etc/hosts` and :file:`/etc/networks` files, respectively.  It can be
-used as a substitute for a DNS service for small number of hosts; with bigger
-network or larger clusters usage of a real DNS server is preferred.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/netbase/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/netbase/COPYRIGHT
 
 ..
  Local Variables:

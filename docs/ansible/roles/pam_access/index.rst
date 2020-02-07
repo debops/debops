@@ -3,30 +3,20 @@
 debops.pam_access
 =================
 
-The `Linux Pluggable Authentication Modules`__ provide dynamic authentication
-support to services on Linux hosts. The ``debops.pam_access`` role can be used
-to manage one aspect of PAM - access control rules that can be used to grant or
-revoke access to services based on users, groups and origins.
-
-.. __: https://en.wikipedia.org/wiki/Linux_PAM
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/pam_access/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/pam_access/COPYRIGHT
 
 ..
  Local Variables:

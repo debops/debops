@@ -3,27 +3,19 @@
 debops.postconf
 ===============
 
-The ``debops.postconf`` Ansible role configures Postfix SMTP server according
-to autodetected or manually selected parameters. The role uses the
-:ref:`debops.postfix` Ansible role to manage Postfix configuration files and lookup
-tables.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 3
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 3
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/postconf/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/postconf/COPYRIGHT
 
 ..
  Local Variables:

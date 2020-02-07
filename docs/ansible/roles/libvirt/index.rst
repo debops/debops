@@ -3,33 +3,20 @@
 debops.libvirt
 ==============
 
-The ``debops.libvirt`` role can be used to manage networks and storage pools
-defined in `libvirt`_ virtualization service. It's designed to be used either
-"locally", directly on a given host, or "remotely" from a central host through
-the API.
-
-To configure a host to provide the :program:`libvirtd` service you can use the
-``debops.libvirtd`` role.
-
-.. _libvirt: https://libvirt.org/
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/libvirt/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/libvirt/COPYRIGHT
 
 ..
  Local Variables:

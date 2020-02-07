@@ -3,10 +3,8 @@
 debops.apache
 =============
 
-The ``debops.apache`` role allows you to setup and manage the `Apache HTTP Server`__
-with version 2.4 and above.
-
-.. __: https://httpd.apache.org/
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -14,18 +12,12 @@ with version 2.4 and above.
    getting-started
    defaults-detailed
    ansible-integration
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/apache/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/apache/COPYRIGHT
 
 ..
  Local Variables:

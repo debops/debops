@@ -3,26 +3,19 @@
 debops.ansible
 ==============
 
-The ``debops.ansible`` role can be used to install Ansible on a Debian or
-Ubuntu host. Ansible will be installed either from the OS repositories, from
-Ansible upstream APT repository, or using a locally built ``.deb`` package.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/ansible/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/ansible/COPYRIGHT
 
 ..
  Local Variables:

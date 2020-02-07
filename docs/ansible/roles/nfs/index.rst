@@ -3,26 +3,20 @@
 debops.nfs
 ==========
 
-The ``debops.nfs`` Ansible role can be used to configure NFS shares on
-Debian/Ubuntu hosts.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/nfs/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/nfs/COPYRIGHT
 
 ..
  Local Variables:

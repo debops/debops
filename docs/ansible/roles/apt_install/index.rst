@@ -3,30 +3,20 @@
 debops.apt_install
 ==================
 
-The ``debops.apt_install`` Ansible role is meant to be used as an easy way to
-install APT packages on hosts that don't require more extensive configuration
-which would require a more extensive, custom Ansible role. The role itself
-exposes several Ansible default variables which can be used to specify custom
-lists of packages on different levels of Ansible inventory (global, per-group
-or per-host).
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/apt_install/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/apt_install/COPYRIGHT
 
 ..
  Local Variables:

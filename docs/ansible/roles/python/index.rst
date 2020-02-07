@@ -3,36 +3,19 @@
 debops.python
 =============
 
-`Python`__ is a popular, dynamic programming language available on GNU/Linux
-platforms. Ansible is written in Python and requires Python on remote host for
-normal operations.
-
-.. __: https://www.python.org/
-
-The ``debops.python`` Ansible role can be used to manage the Python environment
-on a Debian/Ubuntu host. Role supports multiple Python versions installed on
-a host at the same time, which is the default practice in Debian.
-
-A special "raw" mode of operation with a separate Ansible playbook can be used
-to bootstrap Python environment on a host, so that Ansible can then install
-packages and operate normally.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/python/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/python/COPYRIGHT
 
 ..
  Local Variables:

@@ -3,29 +3,20 @@
 debops.apt_mark
 ===============
 
-The ``debops.apt_mark`` Ansible role can be used to set the desired state of
-APT packages using :man:`apt-mark(8)` command. It might be useful if a new
-Debian/Ubuntu install results in many packages which should be installed are
-marked for autoremoval, or if you want to hold certain APT packages in their
-current state. The role operates only on packages that are already installed.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/apt_mark/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/apt_mark/COPYRIGHT
 
 ..
  Local Variables:

@@ -3,28 +3,8 @@
 debops.owncloud
 ===============
 
-This role installs a NextCloud__ or ownCloud__ instance on a specified host, either with
-SQLite, MySQL, MariaDB or PostgreSQL database as a backend and an Nginx
-or Apache webserver as a frontend.
-
-.. __: https://nextcloud.com/
-.. __: https://en.wikipedia.org/wiki/OwnCloud
-
-Nextcloud will be installed using the upstream tarballs. ownCloud will be installed as package coming directly from upstream.
-
-Note that Nginx is `not officially supported by ownCloud nor NextCloud
-<https://github.com/debops/ansible-owncloud/issues/49>`_ but it is community
-supported and should work without problems. Apache is supported by the role but
-not yet used by default and not very well tested.
-
-Features
-~~~~~~~~
-
-* Support for LDAP using the :ref:`debops.ldap` Ansible role.
-* In memory caching using Redis for file locking and APCu.
-* Theming support (only tested with ownCloud 10).
-* Extensive configuration options via Ansible’s inventory.
-* Fully automated ownCloud security updates. `Not yet enabled by default nor tested with ownCloud 10 <https://github.com/debops/ansible-owncloud/issues/28>`_.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -34,19 +14,13 @@ Features
    external-users
    external-storage
    upgrade
+   defaults/main
+   ldap-dit
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-      ldap-dit
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/owncloud/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/owncloud/COPYRIGHT
 
 ..
  Local Variables:

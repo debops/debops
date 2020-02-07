@@ -3,27 +3,20 @@
 debops.ruby
 ===========
 
-The ``debops.ruby`` role can be used to configure a Ruby environment. The role
-will install Ruby packages from the current OS release, as well as specified
-Ruby gems, either system-wide or on a selected user account.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/ruby/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/ruby/COPYRIGHT
 
 ..
  Local Variables:

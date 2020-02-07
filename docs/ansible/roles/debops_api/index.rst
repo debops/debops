@@ -3,26 +3,19 @@
 debops.debops_api
 =================
 
-``debops.debops_api`` can be used to setup the `DebOps API`__.
-
-.. __: https://github.com/debops/debops-api
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/debops_api/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/debops_api/COPYRIGHT
 
 ..
  Local Variables:

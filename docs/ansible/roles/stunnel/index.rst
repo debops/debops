@@ -3,13 +3,8 @@
 debops.stunnel
 ==============
 
-`stunnel`_ can be used to create encrypted TCP tunnels between two service
-ports, either on the same host or on separate hosts.
-
-Encryption is done using SSL certificates. This Ansible role can be used to
-create tunnels between two or more hosts, using Ansible inventory groups.
-
-.. _stunnel: http://stunnel.org/
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -18,18 +13,12 @@ create tunnels between two or more hosts, using Ansible inventory groups.
    defaults-detailed
    guides
    troubleshooting
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/stunnel/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/stunnel/COPYRIGHT
 
 ..
  Local Variables:

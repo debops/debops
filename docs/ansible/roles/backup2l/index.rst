@@ -3,28 +3,19 @@
 debops.backup2l
 ===============
 
-The ``debops.backup2l`` role manages the `backup2l`__ (backup tool) script.
-This script can be used to make automated, incremental archives of a given host
-which can be copied to another system as a backup.
-
-.. __: https://github.com/gkiefer/backup2l
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/backup2l/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/backup2l/COPYRIGHT
 
 
 ..

@@ -3,28 +3,19 @@
 debops.proc_hidepid
 ===================
 
-This role will ensure that the ``/proc`` filesystem is mounted with the
-``hidepid=`` option enabled. `The 'hidepid=' option`__ can be used to hide
-processes that don't belong to a particular user account.
-
-.. __: https://wiki.archlinux.org/index.php/Security#hidepid
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/proc_hidepid/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/proc_hidepid/COPYRIGHT
 
 ..
  Local Variables:

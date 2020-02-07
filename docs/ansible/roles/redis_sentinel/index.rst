@@ -3,13 +3,8 @@
 debops.redis_sentinel
 =====================
 
-`Redis <https://redis.io/>`__ is an in-memory key/value store, usable as
-a persistent database, cache or a message broker.
-`Redis Sentinel <https://redis.io/topics/sentinel>`_ manages the failover and
-high availability of a Redis cluster.
-
-The ``debops.redis_sentinel`` Ansible role can be used to install and manage
-multiple Redis Sentinel instances on Debian/Ubuntu hosts.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -17,18 +12,12 @@ multiple Redis Sentinel instances on Debian/Ubuntu hosts.
    getting-started
    defaults-detailed
    config-pipeline
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/redis_sentinel/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/redis_sentinel/COPYRIGHT
 
 ..
  Local Variables:
