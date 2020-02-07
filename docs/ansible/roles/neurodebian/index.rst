@@ -3,31 +3,19 @@
 debops.neurodebian
 ==================
 
-The ``debops.neurodebian`` role allows you to configure the NeuroDebian__
-repository and install packages from it.
-
-NeuroDebian provides a large collection of popular neuroscience research
-software for the Debian operating system as well as Ubuntu and other
-derivatives.
-
-.. __: http://neuro.debian.net/
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/neurodebian/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/neurodebian/COPYRIGHT
 
 ..
  Local Variables:

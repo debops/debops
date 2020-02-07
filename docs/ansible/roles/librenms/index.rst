@@ -3,33 +3,20 @@
 debops.librenms
 ===============
 
-`LibreNMS`_ is a network monitoring dashboard written in PHP. It can use SNMP,
-:program:`collectd`, :program:`check_mk` or other agents to gather data from variety of
-devices (switches, routers, servers, etc.) and graph them using RRD. It's easy
-to use, and can perform autodiscovery to find and monitor additional devices.
-
-``debops.librenms`` role will manage a central LibreNMS monitoring host and web
-interface.
-
-.. _LibreNMS: http://www.librenms.org/
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/librenms/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/librenms/COPYRIGHT
 
 ..
  Local Variables:

@@ -1,0 +1,6 @@
+Synopsis
+========
+
+``debops service/slapd`` [**--limit** `group,host,`...] [**--diff**] [**--check**] [**--tags** `tag1,tag2,`...] [**--skip-tags** `tag1,tag2,`...] [<``ansible-playbook`` options>] ...
+
+``debops service/slapd`` **--tags** ``role::slapd:tasks`` [**--limit** `group,host,`...] [**--diff**] [**--check**] [<``ansible-playbook`` options>] ...

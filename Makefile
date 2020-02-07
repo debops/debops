@@ -142,7 +142,7 @@ test-docs:
 .PHONY: test-man
 test-man:
 	@printf "%s\n" "Testing man documentation generation..."
-	@cd docs && sphinx-build -n -W -b man -d _build/doctrees . _build/man
+	@cd docs && sphinx-build -t manpages -n -W -b man -d _build/doctrees . _build/man
 
 .PHONY: check-links
 check-links:

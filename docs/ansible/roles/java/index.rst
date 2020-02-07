@@ -3,26 +3,19 @@
 debops.java
 ===========
 
-The ``debops.java`` Ansible role installs the default Java OpenJRE headless
-packages for current OS release. It can also be used to install other Java or
-OpenJDK/OpenJRE versions.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/java/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/java/COPYRIGHT
 
 ..
  Local Variables:

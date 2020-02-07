@@ -3,11 +3,8 @@
 debops.php
 ==========
 
-The ``debops.php`` role can be used to manage PHP Hypertext Preprocessor
-environment on a Debian/Ubuntu host. The role supports different PHP versions
-available in OS distributions (PHP5, PHP7) with PHP-FPM service and multiple
-PHP-FPM pools. Other Ansible roles can use it as a role dependency to offload
-PHP management for their own use.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -15,18 +12,12 @@ PHP management for their own use.
    getting-started
    defaults-detailed
    upgrade
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/php/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/php/COPYRIGHT
 
 ..
  Local Variables:

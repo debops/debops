@@ -3,25 +3,19 @@
 debops.console
 ==============
 
-The ``debops.console`` role manages miscellaneous preferences related to the
-Linux console and CLI environment.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/console/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/console/COPYRIGHT
 
 ..
  Local Variables:

@@ -3,10 +3,8 @@
 debops.authorized_keys
 ======================
 
-The ``debops.authorized_keys`` role can be used to manage SSH keys centrally in
-the :file:`/etc/ssh/authorized_keys/` directory. The role only manages the keys
-themselves, you should configure the ``sshd`` service to use them separately,
-for example by using the :ref:`debops.sshd` Ansible role.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -14,18 +12,12 @@ for example by using the :ref:`debops.sshd` Ansible role.
    getting-started
    defaults-detailed
    upgrade
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/authorized_keys/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/authorized_keys/COPYRIGHT
 
 ..
  Local Variables:

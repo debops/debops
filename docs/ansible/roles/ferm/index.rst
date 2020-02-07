@@ -3,12 +3,8 @@
 debops.ferm
 ===========
 
-`ferm`_ is a wrapper around the :command:`iptables` and the :command:`ip6tables` commands which lets
-you manage host firewalls in an easy and Ansible-friendly way. This role can
-be used to setup firewall rules directly from the inventory, or it can be used
-as a dependency by other roles to setup firewall rules for other services.
-
-.. _ferm: http://ferm.foo-projects.org/
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -17,18 +13,12 @@ as a dependency by other roles to setup firewall rules for other services.
    defaults-detailed
    rules
    guides
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/ferm/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/ferm/COPYRIGHT
 
 ..
  Local Variables:

@@ -3,26 +3,20 @@
 debops.tinyproxy
 ================
 
-The ``debops.tinyproxy`` role can be used to install Tinyproxy on a Debian or
-Ubuntu host. Tinyproxy is a light-weight HTTP/HTTPS proxy daemon for POSIX operating systems.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/tinyproxy/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/tinyproxy/COPYRIGHT
 
 ..
  Local Variables:

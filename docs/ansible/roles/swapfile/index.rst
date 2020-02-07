@@ -3,12 +3,8 @@
 debops.swapfile
 ===============
 
-This Ansible role lets you manage one or multiple swap files. You can also
-manage kernel parameters related to how swap is used by the system.
-
-Note that this role can not setup a swap file on a BTRFS filesystem.
-
-Refer to :ref:`debops.sysctl` for paging and swapping related kernel settings.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -16,18 +12,12 @@ Refer to :ref:`debops.sysctl` for paging and swapping related kernel settings.
    getting-started
    defaults-detailed
    upgrade
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/swapfile/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/swapfile/COPYRIGHT
 
 ..
  Local Variables:

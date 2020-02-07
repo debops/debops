@@ -3,30 +3,19 @@
 debops.apt_proxy
 ================
 
-This role manages the HTTP/HTTPS/FTP proxy configuration for APT. You can
-define what proxy to use, what hosts should be connected to directly, as well
-as set additional APT configuration options related to proxies as needed.
-
-The role also features proxy online detection support to silently
-skip/ignore temporally offline proxies which can make sense for
-workstations and home servers.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/apt_proxy/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/apt_proxy/COPYRIGHT
 
 ..
  Local Variables:

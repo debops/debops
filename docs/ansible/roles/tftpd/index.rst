@@ -3,27 +3,19 @@
 debops.tftpd
 ============
 
-This Ansible role can configure a standalone TFTP server using the
-:command:`tftpd-hpa` daemon. The TFTP server can be used to serve files for
-embedded devices or serve iPXE files from :ref:`debops.ipxe` role to other
-hosts on the network, allowing for network boot and OS installation.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/tftpd/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/tftpd/COPYRIGHT
 
 ..
  Local Variables:

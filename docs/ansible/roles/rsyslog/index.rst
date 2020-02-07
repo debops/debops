@@ -3,11 +3,8 @@
 debops.rsyslog
 ==============
 
-The `rsyslog <http://rsyslog.com/>`_ package is used to read, process, store
-and forward system logs in different ways, on local or remote systems. The
-``debops.rsyslog`` role can be used to easily configure log forwarding to
-a central log server, as well as store logs on the filesystem or other storage
-backends.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -15,18 +12,12 @@ backends.
    getting-started
    defaults-detailed
    unprivileged-tls
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/rsyslog/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/rsyslog/COPYRIGHT
 
 ..
  Local Variables:

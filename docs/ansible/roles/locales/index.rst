@@ -3,27 +3,19 @@
 debops.locales
 ==============
 
-The ``debops.locales`` Ansible role manages localization and
-internationalization configuration, used by the ``locales`` Debian package. The
-role can be used as a dependency of other Ansible roles to ensure that the
-localization is properly configured on the host.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/locales/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/locales/COPYRIGHT
 
 ..
  Local Variables:

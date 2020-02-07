@@ -140,7 +140,9 @@ version = release
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'includes']
+exclude_patterns = ['_build', 'includes', 'ansible/roles/*/man_*']
+if tags.has('manpages'):
+    exclude_patterns = ['_build', 'includes']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -357,7 +359,11 @@ for element in os.listdir(rst_ansible_roles):
                     authors = line.strip().split()[3:-1]
                     role_authors.append(' '.join(authors))
 
-    if os.path.isfile(rst_ansible_roles + element + '/index.rst'):
+    if os.path.isfile(rst_ansible_roles + element + '/man_index.rst'):
+        man_pages.append((rst_ansible_roles + element + '/man_index',
+                          'debops.' + element, role_description,
+                          role_authors, 5))
+    elif os.path.isfile(rst_ansible_roles + element + '/index.rst'):
         man_pages.append((rst_ansible_roles + element + '/index',
                           'debops.' + element, role_description,
                           role_authors, 5))

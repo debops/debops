@@ -3,12 +3,8 @@
 debops.etc_aliases
 ==================
 
-The :file:`/etc/aliases` file contains the mail alias database used by the
-various SMTP daemons to redirect local mail to remote recipients, local files,
-commands, etc. See the :man:`aliases(5)` for more details.
-
-This role can be used to set the contents of the alias database, either using
-Ansible inventory variables, or as a dependency of another Ansible role.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
@@ -16,18 +12,12 @@ Ansible inventory variables, or as a dependency of another Ansible role.
    getting-started
    defaults-detailed
    dependency
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/etc_aliases/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/etc_aliases/COPYRIGHT
 
 ..
  Local Variables:

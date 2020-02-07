@@ -3,32 +3,20 @@
 debops.sysnews
 ==============
 
-This role can be used to manage "System News" bulletin displayed after users
-log in to a particular host using local system console or SSH. System News can
-be used to notify users about important changes on the host; this is especially
-useful in multi-user environments or on bastion hosts.
-
-The System News can be read by executing the :command:`news` command in the
-shell. You can read all of the news entries by executing the :command:`news -a`
-command.
+.. include:: man_description.rst
+   :start-line: 3
 
 .. toctree::
    :maxdepth: 2
 
    getting-started
    defaults-detailed
+   defaults/main
 
-.. only:: html
+Copyright
+---------
 
-   .. toctree::
-      :maxdepth: 2
-
-      defaults/main
-
-   Copyright
-   ---------
-
-   .. literalinclude:: ../../../../ansible/roles/sysnews/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/sysnews/COPYRIGHT
 
 ..
  Local Variables:
