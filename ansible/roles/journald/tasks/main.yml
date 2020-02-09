@@ -1,0 +1,113 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+  vars:
+    secret__directories:
+      - '{{ (journald__fss_verify_key_path | dirname)
+            if journald__fss_enabled|bool
+            else [] }}'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save journald local facts
+  template:
+    src: 'etc/ansible/facts.d/journald.fact.j2'
+    dest: '/etc/ansible/facts.d/journald.fact'
+    mode: '0755'
+  register: journald__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: journald__register_facts is changed
+
+- name: Move persistent journal to volatile storage if requested
+  command: 'journalctl --relinquish-var'
+  when: (journald__enabled|bool and journald__version is version("244", ">=") and
+         journald__persistent_state == 'absent' and
+         (ansible_local.journald.persistent|d(False))|bool)
+
+- name: Remove persistent journal storage if requested
+  file:
+    path: '/var/log/journal'
+    state: 'absent'
+  when: journald__enabled|bool and
+        journald__storage in [ 'auto', 'none', 'volatile' ] and
+        journald__persistent_state == 'absent'
+
+- name: Create persistent journal storage directory
+  file:
+    path: '/var/log/journal/{{ ansible_machine_id }}'
+    state: 'directory'
+    group: 'systemd-journal'
+    mode: '2755'
+  register: journald__register_persistent
+  when: journald__enabled|bool and
+        journald__storage in [ 'auto', 'persistent' ] and
+        journald__persistent_state != 'absent'
+
+- name: Apply extended permissions in the persistent storage
+  command: 'systemd-tmpfiles --create --prefix /var/log/journal'
+  changed_when: False
+  when: journald__enabled|bool and
+        journald__storage in [ 'auto', 'persistent' ] and
+        journald__persistent_state != 'absent'
+
+- name: Create Foward Secure Seal keys when requested
+  command: 'journalctl --setup-keys --interval={{ journald__fss_interval }}'
+  register: journald__register_fss
+  changed_when: journald__register_fss.stderr_lines | count > 1
+  when: (journald__enabled|bool and
+         journald__storage in [ 'auto', 'persistent' ] and
+         journald__persistent_state != 'absent' and
+         journald__fss_enabled|bool and
+        (not ansible_local.journald.sealed|d())|bool)
+
+- name: Save Forward Secure Seal verification key on Ansible Controller
+  copy:
+    content: '{{ journald__register_fss.stdout }}'
+    dest: '{{ journald__fss_verify_key_path }}'
+  delegate_to: 'localhost'
+  become: False
+  when: journald__register_fss is changed
+
+- name: Flush journal to persistent storage
+  systemd:
+    name: 'systemd-journal-flush.service'
+    state: 'restarted'
+  when: journald__enabled|bool and journald__persistent_state != 'absent' and
+        journald__register_persistent is changed
+
+- name: Create journald configuration directory
+  file:
+    path: '/etc/systemd/journald.conf.d'
+    state: 'directory'
+    mode: '0755'
+  when: journald__enabled|bool
+
+- name: Generate journald configuration
+  template:
+    src: 'etc/systemd/journald.conf.d/ansible.conf.j2'
+    dest: '/etc/systemd/journald.conf.d/ansible.conf'
+    mode: '0644'
+  register: journald__register_config
+  when: journald__enabled|bool
+
+- name: Restart journald if its configuration was modified
+  service:
+    name: 'systemd-journald'
+    state: 'restarted'
+  when: journald__enabled|bool and journald__register_config is changed
+
+- name: Verify journal logs using FSS when requested
+  command: 'journalctl --verify --verify-key="{{ journald__fss_verify_key }}"'
+  register: journald__register_fss_verify
+  changed_when: False
+  tags: [ 'never', 'role::journald:fss:verify' ]

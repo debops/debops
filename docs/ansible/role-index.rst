@@ -196,6 +196,7 @@ Logging
 -------
 
 - :ref:`debops.elasticsearch`
+- :ref:`debops.journald`
 - :ref:`debops.kibana`
 - :ref:`debops.logrotate`
 - :ref:`debops.rsyslog`
