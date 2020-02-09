@@ -75,10 +75,9 @@ journald__fss_interval: '15min'
 # .. envvar:: journald__fss_verify_key_path [[[
 #
 # Directory on the Ansible Host where the FSS verification key will be stored.
-# By default it's stored inside of the :file:`secret/` directory in the DebOps
-# project directory. See :ref:`debops.secret` role for more details.
-journald__fss_verify_key_path: '{{ secret + "/journald/fss/"
-                                   + inventory_hostname + "/verify_key" }}'
+# By default it's stored relative to the :file:`secret/` directory in the
+# DebOps project directory. See :ref:`debops.secret` role for more details.
+journald__fss_verify_key_path: '{{ "journald/fss/" + inventory_hostname + "/verify_key" }}'
 
                                                                    # ]]]
 # .. envvar:: journald__fss_verify_key [[[
@@ -86,7 +85,7 @@ journald__fss_verify_key_path: '{{ secret + "/journald/fss/"
 # The contents of the FSS verification key file stored on the Ansible
 # Controller, used by the log verification task (not run by the role by
 # default).
-journald__fss_verify_key: '{{ lookup("file", journald__fss_verify_key_path) }}'
+journald__fss_verify_key: '{{ lookup("file", secret + "/" + journald__fss_verify_key_path) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Main :command:`systemd-journald` configuration [[[
