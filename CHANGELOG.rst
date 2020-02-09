@@ -30,6 +30,10 @@ New DebOps roles
 
 .. __: https://www.etesync.com/
 
+- The :ref:`debops.journald` role can be used to manage the
+  :command:`systemd-journald` service, supports configuration of Forward Secure
+  Sealing and configures persistent storage of the log files.
+
 Changed
 ~~~~~~~
 
