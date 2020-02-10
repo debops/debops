@@ -18,6 +18,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.2: https://github.com/debops/debops/compare/v1.2.0...stable-1.2
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The :ref:`debops.machine` role is reordered in the file:`common.yml` playbook
+  to be executed before the :ref:`debops.ldap` role which uses the former role
+  facts. It's also added to the :file:`bootstrap-ldap.yml` playbook for
+  completeness.
+
 Fixed
 ~~~~~
 
