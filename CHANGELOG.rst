@@ -28,6 +28,17 @@ Added
   :envvar:`sudo__dependent_sudoers` variable and improve the
   :file:`etc/sudoers.d/config.j2` template.
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The :ref:`debops.machine` role is reordered in the file:`common.yml` playbook
+  to be executed before the :ref:`debops.ldap` role which uses the former role
+  facts. It's also added to the :file:`bootstrap-ldap.yml` playbook for
+  completeness.
+
 Fixed
 ~~~~~
 
