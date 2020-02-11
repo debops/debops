@@ -35,6 +35,14 @@ New DebOps roles
   Sealing and configures persistent storage of the log files. The role is
   included by default in the :file:`common.yml` playbook.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The role can now be configured to install Roundcube from private or internal
+  :command:`git` repositories that might contain additional modifications to
+  the application code required by some organizations. See the
+  :ref:`roundcube__ref_private_repo` section in the documentation for details.
+
 Changed
 ~~~~~~~
 
@@ -44,6 +52,9 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Stretch and Debian Buster netboot
   installer versions have been updated to their next point releases, 9.11 and
   10.3 respectively.
+
+- In the :ref:`debops.roundcube` role, the Roundcube version installed by
+  default has been updated to ``v1.4.2``.
 
 General
 '''''''
