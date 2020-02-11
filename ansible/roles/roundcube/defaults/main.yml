@@ -131,16 +131,30 @@ roundcube__shell: '/usr/sbin/nologin'
 roundcube__git_gpg_key: '4295 5C9D 6F2A CA9D 3E96  D55F 3E54 28D0 262C 54F8'
 
                                                                    # ]]]
+# .. envvar:: roundcube__git_additional_gpg_keys [[[
+#
+# List of additional GPG keys to add to the Roundcue user account. This might
+# be needed if multiple people/organizations sign :command:`git` commits or
+# tags in the Roundcube repository, or installation from a private repository
+# is used instead of a public one.
+roundcube__git_additional_gpg_keys: []
+
+                                                                   # ]]]
 # .. envvar:: roundcube__git_repo [[[
 #
-# Roundcube source repository.
+# Roundcube source repository. You can specify a public or private
+# :command:`git` repository using the ``https://`` protocol.
+# See :ref:`roundcube__ref_private_repo` for more details.
 roundcube__git_repo: 'https://github.com/roundcube/roundcubemail.git'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_dir [[[
 #
 # Roundcube source directory on the host.
-roundcube__git_dir: '{{ roundcube__src + "/" + roundcube__git_repo.split("://")[1] }}'
+roundcube__git_dir: '{{ roundcube__src + "/"
+                        + roundcube__git_repo
+                          .split("@" if ("@" in roundcube__git_repo)
+                                     else "://")[1] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_version [[[
@@ -3570,6 +3584,13 @@ roundcube__max_file_size: '30'
 # Role-dependent configuration [[[
 # --------------------------------
 
+# .. envvar:: roundcube__keyring__dependent_gpg_user [[[
+#
+# The UNIX account which will be used to install additional GPG keys by the
+# :ref:`debops.keyring` role.
+roundcube__keyring__dependent_gpg_user: '{{ roundcube__user }}'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__keyring__dependent_gpg_keys [[[
 #
 # GPG key configuration for the :ref:`debops.keyring` Ansible role.
@@ -3579,6 +3600,8 @@ roundcube__keyring__dependent_gpg_keys:
     group: '{{ roundcube__group }}'
     home: '{{ roundcube__home }}'
     id: '{{ roundcube__git_gpg_key }}'
+
+  - '{{ roundcube__git_additional_gpg_keys }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__nginx__dependent_servers [[[
