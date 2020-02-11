@@ -29,6 +29,9 @@ Added
   the application code required by some organizations. See the
   :ref:`roundcube__ref_private_repo` section in the documentation for details.
 
+- The ``tslib`` NPM package will be installed as a requirement for the
+  :command:`lessc` command for compile the ``.css`` files.
+
 Changed
 ~~~~~~~
 
