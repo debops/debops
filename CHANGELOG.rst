@@ -18,6 +18,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.0: https://github.com/debops/debops/compare/v2.0.0...stable-2.0
 
+Added
+~~~~~
+
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The role can now be configured to install Roundcube from private or internal
+  :command:`git` repositories that might contain additional modifications to
+  the application code required by some organizations. See the
+  :ref:`roundcube__ref_private_repo` section in the documentation for details.
+
 Changed
 ~~~~~~~
 

@@ -23,15 +23,15 @@
 
 - name: Create required Roundcube directories
   file:
-    path: '{{ item }}'
+    path: '{{ item.path }}'
     state: 'directory'
     owner: '{{ roundcube__user }}'
     group: '{{ roundcube__group }}'
-    mode: '0755'
+    mode: '{{ item.mode | d("0755") }}'
   loop:
-    - '{{ roundcube__src }}'
-    - '{{ roundcube__git_dir  | dirname }}'
-    - '{{ roundcube__git_dest | dirname }}'
+    - { path: '{{ roundcube__src }}' }
+    - { path: '{{ roundcube__git_dir  | dirname }}', mode: "0750" }
+    - { path: '{{ roundcube__git_dest | dirname }}' }
 
 - name: Clone Roundcube source from upstream repository
   git:
@@ -40,6 +40,10 @@
     version: '{{ roundcube__git_version }}'
     separate_git_dir: '{{ roundcube__git_dir }}'
     verify_commit: True
+    # FIXME: At the moment GPG whitelisting does not work correctly
+    #gpg_whitelist: '{{ [ roundcube__git_gpg_key ]
+    #                   + roundcube__git_additional_gpg_keys
+    #                   | flatten }}'
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_git

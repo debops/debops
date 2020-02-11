@@ -30,6 +30,63 @@ therefore access to the LDAP entries and attributes depends on the LDAP ACL
 configuration in the directory itself.
 
 
+.. _roundcube__ref_private_repo:
+
+Deployment from private or internal git repository
+--------------------------------------------------
+
+The :ref:`debops.roundcube` role supports deployment of Roundcube from
+private/internal :command:`git` repositories over HTTPS. This can be useful
+when a Roundcube codebase is forked to include custom themes or other changes
+in the application required for a particular installation.
+
+To do this, you can specify the URL to the :command:`git` repository using the
+:envvar:`roundcube__git_repo` variable in the form:
+
+.. code-block:: none
+
+   https://<username>:<password>@<git-host>/<organization>/<repository>.git
+
+In GitLab, this functionality is called `Deploy Tokens`__, while on GitHub
+users can create `Personal Access Tokens`__. The tokens can be generated
+per-project and allow for read-only access to the :command:`git` repository.
+
+.. __: https://docs.gitlab.com/ce/user/project/deploy_tokens/
+.. __: https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
+
+The access credentials will be stored in the :file:`.git/` directory of the
+cloned Roundcube repository. The role by default puts it in the location
+specified by the :envvar:`roundcube__git_dir` variable, under the
+:file:`/usr/local/src/` subdirectories, with access restricted via UNIX
+permissions.
+
+The role expects that the checked out commits or tags are signed by a valid GPG
+key. To include the GPG keys for the staff that creates the modifications of
+the Roundcube code base, you can include their GPG fingerprints in the
+:envvar:`roundcube__git_additional_gpg_keys` list. They will be imported to the
+Roundcube UNIX account by the :ref:`debops.keyring` role.
+
+Here are an example Ansible inventory variables that hide the token using the
+:ref:`debops.secret` role:
+
+.. code-block:: yaml
+
+   roundcube_access_token: '{{ lookup("file", secret + "/roundcube/access_token") }}'
+   roundcube__git_repo: '{{ "https://" + roundcube_access_token
+                            + "@code.example.org/mail-infra/roundcubemail.git" }}'
+   roundcube__git_additional_gpg_keys: [ 'fingerprint1', 'fingerprint2' ]
+
+Before running the role, make sure to put the credentials in the
+:file:`ansible/secret/roundcube/access_token` file inside of the DebOps project
+directory. The file should contain the credentials in the form of:
+
+.. code-block:: none
+
+   <username>:<password>
+
+There should be no new line character at the end.
+
+
 .. _roundcube__ref_srv_records:
 
 IMAP, SMTP and Sieve server detection
