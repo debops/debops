@@ -546,8 +546,6 @@ target` for which the key only exists in
 on the Ansible controller.
 
 
-.. _cryptsetup__ref_devices_chaining_multiple_ciphers:
-
 Example for adding another boot disk to a FDE system with the same passphrase for both
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
